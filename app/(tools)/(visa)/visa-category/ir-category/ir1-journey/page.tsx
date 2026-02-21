@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from "@/app/context/AuthContext";
 import { useWizard, WizardState } from "@/app/(main)/dashboard/hooks/useWizard";
 // import { roadmapData } from "@/app/(main)/dashboard/data/roadmap";
@@ -52,10 +52,13 @@ export default function IR1JourneyPage() {
         setStartFreshModalOpen(false);
     };
 
-    const handleStartJourney = () => {
-        actions.startJourney();
-        setJourneyDecisionMade(true);
-    };
+    // Loading state
+    useEffect(() => {
+        if (isLoaded && isSignedIn && !hasExistingProgress && !journeyDecisionMade) {
+            actions.startJourney();
+            setJourneyDecisionMade(true);
+        }
+    }, [isLoaded, isSignedIn, hasExistingProgress, journeyDecisionMade, actions]);
 
     // Loading state
     if (!isLoaded) {
@@ -202,39 +205,7 @@ export default function IR1JourneyPage() {
                         )}
                     </AnimatePresence>
 
-                    {/* ── Guest Banner: Sign In to Save Progress ── */}
-                    {!isSignedIn && (
-                        <div className="bg-[#faba20] text-[#7c2d12] rounded-2xl p-6 mb-8 text-center shadow-sm">
-                            <div className="flex items-center justify-center gap-2 mb-4">
-                                <span className="text-2xl" role="img" aria-label="lock">🔒</span>
-                                <h4 className="text-2xl font-bold">Save Your Progress</h4>
-                            </div>
-                            <p className="mb-4 text-lg opacity-90 mx-auto">
-                                Sign in free to save your progress, mark steps complete, and resume anytime from any device.
-                            </p>
-                            <button
-                                className="px-8 py-3 rounded-xl bg-primary/90 text-white font-bold text-lg hover:bg-[#0f766e] transition-all shadow-lg active:scale-95"
-                                onClick={() => router.push('/login')}
-                            >
-                                Sign In Free
-                            </button>
-                        </div>
-                    )}
 
-                    {/* ── Start Journey Button (logged in, no existing progress) ── */}
-                    {isSignedIn && !hasExistingProgress && !journeyDecisionMade && (
-                        <div className="bg-gradient-to-r from-primary/5 to-primary/10 border border-primary/20 rounded-2xl p-6 mb-8 text-center">
-                            <h3 className="text-xl font-bold text-slate-900 mb-2">Ready to Begin?</h3>
-                            <p className="text-slate-500 mb-4">Your progress will be automatically saved to your account.</p>
-                            <button
-                                onClick={handleStartJourney}
-                                className="inline-flex items-center gap-2 px-8 py-3 bg-primary text-white font-bold rounded-xl hover:bg-primary/90 transition-all shadow-md hover:shadow-lg active:scale-95"
-                            >
-                                Start My Journey
-                                <ArrowRight className="w-4 h-4" />
-                            </button>
-                        </div>
-                    )}
                 </div>
 
                 {/* ── Wizard (shown when decision is made or user is guest) ── */}
@@ -290,7 +261,6 @@ function Wizard({ state, actions, isLoaded, isSignedIn }: WizardProps) {
             actions.setStage(state.currentStage + 1);
             actions.setCurrentStep(0);
         }
-        window.scrollTo({ top: 0, behavior: 'smooth' });
     };
 
     const handlePrev = () => {
@@ -302,7 +272,6 @@ function Wizard({ state, actions, isLoaded, isSignedIn }: WizardProps) {
             actions.setStage(state.currentStage - 1);
             actions.setCurrentStep(prevStage.steps.length - 1);
         }
-        window.scrollTo({ top: 0, behavior: 'smooth' });
     };
 
     return (
@@ -318,11 +287,6 @@ function Wizard({ state, actions, isLoaded, isSignedIn }: WizardProps) {
                     </div>
                 </div>
                 <div className="flex items-center gap-3">
-                    {!isSignedIn && (
-                        <span className="text-xs text-amber-600 bg-amber-50 border border-amber-200 px-3 py-1 rounded-full font-medium">
-                            ⚠ Progress not saved — Sign in to save
-                        </span>
-                    )}
                     <button
                         onClick={() => setIsVaultOpen(true)}
                         className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 rounded-lg font-semibold text-slate-700 hover:border-[#0d9488] hover:bg-[#ebf5f4] transition-all"
