@@ -15,7 +15,7 @@ import { Card } from "@/components/ui/card";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 
-const supabase = createClient();
+
 
 function LoginContent() {
   const [email, setEmail] = useState("");
@@ -77,8 +77,9 @@ function LoginContent() {
 
   // Listen for auth state changes
   useEffect(() => {
+    const supabase = createClient();
     const { data: listener } = supabase.auth.onAuthStateChange(
-      (_event, session) => {
+      (_event: string, session: { user?: { id: string } } | null) => {
         if (session?.user) {
           fetchProfile(session.user.id);
         }
@@ -88,6 +89,7 @@ function LoginContent() {
   }, []);
 
   const fetchProfile = async (userId: string) => {
+    const supabase = createClient();
     const { data, error } = await supabase
       .from("profiles")
       .select("mfa_enabled, mfa_prompt_dismissed_at")

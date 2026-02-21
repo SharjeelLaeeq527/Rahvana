@@ -8,10 +8,10 @@ import {
   Info,
   CheckCircle,
   Plus,
-  Clock,
   ArrowRight,
   X,
-  PlayCircle,
+  Clock,
+  Loader2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -1079,19 +1079,35 @@ export default function ExploreJourneys({
   const categoryFromUrl = searchParams.get("category");
   const router = useRouter();
 
+  const [checkingProgress, setCheckingProgress] = useState(true);
+
   // Check if logged-in user has an existing IR-1 journey
   useEffect(() => {
+    let active = true;
+    
     if (!user?.id) {
       setIr1Progress(null);
+      setCheckingProgress(false);
       return;
     }
+    
+    setCheckingProgress(true);
     loadJourneyProgress(user.id, "ir1").then((record) => {
+      if (!active) return;
       if (record && record.started) {
         setIr1Progress(record);
       } else {
         setIr1Progress(null);
       }
+      setCheckingProgress(false);
+    }).catch(() => {
+      if (!active) return;
+      setCheckingProgress(false);
     });
+
+    return () => {
+      active = false;
+    };
   }, [user?.id]);
 
   const ir1HasProgress = !!ir1Progress;
@@ -1536,6 +1552,7 @@ export default function ExploreJourneys({
                     onCompare={(e) => toggleCompare(journey.id, e)}
                     onWatchIntro={() => setVideoModalJourney(journey)}
                     hasProgress={journey.id === "ir1" && ir1HasProgress}
+                    isLoading={journey.id === "ir1" && checkingProgress}
                     progressPercent={
                       journey.id === "ir1" ? ir1ProgressPercent : undefined
                     }
@@ -1562,6 +1579,7 @@ export default function ExploreJourneys({
                     onCompare={(e) => toggleCompare(journey.id, e)}
                     onWatchIntro={() => setVideoModalJourney(journey)}
                     hasProgress={journey.id === "ir1" && ir1HasProgress}
+                    isLoading={journey.id === "ir1" && checkingProgress}
                     progressPercent={
                       journey.id === "ir1" ? ir1ProgressPercent : undefined
                     }
@@ -1893,6 +1911,7 @@ function JourneyCard({
   onWatchIntro,
   hasProgress,
   progressPercent,
+  isLoading,
 }: {
   journey: Journey;
   isActive: boolean;
@@ -1902,6 +1921,7 @@ function JourneyCard({
   onWatchIntro: () => void;
   hasProgress?: boolean;
   progressPercent?: number;
+  isLoading?: boolean;
 }) {
   return (
     <div
@@ -1934,7 +1954,7 @@ function JourneyCard({
           {/* In Progress Badge with Percent */}
           {hasProgress && (
             <span className="text-xs font-bold text-teal-700 bg-teal-50 px-2 py-1 rounded-full border border-teal-200 flex items-center gap-1">
-              <PlayCircle className="w-3 h-3" />
+              <Clock className="w-3 h-3" />
               {progressPercent !== undefined
                 ? `${progressPercent}% Complete`
                 : "In Progress"}
@@ -2006,18 +2026,24 @@ function JourneyCard({
       {/* Action Buttons */}
       <div className="flex items-center flex-wrap gap-3">
         {journey.id === "ir1" ? (
-          <Link href="/visa-category/ir-category/ir1-journey">
+          <Link href={hasProgress ? "/my-journeys" : "/visa-category/ir-category/ir1-journey"}>
             <Button
+              disabled={isLoading}
               className={cn(
                 "h-9 px-4 rounded-lg font-medium shadow-none transition-colors",
                 hasProgress
                   ? "bg-teal-600 text-white hover:bg-teal-700"
                   : "bg-teal-700 text-white hover:bg-teal-800",
+                isLoading && "opacity-80"
               )}
             >
-              {hasProgress ? (
+              {isLoading ? (
                 <>
-                  <PlayCircle className="w-4 h-4 mr-1" /> Resume Journey
+                  <Loader2 className="w-4 h-4 mr-1 animate-spin" /> Checking...
+                </>
+              ) : hasProgress ? (
+                <>
+                  <ArrowRight className="w-4 h-4 mr-1" /> Resume Journey
                 </>
               ) : (
                 "Start Journey"

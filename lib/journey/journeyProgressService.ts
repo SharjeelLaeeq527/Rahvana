@@ -1,8 +1,6 @@
 import { createClient } from '@/lib/supabase/client';
 import { WizardState } from '@/app/(main)/dashboard/hooks/useWizard';
 
-const supabase = createClient();
-
 export interface JourneyProgressRecord {
   id: string;
   user_id: string;
@@ -21,6 +19,28 @@ export interface JourneyProgressRecord {
 }
 
 /**
+ * Helper to wrap thenable actions with a timeout to prevent infinite hangs in the UI.
+ * Default timeout is 10 seconds.
+ */
+async function withTimeout<T>(promiseLike: Promise<T> | PromiseLike<T>, timeoutMs: number = 10000): Promise<T> {
+  let timeoutId: NodeJS.Timeout;
+  const timeoutPromise = new Promise<never>((_, reject) => {
+    timeoutId = setTimeout(() => {
+      reject(new Error('Request timed out'));
+    }, timeoutMs);
+  });
+
+  try {
+    const result = await Promise.race([Promise.resolve(promiseLike), timeoutPromise]);
+    clearTimeout(timeoutId!);
+    return result as T;
+  } catch (err) {
+    clearTimeout(timeoutId!);
+    throw err;
+  }
+}
+
+/**
  * Load journey progress from Supabase for a logged-in user.
  * Returns null if no progress exists yet.
  */
@@ -28,54 +48,84 @@ export async function loadJourneyProgress(
   userId: string,
   journeyId: string
 ): Promise<JourneyProgressRecord | null> {
-  const { data, error } = await supabase
-    .from('user_journey_progress')
-    .select('*')
-    .eq('user_id', userId)
-    .eq('journey_id', journeyId)
-    .maybeSingle();
+  if (!userId) return null;
+  
+  try {
+    const supabase = createClient();
+    const { data, error } = await withTimeout(
+      supabase
+        .from('user_journey_progress')
+        .select('*')
+        .eq('user_id', userId)
+        .eq('journey_id', journeyId)
+        .maybeSingle()
+    );
 
-  if (error) {
-    console.error('[Journey] Failed to load progress:', error.message);
+    if (error) {
+      console.error('[Journey] Failed to load progress:', error.message);
+      return null;
+    }
+
+    return data as JourneyProgressRecord | null;
+  } catch (error) {
+    console.error('[Journey] loadJourneyProgress timed out or failed:', error);
     return null;
   }
-
-  return data as JourneyProgressRecord | null;
 }
 
 /**
  * List all journey progress records for a user with minimal fields for performance.
  */
 export async function listUserJourneys(userId: string): Promise<JourneyProgressRecord[]> {
-  const { data, error } = await supabase
-    .from('user_journey_progress')
-    .select('id, journey_id, completed_steps, last_updated_at')
-    .eq('user_id', userId)
-    .order('last_updated_at', { ascending: false });
+  if (!userId) return [];
 
-  if (error) {
-    console.error('[Journey] Failed to list journeys:', error.message);
+  try {
+    const supabase = createClient();
+    const { data, error } = await withTimeout(
+      supabase
+        .from('user_journey_progress')
+        .select('id, journey_id, completed_steps, last_updated_at')
+        .eq('user_id', userId)
+        .order('last_updated_at', { ascending: false })
+    );
+
+    if (error) {
+      console.error('[Journey] Failed to list journeys:', error.message);
+      return [];
+    }
+
+    return (data || []) as JourneyProgressRecord[];
+  } catch (error) {
+    console.error('[Journey] listUserJourneys timed out or failed:', error);
     return [];
   }
-
-  return data as JourneyProgressRecord[];
 }
 
 /**
  * Delete all journey progress for a specific user.
  */
 export async function deleteAllUserJourneys(userId: string): Promise<boolean> {
-  const { error } = await supabase
-    .from('user_journey_progress')
-    .delete()
-    .eq('user_id', userId);
+  if (!userId) return false;
 
-  if (error) {
-    console.error('[Journey] Failed to delete all journeys:', error.message);
+  try {
+    const supabase = createClient();
+    const { error } = await withTimeout(
+      supabase
+        .from('user_journey_progress')
+        .delete()
+        .eq('user_id', userId)
+    );
+
+    if (error) {
+      console.error('[Journey] Failed to delete all journeys:', error.message);
+      return false;
+    }
+
+    return true;
+  } catch (error) {
+    console.error('[Journey] deleteAllUserJourneys timed out or failed:', error);
     return false;
   }
-
-  return true;
 }
 
 /**
@@ -87,32 +137,42 @@ export async function saveJourneyProgress(
   journeyId: string,
   state: WizardState
 ): Promise<boolean> {
-  const payload = {
-    user_id: userId,
-    journey_id: journeyId,
-    current_stage: state.currentStage,
-    current_step: state.currentStep ?? 0,
-    completed_steps: Array.from(state.completedSteps),
-    collapsed_steps: state.collapsedSteps,
-    role: state.role,
-    filing_type: state.filingType,
-    document_checklist: state.documentChecklist,
-    notes: state.notes,
-    started: state.started,
-  };
+  if (!userId) return false;
 
-  const { error } = await supabase
-    .from('user_journey_progress')
-    .upsert(payload, {
-      onConflict: 'user_id,journey_id',
-    });
+  try {
+    const supabase = createClient();
+    const payload = {
+      user_id: userId,
+      journey_id: journeyId,
+      current_stage: state.currentStage,
+      current_step: state.currentStep ?? 0,
+      completed_steps: Array.from(state.completedSteps),
+      collapsed_steps: state.collapsedSteps,
+      role: state.role,
+      filing_type: state.filingType,
+      document_checklist: state.documentChecklist,
+      notes: state.notes,
+      started: state.started,
+    };
 
-  if (error) {
-    console.error('[Journey] Failed to save progress:', error.message);
+    const { error } = await withTimeout(
+      supabase
+        .from('user_journey_progress')
+        .upsert(payload, {
+          onConflict: 'user_id,journey_id',
+        })
+    );
+
+    if (error) {
+      console.error('[Journey] Failed to save progress:', error.message);
+      return false;
+    }
+
+    return true;
+  } catch (error) {
+    console.error('[Journey] saveJourneyProgress timed out or failed:', error);
     return false;
   }
-
-  return true;
 }
 
 /**
@@ -122,18 +182,28 @@ export async function deleteJourneyProgress(
   userId: string,
   journeyId: string
 ): Promise<boolean> {
-  const { error } = await supabase
-    .from('user_journey_progress')
-    .delete()
-    .eq('user_id', userId)
-    .eq('journey_id', journeyId);
+  if (!userId) return false;
 
-  if (error) {
-    console.error('[Journey] Failed to delete progress:', error.message);
+  try {
+    const supabase = createClient();
+    const { error } = await withTimeout(
+      supabase
+        .from('user_journey_progress')
+        .delete()
+        .eq('user_id', userId)
+        .eq('journey_id', journeyId)
+    );
+
+    if (error) {
+      console.error('[Journey] Failed to delete progress:', error.message);
+      return false;
+    }
+
+    return true;
+  } catch (error) {
+    console.error('[Journey] deleteJourneyProgress timed out or failed:', error);
     return false;
   }
-
-  return true;
 }
 
 /**

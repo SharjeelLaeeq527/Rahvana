@@ -1,11 +1,11 @@
 import { motion } from "framer-motion";
-import { FilePlus, FileEdit, FileRefresh, HelpCircle } from "lucide-react";
+import { FilePlus, FileEdit, HelpCircle, RotateCcw } from "lucide-react";
 import guideData from "@/data/birth-certificate-guide-data.json";
 
 const ICONS: Record<string, React.ElementType> = {
   new: FilePlus,
   correction: FileEdit,
-  replacement: FileRefresh,
+  replacement: RotateCcw,
   unsure: HelpCircle,
 };
 

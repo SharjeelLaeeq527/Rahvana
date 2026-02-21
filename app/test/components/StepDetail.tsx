@@ -102,17 +102,7 @@ export function StepDetail({
           </div>
         )}
 
-        {/* Help/Notes (Info Box) */}
-        {step.notes && (
-          <div className="bg-[#e0f2fe] border-l-4 border-l-primary p-4 rounded-xl flex gap-3 items-start">
-            <div className="bg-primary text-white rounded-md w-6 h-6 flex items-center justify-center shrink-0 mt-0.5 text-xs font-bold">
-              i
-            </div>
-            <p className="text-[15px] text-slate-800 leading-relaxed font-medium">
-              {step.notes}
-            </p>
-          </div>
-        )}
+        {/* Step Notes Tooltip replaced highlighted box */}
       </div>
 
       {/* Navigation Buttons */}

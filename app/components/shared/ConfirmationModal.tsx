@@ -1,6 +1,6 @@
 "use client";
 
-import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 
 interface ConfirmationModalProps {
   open: boolean;
@@ -36,10 +36,10 @@ export function ConfirmationModal({
 
           <div className="relative z-10 space-y-3">
             {/* Title */}
-            <h2 className="text-2xl font-bold text-slate-900">{title}</h2>
+            <DialogTitle className="text-2xl font-bold text-slate-900">{title}</DialogTitle>
 
             {/* Description */}
-            <p className="text-muted-foreground">{description}</p>
+            <DialogDescription className="text-muted-foreground">{description}</DialogDescription>
 
             {/* Action buttons */}
             <div className="flex justify-between gap-4 pt-4">

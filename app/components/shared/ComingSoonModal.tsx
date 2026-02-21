@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/app/context/AuthContext";
 
@@ -54,9 +54,9 @@ export function ComingSoonModal({ open, onOpenChange }: ComingSoonModalProps) {
                   : "translate-y-8 opacity-0"
               }`}
             >
-              <h1 className="text-5xl md:text-6xl font-bold mb-6 tracking-tight">
+              <DialogTitle className="text-5xl md:text-6xl font-bold mb-6 tracking-tight">
                 <span className="text-[#0D7377]">Coming Soon</span>
-              </h1>
+              </DialogTitle>
             </div>
 
             {/* Subtitle */}
@@ -67,10 +67,10 @@ export function ComingSoonModal({ open, onOpenChange }: ComingSoonModalProps) {
                   : "translate-y-8 opacity-0"
               }`}
             >
-              <p className="text-lg md:text-xl text-muted-foreground mb-10 leading-relaxed">
+              <DialogDescription className="text-lg md:text-xl text-muted-foreground mb-10 leading-relaxed">
                 We&apos;re crafting something extraordinary for you. Stay tuned
                 for an experience that redefines excellence.
-              </p>
+              </DialogDescription>
             </div>
 
             {/* Loader */}
