@@ -7,7 +7,7 @@ import {
   Star,
   Bookmark,
 } from "lucide-react";
-import { type WizardStepId } from "@/types/frc-wizard";
+import { type WizardStepId } from "@/types/guide-wizard";
 
 const STEP_ICONS: Record<string, React.ElementType> = {
   document_need: ClipboardList,

@@ -6,28 +6,28 @@ import WizardHeader from "../../../components/guides/WizardHeader";
 import WizardSidebar from "../../../components/guides/WizardSidebar";
 import WizardInfoPanel from "../../../components/guides/WizardInfoPanel";
 import DocumentNeedStep from "../../../components/guides/steps/DocumentNeedStep";
-import LocationStep from "../../../components/guides/steps/LocationStep";
+// import LocationStep from "../../../components/guides/steps/LocationStep";
 import RoadmapStep from "../../../components/guides/steps/RoadmapStep";
-import OfficeFinderStep from "../../../components/guides/steps/OfficeFinderStep";
+// import OfficeFinderStep from "../../../components/guides/steps/OfficeFinderStep";
 import ValidationStep from "../../../components/guides/steps/ValidationStep";
 import WhatsThisModal from "../../../components/guides/WhatsThisModal";
-import { type WizardState, WizardStepId } from "@/types/frc-wizard";
+import { type WizardState, WizardStepId } from "@/types/guide-wizard";
 import guideData from "@/data/passport-guide-data.json";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 
 const STEP_IDS: WizardStepId[] = [
   "document_need",
-  "location",
+  // "location",
   "roadmap",
-  "office_finder",
+  // "office_finder",
   "validation",
 ];
 
 const STEP_LABELS: Record<string, string> = {
   document_need: "Application Type",
-  location: "Location",
+  // location: "Location",
   roadmap: "Roadmap",
-  office_finder: "Office Finder",
+  // office_finder: "Office Finder",
   validation: "Validation",
 };
 
@@ -36,9 +36,9 @@ const INFO_PANEL_KEYS: Record<
   keyof typeof guideData.wizard.info_panel
 > = {
   document_need: "document_need",
-  location: "location",
+  // location: "location",
   roadmap: "roadmap",
-  office_finder: "office_finder",
+  // office_finder: "office_finder",
   validation: "validation",
 };
 
@@ -63,12 +63,12 @@ const PassportGuide = () => {
     switch (currentStepId) {
       case "document_need":
         return !!state.documentNeed;
-      case "location":
-        return !!state.province && !!state.district && !!state.city;
+      // case "location":
+      //   return !!state.province && !!state.district && !!state.city;
       case "roadmap":
         return true;
-      case "office_finder":
-        return true;
+      // case "office_finder":
+      //   return true;
       case "validation":
         return false;
       default:
@@ -118,18 +118,18 @@ const PassportGuide = () => {
             data={guideData.wizard.document_need}
           />
         );
-      case "location":
-        return (
-          <LocationStep
-            province={state.province}
-            district={state.district}
-            city={state.city}
-            onProvinceChange={(v) => setState((s) => ({ ...s, province: v }))}
-            onDistrictChange={(v) => setState((s) => ({ ...s, district: v }))}
-            onCityChange={(v) => setState((s) => ({ ...s, city: v }))}
-            data={guideData.wizard.location}
-          />
-        );
+      // case "location":
+      //   return (
+      //     <LocationStep
+      //       province={state.province}
+      //       district={state.district}
+      //       city={state.city}
+      //       onProvinceChange={(v) => setState((s) => ({ ...s, province: v }))}
+      //       onDistrictChange={(v) => setState((s) => ({ ...s, district: v }))}
+      //       onCityChange={(v) => setState((s) => ({ ...s, city: v }))}
+      //       data={guideData.wizard.location}
+      //     />
+      //   );
       case "roadmap":
         return (
           <RoadmapStep
@@ -138,16 +138,16 @@ const PassportGuide = () => {
             data={guideData.wizard.roadmap}
           />
         );
-      case "office_finder":
-        return (
-          <OfficeFinderStep
-            province={state.province}
-            district={state.district}
-            offices={guideData.wizard.offices}
-            officeType="Passport"
-            warningText="Passport services are handled at Regional Passport Offices (RPO) and Executive Passport Offices (EPO). Verify office hours and available services before visiting. You can apply at any passport office regardless of your CNIC address."
-          />
-        );
+      // case "office_finder":
+      //   return (
+      //     <OfficeFinderStep
+      //       province={state.province}
+      //       district={state.district}
+      //       offices={guideData.wizard.offices}
+      //       officeType="Passport"
+      //       warningText="Passport services are handled at Regional Passport Offices (RPO) and Executive Passport Offices (EPO). Verify office hours and available services before visiting. You can apply at any passport office regardless of your CNIC address."
+      //     />
+      //   );
       case "validation":
         return (
           <ValidationStep
@@ -222,7 +222,7 @@ const PassportGuide = () => {
                   disabled={!canGoNext()}
                   className={`flex items-center gap-1 px-5 py-2.5 rounded-lg text-sm font-semibold cursor-pointer ${
                     canGoNext()
-                      ? "bg-linear-to-br from-emerald-600 to-emerald-700 text-white shadow-md border-none"
+                      ? "bg-gradient-to-br from-[#14a0a6] to-[#0d7377] text-white shadow-md border-none"
                       : "bg-gray-200 text-gray-400 cursor-not-allowed"
                   }`}
                 >
