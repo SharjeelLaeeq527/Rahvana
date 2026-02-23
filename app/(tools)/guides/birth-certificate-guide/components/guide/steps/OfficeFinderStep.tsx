@@ -1,127 +1,113 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import {
-  AlertTriangle,
-  Search,
-  Clock,
-  MapIcon,
-  Star,
-} from "lucide-react";
-import guideData from "@/data/birth-certificate-guide-data.json";
+import { Search, MapPin, Building2, Clock, Check, Star } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 interface OfficeFinderStepProps {
-  province: string | null;
-  district: string | null;
+  location: { province: string | null; district: string | null };
+  savedOffice: any;
+  onSave: (office: any) => void;
 }
 
-const OfficeFinderStep = ({ province, district }: OfficeFinderStepProps) => {
-  const [searchQuery, setSearchQuery] = useState("");
-
-  const allOffices = guideData.wizard.offices;
-
-  const filteredOffices = allOffices.filter((o: any) => {
-    const matchesSearch =
-      !searchQuery ||
-      o.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (o.address && o.address.toLowerCase().includes(searchQuery.toLowerCase()));
-
-    const matchesLocation = 
-      (!province || o.province === province) && 
-      (!district || o.district === district);
-
-    return matchesSearch && matchesLocation;
-  });
-
-  const displayOffices =
-    filteredOffices.length > 0 ? filteredOffices : allOffices;
-
-
-  const locationLabel =
-    [district, province].filter(Boolean).join(", ") || "Pakistan";
+const OfficeFinderStep = ({ location, savedOffice, onSave }: OfficeFinderStepProps) => {
+  const [search, setSearch] = useState("");
+  
+  // Sample data simulating UC offices for the selected district
+  const sampleOffice = {
+    id: "uc-office-1",
+    name: `Union Council Office (${location.district || 'Local'})`,
+    address: `Your local UC office based on ${location.district || 'selected'} venue`,
+    timings: "Mon-Fri: 9:00 AM - 4:00 PM",
+    proTip: "Visit between 10 AM and 1 PM for Secretary's availability.",
+    isMandatory: true
+  };
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 12 }}
-      animate={{ opacity: 1, y: 0 }}
-    >
-      <h2 className="text-[1.75rem] font-extrabold text-slate-900 mb-2 font-['Plus_Jakarta_Sans','Inter',system-ui,sans-serif]">
-        Find Registration Office
-      </h2>
+    <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="space-y-8">
+      <div className="mb-8">
+        <h2 className="text-[2rem] font-black text-[#0f172a] mb-2 font-['Plus_Jakarta_Sans',system-ui]">
+          Find Your Union Council
+        </h2>
+        <p className="text-[1rem] text-slate-500 font-medium font-['Plus_Jakarta_Sans',system-ui]">
+          Based on your location: <span className="text-teal-600 font-bold">{location.district}, {location.province}</span>
+        </p>
+      </div>
 
-      <p className="text-[0.95rem] text-slate-500 mb-6 font-['Plus_Jakarta_Sans','Inter',system-ui,sans-serif]">
-        Based on your location: <span className="text-teal-600 font-bold">{locationLabel}</span>
-      </p>
-
-
-      {/* Search */}
-      <div className="relative mb-6">
-        <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4.5 h-4.5 text-slate-400" />
-
+      {/* Search Bar */}
+      <div className="relative group">
+        <div className="absolute inset-y-0 left-5 flex items-center pointer-events-none">
+          <Search className="w-5 h-5 text-slate-400 group-focus-within:text-teal-600 transition-colors" />
+        </div>
         <input
           type="text"
-          placeholder="Search for Union Council, NADRA Center, or E-Khidmat..."
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          className="w-full py-[0.8rem] pl-11 pr-4 rounded-[12px] border border-slate-200 text-[0.9rem] bg-white text-slate-900 outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 transition-all font-['Plus_Jakarta_Sans',system-ui]"
+          placeholder="Search by UC number, area, or address..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className="w-full pl-14 pr-6 py-5 rounded-[18px] border border-slate-200 focus:border-teal-500 focus:ring-4 focus:ring-teal-50 shadow-sm outline-none transition-all text-slate-900 font-medium font-['Plus_Jakarta_Sans',system-ui]"
         />
       </div>
 
-      {/* Office Cards */}
-      <div className="flex flex-col gap-4">
-        {displayOffices.map((office: any, i: number) => (
-          <motion.div
-            key={i}
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: i * 0.08 }}
-            className="p-5 rounded-[14px] border border-slate-200 bg-white"
-          >
-            <div className="flex items-center gap-3 mb-2 font-['Plus_Jakarta_Sans',system-ui]">
-              <h4 className="text-[1.05rem] font-bold text-slate-900">
-                {office.name}
-              </h4>
-
-              <span className="px-2 py-1 rounded-md bg-teal-50 text-teal-700 text-[0.7rem] font-bold uppercase tracking-wider">
-                {office.badge}
-              </span>
+      {/* Office Card */}
+      <div className="p-8 rounded-[24px] border border-slate-100 bg-white shadow-sm space-y-6">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="space-y-1">
+            <div className="flex items-center gap-3">
+              <h3 className="text-[1.25rem] font-black text-[#0f172a] font-['Plus_Jakarta_Sans',system-ui]">
+                {sampleOffice.name}
+              </h3>
+              {sampleOffice.isMandatory && (
+                <span className="px-3 py-1 bg-teal-50 text-teal-700 text-[0.65rem] font-black uppercase tracking-wider rounded-lg">
+                  Mandatory
+                </span>
+              )}
             </div>
-
-            <p className="text-[0.85rem] text-slate-500 mb-3 font-['Plus_Jakarta_Sans',system-ui]">
-              {office.address}
+            <p className="text-[0.9rem] text-slate-500 font-medium">
+              {sampleOffice.address}
             </p>
+          </div>
+        </div>
 
-            <div className="flex flex-wrap gap-6 text-[0.82rem] text-slate-500 mb-3 font-['Plus_Jakarta_Sans',system-ui]">
-              <span className="flex items-center gap-1.5">
-                <Clock className="w-3.5 h-3.5" />
-                {office.hours}
-              </span>
-            </div>
+        <div className="flex items-center gap-2 text-slate-400">
+           <Clock className="w-4 h-4" />
+           <span className="text-[0.85rem] font-bold">{sampleOffice.timings}</span>
+        </div>
 
-            <div className="px-4 py-2 rounded-lg bg-teal-50/50 text-[0.8rem] text-teal-800 mb-4 border border-teal-100/50 font-['Plus_Jakarta_Sans',system-ui]">
-              <span className="font-bold mr-1">Pro-Tip:</span> {office.tip}
-            </div>
+        {/* Pro-Tip */}
+        <div className="p-4 bg-[#f0fdfa] border border-[#ccfbf1] rounded-xl flex items-center gap-3">
+           <span className="text-teal-700 text-[0.85rem] font-black italic shrink-0">Pro-Tip:</span>
+           <p className="text-[#134e4a] text-[0.85rem] font-bold">
+              {sampleOffice.proTip}
+           </p>
+        </div>
 
-            <div className="flex gap-3">
-              <motion.button
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-lg border-2 border-teal-600 text-teal-700 text-[0.85rem] font-bold bg-white cursor-pointer hover:bg-teal-50 transition-all font-['Plus_Jakarta_Sans',system-ui]"
-              >
-                <MapIcon className="w-3.5 h-3.5" />
-                View on Map
-              </motion.button>
-
-              <motion.button
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-lg text-white text-[0.85rem] font-bold cursor-pointer bg-teal-600 hover:bg-teal-700 shadow-sm transition-all font-['Plus_Jakarta_Sans',system-ui]"
-              >
-                <Star className="w-3.5 h-3.5" />
-                Save Office
-              </motion.button>
-            </div>
-          </motion.div>
-        ))}
+        {/* Actions */}
+        <div className="flex flex-col sm:flex-row gap-4 pt-2">
+           <button className="flex-1 flex items-center justify-center gap-2 py-4 rounded-[14px] border-2 border-teal-600 text-teal-700 font-black text-[0.95rem] hover:bg-teal-50 transition-all">
+              <MapPin className="w-4.5 h-4.5" />
+              View on Map
+           </button>
+           <button 
+            onClick={() => onSave(sampleOffice)}
+            className={cn(
+              "flex-1 flex items-center justify-center gap-2 py-4 rounded-[14px] font-black text-[0.95rem] transition-all",
+              savedOffice?.id === sampleOffice.id
+                ? "bg-slate-900 text-white"
+                : "bg-teal-600 text-white hover:bg-teal-700 shadow-lg shadow-teal-100"
+            )}
+           >
+              {savedOffice?.id === sampleOffice.id ? (
+                <>
+                  <Check className="w-4.5 h-4.5" />
+                  Office Saved
+                </>
+              ) : (
+                <>
+                  <Star className="w-4.5 h-4.5" />
+                  Save Office
+                </>
+              )}
+           </button>
+        </div>
       </div>
     </motion.div>
   );

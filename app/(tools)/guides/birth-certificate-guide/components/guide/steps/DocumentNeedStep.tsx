@@ -6,7 +6,6 @@ const ICONS: Record<string, React.ElementType> = {
   new: FilePlus,
   correction: FileEdit,
   replacement: RotateCcw,
-  unsure: HelpCircle,
 };
 
 interface DocumentNeedStepProps {

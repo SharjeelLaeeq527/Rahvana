@@ -10,7 +10,7 @@ const WizardHeader = ({ onWhatsThis }: WizardHeaderProps) => {
     <header
       className="
         fixed top-0 left-0 w-full z-50
-        h-14 px-6 mt-24
+        h-14 px-6
         flex items-center justify-center
         bg-[linear-gradient(135deg,#0d7377,#14a0a6)]
       "

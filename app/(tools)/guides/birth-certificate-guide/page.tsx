@@ -6,53 +6,58 @@ import WizardHeader from "./components/guide/WizardHeader";
 import WizardSidebar from "./components/guide/WizardSidebar";
 import WizardInfoPanel from "./components/guide/WizardInfoPanel";
 import WhatsThisModal from "./components/guide/WhatsThisModal";
-import PersonTypeStep from "./components/guide/steps/PersonTypeStep";
 import DocumentNeedStep from "./components/guide/steps/DocumentNeedStep";
-import CaseTypeStep from "./components/guide/steps/CaseTypeStep";
+import AgeCategoryStep from "./components/guide/steps/AgeCategoryStep";
+import BirthSettingStep from "./components/guide/steps/BirthSettingStep";
 import LocationStep from "./components/guide/steps/LocationStep";
-import RoadmapStep from "./components/guide/steps/RoadmapStep";
+import ParentalDetailsStep from "./components/guide/steps/ParentalDetailsStep";
 import OfficeFinderStep from "./components/guide/steps/OfficeFinderStep";
-import ValidationStep from "./components/guide/steps/ValidationStep";
+import RoadmapStep from "./components/guide/steps/RoadmapStep";
 import { type BirthStepId, type BirthWizardState } from "@/types/birth-certificate-wizard";
 import guideData from "@/data/birth-certificate-guide-data.json";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 
 const STEP_IDS: BirthStepId[] = [
-  "person_type",
   "document_need",
-  "case_type",
+  "age_category",
+  "birth_setting",
   "location",
-  "roadmap",
+  "parental_details",
   "office_finder",
-  "validation",
+  "roadmap",
 ];
 
-const INFO_PANEL_KEYS: Record<
-  BirthStepId,
-  keyof typeof guideData.wizard.info_panel
-> = {
-  person_type: "person_type",
+const INFO_PANEL_KEYS: Record<BirthStepId, string> = {
   document_need: "document_need",
-  case_type: "case_type",
+  age_category: "age_category",
+  birth_setting: "birth_setting",
   location: "location",
+  parental_details: "parental_details",
+  office_finder: "location", // reusing location tips for office finder
   roadmap: "roadmap",
-  office_finder: "office_finder",
-  validation: "validation",
 };
 
 const BirthCertificateGuidePage = () => {
   const [currentStep, setCurrentStep] = useState(0);
   const [showWhatsThis, setShowWhatsThis] = useState(false);
   const [state, setState] = useState<BirthWizardState>({
-    personType: null,
     documentNeed: null,
-    caseType: null,
+    timing: null,
+    ageCategory: null,
+    birthSetting: null,
     province: null,
     district: null,
     city: null,
+    parentalStatus: {
+      hasCNICs: false,
+      hasNikahNama: false,
+      isSingleParent: false,
+      hasOldRecords: false,
+      hasSchoolRecord: false,
+      hasResidenceProof: false,
+    },
+    savedOffice: null,
     checkedDocuments: [],
-    validationChecks: [],
-    uploadedFile: false,
   });
 
   useEffect(() => {
@@ -70,24 +75,34 @@ const BirthCertificateGuidePage = () => {
 
   const currentStepId = STEP_IDS[currentStep];
   const infoPanelData =
-    guideData.wizard.info_panel[INFO_PANEL_KEYS[currentStepId] as keyof typeof guideData.wizard.info_panel];
+    (guideData.wizard.info_panel as any)[INFO_PANEL_KEYS[currentStepId]];
+
+  const handleAgeSelect = (category: BirthWizardState['ageCategory']) => {
+    let timing: BirthWizardState['timing'] = null;
+
+    if (category === "0-3") timing = "timely";
+    else if (category === "3-10") timing = "late";
+    else timing = "very_late";
+
+    setState(s => ({ ...s, ageCategory: category, timing }));
+  };
 
   const canGoNext = (): boolean => {
     switch (currentStepId) {
-      case "person_type":
-        return !!state.personType;
       case "document_need":
         return !!state.documentNeed;
-      case "case_type":
-        return !!state.caseType;
+      case "age_category":
+        return !!state.ageCategory;
+      case "birth_setting":
+        return !!state.birthSetting;
       case "location":
-        return !!state.province && !!state.district && !!state.city;
+        return !!state.province && !!state.district;
+      case "parental_details":
+        return true; // Optional selections
+      case "office_finder":
+        return true; // Optional finding
       case "roadmap":
         return true;
-      case "office_finder":
-        return true;
-      case "validation":
-        return false;
       default:
         return false;
     }
@@ -103,33 +118,8 @@ const BirthCertificateGuidePage = () => {
     if (currentStep > 0) setCurrentStep(currentStep - 1);
   };
 
-  const toggleDocument = (id: string) => {
-    setState((s) => ({
-      ...s,
-      checkedDocuments: s.checkedDocuments.includes(id)
-        ? s.checkedDocuments.filter((d) => d !== id)
-        : [...s.checkedDocuments, id],
-    }));
-  };
-
-  const toggleValidationCheck = (label: string) => {
-    setState((s) => ({
-      ...s,
-      validationChecks: s.validationChecks.includes(label)
-        ? s.validationChecks.filter((l) => l !== label)
-        : [...s.validationChecks, label],
-    }));
-  };
-
   const renderStep = () => {
     switch (currentStepId) {
-      case "person_type":
-        return (
-          <PersonTypeStep
-            selected={state.personType}
-            onSelect={(v) => setState((s) => ({ ...s, personType: v }))}
-          />
-        );
       case "document_need":
         return (
           <DocumentNeedStep
@@ -137,11 +127,18 @@ const BirthCertificateGuidePage = () => {
             onSelect={(v) => setState((s) => ({ ...s, documentNeed: v }))}
           />
         );
-      case "case_type":
+      case "age_category":
         return (
-          <CaseTypeStep
-            selected={state.caseType}
-            onSelect={(v) => setState((s) => ({ ...s, caseType: v }))}
+          <AgeCategoryStep
+             selectedCategory={state.ageCategory}
+             onSelect={(id) => handleAgeSelect(id as any)}
+          />
+        );
+      case "birth_setting":
+        return (
+          <BirthSettingStep
+            selected={state.birthSetting}
+            onSelect={(v) => setState((s) => ({ ...s, birthSetting: v }))}
           />
         );
       case "location":
@@ -150,35 +147,49 @@ const BirthCertificateGuidePage = () => {
             province={state.province}
             district={state.district}
             city={state.city}
-            onProvinceChange={(v) => setState((s) => ({ ...s, province: v }))}
-            onDistrictChange={(v) => setState((s) => ({ ...s, district: v }))}
+            onProvinceChange={(v) => setState((s) => ({ ...s, province: v, district: null, city: null }))}
+            onDistrictChange={(v) => setState((s) => ({ ...s, district: v, city: null }))}
             onCityChange={(v) => setState((s) => ({ ...s, city: v }))}
           />
         );
-      case "roadmap":
+      case "parental_details":
         return (
-          <RoadmapStep
-            caseType={state.caseType}
-            personType={state.personType}
-            documentNeed={state.documentNeed}
-            checkedDocuments={state.checkedDocuments}
-            onToggleDocument={toggleDocument}
+          <ParentalDetailsStep
+            status={state.parentalStatus}
+            onToggle={(key) => setState(s => ({
+              ...s,
+              parentalStatus: {
+                ...s.parentalStatus,
+                [key]: !((s.parentalStatus as any)[key])
+              }
+            }))}
           />
         );
       case "office_finder":
         return (
           <OfficeFinderStep
-            province={state.province}
-            district={state.district}
+            location={{ province: state.province, district: state.district }}
+            savedOffice={state.savedOffice}
+            onSave={(office) => setState(s => ({ ...s, savedOffice: office }))}
           />
         );
-      case "validation":
+      case "roadmap":
         return (
-          <ValidationStep
-            validationChecks={state.validationChecks}
-            onToggleCheck={toggleValidationCheck}
-            uploadedFile={state.uploadedFile}
-            onUpload={() => setState((s) => ({ ...s, uploadedFile: true }))}
+          <RoadmapStep
+            birthSetting={state.birthSetting}
+            ageCategory={state.ageCategory}
+            documentNeed={state.documentNeed}
+            timing={state.timing}
+            province={state.province}
+            district={state.district}
+            parentalStatus={state.parentalStatus}
+            checkedDocuments={state.checkedDocuments}
+            onToggleDocument={(id) => setState(s => ({
+              ...s,
+              checkedDocuments: s.checkedDocuments.includes(id)
+                ? s.checkedDocuments.filter(d => d !== id)
+                : [...s.checkedDocuments, id]
+            }))}
           />
         );
       default:
@@ -188,19 +199,20 @@ const BirthCertificateGuidePage = () => {
 
 
   return (
-    <div className="min-h-screen pt-14 flex flex-col bg-slate-50 font-sans">
+    <div className="h-screen flex flex-col bg-slate-50 font-sans overflow-hidden">
       <WizardHeader onWhatsThis={() => setShowWhatsThis(true)} />
 
-      <div className="flex flex-1 overflow-hidden h-[calc(100vh-56px)]">
+      <div className="flex flex-1 overflow-hidden mt-14">
         {/* Left Sidebar */}
         <WizardSidebar
           currentStep={currentStep}
           steps={STEP_IDS}
           onStepClick={setCurrentStep}
+          savedOffice={state.savedOffice}
         />
 
         {/* Center Content */}
-        <main className="flex-1 overflow-y-auto relative px-10 py-8">
+        <main className="flex-1 overflow-y-auto relative px-10 py-8 scroll-smooth">
           {/* Grid background */}
           <div
             className="fixed inset-0 pointer-events-none z-0"
@@ -213,7 +225,7 @@ const BirthCertificateGuidePage = () => {
 
           <div className="relative z-10 max-w-4xl mx-auto">
             {/* Wizard Card */}
-            <div className="bg-white rounded-2xl border border-slate-200 p-8 shadow-sm min-h-120">
+            <div className="bg-white rounded-2xl border border-slate-200 p-8 shadow-sm min-h-[500px]">
               <AnimatePresence mode="wait">
                 <motion.div
                   key={currentStepId}
@@ -228,7 +240,7 @@ const BirthCertificateGuidePage = () => {
             </div>
 
             {/* Navigation Footer */}
-            <div className="flex justify-between items-center mt-6 pb-8">
+            <div className="flex justify-between items-center mt-6 pb-20">
               {currentStep > 0 ? (
                 <motion.button
                   whileHover={{ scale: 1.03 }}

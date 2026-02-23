@@ -1,20 +1,21 @@
 import { motion } from "framer-motion";
-import { User, Baby, GraduationCap } from "lucide-react";
+import { ClipboardList, Building2, Home, Globe, GraduationCap } from "lucide-react";
 import guideData from "@/data/birth-certificate-guide-data.json";
 
 const ICONS: Record<string, React.ElementType> = {
-  adult: User,
-  child: Baby,
-  senior: GraduationCap,
+  hospital: Building2,
+  home: Home,
+  overseas: Globe,
+  adoption: GraduationCap,
 };
 
-interface PersonTypeStepProps {
+interface BirthSettingStepProps {
   selected: string | null;
   onSelect: (id: string) => void;
 }
 
-const PersonTypeStep = ({ selected, onSelect }: PersonTypeStepProps) => {
-  const { title, description, types } = (guideData.wizard as any).person_type;
+const BirthSettingStep = ({ selected, onSelect }: BirthSettingStepProps) => {
+  const { title, description, types } = guideData.wizard.birth_setting;
 
   return (
     <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}>
@@ -29,9 +30,9 @@ const PersonTypeStep = ({ selected, onSelect }: PersonTypeStepProps) => {
       </p>
 
       {/* Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-5 mb-8">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 mb-8">
         {types.map((option: any) => {
-          const Icon = ICONS[option.id] || User;
+          const Icon = ICONS[option.id] || ClipboardList;
           const isSelected = selected === option.id;
 
           return (
@@ -67,4 +68,4 @@ const PersonTypeStep = ({ selected, onSelect }: PersonTypeStepProps) => {
   );
 };
 
-export default PersonTypeStep;
+export default BirthSettingStep;

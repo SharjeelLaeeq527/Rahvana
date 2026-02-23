@@ -1,27 +1,32 @@
 import { motion } from "framer-motion";
-import { ClipboardList, MapPin, Map, Search, Star, Bookmark } from "lucide-react";
+import { ClipboardList, MapPin, Map, Search, Bookmark, Clock } from "lucide-react";
 import { type BirthStepId } from "@/types/birth-certificate-wizard";
 
 const STEP_ICONS: Record<string, React.ElementType> = {
-  case_type: ClipboardList,
+  document_need: ClipboardList,
+  age_category: Clock,
+  birth_setting: Bookmark,
   location: MapPin,
-  roadmap: Map,
+  parental_details: ClipboardList,
   office_finder: Search,
-  validation: Star,
+  roadmap: Map,
 };
 
 const STEP_LABELS: Record<string, string> = {
-  case_type: "Case Type",
+  document_need: "Requirement Type",
+  age_category: "Age Group",
+  birth_setting: "Birth Setting",
   location: "Location",
-  roadmap: "Roadmap",
+  parental_details: "Parents Details",
   office_finder: "Office Finder",
-  validation: "Validation",
+  roadmap: "Roadmap",
 };
 
 interface WizardSidebarProps {
   currentStep: number;
   steps: BirthStepId[];
   onStepClick: (step: number) => void;
+  savedOffice?: { name: string; address: string } | null;
 }
 
 type StepStatus = "completed" | "active" | "upcoming";
@@ -32,7 +37,7 @@ const getStatus = (index: number, currentStep: number): StepStatus => {
   return "upcoming";
 };
 
-const WizardSidebar = ({ currentStep, steps, onStepClick }: WizardSidebarProps) => {
+const WizardSidebar = ({ currentStep, steps, onStepClick, savedOffice }: WizardSidebarProps) => {
   const progress = currentStep + 1;
   const total = steps.length;
   const progressPercent = (progress / total) * 100;
@@ -40,7 +45,25 @@ const WizardSidebar = ({ currentStep, steps, onStepClick }: WizardSidebarProps) 
   return (
     <aside className="w-70 min-w-70 bg-white border-r border-slate-200 flex flex-col h-full overflow-hidden">
       
-      <div className="pt-5 px-4 pb-3">
+      <div className="pt-5 px-4 pb-3 space-y-3">
+        {/* Saved Office Widget */}
+        {savedOffice && (
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="p-4 rounded-xl bg-teal-50 border border-teal-100 mb-2"
+          >
+            <div className="flex items-center gap-2 mb-2">
+              <div className="w-6 h-6 rounded-md bg-teal-600 flex items-center justify-center text-white">
+                <MapPin className="w-3.5 h-3.5" />
+              </div>
+              <span className="text-[0.65rem] font-black text-teal-800 uppercase tracking-wider">Priority Office</span>
+            </div>
+            <h5 className="text-[0.8rem] font-black text-slate-900 leading-tight mb-1">{savedOffice.name}</h5>
+            <p className="text-[0.7rem] text-slate-500 font-medium leading-tight">{savedOffice.address}</p>
+          </motion.div>
+        )}
+
         <motion.button
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.98 }}
