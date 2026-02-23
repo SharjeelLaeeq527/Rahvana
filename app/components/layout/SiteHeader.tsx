@@ -20,6 +20,7 @@ import {
   Lock as LockIcon,
   CreditCard,
   Mail,
+  BookOpen,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import MegaMenu from "./MegaMenu";
@@ -171,6 +172,7 @@ export function SiteHeader({
         home: "/",
         journeys: "/visa-category/ir-category",
         "my-journeys": "/my-journeys",
+        "my-guides": "/guides/my-guides",
         "ir1-journey": "/visa-category/ir-category/ir1-journey",
         "ir5-journey": "/visa-category/ir-category/ir5-journey",
         "k1-journey": "/visa-category/ir-category/k1-journey",
@@ -513,6 +515,13 @@ export function SiteHeader({
                         My Journeys
                       </button>
                       <button
+                        onClick={() => handleNav("my-guides")}
+                        className="flex items-center gap-3 w-full py-2.5 px-5 text-muted-foreground hover:bg-muted hover:text-primary transition-colors text-sm font-medium"
+                      >
+                        <BookOpen className="w-4 h-4 text-primary" />
+                        My Guides
+                      </button>
+                      <button
                         onClick={() => handleNav("profile")}
                         className="flex items-center gap-3 w-full py-2.5 px-5 text-muted-foreground hover:bg-muted hover:text-primary transition-colors text-sm font-medium"
                       >
@@ -842,6 +851,17 @@ export function SiteHeader({
                     >
                       <Briefcase className="w-5 h-5 text-primary" />
                       <span className="font-bold">My Journeys</span>
+                    </HydrationSafeButton>
+                    <HydrationSafeButton
+                      onClick={() => handleNav("my-guides")}
+                      className={`flex items-center gap-3 px-4 py-3 rounded-xl text-left transition-all ${
+                        isActive("my-guides", "/guides/my-guides")
+                          ? "bg-primary/10 text-primary"
+                          : "text-muted-foreground hover:bg-muted"
+                      }`}
+                    >
+                      <BookOpen className="w-5 h-5 text-primary" />
+                      <span className="font-bold">My Guides</span>
                     </HydrationSafeButton>
                     <HydrationSafeButton
                       onClick={() => handleNav("profile")}

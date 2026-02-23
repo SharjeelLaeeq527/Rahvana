@@ -15,14 +15,14 @@ import OfficeFinderStep from "./components/guide/steps/OfficeFinderStep";
 import RoadmapStep from "./components/guide/steps/RoadmapStep";
 import { type BirthStepId, type BirthWizardState } from "@/types/birth-certificate-wizard";
 import guideData from "@/data/birth-certificate-guide-data.json";
-import { ArrowLeft, ArrowRight } from "lucide-react";
+import { ArrowLeft, ArrowRight, Save, Play, Loader2 } from "lucide-react";
+import { useGuideSession } from "@/lib/guides/useGuideSession";
 
 const STEP_IDS: BirthStepId[] = [
   "document_need",
   "age_category",
   "birth_setting",
   "location",
-  "parental_details",
   "office_finder",
   "roadmap",
 ];
@@ -32,12 +32,13 @@ const INFO_PANEL_KEYS: Record<BirthStepId, string> = {
   age_category: "age_category",
   birth_setting: "birth_setting",
   location: "location",
-  parental_details: "parental_details",
   office_finder: "location", // reusing location tips for office finder
   roadmap: "roadmap",
 };
 
 const BirthCertificateGuidePage = () => {
+  const { session, stepsData, loading, saving, startSession, saveStep } = useGuideSession("birth-certificate-guide");
+  
   const [currentStep, setCurrentStep] = useState(0);
   const [showWhatsThis, setShowWhatsThis] = useState(false);
   const [state, setState] = useState<BirthWizardState>({
@@ -59,6 +60,41 @@ const BirthCertificateGuidePage = () => {
     savedOffice: null,
     checkedDocuments: [],
   });
+
+  const [hasHydrated, setHasHydrated] = useState(false);
+
+  // Hydrate state from session when loaded
+  useEffect(() => {
+    if (!hasHydrated && stepsData && Object.keys(stepsData).length > 0) {
+      // Merge all step data into a single state object
+      const hydratedState = { ...state };
+      Object.keys(stepsData).forEach(key => {
+        const data = stepsData[key];
+        if (key === 'document_need') hydratedState.documentNeed = data.documentNeed;
+        if (key === 'age_category') {
+          hydratedState.ageCategory = data.ageCategory;
+          hydratedState.timing = data.timing;
+        }
+        if (key === 'birth_setting') hydratedState.birthSetting = data.birthSetting;
+        if (key === 'location') {
+          hydratedState.province = data.province;
+          hydratedState.district = data.district;
+          hydratedState.city = data.city;
+        }
+        if (key === 'parental_details') hydratedState.parentalStatus = data.parentalStatus;
+        if (key === 'office_finder') hydratedState.savedOffice = data.savedOffice;
+        if (key === 'roadmap') hydratedState.checkedDocuments = data.checkedDocuments;
+      });
+      setState(hydratedState);
+      
+      // Also set current step if session has it
+      if (session?.current_step_key) {
+        const stepIndex = STEP_IDS.indexOf(session.current_step_key as any);
+        if (stepIndex !== -1) setCurrentStep(stepIndex);
+      }
+      setHasHydrated(true);
+    }
+  }, [stepsData, session?.id, hasHydrated]);
 
   useEffect(() => {
     const hide = localStorage.getItem("hideBirthWhatsThis");
@@ -84,7 +120,11 @@ const BirthCertificateGuidePage = () => {
     else if (category === "3-10") timing = "late";
     else timing = "very_late";
 
-    setState(s => ({ ...s, ageCategory: category, timing }));
+    const newState = { ...state, ageCategory: category, timing };
+    setState(newState);
+    if (session) {
+      saveStep("age_category", { ageCategory: category, timing }, true);
+    }
   };
 
   const canGoNext = (): boolean => {
@@ -97,8 +137,6 @@ const BirthCertificateGuidePage = () => {
         return !!state.birthSetting;
       case "location":
         return !!state.province && !!state.district;
-      case "parental_details":
-        return true; // Optional selections
       case "office_finder":
         return true; // Optional finding
       case "roadmap":
@@ -110,12 +148,31 @@ const BirthCertificateGuidePage = () => {
 
   const goNext = () => {
     if (currentStep < STEP_IDS.length - 1 && canGoNext()) {
-      setCurrentStep(currentStep + 1);
+      const nextStep = currentStep + 1;
+      setCurrentStep(nextStep);
+      
+      // Auto-save current step progress when moving forward
+      if (session) {
+        const progress = Math.round(((nextStep) / (STEP_IDS.length - 1)) * 100);
+        saveStep(currentStepId, getCurrentStepPayload(currentStepId), true, progress);
+      }
     }
   };
 
   const goBack = () => {
     if (currentStep > 0) setCurrentStep(currentStep - 1);
+  };
+
+  const getCurrentStepPayload = (stepId: BirthStepId) => {
+    switch (stepId) {
+      case "document_need": return { documentNeed: state.documentNeed };
+      case "age_category": return { ageCategory: state.ageCategory, timing: state.timing };
+      case "birth_setting": return { birthSetting: state.birthSetting };
+      case "location": return { province: state.province, district: state.district, city: state.city };
+      case "office_finder": return { savedOffice: state.savedOffice };
+      case "roadmap": return { checkedDocuments: state.checkedDocuments };
+      default: return {};
+    }
   };
 
   const renderStep = () => {
@@ -124,7 +181,10 @@ const BirthCertificateGuidePage = () => {
         return (
           <DocumentNeedStep
             selected={state.documentNeed}
-            onSelect={(v) => setState((s) => ({ ...s, documentNeed: v }))}
+            onSelect={(v) => {
+              setState((s) => ({ ...s, documentNeed: v }));
+              if (session) saveStep("document_need", { documentNeed: v }, true);
+            }}
           />
         );
       case "age_category":
@@ -138,7 +198,10 @@ const BirthCertificateGuidePage = () => {
         return (
           <BirthSettingStep
             selected={state.birthSetting}
-            onSelect={(v) => setState((s) => ({ ...s, birthSetting: v }))}
+            onSelect={(v) => {
+              setState((s) => ({ ...s, birthSetting: v }));
+              if (session) saveStep("birth_setting", { birthSetting: v }, true);
+            }}
           />
         );
       case "location":
@@ -152,25 +215,15 @@ const BirthCertificateGuidePage = () => {
             onCityChange={(v) => setState((s) => ({ ...s, city: v }))}
           />
         );
-      case "parental_details":
-        return (
-          <ParentalDetailsStep
-            status={state.parentalStatus}
-            onToggle={(key) => setState(s => ({
-              ...s,
-              parentalStatus: {
-                ...s.parentalStatus,
-                [key]: !((s.parentalStatus as any)[key])
-              }
-            }))}
-          />
-        );
       case "office_finder":
         return (
           <OfficeFinderStep
             location={{ province: state.province, district: state.district }}
             savedOffice={state.savedOffice}
-            onSave={(office) => setState(s => ({ ...s, savedOffice: office }))}
+            onSave={(office) => {
+              setState(s => ({ ...s, savedOffice: office }));
+              if (session) saveStep("office_finder", { savedOffice: office }, true);
+            }}
           />
         );
       case "roadmap":
@@ -184,12 +237,13 @@ const BirthCertificateGuidePage = () => {
             district={state.district}
             parentalStatus={state.parentalStatus}
             checkedDocuments={state.checkedDocuments}
-            onToggleDocument={(id) => setState(s => ({
-              ...s,
-              checkedDocuments: s.checkedDocuments.includes(id)
+            onToggleDocument={(id) => setState(s => {
+              const newDocs = s.checkedDocuments.includes(id)
                 ? s.checkedDocuments.filter(d => d !== id)
-                : [...s.checkedDocuments, id]
-            }))}
+                : [...s.checkedDocuments, id];
+              if (session) saveStep("roadmap", { checkedDocuments: newDocs }, true);
+              return { ...s, checkedDocuments: newDocs };
+            })}
           />
         );
       default:
@@ -197,6 +251,16 @@ const BirthCertificateGuidePage = () => {
     }
   };
 
+  if (loading) {
+    return (
+      <div className="h-screen flex items-center justify-center bg-slate-50">
+        <div className="flex flex-col items-center gap-4">
+          <Loader2 className="w-12 h-12 text-teal-600 animate-spin" />
+          <p className="text-slate-500 font-bold animate-pulse">Initializing Secure Session...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="h-screen flex flex-col bg-slate-50 font-sans overflow-hidden">
@@ -224,8 +288,51 @@ const BirthCertificateGuidePage = () => {
           />
 
           <div className="relative z-10 max-w-4xl mx-auto">
+            {/* Guide Session Banner */}
+            {!session && (
+              <motion.div 
+                initial={{ opacity: 0, y: -20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="mb-6 bg-teal-600 rounded-3xl p-6 text-white shadow-xl shadow-teal-100 flex flex-col md:flex-row items-center justify-between gap-6"
+              >
+                <div>
+                  <h3 className="text-xl font-bold mb-1">Save Your Progress</h3>
+                  <p className="text-teal-50 text-sm opacity-90">Sign in and start a secure session to save your roadmap and documents for later.</p>
+                </div>
+                <button 
+                  onClick={startSession}
+                  className="flex items-center gap-2 px-8 py-3.5 bg-white text-teal-700 rounded-2xl font-black text-sm hover:bg-teal-50 transition-all shadow-lg shadow-teal-900/20 whitespace-nowrap"
+                >
+                  <Play size={18} fill="currentColor" />
+                  Start Secure Session
+                </button>
+              </motion.div>
+            )}
+
+            {session && (
+              <div className="flex items-center justify-between mb-6 px-2">
+                <div className="flex items-center gap-3">
+                  <div className="flex items-center justify-center w-8 h-8 rounded-full bg-teal-100 text-teal-700">
+                    <Save size={14} className={saving ? "animate-bounce" : ""} />
+                  </div>
+                  <div>
+                    <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 leading-none mb-1">Session Active</p>
+                    <p className="text-xs font-bold text-slate-700">{saving ? "Saving progress..." : `Progress: ${session.progress_percent}% Saved`}</p>
+                  </div>
+                </div>
+              </div>
+            )}
+
             {/* Wizard Card */}
-            <div className="bg-white rounded-2xl border border-slate-200 p-8 shadow-sm min-h-[500px]">
+            <div className="bg-white rounded-3xl border border-slate-200 p-8 shadow-sm min-h-[500px] relative overflow-hidden group">
+              <div className="absolute top-0 left-0 w-full h-1 bg-slate-50">
+                 <motion.div 
+                    initial={{ width: 0 }}
+                    animate={{ width: `${((currentStep + 1) / STEP_IDS.length) * 100}%` }}
+                    className="h-full bg-teal-500"
+                 />
+              </div>
+              
               <AnimatePresence mode="wait">
                 <motion.div
                   key={currentStepId}
