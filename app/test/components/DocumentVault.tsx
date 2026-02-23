@@ -74,14 +74,7 @@ export function DocumentVault({
 
         {/* Body */}
         <div className="p-6 overflow-y-auto flex-grow bg-slate-50/30">
-          <div className="bg-[#ebf5f4] text-[#0f766e] p-4 rounded-xl text-sm border border-[#0d9488]/20 mb-6 flex gap-3">
-            <span className="text-xl">ℹ️</span>
-            <div>
-              <strong>Privacy Note:</strong> For this demo, files are processed
-              locally. In production, documents are encrypted and stored in your
-              secure Document Vault.
-            </div>
-          </div>
+          {/* Privacy Note Tooltip replaced highlighted box */}
 
           <div className="space-y-4">
             {roadmapData.documents.map((doc) => {

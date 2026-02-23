@@ -6,28 +6,28 @@ import WizardHeader from "../../../components/guides/WizardHeader";
 import WizardSidebar from "../../../components/guides/WizardSidebar";
 import WizardInfoPanel from "../../../components/guides/WizardInfoPanel";
 import DocumentNeedStep from "../../../components/guides/steps/DocumentNeedStep";
-import LocationStep from "../../../components/guides/steps/LocationStep";
+// import LocationStep from "../../../components/guides/steps/LocationStep";
 import RoadmapStep from "../../../components/guides/steps/RoadmapStep";
-import OfficeFinderStep from "../../../components/guides/steps/OfficeFinderStep";
+// import OfficeFinderStep from "../../../components/guides/steps/OfficeFinderStep";
 import ValidationStep from "../../../components/guides/steps/ValidationStep";
 import WhatsThisModal from "../../../components/guides/WhatsThisModal";
-import { type WizardState, WizardStepId } from "@/types/frc-wizard";
+import { type WizardState, WizardStepId } from "@/types/guide-wizard";
 import guideData from "@/data/frc-guide-data.json";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 
 const STEP_IDS: WizardStepId[] = [
   "document_need",
-  "location",
+  // "location",
   "roadmap",
-  "office_finder",
+  // "office_finder",
   "validation",
 ];
 
 const INFO_PANEL_KEYS: Record<WizardStepId, keyof typeof guideData.wizard.info_panel> = {
   document_need: "document_need",
-  location: "location",
+  // location: "location",
   roadmap: "roadmap",
-  office_finder: "office_finder",
+  // office_finder: "office_finder",
   validation: "validation",
 };
 
@@ -55,9 +55,9 @@ const FrcGuide = () => {
   const canGoNext = (): boolean => {
     switch (currentStepId) {
       case "document_need": return !!state.documentNeed;
-      case "location": return !!state.province && !!state.district && !!state.city;
+      // case "location": return !!state.province && !!state.district && !!state.city;
       case "roadmap": return true;
-      case "office_finder": return true;
+      // case "office_finder": return true;
       case "validation": return false;
       default: return false;
     }
@@ -104,18 +104,18 @@ const FrcGuide = () => {
             data={guideData.wizard.document_need}
           />
         );
-      case "location":
-        return (
-          <LocationStep
-            province={state.province}
-            district={state.district}
-            city={state.city}
-            onProvinceChange={(v) => setState((s) => ({ ...s, province: v }))}
-            onDistrictChange={(v) => setState((s) => ({ ...s, district: v }))}
-            onCityChange={(v) => setState((s) => ({ ...s, city: v }))}
-            data={guideData.wizard.location}
-          />
-        );
+      // case "location":
+      //   return (
+      //     <LocationStep
+      //       province={state.province}
+      //       district={state.district}
+      //       city={state.city}
+      //       onProvinceChange={(v) => setState((s) => ({ ...s, province: v }))}
+      //       onDistrictChange={(v) => setState((s) => ({ ...s, district: v }))}
+      //       onCityChange={(v) => setState((s) => ({ ...s, city: v }))}
+      //       data={guideData.wizard.location}
+      //     />
+      //   );
       case "roadmap":
         return (
           <RoadmapStep
@@ -124,16 +124,16 @@ const FrcGuide = () => {
             data={guideData.wizard.roadmap}
           />
         );
-      case "office_finder":
-        return (
-          <OfficeFinderStep
-            province={state.province}
-            district={state.district}
-            offices={guideData.wizard.offices}
-            officeType="NADRA"
-            warningText="FRCs are processed at authorized NADRA Registration Centers. Verify that the office you plan to visit offers FRC services. Office listings and contact information may change; always confirm details before visiting."
-          />
-        );
+      // case "office_finder":
+      //   return (
+      //     <OfficeFinderStep
+      //       province={state.province}
+      //       district={state.district}
+      //       offices={guideData.wizard.offices}
+      //       officeType="NADRA"
+      //       warningText="FRCs are processed at authorized NADRA Registration Centers. Verify that the office you plan to visit offers FRC services. Office listings and contact information may change; always confirm details before visiting."
+      //     />
+      //   );
       case "validation":
         return (
           <ValidationStep

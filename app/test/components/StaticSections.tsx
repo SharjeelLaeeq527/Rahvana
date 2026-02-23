@@ -270,14 +270,8 @@ export function IR1JourneyDetail({ isSignedIn, onToggleAuth, children }: { isSig
         <section id="ir1-journey" className="block">
             <div className="max-w-[1400px] mx-auto px-6 py-[60px]">
                 <div className='max-w-5xl mx-auto mb-12'>
-                    <h1 className="text-5xl font-bold mb-4">IR-1/CR-1 Spouse Visa Journey</h1>
+                        <h1 className="text-5xl font-bold mb-4">IR-1/CR-1 Spouse Visa Journey</h1>
                     <p className="text-slate-500 mb-8 text-lg">Comprehensive roadmap for bringing your spouse to the United States via consular processing at U.S. Embassy Islamabad, Pakistan.</p>
-                    <div className="bg-[#e0f2fe] border-l-4 border-l-[#0d9488] p-4 rounded-xl mb-8 flex gap-3 items-start">
-                        {/* <div className="bg-blue-600 text-white rounded-md w-6 h-6 flex items-center justify-center shrink-0 mt-0.5 text-xs font-bold">i</div> */}
-                        <p className="text-base text-slate-800 leading-relaxed font-medium">
-                            <span className="font-bold">IR-1 vs CR-1:</span> If married less than 2 years at entry, you`ll receive CR-1 (conditional, 2-year green card requiring I-751 filing). If married 2+ years, IR-1 (10-year green card).
-                        </p>
-                    </div>
 
                     {/* Stage Overview */}
                     <div className="mb-12">
@@ -308,8 +302,8 @@ export function IR1JourneyDetail({ isSignedIn, onToggleAuth, children }: { isSig
                                     </div>
                                     {/* Connectivity Line for Desktop */}
                                     {stage !== 'V' && (
-                                        <div className="hidden lg:block absolute top-1/2 -right-2 transform -translate-y-1/2 z-10">
-                                            <ArrowRight className="w-4 h-4 text-slate-300" />
+                                        <div className="hidden lg:flex absolute top-1/2 left-[calc(100%+8px)] -translate-x-1/2 -translate-y-1/2 z-[20] items-center justify-center w-6 h-6">
+                                            <ArrowRight className="w-5 h-5 text-slate-300" />
                                         </div>
                                     )}
                                 </div>

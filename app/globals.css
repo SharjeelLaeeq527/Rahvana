@@ -413,6 +413,14 @@
   animation: float-particle linear infinite;
 }
 
+.backface-hidden {
+  backface-visibility: hidden;
+}
+
+.rotate-y-180 {
+  transform: rotateY(180deg);
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;

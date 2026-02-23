@@ -383,7 +383,7 @@ export default function DocumentChecklist({
                           <div
                             className={`p-2 rounded text-xs ${
                               qualityCheck.passed
-                                ? "bg-blue-50 text-blue-700"
+                                ? "bg-primary/10 text-primary"
                                 : "bg-red-50 text-red-700"
                             }`}
                           >
@@ -409,12 +409,12 @@ export default function DocumentChecklist({
           )}
         </div>
 
-        <div className="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
-          <h4 className="font-medium text-blue-800 flex items-center">
+        <div className="mt-6 p-4 bg-primary/10 rounded-lg border border-primary/30">
+          <h4 className="font-medium text-primary flex items-center">
             <AlertTriangle className="mr-2 h-4 w-4" />
             Document Preparation Tips
           </h4>
-          <ul className="mt-2 space-y-1 text-sm text-blue-700">
+          <ul className="mt-2 space-y-1 text-sm text-primary">
             <li>• Make sure all documents are clear and readable</li>
             <li>• Check that names match across all documents</li>
             <li>• Ensure documents are not expired</li>

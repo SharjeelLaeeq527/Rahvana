@@ -25,7 +25,7 @@ import GetInTouch from "./components/Contact/GetInTouch";
 import { AuthRequiredModal } from "./components/shared/AuthRequiredModal";
 import { MfaPromptModal } from "./components/shared/MFAPromptModal";
 
-const supabase = createClient();
+
 
 const JOURNEYS = [
   // Family & Protection
@@ -578,7 +578,8 @@ function HomePageContent() {
     if (!user) return;
 
     const fetchProfile = async (userId: string) => {
-      const { data, error } = await supabase
+      const supabaseClient = createClient();
+      const { data, error } = await supabaseClient
         .from("profiles")
         .select("mfa_enabled, mfa_prompt_dismissed_at")
         .eq("id", userId)
@@ -610,7 +611,8 @@ function HomePageContent() {
   const handleRemindLater = async () => {
     if (!user) return;
 
-    await supabase
+    const supabaseClient = createClient();
+    await supabaseClient
       .from("profiles")
       .update({
         mfa_prompt_dismissed_at: new Date().toISOString(),
@@ -661,7 +663,7 @@ function HomePageContent() {
                     </p>
                     <div className="flex flex-wrap gap-4 mb-10">
                       {user && (
-                        <Link href={"/visa-category/ir-category/ir1-journey"}>
+                        <Link href={"/my-journeys"}>
                           <HydrationSafeButton
                             onClick={() => {}}
                             className="inline-flex items-center gap-2 px-8 py-4 text-base font-semibold text-white rounded-lg bg-linear-to-r from-rahvana-primary to-rahvana-primary-light shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all"
@@ -977,7 +979,7 @@ function HomePageContent() {
                     Your Journey
                   </motion.span>
                   <h2 className="text-3xl md:text-5xl font-bold text-foreground mb-4">
-                    How Rahvana Works
+                    How Typical US Immigration Journey Works
                   </h2>
                   <p className="text-lg text-muted-foreground">
                     From preparation to arrival, we guide you through every step
@@ -1294,7 +1296,7 @@ function HomePageContent() {
           <Dashboard
             state={state}
             isSignedIn={isSignedIn}
-            onContinue={() => handleNavigate("ir1-journey")}
+            onContinue={() => router.push("/my-journeys")}
             onNavigate={handleNavigate}
             onToggleAuth={handleToggleAuth}
           />

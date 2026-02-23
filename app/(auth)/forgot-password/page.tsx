@@ -67,12 +67,12 @@ export default function ForgotPasswordPage() {
   // Success State - Email Sent
   if (success) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background px-4">
+      <div className="min-h-screen flex items-center justify-center bg-background px-4 sm:px-6 py-12">
         <div className="w-full max-w-[480px]">
           {/* Card */}
           <div className="bg-card rounded-2xl shadow-xl border border-border overflow-hidden">
             {/* Header */}
-            <div className="px-8 pt-10 pb-6 text-center">
+            <div className="px-6 sm:px-8 pt-8 sm:pt-10 pb-6 text-center">
               {/* Email Icon */}
               <div className="mx-auto w-20 h-20 bg-linear-to-br from-emerald-400 to-emerald-600 rounded-full flex items-center justify-center mb-6 shadow-lg shadow-emerald-200">
                 <svg
@@ -103,7 +103,7 @@ export default function ForgotPasswordPage() {
             <div className="border-t border-border" />
 
             {/* Instructions */}
-            <div className="px-8 py-6 bg-muted/20">
+            <div className="px-6 sm:px-8 py-6 bg-muted/20">
               <div className="space-y-4">
                 <div className="flex items-start gap-3">
                   <div className="w-6 h-6 rounded-full bg-primary text-white flex items-center justify-center text-xs font-medium shrink-0 mt-0.5">
@@ -136,12 +136,12 @@ export default function ForgotPasswordPage() {
             <div className="border-t border-border" />
 
             {/* Footer */}
-            <div className="px-8 py-6">
+            <div className="px-6 sm:px-8 py-6">
               <p className="text-center text-sm text-muted-foreground mb-4">
                 Didn&apos;t receive the email? Check your spam folder
               </p>
 
-              <div className="flex gap-3">
+              <div className="flex flex-col sm:flex-row gap-3">
                 <Button
                   onClick={handleResend}
                   disabled={isSubmitting}
@@ -180,7 +180,7 @@ export default function ForgotPasswordPage() {
 
   // Default State - Enter Email
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background px-4">
+    <div className="min-h-screen flex items-center justify-center bg-background px-4 sm:px-6 py-12">
       <div className="w-full max-w-[480px]">
         {/* Logo */}
         <div className="flex justify-center mb-6">
@@ -202,7 +202,7 @@ export default function ForgotPasswordPage() {
         {/* Card */}
         <div className="bg-card rounded-2xl shadow-xl border border-border overflow-hidden">
           {/* Header */}
-          <div className="px-8 pt-6 pb-2 text-center">
+          <div className="px-6 sm:px-8 pt-6 sm:pt-8 pb-2 text-center">
             {/* Lock Icon */}
             <div className="mx-auto w-20 h-20 bg-linear-to-br from-primary/80 to-primary rounded-full flex items-center justify-center mb-6 shadow-lg shadow-primary/30">
               <svg
@@ -230,7 +230,7 @@ export default function ForgotPasswordPage() {
           </div>
 
           {/* Form */}
-          <div className="px-8 py-8">
+          <div className="px-6 sm:px-8 py-6 sm:py-8">
             <form onSubmit={handleSubmit} className="space-y-5">
               <div className="space-y-2">
                 <label className="block text-sm font-medium text-foreground">
@@ -299,7 +299,7 @@ export default function ForgotPasswordPage() {
           <div className="border-t border-border" />
 
           {/* Footer */}
-          <div className="px-8 py-5 bg-muted/20">
+          <div className="px-6 sm:px-8 py-5 bg-muted/20">
             <Link
               href="/login"
               className="flex items-center justify-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"

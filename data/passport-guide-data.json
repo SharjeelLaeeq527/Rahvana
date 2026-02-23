@@ -187,7 +187,7 @@
     "last_verified": "February 20, 2026",
 
     "whats_this": {
-      "heading": "Passport Immigration Wizard",
+      "heading": "Welcome to Passport Guide",
       "sub": "DGIP • Immigration & International Travel",
       "description": "The Pakistani Passport is an official travel document issued by the Directorate General of Immigration & Passports (DGIP). It is required for all international travel and serves as proof of Pakistani citizenship. This wizard guides you through the application process step by step.",
       "how_we_help": [
@@ -435,31 +435,57 @@
 
     "roadmap": {
       "title": "Your Personalized Roadmap",
-      "estimated_timeline": "10–15 working days",
-      "phases": [
+      "estimated_timeline": "Normal 10–15 working days | Urgent 4-10 working days",
+      "onsitePhases": [
         {
           "id": 1,
-          "title": "Pay Fee & Gather Docs",
-          "duration": "1–2d",
-          "description": "Pay the passport fee online via 1Link/bank challan and collect all required documents including CNIC, photos, and previous passport."
+          "title": "Fee Payment & Document Preparation",
+          "duration": "1–2 Days",
+          "description": "Download or obtain the passport fee challan. Pay the required fee via bank challan or e-payment. Collect original CNIC with copy. For minors, bring B-Form and guardian's CNIC. Keep previous passport if applying for renewal."
         },
         {
           "id": 2,
-          "title": "Visit RPO/EPO",
-          "duration": "1d",
-          "description": "Visit your nearest Regional Passport Office or Executive Passport Office. Submit documents, complete biometric capture (fingerprints, photo), and attend interview."
+          "title": "Visit Regional Passport Office (RPO)",
+          "duration": "1 Day",
+          "description": "Visit your nearest Regional Passport Office (RPO) or Pakistan Mission. Present your paid fee receipt. Obtain a token number. Your photograph will be taken, fingerprints captured, and biometric verification completed. Data entry and interview (if required) will be conducted."
         },
         {
           "id": 3,
-          "title": "Processing",
-          "duration": "4–10d",
-          "description": "Your application is processed by DGIP. Normal processing takes ~10 working days, Urgent ~4 days, Fast Track ~2 days."
+          "title": "Application Verification & Processing",
+          "duration": "4–10 Days",
+          "description": "Your application is reviewed by the Directorate General of Immigration & Passports (DGIP). Criminal record checks (ECL/BL) are performed. After successful verification, passport printing is initiated."
         },
         {
           "id": 4,
-          "title": "Collect Passport",
-          "duration": "1d",
-          "description": "Collect your passport from the office or receive it via courier delivery if you opted for online/delivery service."
+          "title": "Passport Collection or Delivery",
+          "duration": "1 Day",
+          "description": "You will receive an SMS when your passport is ready. Collect it from the passport office or receive it via courier if delivery was selected. Verify name spelling, CNIC number, date of birth, and other details before leaving."
+        }
+      ],
+      "onlinePhases": [
+        {
+          "id": 1,
+          "title": "Setup Account & Application",
+          "duration": "1–2 Days",
+          "description": "Create an account on the official passport portal. Fill in personal, demographic, and address details. Upload required documents including CNIC copy and photograph. Review all entered information carefully before proceeding."
+        },
+        {
+          "id": 2,
+          "title": "Online Fee Payment & Submission",
+          "duration": "Same Day",
+          "description": "Pay the passport fee online using debit or credit card. Submit your application digitally. Receive a tracking ID via email. Save confirmation details for future tracking."
+        },
+        {
+          "id": 3,
+          "title": "Verification & Processing",
+          "duration": "4–10 Days",
+          "description": "Authorities verify submitted documents and conduct necessary background checks. You will receive status updates via email or SMS. Once approved, passport printing begins."
+        },
+        {
+          "id": 4,
+          "title": "Passport Printing & Dispatch",
+          "duration": "1–3 Days After Approval",
+          "description": "Your passport is printed at the DGIP facility and dispatched via courier service. Track delivery using your tracking ID. Ensure someone is available at the provided address to receive it."
         }
       ],
       "documents_checklist": [

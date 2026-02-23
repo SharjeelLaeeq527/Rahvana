@@ -150,7 +150,7 @@ const DocumentValidator = ({
     <Card className="w-full">
       <CardHeader>
         <div className="flex items-center justify-between">
-          <CardTitle className="text-xl font-bold text-blue-700">{title}</CardTitle>
+          <CardTitle className="text-xl font-bold text-primary">{title}</CardTitle>
           {file && (
             <Badge variant="outline" className="capitalize">
               {documentType.replace('_', ' ')}
@@ -179,7 +179,7 @@ const DocumentValidator = ({
               />
               <Label 
                 htmlFor="document-upload" 
-                className="cursor-pointer inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+                className="cursor-pointer inline-flex items-center px-4 py-2 bg-primary text-white rounded-md hover:bg-primary"
               >
                 <Upload className="h-4 w-4 mr-2" />
                 Select File
@@ -220,7 +220,7 @@ const DocumentValidator = ({
             <Button 
               onClick={validateDocument} 
               disabled={!file || isProcessing}
-              className="bg-blue-600 hover:bg-blue-700"
+              className="bg-primary hover:bg-primary/70"
             >
               <Scan className="h-4 w-4 mr-2" />
               {isProcessing ? 'Validating...' : 'Validate Document'}
@@ -262,7 +262,7 @@ const DocumentValidator = ({
                       className={`${
                         issue.severity === 'critical' ? 'bg-red-50 border-red-200' :
                         issue.severity === 'warning' ? 'bg-yellow-50 border-yellow-200' :
-                        'bg-blue-50 border-blue-200'
+                        'bg-primary/10 border-primary/30'
                       }`}
                     >
                       <div className="flex items-start space-x-2">
@@ -289,12 +289,12 @@ const DocumentValidator = ({
           )}
 
           {/* Document-specific guidance */}
-          <div className="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
-            <h4 className="font-medium text-blue-800 flex items-center">
+          <div className="mt-6 p-4 bg-primary/10 rounded-lg border border-C/30">
+            <h4 className="font-medium text-primary flex items-center">
               <AlertTriangle className="mr-2 h-4 w-4" />
               Document-Specific Guidance
             </h4>
-            <ul className="mt-2 space-y-1 text-sm text-blue-700">
+            <ul className="mt-2 space-y-1 text-sm text-primary">
               {documentType === 'passport' && (
                 <>
                   <li>• Ensure passport is valid for at least 6 months beyond your intended stay</li>

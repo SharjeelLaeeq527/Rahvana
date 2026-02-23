@@ -273,8 +273,6 @@ export function useWizard(options: UseWizardOptions = {}) {
 
     /** Reset all progress (Start Fresh) */
     resetProgress: async () => {
-      if (!confirm('Reset all progress? This cannot be undone.')) return;
-
       if (userId) {
         await deleteJourneyProgress(userId, journeyId);
       } else {

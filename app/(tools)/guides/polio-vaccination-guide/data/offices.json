@@ -1,0 +1,133 @@
+
+
+
+{
+"offices": [
+{
+"id": "polio-lhr-01",
+"name": "Polio Vaccination Centre - Mayo Hospital",
+"city": "Lahore City",
+"district": "lahore",
+"province": "punjab",
+"address": "Mayo Hospital, Anarkali, Lahore",
+"phone": "+92-42-99211100",
+"hours": "Mon-Sat: 8:00 AM - 2:00 PM",
+"mapLink": "[https://maps.google.com/?q=Mayo+Hospital+Lahore](https://maps.google.com/?q=Mayo+Hospital+Lahore)",
+"services": ["Polio Vaccination", "Routine Immunization", "Child Health Cards"],
+"nadraConnected": false,
+"notes": "Government vaccination centre under Punjab Health Department."
+},
+{
+"id": "polio-rwp-01",
+"name": "Polio Vaccination Centre - Holy Family Hospital",
+"city": "Rawalpindi City",
+"district": "rawalpindi",
+"province": "punjab",
+"address": "Holy Family Hospital, Murree Road, Rawalpindi",
+"phone": "+92-51-9290200",
+"hours": "Mon-Sat: 8:00 AM - 2:00 PM",
+"mapLink": "[https://maps.google.com/?q=Holy+Family+Hospital+Rawalpindi](https://maps.google.com/?q=Holy+Family+Hospital+Rawalpindi)",
+"services": ["Polio Vaccination", "Routine Immunization"],
+"nadraConnected": false,
+"notes": "Linked with EPI Punjab."
+},
+{
+"id": "polio-khi-01",
+"name": "Polio Vaccination Centre - Civil Hospital",
+"city": "Karachi Central",
+"district": "karachi",
+"province": "sindh",
+"address": "Civil Hospital, M.A. Jinnah Road, Karachi",
+"phone": "+92-21-99215740",
+"hours": "Mon-Sat: 8:00 AM - 2:00 PM",
+"mapLink": "[https://maps.google.com/?q=Civil+Hospital+Karachi](https://maps.google.com/?q=Civil+Hospital+Karachi)",
+"services": ["Polio Vaccination", "Routine Immunization", "Child Registration"],
+"nadraConnected": false,
+"notes": "Sindh Health Dept. vaccination hub."
+},
+{
+"id": "polio-hyd-01",
+"name": "Polio Vaccination Centre - Liaquat University Hospital",
+"city": "Hyderabad City",
+"district": "hyderabad",
+"province": "sindh",
+"address": "LUMHS Hospital, Hyderabad",
+"phone": "+92-22-9210230",
+"hours": "Mon-Sat: 8:00 AM - 2:00 PM",
+"mapLink": "[https://maps.google.com/?q=LUMHS+Hyderabad](https://maps.google.com/?q=LUMHS+Hyderabad)",
+"services": ["Polio Vaccination", "Routine Immunization"],
+"nadraConnected": false,
+"notes": "Provincial immunization center."
+},
+{
+"id": "polio-psh-01",
+"name": "Polio Vaccination Centre - Khyber Teaching Hospital",
+"city": "Peshawar City",
+"district": "peshawar",
+"province": "kpk",
+"address": "Khyber Teaching Hospital, Peshawar",
+"phone": "+92-91-9211430",
+"hours": "Mon-Sat: 8:00 AM - 2:00 PM",
+"mapLink": "[https://maps.google.com/?q=Khyber+Teaching+Hospital](https://maps.google.com/?q=Khyber+Teaching+Hospital)",
+"services": ["Polio Vaccination", "Routine Immunization"],
+"nadraConnected": false,
+"notes": "KP Health Dept vaccination unit."
+},
+{
+"id": "polio-isl-01",
+"name": "Polio Vaccination Centre - PIMS",
+"city": "Islamabad",
+"district": "islamabad",
+"province": "ict",
+"address": "Pakistan Institute of Medical Sciences (PIMS), Islamabad",
+"phone": "+92-51-9261170",
+"hours": "Mon-Sat: 8:00 AM - 2:00 PM",
+"mapLink": "[https://maps.google.com/?q=PIMS+Islamabad](https://maps.google.com/?q=PIMS+Islamabad)",
+"services": ["Polio Vaccination", "Routine Immunization", "Child Health"],
+"nadraConnected": false,
+"notes": "Federal EPI linked centre."
+},
+{
+"id": "polio-qta-01",
+"name": "Polio Vaccination Centre - Civil Hospital Quetta",
+"city": "Quetta City",
+"district": "quetta",
+"province": "balochistan",
+"address": "Civil Hospital, Jinnah Road, Quetta",
+"phone": "+92-81-9201000",
+"hours": "Mon-Sat: 8:00 AM - 1:30 PM",
+"mapLink": "[https://maps.google.com/?q=Civil+Hospital+Quetta](https://maps.google.com/?q=Civil+Hospital+Quetta)",
+"services": ["Polio Vaccination", "Routine Immunization"],
+"nadraConnected": false,
+"notes": "Balochistan Health Dept centre."
+},
+{
+"id": "polio-glt-01",
+"name": "Polio Vaccination Centre - DHQ Hospital Gilgit",
+"city": "Gilgit City",
+"district": "gilgit",
+"province": "gilgit-baltistan",
+"address": "DHQ Hospital, Gilgit",
+"phone": "+92-5811-920020",
+"hours": "Mon-Sat: 9:00 AM - 1:00 PM",
+"mapLink": "[https://maps.google.com/?q=DHQ+Hospital+Gilgit](https://maps.google.com/?q=DHQ+Hospital+Gilgit)",
+"services": ["Polio Vaccination", "Routine Immunization"],
+"nadraConnected": false,
+"notes": "GB Health Department immunization unit."
+},
+{
+"id": "polio-ajk-01",
+"name": "Polio Vaccination Centre - Abbas Institute of Medical Sciences",
+"city": "Muzaffarabad City",
+"district": "muzaffarabad",
+"province": "ajk",
+"address": "AIMS Hospital, Muzaffarabad",
+"phone": "+92-5822-920200",
+"hours": "Mon-Sat: 9:00 AM - 1:30 PM",
+"mapLink": "[https://maps.google.com/?q=AIMS+Hospital+Muzaffarabad](https://maps.google.com/?q=AIMS+Hospital+Muzaffarabad)",
+"services": ["Polio Vaccination", "Routine Immunization"],
+"nadraConnected": false,
+"notes": "AJK Health Dept immunization facility."
+}
+]
+}
