@@ -52,15 +52,42 @@ export default function RoadmapStep() {
           id: 2,
           title: "Details & Biometrics",
           duration: "15 mins",
-          description:
-            "Enter your personal details, upload photos of required documents, and use the phone camera to scan your fingerprints.",
+          description: (
+            <ul className="list-disc pl-5 space-y-1">
+              <li>On “Home” page, go to “ID Documents” and select “ID Card”</li>
+              <li>Choose select “My Blood Relatives” category</li>
+              <li>Select “Modification” category</li>
+              <li>Capture applicant&apos;s Photograph &amp; Fingerprints.</li>
+              <li>Enter the personel details</li>
+              <li>Upload documents, if required</li>
+              <li>Review and verify information</li>
+            </ul>
+          ),
         },
         {
           id: 3,
           title: "Payment & Submit",
           duration: "5 mins",
-          description:
-            "Pay the processing fee securely online via debit/credit card and submit the application for review.",
+          description: (
+            <ul className="list-disc pl-5 space-y-1">
+              <li>Biometric Verification (anyone of parents or sibling).</li>
+              <li>Photographs and fingerprints are mandatory</li>
+              <li>Your data will be entered and reviewed.</li>
+              <li>
+                Attestation by anyone of the parents or siblings or by Gazetted
+                officer
+              </li>
+              <li>Interview by OIC</li>
+              <li>
+                Fee submission (Executive Rs 2500) &amp; (Urgent Rs 1500) &amp;
+                (Normal Rs 750) excluding delivery fee
+              </li>
+              <li>
+                CNIC will be printed and handed over upon completion of the
+                processing period against the specific category
+              </li>
+            </ul>
+          ),
         },
       ]
     : [
@@ -298,9 +325,9 @@ export default function RoadmapStep() {
                   </button>
                 </div>
 
-                <p className="text-[0.875rem] text-slate-700 leading-relaxed">
+                <div className="text-[0.875rem] text-slate-700 leading-relaxed">
                   {phases[activePhase - 1]?.description}
-                </p>
+                </div>
               </div>
             </motion.div>
           )}
@@ -428,7 +455,7 @@ export default function RoadmapStep() {
             </p>
           </div>
 
-          {isNew && (
+          {/* {isNew && (
             <div className="bg-linear-to-r from-primary to-primary/80 rounded-2xl p-6 text-white mb-8 shadow-md">
               <div className="flex items-start gap-4">
                 <div className="bg-white/20 p-3 rounded-full shrink-0">
@@ -447,9 +474,9 @@ export default function RoadmapStep() {
                 </div>
               </div>
             </div>
-          )}
+          )} */}
 
-          <div className="mb-10">
+          {/* <div className="mb-10">
             <h3 className="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
               <History className="w-5 h-5 text-slate-400" />
               Processing Tiers
@@ -501,7 +528,7 @@ export default function RoadmapStep() {
               * Fees are subject to updates by NADRA. Always verify on the
               official website.
             </p>
-          </div>
+          </div> */}
 
           <div className="bg-slate-50 rounded-2xl p-6 border border-slate-100">
             <h3 className="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
