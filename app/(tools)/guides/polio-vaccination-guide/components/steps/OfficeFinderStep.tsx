@@ -130,7 +130,7 @@ export default function OfficeFinderStep({
                       {office.name}
                     </h4>
                     {office.nadraConnected && (
-                      <span className="px-2.5 py-1 rounded-md bg-emerald-100 text-emerald-700 text-xs font-semibold whitespace-nowrap">
+                      <span className="px-2.5 py-1 rounded-md bg-primary/10 text-primary text-xs font-semibold whitespace-nowrap">
                         NIMS Connected
                       </span>
                     )}
@@ -168,7 +168,6 @@ export default function OfficeFinderStep({
 
               {office.notes && (
                 <div className="px-4 py-2.5 rounded-xl bg-blue-50 text-sm text-blue-800 border border-blue-100 flex items-start gap-2">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
                   {/* <span className="mt-0.5">ℹ️</span> */}
                   <span>{office.notes}</span>
                 </div>

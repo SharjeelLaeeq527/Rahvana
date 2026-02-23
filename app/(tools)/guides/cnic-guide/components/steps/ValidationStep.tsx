@@ -2,13 +2,20 @@
 
 import React, { useState } from "react";
 import { useCnicWizard } from "../../CnicContext";
-import { motion } from "framer-motion";
-import { Upload, Check, ArrowLeft, ShieldCheck } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import {
+  Upload,
+  Check,
+  ArrowLeft,
+  ShieldCheck,
+  ChevronDown,
+} from "lucide-react";
 
 export default function ValidationStep() {
   const { setCurrentStep, resetWizard } = useCnicWizard();
   const [validationChecks, setValidationChecks] = useState<string[]>([]);
   const [uploadedFile, setUploadedFile] = useState(false);
+  const [isChecklistOpen, setIsChecklistOpen] = useState(false);
 
   const onToggleCheck = (label: string) => {
     setValidationChecks((prev) =>
@@ -109,7 +116,7 @@ export default function ValidationStep() {
           <div className="p-8 rounded-lg border-2 border-dashed border-slate-200 bg-slate-50 flex flex-col items-center gap-3 text-center">
             <Upload
               className={`w-8 h-8 ${
-                uploadedFile ? "text-emerald-700" : "text-slate-400"
+                uploadedFile ? "text-primary" : "text-slate-400"
               }`}
             />
 
@@ -129,8 +136,8 @@ export default function ValidationStep() {
               className={`px-6 py-2 mt-2 rounded-lg text-sm font-semibold text-white shadow-md transition
                 ${
                   uploadedFile
-                    ? "bg-emerald-700 cursor-default opacity-90"
-                    : "bg-linear-to-r from-emerald-700 to-emerald-600 hover:shadow-lg"
+                    ? "bg-primary cursor-default opacity-90"
+                    : "bg-linear-to-r from-primary to-primary/90 hover:shadow-lg"
                 }
               `}
             >
@@ -140,93 +147,121 @@ export default function ValidationStep() {
         </div>
 
         {/* Checklist Header */}
-        <div className="flex justify-between items-center mb-4">
-          <h3 className="text-lg font-bold text-slate-900">
-            {config.checklist_title} ({checkedCount}/{totalItems})
-          </h3>
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
+          <div
+            className="cursor-pointer group flex-1"
+            onClick={() => setIsChecklistOpen(!isChecklistOpen)}
+          >
+            <h3 className="text-[1.15rem] font-bold text-slate-900 group-hover:text-primary transition-colors flex items-center gap-2">
+              {config.checklist_title} ({checkedCount}/{totalItems})
+              <ChevronDown
+                className={`w-5 h-5 transition-transform duration-300 ${
+                  isChecklistOpen ? "rotate-180" : ""
+                }`}
+              />
+            </h3>
+            {!isChecklistOpen && (
+              <p className="text-[0.85rem] text-slate-500 mt-0.5">
+                Click to review the pre-submission checklist
+              </p>
+            )}
+          </div>
 
           {criticalRemaining > 0 && (
-            <span className="px-3 py-1 rounded-md bg-red-100 text-red-600 text-xs font-semibold">
+            <span className="px-3 py-1 rounded-md bg-red-100 text-red-600 text-xs font-semibold shrink-0">
               {criticalRemaining} Critical Issues
             </span>
           )}
         </div>
 
         {/* Categories */}
-        {config.categories.map((category, ci) => (
-          <div key={ci} className="mb-6">
-            {/* Category Header */}
-            <div className="flex items-center gap-2 mb-3">
-              <div className="w-2 h-2 rounded-full bg-emerald-700" />
-              <h4 className="text-sm font-bold text-slate-800">
-                {category.name}
-              </h4>
-            </div>
+        <AnimatePresence>
+          {isChecklistOpen && (
+            <motion.div
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: "auto", opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              className="overflow-hidden"
+            >
+              {config.categories.map((category, ci) => (
+                <div key={ci} className="mb-6">
+                  {/* Category Header */}
+                  <div className="flex items-center gap-2 mb-3">
+                    <div className="w-2 h-2 rounded-full bg-primary" />
+                    <h4 className="text-sm font-bold text-slate-800">
+                      {category.name}
+                    </h4>
+                  </div>
 
-            {/* Items */}
-            <div className="flex flex-col gap-2 pl-4">
-              {category.items.map((item) => {
-                const isChecked = validationChecks.includes(item.label);
+                  {/* Items */}
+                  <div className="flex flex-col gap-2 pl-4">
+                    {category.items.map((item) => {
+                      const isChecked = validationChecks.includes(item.label);
 
-                return (
-                  <motion.div
-                    key={item.label}
-                    whileHover={{ x: 2 }}
-                    onClick={() => onToggleCheck(item.label)}
-                    role="checkbox"
-                    aria-checked={isChecked}
-                    tabIndex={0}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter" || e.key === " ") {
-                        onToggleCheck(item.label);
-                      }
-                    }}
-                    className={`flex items-center gap-3 px-3 py-2 rounded-md cursor-pointer transition
-                      ${isChecked ? "bg-emerald-50" : "hover:bg-slate-50"}
+                      return (
+                        <motion.div
+                          key={item.label}
+                          whileHover={{ x: 2 }}
+                          onClick={() => onToggleCheck(item.label)}
+                          role="checkbox"
+                          aria-checked={isChecked}
+                          tabIndex={0}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter" || e.key === " ") {
+                              onToggleCheck(item.label);
+                            }
+                          }}
+                          className={`flex items-center gap-3 px-3 py-2 rounded-md cursor-pointer transition
+                      ${isChecked ? "bg-primary/10" : "hover:bg-slate-50"}
                     `}
-                  >
-                    {/* Checkbox */}
-                    <div
-                      className={`w-5 h-5 rounded-md border-2 flex items-center justify-center transition shrink-0
+                        >
+                          {/* Checkbox */}
+                          <div
+                            className={`w-5 h-5 rounded-md border-2 flex items-center justify-center transition shrink-0
                         ${
                           isChecked
-                            ? "bg-emerald-700 border-emerald-700"
+                            ? "bg-primary border-primary"
                             : "border-slate-300 bg-white"
                         }
                       `}
-                    >
-                      {isChecked && <Check className="w-3 h-3 text-white" />}
-                    </div>
+                          >
+                            {isChecked && (
+                              <Check className="w-3 h-3 text-white" />
+                            )}
+                          </div>
 
-                    {/* Label */}
-                    <span
-                      className={`text-sm flex-1 transition
+                          {/* Label */}
+                          <span
+                            className={`text-sm flex-1 transition
                         ${
                           isChecked
                             ? "text-slate-400 line-through"
                             : "text-slate-800"
                         }
                       `}
-                    >
-                      {item.label}
-                    </span>
+                          >
+                            {item.label}
+                          </span>
 
-                    {/* Critical Badge */}
-                    {item.critical && (
-                      <span
-                        className={`text-xs font-semibold shrink-0
-                          ${isChecked ? "text-emerald-700" : "text-red-600"}
+                          {/* Critical Badge */}
+                          {item.critical && (
+                            <span
+                              className={`text-xs font-semibold shrink-0
+                          ${isChecked ? "text-primary" : "text-red-600"}
                         `}
-                      >
-                        {isChecked ? "✓ Verified" : "Critical"}
-                      </span>
-                    )}
-                  </motion.div>
-                );
-              })}
-            </div>
-          </div>
-        ))}
+                            >
+                              {isChecked ? "✓ Verified" : "Critical"}
+                            </span>
+                          )}
+                        </motion.div>
+                      );
+                    })}
+                  </div>
+                </div>
+              ))}
+            </motion.div>
+          )}
+        </AnimatePresence>
       </motion.div>
 
       {/* Navigation */}

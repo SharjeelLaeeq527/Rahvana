@@ -11,10 +11,6 @@ import {
   ArrowRight,
   ArrowLeft,
   ChevronDown,
-  Laptop,
-  ShieldCheck,
-  CreditCard,
-  ExternalLink,
 } from "lucide-react";
 
 export default function RoadmapStep() {
@@ -53,8 +49,47 @@ export default function RoadmapStep() {
       id: 3,
       title: "Download Online",
       duration: "Instant",
-      description:
-        "Pay the Rs. 100 processing fee on the NIMS portal securely and download your official Polio Vaccination Certificate PDF.",
+      description: (
+        <div className="space-y-2">
+          {/* <p>
+            Pay the Rs. 100 processing fee on the NIMS portal securely and
+            download your official Polio Vaccination Certificate PDF.
+          </p> */}
+          <ul className="list-disc pl-5 space-y-1">
+            <li>
+              Visit the official{" "}
+              <a
+                href="https://nims.nadra.gov.pk/nims/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-primary hover:underline font-semibold"
+              >
+                NIMS website
+              </a>{" "}
+              and select &quot;Other Vaccination – Polio / Yellow Fever&quot;.
+            </li>
+            <li>
+              Enter your{" "}
+              <strong>
+                {isChild
+                  ? "B-Form / CRC Number"
+                  : isForeigner
+                    ? "Passport Number"
+                    : "CNIC & Passport Number"}
+              </strong>{" "}
+              and <strong>Issue Date</strong> to retrieve your specific records.
+            </li>
+            <li>
+              Verify your information, pay the one-time processing fee online (≈
+              Rs. 100).
+            </li>
+            <li>
+              Hit Download and save the PDF securely on your phone for easy
+              access.
+            </li>
+          </ul>
+        </div>
+      ),
     },
   ];
 
@@ -337,87 +372,6 @@ export default function RoadmapStep() {
             </motion.div>
           )}
         </AnimatePresence>
-
-        {/* Download & Payment Instructions */}
-        <div className="mt-8 pb-4">
-          <div className="flex items-center gap-2 mb-4">
-            <h3 className="text-[1.15rem] font-bold text-slate-900">
-              Download Your Certificate
-            </h3>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="bg-slate-50 border border-slate-200 rounded-2xl p-6 shadow-sm">
-              <div className="w-12 h-12 bg-white rounded-xl shadow-sm border border-slate-100 flex items-center justify-center mb-4">
-                <Laptop className="w-6 h-6 text-slate-700" />
-              </div>
-              <h3 className="font-bold text-lg text-slate-900 mb-2">
-                1. Visit the Portal
-              </h3>
-              <p className="text-slate-600 text-sm mb-4">
-                Go to the official NIMS website and select the &quot;Other
-                Vaccination – Polio / Yellow Fever&quot; option.
-              </p>
-              <a
-                href="https://nims.nadra.gov.pk/nims/"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 text-primary hover:text-primary/80 font-bold transition-colors"
-              >
-                Open NIMS Portal <ExternalLink className="w-4 h-4" />
-              </a>
-            </div>
-
-            <div className="bg-slate-50 border border-slate-200 rounded-2xl p-6 shadow-sm">
-              <div className="w-12 h-12 bg-white rounded-xl shadow-sm border border-slate-100 flex items-center justify-center mb-4">
-                <ShieldCheck className="w-6 h-6 text-primary" />
-              </div>
-              <h3 className="font-bold text-lg text-slate-900 mb-2">
-                2. Enter Details
-              </h3>
-              <p className="text-slate-600 text-sm mb-4">
-                To retrieve your specific records, you will need your:
-              </p>
-              <ul className="space-y-2">
-                <li className="flex items-center gap-2 text-sm font-medium text-slate-800">
-                  <div className="w-2 h-2 rounded-full bg-primary"></div>
-                  {isChild
-                    ? "B-Form / CRC Number"
-                    : isForeigner
-                      ? "Passport Number"
-                      : "CNIC & Passport Number"}
-                </li>
-                <li className="flex items-center gap-2 text-sm font-medium text-slate-800">
-                  <div className="w-2 h-2 rounded-full bg-primary"></div>
-                  Issue Date
-                </li>
-              </ul>
-            </div>
-
-            <div className="bg-slate-50 border border-slate-200 rounded-2xl p-6 shadow-sm md:col-span-2 flex flex-col md:flex-row items-center justify-between gap-6">
-              <div>
-                <div className="flex items-center gap-3 mb-2">
-                  <CreditCard className="w-6 h-6 text-slate-700" />
-                  <h3 className="font-bold text-lg text-slate-900">
-                    3. Make Payment & Download
-                  </h3>
-                </div>
-                <p className="text-slate-600 text-sm max-w-lg">
-                  Verify your information on the screen, pay the one-time
-                  processing fee online (≈ Rs. 100), and hit Download. Save the
-                  PDF securely on your phone for easy access.
-                </p>
-              </div>
-              <div className="text-center bg-white p-4 rounded-xl border border-slate-100 shadow-sm min-w-[140px]">
-                <span className="block text-xs uppercase tracking-wider text-slate-400 font-bold mb-1">
-                  Total Fee
-                </span>
-                <span className="text-2xl font-black text-primary">
-                  Rs. 100
-                </span>
-              </div>
-            </div>
-          </div>
-        </div>
       </motion.div>
 
       {/* Navigation */}

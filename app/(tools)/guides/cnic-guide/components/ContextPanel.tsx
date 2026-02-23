@@ -1,17 +1,19 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-import { createPortal } from "react-dom";
+import React, { useState } from "react";
 import { useCnicWizard } from "../CnicContext";
 import {
   Info,
   AlertTriangle,
   ExternalLink,
   Link as LinkIcon,
-  Building2,
+  CreditCard,
+  History,
+  Activity,
+  MessageSquare,
+  PhoneCall,
+  Clock,
 } from "lucide-react";
-
-import OfficeFinderStep from "./steps/OfficeFinderStep";
 
 type ContextDataMap = {
   tips?: string[];
@@ -135,24 +137,26 @@ const CONTEXT_DATA: Record<number, ContextDataMap> = {
 export default function ContextPanel() {
   const { state } = useCnicWizard();
   const [activeTab, setActiveTab] = useState("tips");
-  const [showOfficeModal, setShowOfficeModal] = useState(false);
-  const [mounted, setMounted] = useState(false);
+  // const [showOfficeModal, setShowOfficeModal] = useState(false);
+  // const [mounted, setMounted] = useState(false);
 
-  useEffect(() => {
-    setMounted(true);
-  }, []);
+  const isNew = state.applicationType === "new";
 
-  // Prevent background scrolling when modal is open
-  useEffect(() => {
-    if (showOfficeModal) {
-      document.body.style.overflow = "hidden";
-    } else {
-      document.body.style.overflow = "";
-    }
-    return () => {
-      document.body.style.overflow = "";
-    };
-  }, [showOfficeModal]);
+  // useEffect(() => {
+  //   setMounted(true);
+  // }, []);
+
+  // // Prevent background scrolling when modal is open
+  // useEffect(() => {
+  //   if (showOfficeModal) {
+  //     document.body.style.overflow = "hidden";
+  //   } else {
+  //     document.body.style.overflow = "";
+  //   }
+  //   return () => {
+  //     document.body.style.overflow = "";
+  //   };
+  // }, [showOfficeModal]);
 
   // fallback to step 0 if not found
   const context = CONTEXT_DATA[state.currentStep] || CONTEXT_DATA[0];
@@ -274,10 +278,140 @@ export default function ContextPanel() {
             )}
           </div>
         )}
+
+        {/* Fee Structure Section */}
+        <div className="mt-8 pb-4 border-t border-slate-200 pt-8">
+          <div className="mb-6">
+            <h2 className="text-xl font-bold text-slate-900 mb-2 tracking-tight">
+              Fee Structure
+            </h2>
+          </div>
+
+          {isNew && (
+            <div className="bg-linear-to-r from-primary to-primary/80 rounded-2xl p-4 text-white mb-6 shadow-sm">
+              <div className="flex items-start gap-3">
+                <div className="bg-white/20 p-2 rounded-full shrink-0">
+                  <CreditCard className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold mb-1 leading-none">
+                    First CNIC May Be Free
+                  </h3>
+                  <p className="text-white/90 leading-relaxed text-[0.8rem]">
+                    Recent government initiatives frequently waive fees for
+                    first-time applicants aged 18+. Check with NADRA staff to
+                    avoid paying!
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          <div className="mb-8">
+            <h3 className="text-md font-bold text-slate-800 mb-3 flex items-center gap-2">
+              <History className="w-4 h-4 text-slate-400" />
+              Processing Tiers
+            </h3>
+            <div className="flex flex-col gap-3">
+              {[
+                {
+                  type: "Normal",
+                  price: "~750",
+                  days: "approx. 30 days",
+                  badge: "bg-blue-100 text-blue-700",
+                },
+                {
+                  type: "Urgent",
+                  price: "~1,500",
+                  days: "approx. 15 days",
+                  badge: "bg-purple-100 text-purple-700",
+                },
+                {
+                  type: "Executive",
+                  price: "~2,500",
+                  days: "approx. 6 days",
+                  badge: "bg-orange-100 text-orange-700",
+                },
+              ].map((tier, i) => (
+                <div
+                  key={i}
+                  className="bg-white border text-center border-slate-200 rounded-xl p-4 flex items-center justify-between shadow-sm"
+                >
+                  <div className="text-left flex flex-col gap-1 items-start">
+                    <div
+                      className={`px-2.5 py-0.5 rounded-full text-[0.65rem] font-bold uppercase tracking-wider ${tier.badge}`}
+                    >
+                      {tier.type}
+                    </div>
+                    <p className="text-[0.75rem] text-slate-500 flex items-center gap-1">
+                      <Clock className="w-3 h-3" />
+                      {tier.days}
+                    </p>
+                  </div>
+                  <div className="text-xl font-black text-slate-900">
+                    <span className="text-xs font-medium text-slate-400 mr-1 align-top relative top-0.5">
+                      Rs.
+                    </span>
+                    {tier.price}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Tracking Section (Moved from RoadmapStep) */}
+        <div className="mt-2 pb-4 border-t border-slate-200 pt-8">
+          <div className="mb-6">
+            <h2 className="text-xl font-bold text-slate-900 mb-2 tracking-tight">
+              Tracking
+            </h2>
+            {/* <p className="text-slate-600 text-[0.85rem]">
+              Everything you need to know about processing costs and how to
+              monitor your CNIC application.
+            </p> */}
+          </div>
+
+          <div className="bg-slate-100/50 rounded-2xl p-4 border border-slate-200/60">
+            <h3 className="text-sm font-bold text-slate-800 mb-3 flex items-center gap-2">
+              <Activity className="w-4 h-4 text-slate-400" />
+              How to track
+            </h3>
+            <div className="flex flex-col gap-3">
+              <div className="bg-white p-3 rounded-xl border border-slate-200 shadow-sm flex items-start gap-3">
+                <div className="bg-primary/10 p-2 rounded-lg text-primary shrink-0">
+                  <MessageSquare className="w-4 h-4" />
+                </div>
+                <div>
+                  <p className="font-bold text-slate-900 text-[0.8rem] mb-0.5">
+                    SMS Tracking
+                  </p>
+                  <p className="text-[0.75rem] text-slate-500 leading-relaxed">
+                    Send your tracking ID to <strong>8400</strong> via SMS.
+                  </p>
+                </div>
+              </div>
+              <div className="bg-white p-3 rounded-xl border border-slate-200 shadow-sm flex items-start gap-3">
+                <div className="bg-blue-100 p-2 rounded-lg text-blue-600 shrink-0">
+                  <PhoneCall className="w-4 h-4" />
+                </div>
+                <div>
+                  <p className="font-bold text-slate-900 text-[0.8rem] mb-0.5">
+                    Helpline
+                  </p>
+                  <p className="text-[0.75rem] text-slate-500 leading-relaxed">
+                    Call <strong>1777</strong> (mobile) or{" "}
+                    <strong>051-111-786-100</strong> (landline).
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* Locate Nearest Office Button */}
-      <div className="p-4 border-t border-slate-200 bg-white">
+      {/* <div className="p-4 border-t border-slate-200 bg-white">
         <button
           onClick={() => setShowOfficeModal(true)}
           className="w-full py-3 px-4 bg-primary text-white rounded-xl font-semibold flex items-center justify-center gap-2 hover:bg-primary/90 transition-all shadow-md shadow-primary/20"
@@ -285,10 +419,10 @@ export default function ContextPanel() {
           <Building2 className="w-5 h-5" />
           Locate Nearest NADRA Office
         </button>
-      </div>
+      </div> */}
 
       {/* Office Modal */}
-      {mounted &&
+      {/* {mounted &&
         showOfficeModal &&
         createPortal(
           <div className="fixed inset-0 z-100 flex items-center justify-center p-4">
@@ -303,7 +437,7 @@ export default function ContextPanel() {
             </div>
           </div>,
           document.body,
-        )}
+        )} */}
     </div>
   );
 }
