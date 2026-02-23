@@ -11,7 +11,7 @@ export default function TwentyTwoOneGActionPlannerLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white">
+    <div className="min-h-screen bg-linear-to-b from-primary/10 to-white">
       {children}
     </div>
   );

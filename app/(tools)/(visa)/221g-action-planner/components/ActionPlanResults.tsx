@@ -493,9 +493,9 @@ export default function ActionPlanResults({
                 </TabsContent>
 
                 <TabsContent value="tips" className="mt-6">
-                  <Card className="border-blue-500/20 bg-blue-500/10">
+                  <Card className="border-primary bg-primary/10">
                     <CardHeader>
-                      <CardTitle className="text-lg font-semibold text-blue-700 flex items-center">
+                      <CardTitle className="text-lg font-semibold text-primary flex items-center">
                         <InfoCircledIcon className="w-5 h-5 mr-2" />
                         Tips & Best Practices
                       </CardTitle>
@@ -507,8 +507,8 @@ export default function ActionPlanResults({
                             key={idx}
                             className="flex items-start space-x-3 p-3 bg-card rounded-lg"
                           >
-                            <span className="text-blue-500 text-xl">💡</span>
-                            <span className="text-blue-700 leading-relaxed">
+                            <span className="text-primary text-xl">💡</span>
+                            <span className="text-primary leading-relaxed">
                               {tip}
                             </span>
                           </li>
@@ -584,7 +584,7 @@ export default function ActionPlanResults({
 
               {/* Packet Builder */}
               <Card className="max-w-4xl mx-auto mb-8 text-left">
-                <CardHeader className="bg-linear-to-r from-blue-500/10 to-primary/10">
+                <CardHeader className="bg-linear-to-r from-primary/30 to-primary/70">
                   <CardTitle className="text-2xl font-bold text-foreground">
                     Submission Packet Builder
                   </CardTitle>
@@ -740,7 +740,7 @@ export default function ActionPlanResults({
                 <Button
                   variant="secondary"
                   size="lg"
-                  className="text-lg px-8 bg-blue-100 hover:bg-blue-200 text-blue-800"
+                  className="text-lg px-8 bg-primary/10 hover:bg-primary/30 text-primary"
                   disabled={saving}
                   onClick={async () => {
                     setSaving(true);

@@ -248,7 +248,7 @@ export default function CombinedIntakeForm({
     <div className="w-full">
       <Card className="w-full">
         <CardHeader className="text-center">
-          <CardTitle className="text-3xl font-bold text-blue-700">
+          <CardTitle className="text-3xl font-bold text-primary">
             221(g) / Administrative Processing Action Planner
           </CardTitle>
           <CardDescription>
@@ -257,7 +257,11 @@ export default function CombinedIntakeForm({
         </CardHeader>
         <CardContent>
           <div className="mb-6">
-            <Progress value={progress} className="w-full h-2" />
+            <Progress
+              value={progress}
+              className="w-full h-2 bg-primary/10"
+              indicatorClassName="bg-primary"
+            />
             <div className="flex justify-between mt-2 text-sm text-gray-600">
               <span>
                 Step {showFormChecker ? 3 : currentStep + 1} of {steps.length}
@@ -302,7 +306,7 @@ export default function CombinedIntakeForm({
                         value={formData.visaTypeOther}
                         onChange={handleVisaTypeOtherChange}
                         placeholder="Enter your visa type"
-                        className="w-full px-3 py-2 md:px-4 md:py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        className="w-full px-3 py-2 md:px-4 md:py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
                       />
                     </div>
                   )}
@@ -343,7 +347,7 @@ export default function CombinedIntakeForm({
                           handleInputChange("embassyOther", e.target.value)
                         }
                         placeholder="Enter embassy name and location (e.g., U.S. Embassy Bangkok, Thailand)"
-                        className="border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+                        className="border-gray-300 focus:border-primary focus:ring-primary"
                       />
                     </div>
                   )}
@@ -441,7 +445,7 @@ export default function CombinedIntakeForm({
                               }
                               placeholder="Enter details of additional documents or requests"
                               rows={3}
-                              className="resize-none border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+                              className="resize-none border-gray-300 focus:border-primary focus:ring-primary"
                             />
                           </div>
                         )}
@@ -499,11 +503,11 @@ export default function CombinedIntakeForm({
                     />
                   </div>
 
-                  <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
-                    <Label className="text-blue-800 font-medium">
+                  <div className="bg-primary/10 p-4 rounded-lg border border-primary/30">
+                    <Label className="text-primary font-medium">
                       221(g) Letter Items
                     </Label>
-                    <p className="text-sm text-blue-700 mt-1">
+                    <p className="text-sm text-primary mt-1">
                       You will check the items that match your 221(g) letter on
                       the next screen
                     </p>
@@ -596,8 +600,8 @@ export default function CombinedIntakeForm({
                 />
               </div>
 
-              <div className="bg-blue-50 p-5 rounded-lg border border-blue-200">
-                <h4 className="font-semibold text-blue-800 mb-3 text-base">
+              <div className="bg-primary/10 p-5 rounded-lg border border-primary/30">
+                <h4 className="font-semibold text-primary mb-3 text-base">
                   Review Your Information
                 </h4>
                 <div className="space-y-2 text-sm">
