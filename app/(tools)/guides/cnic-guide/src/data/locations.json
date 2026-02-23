@@ -1,0 +1,136 @@
+{
+  "provinces": [
+    {
+      "id": "punjab",
+      "name": "Punjab",
+      "districts": [
+        {
+          "id": "lahore",
+          "name": "Lahore",
+          "cities": ["Lahore City", "Raiwind", "Shahdara"]
+        },
+        {
+          "id": "rawalpindi",
+          "name": "Rawalpindi",
+          "cities": ["Rawalpindi City", "Taxila", "Gujar Khan"]
+        },
+        {
+          "id": "faisalabad",
+          "name": "Faisalabad",
+          "cities": ["Faisalabad City", "Jaranwala", "Samundri"]
+        },
+        {
+          "id": "multan",
+          "name": "Multan",
+          "cities": ["Multan City", "Shujabad", "Jalalpur Pirwala"]
+        },
+        {
+          "id": "gujranwala",
+          "name": "Gujranwala",
+          "cities": ["Gujranwala City", "Wazirabad", "Kamoke"]
+        }
+      ]
+    },
+    {
+      "id": "sindh",
+      "name": "Sindh",
+      "districts": [
+        {
+          "id": "karachi",
+          "name": "Karachi",
+          "cities": ["Karachi Central", "Karachi South", "Karachi East", "Karachi West", "Malir", "Korangi"]
+        },
+        {
+          "id": "hyderabad",
+          "name": "Hyderabad",
+          "cities": ["Hyderabad City", "Latifabad", "Qasimabad"]
+        },
+        {
+          "id": "sukkur",
+          "name": "Sukkur",
+          "cities": ["Sukkur City", "Rohri", "New Sukkur"]
+        }
+      ]
+    },
+    {
+      "id": "kpk",
+      "name": "Khyber Pakhtunkhwa",
+      "districts": [
+        {
+          "id": "peshawar",
+          "name": "Peshawar",
+          "cities": ["Peshawar City", "University Town", "Hayatabad"]
+        },
+        {
+          "id": "abbottabad",
+          "name": "Abbottabad",
+          "cities": ["Abbottabad City", "Havelian", "Mandian"]
+        },
+        {
+          "id": "mardan",
+          "name": "Mardan",
+          "cities": ["Mardan City", "Takht Bhai", "Rustam"]
+        }
+      ]
+    },
+    {
+      "id": "balochistan",
+      "name": "Balochistan",
+      "districts": [
+        {
+          "id": "quetta",
+          "name": "Quetta",
+          "cities": ["Quetta City", "Satellite Town", "Chiltan Town"]
+        },
+        {
+          "id": "gwadar",
+          "name": "Gwadar",
+          "cities": ["Gwadar City", "Jiwani", "Pasni"]
+        }
+      ]
+    },
+    {
+      "id": "ict",
+      "name": "Islamabad Capital Territory",
+      "districts": [
+        {
+          "id": "islamabad",
+          "name": "Islamabad",
+          "cities": ["Zone I", "Zone II", "Zone III", "Zone IV", "Zone V"]
+        }
+      ]
+    },
+    {
+      "id": "gilgit-baltistan",
+      "name": "Gilgit-Baltistan",
+      "districts": [
+        {
+          "id": "gilgit",
+          "name": "Gilgit",
+          "cities": ["Gilgit City", "Danyor", "Jutal"]
+        },
+        {
+          "id": "skardu",
+          "name": "Skardu",
+          "cities": ["Skardu City", "Shigar", "Khaplu"]
+        }
+      ]
+    },
+    {
+      "id": "ajk",
+      "name": "Azad Jammu & Kashmir",
+      "districts": [
+        {
+          "id": "muzaffarabad",
+          "name": "Muzaffarabad",
+          "cities": ["Muzaffarabad City", "Domel", "Garhi Dopatta"]
+        },
+        {
+          "id": "mirpur",
+          "name": "Mirpur",
+          "cities": ["Mirpur City", "Dadyal", "Chakswari"]
+        }
+      ]
+    }
+  ]
+}
