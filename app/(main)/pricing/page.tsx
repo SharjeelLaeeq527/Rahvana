@@ -14,7 +14,7 @@ export default function PricingSection() {
     const supabase = createClient();
 
     // Get current user
-    supabase.auth.getUser().then(({ data }) => {
+    supabase.auth.getUser().then(({ data }: { data: { user: { id: string } | null } }) => {
       setUserId(data.user?.id || null);
       setIsLoading(false);
     });

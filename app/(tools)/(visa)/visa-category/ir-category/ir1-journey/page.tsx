@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from "@/app/context/AuthContext";
 import { useWizard, WizardState } from "@/app/(main)/dashboard/hooks/useWizard";
 // import { roadmapData } from "@/app/(main)/dashboard/data/roadmap";
@@ -9,8 +9,9 @@ import { StepDetail } from "@/app/test/components/StepDetail";
 import { DocumentVault } from "@/app/test/components/DocumentVault";
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
-import { PlayCircle, RotateCcw, ArrowRight, Save, CheckCircle2, Loader2, FileText, Layout, Users, IdCard, Plane } from 'lucide-react';
+import { RotateCcw, ArrowRight, Save, CheckCircle2, Loader2, FileText, Layout, Users, IdCard, Plane } from 'lucide-react';
 import { roadmapData } from '@/data/roadmap';
+import { ConfirmationModal } from "@/app/components/shared/ConfirmationModal";
 
 export default function IR1JourneyPage() {
     const { user } = useAuth();
@@ -29,6 +30,7 @@ export default function IR1JourneyPage() {
     // - there's existing progress
     // - they haven't clicked "Resume" or "Start Fresh" yet
     const [journeyDecisionMade, setJourneyDecisionMade] = useState(false);
+    const [startFreshModalOpen, setStartFreshModalOpen] = useState(false);
 
     const showDecisionScreen =
         isLoaded &&
@@ -40,15 +42,23 @@ export default function IR1JourneyPage() {
         setJourneyDecisionMade(true);
     };
 
-    const handleStartFresh = async () => {
-        await actions.resetProgress();
-        setJourneyDecisionMade(true);
+    const handleStartFresh = () => {
+        setStartFreshModalOpen(true);
     };
 
-    const handleStartJourney = () => {
-        actions.startJourney();
+    const confirmStartFresh = async () => {
+        await actions.resetProgress();
         setJourneyDecisionMade(true);
+        setStartFreshModalOpen(false);
     };
+
+    // Loading state
+    useEffect(() => {
+        if (isLoaded && isSignedIn && !hasExistingProgress && !journeyDecisionMade) {
+            actions.startJourney();
+            setJourneyDecisionMade(true);
+        }
+    }, [isLoaded, isSignedIn, hasExistingProgress, journeyDecisionMade, actions]);
 
     // Loading state
     if (!isLoaded) {
@@ -68,34 +78,28 @@ export default function IR1JourneyPage() {
                 <div className='max-w-5xl mx-auto mb-12'>
                     {/* Header */}
                     <div className="flex items-start justify-between mb-4">
-                        <div>
+                        <div className="flex-1">
                             <h1 className="text-5xl font-bold mb-4">IR-1/CR-1 Spouse Visa Journey</h1>
-                            <p className="text-slate-500 mb-8 text-lg">
+                            <p className="text-slate-500 mb-8 text-lg max-w-2xl">
                                 Comprehensive roadmap for bringing your spouse to the United States via consular processing at U.S. Embassy Islamabad, Pakistan.
                             </p>
                         </div>
                         {/* Sync indicator */}
                         {isSignedIn && (
-                            <div className="flex items-center gap-2 text-sm text-slate-500 mt-2 shrink-0">
-                                {isSyncing ? (
-                                    <>
-                                        <Loader2 className="w-4 h-4 animate-spin text-primary" />
-                                        <span>Saving...</span>
-                                    </>
-                                ) : (
-                                    <>
-                                        <Save className="w-4 h-4 text-emerald-500" />
-                                        <span className="text-emerald-600 font-medium">Auto-saved</span>
-                                    </>
-                                )}
-                            </div>
-                        )}
-                    </div>
-
-                    <div className="bg-[#e0f2fe] border-l-4 border-l-[#0d9488] p-4 rounded-xl mb-8 flex gap-3 items-start">
-                        <p className="text-base text-slate-800 leading-relaxed font-medium">
-                            <span className="font-bold">IR-1 vs CR-1:</span> If married less than 2 years at entry, you&apos;ll receive CR-1 (conditional, 2-year green card requiring I-751 filing). If married 2+ years, IR-1 (10-year green card).
-                        </p>
+                             <div className="flex items-center gap-2 text-sm text-slate-500 mt-2 shrink-0">
+                                 {isSyncing ? (
+                                     <>
+                                         <Loader2 className="w-4 h-4 animate-spin text-primary" />
+                                         <span>Saving...</span>
+                                     </>
+                                 ) : (
+                                     <>
+                                         <Save className="w-4 h-4 text-emerald-500" />
+                                         <span className="text-emerald-600 font-medium">Auto-saved</span>
+                                     </>
+                                 )}
+                             </div>
+                         )}
                     </div>
 
                     {/* Stage Overview */}
@@ -127,8 +131,8 @@ export default function IR1JourneyPage() {
                                     </div>
                                     {/* Connectivity Line for Desktop */}
                                     {stage !== 'V' && (
-                                        <div className="hidden lg:block absolute top-1/2 -right-2 transform -translate-y-1/2 z-10">
-                                            <ArrowRight className="w-4 h-4 text-slate-300" />
+                                        <div className="hidden lg:flex absolute top-1/2 left-[calc(100%+8px)] -translate-x-1/2 -translate-y-1/2 z-[20] items-center justify-center w-6 h-6">
+                                            <ArrowRight className="w-5 h-5 text-slate-300" />
                                         </div>
                                     )}
                                 </div>
@@ -145,11 +149,8 @@ export default function IR1JourneyPage() {
                                 initial={{ opacity: 0, scale: 0.95, y: 20 }}
                                 animate={{ opacity: 1, scale: 1, y: 0 }}
                                 exit={{ opacity: 0, scale: 0.95, y: -20 }}
-                                className="bg-white border-2 border-primary/20 rounded-2xl p-8 mb-8 shadow-xl relative overflow-hidden group"
+                                className="bg-white border-2 border-primary/20 rounded-2xl p-8 mb-8 shadow-xl relative overflow-hidden"
                             >
-                                <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
-                                    <PlayCircle className="w-24 h-24 text-primary" />
-                                </div>
                                 <div className="flex items-center gap-3 mb-4">
                                     <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
                                         <CheckCircle2 className="w-6 h-6 text-primary" />
@@ -189,7 +190,6 @@ export default function IR1JourneyPage() {
                                         onClick={handleResume}
                                         className="flex-1 flex items-center justify-center gap-2 px-6 py-3 bg-primary text-white font-bold rounded-xl hover:bg-primary/90 transition-all shadow-md hover:shadow-lg active:scale-95"
                                     >
-                                        <PlayCircle className="w-5 h-5" />
                                         Resume My Journey
                                         <ArrowRight className="w-4 h-4" />
                                     </button>
@@ -205,40 +205,7 @@ export default function IR1JourneyPage() {
                         )}
                     </AnimatePresence>
 
-                    {/* ── Guest Banner: Sign In to Save Progress ── */}
-                    {!isSignedIn && (
-                        <div className="bg-[#faba20] text-[#7c2d12] rounded-2xl p-6 mb-8 text-center shadow-sm">
-                            <div className="flex items-center justify-center gap-2 mb-4">
-                                <span className="text-2xl" role="img" aria-label="lock">🔒</span>
-                                <h4 className="text-2xl font-bold">Save Your Progress</h4>
-                            </div>
-                            <p className="mb-4 text-lg opacity-90 mx-auto">
-                                Sign in free to save your progress, mark steps complete, and resume anytime from any device.
-                            </p>
-                            <button
-                                className="px-8 py-3 rounded-xl bg-primary/90 text-white font-bold text-lg hover:bg-[#0f766e] transition-all shadow-lg active:scale-95"
-                                onClick={() => router.push('/login')}
-                            >
-                                Sign In Free
-                            </button>
-                        </div>
-                    )}
 
-                    {/* ── Start Journey Button (logged in, no existing progress) ── */}
-                    {isSignedIn && !hasExistingProgress && !journeyDecisionMade && (
-                        <div className="bg-gradient-to-r from-primary/5 to-primary/10 border border-primary/20 rounded-2xl p-6 mb-8 text-center">
-                            <h3 className="text-xl font-bold text-slate-900 mb-2">Ready to Begin?</h3>
-                            <p className="text-slate-500 mb-4">Your progress will be automatically saved to your account.</p>
-                            <button
-                                onClick={handleStartJourney}
-                                className="inline-flex items-center gap-2 px-8 py-3 bg-primary text-white font-bold rounded-xl hover:bg-primary/90 transition-all shadow-md hover:shadow-lg active:scale-95"
-                            >
-                                <PlayCircle className="w-5 h-5" />
-                                Start My Journey
-                                <ArrowRight className="w-4 h-4" />
-                            </button>
-                        </div>
-                    )}
                 </div>
 
                 {/* ── Wizard (shown when decision is made or user is guest) ── */}
@@ -251,6 +218,15 @@ export default function IR1JourneyPage() {
                     />
                 )}
             </div>
+            
+            <ConfirmationModal
+                open={startFreshModalOpen}
+                onOpenChange={setStartFreshModalOpen}
+                title="Start Fresh?"
+                description="Are you sure you want to reset all progress? This action cannot be undone."
+                confirmText="Start Fresh"
+                onConfirm={confirmStartFresh}
+            />
         </section>
     );
 }
@@ -285,7 +261,6 @@ function Wizard({ state, actions, isLoaded, isSignedIn }: WizardProps) {
             actions.setStage(state.currentStage + 1);
             actions.setCurrentStep(0);
         }
-        window.scrollTo({ top: 0, behavior: 'smooth' });
     };
 
     const handlePrev = () => {
@@ -297,7 +272,6 @@ function Wizard({ state, actions, isLoaded, isSignedIn }: WizardProps) {
             actions.setStage(state.currentStage - 1);
             actions.setCurrentStep(prevStage.steps.length - 1);
         }
-        window.scrollTo({ top: 0, behavior: 'smooth' });
     };
 
     return (
@@ -313,11 +287,6 @@ function Wizard({ state, actions, isLoaded, isSignedIn }: WizardProps) {
                     </div>
                 </div>
                 <div className="flex items-center gap-3">
-                    {!isSignedIn && (
-                        <span className="text-xs text-amber-600 bg-amber-50 border border-amber-200 px-3 py-1 rounded-full font-medium">
-                            ⚠ Progress not saved — Sign in to save
-                        </span>
-                    )}
                     <button
                         onClick={() => setIsVaultOpen(true)}
                         className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 rounded-lg font-semibold text-slate-700 hover:border-[#0d9488] hover:bg-[#ebf5f4] transition-all"

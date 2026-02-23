@@ -290,12 +290,6 @@ export default function ToolsPage() {
       </div>
 
       <div className="max-w-7xl mx-auto px-6 py-8">
-        {/* Header */}
-        {/* <header className="flex justify-between items-center mb-16">
-          <div className="text-2xl font-bold text-[#0d7377] tracking-tighter">
-            Arachnie.Tools
-          </div>
-        </header> */}
 
         {/* Hero Section */}
         <section className="text-center mb-5 md:mb-10">

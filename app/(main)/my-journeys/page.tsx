@@ -22,6 +22,7 @@ import {
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { ConfirmationModal } from "@/app/components/shared/ConfirmationModal";
 
 // Helper map for journey display names
 const JOURNEY_NAMES: Record<string, string> = {
@@ -51,24 +52,38 @@ export default function MyJourneysPage() {
   const [loading, setLoading] = useState(true);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [hasFetched, setHasFetched] = useState(false);
-  const hasFetchedRef = useRef(false);
+
+  // Modal states
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [deleteAllModalOpen, setDeleteAllModalOpen] = useState(false);
+  const [selectedJourneyId, setSelectedJourneyId] = useState<string | null>(null);
+  const isMounted = useRef(true);
+
+  useEffect(() => {
+    isMounted.current = true;
+    return () => {
+      isMounted.current = false;
+    };
+  }, []);
 
   const fetchJourneys = useCallback(async () => {
     if (!user?.id) return;
     
-    // Use the functional state check to avoid dependency on 'journeys'
     setLoading(true);
     
     try {
       const data = await listUserJourneys(user.id);
+      if (!isMounted.current) return;
       setJourneys(data);
       setHasFetched(true);
     } catch (error) {
       console.error("Error fetching journeys:", error);
     } finally {
-      setLoading(false);
+      if (isMounted.current) {
+        setLoading(false);
+      }
     }
-  }, [user?.id]); // Only depend on user.id
+  }, [user?.id]);
 
   useEffect(() => {
     if (authLoading) return;
@@ -78,34 +93,44 @@ export default function MyJourneysPage() {
       return;
     }
 
-    if (user?.id && !hasFetchedRef.current) {
-      hasFetchedRef.current = true;
+    if (user.id && !hasFetched) {
       fetchJourneys();
     }
-  }, [user?.id, authLoading, router, fetchJourneys]);
+  }, [user?.id, authLoading, router, fetchJourneys, hasFetched]);
 
   const handleDelete = async (journeyId: string) => {
-    if (!user?.id) return;
-    if (!confirm("Are you sure you want to delete this journey? All progress will be lost forever.")) return;
+    setSelectedJourneyId(journeyId);
+    setDeleteModalOpen(true);
+  };
 
-    setDeletingId(journeyId);
+  const confirmDelete = async () => {
+    if (!user?.id || !selectedJourneyId) return;
+
+    setDeletingId(selectedJourneyId);
+    setDeleteModalOpen(false);
     try {
-      const success = await deleteJourneyProgress(user.id, journeyId);
+      const success = await deleteJourneyProgress(user.id, selectedJourneyId);
       if (success) {
-        setJourneys((prev: JourneyProgressRecord[]) => prev.filter((j) => j.journey_id !== journeyId));
+        setJourneys((prev: JourneyProgressRecord[]) => prev.filter((j) => j.journey_id !== selectedJourneyId));
       }
     } catch (error) {
       console.error("Error deleting journey:", error);
     } finally {
       setDeletingId(null);
+      setSelectedJourneyId(null);
     }
   };
 
   const handleDeleteAll = async () => {
     if (!user?.id || journeys.length === 0) return;
-    if (!confirm(`Are you sure you want to delete ALL (${journeys.length}) journeys? This cannot be undone.`)) return;
+    setDeleteAllModalOpen(true);
+  };
+
+  const confirmDeleteAll = async () => {
+    if (!user?.id) return;
 
     setDeletingId('all');
+    setDeleteAllModalOpen(false);
     try {
       const success = await deleteAllUserJourneys(user.id);
       if (success) {
@@ -203,10 +228,7 @@ export default function MyJourneysPage() {
                       </div>
                       <div className="h-2.5 bg-slate-100 rounded-full w-full" />
                     </div>
-                    <div className="mt-8 pt-6 border-t border-slate-100 flex justify-between items-center">
-                      <div className="flex -space-x-2">
-                        {[1, 2, 3].map(j => <div key={j} className="w-8 h-8 rounded-full bg-slate-200 border-2 border-white" />)}
-                      </div>
+                    <div className="mt-8 pt-6 border-t border-slate-100 flex justify-end">
                       <div className="w-32 h-10 bg-slate-100 rounded-full" />
                     </div>
                   </CardContent>
@@ -309,16 +331,6 @@ export default function MyJourneysPage() {
                             </div>
 
                             <div className="mt-8 flex items-center justify-between pt-6 border-t border-slate-100 gap-4">
-                              <div className="flex -space-x-2">
-                                {[1, 2, 3].map((i) => (
-                                  <div key={i} className="w-8 h-8 rounded-full bg-slate-100 border-2 border-white flex items-center justify-center text-[10px] font-bold text-slate-400">
-                                    {i}
-                                  </div>
-                                ))}
-                                <div className="w-8 h-8 rounded-full bg-primary/5 border-2 border-white flex items-center justify-center text-[10px] font-bold text-primary">
-                                  +{j.completed_steps.length}
-                                </div>
-                              </div>
                               
                               <Button className="rounded-full bg-primary text-white shadow-lg shadow-primary/20 transition-all font-bold px-6 border-transparent hover:bg-primary/90">
                                 Resume Journey <ArrowRight className="ml-2 w-4 h-4 group-hover:translate-x-1 transition-transform" />
@@ -344,6 +356,25 @@ export default function MyJourneysPage() {
           to { background-position: 40px 0; }
         }
       `}</style>
+
+      {/* Confirmation Modals */}
+      <ConfirmationModal
+        open={deleteModalOpen}
+        onOpenChange={setDeleteModalOpen}
+        title="Delete Journey?"
+        description="Are you sure you want to delete this journey? All progress will be lost forever."
+        confirmText="Delete"
+        onConfirm={confirmDelete}
+      />
+
+      <ConfirmationModal
+        open={deleteAllModalOpen}
+        onOpenChange={setDeleteAllModalOpen}
+        title="Delete All Journeys?"
+        description={`Are you sure you want to delete ALL (${journeys.length}) journeys? This cannot be undone.`}
+        confirmText="Delete All"
+        onConfirm={confirmDeleteAll}
+      />
     </div>
   );
 }

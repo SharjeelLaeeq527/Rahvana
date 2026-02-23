@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { useAuth } from "@/app/context/AuthContext";
 import { useRouter } from "next/navigation";
+import { ConfirmationModal } from "@/app/components/shared/ConfirmationModal";
 
 export default function SettingsPage() {
   const { user, isLoading, signOut } = useAuth();
@@ -31,6 +32,7 @@ export default function SettingsPage() {
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState("");
   const [profile, setProfile] = useState<{ mfa_enabled: boolean } | null>(null);
+  const [deleteAccountModalOpen, setDeleteAccountModalOpen] = useState(false);
 
   // Track if we've already fetched for this user
   const hasFetchedRef = useRef<string | null>(null);
@@ -180,35 +182,34 @@ export default function SettingsPage() {
     router.push("/login");
   };
 
-  const handleDeleteAccount = async () => {
-    if (
-      confirm(
-        "Are you sure you want to delete your account? This action cannot be undone.",
-      )
-    ) {
-      try {
-        setLoading(true);
+  const handleDeleteAccount = () => {
+    setDeleteAccountModalOpen(true);
+  };
 
-        // Delete user data from database
-        await supabase.from("user_profiles").delete().eq("id", user?.id);
+  const confirmDeleteAccount = async () => {
+    try {
+      setLoading(true);
+      setDeleteAccountModalOpen(false);
 
-        await supabase.from("user_settings").delete().eq("user_id", user?.id);
+      // Delete user data from database
+      await supabase.from("user_profiles").delete().eq("id", user?.id);
 
-        // Delete user from Supabase auth
-        const { error } = await supabase.auth.admin.deleteUser(user?.id || "");
+      await supabase.from("user_settings").delete().eq("user_id", user?.id);
 
-        if (error) {
-          throw error;
-        }
+      // Delete user from Supabase auth
+      const { error } = await supabase.auth.admin.deleteUser(user?.id || "");
 
-        // Sign out and redirect to home
-        await signOut();
-        router.push("/");
-      } catch (error) {
-        console.error("Error deleting account:", error);
-        setMessage("Error deleting account. Please try again.");
-        setLoading(false);
+      if (error) {
+        throw error;
       }
+
+      // Sign out and redirect to home
+      await signOut();
+      router.push("/");
+    } catch (error) {
+      console.error("Error deleting account:", error);
+      setMessage("Error deleting account. Please try again.");
+      setLoading(false);
     }
   };
 
@@ -432,6 +433,15 @@ export default function SettingsPage() {
           </div>
         </div>
       </div>
+      
+      <ConfirmationModal
+        open={deleteAccountModalOpen}
+        onOpenChange={setDeleteAccountModalOpen}
+        title="Delete Account?"
+        description="Are you sure you want to delete your account? This action cannot be undone and all your data will be permanently removed."
+        confirmText="Delete Account"
+        onConfirm={confirmDeleteAccount}
+      />
     </div>
   );
 }
