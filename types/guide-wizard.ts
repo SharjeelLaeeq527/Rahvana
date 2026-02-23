@@ -1,8 +1,8 @@
 export type WizardStepId =
   | "document_need"
-  | "location"
+  // | "location"
   | "roadmap"
-  | "office_finder"
+  // | "office_finder"
   | "validation";
 
 export interface WizardState {

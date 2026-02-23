@@ -542,7 +542,6 @@ function ToolCard({ tool, index }: { tool: Tool; index: number }) {
       {/* Footer / Action */}
       <div className="relative z-10 flex items-center justify-between pt-4 border-t border-border mt-auto">
         <span className="text-xs font-medium text-muted-foreground flex items-center gap-1">
-          {/* Placeholder for stats or extra info if needed */}
         </span>
 
         {isClickable ? (

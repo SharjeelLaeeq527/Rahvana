@@ -12,7 +12,6 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 // --- Data & Types ---
-
 interface Service {
   id: string;
   title: string;
@@ -41,7 +40,6 @@ const SERVICES: Service[] = NAV_DATA.services.tabs.flatMap((tab) =>
 const CATEGORIES = ["All", ...NAV_DATA.services.tabs.map((tab) => tab.label)];
 
 // --- Components ---
-
 export default function ServicesPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All");
@@ -346,22 +344,6 @@ function ServiceCard({ service, index }: { service: Service; index: number }) {
       {/* Radial Glow Effect */}
       <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none z-0 bg-[radial-gradient(400px_circle_at_var(--mouse-x,50%)_var(--mouse-y,50%),rgba(13,115,119,0.04),transparent_40%)] dark:bg-[radial-gradient(400px_circle_at_var(--mouse-x,50%)_var(--mouse-y,50%),rgba(255,255,255,0.03),transparent_40%)]" />
 
-      {/* Header (Badge) */}
-      {/* <div className="flex justify-end items-start mb-2 min-h-[24px] relative z-10"> */}
-      {/* {service.badge && (
-          <span
-            className={`text-[10px] uppercase font-bold tracking-wider px-3 py-1 rounded-full border 
-            ${
-              service.badge === "Live"
-                ? "bg-green-50 text-green-700 border-green-200 dark:bg-green-900/20 dark:text-green-400 dark:border-green-800"
-                : "bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-900/20 dark:text-amber-400 dark:border-amber-800"
-            }`}
-          >
-            {service.badge}
-          </span>
-        )} */}
-      {/* </div> */}
-
       {/* Content */}
       <div className="relative z-10 flex flex-col grow pt-2">
         <h3 className="text-xl font-bold text-foreground mb-1 transition-colors">
@@ -380,7 +362,6 @@ function ServiceCard({ service, index }: { service: Service; index: number }) {
       {/* Footer / Action */}
       <div className="relative z-10 flex items-center justify-between pt-4 border-t border-border mt-auto">
         <span className="text-xs font-medium text-muted-foreground flex items-center gap-1">
-          {/* Placeholder for stats or extra info if needed */}
         </span>
 
         {isClickable ? (
