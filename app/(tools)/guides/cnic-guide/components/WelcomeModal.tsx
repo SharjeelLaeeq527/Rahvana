@@ -2,7 +2,7 @@
 
 import React, { useMemo, useState } from "react";
 import { useCnicWizard } from "../CnicContext";
-import { X, Info } from "lucide-react";
+import { X, Info, CheckCircle2 } from "lucide-react";
 
 interface ExpandSectionProps {
   title: string;
@@ -308,9 +308,9 @@ export default function WelcomeModal() {
               >
                 Welcome to the CNIC Guide Application Wizard
               </h2>
-              <p className="mt-2 text-sm md:text-base text-white/75 max-w-3xl mx-auto leading-relaxed">
+              <p className="mt-2 text-sm md:text-base text-white/75 max-w-3xl mx-auto leading-relaxed flex items-center justify-center gap-2">
                 Let&apos;s get your Computerised National Identity Card done
-                correctly ✔
+                correctly <CheckCircle2 className="w-5 h-5 text-emerald-400" />
               </p>
 
               {/* Feature boxes */}

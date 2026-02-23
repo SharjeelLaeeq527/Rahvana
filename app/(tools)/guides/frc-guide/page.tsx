@@ -4,7 +4,9 @@ import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import WizardHeader from "../../../components/guides/WizardHeader";
 import WizardSidebar from "../../../components/guides/WizardSidebar";
-import WizardInfoPanel from "../../../components/guides/WizardInfoPanel";
+import WizardInfoPanel, {
+  InfoPanelData,
+} from "../../../components/guides/WizardInfoPanel";
 import DocumentNeedStep from "../../../components/guides/steps/DocumentNeedStep";
 // import LocationStep from "../../../components/guides/steps/LocationStep";
 import RoadmapStep from "../../../components/guides/steps/RoadmapStep";
@@ -14,6 +16,7 @@ import WhatsThisModal from "../../../components/guides/WhatsThisModal";
 import { type WizardState, WizardStepId } from "@/types/guide-wizard";
 import guideData from "@/data/frc-guide-data.json";
 import { ArrowLeft, ArrowRight } from "lucide-react";
+import FeedbackButton from "@/app/components/FeedbackButton";
 
 const STEP_IDS: WizardStepId[] = [
   "document_need",
@@ -23,7 +26,16 @@ const STEP_IDS: WizardStepId[] = [
   "validation",
 ];
 
-const INFO_PANEL_KEYS: Record<WizardStepId, keyof typeof guideData.wizard.info_panel> = {
+const STEP_LABELS: Record<string, string> = {
+  document_need: "Application Type",
+  roadmap: "Roadmap",
+  validation: "Validation",
+};
+
+const INFO_PANEL_KEYS: Record<
+  WizardStepId,
+  keyof typeof guideData.wizard.info_panel
+> = {
   document_need: "document_need",
   // location: "location",
   roadmap: "roadmap",
@@ -46,25 +58,32 @@ const FrcGuide = () => {
 
   useEffect(() => {
     const dontShow = localStorage.getItem("hide_whats_this_modal");
-    if(!dontShow) setShowWhatsThis(true);
+    if (!dontShow) setShowWhatsThis(true);
   }, []);
 
   const currentStepId = STEP_IDS[currentStep];
-  const infoPanelData = guideData.wizard.info_panel[INFO_PANEL_KEYS[currentStepId]];
+  const infoPanelData = guideData.wizard.info_panel[
+    INFO_PANEL_KEYS[currentStepId]
+  ] as unknown as InfoPanelData;
 
   const canGoNext = (): boolean => {
     switch (currentStepId) {
-      case "document_need": return !!state.documentNeed;
+      case "document_need":
+        return !!state.documentNeed;
       // case "location": return !!state.province && !!state.district && !!state.city;
-      case "roadmap": return true;
+      case "roadmap":
+        return true;
       // case "office_finder": return true;
-      case "validation": return false;
-      default: return false;
+      case "validation":
+        return false;
+      default:
+        return false;
     }
   };
 
   const goNext = () => {
-    if (currentStep < STEP_IDS.length - 1 && canGoNext()) setCurrentStep(currentStep + 1);
+    if (currentStep < STEP_IDS.length - 1 && canGoNext())
+      setCurrentStep(currentStep + 1);
   };
 
   const goBack = () => {
@@ -151,10 +170,17 @@ const FrcGuide = () => {
 
   return (
     <div className="min-h-screen flex flex-col bg-gray-50 pt-14">
-      <WizardHeader onWhatsThis={() => setShowWhatsThis(true)} title={guideData.wizard.title} />
+      <WizardHeader
+        onWhatsThis={() => setShowWhatsThis(true)}
+        title={guideData.wizard.title}
+      />
 
       <div className="flex flex-1 overflow-hidden h-[calc(100vh-56px)]">
-        <WizardSidebar currentStep={currentStep} steps={STEP_IDS} onStepClick={setCurrentStep} />
+        <WizardSidebar
+          currentStep={currentStep}
+          steps={STEP_IDS}
+          onStepClick={setCurrentStep}
+        />
 
         <main className="flex-1 overflow-y-auto p-8 relative">
           <div
@@ -191,7 +217,9 @@ const FrcGuide = () => {
                 >
                   <ArrowLeft className="w-4 h-4" /> Back
                 </motion.button>
-              ) : <div />}
+              ) : (
+                <div />
+              )}
 
               <span className="text-sm text-gray-500 font-medium">
                 Step {currentStep + 1} of {STEP_IDS.length}
@@ -204,9 +232,11 @@ const FrcGuide = () => {
                   onClick={goNext}
                   disabled={!canGoNext()}
                   className={`flex items-center gap-1.5 px-5 py-2.5 rounded-xl font-semibold text-sm cursor-pointer
-                    ${canGoNext()
-                      ? "bg-linear-to-br from-teal-600 to-teal-500 text-white shadow-md"
-                      : "bg-gray-200 text-gray-400 cursor-not-allowed"}
+                    ${
+                      canGoNext()
+                        ? "bg-linear-to-br from-teal-600 to-teal-500 text-white shadow-md"
+                        : "bg-gray-200 text-gray-400 cursor-not-allowed"
+                    }
                   `}
                 >
                   Continue <ArrowRight className="w-4 h-4" />
@@ -216,7 +246,10 @@ const FrcGuide = () => {
           </div>
         </main>
 
-        <WizardInfoPanel data={infoPanelData} lastVerified={guideData.wizard.last_verified} />
+        <WizardInfoPanel
+          data={infoPanelData}
+          lastVerified={guideData.wizard.last_verified}
+        />
       </div>
 
       <WhatsThisModal
@@ -224,6 +257,10 @@ const FrcGuide = () => {
         onClose={() => setShowWhatsThis(false)}
         data={guideData.wizard.whats_this}
         documentLabel="Family Registration Certificate"
+      />
+      <FeedbackButton
+        steps={Object.values(STEP_LABELS)}
+        currentStepName={STEP_LABELS[currentStepId] || ""}
       />
     </div>
   );

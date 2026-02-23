@@ -11,6 +11,16 @@ import Step1 from "./components/steps/Step1";
 import LocationStep from "./components/steps/LocationStep";
 import RoadmapStep from "./components/steps/RoadmapStep";
 import ValidationStep from "./components/steps/ValidationStep";
+import FeedbackButton from "@/app/components/FeedbackButton";
+
+const STEPS = [
+  "",
+  "Who Needs It & Docs",
+  "Location Details",
+  "Process Roadmap",
+  "Validation Checklist",
+];
+
 function WizardContent() {
   const { state, isMounted, setShowWelcomeModal } = usePolioWizard();
 
@@ -89,6 +99,10 @@ function WizardContent() {
 
       {/* Modals & Floating Elements */}
       <WelcomeModal />
+      <FeedbackButton
+        steps={STEPS.filter(Boolean)}
+        currentStepName={STEPS[state.currentStep] || ""}
+      />
     </div>
   );
 }
