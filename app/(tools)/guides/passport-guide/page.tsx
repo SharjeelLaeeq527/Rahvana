@@ -4,7 +4,9 @@ import { useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import WizardHeader from "../../../components/guides/WizardHeader";
 import WizardSidebar from "../../../components/guides/WizardSidebar";
-import WizardInfoPanel from "../../../components/guides/WizardInfoPanel";
+import WizardInfoPanel, {
+  InfoPanelData,
+} from "../../../components/guides/WizardInfoPanel";
 import DocumentNeedStep from "../../../components/guides/steps/DocumentNeedStep";
 // import LocationStep from "../../../components/guides/steps/LocationStep";
 import RoadmapStep from "../../../components/guides/steps/RoadmapStep";
@@ -14,6 +16,7 @@ import WhatsThisModal from "../../../components/guides/WhatsThisModal";
 import { type WizardState, WizardStepId } from "@/types/guide-wizard";
 import guideData from "@/data/passport-guide-data.json";
 import { ArrowLeft, ArrowRight } from "lucide-react";
+import FeedbackButton from "@/app/components/FeedbackButton";
 
 const STEP_IDS: WizardStepId[] = [
   "document_need",
@@ -56,8 +59,9 @@ const PassportGuide = () => {
   });
 
   const currentStepId = STEP_IDS[currentStep];
-  const infoPanelData =
-    guideData.wizard.info_panel[INFO_PANEL_KEYS[currentStepId]];
+  const infoPanelData = guideData.wizard.info_panel[
+    INFO_PANEL_KEYS[currentStepId]
+  ] as unknown as InfoPanelData;
 
   const canGoNext = (): boolean => {
     switch (currentStepId) {
@@ -222,7 +226,7 @@ const PassportGuide = () => {
                   disabled={!canGoNext()}
                   className={`flex items-center gap-1 px-5 py-2.5 rounded-lg text-sm font-semibold cursor-pointer ${
                     canGoNext()
-                      ? "bg-gradient-to-br from-[#14a0a6] to-[#0d7377] text-white shadow-md border-none"
+                      ? "bg-linear-to-br from-[#14a0a6] to-[#0d7377] text-white shadow-md border-none"
                       : "bg-gray-200 text-gray-400 cursor-not-allowed"
                   }`}
                 >
@@ -244,6 +248,10 @@ const PassportGuide = () => {
         onClose={() => setShowWhatsThis(false)}
         data={guideData.wizard.whats_this}
         documentLabel="Pakistani Passport"
+      />
+      <FeedbackButton
+        steps={Object.values(STEP_LABELS)}
+        currentStepName={STEP_LABELS[currentStepId] || ""}
       />
     </div>
   );

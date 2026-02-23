@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { usePolioWizard } from "../../PolioContext";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -19,6 +19,17 @@ export default function RoadmapStep() {
 
   const [checkedDocs, setCheckedDocs] = useState<string[]>([]);
   const [isDocsOpen, setIsDocsOpen] = useState(false);
+
+  useEffect(() => {
+    if (activePhase !== null) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "unset";
+    }
+    return () => {
+      document.body.style.overflow = "unset";
+    };
+  }, [activePhase]);
 
   const toggleDoc = (title: string) => {
     setCheckedDocs((prev) =>

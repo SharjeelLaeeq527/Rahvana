@@ -11,9 +11,13 @@ import LocationStep from "./components/guide/steps/LocationStep";
 import RoadmapStep from "./components/guide/steps/RoadmapStep";
 import OfficeFinderStep from "./components/guide/steps/OfficeFinderStep";
 import ValidationStep from "./components/guide/steps/ValidationStep";
-import { type NikahStepId, type NikahWizardState } from "@/types/nikah-nama-wizard";
+import {
+  type NikahStepId,
+  type NikahWizardState,
+} from "@/types/nikah-nama-wizard";
 import guideData from "@/data/nikah-nama-guide-data.json";
 import { ArrowLeft, ArrowRight } from "lucide-react";
+import FeedbackButton from "@/app/components/FeedbackButton";
 
 const STEP_IDS: NikahStepId[] = [
   "case_type",
@@ -22,6 +26,14 @@ const STEP_IDS: NikahStepId[] = [
   "office_finder",
   "validation",
 ];
+
+const STEP_LABELS: Record<string, string> = {
+  case_type: "Case Type",
+  location: "Location",
+  roadmap: "Roadmap",
+  office_finder: "Office Finder",
+  validation: "Validation",
+};
 
 const INFO_PANEL_KEYS: Record<
   NikahStepId,
@@ -62,7 +74,9 @@ const NikahNamaGuidePage = () => {
 
   const currentStepId = STEP_IDS[currentStep];
   const infoPanelData =
-    guideData.wizard.info_panel[INFO_PANEL_KEYS[currentStepId] as keyof typeof guideData.wizard.info_panel];
+    guideData.wizard.info_panel[
+    INFO_PANEL_KEYS[currentStepId] as keyof typeof guideData.wizard.info_panel
+    ];
 
   const canGoNext = (): boolean => {
     switch (currentStepId) {
@@ -242,7 +256,7 @@ const NikahNamaGuidePage = () => {
 
         {/* Right Info Panel */}
         <WizardInfoPanel
-          data={infoPanelData as any}
+          data={infoPanelData}
           lastVerified={guideData.wizard.last_verified}
         />
       </div>
@@ -251,6 +265,10 @@ const NikahNamaGuidePage = () => {
         open={showWhatsThis}
         onClose={() => setShowWhatsThis(false)}
         onDontShowAgain={handleDontShowAgain}
+      />
+      <FeedbackButton
+        steps={Object.values(STEP_LABELS)}
+        currentStepName={STEP_LABELS[currentStepId] || ""}
       />
     </div>
   );

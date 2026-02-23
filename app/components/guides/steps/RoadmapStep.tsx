@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Upload, X, Check, Download, ChevronDown } from "lucide-react";
 
@@ -45,6 +45,17 @@ const RoadmapStep = ({
   const [activePhase, setActivePhase] = useState<Phase | null>(null);
   const [isFlipped, setIsFlipped] = useState(false);
   const [showDocuments, setShowDocuments] = useState(false);
+
+  useEffect(() => {
+    if (activePhase) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "unset";
+    }
+    return () => {
+      document.body.style.overflow = "unset";
+    };
+  }, [activePhase]);
 
   const checkedCount = checkedDocuments.length;
   const totalDocs = documentsChecklist.length;
