@@ -128,7 +128,8 @@ export const ResultPage = ({
   if (results && results.questions) {
     return (
       <div className="min-h-screen bg-linear-to-br from-slate-50 to-teal-50 p-6">
-        <div className="max-w-7xl mx-auto">
+        <div className="max-w-7xl">
+          {/* removed  mx-auto from above div */}
           <div className="text-center mb-8">
             <div className="flex justify-center gap-4 mb-4">
               <Button

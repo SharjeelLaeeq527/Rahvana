@@ -154,21 +154,21 @@ export default function Step1() {
                 <button
                   key={type.id}
                   onClick={() => handlePersonSelect(type.id)}
-                  className={`group text-left p-4 rounded-xl border-2 transition-all duration-200 ${
+                  className={`group text-left p-4 rounded-xl border-2 transition-all duration-200 bg-linear-to-br ${type.color} ${
                     isSelected
-                      ? "border-primary shadow-sm bg-primary/5"
-                      : "border-slate-100 hover:border-slate-200 hover:bg-slate-50 bg-white"
+                      ? "border-primary shadow-md ring-2 ring-primary/20 scale-[1.02]"
+                      : "border-transparent opacity-90 hover:opacity-100 hover:shadow-md"
                   }`}
                 >
                   <div className="flex items-center gap-3 mb-2">
                     <div
-                      className={`w-10 h-10 rounded-lg bg-linear-to-br ${type.color} flex items-center justify-center shadow-sm`}
+                      className={`w-10 h-10 rounded-lg bg-white/60 flex items-center justify-center shadow-sm backdrop-blur-sm`}
                     >
                       <Icon className={`w-5 h-5 ${type.iconColor}`} />
                     </div>
                     <h4 className="font-bold text-slate-900">{type.title}</h4>
                   </div>
-                  <p className="text-slate-500 leading-relaxed text-xs">
+                  <p className="text-slate-600 leading-relaxed text-xs font-medium">
                     {type.description}
                   </p>
                 </button>
@@ -214,21 +214,21 @@ export default function Step1() {
                 <button
                   key={type.id}
                   onClick={() => handleAppTypeSelect(type.id)}
-                  className={`group p-4 rounded-xl border-2 transition-all duration-200 flex flex-col items-center text-center ${
+                  className={`group p-4 rounded-xl border-2 transition-all duration-200 flex flex-col items-center text-center bg-linear-to-br ${type.color} ${
                     isSelected
-                      ? "border-primary shadow-sm bg-primary/5"
-                      : "border-slate-100 hover:border-slate-200 hover:bg-slate-50 bg-white"
+                      ? "border-primary shadow-md ring-2 ring-primary/20 scale-[1.02]"
+                      : "border-transparent opacity-90 hover:opacity-100 hover:shadow-md"
                   }`}
                 >
                   <div
-                    className={`w-12 h-12 rounded-xl bg-linear-to-br ${type.color} flex items-center justify-center mb-3 shadow-sm`}
+                    className={`w-12 h-12 rounded-xl bg-white/60 flex items-center justify-center mb-3 shadow-sm backdrop-blur-sm`}
                   >
                     <Icon className={`w-6 h-6 ${type.iconColor}`} />
                   </div>
                   <h4 className="font-bold text-slate-900 text-sm mb-1">
                     {type.title}
                   </h4>
-                  <p className="text-slate-500 leading-snug text-xs">
+                  <p className="text-slate-600 leading-snug text-xs font-medium">
                     {type.description}
                   </p>
                 </button>
