@@ -10,6 +10,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
 
 import { useRouter } from "next/navigation";
 import { ResultPage } from "./result/ResultPage";
@@ -99,7 +106,7 @@ const CaseTypeStep = ({
   onNext,
   onBack,
 }: CaseTypeStepProps) => (
-  <div className="space-y-8">
+  <div className="space-y-8 mx-2">
     <div className="text-center mb-8">
       <h2 className="text-3xl font-bold text-foreground mb-3">
         Select Case Type
@@ -295,7 +302,7 @@ const CaseTypeStep = ({
       </div>
     )}
 
-    <div className="flex flex-col sm:flex-row justify-between gap-4 pt-6">
+    <div className="flex flex-row justify-between gap-4 pt-6">
       <Button
         onClick={onBack}
         variant="outline"
@@ -508,7 +515,7 @@ const QuestionStep = ({
             variant="outline"
             className="bg-teal-600 hover:bg-teal-700 text-white"
           >
-            Prev
+            Previous
           </Button>
           <div className="flex space-x-2">
             <Button
@@ -1200,7 +1207,7 @@ export default function InterviewPreparation() {
   const { user } = useAuth();
   const supabase = createBrowserClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
   );
 
   // Auto-fill profile data
@@ -1210,9 +1217,9 @@ export default function InterviewPreparation() {
 
       try {
         const { data } = await supabase
-          .from('user_profiles')
-          .select('profile_details')
-          .eq('id', user.id)
+          .from("user_profiles")
+          .select("profile_details")
+          .eq("id", user.id)
           .single();
 
         if (data?.profile_details && !profileLoaded) {
@@ -1244,7 +1251,8 @@ export default function InterviewPreparation() {
             household_size: formData.household_size,
             beneficiary_employment: formData.beneficiary_employment,
             sponsor_employment: formData.sponsor_employment,
-            military_or_defense_background: formData.military_or_defense_background,
+            military_or_defense_background:
+              formData.military_or_defense_background,
             previous_us_visits: formData.previous_us_visits,
             previous_visa_refusal: formData.previous_visa_refusal,
             visa_overstay_history: formData.visa_overstay_history,
@@ -1254,12 +1262,13 @@ export default function InterviewPreparation() {
             living_arrangements_in_us: formData.living_arrangements_in_us,
             future_plans: formData.future_plans,
             joint_finances: formData.joint_finances,
-            financial_arrangement_description: formData.financial_arrangement_description,
+            financial_arrangement_description:
+              formData.financial_arrangement_description,
           });
 
-          setFormData(prev => ({
+          setFormData((prev) => ({
             ...prev,
-            ...mappedData
+            ...mappedData,
           }));
           setProfileLoaded(true);
         }
@@ -1787,7 +1796,15 @@ export default function InterviewPreparation() {
   // Render the appropriate step
   const renderStep = () => {
     if (!questionnaireData) {
-      return <div>Loading questionnaire...</div>;
+      return (
+        <div className="flex flex-col items-center justify-center py-12 space-y-4  mx-2">
+          <div className="w-12 h-12 border-4 border-teal-200 border-t-teal-600 rounded-full animate-spin"></div>
+          <p className="text-lg font-medium text-slate-600 animate-pulse">
+            Loading...
+            {/* questionnaire... */}
+          </p>
+        </div>
+      );
     }
 
     const renderWithNotification = (content: React.ReactNode) => (
@@ -1910,7 +1927,8 @@ export default function InterviewPreparation() {
           ></div>
         </div>
 
-        <div className="mt-4 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
+        {/* Desktop View */}
+        <div className="mt-4 hidden md:grid md:grid-cols-4 lg:grid-cols-5 gap-3">
           {sections.map(
             (
               section: { title: string; questions: QuestionDefinition[] },
@@ -1966,12 +1984,94 @@ export default function InterviewPreparation() {
             <div className="text-[10px] mt-1">Step {sections.length + 2}</div>
           </div>
         </div>
+
+        {/* Mobile View with Sheet */}
+        <div className="mt-4 md:hidden">
+          <Sheet>
+            <SheetTrigger asChild>
+              <Button
+                variant="outline"
+                className="w-full flex justify-between items-center bg-slate-50 border-slate-200 shadow-sm text-slate-700"
+              >
+                <span>View All Steps</span>
+                <span className="text-xs font-mono bg-teal-100 text-teal-800 px-2 py-0.5 rounded-full">
+                  {step}/{totalSteps}
+                </span>
+              </Button>
+            </SheetTrigger>
+            <SheetContent side="bottom" className="h-[80vh] rounded-t-xl pb-8">
+              <SheetHeader className="pb-4">
+                <SheetTitle>Interview Preparations Steps</SheetTitle>
+              </SheetHeader>
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 overflow-y-auto max-h-[60vh] pb-4">
+                {sections.map(
+                  (
+                    section: { title: string; questions: QuestionDefinition[] },
+                    index: number,
+                  ) => {
+                    const isActive = index === currentSectionIndex;
+                    const isCompleted = index < currentSectionIndex;
+
+                    return (
+                      <div
+                        key={index}
+                        className={`p-3 rounded-lg text-center text-xs font-medium transition-all ${
+                          isActive
+                            ? "bg-teal-600 text-white border-2 border-teal-600 shadow-md"
+                            : isCompleted
+                              ? "bg-teal-100 text-teal-800 border-2 border-teal-200"
+                              : "bg-slate-100 text-slate-500 border-2 border-slate-200"
+                        }`}
+                      >
+                        <div className="font-semibold truncate">
+                          {section.title.substring(0, 20)}
+                          {section.title.length > 20 ? "..." : ""}
+                        </div>
+                        <div className="text-[10px] mt-1">Step {index + 1}</div>
+                      </div>
+                    );
+                  },
+                )}
+
+                {/* Review Step Indicator */}
+                <div
+                  className={`p-3 rounded-lg text-center text-xs font-medium transition-all ${
+                    step === sections.length + 1
+                      ? "bg-teal-600 text-white border-2 border-teal-600 shadow-md"
+                      : step > sections.length + 1
+                        ? "bg-teal-100 text-teal-800 border-2 border-teal-200"
+                        : "bg-slate-100 text-slate-500 border-2 border-slate-200"
+                  }`}
+                >
+                  <div className="font-semibold">Review</div>
+                  <div className="text-[10px] mt-1">
+                    Step {sections.length + 1}
+                  </div>
+                </div>
+
+                {/* Results Step Indicator */}
+                <div
+                  className={`p-3 rounded-lg text-center text-xs font-medium transition-all ${
+                    step === sections.length + 2
+                      ? "bg-teal-600 text-white border-2 border-teal-600 shadow-md"
+                      : "bg-slate-100 text-slate-500 border-2 border-slate-200"
+                  }`}
+                >
+                  <div className="font-semibold">Results</div>
+                  <div className="text-[10px] mt-1">
+                    Step {sections.length + 2}
+                  </div>
+                </div>
+              </div>
+            </SheetContent>
+          </Sheet>
+        </div>
       </div>
     );
   };
 
   return (
-    <div className="container mx-auto py-8 max-w-4xl">
+    <div className="container mx-auto py-8 px-4 md:px-8 max-w-4xl">
       <div className="text-center mb-8">
         <h1 className="text-3xl font-bold text-slate-900 mb-2">
           Interview Preparation Tool
@@ -1984,7 +2084,18 @@ export default function InterviewPreparation() {
 
       {renderProgressSections()}
 
-      <Card className="p-6 shadow-lg">{renderStep()}</Card>
+      <Card className="p-6 shadow-lg">
+        {loading ? (
+          <div className="flex flex-col items-center justify-center py-12 space-y-4">
+            <div className="w-12 h-12 border-4 border-teal-200 border-t-teal-600 rounded-full animate-spin"></div>
+            <p className="text-lg font-medium text-slate-600 animate-pulse">
+              Loading...
+            </p>
+          </div>
+        ) : (
+          renderStep()
+        )}
+      </Card>
     </div>
   );
 }
