@@ -6,7 +6,7 @@ import { HelpCircle } from "lucide-react";
 import ProgressTree from "./components/ProgressTree";
 import ContextPanel from "./components/ContextPanel";
 import WelcomeModal from "./components/WelcomeModal";
-import Step0 from "./components/steps/Step0";
+// import Step0 from "./components/steps/Step0";
 import Step1 from "./components/steps/Step1";
 import LocationStep from "./components/steps/LocationStep";
 import RoadmapStep from "./components/steps/RoadmapStep";
@@ -16,8 +16,8 @@ function WizardContent() {
 
   const renderStep = () => {
     switch (state.currentStep) {
-      case 0:
-        return <Step0 />;
+      // case 0:
+      //   return <Step0 />;
       case 1:
         return <Step1 />;
       case 2:
@@ -27,7 +27,7 @@ function WizardContent() {
       case 4:
         return <ValidationStep />;
       default:
-        return <Step0 />;
+        return <Step1 />;
     }
   };
 
