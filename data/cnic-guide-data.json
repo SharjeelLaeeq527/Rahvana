@@ -95,6 +95,29 @@
       ]
     },
     "offices": [],
+    "fee_structure": {
+      "title": "CNIC Fee Structure",
+      "tiers": [
+        {
+          "type": "Normal",
+          "price": "750",
+          "days": "25 - 40 working days",
+          "badge_variant": "blue"
+        },
+        {
+          "type": "Urgent",
+          "price": "1,500",
+          "days": "15 - 25 working days",
+          "badge_variant": "orange"
+        },
+        {
+          "type": "Executive",
+          "price": "2,500",
+          "days": "10 - 15 working days",
+          "badge_variant": "purple"
+        }
+      ]
+    },
     "roadmaps": {
       "special_new": {
         "title": "Your Personalized Roadmap",

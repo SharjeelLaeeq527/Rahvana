@@ -310,7 +310,7 @@ const TimelinePhases = ({ phases, type, onSelectPhase }: TimelineProps) => {
         </span>
       </div>
 
-      <div className="flex justify-between items-start gap-4 sm:gap-0 mt-4">
+      <div className="flex justify-between items-stretch gap-4 sm:gap-0 mt-4">
         {phases.map((phase, i) => (
           <div
             key={phase.id}
@@ -331,10 +331,10 @@ const TimelinePhases = ({ phases, type, onSelectPhase }: TimelineProps) => {
                 setActiveId(phase.id);
                 onSelectPhase(phase);
               }}
-              className="relative z-10 flex flex-col items-center gap-2 bg-transparent border-none p-1 group"
+              className="relative z-10 flex flex-1 flex-col items-center gap-2 bg-transparent border-none p-1 group w-full"
             >
               <div
-                className={`w-14 h-14 rounded-full flex items-center justify-center
+                className={`w-14 h-14 shrink-0 rounded-full flex items-center justify-center
                 font-bold text-white text-lg shadow-lg group-hover:scale-110 transition-transform duration-200 border-2
                 ${
                   activeId === phase.id
@@ -349,11 +349,11 @@ const TimelinePhases = ({ phases, type, onSelectPhase }: TimelineProps) => {
                 {phase.id}
               </div>
 
-              <div className="text-center px-1">
+              <div className="text-center px-1 flex flex-col items-center flex-1 w-full">
                 <span className="block text-sm font-semibold text-slate-800 group-hover:text-primary transition-colors">
                   {phase.title}
                 </span>
-                <span className="block text-xs text-slate-500 mt-1 font-medium">
+                <span className="block text-xs text-slate-500 mt-auto pt-1 font-medium">
                   {phase.duration}
                 </span>
               </div>

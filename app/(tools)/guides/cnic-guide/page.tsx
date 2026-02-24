@@ -35,7 +35,10 @@ const STEP_LABELS: Record<string, string> = {
   validation: "Validation",
 };
 
-const INFO_PANEL_KEYS: Record<WizardStepId, any> = {
+const INFO_PANEL_KEYS: Record<
+  WizardStepId,
+  keyof typeof guideData.wizard.info_panel
+> = {
   document_need: "document_need",
   age_category: "document_need",
   birth_setting: "document_need",
@@ -76,7 +79,7 @@ const CnicGuide = () => {
       checkedDocuments: stepsData.roadmap || prev.checkedDocuments,
       validationChecks: stepsData.validation?.checks || prev.validationChecks,
       uploadedFile: stepsData.validation?.uploaded || prev.uploadedFile,
-    })
+    }),
   );
 
   useEffect(() => {
@@ -86,7 +89,7 @@ const CnicGuide = () => {
 
   const currentStepId = STEP_IDS[currentStep];
   const infoPanelKey = INFO_PANEL_KEYS[currentStepId];
-  const infoPanelData = (guideData.wizard.info_panel as any)[
+  const infoPanelData = guideData.wizard.info_panel[
     infoPanelKey
   ] as unknown as InfoPanelData;
 
@@ -320,6 +323,7 @@ const CnicGuide = () => {
         <WizardInfoPanel
           data={infoPanelData}
           lastVerified={guideData.wizard.last_verified}
+          guideData={guideData}
           guideType="other"
         />
       </div>
