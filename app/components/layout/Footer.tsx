@@ -4,7 +4,13 @@ import { useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import Link from "next/link";
 import { ComingSoonModal } from "../shared/ComingSoonModal";
-import { Instagram, Facebook, Linkedin, ArrowRight } from "lucide-react";
+import {
+  Instagram,
+  Facebook,
+  Linkedin,
+  ArrowRight,
+  Youtube,
+} from "lucide-react";
 
 export default function Footer() {
   const pathname = usePathname();
@@ -215,6 +221,18 @@ export default function Footer() {
                 X
               </Link>
               <Link
+                href="https://youtube.com/@rahvana_co?si=Mb5-OwJmc5ThTxJs"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-2 text-slate-400 hover:text-white transition-colors group"
+              >
+                <Youtube
+                  size={18}
+                  className="group-hover:scale-110 transition-transform"
+                />
+                Youtube
+              </Link>
+              {/* <Link
                 href="#"
                 className="flex items-center gap-2 text-slate-400 hover:text-white transition-colors group"
               >
@@ -223,7 +241,7 @@ export default function Footer() {
                   className="group-hover:scale-110 transition-transform"
                 />
                 LinkedIn
-              </Link>
+              </Link> */}
             </nav>
           </div>
         </div>
