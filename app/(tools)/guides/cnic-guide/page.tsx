@@ -298,6 +298,7 @@ const CnicGuide = () => {
         <WizardInfoPanel
           data={infoPanelData}
           lastVerified={guideData.wizard.last_verified}
+          guideType="other"
         />
       </div>
 

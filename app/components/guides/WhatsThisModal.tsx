@@ -44,7 +44,7 @@ function ExpandSection({
           <div className="text-sm font-extrabold tracking-wide text-white/95 uppercase">
             {title}
           </div>
-          {subtitle ? (
+          {subtitle && !isOpen ? (
             <div className="mt-1 text-sm text-white/70">{subtitle}</div>
           ) : null}
         </div>
