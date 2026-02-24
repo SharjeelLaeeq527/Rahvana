@@ -6,7 +6,7 @@ export type WizardStepId =
   | "validation";
 
 export interface WizardState {
-  documentNeed: string | null;
+  documentNeed: string | Record<string, string> | null;
   province: string | null;
   district: string | null;
   city: string | null;

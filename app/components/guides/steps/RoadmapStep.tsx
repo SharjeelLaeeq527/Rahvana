@@ -313,9 +313,9 @@ const TimelinePhases = ({ phases, type, onSelectPhase }: TimelineProps) => {
                 {phase.title}
               </span>
 
-              {/* <span className="text-[0.72rem] text-slate-500">
+              <span className="text-[0.72rem] text-slate-500">
                 {phase.duration}
-              </span> */}
+              </span>
             </button>
 
             {i < phases.length - 1 && (
