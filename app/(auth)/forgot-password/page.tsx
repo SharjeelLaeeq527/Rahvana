@@ -1,7 +1,7 @@
 // app/(auth)/forgot-password/page.tsx
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import Link from "next/link";
@@ -11,6 +11,23 @@ export default function ForgotPasswordPage() {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [timer, setTimer] = useState(0);
+
+  useEffect(() => {
+    if (timer <= 0) return;
+
+    const interval = setInterval(() => {
+      setTimer((prev) => {
+        if (prev <= 1) {
+          clearInterval(interval);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [timer]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -41,8 +58,11 @@ export default function ForgotPasswordPage() {
   };
 
   const handleResend = async () => {
+    if (timer > 0) return;
+
     setIsSubmitting(true);
     setError("");
+
     try {
       const response = await fetch("/api/auth/forgot-password", {
         method: "POST",
@@ -56,6 +76,8 @@ export default function ForgotPasswordPage() {
 
       if (!response.ok) {
         setError(data.error || "Failed to resend email");
+      } else {
+        setTimer(60);
       }
     } catch {
       setError("Failed to resend. Please try again.");
@@ -144,12 +166,14 @@ export default function ForgotPasswordPage() {
               <div className="flex flex-col sm:flex-row gap-3">
                 <Button
                   onClick={handleResend}
-                  disabled={isSubmitting}
+                  disabled={isSubmitting || timer > 0}
                   variant="outline"
                   className="flex-1 h-11 rounded-xl border-border hover:bg-muted text-foreground font-medium"
                 >
                   {isSubmitting ? (
                     <div className="w-4 h-4 border-2 border-slate-400 border-t-transparent rounded-full animate-spin" />
+                  ) : timer > 0 ? (
+                    `Resend in ${timer}s`
                   ) : (
                     "Resend email"
                   )}
