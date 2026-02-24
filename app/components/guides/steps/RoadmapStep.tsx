@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { Upload, X, Check, Download, ChevronDown } from "lucide-react";
+import { X, Check, ChevronDown } from "lucide-react";
 
 interface Phase {
   id: number;
@@ -36,7 +37,7 @@ const RoadmapStep = ({
   data,
 }: RoadmapStepProps) => {
   const title = data?.title || "Your Personalized Roadmap";
-  const estimatedTimeline = data?.estimated_timeline || "";
+  // const estimatedTimeline = data?.estimated_timeline || "";
 
   const onsitePhases = data?.onsitePhases || [];
   const onlinePhases = data?.onlinePhases || [];
@@ -45,6 +46,11 @@ const RoadmapStep = ({
   const [activePhase, setActivePhase] = useState<Phase | null>(null);
   const [isFlipped, setIsFlipped] = useState(false);
   const [showDocuments, setShowDocuments] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     if (activePhase) {
@@ -106,7 +112,7 @@ const RoadmapStep = ({
       </div>
 
       {/* Checklist Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4 mt-10">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4 mt-5">
         <div
           className="cursor-pointer group flex-1"
           onClick={() => setShowDocuments(!showDocuments)}
@@ -126,8 +132,6 @@ const RoadmapStep = ({
             </p>
           )}
         </div>
-
-
       </div>
 
       {/* Checklist Items */}
@@ -194,8 +198,6 @@ const RoadmapStep = ({
                         </p>
                       </div>
                     </div>
-
-
                   </motion.div>
                 );
               })}
@@ -205,64 +207,75 @@ const RoadmapStep = ({
       </AnimatePresence>
 
       {/* Phase Modal */}
-      <AnimatePresence>
-        {activePhase && (
-          <>
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50"
-              onClick={() => setActivePhase(null)}
-            />
+      {mounted && typeof document !== "undefined"
+        ? createPortal(
+            <AnimatePresence>
+              {activePhase && (
+                <>
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50"
+                    onClick={() => setActivePhase(null)}
+                  />
 
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95, y: 20 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 
-              w-[90%] max-w-lg bg-white rounded-2xl shadow-2xl p-6 z-50 border border-slate-200"
-            >
-              <div className="flex justify-between items-center mb-4">
-                <div>
-                  <h4 className="text-lg font-bold text-primary">
-                    Phase {activePhase.id}: {activePhase.title}
-                  </h4>
-                  <p className="text-sm text-slate-500 mt-1">{activePhase.duration}</p>
-                </div>
-                <button 
-                  onClick={() => setActivePhase(null)}
-                  className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-slate-100 transition-colors"
-                >
-                  <X className="w-4 h-4 text-slate-500" />
-                </button>
-              </div>
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.95, y: 20 }}
+                    animate={{ opacity: 1, scale: 1, y: 0 }}
+                    exit={{ opacity: 0, scale: 0.95, y: 20 }}
+                    className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 
+                    w-[90%] max-w-lg bg-white rounded-2xl shadow-2xl p-6 z-50 border border-slate-200"
+                  >
+                    <div className="flex justify-between items-center mb-4">
+                      <div>
+                        <h4 className="text-lg font-bold text-primary">
+                          Phase {activePhase.id}: {activePhase.title}
+                        </h4>
+                        <p className="text-sm text-slate-500 mt-1">
+                          {activePhase.duration}
+                        </p>
+                      </div>
+                      <button
+                        onClick={() => setActivePhase(null)}
+                        className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-slate-100 transition-colors"
+                      >
+                        <X className="w-4 h-4 text-slate-500" />
+                      </button>
+                    </div>
 
-              <div className="bg-slate-50 rounded-xl p-4 border border-slate-100">
-                <ul className="space-y-3">
-                  {getBulletPoints(activePhase.description).map(
-                    (point, index) => (
-                      <li key={index} className="flex gap-3">
-                        <span className="text-primary font-bold flex-shrink-0">•</span>
-                        <span className="text-slate-700 text-sm leading-relaxed">{point}</span>
-                      </li>
-                    ),
-                  )}
-                </ul>
-              </div>
-              
-              <div className="mt-4 flex justify-end">
-                <button
-                  onClick={() => setActivePhase(null)}
-                  className="px-4 py-2 bg-primary text-white rounded-lg text-sm font-medium hover:bg-primary/90 transition-colors"
-                >
-                  Close
-                </button>
-              </div>
-            </motion.div>
-          </>
-        )}
-      </AnimatePresence>
+                    <div className="bg-slate-50 rounded-xl p-4 border border-slate-100">
+                      <ul className="space-y-3">
+                        {getBulletPoints(activePhase.description).map(
+                          (point, index) => (
+                            <li key={index} className="flex gap-3">
+                              <span className="text-primary font-bold shrink-0">
+                                •
+                              </span>
+                              <span className="text-slate-700 text-sm leading-relaxed">
+                                {point}
+                              </span>
+                            </li>
+                          ),
+                        )}
+                      </ul>
+                    </div>
+
+                    <div className="mt-4 flex justify-end">
+                      <button
+                        onClick={() => setActivePhase(null)}
+                        className="px-4 py-2 bg-primary text-white rounded-lg text-sm font-medium hover:bg-primary/90 transition-colors"
+                      >
+                        Close
+                      </button>
+                    </div>
+                  </motion.div>
+                </>
+              )}
+            </AnimatePresence>,
+            document.body,
+          )
+        : null}
     </motion.div>
   );
 };
@@ -279,44 +292,64 @@ const TimelinePhases = ({ phases, type, onSelectPhase }: TimelineProps) => {
   const [activeId, setActiveId] = useState<number | null>(null);
 
   return (
-    <div className={`p-6 rounded-2xl border shadow-lg ${
-      type === "Onsite Application" 
-        ? "bg-gradient-to-br from-[#e8f6f6] to-[#d1eeef] border-[#0d7377]/20" 
-        : "bg-gradient-to-br from-[#e8f6f6] to-[#32e0c4]/20 border-[#32e0c4]/30"
-    }`}>
+    <div
+      className={`p-6 rounded-2xl border shadow-lg ${
+        type === "Onsite Application"
+          ? "bg-linear-to-br from-[#e8f6f6] to-[#d1eeef] border-[#0d7377]/20"
+          : "bg-linear-to-br from-[#e8f6f6] to-[#32e0c4]/20 border-[#32e0c4]/30"
+      }`}
+    >
       <div className="flex justify-between items-center mb-6">
-        <h4 className={`text-lg font-bold ${type === "Onsite Application" ? "text-[#0d7377]" : "text-[#32e0c4]"}`}>{type}</h4>
-        <span className="text-xs text-slate-500 bg-slate-100 px-2 py-1 rounded-full">Click to view details</span>
+        <h4
+          className={`text-lg font-bold ${type === "Onsite Application" ? "text-[#0d7377]" : "text-[#32e0c4]"}`}
+        >
+          {type}
+        </h4>
+        <span className="text-xs text-slate-500 bg-slate-100 px-2 py-1 rounded-full">
+          Click to view details
+        </span>
       </div>
 
-      <div className="flex justify-center items-start gap-4">
+      <div className="flex justify-between items-start gap-4 sm:gap-0 mt-4">
         {phases.map((phase, i) => (
-          <div key={phase.id} className="flex flex-col items-center">
+          <div
+            key={phase.id}
+            className="relative flex-1 flex flex-col items-center min-w-[100px]"
+          >
+            {/* Connecting Line */}
+            {i < phases.length - 1 && (
+              <div className="hidden sm:block absolute top-[28px] left-[50%] w-full h-1 z-0">
+                <div
+                  className={`w-full h-full ${type === "Onsite Application" ? "bg-[#0d7377]/30" : "bg-[#32e0c4]/40"} rounded-full`}
+                ></div>
+              </div>
+            )}
+
             <button
               onClick={(e) => {
                 e.stopPropagation();
                 setActiveId(phase.id);
                 onSelectPhase(phase);
               }}
-              className="flex flex-col items-center gap-2 bg-transparent border-none p-1 group"
+              className="relative z-10 flex flex-col items-center gap-2 bg-transparent border-none p-1 group"
             >
               <div
                 className={`w-14 h-14 rounded-full flex items-center justify-center
                 font-bold text-white text-lg shadow-lg group-hover:scale-110 transition-transform duration-200 border-2
                 ${
                   activeId === phase.id
-                    ? type === "Onsite Application" 
-                      ? "bg-[#0d7377] border-[#0a5a5d] ring-4 ring-[#0d7377]/20" 
+                    ? type === "Onsite Application"
+                      ? "bg-[#0d7377] border-[#0a5a5d] ring-4 ring-[#0d7377]/20"
                       : "bg-[#32e0c4] border-[#14a0a6] ring-4 ring-[#32e0c4]/20"
-                    : type === "Onsite Application" 
-                      ? "bg-gradient-to-br from-[#0d7377] to-[#0a5a5d] border-[#0a5a5d] group-hover:ring-2 group-hover:ring-[#0d7377]/30"
-                      : "bg-gradient-to-br from-[#32e0c4] to-[#14a0a6] border-[#14a0a6] group-hover:ring-2 group-hover:ring-[#32e0c4]/30"
+                    : type === "Onsite Application"
+                      ? "bg-linear-to-br from-[#0d7377] to-[#0a5a5d] border-[#0a5a5d] group-hover:ring-2 group-hover:ring-[#0d7377]/30"
+                      : "bg-linear-to-br from-[#32e0c4] to-[#14a0a6] border-[#14a0a6] group-hover:ring-2 group-hover:ring-[#32e0c4]/30"
                 }`}
               >
                 {phase.id}
               </div>
 
-              <div className="text-center">
+              <div className="text-center px-1">
                 <span className="block text-sm font-semibold text-slate-800 group-hover:text-primary transition-colors">
                   {phase.title}
                 </span>
@@ -325,12 +358,6 @@ const TimelinePhases = ({ phases, type, onSelectPhase }: TimelineProps) => {
                 </span>
               </div>
             </button>
-
-            {i < phases.length - 1 && (
-              <div className="self-center flex items-center justify-center w-full mt-3">
-                <div className={`w-12 h-1 ${type === "Onsite Application" ? "bg-[#0d7377]/30" : "bg-[#32e0c4]/40"} rounded-full`}></div>
-              </div>
-            )}
           </div>
         ))}
       </div>

@@ -130,7 +130,7 @@ const DocumentNeedStep = ({
     };
 
     return (
-      <div className="max-w-4xl mx-auto animate-in fade-in slide-in-from-bottom-4 duration-500 pb-10">
+      <div className="max-w-4xl mx-auto animate-in fade-in slide-in-from-bottom-4 duration-500 pb-5">
         <div className="mb-8">
           <h2 className="text-3xl font-bold text-slate-900 mb-3 tracking-tight">
             {title}
@@ -287,7 +287,7 @@ const DocumentNeedStep = ({
         </div>
 
         <div className="mt-10 flex justify-between items-center pt-6 border-t border-slate-100">
-          <button
+          {/* <button
             onClick={handleBack}
             className={`text-slate-500 hover:text-slate-800 font-medium px-4 py-2 hover:bg-slate-50 rounded-lg transition-colors flex items-center gap-2 ${
               internalStep <= 1 ? "invisible" : ""
@@ -296,7 +296,7 @@ const DocumentNeedStep = ({
           >
             <ArrowLeft className="w-4 h-4" />
             Back
-          </button>
+          </button> */}
 
           {internalStep < questions.length && (
             <div className="px-4 py-2 text-sm text-slate-400 font-medium">
