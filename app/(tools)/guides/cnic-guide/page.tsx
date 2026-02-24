@@ -11,6 +11,17 @@ import Step1 from "./components/steps/Step1";
 import LocationStep from "./components/steps/LocationStep";
 import RoadmapStep from "./components/steps/RoadmapStep";
 import ValidationStep from "./components/steps/ValidationStep";
+import FeedbackButton from "@/app/components/FeedbackButton";
+
+const STEPS = [
+  "Welcome",
+  "Who is this for?",
+  "Document need",
+  "Location",
+  "Roadmap",
+  "Office finder",
+  "Validation",
+];
 
 // Reusing global styles from the reference App.jsx would be done via classes
 // but we will use Tailwind primitives and the layout styling.
@@ -93,6 +104,10 @@ function WizardContent() {
 
       {/* Modals & Floating Elements */}
       <WelcomeModal />
+      <FeedbackButton
+        steps={STEPS}
+        currentStepName={STEPS[state.currentStep] || ""}
+      />
     </div>
   );
 }

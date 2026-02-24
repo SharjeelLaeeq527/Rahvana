@@ -4,16 +4,19 @@ import { useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import WizardHeader from "../../../components/guides/WizardHeader";
 import WizardSidebar from "../../../components/guides/WizardSidebar";
-import WizardInfoPanel from "../../../components/guides/WizardInfoPanel";
+import WizardInfoPanel, {
+  InfoPanelData,
+} from "../../../components/guides/WizardInfoPanel";
 import DocumentNeedStep from "../../../components/guides/steps/DocumentNeedStep";
 // import LocationStep from "../../../components/guides/steps/LocationStep";
 import RoadmapStep from "../../../components/guides/steps/RoadmapStep";
-// import OfficeFinderStep from "../../../components/guides/steps/OfficeFinderStep";
+import OfficeFinderStep from "../../../components/guides/steps/OfficeFinderStep";
 import ValidationStep from "../../../components/guides/steps/ValidationStep";
 import WhatsThisModal from "../../../components/guides/WhatsThisModal";
 import { type WizardState, WizardStepId } from "@/types/guide-wizard";
 import guideData from "@/data/passport-guide-data.json";
 import { ArrowLeft, ArrowRight } from "lucide-react";
+import FeedbackButton from "@/app/components/FeedbackButton";
 
 const STEP_IDS: WizardStepId[] = [
   "document_need",
@@ -38,7 +41,6 @@ const INFO_PANEL_KEYS: Record<
   document_need: "document_need",
   // location: "location",
   roadmap: "roadmap",
-  // office_finder: "office_finder",
   validation: "validation",
 };
 
@@ -56,8 +58,9 @@ const PassportGuide = () => {
   });
 
   const currentStepId = STEP_IDS[currentStep];
-  const infoPanelData =
-    guideData.wizard.info_panel[INFO_PANEL_KEYS[currentStepId]];
+  const infoPanelData = guideData.wizard.info_panel[
+    INFO_PANEL_KEYS[currentStepId]
+  ] as unknown as InfoPanelData;
 
   const canGoNext = (): boolean => {
     switch (currentStepId) {
@@ -138,16 +141,6 @@ const PassportGuide = () => {
             data={guideData.wizard.roadmap}
           />
         );
-      // case "office_finder":
-      //   return (
-      //     <OfficeFinderStep
-      //       province={state.province}
-      //       district={state.district}
-      //       offices={guideData.wizard.offices}
-      //       officeType="Passport"
-      //       warningText="Passport services are handled at Regional Passport Offices (RPO) and Executive Passport Offices (EPO). Verify office hours and available services before visiting. You can apply at any passport office regardless of your CNIC address."
-      //     />
-      //   );
       case "validation":
         return (
           <ValidationStep
@@ -170,7 +163,7 @@ const PassportGuide = () => {
         title={guideData.wizard.title}
       />
 
-      <div className="flex flex-1 overflow-hidden h-[calc(100vh-56px)]">
+      <div className="flex flex-1 overflow-hidden h-[calc(100vh-56px)] flex-col lg:flex-row">
         <WizardSidebar
           currentStep={currentStep}
           steps={STEP_IDS}
@@ -178,11 +171,11 @@ const PassportGuide = () => {
           stepLabels={STEP_LABELS}
         />
 
-        <main className="flex-1 overflow-y-auto p-8 relative">
+        <main className="flex-1 overflow-y-auto p-4 sm:p-8 relative">
           <div className="fixed inset-0 bg-[linear-gradient(hsl(168_80%_30%/0.02)_1px,transparent_1px),linear-gradient(90deg,hsl(168_80%_30%/0.02)_1px,transparent_1px)] bg-size-[48px_48px] pointer-events-none z-0" />
 
-          <div className="relative z-10 max-w-2xl mx-auto">
-            <div className="bg-white rounded-2xl border border-gray-200 p-8 shadow-sm min-h-100">
+          <div className="relative z-10 max-w-full md:max-w-2xl mx-auto">
+            <div className="bg-white rounded-2xl border border-gray-200 p-4 sm:p-8 shadow-sm min-h-100">
               <AnimatePresence mode="wait">
                 <motion.div
                   key={currentStepId}
@@ -196,7 +189,7 @@ const PassportGuide = () => {
               </AnimatePresence>
             </div>
 
-            <div className="flex justify-between items-center mt-5 pb-6">
+            <div className="flex flex-col justify-between items-center gap-4 mt-5 pb-6 w-full">
               {currentStep > 0 ? (
                 <motion.button
                   whileHover={{ scale: 1.03 }}
@@ -222,7 +215,7 @@ const PassportGuide = () => {
                   disabled={!canGoNext()}
                   className={`flex items-center gap-1 px-5 py-2.5 rounded-lg text-sm font-semibold cursor-pointer ${
                     canGoNext()
-                      ? "bg-gradient-to-br from-[#14a0a6] to-[#0d7377] text-white shadow-md border-none"
+                      ? "bg-linear-to-br from-[#14a0a6] to-[#0d7377] text-white shadow-md border-none"
                       : "bg-gray-200 text-gray-400 cursor-not-allowed"
                   }`}
                 >
@@ -236,6 +229,8 @@ const PassportGuide = () => {
         <WizardInfoPanel
           data={infoPanelData}
           lastVerified={guideData.wizard.last_verified}
+          guideData={guideData}
+          guideType="passport"
         />
       </div>
 
@@ -244,6 +239,10 @@ const PassportGuide = () => {
         onClose={() => setShowWhatsThis(false)}
         data={guideData.wizard.whats_this}
         documentLabel="Pakistani Passport"
+      />
+      <FeedbackButton
+        steps={Object.values(STEP_LABELS)}
+        currentStepName={STEP_LABELS[currentStepId] || ""}
       />
     </div>
   );

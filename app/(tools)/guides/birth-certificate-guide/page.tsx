@@ -1,121 +1,104 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import WizardHeader from "./components/guide/WizardHeader";
-import WizardSidebar from "./components/guide/WizardSidebar";
-import WizardInfoPanel from "./components/guide/WizardInfoPanel";
-import WhatsThisModal from "./components/guide/WhatsThisModal";
-import DocumentNeedStep from "./components/guide/steps/DocumentNeedStep";
-import AgeCategoryStep from "./components/guide/steps/AgeCategoryStep";
-import BirthSettingStep from "./components/guide/steps/BirthSettingStep";
-import LocationStep from "./components/guide/steps/LocationStep";
-import ParentalDetailsStep from "./components/guide/steps/ParentalDetailsStep";
-import OfficeFinderStep from "./components/guide/steps/OfficeFinderStep";
-import RoadmapStep from "./components/guide/steps/RoadmapStep";
-import { type BirthStepId, type BirthWizardState } from "@/types/birth-certificate-wizard";
+import WizardHeader from "../../../components/guides/WizardHeader";
+import WizardSidebar from "../../../components/guides/WizardSidebar";
+import WizardInfoPanel, {
+  InfoPanelData,
+} from "../../../components/guides/WizardInfoPanel";
+import DocumentNeedStep from "../../../components/guides/steps/DocumentNeedStep";
+import RoadmapStep from "../../../components/guides/steps/RoadmapStep";
+import ValidationStep from "../../../components/guides/steps/ValidationStep";
+import WhatsThisModal from "../../../components/guides/WhatsThisModal";
+import { type WizardState, WizardStepId } from "@/types/guide-wizard";
 import guideData from "@/data/birth-certificate-guide-data.json";
 import { ArrowLeft, ArrowRight } from "lucide-react";
+import FeedbackButton from "@/app/components/FeedbackButton";
 
-const STEP_IDS: BirthStepId[] = [
-  "document_need",
-  "age_category",
-  "birth_setting",
-  "location",
-  "parental_details",
-  "office_finder",
-  "roadmap",
-];
+const STEP_IDS: WizardStepId[] = ["document_need", "roadmap", "validation"];
 
-const INFO_PANEL_KEYS: Record<BirthStepId, string> = {
+const STEP_LABELS: Record<string, string> = {
+  document_need: "Application Type",
+  roadmap: "Roadmap",
+  validation: "Validation",
+};
+
+const INFO_PANEL_KEYS: Record<
+  WizardStepId,
+  keyof typeof guideData.wizard.info_panel
+> = {
   document_need: "document_need",
-  age_category: "age_category",
-  birth_setting: "birth_setting",
-  location: "location",
-  parental_details: "parental_details",
-  office_finder: "location", // reusing location tips for office finder
   roadmap: "roadmap",
+  validation: "validation",
 };
 
 const BirthCertificateGuidePage = () => {
   const [currentStep, setCurrentStep] = useState(0);
-  const [showWhatsThis, setShowWhatsThis] = useState(false);
-  const [state, setState] = useState<BirthWizardState>({
+  const [showWhatsThis, setShowWhatsThis] = useState(true);
+  const [state, setState] = useState<WizardState>({
     documentNeed: null,
-    timing: null,
-    ageCategory: null,
-    birthSetting: null,
     province: null,
     district: null,
     city: null,
-    parentalStatus: {
-      hasCNICs: false,
-      hasNikahNama: false,
-      isSingleParent: false,
-      hasOldRecords: false,
-      hasSchoolRecord: false,
-      hasResidenceProof: false,
-    },
-    savedOffice: null,
     checkedDocuments: [],
+    validationChecks: [],
+    uploadedFile: false,
   });
 
   useEffect(() => {
-    const hide = localStorage.getItem("hideBirthWhatsThis");
-    if (!hide) {
-      setShowWhatsThis(true);
-    }
+    const dontShow = localStorage.getItem("hideBirthWhatsThis");
+    if (!dontShow) setShowWhatsThis(true);
   }, []);
 
-  const handleDontShowAgain = (val: boolean) => {
-    if (val) {
-      localStorage.setItem("hideBirthWhatsThis", "true");
-    }
-  };
-
   const currentStepId = STEP_IDS[currentStep];
-  const infoPanelData =
-    (guideData.wizard.info_panel as any)[INFO_PANEL_KEYS[currentStepId]];
-
-  const handleAgeSelect = (category: BirthWizardState['ageCategory']) => {
-    let timing: BirthWizardState['timing'] = null;
-
-    if (category === "0-3") timing = "timely";
-    else if (category === "3-10") timing = "late";
-    else timing = "very_late";
-
-    setState(s => ({ ...s, ageCategory: category, timing }));
-  };
+  const infoPanelData = guideData.wizard.info_panel[
+    INFO_PANEL_KEYS[currentStepId]
+  ] as unknown as InfoPanelData;
 
   const canGoNext = (): boolean => {
     switch (currentStepId) {
       case "document_need":
         return !!state.documentNeed;
-      case "age_category":
-        return !!state.ageCategory;
-      case "birth_setting":
-        return !!state.birthSetting;
-      case "location":
-        return !!state.province && !!state.district;
-      case "parental_details":
-        return true; // Optional selections
-      case "office_finder":
-        return true; // Optional finding
       case "roadmap":
         return true;
+      case "validation":
+        return false; // Typically validation blocks until something occurs? Matching FRC logic.
       default:
         return false;
     }
   };
 
   const goNext = () => {
-    if (currentStep < STEP_IDS.length - 1 && canGoNext()) {
+    if (currentStep < STEP_IDS.length - 1 && canGoNext())
       setCurrentStep(currentStep + 1);
-    }
   };
 
   const goBack = () => {
     if (currentStep > 0) setCurrentStep(currentStep - 1);
+  };
+
+  const handleDocumentNeedSelect = (id: string) => {
+    setState((s) => ({ ...s, documentNeed: id }));
+    setTimeout(() => setCurrentStep(1), 400);
+  };
+
+  const toggleDocument = (id: string) => {
+    setState((s) => ({
+      ...s,
+      checkedDocuments: s.checkedDocuments.includes(id)
+        ? s.checkedDocuments.filter((d) => d !== id)
+        : [...s.checkedDocuments, id],
+    }));
+  };
+
+  const toggleValidationCheck = (label: string) => {
+    setState((s) => ({
+      ...s,
+      validationChecks: s.validationChecks.includes(label)
+        ? s.validationChecks.filter((l) => l !== label)
+        : [...s.validationChecks, label],
+    }));
   };
 
   const renderStep = () => {
@@ -124,72 +107,26 @@ const BirthCertificateGuidePage = () => {
         return (
           <DocumentNeedStep
             selected={state.documentNeed}
-            onSelect={(v) => setState((s) => ({ ...s, documentNeed: v }))}
-          />
-        );
-      case "age_category":
-        return (
-          <AgeCategoryStep
-             selectedCategory={state.ageCategory}
-             onSelect={(id) => handleAgeSelect(id as any)}
-          />
-        );
-      case "birth_setting":
-        return (
-          <BirthSettingStep
-            selected={state.birthSetting}
-            onSelect={(v) => setState((s) => ({ ...s, birthSetting: v }))}
-          />
-        );
-      case "location":
-        return (
-          <LocationStep
-            province={state.province}
-            district={state.district}
-            city={state.city}
-            onProvinceChange={(v) => setState((s) => ({ ...s, province: v, district: null, city: null }))}
-            onDistrictChange={(v) => setState((s) => ({ ...s, district: v, city: null }))}
-            onCityChange={(v) => setState((s) => ({ ...s, city: v }))}
-          />
-        );
-      case "parental_details":
-        return (
-          <ParentalDetailsStep
-            status={state.parentalStatus}
-            onToggle={(key) => setState(s => ({
-              ...s,
-              parentalStatus: {
-                ...s.parentalStatus,
-                [key]: !((s.parentalStatus as any)[key])
-              }
-            }))}
-          />
-        );
-      case "office_finder":
-        return (
-          <OfficeFinderStep
-            location={{ province: state.province, district: state.district }}
-            savedOffice={state.savedOffice}
-            onSave={(office) => setState(s => ({ ...s, savedOffice: office }))}
+            onSelect={handleDocumentNeedSelect}
+            data={guideData.wizard.document_need}
           />
         );
       case "roadmap":
         return (
           <RoadmapStep
-            birthSetting={state.birthSetting}
-            ageCategory={state.ageCategory}
-            documentNeed={state.documentNeed}
-            timing={state.timing}
-            province={state.province}
-            district={state.district}
-            parentalStatus={state.parentalStatus}
             checkedDocuments={state.checkedDocuments}
-            onToggleDocument={(id) => setState(s => ({
-              ...s,
-              checkedDocuments: s.checkedDocuments.includes(id)
-                ? s.checkedDocuments.filter(d => d !== id)
-                : [...s.checkedDocuments, id]
-            }))}
+            onToggleDocument={toggleDocument}
+            data={guideData.wizard.roadmap}
+          />
+        );
+      case "validation":
+        return (
+          <ValidationStep
+            validationChecks={state.validationChecks}
+            onToggleCheck={toggleValidationCheck}
+            uploadedFile={state.uploadedFile}
+            onUpload={() => setState((s) => ({ ...s, uploadedFile: true }))}
+            data={guideData.wizard.validation}
           />
         );
       default:
@@ -197,35 +134,32 @@ const BirthCertificateGuidePage = () => {
     }
   };
 
-
   return (
-    <div className="h-screen flex flex-col bg-slate-50 font-sans overflow-hidden">
-      <WizardHeader onWhatsThis={() => setShowWhatsThis(true)} />
+    <div className="min-h-screen flex flex-col bg-gray-50 pt-14">
+      <WizardHeader
+        onWhatsThis={() => setShowWhatsThis(true)}
+        title={guideData.wizard.title}
+      />
 
-      <div className="flex flex-1 overflow-hidden mt-14">
-        {/* Left Sidebar */}
+      <div className="flex flex-1 overflow-hidden h-[calc(100vh-56px)]">
         <WizardSidebar
           currentStep={currentStep}
           steps={STEP_IDS}
           onStepClick={setCurrentStep}
-          savedOffice={state.savedOffice}
         />
 
-        {/* Center Content */}
-        <main className="flex-1 overflow-y-auto relative px-10 py-8 scroll-smooth">
-          {/* Grid background */}
+        <main className="flex-1 overflow-y-auto p-8 relative">
           <div
             className="fixed inset-0 pointer-events-none z-0"
             style={{
               backgroundImage:
-                "linear-gradient(rgba(13,115,119,0.02) 1px, transparent 1px), linear-gradient(90deg, rgba(13,115,119,0.02) 1px, transparent 1px)",
+                "linear-gradient(hsl(168 80% 30% / 0.02) 1px, transparent 1px), linear-gradient(90deg, hsl(168 80% 30% / 0.02) 1px, transparent 1px)",
               backgroundSize: "48px 48px",
             }}
           />
 
-          <div className="relative z-10 max-w-4xl mx-auto">
-            {/* Wizard Card */}
-            <div className="bg-white rounded-2xl border border-slate-200 p-8 shadow-sm min-h-[500px]">
+          <div className="relative z-10 max-w-3xl mx-auto">
+            <div className="bg-white rounded-2xl border border-gray-200 p-8 shadow-sm min-h-100">
               <AnimatePresence mode="wait">
                 <motion.div
                   key={currentStepId}
@@ -239,59 +173,65 @@ const BirthCertificateGuidePage = () => {
               </AnimatePresence>
             </div>
 
-            {/* Navigation Footer */}
-            <div className="flex justify-between items-center mt-6 pb-20">
+            <div className="flex justify-between items-center mt-5 pb-6">
               {currentStep > 0 ? (
                 <motion.button
                   whileHover={{ scale: 1.03 }}
                   whileTap={{ scale: 0.97 }}
                   onClick={goBack}
-                  className="flex items-center gap-1.5 px-6 py-3 rounded-xl border-2 border-slate-200 bg-white text-slate-700 text-sm font-bold cursor-pointer font-['Plus_Jakarta_Sans',system-ui]"
+                  className="flex items-center gap-1.5 px-5 py-2.5 rounded-xl border border-gray-300 bg-white text-gray-700 font-semibold text-sm cursor-pointer"
                 >
-                  <ArrowLeft className="w-4 h-4" />
-                  Back
+                  <ArrowLeft className="w-4 h-4" /> Back
                 </motion.button>
               ) : (
                 <div />
               )}
 
-              <span className="text-sm text-slate-400 font-bold uppercase tracking-wider font-['Plus_Jakarta_Sans',system-ui]">
+              <span className="text-sm text-gray-500 font-medium">
                 Step {currentStep + 1} of {STEP_IDS.length}
               </span>
 
               {currentStep < STEP_IDS.length - 1 && (
                 <motion.button
-                  whileHover={{ scale: canGoNext() ? 1.03 : 1 }}
-                  whileTap={{ scale: canGoNext() ? 0.97 : 1 }}
+                  whileHover={{ scale: 1.03 }}
+                  whileTap={{ scale: 0.97 }}
                   onClick={goNext}
                   disabled={!canGoNext()}
-                  className={`flex items-center gap-1.5 px-8 py-3 rounded-xl text-sm font-bold shadow-md transition font-['Plus_Jakarta_Sans',system-ui]
+                  className={`flex items-center gap-1.5 px-5 py-2.5 rounded-xl font-semibold text-sm cursor-pointer
                     ${
                       canGoNext()
-                        ? "bg-teal-600 text-white cursor-pointer hover:bg-teal-700"
-                        : "bg-slate-200 text-slate-400 cursor-not-allowed shadow-none"
+                        ? "bg-linear-to-br from-teal-600 to-teal-500 text-white shadow-md"
+                        : "bg-gray-200 text-gray-400 cursor-not-allowed"
                     }
                   `}
                 >
-                  Continue
-                  <ArrowRight className="w-4 h-4" />
+                  Continue <ArrowRight className="w-4 h-4" />
                 </motion.button>
               )}
             </div>
           </div>
         </main>
 
-        {/* Right Info Panel */}
         <WizardInfoPanel
-          data={infoPanelData as any}
+          data={infoPanelData}
           lastVerified={guideData.wizard.last_verified}
+          guideData={guideData}
+          guideType="other"
         />
       </div>
 
       <WhatsThisModal
         open={showWhatsThis}
-        onClose={() => setShowWhatsThis(false)}
-        onDontShowAgain={handleDontShowAgain}
+        onClose={() => {
+          setShowWhatsThis(false);
+          localStorage.setItem("hideBirthWhatsThis", "true");
+        }}
+        data={guideData.wizard.whats_this}
+        documentLabel="Birth Certificate"
+      />
+      <FeedbackButton
+        steps={Object.values(STEP_LABELS)}
+        currentStepName={STEP_LABELS[currentStepId] || ""}
       />
     </div>
   );

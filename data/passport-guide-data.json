@@ -199,7 +199,6 @@
       ],
       "quick_instructions": [
         "Select your passport application type (New, Renewal, or Lost/Damaged)",
-        "Provide location details to find your nearest passport office",
         "Receive a custom roadmap and document checklist",
         "Validate your passport application against requirements"
       ],
@@ -2201,6 +2200,33 @@
           "Fast Track service is NOT available for ePassport delivery.",
           "Don't use unofficial agents — only apply through official DGIP channels."
         ],
+        "fee_structure": {
+          "title": "Passport Fee Structure",
+          "special_note": {
+            "title": "ePassport vs MRP",
+            "description": "ePassports include a biometric chip for faster clearance. Fees for ePassports are slightly higher than Machine Readable Passports (MRP). Ensure you select the correct category."
+          },
+          "tiers": [
+            {
+              "type": "Normal",
+              "price": "5,500 - 9,000",
+              "days": "approx. 10 days",
+              "badge_variant": "blue"
+            },
+            {
+              "type": "Urgent",
+              "price": "8,500 - 15,000",
+              "days": "approx. 4 days",
+              "badge_variant": "purple"
+            },
+            {
+              "type": "Fast Track",
+              "price": "12,500 - 20,000",
+              "days": "approx. 2 days",
+              "badge_variant": "orange"
+            }
+          ]
+        },
         "links": [
           {
             "label": "DGIP Document Requirements",

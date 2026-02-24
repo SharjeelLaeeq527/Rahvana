@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useCnicWizard } from "../../CnicContext";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -14,12 +14,34 @@ import {
   ChevronDown,
 } from "lucide-react";
 
+interface Phase {
+  id: number;
+  title: string;
+  duration: string;
+  description: string;
+}
+
 export default function RoadmapStep() {
   const { state, setCurrentStep, completeStep } = useCnicWizard();
-  const [activePhase, setActivePhase] = useState<number | null>(1);
+
+  const [activePhase, setActivePhase] = useState<Phase | null>(null);
+  const [isFlipped, setIsFlipped] = useState(
+    state.applicationMethod === "online",
+  );
 
   const [checkedDocs, setCheckedDocs] = useState<string[]>([]);
   const [isDocsOpen, setIsDocsOpen] = useState(false);
+
+  useEffect(() => {
+    if (activePhase) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "unset";
+    }
+    return () => {
+      document.body.style.overflow = "unset";
+    };
+  }, [activePhase]);
 
   const toggleDoc = (title: string) => {
     setCheckedDocs((prev) =>
@@ -34,80 +56,106 @@ export default function RoadmapStep() {
   const isReplacement = state.applicationType === "replacement";
 
   // Dynamic Process Phases
-  const phases = isOnline
-    ? [
-        {
-          id: 1,
-          title: "Download App",
-          duration: "5 mins",
-          description:
-            "Download the PakID app on your smartphone and register an account using your mobile number and email address.",
-        },
-        {
-          id: 2,
-          title: "Details & Biometrics",
-          duration: "15 mins",
-          description: (
-            <ul className="list-disc pl-5 space-y-1">
-              <li>On “Home” page, go to “ID Documents” and select “ID Card”</li>
-              <li>Choose select “My Blood Relatives” category</li>
-              <li>Select “Modification” category</li>
-              <li>Capture applicant&apos;s Photograph &amp; Fingerprints.</li>
-              <li>Enter the personal details</li>
-              <li>Upload documents, if required</li>
-              <li>Review and verify information</li>
-            </ul>
-          ),
-        },
-        {
-          id: 3,
-          title: "Payment & Submit",
-          duration: "5 mins",
-          description: (
-            <ul className="list-disc pl-5 space-y-1">
-              <li>Biometric Verification (anyone of parents or sibling).</li>
-              <li>Photographs and fingerprints are mandatory</li>
-              <li>Your data will be entered and reviewed.</li>
-              <li>
-                Attestation by anyone of the parents or siblings or by Gazetted
-                officer
-              </li>
-              <li>Interview by OIC</li>
-              <li>
-                Fee submission (Executive Rs 2500) &amp; (Urgent Rs 1500) &amp;
-                (Normal Rs 750) excluding delivery fee
-              </li>
-              <li>
-                CNIC will be printed and handed over upon completion of the
-                processing period against the specific category
-              </li>
-            </ul>
-          ),
-        },
-      ]
-    : [
-        {
-          id: 1,
-          title: "Token & Waiting",
-          duration: "Varies",
-          description:
-            "Visit your nearest NADRA Registration Center, get a queue token, and wait for your turn. Visit early morning to avoid rush.",
-        },
-        {
-          id: 2,
-          title: "Data Entry & Biometrics",
-          duration: "15 mins",
-          description:
-            "Provide your original documents to the operator. They will capture your photograph, fingerprints, and digital signature.",
-        },
-        {
-          id: 3,
-          title: "Review & Receipt",
-          duration: "5 mins",
-          description:
-            "Review the printed application form carefully. Sign it and collect your tracking receipt.",
-        },
-      ];
+  let onlinePhases: Phase[] = [];
+  let onsitePhases: Phase[] = [];
+
+  if (isSpecial) {
+    onlinePhases = [
+      {
+        id: 1,
+        title: "Download App",
+        duration: "5 mins",
+        description:
+          "Download the PakID app on your smartphone and register an account using your mobile number and email address.",
+      },
+      {
+        id: 2,
+        title: "Details & Documents",
+        duration: "20 mins",
+        description:
+          "On Home page, go to ID Documents and select ID Card. Choose application category. Select the purpose(new, update card, udapte Info etc). Enter applicant’s personal details. Upload supporting documents including Birth Certificate or B-Form (if available), School Leaving Certificate, Guardian Certificate (if any), Affidavit explaining family status, and Union Council or Police Verification documents. Review and verify all information carefully.",
+      },
+      {
+        id: 3,
+        title: "Submit & Verification",
+        duration: "5 mins",
+        description:
+          "Submit application for NADRA verification. Online payment (if applicable): Executive Rs 2500, Urgent Rs 1500, Normal Rs 750 (excluding delivery fee). Application will be forwarded for manual NADRA verification and background checks. Applicant will be notified via SMS/app for biometric visit and final processing.",
+      },
+    ];
+
+    onsitePhases = [
+      {
+        id: 1,
+        title: "Token & Registration",
+        duration: "Varies",
+        description:
+          "Visit nearest NADRA Registration Center. Inform staff that you are applying WITHOUT BLOOD RELATIVE (Special Case). Get a special case token and wait for your turn. Visit early morning to avoid delays.",
+      },
+      {
+        id: 2,
+        title: "Verification & Biometrics",
+        duration: "25–40 mins",
+        description:
+          "Biometric capture (photograph, fingerprints, signature). Document verification including Birth Certificate/B-Form (if available), School Leaving Certificate, Guardian Certificate (if any), Affidavit, Union Council verification and/or Police verification. No family biometric required. Attestation by Gazetted Officer or Union Council Officer. Interview by NADRA OIC (Officer In-Charge). Fee submission (Executive Rs 2500, Urgent Rs 1500, Normal Rs 750) excluding delivery fee. Application sent for NADRA internal verification.",
+      },
+      {
+        id: 3,
+        title: "Review & Receipt",
+        duration: "5 mins",
+        description:
+          "Review printed application form. Sign it and collect your tracking receipt. CNIC will be printed and handed over after completion of NADRA verification and approval process according to selected category.",
+      },
+    ];
+  } else {
+    onlinePhases = [
+      {
+        id: 1,
+        title: "Download App",
+        duration: "5 mins",
+        description:
+          "Download the PakID app on your smartphone and register an account using your mobile number and email address.",
+      },
+      {
+        id: 2,
+        title: "Details & Biometrics",
+        duration: "15 mins",
+        description:
+          "On Home page, go to ID Documents and select ID Card. Choose application category. Select the purpose(new, update card, udapte Info etc). Capture applicant's Photograph & Fingerprints. Enter the personal details. Upload documents, if required. Review and verify information.",
+      },
+      {
+        id: 3,
+        title: "Payment & Submit",
+        duration: "5 mins",
+        description:
+          "Submit application. Fee submission (Executive Rs 2500) & (Urgent Rs 1500) & (Normal Rs 750) excluding delivery fee. CNIC/SCNIC will be printed and handed over upon completion of the processing period against the specific category.",
+      },
+    ];
+
+    onsitePhases = [
+      {
+        id: 1,
+        title: "Token & Waiting",
+        duration: "Varies",
+        description:
+          "Visit your nearest NADRA Registration Center, get a queue token, and wait for your turn. Visit early morning to avoid rush.",
+      },
+      {
+        id: 2,
+        title: "Data Entry & Biometrics",
+        duration: "15 mins",
+        description:
+          "Biometric Verification (anyone of parents or sibling). Photographs and fingerprints are mandatory. Your data will be entered and reviewed. Attestation by anyone of the parents or siblings or by Gazetted officer. Interview by OIC. Fee submission (Executive Rs 2500, Urgent Rs 1500, Normal Rs 750) excluding delivery fee. CNIC will be printed and handed over upon completion of the processing period against the specific category.",
+      },
+      {
+        id: 3,
+        title: "Review & Receipt",
+        duration: "5 mins",
+        description:
+          "Review the printed application form carefully. Sign it and collect your tracking receipt.",
+      },
+    ];
+  }
 
   // Dynamic Document Checklist
   let documents_checklist: {
@@ -226,6 +274,13 @@ export default function RoadmapStep() {
     setCurrentStep(2);
   };
 
+  const getBulletPoints = (text: string) => {
+    return text
+      .split(".")
+      .map((item) => item.trim())
+      .filter((item) => item.length > 0);
+  };
+
   return (
     <div className="max-w-4xl mx-auto animate-in fade-in slide-in-from-bottom-4 duration-500">
       <motion.div
@@ -244,89 +299,34 @@ export default function RoadmapStep() {
           </span>
         </p>
 
-        {/* Timeline */}
-        <div className="flex items-start justify-center gap-2 mb-10 p-6 rounded-2xl bg-slate-50 border border-slate-200">
-          {phases.map((phase, i) => (
-            <div key={phase.id} className="flex items-start gap-2">
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                onClick={() =>
-                  setActivePhase(activePhase === phase.id ? null : phase.id)
-                }
-                className={`flex flex-col items-center gap-2 p-2 rounded-xl cursor-pointer focus:outline-none transition-all duration-300 ${
-                  activePhase === phase.id
-                    ? "opacity-100 scale-105"
-                    : "opacity-60 hover:opacity-100"
-                }`}
-              >
-                <div
-                  className={`w-12 h-12 rounded-full flex items-center justify-center font-extrabold text-[1.1rem] transition-all duration-300 ${
-                    activePhase === phase.id
-                      ? "bg-primary text-white shadow-lg shadow-primary/40 ring-4 ring-primary/20"
-                      : "bg-slate-200 text-slate-500 border-2 border-slate-300"
-                  }`}
-                >
-                  {phase.id}
-                </div>
-
-                <span
-                  className={`text-[0.8rem] font-bold text-center max-w-22 leading-tight ${
-                    activePhase === phase.id ? "text-primary" : "text-slate-800"
-                  }`}
-                >
-                  {phase.title}
-                </span>
-
-                <span
-                  className={`flex items-center gap-1 text-[0.72rem] ${
-                    activePhase === phase.id
-                      ? "text-primary/80 font-medium"
-                      : "text-slate-500"
-                  }`}
-                >
-                  <Clock className="w-3 h-3" />
-                  {phase.duration}
-                </span>
-              </motion.button>
-
-              {i < phases.length - 1 && (
-                <div className="w-10 h-0.5 bg-primary mt-6 opacity-30" />
-              )}
+        {/* Flashcard Timeline */}
+        <div className="mb-12">
+          <div
+            onClick={() => setIsFlipped(!isFlipped)}
+            className={`relative w-full min-h-[260px] cursor-pointer transition-transform duration-700 ${
+              isFlipped ? "rotate-y-180" : ""
+            }`}
+            style={{ transformStyle: "preserve-3d", perspective: "1200px" }}
+          >
+            {/* FRONT (Onsite) */}
+            <div className="absolute inset-0 backface-hidden">
+              <TimelinePhases
+                phases={onsitePhases}
+                type="Onsite Application"
+                onSelectPhase={setActivePhase}
+              />
             </div>
-          ))}
+
+            {/* BACK (Online) */}
+            <div className="absolute inset-0 backface-hidden rotate-y-180">
+              <TimelinePhases
+                phases={onlinePhases}
+                type="Online Application"
+                onSelectPhase={setActivePhase}
+              />
+            </div>
+          </div>
         </div>
-
-        {/* Phase Detail */}
-        <AnimatePresence>
-          {activePhase !== null && (
-            <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: "auto" }}
-              exit={{ opacity: 0, height: 0 }}
-              className="mb-6 overflow-hidden"
-            >
-              <div className="p-5 rounded-xl bg-primary/5 border border-primary/20">
-                <div className="flex justify-between items-center mb-2">
-                  <h4 className="text-[1rem] font-bold text-primary">
-                    Phase {activePhase}: {phases[activePhase - 1]?.title}
-                  </h4>
-
-                  <button
-                    onClick={() => setActivePhase(null)}
-                    className="text-slate-500 hover:text-slate-800 transition-colors focus:outline-none"
-                  >
-                    <X className="w-4 h-4" />
-                  </button>
-                </div>
-
-                <div className="text-[0.875rem] text-slate-700 leading-relaxed">
-                  {phases[activePhase - 1]?.description}
-                </div>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
 
         {/* Checklist Header */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4 mt-10">
@@ -416,7 +416,9 @@ export default function RoadmapStep() {
                           </div>
 
                           <p
-                            className={`text-[0.8rem] text-slate-500 mt-0.5 ${isChecked ? "opacity-70" : ""}`}
+                            className={`text-[0.8rem] text-slate-500 mt-0.5 ${
+                              isChecked ? "opacity-70" : ""
+                            }`}
                           >
                             {doc.description}
                           </p>
@@ -437,6 +439,49 @@ export default function RoadmapStep() {
                 })}
               </div>
             </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Phase Modal */}
+        <AnimatePresence>
+          {activePhase && (
+            <>
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50"
+                onClick={() => setActivePhase(null)}
+              />
+
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.95 }}
+                className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 
+                w-[90%] max-w-md bg-white rounded-2xl shadow-xl p-6 z-50"
+              >
+                <div className="flex justify-between items-center mb-4">
+                  <h4 className="text-lg font-bold text-[#0d7377]">
+                    Phase {activePhase.id}: {activePhase.title}
+                  </h4>
+                  <button onClick={() => setActivePhase(null)}>
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+
+                <ul className="space-y-2 text-sm text-gray-600 leading-6">
+                  {getBulletPoints(activePhase.description).map(
+                    (point, index) => (
+                      <li key={index} className="flex gap-2">
+                        <span className="text-[#0d7377] font-bold">•</span>
+                        <span>{point}</span>
+                      </li>
+                    ),
+                  )}
+                </ul>
+              </motion.div>
+            </>
           )}
         </AnimatePresence>
       </motion.div>
@@ -466,3 +511,62 @@ export default function RoadmapStep() {
     </div>
   );
 }
+
+interface TimelineProps {
+  phases: Phase[];
+  type: string;
+  onSelectPhase: (phase: Phase) => void;
+}
+
+const TimelinePhases = ({ phases, type, onSelectPhase }: TimelineProps) => {
+  const [activeId, setActiveId] = useState<number | null>(null);
+
+  return (
+    <div className="p-6 rounded-xl bg-[#f8fdfd] border border-[#e1f3f3] shadow-md h-full">
+      <div className="flex justify-between items-center mb-6">
+        <h4 className="text-lg font-semibold text-[#0d7377]">{type}</h4>
+        <span className="text-xs text-slate-500">Click anywhere to switch</span>
+      </div>
+
+      <div className="flex justify-center items-start gap-2.5">
+        {phases.map((phase, i) => (
+          <div key={phase.id} className="flex items-start gap-2.5">
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                setActiveId(phase.id);
+                onSelectPhase(phase);
+              }}
+              className="flex flex-col items-center gap-2 bg-transparent border-none p-1 focus:outline-none group"
+            >
+              <div
+                className={`w-12 h-12 rounded-full flex items-center justify-center
+                font-bold text-white text-[1.05rem] shadow-md transition-colors
+                ${
+                  activeId === phase.id
+                    ? "bg-[#0d7377]"
+                    : "bg-linear-to-br from-[#14a0a6] to-[#0a5a5d] group-hover:from-[#0d7377] group-hover:to-[#0d7377]"
+                }`}
+              >
+                {phase.id}
+              </div>
+
+              <span className="text-[0.8rem] font-semibold text-center max-w-24 leading-[1.3] min-h-12 text-slate-800">
+                {phase.title}
+              </span>
+
+              <span className="flex items-center gap-1 text-[0.72rem] text-slate-500">
+                <Clock className="w-3 h-3" />
+                {phase.duration}
+              </span>
+            </button>
+
+            {i < phases.length - 1 && (
+              <div className="w-10 h-0.5 bg-[#14a0a6] mt-6 opacity-40" />
+            )}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};

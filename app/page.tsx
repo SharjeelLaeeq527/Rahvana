@@ -902,7 +902,7 @@ function HomePageContent() {
                         {tool.desc}
                       </p>
                       <div className="flex items-center gap-2 text-sm font-bold text-rahvana-primary group-hover:gap-3 transition-all">
-                        Ready to Use <Icons.ArrowRight className="w-4 h-4" />
+                        Try it out <Icons.ArrowRight className="w-4 h-4" />
                       </div>
                     </motion.div>
                   ))}

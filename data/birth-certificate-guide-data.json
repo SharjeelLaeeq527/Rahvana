@@ -16,10 +16,15 @@
             ],
             "disclaimer": "General guidance based on 2026 rules. Fees and requirements vary by province. Not legal advice."
         },
+        "steps": [
+            { "id": "document_need", "label": "Document Need", "icon": "clipboard" },
+            { "id": "roadmap", "label": "Roadmap", "icon": "map" },
+            { "id": "validation", "label": "Validation", "icon": "star" }
+        ],
         "document_need": {
             "title": "What do you require regarding birth certificates?",
             "description": "Select the option that best describes your current need.",
-            "types": [
+            "options": [
                 {
                     "id": "new",
                     "title": "New Registration",
@@ -40,295 +45,148 @@
                 }
             ]
         },
-        "age_category": {
-            "title": "Select the person's current age:",
-            "description": "Age group determines biometric requirements and necessary proofs.",
-            "options": [
+        "roadmap": {
+            "title": "Personalized Roadmap & Requirements",
+            "estimated_timeline": "3-15 Working Days",
+            "onsitePhases": [
                 {
-                    "id": "0-3",
-                    "title": "0 to 3 Years",
-                    "description": "Infant. No photo, no biometrics required at NADRA (only parents present).",
-                    "color": "teal"
+                    "id": 1,
+                    "title": "Gather Evidence",
+                    "duration": "1 Day",
+                    "description": "Collect mandatory proofs such as Parents' CNICs, Nikah Nama Copy, and Hospital Slip/Vaccination Card before visiting any office."
                 },
                 {
-                    "id": "3-10",
-                    "title": "3 to 10 Years",
-                    "description": "Child. Photo mandatory; iris optional at advanced centers.",
-                    "color": "blue"
+                    "id": 2,
+                    "title": "Union Council (CBRC)",
+                    "duration": "2-5 Days",
+                    "description": "Submit documents to Secretary UC to obtain the Computerized Birth Registration Certificate. In Punjab/Sindh, check the Pak-ID app option for online processing."
                 },
                 {
-                    "id": "10-18",
-                    "title": "10 to 18 Years",
-                    "description": "Minor. Fingerprints, photo, and iris all mandatory.",
-                    "color": "indigo"
+                    "id": 3,
+                    "title": "NADRA B-Form",
+                    "duration": "Same Day / 3-5 Days",
+                    "description": "Present UC CBRC at the NADRA counter. Biometrics will be captured based on age. Pay normal fee Rs 50 or Urgent Rs 500."
                 },
                 {
-                    "id": "18+",
-                    "title": "18 Years and Above",
-                    "description": "Adult. Full biometrics for CNIC. Family biometrics option available if CBRC missing (till Dec 31, 2026).",
-                    "color": "purple"
+                    "id": 4,
+                    "title": "Final Collection",
+                    "duration": "Dependent on processing time",
+                    "description": "Track status via SMS or 1777 Helpline. Pick up the final computerized B-Form or CNIC from the center counter."
                 }
-            ]
-        },
-        "birth_setting": {
-            "title": "Where did the birth occur?",
-            "description": "Evidence requirements change based on birth setting.",
-            "types": [
+            ],
+            "onlinePhases": [
                 {
-                    "id": "hospital",
-                    "title": "In a Hospital",
-                    "description": "Requires discharge slip or birth notification slip.",
-                    "color": "teal"
+                    "id": 1,
+                    "title": "Pak-ID Portal Account Registration",
+                    "duration": "30 Minutes",
+                    "description": "Create an account on the Pak-ID portal. This option is primarily available for UC registration in Punjab and Karachi districts."
                 },
                 {
-                    "id": "home",
-                    "title": "At Home",
-                    "description": "Requires affidavit and 2 witness CNICs.",
-                    "color": "blue"
+                    "id": 2,
+                    "title": "Application Submission & Document Upload",
+                    "duration": "Same Day",
+                    "description": "Fill out the birth registration details and upload digital copies of parent CNICs, Nikah Nama, and Hospital proofs."
                 },
                 {
-                    "id": "overseas",
-                    "title": "Abroad / Overseas",
-                    "description": "Requires Embassy S-1 form or consulate notification.",
-                    "color": "purple"
+                    "id": 3,
+                    "title": "Verification & Fee Payment",
+                    "duration": "Processing Time",
+                    "description": "Pay any applicable local fees safely via the online platform interface."
                 },
                 {
-                    "id": "adoption",
-                    "title": "Adoption / Guardian",
-                    "description": "Requires legal court guardian orders.",
-                    "color": "indigo"
+                    "id": 4,
+                    "title": "Delivery / Print",
+                    "duration": "3-5 Days",
+                    "description": "Receive the digital certificate in the secure vault or via courier depending on your selected options."
                 }
-            ]
-        },
-        "location": {
-            "title": "Where is the location of birth/residence?",
-            "description": "Provincial portals (like Pak-ID) and late fee policies vary by region.",
-            "provinces": [
+            ],
+            "documents_checklist": [
                 {
-                    "id": "punjab",
-                    "name": "Punjab",
-                    "note": "Free registration & certificate up to 7 years late (no court/newspaper ad needed). Full Pak-ID app online UC registration active.",
-                    "districts": [
-                        {
-                            "id": "lhr",
-                            "name": "Lahore"
-                        },
-                        {
-                            "id": "fsd",
-                            "name": "Faisalabad"
-                        },
-                        {
-                            "id": "rwp",
-                            "name": "Rawalpindi"
-                        },
-                        {
-                            "id": "mul",
-                            "name": "Multan"
-                        },
-                        {
-                            "id": "guj",
-                            "name": "Gujranwala"
-                        },
-                        {
-                            "id": "skt",
-                            "name": "Sialkot"
-                        },
-                        {
-                            "id": "jhl",
-                            "name": "Jhelum"
-                        },
-                        {
-                            "id": "chk",
-                            "name": "Chakwal"
-                        }
-                    ]
-                },
-                {
-                    "id": "sindh",
-                    "name": "Sindh",
-                    "note": "Fees after 60-90 days. Pak-ID online available in Karachi East/Central, Larkana, and select districts.",
-                    "districts": [
-                        {
-                            "id": "khi-e",
-                            "name": "Karachi East"
-                        },
-                        {
-                            "id": "khi-c",
-                            "name": "Karachi Central"
-                        },
-                        {
-                            "id": "hyd",
-                            "name": "Hyderabad"
-                        },
-                        {
-                            "id": "skr",
-                            "name": "Sukkur"
-                        },
-                        {
-                            "id": "lrk",
-                            "name": "Larkana"
-                        },
-                        {
-                            "id": "mph",
-                            "name": "Mirpur Khas"
-                        },
-                        {
-                            "id": "nsf",
-                            "name": "Naushahro Feroze"
-                        },
-                        {
-                            "id": "sba",
-                            "name": "Shaheed Benazirabad"
-                        }
-                    ]
-                },
-                {
-                    "id": "kpk",
-                    "name": "KPK & ICT",
-                    "note": "Standard late fees apply. Digital pilots for UC registration active 2026 in Peshawar and Islamabad.",
-                    "districts": [
-                        {
-                            "id": "isb",
-                            "name": "Islamabad"
-                        },
-                        {
-                            "id": "pes",
-                            "name": "Peshawar"
-                        },
-                        {
-                            "id": "abt",
-                            "name": "Abbottabad"
-                        },
-                        {
-                            "id": "mar",
-                            "name": "Mardan"
-                        }
-                    ]
-                },
-                {
-                    "id": "balochistan",
-                    "name": "Balochistan",
-                    "note": "Digital UC registration limited to Quetta district; manual elsewhere.",
-                    "districts": [
-                        {
-                            "id": "qta",
-                            "name": "Quetta"
-                        }
-                    ]
-                }
-            ]
-        },
-        "parental_details": {
-            "title": "Tell us about the parents' documents:",
-            "options": [
-                {
-                    "id": "cnics",
-                    "label": "Parents' valid CNIC / NICOP (At least one, preferably both)",
+                    "id": "parents_cnic",
+                    "label": "Parents' CNIC/NICOP",
+                    "description": "Must be valid and unexpired (Both preferred)",
                     "required": true
                 },
                 {
                     "id": "nikah_nama",
-                    "label": "Nikah Nama (Marriage Certificate) copy",
+                    "label": "Nikah Nama",
+                    "description": "Copy of the Marriage Certificate",
                     "required": true
                 },
                 {
-                    "id": "proof_age",
-                    "label": "Hospital Slip / Vaccination Card (Strong proof)",
-                    "required": false
-                },
-                {
-                    "id": "school_records",
-                    "label": "School Record / Matric Certificate (Optional for 10+ years)",
+                    "id": "hospital_slip",
+                    "label": "Hospital Slip / Vaccination Card",
+                    "description": "Strong proof of birth date and location",
                     "required": false
                 },
                 {
                     "id": "residence_proof",
-                    "label": "Residence Proof (Utility Bill / Rent Agreement)",
+                    "label": "Residence Proof",
+                    "description": "Optional but helpful (e.g. Utility Bill)",
+                    "required": false
+                },
+                {
+                    "id": "witnesses",
+                    "label": "2 Witness CNIC copies",
+                    "description": "Required primarily for Home Births along with Affidavit",
                     "required": false
                 }
             ]
         },
-        "roadmap": {
-            "title": "Personalized Roadmap & Requirements",
-            "estimated_timeline": "3-15 Working Days",
-            "stations": [
+        "validation": {
+            "title": "Certificate Validation",
+            "description": "Ensure your Birth Certificate meets all legal and immigration requirements before usage",
+            "upload_section": {
+                "title": "Upload Your Birth Certificate",
+                "description": "Upload your final Birth Certificate to Document Vault",
+                "formats": "PDF, JPG, PNG (Max 10MB)"
+            },
+            "checklist_title": "Legal & Immigration Ready Validation",
+            "categories": [
                 {
-                    "id": "gather",
-                    "title": "Gather Evidence",
-                    "description": "Collect mandatory proofs for your specific age group and setting.",
-                    "tasks": [
-                        "Parents' CNICs (check expiry)",
-                        "Nikah Nama Copy",
-                        "Hospital Slip / Vaccination Card"
+                    "name": "Spelling & Names",
+                    "items": [
+                        {
+                            "label": "Child's name spelling matches passport and other documents exactly",
+                            "critical": true
+                        },
+                        {
+                            "label": "Father's and mother's names matches their CNIC spellings",
+                            "critical": true
+                        }
                     ]
                 },
                 {
-                    "id": "uc_cbrc",
-                    "title": "Union Council (CBRC)",
-                    "description": "Step 1: Obtain the Computerized Birth Registration Certificate.",
-                    "tasks": [
-                        "Check Pak-ID app option (Punjab/Sindh)",
-                        "Submit documents to Secretary UC",
-                        "Collect CBRC"
+                    "name": "Dates & Locations",
+                    "items": [
+                        {
+                            "label": "Date of Birth is accurate and matches vaccination/hospital records",
+                            "critical": true
+                        },
+                        {
+                            "label": "Place of birth (City/District) is accurately captured",
+                            "critical": true
+                        }
                     ]
                 },
                 {
-                    "id": "nadra_crc",
-                    "title": "NADRA B-Form",
-                    "description": "Step 2: Obtain the CRC/B-Form or Adult CNIC.",
-                    "tasks": [
-                        "Present UC CBRC at counter",
-                        "Biometrics (Photo/IRIS) based on age",
-                        "Pay fee: Normal Rs 50 / Urgent Rs 500"
-                    ]
-                },
-                {
-                    "id": "collection",
-                    "title": "Final Collection",
-                    "description": "Collect the final computerized B-Form or CNIC.",
-                    "tasks": [
-                        "Track status via SMS or 1777 Helpline",
-                        "Pick up from center counter"
+                    "name": "Document Integrity",
+                    "items": [
+                        {
+                            "label": "Certificate has official Union Council / NADRA seal and signature",
+                            "critical": true
+                        },
+                        {
+                            "label": "Date of issuance is clearly visible",
+                            "critical": false
+                        },
+                        {
+                            "label": "QR code or tracking number is present",
+                            "critical": false
+                        }
                     ]
                 }
-            ],
-            "documents_checklist": {
-                "core": [
-                    "Parents CNIC/NICOP (Must be valid)",
-                    "Nikah Nama copy",
-                    "Hospital Slip / Vaccination Card",
-                    "Residence Proof (Optional but helpful)"
-                ],
-                "case_specific": {
-                    "home": [
-                        "Affidavit (Home Birth)",
-                        "2 Witness CNIC copies"
-                    ],
-                    "overseas": [
-                        "Embassy S-1 Form"
-                    ],
-                    "adoption": [
-                        "Court Order"
-                    ],
-                    "late": [
-                        "Vaccination Card / School Admission"
-                    ],
-                    "very_late": [
-                        "Punjab: No Decree/Ad",
-                        "Others: Court decree or Newspaper Ad"
-                    ],
-                    "correction": [
-                        "Strong record proof (School/Passport/Affidavit)"
-                    ],
-                    "replacement": [
-                        "Police FIR (for Lost cases)",
-                        "Affidavit"
-                    ],
-                    "18_plus": [
-                        "First-time CNIC: Family biometrics option if CBRC missing (Till Dec 2026)"
-                    ]
-                }
-            }
+            ]
         },
         "info_panel": {
             "document_need": {
@@ -350,51 +208,6 @@
                     }
                 ]
             },
-            "age_category": {
-                "tips": [
-                    "18+: Use family biometrics verification if birth cert is missing (Till Dec 31, 2026).",
-                    "0-3 Years: No biometrics or photo required at center."
-                ],
-                "pitfalls": [
-                    "Expired parent CNICs are not accepted for registration."
-                ],
-                "links": []
-            },
-            "birth_setting": {
-                "tips": [
-                    "Home births require an affidavit signed by parents and 2 witnesses.",
-                    "Vaccination card is strong evidence for home births."
-                ],
-                "pitfalls": [
-                    "Hospital slips are required to avoid 'Late' classification in hospital births."
-                ],
-                "links": []
-            },
-            "location": {
-                "tips": [
-                    "Pak-ID app allows full online UC registration in Punjab.",
-                    "NADRA Helpline (1777) is available for all provinces."
-                ],
-                "pitfalls": [
-                    "Applying in the wrong UC jurisdiction will lead to rejection."
-                ],
-                "links": [
-                    {
-                        "label": "NADRA Helpline",
-                        "url": "tel:1777"
-                    }
-                ]
-            },
-            "parental_details": {
-                "tips": [
-                    "Both parents' CNICs are preferred for smooth B-Form issuance.",
-                    "Married couples should ensure names match Nikah Nama exactly."
-                ],
-                "pitfalls": [
-                    "Spelling mismatches cause major delays in immigration RFEs."
-                ],
-                "links": []
-            },
             "roadmap": {
                 "tips": [
                     "Urgent/Executive B-Form (Rs 500) is usually ready in 3-5 days.",
@@ -406,6 +219,22 @@
                 "links": [
                     {
                         "label": "Online Tracking",
+                        "url": "https://id.nadra.gov.pk"
+                    }
+                ]
+            },
+            "validation": {
+                "tips": [
+                    "Verify all spellings match your passport and other official documents exactly.",
+                    "Check that the NADRA seal and signature are clearly visible on the certificate."
+                ],
+                "pitfalls": [
+                    "Don't assume the certificate is correct without verifying every detail.",
+                    "Missing barcode/QR code can invalidate the document internationally."
+                ],
+                "links": [
+                    {
+                        "label": "NADRA Certificate Verification",
                         "url": "https://id.nadra.gov.pk"
                     }
                 ]

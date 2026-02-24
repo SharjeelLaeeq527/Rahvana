@@ -12,7 +12,7 @@ const WizardHeader = ({
 }: WizardHeaderProps) => {
   return (
     <header
-      className="fixed top-0 left-0 w-full z-50 h-14 px-6
+      className="fixed top-0 left-0 w-full z-40 h-14 px-6
                  flex items-center
                  bg-[#0d7478] shadow-sm mt-24"
     >
