@@ -56,54 +56,106 @@ export default function RoadmapStep() {
   const isReplacement = state.applicationType === "replacement";
 
   // Dynamic Process Phases
-  const onlinePhases: Phase[] = [
-    {
-      id: 1,
-      title: "Download App",
-      duration: "5 mins",
-      description:
-        "Download the PakID app on your smartphone and register an account using your mobile number and email address.",
-    },
-    {
-      id: 2,
-      title: "Details & Biometrics",
-      duration: "15 mins",
-      description:
-        "On Home page, go to ID Documents and select ID Card. Choose My Blood Relatives category. Select Modification category. Capture applicant's Photograph & Fingerprints. Enter the personal details. Upload documents, if required. Review and verify information.",
-    },
-    {
-      id: 3,
-      title: "Payment & Submit",
-      duration: "5 mins",
-      description:
-        "Submit application. Fee submission (Executive Rs 2500) & (Urgent Rs 1500) & (Normal Rs 750) excluding delivery fee. CNIC/SCNIC will be printed and handed over upon completion of the processing period against the specific category.",
-    },
-  ];
+  let onlinePhases: Phase[] = [];
+  let onsitePhases: Phase[] = [];
 
-  const onsitePhases: Phase[] = [
-    {
-      id: 1,
-      title: "Token & Waiting",
-      duration: "Varies",
-      description:
-        "Visit your nearest NADRA Registration Center, get a queue token, and wait for your turn. Visit early morning to avoid rush.",
-    },
-    {
-      id: 2,
-      title: "Data Entry & Biometrics",
-      duration: "15 mins",
-      description:
-        "Biometric Verification (anyone of parents or sibling). Photographs and fingerprints are mandatory. Your data will be entered and reviewed. Attestation by anyone of the parents or siblings or by Gazetted officer. Interview by OIC. Fee submission (Executive Rs 2500, Urgent Rs 1500, Normal Rs 750) excluding delivery fee. CNIC will be printed and handed over upon completion of the processing period against the specific category.",
-      // "Provide your original documents to the operator. They will capture your photograph, fingerprints, and digital signature.",
-    },
-    {
-      id: 3,
-      title: "Review & Receipt",
-      duration: "5 mins",
-      description:
-        "Review the printed application form carefully. Sign it and collect your tracking receipt.",
-    },
-  ];
+  if (isSpecial) {
+    onlinePhases = [
+      {
+        id: 1,
+        title: "Download App",
+        duration: "5 mins",
+        description:
+          "Download the PakID app on your smartphone and register an account using your mobile number and email address.",
+      },
+      {
+        id: 2,
+        title: "Details & Documents",
+        duration: "20 mins",
+        description:
+          "On Home page, go to ID Documents and select ID Card. Choose application category. Select the purpose(new, update card, udapte Info etc). Enter applicant’s personal details. Upload supporting documents including Birth Certificate or B-Form (if available), School Leaving Certificate, Guardian Certificate (if any), Affidavit explaining family status, and Union Council or Police Verification documents. Review and verify all information carefully.",
+      },
+      {
+        id: 3,
+        title: "Submit & Verification",
+        duration: "5 mins",
+        description:
+          "Submit application for NADRA verification. Online payment (if applicable): Executive Rs 2500, Urgent Rs 1500, Normal Rs 750 (excluding delivery fee). Application will be forwarded for manual NADRA verification and background checks. Applicant will be notified via SMS/app for biometric visit and final processing.",
+      },
+    ];
+
+    onsitePhases = [
+      {
+        id: 1,
+        title: "Token & Registration",
+        duration: "Varies",
+        description:
+          "Visit nearest NADRA Registration Center. Inform staff that you are applying WITHOUT BLOOD RELATIVE (Special Case). Get a special case token and wait for your turn. Visit early morning to avoid delays.",
+      },
+      {
+        id: 2,
+        title: "Verification & Biometrics",
+        duration: "25–40 mins",
+        description:
+          "Biometric capture (photograph, fingerprints, signature). Document verification including Birth Certificate/B-Form (if available), School Leaving Certificate, Guardian Certificate (if any), Affidavit, Union Council verification and/or Police verification. No family biometric required. Attestation by Gazetted Officer or Union Council Officer. Interview by NADRA OIC (Officer In-Charge). Fee submission (Executive Rs 2500, Urgent Rs 1500, Normal Rs 750) excluding delivery fee. Application sent for NADRA internal verification.",
+      },
+      {
+        id: 3,
+        title: "Review & Receipt",
+        duration: "5 mins",
+        description:
+          "Review printed application form. Sign it and collect your tracking receipt. CNIC will be printed and handed over after completion of NADRA verification and approval process according to selected category.",
+      },
+    ];
+  } else {
+    onlinePhases = [
+      {
+        id: 1,
+        title: "Download App",
+        duration: "5 mins",
+        description:
+          "Download the PakID app on your smartphone and register an account using your mobile number and email address.",
+      },
+      {
+        id: 2,
+        title: "Details & Biometrics",
+        duration: "15 mins",
+        description:
+          "On Home page, go to ID Documents and select ID Card. Choose application category. Select the purpose(new, update card, udapte Info etc). Capture applicant's Photograph & Fingerprints. Enter the personal details. Upload documents, if required. Review and verify information.",
+      },
+      {
+        id: 3,
+        title: "Payment & Submit",
+        duration: "5 mins",
+        description:
+          "Submit application. Fee submission (Executive Rs 2500) & (Urgent Rs 1500) & (Normal Rs 750) excluding delivery fee. CNIC/SCNIC will be printed and handed over upon completion of the processing period against the specific category.",
+      },
+    ];
+
+    onsitePhases = [
+      {
+        id: 1,
+        title: "Token & Waiting",
+        duration: "Varies",
+        description:
+          "Visit your nearest NADRA Registration Center, get a queue token, and wait for your turn. Visit early morning to avoid rush.",
+      },
+      {
+        id: 2,
+        title: "Data Entry & Biometrics",
+        duration: "15 mins",
+        description:
+          "Biometric Verification (anyone of parents or sibling). Photographs and fingerprints are mandatory. Your data will be entered and reviewed. Attestation by anyone of the parents or siblings or by Gazetted officer. Interview by OIC. Fee submission (Executive Rs 2500, Urgent Rs 1500, Normal Rs 750) excluding delivery fee. CNIC will be printed and handed over upon completion of the processing period against the specific category.",
+      },
+      {
+        id: 3,
+        title: "Review & Receipt",
+        duration: "5 mins",
+        description:
+          "Review the printed application form carefully. Sign it and collect your tracking receipt.",
+      },
+    ];
+  }
 
   // Dynamic Document Checklist
   let documents_checklist: {
