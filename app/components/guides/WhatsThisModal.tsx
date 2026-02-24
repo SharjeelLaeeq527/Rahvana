@@ -283,7 +283,7 @@ const WhatsThisModal = ({
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="fixed inset-0 z-50 flex items-center justify-center px-4 py-6 bg-slate-900/60 backdrop-blur-md"
+          className="fixed inset-0 z-50 flex items-center justify-center px-4 py-6 bg-teal-900/60 backdrop-blur-md"
           role="dialog"
           aria-modal="true"
           aria-labelledby="whats-this-welcome-title"
@@ -338,7 +338,7 @@ const WhatsThisModal = ({
                     />
                     <FeatureCard
                       variant="blue"
-                      title="Customized Documents"
+                      title="Personalized Checklist"
                       subtitle="See exactly what you need for your situation."
                       Icon={ClipboardIcon}
                     />
