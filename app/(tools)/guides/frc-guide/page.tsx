@@ -17,8 +17,7 @@ import { type WizardState, WizardStepId } from "@/types/guide-wizard";
 import guideData from "@/data/frc-guide-data.json";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import FeedbackButton from "@/app/components/FeedbackButton";
-import { useAuth } from "@/app/context/AuthContext";
-import { useGuideSession } from "@/lib/guides/useGuideSession";
+import { useWizardSession } from "@/lib/guides/useWizardSession";
 
 const STEP_IDS: WizardStepId[] = [
   "document_need",
@@ -34,16 +33,13 @@ const STEP_LABELS: Record<string, string> = {
   validation: "Validation",
 };
 
-const INFO_PANEL_KEYS: Record<
-  WizardStepId,
-  any
-> = {
+const INFO_PANEL_KEYS: Record<WizardStepId, any> = {
   document_need: "document_need",
-  age_category: "document_need", // Fallback
-  birth_setting: "document_need", // Fallback
-  location: "roadmap", // Fallback
+  age_category: "document_need",
+  birth_setting: "document_need",
+  location: "roadmap",
   roadmap: "roadmap",
-  office_finder: "roadmap", // Fallback
+  office_finder: "roadmap",
   validation: "validation",
 };
 
@@ -63,39 +59,22 @@ const FrcGuide = () => {
     savedOffice: null,
   });
 
-  const [hasLoaded, setHasLoaded] = useState(false);
-
-  const { user } = useAuth();
-  const { session, stepsData, startSession, saveStep, loading } = useGuideSession("frc-guide");
-
-  // Sync state to backend
-  useEffect(() => {
-    if (user && !session && !loading) {
-      startSession();
-    }
-  }, [user, session, loading, startSession]);
-
-  // Load backend data into state
-  useEffect(() => {
-    if (stepsData && Object.keys(stepsData).length > 0 && !hasLoaded) {
-      setState((prev) => ({
-        ...prev,
-        documentNeed: stepsData.document_need || prev.documentNeed,
-        checkedDocuments: stepsData.roadmap?.checkedDocuments || prev.checkedDocuments,
-        validationChecks: stepsData.validation?.checks || prev.validationChecks,
-        uploadedFile: stepsData.validation?.uploaded || prev.uploadedFile,
-      }));
-
-      // Set current step if available in session
-      if (session?.current_step_key) {
-        const stepIndex = STEP_IDS.indexOf(session.current_step_key as WizardStepId);
-        if (stepIndex !== -1) {
-          setCurrentStep(stepIndex);
-        }
-      }
-      setHasLoaded(true);
-    }
-  }, [stepsData, session, hasLoaded]);
+  const { saveWizardStep } = useWizardSession(
+    "frc-guide",
+    state,
+    setState,
+    STEP_IDS,
+    setCurrentStep,
+    (prev, stepsData) => ({
+      documentNeed: stepsData.document_need || prev.documentNeed,
+      province: stepsData.location?.province || prev.province,
+      district: stepsData.location?.district || prev.district,
+      city: stepsData.location?.city || prev.city,
+      checkedDocuments: stepsData.roadmap || prev.checkedDocuments,
+      validationChecks: stepsData.validation?.checks || prev.validationChecks,
+      uploadedFile: stepsData.validation?.uploaded || prev.uploadedFile,
+    })
+  );
 
   useEffect(() => {
     const dontShow = localStorage.getItem("hide_whats_this_modal");
@@ -103,8 +82,10 @@ const FrcGuide = () => {
   }, []);
 
   const currentStepId = STEP_IDS[currentStep];
-  const infoPanelKey = INFO_PANEL_KEYS[currentStepId as WizardStepId];
-  const infoPanelData = (guideData.wizard.info_panel as any)[infoPanelKey] as unknown as InfoPanelData;
+  const infoPanelKey = INFO_PANEL_KEYS[currentStepId];
+  const infoPanelData = (guideData.wizard.info_panel as any)[
+    infoPanelKey
+  ] as unknown as InfoPanelData;
 
   const canGoNext = (): boolean => {
     switch (currentStepId) {
@@ -132,49 +113,33 @@ const FrcGuide = () => {
 
   const handleDocumentNeedSelect = (id: string) => {
     setState((s) => ({ ...s, documentNeed: id }));
-
-    // Save progress to backend if authenticated
-    if (user && session) {
-      const progressPercent = Math.round(((STEP_IDS.indexOf("document_need") + 1) / STEP_IDS.length) * 100);
-      saveStep("document_need", id, true, progressPercent);
-    }
-
+    saveWizardStep("document_need", id, true);
     setTimeout(() => setCurrentStep(1), 400);
   };
 
   const toggleDocument = (id: string) => {
-    const newState = state.checkedDocuments.includes(id)
+    const newChecked = state.checkedDocuments.includes(id)
       ? state.checkedDocuments.filter((d) => d !== id)
       : [...state.checkedDocuments, id];
-
     setState((s) => ({
       ...s,
-      checkedDocuments: newState,
+      checkedDocuments: newChecked,
     }));
-
-    if (user && session) {
-      const progressPercent = Math.round(((STEP_IDS.indexOf("roadmap") + 1) / STEP_IDS.length) * 100);
-      saveStep("roadmap", { checkedDocuments: newState }, false, progressPercent);
-    }
+    saveWizardStep("roadmap", newChecked);
   };
 
   const toggleValidationCheck = (label: string) => {
-    const newState = state.validationChecks.includes(label)
+    const newChecks = state.validationChecks.includes(label)
       ? state.validationChecks.filter((l) => l !== label)
       : [...state.validationChecks, label];
-
     setState((s) => ({
       ...s,
-      validationChecks: newState,
+      validationChecks: newChecks,
     }));
-
-    if (user && session) {
-      const progressPercent = Math.round(((STEP_IDS.indexOf("validation") + 1) / STEP_IDS.length) * 100);
-      saveStep("validation", { 
-        checks: newState,
-        uploaded: state.uploadedFile 
-      }, false, progressPercent);
-    }
+    saveWizardStep("validation", {
+      checks: newChecks,
+      uploaded: state.uploadedFile,
+    });
   };
 
   const renderStep = () => {
@@ -215,13 +180,10 @@ const FrcGuide = () => {
             uploadedFile={state.uploadedFile}
             onUpload={() => {
               setState((s) => ({ ...s, uploadedFile: true }));
-              if (user && session) {
-                const progressPercent = Math.round(((STEP_IDS.indexOf("validation") + 1) / STEP_IDS.length) * 100);
-                saveStep("validation", { 
-                  checks: state.validationChecks,
-                  uploaded: true 
-                }, false, progressPercent);
-              }
+              saveWizardStep("validation", {
+                checks: state.validationChecks,
+                uploaded: true,
+              });
             }}
             data={guideData.wizard.validation}
           />

@@ -3,6 +3,7 @@ export type BirthStepId =
   | "age_category"
   | "birth_setting"
   | "location"
+  | "parental_details"
   | "office_finder"
   | "roadmap";
 

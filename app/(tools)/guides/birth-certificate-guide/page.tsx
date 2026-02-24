@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState, useEffect } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import WizardHeader from "../../../components/guides/WizardHeader";
 import WizardSidebar from "../../../components/guides/WizardSidebar";
@@ -15,8 +15,7 @@ import { type WizardState, WizardStepId } from "@/types/guide-wizard";
 import guideData from "@/data/birth-certificate-guide-data.json";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import FeedbackButton from "@/app/components/FeedbackButton";
-import { useAuth } from "@/app/context/AuthContext";
-import { useGuideSession } from "@/lib/guides/useGuideSession";
+import { useWizardSession } from "@/lib/guides/useWizardSession";
 
 const STEP_IDS: WizardStepId[] = [
   "document_need",
@@ -34,16 +33,15 @@ const STEP_LABELS: Record<string, string> = {
   validation: "Validation",
 };
 
-const INFO_PANEL_KEYS: Record<
-  WizardStepId,
-  keyof typeof guideData.wizard.info_panel
-> = {
+const INFO_PANEL_KEYS: Record<WizardStepId, any> = {
   document_need: "document_need",
   age_category: "age_category",
   birth_setting: "birth_setting",
+  location: "roadmap",
+  office_finder: "roadmap",
   roadmap: "roadmap",
   validation: "validation",
-} as any;
+};
 
 const BirthCertificateGuidePage = () => {
   const [currentStep, setCurrentStep] = useState(0);
@@ -61,41 +59,22 @@ const BirthCertificateGuidePage = () => {
     savedOffice: null,
   });
 
-  const [hasLoaded, setHasLoaded] = useState(false);
-
-  const { user } = useAuth();
-  const { session, stepsData, startSession, saveStep, loading } = useGuideSession("birth-certificate-guide");
-
-  // Load backend data into state
-  useEffect(() => {
-    if (stepsData && Object.keys(stepsData).length > 0 && !hasLoaded) {
-      setState((prev) => ({
-        ...prev,
-        documentNeed: stepsData.document_need || prev.documentNeed,
-        ageCategory: stepsData.age_category || prev.ageCategory,
-        birthSetting: stepsData.birth_setting || prev.birthSetting,
-        checkedDocuments: stepsData.roadmap?.checkedDocuments || prev.checkedDocuments,
-        validationChecks: stepsData.validation?.checks || prev.validationChecks,
-        uploadedFile: stepsData.validation?.uploaded || prev.uploadedFile,
-      }));
-
-      // Set current step if available in session
-      if (session?.current_step_key) {
-        const stepIndex = STEP_IDS.indexOf(session.current_step_key as WizardStepId);
-        if (stepIndex !== -1) {
-          setCurrentStep(stepIndex);
-        }
-      }
-      setHasLoaded(true);
-    }
-  }, [stepsData, session, hasLoaded]);
-
-  // Sync state to backend
-  useEffect(() => {
-    if (user && !session && !loading) {
-      startSession();
-    }
-  }, [user, session, loading, startSession]);
+  const { saveWizardStep } = useWizardSession(
+    "birth-certificate-guide",
+    state,
+    setState,
+    STEP_IDS,
+    setCurrentStep,
+    (prev, stepsData) => ({
+      ...prev,
+      documentNeed: stepsData.document_need || prev.documentNeed,
+      ageCategory: stepsData.age_category || prev.ageCategory,
+      birthSetting: stepsData.birth_setting || prev.birthSetting,
+      checkedDocuments: stepsData.roadmap?.checkedDocuments || prev.checkedDocuments,
+      validationChecks: stepsData.validation?.checks || prev.validationChecks,
+      uploadedFile: stepsData.validation?.uploaded || prev.uploadedFile,
+    })
+  );
 
   useEffect(() => {
     const dontShow = localStorage.getItem("hideBirthWhatsThis_v3");
@@ -133,16 +112,12 @@ const BirthCertificateGuidePage = () => {
   };
 
   const handleSelectionSelect = (id: string, stepId: string) => {
-    if (stepId === "document_need") setState(s => ({ ...s, documentNeed: id }));
-    if (stepId === "age_category") setState(s => ({ ...s, ageCategory: id }));
-    if (stepId === "birth_setting") setState(s => ({ ...s, birthSetting: id }));
+    if (stepId === "document_need") setState((s: WizardState) => ({ ...s, documentNeed: id }));
+    if (stepId === "age_category") setState((s: WizardState) => ({ ...s, ageCategory: id }));
+    if (stepId === "birth_setting") setState((s: WizardState) => ({ ...s, birthSetting: id }));
     
-    // Save progress to backend if authenticated
-    if (user && session) {
-      const stepIdx = STEP_IDS.indexOf(stepId as WizardStepId);
-      const progressPercent = Math.round(((stepIdx + 1) / STEP_IDS.length) * 100);
-      saveStep(stepId, id, true, progressPercent);
-    }
+    // Save progress to backend
+    saveWizardStep(stepId, id, true);
 
     setTimeout(() => {
       if (currentStep < STEP_IDS.length - 1) setCurrentStep(currentStep + 1);
@@ -154,15 +129,13 @@ const BirthCertificateGuidePage = () => {
       ? state.checkedDocuments.filter((d) => d !== id)
       : [...state.checkedDocuments, id];
 
-    setState((s) => ({
+    setState((s: WizardState) => ({
       ...s,
       checkedDocuments: newState,
     }));
 
-    if (user && session) {
-      const progressPercent = Math.round(((STEP_IDS.indexOf("roadmap") + 1) / STEP_IDS.length) * 100);
-      saveStep("roadmap", { checkedDocuments: newState }, false, progressPercent);
-    }
+    // Save progress to backend
+    saveWizardStep("roadmap", { checkedDocuments: newState });
   };
 
   const toggleValidationCheck = (label: string) => {
@@ -170,18 +143,16 @@ const BirthCertificateGuidePage = () => {
       ? state.validationChecks.filter((l) => l !== label)
       : [...state.validationChecks, label];
 
-    setState((s) => ({
+    setState((s: WizardState) => ({
       ...s,
       validationChecks: newState,
     }));
 
-    if (user && session) {
-      const progressPercent = Math.round(((STEP_IDS.indexOf("validation") + 1) / STEP_IDS.length) * 100);
-      saveStep("validation", { 
-        checks: newState,
-        uploaded: state.uploadedFile 
-      }, false, progressPercent);
-    }
+    // Save progress to backend
+    saveWizardStep("validation", { 
+      checks: newState,
+      uploaded: state.uploadedFile 
+    });
   };
 
   const renderStep = () => {
@@ -225,14 +196,11 @@ const BirthCertificateGuidePage = () => {
             onToggleCheck={toggleValidationCheck}
             uploadedFile={state.uploadedFile}
             onUpload={() => {
-              setState((s) => ({ ...s, uploadedFile: true }));
-              if (user && session) {
-                const progressPercent = Math.round(((STEP_IDS.indexOf("validation") + 1) / STEP_IDS.length) * 100);
-                saveStep("validation", { 
-                  checks: state.validationChecks,
-                  uploaded: true 
-                }, false, progressPercent);
-              }
+              setState((s: WizardState) => ({ ...s, uploadedFile: true }));
+              saveWizardStep("validation", { 
+                checks: state.validationChecks,
+                uploaded: true 
+              });
             }}
             data={guideData.wizard.validation as any}
           />
