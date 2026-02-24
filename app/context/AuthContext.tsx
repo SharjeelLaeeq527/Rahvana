@@ -7,6 +7,7 @@ import {
   useEffect,
   useState,
   useCallback,
+  useMemo,
 } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { AuthError, User, Session } from "@supabase/supabase-js";
@@ -120,7 +121,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isAdmin, setIsAdmin] = useState(false);
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const supabase = createClient();
+  // useMemo ensures the same client instance is used across renders,
+  // preventing stale closures in fetchProfile and onAuthStateChange.
+  const supabase = useMemo(() => createClient(), []);
 
   // MFA auth state
   const authLevel = (session as { aal?: string })?.aal ?? "aal1";
@@ -174,13 +177,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   // Fetch profile
   const fetchProfile = useCallback(
     async (userId: string) => {
-      const { data, error } = await supabase
-        .from("profiles")
-        .select("*")
-        .eq("id", userId)
-        .single();
+      try {
+        const { data, error } = await supabase
+          .from("profiles")
+          .select("*")
+          .eq("id", userId)
+          .single();
 
-      if (!error) setProfile(data);
+        if (error) {
+          console.error("[AuthContext] fetchProfile error:", error.message, "userId:", userId);
+          return;
+        }
+        setProfile(data);
+      } catch (err) {
+        console.error("[AuthContext] fetchProfile unexpected error:", err);
+      }
     },
     [supabase],
   );
@@ -219,6 +230,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         const adminStatus = await fetchUserProfile(session.user.id);
         setIsAdmin(adminStatus);
       } else {
+        // User signed out — clear all user-specific state
+        setProfile(null);
         setIsAdmin(false);
       }
 
@@ -561,6 +574,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signOut = async () => {
     await supabase.auth.signOut();
+    // Eagerly clear state so UI updates immediately
+    setProfile(null);
     setIsAdmin(false);
   };
 
