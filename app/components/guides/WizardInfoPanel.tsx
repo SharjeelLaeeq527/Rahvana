@@ -7,44 +7,54 @@ import {
   ExternalLink,
   CreditCard,
   History,
-  Activity,
-  MessageSquare,
   PhoneCall,
   Globe,
   Clock,
 } from "lucide-react";
 
+interface FeeStructureTier {
+  type: string;
+  price: string;
+  days: string;
+  badge_variant?: "blue" | "purple" | "orange" | "green";
+}
+
+interface FeeStructure {
+  title?: string;
+  special_note?: {
+    title: string;
+    description: string;
+  };
+  tiers: FeeStructureTier[];
+}
+
+interface OfficeLocationOption {
+  type: "website" | "helpline";
+  title: string;
+  description?: string;
+  url?: string;
+  phone_local?: string;
+  phone_international?: string;
+}
+
+interface OfficeLocation {
+  title?: string;
+  options: OfficeLocationOption[];
+}
+
 export interface InfoPanelData {
   tips: string[];
   pitfalls: string[];
   links: { label: string; url: string }[];
-  fee_structure?: {
-    title?: string;
-    special_note?: {
-      title: string;
-      description: string;
-    };
-    tiers: {
-      type: string;
-      price: string;
-      days: string;
-      badge_variant?: "blue" | "purple" | "orange" | "green";
-    }[];
-  } | null;
-  tracking?: {
-    title?: string;
-    methods: {
-      type: "sms" | "phone" | "web";
-      title: string;
-      description: string;
-      action_text?: string;
-    }[];
-  } | null;
+  fee_structure?: FeeStructure | null;
+  office_location?: OfficeLocation | null;
 }
 
 interface WizardInfoPanelProps {
   data: InfoPanelData;
   lastVerified: string;
+  guideType: "passport" | "frc" | "other";
+  guideData?: Record<string, any>; // Global guide data to show consistent info
 }
 
 type InfoTab = "tips" | "pitfalls" | "links";
@@ -65,17 +75,49 @@ const TAB_CONFIG: {
   { key: "links", label: "Links", icon: LinkIcon, color: "hsl(215 70% 50%)" },
 ];
 
-const WizardInfoPanel = ({ data, lastVerified }: WizardInfoPanelProps) => {
+const STATIC_OFFICE_LOCATION: OfficeLocation = {
+  title: "Find Nearest NADRA Office",
+  options: [
+    {
+      type: "website",
+      title: "NADRA Official Offices Website",
+      description: "Locate the nearest NADRA Registration Center (NRC)",
+      url: "https://www.nadra.gov.pk/nadraOffices",
+    },
+    {
+      type: "helpline",
+      title: "NADRA Helpline",
+      description:
+        "For immediate, direct assistance, you can call the NADRA helpline.",
+      phone_local: "1777",
+      phone_international: "+92 51 111 786 100",
+    },
+  ],
+};
+
+const WizardInfoPanel = ({
+  data,
+  lastVerified,
+  guideData,
+  guideType,
+}: WizardInfoPanelProps) => {
   const [activeTab, setActiveTab] = useState<InfoTab>("tips");
+
+  const feeStructure =
+    data.fee_structure || (guideData as Record<string, any>)?.fee_structure || (guideData?.wizard as Record<string, any>)?.fee_structure || null;
+
+  const officeLocation = data.office_location || (guideData as Record<string, any>)?.office_finder || (guideData?.wizard as Record<string, any>)?.office_finder || null;
+
+  // Show office section based on availability of dynamic data or guide type
+  const showOfficeSection = officeLocation || (guideType === "passport" || guideType === "frc");
 
   return (
     <aside
-      className="w-75 min-w-75 h-full bg-white 
-                 border-l border-[hsl(214_32%_91%)]
-                 flex flex-col overflow-hidden"
+      className="h-full flex flex-col bg-white border-l border-slate-200 rounded-xl mx-4 my-3"
+      style={{ height: "660px", width: "350px" }}
     >
-      {/* Tabs */}
-      <div className="flex border-b border-[hsl(214_32%_91%)] px-1 shrink-0">
+      {/* Tabs for Tips/Pitfalls/Links */}
+      <div className="flex border-b border-slate-200 p-2 rounded-t-xl">
         {TAB_CONFIG.map((tab) => {
           const isActive = activeTab === tab.key;
 
@@ -83,29 +125,23 @@ const WizardInfoPanel = ({ data, lastVerified }: WizardInfoPanelProps) => {
             <button
               key={tab.key}
               onClick={() => setActiveTab(tab.key)}
-              className={`flex-1 flex items-center justify-center gap-1.5 
-                          py-[0.85rem] px-2 text-[0.8rem] font-semibold
-                          border-b-2 transition-colors
-                          ${
-                            isActive
-                              ? "border-[hsl(168_80%_30%)] text-[hsl(168_80%_30%)]"
-                              : "border-transparent text-[hsl(215_16%_57%)] hover:text-[hsl(220_20%_25%)] hover:bg-[hsl(215_60%_98%)]"
-                          }`}
-              style={
+              className={`flex-1 px-4 py-3 text-sm font-medium transition-colors border-b-2 ${
                 isActive
-                  ? { borderBottomColor: tab.color, color: tab.color }
-                  : undefined
-              }
+                  ? "text-primary border-primary"
+                  : "text-slate-500 border-transparent hover:text-slate-800 hover:bg-slate-50"
+              }`}
             >
-              <tab.icon className="w-3.5 h-3.5" />
-              {tab.label}
+              <div className="flex items-center justify-center gap-2">
+                <tab.icon className="w-4 h-4" />
+                <span>{tab.label}</span>
+              </div>
             </button>
           );
         })}
       </div>
 
       {/* Content */}
-      <div className="flex-1 overflow-y-auto custom-scrollbar p-4 bg-[hsl(214_30%_98%)]/50">
+      <div className="flex-1 overflow-y-auto p-5 custom-scrollbar bg-slate-50/30">
         <div className="min-h-min space-y-6">
           <AnimatePresence mode="wait">
             <motion.div
@@ -122,24 +158,18 @@ const WizardInfoPanel = ({ data, lastVerified }: WizardInfoPanelProps) => {
                     data.tips.map((tip, i) => (
                       <div
                         key={i}
-                        className="flex gap-3 items-start bg-white p-3 rounded-xl border border-[hsl(214_32%_91%)] shadow-sm"
+                        className="flex gap-3 items-start bg-white p-3 rounded-xl border border-slate-100 shadow-sm"
                       >
-                        <span
-                          className="w-6 h-6 min-w-6 rounded-full
-                                    bg-[hsl(168_60%_95%)]
-                                    text-[hsl(168_80%_30%)]
-                                    flex items-center justify-center
-                                    text-xs font-bold mt-0.5 shrink-0"
-                        >
+                        <div className="shrink-0 w-6 h-6 bg-primary/10 text-primary rounded-full flex items-center justify-center text-xs font-bold mt-0.5">
                           {i + 1}
-                        </span>
-                        <p className="text-[0.85rem] leading-normal text-[hsl(220_20%_25%)]">
+                        </div>
+                        <p className="text-sm text-slate-700 leading-relaxed">
                           {tip}
                         </p>
                       </div>
                     ))
                   ) : (
-                    <p className="text-[0.85rem] text-[hsl(215_16%_57%)] text-center py-4">
+                    <p className="text-sm text-slate-500 text-center py-4">
                       No tips available for this step.
                     </p>
                   ))}
@@ -150,16 +180,16 @@ const WizardInfoPanel = ({ data, lastVerified }: WizardInfoPanelProps) => {
                     data.pitfalls.map((pitfall, i) => (
                       <div
                         key={i}
-                        className="flex gap-3 p-3 rounded-xl bg-[hsl(35_90%_98%)] border border-[hsl(35_90%_90%)]"
+                        className="flex gap-3 p-3 rounded-xl bg-rose-50 border border-rose-100/50"
                       >
-                        <AlertTriangle className="shrink-0 w-5 h-5 mt-0.5 text-[hsl(35_90%_50%)]" />
-                        <p className="text-[0.85rem] leading-normal font-medium text-[hsl(220_20%_25%)]">
+                        <AlertTriangle className="shrink-0 w-5 h-5 mt-0.5 text-rose-500" />
+                        <p className="text-sm text-slate-800 leading-relaxed font-medium">
                           {pitfall}
                         </p>
                       </div>
                     ))
                   ) : (
-                    <p className="text-[0.85rem] text-[hsl(215_16%_57%)] text-center py-4">
+                    <p className="text-sm text-slate-500 text-center py-4">
                       No pitfalls specified for this step.
                     </p>
                   ))}
@@ -173,24 +203,16 @@ const WizardInfoPanel = ({ data, lastVerified }: WizardInfoPanelProps) => {
                         href={link.url}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="flex items-center justify-between gap-2
-                                  p-3 rounded-[10px]
-                                  border border-[hsl(214_32%_91%)]
-                                  bg-white
-                                  text-[hsl(215_70%_45%)]
-                                  text-[0.85rem] font-medium
-                                  hover:bg-[hsl(215_60%_98%)]
-                                  hover:border-[hsl(215_70%_80%)]
-                                  transition-all duration-200 group"
+                        className="flex items-center gap-3 p-3 bg-white hover:bg-slate-50 border border-slate-200 rounded-lg transition-colors group"
                       >
-                        <span className="truncate text-slate-700 group-hover:text-blue-600">
+                        <ExternalLink className="shrink-0 w-4 h-4 text-primary" />
+                        <span className="text-sm font-medium text-slate-700 group-hover:text-primary truncate">
                           {link.label}
                         </span>
-                        <ExternalLink className="w-3.5 h-3.5 shrink-0" />
                       </a>
                     ))
                   ) : (
-                    <p className="text-[0.85rem] text-[hsl(215_16%_57%)] text-center py-4">
+                    <p className="text-sm text-slate-500 text-center py-4">
                       No links available for this step.
                     </p>
                   ))}
@@ -198,40 +220,40 @@ const WizardInfoPanel = ({ data, lastVerified }: WizardInfoPanelProps) => {
             </motion.div>
           </AnimatePresence>
 
-          {/* Fee Structure Section */}
-          {data.fee_structure && (
-            <div className="pt-6 border-t border-[hsl(214_32%_91%)]">
-              <div className="mb-5">
-                <h2 className="text-lg font-bold text-[hsl(220_20%_20%)] mb-1.5 tracking-tight">
-                  {data.fee_structure.title || "Fee Structure"}
+          {/* Fee Structure Section - Always Visible */}
+          {feeStructure && (
+            <div className="mt-8 pb-4 border-t border-slate-200 pt-8">
+              <div className="mb-6">
+                <h2 className="text-xl font-bold text-slate-900 mb-2 tracking-tight">
+                  {feeStructure?.title || "Fee Structure"}
                 </h2>
               </div>
 
-              {data.fee_structure.special_note && (
-                <div className="bg-linear-to-r from-teal-600 to-teal-500 rounded-2xl p-4 text-white mb-5 shadow-sm">
+              {feeStructure?.special_note && (
+                <div className="bg-gradient-to-r from-primary to-primary/80 rounded-2xl p-4 text-white mb-6 shadow-sm">
                   <div className="flex items-start gap-3">
                     <div className="bg-white/20 p-2 rounded-full shrink-0">
-                      <CreditCard className="w-4 h-4" />
+                      <CreditCard className="w-5 h-5" />
                     </div>
                     <div>
-                      <h3 className="text-sm font-bold mb-1 leading-none">
-                        {data.fee_structure.special_note.title}
+                      <h3 className="text-lg font-bold mb-1 leading-none">
+                        {feeStructure.special_note.title}
                       </h3>
                       <p className="text-white/90 leading-relaxed text-[0.8rem]">
-                        {data.fee_structure.special_note.description}
+                        {feeStructure.special_note.description}
                       </p>
                     </div>
                   </div>
                 </div>
               )}
 
-              <div className="mb-4">
-                <h3 className="text-sm font-bold text-slate-800 mb-3 flex items-center gap-2">
+              <div className="mb-8">
+                <h3 className="text-md font-bold text-slate-800 mb-3 flex items-center gap-2">
                   <History className="w-4 h-4 text-slate-400" />
                   Processing Tiers
                 </h3>
-                <div className="flex flex-col gap-2.5">
-                  {data.fee_structure.tiers.map((tier, i) => {
+                <div className="flex flex-col gap-3">
+                  {feeStructure?.tiers?.map((tier: FeeStructureTier, i: number) => {
                     const badges: Record<string, string> = {
                       blue: "bg-blue-100 text-blue-700",
                       purple: "bg-purple-100 text-purple-700",
@@ -244,21 +266,23 @@ const WizardInfoPanel = ({ data, lastVerified }: WizardInfoPanelProps) => {
                     return (
                       <div
                         key={i}
-                        className="bg-white border text-center border-slate-200 rounded-xl p-3.5 flex items-center justify-between shadow-sm"
+                        className="bg-white border text-center border-slate-200 rounded-xl p-4 flex items-center justify-between shadow-sm"
                       >
-                        <div className="text-left flex flex-col gap-1.5 items-start">
+                        <div className="text-left flex flex-col gap-1 items-start">
                           <div
-                            className={`px-2 py-0.5 rounded-md text-[0.65rem] font-bold uppercase tracking-wider ${badgeClass}`}
+                            className={`px-2.5 py-0.5 rounded-full text-[0.65rem] font-bold uppercase tracking-wider ${badgeClass}`}
                           >
                             {tier.type}
                           </div>
-                          <p className="text-[0.7rem] text-slate-500 flex items-center gap-1">
+                          <p className="text-[0.75rem] text-slate-500 flex items-center gap-1">
                             <Clock className="w-3 h-3" />
                             {tier.days}
                           </p>
                         </div>
-                        <div className="text-lg font-black text-slate-800">
-                          <span className="text-[0.65rem] font-bold text-slate-400 mr-1 align-top relative top-0.5">
+                        <div className="text-lg font-black text-slate-900">
+                          {" "}
+                          {/* Reduced font size from text-xl to text-lg */}
+                          <span className="text-xs font-medium text-slate-400 mr-1 align-top relative top-0.5">
                             Rs.
                           </span>
                           {tier.price}
@@ -271,75 +295,97 @@ const WizardInfoPanel = ({ data, lastVerified }: WizardInfoPanelProps) => {
             </div>
           )}
 
-          {/* Tracking Section */}
-          {data.tracking &&
-            data.tracking.methods &&
-            data.tracking.methods.length > 0 && (
-              <div className="pt-6 border-t border-[hsl(214_32%_91%)]">
-                <div className="mb-4">
-                  <h2 className="text-lg font-bold text-[hsl(220_20%_20%)] mb-1.5 tracking-tight">
-                    {data.tracking.title || "Tracking"}
-                  </h2>
-                </div>
+          {/* Office Location Section - Dynamic with fallback to static */}
+          {showOfficeSection && (
+            <div className="mt-2 pb-4 border-t border-slate-200 pt-8">
+              <div className="mb-6">
+                <h2 className="text-xl font-bold text-slate-900 mb-2 tracking-tight">
+                  {officeLocation?.title || STATIC_OFFICE_LOCATION.title}
+                </h2>
+              </div>
 
-                <div className="bg-[hsl(214_32%_95%)] rounded-2xl p-4 border border-[hsl(214_32%_91%)]">
-                  <h3 className="text-sm font-bold text-slate-800 mb-3 flex items-center gap-2">
-                    <Activity className="w-4 h-4 text-slate-400" />
-                    How to track
-                  </h3>
-                  <div className="flex flex-col gap-2.5">
-                    {data.tracking.methods.map((method, i) => {
+              <div className="bg-slate-100/50 rounded-2xl p-4 border border-slate-200/60">
+                <div className="flex flex-col gap-3">
+                  {(officeLocation?.options || STATIC_OFFICE_LOCATION.options).map(
+                    (option: OfficeLocationOption, i: number) => {
                       const icons = {
-                        sms: {
-                          Icon: MessageSquare,
-                          colors: "bg-teal-100 text-teal-600",
+                        website: {
+                          Icon: Globe,
+                          colors: "bg-primary/10 text-primary",
                         },
-                        phone: {
+                        helpline: {
                           Icon: PhoneCall,
                           colors: "bg-blue-100 text-blue-600",
                         },
-                        web: {
-                          Icon: Globe,
-                          colors: "bg-purple-100 text-purple-600",
-                        },
                       };
-                      const { Icon, colors } = icons[method.type] || icons.web;
+
+                      const iconConfig =
+                        (icons as Record<string, any>)[option.type] || icons.website;
+                      const { Icon, colors } = iconConfig;
 
                       return (
                         <div
                           key={i}
                           className="bg-white p-3 rounded-xl border border-slate-200 shadow-sm flex items-start gap-3"
                         >
-                          <div className={`p-2 rounded-lg shrink-0 ${colors}`}>
+                          <div className={`${colors} p-2 rounded-lg shrink-0`}>
                             <Icon className="w-4 h-4" />
                           </div>
                           <div>
-                            <p className="font-bold text-slate-800 text-[0.8rem] mb-0.5">
-                              {method.title}
+                            <p className="font-bold text-slate-900 text-[0.8rem] mb-0.5">
+                              {option.title}
                             </p>
-                            <p
-                              className="text-[0.75rem] text-slate-500 leading-relaxed"
-                              dangerouslySetInnerHTML={{
-                                __html: method.description,
-                              }}
-                            />
+                            <p className="text-[0.75rem] text-slate-500 leading-relaxed">
+                              {option.description && (
+                                <>
+                                  {option.description}
+                                  <br />
+                                </>
+                              )}
+
+                              {option.url && (
+                                <a
+                                  href={option.url}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="text-primary hover:underline font-medium flex items-center gap-1"
+                                >
+                                  Visit Official Website
+                                  <ExternalLink className="w-3 h-3" />
+                                </a>
+                              )}
+
+                              {option.phone_local && (
+                                <>
+                                  <br />
+                                  <strong>Helpline:</strong> Dial{" "}
+                                  {option.phone_local} (from mobile users in
+                                  Pakistan)
+                                  <br />
+                                </>
+                              )}
+
+                              {option.phone_international && (
+                                <>
+                                  <strong>International Helpline:</strong>{" "}
+                                  {option.phone_international}
+                                </>
+                              )}
+                            </p>
                           </div>
                         </div>
                       );
-                    })}
-                  </div>
+                    }
+                  )}
                 </div>
               </div>
-            )}
+            </div>
+          )}
         </div>
       </div>
 
       {/* Footer */}
-      <div
-        className="px-4 py-3 border-t border-[hsl(214_32%_91%)] shrink-0
-                   text-right text-[0.72rem] font-medium
-                   text-[hsl(215_16%_60%)] bg-white"
-      >
+      <div className="p-4 border-t border-slate-200 bg-white text-xs text-slate-500 text-center rounded-b-xl">
         Last verified: {lastVerified}
       </div>
     </aside>

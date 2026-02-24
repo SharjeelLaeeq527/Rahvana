@@ -9,8 +9,8 @@ import {
   FilePlus2,
   RefreshCw,
   FileEdit,
-  Smartphone,
-  Building2,
+  // Smartphone,
+  // Building2,
   CheckCircle2,
 } from "lucide-react";
 
@@ -60,32 +60,32 @@ const APPLICATION_TYPES = [
   },
 ];
 
-const APPLICATION_METHODS = [
-  {
-    id: "online",
-    title: "Online via Pak ID App",
-    description: "Highly Recommended. Apply using your smartphone.",
-    features: ["Avoid queues", "Home delivery", "Upload from phone"],
-    icon: Smartphone,
-    color: "from-primary to-primary/70",
-    badge: "Recommended",
-  },
-  {
-    id: "inperson",
-    title: "NADRA Center",
-    description: "Traditional processing at an office counter.",
-    features: ["Staff assistance", "Instant biometrics", "For special cases"],
-    icon: Building2,
-    color: "from-slate-700 to-slate-900",
-  },
-];
+// const APPLICATION_METHODS = [
+//   {
+//     id: "online",
+//     title: "Online via Pak ID App",
+//     description: "Highly Recommended. Apply using your smartphone.",
+//     features: ["Avoid queues", "Home delivery", "Upload from phone"],
+//     icon: Smartphone,
+//     color: "from-primary to-primary/70",
+//     badge: "Recommended",
+//   },
+//   {
+//     id: "inperson",
+//     title: "NADRA Center",
+//     description: "Traditional processing at an office counter.",
+//     features: ["Staff assistance", "Instant biometrics", "For special cases"],
+//     icon: Building2,
+//     color: "from-slate-700 to-slate-900",
+//   },
+// ];
 
 export default function Step1() {
   const {
     state,
     setPersonType,
     setApplicationType,
-    setApplicationMethod,
+    // setApplicationMethod,
     setCurrentStep,
     completeStep,
   } = useCnicWizard();
@@ -100,16 +100,20 @@ export default function Step1() {
 
   const handleAppTypeSelect = (typeId: string) => {
     setApplicationType(typeId);
-    setInternalStep(3);
-  };
-
-  const handleMethodSelect = (methodId: string) => {
-    setApplicationMethod(methodId);
+    // setInternalStep(3);
     setTimeout(() => {
       completeStep(1);
       setCurrentStep(2);
     }, 400);
   };
+
+  // const handleMethodSelect = (methodId: string) => {
+  //   setApplicationMethod(methodId);
+  //   setTimeout(() => {
+  //     completeStep(1);
+  //     setCurrentStep(2);
+  //   }, 400);
+  // };
 
   const handleBack = () => {
     if (internalStep > 1) {
@@ -238,7 +242,7 @@ export default function Step1() {
         </div>
 
         {/* Phase 3: Application Method */}
-        <div
+        {/* <div
           className={`relative pl-12 md:pl-14 transition-all duration-500 ${internalStep >= 3 ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4 pointer-events-none hidden"}`}
         >
           <div
@@ -304,7 +308,7 @@ export default function Step1() {
               );
             })}
           </div>
-        </div>
+        </div> */}
       </div>
 
       <div className="mt-10 flex justify-between items-center pt-6 border-t border-slate-100">
@@ -327,10 +331,10 @@ export default function Step1() {
           </svg>
           Back
         </button>
-        <div className="text-sm font-bold text-slate-400 uppercase tracking-widest hidden sm:block">
+        {/* <div className="text-sm font-bold text-slate-400 uppercase tracking-widest hidden sm:block">
           Step 1 of 5
-        </div>
-        {internalStep < 3 && (
+        </div> */}
+        {internalStep < 2 && (
           <div className="px-4 py-2 text-sm text-slate-400 font-medium">
             Make a selection above
           </div>

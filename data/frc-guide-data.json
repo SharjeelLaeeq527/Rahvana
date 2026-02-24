@@ -94,27 +94,34 @@
     ]
   },
 
-  "fees": {
-    "by_birth": {
-      "amount": 1000,
-      "currency": "PKR",
-      "note": "Applicable for By Birth category"
-    },
-    "by_marriage": {
-      "amount": 1000,
-      "currency": "PKR",
-      "note": "Applicable for By Marriage category"
-    },
-    "by_adoption": {
-      "amount": 1000,
-      "currency": "PKR",
-      "note": "Applicable for By Adoption category"
-    },
-    "by_all": {
-      "amount": 2000,
-      "currency": "PKR",
-      "note": "Applicable for By All category"
-    }
+  "fee_structure": {
+    "title": "FRC Fee Structure",
+    "tiers": [
+      {
+        "type": "By Birth",
+        "price": "1,000",
+        "days": "Standard Processing",
+        "badge_variant": "blue"
+      },
+      {
+        "type": "By Marriage",
+        "price": "1,000",
+        "days": "Standard Processing",
+        "badge_variant": "purple"
+      },
+      {
+        "type": "By Adoption",
+        "price": "1,000",
+        "days": "Standard Processing",
+        "badge_variant": "orange"
+      },
+      {
+        "type": "By All",
+        "price": "2,000",
+        "days": "Standard Processing",
+        "badge_variant": "green"
+      }
+    ]
   },
 
   "processing_time": {
@@ -181,7 +188,6 @@
       "description": "The Family Registration Certificate (FRC) is an official document issued by NADRA that lists your registered family members as recorded in their database. It is commonly required for visa applications, embassy submissions, and legal verification of family relationships.",
       "quick_instructions": [
         "Answer a few questions about your FRC need",
-        "Provide location details to find your nearest NADRA office",
         "Receive a custom roadmap and document checklist",
         "Validate your final certificate against immigration requirements"
       ],
