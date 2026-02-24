@@ -17,6 +17,7 @@ import { type WizardState, WizardStepId } from "@/types/guide-wizard";
 import guideData from "@/data/cnic-guide-data.json";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import FeedbackButton from "@/app/components/FeedbackButton";
+import { useWizardSession } from "@/lib/guides/useWizardSession";
 
 const STEP_IDS: WizardStepId[] = [
   "document_need",
@@ -34,14 +35,13 @@ const STEP_LABELS: Record<string, string> = {
   validation: "Validation",
 };
 
-const INFO_PANEL_KEYS: Record<
-  WizardStepId,
-  keyof typeof guideData.wizard.info_panel
-> = {
+const INFO_PANEL_KEYS: Record<WizardStepId, any> = {
   document_need: "document_need",
-  // location: "location",
+  age_category: "document_need",
+  birth_setting: "document_need",
+  location: "roadmap",
   roadmap: "roadmap",
-  // office_finder: "office_finder",
+  office_finder: "roadmap",
   validation: "validation",
 };
 
@@ -50,13 +50,34 @@ const CnicGuide = () => {
   const [showWhatsThis, setShowWhatsThis] = useState(true);
   const [state, setState] = useState<WizardState>({
     documentNeed: null,
+    ageCategory: null,
+    birthSetting: null,
     province: null,
     district: null,
     city: null,
     checkedDocuments: [],
     validationChecks: [],
     uploadedFile: false,
+    savedOffice: null,
   });
+
+  const { saveWizardStep } = useWizardSession(
+    "cnic-guide",
+    state,
+    setState,
+    STEP_IDS,
+    setCurrentStep,
+    (prev, stepsData) => ({
+      ...prev,
+      documentNeed: stepsData.document_need || prev.documentNeed,
+      province: stepsData.location?.province || prev.province,
+      district: stepsData.location?.district || prev.district,
+      city: stepsData.location?.city || prev.city,
+      checkedDocuments: stepsData.roadmap || prev.checkedDocuments,
+      validationChecks: stepsData.validation?.checks || prev.validationChecks,
+      uploadedFile: stepsData.validation?.uploaded || prev.uploadedFile,
+    })
+  );
 
   useEffect(() => {
     const dontShow = localStorage.getItem("hide_whats_this_modal_cnic");
@@ -64,8 +85,9 @@ const CnicGuide = () => {
   }, []);
 
   const currentStepId = STEP_IDS[currentStep];
-  const infoPanelData = guideData.wizard.info_panel[
-    INFO_PANEL_KEYS[currentStepId]
+  const infoPanelKey = INFO_PANEL_KEYS[currentStepId];
+  const infoPanelData = (guideData.wizard.info_panel as any)[
+    infoPanelKey
   ] as unknown as InfoPanelData;
 
   const canGoNext = (): boolean => {
