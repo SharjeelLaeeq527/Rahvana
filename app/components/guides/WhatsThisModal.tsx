@@ -436,13 +436,13 @@ const WhatsThisModal = ({
                     </label>
 
                     <div className="flex flex-col sm:flex-row gap-3">
-                      <button
+                      {/* <button
                         onClick={handleClose}
                         className="px-6 py-3 md:py-2.5 rounded-xl font-semibold bg-white/10 hover:bg-white/20 text-white transition-all border border-white/20 focus:outline-none focus:ring-2 focus:ring-white/50"
                         type="button"
                       >
                         Not now
-                      </button>
+                      </button> */}
                       <button
                         onClick={handleClose}
                         className="px-6 py-3 md:py-2.5 rounded-xl font-bold bg-white text-[#062f31] hover:bg-gray-100 hover:scale-[1.02] active:scale-[0.98] transition-all shadow-[0_0_20px_rgba(255,255,255,0.3)] focus:outline-none focus:ring-2 focus:ring-white/50"
