@@ -1,187 +1,323 @@
 {
-    "title": "Pakistan Birth Certificate Guide – Union Council & NADRA Wizard (2026 Updated)",
-    "legal_basis": "Births and Deaths Registration Act + NADRA Ordinance 2000 + Provincial CRVS Laws (2026). First step always: Union Council Computerized Birth Registration Certificate (CBRC). Punjab: Free registration & computerized certificate up to 7 years late (CM policy 2026). NADRA CRC fees: Normal Rs 50, Urgent/Executive Rs 500.",
+    "overview": {
+        "title": "Pakistan Birth Certificate Guide (Union Council & NADRA)",
+        "description": "The Birth Certificate is an official civil document issued by local Union Councils or NADRA in Pakistan. It serves as primary evidence of birth and is required for legal, educational, and immigration purposes (USCIS, NVC, etc.).",
+        "legal_basis": "Issued under the Births and Deaths Registration Act and NADRA Ordinance 2000. Punjab CM Policy 2026: Free registration up to 7 years late.",
+        "primary_use": [
+            "Passport and CNIC applications",
+            "School and college admissions",
+            "Visa and immigration processes",
+            "Inheritance and legal matters"
+        ],
+        "issuing_authority": "Union Council (Local Govt) / NADRA",
+        "validity_note": "Computerized certificates (CBRC) have no expiry but must reflect the latest NADRA record."
+    },
+    "fee_structure": {
+        "title": "Birth Certificate Fee Structure (2026)",
+        "special_note": {
+            "title": "Punjab Promotion",
+            "description": "Registration and computerized certificates are currently FREE in Punjab for up to 7 years late (CM Policy)."
+        },
+        "tiers": [
+            {
+                "type": "0-60 Days (Normal)",
+                "price": "100 - 200",
+                "days": "Local UC Rate",
+                "badge_variant": "green"
+            },
+            {
+                "type": "2 Months - 2 Years (Late)",
+                "price": "500 - 800",
+                "days": "Late Registration",
+                "badge_variant": "orange"
+            },
+            {
+                "type": "2 - 7 Years (Very Late)",
+                "price": "1,000 - 2,000",
+                "days": "Delayed Entry",
+                "badge_variant": "purple"
+            },
+            {
+                "type": "After 7 Years (Delayed)",
+                "price": "2,500+",
+                "days": "+ Legal Costs",
+                "badge_variant": "blue"
+            },
+            {
+                "type": "B-Form (NADRA) - Normal",
+                "price": "50",
+                "days": "10-15 Working Days",
+                "badge_variant": "blue"
+            },
+            {
+                "type": "B-Form (NADRA) - Executive",
+                "price": "500",
+                "days": "3-5 Working Days",
+                "badge_variant": "orange"
+            }
+        ]
+    },
     "wizard": {
-        "title": "Birth Registration Wizard",
-        "subtitle": "Union Council CBRC & NADRA B-Form • 2026 Verified",
-        "last_verified": "February 23, 2026",
+        "title": "Birth Registration Guide",
+        "subtitle": "Union Council CBRC & NADRA B-Form",
+        "last_verified": "February 24, 2026",
         "whats_this": {
-            "heading": "Birth Certificate Wizard",
+            "heading": "Welcome to Birth Certificate Guide",
             "sub": "Official Procedure 2026",
-            "description": "Obtaining a birth certificate is a two-step process in Pakistan: Union Council Computerized registration (CBRC) followed by NADRA B-Form (CRC). This 2026-updated wizard reflects current biometric rules and provincial policies.",
+            "description": "This wizard helps you navigate the process of obtaining or correcting a birth certificate in Pakistan. We cover both local Union Council registration (CBRC) and NADRA B-Form issuance.",
             "quick_instructions": [
-                "Union Council registration (CBRC) is mandatory before applying for a NADRA B-Form/CRC.",
-                "Punjab residents enjoy free registration for up to 7 years late (no court order needed).",
-                "Biometric requirements vary by age: 0-3 years (None), 3-10 years (Photo), 10-18 years (Full fingerprints/Iris)."
+                "Answer questions about the birth setting and age",
+                "Get a customized roadmap and document checklist",
+                "Validate your final certificate for immigration"
             ],
-            "disclaimer": "General guidance based on 2026 rules. Fees and requirements vary by province. Not legal advice."
+            "disclaimer": "This wizard provides general guidance. Requirements vary by province and Union Council. Always verify with local authorities."
         },
         "steps": [
-            { "id": "document_need", "label": "Document Need", "icon": "clipboard" },
-            { "id": "roadmap", "label": "Roadmap", "icon": "map" },
-            { "id": "validation", "label": "Validation", "icon": "star" }
+            {
+                "id": "document_need",
+                "label": "Document Need",
+                "icon": "clipboard"
+            },
+            {
+                "id": "age_category",
+                "label": "Age Group",
+                "icon": "users"
+            },
+            {
+                "id": "birth_setting",
+                "label": "Birth Setting",
+                "icon": "home"
+            },
+            {
+                "id": "roadmap",
+                "label": "Roadmap",
+                "icon": "map"
+            },
+            {
+                "id": "validation",
+                "label": "Validation",
+                "icon": "star"
+            }
         ],
         "document_need": {
-            "title": "What do you require regarding birth certificates?",
-            "description": "Select the option that best describes your current need.",
+            "title": "What bringing you here?",
+            "description": "Select the option that best describes your current requirement.",
             "options": [
                 {
                     "id": "new",
                     "title": "New Registration",
-                    "description": "First-time CBRC registration at Union Council or NADRA B-Form issuance.",
-                    "color": "green"
+                    "description": "First-time CBRC registration at Union Council.",
+                    "color": "green",
+                    "icon": "new"
                 },
                 {
                     "id": "correction",
                     "title": "Correction",
-                    "description": "Fixing name, DOB, or parent spelling errors in existing records.",
-                    "color": "orange"
+                    "description": "Fixing errors in existing birth records.",
+                    "color": "orange",
+                    "icon": "correction"
                 },
                 {
                     "id": "replacement",
-                    "title": "Replacement / Duplicate",
-                    "description": "Reissuing certificates that were lost or damaged.",
+                    "title": "Replacement",
+                    "description": "Reissuing lost or damaged certificates.",
+                    "color": "blue",
+                    "icon": "replacement"
+                }
+            ]
+        },
+        "age_category": {
+            "title": "Select the person's current age:",
+            "description": "Age group determines biometric requirements and late registration rules.",
+            "options": [
+                {
+                    "id": "0-3",
+                    "title": "0 to 3 Years",
+                    "description": "No biometrics/photo required at NADRA. Infants under 3 only need parent presence.",
+                    "color": "green"
+                },
+                {
+                    "id": "3-10",
+                    "title": "3 to 10 Years",
+                    "description": "Photo mandatory; iris optional at advanced centers.",
                     "color": "blue"
+                },
+                {
+                    "id": "10-18",
+                    "title": "10 to 18 Years",
+                    "description": "Full fingerprints, photo, and iris are all mandatory.",
+                    "color": "indigo"
+                },
+                {
+                    "id": "18+",
+                    "title": "18 Years & Above",
+                    "description": "Full biometrics required. Family linkage verification option available till Dec 2026.",
+                    "color": "purple"
+                }
+            ]
+        },
+        "birth_setting": {
+            "title": "Where did the birth occur?",
+            "description": "Documentary proof varies based on birth location.",
+            "options": [
+                {
+                    "id": "hospital",
+                    "title": "Hospital",
+                    "description": "Hospital discharge or birth notification slip is required.",
+                    "color": "green"
+                },
+                {
+                    "id": "home",
+                    "title": "At Home",
+                    "description": "Affidavit signed by parents and 2 witness CNICs required.",
+                    "color": "blue"
+                },
+                {
+                    "id": "overseas",
+                    "title": "Overseas",
+                    "description": "Requires Embassy S-1 form or consulate birth notification.",
+                    "color": "purple"
+                },
+                {
+                    "id": "adoption",
+                    "title": "Adoption",
+                    "description": "Legal court guardian orders are mandatory for registration.",
+                    "color": "indigo"
                 }
             ]
         },
         "roadmap": {
-            "title": "Personalized Roadmap & Requirements",
+            "title": "Personalized Roadmap",
             "estimated_timeline": "3-15 Working Days",
             "onsitePhases": [
                 {
                     "id": 1,
                     "title": "Gather Evidence",
-                    "duration": "1 Day",
-                    "description": "Collect mandatory proofs such as Parents' CNICs, Nikah Nama Copy, and Hospital Slip/Vaccination Card before visiting any office."
+                    "duration": "1-2 Days",
+                    "description": "Collect mandatory proofs for your specific age group and birth setting. Original CNICs of parents and Nikah Nama are essential. Vaccination cards or hospital slips should be gathered if available."
                 },
                 {
                     "id": 2,
                     "title": "Union Council (CBRC)",
-                    "duration": "2-5 Days",
-                    "description": "Submit documents to Secretary UC to obtain the Computerized Birth Registration Certificate. In Punjab/Sindh, check the Pak-ID app option for online processing."
+                    "duration": "2-7 Days",
+                    "description": "Visit your local Union Council or Municipal Corporation. Submit the application form along with required documents. Pay the applicable fee. Wait for the processing and pick up your computerized birth certificate (CBRC)."
                 },
                 {
                     "id": 3,
                     "title": "NADRA B-Form",
-                    "duration": "Same Day / 3-5 Days",
-                    "description": "Present UC CBRC at the NADRA counter. Biometrics will be captured based on age. Pay normal fee Rs 50 or Urgent Rs 500."
+                    "duration": "Same Day / Urgent",
+                    "description": "Present the UC CBRC at a NADRA Registration Center. Complete the biometric process for the child. Pay the NADRA fee (Normal Rs. 50 / Urgent Rs. 500). Receive the token."
                 },
                 {
                     "id": 4,
-                    "title": "Final Collection",
-                    "duration": "Dependent on processing time",
-                    "description": "Track status via SMS or 1777 Helpline. Pick up the final computerized B-Form or CNIC from the center counter."
+                    "title": "Collection",
+                    "duration": "3-15 Days",
+                    "description": "Track your application status via 1777 or SMS. Visit the NADRA center to collect the final B-Form or CNIC. Verify all details and spellings on the document immediately."
                 }
             ],
             "onlinePhases": [
                 {
                     "id": 1,
-                    "title": "Pak-ID Portal Account Registration",
+                    "title": "Pak-ID Registration",
                     "duration": "30 Minutes",
-                    "description": "Create an account on the Pak-ID portal. This option is primarily available for UC registration in Punjab and Karachi districts."
+                    "description": "Create an account on the Pak-ID Mobile App or website. Select the Birth Registration service. Online options are currently available in selected Punjab districts."
                 },
                 {
                     "id": 2,
-                    "title": "Application Submission & Document Upload",
-                    "duration": "Same Day",
-                    "description": "Fill out the birth registration details and upload digital copies of parent CNICs, Nikah Nama, and Hospital proofs."
+                    "title": "Digital Application",
+                    "duration": "30 Minutes",
+                    "description": "Enter family details and upload scanned copies of required documents like hospital slip or affidavit. Submit for initial verification."
                 },
                 {
                     "id": 3,
-                    "title": "Verification & Fee Payment",
-                    "duration": "Processing Time",
-                    "description": "Pay any applicable local fees safely via the online platform interface."
+                    "title": "Fee Payment",
+                    "duration": "Same Day",
+                    "description": "Pay the application fee online using a debit/credit card. Review your application summary for accuracy."
                 },
                 {
                     "id": 4,
-                    "title": "Delivery / Print",
+                    "title": "Digital Issuance",
                     "duration": "3-5 Days",
-                    "description": "Receive the digital certificate in the secure vault or via courier depending on your selected options."
+                    "description": "Once approved, download the digital version. For physical B-Form, visiting a NADRA center for biometrics may still be required."
                 }
             ],
             "documents_checklist": [
                 {
-                    "id": "parents_cnic",
-                    "label": "Parents' CNIC/NICOP",
-                    "description": "Must be valid and unexpired (Both preferred)",
-                    "required": true
+                    "id": "parent_cnic",
+                    "label": "Parents CNIC (Valid)",
+                    "required": true,
+                    "description": "Originals for verification"
                 },
                 {
                     "id": "nikah_nama",
-                    "label": "Nikah Nama",
-                    "description": "Copy of the Marriage Certificate",
-                    "required": true
+                    "label": "Nikah Nama Copy",
+                    "required": true,
+                    "description": "Relationship proof"
                 },
                 {
                     "id": "hospital_slip",
-                    "label": "Hospital Slip / Vaccination Card",
-                    "description": "Strong proof of birth date and location",
-                    "required": false
+                    "label": "Hospital Discharge Slip",
+                    "required": false,
+                    "description": "Only for hospital births"
                 },
                 {
-                    "id": "residence_proof",
-                    "label": "Residence Proof",
-                    "description": "Optional but helpful (e.g. Utility Bill)",
-                    "required": false
+                    "id": "witness_cnic",
+                    "label": "2 Witness CNICs",
+                    "required": false,
+                    "description": "Only for home births"
                 },
                 {
-                    "id": "witnesses",
-                    "label": "2 Witness CNIC copies",
-                    "description": "Required primarily for Home Births along with Affidavit",
-                    "required": false
+                    "id": "affidavit",
+                    "label": "Affidavit",
+                    "required": false,
+                    "description": "For home or late registration"
                 }
             ]
         },
         "validation": {
             "title": "Certificate Validation",
-            "description": "Ensure your Birth Certificate meets all legal and immigration requirements before usage",
+            "description": "Ensure your certificate meets international standards and immigration requirements.",
             "upload_section": {
-                "title": "Upload Your Birth Certificate",
-                "description": "Upload your final Birth Certificate to Document Vault",
-                "formats": "PDF, JPG, PNG (Max 10MB)"
+                "title": "Review your Document",
+                "description": "Upload a scan of your CBRC for automated field verification.",
+                "formats": "PDF, JPG, PNG"
             },
-            "checklist_title": "Legal & Immigration Ready Validation",
+            "checklist_title": "Field Verification",
             "categories": [
                 {
-                    "name": "Spelling & Names",
+                    "name": "Mandatory Fields",
                     "items": [
                         {
-                            "label": "Child's name spelling matches passport and other documents exactly",
+                            "label": "Computerized (QR Code present)",
                             "critical": true
                         },
                         {
-                            "label": "Father's and mother's names matches their CNIC spellings",
+                            "label": "Correct Name Spelling",
+                            "critical": true
+                        },
+                        {
+                            "label": "Accurate Date of Birth",
+                            "critical": true
+                        },
+                        {
+                            "label": "Parents' Names match CNIC",
                             "critical": true
                         }
                     ]
                 },
                 {
-                    "name": "Dates & Locations",
+                    "name": "Format & Stamps",
                     "items": [
                         {
-                            "label": "Date of Birth is accurate and matches vaccination/hospital records",
-                            "critical": true
-                        },
-                        {
-                            "label": "Place of birth (City/District) is accurately captured",
-                            "critical": true
-                        }
-                    ]
-                },
-                {
-                    "name": "Document Integrity",
-                    "items": [
-                        {
-                            "label": "Certificate has official Union Council / NADRA seal and signature",
-                            "critical": true
-                        },
-                        {
-                            "label": "Date of issuance is clearly visible",
+                            "label": "Secretary UC Signature",
                             "critical": false
                         },
                         {
-                            "label": "QR code or tracking number is present",
+                            "label": "Official Union Council Stamp",
+                            "critical": true
+                        },
+                        {
+                            "label": "Issue Date visible",
                             "critical": false
                         }
                     ]
@@ -191,53 +327,58 @@
         "info_panel": {
             "document_need": {
                 "tips": [
-                    "Union Council CBRC is mandatory before NADRA B-Form application.",
-                    "Punjab: Registration is free up to 7 years late (CM policy 2026)."
+                    "Always get a Computerized UC Certificate first.",
+                    "Punjab registration is free up to 7 years late."
                 ],
                 "pitfalls": [
-                    "Applying at NADRA center without a Computerized UC Certificate (CBRC)."
+                    "Applying at NADRA without UC computerized certificate."
                 ],
                 "links": [
                     {
-                        "label": "NADRA Website",
-                        "url": "https://www.nadra.gov.pk"
-                    },
-                    {
-                        "label": "Pak-ID Portal",
-                        "url": "https://id.nadra.gov.pk"
+                        "label": "NADRA Official",
+                        "url": "https://nadra.gov.pk"
                     }
                 ]
+            },
+            "age_category": {
+                "tips": [
+                    "Check biometric requirements for 10+ minors.",
+                    "Adults missing CBRC can use family biometrics till Dec 2026."
+                ],
+                "pitfalls": [
+                    "Ignoring age-specific photo requirements."
+                ],
+                "links": []
+            },
+            "birth_setting": {
+                "tips": [
+                    "Keep hospital slips safe; they are primary evidence.",
+                    "Home births should be registered within 60 days to avoid penalties."
+                ],
+                "pitfalls": [
+                    "Missing witness CNICs for home birth registration."
+                ],
+                "links": []
             },
             "roadmap": {
                 "tips": [
-                    "Urgent/Executive B-Form (Rs 500) is usually ready in 3-5 days.",
-                    "Normal B-Form fee is only Rs 50."
+                    "Executive processing (Rs 500) saves 10+ days.",
+                    "Verify all spellings on the spot at the UC."
                 ],
                 "pitfalls": [
-                    "Spelling errors in initial UC registration are hard to fix later."
+                    "Leaving without checking the digital entry."
                 ],
-                "links": [
-                    {
-                        "label": "Online Tracking",
-                        "url": "https://id.nadra.gov.pk"
-                    }
-                ]
+                "links": []
             },
             "validation": {
                 "tips": [
-                    "Verify all spellings match your passport and other official documents exactly.",
-                    "Check that the NADRA seal and signature are clearly visible on the certificate."
+                    "Cross-check CBRC with Passport application details.",
+                    "Attestation by MOFA is usually required for international use."
                 ],
                 "pitfalls": [
-                    "Don't assume the certificate is correct without verifying every detail.",
-                    "Missing barcode/QR code can invalidate the document internationally."
+                    "Manual handwritten certificates are NOT accepted for visas."
                 ],
-                "links": [
-                    {
-                        "label": "NADRA Certificate Verification",
-                        "url": "https://id.nadra.gov.pk"
-                    }
-                ]
+                "links": []
             }
         }
     }

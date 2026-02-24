@@ -13,7 +13,7 @@ const supabaseAdmin = createClient(
       autoRefreshToken: false,
       persistSession: false,
     },
-  }
+  },
 );
 
 export async function POST(request: NextRequest) {
@@ -21,56 +21,63 @@ export async function POST(request: NextRequest) {
     const { email } = await request.json();
 
     if (!email) {
-      return NextResponse.json(
-        { error: "Email is required" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "Email is required" }, { status: 400 });
     }
 
-    // Check if user exists
-    const { data: users, error: userError } = await supabaseAdmin.auth.admin.listUsers();
+    const normalizedEmail = email.toLowerCase().trim();
 
-    if (userError) {
-      console.error("Error listing users:", userError);
-      return NextResponse.json(
-        { error: "Server error" },
-        { status: 500 }
-      );
+    const { data, error: listError } = await supabaseAdmin.auth.admin.listUsers(
+      {
+        page: 1,
+        perPage: 1000,
+      },
+    );
+
+    if (listError) {
+      console.error("List users error:", listError);
+      return NextResponse.json({ error: "Server error" }, { status: 500 });
     }
 
-    const user = users.users.find(u => u.email?.toLowerCase() === email.toLowerCase());
+    const user = data.users.find(
+      (u) => u.email?.toLowerCase() === normalizedEmail,
+    );
 
-    // Always return success to prevent email enumeration
     if (!user) {
       return NextResponse.json({ success: true });
     }
 
     // Generate password reset token
     const resetToken = crypto.randomBytes(32).toString("hex");
-    const resetTokenHash = crypto.createHash("sha256").update(resetToken).digest("hex");
+    const resetTokenHash = crypto
+      .createHash("sha256")
+      .update(resetToken)
+      .digest("hex");
     const resetTokenExpiry = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
 
     // Store token in user metadata
-    const { error: updateError } = await supabaseAdmin.auth.admin.updateUserById(user.id, {
-      user_metadata: {
-        ...user.user_metadata,
-        reset_token_hash: resetTokenHash,
-        reset_token_expiry: resetTokenExpiry.toISOString(),
-      },
-    });
+    const { error: updateError } =
+      await supabaseAdmin.auth.admin.updateUserById(user.id, {
+        user_metadata: {
+          ...user.user_metadata,
+          reset_token_hash: resetTokenHash,
+          reset_token_expiry: resetTokenExpiry.toISOString(),
+        },
+      });
 
     if (updateError) {
       console.error("Error updating user:", updateError);
       return NextResponse.json(
         { error: "Failed to generate reset token" },
-        { status: 500 }
+        { status: 500 },
       );
     }
 
     // Build reset URL
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || request.headers.get("origin") || "http://localhost:3000";
-    const resetLink = `${baseUrl}/reset-password?token=${resetToken}&email=${encodeURIComponent(email)}`;
-    console.log("DEBUG: Generated Reset Link:", resetLink);
+    const baseUrl =
+      process.env.NEXT_PUBLIC_APP_URL ||
+      request.headers.get("origin") ||
+      "http://localhost:3000";
+    const resetLink = `${baseUrl}/reset-password?token=${resetToken}&email=${encodeURIComponent(normalizedEmail)}`;
 
     // Send email via Resend
     const emailHtml = getPasswordResetEmailHtml(resetLink);
@@ -84,7 +91,7 @@ export async function POST(request: NextRequest) {
       console.error("Email send failed:", emailError);
       return NextResponse.json(
         { error: "Failed to send reset email" },
-        { status: 500 }
+        { status: 500 },
       );
     }
 
@@ -93,7 +100,7 @@ export async function POST(request: NextRequest) {
     console.error("Forgot password error:", error);
     return NextResponse.json(
       { error: "An unexpected error occurred" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

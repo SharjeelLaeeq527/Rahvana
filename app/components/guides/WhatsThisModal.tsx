@@ -1,5 +1,12 @@
 import React, { useState, useEffect } from "react";
-import { X, Info, CheckCircle2 } from "lucide-react";
+import {
+  X,
+  Info,
+  CheckCircle2,
+  ShieldCheck,
+  ClipboardCheck,
+  FolderCheck,
+} from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 export interface WhatsThisData {
@@ -44,7 +51,7 @@ function ExpandSection({
           <div className="text-sm font-extrabold tracking-wide text-white/95 uppercase">
             {title}
           </div>
-          {subtitle ? (
+          {subtitle && !isOpen ? (
             <div className="mt-1 text-sm text-white/70">{subtitle}</div>
           ) : null}
         </div>
@@ -86,87 +93,6 @@ function ExpandSection({
         </div>
       </div>
     </div>
-  );
-}
-
-/** Custom icons (inline SVG) */
-function ShieldCheckIcon({ className = "" }: { className?: string }) {
-  return (
-    <svg
-      className={className}
-      viewBox="0 0 24 24"
-      fill="none"
-      aria-hidden="true"
-    >
-      <path
-        d="M12 2l7 4v6c0 5-3 9-7 10-4-1-7-5-7-10V6l7-4z"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinejoin="round"
-      />
-      <path
-        d="M8.5 12l2.2 2.2L15.8 9.1"
-        stroke="currentColor"
-        strokeWidth="2.4"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
-}
-
-function ClipboardIcon({ className = "" }: { className?: string }) {
-  return (
-    <svg
-      className={className}
-      viewBox="0 0 24 24"
-      fill="none"
-      aria-hidden="true"
-    >
-      <path
-        d="M9 4h6a2 2 0 0 1 2 2v1H7V6a2 2 0 0 1 2-2z"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinejoin="round"
-      />
-      <path
-        d="M7 7h10v13a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2V7z"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinejoin="round"
-      />
-      <path
-        d="M9.5 11h5M9.5 14h5M9.5 17h3.5"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-      />
-    </svg>
-  );
-}
-
-function FolderCheckIcon({ className = "" }: { className?: string }) {
-  return (
-    <svg
-      className={className}
-      viewBox="0 0 24 24"
-      fill="none"
-      aria-hidden="true"
-    >
-      <path
-        d="M3 7a2 2 0 0 1 2-2h5l2 2h9a2 2 0 0 1 2-2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7z"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinejoin="round"
-      />
-      <path
-        d="M9 14l2 2 4-4"
-        stroke="currentColor"
-        strokeWidth="2.4"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
   );
 }
 
@@ -222,7 +148,7 @@ function FeatureCard({
         ].join(" ")}
         aria-hidden="true"
       >
-        <Icon className="w-6 h-6" />
+        <Icon className="w-5 h-5" strokeWidth={2.2} />
       </span>
 
       <div className="min-w-0 text-left flex-1">
@@ -283,7 +209,7 @@ const WhatsThisModal = ({
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="fixed inset-0 z-50 flex items-center justify-center px-4 py-6 bg-slate-900/60 backdrop-blur-md"
+          className="fixed inset-0 z-50 flex items-center justify-center px-4 py-6 bg-teal-900/60 backdrop-blur-md"
           role="dialog"
           aria-modal="true"
           aria-labelledby="whats-this-welcome-title"
@@ -334,19 +260,21 @@ const WhatsThisModal = ({
                       variant="teal"
                       title="Avoid Pitfalls"
                       subtitle="Find out common mistakes that cause rejections."
-                      Icon={ShieldCheckIcon}
+                      Icon={ShieldCheck}
                     />
+
                     <FeatureCard
                       variant="blue"
-                      title="Customized Documents"
+                      title="Personalized Checklist"
                       subtitle="See exactly what you need for your situation."
-                      Icon={ClipboardIcon}
+                      Icon={ClipboardCheck}
                     />
+
                     <FeatureCard
                       variant="amber"
                       title="Clear Steps"
                       subtitle="A tailored roadmap for the process."
-                      Icon={FolderCheckIcon}
+                      Icon={FolderCheck}
                     />
                   </div>
                 </div>
@@ -436,13 +364,13 @@ const WhatsThisModal = ({
                     </label>
 
                     <div className="flex flex-col sm:flex-row gap-3">
-                      <button
+                      {/* <button
                         onClick={handleClose}
                         className="px-6 py-3 md:py-2.5 rounded-xl font-semibold bg-white/10 hover:bg-white/20 text-white transition-all border border-white/20 focus:outline-none focus:ring-2 focus:ring-white/50"
                         type="button"
                       >
                         Not now
-                      </button>
+                      </button> */}
                       <button
                         onClick={handleClose}
                         className="px-6 py-3 md:py-2.5 rounded-xl font-bold bg-white text-[#062f31] hover:bg-gray-100 hover:scale-[1.02] active:scale-[0.98] transition-all shadow-[0_0_20px_rgba(255,255,255,0.3)] focus:outline-none focus:ring-2 focus:ring-white/50"

@@ -486,7 +486,7 @@
           "id": 4,
           "title": "Download FRC Certificate",
           "duration": "After Approval",
-          "description": "Download the approved FRC certificate in PDF format from the portal. Carefully review all family details. Print the certificate if a hard copy is required."
+          "description": "Download the approved FRC certificate in PDF format from the portal. Carefully review all family details. Kindly check that downloadable PDF should contain the digital stamp. PDF from PakID app reflects NADRA records; for official acceptance, some agencies may require printed certificate from NADRA center. Print the certificate if a hard copy is required."
         }
       ],
       "documents_checklist": [
@@ -1667,7 +1667,7 @@
     "info_panel": {
       "document_need": {
         "tips": [
-          "New certificates typically issued instantly in real-time or take 1 day while applying via app if all documents are ready.",
+          "New certificates are typically issued instantly or within one day if applied for via the app with all documents ready. Online processing generally takes 24 hours but may vary if corrections are needed.",
           "Corrections require supporting documents proving the correct information.",
           "Replacement certificates can usually be issued same-day if original registration exists in NADRA database."
         ],

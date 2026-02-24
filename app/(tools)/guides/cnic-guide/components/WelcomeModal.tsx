@@ -306,6 +306,7 @@ export default function WelcomeModal() {
                 id="cnic-welcome-title"
                 className="text-3xl md:text-4xl font-black tracking-tight text-white mb-3"
               >
+                
                 Welcome to the CNIC Guide Application Wizard
               </h2>
               <p className="mt-2 text-sm md:text-base text-white/75 max-w-3xl mx-auto leading-relaxed flex items-center justify-center gap-2">
