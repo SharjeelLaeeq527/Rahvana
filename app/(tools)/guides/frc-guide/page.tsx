@@ -10,7 +10,7 @@ import WizardInfoPanel, {
 import DocumentNeedStep from "../../../components/guides/steps/DocumentNeedStep";
 // import LocationStep from "../../../components/guides/steps/LocationStep";
 import RoadmapStep from "../../../components/guides/steps/RoadmapStep";
-// import OfficeFinderStep from "../../../components/guides/steps/OfficeFinderStep";
+import OfficeFinderStep from "../../../components/guides/steps/OfficeFinderStep";
 import ValidationStep from "../../../components/guides/steps/ValidationStep";
 import WhatsThisModal from "../../../components/guides/WhatsThisModal";
 import { type WizardState, WizardStepId } from "@/types/guide-wizard";
@@ -39,7 +39,6 @@ const INFO_PANEL_KEYS: Record<
   document_need: "document_need",
   // location: "location",
   roadmap: "roadmap",
-  // office_finder: "office_finder",
   validation: "validation",
 };
 
@@ -143,16 +142,6 @@ const FrcGuide = () => {
             data={guideData.wizard.roadmap}
           />
         );
-      // case "office_finder":
-      //   return (
-      //     <OfficeFinderStep
-      //       province={state.province}
-      //       district={state.district}
-      //       offices={guideData.wizard.offices}
-      //       officeType="NADRA"
-      //       warningText="FRCs are processed at authorized NADRA Registration Centers. Verify that the office you plan to visit offers FRC services. Office listings and contact information may change; always confirm details before visiting."
-      //     />
-      //   );
       case "validation":
         return (
           <ValidationStep
@@ -169,20 +158,20 @@ const FrcGuide = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-gray-50 pt-14">
+    <div className="min-h-screen flex flex-col bg-[#f5f7fa] pt-14">
       <WizardHeader
         onWhatsThis={() => setShowWhatsThis(true)}
         title={guideData.wizard.title}
       />
 
-      <div className="flex flex-1 overflow-hidden h-[calc(100vh-56px)]">
+      <div className="flex flex-1 overflow-hidden h-[calc(100vh-56px)] flex-col lg:flex-row">
         <WizardSidebar
           currentStep={currentStep}
           steps={STEP_IDS}
           onStepClick={setCurrentStep}
         />
 
-        <main className="flex-1 overflow-y-auto p-8 relative">
+        <main className="flex-1 overflow-y-auto p-4 sm:p-8 relative">
           <div
             className="fixed inset-0 pointer-events-none z-0"
             style={{
@@ -192,8 +181,8 @@ const FrcGuide = () => {
             }}
           />
 
-          <div className="relative z-10 max-w-3xl mx-auto">
-            <div className="bg-white rounded-2xl border border-gray-200 p-8 shadow-sm min-h-100">
+          <div className="relative z-10 max-w-full md:max-w-3xl mx-auto">
+            <div className="bg-white rounded-2xl border border-gray-200 p-4 sm:p-8 shadow-sm min-h-100">
               <AnimatePresence mode="wait">
                 <motion.div
                   key={currentStepId}
@@ -207,7 +196,7 @@ const FrcGuide = () => {
               </AnimatePresence>
             </div>
 
-            <div className="flex justify-between items-center mt-5 pb-6">
+            <div className="flex flex-col justify-between items-center gap-4 mt-5 pb-6 w-full">
               {currentStep > 0 ? (
                 <motion.button
                   whileHover={{ scale: 1.03 }}
@@ -249,6 +238,8 @@ const FrcGuide = () => {
         <WizardInfoPanel
           data={infoPanelData}
           lastVerified={guideData.wizard.last_verified}
+          guideData={guideData}
+          guideType="frc"
         />
       </div>
 
