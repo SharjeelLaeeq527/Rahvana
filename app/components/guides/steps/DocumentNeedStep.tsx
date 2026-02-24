@@ -13,6 +13,14 @@ import {
   Building2,
   CheckCircle2,
   ArrowLeft,
+  Baby,
+  Smile,
+  GraduationCap,
+  Briefcase,
+  Hospital,
+  Home,
+  Globe,
+  Heart,
 } from "lucide-react";
 
 const ICONS: Record<string, React.ElementType> = {
@@ -28,6 +36,14 @@ const ICONS: Record<string, React.ElementType> = {
   correction: FileEdit,
   online: Smartphone,
   inperson: Building2,
+  "0-3": Baby,
+  "3-10": Smile,
+  "10-18": GraduationCap,
+  "18+": Briefcase,
+  hospital: Hospital,
+  home: Home,
+  overseas: Globe,
+  adoption: Heart,
 };
 
 const GRADIENT_STYLES: Record<
@@ -309,7 +325,13 @@ const DocumentNeedStep = ({
         {description}
       </p>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5">
+      <div className={`grid gap-5 ${
+        options.length === 4 
+          ? "grid-cols-1 sm:grid-cols-2 max-w-3xl mx-auto" 
+          : options.length % 3 === 0 
+            ? "grid-cols-1 sm:grid-cols-2 md:grid-cols-3"
+            : "grid-cols-1 sm:grid-cols-2 max-w-3xl mx-auto"
+      }`}>
         {options.map((option, i) => {
           const Icon = ICONS[option.icon || option.id] || FileText;
           const styles = GRADIENT_STYLES[option.color] || GRADIENT_STYLES.green;
