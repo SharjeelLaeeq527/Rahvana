@@ -9,8 +9,8 @@ import {
   FilePlus2,
   RefreshCw,
   FileEdit,
-  Smartphone,
-  Building2,
+  // Smartphone,
+  // Building2,
   CheckCircle2,
 } from "lucide-react";
 
@@ -87,7 +87,7 @@ export default function Step1() {
     setApplicationType,
     // setApplicationMethod,
     setCurrentStep,
-    // completeStep,
+    completeStep,
   } = useCnicWizard();
 
   // We maintain internal state to reveal sections sequentially
@@ -100,7 +100,11 @@ export default function Step1() {
 
   const handleAppTypeSelect = (typeId: string) => {
     setApplicationType(typeId);
-    setInternalStep(3);
+    // setInternalStep(3);
+    setTimeout(() => {
+      completeStep(1);
+      setCurrentStep(2);
+    }, 400);
   };
 
   // const handleMethodSelect = (methodId: string) => {

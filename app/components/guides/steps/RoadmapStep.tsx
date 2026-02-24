@@ -303,7 +303,7 @@ const TimelinePhases = ({ phases, type, onSelectPhase }: TimelineProps) => {
                 ${
                   activeId === phase.id
                     ? "bg-[#0d7377]"
-                    : "bg-gradient-to-br from-[#14a0a6] to-[#0a5a5d]"
+                    : "bg-linear-to-br from-[#14a0a6] to-[#0a5a5d]"
                 }`}
               >
                 {phase.id}
@@ -313,9 +313,9 @@ const TimelinePhases = ({ phases, type, onSelectPhase }: TimelineProps) => {
                 {phase.title}
               </span>
 
-              <span className="text-[0.72rem] text-slate-500">
+              {/* <span className="text-[0.72rem] text-slate-500">
                 {phase.duration}
-              </span>
+              </span> */}
             </button>
 
             {i < phases.length - 1 && (
