@@ -717,14 +717,14 @@ export const NAV_DATA: Record<string, NavSection> = {
             href: "/guides/nikah-nama-guide",
             // badge: "Live",
           },
-          {
-            icon: <FileCheck className="h-5 w-5" />,
-            title: "Divorce & Death",
-            description: "Termination of prior marriages.",
-            href: "/guides/prior-marriage-termination",
-            // badge: "Soon",
-            disabled: true,
-          },
+          // {
+          //   icon: <FileCheck className="h-5 w-5" />,
+          //   title: "Divorce & Death",
+          //   description: "Termination of prior marriages.",
+          //   href: "/guides/prior-marriage-termination",
+          //   // badge: "Soon",
+          //   disabled: true,
+          // },
           {
             icon: <DollarSign className="h-5 w-5" />,
             title: "Asset Documentation",

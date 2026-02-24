@@ -2,6 +2,13 @@
 
 import React, { useState } from "react";
 import { MessageCircle, X, Upload, CheckCircle2 } from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectTrigger,
+  SelectItem,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface FeedbackButtonProps {
   steps: string[];
@@ -146,56 +153,58 @@ export default function FeedbackButton({
                 </div>
               ) : (
                 <form onSubmit={handleSubmit} className="space-y-5">
-                  {/* Category */}
-                  <div>
-                    <label className="block text-sm font-medium text-slate-700 mb-2">
+                  {/* Feedback Type */}
+                  <div className="mt-4">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
                       Feedback Type
                     </label>
-                    <select
+                    <Select
                       value={feedback.category}
-                      onChange={(e) =>
-                        setFeedback((prev) => ({
-                          ...prev,
-                          category: e.target.value,
-                        }))
+                      onValueChange={(val) =>
+                        setFeedback((prev) => ({ ...prev, category: val }))
                       }
-                      className="w-full p-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 bg-white shadow-sm"
-                      required
                     >
-                      <option value="">Select a category</option>
-                      <option value="Incorrect info">
-                        Incorrect information
-                      </option>
-                      <option value="UI/UX issue">UI/UX issue</option>
-                      <option value="Bug">Bug / Something broken</option>
-                      <option value="Suggestion">
-                        Suggestion / Improvement
-                      </option>
-                      <option value="Other">Other</option>
-                    </select>
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder="Select a category" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Incorrect info">
+                          Incorrect information
+                        </SelectItem>
+                        <SelectItem value="UI/UX issue">UI/UX issue</SelectItem>
+                        <SelectItem value="Bug">
+                          Bug / Something broken
+                        </SelectItem>
+                        <SelectItem value="Suggestion">
+                          Suggestion / Improvement
+                        </SelectItem>
+                        <SelectItem value="Other">Other</SelectItem>
+                      </SelectContent>
+                    </Select>
                   </div>
 
                   {/* Step */}
-                  <div>
-                    <label className="block text-sm font-medium text-slate-700 mb-2">
+                  <div className="mt-4">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
                       Where did this happen?
                     </label>
-                    <select
+                    <Select
                       value={feedback.step}
-                      onChange={(e) =>
-                        setFeedback((prev) => ({
-                          ...prev,
-                          step: e.target.value,
-                        }))
+                      onValueChange={(val) =>
+                        setFeedback((prev) => ({ ...prev, step: val }))
                       }
-                      className="w-full p-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 bg-white shadow-sm"
                     >
-                      {steps.map((s) => (
-                        <option key={s} value={s}>
-                          {s}
-                        </option>
-                      ))}
-                    </select>
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder="Select a step" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {steps.map((s) => (
+                          <SelectItem key={s} value={s}>
+                            {s}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
 
                   {/* Description */}
