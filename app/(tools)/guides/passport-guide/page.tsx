@@ -17,6 +17,7 @@ import { type WizardState, WizardStepId } from "@/types/guide-wizard";
 import guideData from "@/data/passport-guide-data.json";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import FeedbackButton from "@/app/components/FeedbackButton";
+import { useWizardSession } from "@/lib/guides/useWizardSession";
 
 const STEP_IDS: WizardStepId[] = [
   "document_need",
@@ -34,13 +35,13 @@ const STEP_LABELS: Record<string, string> = {
   validation: "Validation",
 };
 
-const INFO_PANEL_KEYS: Record<
-  WizardStepId,
-  keyof typeof guideData.wizard.info_panel
-> = {
+const INFO_PANEL_KEYS: Record<WizardStepId, any> = {
   document_need: "document_need",
-  // location: "location",
+  age_category: "document_need",
+  birth_setting: "document_need",
+  location: "roadmap",
   roadmap: "roadmap",
+  office_finder: "roadmap",
   validation: "validation",
 };
 
@@ -49,17 +50,39 @@ const PassportGuide = () => {
   const [showWhatsThis, setShowWhatsThis] = useState(true);
   const [state, setState] = useState<WizardState>({
     documentNeed: null,
+    ageCategory: null,
+    birthSetting: null,
     province: null,
     district: null,
     city: null,
     checkedDocuments: [],
     validationChecks: [],
     uploadedFile: false,
+    savedOffice: null,
   });
 
+  const { saveWizardStep } = useWizardSession(
+    "passport-guide",
+    state,
+    setState,
+    STEP_IDS,
+    setCurrentStep,
+    (prev, stepsData) => ({
+      ...prev,
+      documentNeed: stepsData.document_need || prev.documentNeed,
+      province: stepsData.location?.province || prev.province,
+      district: stepsData.location?.district || prev.district,
+      city: stepsData.location?.city || prev.city,
+      checkedDocuments: stepsData.roadmap || prev.checkedDocuments,
+      validationChecks: stepsData.validation?.checks || prev.validationChecks,
+      uploadedFile: stepsData.validation?.uploaded || prev.uploadedFile,
+    })
+  );
+
   const currentStepId = STEP_IDS[currentStep];
-  const infoPanelData = guideData.wizard.info_panel[
-    INFO_PANEL_KEYS[currentStepId]
+  const infoPanelKey = INFO_PANEL_KEYS[currentStepId];
+  const infoPanelData = (guideData.wizard.info_panel as any)[
+    infoPanelKey
   ] as unknown as InfoPanelData;
 
   const canGoNext = (): boolean => {
@@ -89,26 +112,36 @@ const PassportGuide = () => {
   };
 
   const handleDocumentNeedSelect = (id: string) => {
-    setState((s) => ({ ...s, documentNeed: id }));
+    setState((s: WizardState) => ({ ...s, documentNeed: id }));
+    saveWizardStep("document_need", id, true);
     setTimeout(() => setCurrentStep(1), 400);
   };
 
   const toggleDocument = (id: string) => {
-    setState((s) => ({
+    const newDocs = state.checkedDocuments.includes(id)
+      ? state.checkedDocuments.filter((d) => d !== id)
+      : [...state.checkedDocuments, id];
+
+    setState((s: WizardState) => ({
       ...s,
-      checkedDocuments: s.checkedDocuments.includes(id)
-        ? s.checkedDocuments.filter((d) => d !== id)
-        : [...s.checkedDocuments, id],
+      checkedDocuments: newDocs,
     }));
+    saveWizardStep("roadmap", newDocs);
   };
 
   const toggleValidationCheck = (label: string) => {
-    setState((s) => ({
+    const newChecks = state.validationChecks.includes(label)
+      ? state.validationChecks.filter((l) => l !== label)
+      : [...state.validationChecks, label];
+
+    setState((s: WizardState) => ({
       ...s,
-      validationChecks: s.validationChecks.includes(label)
-        ? s.validationChecks.filter((l) => l !== label)
-        : [...s.validationChecks, label],
+      validationChecks: newChecks,
     }));
+    saveWizardStep("validation", {
+      checks: newChecks,
+      uploaded: state.uploadedFile,
+    });
   };
 
   const renderStep = () => {
@@ -147,7 +180,13 @@ const PassportGuide = () => {
             validationChecks={state.validationChecks}
             onToggleCheck={toggleValidationCheck}
             uploadedFile={state.uploadedFile}
-            onUpload={() => setState((s) => ({ ...s, uploadedFile: true }))}
+            onUpload={() => {
+              setState((s: WizardState) => ({ ...s, uploadedFile: true }));
+              saveWizardStep("validation", {
+                checks: state.validationChecks,
+                uploaded: true,
+              });
+            }}
             data={guideData.wizard.validation}
           />
         );

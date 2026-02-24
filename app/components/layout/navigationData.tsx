@@ -13,10 +13,6 @@ import {
   Shield,
   Map,
   FileText,
-  Layout,
-  Search,
-  Layers,
-  Folder,
   DollarSign,
   Syringe,
   FileCheck,
@@ -24,6 +20,16 @@ import {
   FileUp,
   GraduationCap,
   BookOpen,
+  Brain,
+  LifeBuoy,
+  Compass,
+  Calculator,
+  Clock,
+  Calendar,
+  Files,
+  PenTool,
+  Wand2,
+  FolderLock,
 } from "lucide-react";
 
 export interface NavItem {
@@ -537,7 +543,9 @@ export const NAV_DATA: Record<string, NavSection> = {
         label: "AI & Planning",
         items: [
           {
-            icon: <ShieldCheck className="h-5 w-5" />,
+            icon: (
+              <Brain className="h-5 w-5 text-violet-600 dark:text-violet-400" />
+            ),
             title: "CasePulse AI",
             description:
               "Instant AI case strength score + gaps to fix before NVC/Interview.",
@@ -545,7 +553,9 @@ export const NAV_DATA: Record<string, NavSection> = {
             // badge: "Live",
           },
           {
-            icon: <Map className="h-5 w-5" />,
+            icon: (
+              <LifeBuoy className="h-5 w-5 text-violet-600 dark:text-violet-400" />
+            ),
             title: "221(g) Rescue Planner",
             description:
               "Step-by-step next moves after 221(g) or Administrative Processing.",
@@ -553,7 +563,9 @@ export const NAV_DATA: Record<string, NavSection> = {
             // badge: "Live",
           },
           {
-            icon: <FileText className="h-5 w-5" />,
+            icon: (
+              <Compass className="h-5 w-5 text-violet-600 dark:text-violet-400" />
+            ),
             title: "VisaPath Finder",
             description:
               "Quick quiz that points you to the right visa path + next steps.",
@@ -561,7 +573,9 @@ export const NAV_DATA: Record<string, NavSection> = {
             // badge: "Live",
           },
           {
-            icon: <ShieldCheck className="h-5 w-5" />,
+            icon: (
+              <MessageSquare className="h-5 w-5 text-violet-600 dark:text-violet-400" />
+            ),
             title: "InterviewIQ",
             description:
               "Prepare smarter and deliver confident answers when it matters most.",
@@ -575,7 +589,9 @@ export const NAV_DATA: Record<string, NavSection> = {
         label: "Money & Sponsorship",
         items: [
           {
-            icon: <Layout className="h-5 w-5" />,
+            icon: (
+              <Calculator className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
+            ),
             title: "SponsorReady",
             description:
               "Auto-check income/assets and tell you what you still need.",
@@ -588,14 +604,18 @@ export const NAV_DATA: Record<string, NavSection> = {
         label: "Tracking",
         items: [
           {
-            icon: <Search className="h-5 w-5" />,
+            icon: (
+              <Clock className="h-5 w-5 text-amber-600 dark:text-amber-400" />
+            ),
             title: "QueueWatch (IV Scheduling)",
             description:
               "Track interview scheduling movement and trends by category.",
             href: "/iv-tool",
           },
           {
-            icon: <Search className="h-5 w-5" />,
+            icon: (
+              <Calendar className="h-5 w-5 text-amber-600 dark:text-amber-400" />
+            ),
             title: "BulletinBuddy",
             description:
               "Check your priority date progress against the Visa Bulletin.",
@@ -610,14 +630,18 @@ export const NAV_DATA: Record<string, NavSection> = {
         label: "Docs & PDFs",
         items: [
           {
-            icon: <Camera className="h-5 w-5" />,
+            icon: (
+              <Camera className="h-5 w-5 text-rose-600 dark:text-rose-400" />
+            ),
             title: "PhotoPass",
             description: "Make a compliant passport/visa photo in minutes.",
             href: "/passport",
             // badge: "Live",
           },
           {
-            icon: <Layers className="h-5 w-5" />,
+            icon: (
+              <Files className="h-5 w-5 text-rose-600 dark:text-rose-400" />
+            ),
             title: "PDF ToolKit",
             description:
               "Merge • compress • convert • edit — all in one toolkit.",
@@ -625,7 +649,9 @@ export const NAV_DATA: Record<string, NavSection> = {
             // badge: "Live",
           },
           {
-            icon: <FileText className="h-5 w-5" />,
+            icon: (
+              <PenTool className="h-5 w-5 text-rose-600 dark:text-rose-400" />
+            ),
             title: "SignSnap",
             description: "Create a clean digital signature for your forms.",
             href: "/signature-image-processing",
@@ -637,7 +663,9 @@ export const NAV_DATA: Record<string, NavSection> = {
         label: "Forms & Automation",
         items: [
           {
-            icon: <FileText className="h-5 w-5" />,
+            icon: (
+              <Wand2 className="h-5 w-5 text-cyan-600 dark:text-cyan-400" />
+            ),
             title: "FormForge Autofill",
             description:
               "Auto-fills your official form and generates a ready-to-upload PDF.",
@@ -650,7 +678,9 @@ export const NAV_DATA: Record<string, NavSection> = {
         label: "Storage & Organization",
         items: [
           {
-            icon: <Folder className="h-5 w-5" />,
+            icon: (
+              <FolderLock className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
+            ),
             title: "Document Vault",
             description:
               "Organize docs + build shareable packets when the embassy asks.",
@@ -670,48 +700,62 @@ export const NAV_DATA: Record<string, NavSection> = {
         label: "Pakistan Docs",
         items: [
           {
-            icon: <FileText className="h-5 w-5" />,
+            icon: (
+              <FileText className="h-5 w-5 text-green-600 dark:text-green-400" />
+            ),
             title: "PCC Playbooks (All Provinces)",
             description:
               "Guides for Sindh, Punjab, KPK, and Balochistan Police Certificates.",
             href: "/guides/police-verification",
           },
           {
-            icon: <Shield className="h-5 w-5" />,
+            icon: (
+              <Shield className="h-5 w-5 text-green-600 dark:text-green-400" />
+            ),
             title: "PCC Reference Guide",
             description:
               "Comprehensive overview of Police Character Certificates.",
             href: "/guides/police-certificate",
           },
           {
-            icon: <Globe className="h-5 w-5" />,
+            icon: (
+              <Globe className="h-5 w-5 text-green-600 dark:text-green-400" />
+            ),
             title: "Passport Guide",
             description: "Obtaining or renewing your Pakistani passport.",
             href: "/guides/passport-guide",
             // badge: "Live",
           },
           {
-            icon: <FileText className="h-5 w-5" />,
+            icon: (
+              <FileText className="h-5 w-5 text-green-600 dark:text-green-400" />
+            ),
             title: "CNIC Guide",
             description: "Obtaining and renewing your NADRA CNIC.",
             href: "/guides/cnic-guide",
             // badge: "Live",
           },
           {
-            icon: <FileText className="h-5 w-5" />,
+            icon: (
+              <FileText className="h-5 w-5 text-green-600 dark:text-green-400" />
+            ),
             title: "Birth Certificate",
             description: "NADRA CRC, B-Form, and birth documentation.",
             href: "/guides/birth-certificate-guide",
           },
           {
-            icon: <Globe className="h-5 w-5" />,
+            icon: (
+              <Globe className="h-5 w-5 text-green-600 dark:text-green-400" />
+            ),
             title: "FRC Guide",
             description: "Family Registration Certificate (FRC) guide.",
             href: "/guides/frc-guide",
             // badge: "Live",
           },
           {
-            icon: <Heart className="h-5 w-5" />,
+            icon: (
+              <Heart className="h-5 w-5 text-green-600 dark:text-green-400" />
+            ),
             title: "Marriage Certificate",
             description: "Nikahnama and MRC guide.",
             href: "/guides/nikah-nama-guide",
@@ -726,13 +770,17 @@ export const NAV_DATA: Record<string, NavSection> = {
           //   disabled: true,
           // },
           {
-            icon: <DollarSign className="h-5 w-5" />,
+            icon: (
+              <DollarSign className="h-5 w-5 text-green-600 dark:text-green-400" />
+            ),
             title: "Asset Documentation",
             description: "Prove financial standing with correct documents.",
             href: "/guides/asset-document-guide",
           },
           {
-            icon: <Briefcase className="h-5 w-5" />,
+            icon: (
+              <Briefcase className="h-5 w-5 text-green-600 dark:text-green-400" />
+            ),
             title: "Employment Verification",
             description: "Employment letters and income proof.",
             href: "/guides/employment-certificate-guide",
@@ -744,14 +792,16 @@ export const NAV_DATA: Record<string, NavSection> = {
         label: "Embassy Logistics",
         items: [
           {
-            icon: <Map className="h-5 w-5" />,
+            icon: <Map className="h-5 w-5 text-blue-600 dark:text-blue-400" />,
             title: "Courier & Passport Delivery",
             description:
               "Register, choose delivery options, and courier guide.",
             href: "/guides/courier-registration",
           },
           {
-            icon: <Users className="h-5 w-5" />,
+            icon: (
+              <Users className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+            ),
             title: "Interview Preparation",
             description: "Required documents and what to bring to the embassy.",
             href: "/interview-prep",
@@ -763,7 +813,9 @@ export const NAV_DATA: Record<string, NavSection> = {
         label: "Financial & Sponsorship",
         items: [
           {
-            icon: <DollarSign className="h-5 w-5" />,
+            icon: (
+              <DollarSign className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
+            ),
             title: "Affidavit of Support",
             description: "I-864 guide and financial requirements.",
             href: "/affidavit-support-calculator",
@@ -775,7 +827,9 @@ export const NAV_DATA: Record<string, NavSection> = {
         label: "Medical & Exam",
         items: [
           {
-            icon: <Activity className="h-5 w-5" />,
+            icon: (
+              <Activity className="h-5 w-5 text-teal-600 dark:text-teal-400" />
+            ),
             title: "Medical Examination",
             description: "Panel physicians and medical requirements.",
             href: "/guides/medical-exam",
@@ -783,7 +837,9 @@ export const NAV_DATA: Record<string, NavSection> = {
             disabled: true,
           },
           {
-            icon: <Syringe className="h-5 w-5" />,
+            icon: (
+              <Syringe className="h-5 w-5 text-teal-600 dark:text-teal-400" />
+            ),
             title: "Vaccination Guide",
             description: "CDC-required vaccinations and polio certificate.",
             href: "/guides/polio-vaccination-guide",
@@ -795,7 +851,9 @@ export const NAV_DATA: Record<string, NavSection> = {
         label: "Relationship Evidence",
         items: [
           {
-            icon: <Heart className="h-5 w-5" />,
+            icon: (
+              <Heart className="h-5 w-5 text-rose-600 dark:text-rose-400" />
+            ),
             title: "Bona Fide Marriage",
             description: "Proof of genuine relationship.",
             href: "/guides/bona-marriage-guide",
@@ -808,7 +866,9 @@ export const NAV_DATA: Record<string, NavSection> = {
         label: "Arrival & Travel",
         items: [
           {
-            icon: <FileCheck className="h-5 w-5" />,
+            icon: (
+              <FileCheck className="h-5 w-5 text-sky-600 dark:text-sky-400" />
+            ),
             title: "Customs & Declarations",
             description: "What to declare and common pitfalls.",
             href: "/guides/custom-requirements",
@@ -820,7 +880,9 @@ export const NAV_DATA: Record<string, NavSection> = {
         label: "Education & Process",
         items: [
           {
-            icon: <BookOpen className="h-5 w-5" />,
+            icon: (
+              <BookOpen className="h-5 w-5 text-amber-600 dark:text-amber-400" />
+            ),
             title: "Educational Certificates",
             description:
               "HEC/IBCC attestation, WES evaluation, and I-20 requirements.",
@@ -834,7 +896,9 @@ export const NAV_DATA: Record<string, NavSection> = {
         label: "Visa Strategy",
         items: [
           {
-            icon: <GraduationCap className="h-5 w-5" />,
+            icon: (
+              <GraduationCap className="h-5 w-5 text-violet-600 dark:text-violet-400" />
+            ),
             title: "Visa Case Strength",
             description: "Understand your visa case strength and improve it.",
             href: "/guides/visa-strength-guide",
@@ -854,13 +918,17 @@ export const NAV_DATA: Record<string, NavSection> = {
         label: "Expert Help",
         items: [
           {
-            icon: <MessageSquare className="h-5 w-5" />,
+            icon: (
+              <MessageSquare className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
+            ),
             title: "Book a Consultation",
             description: "Book a call — your first consult is free.",
             href: "/book-consultation",
           },
           {
-            icon: <Users className="h-5 w-5" />,
+            icon: (
+              <Users className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
+            ),
             title: "Expert Case Review",
             description:
               "Human review of your documents + a tailored improvement plan.",
@@ -874,7 +942,9 @@ export const NAV_DATA: Record<string, NavSection> = {
         label: "Pakistan Docs",
         items: [
           {
-            icon: <Shield className="h-5 w-5" />,
+            icon: (
+              <Shield className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
+            ),
             title: "PCC Filing Service — Sindh",
             description: "Done-for-you police certificate filing for Sindh.",
             href: "#",
@@ -882,7 +952,9 @@ export const NAV_DATA: Record<string, NavSection> = {
             disabled: true,
           },
           {
-            icon: <Shield className="h-5 w-5" />,
+            icon: (
+              <Shield className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
+            ),
             title: "PCC Filing Service — Punjab (Coming Soon)",
             description:
               "Join the waitlist for done-for-you PCC filing in Punjab.",
@@ -891,7 +963,9 @@ export const NAV_DATA: Record<string, NavSection> = {
             disabled: true,
           },
           {
-            icon: <Shield className="h-5 w-5" />,
+            icon: (
+              <Shield className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
+            ),
             title: "PCC Filing Service — KPK (Coming Soon)",
             description:
               "Join the waitlist for done-for-you PCC filing in KPK.",
@@ -900,7 +974,9 @@ export const NAV_DATA: Record<string, NavSection> = {
             disabled: true,
           },
           {
-            icon: <Shield className="h-5 w-5" />,
+            icon: (
+              <Shield className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
+            ),
             title: "PCC Filing Service — Balochistan (Coming Soon)",
             description:
               "Join the waitlist for done-for-you PCC filing in Balochistan.",
@@ -915,7 +991,9 @@ export const NAV_DATA: Record<string, NavSection> = {
         label: "Medical",
         items: [
           {
-            icon: <Heart className="h-5 w-5" />,
+            icon: (
+              <Heart className="h-5 w-5 text-rose-600 dark:text-rose-400" />
+            ),
             title: "Book Medical Appointment",
             description: "Book your panel physician medical exam appointment.",
             href: "/book-appointment",
@@ -928,7 +1006,9 @@ export const NAV_DATA: Record<string, NavSection> = {
         label: "Documents",
         items: [
           {
-            icon: <FileUp className="h-5 w-5" />,
+            icon: (
+              <FileUp className="h-5 w-5 text-amber-600 dark:text-amber-400" />
+            ),
             title: "Urdu → English Translation",
             description:
               "Request certified translation + formatting for submission.",

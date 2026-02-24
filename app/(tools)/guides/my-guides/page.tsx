@@ -10,9 +10,12 @@ import {
   ArrowRight,
   LayoutGrid,
   Search,
-  ChevronRight
+  ChevronRight,
+  Trash2,
+  Trash
 } from "lucide-react";
 import { motion } from "framer-motion";
+import { ConfirmationModal } from "@/app/components/shared/ConfirmationModal";
 
 interface UserGuideSession {
   id: string;
@@ -29,22 +32,70 @@ interface UserGuideSession {
 export default function MyGuidesPage() {
   const [sessions, setSessions] = useState<UserGuideSession[]>([]);
   const [loading, setLoading] = useState(true);
+  const [deleting, setDeleting] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  
+  // Modal states
+  const [showConfirmDelete, setShowConfirmDelete] = useState(false);
+  const [showConfirmClearAll, setShowConfirmClearAll] = useState(false);
+  const [selectedSessionId, setSelectedSessionId] = useState<string | null>(null);
+
+  const fetchMyGuides = async () => {
+    try {
+      setLoading(true);
+      const res = await fetch("/api/guides/my-guides");
+      const data = await res.json();
+      setSessions(data.sessions || []);
+    } catch (error) {
+      console.error("Failed to fetch my guides:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const fetchMyGuides = async () => {
-      try {
-        const res = await fetch("/api/guides/my-guides");
-        const data = await res.json();
-        setSessions(data.sessions || []);
-      } catch (error) {
-        console.error("Failed to fetch my guides:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
     fetchMyGuides();
   }, []);
+
+  const handleDelete = async () => {
+    if (!selectedSessionId) return;
+    try {
+      setDeleting(true);
+      const res = await fetch("/api/guides/delete", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ sessionId: selectedSessionId }),
+      });
+      if (res.ok) {
+        setSessions(prev => prev.filter(s => s.id !== selectedSessionId));
+        setShowConfirmDelete(false);
+        setSelectedSessionId(null);
+      }
+    } catch (error) {
+      console.error("Failed to delete guide:", error);
+    } finally {
+      setDeleting(false);
+    }
+  };
+
+  const handleClearAll = async () => {
+    try {
+      setDeleting(true);
+      const res = await fetch("/api/guides/delete", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ deleteAll: true }),
+      });
+      if (res.ok) {
+        setSessions([]);
+        setShowConfirmClearAll(false);
+      }
+    } catch (error) {
+      console.error("Failed to clear all guides:", error);
+    } finally {
+      setDeleting(false);
+    }
+  };
 
   const filteredSessions = sessions.filter(s => 
     s.guides.title.toLowerCase().includes(searchQuery.toLowerCase())
@@ -74,15 +125,26 @@ export default function MyGuidesPage() {
             </p>
           </div>
 
-          <div className="relative w-full md:w-72 group">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4 group-focus-within:text-teal-500 transition-colors" />
-            <input 
-              type="text" 
-              placeholder="Search your guides..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-9 pr-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-4 focus:ring-teal-500/10 focus:border-teal-500 transition-all shadow-sm"
-            />
+          <div className="flex flex-col sm:flex-row items-center gap-4">
+            {sessions.length > 0 && (
+              <button
+                onClick={() => setShowConfirmClearAll(true)}
+                className="flex items-center gap-2 px-4 py-2.5 text-red-600 hover:bg-red-50 rounded-xl transition-colors font-semibold text-sm border border-red-100"
+              >
+                <Trash size={16} />
+                Clear All
+              </button>
+            )}
+            <div className="relative w-full md:w-72 group">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4 group-focus-within:text-teal-500 transition-colors" />
+              <input 
+                type="text" 
+                placeholder="Search your guides..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full pl-9 pr-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-4 focus:ring-teal-500/10 focus:border-teal-500 transition-all shadow-sm"
+              />
+            </div>
           </div>
         </div>
 
@@ -112,12 +174,25 @@ export default function MyGuidesPage() {
                   <div className="p-3 bg-teal-50 rounded-2xl text-teal-600 group-hover:bg-teal-600 group-hover:text-white transition-colors duration-300">
                     <BookOpen size={24} />
                   </div>
-                  <div className="flex flex-col items-end">
-                    <span className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full 
-                      ${session.status === 'completed' ? 'bg-green-100 text-green-700' : 'bg-orange-100 text-orange-700'}`}>
-                      {session.status.replace('_', ' ')}
-                    </span>
-                    <span className="text-[10px] text-slate-400 mt-1 flex items-center gap-1 font-medium">
+                  <div className="flex flex-col items-end gap-2">
+                    <div className="flex items-center gap-2">
+                      <span className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full 
+                        ${session.status === 'completed' ? 'bg-green-100 text-green-700' : 'bg-orange-100 text-orange-700'}`}>
+                        {session.status.replace('_', ' ')}
+                      </span>
+                      <button
+                        onClick={(e) => {
+                          e.preventDefault();
+                          setSelectedSessionId(session.id);
+                          setShowConfirmDelete(true);
+                        }}
+                        className="p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all"
+                        title="Delete this progress"
+                      >
+                        <Trash2 size={16} />
+                      </button>
+                    </div>
+                    <span className="text-[10px] text-slate-400 flex items-center gap-1 font-medium">
                       <Clock size={10} />
                       {new Date(session.last_updated_at).toLocaleDateString()}
                     </span>
@@ -183,6 +258,29 @@ export default function MyGuidesPage() {
           </div>
         )}
       </div>
+
+      {/* Confirmation Modals */}
+      <ConfirmationModal
+        open={showConfirmDelete}
+        onOpenChange={setShowConfirmDelete}
+        title="Delete Progress?"
+        description="This will permanently delete your progress for this guide. You cannot undo this action."
+        confirmText="Yes, Delete"
+        cancelText="No, Keep it"
+        onConfirm={handleDelete}
+        loading={deleting}
+      />
+
+      <ConfirmationModal
+        open={showConfirmClearAll}
+        onOpenChange={setShowConfirmClearAll}
+        title="Clear All Progress?"
+        description="Are you sure you want to delete all your guide sessions? This action is permanent and will reset all your active and completed guides."
+        confirmText="Yes, Clear All"
+        cancelText="Cancel"
+        onConfirm={handleClearAll}
+        loading={deleting}
+      />
     </div>
   );
 }

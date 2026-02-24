@@ -13,6 +13,14 @@ import {
   Building2,
   CheckCircle2,
   ArrowLeft,
+  Baby,
+  Smile,
+  GraduationCap,
+  Briefcase,
+  Hospital,
+  Home,
+  Globe,
+  Heart,
 } from "lucide-react";
 
 const ICONS: Record<string, React.ElementType> = {
@@ -28,6 +36,14 @@ const ICONS: Record<string, React.ElementType> = {
   correction: FileEdit,
   online: Smartphone,
   inperson: Building2,
+  "0-3": Baby,
+  "3-10": Smile,
+  "10-18": GraduationCap,
+  "18+": Briefcase,
+  hospital: Hospital,
+  home: Home,
+  overseas: Globe,
+  adoption: Heart,
 };
 
 const GRADIENT_STYLES: Record<
@@ -114,7 +130,7 @@ const DocumentNeedStep = ({
     };
 
     return (
-      <div className="max-w-4xl mx-auto animate-in fade-in slide-in-from-bottom-4 duration-500 pb-10">
+      <div className="max-w-4xl mx-auto animate-in fade-in slide-in-from-bottom-4 duration-500 pb-5">
         <div className="mb-8">
           <h2 className="text-3xl font-bold text-slate-900 mb-3 tracking-tight">
             {title}
@@ -271,7 +287,7 @@ const DocumentNeedStep = ({
         </div>
 
         <div className="mt-10 flex justify-between items-center pt-6 border-t border-slate-100">
-          <button
+          {/* <button
             onClick={handleBack}
             className={`text-slate-500 hover:text-slate-800 font-medium px-4 py-2 hover:bg-slate-50 rounded-lg transition-colors flex items-center gap-2 ${
               internalStep <= 1 ? "invisible" : ""
@@ -280,7 +296,7 @@ const DocumentNeedStep = ({
           >
             <ArrowLeft className="w-4 h-4" />
             Back
-          </button>
+          </button> */}
 
           {internalStep < questions.length && (
             <div className="px-4 py-2 text-sm text-slate-400 font-medium">
@@ -309,7 +325,13 @@ const DocumentNeedStep = ({
         {description}
       </p>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5">
+      <div className={`grid gap-5 ${
+        options.length === 4 
+          ? "grid-cols-1 sm:grid-cols-2 max-w-3xl mx-auto" 
+          : options.length % 3 === 0 
+            ? "grid-cols-1 sm:grid-cols-2 md:grid-cols-3"
+            : "grid-cols-1 sm:grid-cols-2 max-w-3xl mx-auto"
+      }`}>
         {options.map((option, i) => {
           const Icon = ICONS[option.icon || option.id] || FileText;
           const styles = GRADIENT_STYLES[option.color] || GRADIENT_STYLES.green;

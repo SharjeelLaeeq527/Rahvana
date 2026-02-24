@@ -140,7 +140,7 @@ export default function Footer() {
                 href="/pdf-processing"
                 className="text-slate-400 hover:text-white transition-colors"
               >
-                PDF PowerKit
+                PDF ToolKit
               </Link>
               <Link
                 href="/tools"

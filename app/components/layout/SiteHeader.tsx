@@ -9,10 +9,8 @@ import {
   User as UserIcon,
   LogOut,
   Shield,
-  FileText,
   Zap,
   Briefcase,
-  Folder,
   Layout,
   Settings,
   HelpCircle,
@@ -21,6 +19,8 @@ import {
   CreditCard,
   Mail,
   BookOpen,
+  FolderLock,
+  Wand2,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import MegaMenu from "./MegaMenu";
@@ -134,10 +134,12 @@ export function SiteHeader({
   // const { theme, setTheme } = useTheme();
 
   const MOBILE_ICONS: Record<string, React.ReactNode> = {
-    journeys: <Briefcase className="w-5 h-5 text-primary" />,
-    tools: <FileText className="w-5 h-5 text-primary" />,
-    guides: <Folder className="w-5 h-5 text-primary" />,
-    services: <Zap className="w-5 h-5 text-primary" />,
+    journeys: (
+      <Briefcase className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+    ),
+    tools: <Wand2 className="w-5 h-5 text-violet-600 dark:text-violet-400" />,
+    guides: <BookOpen className="w-5 h-5 text-amber-600 dark:text-amber-400" />,
+    services: <Zap className="w-5 h-5 text-rose-600 dark:text-rose-400" />,
   };
 
   const pathname = usePathname();
@@ -504,49 +506,49 @@ export function SiteHeader({
                         onClick={() => handleNav("dashboard")}
                         className="flex items-center gap-3 w-full py-2.5 px-5 text-muted-foreground hover:bg-muted hover:text-primary transition-colors text-sm font-medium"
                       >
-                        <Layout className="w-4 h-4 text-primary" />
+                        <Layout className="w-4 h-4 text-cyan-600 dark:text-cyan-400" />
                         My Dashboard
                       </button>
                       <button
                         onClick={() => handleNav("my-journeys")}
                         className="flex items-center gap-3 w-full py-2.5 px-5 text-muted-foreground hover:bg-muted hover:text-primary transition-colors text-sm font-medium"
                       >
-                        <Briefcase className="w-4 h-4 text-primary" />
+                        <Briefcase className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
                         My Journeys
                       </button>
                       <button
                         onClick={() => handleNav("my-guides")}
                         className="flex items-center gap-3 w-full py-2.5 px-5 text-muted-foreground hover:bg-muted hover:text-primary transition-colors text-sm font-medium"
                       >
-                        <BookOpen className="w-4 h-4 text-primary" />
+                        <BookOpen className="w-4 h-4 text-amber-600 dark:text-amber-400" />
                         My Guides
                       </button>
                       <button
                         onClick={() => handleNav("profile")}
                         className="flex items-center gap-3 w-full py-2.5 px-5 text-muted-foreground hover:bg-muted hover:text-primary transition-colors text-sm font-medium"
                       >
-                        <UserIcon className="w-4 h-4 text-primary" />
+                        <UserIcon className="w-4 h-4 text-violet-600 dark:text-violet-400" />
                         My Profile
                       </button>
                       <button
                         onClick={() => handleNav("document-vault")}
                         className="flex items-center gap-3 w-full py-2.5 px-5 text-muted-foreground hover:bg-muted hover:text-primary transition-colors text-sm font-medium"
                       >
-                        <Folder className="w-4 h-4 text-primary" />
+                        <FolderLock className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
                         Document Vault
                       </button>
                       <button
                         onClick={() => handleNav("services")}
                         className="flex items-center gap-3 w-full py-2.5 px-5 text-muted-foreground hover:bg-muted hover:text-primary transition-colors text-sm font-medium"
                       >
-                        <TagIcon className="w-4 h-4 text-primary" />
+                        <TagIcon className="w-4 h-4 text-rose-600 dark:text-rose-400" />
                         My Services
                       </button>
                       <button
                         onClick={() => {}} // Placeholder
                         className="flex items-center gap-3 w-full py-2.5 px-5 text-muted-foreground hover:bg-muted hover:text-primary transition-colors text-sm font-medium"
                       >
-                        <LockIcon className="w-4 h-4 text-primary" />
+                        <LockIcon className="w-4 h-4 text-indigo-500 dark:text-indigo-400" />
                         Portal Locker
                       </button>
 
@@ -570,21 +572,21 @@ export function SiteHeader({
                         onClick={() => handleNav("settings")}
                         className="flex items-center gap-3 w-full py-2.5 px-5 text-muted-foreground hover:bg-muted hover:text-primary transition-colors text-sm font-medium"
                       >
-                        <Settings className="w-4 h-4 text-primary" />
+                        <Settings className="w-4 h-4 text-slate-500 dark:text-slate-400" />
                         Account Settings
                       </button>
                       <button
                         onClick={() => handleNav("view-security-questions")}
                         className="flex items-center gap-3 w-full py-2.5 px-5 text-muted-foreground hover:bg-muted hover:text-primary transition-colors text-sm font-medium"
                       >
-                        <Shield className="w-4 h-4 text-primary" />
+                        <Shield className="w-4 h-4 text-emerald-500 dark:text-emerald-400" />
                         Security & Login
                       </button>
                       <button
                         onClick={() => {}} // Placeholder
                         className="flex items-center gap-3 w-full py-2.5 px-5 text-muted-foreground hover:bg-muted hover:text-primary transition-colors text-sm font-medium"
                       >
-                        <HelpCircle className="w-4 h-4 text-primary" />
+                        <HelpCircle className="w-4 h-4 text-cyan-500 dark:text-cyan-400" />
                         Help Center
                       </button>
                     </div>
@@ -825,7 +827,7 @@ export function SiteHeader({
                       : "text-muted-foreground hover:bg-muted"
                   }`}
                 >
-                  <CreditCard className="w-5 h-5 text-primary" />
+                  <CreditCard className="w-5 h-5 text-amber-500 dark:text-amber-400" />
                   <span className="font-bold">Pricing</span>
                 </HydrationSafeButton>
                 {isSignedIn && (
@@ -838,7 +840,7 @@ export function SiteHeader({
                           : "text-muted-foreground hover:bg-muted"
                       }`}
                     >
-                      <Layout className="w-5 h-5 text-primary" />
+                      <Layout className="w-5 h-5 text-cyan-600 dark:text-cyan-400" />
                       <span className="font-bold">My Dashboard</span>
                     </HydrationSafeButton>
                     <HydrationSafeButton
@@ -849,7 +851,7 @@ export function SiteHeader({
                           : "text-muted-foreground hover:bg-muted"
                       }`}
                     >
-                      <Briefcase className="w-5 h-5 text-primary" />
+                      <Briefcase className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
                       <span className="font-bold">My Journeys</span>
                     </HydrationSafeButton>
                     <HydrationSafeButton
@@ -860,7 +862,7 @@ export function SiteHeader({
                           : "text-muted-foreground hover:bg-muted"
                       }`}
                     >
-                      <BookOpen className="w-5 h-5 text-primary" />
+                      <BookOpen className="w-5 h-5 text-amber-600 dark:text-amber-400" />
                       <span className="font-bold">My Guides</span>
                     </HydrationSafeButton>
                     <HydrationSafeButton
@@ -871,7 +873,7 @@ export function SiteHeader({
                           : "text-muted-foreground hover:bg-muted"
                       }`}
                     >
-                      <UserIcon className="w-5 h-5 text-primary" />
+                      <UserIcon className="w-5 h-5 text-violet-600 dark:text-violet-400" />
                       <span className="font-bold">My Profile</span>
                     </HydrationSafeButton>
                     <HydrationSafeButton
@@ -882,7 +884,7 @@ export function SiteHeader({
                           : "text-muted-foreground hover:bg-muted"
                       }`}
                     >
-                      <Settings className="w-5 h-5 text-primary" />
+                      <Settings className="w-5 h-5 text-slate-500 dark:text-slate-400" />
                       <span className="font-bold">Account Settings</span>
                     </HydrationSafeButton>
                   </>
@@ -895,7 +897,7 @@ export function SiteHeader({
                       : "text-muted-foreground hover:bg-muted"
                   }`}
                 >
-                  <Mail className="w-5 h-5 text-primary" />
+                  <Mail className="w-5 h-5 text-rose-500 dark:text-rose-400" />
                   <span className="font-bold">Contact</span>
                 </HydrationSafeButton>
               </nav>
