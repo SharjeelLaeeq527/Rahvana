@@ -10,6 +10,7 @@ import {
   Loader2,
   CheckCircle2,
   AlertCircle,
+  Facebook,
 } from "lucide-react";
 import { submitContactForm } from "./contact-action";
 const XIcon = ({ size = 20 }: { size?: number }) => (
@@ -100,7 +101,8 @@ export default function GetInTouch() {
               <SocialCard
                 icon={<Instagram size={20} />}
                 label="Instagram"
-                href="#"
+                href="https://www.instagram.com/rahvana.co?igsh=NTc4MTIwNjQ2YQ%3D%3D&utm_source=qr"
+                target="_blank"
                 ariaLabel="Follow us on Instagram"
               />
               <SocialCard
@@ -112,14 +114,16 @@ export default function GetInTouch() {
               <SocialCard
                 icon={<XIcon size={20} />}
                 label="X"
-                href="#"
+                href="https://x.com/rahvanaco?s=21&t=a8CQwdRgHqBFZmUfsX8Gpg"
+                target="_blank"
                 ariaLabel="Follow us on X"
               />
               <SocialCard
-                icon={<Youtube size={20} />}
-                label="YouTube"
-                href="#"
-                ariaLabel="Subscribe on YouTube"
+                icon={<Facebook size={20} />}
+                label="Facebook"
+                href="https://www.facebook.com/profile.php?id=61587967827317&mibextid=wwXIfr"
+                target="_blank"
+                ariaLabel="Follow us on Facebook"
               />
             </div>
           </div>
@@ -256,16 +260,19 @@ function SocialCard({
   icon,
   label,
   href,
+  target,
   ariaLabel,
 }: {
   icon: React.ReactNode;
   label: string;
   href: string;
+  target?: string;
   ariaLabel: string;
 }) {
   return (
     <a
       href={href}
+      target={target}
       className="flex items-center gap-3 p-4 bg-muted/30 border border-border rounded-xl text-foreground no-underline transition-all hover:border-primary hover:-translate-y-0.5 hover:shadow-md group"
       aria-label={ariaLabel}
     >

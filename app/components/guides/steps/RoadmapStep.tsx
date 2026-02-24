@@ -76,11 +76,6 @@ const RoadmapStep = ({
         {title}
       </h2>
 
-      <p className="text-[0.95rem] mb-8">
-        <span className="text-[hsl(215_16%_47%)]">Estimated timeline: </span>
-        <span className="text-[#0d7377] font-bold">{estimatedTimeline}</span>
-      </p>
-
       {/* Flashcard Timeline */}
       <div className="mb-12">
         <div
@@ -132,14 +127,7 @@ const RoadmapStep = ({
           )}
         </div>
 
-        <motion.button
-          whileHover={{ scale: 1.03 }}
-          whileTap={{ scale: 0.97 }}
-          className="w-full sm:w-auto flex items-center justify-center gap-1.5 px-4 py-2 rounded-lg border-[1.5px] border-primary text-primary text-[0.85rem] font-semibold hover:bg-primary/5 transition-colors focus:outline-none shrink-0"
-        >
-          <Download className="w-3.5 h-3.5" />
-          Print Checklist
-        </motion.button>
+
       </div>
 
       {/* Checklist Items */}
@@ -207,13 +195,7 @@ const RoadmapStep = ({
                       </div>
                     </div>
 
-                    <button
-                      onClick={(e) => e.stopPropagation()}
-                      className="flex items-center gap-1 px-3 py-1.5 rounded-lg border border-primary text-primary text-[0.8rem] font-semibold hover:bg-primary/5 transition-colors shrink-0"
-                    >
-                      <Upload className="w-3.5 h-3.5" />
-                      Upload
-                    </button>
+
                   </motion.div>
                 );
               })}
@@ -235,31 +217,48 @@ const RoadmapStep = ({
             />
 
             <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.95 }}
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
               className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 
-              w-[90%] max-w-md bg-white rounded-2xl shadow-xl p-6 z-50"
+              w-[90%] max-w-lg bg-white rounded-2xl shadow-2xl p-6 z-50 border border-slate-200"
             >
               <div className="flex justify-between items-center mb-4">
-                <h4 className="text-lg font-bold text-[#0d7377]">
-                  Phase {activePhase.id}: {activePhase.title}
-                </h4>
-                <button onClick={() => setActivePhase(null)}>
-                  <X className="w-4 h-4" />
+                <div>
+                  <h4 className="text-lg font-bold text-primary">
+                    Phase {activePhase.id}: {activePhase.title}
+                  </h4>
+                  <p className="text-sm text-slate-500 mt-1">{activePhase.duration}</p>
+                </div>
+                <button 
+                  onClick={() => setActivePhase(null)}
+                  className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-slate-100 transition-colors"
+                >
+                  <X className="w-4 h-4 text-slate-500" />
                 </button>
               </div>
 
-              <ul className="space-y-2 text-sm text-gray-600 leading-6">
-                {getBulletPoints(activePhase.description).map(
-                  (point, index) => (
-                    <li key={index} className="flex gap-2">
-                      <span className="text-[#0d7377] font-bold">•</span>
-                      <span>{point}</span>
-                    </li>
-                  ),
-                )}
-              </ul>
+              <div className="bg-slate-50 rounded-xl p-4 border border-slate-100">
+                <ul className="space-y-3">
+                  {getBulletPoints(activePhase.description).map(
+                    (point, index) => (
+                      <li key={index} className="flex gap-3">
+                        <span className="text-primary font-bold flex-shrink-0">•</span>
+                        <span className="text-slate-700 text-sm leading-relaxed">{point}</span>
+                      </li>
+                    ),
+                  )}
+                </ul>
+              </div>
+              
+              <div className="mt-4 flex justify-end">
+                <button
+                  onClick={() => setActivePhase(null)}
+                  className="px-4 py-2 bg-primary text-white rounded-lg text-sm font-medium hover:bg-primary/90 transition-colors"
+                >
+                  Close
+                </button>
+              </div>
             </motion.div>
           </>
         )}
@@ -280,46 +279,57 @@ const TimelinePhases = ({ phases, type, onSelectPhase }: TimelineProps) => {
   const [activeId, setActiveId] = useState<number | null>(null);
 
   return (
-    <div className="p-6 rounded-xl bg-[#f8fdfd] border border-[#e1f3f3] shadow-md">
+    <div className={`p-6 rounded-2xl border shadow-lg ${
+      type === "Onsite Application" 
+        ? "bg-gradient-to-br from-[#e8f6f6] to-[#d1eeef] border-[#0d7377]/20" 
+        : "bg-gradient-to-br from-[#e8f6f6] to-[#32e0c4]/20 border-[#32e0c4]/30"
+    }`}>
       <div className="flex justify-between items-center mb-6">
-        <h4 className="text-lg font-semibold text-[#0d7377]">{type}</h4>
-        <span className="text-xs text-slate-500">Click anywhere to switch</span>
+        <h4 className={`text-lg font-bold ${type === "Onsite Application" ? "text-[#0d7377]" : "text-[#32e0c4]"}`}>{type}</h4>
+        <span className="text-xs text-slate-500 bg-slate-100 px-2 py-1 rounded-full">Click to view details</span>
       </div>
 
-      <div className="flex justify-center items-start gap-2.5">
+      <div className="flex justify-center items-start gap-4">
         {phases.map((phase, i) => (
-          <div key={phase.id} className="flex items-start gap-2.5">
+          <div key={phase.id} className="flex flex-col items-center">
             <button
               onClick={(e) => {
                 e.stopPropagation();
                 setActiveId(phase.id);
                 onSelectPhase(phase);
               }}
-              className="flex flex-col items-center gap-2 bg-transparent border-none p-1"
+              className="flex flex-col items-center gap-2 bg-transparent border-none p-1 group"
             >
               <div
-                className={`w-12 h-12 rounded-full flex items-center justify-center
-                font-bold text-white text-[1.05rem] shadow-md
+                className={`w-14 h-14 rounded-full flex items-center justify-center
+                font-bold text-white text-lg shadow-lg group-hover:scale-110 transition-transform duration-200 border-2
                 ${
                   activeId === phase.id
-                    ? "bg-[#0d7377]"
-                    : "bg-linear-to-br from-[#14a0a6] to-[#0a5a5d]"
+                    ? type === "Onsite Application" 
+                      ? "bg-[#0d7377] border-[#0a5a5d] ring-4 ring-[#0d7377]/20" 
+                      : "bg-[#32e0c4] border-[#14a0a6] ring-4 ring-[#32e0c4]/20"
+                    : type === "Onsite Application" 
+                      ? "bg-gradient-to-br from-[#0d7377] to-[#0a5a5d] border-[#0a5a5d] group-hover:ring-2 group-hover:ring-[#0d7377]/30"
+                      : "bg-gradient-to-br from-[#32e0c4] to-[#14a0a6] border-[#14a0a6] group-hover:ring-2 group-hover:ring-[#32e0c4]/30"
                 }`}
               >
                 {phase.id}
               </div>
 
-              <span className="text-[0.8rem] font-semibold text-center max-w-24 leading-[1.3] min-h-12">
-                {phase.title}
-              </span>
-
-              {/* <span className="text-[0.72rem] text-slate-500">
-                {phase.duration}
-              </span> */}
+              <div className="text-center">
+                <span className="block text-sm font-semibold text-slate-800 group-hover:text-primary transition-colors">
+                  {phase.title}
+                </span>
+                <span className="block text-xs text-slate-500 mt-1 font-medium">
+                  {phase.duration}
+                </span>
+              </div>
             </button>
 
             {i < phases.length - 1 && (
-              <div className="w-10 h-0.5 bg-[#14a0a6] mt-6 opacity-40" />
+              <div className="self-center flex items-center justify-center w-full mt-3">
+                <div className={`w-12 h-1 ${type === "Onsite Application" ? "bg-[#0d7377]/30" : "bg-[#32e0c4]/40"} rounded-full`}></div>
+              </div>
             )}
           </div>
         ))}

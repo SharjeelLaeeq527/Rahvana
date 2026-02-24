@@ -52,30 +52,23 @@ const WizardSidebar = ({
   const progressPercent = (progress / total) * 100;
 
   return (
-    <aside
-      className="w-70 min-w-70 h-full bg-white
-                 border-r border-[hsl(214_32%_91%)]
-                 flex flex-col overflow-hidden"
-    >
+    <aside className="h-full flex flex-col bg-white border-r border-slate-200 rounded-xl mx-4 my-3" style={{ height: '660px', width: '320px' }}>
       {/* Add to Active Wizards Button */}
-      <div className="pt-5 px-4 pb-3">
+      <div className="p-4 border-b border-slate-200 rounded-t-xl">
         <motion.button
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.98 }}
           className="w-full flex items-center justify-center gap-2
-                     py-[0.7rem] px-4 rounded-[10px]
-                     text-white text-[0.875rem] font-semibold
-                     shadow-[0_2px_8px_hsl(168_80%_30%/0.3)]
-                     bg-[#0d7478]
-                     transition-all"
+                     px-4 py-2.5 rounded-lg font-medium transition-all
+                     bg-primary text-white hover:bg-primary/80"
         >
-          <Bookmark className="w-4 h-4" />
+          <Bookmark className="w-5 h-5" />
           Add to Active Wizards
         </motion.button>
       </div>
 
       {/* Steps */}
-      <nav className="flex-1 px-4 py-2 overflow-y-auto">
+      <nav className="flex-1 overflow-y-auto p-4 custom-scrollbar">
         {steps.map((stepId, index) => {
           const status = getStatus(index, currentStep);
           const Icon = STEP_ICONS[stepId] || ClipboardList;
@@ -87,98 +80,85 @@ const WizardSidebar = ({
               <motion.button
                 onClick={() => isClickable && onStepClick(index)}
                 whileHover={isClickable ? { x: 4 } : {}}
-                className={`w-full flex items-center gap-3
-                           p-3 rounded-[12px]
-                           transition-all
+                className={`w-full flex items-start gap-3 p-2 rounded-lg text-left transition-colors
                            ${
-                             status === "active"
-                               ? "bg-[#0d7478]"
-                               : "bg-transparent"
-                           }
-                           ${isClickable ? "cursor-pointer" : "cursor-default"}`}
+                             status === "completed"
+                               ? "hover:bg-slate-50 cursor-pointer text-slate-700"
+                               : status === "active"
+                                 ? "bg-primary/10 cursor-pointer text-primary"
+                                 : "opacity-50 cursor-not-allowed text-slate-500"
+                           }`}
               >
-                {/* Icon Circle */}
-                <div
-                  className={`w-9 h-9 rounded-full flex items-center justify-center shrink-0
-                  ${
-                    status === "completed"
-                      ? "bg-[#0d7478]"
-                      : status === "active"
-                      ? "bg-white/20"
-                      : "bg-[hsl(210_20%_96%)]"
-                  }`}
-                >
+                <div className="shrink-0 mt-0.5">
                   {status === "completed" ? (
-                    <svg
-                      width="16"
-                      height="16"
-                      viewBox="0 0 16 16"
-                      fill="none"
-                    >
-                      <path
-                        d="M3 8.5L6.5 12L13 4"
-                        stroke="white"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      />
-                    </svg>
+                    <div className="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center">
+                      <svg
+                        width="20"
+                        height="20"
+                        viewBox="0 0 20 20"
+                        fill="none"
+                      >
+                        <path
+                          d="M6.5 10.5L9 13L14.5 7.5"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
+                      </svg>
+                    </div>
                   ) : (
-                    <Icon
-                      className={`w-4 h-4
+                    <div
+                      className={`w-8 h-8 rounded-full flex items-center justify-center
                         ${
                           status === "active"
-                            ? "text-white"
-                            : "text-[hsl(215_16%_57%)]"
+                            ? "bg-primary shadow-md"
+                            : "bg-slate-100"
                         }`}
-                    />
+                    >
+                      <Icon
+                        className={`w-4 h-4
+                          ${
+                            status === "active"
+                              ? "text-white"
+                              : "text-slate-400"
+                          }`}
+                      />
+                    </div>
                   )}
                 </div>
 
-                {/* Label */}
-                <div className="text-left">
-                  <div
-                    className={`text-[0.875rem] font-semibold
-                      ${
-                        status === "active"
-                          ? "text-white"
-                          : status === "completed"
-                          ? "text-[#0d7478]"
-                          : "text-[hsl(215_16%_57%)]"
-                      }`}
+                <div className="flex-1 min-w-0 py-1">
+                  <p
+                    className={`font-medium text-sm truncate ${status === "active" ? "font-bold" : ""}`}
                   >
                     {label}
-                  </div>
-
-                  <div
-                    className={`text-[0.75rem] mt-px
-                      ${
-                        status === "active"
-                          ? "text-white/80"
-                          : status === "completed"
-                          ? "text-[#0d7478]"
-                          : "text-[hsl(215_16%_67%)]"
-                      }`}
+                  </p>
+                  <p
+                    className={`text-xs mt-0.5 ${
+                      status === "active" ? "text-primary" : "text-slate-400"
+                    }`}
                   >
                     {status === "completed"
                       ? "Completed"
                       : status === "active"
-                      ? "In Progress"
-                      : "Upcoming"}
-                  </div>
+                        ? "In Progress"
+                        : "Upcoming"}
+                  </p>
                 </div>
               </motion.button>
 
               {/* Connector Line */}
               {index < steps.length - 1 && (
-                <div
-                  className={`w-0.5 h-6 ml-7.25 rounded
-                    ${
+                <div className="flex justify-start pl-6 py-0.5">
+                  <div
+                    className={`w-0.5 h-4 ${
                       status === "completed"
-                        ? "bg-[#0d7478]"
-                        : "bg-[hsl(214_32%_91%)]"
+                        ? "bg-primary"
+                        : "bg-slate-200"
                     }`}
-                />
+                  />
+                </div>
               )}
             </div>
           );
@@ -186,25 +166,19 @@ const WizardSidebar = ({
       </nav>
 
       {/* Progress Bar */}
-      <div className="p-4 border-t border-[hsl(214_32%_91%)]">
-        <div className="flex justify-between text-[0.8rem]
-                        text-[hsl(215_16%_47%)]
-                        font-medium mb-2">
-          <span>Progress</span>
-          <span>
-            {progress} of {total}
+      <div className="p-4 border-t border-slate-200 bg-slate-50 rounded-b-xl">
+        <div className="flex items-center justify-between text-xs text-slate-500 mb-2 font-medium">
+          <span>Overall Progress</span>
+          <span className="text-primary bg-primary/10 px-2 py-0.5 rounded-full">
+            {progress} / {total} Steps
           </span>
         </div>
-
-        <div className="h-1.5 rounded-[3px]
-                        bg-[hsl(210_20%_96%)]
-                        overflow-hidden">
+        <div className="w-full bg-slate-200 rounded-full h-1.5 animate-pulse">
           <motion.div
             initial={{ width: 0 }}
             animate={{ width: `${progressPercent}%` }}
             transition={{ duration: 0.5, ease: "easeInOut" }}
-            className="h-full rounded-[3px]
-                       bg-[#0d7478]"
+            className="h-1.5 rounded-full transition-all duration-500 shadow-sm bg-primary"
           />
         </div>
       </div>

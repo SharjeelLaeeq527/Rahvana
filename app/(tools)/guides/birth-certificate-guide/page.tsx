@@ -215,6 +215,8 @@ const BirthCertificateGuidePage = () => {
         <WizardInfoPanel
           data={infoPanelData}
           lastVerified={guideData.wizard.last_verified}
+          guideData={guideData}
+          guideType="other"
         />
       </div>
 
