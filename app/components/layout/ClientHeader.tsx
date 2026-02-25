@@ -28,29 +28,22 @@ export function ClientHeader() {
 
   const handleAuthToggle = async () => {
     if (user) {
-      // ── SIGN OUT ─────────────────────────────────────────────────────────
-      // Show the overlay ONLY for sign-out, not for navigating to login.
-      // The root layout keeps this component mounted across all client
-      // navigations (Next.js App Router), so any state that is set here
-      // persists after a Google OAuth redirect. By never setting isSigningOut
-      // during the login-redirect path, we avoid the stale "Signing Out..."
-      // overlay that appeared after a fresh login.
+      // ── SIGN OUT ─────────────────────────────────────────────────
       setIsSigningOut(true);
+
+      // Run signOut (which already has internal timeouts).
+      // Even if it fails, we MUST redirect to clear stale state.
       try {
         await signOut();
-        // Full page reload so the middleware re-validates the now-cleared
-        // Supabase session cookie from scratch. router.push would be a
-        // client-side navigation that races with cookie clearing.
-        window.location.href = "/";
-      } catch (err) {
-        console.error("[ClientHeader] Sign out error:", err);
-        setIsSigningOut(false);
+      } catch {
+        // Swallow — redirect handles cleanup
       }
+
+      // ALWAYS redirect — this is outside try/catch so it runs no matter what.
+      // Full page reload ensures middleware re-validates from scratch.
+      window.location.href = "/";
     } else {
-      // ── NAVIGATE TO LOGIN ─────────────────────────────────────────────────
-      // Do NOT set isSigningOut / isAuthLoading here. The component stays
-      // mounted while the user is on the login page and after they return,
-      // so any loading state set here would still be true after OAuth redirect.
+      // ── NAVIGATE TO LOGIN ──────────────────────────────────────
       router.push("/login");
     }
   };
