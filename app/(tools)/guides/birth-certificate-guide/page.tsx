@@ -231,11 +231,11 @@ const BirthCertificateGuidePage = () => {
       />
 
       <div className="flex flex-1 overflow-hidden h-[calc(100vh-56px)] flex-col lg:flex-row">
-        <WizardSidebar
+        {/* <WizardSidebar
           currentStep={currentStep}
           steps={STEP_IDS}
           onStepClick={setCurrentStep}
-        />
+        /> */}
 
         <main className="flex-1 overflow-y-auto p-4 sm:p-8 relative">
           <div

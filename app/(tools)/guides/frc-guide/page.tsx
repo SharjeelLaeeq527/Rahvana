@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import WizardHeader from "../../../components/guides/WizardHeader";
 import WizardSidebar from "../../../components/guides/WizardSidebar";
@@ -8,9 +8,7 @@ import WizardInfoPanel, {
   InfoPanelData,
 } from "../../../components/guides/WizardInfoPanel";
 import DocumentNeedStep from "../../../components/guides/steps/DocumentNeedStep";
-// import LocationStep from "../../../components/guides/steps/LocationStep";
 import RoadmapStep from "../../../components/guides/steps/RoadmapStep";
-import OfficeFinderStep from "../../../components/guides/steps/OfficeFinderStep";
 import ValidationStep from "../../../components/guides/steps/ValidationStep";
 import WhatsThisModal from "../../../components/guides/WhatsThisModal";
 import { type WizardState, WizardStepId } from "@/types/guide-wizard";
@@ -20,12 +18,10 @@ import FeedbackButton from "@/app/components/FeedbackButton";
 import { useWizardSession } from "@/lib/guides/useWizardSession";
 import { useGuideUpload } from "@/lib/guides/useGuideUpload";
 import { useGuideFeedback } from "@/lib/guides/useGuideFeedback";
+import { useGuideSave } from "@/lib/guides/useGuideSave";
+import { useNavigationGuard } from "@/lib/guides/useNavigationGuard";
 
-const STEP_IDS: WizardStepId[] = [
-  "document_need",
-  "roadmap",
-  "validation",
-];
+const STEP_IDS: WizardStepId[] = ["document_need", "roadmap", "validation"];
 
 const STEP_LABELS: Record<string, string> = {
   document_need: "Application Type",
@@ -33,7 +29,10 @@ const STEP_LABELS: Record<string, string> = {
   validation: "Validation",
 };
 
-const INFO_PANEL_KEYS: Record<string, keyof typeof guideData.wizard.info_panel> = {
+const INFO_PANEL_KEYS: Record<
+  string,
+  keyof typeof guideData.wizard.info_panel
+> = {
   document_need: "document_need",
   roadmap: "roadmap",
   validation: "validation",
@@ -42,6 +41,8 @@ const INFO_PANEL_KEYS: Record<string, keyof typeof guideData.wizard.info_panel> 
 const FrcGuide = () => {
   const [currentStep, setCurrentStep] = useState(0);
   const [showWhatsThis, setShowWhatsThis] = useState(true);
+  const [isSaved, setIsSaved] = useState(false);
+  const [navigationHandled, setNavigationHandled] = useState(false);
   const [state, setState] = useState<WizardState>({
     documentNeed: null,
     ageCategory: null,
@@ -72,31 +73,84 @@ const FrcGuide = () => {
       validationChecks: stepsData.validation?.checks || prev.validationChecks,
       uploadedFile: stepsData.validation?.uploaded || prev.uploadedFile,
       savedOffice: prev.savedOffice, // Not used in FRC guide
-    })
+    }),
   );
 
   const { uploadFile: uploadFileHook } = useGuideUpload();
   const { submitFeedback: submitFeedbackHook } = useGuideFeedback();
+  const { saveGuide, saving } = useGuideSave();
 
   // Wrapper functions to match expected signatures
   const handleUploadFile = async (file: File) => {
-    await uploadFileHook(file, 'frc-guide', 'validation');
+    await uploadFileHook(file, "frc-guide", "validation");
     // Update local state to reflect the upload
-    setState(s => ({ ...s, uploadedFile: true }));
+    setState((s) => ({ ...s, uploadedFile: true }));
     saveWizardStep("validation", {
       checks: state.validationChecks,
       uploaded: true,
     });
   };
 
-  const handleSubmitFeedback = async (feedbackType: string, description: string, attachment?: File) => {
-    await submitFeedbackHook('frc-guide', currentStepId, feedbackType, description, attachment);
+  const handleSubmitFeedback = async (
+    feedbackType: string,
+    description: string,
+    attachment?: File,
+  ) => {
+    await submitFeedbackHook(
+      "frc-guide",
+      currentStepId,
+      feedbackType,
+      description,
+      attachment,
+    );
   };
+
+  const hasProgress = useMemo(() => {
+    return (
+      currentStep > 0 ||
+      !!state.documentNeed ||
+      state.checkedDocuments.length > 0 ||
+      state.validationChecks.length > 0 ||
+      state.uploadedFile
+    );
+  }, [currentStep, state]);
 
   useEffect(() => {
     const dontShow = localStorage.getItem("hide_whats_this_modal");
-    if (!dontShow) setShowWhatsThis(true);
+    if (!dontShow) {
+      setShowWhatsThis(true);
+    }
   }, []);
+
+  useNavigationGuard(
+    hasProgress && !isSaved,
+    async () => {
+      await saveGuide("frc-guide"); // wait save complete
+      setIsSaved(true); // mark as saved
+    },
+    navigationHandled,
+    setNavigationHandled
+  );
+
+  // Before unload confirmation
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      // Show confirmation if user has made progress beyond the first step
+      if (
+        currentStep > 0 ||
+        (state.documentNeed && state.documentNeed !== "")
+      ) {
+        e.preventDefault();
+        e.returnValue = "";
+        return "";
+      }
+    };
+
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => {
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+    };
+  }, [currentStep, state.documentNeed]);
 
   const currentStepId = STEP_IDS[currentStep];
   const infoPanelKey = INFO_PANEL_KEYS[currentStepId];
@@ -108,10 +162,8 @@ const FrcGuide = () => {
     switch (currentStepId) {
       case "document_need":
         return !!state.documentNeed;
-      // case "location": return !!state.province && !!state.district && !!state.city;
       case "roadmap":
         return true;
-      // case "office_finder": return true;
       case "validation":
         return false;
       default:
@@ -131,7 +183,6 @@ const FrcGuide = () => {
   const handleDocumentNeedSelect = (id: string) => {
     setState((s) => ({ ...s, documentNeed: id }));
     saveWizardStep("document_need", id, true);
-    setTimeout(() => setCurrentStep(1), 400);
   };
 
   const toggleDocument = (id: string) => {
@@ -169,18 +220,6 @@ const FrcGuide = () => {
             data={guideData.wizard.document_need}
           />
         );
-      // case "location":
-      //   return (
-      //     <LocationStep
-      //       province={state.province}
-      //       district={state.district}
-      //       city={state.city}
-      //       onProvinceChange={(v) => setState((s) => ({ ...s, province: v }))}
-      //       onDistrictChange={(v) => setState((s) => ({ ...s, district: v }))}
-      //       onCityChange={(v) => setState((s) => ({ ...s, city: v }))}
-      //       data={guideData.wizard.location}
-      //     />
-      //   );
       case "roadmap":
         return (
           <RoadmapStep
@@ -204,6 +243,10 @@ const FrcGuide = () => {
     }
   };
 
+  const handleStepClick = (stepIndex: number) => {
+    setCurrentStep(stepIndex);
+  };
+
   return (
     <div className="min-h-screen flex flex-col bg-[#f5f7fa] pt-14">
       <WizardHeader
@@ -213,9 +256,14 @@ const FrcGuide = () => {
 
       <div className="flex flex-1 overflow-hidden h-[calc(100vh-56px)] flex-col lg:flex-row">
         <WizardSidebar
-          currentStep={currentStep}
+          currentStep={STEP_IDS.indexOf(currentStepId)}
           steps={STEP_IDS}
-          onStepClick={setCurrentStep}
+          onStepClick={handleStepClick}
+          stepLabels={STEP_LABELS}
+          guideSlug="frc-guide"
+          onSaveGuide={saveGuide}
+          onGuideSaved={() => setIsSaved(true)}
+          saving={saving}
         />
 
         <main className="flex-1 overflow-y-auto p-4 sm:p-8 relative">

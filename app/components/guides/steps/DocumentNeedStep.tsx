@@ -130,9 +130,10 @@ const DocumentNeedStep = ({
   if (questions.length > 0) {
     const handleOptionSelect = (qIndex: number, qId: string, optId: string) => {
       onSelect(optId, qId);
-      if (qIndex + 1 < questions.length) {
-        setInternalStep(qIndex + 2);
-      }
+      // Don't automatically advance to next step - let user click Next button
+      // if (qIndex + 1 < questions.length) {
+      //   setInternalStep(qIndex + 2);
+      // }
     };
 
     const handleBack = () => {

@@ -236,11 +236,11 @@ const PolioVaccinationGuide = () => {
       />
 
       <div className="flex flex-1 overflow-hidden h-[calc(100vh-56px)]">
-        <WizardSidebar
+        {/* <WizardSidebar
           currentStep={currentStep}
           steps={STEP_IDS}
           onStepClick={setCurrentStep}
-        />
+        /> */}
 
         <main className="flex-1 overflow-y-auto p-8 relative">
           <div
