@@ -18,6 +18,7 @@ import guideData from "@/data/cnic-guide-data.json";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import FeedbackButton from "@/app/components/FeedbackButton";
 import { useWizardSession } from "@/lib/guides/useWizardSession";
+import { useGuideUpload } from "@/lib/guides/useGuideUpload";
 
 const STEP_IDS: WizardStepId[] = [
   "document_need",
@@ -81,6 +82,18 @@ const CnicGuide = () => {
       uploadedFile: stepsData.validation?.uploaded || prev.uploadedFile,
     }),
   );
+
+  const { uploadFile: uploadFileHook } = useGuideUpload();
+    // Wrapper functions to match expected signatures
+    const handleUploadFile = async (file: File) => {
+      await uploadFileHook(file, 'birth-certificate-guide', 'validation');
+      // Update local state to reflect the upload
+      setState(s => ({ ...s, uploadedFile: true }));
+      saveWizardStep("validation", {
+        checks: state.validationChecks,
+        uploaded: true,
+      });
+    };
 
   useEffect(() => {
     const dontShow = localStorage.getItem("hide_whats_this_modal_cnic");
@@ -233,7 +246,7 @@ const CnicGuide = () => {
             validationChecks={state.validationChecks}
             onToggleCheck={toggleValidationCheck}
             uploadedFile={state.uploadedFile}
-            onUpload={() => setState((s) => ({ ...s, uploadedFile: true }))}
+            onUpload={handleUploadFile}
             data={guideData.wizard.validation}
           />
         );

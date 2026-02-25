@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import WizardHeader from "../../../components/guides/WizardHeader";
 import WizardSidebar from "../../../components/guides/WizardSidebar";
@@ -18,6 +18,8 @@ import guideData from "@/data/passport-guide-data.json";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import FeedbackButton from "@/app/components/FeedbackButton";
 import { useWizardSession } from "@/lib/guides/useWizardSession";
+import { useGuideUpload } from "@/lib/guides/useGuideUpload";
+import { useGuideFeedback } from "@/lib/guides/useGuideFeedback";
 
 const STEP_IDS: WizardStepId[] = [
   "document_need",
@@ -70,14 +72,41 @@ const PassportGuide = () => {
     (prev, stepsData) => ({
       ...prev,
       documentNeed: stepsData.document_need || prev.documentNeed,
+      ageCategory: prev.ageCategory, // Not used in Passport guide
+      birthSetting: prev.birthSetting, // Not used in Passport guide
       province: stepsData.location?.province || prev.province,
       district: stepsData.location?.district || prev.district,
       city: stepsData.location?.city || prev.city,
       checkedDocuments: stepsData.roadmap || prev.checkedDocuments,
       validationChecks: stepsData.validation?.checks || prev.validationChecks,
       uploadedFile: stepsData.validation?.uploaded || prev.uploadedFile,
+            savedOffice: prev.savedOffice, // Not used in Passport guide
+
     })
   );
+
+  const { uploadFile: uploadFileHook } = useGuideUpload();
+  const { submitFeedback: submitFeedbackHook } = useGuideFeedback();
+
+  // Wrapper functions to match expected signatures
+  const handleUploadFile = async (file: File) => {
+    await uploadFileHook(file, 'passport-guide', 'validation');
+    // Update local state to reflect the upload
+    setState(s => ({ ...s, uploadedFile: true }));
+    saveWizardStep("validation", {
+      checks: state.validationChecks,
+      uploaded: true,
+    });
+  };
+
+  const handleSubmitFeedback = async (feedbackType: string, description: string, attachment?: File) => {
+    await submitFeedbackHook('passport-guide', currentStepId, feedbackType, description, attachment);
+  };
+
+  useEffect(() => {
+      const dontShow = localStorage.getItem("hide_whats_this_modal");
+      if (!dontShow) setShowWhatsThis(true);
+    }, []);
 
   const currentStepId = STEP_IDS[currentStep];
   const infoPanelKey = INFO_PANEL_KEYS[currentStepId];
@@ -180,13 +209,8 @@ const PassportGuide = () => {
             validationChecks={state.validationChecks}
             onToggleCheck={toggleValidationCheck}
             uploadedFile={state.uploadedFile}
-            onUpload={() => {
-              setState((s: WizardState) => ({ ...s, uploadedFile: true }));
-              saveWizardStep("validation", {
-                checks: state.validationChecks,
-                uploaded: true,
-              });
-            }}
+                        onUpload={handleUploadFile}
+
             data={guideData.wizard.validation}
           />
         );

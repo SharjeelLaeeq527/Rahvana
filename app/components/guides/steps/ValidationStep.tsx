@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { Upload, Check, ChevronDown } from "lucide-react";
+import { Upload, Check, ChevronDown, CheckCircle2 } from "lucide-react";
 import { useState } from "react";
 
 interface ValidationCategory {
@@ -23,7 +23,7 @@ interface ValidationStepProps {
   validationChecks: string[];
   onToggleCheck: (label: string) => void;
   uploadedFile: boolean;
-  onUpload: () => void;
+  onUpload: (file: File) => Promise<void>;
   data?: ValidationData;
 }
 
@@ -62,6 +62,22 @@ const ValidationStep = ({
   );
   const criticalRemaining = criticalTotal - criticalChecked;
 
+  const handleButtonClick = () => {
+    if (!uploadedFile) {
+      // Trigger file input when button is clicked
+      const fileInput = document.createElement('input');
+      fileInput.type = 'file';
+      fileInput.accept = data?.upload_section?.formats?.replace(/,/g, ',.') || '';
+      fileInput.onchange = (e: any) => {
+        const file = e.target.files?.[0];
+        if (file) {
+          onUpload(file);
+        }
+      };
+      fileInput.click();
+    }
+  };
+
   return (
     <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}>
       {/* Title & Description */}
@@ -76,7 +92,7 @@ const ValidationStep = ({
       </p>
 
       {/* Upload Section */}
-      <div className="p-6 rounded-xl border border-[hsl(214_32%_91%)] bg-white mb-8">
+      <div className={`p-6 rounded-xl border mb-8 ${uploadedFile ? "border-green-200 bg-green-50" : "border-[hsl(214_32%_91%)] bg-white"}`}>
         <h3
           className="text-[1.1rem] font-bold text-[hsl(220_20%_10%)] mb-4
                        font-['Plus_Jakarta_Sans','Inter',system-ui,sans-serif]"
@@ -84,29 +100,50 @@ const ValidationStep = ({
           {uploadSection.title}
         </h3>
 
-        <div className="flex flex-col items-center gap-3 p-8 rounded-lg border-2 border-dashed border-[hsl(214_32%_88%)] bg-[hsl(210_20%_99%)]">
-          <Upload
-            className={`w-8 h-8 ${uploadedFile ? "text-[hsl(168_80%_30%)]" : "text-[hsl(215_16%_70%)]"}`}
-          />
-          <p className="text-[0.9rem] text-[hsl(215_16%_47%)] text-center">
-            {uploadSection.description}
-          </p>
-          <p className="text-[0.78rem] text-[hsl(215_16%_60%)]">
-            Accepted formats: {uploadSection.formats}
-          </p>
+        <div className={`flex flex-col items-center gap-3 p-8 rounded-lg border-2 border-dashed ${uploadedFile ? "border-green-300 bg-green-100" : "border-[hsl(214_32%_88%)] bg-[hsl(210_20%_99%)]"}`}>
+          {uploadedFile ? (
+            <>
+              <CheckCircle2 className="w-8 h-8 text-green-600" />
+              <p className="text-[0.9rem] text-green-700 font-semibold text-center">
+                Document Successfully Uploaded to Vault
+              </p>
+              <p className="text-[0.78rem] text-green-600">
+                Your document has been securely stored
+              </p>
+            </>
+          ) : (
+            <>
+              <Upload
+                className="w-8 h-8 text-[hsl(215_16%_70%)]"
+              />
+              <p className="text-[0.9rem] text-[hsl(215_16%_47%)] text-center">
+                {uploadSection.description}
+              </p>
+              <p className="text-[0.78rem] text-[hsl(215_16%_60%)]">
+                Accepted formats: {uploadSection.formats}
+              </p>
+            </>
+          )}
           <motion.button
-            whileHover={{ scale: 1.03 }}
-            whileTap={{ scale: 0.97 }}
-            onClick={onUpload}
-            className={`px-6 py-2 rounded-xl text-white text-[0.875rem] font-semibold
-                        shadow-[0_2px_8px_hsl(168_80%_30%/0.3)]
+            whileHover={{ scale: uploadedFile ? 1 : 1.03 }}
+            whileTap={{ scale: uploadedFile ? 1 : 0.97 }}
+            onClick={handleButtonClick}
+            disabled={uploadedFile}
+            className={`px-6 py-2 rounded-xl text-[0.875rem] font-semibold transition-all
                         ${
                           uploadedFile
-                            ? "bg-[hsl(168_80%_30%)]"
-                            : "bg-gradient-to-br from-[#14a0a6] to-[#0d7377]"
+                            ? "bg-green-100 text-green-700 border border-green-300 cursor-default"
+                            : "bg-gradient-to-br from-[#14a0a6] to-[#0d7377] text-white shadow-[0_2px_8px_hsl(168_80%_30%/0.3)] hover:shadow-[0_4px_12px_hsl(168_80%_30%/0.4)] cursor-pointer"
                         }`}
           >
-            {uploadedFile ? "✓ Uploaded" : "Upload to Vault"}
+            {uploadedFile ? (
+              <span className="flex items-center gap-2">
+                <Check className="w-4 h-4" />
+                Uploaded to Vault
+              </span>
+            ) : (
+              "Upload to Vault"
+            )}
           </motion.button>
         </div>
       </div>

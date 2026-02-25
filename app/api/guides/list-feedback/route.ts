@@ -87,13 +87,14 @@ export async function GET(request: NextRequest) {
         status,
         created_at,
         guides(title),
-        profiles: user_id (email)
+        profiles:user_id (email, full_name)
       `,
       )
       .order("created_at", { ascending: false })
       .range(from, to);
 
     if (error) {
+      console.error("Supabase fetch error:", error);
       return NextResponse.json(
         { error: "Failed to fetch feedback" },
         { status: 500 },
