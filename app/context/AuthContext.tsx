@@ -275,7 +275,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           setUser(validatedUser);
           setSession(currentSession);
 
-          // Pass user metadata so fetchProfile can use it as fallback
+          // ── STEP 4: Set preliminary profile ──────────────────────────
+          // Immediately set a preliminary profile from metadata so the UI 
+          // never shows "Valued User" while we wait for the DB fetch.
+          const preliminaryName = 
+            validatedUser.user_metadata?.full_name || 
+            validatedUser.user_metadata?.name || 
+            validatedUser.email?.split("@")[0] || 
+            "User";
+            
+          setProfile(prev => prev || {
+            full_name: preliminaryName,
+            email: validatedUser.email || "",
+            role: "user"
+          });
+
+          // Now fetch the real profile from the DB for updates/extra fields
           await fetchProfile(validatedUser.id, {
             full_name: validatedUser.user_metadata?.full_name,
             name: validatedUser.user_metadata?.name,
@@ -301,11 +316,30 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (event: string, session: Session | null) => {
+    } = supabase.auth.onAuthStateChange(async (event, session) => {
+      // Avoid clearing state if it's already being handled by getInitialSession
+      if (event === 'INITIAL_SESSION' && session?.user) return;
+
       setUser(session?.user ?? null);
       setSession(session ?? null);
 
       if (session?.user) {
+        // Set preliminary profile immediately on state change too
+        const preliminaryName = 
+          session.user.user_metadata?.full_name || 
+          session.user.user_metadata?.name || 
+          session.user.email?.split("@")[0] || 
+          "User";
+          
+        setProfile(prev => {
+          if (prev && prev.full_name !== "User" && prev.full_name !== "Valued User") return prev;
+          return {
+            full_name: preliminaryName,
+            email: session.user.email || "",
+            role: "user"
+          };
+        });
+
         await fetchProfile(session.user.id, {
           full_name: session.user.user_metadata?.full_name,
           name: session.user.user_metadata?.name,
