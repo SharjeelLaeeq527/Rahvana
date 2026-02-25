@@ -13,6 +13,7 @@ import {
   Building2,
   CheckCircle2,
   ArrowLeft,
+  ArrowRight,
   Baby,
   Smile,
   GraduationCap,
@@ -112,12 +113,14 @@ export interface DocumentNeedStepProps {
   selected: string | Record<string, string> | null;
   onSelect: (id: string, questionId?: string) => void;
   data?: DocumentNeedData;
+  onNext?: () => void;
 }
 
 const DocumentNeedStep = ({
   selected,
   onSelect,
   data,
+  onNext,
 }: DocumentNeedStepProps) => {
   const [internalStep, setInternalStep] = useState(1);
 
@@ -130,10 +133,6 @@ const DocumentNeedStep = ({
   if (questions.length > 0) {
     const handleOptionSelect = (qIndex: number, qId: string, optId: string) => {
       onSelect(optId, qId);
-      // Don't automatically advance to next step - let user click Next button
-      // if (qIndex + 1 < questions.length) {
-      //   setInternalStep(qIndex + 2);
-      // }
     };
 
     const handleBack = () => {
@@ -156,7 +155,7 @@ const DocumentNeedStep = ({
         <div className="space-y-8 relative before:absolute before:inset-0 before:ml-[23px] md:before:ml-[27px] before:-translate-x-px md:before:translate-x-0 before:h-full before:w-0.5 before:bg-linear-to-b before:from-transparent before:via-slate-200 before:border-slate-300">
           {questions.map((q, index) => {
             const stepNumber = index + 1;
-            const isActive = internalStep >= stepNumber;
+            const isActive = internalStep === stepNumber;
             const isCompleted = internalStep > stepNumber;
 
             return (
@@ -302,22 +301,45 @@ const DocumentNeedStep = ({
         </div>
 
         <div className="mt-10 flex justify-between items-center pt-6 border-t border-slate-100">
-          {/* <button
+          <button
             onClick={handleBack}
-            className={`text-slate-500 hover:text-slate-800 font-medium px-4 py-2 hover:bg-slate-50 rounded-lg transition-colors flex items-center gap-2 ${
+            className={`flex items-center gap-1.5 px-5 py-2.5 rounded-xl border border-gray-300 bg-white text-gray-700 font-semibold text-sm cursor-pointer transition-colors ${
               internalStep <= 1 ? "invisible" : ""
             }`}
             disabled={internalStep <= 1}
           >
             <ArrowLeft className="w-4 h-4" />
             Back
-          </button> */}
+          </button>
 
-          {internalStep < questions.length && (
-            <div className="px-4 py-2 text-sm text-slate-400 font-medium">
-              Make a selection above
-            </div>
-          )}
+          {questions.length > 1 &&
+            (() => {
+              const currentQ = questions[internalStep - 1];
+              const isAnswered =
+                typeof selected === "object" &&
+                selected !== null &&
+                !!selected[currentQ.id];
+
+              return (
+                <button
+                  onClick={() => {
+                    if (internalStep < questions.length) {
+                      setInternalStep(internalStep + 1);
+                    } else if (onNext) {
+                      onNext();
+                    }
+                  }}
+                  disabled={!isAnswered}
+                  className={`flex items-center gap-1.5 px-5 py-2.5 rounded-xl font-semibold text-sm transition-colors ${
+                    isAnswered
+                      ? "bg-linear-to-br from-teal-600 to-teal-500 text-white shadow-md hover:scale-[1.03] cursor-pointer"
+                      : "bg-gray-200 text-gray-400 cursor-not-allowed"
+                  }`}
+                >
+                  Continue <ArrowRight className="w-4 h-4" />
+                </button>
+              );
+            })()}
         </div>
       </div>
     );
