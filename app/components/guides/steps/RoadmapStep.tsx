@@ -47,6 +47,7 @@ const RoadmapStep = ({
   const [isFlipped, setIsFlipped] = useState(false);
   const [showDocuments, setShowDocuments] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const [hasClickedAnyPhase, setHasClickedAnyPhase] = useState(false);
 
   useEffect(() => {
     setMounted(true);
@@ -92,20 +93,36 @@ const RoadmapStep = ({
           style={{ transformStyle: "preserve-3d", perspective: "1200px" }}
         >
           {/* FRONT (Onsite) */}
-          <div className="absolute inset-0 backface-hidden">
+          <div
+            className={`absolute inset-0 backface-hidden ${
+              isFlipped ? "pointer-events-none" : "z-10"
+            }`}
+          >
             <TimelinePhases
               phases={onsitePhases}
               type="Onsite Application"
-              onSelectPhase={setActivePhase}
+              onSelectPhase={(phase) => {
+                setActivePhase(phase);
+                setHasClickedAnyPhase(true);
+              }}
+              hasClickedAnyPhase={hasClickedAnyPhase}
             />
           </div>
 
           {/* BACK (Online) */}
-          <div className="absolute inset-0 backface-hidden rotate-y-180">
+          <div
+            className={`absolute inset-0 backface-hidden rotate-y-180 ${
+              !isFlipped ? "pointer-events-none" : "z-10"
+            }`}
+          >
             <TimelinePhases
               phases={onlinePhases}
               type="Online Application"
-              onSelectPhase={setActivePhase}
+              onSelectPhase={(phase) => {
+                setActivePhase(phase);
+                setHasClickedAnyPhase(true);
+              }}
+              hasClickedAnyPhase={hasClickedAnyPhase}
             />
           </div>
         </div>
@@ -286,9 +303,15 @@ interface TimelineProps {
   phases: Phase[];
   type: string;
   onSelectPhase: (phase: Phase) => void;
+  hasClickedAnyPhase: boolean;
 }
 
-const TimelinePhases = ({ phases, type, onSelectPhase }: TimelineProps) => {
+const TimelinePhases = ({
+  phases,
+  type,
+  onSelectPhase,
+  hasClickedAnyPhase,
+}: TimelineProps) => {
   const [activeId, setActiveId] = useState<number | null>(null);
 
   return (
@@ -333,20 +356,36 @@ const TimelinePhases = ({ phases, type, onSelectPhase }: TimelineProps) => {
               }}
               className="relative z-10 flex flex-1 flex-col items-center gap-2 bg-transparent border-none p-1 group w-full"
             >
-              <div
-                className={`w-14 h-14 shrink-0 rounded-full flex items-center justify-center
-                font-bold text-white text-lg shadow-lg group-hover:scale-110 transition-transform duration-200 border-2
-                ${
-                  activeId === phase.id
-                    ? type === "Onsite Application"
-                      ? "bg-[#0d7377] border-[#0a5a5d] ring-4 ring-[#0d7377]/20"
-                      : "bg-[#32e0c4] border-[#14a0a6] ring-4 ring-[#32e0c4]/20"
-                    : type === "Onsite Application"
-                      ? "bg-linear-to-br from-[#0d7377] to-[#0a5a5d] border-[#0a5a5d] group-hover:ring-2 group-hover:ring-[#0d7377]/30"
-                      : "bg-linear-to-br from-[#32e0c4] to-[#14a0a6] border-[#14a0a6] group-hover:ring-2 group-hover:ring-[#32e0c4]/30"
-                }`}
-              >
-                {phase.id}
+              {i === 0 && !hasClickedAnyPhase && (
+                <div className="absolute -top-8 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity bg-slate-800 text-white text-xs px-2 py-1 rounded whitespace-nowrap pointer-events-none z-20">
+                  Click here
+                </div>
+              )}
+              <div className="relative">
+                {i === 0 && !hasClickedAnyPhase && (
+                  <div
+                    className="absolute inset-0 rounded-full bg-current opacity-30 animate-ping z-0 pointer-events-none"
+                    style={{
+                      color:
+                        type === "Onsite Application" ? "#0d7377" : "#32e0c4",
+                    }}
+                  />
+                )}
+                <div
+                  className={`relative z-10 w-14 h-14 shrink-0 rounded-full flex items-center justify-center
+                  font-bold text-white text-lg shadow-lg group-hover:scale-110 transition-transform duration-200 border-2
+                  ${
+                    activeId === phase.id
+                      ? type === "Onsite Application"
+                        ? "bg-[#0d7377] border-[#0a5a5d] ring-4 ring-[#0d7377]/20"
+                        : "bg-[#32e0c4] border-[#14a0a6] ring-4 ring-[#32e0c4]/20"
+                      : type === "Onsite Application"
+                        ? "bg-linear-to-br from-[#0d7377] to-[#0a5a5d] border-[#0a5a5d] group-hover:ring-2 group-hover:ring-[#0d7377]/30"
+                        : "bg-linear-to-br from-[#32e0c4] to-[#14a0a6] border-[#14a0a6] group-hover:ring-2 group-hover:ring-[#32e0c4]/30"
+                  }`}
+                >
+                  {phase.id}
+                </div>
               </div>
 
               <div className="text-center px-1 flex flex-col items-center flex-1 w-full">
