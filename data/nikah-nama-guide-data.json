@@ -1,28 +1,28 @@
 {
-    "title": "Union Council Nikah Nama & NADRA MRC Registration Guide",
-    "legal_basis": "Muslim Family Laws Ordinance 1961 (Section 5 mandatory registration) + provincial laws (e.g., Punjab Child Marriage Restraint Ordinance 2026)",
+    "title": "Marriage (Nikah) Registration & Computerized MRC Guide",
+    "legal_basis": "Muslim Family Laws Ordinance 1961 (Section 5) + Provincial Rules",
     "wizard": {
         "title": "Marriage Registration",
         "subtitle": "Union Council & NADRA • 2026 Official Guide",
-        "last_verified": "February 20, 2026",
+        "last_verified": "February 24, 2026",
         "whats_this": {
             "heading": "Nikah Nama & MRC Wizard",
             "sub": "Union Council & NADRA Official Flow",
-            "description": "All Muslim marriages in Pakistan must be registered at the Union Council (or equivalent) within days/weeks of Nikah. After UC registration, a computerized Marriage Registration Certificate (MRC) is issued via NADRA. This wizard helps you navigate the 2026 legal requirements, fees, and digital registration options.",
+            "description": "All Muslim marriages in Pakistan must be registered at the Union Council (or equivalent). After UC registration, a computerized Marriage Registration Certificate (MRC) is issued. This wizard helps you navigate the registration steps, documents, and attestation requirements.",
             "quick_instructions": [
-                "Select your marriage case details (Local, Foreign spouse, or Polygamy)",
-                "Determine your location to find the relevant Union Council",
-                "Generate a personalized document checklist and timeline",
-                "Explore digital registration via Pak ID app in pilot districts",
-                "Validate your certificate details before official use"
+                "Select your specific marriage case case (Standard, Foreign Partner, etc.)",
+                "Review the estimated fee structure for 2026",
+                "Follow the step-by-step registration and attestation roadmap",
+                "Generate a personalized document checklist",
+                "Validate your final certificate details"
             ],
-            "disclaimer": "This is general guidance based on 2026 regulations. Laws and procedures can vary by province and specific circumstances. Always verify with your local Union Council or NADRA center."
+            "disclaimer": "Fees and procedures are subject to change by local Union Councils. Always confirm with your local UC Secretary."
         },
         "steps": [
             {
                 "id": "document_need",
-                "label": "Case Type",
-                "icon": "settings"
+                "label": "Application Type",
+                "icon": "clipboard"
             },
             {
                 "id": "roadmap",
@@ -35,216 +35,205 @@
                 "icon": "star"
             }
         ],
+        "fee_structure": {
+            "title": "Fee Structure (Estimated 2026)",
+            "special_note": {
+                "title": "Attestation Note",
+                "description": "Costs for MOFA attestation or certified translations are separate from registration fees."
+            },
+            "tiers": [
+                {
+                    "type": "Official UC Fee",
+                    "price": "500 - 2,000",
+                    "days": "Standard processing",
+                    "badge_variant": "green"
+                },
+                {
+                    "type": "Urgent Tracking",
+                    "price": "1,500 - 2,500",
+                    "days": "Fast-track issuance",
+                    "badge_variant": "orange"
+                },
+                {
+                    "type": "Lawyer/Agent Service",
+                    "price": "5,000 - 15,000",
+                    "days": "End-to-end handling",
+                    "badge_variant": "purple"
+                },
+                {
+                    "type": "Consultant/Legal Firm",
+                    "price": "25,000 - 50,000",
+                    "days": "Includes full documentation",
+                    "badge_variant": "blue"
+                }
+            ]
+        },
         "document_need": {
             "title": "Marriage Case Details",
-            "description": "Your requirements depend on the nature of the marriage and the citizenship of the parties.",
+            "description": "Help us customize your guide by selecting the scenario that fits your marriage.",
             "options": [
                 {
-                    "id": "local",
-                    "title": "Local Marriage",
-                    "description": "Both parties are Pakistani citizens",
+                    "id": "case1",
+                    "title": "Standard Registration",
+                    "description": "Both partners are Pakistani citizens (Single)",
+                    "icon": "users",
                     "color": "green"
                 },
                 {
-                    "id": "foreigner",
-                    "title": "Foreign Spouse",
-                    "description": "One party is a foreign national",
+                    "id": "case2",
+                    "title": "Foreign Partner",
+                    "description": "One partner is a foreign national (e.g. US/UK Citizen)",
+                    "icon": "globe",
                     "color": "blue"
                 },
                 {
-                    "id": "polygamy",
-                    "title": "Polygamy",
-                    "description": "Existing marriage permission needed",
+                    "id": "case3",
+                    "title": "Second Marriage",
+                    "description": "One or both partners are Divorced or Widowed",
+                    "icon": "history",
                     "color": "orange"
                 },
                 {
-                    "id": "abroad",
-                    "title": "Nikah Abroad",
-                    "description": "Marriage performed outside Pakistan",
+                    "id": "case4",
+                    "title": "Age-Specific Case",
+                    "description": "Bride is under the age of 18",
+                    "icon": "user-check",
                     "color": "purple"
-                }
-            ],
-            "provinces": [
-                "Punjab",
-                "Sindh",
-                "KPK",
-                "Balochistan",
-                "AJK",
-                "Gilgit-Baltistan",
-                "ICT"
-            ],
-            "eligibility_note": "Critical: As of 2026, Punjab requires 18 years minimum for BOTH bride and groom. Other provinces may vary (some 16 for females), but 18 is the standard for NADRA registration."
-        },
-        "location": {
-            "title": "Location Information",
-            "description": "Marriage registration is typically done at the Union Council of the area where the Nikah took place or where the bride resides.",
-            "provinces": [
-                {
-                    "name": "Punjab",
-                    "districts": [
-                        "Lahore",
-                        "Faisalabad",
-                        "Rawalpindi",
-                        "Multan",
-                        "Gujranwala",
-                        "Sialkot",
-                        "Jhelum",
-                        "Chakwal"
-                    ],
-                    "is_pilot": true,
-                    "pilot_note": "Digital registration via Pak ID app is widely available in many Punjab UCs."
-                },
-                {
-                    "name": "Sindh",
-                    "districts": [
-                        "Karachi South",
-                        "Karachi East",
-                        "Hyderabad",
-                        "Sukkur"
-                    ]
-                },
-                {
-                    "name": "Khyber Pakhtunkhwa",
-                    "districts": [
-                        "Peshawar",
-                        "Mardan",
-                        "Abbottabad"
-                    ]
                 }
             ]
         },
         "roadmap": {
             "title": "Registration Roadmap",
-            "estimated_timeline": "7-14 Days",
+            "estimated_timeline": "10-20 Days",
             "onsitePhases": [
                 {
                     "id": 1,
                     "title": "Nikah Ceremony",
                     "duration": "Day 1",
-                    "description": "Signed Nikah Nama (standard form) with licensed Nikah Khawan"
+                    "description": "Licensed Nikah Khawan fills the handwritten Urdu Nikah Nama."
                 },
                 {
                     "id": 2,
-                    "title": "UC Submission",
-                    "duration": "1-3d",
-                    "description": "Submit docs to Union Council Secretary/Nikah Registrar"
+                    "title": "UC Registration",
+                    "duration": "1-30 Days",
+                    "description": "Submit Urdu Nikah Nama and CNICs to Union Council for registration."
                 },
                 {
                     "id": 3,
-                    "title": "Portal Entry",
-                    "duration": "1-2d",
-                    "description": "Secretary enters details into the NADRA/Local Govt portal"
+                    "title": "NADRA Issuance",
+                    "duration": "3-7 Days",
+                    "description": "Collect the computerized Marriage Registration Certificate (MRC)."
                 },
                 {
                     "id": 4,
-                    "title": "MRC Issuance",
-                    "duration": "1-7d",
-                    "description": "Collection of Computerized Marriage Registration Certificate"
+                    "title": "MOFA Attestation",
+                    "duration": "2-5 Days",
+                    "description": "Get the certificate attested by Ministry of Foreign Affairs (Mandatory for Visas)."
                 }
             ],
             "documents_checklist": [
                 {
-                    "id": "nikah_nama",
-                    "label": "Original Nikah Nama",
-                    "description": "Standard Urdu form, signed by parties, witnesses, and Nikah Khawan",
+                    "id": "urdu_nikah",
+                    "label": "Original Urdu Nikah Nama",
+                    "description": "Signed by Nikah Khawan, Bride, Groom, and Witnesses",
                     "required": true
                 },
                 {
                     "id": "cnic_parties",
                     "label": "CNIC of Bride & Groom",
-                    "description": "Originals + copies (must be valid)",
+                    "description": "Valid original CNICs plus photocopies",
                     "required": true
                 },
                 {
-                    "id": "cnic_witnesses",
-                    "label": "CNIC of 2 Witnesses",
-                    "description": "Mandatory presence/identity of witnesses at Nikah",
-                    "required": true
-                },
-                {
-                    "id": "cnic_guardians",
-                    "label": "CNIC of Fathers/Guardians",
-                    "description": "Copies of bride and groom's fathers' CNICs",
+                    "id": "cnic_fathers",
+                    "label": "CNIC of Both Fathers",
+                    "description": "Copies of bride's father and groom's father CNICs",
                     "required": true
                 },
                 {
                     "id": "photos",
                     "label": "Passport Photos",
-                    "description": "2 recent photos of bride & groom (white background)",
+                    "description": "Two passport-size photos with white background",
                     "required": true
                 },
                 {
-                    "id": "arbitration_perm",
-                    "label": "Arbitration Permission",
-                    "description": "For polygamous marriages only (Section 6 MFLO)",
+                    "id": "passport_foreign",
+                    "label": "Foreign Passport Copy",
+                    "description": "Including entry stamp page to Pakistan",
                     "required": false,
-                    "category": "polygamy"
+                    "category": "case2"
                 },
                 {
-                    "id": "divorce_death_cert",
-                    "label": "Divorce/Death Cert",
-                    "description": "Talaq Nama or Death Cert if previously married",
-                    "required": false
+                    "id": "free_will",
+                    "label": "Affidavit of Free Will",
+                    "description": "Usually required when one spouse is a foreigner",
+                    "required": false,
+                    "category": "case2"
                 },
                 {
-                    "id": "foreign_noc",
-                    "label": "Embassy NOC",
-                    "description": "For foreign spouses, NOC from their respective embassy",
+                    "id": "visa_poc",
+                    "label": "Valid Visa / POC / NICOP",
+                    "description": "For foreign nationals or overseas Pakistanis",
                     "required": false,
-                    "category": "foreigner"
+                    "category": "case2"
+                },
+                {
+                    "id": "divorce_death",
+                    "label": "Divorce or Death Certificate",
+                    "description": "NADRA Divorce Certificate or Spouse's Death Certificate",
+                    "required": false,
+                    "category": "case3"
+                },
+                {
+                    "id": "bform_birth",
+                    "label": "B-Form / Birth Certificate",
+                    "description": "Proof of age for younger applicants",
+                    "required": false,
+                    "category": "case4"
                 }
             ]
         },
-        "offices": [
-            {
-                "name": "Union Council Office (Local)",
-                "badge": "Mandatory",
-                "address": "Your local UC office based on Nikah venue",
-                "hours": "Mon-Fri: 9:00 AM - 4:00 PM",
-                "tip": "Visit between 10 AM and 1 PM for Secretary's availability."
-            }
-        ],
         "validation": {
             "title": "Certificate Validation",
-            "description": "Ensure your NADRA MRC is error-free before using it for FRC or Visa purposes.",
+            "description": "Double check all computerized details before finalizing your paperwork.",
             "upload_section": {
-                "title": "Upload MRC for Vault",
-                "description": "Save your computerized certificate in Document Vault",
-                "formats": "PDF, JPG (Max 5MB)"
+                "title": "Upload Certificate",
+                "description": "Store your computerized MRC securely in your vault.",
+                "formats": "PDF, JPG, PNG (Max 10MB)"
             },
-            "checklist_title": "MRC Accuracy Checklist",
+            "checklist_title": "Final Review Checklist",
             "categories": [
                 {
-                    "name": "Personal Details",
+                    "name": "Identity Checks",
                     "items": [
                         {
-                            "label": "Groom's name and CNIC match exactly",
+                            "label": "Spelling matches CNIC and Passport exactly",
                             "critical": true
                         },
                         {
-                            "label": "Bride's name and CNIC match exactly",
+                            "label": "Father's and Husband's names are correctly listed",
                             "critical": true
                         },
                         {
-                            "label": "Date of Marriage (Nikah) is correct",
+                            "label": "CNIC numbers are accurate without typos",
                             "critical": true
                         }
                     ]
                 },
                 {
-                    "name": "Legal Status",
+                    "name": "Administrative Checks",
                     "items": [
                         {
-                            "label": "Registration date is within official limits",
+                            "label": "Column 21 is filled correctly",
+                            "critical": true
+                        },
+                        {
+                            "label": "Official seal and QR code are clear",
+                            "critical": true
+                        },
+                        {
+                            "label": "Registration date is within 30 days of Nikah",
                             "critical": false
-                        },
-                        {
-                            "label": "Arbitration Council reference (if polygamy)",
-                            "critical": true
-                        },
-                        {
-                            "label": "Official seal and QR code are present",
-                            "critical": true
                         }
                     ]
                 }
@@ -253,79 +242,49 @@
         "info_panel": {
             "document_need": {
                 "tips": [
-                    "Always use licensed Nikah Khawan (registered with UC).",
-                    "Get 3–4 copies of signed Nikah Nama immediately after ceremony.",
-                    "Check Pak ID app for supported digital registration UCs."
+                    "Focus on the Computerized Certificate: The handwritten Urdu Nikah Nama alone is often not accepted by embassies.",
+                    "Ensure names on the Nikah Nama match the CNIC and Passport exactly to avoid attestation delays.",
+                    "Always use a licensed Nikah Khawan registered with the relevant Union Council."
                 ],
                 "pitfalls": [
-                    "Assuming old age rules apply in Punjab (must be 18+ for both now).",
-                    "Marriage below legal age is voidable/criminal; UC will refuse registration.",
-                    "Ignoring Iddat period makes registration invalid."
+                    "Incorrect Spelling: Even a one-letter difference can cause rejection during MOFA attestation.",
+                    "Delayed Registration: Failing to register within 30 days requires a complex affidavit for late entry."
                 ],
                 "links": [
                     {
-                        "label": "NADRA Official Site",
-                        "url": "https://www.nadra.gov.pk"
+                        "label": "NADRA Procedure",
+                        "url": "https://www.nadra.gov.pk/marriage-certificate/"
                     },
                     {
-                        "label": "Punjab Local Govt",
-                        "url": "https://lgcd.punjab.gov.pk"
-                    }
-                ]
-            },
-            "location": {
-                "tips": [
-                    "Registration is usually done where the Nikah took place. If the parties reside elsewhere, supplementary docs may be needed.",
-                    "Digital registration via Pak ID app is widely available in many Punjab pilot UCs.",
-                    "Register within 15–30 days to avoid late fees/penalties.",
-                    "In pilot districts like Lahore/Faisalabad, use Pak ID app for biometric registration."
-                ],
-                "pitfalls": [
-                    "Don't pay extra to 'agents' — stick to official UC/NADRA fees.",
-                    "Delaying registration leads to complications in FRC/Passport updates later."
-                ],
-                "links": [
-                    {
-                        "label": "Pak ID (Google Play)",
-                        "url": "https://play.google.com/store/apps/details?id=pk.gov.nadra.pakid"
+                        "label": "MOFA Attestation Guide",
+                        "url": "https://mofa.gov.pk/attestation-services/"
                     }
                 ]
             },
             "roadmap": {
                 "tips": [
-                    "Keep original Nikah Nama safe; never submit original to UC indefinitely.",
-                    "For abroad/proxy marriages: Register at Pakistan Mission first → MOFA attestation."
+                    "MOFA Attestation: The certificate must be attested by MOFA for any international visa application.",
+                    "Certified Translation: If your UC only issues a partial translation, use a certified service for a full English copy.",
+                    "Keep multiple certified copies (at least 5-6) of the computerized certificate for future use."
                 ],
                 "pitfalls": [
-                    "Strict Polygamy Advisory: Arbitration Council permission is MANDATORY under Section 6 MFLO.",
-                    "Incomplete docs (e.g. missing witness CNIC) will cause rejection.",
-                    "Not getting Arbitration permission in polygamy is a criminal offense."
+                    "Column 21 Neglect: Leaving column 21 (regarding special conditions) blank can be a major hurdle later.",
+                    "Missing Father's Name: Ensure the certificates reflect the father's name correctly as per identity documents."
                 ],
                 "links": [
                     {
-                        "label": "MOFA Attestation Guide",
-                        "url": "https://mofa.gov.pk"
+                        "label": "MOFA Checklist",
+                        "url": "https://mofa.gov.pk/checklist-for-attestation/"
                     }
                 ]
             },
-            "office_finder": {
-                "tips": [
-                    "Verify UC Secretary Presence: Usually available morning only (Nikah Registrars/Secretaries).",
-                    "E-Khidmat Markaz in Punjab can also facilitate MRC applications.",
-                    "Confirmed pilot districts for digital MRC: Lahore, Faisalabad, Chakwal, Jhelum."
-                ],
-                "pitfalls": [
-                    "UC offices may have irregular timings; call first if possible."
-                ],
-                "links": []
-            },
             "validation": {
                 "tips": [
-                    "Scan the QR code on your MRC to verify authenticity on the spot.",
-                    "Get MRC attested by MOFA if applying for a foreign visa."
+                    "Verify the database: Some embassies check the NADRA database directly; ensure your certificate is properly synced.",
+                    "In case of a married female, her CNIC should be updated with husband's name for certain visa types."
                 ],
                 "pitfalls": [
-                    "Errors in CNIC digits on MRC will prevent FRC updates."
+                    "Errors in MRC digits: Typos in CNIC digits on the MRC will prevent future software updates (like FRC)."
                 ],
                 "links": []
             }
