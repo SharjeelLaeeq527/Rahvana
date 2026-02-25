@@ -58,39 +58,39 @@ interface Guide {
 
 const GUIDES: Guide[] = [
   // --- Pakistan Docs ---
-  {
-    id: "pcc-sindh",
-    title: "PCC Playbook — Sindh",
-    description:
-      "Sindh police certificate guide: requirements, steps, timelines, and common mistakes.",
-    category: "Pakistan Docs",
-    href: "/police-verification?province=Sindh",
-    icon: FileText,
-  },
-  {
-    id: "pcc-punjab",
-    title: "PCC Playbook — Punjab",
-    description: "Punjab police certificate guide (service coming soon).",
-    category: "Pakistan Docs",
-    href: "/police-verification?province=Punjab",
-    icon: Shield,
-  },
-  {
-    id: "pcc-kpk",
-    title: "PCC Playbook — KPK",
-    description: "KPK police certificate guide (service coming soon).",
-    category: "Pakistan Docs",
-    href: "/police-verification?province=KPK",
-    icon: Shield,
-  },
-  {
-    id: "pcc-balochistan",
-    title: "PCC Playbook — Balochistan",
-    description: "Balochistan police certificate guide (service coming soon).",
-    category: "Pakistan Docs",
-    href: "/police-verification?province=Balochistan",
-    icon: Shield,
-  },
+  // {
+  //   id: "pcc-sindh",
+  //   title: "PCC Playbook — Sindh",
+  //   description:
+  //     "Sindh police certificate guide: requirements, steps, timelines, and common mistakes.",
+  //   category: "Pakistan Docs",
+  //   href: "/police-verification?province=Sindh",
+  //   icon: FileText,
+  // },
+  // {
+  //   id: "pcc-punjab",
+  //   title: "PCC Playbook — Punjab",
+  //   description: "Punjab police certificate guide (service coming soon).",
+  //   category: "Pakistan Docs",
+  //   href: "/police-verification?province=Punjab",
+  //   icon: Shield,
+  // },
+  // {
+  //   id: "pcc-kpk",
+  //   title: "PCC Playbook — KPK",
+  //   description: "KPK police certificate guide (service coming soon).",
+  //   category: "Pakistan Docs",
+  //   href: "/police-verification?province=KPK",
+  //   icon: Shield,
+  // },
+  // {
+  //   id: "pcc-balochistan",
+  //   title: "PCC Playbook — Balochistan",
+  //   description: "Balochistan police certificate guide (service coming soon).",
+  //   category: "Pakistan Docs",
+  //   href: "/police-verification?province=Balochistan",
+  //   icon: Shield,
+  // },
   {
     id: "passport",
     title: "Passport Guide",
@@ -100,15 +100,15 @@ const GUIDES: Guide[] = [
     href: "/guides/passport-guide",
     icon: Globe,
   },
-  {
-    id: "pcc-reference",
-    title: "PCC Reference Guide",
-    description:
-      "Comprehensive overview of Police Character Certificates for all provinces.",
-    category: "Pakistan Docs",
-    href: "/guides/police-certificate",
-    icon: Shield,
-  },
+  // {
+  //   id: "pcc-reference",
+  //   title: "PCC Reference Guide",
+  //   description:
+  //     "Comprehensive overview of Police Character Certificates for all provinces.",
+  //   category: "Pakistan Docs",
+  //   href: "/guides/police-certificate",
+  //   icon: Shield,
+  // },
   {
     id: "cnic",
     title: "CNIC (National ID)",
@@ -142,114 +142,114 @@ const GUIDES: Guide[] = [
     href: "/guides/nikah-nama-guide",
     icon: Heart,
   },
-  {
-    id: "divorce-death",
-    title: "Divorce & Death",
-    description: "Termination of prior marriages documentation.",
-    category: "Pakistan Docs",
-    href: "/guides/prior-marriage-termination",
-    icon: FileCheck,
-    disabled: true,
-    comingSoon: true,
-  },
-  {
-    id: "court-records",
-    title: "Court & Prison Records",
-    description: "Obtaining legal records for visa compliance.",
-    category: "Pakistan Docs",
-    href: "/guides/court-records",
-    icon: Scale,
-    disabled: true,
-    comingSoon: true,
-  },
+  // {
+  //   id: "divorce-death",
+  //   title: "Divorce & Death",
+  //   description: "Termination of prior marriages documentation.",
+  //   category: "Pakistan Docs",
+  //   href: "/guides/prior-marriage-termination",
+  //   icon: FileCheck,
+  //   disabled: true,
+  //   comingSoon: true,
+  // },
+  // {
+  //   id: "court-records",
+  //   title: "Court & Prison Records",
+  //   description: "Obtaining legal records for visa compliance.",
+  //   category: "Pakistan Docs",
+  //   href: "/guides/court-records",
+  //   icon: Scale,
+  //   disabled: true,
+  //   comingSoon: true,
+  // },
 
   // --- Embassy Logistics ---
-  {
-    id: "courier-passport",
-    title: "Courier & Passport Delivery",
-    description:
-      "Register, choose delivery options, and troubleshoot common courier issues.",
-    category: "Embassy Logistics",
-    href: "/guides/courier-registration",
-    icon: Map,
-  },
-  {
-    id: "interview-prep",
-    title: "Interview Preparation",
-    description: "Required documents and what to bring to the embassy.",
-    category: "Embassy Logistics",
-    href: "/interview-prep", // Tool Link
-    icon: Users,
-  },
-  {
-    id: "ds260",
-    title: "DS-260 Form",
-    description: "How to complete the online immigrant visa application.",
-    category: "Embassy Logistics",
-    href: "/guides/ds260",
-    icon: Globe,
-    disabled: true,
-    comingSoon: true,
-  },
+  // {
+  //   id: "courier-passport",
+  //   title: "Courier & Passport Delivery",
+  //   description:
+  //     "Register, choose delivery options, and troubleshoot common courier issues.",
+  //   category: "Embassy Logistics",
+  //   href: "/guides/courier-registration",
+  //   icon: Map,
+  // },
+  // {
+  //   id: "interview-prep",
+  //   title: "Interview Preparation",
+  //   description: "Required documents and what to bring to the embassy.",
+  //   category: "Embassy Logistics",
+  //   href: "/interview-prep", // Tool Link
+  //   icon: Users,
+  // },
+  // {
+  //   id: "ds260",
+  //   title: "DS-260 Form",
+  //   description: "How to complete the online immigrant visa application.",
+  //   category: "Embassy Logistics",
+  //   href: "/guides/ds260",
+  //   icon: Globe,
+  //   disabled: true,
+  //   comingSoon: true,
+  // },
 
   // --- Arrival & Travel ---
-  {
-    id: "customs",
-    title: "Customs & Declarations",
-    description:
-      "What to declare, what to avoid, and common pitfalls when traveling.",
-    category: "Arrival & Travel",
-    href: "/guides/custom-requirements",
-    icon: FileCheck,
-  },
+  // {
+  //   id: "customs",
+  //   title: "Customs & Declarations",
+  //   description:
+  //     "What to declare, what to avoid, and common pitfalls when traveling.",
+  //   category: "Arrival & Travel",
+  //   href: "/guides/custom-requirements",
+  //   icon: FileCheck,
+  // },
 
   // --- Financial & Sponsorship ---
-  {
-    id: "asset-docs",
-    title: "Asset Documentation",
-    description: "Prove your financial standing with correct asset documents.",
-    category: "Pakistan Docs",
-    href: "/guides/asset-document-guide",
-    icon: DollarSign,
-  },
-  {
-    id: "employment-verification",
-    title: "Employment Verification",
-    description: "Employment letters, paystubs, and income proof.",
-    category: "Pakistan Docs",
-    href: "/guides/employment-certificate-guide",
-    icon: Briefcase,
-  },
-  {
-    id: "tax-documents",
-    title: "Tax Transcripts",
-    description: "IRS tax documents and W-2 forms for sponsorship.",
-    category: "Financial & Sponsorship",
-    href: "/guides/tax-documents",
-    icon: FileText,
-    disabled: true,
-    comingSoon: true,
-  },
-  {
-    id: "affidavit-support",
-    title: "I-864 Affidavit",
-    description: "Complete guide to financial sponsorship requirements.",
-    category: "Financial & Sponsorship",
-    href: "/affidavit-support-calculator", // Redirect to tool
-    icon: DollarSign,
-  },
+  // {
+  //   id: "asset-docs",
+  //   title: "Asset Documentation",
+  //   description: "Prove your financial standing with correct asset documents.",
+  //   category: "Pakistan Docs",
+  //   href: "/guides/asset-document-guide",
+  //   icon: DollarSign,
+  // },
+  // {
+  //   id: "employment-verification",
+  //   title: "Employment Verification",
+  //   description: "Employment letters, paystubs, and income proof.",
+  //   category: "Pakistan Docs",
+  //   href: "/guides/employment-certificate-guide",
+  //   icon: Briefcase,
+  // },
+  // {
+  //   id: "tax-documents",
+  //   title: "Tax Transcripts",
+  //   description: "IRS tax documents and W-2 forms for sponsorship.",
+  //   category: "Financial & Sponsorship",
+  //   href: "/guides/tax-documents",
+  //   icon: FileText,
+  //   disabled: true,
+  //   comingSoon: true,
+  // },
+  // {
+  //   id: "affidavit-support",
+  //   title: "I-864 Affidavit",
+  //   description: "Complete guide to financial sponsorship requirements.",
+  //   category: "Financial & Sponsorship",
+  //   href: "/affidavit-support-calculator", // Redirect to tool
+  //   icon: DollarSign,
+  // },
 
   // --- Medical & Exam ---
-  {
-    id: "medical-exam",
-    title: "Medical Examination",
-    description: "Panel physicians, appointments, and requirements.",
-    category: "Medical & Exam",
-    href: "/guides/medical-exam",
-    icon: Activity,
-    disabled: true,
-    comingSoon: true,
-  },
+  // {
+  //   id: "medical-exam",
+  //   title: "Medical Examination",
+  //   description: "Panel physicians, appointments, and requirements.",
+  //   category: "Medical & Exam",
+  //   href: "/guides/medical-exam",
+  //   icon: Activity,
+  //   disabled: true,
+  //   comingSoon: true,
+  // },
   {
     id: "vaccinations",
     title: "Vaccination Guide",
@@ -260,33 +260,33 @@ const GUIDES: Guide[] = [
   },
 
   // --- Relationship Evidence ---
-  {
-    id: "relationship-evidence",
-    title: "Bona Fide Marriage",
-    description: "Photos, chat logs, and proof of genuine relationship.",
-    category: "Relationship Evidence",
-    href: "/guides/bona-marriage-guide",
-    icon: Heart,
-  },
+  // {
+  //   id: "relationship-evidence",
+  //   title: "Bona Fide Marriage",
+  //   description: "Photos, chat logs, and proof of genuine relationship.",
+  //   category: "Relationship Evidence",
+  //   href: "/guides/bona-marriage-guide",
+  //   icon: Heart,
+  // },
 
   // --- Visa Strategy ---
-  {
-    id: "visa-strength",
-    title: "Visa Case Strength",
-    description: "Understand your visa case strength and improve it.",
-    category: "Visa Strategy",
-    href: "/guides/visa-strength-guide",
-    icon: GraduationCap,
-  },
-  {
-    id: "educational-docs",
-    title: "Educational Certificates (US Visa)",
-    description:
-      "Complete roadmap: HEC/IBCC attestation, WES evaluation, and I-20 requirements.",
-    href: "/guides/educational-certificates-us-visa",
-    icon: BookOpen,
-    category: "Education & Process",
-  },
+  // {
+  //   id: "visa-strength",
+  //   title: "Visa Case Strength",
+  //   description: "Understand your visa case strength and improve it.",
+  //   category: "Visa Strategy",
+  //   href: "/guides/visa-strength-guide",
+  //   icon: GraduationCap,
+  // },
+  // {
+  //   id: "educational-docs",
+  //   title: "Educational Certificates (US Visa)",
+  //   description:
+  //     "Complete roadmap: HEC/IBCC attestation, WES evaluation, and I-20 requirements.",
+  //   href: "/guides/educational-certificates-us-visa",
+  //   icon: BookOpen,
+  //   category: "Education & Process",
+  // },
 ];
 
 const CATEGORIES: ("All" | GuideCategory)[] = [
