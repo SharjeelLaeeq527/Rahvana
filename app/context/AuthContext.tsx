@@ -174,24 +174,67 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
-  // Fetch profile
+  // Fetch profile with retry and fallback
   const fetchProfile = useCallback(
-    async (userId: string) => {
-      try {
-        const { data, error } = await supabase
-          .from("profiles")
-          .select("*")
-          .eq("id", userId)
-          .single();
+    async (
+      userId: string,
+      userMeta?: { full_name?: string; name?: string; email?: string },
+    ) => {
+      // Try up to 2 attempts with a short delay
+      for (let attempt = 0; attempt < 2; attempt++) {
+        try {
+          const { data, error } = await supabase
+            .from("profiles")
+            .select("*")
+            .eq("id", userId)
+            .single();
 
-        if (error) {
-          console.error("[AuthContext] fetchProfile error:", error.message, "userId:", userId);
-          return;
+          if (!error && data) {
+            setProfile(data);
+            return; // Success — done
+          }
+
+          if (error) {
+            console.error(
+              `[AuthContext] fetchProfile attempt ${attempt + 1} error:`,
+              error.message,
+              "userId:",
+              userId,
+            );
+          }
+        } catch (err) {
+          console.error(
+            `[AuthContext] fetchProfile attempt ${attempt + 1} unexpected error:`,
+            err,
+          );
         }
-        setProfile(data);
-      } catch (err) {
-        console.error("[AuthContext] fetchProfile unexpected error:", err);
+
+        // Wait 1s before retrying
+        if (attempt === 0) {
+          await new Promise((resolve) => setTimeout(resolve, 1000));
+        }
       }
+
+      // All attempts failed — set a fallback profile from user metadata
+      // so the UI never shows "Valued User".
+      const fallbackName =
+        userMeta?.full_name ||
+        userMeta?.name ||
+        userMeta?.email?.split("@")[0] ||
+        "User";
+
+      console.warn(
+        "[AuthContext] fetchProfile: using fallback profile for",
+        userId,
+        "name:",
+        fallbackName,
+      );
+
+      setProfile({
+        full_name: fallbackName,
+        email: userMeta?.email || "",
+        role: "user",
+      });
     },
     [supabase],
   );
@@ -200,11 +243,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const getInitialSession = async () => {
       try {
         // ── STEP 1: Handle PKCE auth code in URL ────────────────────────
-        // After OAuth (Google) or email confirmation, Supabase may redirect
-        // back to the site with ?code=xxx in the URL. If this code isn't
-        // exchanged for a session, the user appears unauthenticated.
-        // This commonly happens when the Supabase redirect URL config
-        // sends the code to the homepage instead of /api/auth/callback.
         if (typeof window !== 'undefined') {
           const params = new URLSearchParams(window.location.search);
           const code = params.get('code');
@@ -213,27 +251,37 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             if (exchangeError) {
               console.error('[AuthContext] PKCE code exchange error:', exchangeError.message);
             }
-            // Remove ?code= from URL to prevent re-exchange on refresh
             const cleanUrl = new URL(window.location.href);
             cleanUrl.searchParams.delete('code');
             window.history.replaceState({}, '', cleanUrl.pathname + cleanUrl.search);
           }
         }
 
-        // ── STEP 2: Validate session with server ────────────────────────
-        // getUser() validates the token against Supabase servers.
-        // getSession() only reads from local storage without validation.
+        // ── STEP 2: Ensure tokens are fresh ──────────────────────────────
+        // CRITICAL: Call getSession() FIRST — it refreshes the access token
+        // if it's expired. getUser() does NOT refresh tokens; it only
+        // validates them. On page refresh with an expired token, calling
+        // getUser() without refreshing first returns null → "Valued User".
+        const {
+          data: { session: currentSession },
+        } = await supabase.auth.getSession();
+
+        // ── STEP 3: Validate user server-side ────────────────────────────
         const {
           data: { user: validatedUser },
         } = await supabase.auth.getUser();
 
         if (validatedUser) {
-          const {
-            data: { session: currentSession },
-          } = await supabase.auth.getSession();
           setUser(validatedUser);
           setSession(currentSession);
-          await fetchProfile(validatedUser.id);
+
+          // Pass user metadata so fetchProfile can use it as fallback
+          await fetchProfile(validatedUser.id, {
+            full_name: validatedUser.user_metadata?.full_name,
+            name: validatedUser.user_metadata?.name,
+            email: validatedUser.email,
+          });
+
           const adminStatus = await fetchUserProfile(validatedUser.id);
           setIsAdmin(adminStatus);
         } else {
@@ -258,7 +306,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setSession(session ?? null);
 
       if (session?.user) {
-        await fetchProfile(session.user.id);
+        await fetchProfile(session.user.id, {
+          full_name: session.user.user_metadata?.full_name,
+          name: session.user.user_metadata?.name,
+          email: session.user.email,
+        });
         const adminStatus = await fetchUserProfile(session.user.id);
         setIsAdmin(adminStatus);
       } else {
