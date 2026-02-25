@@ -50,11 +50,21 @@ export interface InfoPanelData {
   office_location?: OfficeLocation | null;
 }
 
+export interface GuideDataInfo {
+  fee_structure?: FeeStructure;
+  office_finder?: OfficeLocation;
+  [key: string]: unknown;
+}
+
+export interface GuideData extends GuideDataInfo {
+  wizard?: GuideDataInfo;
+}
+
 interface WizardInfoPanelProps {
   data: InfoPanelData;
   lastVerified: string;
-  guideType: "passport" | "frc" | "other";
-  guideData?: Record<string, any>; // Global guide data to show consistent info
+  guideType: "passport" | "frc" | "cnic" | "other";
+  guideData?: GuideData; // Global guide data to show consistent info
 }
 
 type InfoTab = "tips" | "pitfalls" | "links";
@@ -104,12 +114,23 @@ const WizardInfoPanel = ({
   const [activeTab, setActiveTab] = useState<InfoTab>("tips");
 
   const feeStructure =
-    data.fee_structure || (guideData as Record<string, any>)?.fee_structure || (guideData?.wizard as Record<string, any>)?.fee_structure || null;
+    data.fee_structure ||
+    guideData?.fee_structure ||
+    guideData?.wizard?.fee_structure ||
+    null;
 
-  const officeLocation = data.office_location || (guideData as Record<string, any>)?.office_finder || (guideData?.wizard as Record<string, any>)?.office_finder || null;
+  const officeLocation =
+    data.office_location ||
+    guideData?.office_finder ||
+    guideData?.wizard?.office_finder ||
+    null;
 
   // Show office section based on availability of dynamic data or guide type
-  const showOfficeSection = officeLocation || (guideType === "passport" || guideType === "frc");
+  const showOfficeSection =
+    officeLocation ||
+    guideType === "passport" ||
+    guideType === "frc" ||
+    guideType === "cnic";
 
   return (
     <aside
@@ -230,7 +251,7 @@ const WizardInfoPanel = ({
               </div>
 
               {feeStructure?.special_note && (
-                <div className="bg-gradient-to-r from-primary to-primary/80 rounded-2xl p-4 text-white mb-6 shadow-sm">
+                <div className="bg-linear-to-r from-primary to-primary/80 rounded-2xl p-4 text-white mb-6 shadow-sm">
                   <div className="flex items-start gap-3">
                     <div className="bg-white/20 p-2 rounded-full shrink-0">
                       <CreditCard className="w-5 h-5" />
@@ -253,43 +274,45 @@ const WizardInfoPanel = ({
                   Processing Tiers
                 </h3>
                 <div className="flex flex-col gap-3">
-                  {feeStructure?.tiers?.map((tier: FeeStructureTier, i: number) => {
-                    const badges: Record<string, string> = {
-                      blue: "bg-blue-100 text-blue-700",
-                      purple: "bg-purple-100 text-purple-700",
-                      orange: "bg-orange-100 text-orange-700",
-                      green: "bg-emerald-100 text-emerald-700",
-                    };
-                    const badgeClass =
-                      badges[tier.badge_variant || "blue"] || badges.blue;
+                  {feeStructure?.tiers?.map(
+                    (tier: FeeStructureTier, i: number) => {
+                      const badges: Record<string, string> = {
+                        blue: "bg-blue-100 text-blue-700",
+                        purple: "bg-purple-100 text-purple-700",
+                        orange: "bg-orange-100 text-orange-700",
+                        green: "bg-emerald-100 text-emerald-700",
+                      };
+                      const badgeClass =
+                        badges[tier.badge_variant || "blue"] || badges.blue;
 
-                    return (
-                      <div
-                        key={i}
-                        className="bg-white border text-center border-slate-200 rounded-xl p-4 flex items-center justify-between shadow-sm"
-                      >
-                        <div className="text-left flex flex-col gap-1 items-start">
-                          <div
-                            className={`px-2.5 py-0.5 rounded-full text-[0.65rem] font-bold uppercase tracking-wider ${badgeClass}`}
-                          >
-                            {tier.type}
+                      return (
+                        <div
+                          key={i}
+                          className="bg-white border text-center border-slate-200 rounded-xl p-4 flex items-center justify-between shadow-sm"
+                        >
+                          <div className="text-left flex flex-col gap-1 items-start">
+                            <div
+                              className={`px-2.5 py-0.5 rounded-full text-[0.65rem] font-bold uppercase tracking-wider ${badgeClass}`}
+                            >
+                              {tier.type}
+                            </div>
+                            <p className="text-[0.75rem] text-slate-500 flex items-center gap-1">
+                              <Clock className="w-3 h-3" />
+                              {tier.days}
+                            </p>
                           </div>
-                          <p className="text-[0.75rem] text-slate-500 flex items-center gap-1">
-                            <Clock className="w-3 h-3" />
-                            {tier.days}
-                          </p>
+                          <div className="text-lg font-black text-slate-900">
+                            {" "}
+                            {/* Reduced font size from text-xl to text-lg */}
+                            <span className="text-xs font-medium text-slate-400 mr-1 align-top relative top-0.5">
+                              Rs.
+                            </span>
+                            {tier.price}
+                          </div>
                         </div>
-                        <div className="text-lg font-black text-slate-900">
-                          {" "}
-                          {/* Reduced font size from text-xl to text-lg */}
-                          <span className="text-xs font-medium text-slate-400 mr-1 align-top relative top-0.5">
-                            Rs.
-                          </span>
-                          {tier.price}
-                        </div>
-                      </div>
-                    );
-                  })}
+                      );
+                    },
+                  )}
                 </div>
               </div>
             </div>
@@ -306,77 +329,79 @@ const WizardInfoPanel = ({
 
               <div className="bg-slate-100/50 rounded-2xl p-4 border border-slate-200/60">
                 <div className="flex flex-col gap-3">
-                  {(officeLocation?.options || STATIC_OFFICE_LOCATION.options).map(
-                    (option: OfficeLocationOption, i: number) => {
-                      const icons = {
-                        website: {
-                          Icon: Globe,
-                          colors: "bg-primary/10 text-primary",
-                        },
-                        helpline: {
-                          Icon: PhoneCall,
-                          colors: "bg-blue-100 text-blue-600",
-                        },
-                      };
+                  {(
+                    officeLocation?.options || STATIC_OFFICE_LOCATION.options
+                  ).map((option: OfficeLocationOption, i: number) => {
+                    const icons: Record<
+                      string,
+                      { Icon: React.ElementType; colors: string }
+                    > = {
+                      website: {
+                        Icon: Globe,
+                        colors: "bg-primary/10 text-primary",
+                      },
+                      helpline: {
+                        Icon: PhoneCall,
+                        colors: "bg-blue-100 text-blue-600",
+                      },
+                    };
 
-                      const iconConfig =
-                        (icons as Record<string, any>)[option.type] || icons.website;
-                      const { Icon, colors } = iconConfig;
+                    const iconConfig = icons[option.type] || icons.website;
+                    const { Icon, colors } = iconConfig;
 
-                      return (
-                        <div
-                          key={i}
-                          className="bg-white p-3 rounded-xl border border-slate-200 shadow-sm flex items-start gap-3"
-                        >
-                          <div className={`${colors} p-2 rounded-lg shrink-0`}>
-                            <Icon className="w-4 h-4" />
-                          </div>
-                          <div>
-                            <p className="font-bold text-slate-900 text-[0.8rem] mb-0.5">
-                              {option.title}
-                            </p>
-                            <p className="text-[0.75rem] text-slate-500 leading-relaxed">
-                              {option.description && (
-                                <>
-                                  {option.description}
-                                  <br />
-                                </>
-                              )}
-
-                              {option.url && (
-                                <a
-                                  href={option.url}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="text-primary hover:underline font-medium flex items-center gap-1"
-                                >
-                                  Visit Official Website
-                                  <ExternalLink className="w-3 h-3" />
-                                </a>
-                              )}
-
-                              {option.phone_local && (
-                                <>
-                                  <br />
-                                  <strong>Helpline:</strong> Dial{" "}
-                                  {option.phone_local} (from mobile users in
-                                  Pakistan)
-                                  <br />
-                                </>
-                              )}
-
-                              {option.phone_international && (
-                                <>
-                                  <strong>International Helpline:</strong>{" "}
-                                  {option.phone_international}
-                                </>
-                              )}
-                            </p>
-                          </div>
+                    return (
+                      <div
+                        key={i}
+                        className="bg-white p-3 rounded-xl border border-slate-200 shadow-sm flex items-start gap-3"
+                      >
+                        <div className={`${colors} p-2 rounded-lg shrink-0`}>
+                          <Icon className="w-4 h-4" />
                         </div>
-                      );
-                    }
-                  )}
+                        <div>
+                          <p className="font-bold text-slate-900 text-[0.8rem] mb-0.5">
+                            {option.title}
+                          </p>
+                          <p className="text-[0.75rem] text-slate-500 leading-relaxed">
+                            {option.description && (
+                              <>
+                                {option.description}
+                                <br />
+                              </>
+                            )}
+
+                            {option.url && (
+                              <a
+                                href={option.url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-primary hover:underline font-medium flex items-center gap-1"
+                              >
+                                Visit Official Website
+                                <ExternalLink className="w-3 h-3" />
+                              </a>
+                            )}
+
+                            {option.phone_local && (
+                              <>
+                                <br />
+                                <strong>Helpline:</strong> Dial{" "}
+                                {option.phone_local} (from mobile users in
+                                Pakistan)
+                                <br />
+                              </>
+                            )}
+
+                            {option.phone_international && (
+                              <>
+                                <strong>International Helpline:</strong>{" "}
+                                {option.phone_international}
+                              </>
+                            )}
+                          </p>
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
             </div>

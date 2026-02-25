@@ -243,7 +243,8 @@
         ],
         "links": [
           { "label": "NADRA Official Website", "url": "https://www.nadra.gov.pk" },
-          { "label": "Pak Identity App", "url": "https://id.nadra.gov.pk/" }
+          { "label": "Pak Identity App", "url": "https://id.nadra.gov.pk/" },
+          { "label": "NADRA Helpline: 1777", "url": "tel:1777" }
         ]
       },
       "location": {

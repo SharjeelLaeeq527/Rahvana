@@ -42,6 +42,7 @@ const RoadmapStep = ({
   const onsitePhases = data?.onsitePhases || [];
   const onlinePhases = data?.onlinePhases || [];
   const documentsChecklist = data?.documents_checklist || [];
+  const hasOnlinePhases = onlinePhases.length > 0;
 
   const [activePhase, setActivePhase] = useState<Phase | null>(null);
   const [isFlipped, setIsFlipped] = useState(false);
@@ -86,8 +87,8 @@ const RoadmapStep = ({
       {/* Flashcard Timeline */}
       <div className="mb-12">
         <div
-          onClick={() => setIsFlipped(!isFlipped)}
-          className={`relative w-full min-h-[260px] cursor-pointer transition-transform duration-700 ${
+          onClick={() => hasOnlinePhases && setIsFlipped(!isFlipped)}
+          className={`relative w-full min-h-[260px] ${hasOnlinePhases ? "cursor-pointer" : ""} transition-transform duration-700 ${
             isFlipped ? "rotate-y-180" : ""
           }`}
           style={{ transformStyle: "preserve-3d", perspective: "1200px" }}

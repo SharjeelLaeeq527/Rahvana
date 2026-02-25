@@ -20,14 +20,9 @@
         },
         "steps": [
             {
-                "id": "case_type",
+                "id": "document_need",
                 "label": "Case Type",
                 "icon": "settings"
-            },
-            {
-                "id": "location",
-                "label": "Location",
-                "icon": "map-pin"
             },
             {
                 "id": "roadmap",
@@ -35,20 +30,15 @@
                 "icon": "map"
             },
             {
-                "id": "office_finder",
-                "label": "Office Finder",
-                "icon": "search"
-            },
-            {
                 "id": "validation",
                 "label": "Validation",
                 "icon": "star"
             }
         ],
-        "case_type": {
+        "document_need": {
             "title": "Marriage Case Details",
             "description": "Your requirements depend on the nature of the marriage and the citizenship of the parties.",
-            "types": [
+            "options": [
                 {
                     "id": "local",
                     "title": "Local Marriage",
@@ -126,7 +116,7 @@
         "roadmap": {
             "title": "Registration Roadmap",
             "estimated_timeline": "7-14 Days",
-            "phases": [
+            "onsitePhases": [
                 {
                     "id": 1,
                     "title": "Nikah Ceremony",
@@ -261,7 +251,7 @@
             ]
         },
         "info_panel": {
-            "case_type": {
+            "document_need": {
                 "tips": [
                     "Always use licensed Nikah Khawan (registered with UC).",
                     "Get 3–4 copies of signed Nikah Nama immediately after ceremony.",

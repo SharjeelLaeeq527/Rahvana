@@ -1,92 +1,118 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import WizardHeader from "./components/guide/WizardHeader";
-import WizardSidebar from "./components/guide/WizardSidebar";
-import WizardInfoPanel from "./components/guide/WizardInfoPanel";
-import WhatsThisModal from "./components/guide/WhatsThisModal";
-import CaseTypeStep from "./components/guide/steps/CaseTypeStep";
-import LocationStep from "./components/guide/steps/LocationStep";
-import RoadmapStep from "./components/guide/steps/RoadmapStep";
-import OfficeFinderStep from "./components/guide/steps/OfficeFinderStep";
-import ValidationStep from "./components/guide/steps/ValidationStep";
-import {
-  type NikahStepId,
-  type NikahWizardState,
-} from "@/types/nikah-nama-wizard";
+import WizardHeader from "../../../components/guides/WizardHeader";
+import WizardSidebar from "../../../components/guides/WizardSidebar";
+import WizardInfoPanel, {
+  InfoPanelData,
+} from "../../../components/guides/WizardInfoPanel";
+import DocumentNeedStep from "../../../components/guides/steps/DocumentNeedStep";
+import RoadmapStep from "../../../components/guides/steps/RoadmapStep";
+import ValidationStep from "../../../components/guides/steps/ValidationStep";
+import WhatsThisModal from "../../../components/guides/WhatsThisModal";
+import { type WizardState, WizardStepId } from "@/types/guide-wizard";
 import guideData from "@/data/nikah-nama-guide-data.json";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import FeedbackButton from "@/app/components/FeedbackButton";
+import { useWizardSession } from "@/lib/guides/useWizardSession";
+import { useGuideUpload } from "@/lib/guides/useGuideUpload";
 
-const STEP_IDS: NikahStepId[] = [
-  "case_type",
-  "location",
-  "roadmap",
-  "office_finder",
-  "validation",
-];
+const STEP_IDS: WizardStepId[] = ["document_need", "roadmap", "validation"];
 
 const STEP_LABELS: Record<string, string> = {
-  case_type: "Case Type",
-  location: "Location",
+  document_need: "Case Type",
   roadmap: "Roadmap",
-  office_finder: "Office Finder",
   validation: "Validation",
 };
 
 const INFO_PANEL_KEYS: Record<
-  NikahStepId,
+  WizardStepId,
   keyof typeof guideData.wizard.info_panel
 > = {
-  case_type: "case_type",
-  location: "location",
+  document_need: "document_need",
+  age_category: "document_need",
+  birth_setting: "document_need",
+  location: "roadmap",
   roadmap: "roadmap",
-  office_finder: "office_finder",
+  office_finder: "roadmap",
   validation: "validation",
 };
 
 const NikahNamaGuidePage = () => {
   const [currentStep, setCurrentStep] = useState(0);
-  const [showWhatsThis, setShowWhatsThis] = useState(false);
-  const [state, setState] = useState<NikahWizardState>({
-    caseType: null,
+  const [showWhatsThis, setShowWhatsThis] = useState(true);
+  const [state, setState] = useState<WizardState>({
+    documentNeed: null,
+    ageCategory: null,
+    birthSetting: null,
     province: null,
     district: null,
     city: null,
     checkedDocuments: [],
     validationChecks: [],
     uploadedFile: false,
+    savedOffice: null,
   });
 
-  useEffect(() => {
-    const hide = localStorage.getItem("hideNikahWhatsThis");
-    if (!hide) {
-      setShowWhatsThis(true);
-    }
-  }, []);
+  const { saveWizardStep } = useWizardSession(
+    "nikah-nama-guide",
+    state,
+    setState,
+    STEP_IDS,
+    setCurrentStep,
+    (prev, stepsData) => ({
+      ...prev,
+      documentNeed: stepsData.document_need || prev.documentNeed,
+      province: stepsData.location?.province || prev.province,
+      district: stepsData.location?.district || prev.district,
+      city: stepsData.location?.city || prev.city,
+      checkedDocuments: stepsData.roadmap || prev.checkedDocuments,
+      validationChecks: stepsData.validation?.checks || prev.validationChecks,
+      uploadedFile: stepsData.validation?.uploaded || prev.uploadedFile,
+    }),
+  );
 
-  const handleDontShowAgain = (val: boolean) => {
-    if (val) {
-      localStorage.setItem("hideNikahWhatsThis", "true");
-    }
+  const { uploadFile: uploadFileHook } = useGuideUpload();
+  // Wrapper functions to match expected signatures
+  const handleUploadFile = async (file: File) => {
+    await uploadFileHook(file, "nikah-nama-guide", "validation");
+    // Update local state to reflect the upload
+    setState((s) => ({ ...s, uploadedFile: true }));
+    saveWizardStep("validation", {
+      checks: state.validationChecks,
+      uploaded: true,
+    });
   };
 
+  useEffect(() => {
+    const dontShow = localStorage.getItem("hide_whats_this_modal_nikah");
+    if (!dontShow) setShowWhatsThis(true);
+  }, []);
+
   const currentStepId = STEP_IDS[currentStep];
-  const infoPanelData =
-    guideData.wizard.info_panel[
-    INFO_PANEL_KEYS[currentStepId] as keyof typeof guideData.wizard.info_panel
-    ];
+  const infoPanelKey = INFO_PANEL_KEYS[currentStepId];
+  // We need to typecast correctly due to TS limitations with JSON
+  const infoPanelData = guideData.wizard.info_panel[
+    infoPanelKey as keyof typeof guideData.wizard.info_panel
+  ] as unknown as InfoPanelData;
 
   const canGoNext = (): boolean => {
     switch (currentStepId) {
-      case "case_type":
-        return !!state.caseType;
-      case "location":
-        return !!state.province && !!state.district && !!state.city;
+      case "document_need":
+        const docNeed = guideData.wizard.document_need as {
+          questions?: unknown[];
+        };
+        if (docNeed.questions) {
+          const numQuestions = docNeed.questions.length;
+          const answers = state.documentNeed;
+          if (typeof answers === "object" && answers !== null) {
+            return Object.keys(answers).length === numQuestions;
+          }
+          return false;
+        }
+        return !!state.documentNeed;
       case "roadmap":
-        return true;
-      case "office_finder":
         return true;
       case "validation":
         return false;
@@ -96,13 +122,29 @@ const NikahNamaGuidePage = () => {
   };
 
   const goNext = () => {
-    if (currentStep < STEP_IDS.length - 1 && canGoNext()) {
+    if (currentStep < STEP_IDS.length - 1 && canGoNext())
       setCurrentStep(currentStep + 1);
-    }
   };
 
   const goBack = () => {
     if (currentStep > 0) setCurrentStep(currentStep - 1);
+  };
+
+  const handleDocumentNeedSelect = (id: string, questionId?: string) => {
+    if (questionId) {
+      setState((s) => ({
+        ...s,
+        documentNeed: {
+          ...(typeof s.documentNeed === "object" && s.documentNeed !== null
+            ? s.documentNeed
+            : {}),
+          [questionId]: id,
+        },
+      }));
+    } else {
+      setState((s) => ({ ...s, documentNeed: id }));
+      setTimeout(() => setCurrentStep(1), 400);
+    }
   };
 
   const toggleDocument = (id: string) => {
@@ -125,37 +167,57 @@ const NikahNamaGuidePage = () => {
 
   const renderStep = () => {
     switch (currentStepId) {
-      case "case_type":
+      case "document_need":
         return (
-          <CaseTypeStep
-            selected={state.caseType}
-            onSelect={(v) => setState((s) => ({ ...s, caseType: v }))}
-          />
-        );
-      case "location":
-        return (
-          <LocationStep
-            province={state.province}
-            district={state.district}
-            city={state.city}
-            onProvinceChange={(v) => setState((s) => ({ ...s, province: v }))}
-            onDistrictChange={(v) => setState((s) => ({ ...s, district: v }))}
-            onCityChange={(v) => setState((s) => ({ ...s, city: v }))}
+          <DocumentNeedStep
+            selected={state.documentNeed}
+            onSelect={handleDocumentNeedSelect}
+            data={
+              guideData.wizard.document_need as React.ComponentProps<
+                typeof DocumentNeedStep
+              >["data"]
+            }
           />
         );
       case "roadmap":
+        const docNeedRaw = state.documentNeed as
+          | string
+          | Record<string, string>
+          | null;
+        let selectedCategory: string | undefined;
+
+        if (typeof docNeedRaw === "string") {
+          selectedCategory = docNeedRaw;
+        } else if (
+          docNeedRaw &&
+          typeof docNeedRaw === "object" &&
+          Object.keys(docNeedRaw).length > 0
+        ) {
+          // Pick a value from the object... not typical if nikah nama isn't using questions.
+          selectedCategory = Object.values(docNeedRaw)[0];
+        }
+
+        // We filter checklist documents based on category
+        const roadmapData = { ...guideData.wizard.roadmap };
+        if (selectedCategory) {
+          roadmapData.documents_checklist =
+            roadmapData.documents_checklist.filter(
+              (doc: { category?: string }) => {
+                if (doc.category) {
+                  return doc.category === selectedCategory;
+                }
+                return true;
+              },
+            );
+        }
+
         return (
           <RoadmapStep
-            caseType={state.caseType}
             checkedDocuments={state.checkedDocuments}
             onToggleDocument={toggleDocument}
-          />
-        );
-      case "office_finder":
-        return (
-          <OfficeFinderStep
-            province={state.province}
-            district={state.district}
+            data={
+              roadmapData as React.ComponentProps<typeof RoadmapStep>["data"]
+            }
           />
         );
       case "validation":
@@ -164,7 +226,12 @@ const NikahNamaGuidePage = () => {
             validationChecks={state.validationChecks}
             onToggleCheck={toggleValidationCheck}
             uploadedFile={state.uploadedFile}
-            onUpload={() => setState((s) => ({ ...s, uploadedFile: true }))}
+            onUpload={handleUploadFile}
+            data={
+              guideData.wizard.validation as React.ComponentProps<
+                typeof ValidationStep
+              >["data"]
+            }
           />
         );
       default:
@@ -173,32 +240,31 @@ const NikahNamaGuidePage = () => {
   };
 
   return (
-    <div className="min-h-screen pt-14 flex flex-col bg-slate-50 font-sans">
-      <WizardHeader onWhatsThis={() => setShowWhatsThis(true)} />
+    <div className="min-h-screen flex flex-col bg-gray-50 pt-14">
+      <WizardHeader
+        onWhatsThis={() => setShowWhatsThis(true)}
+        title={guideData.wizard.title}
+      />
 
       <div className="flex flex-1 overflow-hidden h-[calc(100vh-56px)]">
-        {/* Left Sidebar */}
         <WizardSidebar
           currentStep={currentStep}
           steps={STEP_IDS}
           onStepClick={setCurrentStep}
         />
 
-        {/* Center Content */}
-        <main className="flex-1 overflow-y-auto relative px-10 py-8">
-          {/* Grid background */}
+        <main className="flex-1 overflow-y-auto p-8 relative">
           <div
             className="fixed inset-0 pointer-events-none z-0"
             style={{
               backgroundImage:
-                "linear-gradient(rgba(13,115,119,0.02) 1px, transparent 1px), linear-gradient(90deg, rgba(13,115,119,0.02) 1px, transparent 1px)",
+                "linear-gradient(hsl(168 80% 30% / 0.02) 1px, transparent 1px), linear-gradient(90deg, hsl(168 80% 30% / 0.02) 1px, transparent 1px)",
               backgroundSize: "48px 48px",
             }}
           />
 
-          <div className="relative z-10 max-w-4xl mx-auto">
-            {/* Wizard Card */}
-            <div className="bg-white rounded-2xl border border-slate-200 p-8 shadow-sm min-h-120">
+          <div className="relative z-10 max-w-3xl mx-auto">
+            <div className="bg-white rounded-2xl border border-gray-200 p-8 shadow-sm min-h-100">
               <AnimatePresence mode="wait">
                 <motion.div
                   key={currentStepId}
@@ -212,59 +278,65 @@ const NikahNamaGuidePage = () => {
               </AnimatePresence>
             </div>
 
-            {/* Navigation Footer */}
-            <div className="flex justify-between items-center mt-6 pb-8">
+            <div className="flex justify-between items-center mt-5 pb-6">
               {currentStep > 0 ? (
                 <motion.button
                   whileHover={{ scale: 1.03 }}
                   whileTap={{ scale: 0.97 }}
                   onClick={goBack}
-                  className="flex items-center gap-1.5 px-6 py-3 rounded-xl border-2 border-slate-200 bg-white text-slate-700 text-sm font-bold cursor-pointer font-['Plus_Jakarta_Sans',system-ui]"
+                  className="flex items-center gap-1.5 px-5 py-2.5 rounded-xl border border-gray-300 bg-white text-gray-700 font-semibold text-sm cursor-pointer"
                 >
-                  <ArrowLeft className="w-4 h-4" />
-                  Back
+                  <ArrowLeft className="w-4 h-4" /> Back
                 </motion.button>
               ) : (
                 <div />
               )}
 
-              <span className="text-sm text-slate-400 font-bold uppercase tracking-wider font-['Plus_Jakarta_Sans',system-ui]">
+              <span className="text-sm text-gray-500 font-medium">
                 Step {currentStep + 1} of {STEP_IDS.length}
               </span>
 
               {currentStep < STEP_IDS.length - 1 && (
                 <motion.button
-                  whileHover={{ scale: canGoNext() ? 1.03 : 1 }}
-                  whileTap={{ scale: canGoNext() ? 0.97 : 1 }}
+                  whileHover={{ scale: 1.03 }}
+                  whileTap={{ scale: 0.97 }}
                   onClick={goNext}
                   disabled={!canGoNext()}
-                  className={`flex items-center gap-1.5 px-8 py-3 rounded-xl text-sm font-bold shadow-md transition font-['Plus_Jakarta_Sans',system-ui]
+                  className={`flex items-center gap-1.5 px-5 py-2.5 rounded-xl font-semibold text-sm cursor-pointer
                     ${
                       canGoNext()
-                        ? "bg-teal-600 text-white cursor-pointer hover:bg-teal-700"
-                        : "bg-slate-200 text-slate-400 cursor-not-allowed shadow-none"
+                        ? "bg-linear-to-br from-teal-600 to-teal-500 text-white shadow-md"
+                        : "bg-gray-200 text-gray-400 cursor-not-allowed"
                     }
                   `}
                 >
-                  Continue
-                  <ArrowRight className="w-4 h-4" />
+                  Continue <ArrowRight className="w-4 h-4" />
                 </motion.button>
               )}
             </div>
           </div>
         </main>
 
-        {/* Right Info Panel */}
         <WizardInfoPanel
           data={infoPanelData}
           lastVerified={guideData.wizard.last_verified}
+          guideData={guideData as Record<string, unknown>}
+          guideType="other"
         />
       </div>
 
       <WhatsThisModal
         open={showWhatsThis}
-        onClose={() => setShowWhatsThis(false)}
-        onDontShowAgain={handleDontShowAgain}
+        onClose={() => {
+          setShowWhatsThis(false);
+          localStorage.setItem("hide_whats_this_modal_nikah", "true");
+        }}
+        data={
+          guideData.wizard.whats_this as React.ComponentProps<
+            typeof WhatsThisModal
+          >["data"]
+        }
+        documentLabel="Nikah Nama & MRC"
       />
       <FeedbackButton
         steps={Object.values(STEP_LABELS)}
