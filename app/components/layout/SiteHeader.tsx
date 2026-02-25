@@ -493,7 +493,10 @@ export function SiteHeader({
                     {/* Header */}
                     <div className="px-5 py-4 border-b border-border bg-muted/30">
                       <h3 className="font-bold text-foreground">
-                        {profile?.full_name || "Valued User"}
+                        {profile?.full_name || 
+                         user?.user_metadata?.full_name || 
+                         user?.user_metadata?.name || 
+                         "Valued User"}
                       </h3>
                       <p className="text-sm text-muted-foreground">
                         {user?.email || "No email available"}

@@ -174,24 +174,67 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
-  // Fetch profile
+  // Fetch profile with retry and fallback
   const fetchProfile = useCallback(
-    async (userId: string) => {
-      try {
-        const { data, error } = await supabase
-          .from("profiles")
-          .select("*")
-          .eq("id", userId)
-          .single();
+    async (
+      userId: string,
+      userMeta?: { full_name?: string; name?: string; email?: string },
+    ) => {
+      // Try up to 2 attempts with a short delay
+      for (let attempt = 0; attempt < 2; attempt++) {
+        try {
+          const { data, error } = await supabase
+            .from("profiles")
+            .select("*")
+            .eq("id", userId)
+            .single();
 
-        if (error) {
-          console.error("[AuthContext] fetchProfile error:", error.message, "userId:", userId);
-          return;
+          if (!error && data) {
+            setProfile(data);
+            return; // Success — done
+          }
+
+          if (error) {
+            console.error(
+              `[AuthContext] fetchProfile attempt ${attempt + 1} error:`,
+              error.message,
+              "userId:",
+              userId,
+            );
+          }
+        } catch (err) {
+          console.error(
+            `[AuthContext] fetchProfile attempt ${attempt + 1} unexpected error:`,
+            err,
+          );
         }
-        setProfile(data);
-      } catch (err) {
-        console.error("[AuthContext] fetchProfile unexpected error:", err);
+
+        // Wait 1s before retrying
+        if (attempt === 0) {
+          await new Promise((resolve) => setTimeout(resolve, 1000));
+        }
       }
+
+      // All attempts failed — set a fallback profile from user metadata
+      // so the UI never shows "Valued User".
+      const fallbackName =
+        userMeta?.full_name ||
+        userMeta?.name ||
+        userMeta?.email?.split("@")[0] ||
+        "User";
+
+      console.warn(
+        "[AuthContext] fetchProfile: using fallback profile for",
+        userId,
+        "name:",
+        fallbackName,
+      );
+
+      setProfile({
+        full_name: fallbackName,
+        email: userMeta?.email || "",
+        role: "user",
+      });
     },
     [supabase],
   );
@@ -199,24 +242,61 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const getInitialSession = async () => {
       try {
-        // IMPORTANT: Use getUser() instead of getSession().
-        // getSession() reads tokens from local storage/cookies WITHOUT
-        // validating them against the Supabase server. In production,
-        // this can return a stale or invalid session, causing "Valued User"
-        // and other auth issues. getUser() makes a server round-trip to
-        // validate the token and returns the authoritative user object.
+        // ── STEP 1: Handle PKCE auth code in URL ────────────────────────
+        if (typeof window !== 'undefined') {
+          const params = new URLSearchParams(window.location.search);
+          const code = params.get('code');
+          if (code) {
+            const { error: exchangeError } = await supabase.auth.exchangeCodeForSession(code);
+            if (exchangeError) {
+              console.error('[AuthContext] PKCE code exchange error:', exchangeError.message);
+            }
+            const cleanUrl = new URL(window.location.href);
+            cleanUrl.searchParams.delete('code');
+            window.history.replaceState({}, '', cleanUrl.pathname + cleanUrl.search);
+          }
+        }
+
+        // ── STEP 2: Ensure tokens are fresh ──────────────────────────────
+        // CRITICAL: Call getSession() FIRST — it refreshes the access token
+        // if it's expired. getUser() does NOT refresh tokens; it only
+        // validates them. On page refresh with an expired token, calling
+        // getUser() without refreshing first returns null → "Valued User".
+        const {
+          data: { session: currentSession },
+        } = await supabase.auth.getSession();
+
+        // ── STEP 3: Validate user server-side ────────────────────────────
         const {
           data: { user: validatedUser },
         } = await supabase.auth.getUser();
 
         if (validatedUser) {
-          // Now get the session for the session object (tokens, etc.)
-          const {
-            data: { session: currentSession },
-          } = await supabase.auth.getSession();
           setUser(validatedUser);
           setSession(currentSession);
-          fetchProfile(validatedUser.id);
+
+          // ── STEP 4: Set preliminary profile ──────────────────────────
+          // Immediately set a preliminary profile from metadata so the UI 
+          // never shows "Valued User" while we wait for the DB fetch.
+          const preliminaryName = 
+            validatedUser.user_metadata?.full_name || 
+            validatedUser.user_metadata?.name || 
+            validatedUser.email?.split("@")[0] || 
+            "User";
+            
+          setProfile(prev => prev || {
+            full_name: preliminaryName,
+            email: validatedUser.email || "",
+            role: "user"
+          });
+
+          // Now fetch the real profile from the DB for updates/extra fields
+          await fetchProfile(validatedUser.id, {
+            full_name: validatedUser.user_metadata?.full_name,
+            name: validatedUser.user_metadata?.name,
+            email: validatedUser.email,
+          });
+
           const adminStatus = await fetchUserProfile(validatedUser.id);
           setIsAdmin(adminStatus);
         } else {
@@ -236,12 +316,35 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (event: string, session: Session | null) => {
+    } = supabase.auth.onAuthStateChange(async (event, session) => {
+      // Avoid clearing state if it's already being handled by getInitialSession
+      if (event === 'INITIAL_SESSION' && session?.user) return;
+
       setUser(session?.user ?? null);
       setSession(session ?? null);
 
       if (session?.user) {
-        await fetchProfile(session.user.id);
+        // Set preliminary profile immediately on state change too
+        const preliminaryName = 
+          session.user.user_metadata?.full_name || 
+          session.user.user_metadata?.name || 
+          session.user.email?.split("@")[0] || 
+          "User";
+          
+        setProfile(prev => {
+          if (prev && prev.full_name !== "User" && prev.full_name !== "Valued User") return prev;
+          return {
+            full_name: preliminaryName,
+            email: session.user.email || "",
+            role: "user"
+          };
+        });
+
+        await fetchProfile(session.user.id, {
+          full_name: session.user.user_metadata?.full_name,
+          name: session.user.user_metadata?.name,
+          email: session.user.email,
+        });
         const adminStatus = await fetchUserProfile(session.user.id);
         setIsAdmin(adminStatus);
       } else {
@@ -588,21 +691,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const signOut = async () => {
-    // 1. Call the server-side sign-out API route first.
-    //    This uses the server Supabase client which can properly clear
-    //    the httpOnly cookies set by the middleware. It also revokes
-    //    the refresh token globally on the Supabase server.
+    // ── SERVER-SIDE SIGN OUT (fire-and-forget) ──────────────────────
+    // Don't await this — if the API route hangs (cold start, network),
+    // we must not block the UI. The full page reload will handle the rest.
+    fetch('/api/auth/signout', { method: 'POST' }).catch(() => {});
+
+    // ── LOCAL SIGN OUT (with timeout) ───────────────────────────────
+    // supabase.auth.signOut() can sometimes hang in production.
+    // Race it against a 3-second timeout so the UI is never stuck.
     try {
-      await fetch('/api/auth/signout', { method: 'POST' });
-    } catch (err) {
-      console.error('[AuthContext] Server signout failed:', err);
+      await Promise.race([
+        supabase.auth.signOut({ scope: 'local' }),
+        new Promise(resolve => setTimeout(resolve, 3000)),
+      ]);
+    } catch {
+      // Swallow errors — we're signing out regardless
     }
 
-    // 2. Also sign out on the browser client to clear any local state
-    //    (localStorage tokens, in-memory session, etc.)
-    await supabase.auth.signOut({ scope: 'local' });
-
-    // 3. Eagerly clear React state so UI updates immediately
+    // ── CLEAR REACT STATE ───────────────────────────────────────────
     setUser(null);
     setSession(null);
     setProfile(null);

@@ -58,7 +58,7 @@
         ]
     },
     "wizard": {
-        "title": "Birth Registration Guide",
+        "title": "Birth Certiifcate Guide",
         "subtitle": "Union Council CBRC & NADRA B-Form",
         "last_verified": "February 24, 2026",
         "whats_this": {
@@ -66,11 +66,11 @@
             "sub": "Official Procedure 2026",
             "description": "The Birth Certificate is an official civil document issued by local Union Councils or NADRA in Pakistan. It serves as primary evidence of birth and is required for legal, educational, and immigration purposes (USCIS, NVC, etc.).",
             "quick_instructions": [
-                "Primary Documentation: Gather the Hospital Birth Slip or Home Birth Affidavit (signed by witnesses) along with parents' valid CNICs.",
-                "Union Council (CBRC): Complete the mandatory first registration at your local UC to receive the Computerized Birth Registration Certificate.",
-                "NADRA Enrollment: Use the UC certificate to enroll the child at a NADRA Registration Center for the Child Registration Certificate (B-Form).",
-                "Biometric Verification: Complete mandatory biometric capture (photo/iris/fingerprints) at the NADRA center for all eligible age groups.",
-                "Collection & Verification: Track and collect the final document, ensuring all details match the parents' official records exactly."
+                "Select the reason for your request and who the certificate is for",
+                "Choose the current age to help us determine the correct process and requirements.",
+                "Provide the information where the birth took place.",
+                "Get a tailored roadmap + checklist (what to request, verify, and upload).",
+                "Validate the final certificate before submission."
             ],
             "disclaimer": "This wizard provides general guidance. Requirements vary by province and Union Council. Always verify with local authorities."
         },
