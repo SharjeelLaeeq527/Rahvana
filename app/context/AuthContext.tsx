@@ -199,24 +199,41 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const getInitialSession = async () => {
       try {
-        // IMPORTANT: Use getUser() instead of getSession().
-        // getSession() reads tokens from local storage/cookies WITHOUT
-        // validating them against the Supabase server. In production,
-        // this can return a stale or invalid session, causing "Valued User"
-        // and other auth issues. getUser() makes a server round-trip to
-        // validate the token and returns the authoritative user object.
+        // ── STEP 1: Handle PKCE auth code in URL ────────────────────────
+        // After OAuth (Google) or email confirmation, Supabase may redirect
+        // back to the site with ?code=xxx in the URL. If this code isn't
+        // exchanged for a session, the user appears unauthenticated.
+        // This commonly happens when the Supabase redirect URL config
+        // sends the code to the homepage instead of /api/auth/callback.
+        if (typeof window !== 'undefined') {
+          const params = new URLSearchParams(window.location.search);
+          const code = params.get('code');
+          if (code) {
+            const { error: exchangeError } = await supabase.auth.exchangeCodeForSession(code);
+            if (exchangeError) {
+              console.error('[AuthContext] PKCE code exchange error:', exchangeError.message);
+            }
+            // Remove ?code= from URL to prevent re-exchange on refresh
+            const cleanUrl = new URL(window.location.href);
+            cleanUrl.searchParams.delete('code');
+            window.history.replaceState({}, '', cleanUrl.pathname + cleanUrl.search);
+          }
+        }
+
+        // ── STEP 2: Validate session with server ────────────────────────
+        // getUser() validates the token against Supabase servers.
+        // getSession() only reads from local storage without validation.
         const {
           data: { user: validatedUser },
         } = await supabase.auth.getUser();
 
         if (validatedUser) {
-          // Now get the session for the session object (tokens, etc.)
           const {
             data: { session: currentSession },
           } = await supabase.auth.getSession();
           setUser(validatedUser);
           setSession(currentSession);
-          fetchProfile(validatedUser.id);
+          await fetchProfile(validatedUser.id);
           const adminStatus = await fetchUserProfile(validatedUser.id);
           setIsAdmin(adminStatus);
         } else {
@@ -588,21 +605,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const signOut = async () => {
-    // 1. Call the server-side sign-out API route first.
-    //    This uses the server Supabase client which can properly clear
-    //    the httpOnly cookies set by the middleware. It also revokes
-    //    the refresh token globally on the Supabase server.
+    // ── SERVER-SIDE SIGN OUT (fire-and-forget) ──────────────────────
+    // Don't await this — if the API route hangs (cold start, network),
+    // we must not block the UI. The full page reload will handle the rest.
+    fetch('/api/auth/signout', { method: 'POST' }).catch(() => {});
+
+    // ── LOCAL SIGN OUT (with timeout) ───────────────────────────────
+    // supabase.auth.signOut() can sometimes hang in production.
+    // Race it against a 3-second timeout so the UI is never stuck.
     try {
-      await fetch('/api/auth/signout', { method: 'POST' });
-    } catch (err) {
-      console.error('[AuthContext] Server signout failed:', err);
+      await Promise.race([
+        supabase.auth.signOut({ scope: 'local' }),
+        new Promise(resolve => setTimeout(resolve, 3000)),
+      ]);
+    } catch {
+      // Swallow errors — we're signing out regardless
     }
 
-    // 2. Also sign out on the browser client to clear any local state
-    //    (localStorage tokens, in-memory session, etc.)
-    await supabase.auth.signOut({ scope: 'local' });
-
-    // 3. Eagerly clear React state so UI updates immediately
+    // ── CLEAR REACT STATE ───────────────────────────────────────────
     setUser(null);
     setSession(null);
     setProfile(null);
