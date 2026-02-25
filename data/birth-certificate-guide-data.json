@@ -64,11 +64,13 @@
         "whats_this": {
             "heading": "Welcome to Birth Certificate Guide",
             "sub": "Official Procedure 2026",
-            "description": "This wizard helps you navigate the process of obtaining or correcting a birth certificate in Pakistan. We cover both local Union Council registration (CBRC) and NADRA B-Form issuance.",
+            "description": "The Birth Certificate is an official civil document issued by local Union Councils or NADRA in Pakistan. It serves as primary evidence of birth and is required for legal, educational, and immigration purposes (USCIS, NVC, etc.).",
             "quick_instructions": [
-                "Answer questions about the birth setting and age",
-                "Get a customized roadmap and document checklist",
-                "Validate your final certificate for immigration"
+                "Primary Documentation: Gather the Hospital Birth Slip or Home Birth Affidavit (signed by witnesses) along with parents' valid CNICs.",
+                "Union Council (CBRC): Complete the mandatory first registration at your local UC to receive the Computerized Birth Registration Certificate.",
+                "NADRA Enrollment: Use the UC certificate to enroll the child at a NADRA Registration Center for the Child Registration Certificate (B-Form).",
+                "Biometric Verification: Complete mandatory biometric capture (photo/iris/fingerprints) at the NADRA center for all eligible age groups.",
+                "Collection & Verification: Track and collect the final document, ensuring all details match the parents' official records exactly."
             ],
             "disclaimer": "This wizard provides general guidance. Requirements vary by province and Union Council. Always verify with local authorities."
         },
@@ -220,13 +222,13 @@
                     "id": 1,
                     "title": "Pak-ID Registration",
                     "duration": "30 Minutes",
-                    "description": "Create an account on the Pak-ID Mobile App or website. Select the Birth Registration service. Online options are currently available in selected Punjab districts."
+                    "description": "Create an account on the Pak-ID Mobile App. Digital app submission is only available in selected Punjab districts. If your district is not covered, you must visit your local Union Council in person. Check app availability for your area before proceeding."
                 },
                 {
                     "id": 2,
                     "title": "Digital Application",
                     "duration": "30 Minutes",
-                    "description": "Enter family details and upload scanned copies of required documents like hospital slip or affidavit. Submit for initial verification."
+                    "description": "Enter family details and upload scanned copies of required documents like hospital slip or affidavit. Submit for initial digital verification. Note: Even after digital submission, a Union Council visit may still be required for in-person verification in some districts."
                 },
                 {
                     "id": 3,
@@ -238,39 +240,51 @@
                     "id": 4,
                     "title": "Digital Issuance",
                     "duration": "3-5 Days",
-                    "description": "Once approved, download the digital version. For physical B-Form, visiting a NADRA center for biometrics may still be required."
+                    "description": "Once approved, download the digital CBRC. For the NADRA B-Form, visiting a NADRA Registration Center for biometrics remains mandatory regardless of digital submission method."
                 }
             ],
             "documents_checklist": [
                 {
                     "id": "parent_cnic",
-                    "label": "Parents CNIC (Valid)",
+                    "label": "Parents' CNIC / NICOP (Valid)",
                     "required": true,
-                    "description": "Originals for verification"
+                    "description": "Originals of both parents required for verification"
                 },
                 {
                     "id": "nikah_nama",
                     "label": "Nikah Nama Copy",
                     "required": true,
-                    "description": "Relationship proof"
+                    "description": "Proof of parents' marriage — relationship verification"
+                },
+                {
+                    "id": "proof_of_residence",
+                    "label": "Proof of Residence",
+                    "required": true,
+                    "description": "Utility bill, tenancy agreement, or domicile certificate"
                 },
                 {
                     "id": "hospital_slip",
-                    "label": "Hospital Discharge Slip",
+                    "label": "Hospital Discharge / Birth Notification Slip",
                     "required": false,
-                    "description": "Only for hospital births"
+                    "description": "Required only for hospital births — primary evidence of birth"
                 },
                 {
                     "id": "witness_cnic",
                     "label": "2 Witness CNICs",
                     "required": false,
-                    "description": "Only for home births"
+                    "description": "Required only for home births — witnesses must be non-relatives"
                 },
                 {
                     "id": "affidavit",
-                    "label": "Affidavit",
+                    "label": "Affidavit (Sworn Statement)",
                     "required": false,
-                    "description": "For home or late registration"
+                    "description": "Mandatory for home births or late registration; signed by both parents"
+                },
+                {
+                    "id": "grandparent_cnic",
+                    "label": "Grandparent's CNIC (Conditional)",
+                    "required": false,
+                    "description": "Required only if parent's CNIC is unavailable, or for identity verification in specific districts — not a standard requirement"
                 }
             ]
         },
@@ -362,13 +376,24 @@
             },
             "roadmap": {
                 "tips": [
-                    "Executive processing (Rs 500) saves 10+ days.",
-                    "Verify all spellings on the spot at the UC."
+                    "Union Council (UC) registration is mandatory FIRST — NADRA B-Form cannot be issued without a valid UC CBRC.",
+                    "Required documents: Hospital birth slip, parents' CNIC/NICOP copies, Nikah Nama, proof of residence, and affidavit for home births.",
+                    "Punjab: Digital registration via Pak-ID app available in selected districts. Sindh: Uses CRMS (Civil Registration Management System). KPK: Integrated with LG&RDD. Balochistan, GB, AJK, ICT: Manual UC registration required — no digital option.",
+                    "Executive NADRA processing (Rs. 500) delivers B-Form in 3–5 days instead of 10–15.",
+                    "Verify all name spellings and dates on the spot at the UC before leaving — corrections later require a separate process."
                 ],
                 "pitfalls": [
-                    "Leaving without checking the digital entry."
+                    "Digital app submission (Pak-ID) is only available in selected Punjab districts — a Union Council visit may still be required for in-person verification even after digital submission.",
+                    "Grandparent's CNIC is NOT a standard requirement — it is only needed if the parent's CNIC is unavailable or for verification in specific districts. Do not gather it unless specifically requested.",
+                    "Leaving the UC counter without verifying the digital entry — errors are much harder to correct after the fact.",
+                    "Going to NADRA directly without first obtaining the UC Computerized Birth Certificate (CBRC) — NADRA will reject the application."
                 ],
-                "links": []
+                "links": [
+                    {
+                        "label": "Pak-ID App (Punjab Digital Registration)",
+                        "url": "https://pakid.nadra.gov.pk"
+                    }
+                ]
             },
             "validation": {
                 "tips": [

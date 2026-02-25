@@ -45,11 +45,11 @@ export async function POST(request: Request) {
       const filePath = `feedback/${guide.id}/${user.id}/${file.name}`;
 
       await supabase.storage
-        .from("documents")
+        .from("document-vault")
         .upload(filePath, file, { upsert: true });
 
       const { data } = supabase.storage
-        .from("documents")
+        .from("document-vault")
         .getPublicUrl(filePath);
 
       attachmentUrl = data.publicUrl;

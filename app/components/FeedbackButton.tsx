@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import { MessageCircle, X, Upload, CheckCircle2 } from "lucide-react";
+import { useToast } from "./shared/ToastProvider";
 import {
   Select,
   SelectContent,
@@ -13,11 +14,13 @@ import {
 interface FeedbackButtonProps {
   steps: string[];
   currentStepName: string;
+  onSubmit?: (feedbackType: string, description: string, attachment?: File) => Promise<any>;
 }
 
 export default function FeedbackButton({
   steps,
   currentStepName,
+  onSubmit,
 }: FeedbackButtonProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [feedback, setFeedback] = useState({
@@ -26,7 +29,8 @@ export default function FeedbackButton({
     description: "",
     attachments: [] as File[],
   });
-  const [submitted, setSubmitted] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const { showToast } = useToast();
 
   // Prevent background scrolling when modal is open
   React.useEffect(() => {
@@ -49,46 +53,33 @@ export default function FeedbackButton({
     }
   }, [currentStepName, feedback.step]);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setIsSubmitting(true);
 
-    // Store feedback locally (in production, this would be sent to a server)
-    const existingFeedback = JSON.parse(
-      localStorage.getItem("wizard_feedback") || "[]",
-    );
+    try {
+      // If onSubmit callback is provided, use the API
+      if (onSubmit && feedback.category && feedback.description) {
+        // Submit to API - only send first attachment if available
+        await onSubmit(feedback.category, feedback.description, feedback.attachments[0]);
+      } else {
+        throw new Error('No feedback submission handler provided');
+      }
 
-    // We don't save the actual File objects in localStorage since they can't be stringified properly
-    // Storing metadata instead
-    const fileMetadata = feedback.attachments.map((f) => ({
-      name: f.name,
-      size: f.size,
-      type: f.type,
-    }));
-
-    const newFeedback = {
-      category: feedback.category,
-      step: feedback.step,
-      description: feedback.description,
-      attachments: fileMetadata,
-      timestamp: new Date().toISOString(),
-    };
-
-    localStorage.setItem(
-      "wizard_feedback",
-      JSON.stringify([...existingFeedback, newFeedback]),
-    );
-
-    setSubmitted(true);
-    setTimeout(() => {
+      showToast("Feedback submitted successfully! Thank you for helping us improve.", "success");
       setIsOpen(false);
-      setSubmitted(false);
       setFeedback({
         category: "",
         step: currentStepName || "",
         description: "",
         attachments: [],
       });
-    }, 2000);
+      setIsSubmitting(false);
+    } catch (error) {
+      console.error('Error submitting feedback:', error);
+      setIsSubmitting(false);
+      showToast("Failed to submit feedback. Please try again.", "error");
+    }
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -139,20 +130,7 @@ export default function FeedbackButton({
                 </button>
               </div>
 
-              {submitted ? (
-                <div className="py-12 text-center">
-                  <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <CheckCircle2 className="w-8 h-8 text-green-600" />
-                  </div>
-                  <h4 className="text-lg font-semibold text-slate-900 mb-2">
-                    Thank you for your feedback!
-                  </h4>
-                  <p className="text-slate-600">
-                    Your input helps us improve the wizard experience.
-                  </p>
-                </div>
-              ) : (
-                <form onSubmit={handleSubmit} className="space-y-5">
+              <form onSubmit={handleSubmit} className="space-y-5">
                   {/* Feedback Type */}
                   <div className="mt-4">
                     <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -279,13 +257,13 @@ export default function FeedbackButton({
                     </button>
                     <button
                       type="submit"
-                      className="px-4 py-2 text-sm font-medium text-white bg-teal-600 border border-transparent rounded-lg hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500"
+                      disabled={isSubmitting}
+                      className="px-4 py-2 text-sm font-medium text-white bg-teal-600 border border-transparent rounded-lg hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500 disabled:opacity-50"
                     >
-                      Submit Feedback
+                      {isSubmitting ? "Submitting..." : "Submit Feedback"}
                     </button>
                   </div>
                 </form>
-              )}
             </div>
           </div>
         </div>

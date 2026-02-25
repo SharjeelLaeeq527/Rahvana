@@ -63,7 +63,7 @@ const WizardSidebar = ({
                      bg-primary text-white hover:bg-primary/80"
         >
           <Bookmark className="w-5 h-5" />
-          Add to Active Wizards
+          Add to My Guides
         </motion.button>
       </div>
 

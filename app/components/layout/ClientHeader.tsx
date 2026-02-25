@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useAuth } from "@/app/context/AuthContext";
 import { SiteHeader } from "./SiteHeader";
 import { useRouter, usePathname } from "next/navigation";
@@ -10,11 +10,12 @@ export function ClientHeader() {
   const router = useRouter();
   const pathname = usePathname();
 
-  const [isAuthLoading, setIsAuthLoading] = useState(false);
+  // Tracks whether a sign-out is in progress (shows the loading overlay)
+  const [isSigningOut, setIsSigningOut] = useState(false);
 
-  // Hide header on admin pages, admin-login, login and signup pages
+  // Hide header on admin/auth pages
   const isExcludedPage =
-    pathname.startsWith("/admin") || 
+    pathname.startsWith("/admin") ||
     pathname === "/admin-login" ||
     pathname === "/login" ||
     pathname === "/signup" ||
@@ -26,18 +27,24 @@ export function ClientHeader() {
   }
 
   const handleAuthToggle = async () => {
-    setIsAuthLoading(true);
-    try {
-      if (user) {
-        // User is signed in, sign them out
+    if (user) {
+      // ── SIGN OUT ─────────────────────────────────────────────────
+      setIsSigningOut(true);
+
+      // Run signOut (which already has internal timeouts).
+      // Even if it fails, we MUST redirect to clear stale state.
+      try {
         await signOut();
-        router.push("/");
-      } else {
-        // User is not signed in, redirect to login page
-        router.push("/login");
+      } catch {
+        // Swallow — redirect handles cleanup
       }
-    } finally {
-      setIsAuthLoading(false);
+
+      // ALWAYS redirect — this is outside try/catch so it runs no matter what.
+      // Full page reload ensures middleware re-validates from scratch.
+      window.location.href = "/";
+    } else {
+      // ── NAVIGATE TO LOGIN ──────────────────────────────────────
+      router.push("/login");
     }
   };
 
@@ -49,10 +56,10 @@ export function ClientHeader() {
         user={user}
         profile={profile}
       />
-      
-      {/* Global Auth Loading Overlay */}
-      {isAuthLoading && (
-        <div className="fixed inset-0 z-9999 flex flex-col items-center justify-center bg-background/60 backdrop-blur-md transition-all duration-300">
+
+      {/* Sign-out loading overlay — only shown during actual sign-out */}
+      {isSigningOut && (
+        <div className="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-background/60 backdrop-blur-md transition-all duration-300">
           <div className="relative">
             <div className="w-16 h-16 border-4 border-primary/20 border-t-primary rounded-full animate-spin" />
             <div className="absolute inset-0 flex items-center justify-center">
@@ -60,9 +67,7 @@ export function ClientHeader() {
             </div>
           </div>
           <div className="mt-6 flex flex-col items-center gap-2">
-            <h2 className="text-xl font-bold text-foreground">
-              {user ? "Signing Out..." : "Redirecting to Login..."}
-            </h2>
+            <h2 className="text-xl font-bold text-foreground">Signing Out...</h2>
             <p className="text-muted-foreground animate-pulse">Please wait a moment</p>
           </div>
         </div>
