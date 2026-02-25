@@ -288,23 +288,21 @@ const WizardInfoPanel = ({
                       return (
                         <div
                           key={i}
-                          className="bg-white border text-center border-slate-200 rounded-xl p-4 flex items-center justify-between shadow-sm"
+                          className="bg-white border border-slate-200 rounded-xl p-3 sm:p-4 flex items-center justify-between shadow-sm gap-3"
                         >
-                          <div className="text-left flex flex-col gap-1 items-start">
+                          <div className="flex-1 min-w-0">
                             <div
-                              className={`px-2.5 py-0.5 rounded-full text-[0.65rem] font-bold uppercase tracking-wider ${badgeClass}`}
+                              className={`inline-block px-2 py-0.5 rounded-full text-[0.6rem] sm:text-[0.65rem] font-bold uppercase tracking-wider mb-1 ${badgeClass}`}
                             >
                               {tier.type}
                             </div>
-                            <p className="text-[0.75rem] text-slate-500 flex items-center gap-1">
-                              <Clock className="w-3 h-3" />
+                            <p className="text-[0.7rem] sm:text-[0.75rem] text-slate-500 flex items-center gap-1 truncate">
+                              <Clock className="w-3 h-3 flex-shrink-0" />
                               {tier.days}
                             </p>
                           </div>
-                          <div className="text-lg font-black text-slate-900">
-                            {" "}
-                            {/* Reduced font size from text-xl to text-lg */}
-                            <span className="text-xs font-medium text-slate-400 mr-1 align-top relative top-0.5">
+                          <div className="text-base sm:text-lg font-black text-slate-900 flex items-baseline gap-1 whitespace-nowrap">
+                            <span className="text-[0.65rem] sm:text-xs font-medium text-slate-400">
                               Rs.
                             </span>
                             {tier.price}

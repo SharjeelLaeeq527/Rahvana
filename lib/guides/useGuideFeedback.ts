@@ -46,7 +46,6 @@ export function useGuideFeedback() {
       const errorMessage = error instanceof Error ? error.message : 'Feedback submission failed';
       setSubmitError(errorMessage);
       console.error('Feedback submission error:', error);
-      showToast("Failed to submit feedback. Please try again.", "error");
       throw error;
     } finally {
       setSubmitting(false);

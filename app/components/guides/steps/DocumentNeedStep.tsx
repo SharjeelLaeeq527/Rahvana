@@ -316,7 +316,7 @@ const DocumentNeedStep = ({
             Back
           </button>
 
-          {questions.length > 1 &&
+          {questions.length >= 1 &&
             (() => {
               const currentQ = questions[internalStep - 1];
               const isAnswered =

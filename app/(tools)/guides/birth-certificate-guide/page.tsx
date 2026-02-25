@@ -206,9 +206,6 @@ const BirthCertificateGuidePage = () => {
     } else {
       setState((s: WizardState) => ({ ...s, documentNeed: id }));
       saveWizardStep("document_need", id, true);
-      setTimeout(() => {
-        if (currentStep < STEP_IDS.length - 1) setCurrentStep(currentStep + 1);
-      }, 400);
     }
   };
 
