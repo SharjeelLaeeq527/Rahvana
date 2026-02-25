@@ -217,7 +217,9 @@ const PolioVaccinationGuide = () => {
             validationChecks={state.validationChecks}
             onToggleCheck={toggleValidationCheck}
             uploadedFile={state.uploadedFile}
-            onUpload={() => setState((s) => ({ ...s, uploadedFile: true }))}
+            onUpload={async () => {
+              setState((s) => ({ ...s, uploadedFile: true }));
+            }}
             data={guideData.wizard.validation}
           />
         );
