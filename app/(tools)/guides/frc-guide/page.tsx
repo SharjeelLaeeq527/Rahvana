@@ -18,12 +18,12 @@ import guideData from "@/data/frc-guide-data.json";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import FeedbackButton from "@/app/components/FeedbackButton";
 import { useWizardSession } from "@/lib/guides/useWizardSession";
+import { useGuideUpload } from "@/lib/guides/useGuideUpload";
+import { useGuideFeedback } from "@/lib/guides/useGuideFeedback";
 
-const STEP_IDS: WizardStepId[] = [
+const STEP_IDS: (keyof typeof INFO_PANEL_KEYS)[] = [
   "document_need",
-  // "location",
   "roadmap",
-  // "office_finder",
   "validation",
 ];
 
@@ -33,13 +33,9 @@ const STEP_LABELS: Record<string, string> = {
   validation: "Validation",
 };
 
-const INFO_PANEL_KEYS: Record<WizardStepId, any> = {
+const INFO_PANEL_KEYS: Record<string, keyof typeof guideData.wizard.info_panel> = {
   document_need: "document_need",
-  age_category: "document_need",
-  birth_setting: "document_need",
-  location: "roadmap",
   roadmap: "roadmap",
-  office_finder: "roadmap",
   validation: "validation",
 };
 
@@ -67,14 +63,35 @@ const FrcGuide = () => {
     setCurrentStep,
     (prev, stepsData) => ({
       documentNeed: stepsData.document_need || prev.documentNeed,
+      ageCategory: prev.ageCategory, // Not used in FRC guide
+      birthSetting: prev.birthSetting, // Not used in FRC guide
       province: stepsData.location?.province || prev.province,
       district: stepsData.location?.district || prev.district,
       city: stepsData.location?.city || prev.city,
       checkedDocuments: stepsData.roadmap || prev.checkedDocuments,
       validationChecks: stepsData.validation?.checks || prev.validationChecks,
       uploadedFile: stepsData.validation?.uploaded || prev.uploadedFile,
+      savedOffice: prev.savedOffice, // Not used in FRC guide
     })
   );
+
+  const { uploadFile: uploadFileHook } = useGuideUpload();
+  const { submitFeedback: submitFeedbackHook } = useGuideFeedback();
+
+  // Wrapper functions to match expected signatures
+  const handleUploadFile = async (file: File) => {
+    await uploadFileHook(file, 'frc-guide', 'validation');
+    // Update local state to reflect the upload
+    setState(s => ({ ...s, uploadedFile: true }));
+    saveWizardStep("validation", {
+      checks: state.validationChecks,
+      uploaded: true,
+    });
+  };
+
+  const handleSubmitFeedback = async (feedbackType: string, description: string, attachment?: File) => {
+    await submitFeedbackHook('frc-guide', currentStepId, feedbackType, description, attachment);
+  };
 
   useEffect(() => {
     const dontShow = localStorage.getItem("hide_whats_this_modal");
@@ -83,7 +100,7 @@ const FrcGuide = () => {
 
   const currentStepId = STEP_IDS[currentStep];
   const infoPanelKey = INFO_PANEL_KEYS[currentStepId];
-  const infoPanelData = (guideData.wizard.info_panel as any)[
+  const infoPanelData = guideData.wizard.info_panel[
     infoPanelKey
   ] as unknown as InfoPanelData;
 
@@ -142,6 +159,8 @@ const FrcGuide = () => {
     });
   };
 
+
+
   const renderStep = () => {
     switch (currentStepId) {
       case "document_need":
@@ -178,13 +197,7 @@ const FrcGuide = () => {
             validationChecks={state.validationChecks}
             onToggleCheck={toggleValidationCheck}
             uploadedFile={state.uploadedFile}
-            onUpload={() => {
-              setState((s) => ({ ...s, uploadedFile: true }));
-              saveWizardStep("validation", {
-                checks: state.validationChecks,
-                uploaded: true,
-              });
-            }}
+            onUpload={handleUploadFile}
             data={guideData.wizard.validation}
           />
         );
@@ -288,6 +301,7 @@ const FrcGuide = () => {
       <FeedbackButton
         steps={Object.values(STEP_LABELS)}
         currentStepName={STEP_LABELS[currentStepId] || ""}
+        onSubmit={handleSubmitFeedback}
       />
     </div>
   );
