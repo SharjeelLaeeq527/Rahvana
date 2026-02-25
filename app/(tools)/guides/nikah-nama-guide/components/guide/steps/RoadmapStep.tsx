@@ -15,7 +15,7 @@ const RoadmapStep = ({
   checkedDocuments,
   onToggleDocument,
 }: RoadmapStepProps) => {
-  const { title, estimated_timeline, phases, documents_checklist } =
+  const { title, estimated_timeline, documents_checklist } =
     guideData.wizard.roadmap;
 
   const [activePhase, setActivePhase] = useState<number | null>(null);
@@ -44,7 +44,7 @@ const RoadmapStep = ({
       {/* Timeline */}
       <section>
         <h3 className="text-sm font-bold text-slate-400 uppercase tracking-widest mb-6">Process Timeline</h3>
-        <div className="flex flex-wrap items-start justify-center gap-4 p-6 rounded-2xl bg-slate-50 border border-slate-100">
+        {/* <div className="flex flex-wrap items-start justify-center gap-4 p-6 rounded-2xl bg-slate-50 border border-slate-100">
             {phases.map((phase, i) => (
             <div key={phase.id} className="flex items-start gap-4">
                 <motion.button
@@ -79,7 +79,7 @@ const RoadmapStep = ({
                 )}
             </div>
             ))}
-        </div>
+        </div> */}
 
         {/* Phase Detail */}
         <AnimatePresence>
@@ -98,10 +98,10 @@ const RoadmapStep = ({
                         <X className="w-4 h-4" />
                     </button>
                     <h4 className="text-[1rem] font-bold text-teal-900 mb-2 font-['Plus_Jakarta_Sans','Inter',system-ui,sans-serif]">
-                        Phase {activePhase}: {phases[activePhase - 1]?.title}
+                        {/* Phase {activePhase}: {phases[activePhase - 1]?.title} */}
                     </h4>
                     <p className="text-[0.875rem] text-slate-600 leading-relaxed font-['Plus_Jakarta_Sans','Inter',system-ui,sans-serif]">
-                        {phases[activePhase - 1]?.description}
+                        {/* {phases[activePhase - 1]?.description} */}
                     </p>
                 </div>
             </motion.div>

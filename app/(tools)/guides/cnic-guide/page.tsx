@@ -263,11 +263,11 @@ const CnicGuide = () => {
       />
 
       <div className="flex flex-1 overflow-hidden h-[calc(100vh-56px)]">
-        <WizardSidebar
+        {/* <WizardSidebar
           currentStep={currentStep}
           steps={STEP_IDS}
           onStepClick={setCurrentStep}
-        />
+        /> */}
 
         <main className="flex-1 overflow-y-auto p-8 relative">
           <div
@@ -336,8 +336,8 @@ const CnicGuide = () => {
         <WizardInfoPanel
           data={infoPanelData}
           lastVerified={guideData.wizard.last_verified}
-          guideData={guideData}
-          guideType="other"
+          guideData={guideData as Record<string, unknown>}
+          guideType="cnic"
         />
       </div>
 

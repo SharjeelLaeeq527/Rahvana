@@ -68,6 +68,18 @@ const GRADIENT_STYLES: Record<
     iconBg: "bg-[hsl(210_60%_90%)]",
     iconColor: "text-[hsl(210_80%_40%)]",
   },
+  purple: {
+    bg: "bg-[linear-gradient(135deg,hsl(270_70%_97%),hsl(280_60%_94%))]",
+    border: "border-[hsl(270_60%_80%)]",
+    iconBg: "bg-[hsl(270_60%_92%)]",
+    iconColor: "text-[hsl(270_80%_40%)]",
+  },
+  rose: {
+    bg: "bg-[linear-gradient(135deg,hsl(340_70%_97%),hsl(350_60%_94%))]",
+    border: "border-[hsl(340_60%_80%)]",
+    iconBg: "bg-[hsl(340_60%_92%)]",
+    iconColor: "text-[hsl(340_80%_40%)]",
+  },
 };
 
 export interface DocumentNeedOption {
@@ -118,9 +130,10 @@ const DocumentNeedStep = ({
   if (questions.length > 0) {
     const handleOptionSelect = (qIndex: number, qId: string, optId: string) => {
       onSelect(optId, qId);
-      if (qIndex + 1 < questions.length) {
-        setInternalStep(qIndex + 2);
-      }
+      // Don't automatically advance to next step - let user click Next button
+      // if (qIndex + 1 < questions.length) {
+      //   setInternalStep(qIndex + 2);
+      // }
     };
 
     const handleBack = () => {
@@ -176,7 +189,9 @@ const DocumentNeedStep = ({
                   <p className="text-sm text-slate-500 mb-4">{q.description}</p>
                 )}
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div
+                  className={`grid gap-4 ${q.options.length === 2 ? "grid-cols-1 sm:grid-cols-2" : "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3"}`}
+                >
                   {q.options.map((option) => {
                     const Icon = ICONS[option.icon || option.id] || FileText;
 
@@ -197,7 +212,7 @@ const DocumentNeedStep = ({
                           onClick={() =>
                             handleOptionSelect(index, q.id, option.id)
                           }
-                          className={`group relative text-left rounded-xl border-2 transition-all duration-300 overflow-hidden ${
+                          className={`group relative w-full text-left rounded-xl border-2 transition-all duration-300 overflow-hidden ${
                             isOptSelected
                               ? "border-primary shadow-md ring-2 ring-primary/10 scale-[1.02]"
                               : "border-slate-200 hover:border-slate-300 shadow-sm hover:shadow-md"
@@ -213,16 +228,16 @@ const DocumentNeedStep = ({
                             className={`p-5 h-full ${bgClass} text-white relative z-0`}
                           >
                             <div className="absolute -bottom-10 -right-10 w-32 h-32 bg-white/10 rounded-full blur-2xl group-hover:scale-150 transition-transform"></div>
-                            <div className="flex items-center justify-between mb-4">
-                              <Icon className="w-8 h-8 text-white/90" />
+                            <div className="flex items-center justify-between mb-4 w-full">
+                              <Icon className="w-8 h-8 text-white/90 shrink-0" />
                               {isOptSelected && (
-                                <CheckCircle2 className="w-6 h-6 text-white" />
+                                <CheckCircle2 className="w-6 h-6 text-white shrink-0" />
                               )}
                             </div>
-                            <h3 className="text-lg font-bold mb-1 tracking-tight">
+                            <h3 className="text-lg font-bold mb-1 tracking-tight w-full wrap-break-words">
                               {option.title}
                             </h3>
-                            <p className="text-white/80 leading-snug text-xs mb-4 max-w-[90%]">
+                            <p className="text-white/80 leading-snug text-xs mb-4 w-full wrap-break-words">
                               {option.description}
                             </p>
                             <ul className="space-y-1">
@@ -253,23 +268,23 @@ const DocumentNeedStep = ({
                         onClick={() =>
                           handleOptionSelect(index, q.id, option.id)
                         }
-                        className={`group text-left p-4 rounded-xl border-2 transition-all duration-200 ${bgClass} ${
+                        className={`group flex flex-col w-full items-start text-left p-4 rounded-xl border-2 transition-all duration-200 ${bgClass} ${
                           isOptSelected
                             ? "border-primary shadow-md ring-2 ring-primary/20 scale-[1.02]"
                             : "border-transparent opacity-90 hover:opacity-100 hover:shadow-md"
                         }`}
                       >
-                        <div className="flex items-center gap-3 mb-2">
-                          <div className="w-10 h-10 rounded-lg bg-white/60 flex items-center justify-center shadow-sm backdrop-blur-sm">
-                            <Icon className={`w-5 h-5 ${iconColor}`} />
-                          </div>
-                          <h4 className="font-bold text-slate-900">
+                        <div className="w-10 h-10 shrink-0 rounded-lg bg-white/60 flex items-center justify-center shadow-sm backdrop-blur-sm mb-3">
+                          <Icon className={`w-5 h-5 ${iconColor}`} />
+                        </div>
+                        <div className="w-full min-w-0">
+                          <h4 className="font-bold text-slate-900 leading-tight mb-1 wrap-break-words">
                             {option.title}
                           </h4>
+                          <p className="text-slate-600 leading-relaxed text-xs font-medium wrap-break-words">
+                            {option.description}
+                          </p>
                         </div>
-                        <p className="text-slate-600 leading-relaxed text-xs font-medium">
-                          {option.description}
-                        </p>
                       </button>
                     );
                   })}
@@ -325,13 +340,15 @@ const DocumentNeedStep = ({
         {description}
       </p>
 
-      <div className={`grid gap-5 ${
-        options.length === 4 
-          ? "grid-cols-1 sm:grid-cols-2 max-w-3xl mx-auto" 
-          : options.length % 3 === 0 
-            ? "grid-cols-1 sm:grid-cols-2 md:grid-cols-3"
-            : "grid-cols-1 sm:grid-cols-2 max-w-3xl mx-auto"
-      }`}>
+      <div
+        className={`grid gap-5 ${
+          options.length === 4
+            ? "grid-cols-1 sm:grid-cols-2 max-w-3xl mx-auto"
+            : options.length % 3 === 0
+              ? "grid-cols-1 sm:grid-cols-2 md:grid-cols-3"
+              : "grid-cols-1 sm:grid-cols-2 max-w-3xl mx-auto"
+        }`}
+      >
         {options.map((option, i) => {
           const Icon = ICONS[option.icon || option.id] || FileText;
           const styles = GRADIENT_STYLES[option.color] || GRADIENT_STYLES.green;

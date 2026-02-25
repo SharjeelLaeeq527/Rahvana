@@ -49,9 +49,13 @@
   --rahvana-primary-dark: #0a5a5d;
   --rahvana-primary-pale: #e8f6f6;
   --rahvana-secondary: #32e0c4;
-  
+
   /* Guide-specific tokens */
-  --guide-hero-gradient: linear-gradient(135deg, hsl(168 70% 42%), hsl(168 60% 52%));
+  --guide-hero-gradient: linear-gradient(
+    135deg,
+    hsl(168 70% 42%),
+    hsl(168 60% 52%)
+  );
   --guide-card-shadow: 0 4px 24px -4px hsl(168 70% 42% / 0.15);
   --guide-card-hover-shadow: 0 8px 32px -4px hsl(168 70% 42% / 0.25);
   --guide-grid-color: hsl(168 70% 42% / 0.025);
@@ -325,7 +329,7 @@
 }
 
 .guide-grid-bg {
-  background-image: 
+  background-image:
     linear-gradient(var(--guide-grid-color) 1px, transparent 1px),
     linear-gradient(90deg, var(--guide-grid-color) 1px, transparent 1px);
   background-size: 48px 48px;
@@ -340,6 +344,42 @@
   display: none;
 }
 
+/* Custom Scrollbar Theme Colors and Corners */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+  border-radius: 8px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.25);
+  border-radius: 8px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.4);
+}
+
+/* Adjust scrollbar for light backgrounds to match theme */
+.bg-slate-50\/30.custom-scrollbar::-webkit-scrollbar-thumb,
+.bg-slate-50 .custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(13, 115, 119, 0.25);
+}
+
+.bg-slate-50\/30.custom-scrollbar::-webkit-scrollbar-thumb:hover,
+.bg-slate-50 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(13, 115, 119, 0.45);
+}
+
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.25) transparent;
+}
+
 @keyframes rotate-line {
   0% {
     transform: translate(-50%, -50%) rotate(0deg);
@@ -350,7 +390,8 @@
 }
 
 @keyframes float {
-  0%, 100% {
+  0%,
+  100% {
     transform: translateY(0px);
   }
   50% {
@@ -359,7 +400,8 @@
 }
 
 @keyframes float-delay {
-  0%, 100% {
+  0%,
+  100% {
     transform: translateY(0px);
   }
   50% {

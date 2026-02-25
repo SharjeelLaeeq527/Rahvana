@@ -133,7 +133,7 @@ const ValidationStep = ({
                         ${
                           uploadedFile
                             ? "bg-green-100 text-green-700 border border-green-300 cursor-default"
-                            : "bg-gradient-to-br from-[#14a0a6] to-[#0d7377] text-white shadow-[0_2px_8px_hsl(168_80%_30%/0.3)] hover:shadow-[0_4px_12px_hsl(168_80%_30%/0.4)] cursor-pointer"
+                            : "bg-linear-to-br from-[#14a0a6] to-[#0d7377] text-white shadow-[0_2px_8px_hsl(168_80%_30%/0.3)] hover:shadow-[0_4px_12px_hsl(168_80%_30%/0.4)] cursor-pointer"
                         }`}
           >
             {uploadedFile ? (

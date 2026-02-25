@@ -37,8 +37,8 @@
           "title": "What is the purpose?",
           "options": [
             { "id": "new", "title": "New CNIC", "description": "Applying for the very first time (age 18+)", "icon": "new", "color": "blue" },
-            { "id": "correction", "title": "Correction / Update", "description": "Fixing details (name, DOB, marital status, address)", "icon": "correction", "color": "green" },
-            { "id": "replacement", "title": "Replacement / Renewal", "description": "CNIC is expired, lost, stolen, or damaged", "icon": "replacement", "color": "orange" }
+            { "id": "correction", "title": "Correction / Update", "description": "Fixing details (name, DOB, marital status, address)", "icon": "correction", "color": "purple" },
+            { "id": "replacement", "title": "Replacement / Renewal", "description": "CNIC is expired, lost, stolen, or damaged", "icon": "replacement", "color": "rose" }
           ]
         }
       ]
@@ -243,7 +243,8 @@
         ],
         "links": [
           { "label": "NADRA Official Website", "url": "https://www.nadra.gov.pk" },
-          { "label": "Pak Identity App", "url": "https://id.nadra.gov.pk/" }
+          { "label": "Pak Identity App", "url": "https://id.nadra.gov.pk/" },
+          { "label": "NADRA Helpline: 1777", "url": "tel:1777" }
         ]
       },
       "location": {
