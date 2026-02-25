@@ -189,7 +189,11 @@ const DocumentNeedStep = ({
                 )}
 
                 <div
-                  className={`grid gap-4 ${q.options.length === 2 ? "grid-cols-1 sm:grid-cols-2" : "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3"}`}
+                  className={`grid gap-4 ${
+                    q.options.length === 2 || q.options.length === 4
+                      ? "grid-cols-1 sm:grid-cols-2"
+                      : "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3"
+                  }`}
                 >
                   {q.options.map((option) => {
                     const Icon = ICONS[option.icon || option.id] || FileText;
