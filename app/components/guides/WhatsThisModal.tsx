@@ -225,7 +225,8 @@ const WhatsThisModal = ({
               "max-h-[88vh] overflow-hidden flex flex-col relative",
               "rounded-3xl shadow-2xl",
               "border border-white/10",
-              "bg-linear-to-br from-[#062f31] via-[#0b5c5f] to-[#0d7478]",
+              "bg-linear-to-br from-[#062f31] via-[#0b5c5f] to-[#0d7377]",
+              // "bg-linear-to-br from-[#062f31] via-[#0b5c5f] to-[#0d7478]",
             ].join(" ")}
             onClick={(e) => e.stopPropagation()}
           >
@@ -295,7 +296,7 @@ const WhatsThisModal = ({
                   </ExpandSection>
 
                   <ExpandSection
-                    title="Quick Overview"
+                    title="How to use this wizard"
                     subtitle="Fast, step-by-step. Expand to see the flow."
                     isOpen={openSteps}
                     onToggle={() => setOpenSteps((v) => !v)}

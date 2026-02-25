@@ -1,0 +1,359 @@
+{
+  "wizard": {
+    "title": "Polio Vaccination Guide",
+    "subtitle": "Ministry of National Health Services",
+    "last_verified": "February 25, 2026",
+    "whats_this": {
+      "heading": "Welcome to the Polio Vaccination Guide Wizard",
+      "sub": "Get your official Polio Vaccination Certificate for travel",
+      "description": "A Polio Vaccination Certificate is an official document that proves you have received the polio vaccine. It’s especially needed if you’re travelling abroad from Pakistan — many countries require it to reduce the international spread of the virus.",
+      "quick_instructions": [
+        "Select who needs the certificate",
+        "Receive a custom roadmap and document checklist",
+        "Follow the step-by-step guide to get vaccinated and register on NIMS"
+      ],
+      "disclaimer": "This wizard provides general guidance. Requirements and fees are subject to change by the government."
+    },
+    "steps": [
+      { "id": "document_need", "label": "Applicant Profile", "icon": "user" },
+      { "id": "location", "label": "Location Details", "icon": "map-pin" },
+      { "id": "roadmap", "label": "Roadmap", "icon": "map" },
+      { "id": "office_finder", "label": "Office Finder", "icon": "building" },
+      { "id": "validation", "label": "Validation", "icon": "shield" }
+    ],
+    "document_need": {
+      "title": "Who is getting the certificate?",
+      "description": "Select the applicant's profile to determine the exact documents required at the vaccination center.",
+      "questions": [
+        {
+          "id": "personType",
+          "title": "Select Applicant Profile",
+          "options": [
+            { "id": "adult", "title": "Pakistani Adult (Travel)", "description": "For citizens leaving the country.", "icon": "user", "color": "green" },
+            { "id": "child", "title": "Pakistani Child", "description": "Minors needing the certificate.", "icon": "users", "color": "orange" },
+            { "id": "foreigner", "title": "Foreigner (Long-term)", "description": "Foreigners staying > 4 weeks in Pakistan.", "icon": "globe", "color": "blue" }
+          ]
+        }
+      ]
+    },
+    "location": {
+      "title": "Location Information",
+      "description": "Your current residential address helps determine the nearest vaccination centers.",
+      "country": "Pakistan",
+      "country_note": "This wizard is specifically for Pakistan vaccination centers.",
+      "location_note": "Why location matters: Knowing your location helps us find the nearest authorized vaccination center that is linked with the NIMS system.",
+      "provinces": [
+        {
+          "name": "Punjab",
+          "districts": ["Lahore", "Rawalpindi", "Murree", "Faisalabad", "Multan", "Gujranwala", "Wazirabad", "Sialkot", "Sheikhupura", "Gujrat", "Sahiwal", "Attock", "Chakwal", "Talagang", "Mianwali", "Dera Ghazi Khan", "Taunsa", "Kot Addu"]
+        },
+        {
+          "name": "Sindh",
+          "districts": ["Karachi Central", "Karachi South", "Karachi East", "Karachi West", "Malir", "Korangi", "Keamari", "Hyderabad", "Sukkur", "Larkana", "Shaheed Benazirabad", "Sujawal"]
+        },
+        {
+          "name": "Khyber Pakhtunkhwa",
+          "districts": ["Peshawar", "Mardan", "Swat", "Upper Chitral", "Lower Chitral", "Khyber", "Upper South Waziristan", "Lower South Waziristan"]
+        },
+        {
+          "name": "Balochistan",
+          "districts": ["Quetta", "Gwadar", "Hub", "Chaman", "Surab", "Usta Muhammad"]
+        },
+        {
+          "name": "Islamabad Capital Territory",
+          "districts": ["Islamabad"]
+        },
+        {
+          "name": "Gilgit-Baltistan",
+          "districts": ["Gilgit", "Skardu", "Hunza", "Ghizer"]
+        },
+        {
+          "name": "Azad Jammu & Kashmir",
+          "districts": ["Muzaffarabad", "Mirpur", "Kotli", "Poonch"]
+        }
+      ]
+    },
+    "offices": [
+      {
+        "id": "polio-lhr-01",
+        "name": "Polio Vaccination Centre - Mayo Hospital",
+        "city": "Lahore City",
+        "district": "Lahore",
+        "province": "Punjab",
+        "address": "Mayo Hospital, Anarkali, Lahore",
+        "phone": "+92-42-99211100",
+        "hours": "Mon-Sat: 8:00 AM - 2:00 PM",
+        "map_link": "https://maps.google.com/?q=Mayo+Hospital+Lahore",
+        "services": ["Polio Vaccination", "Routine Immunization", "Child Health Cards"],
+        "nadraConnected": false,
+        "notes": "Government vaccination centre under Punjab Health Department."
+      },
+      {
+        "id": "polio-rwp-01",
+        "name": "Polio Vaccination Centre - Holy Family Hospital",
+        "city": "Rawalpindi City",
+        "district": "Rawalpindi",
+        "province": "Punjab",
+        "address": "Holy Family Hospital, Murree Road, Rawalpindi",
+        "phone": "+92-51-9290200",
+        "hours": "Mon-Sat: 8:00 AM - 2:00 PM",
+        "map_link": "https://maps.google.com/?q=Holy+Family+Hospital+Rawalpindi",
+        "services": ["Polio Vaccination", "Routine Immunization"],
+        "nadraConnected": false,
+        "notes": "Linked with EPI Punjab."
+      },
+      {
+        "id": "polio-khi-01",
+        "name": "Polio Vaccination Centre - Civil Hospital",
+        "city": "Karachi Central",
+        "district": "Karachi",
+        "province": "Sindh",
+        "address": "Civil Hospital, M.A. Jinnah Road, Karachi",
+        "phone": "+92-21-99215740",
+        "hours": "Mon-Sat: 8:00 AM - 2:00 PM",
+        "map_link": "https://maps.google.com/?q=Civil+Hospital+Karachi",
+        "services": ["Polio Vaccination", "Routine Immunization", "Child Registration"],
+        "nadraConnected": false,
+        "notes": "Sindh Health Dept. vaccination hub."
+      },
+      {
+        "id": "polio-hyd-01",
+        "name": "Polio Vaccination Centre - Liaquat University Hospital",
+        "city": "Hyderabad City",
+        "district": "Hyderabad",
+        "province": "Sindh",
+        "address": "LUMHS Hospital, Hyderabad",
+        "phone": "+92-22-9210230",
+        "hours": "Mon-Sat: 8:00 AM - 2:00 PM",
+        "map_link": "https://maps.google.com/?q=LUMHS+Hyderabad",
+        "services": ["Polio Vaccination", "Routine Immunization"],
+        "nadraConnected": false,
+        "notes": "Provincial immunization center."
+      },
+      {
+        "id": "polio-psh-01",
+        "name": "Polio Vaccination Centre - Khyber Teaching Hospital",
+        "city": "Peshawar City",
+        "district": "Peshawar",
+        "province": "Khyber Pakhtunkhwa",
+        "address": "Khyber Teaching Hospital, Peshawar",
+        "phone": "+92-91-9211430",
+        "hours": "Mon-Sat: 8:00 AM - 2:00 PM",
+        "mapLink": "https://maps.google.com/?q=Khyber+Teaching+Hospital",
+        "services": ["Polio Vaccination", "Routine Immunization"],
+        "nadraConnected": false,
+        "notes": "KP Health Dept vaccination unit."
+      },
+      {
+        "id": "polio-isl-01",
+        "name": "Polio Vaccination Centre - PIMS",
+        "city": "Islamabad",
+        "district": "Islamabad",
+        "province": "Islamabad Capital Territory",
+        "address": "Pakistan Institute of Medical Sciences (PIMS), Islamabad",
+        "phone": "+92-51-9261170",
+        "hours": "Mon-Sat: 8:00 AM - 2:00 PM",
+        "mapLink": "https://maps.google.com/?q=PIMS+Islamabad",
+        "services": ["Polio Vaccination", "Routine Immunization", "Child Health"],
+        "nadraConnected": false,
+        "notes": "Federal EPI linked centre."
+      },
+      {
+        "id": "polio-qta-01",
+        "name": "Polio Vaccination Centre - Civil Hospital Quetta",
+        "city": "Quetta City",
+        "district": "Quetta",
+        "province": "Balochistan",
+        "address": "Civil Hospital, Jinnah Road, Quetta",
+        "phone": "+92-81-9201000",
+        "hours": "Mon-Sat: 8:00 AM - 1:30 PM",
+        "mapLink": "https://maps.google.com/?q=Civil+Hospital+Quetta",
+        "services": ["Polio Vaccination", "Routine Immunization"],
+        "nadraConnected": false,
+        "notes": "Balochistan Health Dept centre."
+      },
+      {
+        "id": "polio-glt-01",
+        "name": "Polio Vaccination Centre - DHQ Hospital Gilgit",
+        "city": "Gilgit City",
+        "district": "Gilgit",
+        "province": "Gilgit-Baltistan",
+        "address": "DHQ Hospital, Gilgit",
+        "phone": "+92-5811-920020",
+        "hours": "Mon-Sat: 9:00 AM - 1:00 PM",
+        "mapLink": "https://maps.google.com/?q=DHQ+Hospital+Gilgit",
+        "services": ["Polio Vaccination", "Routine Immunization"],
+        "nadraConnected": false,
+        "notes": "GB Health Department immunization unit."
+      },
+      {
+        "id": "polio-ajk-01",
+        "name": "Polio Vaccination Centre - Abbas Institute of Medical Sciences",
+        "city": "Muzaffarabad City",
+        "district": "Muzaffarabad",
+        "province": "Azad Jammu & Kashmir",
+        "address": "AIMS Hospital, Muzaffarabad",
+        "phone": "+92-5822-920200",
+        "hours": "Mon-Sat: 9:00 AM - 1:30 PM",
+        "mapLink": "https://maps.google.com/?q=AIMS+Hospital+Muzaffarabad",
+        "services": ["Polio Vaccination", "Routine Immunization"],
+        "nadraConnected": false,
+        "notes": "AJK Health Dept immunization facility."
+      }
+    ],
+    "fee_structure": {
+      "title": "Polio Certificate Fee",
+      "tiers": [
+        {
+          "type": "Standard",
+          "price": "100",
+          "days": "Instant Download",
+          "badge_variant": "blue"
+        }
+      ]
+    },
+    "roadmaps": {
+      "adult": {
+        "title": "Your Personalized Roadmap",
+        "estimated_timeline": "1 - 2 Days",
+        "onlinePhases": [
+          { "id": 1, "title": "Download Online", "duration": "Instant", "description": "Visit the official NIMS website and select 'Other Vaccination – Polio / Yellow Fever'. Enter your CNIC & Passport Number and Issue Date. Verify your information, pay the one-time processing fee online (≈ Rs. 100). Hit Download and save the PDF securely on your phone for easy access." }
+        ],
+        "onsitePhases": [
+          { "id": 1, "title": "Where to Go", "duration": "Preparation", "description": "Authorized government hospitals, District Headquarter Hospitals (DHQs), and District Health Offices (DHOs) provide both the vaccine and NIMS data entry." },
+          { "id": 2, "title": "Get Vaccinated", "duration": "1 Day", "description": "Visit your selected vaccination center. Provide your original ID and ensure the staff correctly enters your details into the NIMS system." },
+          { "id": 3, "title": "NIMS Entry", "duration": "24 Hours", "description": "Wait up to 24 hours for the vaccination record to reflect on the official NIMS portal. You can check your status online." }
+        ],
+        "documents_checklist": [
+          { "id": "cnic", "label": "Original CNIC", "description": "Your 13-digit Computerized National Identity Card.", "required": true },
+          { "id": "passport", "label": "Original Passport", "description": "Mandatory if you are traveling abroad; ensures the certificate is linked to your passport.", "required": true },
+          { "id": "mobile", "label": "Active Mobile Number", "description": "Used for SMS verification and NIMS portal tracking.", "required": true }
+        ]
+      },
+      "child": {
+        "title": "Your Personalized Roadmap",
+        "estimated_timeline": "1 - 2 Days",
+        "onlinePhases": [
+          { "id": 1, "title": "Download Online", "duration": "Instant", "description": "Visit the official NIMS website and select 'Other Vaccination – Polio / Yellow Fever'. Enter the B-Form / CRC Number and Issue Date. Verify your information, pay the one-time processing fee online (≈ Rs. 100). Hit Download and save the PDF securely on your phone for easy access." }
+        ],
+        "onsitePhases": [
+          { "id": 1, "title": "Where to Go", "duration": "Preparation", "description": "Authorized government hospitals, District Headquarter Hospitals (DHQs), and District Health Offices (DHOs) provide both the vaccine and NIMS data entry." },
+          { "id": 2, "title": "Get Vaccinated", "duration": "Day 1", "description": "Visit your selected vaccination center. Provide original ID and ensure the staff correctly enters details into the NIMS system." },
+          { "id": 3, "title": "NIMS Entry", "duration": "24 Hours", "description": "Wait up to 24 hours for the vaccination record to reflect on the official NIMS portal. You can check status online." }
+        ],
+        "documents_checklist": [
+          { "id": "bform", "label": "Original B-Form (CRC)", "description": "Mandatory for minors. Ensure the B-Form number is correctly relayed to the operator.", "required": true },
+          { "id": "parent_cnic", "label": "Parent's CNIC", "description": "Original CNIC of the accompanying parent or guardian.", "required": true },
+          { "id": "mobile", "label": "Active Mobile Number", "description": "Used for SMS verification and NIMS portal tracking.", "required": true },
+          { "id": "passport", "label": "Passport Copy", "description": "Important if the child is traveling abroad.", "required": false }
+        ]
+      },
+      "foreigner": {
+        "title": "Your Personalized Roadmap",
+        "estimated_timeline": "1 - 2 Days",
+        "onlinePhases": [
+          { "id": 1, "title": "Download Online", "duration": "Instant", "description": "Visit the official NIMS website and select 'Other Vaccination – Polio / Yellow Fever'. Enter your Passport Number and Issue Date. Verify your information, pay the one-time processing fee online (≈ Rs. 100). Hit Download and save the PDF securely on your phone for easy access." }
+        ],
+        "onsitePhases": [
+          { "id": 1, "title": "Where to Go", "duration": "Preparation", "description": "Authorized government hospitals, District Headquarter Hospitals (DHQs), and District Health Offices (DHOs) provide both the vaccine and NIMS data entry." },
+          { "id": 2, "title": "Get Vaccinated", "duration": "Day 1", "description": "Visit your selected vaccination center. Provide your original ID and ensure the staff correctly enters your details into the NIMS system." },
+          { "id": 3, "title": "NIMS Entry", "duration": "24 Hours", "description": "Wait up to 24 hours for the vaccination record to reflect on the official NIMS portal. You can check your status online." }
+        ],
+        "documents_checklist": [
+          { "id": "passport", "label": "Original Passport", "description": "Primary identification document. The passport number is used for NIMS entry.", "required": true },
+          { "id": "visa", "label": "Valid Visa Copy", "description": "Proof of legal stay in Pakistan.", "required": true },
+          { "id": "mobile", "label": "Active Mobile Number", "description": "Used for SMS verification and NIMS portal tracking.", "required": true }
+        ]
+      }
+    },
+    "validation": {
+      "title": "Document Validation Vault",
+      "description": "Ensure all requirements are met to avoid rejection at the vaccination center or travel gates.",
+      "upload_section": {
+        "title": "Upload Vaccination Records",
+        "description": "Securely upload your NIMS downloaded certificate for quick access.",
+        "formats": "PDF, JPG, PNG (Max 5MB)"
+      },
+      "checklist_title": "Final Check",
+      "categories": [
+        {
+          "name": "Document Readiness",
+          "items": [
+            { "label": "Original Passport / ID is ready", "critical": true },
+            { "label": "B-Form or CRC prepared (if applicable)", "critical": true }
+          ]
+        },
+        {
+          "name": "NIMS & Online Status",
+          "items": [
+            { "label": "Check NIMS website for data reflection after vaccination", "critical": true },
+            { "label": "Verify phone number linked with the NIMS record matches", "critical": true }
+          ]
+        },
+        {
+          "name": "Payment Preparation",
+          "items": [
+            { "label": "Credit/Debit Card enabled for online transactions", "critical": false },
+            { "label": "Processing fee (Rs. 100) available", "critical": false }
+          ]
+        }
+      ]
+    },
+    "info_panel": {
+      "document_need": {
+        "tips": [
+          "Ensure you bring the original ID document associated with your profile.",
+          "Children must have their original B-Form or CRC."
+        ],
+        "pitfalls": [
+          "Do not forget your original passport if traveling abroad."
+        ],
+        "links": [
+          { "label": "NIMS Portal", "url": "https://nims.nadra.gov.pk/nims/" }
+        ]
+      },
+      "location": {
+        "tips": [
+          "Your nearest vaccination center is based on your current residential address."
+        ],
+        "pitfalls": [
+          "Don't assume any center can process your request — check availability."
+        ],
+        "links": [
+        ]
+      },
+      "roadmap": {
+        "tips": [
+          "Double-check your passport number with the operator during data entry.",
+          "Wait 24 hours before trying to download the certificate from NIMS."
+        ],
+        "pitfalls": [
+          "A wrong passport number entry will require a correction process."
+        ],
+        "links": [
+          { "label": "NIMS Certificate Download", "url": "https://nims.nadra.gov.pk/nims/" }
+        ]
+      },
+      "office_finder": {
+        "tips": [
+          "Confirm office hours before visiting; some close early on Fridays."
+        ],
+        "pitfalls": [
+          "Don't rely on unofficial centers."
+        ],
+        "links": [
+        ]
+      },
+      "validation": {
+        "tips": [
+          "Keep a digital copy of your certificate on your phone.",
+          "Print a color copy of the certificate for airport immigration."
+        ],
+        "pitfalls": [
+          "Traveling without the printed certificate might cause delays at the airport."
+        ],
+        "links": []
+      }
+    }
+  }
+}
