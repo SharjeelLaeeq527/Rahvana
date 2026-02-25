@@ -21,7 +21,7 @@ import { useWizardSession } from "@/lib/guides/useWizardSession";
 import { useGuideUpload } from "@/lib/guides/useGuideUpload";
 import { useGuideFeedback } from "@/lib/guides/useGuideFeedback";
 
-const STEP_IDS: (keyof typeof INFO_PANEL_KEYS)[] = [
+const STEP_IDS: WizardStepId[] = [
   "document_need",
   "roadmap",
   "validation",
@@ -158,8 +158,6 @@ const FrcGuide = () => {
       uploaded: state.uploadedFile,
     });
   };
-
-
 
   const renderStep = () => {
     switch (currentStepId) {
