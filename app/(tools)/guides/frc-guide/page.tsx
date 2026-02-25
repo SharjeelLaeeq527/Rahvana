@@ -285,7 +285,7 @@ const FrcGuide = () => {
         <WizardInfoPanel
           data={infoPanelData}
           lastVerified={guideData.wizard.last_verified}
-          guideData={guideData}
+          guideData={guideData as Record<string, unknown>}
           guideType="frc"
         />
       </div>
