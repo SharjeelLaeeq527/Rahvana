@@ -13,6 +13,7 @@ import {
   Building2,
   CheckCircle2,
   ArrowLeft,
+  ArrowRight,
   Baby,
   Smile,
   GraduationCap,
@@ -68,6 +69,18 @@ const GRADIENT_STYLES: Record<
     iconBg: "bg-[hsl(210_60%_90%)]",
     iconColor: "text-[hsl(210_80%_40%)]",
   },
+  purple: {
+    bg: "bg-[linear-gradient(135deg,hsl(270_70%_97%),hsl(280_60%_94%))]",
+    border: "border-[hsl(270_60%_80%)]",
+    iconBg: "bg-[hsl(270_60%_92%)]",
+    iconColor: "text-[hsl(270_80%_40%)]",
+  },
+  rose: {
+    bg: "bg-[linear-gradient(135deg,hsl(340_70%_97%),hsl(350_60%_94%))]",
+    border: "border-[hsl(340_60%_80%)]",
+    iconBg: "bg-[hsl(340_60%_92%)]",
+    iconColor: "text-[hsl(340_80%_40%)]",
+  },
 };
 
 export interface DocumentNeedOption {
@@ -100,12 +113,14 @@ export interface DocumentNeedStepProps {
   selected: string | Record<string, string> | null;
   onSelect: (id: string, questionId?: string) => void;
   data?: DocumentNeedData;
+  onNext?: () => void;
 }
 
 const DocumentNeedStep = ({
   selected,
   onSelect,
   data,
+  onNext,
 }: DocumentNeedStepProps) => {
   const [internalStep, setInternalStep] = useState(1);
 
@@ -118,9 +133,6 @@ const DocumentNeedStep = ({
   if (questions.length > 0) {
     const handleOptionSelect = (qIndex: number, qId: string, optId: string) => {
       onSelect(optId, qId);
-      if (qIndex + 1 < questions.length) {
-        setInternalStep(qIndex + 2);
-      }
     };
 
     const handleBack = () => {
@@ -143,7 +155,7 @@ const DocumentNeedStep = ({
         <div className="space-y-8 relative before:absolute before:inset-0 before:ml-[23px] md:before:ml-[27px] before:-translate-x-px md:before:translate-x-0 before:h-full before:w-0.5 before:bg-linear-to-b before:from-transparent before:via-slate-200 before:border-slate-300">
           {questions.map((q, index) => {
             const stepNumber = index + 1;
-            const isActive = internalStep >= stepNumber;
+            const isActive = internalStep === stepNumber;
             const isCompleted = internalStep > stepNumber;
 
             return (
@@ -176,7 +188,9 @@ const DocumentNeedStep = ({
                   <p className="text-sm text-slate-500 mb-4">{q.description}</p>
                 )}
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div
+                  className={`grid gap-4 ${q.options.length === 2 ? "grid-cols-1 sm:grid-cols-2" : "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3"}`}
+                >
                   {q.options.map((option) => {
                     const Icon = ICONS[option.icon || option.id] || FileText;
 
@@ -197,7 +211,7 @@ const DocumentNeedStep = ({
                           onClick={() =>
                             handleOptionSelect(index, q.id, option.id)
                           }
-                          className={`group relative text-left rounded-xl border-2 transition-all duration-300 overflow-hidden ${
+                          className={`group relative w-full text-left rounded-xl border-2 transition-all duration-300 overflow-hidden ${
                             isOptSelected
                               ? "border-primary shadow-md ring-2 ring-primary/10 scale-[1.02]"
                               : "border-slate-200 hover:border-slate-300 shadow-sm hover:shadow-md"
@@ -213,16 +227,16 @@ const DocumentNeedStep = ({
                             className={`p-5 h-full ${bgClass} text-white relative z-0`}
                           >
                             <div className="absolute -bottom-10 -right-10 w-32 h-32 bg-white/10 rounded-full blur-2xl group-hover:scale-150 transition-transform"></div>
-                            <div className="flex items-center justify-between mb-4">
-                              <Icon className="w-8 h-8 text-white/90" />
+                            <div className="flex items-center justify-between mb-4 w-full">
+                              <Icon className="w-8 h-8 text-white/90 shrink-0" />
                               {isOptSelected && (
-                                <CheckCircle2 className="w-6 h-6 text-white" />
+                                <CheckCircle2 className="w-6 h-6 text-white shrink-0" />
                               )}
                             </div>
-                            <h3 className="text-lg font-bold mb-1 tracking-tight">
+                            <h3 className="text-lg font-bold mb-1 tracking-tight w-full wrap-break-words">
                               {option.title}
                             </h3>
-                            <p className="text-white/80 leading-snug text-xs mb-4 max-w-[90%]">
+                            <p className="text-white/80 leading-snug text-xs mb-4 w-full wrap-break-words">
                               {option.description}
                             </p>
                             <ul className="space-y-1">
@@ -253,23 +267,23 @@ const DocumentNeedStep = ({
                         onClick={() =>
                           handleOptionSelect(index, q.id, option.id)
                         }
-                        className={`group text-left p-4 rounded-xl border-2 transition-all duration-200 ${bgClass} ${
+                        className={`group flex flex-col w-full items-start text-left p-4 rounded-xl border-2 transition-all duration-200 ${bgClass} ${
                           isOptSelected
                             ? "border-primary shadow-md ring-2 ring-primary/20 scale-[1.02]"
                             : "border-transparent opacity-90 hover:opacity-100 hover:shadow-md"
                         }`}
                       >
-                        <div className="flex items-center gap-3 mb-2">
-                          <div className="w-10 h-10 rounded-lg bg-white/60 flex items-center justify-center shadow-sm backdrop-blur-sm">
-                            <Icon className={`w-5 h-5 ${iconColor}`} />
-                          </div>
-                          <h4 className="font-bold text-slate-900">
+                        <div className="w-10 h-10 shrink-0 rounded-lg bg-white/60 flex items-center justify-center shadow-sm backdrop-blur-sm mb-3">
+                          <Icon className={`w-5 h-5 ${iconColor}`} />
+                        </div>
+                        <div className="w-full min-w-0">
+                          <h4 className="font-bold text-slate-900 leading-tight mb-1 wrap-break-words">
                             {option.title}
                           </h4>
+                          <p className="text-slate-600 leading-relaxed text-xs font-medium wrap-break-words">
+                            {option.description}
+                          </p>
                         </div>
-                        <p className="text-slate-600 leading-relaxed text-xs font-medium">
-                          {option.description}
-                        </p>
                       </button>
                     );
                   })}
@@ -287,22 +301,45 @@ const DocumentNeedStep = ({
         </div>
 
         <div className="mt-10 flex justify-between items-center pt-6 border-t border-slate-100">
-          {/* <button
+          <button
             onClick={handleBack}
-            className={`text-slate-500 hover:text-slate-800 font-medium px-4 py-2 hover:bg-slate-50 rounded-lg transition-colors flex items-center gap-2 ${
+            className={`flex items-center gap-1.5 px-5 py-2.5 rounded-xl border border-gray-300 bg-white text-gray-700 font-semibold text-sm cursor-pointer transition-colors ${
               internalStep <= 1 ? "invisible" : ""
             }`}
             disabled={internalStep <= 1}
           >
             <ArrowLeft className="w-4 h-4" />
             Back
-          </button> */}
+          </button>
 
-          {internalStep < questions.length && (
-            <div className="px-4 py-2 text-sm text-slate-400 font-medium">
-              Make a selection above
-            </div>
-          )}
+          {questions.length > 1 &&
+            (() => {
+              const currentQ = questions[internalStep - 1];
+              const isAnswered =
+                typeof selected === "object" &&
+                selected !== null &&
+                !!selected[currentQ.id];
+
+              return (
+                <button
+                  onClick={() => {
+                    if (internalStep < questions.length) {
+                      setInternalStep(internalStep + 1);
+                    } else if (onNext) {
+                      onNext();
+                    }
+                  }}
+                  disabled={!isAnswered}
+                  className={`flex items-center gap-1.5 px-5 py-2.5 rounded-xl font-semibold text-sm transition-colors ${
+                    isAnswered
+                      ? "bg-linear-to-br from-teal-600 to-teal-500 text-white shadow-md hover:scale-[1.03] cursor-pointer"
+                      : "bg-gray-200 text-gray-400 cursor-not-allowed"
+                  }`}
+                >
+                  Continue <ArrowRight className="w-4 h-4" />
+                </button>
+              );
+            })()}
         </div>
       </div>
     );
@@ -325,13 +362,15 @@ const DocumentNeedStep = ({
         {description}
       </p>
 
-      <div className={`grid gap-5 ${
-        options.length === 4 
-          ? "grid-cols-1 sm:grid-cols-2 max-w-3xl mx-auto" 
-          : options.length % 3 === 0 
-            ? "grid-cols-1 sm:grid-cols-2 md:grid-cols-3"
-            : "grid-cols-1 sm:grid-cols-2 max-w-3xl mx-auto"
-      }`}>
+      <div
+        className={`grid gap-5 ${
+          options.length === 4
+            ? "grid-cols-1 sm:grid-cols-2 max-w-3xl mx-auto"
+            : options.length % 3 === 0
+              ? "grid-cols-1 sm:grid-cols-2 md:grid-cols-3"
+              : "grid-cols-1 sm:grid-cols-2 max-w-3xl mx-auto"
+        }`}
+      >
         {options.map((option, i) => {
           const Icon = ICONS[option.icon || option.id] || FileText;
           const styles = GRADIENT_STYLES[option.color] || GRADIENT_STYLES.green;

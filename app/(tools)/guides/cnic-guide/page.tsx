@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import WizardHeader from "../../../components/guides/WizardHeader";
 import WizardSidebar from "../../../components/guides/WizardSidebar";
@@ -18,6 +18,10 @@ import guideData from "@/data/cnic-guide-data.json";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import FeedbackButton from "@/app/components/FeedbackButton";
 import { useWizardSession } from "@/lib/guides/useWizardSession";
+import { useGuideUpload } from "@/lib/guides/useGuideUpload";
+import { useGuideSave } from "@/lib/guides/useGuideSave";
+import { useGuideFeedback } from "@/lib/guides/useGuideFeedback";
+import { useNavigationGuard } from "@/lib/guides/useNavigationGuard";
 
 const STEP_IDS: WizardStepId[] = [
   "document_need",
@@ -51,6 +55,8 @@ const INFO_PANEL_KEYS: Record<
 const CnicGuide = () => {
   const [currentStep, setCurrentStep] = useState(0);
   const [showWhatsThis, setShowWhatsThis] = useState(true);
+  const [isSaved, setIsSaved] = useState(false);
+  const [navigationHandled, setNavigationHandled] = useState(false);
   const [state, setState] = useState<WizardState>({
     documentNeed: null,
     ageCategory: null,
@@ -82,10 +88,79 @@ const CnicGuide = () => {
     }),
   );
 
+  const { uploadFile: uploadFileHook } = useGuideUpload();
+  const { submitFeedback: submitFeedbackHook } = useGuideFeedback();
+  const { saveGuide, saving } = useGuideSave();
+
+  // Wrapper functions to match expected signatures
+  const handleUploadFile = async (file: File) => {
+    await uploadFileHook(file, "cnic-guide", "validation");
+    // Update local state to reflect the upload
+    setState((s) => ({ ...s, uploadedFile: true }));
+    saveWizardStep("validation", {
+      checks: state.validationChecks,
+      uploaded: true,
+    });
+  };
+
+  const handleSubmitFeedback = async (
+    feedbackType: string,
+    description: string,
+    attachment?: File,
+  ) => {
+    await submitFeedbackHook(
+      "cnic-guide",
+      currentStepId,
+      feedbackType,
+      description,
+      attachment,
+    );
+  };
+
+  const hasProgress = useMemo(() => {
+    return (
+      currentStep > 0 ||
+      !!state.documentNeed ||
+      state.checkedDocuments.length > 0 ||
+      state.validationChecks.length > 0 ||
+      state.uploadedFile
+    );
+  }, [currentStep, state]);
+
   useEffect(() => {
     const dontShow = localStorage.getItem("hide_whats_this_modal_cnic");
     if (!dontShow) setShowWhatsThis(true);
   }, []);
+
+  useNavigationGuard(
+    hasProgress && !isSaved,
+    async () => {
+      await saveGuide("cnic-guide"); // wait save complete
+      setIsSaved(true); // mark as saved
+    },
+    navigationHandled,
+    setNavigationHandled,
+  );
+
+  // Before unload confirmation
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      // Show confirmation if user has made progress beyond the first step
+      if (
+        currentStep > 0 ||
+        (state.documentNeed && state.documentNeed !== "")
+      ) {
+        e.preventDefault();
+        e.returnValue = "";
+        return "";
+      }
+    };
+
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => {
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+    };
+  }, [currentStep, state.documentNeed]);
 
   const currentStepId = STEP_IDS[currentStep];
   const infoPanelKey = INFO_PANEL_KEYS[currentStepId];
@@ -170,6 +245,7 @@ const CnicGuide = () => {
             selected={state.documentNeed}
             onSelect={handleDocumentNeedSelect}
             data={guideData.wizard.document_need}
+            onNext={goNext}
           />
         );
       // case "location":
@@ -233,7 +309,7 @@ const CnicGuide = () => {
             validationChecks={state.validationChecks}
             onToggleCheck={toggleValidationCheck}
             uploadedFile={state.uploadedFile}
-            onUpload={() => setState((s) => ({ ...s, uploadedFile: true }))}
+            onUpload={handleUploadFile}
             data={guideData.wizard.validation}
           />
         );
@@ -249,14 +325,19 @@ const CnicGuide = () => {
         title={guideData.wizard.title}
       />
 
-      <div className="flex flex-1 overflow-hidden h-[calc(100vh-56px)]">
+      <div className="flex flex-1 overflow-hidden h-[calc(100vh-56px)] flex-col lg:flex-row">
         <WizardSidebar
-          currentStep={currentStep}
+          currentStep={STEP_IDS.indexOf(currentStepId)}
           steps={STEP_IDS}
-          onStepClick={setCurrentStep}
+          onStepClick={(stepIndex) => setCurrentStep(stepIndex)}
+          stepLabels={STEP_LABELS}
+          guideSlug="cnic-guide"
+          onSaveGuide={saveGuide}
+          onGuideSaved={() => setIsSaved(true)}
+          saving={saving}
         />
 
-        <main className="flex-1 overflow-y-auto p-8 relative">
+        <main className="flex-1 overflow-y-auto p-4 sm:p-8 relative">
           <div
             className="fixed inset-0 pointer-events-none z-0"
             style={{
@@ -266,8 +347,8 @@ const CnicGuide = () => {
             }}
           />
 
-          <div className="relative z-10 max-w-3xl mx-auto">
-            <div className="bg-white rounded-2xl border border-gray-200 p-8 shadow-sm min-h-100">
+          <div className="relative z-10 max-w-full md:max-w-3xl mx-auto">
+            <div className="bg-white rounded-2xl border border-gray-200 p-4 sm:p-8 shadow-sm min-h-100">
               <AnimatePresence mode="wait">
                 <motion.div
                   key={currentStepId}
@@ -299,23 +380,27 @@ const CnicGuide = () => {
                 Step {currentStep + 1} of {STEP_IDS.length}
               </span>
 
-              {currentStep < STEP_IDS.length - 1 && (
-                <motion.button
-                  whileHover={{ scale: 1.03 }}
-                  whileTap={{ scale: 0.97 }}
-                  onClick={goNext}
-                  disabled={!canGoNext()}
-                  className={`flex items-center gap-1.5 px-5 py-2.5 rounded-xl font-semibold text-sm cursor-pointer
+              {currentStep < STEP_IDS.length - 1 &&
+                !(
+                  currentStepId === "document_need" &&
+                  guideData.wizard.document_need.questions
+                ) && (
+                  <motion.button
+                    whileHover={{ scale: 1.03 }}
+                    whileTap={{ scale: 0.97 }}
+                    onClick={goNext}
+                    disabled={!canGoNext()}
+                    className={`flex items-center gap-1.5 px-5 py-2.5 rounded-xl font-semibold text-sm cursor-pointer
                     ${
                       canGoNext()
                         ? "bg-linear-to-br from-teal-600 to-teal-500 text-white shadow-md"
                         : "bg-gray-200 text-gray-400 cursor-not-allowed"
                     }
                   `}
-                >
-                  Continue <ArrowRight className="w-4 h-4" />
-                </motion.button>
-              )}
+                  >
+                    Continue <ArrowRight className="w-4 h-4" />
+                  </motion.button>
+                )}
             </div>
           </div>
         </main>
@@ -323,8 +408,8 @@ const CnicGuide = () => {
         <WizardInfoPanel
           data={infoPanelData}
           lastVerified={guideData.wizard.last_verified}
-          guideData={guideData}
-          guideType="other"
+          guideData={guideData as Record<string, unknown>}
+          guideType="cnic"
         />
       </div>
 
@@ -337,6 +422,7 @@ const CnicGuide = () => {
       <FeedbackButton
         steps={Object.values(STEP_LABELS)}
         currentStepName={STEP_LABELS[currentStepId] || ""}
+        onSubmit={handleSubmitFeedback}
       />
     </div>
   );

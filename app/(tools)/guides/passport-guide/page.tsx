@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import WizardHeader from "../../../components/guides/WizardHeader";
 import WizardSidebar from "../../../components/guides/WizardSidebar";
@@ -8,9 +8,7 @@ import WizardInfoPanel, {
   InfoPanelData,
 } from "../../../components/guides/WizardInfoPanel";
 import DocumentNeedStep from "../../../components/guides/steps/DocumentNeedStep";
-// import LocationStep from "../../../components/guides/steps/LocationStep";
 import RoadmapStep from "../../../components/guides/steps/RoadmapStep";
-import OfficeFinderStep from "../../../components/guides/steps/OfficeFinderStep";
 import ValidationStep from "../../../components/guides/steps/ValidationStep";
 import WhatsThisModal from "../../../components/guides/WhatsThisModal";
 import { type WizardState, WizardStepId } from "@/types/guide-wizard";
@@ -18,20 +16,20 @@ import guideData from "@/data/passport-guide-data.json";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import FeedbackButton from "@/app/components/FeedbackButton";
 import { useWizardSession } from "@/lib/guides/useWizardSession";
+import { useGuideUpload } from "@/lib/guides/useGuideUpload";
+import { useGuideFeedback } from "@/lib/guides/useGuideFeedback";
+import { useGuideSave } from "@/lib/guides/useGuideSave";
+import { useNavigationGuard } from "@/lib/guides/useNavigationGuard";
 
 const STEP_IDS: WizardStepId[] = [
   "document_need",
-  // "location",
   "roadmap",
-  // "office_finder",
   "validation",
 ];
 
 const STEP_LABELS: Record<string, string> = {
   document_need: "Application Type",
-  // location: "Location",
   roadmap: "Roadmap",
-  // office_finder: "Office Finder",
   validation: "Validation",
 };
 
@@ -48,6 +46,8 @@ const INFO_PANEL_KEYS: Record<WizardStepId, any> = {
 const PassportGuide = () => {
   const [currentStep, setCurrentStep] = useState(0);
   const [showWhatsThis, setShowWhatsThis] = useState(true);
+  const [isSaved, setIsSaved] = useState(false);
+  const [navigationHandled, setNavigationHandled] = useState(false);
   const [state, setState] = useState<WizardState>({
     documentNeed: null,
     ageCategory: null,
@@ -70,14 +70,103 @@ const PassportGuide = () => {
     (prev, stepsData) => ({
       ...prev,
       documentNeed: stepsData.document_need || prev.documentNeed,
+      ageCategory: prev.ageCategory, // Not used in Passport guide
+      birthSetting: prev.birthSetting, // Not used in Passport guide
       province: stepsData.location?.province || prev.province,
       district: stepsData.location?.district || prev.district,
       city: stepsData.location?.city || prev.city,
       checkedDocuments: stepsData.roadmap || prev.checkedDocuments,
       validationChecks: stepsData.validation?.checks || prev.validationChecks,
       uploadedFile: stepsData.validation?.uploaded || prev.uploadedFile,
+            savedOffice: prev.savedOffice, // Not used in Passport guide
+
     })
   );
+
+  const { uploadFile: uploadFileHook } = useGuideUpload();
+  const { submitFeedback: submitFeedbackHook } = useGuideFeedback();
+  const { saveGuide, saving } = useGuideSave();
+
+  // Wrapper functions to match expected signatures
+  const handleUploadFile = async (file: File) => {
+    await uploadFileHook(file, 'passport-guide', 'validation');
+    // Update local state to reflect the upload
+    setState(s => ({ ...s, uploadedFile: true }));
+    saveWizardStep("validation", {
+      checks: state.validationChecks,
+      uploaded: true,
+    });
+  };
+
+  const handleSubmitFeedback = async (feedbackType: string, description: string, attachment?: File) => {
+    await submitFeedbackHook('passport-guide', STEP_IDS[currentStep], feedbackType, description, attachment);
+  };
+
+  const hasProgress = useMemo(() => {
+    return (
+      currentStep > 0 ||
+      !!state.documentNeed ||
+      state.checkedDocuments.length > 0 ||
+      state.validationChecks.length > 0 ||
+      state.uploadedFile
+    );
+  }, [currentStep, state]);
+
+  useEffect(() => {
+    const dontShow = localStorage.getItem("hide_whats_this_modal");
+    if (!dontShow) {
+      setShowWhatsThis(true);
+    }
+  }, []);
+
+
+  useNavigationGuard(
+    hasProgress && !isSaved,
+    async () => {
+      await saveGuide("passport-guide"); // wait save complete
+      setIsSaved(true); // mark as saved
+    },
+    navigationHandled,
+    setNavigationHandled
+  );
+
+  // Before unload confirmation
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      // Show confirmation if user has made progress beyond the first step
+      if (currentStep > 0 || (state.documentNeed && state.documentNeed !== "")) {
+        e.preventDefault();
+        e.returnValue = '';
+        return '';
+      }
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+    };
+  }, [currentStep, state.documentNeed]);
+
+  const handleStepClick = (stepIndex: number) => {
+    setCurrentStep(stepIndex);
+  };
+
+  // Before unload confirmation
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      // Show confirmation if user has made progress beyond the first step
+      if (currentStep > 0 || (state.documentNeed && state.documentNeed !== "")) {
+        e.preventDefault();
+        e.returnValue = '';
+        return '';
+      }
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+    };
+  }, [currentStep, state.documentNeed]);
 
   const currentStepId = STEP_IDS[currentStep];
   const infoPanelKey = INFO_PANEL_KEYS[currentStepId];
@@ -89,12 +178,8 @@ const PassportGuide = () => {
     switch (currentStepId) {
       case "document_need":
         return !!state.documentNeed;
-      // case "location":
-      //   return !!state.province && !!state.district && !!state.city;
       case "roadmap":
         return true;
-      // case "office_finder":
-      //   return true;
       case "validation":
         return false;
       default:
@@ -114,7 +199,6 @@ const PassportGuide = () => {
   const handleDocumentNeedSelect = (id: string) => {
     setState((s: WizardState) => ({ ...s, documentNeed: id }));
     saveWizardStep("document_need", id, true);
-    setTimeout(() => setCurrentStep(1), 400);
   };
 
   const toggleDocument = (id: string) => {
@@ -154,18 +238,6 @@ const PassportGuide = () => {
             data={guideData.wizard.document_need}
           />
         );
-      // case "location":
-      //   return (
-      //     <LocationStep
-      //       province={state.province}
-      //       district={state.district}
-      //       city={state.city}
-      //       onProvinceChange={(v) => setState((s) => ({ ...s, province: v }))}
-      //       onDistrictChange={(v) => setState((s) => ({ ...s, district: v }))}
-      //       onCityChange={(v) => setState((s) => ({ ...s, city: v }))}
-      //       data={guideData.wizard.location}
-      //     />
-      //   );
       case "roadmap":
         return (
           <RoadmapStep
@@ -180,13 +252,8 @@ const PassportGuide = () => {
             validationChecks={state.validationChecks}
             onToggleCheck={toggleValidationCheck}
             uploadedFile={state.uploadedFile}
-            onUpload={() => {
-              setState((s: WizardState) => ({ ...s, uploadedFile: true }));
-              saveWizardStep("validation", {
-                checks: state.validationChecks,
-                uploaded: true,
-              });
-            }}
+                        onUpload={handleUploadFile}
+
             data={guideData.wizard.validation}
           />
         );
@@ -204,10 +271,14 @@ const PassportGuide = () => {
 
       <div className="flex flex-1 overflow-hidden h-[calc(100vh-56px)] flex-col lg:flex-row">
         <WizardSidebar
-          currentStep={currentStep}
+          currentStep={STEP_IDS.indexOf(currentStepId)}
           steps={STEP_IDS}
-          onStepClick={setCurrentStep}
+          onStepClick={handleStepClick}
           stepLabels={STEP_LABELS}
+          guideSlug="passport-guide"
+          onSaveGuide={saveGuide}
+          onGuideSaved={() => setIsSaved(true)}
+          saving={saving}
         />
 
         <main className="flex-1 overflow-y-auto p-4 sm:p-8 relative">
@@ -268,7 +339,7 @@ const PassportGuide = () => {
         <WizardInfoPanel
           data={infoPanelData}
           lastVerified={guideData.wizard.last_verified}
-          guideData={guideData}
+          guideData={guideData as Record<string, unknown>}
           guideType="passport"
         />
       </div>
@@ -282,6 +353,7 @@ const PassportGuide = () => {
       <FeedbackButton
         steps={Object.values(STEP_LABELS)}
         currentStepName={STEP_LABELS[currentStepId] || ""}
+        onSubmit={handleSubmitFeedback}
       />
     </div>
   );

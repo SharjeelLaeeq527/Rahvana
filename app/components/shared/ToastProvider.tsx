@@ -42,18 +42,35 @@ export const ToastProvider = ({ children }: { children: React.ReactNode }) => {
 
       <div className="fixed bottom-6 right-6 space-y-3 z-50">
         <AnimatePresence>
-          {toasts.map((toast) => (
-            <motion.div
-              key={toast.id}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: 20 }}
-              className="bg-card border border-border shadow-lg rounded-xl px-6 py-4 flex items-center gap-3"
-            >
-              <Icons.CheckCircle className="w-5 h-5 text-rahvana-primary" />
-              <span>{toast.message}</span>
-            </motion.div>
-          ))}
+          {toasts.map((toast) => {
+            const isError = toast.type === "error";
+            const isSuccess = toast.type === "success";
+
+            return (
+              <motion.div
+                key={toast.id}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 20 }}
+                className={`border shadow-lg rounded-xl px-6 py-4 flex items-center gap-3 ${
+                  isError
+                    ? "bg-red-50 border-red-200 text-red-800"
+                    : isSuccess
+                      ? "bg-card border-border text-foreground"
+                      : "bg-card border-border text-foreground"
+                }`}
+              >
+                {isError ? (
+                  <Icons.XCircle className="w-5 h-5 text-red-500" />
+                ) : isSuccess ? (
+                  <Icons.CheckCircle className="w-5 h-5 text-rahvana-primary" />
+                ) : (
+                  <Icons.Info className="w-5 h-5 text-blue-500" />
+                )}
+                <span>{toast.message}</span>
+              </motion.div>
+            );
+          })}
         </AnimatePresence>
       </div>
     </ToastContext.Provider>
