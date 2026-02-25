@@ -11,6 +11,7 @@ interface ConfirmationModalProps {
   confirmText?: string;
   onConfirm: () => void | Promise<void>;
   loading?: boolean;
+  onCancel?: () => void;
 }
 
 export function ConfirmationModal({
@@ -22,6 +23,7 @@ export function ConfirmationModal({
   confirmText = "Delete",
   onConfirm,
   loading = false,
+  onCancel,
 }: ConfirmationModalProps) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>

@@ -493,10 +493,10 @@ export function SiteHeader({
                     {/* Header */}
                     <div className="px-5 py-4 border-b border-border bg-muted/30">
                       <h3 className="font-bold text-foreground">
-                        {profile?.full_name || 
-                         user?.user_metadata?.full_name || 
-                         user?.user_metadata?.name || 
-                         "Valued User"}
+                        {profile?.full_name ||
+                          user?.user_metadata?.full_name ||
+                          user?.user_metadata?.name ||
+                          "Valued User"}
                       </h3>
                       <p className="text-sm text-muted-foreground">
                         {user?.email || "No email available"}
@@ -908,10 +908,7 @@ export function SiteHeader({
 
             <div className="p-6 border-t bg-slate-50">
               <HydrationSafeButton
-                onClick={() => {
-                  onToggleAuth?.();
-                  setIsMenuOpen(false);
-                }}
+                onClick={() => setConfirmSignOutOpen(true)}
                 className="w-full py-4 rounded-xl bg-[#0d9488] text-white font-bold shadow-lg hover:bg-[#0f766e] transition-all"
               >
                 {isSignedIn ? "Sign Out" : "Login"}
