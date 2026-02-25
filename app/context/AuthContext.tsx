@@ -199,16 +199,31 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const getInitialSession = async () => {
       try {
+        // IMPORTANT: Use getUser() instead of getSession().
+        // getSession() reads tokens from local storage/cookies WITHOUT
+        // validating them against the Supabase server. In production,
+        // this can return a stale or invalid session, causing "Valued User"
+        // and other auth issues. getUser() makes a server round-trip to
+        // validate the token and returns the authoritative user object.
         const {
-          data: { session },
-        } = await supabase.auth.getSession();
-        setUser(session?.user ?? null);
-        setSession(session ?? null);
+          data: { user: validatedUser },
+        } = await supabase.auth.getUser();
 
-        if (session?.user) {
-          fetchProfile(session.user.id);
-          const adminStatus = await fetchUserProfile(session.user.id);
+        if (validatedUser) {
+          // Now get the session for the session object (tokens, etc.)
+          const {
+            data: { session: currentSession },
+          } = await supabase.auth.getSession();
+          setUser(validatedUser);
+          setSession(currentSession);
+          fetchProfile(validatedUser.id);
+          const adminStatus = await fetchUserProfile(validatedUser.id);
           setIsAdmin(adminStatus);
+        } else {
+          setUser(null);
+          setSession(null);
+          setProfile(null);
+          setIsAdmin(false);
         }
       } catch (_error) {
         console.error("Error getting initial session:", _error);
@@ -573,8 +588,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const signOut = async () => {
-    await supabase.auth.signOut();
-    // Eagerly clear state so UI updates immediately
+    // 1. Call the server-side sign-out API route first.
+    //    This uses the server Supabase client which can properly clear
+    //    the httpOnly cookies set by the middleware. It also revokes
+    //    the refresh token globally on the Supabase server.
+    try {
+      await fetch('/api/auth/signout', { method: 'POST' });
+    } catch (err) {
+      console.error('[AuthContext] Server signout failed:', err);
+    }
+
+    // 2. Also sign out on the browser client to clear any local state
+    //    (localStorage tokens, in-memory session, etc.)
+    await supabase.auth.signOut({ scope: 'local' });
+
+    // 3. Eagerly clear React state so UI updates immediately
+    setUser(null);
+    setSession(null);
     setProfile(null);
     setIsAdmin(false);
   };
