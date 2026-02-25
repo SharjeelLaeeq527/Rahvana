@@ -15,7 +15,7 @@ const RoadmapStep = ({
   checkedDocuments,
   onToggleDocument,
 }: RoadmapStepProps) => {
-  const { title, estimated_timeline, phases, documents_checklist } =
+  const { title, estimated_timeline, onsitePhases: phases, documents_checklist } =
     guideData.wizard.roadmap;
 
   const [activePhase, setActivePhase] = useState<number | null>(null);
