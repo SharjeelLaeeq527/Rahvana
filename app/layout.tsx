@@ -8,8 +8,8 @@ import Footer from "./components/layout/Footer";
 import { ToastProvider } from "./components/shared/ToastProvider";
 
 export const metadata: Metadata = {
-  title: "Immigration Assistant",
-  description: "Automate immigration form filling",
+  title: "Rahvana - Immigration Assistant",
+  description: "Rahvana provides step-by-step guidance, smart tools, and expert support to help you reunite with loved ones.",
 };
 
 export default function RootLayout({
