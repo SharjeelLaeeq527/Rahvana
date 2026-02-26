@@ -58,15 +58,33 @@ export default function FeedbackButton({
     setIsSubmitting(true);
 
     try {
-      // If onSubmit callback is provided, use the API
-      if (onSubmit && feedback.category && feedback.description) {
-        // Submit to API - only send first attachment if available
-        await onSubmit(feedback.category, feedback.description, feedback.attachments[0]);
-      } else {
-        throw new Error('No feedback submission handler provided');
+      if (!feedback.category) {
+        showToast("Please select a feedback type.", "error");
+        setIsSubmitting(false);
+        return;
+      }
+      if (!feedback.description) {
+        showToast("Please provide a description.", "error");
+        setIsSubmitting(false);
+        return;
       }
 
-      showToast("Feedback submitted successfully! Thank you for helping us improve.", "success");
+      // If onSubmit callback is provided, use the API
+      if (onSubmit) {
+        // Submit to API - only send first attachment if available
+        await onSubmit(
+          feedback.category,
+          feedback.description,
+          feedback.attachments[0],
+        );
+      } else {
+        throw new Error("Feedback submission is not configured for this page.");
+      }
+
+      showToast(
+        "Feedback submitted successfully! Thank you for helping us improve.",
+        "success",
+      );
       setIsOpen(false);
       setFeedback({
         category: "",
@@ -76,9 +94,11 @@ export default function FeedbackButton({
       });
       setIsSubmitting(false);
     } catch (error) {
-      console.error('Error submitting feedback:', error);
+      console.error("Error submitting feedback:", error);
       setIsSubmitting(false);
-      showToast("Failed to submit feedback. Please try again.", "error");
+      const message =
+        error instanceof Error ? error.message : "Failed to submit feedback.";
+      showToast(message, "error");
     }
   };
 
@@ -146,17 +166,17 @@ export default function FeedbackButton({
                         <SelectValue placeholder="Select a category" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="Incorrect info">
+                        <SelectItem value="incorrect_information">
                           Incorrect information
                         </SelectItem>
-                        <SelectItem value="UI/UX issue">UI/UX issue</SelectItem>
-                        <SelectItem value="Bug">
+                        <SelectItem value="ui_ux_issue">UI/UX issue</SelectItem>
+                        <SelectItem value="bug">
                           Bug / Something broken
                         </SelectItem>
-                        <SelectItem value="Suggestion">
+                        <SelectItem value="suggestion">
                           Suggestion / Improvement
                         </SelectItem>
-                        <SelectItem value="Other">Other</SelectItem>
+                        <SelectItem value="other">Other</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>

@@ -22,9 +22,9 @@ export async function POST(request: Request) {
     const description = formData.get("description") as string;
     const file = formData.get("attachment") as File | null;
 
-    if (!slug || !feedbackType) {
+    if (!slug || !feedbackType || !description) {
       return NextResponse.json(
-        { error: "Missing required fields" },
+        { error: "Missing required fields (slug, feedbackType, description)" },
         { status: 400 }
       );
     }
@@ -41,8 +41,8 @@ export async function POST(request: Request) {
 
     let attachmentUrl = null;
 
-    if (file) {
-      const filePath = `feedback/${guide.id}/${user.id}/${file.name}`;
+    if (file && file.size > 0) {
+      const filePath = `feedback/${guide.id}/${user.id}/${Date.now()}_${file.name}`;
 
       await supabase.storage
         .from("document-vault")
@@ -55,18 +55,21 @@ export async function POST(request: Request) {
       attachmentUrl = data.publicUrl;
     }
 
-    const { error } = await supabase.from("guide_feedback").insert({
+    const { error: insertError } = await supabase.from("guide_feedback").insert({
       user_id: user.id,
       guide_id: guide.id,
-      step_key: stepKey,
+      step_key: stepKey || null,
       feedback_type: feedbackType,
       description,
       attachment_url: attachmentUrl,
     });
 
-    if (error) {
-      console.error(error);
-      return NextResponse.json({ error: "Failed to submit feedback" }, { status: 500 });
+    if (insertError) {
+      console.error("Feedback insert error:", insertError.message, insertError.details, insertError.hint);
+      return NextResponse.json(
+        { error: `Database error: ${insertError.message}` },
+        { status: 500 }
+      );
     }
 
     return NextResponse.json({ message: "Feedback submitted successfully" });

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import WizardHeader from "../../../components/guides/WizardHeader";
 import WizardSidebar from "../../../components/guides/WizardSidebar";
@@ -18,6 +18,10 @@ import guideData from "@/data/polio-guide-data.json";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import FeedbackButton from "@/app/components/FeedbackButton";
 import { useWizardSession } from "@/lib/guides/useWizardSession";
+import { useGuideSave } from "@/lib/guides/useGuideSave";
+import { useGuideUpload } from "@/lib/guides/useGuideUpload";
+import { useGuideFeedback } from "@/lib/guides/useGuideFeedback";
+import { useNavigationGuard } from "@/lib/guides/useNavigationGuard";
 
 const STEP_IDS: WizardStepId[] = [
   "document_need",
@@ -51,6 +55,8 @@ const INFO_PANEL_KEYS: Record<
 const PolioVaccinationGuide = () => {
   const [currentStep, setCurrentStep] = useState(0);
   const [showWhatsThis, setShowWhatsThis] = useState(true);
+  const [isSaved, setIsSaved] = useState(false);
+  const [navigationHandled, setNavigationHandled] = useState(false);
   const [state, setState] = useState<WizardState>({
     documentNeed: null,
     ageCategory: null,
@@ -82,10 +88,79 @@ const PolioVaccinationGuide = () => {
     }),
   );
 
+  const { uploadFile: uploadFileHook } = useGuideUpload();
+  const { submitFeedback: submitFeedbackHook } = useGuideFeedback();
+  const { saveGuide, saving } = useGuideSave();
+
+  // Wrapper functions to match expected signatures
+  const handleUploadFile = async (file: File) => {
+    await uploadFileHook(file, "polio-vaccination-guide", "validation");
+    // Update local state to reflect the upload
+    setState((s) => ({ ...s, uploadedFile: true }));
+    saveWizardStep("validation", {
+      checks: state.validationChecks,
+      uploaded: true,
+    });
+  };
+
+  const handleSubmitFeedback = async (
+    feedbackType: string,
+    description: string,
+    attachment?: File,
+  ) => {
+    await submitFeedbackHook(
+      "polio-vaccination-guide",
+      currentStepId,
+      feedbackType,
+      description,
+      attachment,
+    );
+  };
+
+  const hasProgress = useMemo(() => {
+    return (
+      currentStep > 0 ||
+      !!state.documentNeed ||
+      state.checkedDocuments.length > 0 ||
+      state.validationChecks.length > 0 ||
+      state.uploadedFile
+    );
+  }, [currentStep, state]);
+
   useEffect(() => {
     const dontShow = localStorage.getItem("hide_whats_this_modal_polio");
     if (!dontShow) setShowWhatsThis(true);
   }, []);
+
+  useNavigationGuard(
+    hasProgress && !isSaved,
+    async () => {
+      await saveGuide("polio-vaccination-guide"); // wait save complete
+      setIsSaved(true); // mark as saved
+    },
+    navigationHandled,
+    setNavigationHandled,
+  );
+
+  // Before unload confirmation
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      // Show confirmation if user has made progress beyond the first step
+      if (
+        currentStep > 0 ||
+        (state.documentNeed && state.documentNeed !== "")
+      ) {
+        e.preventDefault();
+        e.returnValue = "";
+        return "";
+      }
+    };
+
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => {
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+    };
+  }, [currentStep, state.documentNeed]);
 
   const currentStepId = STEP_IDS[currentStep];
   const infoPanelKey = INFO_PANEL_KEYS[currentStepId];
@@ -217,9 +292,7 @@ const PolioVaccinationGuide = () => {
             validationChecks={state.validationChecks}
             onToggleCheck={toggleValidationCheck}
             uploadedFile={state.uploadedFile}
-            onUpload={async () => {
-              setState((s) => ({ ...s, uploadedFile: true }));
-            }}
+            onUpload={handleUploadFile}
             data={guideData.wizard.validation}
           />
         );
@@ -235,14 +308,19 @@ const PolioVaccinationGuide = () => {
         title={guideData.wizard.title}
       />
 
-      <div className="flex flex-1 overflow-hidden h-[calc(100vh-56px)]">
-        {/* <WizardSidebar
-          currentStep={currentStep}
+      <div className="flex flex-1 overflow-hidden h-[calc(100vh-56px)] flex-col lg:flex-row">
+        <WizardSidebar
+          currentStep={STEP_IDS.indexOf(currentStepId)}
           steps={STEP_IDS}
-          onStepClick={setCurrentStep}
-        /> */}
+          onStepClick={(stepIndex) => setCurrentStep(stepIndex)}
+          stepLabels={STEP_LABELS}
+          guideSlug="polio-vaccination-guide"
+          onSaveGuide={saveGuide}
+          onGuideSaved={() => setIsSaved(true)}
+          saving={saving}
+        />
 
-        <main className="flex-1 overflow-y-auto p-8 relative">
+        <main className="flex-1 overflow-y-auto p-4 sm:p-8 relative">
           <div
             className="fixed inset-0 pointer-events-none z-0"
             style={{
@@ -252,8 +330,8 @@ const PolioVaccinationGuide = () => {
             }}
           />
 
-          <div className="relative z-10 max-w-3xl mx-auto">
-            <div className="bg-white rounded-2xl border border-gray-200 p-8 shadow-sm min-h-100">
+          <div className="relative z-10 max-w-full md:max-w-3xl mx-auto">
+            <div className="bg-white rounded-2xl border border-gray-200 p-4 sm:p-8 shadow-sm min-h-100">
               <AnimatePresence mode="wait">
                 <motion.div
                   key={currentStepId}
@@ -323,6 +401,7 @@ const PolioVaccinationGuide = () => {
       <FeedbackButton
         steps={Object.values(STEP_LABELS)}
         currentStepName={STEP_LABELS[currentStepId] || ""}
+        onSubmit={handleSubmitFeedback}
       />
     </div>
   );
