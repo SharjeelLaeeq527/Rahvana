@@ -938,7 +938,7 @@ function HomePageContent() {
                         Get personalized advice from immigration specialists who
                         understand your journey.{" "}
                         <span className="inline-block px-3 py-1 rounded-md bg-white/20 font-bold">
-                          Sign up to get the first free consultation.
+                          Sign up now.
                         </span>
                       </p>
                       <button

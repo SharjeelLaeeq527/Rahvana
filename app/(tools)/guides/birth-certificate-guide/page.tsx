@@ -53,7 +53,7 @@ const BirthCertificateGuidePage = () => {
     savedOffice: null,
   });
 
-  const { saveWizardStep, session } = useWizardSession(
+  const { saveWizardStep, session, loading } = useWizardSession(
     "birth-certificate-guide",
     state,
     setState,
@@ -270,6 +270,14 @@ const BirthCertificateGuidePage = () => {
         return null;
     }
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-[#f5f7fa] pt-14">
+        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-teal-600" />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex flex-col bg-[#f5f7fa] pt-14">
