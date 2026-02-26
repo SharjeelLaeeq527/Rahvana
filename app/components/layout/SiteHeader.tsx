@@ -475,7 +475,7 @@ export function SiteHeader({
 
           {/* LOGIN / PROFILE toggle */}
           {isLoading && !user ? (
-            <div className="w-[88px] h-10 rounded-lg bg-muted animate-pulse" />
+            <div className="w-[88px] h-10 rounded-lg bg-primary/10 animate-pulse" />
           ) : isSignedIn ? (
             <div
               className="relative"
