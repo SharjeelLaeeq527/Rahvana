@@ -30,7 +30,7 @@
           "title": "Select Applicant Profile",
           "options": [
             { "id": "adult", "title": "Pakistani Adult (Travel)", "description": "For citizens leaving the country.", "icon": "user", "color": "green" },
-            { "id": "child", "title": "Pakistani Child", "description": "Minors needing the certificate.", "icon": "users", "color": "orange" },
+            { "id": "child", "title": "Pakistani Child", "description": "For travel or school admission.", "icon": "users", "color": "orange" },
             { "id": "foreigner", "title": "Foreigner (Long-term)", "description": "Foreigners staying > 4 weeks in Pakistan.", "icon": "globe", "color": "blue" }
           ]
         }
@@ -217,7 +217,7 @@
         "title": "Your Personalized Roadmap",
         "estimated_timeline": "1 - 2 Days",
         "onlinePhases": [
-          { "id": 1, "title": "Download Online", "duration": "Instant", "description": "Visit the official NIMS website and select 'Other Vaccination – Polio / Yellow Fever'. Enter your CNIC & Passport Number and Issue Date. Verify your information, pay the one-time processing fee online (≈ Rs. 100). Hit Download and save the PDF securely on your phone for easy access." }
+          { "id": 1, "title": "Download Online", "duration": "Instant", "description": "Visit the official NIMS website and select 'Other Vaccination – Polio / Yellow Fever'. Enter your CNIC & Passport Number and Issue Date. Verify your information, pay the one-time processing fee online (≈ Rs 100). Hit Download and save the PDF securely on your phone for easy access. Online download available in selected districts; otherwise, collect physically at EPI/NIMS center" }
         ],
         "onsitePhases": [
           { "id": 1, "title": "Where to Go", "duration": "Preparation", "description": "Authorized government hospitals, District Headquarter Hospitals (DHQs), and District Health Offices (DHOs) provide both the vaccine and NIMS data entry." },
@@ -234,7 +234,7 @@
         "title": "Your Personalized Roadmap",
         "estimated_timeline": "1 - 2 Days",
         "onlinePhases": [
-          { "id": 1, "title": "Download Online", "duration": "Instant", "description": "Visit the official NIMS website and select 'Other Vaccination – Polio / Yellow Fever'. Enter the B-Form / CRC Number and Issue Date. Verify your information, pay the one-time processing fee online (≈ Rs. 100). Hit Download and save the PDF securely on your phone for easy access." }
+          { "id": 1, "title": "Download Online", "duration": "Instant", "description": "Visit the official NIMS website and select 'Other Vaccination – Polio / Yellow Fever'. Enter the B-Form / CRC Number and Issue Date. Verify your information, pay the one-time processing fee online (≈ Rs. 100). Hit Download and save the PDF securely on your phone for easy access. Online download available in selected districts; otherwise, collect physically at EPI/NIMS center" }
         ],
         "onsitePhases": [
           { "id": 1, "title": "Where to Go", "duration": "Preparation", "description": "Authorized government hospitals, District Headquarter Hospitals (DHQs), and District Health Offices (DHOs) provide both the vaccine and NIMS data entry." },
@@ -252,7 +252,7 @@
         "title": "Your Personalized Roadmap",
         "estimated_timeline": "1 - 2 Days",
         "onlinePhases": [
-          { "id": 1, "title": "Download Online", "duration": "Instant", "description": "Visit the official NIMS website and select 'Other Vaccination – Polio / Yellow Fever'. Enter your Passport Number and Issue Date. Verify your information, pay the one-time processing fee online (≈ Rs. 100). Hit Download and save the PDF securely on your phone for easy access." }
+          { "id": 1, "title": "Download Online", "duration": "Instant", "description": "Visit the official NIMS website and select 'Other Vaccination – Polio / Yellow Fever'. Enter your Passport Number and Issue Date. Verify your information, pay the one-time processing fee online (≈ Rs. 100). Hit Download and save the PDF securely on your phone for easy access. Online download available in selected districts; otherwise, collect physically at EPI/NIMS center" }
         ],
         "onsitePhases": [
           { "id": 1, "title": "Where to Go", "duration": "Preparation", "description": "Authorized government hospitals, District Headquarter Hospitals (DHQs), and District Health Offices (DHOs) provide both the vaccine and NIMS data entry." },
@@ -267,12 +267,12 @@
       }
     },
     "validation": {
-      "title": "Document Validation Vault",
+      "title": "Certificate Validation",
       "description": "Ensure all requirements are met to avoid rejection at the vaccination center or travel gates.",
       "upload_section": {
-        "title": "Upload Vaccination Records",
-        "description": "Securely upload your NIMS downloaded certificate for quick access.",
-        "formats": "PDF, JPG, PNG (Max 5MB)"
+        "title": "Upload Your Vaccination Record",
+        "description": "Upload your Polio Vaccination Certificate to Document vault.",
+        "formats": "PDF, JPG, PNG (Max 10MB)"
       },
       "checklist_title": "Final Check",
       "categories": [

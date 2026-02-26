@@ -739,7 +739,7 @@ export const NAV_DATA: Record<string, NavSection> = {
             icon: (
               <FileText className="h-5 w-5 text-green-600 dark:text-green-400" />
             ),
-            title: "Birth Certificate",
+            title: "Birth Certificate Guide",
             description: "NADRA CRC, B-Form, and birth documentation.",
             href: "/guides/birth-certificate-guide",
           },
@@ -756,7 +756,7 @@ export const NAV_DATA: Record<string, NavSection> = {
             icon: (
               <Heart className="h-5 w-5 text-green-600 dark:text-green-400" />
             ),
-            title: "Marriage Certificate",
+            title: "Marriage Certificate Guide",
             description: "Nikahnama and MRC guide.",
             href: "/guides/nikah-nama-guide",
             // badge: "Live",
@@ -840,7 +840,7 @@ export const NAV_DATA: Record<string, NavSection> = {
             icon: (
               <Syringe className="h-5 w-5 text-teal-600 dark:text-teal-400" />
             ),
-            title: "Vaccination Guide",
+            title: "Polio Vaccination Guide",
             description: "CDC-required vaccinations and polio certificate.",
             href: "/guides/polio-vaccination-guide",
           },
@@ -947,9 +947,8 @@ export const NAV_DATA: Record<string, NavSection> = {
             ),
             title: "PCC Filing Service — Sindh",
             description: "Done-for-you police certificate filing for Sindh.",
-            href: "#",
+            href: "/guides/police-verification",
             // badge: "Soon",
-            disabled: true,
           },
           {
             icon: (

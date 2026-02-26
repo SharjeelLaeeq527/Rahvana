@@ -37,13 +37,13 @@ import {
 
 type GuideCategory =
   | "Pakistan Docs"
-  | "Embassy Logistics"
-  | "Arrival & Travel"
-  | "Financial & Sponsorship"
+  // | "Embassy Logistics"
+  // | "Arrival & Travel"
+  // | "Financial & Sponsorship"
   | "Medical & Exam"
-  | "Relationship Evidence"
-  | "Education & Process"
-  | "Visa Strategy";
+  // | "Relationship Evidence"
+  // | "Education & Process"
+  // | "Visa Strategy";
 
 interface Guide {
   id: string;
@@ -292,13 +292,13 @@ const GUIDES: Guide[] = [
 const CATEGORIES: ("All" | GuideCategory)[] = [
   "All",
   "Pakistan Docs",
-  "Embassy Logistics",
-  "Arrival & Travel",
-  "Financial & Sponsorship",
+  // "Embassy Logistics",
+  // "Arrival & Travel",
+  // "Financial & Sponsorship",
   "Medical & Exam",
-  "Relationship Evidence",
-  "Education & Process",
-  "Visa Strategy",
+  // "Relationship Evidence",
+  // "Education & Process",
+  // "Visa Strategy",
 ];
 
 // --- Components ---
@@ -433,7 +433,7 @@ export default function GuidesPage() {
         </div>
 
         {/* Categories */}
-        <div ref={containerRef} className="relative w-full mb-8">
+        <div ref={containerRef} className="relative w-full mb-8 flex justify-center">
           {/* Hidden container for measuring */}
           <div
             ref={measureRef}
@@ -539,26 +539,26 @@ const CATEGORY_STYLES: Record<
     borderGradient:
       "from-green-400 to-green-300 dark:from-green-400 dark:to-green-300",
   },
-  "Embassy Logistics": {
-    iconBox: "bg-blue-600 text-white border-transparent dark:bg-blue-500",
-    innerBox: "bg-white/20",
-    link: "text-blue-600 dark:text-blue-400",
-    borderGradient:
-      "from-blue-400 to-blue-300 dark:from-blue-400 dark:to-blue-300",
-  },
-  "Arrival & Travel": {
-    iconBox: "bg-sky-600 text-white border-transparent dark:bg-sky-500",
-    innerBox: "bg-white/20",
-    link: "text-sky-600 dark:text-sky-400",
-    borderGradient: "from-sky-400 to-sky-300 dark:from-sky-400 dark:to-sky-300",
-  },
-  "Financial & Sponsorship": {
-    iconBox: "bg-emerald-600 text-white border-transparent dark:bg-emerald-500",
-    innerBox: "bg-white/20",
-    link: "text-emerald-600 dark:text-emerald-400",
-    borderGradient:
-      "from-emerald-400 to-emerald-300 dark:from-emerald-400 dark:to-emerald-300",
-  },
+  // "Embassy Logistics": {
+  //   iconBox: "bg-blue-600 text-white border-transparent dark:bg-blue-500",
+  //   innerBox: "bg-white/20",
+  //   link: "text-blue-600 dark:text-blue-400",
+  //   borderGradient:
+  //     "from-blue-400 to-blue-300 dark:from-blue-400 dark:to-blue-300",
+  // },
+  // "Arrival & Travel": {
+  //   iconBox: "bg-sky-600 text-white border-transparent dark:bg-sky-500",
+  //   innerBox: "bg-white/20",
+  //   link: "text-sky-600 dark:text-sky-400",
+  //   borderGradient: "from-sky-400 to-sky-300 dark:from-sky-400 dark:to-sky-300",
+  // },
+  // "Financial & Sponsorship": {
+  //   iconBox: "bg-emerald-600 text-white border-transparent dark:bg-emerald-500",
+  //   innerBox: "bg-white/20",
+  //   link: "text-emerald-600 dark:text-emerald-400",
+  //   borderGradient:
+  //     "from-emerald-400 to-emerald-300 dark:from-emerald-400 dark:to-emerald-300",
+  // },
   "Medical & Exam": {
     iconBox: "bg-teal-600 text-white border-transparent dark:bg-teal-500",
     innerBox: "bg-white/20",
@@ -566,27 +566,27 @@ const CATEGORY_STYLES: Record<
     borderGradient:
       "from-teal-400 to-teal-300 dark:from-teal-400 dark:to-teal-300",
   },
-  "Relationship Evidence": {
-    iconBox: "bg-rose-600 text-white border-transparent dark:bg-rose-500",
-    innerBox: "bg-white/20",
-    link: "text-rose-600 dark:text-rose-400",
-    borderGradient:
-      "from-rose-400 to-rose-300 dark:from-rose-400 dark:to-rose-300",
-  },
-  "Visa Strategy": {
-    iconBox: "bg-violet-600 text-white border-transparent dark:bg-violet-500",
-    innerBox: "bg-white/20",
-    link: "text-violet-600 dark:text-violet-400",
-    borderGradient:
-      "from-violet-400 to-violet-300 dark:from-violet-400 dark:to-violet-300",
-  },
-  "Education & Process": {
-    iconBox: "bg-amber-600 text-white border-transparent dark:bg-amber-500",
-    innerBox: "bg-white/20",
-    link: "text-amber-600 dark:text-amber-400",
-    borderGradient:
-      "from-amber-400 to-amber-300 dark:from-amber-400 dark:to-amber-300",
-  },
+  // "Relationship Evidence": {
+  //   iconBox: "bg-rose-600 text-white border-transparent dark:bg-rose-500",
+  //   innerBox: "bg-white/20",
+  //   link: "text-rose-600 dark:text-rose-400",
+  //   borderGradient:
+  //     "from-rose-400 to-rose-300 dark:from-rose-400 dark:to-rose-300",
+  // },
+  // "Visa Strategy": {
+  //   iconBox: "bg-violet-600 text-white border-transparent dark:bg-violet-500",
+  //   innerBox: "bg-white/20",
+  //   link: "text-violet-600 dark:text-violet-400",
+  //   borderGradient:
+  //     "from-violet-400 to-violet-300 dark:from-violet-400 dark:to-violet-300",
+  // },
+  // "Education & Process": {
+  //   iconBox: "bg-amber-600 text-white border-transparent dark:bg-amber-500",
+  //   innerBox: "bg-white/20",
+  //   link: "text-amber-600 dark:text-amber-400",
+  //   borderGradient:
+  //     "from-amber-400 to-amber-300 dark:from-amber-400 dark:to-amber-300",
+  // },
 };
 
 function GuideCard({ guide, index }: { guide: Guide; index: number }) {

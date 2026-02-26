@@ -10,7 +10,6 @@ import {
 import { type WizardStepId } from "@/types/guide-wizard";
 import { ConfirmationModal } from "../shared/ConfirmationModal";
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 
 const STEP_ICONS: Record<string, React.ElementType> = {
   document_need: ClipboardList,
@@ -222,6 +221,7 @@ const WizardSidebar = ({
         description="You've started this guide. Do you want to save it to My Guides?"
         cancelText="Don't Save"
         confirmText="Save"
+        confirmVariant="primary"
         onConfirm={handleConfirmSave}
         loading={saving}
       />
