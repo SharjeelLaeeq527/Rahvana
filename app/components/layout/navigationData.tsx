@@ -922,7 +922,7 @@ export const NAV_DATA: Record<string, NavSection> = {
               <MessageSquare className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
             ),
             title: "Book a Consultation",
-            description: "Book a call — your first consult is free.",
+            description: "Book a call with an expert.",
             href: "/book-consultation",
           },
           {
