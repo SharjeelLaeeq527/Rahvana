@@ -9,6 +9,8 @@ import {
 } from "lucide-react";
 import { type WizardStepId } from "@/types/guide-wizard";
 import { ConfirmationModal } from "../shared/ConfirmationModal";
+import { AuthRequiredModal } from "../shared/AuthRequiredModal";
+import { useAuth } from "@/app/context/AuthContext";
 import { useState } from "react";
 
 const STEP_ICONS: Record<string, React.ElementType> = {
@@ -28,6 +30,7 @@ interface WizardSidebarProps {
   onSaveGuide: (slug: string) => Promise<void>;
   onGuideSaved?: () => void;
   saving: boolean;
+  session: any;
 }
 
 const DEFAULT_LABELS: Record<string, string> = {
@@ -55,14 +58,21 @@ const WizardSidebar = ({
   onSaveGuide,
   onGuideSaved,
   saving,
+  session,
 }: WizardSidebarProps) => {
   const labels = stepLabels || DEFAULT_LABELS;
   const progress = currentStep + 1;
   const total = steps.length;
   const progressPercent = (progress / total) * 100;
   const [showConfirmation, setShowConfirmation] = useState(false);
+  const [showAuthModal, setShowAuthModal] = useState(false);
+  const { isAuthenticated } = useAuth();
 
   const handleSaveClick = () => {
+    if (!isAuthenticated) {
+      setShowAuthModal(true);
+      return;
+    }
     setShowConfirmation(true);
   };
 
@@ -79,22 +89,27 @@ const WizardSidebar = ({
 
   return (
     <>
-      <aside className="h-full flex flex-col bg-white border-r border-slate-200 rounded-xl mx-4 my-3" style={{ height: '660px', width: '320px' }}>
+      <aside
+        className="h-full flex flex-col bg-white border-r border-slate-200 rounded-xl mx-4 my-3"
+        style={{ height: "660px", width: "320px" }}
+      >
         {/* Add to Active Wizards Button */}
-        <div className="p-4 border-b border-slate-200 rounded-t-xl">
-          <motion.button
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-            onClick={handleSaveClick}
-            disabled={saving}
-            className="w-full flex items-center justify-center gap-2
-                       px-4 py-2.5 rounded-lg font-medium transition-all
-                       bg-primary text-white hover:bg-primary/80 disabled:opacity-60 disabled:cursor-not-allowed"
-          >
-            <Bookmark className="w-5 h-5" />
-            {saving ? "Saving..." : "Add to My Guides"}
-          </motion.button>
-        </div>
+{(!session || !session.saved) && (
+  <div className="p-4 border-b border-slate-200 rounded-t-xl">
+    <motion.button
+      whileHover={{ scale: 1.02 }}
+      whileTap={{ scale: 0.98 }}
+      onClick={handleSaveClick}
+      disabled={saving || session?.saved}
+      className="w-full flex items-center justify-center gap-2
+                 px-4 py-2.5 rounded-lg font-medium transition-all
+                 bg-primary text-white hover:bg-primary/80 disabled:opacity-60 disabled:cursor-not-allowed"
+    >
+      <Bookmark className="w-5 h-5" />
+      {saving ? "Saving..." : "Add to My Guides"}
+    </motion.button>
+  </div>
+)}
 
         {/* Steps */}
         <nav className="flex-1 overflow-y-auto p-4 custom-scrollbar">
@@ -182,9 +197,7 @@ const WizardSidebar = ({
                   <div className="flex justify-start pl-6 py-0.5">
                     <div
                       className={`w-0.5 h-4 ${
-                        status === "completed"
-                          ? "bg-primary"
-                          : "bg-slate-200"
+                        status === "completed" ? "bg-primary" : "bg-slate-200"
                       }`}
                     />
                   </div>
@@ -224,6 +237,12 @@ const WizardSidebar = ({
         confirmVariant="primary"
         onConfirm={handleConfirmSave}
         loading={saving}
+      />
+
+      <AuthRequiredModal
+        open={showAuthModal}
+        onClose={() => setShowAuthModal(false)}
+        redirectTo="/"
       />
     </>
   );
