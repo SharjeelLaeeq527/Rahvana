@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useRef } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import WizardHeader from "../../../components/guides/WizardHeader";
 import WizardSidebar from "../../../components/guides/WizardSidebar";
@@ -57,7 +57,9 @@ const PassportGuide = () => {
     savedOffice: null,
   });
 
-  const { saveWizardStep } = useWizardSession(
+    const hasInitializedModal = useRef(false);
+
+  const { saveWizardStep, session, loading } = useWizardSession(
     "passport-guide",
     state,
     setState,
@@ -118,11 +120,25 @@ const PassportGuide = () => {
   }, [currentStep, state]);
 
   useEffect(() => {
-    const dontShow = localStorage.getItem("hide_whats_this_modal");
-    if (!dontShow) {
+    if (!session) return;
+
+    // Only run once per page load
+    if (hasInitializedModal.current) return;
+
+    hasInitializedModal.current = true;
+
+    if (!session.hide_intro_modal) {
       setShowWhatsThis(true);
+    } else {
+      setShowWhatsThis(false);
     }
-  }, []);
+  }, [session]);
+
+  useEffect(() => {
+    if (session?.saved) {
+      setIsSaved(true);
+    }
+  }, [session]);
 
   useNavigationGuard(
     hasProgress && !isSaved,
@@ -271,6 +287,14 @@ const PassportGuide = () => {
     }
   };
 
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-[#f5f7fa] pt-14">
+        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-teal-600" />
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen flex flex-col bg-[#f5f7fa] pt-14">
       <WizardHeader
@@ -288,6 +312,7 @@ const PassportGuide = () => {
           onSaveGuide={saveGuide}
           onGuideSaved={() => setIsSaved(true)}
           saving={saving}
+          session={session}
         />
 
         <main className="flex-1 overflow-y-auto p-4 sm:p-8 relative">
@@ -358,6 +383,7 @@ const PassportGuide = () => {
         onClose={() => setShowWhatsThis(false)}
         data={guideData.wizard.whats_this}
         documentLabel="Pakistani Passport"
+        guideSlug="passport-guide"
       />
       <FeedbackButton
         steps={Object.values(STEP_LABELS)}

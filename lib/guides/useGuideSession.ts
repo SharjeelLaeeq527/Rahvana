@@ -1,6 +1,8 @@
 import { useState, useEffect, useCallback } from "react";
 
 export interface GuideSession {
+  hide_intro_modal: boolean;
+  saved: boolean;
   id: string;
   status: 'not_started' | 'in_progress' | 'completed' | 'abandoned';
   progress_percent: number;
