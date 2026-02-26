@@ -70,7 +70,7 @@ const CnicGuide = () => {
     savedOffice: null,
   });
 
-  const { saveWizardStep } = useWizardSession(
+  const { saveWizardStep, session } = useWizardSession(
     "cnic-guide",
     state,
     setState,
@@ -335,6 +335,7 @@ const CnicGuide = () => {
           onSaveGuide={saveGuide}
           onGuideSaved={() => setIsSaved(true)}
           saving={saving}
+          session={session}
         />
 
         <main className="flex-1 overflow-y-auto p-4 sm:p-8 relative">
