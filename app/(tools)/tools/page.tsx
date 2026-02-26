@@ -315,7 +315,7 @@ export default function ToolsPage() {
         </div>
 
         {/* Categories */}
-        <div ref={containerRef} className="relative w-full mb-8">
+        <div ref={containerRef} className="relative w-full mb-8 flex justify-center">
           {/* Hidden container for measuring */}
           <div
             ref={measureRef}
