@@ -478,8 +478,15 @@ export function SiteHeader({
               onMouseEnter={() => handleMenuEnter("profile")}
               onMouseLeave={handleMenuLeave}
             >
-              <HydrationSafeButton className="flex items-center justify-center w-10 h-10 rounded-full bg-primary/10 border-2 border-primary/20 text-primary hover:bg-primary/20 transition-all shadow-sm">
-                <UserIcon className="h-5 w-5" />
+              <HydrationSafeButton className="flex items-center justify-center w-10 h-10 rounded-full bg-primary/10 border-2 border-primary/20 text-primary hover:bg-primary/20 transition-all shadow-sm font-semibold text-lg">
+                {(
+                  profile?.full_name ||
+                  user?.user_metadata?.full_name ||
+                  user?.user_metadata?.name ||
+                  "U"
+                )
+                  .charAt(0)
+                  .toUpperCase()}
               </HydrationSafeButton>
 
               <AnimatePresence>
