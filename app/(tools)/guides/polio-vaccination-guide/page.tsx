@@ -70,7 +70,7 @@ const PolioVaccinationGuide = () => {
     savedOffice: null,
   });
 
-  const { saveWizardStep } = useWizardSession(
+  const { saveWizardStep, session } = useWizardSession(
     "polio-vaccination-guide",
     state,
     setState,
@@ -318,6 +318,7 @@ const PolioVaccinationGuide = () => {
           onSaveGuide={saveGuide}
           onGuideSaved={() => setIsSaved(true)}
           saving={saving}
+          session={session}
         />
 
         <main className="flex-1 overflow-y-auto p-4 sm:p-8 relative">
@@ -363,23 +364,28 @@ const PolioVaccinationGuide = () => {
                 Step {currentStep + 1} of {STEP_IDS.length}
               </span>
 
-              {currentStep < STEP_IDS.length - 1 && (
-                <motion.button
-                  whileHover={{ scale: 1.03 }}
-                  whileTap={{ scale: 0.97 }}
-                  onClick={goNext}
-                  disabled={!canGoNext()}
-                  className={`flex items-center gap-1.5 px-5 py-2.5 rounded-xl font-semibold text-sm cursor-pointer
+              {currentStep < STEP_IDS.length - 1 &&
+                !(
+                  currentStepId === "document_need" &&
+                  guideData.wizard.document_need.questions &&
+                  guideData.wizard.document_need.questions.length > 1
+                ) && (
+                  <motion.button
+                    whileHover={{ scale: 1.03 }}
+                    whileTap={{ scale: 0.97 }}
+                    onClick={goNext}
+                    disabled={!canGoNext()}
+                    className={`flex items-center gap-1.5 px-5 py-2.5 rounded-xl font-semibold text-sm cursor-pointer
                     ${
                       canGoNext()
                         ? "bg-linear-to-br from-teal-600 to-teal-500 text-white shadow-md"
                         : "bg-gray-200 text-gray-400 cursor-not-allowed"
                     }
                   `}
-                >
-                  Continue <ArrowRight className="w-4 h-4" />
-                </motion.button>
-              )}
+                  >
+                    Continue <ArrowRight className="w-4 h-4" />
+                  </motion.button>
+                )}
             </div>
           </div>
         </main>

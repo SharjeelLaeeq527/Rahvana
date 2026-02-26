@@ -150,7 +150,7 @@ export function SiteHeader({
   const [activeMenu, setActiveMenu] = useState<string | null>(null);
   const menuTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  const { profile } = useAuth();
+  const { profile, isLoading } = useAuth();
 
   const handleMenuEnter = (menu: string) => {
     if (menuTimeoutRef.current) clearTimeout(menuTimeoutRef.current);
@@ -460,26 +460,37 @@ export function SiteHeader({
             <Moon className="absolute h-5 w-5 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100 top-2 left-2" />
           </HydrationSafeButton> */}
 
-          {isSignedIn && (
-            <HydrationSafeButton
-              variant="outline"
-              size="icon"
-              aria-label="Search"
-              className="bg-transparent hover:bg-primary/10 p-2 rounded-md text-muted-foreground hover:text-primary"
-            >
-              <Bell className="h-5 w-5" aria-hidden="true" />
-            </HydrationSafeButton>
-          )}
+          {isLoading && !user
+            ? null
+            : isSignedIn && (
+                <HydrationSafeButton
+                  variant="outline"
+                  size="icon"
+                  aria-label="Search"
+                  className="bg-transparent hover:bg-primary/10 p-2 rounded-md text-muted-foreground hover:text-primary"
+                >
+                  <Bell className="h-5 w-5" aria-hidden="true" />
+                </HydrationSafeButton>
+              )}
 
           {/* LOGIN / PROFILE toggle */}
-          {isSignedIn ? (
+          {isLoading && !user ? (
+            <div className="w-[88px] h-10 rounded-lg bg-muted animate-pulse" />
+          ) : isSignedIn ? (
             <div
               className="relative"
               onMouseEnter={() => handleMenuEnter("profile")}
               onMouseLeave={handleMenuLeave}
             >
-              <HydrationSafeButton className="flex items-center justify-center w-10 h-10 rounded-full bg-primary/10 border-2 border-primary/20 text-primary hover:bg-primary/20 transition-all shadow-sm">
-                <UserIcon className="h-5 w-5" />
+              <HydrationSafeButton className="flex items-center justify-center w-10 h-10 rounded-full bg-primary/10 border-2 border-primary/20 text-primary hover:bg-primary/20 transition-all shadow-sm font-semibold text-lg">
+                {(
+                  profile?.full_name ||
+                  user?.user_metadata?.full_name ||
+                  user?.user_metadata?.name ||
+                  "U"
+                )
+                  .charAt(0)
+                  .toUpperCase()}
               </HydrationSafeButton>
 
               <AnimatePresence>
@@ -907,12 +918,23 @@ export function SiteHeader({
             </div>
 
             <div className="p-6 border-t bg-slate-50">
-              <HydrationSafeButton
-                onClick={() => setConfirmSignOutOpen(true)}
-                className="w-full py-4 rounded-xl bg-[#0d9488] text-white font-bold shadow-lg hover:bg-[#0f766e] transition-all"
-              >
-                {isSignedIn ? "Sign Out" : "Login"}
-              </HydrationSafeButton>
+              {isLoading && !user ? (
+                <div className="w-full h-[56px] rounded-xl bg-primary/30 animate-pulse" />
+              ) : (
+                <HydrationSafeButton
+                  onClick={() => {
+                    if (isSignedIn) {
+                      setConfirmSignOutOpen(true);
+                    } else {
+                      onToggleAuth?.();
+                      setIsMenuOpen(false);
+                    }
+                  }}
+                  className="w-full py-4 rounded-xl bg-[#0d9488] text-white font-bold shadow-lg hover:bg-[#0f766e] transition-all"
+                >
+                  {isSignedIn ? "Sign Out" : "Login"}
+                </HydrationSafeButton>
+              )}
             </div>
           </div>
         </div>
