@@ -186,7 +186,8 @@ const NikahNamaGuidePage = () => {
       }));
       // Save progress to backend
       saveWizardStep("document_need", {
-        ...(typeof state.documentNeed === "object" && state.documentNeed !== null
+        ...(typeof state.documentNeed === "object" &&
+        state.documentNeed !== null
           ? state.documentNeed
           : {}),
         [questionId]: id,
@@ -256,15 +257,14 @@ const NikahNamaGuidePage = () => {
           selectedCategory = Object.values(docNeedRaw).join(","); // or match specific question
         }
 
-        const filteredChecklist = guideData.wizard.roadmap.documents_checklist.filter(
-          (doc: any) => {
+        const filteredChecklist =
+          guideData.wizard.roadmap.documents_checklist.filter((doc: any) => {
             if (!doc.category) return true;
             if (selectedCategory) {
               return selectedCategory.includes(doc.category);
             }
             return false;
-          }
-        );
+          });
 
         const roadmapWithFilteredDocs = {
           ...guideData.wizard.roadmap,

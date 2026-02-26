@@ -287,27 +287,31 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           setProfile(prev => prev || {
             full_name: preliminaryName,
             email: validatedUser.email || "",
-            role: "user"
-          });
+            role: "user",});
+          // ── STEP 5: Unlock UI Immediately ────────────────────────────
+          // As soon as we have the preliminary profile, stop the loading skeleton!
+          // We don't want to wait for the DB trips to finish just to show the header.
+          setIsLoading(false);
 
-          // Now fetch the real profile from the DB for updates/extra fields
-          await fetchProfile(validatedUser.id, {
+          // Now fetch the real profile from the DB for updates/extra fields (in background)
+          fetchProfile(validatedUser.id, {
             full_name: validatedUser.user_metadata?.full_name,
             name: validatedUser.user_metadata?.name,
             email: validatedUser.email,
           });
 
-          const adminStatus = await fetchUserProfile(validatedUser.id);
-          setIsAdmin(adminStatus);
+          fetchUserProfile(validatedUser.id).then((adminStatus) => {
+            setIsAdmin(adminStatus);
+          });
         } else {
           setUser(null);
           setSession(null);
           setProfile(null);
           setIsAdmin(false);
+          setIsLoading(false);
         }
       } catch (_error) {
         console.error("Error getting initial session:", _error);
-      } finally {
         setIsLoading(false);
       }
     };
