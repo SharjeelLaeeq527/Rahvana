@@ -107,6 +107,7 @@ const RoadmapStep = ({
                 setHasClickedAnyPhase(true);
               }}
               hasClickedAnyPhase={hasClickedAnyPhase}
+              hasOnlinePhases={hasOnlinePhases}
             />
           </div>
 
@@ -124,6 +125,7 @@ const RoadmapStep = ({
                 setHasClickedAnyPhase(true);
               }}
               hasClickedAnyPhase={hasClickedAnyPhase}
+              hasOnlinePhases={hasOnlinePhases}
             />
           </div>
         </div>
@@ -305,6 +307,7 @@ interface TimelineProps {
   type: string;
   onSelectPhase: (phase: Phase) => void;
   hasClickedAnyPhase: boolean;
+  hasOnlinePhases?: boolean;
 }
 
 const TimelinePhases = ({
@@ -312,6 +315,7 @@ const TimelinePhases = ({
   type,
   onSelectPhase,
   hasClickedAnyPhase,
+  hasOnlinePhases = true,
 }: TimelineProps) => {
   const [activeId, setActiveId] = useState<number | null>(null);
 
@@ -329,9 +333,32 @@ const TimelinePhases = ({
         >
           {type}
         </h4>
-        <span className="text-xs text-slate-500 bg-slate-100 px-2 py-1 rounded-full">
-          Click to view details
-        </span>
+        {hasOnlinePhases ? (
+          <div className="flex items-center gap-1 bg-slate-100/80 p-1 rounded-full border border-slate-200/60 shadow-inner">
+            <span
+              className={`px-3 py-1 text-[0.7rem] font-bold rounded-full transition-all duration-300 uppercase tracking-wider ${
+                type === "Onsite Application"
+                  ? "bg-white text-[#0d7377] shadow-sm ring-1 ring-slate-200/50"
+                  : "text-slate-400 hover:text-slate-600"
+              }`}
+            >
+              Onsite
+            </span>
+            <span
+              className={`px-3 py-1 text-[0.7rem] font-bold rounded-full transition-all duration-300 uppercase tracking-wider ${
+                type === "Online Application"
+                  ? "bg-white text-[#32e0c4] shadow-sm ring-1 ring-slate-200/50"
+                  : "text-slate-400 hover:text-slate-600"
+              }`}
+            >
+              Online
+            </span>
+          </div>
+        ) : (
+          <span className="text-xs text-slate-500 bg-slate-100 px-2 py-1 rounded-full">
+            Click to view details
+          </span>
+        )}
       </div>
 
       <div className="flex justify-between items-stretch gap-4 sm:gap-0 mt-4">

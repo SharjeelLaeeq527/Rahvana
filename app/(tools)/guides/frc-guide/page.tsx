@@ -129,7 +129,7 @@ const FrcGuide = () => {
       setIsSaved(true); // mark as saved
     },
     navigationHandled,
-    setNavigationHandled
+    setNavigationHandled,
   );
 
   // Before unload confirmation

@@ -21,11 +21,7 @@ import { useGuideFeedback } from "@/lib/guides/useGuideFeedback";
 import { useGuideSave } from "@/lib/guides/useGuideSave";
 import { useNavigationGuard } from "@/lib/guides/useNavigationGuard";
 
-const STEP_IDS: WizardStepId[] = [
-  "document_need",
-  "roadmap",
-  "validation",
-];
+const STEP_IDS: WizardStepId[] = ["document_need", "roadmap", "validation"];
 
 const STEP_LABELS: Record<string, string> = {
   document_need: "Application Type",
@@ -78,9 +74,8 @@ const PassportGuide = () => {
       checkedDocuments: stepsData.roadmap || prev.checkedDocuments,
       validationChecks: stepsData.validation?.checks || prev.validationChecks,
       uploadedFile: stepsData.validation?.uploaded || prev.uploadedFile,
-            savedOffice: prev.savedOffice, // Not used in Passport guide
-
-    })
+      savedOffice: prev.savedOffice, // Not used in Passport guide
+    }),
   );
 
   const { uploadFile: uploadFileHook } = useGuideUpload();
@@ -89,17 +84,27 @@ const PassportGuide = () => {
 
   // Wrapper functions to match expected signatures
   const handleUploadFile = async (file: File) => {
-    await uploadFileHook(file, 'passport-guide', 'validation');
+    await uploadFileHook(file, "passport-guide", "validation");
     // Update local state to reflect the upload
-    setState(s => ({ ...s, uploadedFile: true }));
+    setState((s) => ({ ...s, uploadedFile: true }));
     saveWizardStep("validation", {
       checks: state.validationChecks,
       uploaded: true,
     });
   };
 
-  const handleSubmitFeedback = async (feedbackType: string, description: string, attachment?: File) => {
-    await submitFeedbackHook('passport-guide', STEP_IDS[currentStep], feedbackType, description, attachment);
+  const handleSubmitFeedback = async (
+    feedbackType: string,
+    description: string,
+    attachment?: File,
+  ) => {
+    await submitFeedbackHook(
+      "passport-guide",
+      STEP_IDS[currentStep],
+      feedbackType,
+      description,
+      attachment,
+    );
   };
 
   const hasProgress = useMemo(() => {
@@ -119,7 +124,6 @@ const PassportGuide = () => {
     }
   }, []);
 
-
   useNavigationGuard(
     hasProgress && !isSaved,
     async () => {
@@ -127,23 +131,26 @@ const PassportGuide = () => {
       setIsSaved(true); // mark as saved
     },
     navigationHandled,
-    setNavigationHandled
+    setNavigationHandled,
   );
 
   // Before unload confirmation
   useEffect(() => {
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
       // Show confirmation if user has made progress beyond the first step
-      if (currentStep > 0 || (state.documentNeed && state.documentNeed !== "")) {
+      if (
+        currentStep > 0 ||
+        (state.documentNeed && state.documentNeed !== "")
+      ) {
         e.preventDefault();
-        e.returnValue = '';
-        return '';
+        e.returnValue = "";
+        return "";
       }
     };
 
-    window.addEventListener('beforeunload', handleBeforeUnload);
+    window.addEventListener("beforeunload", handleBeforeUnload);
     return () => {
-      window.removeEventListener('beforeunload', handleBeforeUnload);
+      window.removeEventListener("beforeunload", handleBeforeUnload);
     };
   }, [currentStep, state.documentNeed]);
 
@@ -155,16 +162,19 @@ const PassportGuide = () => {
   useEffect(() => {
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
       // Show confirmation if user has made progress beyond the first step
-      if (currentStep > 0 || (state.documentNeed && state.documentNeed !== "")) {
+      if (
+        currentStep > 0 ||
+        (state.documentNeed && state.documentNeed !== "")
+      ) {
         e.preventDefault();
-        e.returnValue = '';
-        return '';
+        e.returnValue = "";
+        return "";
       }
     };
 
-    window.addEventListener('beforeunload', handleBeforeUnload);
+    window.addEventListener("beforeunload", handleBeforeUnload);
     return () => {
-      window.removeEventListener('beforeunload', handleBeforeUnload);
+      window.removeEventListener("beforeunload", handleBeforeUnload);
     };
   }, [currentStep, state.documentNeed]);
 
@@ -252,8 +262,7 @@ const PassportGuide = () => {
             validationChecks={state.validationChecks}
             onToggleCheck={toggleValidationCheck}
             uploadedFile={state.uploadedFile}
-                        onUpload={handleUploadFile}
-
+            onUpload={handleUploadFile}
             data={guideData.wizard.validation}
           />
         );

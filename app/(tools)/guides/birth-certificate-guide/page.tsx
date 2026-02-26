@@ -21,11 +21,7 @@ import { useGuideSave } from "@/lib/guides/useGuideSave";
 import { useGuideFeedback } from "@/lib/guides/useGuideFeedback";
 import { useNavigationGuard } from "@/lib/guides/useNavigationGuard";
 
-const STEP_IDS: WizardStepId[] = [
-  "document_need",
-  "roadmap",
-  "validation",
-];
+const STEP_IDS: WizardStepId[] = ["document_need", "roadmap", "validation"];
 
 const STEP_LABELS: Record<string, string> = {
   document_need: "Application Type",
@@ -198,7 +194,8 @@ const BirthCertificateGuidePage = () => {
       }));
       // Save progress to backend
       saveWizardStep("document_need", {
-        ...(typeof state.documentNeed === "object" && state.documentNeed !== null
+        ...(typeof state.documentNeed === "object" &&
+        state.documentNeed !== null
           ? state.documentNeed
           : {}),
         [questionId]: id,
@@ -339,7 +336,8 @@ const BirthCertificateGuidePage = () => {
               {currentStep < STEP_IDS.length - 1 &&
                 !(
                   currentStepId === "document_need" &&
-                  guideData.wizard.document_need.questions
+                  guideData.wizard.document_need.questions &&
+                  guideData.wizard.document_need.questions.length > 1
                 ) && (
                   <motion.button
                     whileHover={{ scale: 1.03 }}

@@ -29,8 +29,7 @@
           "options": [
             { "id": "adult", "title": "Standard Adult", "description": "Has parents or siblings already registered with NADRA.", "icon": "adult", "color": "green" },
             { "id": "special", "title": "Special Case / Orphan", "description": "No blood relative with a NADRA record available.", "icon": "special", "color": "orange" }
-          ],
-          "note": "<strong>Note:</strong> Women, men, and transgender individuals fall under the standard category as long as they have verifiable blood relatives."
+          ]
         },
         {
           "id": "applicationType",

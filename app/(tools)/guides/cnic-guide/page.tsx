@@ -383,7 +383,8 @@ const CnicGuide = () => {
               {currentStep < STEP_IDS.length - 1 &&
                 !(
                   currentStepId === "document_need" &&
-                  guideData.wizard.document_need.questions
+                  guideData.wizard.document_need.questions &&
+                  guideData.wizard.document_need.questions.length > 1
                 ) && (
                   <motion.button
                     whileHover={{ scale: 1.03 }}
@@ -429,3 +430,5 @@ const CnicGuide = () => {
 };
 
 export default CnicGuide;
+
+// "note": "<strong>Note:</strong> Women, men, and transgender individuals fall under the standard category as long as they have verifiable blood relatives."
