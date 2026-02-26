@@ -53,7 +53,7 @@ const NikahNamaGuidePage = () => {
     savedOffice: null,
   });
 
-  const { saveWizardStep } = useWizardSession(
+  const { saveWizardStep, session, loading } = useWizardSession(
     "nikah-nama-guide",
     state,
     setState,
@@ -293,6 +293,14 @@ const NikahNamaGuidePage = () => {
     }
   };
 
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-[#f5f7fa] pt-14">
+        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-teal-600" />
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen flex flex-col bg-[#f5f7fa] pt-14">
       <WizardHeader
@@ -310,6 +318,7 @@ const NikahNamaGuidePage = () => {
           onSaveGuide={saveGuide}
           onGuideSaved={() => setIsSaved(true)}
           saving={saving}
+          session={session}
         />
 
         <main className="flex-1 overflow-y-auto p-4 sm:p-8 relative">

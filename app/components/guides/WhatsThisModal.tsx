@@ -8,6 +8,8 @@ import {
   FolderCheck,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useHideIntroModal } from "@/lib/guides/useHideIntro";
+import { useAuth } from "@/app/context/AuthContext";
 
 export interface WhatsThisData {
   heading: string;
@@ -22,6 +24,7 @@ interface WhatsThisModalProps {
   onClose: () => void;
   data: WhatsThisData;
   documentLabel?: string;
+  guideSlug?: string; // Pass slug to hide intro modal for this guide
 }
 
 interface ExpandSectionProps {
@@ -177,11 +180,15 @@ const WhatsThisModal = ({
   onClose,
   data,
   documentLabel = "Document",
+  guideSlug,
 }: WhatsThisModalProps) => {
   const [dontShowAgain, setDontShowAgain] = useState(false);
 
   const [openDoc, setOpenDoc] = useState(false);
   const [openSteps, setOpenSteps] = useState(false);
+
+  const { isAuthenticated } = useAuth();
+  const { hideIntroModal, loading: hideLoading } = useHideIntroModal();
 
   // Prevent background scrolling when modal is open
   useEffect(() => {
@@ -195,11 +202,16 @@ const WhatsThisModal = ({
     };
   }, [open]);
 
-  const handleClose = () => {
-    if (dontShowAgain && typeof window !== "undefined") {
-      localStorage.setItem("hide_whats_this_modal", "true");
+  const handleClose = async () => {
+    try {
+      if (dontShowAgain && guideSlug) {
+        await hideIntroModal(guideSlug);
+      }
+    } catch (err) {
+      console.error("Failed to hide intro modal:", err);
+    } finally {
+      onClose();
     }
-    onClose();
   };
 
   return (
@@ -231,14 +243,14 @@ const WhatsThisModal = ({
             onClick={(e) => e.stopPropagation()}
           >
             <div className="absolute top-5 right-5 z-20">
-              <button
-                onClick={handleClose}
-                className="p-2 rounded-2xl bg-white/10 border border-white/10 hover:bg-white/15 transition-colors focus:outline-none focus:ring-2 focus:ring-white/50 backdrop-blur-md shadow-sm"
-                aria-label="Close modal"
-                type="button"
-              >
-                <X className="w-5 h-5 text-white/85" />
-              </button>
+            <button
+  onClick={handleClose}
+  className="p-2 rounded-2xl bg-white/10 border border-white/10 hover:bg-white/15 transition-colors focus:outline-none focus:ring-2 focus:ring-white/50 backdrop-blur-md shadow-sm"
+  aria-label="Close modal"
+  type="button"
+>
+  <X className="w-5 h-5 text-white/85" />
+</button>
             </div>
 
             <div className="flex-1 overflow-y-auto custom-scrollbar w-full">
@@ -339,7 +351,7 @@ const WhatsThisModal = ({
 
                   {/* Footer controls */}
                   <div className="pt-6 mt-4 border-t border-white/10 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6">
-                    <label className="flex items-center gap-3 cursor-pointer select-none group">
+                    {isAuthenticated && <label className="flex items-center gap-3 cursor-pointer select-none group">
                       <div className="relative flex items-center justify-center">
                         <input
                           type="checkbox"
@@ -360,11 +372,12 @@ const WhatsThisModal = ({
                         </svg>
                       </div>
                       <span className="text-sm font-medium text-white/80 group-hover:text-white transition-colors">
-                        Don&apos;t show this again
+                        Don&apos;t show this again{" "}
+                        {hideLoading && "(Saving...)"}
                       </span>
-                    </label>
+                    </label>}
 
-                    <div className="flex flex-col sm:flex-row gap-3">
+                    <div className="flex flex-col sm:flex-row gap-3 sm:ml-auto">
                       {/* <button
                         onClick={handleClose}
                         className="px-6 py-3 md:py-2.5 rounded-xl font-semibold bg-white/10 hover:bg-white/20 text-white transition-all border border-white/20 focus:outline-none focus:ring-2 focus:ring-white/50"
@@ -374,6 +387,7 @@ const WhatsThisModal = ({
                       </button> */}
                       <button
                         onClick={handleClose}
+                        disabled={hideLoading}
                         className="px-6 py-3 md:py-2.5 rounded-xl font-bold bg-white text-[#062f31] hover:bg-gray-100 hover:scale-[1.02] active:scale-[0.98] transition-all shadow-[0_0_20px_rgba(255,255,255,0.3)] focus:outline-none focus:ring-2 focus:ring-white/50"
                         type="button"
                       >

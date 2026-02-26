@@ -70,7 +70,7 @@ const CnicGuide = () => {
     savedOffice: null,
   });
 
-  const { saveWizardStep } = useWizardSession(
+  const { saveWizardStep, session, loading } = useWizardSession(
     "cnic-guide",
     state,
     setState,
@@ -204,37 +204,55 @@ const CnicGuide = () => {
 
   const handleDocumentNeedSelect = (id: string, questionId?: string) => {
     if (questionId) {
+      const newDocumentNeed = {
+        ...(typeof state.documentNeed === "object" && state.documentNeed !== null
+          ? state.documentNeed
+          : {}),
+        [questionId]: id,
+      };
       setState((s) => ({
         ...s,
-        documentNeed: {
-          ...(typeof s.documentNeed === "object" && s.documentNeed !== null
-            ? s.documentNeed
-            : {}),
-          [questionId]: id,
-        },
+        documentNeed: newDocumentNeed,
       }));
+      // Save progress to backend
+      saveWizardStep("document_need", newDocumentNeed);
     } else {
       setState((s) => ({ ...s, documentNeed: id }));
+      // Save progress to backend
+      saveWizardStep("document_need", id, true);
       setTimeout(() => setCurrentStep(1), 400);
     }
   };
 
   const toggleDocument = (id: string) => {
+    const newDocs = state.checkedDocuments.includes(id)
+      ? state.checkedDocuments.filter((d) => d !== id)
+      : [...state.checkedDocuments, id];
+
     setState((s) => ({
       ...s,
-      checkedDocuments: s.checkedDocuments.includes(id)
-        ? s.checkedDocuments.filter((d) => d !== id)
-        : [...s.checkedDocuments, id],
+      checkedDocuments: newDocs,
     }));
+
+    // Save progress to backend
+    saveWizardStep("roadmap", newDocs);
   };
 
   const toggleValidationCheck = (label: string) => {
+    const newChecks = state.validationChecks.includes(label)
+      ? state.validationChecks.filter((l) => l !== label)
+      : [...state.validationChecks, label];
+
     setState((s) => ({
       ...s,
-      validationChecks: s.validationChecks.includes(label)
-        ? s.validationChecks.filter((l) => l !== label)
-        : [...s.validationChecks, label],
+      validationChecks: newChecks,
     }));
+
+    // Save progress to backend
+    saveWizardStep("validation", {
+      checks: newChecks,
+      uploaded: state.uploadedFile,
+    });
   };
 
   const renderStep = () => {
@@ -318,6 +336,14 @@ const CnicGuide = () => {
     }
   };
 
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-[#f5f7fa] pt-14">
+        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-teal-600" />
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen flex flex-col bg-gray-50 pt-14">
       <WizardHeader
@@ -335,6 +361,7 @@ const CnicGuide = () => {
           onSaveGuide={saveGuide}
           onGuideSaved={() => setIsSaved(true)}
           saving={saving}
+          session={session}
         />
 
         <main className="flex-1 overflow-y-auto p-4 sm:p-8 relative">
