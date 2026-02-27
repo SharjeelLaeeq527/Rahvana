@@ -706,7 +706,7 @@ export const NAV_DATA: Record<string, NavSection> = {
           //   title: "PCC Playbooks (All Provinces)",
           //   description:
           //     "Guides for Sindh, Punjab, KPK, and Balochistan Police Certificates.",
-          //   href: "/guides/police-verification",
+          //   href: "/guides/police-verification-guide",
           // },
           // {
           //   icon: (
@@ -947,7 +947,7 @@ export const NAV_DATA: Record<string, NavSection> = {
             ),
             title: "PCC Filing Service — Sindh",
             description: "Done-for-you police certificate filing for Sindh.",
-            href: "/guides/police-verification",
+            href: "/guides/police-verification-guide",
             // badge: "Soon",
           },
           {

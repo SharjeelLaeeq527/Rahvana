@@ -5,7 +5,9 @@ export type WizardStepId =
   | "location"
   | "roadmap"
   | "office_finder"
-  | "validation";
+  | "validation"
+  | "province_selection"
+  | "instructions";
 
 export interface WizardState {
   documentNeed: string | Record<string, string> | null;
