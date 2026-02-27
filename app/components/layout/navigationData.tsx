@@ -546,7 +546,7 @@ export const NAV_DATA: Record<string, NavSection> = {
             icon: (
               <Brain className="h-5 w-5 text-violet-600 dark:text-violet-400" />
             ),
-            title: "CasePulse AI",
+            title: "Case Strength Analyzer",
             description:
               "Instant AI case strength score + gaps to fix before NVC/Interview.",
             href: "/visa-case-strength-checker",
@@ -556,7 +556,7 @@ export const NAV_DATA: Record<string, NavSection> = {
             icon: (
               <LifeBuoy className="h-5 w-5 text-violet-600 dark:text-violet-400" />
             ),
-            title: "221(g) Rescue Planner",
+            title: "221(g) Action Planner",
             description:
               "Step-by-step next moves after 221(g) or Administrative Processing.",
             href: "/221g-action-planner",
@@ -576,7 +576,7 @@ export const NAV_DATA: Record<string, NavSection> = {
             icon: (
               <MessageSquare className="h-5 w-5 text-violet-600 dark:text-violet-400" />
             ),
-            title: "InterviewIQ",
+            title: "Interview Prep",
             description:
               "Prepare smarter and deliver confident answers when it matters most.",
             href: "/interview-prep",
@@ -592,7 +592,7 @@ export const NAV_DATA: Record<string, NavSection> = {
             icon: (
               <Calculator className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
             ),
-            title: "SponsorReady",
+            title: "Sponsorship Calculator",
             description:
               "Auto-check income/assets and tell you what you still need.",
             href: "/affidavit-support-calculator",
@@ -607,7 +607,7 @@ export const NAV_DATA: Record<string, NavSection> = {
             icon: (
               <Clock className="h-5 w-5 text-amber-600 dark:text-amber-400" />
             ),
-            title: "QueueWatch (IV Scheduling)",
+            title: "DQ Status Check",
             description:
               "Track interview scheduling movement and trends by category.",
             href: "/iv-tool",
@@ -616,7 +616,7 @@ export const NAV_DATA: Record<string, NavSection> = {
             icon: (
               <Calendar className="h-5 w-5 text-amber-600 dark:text-amber-400" />
             ),
-            title: "BulletinBuddy",
+            title: "Visa Bulletin Monitor",
             description:
               "Check your priority date progress against the Visa Bulletin.",
             href: "/visa-checker",
@@ -633,7 +633,7 @@ export const NAV_DATA: Record<string, NavSection> = {
             icon: (
               <Camera className="h-5 w-5 text-rose-600 dark:text-rose-400" />
             ),
-            title: "PhotoPass",
+            title: "Photo Booth",
             description: "Make a compliant passport/visa photo in minutes.",
             href: "/passport",
             // badge: "Live",
@@ -652,7 +652,7 @@ export const NAV_DATA: Record<string, NavSection> = {
             icon: (
               <PenTool className="h-5 w-5 text-rose-600 dark:text-rose-400" />
             ),
-            title: "SignSnap",
+            title: "Snap & Sign",
             description: "Create a clean digital signature for your forms.",
             href: "/signature-image-processing",
           },
@@ -666,7 +666,7 @@ export const NAV_DATA: Record<string, NavSection> = {
             icon: (
               <Wand2 className="h-5 w-5 text-cyan-600 dark:text-cyan-400" />
             ),
-            title: "FormForge Autofill",
+            title: "Smart Form Filler",
             description:
               "Auto-fills your official form and generates a ready-to-upload PDF.",
             href: "/visa-forms",
@@ -922,7 +922,7 @@ export const NAV_DATA: Record<string, NavSection> = {
               <MessageSquare className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
             ),
             title: "Book a Consultation",
-            description: "Book a call — your first consult is free.",
+            description: "Book a call with an expert.",
             href: "/book-consultation",
           },
           {

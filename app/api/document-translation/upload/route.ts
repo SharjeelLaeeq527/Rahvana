@@ -1,40 +1,52 @@
 // POST /api/document-translation/upload
 // User uploads original Urdu document for translation
 import { NextRequest, NextResponse } from "next/server";
-import { createClient as createSupabaseClient } from "@supabase/supabase-js";
-
-// Get Supabase client with service role key for storage and database operations
-function getStorageSupabase() {
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  if (!supabaseUrl || !serviceRoleKey) {
-    throw new Error("Supabase credentials not configured");
-  }
-  return createSupabaseClient(supabaseUrl, serviceRoleKey);
-}
+import { createClient } from "@/lib/supabase/server";
 
 export async function POST(request: NextRequest) {
   try {
+    const supabase = await createClient();
+
+    // Get current user
+    const {
+      data: { user },
+      error: userError,
+    } = await supabase.auth.getUser();
+
+    if (userError || !user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     const formData = await request.formData();
     const file = formData.get("file") as File;
-    const userEmail = formData.get("userEmail") as string;
-    const userName = formData.get("userName") as string;
     const userNotes = formData.get("userNotes") as string | undefined;
     const documentType = formData.get("documentType") as string | undefined;
 
+    const userEmail = user.email;
+
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("full_name")
+      .eq("id", user.id)
+      .single();
+
+    const userName = profile?.full_name || "User";
+
     // Validate required fields
-    if (!file || !userEmail || !userName || !documentType) {
+    if (!file || !documentType) {
       return NextResponse.json(
-        { error: "Missing required fields: file, userEmail, userName, documentType" },
-        { status: 400 }
+        {
+          error: "Missing required fields: file, documentType",
+        },
+        { status: 400 },
       );
     }
 
     // Validate file type (PDF only)
-    if (!file.type.includes("pdf")) {
+    if (file.type !== "application/pdf") {
       return NextResponse.json(
         { error: "Only PDF files are allowed" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -43,7 +55,7 @@ export async function POST(request: NextRequest) {
     if (file.size > maxSize) {
       return NextResponse.json(
         { error: `File size exceeds 50MB limit` },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -55,17 +67,19 @@ export async function POST(request: NextRequest) {
     if (!allowedTypes.includes(documentType)) {
       return NextResponse.json(
         { error: "Invalid document type" },
-        { status: 400 }
+        { status: 400 },
       );
     }
-
-    const supabase = getStorageSupabase();
 
     // Generate unique document ID
     const docId = crypto.randomUUID();
     const timestamp = Date.now();
-    const storageFileName = `${fileName.split(".")[0]}_${userName}.pdf`;
-    const storagePath = `translation-originals/${docId}/${timestamp}_${storageFileName}`;
+
+    const safeUserName = userName.replace(/[^a-zA-Z0-9_-]/g, "_");
+    const baseFileName = fileName.replace(/\.pdf$/i, "");
+    const storageFileName = `${baseFileName}_${safeUserName}.pdf`;
+
+    const storagePath = `translation-originals/${user.id}/${docId}/${timestamp}_${storageFileName}`;
 
     // Upload to Supabase Storage
     const buffer = Buffer.from(await file.arrayBuffer());
@@ -80,7 +94,7 @@ export async function POST(request: NextRequest) {
       console.error("Upload error:", uploadError);
       return NextResponse.json(
         { error: "Failed to upload file to storage" },
-        { status: 500 }
+        { status: 500 },
       );
     }
 
@@ -89,6 +103,7 @@ export async function POST(request: NextRequest) {
       .from("translation_documents")
       .insert({
         id: docId,
+        user_id: user.id,
         user_email: userEmail,
         user_name: userName,
         document_type: documentType,
@@ -112,7 +127,7 @@ export async function POST(request: NextRequest) {
       await supabase.storage.from("document-vault").remove([storagePath]);
       return NextResponse.json(
         { error: "Failed to create database record" },
-        { status: 500 }
+        { status: 500 },
       );
     }
 
@@ -127,7 +142,7 @@ export async function POST(request: NextRequest) {
     console.error("Upload error:", error);
     return NextResponse.json(
       { error: "Internal server error" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

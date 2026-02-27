@@ -851,7 +851,7 @@ function HomePageContent() {
                     },
                     {
                       icon: <Icons.LifeBuoy className="w-7 h-7 " />,
-                      title: "221(g) Rescue Planner",
+                      title: "221(g) Action Planner",
                       desc: "Navigate administrative processing with step-by-step guidance and status tracking.",
                       url: "/221g-action-planner",
                     },
@@ -938,7 +938,7 @@ function HomePageContent() {
                         Get personalized advice from immigration specialists who
                         understand your journey.{" "}
                         <span className="inline-block px-3 py-1 rounded-md bg-white/20 font-bold">
-                          Sign up to get the first free consultation.
+                          Sign up now.
                         </span>
                       </p>
                       <button
