@@ -10,6 +10,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { AuthRequiredModal } from "@/app/components/shared/AuthRequiredModal";
+import { useAuth } from "@/app/context/AuthContext";
 
 export default function DocumentTranslationUpload() {
   const [file, setFile] = useState<File | null>(null);
@@ -18,6 +20,9 @@ export default function DocumentTranslationUpload() {
   const [uploading, setUploading] = useState(false);
   const [uploadSuccess, setUploadSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showAuthModal, setShowAuthModal] = useState(false);
+
+  const { isAuthenticated } = useAuth();
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -38,7 +43,7 @@ export default function DocumentTranslationUpload() {
     if (!selected) return;
 
     // Validate file type (PDF only)
-    if (!selected.type.includes("pdf")) {
+    if (!selected.type.includes("application/pdf")) {
       setError("Please upload a valid PDF file.");
       return;
     }
@@ -55,6 +60,11 @@ export default function DocumentTranslationUpload() {
 
   // Handle upload
   const handleUpload = async () => {
+    if (!isAuthenticated) {
+      setShowAuthModal(true);
+      return;
+    }
+
     if (!file || !documentType) {
       setError("Please select a file and document type.");
       return;
@@ -66,8 +76,6 @@ export default function DocumentTranslationUpload() {
     try {
       const formData = new FormData();
       formData.append("file", file);
-      formData.append("userEmail", "user@example.com"); // In a real app, get this from user context
-      formData.append("userName", "Test User"); // In a real app, get this from user context
       formData.append("documentType", documentType);
       if (userNotes) {
         formData.append("userNotes", userNotes);
@@ -254,16 +262,19 @@ export default function DocumentTranslationUpload() {
                 )}
               </button>
 
-              <div className="mt-4 text-center">
-                <button
-                  onClick={() =>
-                    (window.location.href = "/document-translation/my-requests")
-                  }
-                  className="text-primary hover:underline text-sm cursor-pointer"
-                >
-                  See your translation requests
-                </button>
-              </div>
+              {isAuthenticated && (
+                <div className="mt-4 text-center">
+                  <button
+                    onClick={() =>
+                      (window.location.href =
+                        "/document-translation/my-requests")
+                    }
+                    className="text-primary hover:underline text-sm cursor-pointer"
+                  >
+                    See my translation requests
+                  </button>
+                </div>
+              )}
             </div>
           </section>
         </>
@@ -274,6 +285,12 @@ export default function DocumentTranslationUpload() {
           }
         />
       )}
+
+      <AuthRequiredModal
+        open={showAuthModal}
+        onClose={() => setShowAuthModal(false)}
+        redirectTo="/document-translation"
+      />
     </div>
   );
 }

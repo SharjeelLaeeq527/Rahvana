@@ -851,7 +851,7 @@ function HomePageContent() {
                     },
                     {
                       icon: <Icons.LifeBuoy className="w-7 h-7 " />,
-                      title: "221(g) Rescue Planner",
+                      title: "221(g) Action Planner",
                       desc: "Navigate administrative processing with step-by-step guidance and status tracking.",
                       url: "/221g-action-planner",
                     },
