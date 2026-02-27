@@ -503,7 +503,7 @@ function ToolCard({ tool, index }: { tool: Tool; index: number }) {
       <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none z-0 bg-[radial-gradient(400px_circle_at_var(--mouse-x,50%)_var(--mouse-y,50%),rgba(13,115,119,0.04),transparent_40%)] dark:bg-[radial-gradient(400px_circle_at_var(--mouse-x,50%)_var(--mouse-y,50%),rgba(255,255,255,0.03),transparent_40%)]" />
 
       {/* Header (Badge) */}
-      <div className="flex justify-end items-start mb-2 min-h-[24px] relative z-10">
+      {/* <div className="flex justify-end items-start mb-2 min-h-[24px] relative z-10">
         {tool.badge && (
           <span
             className={`text-[10px] uppercase font-bold tracking-wider px-3 py-1 rounded-full border 
@@ -516,7 +516,7 @@ function ToolCard({ tool, index }: { tool: Tool; index: number }) {
             {tool.badge}
           </span>
         )}
-      </div>
+      </div> */}
 
       {/* Content */}
       <div className="relative z-10 flex flex-col grow pt-2">
