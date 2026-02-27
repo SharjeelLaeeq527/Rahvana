@@ -2,30 +2,33 @@
 // User accepts the translation
 
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient as createSupabaseClient } from '@supabase/supabase-js';
-
-function getStorageSupabase() {
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  if (!supabaseUrl || !serviceRoleKey) {
-    throw new Error('Supabase credentials not configured');
-  }
-  return createSupabaseClient(supabaseUrl, serviceRoleKey);
-}
+import { createClient } from '@/lib/supabase/server';
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: { id: string } }
 ) {
   try {
-    const { id } = await params;
-    const supabase = getStorageSupabase();
+    const supabase = await createClient();
+
+    // Auth check
+    const {
+      data: { user },
+      error: userError,
+    } = await supabase.auth.getUser();
+
+    if (userError || !user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const { id } = params;
 
     // Check if document exists and is in TRANSLATED state
     const { data: existing, error: checkError } = await supabase
       .from('translation_documents')
       .select('status, translated_file_path')
       .eq('id', id)
+      .eq('user_id', user.id)
       .single();
 
     if (checkError || !existing) {
@@ -57,6 +60,7 @@ export async function POST(
         user_confirmed_at: new Date().toISOString(),
       })
       .eq('id', id)
+      .eq('user_id', user.id)
       .select()
       .single();
 

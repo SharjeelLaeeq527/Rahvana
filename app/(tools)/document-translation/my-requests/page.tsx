@@ -111,11 +111,8 @@ export default function MyTranslationRequests() {
   useEffect(() => {
     const fetchRequests = async () => {
       try {
-        const userEmail = "user@example.com";
         const response = await fetch(
-          `/api/document-translation/list?userEmail=${encodeURIComponent(
-            userEmail
-          )}`
+          `/api/document-translation/list`
         );
         const data = await response.json();
 
