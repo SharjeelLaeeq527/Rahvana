@@ -58,7 +58,10 @@ const STEP_LABELS: Record<string, string> = {
   validation: "Validation",
 };
 
-const INFO_PANEL_KEYS: Record<string, string> = {
+const INFO_PANEL_KEYS: Record<
+  string,
+  keyof typeof guideData.wizard.info_panel
+> = {
   province_selection: "province_selection",
   roadmap: "roadmap",
   validation: "validation",
