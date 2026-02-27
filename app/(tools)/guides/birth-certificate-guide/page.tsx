@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import WizardHeader from "../../../components/guides/WizardHeader";
 import WizardSidebar from "../../../components/guides/WizardSidebar";
@@ -52,6 +52,8 @@ const BirthCertificateGuidePage = () => {
     uploadedFile: false,
     savedOffice: null,
   });
+
+  const hasInitializedModal = useRef(false);
 
   const { saveWizardStep, session, loading } = useWizardSession(
     "birth-certificate-guide",
@@ -109,9 +111,25 @@ const BirthCertificateGuidePage = () => {
   }, [currentStep, state]);
 
   useEffect(() => {
-    const dontShow = localStorage.getItem("hideBirthWhatsThis_v3");
-    if (!dontShow) setShowWhatsThis(true);
-  }, []);
+    if (!session) return;
+
+    // Only run once per page load
+    if (hasInitializedModal.current) return;
+
+    hasInitializedModal.current = true;
+
+    if (!session.hide_intro_modal) {
+      setShowWhatsThis(true);
+    } else {
+      setShowWhatsThis(false);
+    }
+  }, [session]);
+
+  useEffect(() => {
+    if (session?.saved) {
+      setIsSaved(true);
+    }
+  }, [session]);
 
   useNavigationGuard(
     hasProgress && !isSaved,
@@ -132,7 +150,7 @@ const BirthCertificateGuidePage = () => {
           ? Object.keys(state.documentNeed).length > 0
           : !!state.documentNeed;
 
-      if (currentStep > 0 || hasAnyInput) {
+      if ((currentStep > 0 || hasAnyInput) && !isSaved) {
         e.preventDefault();
         e.returnValue = "";
         return "";
@@ -143,7 +161,7 @@ const BirthCertificateGuidePage = () => {
     return () => {
       window.removeEventListener("beforeunload", handleBeforeUnload);
     };
-  }, [currentStep, state.documentNeed]);
+  }, [currentStep, state.documentNeed, isSaved]);
 
   const currentStepId = STEP_IDS[currentStep];
   const infoPanelKey = INFO_PANEL_KEYS[currentStepId];
@@ -378,12 +396,10 @@ const BirthCertificateGuidePage = () => {
 
       <WhatsThisModal
         open={showWhatsThis}
-        onClose={() => {
-          setShowWhatsThis(false);
-          localStorage.setItem("hideBirthWhatsThis_v3", "true");
-        }}
+        onClose={() => setShowWhatsThis(false)}
         data={guideData.wizard.whats_this}
         documentLabel="Birth Certificate"
+        guideSlug="birth-certificate-guide"
       />
       <FeedbackButton
         steps={Object.values(STEP_LABELS)}

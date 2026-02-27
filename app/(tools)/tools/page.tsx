@@ -53,7 +53,7 @@ const TOOLS: Tool[] = [
   // AI & Planning
   {
     id: "casepulse",
-    title: "CasePulse AI",
+    title: "Case Strength Analyzer",
     description:
       "Instant AI case strength score + gaps to fix before NVC/Interview.",
     category: "AI & Planning",
@@ -95,7 +95,7 @@ const TOOLS: Tool[] = [
   // Money & Sponsorship
   {
     id: "sponsorready",
-    title: "SponsorReady",
+    title: "Sponsorship Calculator",
     description: "Auto-check income/assets and tell you what you still need.",
     category: "Money & Sponsorship",
     href: "/affidavit-support-calculator",
@@ -106,7 +106,7 @@ const TOOLS: Tool[] = [
   // Tracking
   {
     id: "queuewatch",
-    title: "QueueWatch",
+    title: "DQ Status Check",
     description: "Track interview scheduling movement and trends by category.",
     category: "Tracking",
     href: "/iv-tool",
@@ -115,7 +115,7 @@ const TOOLS: Tool[] = [
   },
   {
     id: "bulletinbuddy",
-    title: "BulletinBuddy",
+    title: "Visa Bulletin Monitor",
     description: "Check your priority date progress against the Visa Bulletin.",
     category: "Tracking",
     href: "/visa-checker",
@@ -128,7 +128,7 @@ const TOOLS: Tool[] = [
   // Docs & PDFs
   {
     id: "photopass",
-    title: "PhotoPass",
+    title: "Photo Booth",
     description: "Make a compliant passport/visa photo in minutes.",
     category: "Docs & PDFs",
     href: "/passport",
@@ -137,7 +137,7 @@ const TOOLS: Tool[] = [
   },
   {
     id: "pdftoolkit",
-    title: "PDF ToolKit",
+    title: "PDF Tool Kit",
     description: "Merge • compress • convert • edit — all in one toolkit.",
     category: "Docs & PDFs",
     href: "/pdf-processing",
@@ -146,7 +146,7 @@ const TOOLS: Tool[] = [
   },
   {
     id: "signsnap",
-    title: "SignSnap",
+    title: "Snap & Sign",
     description: "Create a clean digital signature for your forms.",
     category: "Docs & PDFs",
     href: "/signature-image-processing",
@@ -157,7 +157,7 @@ const TOOLS: Tool[] = [
   // Forms & Automation
   {
     id: "formforge",
-    title: "FormForge Autofill",
+    title: "Smart Form Filler",
     description:
       "Auto-fills your official form and generates a ready-to-upload PDF.",
     category: "Forms & Automation",

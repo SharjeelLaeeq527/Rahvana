@@ -289,9 +289,9 @@ function Wizard({ state, actions, isLoaded, isSignedIn }: WizardProps) {
                 <div className="flex items-center gap-3">
                     <button
                         onClick={() => setIsVaultOpen(true)}
-                        className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 rounded-lg font-semibold text-slate-700 hover:border-[#0d9488] hover:bg-[#ebf5f4] transition-all"
+                        className="flex items-center gap-2 px-4 py-2  border border-slate-200 rounded-lg font-semibold text-slate-700 hover:border-[#0d9488] bg-[#ebf5f4] transition-all"
                     >
-                        📁 Document Vault
+                        Document Vault
                     </button>
                 </div>
             </div>

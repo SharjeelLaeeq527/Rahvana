@@ -130,14 +130,6 @@ export const roadmapData = {
                 },
                 {
                     id: "II-03",
-                    name: "Choose Agent (Optional)",
-                    who: "Both",
-                    where: "CEAC portal",
-                    actions: ["Decide: self-representation or attorney", "If attorney: complete DS-261", "If self: proceed to fees"],
-                    notes: "Most straightforward cases use self-representation"
-                },
-                {
-                    id: "II-04",
                     name: "Pay NVC Fees",
                     who: "Petitioner",
                     where: "CEAC portal or Pay.gov",
@@ -147,7 +139,7 @@ export const roadmapData = {
                     notes: "Fees are non-refundable. Payment reflects in 1-2 business days."
                 },
                 {
-                    id: "II-05",
+                    id: "II-04",
                     name: "Complete DS-260 Form",
                     who: "Beneficiary",
                     where: "CEAC portal",
@@ -159,7 +151,7 @@ export const roadmapData = {
                     pakistanSpecific: "Select post: Islamabad, Pakistan"
                 },
                 {
-                    id: "II-06",
+                    id: "II-05",
                     name: "Prepare Civil Documents",
                     who: "Both",
                     where: "Document gathering",
@@ -168,7 +160,7 @@ export const roadmapData = {
                     pakistanSpecific: "Police certificate valid 1 year. Union Council registration increasingly required."
                 },
                 {
-                    id: "II-07",
+                    id: "II-06",
                     name: "Complete I-864 Affidavit",
                     who: "Petitioner",
                     where: "Download, complete, scan",
@@ -178,7 +170,7 @@ export const roadmapData = {
                     officialSource: "https://www.uscis.gov/i-864"
                 },
                 {
-                    id: "II-08",
+                    id: "II-07",
                     name: "Upload Documents to CEAC",
                     who: "Either",
                     where: "CEAC portal",
@@ -187,7 +179,7 @@ export const roadmapData = {
                     notes: "Upload one at a time. Max 4 MB per file. PDF preferred."
                 },
                 {
-                    id: "II-09",
+                    id: "II-08",
                     name: "Review and Submit Documents",
                     who: "Either",
                     where: "CEAC portal",
@@ -196,7 +188,7 @@ export const roadmapData = {
                     nextTrigger: "NVC reviews documents"
                 },
                 {
-                    id: "II-10",
+                    id: "II-09",
                     name: "NVC Document Review",
                     who: "NVC",
                     where: "Background process",
@@ -206,7 +198,7 @@ export const roadmapData = {
                     notes: "Common rejections: poor scan quality, missing translations, expired police certificate"
                 },
                 {
-                    id: "II-11",
+                    id: "II-10",
                     name: "Receive DQ Status",
                     who: "Both",
                     where: "Email + CEAC",
@@ -215,7 +207,7 @@ export const roadmapData = {
                     nextTrigger: "Case sent to Embassy Islamabad"
                 },
                 {
-                    id: "II-12",
+                    id: "II-11",
                     name: "Wait for Interview Scheduling",
                     who: "Embassy",
                     where: "Background",
@@ -224,7 +216,7 @@ export const roadmapData = {
                     notes: "Cannot speed up this process. Interview scheduled by embassy."
                 },
                 {
-                    id: "II-13",
+                    id: "II-12",
                     name: "Receive Interview Letter",
                     who: "Beneficiary",
                     where: "Email + registered mail",
