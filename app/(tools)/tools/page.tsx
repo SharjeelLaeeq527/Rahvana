@@ -63,7 +63,7 @@ const TOOLS: Tool[] = [
   },
   {
     id: "221g-planner",
-    title: "221(g) Rescue Planner",
+    title: "221(g) Action Planner",
     description:
       "Step-by-step next moves after 221(g) or Administrative Processing.",
     category: "AI & Planning",
