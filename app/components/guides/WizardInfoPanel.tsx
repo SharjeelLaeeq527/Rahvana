@@ -63,8 +63,9 @@ export interface GuideData extends GuideDataInfo {
 interface WizardInfoPanelProps {
   data: InfoPanelData;
   lastVerified: string;
-  guideType: "passport" | "frc" | "cnic" | "other";
+  guideType: "passport" | "frc" | "cnic" | "other" | "police-verification";
   guideData?: GuideData; // Global guide data to show consistent info
+  children?: React.ReactNode;
 }
 
 type InfoTab = "tips" | "pitfalls" | "links";
@@ -110,6 +111,7 @@ const WizardInfoPanel = ({
   lastVerified,
   guideData,
   guideType,
+  children,
 }: WizardInfoPanelProps) => {
   const [activeTab, setActiveTab] = useState<InfoTab>("tips");
 
@@ -240,6 +242,9 @@ const WizardInfoPanel = ({
               </div>
             </motion.div>
           </AnimatePresence>
+
+          {/* Custom Injected Actions (Children) */}
+          {children && <div className="space-y-4 mt-2 mb-6">{children}</div>}
 
           {/* Fee Structure Section - Always Visible */}
           {feeStructure && (

@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
@@ -25,6 +25,7 @@ import type {
   QuestionDefinition,
   QuestionnaireSection,
 } from "@/types/profile";
+import CountryAutocomplete from "@/app/components/shared/CountryAutoComplete";
 
 type CaseType = "Spouse";
 
@@ -364,6 +365,7 @@ interface QuestionStepProps {
   formData: FormData;
   error: string | null;
   onChange: (id: keyof FormData, value: unknown) => void;
+  setFormData: React.Dispatch<React.SetStateAction<FormData>>;
   onNext: () => void;
   onBack: () => void;
   onSaveForLater?: () => void;
@@ -376,6 +378,7 @@ const QuestionStep = ({
   formData,
   error,
   onChange,
+  setFormData,
   onNext,
   onBack,
   // onSaveForLater,
@@ -392,6 +395,20 @@ const QuestionStep = ({
       | number
       | boolean
       | undefined;
+
+    if (question.id === "country_of_residence") {
+      return (
+        <CountryAutocomplete
+          formData={formData as unknown as Record<string, unknown>}
+          setFormData={(data) =>
+            setFormData((prev) => ({ ...prev, ...data }))
+          }
+          hideLabel
+          inputClassName="w-full p-3 border border-input rounded-lg focus:ring-2 focus:ring-ring focus:border-ring transition-colors bg-background"
+          placeholder="Start typing country..."
+        />
+      );
+    }
 
     switch (question.type) {
       case "text":
@@ -2225,6 +2242,7 @@ export default function VisaCaseStrengthChecker() {
           formData={formData}
           error={error}
           onChange={handleInputChange}
+          setFormData={setFormData}
           onNext={nextStep}
           onBack={prevStep}
           onSaveForLater={handleSaveForLater}

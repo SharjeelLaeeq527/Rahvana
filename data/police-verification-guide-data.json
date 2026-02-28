@@ -1,0 +1,441 @@
+{
+  "wizard": {
+    "title": "Police Verification Guide",
+    "subtitle": "Character Certificate Process",
+    "last_verified": "February 24, 2026",
+    "whats_this": {
+      "heading": "Welcome to the Police Verification Guide",
+      "sub": "Get your Character Certificate quickly and correctly",
+      "description": " A Police Verification Certificate (PVC) or Police Clearance Certificate (PCC) is an official document issued by law enforcement, confirming an individual has no criminal record, active investigations, or adverse findings against them. A Police Character Certificate is often required for traveling abroad, international jobs, immigration, and general verification.",
+      "quick_instructions": [
+        "Select your province to get tailored instructions.",
+        "Review the required documents and steps.",
+        "Generate necessary forms or apply directly online where supported."
+      ],
+      "disclaimer": "This guide provides general information based on public records. Always verify details with your local police station or PKM center."
+    },
+    "steps": [
+      {
+        "id": "province_selection",
+        "label": "Province Selection",
+        "icon": "map-pin"
+      },
+      {
+        "id": "roadmap",
+        "label": "Roadmap",
+        "icon": "map"
+      },
+      {
+        "id": "validation",
+        "label": "Validation",
+        "icon": "star"
+      }
+    ],
+    "province_selection": {
+      "title": "Select Your Province",
+      "description": "Please choose the province where you are applying for verification.",
+      "options": [
+        {
+          "id": "Sindh",
+          "label": "Sindh",
+          "color": "green"
+        },
+        {
+          "id": "Punjab",
+          "label": "Punjab",
+          "color": "rose"
+        },
+        {
+          "id": "Balochistan",
+          "label": "Balochistan",
+          "color": "orange"
+        },
+        {
+          "id": "KPK",
+          "label": "KPK",
+          "color": "purple"
+        }
+      ]
+    },
+    "fee_structure": {
+      "title": "Verification Fee Structure",
+      "tiers": [
+        {
+          "type": "Punjab",
+          "price": "500",
+          "days": "3 working days",
+          "badge_variant": "blue"
+        },
+        {
+          "type": "Balochistan",
+          "price": "350",
+          "days": "3 working days",
+          "badge_variant": "orange"
+        },
+        {
+          "type": "Sindh",
+          "price": "500–1000",
+          "days": "7–15 working days",
+          "badge_variant": "green"
+        },
+        {
+          "type": "KPK",
+          "price": "3000",
+          "days": "Varies by verification",
+          "badge_variant": "purple"
+        }
+      ]
+    },
+    "roadmaps": {
+      "Sindh": {
+        "title": "Your Personalized Roadmap",
+        "estimated_timeline": "Varies",
+        "onlinePhases": [
+          {
+            "id": 1,
+            "title": "Initial Requirements",
+            "duration": "Setup",
+            "description": "Visit https://prvs.sindhpolice.gov.pk/site/apply to apply for Police Verification Certificate. Ensure you have your original CNIC ready and follow these preliminary steps to access the main form. Choose 'Immigration' as the purpose, enter your 13-digit CNIC, complete the security check, and click 'Continue'."
+          },
+          {
+            "id": 2,
+            "title": "Personal Information",
+            "duration": "Form Step 1",
+            "description": "Select delivery type. Enter Email, Full Name, Father/Husband Name, DOB, CNIC Dates, Passport details, Contact Info, Address, and Country staying in. Specify destination country and clear the Criminal Record Declaration."
+          },
+          {
+            "id": 3,
+            "title": "Deponents / Guarantor",
+            "duration": "Form Step 2",
+            "description": "Provide information for two witnesses (Name, Father's Name, CNIC, Contact, Address) who can verify your identity and residence."
+          },
+          {
+            "id": 4,
+            "title": "Documents Required",
+            "duration": "Form Step 3",
+            "description": "Upload a Passport Size Photograph (JPG/PNG), Passport Copy, Utility Bill Copy (PDF), and the official Verification Letter (PDF)."
+          }
+        ],
+        "onsitePhases": [
+          {
+            "id": 1,
+            "title": "Where to Apply",
+            "duration": "Visit Location",
+            "description": "Visit your relevant District Police Office (DPO), SSP Office, or designated Police Verification Branch in your residential area of Sindh (e.g., Karachi districts, Hyderabad, Sukkur, Larkana, etc.). Applications are not accepted at random police stations; only designated verification offices handle Police Verification Certificates."
+          },
+          {
+            "id": 2,
+            "title": "Document Submission",
+            "duration": "Verification Desk",
+            "description": "Submit original CNIC with photocopy, passport copy, recent passport-size photographs, utility bill (proof of address), and a Verification/Purpose Letter stating why the certificate is required (job, visa, immigration, study, etc.). If applicant is abroad, submit Authority Letter and applicant’s documents."
+          },
+          {
+            "id": 3,
+            "title": "Biometric & Data Entry",
+            "duration": "Identity Process",
+            "description": "Your identity details are entered into the police system. Fingerprint/biometric verification may be conducted in some districts. Residential address and criminal record verification request is generated for field verification."
+          },
+          {
+            "id": 4,
+            "title": "Field Verification",
+            "duration": "Police Visit",
+            "description": "Local police station verifies your address, residence history, and background. Neighbors or local references may be checked. This step is mandatory for onsite applications in Sindh."
+          },
+          {
+            "id": 5,
+            "title": "Fee & Processing Time",
+            "duration": "Processing",
+            "description": "Processing Fee: Typically Rs 300–500 (may vary by district). Normal processing time: 7 to 14 working days depending on field verification speed and district workload."
+          },
+          {
+            "id": 6,
+            "title": "Certificate Collection",
+            "duration": "Final Step",
+            "description": "Police Verification / Character Certificate is issued after clearance. It is either collected in person from the issuing office or delivered through official dispatch/courier (varies by district)."
+          },
+          {
+            "id": 7,
+            "title": "Special Instructions",
+            "duration": "Important",
+            "description": "You must apply in your residential district (unlike Punjab PKM where any center can be used). Verification Letter (purpose letter) is usually required in Sindh even for onsite applications. Blood relatives can apply on your behalf only with a valid Authority Letter if the applicant is abroad."
+          }
+        ],
+        "documents_checklist": [
+          {
+            "id": "sindh_cnic",
+            "label": "Original CNIC",
+            "description": "13-digit CNIC",
+            "required": true
+          },
+          {
+            "id": "sindh_photo",
+            "label": "Passport Size Photograph",
+            "description": "In .JPG or .PNG format",
+            "required": true
+          },
+          {
+            "id": "sindh_passport",
+            "label": "Passport Copy",
+            "description": "Clear copy of passport",
+            "required": true
+          },
+          {
+            "id": "sindh_utility",
+            "label": "Utility Bill",
+            "description": "Recent utility bill in .PDF",
+            "required": true
+          },
+          {
+            "id": "sindh_letter",
+            "label": "Verification Letter",
+            "description": "Official Verification Letter in .PDF",
+            "required": true
+          }
+        ]
+      },
+      "Punjab": {
+        "title": "Your Personalized Roadmap",
+        "estimated_timeline": "3 working days",
+        "onlinePhases": [],
+        "onsitePhases": [
+          {
+            "id": 1,
+            "title": "Where to Apply",
+            "duration": "Visit Location",
+            "description": "Visit any Police Khidmat Markaz (PKM) in Punjab for Police Verification Certificate."
+          },
+          {
+            "id": 2,
+            "title": "Fee & Timeline",
+            "duration": "Processing",
+            "description": "Processing Fee: Rs 500. Turnaround Time: 3 working days. Delivered via Courier to your address."
+          },
+          {
+            "id": 3,
+            "title": "Special Instructions",
+            "duration": "Important",
+            "description": "You can apply from any PKM in Punjab, regardless of your home district. Blood relatives can apply on your behalf using an Authority Letter."
+          }
+        ],
+        "documents_checklist": [
+          {
+            "id": "punjab_cnic",
+            "label": "Original CNIC/B-Form",
+            "description": "Original and photocopy",
+            "required": true
+          },
+          {
+            "id": "punjab_passport",
+            "label": "Original Passport",
+            "description": "Original and photocopy",
+            "required": true
+          },
+          {
+            "id": "punjab_affidavit",
+            "label": "Affidavit & Authority Letter",
+            "description": "Required if applying from abroad or through a relative",
+            "required": false
+          },
+          {
+            "id": "punjab_photo",
+            "label": "Photograph",
+            "description": "Required if applying for a relative",
+            "required": false
+          }
+        ]
+      },
+      "Balochistan": {
+        "title": "Your Personalized Roadmap",
+        "estimated_timeline": "3 working days",
+        "onlinePhases": [],
+        "onsitePhases": [
+          {
+            "id": 1,
+            "title": "Where to Apply",
+            "duration": "Visit Location",
+            "description": "Visit any Police Khidmat Markaz (PKM) in Balochistan for Police Verification Certificate."
+          },
+          {
+            "id": 2,
+            "title": "Fee & Processing",
+            "duration": "Processing",
+            "description": "Processing Fee: Rs 350. Turnaround Time: 3 working days. Delivered via Courier."
+          },
+          {
+            "id": 3,
+            "title": "Special Scenarios",
+            "duration": "Important",
+            "description": "A blood relative can submit the form on your behalf with an Authority Letter. The letter must mention stay duration and be attested."
+          }
+        ],
+        "documents_checklist": [
+          {
+            "id": "bal_cnic",
+            "label": "Original CNIC/B-Form",
+            "description": "Original and photocopy",
+            "required": true
+          },
+          {
+            "id": "bal_passport",
+            "label": "Original Passport",
+            "description": "Original and photocopy",
+            "required": true
+          },
+          {
+            "id": "bal_affidavit",
+            "label": "Affidavit & Authority Letter",
+            "description": "Embassy-stamped if abroad",
+            "required": false
+          },
+          {
+            "id": "bal_photo",
+            "label": "Photograph",
+            "description": "Required if applying for a relative",
+            "required": false
+          }
+        ]
+      },
+      "KPK": {
+        "title": "Your Personalized Roadmap",
+        "estimated_timeline": "Varies by district",
+        "onlinePhases": [],
+        "onsitePhases": [
+          {
+            "id": 1,
+            "title": "Initial Documents",
+            "duration": "Preparation",
+            "description": "Attested 10-point Affidavit on stamp paper. Unattested photocopies of recent CNIC and Passport. Two recent passport-size photographs."
+          },
+          {
+            "id": 2,
+            "title": "Local Verification",
+            "duration": "Action",
+            "description": "Verify your criminal record from the Beat Officer, Moharrar, SHO, and Circle DSP on the back of your stamp paper. Apply in your district as per CNIC addresses."
+          },
+          {
+            "id": 3,
+            "title": "Special Categories",
+            "duration": "Important",
+            "description": "Overseas applicants can have a blood relative submit the stamp paper with their CNIC copy and exit date. Afghan citizens need Passport, Visa, TIF Form, ACC, and attested letter from Afghan Consulate."
+          },
+          {
+            "id": 4,
+            "title": "Submission & Collection",
+            "duration": "Action",
+            "description": "Personally visit the Police Assistance Lines (PAL) office for final submisson. Must personally visit to collect after signature and fingerprints."
+          }
+        ],
+        "documents_checklist": [
+          {
+            "id": "kpk_affidavit",
+            "label": "10-point Affidavit",
+            "description": "Attested on stamp paper",
+            "required": true
+          },
+          {
+            "id": "kpk_cnic",
+            "label": "CNIC Copy",
+            "description": "Unattested photocopy of recent CNIC",
+            "required": true
+          },
+          {
+            "id": "kpk_passport",
+            "label": "Passport Copy",
+            "description": "Unattested photocopy of Passport",
+            "required": true
+          },
+          {
+            "id": "kpk_photos",
+            "label": "Photographs",
+            "description": "Two recent passport-size photographs",
+            "required": true
+          }
+        ]
+      }
+    },
+    "validation": {
+      "title": "Application Validation",
+      "description": "Ensure your Police Verification application meets all requirements before submission",
+      "upload_section": {
+        "title": "Upload Your Verification Certificate",
+        "description": "Upload your approved Character Certificate to the Document Vault.",
+        "formats": "PDF, JPG, PNG (Max 10MB)"
+      },
+      "checklist_title": "Pre-Submission Checklist",
+      "categories": [
+        {
+          "name": "Document Readiness",
+          "items": [
+            {
+              "label": "Original CNIC or B-Form is ready",
+              "critical": true
+            },
+            {
+              "label": "Passport copies prepared (if applicable)",
+              "critical": true
+            },
+            {
+              "label": "Affidavit / Authority Letter drafted and signed (if needed)",
+              "critical": true
+            }
+          ]
+        },
+        {
+          "name": "Payment & Processing",
+          "items": [
+            {
+              "label": "Processing fee available",
+              "critical": false
+            },
+            {
+              "label": "Two passport-size photos prepared",
+              "critical": false
+            }
+          ]
+        }
+      ]
+    },
+    "info_panel": {
+      "province_selection": {
+        "tips": [
+          "Process Overview: Citizens can apply for a Character Certificate from any PKM center in Punjab, regardless of their district of residence (Service valid for other provinces too).",
+          "Rules vary significantly between provinces. Make sure you select the correct one before generating letters."
+        ],
+        "pitfalls": [
+          "Do not guess your application province; choosing incorrectly will lead to wrong documentation requirements."
+        ],
+        "links": []
+      },
+      "roadmap": {
+        "tips": [
+          "Process Overview: Citizens can apply for a Character Certificate from any PKM center in Punjab, regardless of their district of residence.",
+          "Pay close attention to attestation requirements. Missing stamps cause immediate rejection."
+        ],
+        "pitfalls": [
+          "Do not forget to upload the Verification Letter if applying in Sindh. You can generate it from the 'Generate Letter' button below"
+        ],
+        "links": [
+          {
+            "label": "Sindh Police",
+            "url": "https://prvs.sindhpolice.gov.pk/site/apply"
+          }
+        ]
+      },
+      "validation": {
+        "tips": [
+          "Double check your submitted witness records before verifying.",
+          "Ensure your photos meet the specific dimension and background color requirements."
+        ],
+        "pitfalls": [
+          "Don't submit blurry document scans; they will be rejected."
+        ],
+        "links": [
+          {
+            "label": "Sindh Police",
+            "url": "https://prvs.sindhpolice.gov.pk/site/apply"
+          }
+        ]
+      }
+    }
+  }
+}
