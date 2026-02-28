@@ -52,8 +52,8 @@ interface Tool {
 const TOOLS: Tool[] = [
   // AI & Planning
   {
-    id: "casepulse",
-    title: "CasePulse AI",
+    id: "case-strength-analyzer",
+    title: "Case Strength Analyzer",
     description:
       "Instant AI case strength score + gaps to fix before NVC/Interview.",
     category: "AI & Planning",
@@ -72,7 +72,7 @@ const TOOLS: Tool[] = [
     badge: "Live",
   },
   {
-    id: "visapath",
+    id: "visa-path",
     title: "VisaPath Finder",
     description:
       "Quick quiz that points you to the right visa path + next steps.",
@@ -82,8 +82,8 @@ const TOOLS: Tool[] = [
     badge: "Live",
   },
   {
-    id: "interviewiq",
-    title: "InterviewIQ",
+    id: "interview-prep",
+    title: "Interview Prep",
     description:
       "Prepare smarter and deliver confident answers when it matters most.",
     category: "AI & Planning",
@@ -94,8 +94,8 @@ const TOOLS: Tool[] = [
 
   // Money & Sponsorship
   {
-    id: "sponsorready",
-    title: "SponsorReady",
+    id: "sponsorship-calculator",
+    title: "Sponsorship Calculator",
     description: "Auto-check income/assets and tell you what you still need.",
     category: "Money & Sponsorship",
     href: "/affidavit-support-calculator",
@@ -105,7 +105,7 @@ const TOOLS: Tool[] = [
 
   // Tracking
   {
-    id: "queuewatch",
+    id: "queue-watch",
     title: "QueueWatch",
     description: "Track interview scheduling movement and trends by category.",
     category: "Tracking",
@@ -114,8 +114,8 @@ const TOOLS: Tool[] = [
     badge: "Live",
   },
   {
-    id: "bulletinbuddy",
-    title: "BulletinBuddy",
+    id: "visa-bulletin-monitor",
+    title: "Visa Bulletin Monitor",
     description: "Check your priority date progress against the Visa Bulletin.",
     category: "Tracking",
     href: "/visa-checker",
@@ -127,8 +127,8 @@ const TOOLS: Tool[] = [
 
   // Docs & PDFs
   {
-    id: "photopass",
-    title: "PhotoPass",
+    id: "photo-booth",
+    title: "Photo Booth",
     description: "Make a compliant passport/visa photo in minutes.",
     category: "Docs & PDFs",
     href: "/passport",
@@ -136,7 +136,7 @@ const TOOLS: Tool[] = [
     badge: "Live",
   },
   {
-    id: "pdftoolkit",
+    id: "pdf-toolkit",
     title: "PDF ToolKit",
     description: "Merge • compress • convert • edit — all in one toolkit.",
     category: "Docs & PDFs",
@@ -145,8 +145,8 @@ const TOOLS: Tool[] = [
     badge: "Live",
   },
   {
-    id: "signsnap",
-    title: "SignSnap",
+    id: "snap-sign",
+    title: "Snap & Sign",
     description: "Create a clean digital signature for your forms.",
     category: "Docs & PDFs",
     href: "/signature-image-processing",
@@ -156,8 +156,8 @@ const TOOLS: Tool[] = [
 
   // Forms & Automation
   {
-    id: "formforge",
-    title: "FormForge Autofill",
+    id: "form-forge",
+    title: "Smart Form Filler",
     description:
       "Auto-fills your official form and generates a ready-to-upload PDF.",
     category: "Forms & Automation",
@@ -168,7 +168,7 @@ const TOOLS: Tool[] = [
 
   // Storage & Organization
   {
-    id: "docvault",
+    id: "doc-vault",
     title: "Document Vault",
     description:
       "Organize docs + build shareable packets when the embassy asks.",

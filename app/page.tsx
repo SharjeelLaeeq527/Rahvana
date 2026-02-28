@@ -845,7 +845,7 @@ function HomePageContent() {
                   {[
                     {
                       icon: <Icons.Brain className="w-7 h-7 " />,
-                      title: "CasePulse AI",
+                      title: "Case Strength Analyzer",
                       desc: "Get AI-powered insights into your case status, processing times, and what to expect next.",
                       url: "/visa-case-strength-checker",
                     },
@@ -863,7 +863,7 @@ function HomePageContent() {
                     },
                     {
                       icon: <Icons.Calculator className="w-7 h-7" />,
-                      title: "SponsorReady (I-864)",
+                      title: "Sponsorship Calculator",
                       desc: "Calculate financial requirements and determine if you meet the sponsorship threshold.",
                       url: "/affidavit-support-calculator",
                     },
@@ -875,7 +875,7 @@ function HomePageContent() {
                     },
                     {
                       icon: <Icons.Wand2 className="w-7 h-7" />,
-                      title: "FormForge Autofill",
+                      title: "Smart Form Filler",
                       desc: "Auto-complete immigration forms with your saved profile data.",
                       url: "/visa-forms",
                     },
@@ -908,7 +908,7 @@ function HomePageContent() {
                 <div className="mt-12 text-center">
                   <HydrationSafeButton
                     onClick={() => router.push("/tools")}
-                    className="inline-flex items-center gap-2 px-8 py-3 text-base font-bold text-rahvana-primary border-2 border-rahvana-primary rounded-full hover:bg-rahvana-primary hover:text-white transition-all"
+                    className="inline-flex items-center gap-2 px-8 py-3 text-base font-bold text-rahvana-primary border-2 border-rahvana-primary rounded-full hover:bg-rahvana-primary hover:text-white transition-all cursor-pointer"
                   >
                     Explore all tools <Icons.ArrowRight className="w-5 h-5" />
                   </HydrationSafeButton>
