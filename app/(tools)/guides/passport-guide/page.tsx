@@ -29,7 +29,10 @@ const STEP_LABELS: Record<string, string> = {
   validation: "Validation",
 };
 
-const INFO_PANEL_KEYS: Record<WizardStepId, any> = {
+const INFO_PANEL_KEYS: Record<
+  string,
+  keyof typeof guideData.wizard.info_panel
+> = {
   document_need: "document_need",
   age_category: "document_need",
   birth_setting: "document_need",
@@ -57,7 +60,7 @@ const PassportGuide = () => {
     savedOffice: null,
   });
 
-    const hasInitializedModal = useRef(false);
+  const hasInitializedModal = useRef(false);
 
   const { saveWizardStep, session, loading } = useWizardSession(
     "passport-guide",

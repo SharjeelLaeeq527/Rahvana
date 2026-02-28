@@ -172,7 +172,7 @@ export function SiteHeader({
         "affidavit-support-calculator": "/affidavit-support-calculator",
         "visa-eligibility": "/visa-eligibility",
         "Book Appintment": "/book-appointment",
-        "Police Verification": "/police-verification",
+        "Police Verification": "/guides/police-verification-guide",
         "document-translation": "/document-translation",
         "221g-action-planner": "/221g-action-planner",
         "visa-case-strength-checker": "/visa-case-strength-checker",

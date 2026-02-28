@@ -40,15 +40,15 @@ const STEP_LABELS: Record<string, string> = {
 };
 
 const INFO_PANEL_KEYS: Record<
-  WizardStepId,
+  string,
   keyof typeof guideData.wizard.info_panel
 > = {
   document_need: "document_need",
   age_category: "document_need",
   birth_setting: "document_need",
-  location: "roadmap",
+  location: "location",
   roadmap: "roadmap",
-  office_finder: "roadmap",
+  office_finder: "office_finder",
   validation: "validation",
 };
 
@@ -163,9 +163,9 @@ const CnicGuide = () => {
   }, [currentStep, state.documentNeed]);
 
   const currentStepId = STEP_IDS[currentStep];
-  const infoPanelKey = INFO_PANEL_KEYS[currentStepId];
+  const infoPanelKey = INFO_PANEL_KEYS[currentStepId as string];
   const infoPanelData = guideData.wizard.info_panel[
-    infoPanelKey
+    infoPanelKey as keyof typeof guideData.wizard.info_panel
   ] as unknown as InfoPanelData;
 
   const canGoNext = (): boolean => {
@@ -205,7 +205,8 @@ const CnicGuide = () => {
   const handleDocumentNeedSelect = (id: string, questionId?: string) => {
     if (questionId) {
       const newDocumentNeed = {
-        ...(typeof state.documentNeed === "object" && state.documentNeed !== null
+        ...(typeof state.documentNeed === "object" &&
+        state.documentNeed !== null
           ? state.documentNeed
           : {}),
         [questionId]: id,

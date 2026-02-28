@@ -14,7 +14,7 @@ CREATE TABLE translation_documents (
   -- Primary Key
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   
-  -- User (can be nullable for now)
+  -- User Details
   user_id UUID REFERENCES auth.users(id) ON DELETE SET NULL,
   user_email TEXT,  -- Store email for reference 
   user_name TEXT,   -- Store name for reference

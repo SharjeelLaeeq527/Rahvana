@@ -32,6 +32,7 @@ export interface NavItem {
   title: string;
   description: string;
   href: string;
+  // badge?: "Soon" | "Live";
   disabled?: boolean;
 }
 
@@ -43,13 +44,13 @@ export interface NavCategory {
 export interface NavTab {
   id: string;
   label: string;
-  categories?: NavCategory[]; 
-  items?: NavItem[]; 
+  categories?: NavCategory[]; // For Journeys
+  items?: NavItem[]; // For Tools, Guides, Services
 }
 
 export interface NavSection {
   id: string;
-  label: string;
+  label: string; // e.g., "Explore Journeys"
   tabs: NavTab[];
   footerLink?: { label: string; href: string };
   showSearch?: boolean; // For Journeys
@@ -77,19 +78,22 @@ export const NAV_DATA: Record<string, NavSection> = {
                 title: "IR-1 / CR-1",
                 description: "Spouse of U.S. Citizen",
                 href: "#",
+                // badge: "Live",
               },
               {
                 icon: <Briefcase className="h-5 w-5" />,
                 title: "K-1",
                 description: "Fiancé(e) of U.S. Citizen",
                 href: "/visa-category/ir-category",
+                // badge: "Soon",
                 disabled: true,
               },
               {
                 icon: <Globe className="h-5 w-5" />,
                 title: "K-3",
                 description: "Spouse (short-separation option)",
-                href: "#",
+                href: "#", // No live path
+                // badge: "Soon",
                 disabled: true,
               },
               {
@@ -97,6 +101,7 @@ export const NAV_DATA: Record<string, NavSection> = {
                 title: "IR-5",
                 description: "Parent of U.S. Citizen (21+)",
                 href: "#",
+                // badge: "Soon",
                 disabled: true,
               },
               {
@@ -104,6 +109,7 @@ export const NAV_DATA: Record<string, NavSection> = {
                 title: "IR-2 / CR-2",
                 description: "Child of U.S. Citizen",
                 href: "#",
+                // badge: "Soon",
                 disabled: true,
               },
               {
@@ -631,7 +637,7 @@ export const NAV_DATA: Record<string, NavSection> = {
             icon: (
               <Files className="h-5 w-5 text-rose-600 dark:text-rose-400" />
             ),
-            title: "PDF ToolKit",
+            title: "PDF Tool Kit",
             description:
               "Merge • compress • convert • edit — all in one toolkit.",
             href: "/pdf-processing",
@@ -688,7 +694,24 @@ export const NAV_DATA: Record<string, NavSection> = {
         id: "pakistan-docs",
         label: "Pakistan Docs",
         items: [
-         
+          // {
+          //   icon: (
+          //     <FileText className="h-5 w-5 text-green-600 dark:text-green-400" />
+          //   ),
+          //   title: "PCC Playbooks (All Provinces)",
+          //   description:
+          //     "Guides for Sindh, Punjab, KPK, and Balochistan Police Certificates.",
+          //   href: "/guides/police-verification-guide",
+          // },
+          // {
+          //   icon: (
+          //     <Shield className="h-5 w-5 text-green-600 dark:text-green-400" />
+          //   ),
+          //   title: "PCC Reference Guide",
+          //   description:
+          //     "Comprehensive overview of Police Character Certificates.",
+          //   href: "/guides/police-certificate",
+          // },
           {
             icon: (
               <Globe className="h-5 w-5 text-green-600 dark:text-green-400" />
@@ -733,15 +756,81 @@ export const NAV_DATA: Record<string, NavSection> = {
             href: "/guides/nikah-nama-guide",
             // badge: "Live",
           },
-          
+          // {
+          //   icon: <FileCheck className="h-5 w-5" />,
+          //   title: "Divorce & Death",
+          //   description: "Termination of prior marriages.",
+          //   href: "/guides/prior-marriage-termination",
+          //   // badge: "Soon",
+          //   disabled: true,
+          // },
+          // {
+          //   icon: (
+          //     <DollarSign className="h-5 w-5 text-green-600 dark:text-green-400" />
+          //   ),
+          //   title: "Asset Documentation",
+          //   description: "Prove financial standing with correct documents.",
+          //   href: "/guides/asset-document-guide",
+          // },
+          // {
+          //   icon: (
+          //     <Briefcase className="h-5 w-5 text-green-600 dark:text-green-400" />
+          //   ),
+          //   title: "Employment Verification",
+          //   description: "Employment letters and income proof.",
+          //   href: "/guides/employment-certificate-guide",
+          // },
         ],
       },
-   
+      // {
+      //   id: "embassy-logistics",
+      //   label: "Embassy Logistics",
+      //   items: [
+      //     {
+      //       icon: <Map className="h-5 w-5 text-blue-600 dark:text-blue-400" />,
+      //       title: "Courier & Passport Delivery",
+      //       description:
+      //         "Register, choose delivery options, and courier guide.",
+      //       href: "/guides/courier-registration",
+      //     },
+      //     {
+      //       icon: (
+      //         <Users className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+      //       ),
+      //       title: "Interview Preparation",
+      //       description: "Required documents and what to bring to the embassy.",
+      //       href: "/interview-prep",
+      //     },
+      //   ],
+      // },
+      // {
+      //   id: "financial-sponsorship",
+      //   label: "Financial & Sponsorship",
+      //   items: [
+      //     {
+      //       icon: (
+      //         <DollarSign className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
+      //       ),
+      //       title: "Affidavit of Support",
+      //       description: "I-864 guide and financial requirements.",
+      //       href: "/affidavit-support-calculator",
+      //     },
+      //   ],
+      // },
       {
         id: "medical-exam",
         label: "Medical & Exam",
         items: [
-      
+          // {
+          //   icon: (
+          //     <Activity className="h-5 w-5 text-teal-600 dark:text-teal-400" />
+          //   ),
+          //   title: "Medical Examination",
+          //   description: "Panel physicians and medical requirements.",
+          //   href: "/guides/medical-exam",
+          //   // badge: "Soon",
+          //   disabled: true,
+          // },
           {
             icon: (
               <Syringe className="h-5 w-5 text-teal-600 dark:text-teal-400" />
@@ -752,7 +841,66 @@ export const NAV_DATA: Record<string, NavSection> = {
           },
         ],
       },
-   
+      // {
+      //   id: "relationship-evidence",
+      //   label: "Relationship Evidence",
+      //   items: [
+      //     {
+      //       icon: (
+      //         <Heart className="h-5 w-5 text-rose-600 dark:text-rose-400" />
+      //       ),
+      //       title: "Bona Fide Marriage",
+      //       description: "Proof of genuine relationship.",
+      //       href: "/guides/bona-marriage-guide",
+      //       // badge: "Live",
+      //     },
+      //   ],
+      // },
+      // {
+      //   id: "arrival-travel",
+      //   label: "Arrival & Travel",
+      //   items: [
+      //     {
+      //       icon: (
+      //         <FileCheck className="h-5 w-5 text-sky-600 dark:text-sky-400" />
+      //       ),
+      //       title: "Customs & Declarations",
+      //       description: "What to declare and common pitfalls.",
+      //       href: "/guides/custom-requirements",
+      //     },
+      //   ],
+      // },
+      // {
+      //   id: "education-process",
+      //   label: "Education & Process",
+      //   items: [
+      //     {
+      //       icon: (
+      //         <BookOpen className="h-5 w-5 text-amber-600 dark:text-amber-400" />
+      //       ),
+      //       title: "Educational Certificates",
+      //       description:
+      //         "HEC/IBCC attestation, WES evaluation, and I-20 requirements.",
+      //       href: "/guides/educational-certificates-us-visa",
+      //       // badge: "Live",
+      //     },
+      //   ],
+      // },
+      // {
+      //   id: "visa-strategy",
+      //   label: "Visa Strategy",
+      //   items: [
+      //     {
+      //       icon: (
+      //         <GraduationCap className="h-5 w-5 text-violet-600 dark:text-violet-400" />
+      //       ),
+      //       title: "Visa Case Strength",
+      //       description: "Understand your visa case strength and improve it.",
+      //       href: "/guides/visa-strength-guide",
+      //       // badge: "Live",
+      //     },
+      //   ],
+      // },
     ],
   },
   services: {
@@ -794,7 +942,7 @@ export const NAV_DATA: Record<string, NavSection> = {
             ),
             title: "PCC Filing Service — Sindh",
             description: "Done-for-you police certificate filing for Sindh.",
-            href: "/guides/police-verification",
+            href: "/guides/police-verification-guide",
             // badge: "Soon",
           },
           {

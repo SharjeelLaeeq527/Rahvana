@@ -41,17 +41,14 @@ export interface FormSelections {
 }
 
 export interface FormData {
-  visaType: string;
-  visaTypeOther: string;
+  // Step 1: Case Basics (matching reference HTML)
+  visaType: string;         // immigrant | nonimmigrant
+  visaCategory: string;     // IR-1, CR-1, F-1, etc.
+  visaTypeOther: string;    // when visaCategory === 'other'
   interviewDate: string;
-  embassy: string;
-  embassyOther: string;
-  letterReceived: boolean | null;
-  officerRequests: string[];
-  officerRequestOther: string;
-  passportKept: boolean | null;
-  ceacStatus: string;
-  ceacUpdateDate: string;
+  consularPost: string;     // e.g. "U.S. Embassy Islamabad"
+  ceacStatus: string;       // refused | administrative-processing | issued | ready | other
   caseNumber: string;
-  additionalNotes: string;
+  beneficiaryName: string;
+  passportNumber: string;
 }
