@@ -21,7 +21,9 @@ interface InstructionsStepProps {
 }
 
 const InstructionsStep = ({ data }: InstructionsStepProps) => {
-  const [openPhaseId, setOpenPhaseId] = useState<number | null>(data?.phases?.[0]?.id || null);
+  const [openPhaseId, setOpenPhaseId] = useState<number | null>(
+    data?.phases?.[0]?.id || null,
+  );
 
   if (!data || !data.phases) {
     return (
@@ -33,10 +35,13 @@ const InstructionsStep = ({ data }: InstructionsStepProps) => {
 
   return (
     <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 pb-2">
-      <div className="mb-8">
-        <h2 className="text-3xl font-bold text-slate-900 mb-3 tracking-tight">{data.title}</h2>
-        <p className="text-slate-600 text-lg max-w-xl">
-          Follow these steps carefully to complete your Police Character Certificate application.
+      <div className="mb-6 md:mb-8">
+        <h2 className="text-2xl md:text-3xl font-bold text-slate-900 mb-2 md:mb-3 tracking-tight">
+          {data.title}
+        </h2>
+        <p className="text-slate-600 text-base md:text-lg max-w-xl">
+          Follow these steps carefully to complete your Police Character
+          Certificate application.
         </p>
       </div>
 
@@ -50,34 +55,42 @@ const InstructionsStep = ({ data }: InstructionsStepProps) => {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.1 }}
               className={`rounded-2xl border-2 transition-all duration-300 overflow-hidden ${
-                isOpen 
-                  ? "border-primary bg-primary/5 shadow-md" 
+                isOpen
+                  ? "border-primary bg-primary/5 shadow-md"
                   : "border-slate-200 bg-white hover:border-slate-300"
               }`}
             >
               <button
                 onClick={() => setOpenPhaseId(isOpen ? null : phase.id)}
-                className="w-full flex items-center justify-between p-5 text-left"
+                className="w-full flex items-center justify-between p-4 md:p-5 text-left"
               >
-                <div className="flex items-center gap-4">
-                  <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-lg transition-colors ${
-                    isOpen ? "bg-primary text-white" : "bg-slate-100 text-slate-500"
-                  }`}>
+                <div className="flex items-center gap-3 md:gap-4">
+                  <div
+                    className={`shrink-0 w-8 h-8 md:w-10 md:h-10 rounded-full flex items-center justify-center font-bold text-base md:text-lg transition-colors ${
+                      isOpen
+                        ? "bg-primary text-white"
+                        : "bg-slate-100 text-slate-500"
+                    }`}
+                  >
                     {phase.id}
                   </div>
                   <div>
-                    <h3 className={`text-xl font-bold ${isOpen ? "text-primary" : "text-slate-700"}`}>
+                    <h3
+                      className={`text-lg md:text-xl font-bold ${isOpen ? "text-primary" : "text-slate-700"}`}
+                    >
                       {phase.title}
                     </h3>
-                    <div className="flex items-center gap-1.5 mt-1 text-sm text-slate-500 font-medium tracking-wide">
-                      <Info className="w-3.5 h-3.5" />
+                    <div className="flex items-center gap-1.5 mt-1 text-xs md:text-sm text-slate-500 font-medium tracking-wide">
+                      <Info className="w-3.5 h-3.5 shrink-0" />
                       {phase.duration}
                     </div>
                   </div>
                 </div>
-                <ChevronDown className={`w-6 h-6 transition-transform duration-300 ${
-                  isOpen ? "rotate-180 text-primary" : "text-slate-400"
-                }`} />
+                <ChevronDown
+                  className={`w-5 h-5 md:w-6 md:h-6 transition-transform duration-300 shrink-0 ${
+                    isOpen ? "rotate-180 text-primary" : "text-slate-400"
+                  }`}
+                />
               </button>
               <AnimatePresence>
                 {isOpen && (
@@ -87,10 +100,10 @@ const InstructionsStep = ({ data }: InstructionsStepProps) => {
                     exit={{ height: 0, opacity: 0 }}
                     transition={{ duration: 0.2 }}
                   >
-                    <div className="px-5 pb-5 pt-1 ml-14">
-                      <div className="bg-white p-4 rounded-xl border border-slate-100 shadow-sm flex items-start gap-3">
-                        <CheckCircle2 className="w-5 h-5 text-emerald-500 shrink-0 mt-0.5" />
-                        <p className="text-slate-700 leading-relaxed font-medium">
+                    <div className="px-4 md:px-5 pb-4 md:pb-5 pt-1 ml-11 md:ml-14">
+                      <div className="bg-white p-3 md:p-4 rounded-xl border border-slate-100 shadow-sm flex items-start gap-2.5 md:gap-3">
+                        <CheckCircle2 className="w-4 h-4 md:w-5 md:h-5 text-emerald-500 shrink-0 mt-0.5" />
+                        <p className="text-slate-700 leading-relaxed font-medium text-sm md:text-base">
                           {phase.description}
                         </p>
                       </div>

@@ -102,7 +102,7 @@ const RoadmapStep = ({
       </h2>
 
       {/* Flashcard Timeline */}
-      <div className="mb-12">
+      <div className="mb-14">
         <div
           onClick={() => hasOnlinePhases && setIsFlipped(!isFlipped)}
           className={`relative w-full min-h-[260px] ${hasOnlinePhases ? "cursor-pointer" : ""} transition-transform duration-700 ${
@@ -149,7 +149,7 @@ const RoadmapStep = ({
       </div>
 
       {/* Checklist Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4 mt-5">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4 mt-8 pt-5">
         <div
           className="cursor-pointer group flex-1"
           onClick={() => setShowDocuments(!showDocuments)}
@@ -379,8 +379,8 @@ const TimelinePhases = ({
         )}
       </div>
 
-      <div className="overflow-x-auto custom-scrollbar pb-6 -mx-3 px-3">
-        <div className="flex justify-start items-stretch gap-2 sm:gap-4 mt-4 min-w-max">
+      <div className="overflow-x-auto custom-scrollbar pt-10 pb-6 -mx-3 px-3">
+        <div className="flex justify-start items-stretch gap-2 sm:gap-4 min-w-max">
           {phases.map((phase, i) => (
             <div
               key={phase.id}

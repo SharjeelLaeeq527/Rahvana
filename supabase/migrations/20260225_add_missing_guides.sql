@@ -7,5 +7,6 @@ INSERT INTO guides (slug, title, description) VALUES
 ('educational-certificates-us-visa', 'Educational Certificates Guide', 'Guide for attesting educational certificates and degrees.'),
 ('employment-certificate-guide', 'Employment Certificate Guide', 'Guide for employment certificates and verifiable experience letters.'),
 ('police-certificate', 'Police Certificate Guide', 'Guide for obtaining Police Character Certificates.'),
-('visa-strength-guide', 'Visa Strength Guide', 'Guide to strengthen your overall visa application profile.')
+('visa-strength-guide', 'Visa Strength Guide', 'Guide to strengthen your overall visa application profile.'),
+('police-verification-guide', 'Police Verification Guide', 'Guide for obtaining Police Character Certificates.')
 ON CONFLICT (slug) DO NOTHING;

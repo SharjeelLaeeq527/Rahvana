@@ -229,11 +229,13 @@ export default function SettingsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-linear-to-br from-slate-50 to-slate-100 p-4">
-      <div className="max-w-4xl mx-auto py-8">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-slate-900">Settings</h1>
-          <p className="text-slate-600 mt-2">
+    <div className="min-h-screen bg-linear-to-br from-slate-50 to-slate-100 pb-2 px-2 sm:p-4 md:p-6">
+      <div className="max-w-4xl mx-auto pb-2 sm:py-4 md:py-6">
+        <div className="mb-6 sm:mb-8">
+          <h1 className="text-2xl sm:text-3xl font-bold text-slate-900">
+            Settings
+          </h1>
+          <p className="text-sm sm:text-base text-slate-600 mt-1 sm:mt-2">
             Manage your account settings and preferences
           </p>
         </div>
@@ -246,15 +248,15 @@ export default function SettingsPage() {
 
         <div className="space-y-8">
           {/* Notification Settings */}
-          <Card className="p-6 bg-white shadow-lg border-0">
+          <Card className="px-2 sm:px-4 py-4 sm:p-6 bg-white shadow-lg border-0">
             <CardHeader className="border-b border-slate-200 pb-4">
-              <CardTitle className="text-xl text-slate-900">
+              <CardTitle className="text-lg sm:text-xl text-slate-900">
                 Notification Preferences
               </CardTitle>
             </CardHeader>
-            <CardContent className="pt-6 space-y-6">
-              <div className="flex items-center justify-between">
-                <div>
+            <CardContent className="pt-4 sm:pt-6 space-y-6">
+              <div className="flex items-center justify-between gap-4">
+                <div className="space-y-0.5">
                   <Label
                     htmlFor="email-notifications"
                     className="text-base font-medium"
@@ -272,8 +274,8 @@ export default function SettingsPage() {
                 />
               </div>
 
-              <div className="flex items-center justify-between">
-                <div>
+              <div className="flex items-center justify-between gap-4">
+                <div className="space-y-0.5">
                   <Label
                     htmlFor="sms-notifications"
                     className="text-base font-medium"
@@ -291,8 +293,8 @@ export default function SettingsPage() {
                 />
               </div>
 
-              <div className="flex items-center justify-between">
-                <div>
+              <div className="flex items-center justify-between gap-4">
+                <div className="space-y-0.5">
                   <Label
                     htmlFor="push-notifications"
                     className="text-base font-medium"
@@ -313,16 +315,16 @@ export default function SettingsPage() {
           </Card>
 
           {/* Account Settings */}
-          <Card className="p-6 bg-white shadow-lg border-0">
+          <Card className="px-2 sm:px-4 py-4 sm:p-6 bg-white shadow-lg border-0">
             <CardHeader className="border-b border-slate-200 pb-4">
-              <CardTitle className="text-xl text-slate-900">
+              <CardTitle className="text-lg sm:text-xl text-slate-900">
                 Account Settings
               </CardTitle>
             </CardHeader>
-            <CardContent className="pt-6 space-y-6">
-              <div className="flex flex-col">
-                <div className="flex items-center justify-between">
-                  <div>
+            <CardContent className="pt-4 sm:pt-6 space-y-6">
+              <div className="flex flex-col gap-4 sm:gap-2">
+                <div className="flex items-center justify-between gap-4">
+                  <div className="space-y-0.5">
                     <Label
                       htmlFor="two-factor"
                       className="text-base font-medium"
@@ -343,16 +345,21 @@ export default function SettingsPage() {
 
                 <Button
                   onClick={() => router.push("/mfa-setup")}
-                  className="w-fit mt-2"
+                  className="w-full sm:w-fit mt-2 sm:mt-0"
                 >
-                  {profile?.mfa_enabled
-                    ? "Manage Two-Factor Authentication"
-                    : "Setup Two-Factor Authentication"}
+                  <span className="hidden sm:inline">
+                    {profile?.mfa_enabled
+                      ? "Manage Two-Factor Authentication"
+                      : "Setup Two-Factor Authentication"}
+                  </span>
+                  <span className="sm:hidden">
+                    {profile?.mfa_enabled ? "Manage 2FA" : "Setup 2FA"}
+                  </span>
                 </Button>
               </div>
 
-              <div className="flex items-center justify-between">
-                <div>
+              <div className="flex items-center justify-between gap-4">
+                <div className="space-y-0.5">
                   <Label
                     htmlFor="auto-backup"
                     className="text-base font-medium"
@@ -375,32 +382,37 @@ export default function SettingsPage() {
           </Card>
 
           {/* Security Settings */}
-          <Card className="p-6 bg-white shadow-lg border-0">
+          <Card className="px-2 sm:px-4 py-4 sm:p-6 bg-white shadow-lg border-0">
             <CardHeader className="border-b border-slate-200 pb-4">
-              <CardTitle className="text-xl text-slate-900">Security</CardTitle>
+              <CardTitle className="text-lg sm:text-xl text-slate-900">
+                Security
+              </CardTitle>
             </CardHeader>
-            <CardContent className="pt-6 space-y-6">
+            <CardContent className="pt-4 sm:pt-6 space-y-6">
               <div className="space-y-4">
                 <div>
                   <Label className="text-base font-medium">
                     Change Password
                   </Label>
-                  <p className="text-sm text-slate-500 mb-3">
+                  <p className="text-sm text-slate-500 mb-3 sm:mb-4">
                     Update your account password
                   </p>
-                  <Button variant="outline" className="border-slate-300">
+                  <Button
+                    variant="outline"
+                    className="w-full sm:w-auto border-slate-300"
+                  >
                     Change Password
                   </Button>
                 </div>
 
                 <div className="pt-4 border-t border-slate-200">
                   <Label className="text-base font-medium">Sign Out</Label>
-                  <p className="text-sm text-slate-500 mb-3">
+                  <p className="text-sm text-slate-500 mb-3 sm:mb-4">
                     Log out of all devices
                   </p>
                   <Button
                     variant="outline"
-                    className="border-red-300 text-red-700 hover:bg-red-50"
+                    className="w-full sm:w-auto border-red-300 text-red-700 hover:bg-red-50"
                     onClick={handleSignOut}
                   >
                     Sign Out
@@ -411,10 +423,14 @@ export default function SettingsPage() {
                   <Label className="text-base font-medium text-red-700">
                     Delete Account
                   </Label>
-                  <p className="text-sm text-slate-500 mb-3">
+                  <p className="text-sm text-slate-500 mb-3 sm:mb-4">
                     Permanently remove your account and all data
                   </p>
-                  <Button variant="destructive" onClick={handleDeleteAccount}>
+                  <Button
+                    variant="destructive"
+                    className="w-full sm:w-auto"
+                    onClick={handleDeleteAccount}
+                  >
                     Delete Account
                   </Button>
                 </div>
@@ -422,10 +438,10 @@ export default function SettingsPage() {
             </CardContent>
           </Card>
 
-          <div className="flex justify-end">
+          <div className="flex justify-end pt-2">
             <Button
               onClick={handleSaveSettings}
-              className="bg-slate-900 hover:bg-slate-800 text-white px-8"
+              className="w-full sm:w-auto bg-slate-900 hover:bg-slate-800 text-white px-8"
               disabled={loading}
             >
               Save All Settings
@@ -433,7 +449,7 @@ export default function SettingsPage() {
           </div>
         </div>
       </div>
-      
+
       <ConfirmationModal
         open={deleteAccountModalOpen}
         onOpenChange={setDeleteAccountModalOpen}

@@ -64,6 +64,7 @@ const protectedRoutes = [
     '/settings',
 ]
 
+
   // Define admin routes (must be logged in as admin)
   const adminRoutes = ['/admin']
 

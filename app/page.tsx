@@ -24,6 +24,11 @@ import { createClient } from "@/lib/supabase/client";
 import GetInTouch from "./components/Contact/GetInTouch";
 import { AuthRequiredModal } from "./components/shared/AuthRequiredModal";
 import { MfaPromptModal } from "./components/shared/MFAPromptModal";
+import { NAV_DATA } from "@/app/components/layout/navigationData";
+
+const ALL_SERVICES = NAV_DATA.services.tabs.flatMap((tab) =>
+  tab.items ? tab.items.map((item) => ({ ...item, category: tab.label })) : [],
+);
 
 const JOURNEYS = [
   // Family & Protection
@@ -543,6 +548,7 @@ function HomePageContent() {
   const [activeStep, setActiveStep] = useState(1);
   const [showComingSoon, setShowComingSoon] = useState(false);
   const [openFAQ, setOpenFAQ] = useState<number | null>(null);
+  const [activeService, setActiveService] = useState(0);
 
   // Lifted wizard state to share with Dashboard
   const { state, actions, isLoaded } = useWizard();
@@ -890,7 +896,7 @@ function HomePageContent() {
                       className="group relative bg-muted/30 rounded-2xl p-8 border border-border transition-all hover:border-rahvana-primary/30 hover:shadow-xl cursor-pointer overflow-hidden"
                     >
                       <div className="absolute inset-0 bg-linear-to-tr from-rahvana-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                      <div className="w-14 h-14 rounded-xl bg-linear-to-br from-rahvana-primary to-rahvana-primary-light flex items-center justify-center text-white mb-6 transform group-hover:scale-110 transition-transform [&>svg]:!text-white">
+                      <div className="w-14 h-14 rounded-xl bg-linear-to-br from-rahvana-primary to-rahvana-primary-light flex items-center justify-center text-white mb-6 transform group-hover:scale-110 transition-transform [&>svg]:text-white!">
                         {tool.icon}
                       </div>
                       <h3 className="text-xl font-bold text-foreground mb-2">
@@ -912,6 +918,193 @@ function HomePageContent() {
                   >
                     Explore all tools <Icons.ArrowRight className="w-5 h-5" />
                   </HydrationSafeButton>
+                </div>
+              </div>
+            </section>
+
+            {/* SERVICES SECTION */}
+            <section
+              className="relative py-12 md:py-24 bg-muted/10 overflow-hidden"
+              id="services"
+            >
+              <div className="container mx-auto px-6">
+                <div className="text-center max-w-3xl mx-auto mb-16">
+                  <motion.span
+                    initial={{ opacity: 0, y: 10 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-rahvana-primary-pale text-rahvana-primary text-sm font-semibold mb-4"
+                  >
+                    <Icons.Briefcase className="w-4 h-4" />
+                    Premium Services
+                  </motion.span>
+                  <motion.h2
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.1 }}
+                    viewport={{ once: true }}
+                    className="text-3xl md:text-5xl font-bold text-foreground mb-4"
+                  >
+                    Expert Help & Done-for-You Cases
+                  </motion.h2>
+                  <motion.p
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.2 }}
+                    viewport={{ once: true }}
+                    className="text-lg text-muted-foreground"
+                  >
+                    Get the personalized support you need, from quick
+                    consultations to full document preparation and review.
+                  </motion.p>
+                </div>
+
+                <div className="flex flex-col lg:flex-row gap-8 lg:gap-12 w-full max-w-6xl mx-auto">
+                  {/* Left Column: Interactive List */}
+                  <div className="w-full lg:w-5/12 flex flex-col gap-3">
+                    {ALL_SERVICES.filter(
+                      (s) => !s.disabled && s.href !== "/book-consultation",
+                    )
+                      .slice(0, 5)
+                      .map((service, idx) => {
+                        const isActive = activeService === idx;
+                        return (
+                          <motion.div
+                            key={idx}
+                            initial={{ opacity: 0, x: -20 }}
+                            whileInView={{ opacity: 1, x: 0 }}
+                            transition={{ delay: idx * 0.1, duration: 0.4 }}
+                            viewport={{ once: true }}
+                            onClick={() => setActiveService(idx)}
+                            className={`group relative flex items-center p-4 rounded-2xl cursor-pointer transition-all duration-300 border ${
+                              isActive
+                                ? "bg-card border-rahvana-primary shadow-md"
+                                : "bg-transparent border-transparent hover:bg-muted/50 hover:border-border"
+                            }`}
+                          >
+                            <div
+                              className={`flex items-center justify-center w-12 h-12 rounded-xl transition-all duration-300 mr-4 shrink-0 ${
+                                isActive
+                                  ? "bg-rahvana-primary text-white shadow-md shadow-rahvana-primary/20 scale-110 [&>svg]:text-current!"
+                                  : "bg-muted text-muted-foreground group-hover:bg-primary/90 group-hover:text-white [&>svg]:text-current!"
+                              }`}
+                            >
+                              {React.cloneElement(
+                                service.icon as React.ReactElement<{
+                                  className?: string;
+                                }>,
+                                {
+                                  className: "w-5 h-5",
+                                },
+                              )}
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <h4
+                                className={`font-bold text-base truncate transition-colors ${
+                                  isActive
+                                    ? "text-foreground"
+                                    : "text-muted-foreground group-hover:text-foreground"
+                                }`}
+                              >
+                                {service.title}
+                              </h4>
+                              <p className="text-xs text-muted-foreground truncate opacity-80 uppercase tracking-wider mt-1">
+                                {service.category}
+                              </p>
+                            </div>
+                            {/* Active indicator line */}
+                            {/* {isActive && (
+                              <motion.div
+                                layoutId="activeIndicator"
+                                className="absolute left-0 w-1 h-1/2 bg-rahvana-primary rounded-r-full"
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                transition={{ duration: 0.3 }}
+                              />
+                            )} */}
+                          </motion.div>
+                        );
+                      })}
+
+                    <div className="mt-6 pl-4">
+                      <HydrationSafeButton
+                        onClick={() => router.push("/services")}
+                        className="inline-flex items-center gap-2 text-sm font-bold text-rahvana-primary hover:text-rahvana-primary-dark transition-colors"
+                      >
+                        View all services{" "}
+                        <Icons.ArrowRight className="w-4 h-4" />
+                      </HydrationSafeButton>
+                    </div>
+                  </div>
+
+                  {/* Right Column: Dynamic Showcase Card */}
+                  <div className="w-full lg:w-7/12 relative min-h-[400px]">
+                    <AnimatePresence mode="wait">
+                      <motion.div
+                        key={activeService}
+                        initial={{ opacity: 0, y: 20, scale: 0.98 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        exit={{ opacity: 0, y: -20, scale: 0.98 }}
+                        transition={{ duration: 0.4, ease: "easeOut" }}
+                        className="absolute inset-0 rounded-3xl bg-card border border-border overflow-hidden shadow-2xl flex flex-col justify-between"
+                      >
+                        {/* Decorative Background */}
+                        <div className="absolute top-0 right-0 w-64 h-64 bg-rahvana-primary-pale/30 rounded-full blur-3xl -mx-20 -my-20 pointer-events-none"></div>
+                        <div className="absolute bottom-0 left-0 w-48 h-48 bg-rahvana-primary-pale/20 rounded-full blur-2xl -mx-10 -my-10 pointer-events-none"></div>
+
+                        <div className="relative z-10 p-8 md:p-12 flex-1 flex flex-col">
+                          <div className="flex justify-between items-start mb-8 border-b border-border/50 pb-6">
+                            <div className="w-16 h-16 md:w-20 md:h-20 rounded-2xl bg-linear-to-br from-rahvana-primary to-rahvana-primary-light flex items-center justify-center text-white shadow-lg shadow-rahvana-primary/20 [&>svg]:text-white! [&>svg]:w-8 [&>svg]:h-8 md:[&>svg]:w-10 md:[&>svg]:h-10">
+                              {
+                                ALL_SERVICES.filter((s) => !s.disabled  && s.href !== "/book-consultation")[
+                                  activeService
+                                ]?.icon
+                              }
+                            </div>
+                            <div className="inline-block px-4 py-1.5 text-xs font-bold uppercase tracking-wider rounded-full bg-rahvana-primary-pale text-rahvana-primary">
+                              {
+                                ALL_SERVICES.filter((s) => !s.disabled  && s.href !== "/book-consultation")[
+                                  activeService
+                                ]?.category
+                              }
+                            </div>
+                          </div>
+
+                          <h3 className="text-2xl md:text-3xl lg:text-4xl font-bold text-foreground mb-4 leading-tight">
+                            {
+                              ALL_SERVICES.filter((s) => !s.disabled  && s.href !== "/book-consultation")[
+                                activeService
+                              ]?.title
+                            }
+                          </h3>
+                          <p className="text-muted-foreground text-base md:text-lg leading-relaxed mb-8 flex-1">
+                            {
+                              ALL_SERVICES.filter((s) => !s.disabled && s.href !== "/book-consultation")[
+                                activeService
+                              ]?.description
+                            }
+                          </p>
+
+                          <div className="mt-auto">
+                            <HydrationSafeButton
+                              onClick={() => {
+                                const href = ALL_SERVICES.filter(
+                                  (s) => !s.disabled  && s.href !== "/book-consultation",
+                                )[activeService]?.href;
+                                if (href && href !== "#") {
+                                  router.push(href);
+                                }
+                              }}
+                              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-4 text-base font-bold text-white bg-rahvana-primary rounded-xl hover:bg-rahvana-primary-dark transition-all shadow-md hover:shadow-xl hover:-translate-y-1"
+                            >
+                              Get Started{" "}
+                              <Icons.ArrowRight className="w-5 h-5" />
+                            </HydrationSafeButton>
+                          </div>
+                        </div>
+                      </motion.div>
+                    </AnimatePresence>
+                  </div>
                 </div>
               </div>
             </section>

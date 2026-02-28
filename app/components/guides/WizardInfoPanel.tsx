@@ -302,7 +302,7 @@ const WizardInfoPanel = ({
                               {tier.type}
                             </div>
                             <p className="text-[0.7rem] sm:text-[0.75rem] text-slate-500 flex items-center gap-1 truncate">
-                              <Clock className="w-3 h-3 flex-shrink-0" />
+                              <Clock className="w-3 h-3 shrink-0" />
                               {tier.days}
                             </p>
                           </div>
