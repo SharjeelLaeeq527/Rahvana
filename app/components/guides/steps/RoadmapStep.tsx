@@ -65,16 +65,33 @@ const RoadmapStep = ({
     };
   }, [activePhase]);
 
-  const checkedCount = checkedDocuments.length;
-  const totalDocs = documentsChecklist.length;
-
-  const currentPhases = isFlipped ? onlinePhases : onsitePhases;
-
   const getBulletPoints = (text: string) => {
     return text
-      .split(".")
-      .map((item) => item.trim())
+      .split(/\.\s+/)
+      .map((item) => item.replace(/\.$/, "").trim())
       .filter((item) => item.length > 0);
+  };
+
+  const renderTextWithLinks = (text: string) => {
+    const urlRegex = /(https?:\/\/[^\s]+)/g;
+    const parts = text.split(urlRegex);
+    return parts.map((part, i) => {
+      if (part.match(urlRegex)) {
+        return (
+          <a
+            key={i}
+            href={part}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-primary hover:underline font-medium"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {part}
+          </a>
+        );
+      }
+      return part;
+    });
   };
 
   return (
@@ -273,7 +290,7 @@ const RoadmapStep = ({
                                 •
                               </span>
                               <span className="text-slate-700 text-sm leading-relaxed">
-                                {point}
+                                {renderTextWithLinks(point)}
                               </span>
                             </li>
                           ),
@@ -323,13 +340,13 @@ const TimelinePhases = ({
     <div
       className={`p-6 rounded-2xl border shadow-lg ${
         type === "Onsite Application"
-          ? "bg-linear-to-br from-[#e8f6f6] to-[#d1eeef] border-[#0d7377]/20"
-          : "bg-linear-to-br from-[#e8f6f6] to-[#32e0c4]/20 border-[#32e0c4]/30"
+          ? "bg-linear-to-br from-[#e8f6f6] to-[#d1eeef] border-primary/20"
+          : "bg-linear-to-br from-[#e8f6f6] to-[#0d47a1]/20 border-[#0d47a1]/30"
       }`}
     >
       <div className="flex justify-between items-center mb-6">
         <h4
-          className={`text-lg font-bold ${type === "Onsite Application" ? "text-[#0d7377]" : "text-[#32e0c4]"}`}
+          className={`text-lg font-bold ${type === "Onsite Application" ? "text-primary" : "text-[#0d47a1]"}`}
         >
           {type}
         </h4>
@@ -338,7 +355,7 @@ const TimelinePhases = ({
             <span
               className={`px-3 py-1 text-[0.7rem] font-bold rounded-full transition-all duration-300 uppercase tracking-wider ${
                 type === "Onsite Application"
-                  ? "bg-white text-[#0d7377] shadow-sm ring-1 ring-slate-200/50"
+                  ? "bg-white text-primary shadow-sm ring-1 ring-slate-200/50"
                   : "text-slate-400 hover:text-slate-600"
               }`}
             >
@@ -347,7 +364,7 @@ const TimelinePhases = ({
             <span
               className={`px-3 py-1 text-[0.7rem] font-bold rounded-full transition-all duration-300 uppercase tracking-wider ${
                 type === "Online Application"
-                  ? "bg-white text-[#32e0c4] shadow-sm ring-1 ring-slate-200/50"
+                  ? "bg-white text-[#0d47a1] shadow-sm ring-1 ring-slate-200/50"
                   : "text-slate-400 hover:text-slate-600"
               }`}
             >
@@ -355,78 +372,81 @@ const TimelinePhases = ({
             </span>
           </div>
         ) : (
-          <span className="text-xs text-slate-500 bg-slate-100 px-2 py-1 rounded-full">
-            Click to view details
-          </span>
+          // <span className="text-xs text-slate-500 bg-slate-100 px-2 py-1 rounded-full">
+          //   Click to view details
+          // </span>
+          <></>
         )}
       </div>
 
-      <div className="flex justify-between items-stretch gap-4 sm:gap-0 mt-4">
-        {phases.map((phase, i) => (
-          <div
-            key={phase.id}
-            className="relative flex-1 flex flex-col items-center min-w-[100px]"
-          >
-            {/* Connecting Line */}
-            {i < phases.length - 1 && (
-              <div className="hidden sm:block absolute top-[28px] left-[50%] w-full h-1 z-0">
-                <div
-                  className={`w-full h-full ${type === "Onsite Application" ? "bg-[#0d7377]/30" : "bg-[#32e0c4]/40"} rounded-full`}
-                ></div>
-              </div>
-            )}
-
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                setActiveId(phase.id);
-                onSelectPhase(phase);
-              }}
-              className="relative z-10 flex flex-1 flex-col items-center gap-2 bg-transparent border-none p-1 group w-full"
+      <div className="overflow-x-auto custom-scrollbar pb-6 -mx-3 px-3">
+        <div className="flex justify-start items-stretch gap-2 sm:gap-4 mt-4 min-w-max">
+          {phases.map((phase, i) => (
+            <div
+              key={phase.id}
+              className="relative flex flex-col items-center w-[110px] sm:w-[130px]"
             >
-              {i === 0 && !hasClickedAnyPhase && (
-                <div className="absolute -top-8 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity bg-slate-800 text-white text-xs px-2 py-1 rounded whitespace-nowrap pointer-events-none z-20">
-                  Click here
+              {/* Connecting Line */}
+              {i < phases.length - 1 && (
+                <div className="absolute top-[28px] left-[50%] w-full h-1 z-0">
+                  <div
+                    className={`w-full h-full ${type === "Onsite Application" ? "bg-primary/30" : "bg-[#0d47a1]/40"} rounded-full`}
+                  ></div>
                 </div>
               )}
-              <div className="relative">
+
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setActiveId(phase.id);
+                  onSelectPhase(phase);
+                }}
+                className="relative z-10 flex flex-1 flex-col items-center gap-2 bg-transparent border-none p-1 group w-full"
+              >
                 {i === 0 && !hasClickedAnyPhase && (
-                  <div
-                    className="absolute inset-0 rounded-full bg-current opacity-30 animate-ping z-0 pointer-events-none"
-                    style={{
-                      color:
-                        type === "Onsite Application" ? "#0d7377" : "#32e0c4",
-                    }}
-                  />
+                  <div className="absolute -top-8 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity bg-slate-800 text-white text-xs px-2 py-1 rounded whitespace-nowrap pointer-events-none z-20">
+                    Click here
+                  </div>
                 )}
-                <div
-                  className={`relative z-10 w-14 h-14 shrink-0 rounded-full flex items-center justify-center
+                <div className="relative">
+                  {i === 0 && !hasClickedAnyPhase && (
+                    <div
+                      className="absolute inset-0 rounded-full bg-current opacity-30 animate-ping z-0 pointer-events-none"
+                      style={{
+                        color:
+                          type === "Onsite Application" ? "#0d7377" : "#0d47a1",
+                      }}
+                    />
+                  )}
+                  <div
+                    className={`relative z-10 w-14 h-14 shrink-0 rounded-full flex items-center justify-center
                   font-bold text-white text-lg shadow-lg group-hover:scale-110 transition-transform duration-200 border-2
                   ${
                     activeId === phase.id
                       ? type === "Onsite Application"
-                        ? "bg-[#0d7377] border-[#0a5a5d] ring-4 ring-[#0d7377]/20"
-                        : "bg-[#32e0c4] border-[#14a0a6] ring-4 ring-[#32e0c4]/20"
+                        ? "bg-primary border-[#0a5a5d] ring-4 ring-primary/20"
+                        : "bg-[#0d47a1] border-[#14a0a6] ring-4 ring-[#0d47a1]/20"
                       : type === "Onsite Application"
-                        ? "bg-linear-to-br from-[#0d7377] to-[#0a5a5d] border-[#0a5a5d] group-hover:ring-2 group-hover:ring-[#0d7377]/30"
-                        : "bg-linear-to-br from-[#32e0c4] to-[#14a0a6] border-[#14a0a6] group-hover:ring-2 group-hover:ring-[#32e0c4]/30"
+                        ? "bg-linear-to-br from-primary to-[#0a5a5d] border-[#0a5a5d] group-hover:ring-2 group-hover:ring-primary/30"
+                        : "bg-linear-to-br from-[#0d47a1] to-[#14a0a6] border-[#14a0a6] group-hover:ring-2 group-hover:ring-[#0d47a1]/30"
                   }`}
-                >
-                  {phase.id}
+                  >
+                    {phase.id}
+                  </div>
                 </div>
-              </div>
 
-              <div className="text-center px-1 flex flex-col items-center flex-1 w-full">
-                <span className="block text-sm font-semibold text-slate-800 group-hover:text-primary transition-colors">
-                  {phase.title}
-                </span>
-                <span className="block text-xs text-slate-500 mt-auto pt-1 font-medium">
-                  {phase.duration}
-                </span>
-              </div>
-            </button>
-          </div>
-        ))}
+                <div className="text-center px-1 flex flex-col items-center flex-1 w-full">
+                  <span className="block text-sm font-semibold text-slate-800 group-hover:text-primary transition-colors">
+                    {phase.title}
+                  </span>
+                  <span className="block text-xs text-slate-500 mt-auto pt-1 font-medium">
+                    {phase.duration}
+                  </span>
+                </div>
+              </button>
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );

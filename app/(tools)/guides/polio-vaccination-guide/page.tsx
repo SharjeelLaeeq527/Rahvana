@@ -40,7 +40,7 @@ const STEP_LABELS: Record<string, string> = {
 };
 
 const INFO_PANEL_KEYS: Record<
-  WizardStepId,
+  string,
   keyof typeof guideData.wizard.info_panel
 > = {
   document_need: "document_need",
