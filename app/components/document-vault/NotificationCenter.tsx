@@ -78,7 +78,7 @@ export function NotificationCenter() {
   return (
     <div className="flex flex-col h-full">
       <SheetHeader className="px-1 text-left">
-        <div className="flex items-center justify-between gap-2">
+        <div className="flex items-center justify-between gap-2 pr-8">
           <SheetTitle className="text-xl sm:text-2xl">Notifications</SheetTitle>
           {unreadCount > 0 && (
             <Badge variant="secondary" className="shrink-0">

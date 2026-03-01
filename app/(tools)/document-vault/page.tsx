@@ -558,7 +558,9 @@ export default function DocumentVaultPage() {
             </Card>
 
             {/* Config Panel */}
-            <LiveConfigPanel />
+            <div className="mb-4">
+              <LiveConfigPanel />
+            </div>
 
             {/* Mini Tips Card */}
             <Card className="p-4 bg-amber-50 dark:bg-amber-950/30 border-amber-200 dark:border-amber-900 shadow-sm">
