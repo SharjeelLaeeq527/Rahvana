@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo, useRef } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import WizardHeader from "../../../components/guides/WizardHeader";
 import WizardSidebar from "../../../components/guides/WizardSidebar";
@@ -85,6 +85,8 @@ export default function PoliceVerificationGuide() {
     uploadedFile: false,
     checkedDocuments: [],
   });
+
+  const hasInitializedModal = useRef(false);
 
   const { saveWizardStep, session, loading } = useWizardSession(
     "police-verification-guide",
@@ -186,11 +188,25 @@ export default function PoliceVerificationGuide() {
   }, [currentStep, state]);
 
   useEffect(() => {
-    const dontShow = localStorage.getItem(
-      "hide_whats_this_modal_police_verification",
-    );
-    if (!dontShow) setShowWhatsThis(true);
-  }, []);
+    if (!session) return;
+
+    // Only run once per page load
+    if (hasInitializedModal.current) return;
+
+    hasInitializedModal.current = true;
+
+    if (!session.hide_intro_modal) {
+      setShowWhatsThis(true);
+    } else {
+      setShowWhatsThis(false);
+    }
+  }, [session]);
+
+  useEffect(() => {
+    if (session?.saved) {
+      setIsSaved(true);
+    }
+  }, [session]);
 
   useNavigationGuard(
     hasProgress && !isSaved,
@@ -494,15 +510,10 @@ export default function PoliceVerificationGuide() {
 
       <WhatsThisModal
         open={showWhatsThis}
-        onClose={() => {
-          setShowWhatsThis(false);
-          localStorage.setItem(
-            "hide_whats_this_modal_police_verification",
-            "true",
-          );
-        }}
+        onClose={() => setShowWhatsThis(false)}
         data={guideData.wizard.whats_this}
         documentLabel="Police Verification"
+        guideSlug="police-verification-guide"
       />
 
       <FeedbackButton
