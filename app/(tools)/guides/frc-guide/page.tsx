@@ -20,6 +20,7 @@ import { useGuideUpload } from "@/lib/guides/useGuideUpload";
 import { useGuideFeedback } from "@/lib/guides/useGuideFeedback";
 import { useGuideSave } from "@/lib/guides/useGuideSave";
 import { useNavigationGuard } from "@/lib/guides/useNavigationGuard";
+import { Spinner } from "@/components/ui/spinner";
 
 const STEP_IDS: WizardStepId[] = ["document_need", "roadmap", "validation"];
 
@@ -265,8 +266,8 @@ const FrcGuide = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#f5f7fa] pt-14">
-        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-teal-600" />
+      <div className="min-h-screen flex items-center justify-center bg-[#f5f7fa]">
+        <Spinner size="md" />
       </div>
     );
   }
