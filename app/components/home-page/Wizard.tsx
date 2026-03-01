@@ -66,20 +66,20 @@ export function Wizard({ state, actions, isLoaded }: WizardProps) {
             <span className="text-sm font-bold text-slate-500 uppercase tracking-wider">
               Overall Journey Progress
             </span>
-            <span className="text-sm font-bold text-[#0d9488]">
+            <span className="text-sm font-bold text-rahvana-primary">
               {progressPercent}% ({completedTotal}/{totalSteps} steps)
             </span>
           </div>
           <div className="h-2 bg-slate-100 rounded-full overflow-hidden">
             <div
-              className="h-full bg-[#0d9488] transition-all duration-500"
+              className="h-full bg-rahvana-primary transition-all duration-500"
               style={{ width: `${progressPercent}%` }}
             ></div>
           </div>
         </div>
         <button
           onClick={() => setIsVaultOpen(true)}
-          className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 rounded-lg font-semibold text-slate-700 hover:border-[#0d9488] hover:bg-[#ebf5f4] transition-all"
+          className="flex items-center gap-2 px-5 py-2.5 bg-rahvana-primary text-white rounded-xl font-bold hover:bg-rahvana-primary-dark transition-all shadow-md hover:shadow-lg active:scale-95"
         >
           📁 Document Vault
         </button>

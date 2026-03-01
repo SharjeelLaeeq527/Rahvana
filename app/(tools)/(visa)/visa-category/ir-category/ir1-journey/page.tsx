@@ -313,68 +313,9 @@ function Wizard({ state, actions, isLoaded, isSignedIn }: WizardProps) {
 
   if (!isLoaded) {
     return (
-<<<<<<< HEAD
-        <div className="flex flex-col gap-6">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
-                <div className="flex-1">
-                    <div className="flex justify-between items-center mb-2">
-                        <span className="text-sm font-bold text-slate-500 uppercase tracking-wider">Overall Journey Progress</span>
-                        <span className="text-sm font-bold text-[#0d9488]">{progressPercent}% ({completedTotal}/{totalSteps} steps)</span>
-                    </div>
-                    <div className="h-2 bg-slate-100 rounded-full overflow-hidden">
-                        <div className="h-full bg-[#0d9488] transition-all duration-500" style={{ width: `${progressPercent}%` }}></div>
-                    </div>
-                </div>
-                <div className="flex items-center gap-3">
-                    <button
-                        onClick={() => setIsVaultOpen(true)}
-                        className="flex items-center gap-2 px-4 py-2  border border-slate-200 rounded-lg font-semibold text-slate-700 hover:border-[#0d9488] bg-[#ebf5f4] transition-all"
-                    >
-                        Document Vault
-                    </button>
-                </div>
-            </div>
-
-            <div className="flex flex-col md:flex-row gap-6 bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm min-h-[600px] mb-12">
-                <aside className="w-full md:w-[320px] bg-slate-50 border-r border-slate-200 p-4 md:p-6 overflow-y-auto max-h-[800px]">
-                    <ProgressTree
-                        state={state}
-                        onSelectStep={(stageIdx, stepIdx) => {
-                            actions.setStage(stageIdx);
-                            actions.setCurrentStep(stepIdx);
-                        }}
-                    />
-                </aside>
-
-                <main className="flex-1 p-4 md:p-8 bg-white overflow-y-auto">
-                    <StepDetail
-                        step={currentStep}
-                        stage={currentStage}
-                        state={state}
-                        onToggleComplete={actions.toggleComplete}
-                        onNext={handleNext}
-                        onPrev={handlePrev}
-                        isFirst={state.currentStage === 0 && state.currentStep === 0}
-                        isLast={state.currentStage === roadmapData.stages.length - 1 && state.currentStep === currentStage.steps.length - 1}
-                    />
-                </main>
-            </div>
-
-            <DocumentVault
-                isOpen={isVaultOpen}
-                onClose={() => setIsVaultOpen(false)}
-                state={state}
-                onToggleDocument={actions.toggleDocument}
-                onUpdateNote={actions.updateNote}
-                onUpload={actions.uploadDocument}
-                onClearUpload={actions.clearDocument}
-            />
-        </div>
-=======
       <div className="p-20 text-center text-slate-400">
         Loading your journey...
       </div>
->>>>>>> ed0747ee82ba20cbc7af28f6728b38de99cf08ec
     );
   }
 
@@ -416,13 +357,13 @@ function Wizard({ state, actions, isLoaded, isSignedIn }: WizardProps) {
             <span className="text-xs md:text-sm font-bold text-slate-500 uppercase tracking-wider">
               Overall Journey Progress
             </span>
-            <span className="text-xs md:text-sm font-bold text-[#0d9488]">
+            <span className="text-xs md:text-sm font-bold text-rahvana-primary">
               {progressPercent}% ({completedTotal}/{totalSteps} steps)
             </span>
           </div>
           <div className="h-2 bg-slate-100 rounded-full overflow-hidden">
             <div
-              className="h-full bg-[#0d9488] transition-all duration-500"
+              className="h-full bg-rahvana-primary transition-all duration-500"
               style={{ width: `${progressPercent}%` }}
             ></div>
           </div>
@@ -430,9 +371,9 @@ function Wizard({ state, actions, isLoaded, isSignedIn }: WizardProps) {
         <div className="flex items-center gap-3 w-full md:w-auto">
           <button
             onClick={() => setIsVaultOpen(true)}
-            className="flex-1 md:flex-none flex items-center justify-center gap-2 px-4 py-2 bg-white border border-slate-200 rounded-lg font-semibold text-slate-700 hover:border-[#0d9488] hover:bg-[#ebf5f4] transition-all"
+            className="flex-1 md:flex-none flex items-center justify-center gap-2 px-5 py-2.5 bg-rahvana-primary text-white rounded-xl font-bold hover:bg-rahvana-primary-dark transition-all shadow-md hover:shadow-lg active:scale-95"
           >
-            📁 Document Vault
+             Document Vault
           </button>
         </div>
       </div>
