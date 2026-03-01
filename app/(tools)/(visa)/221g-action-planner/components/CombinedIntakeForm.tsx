@@ -12,7 +12,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ArrowRight, CircleHelp, CopyIcon, FileCheck2, ListChecks, RefreshCcw, ShieldCheck, Sparkles, PrinterIcon } from "lucide-react";
+import { ArrowRight, CircleHelp, CopyIcon, FileCheck2, FileText, ListChecks, Mail, RefreshCcw, ShieldCheck, Sparkles, PrinterIcon } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -1140,49 +1140,92 @@ export default function CombinedIntakeForm({
         )}</>;
     };
 
+    const docConfig = {
+      actionPlan: {
+        title: "Action Plan",
+        subtitle: "Prioritized next steps and follow-up timeline.",
+        icon: FileText,
+      },
+      checklist: {
+        title: "Packet Checklist",
+        subtitle: "Track required documents before final submission.",
+        icon: ListChecks,
+      },
+      coverLetter: {
+        title: "Cover Letter",
+        subtitle: "Ready-to-print letter for embassy packet assembly.",
+        icon: Mail,
+      },
+    } as const;
+
     return (
       <div className="space-y-6">
-        <div className="border-b pb-4">
-          <h2 className="text-2xl font-bold text-foreground">Your 221(g) Response Package</h2>
-          <p className="text-muted-foreground mt-1 text-sm">Your personalized documents are ready. Review, print, or copy as needed.</p>
+        <div className="rounded-2xl border border-slate-200 bg-gradient-to-r from-slate-50 via-white to-teal-50/70 p-5 md:p-6">
+          <h2 className="text-2xl font-bold text-slate-900">Your 221(g) Response Package</h2>
+          <p className="mt-1 text-sm text-slate-600">
+            Review each document, copy or print instantly, and finalize your response packet.
+          </p>
         </div>
 
         <Tabs defaultValue="actionPlan" className="w-full">
-          <TabsList className="grid w-full grid-cols-3 mb-4">
-            <TabsTrigger value="actionPlan">Action Plan</TabsTrigger>
-            <TabsTrigger value="checklist">Packet Checklist</TabsTrigger>
-            <TabsTrigger value="coverLetter">Cover Letter</TabsTrigger>
+          <TabsList className="mb-5 grid h-auto w-full grid-cols-1 gap-2 rounded-xl border border-slate-200 bg-slate-50 p-2 sm:grid-cols-3">
+            <TabsTrigger value="actionPlan" className="rounded-lg py-2.5 text-slate-700 data-[state=active]:bg-white data-[state=active]:text-teal-700 data-[state=active]:shadow-sm">
+              Action Plan
+            </TabsTrigger>
+            <TabsTrigger value="checklist" className="rounded-lg py-2.5 text-slate-700 data-[state=active]:bg-white data-[state=active]:text-teal-700 data-[state=active]:shadow-sm">
+              Packet Checklist
+            </TabsTrigger>
+            <TabsTrigger value="coverLetter" className="rounded-lg py-2.5 text-slate-700 data-[state=active]:bg-white data-[state=active]:text-teal-700 data-[state=active]:shadow-sm">
+              Cover Letter
+            </TabsTrigger>
           </TabsList>
 
-          {(["actionPlan", "checklist", "coverLetter"] as const).map((key) => (
-            <TabsContent key={key} value={key} className="mt-0">
-              {/* No max-h, no scroll — shows full content like reference HTML */}
-              <div className="border border-slate-200 rounded-xl p-6 md:p-8 bg-white text-sm font-sans">
-                {renderMarkdown(outputs[key], key === 'checklist')}
-              </div>
-              <div className="flex flex-wrap gap-2 mt-4">
-                <Button variant="outline" size="sm" onClick={() => copyToClipboard(outputs[key])}>
-                  <CopyIcon className="w-3.5 h-3.5 mr-2" /> Copy to Clipboard
-                </Button>
-                <Button className="bg-teal-600 hover:bg-teal-700 text-white" size="sm" onClick={() => {
-                  const titles: Record<string, string> = { actionPlan: 'Action Plan', checklist: 'Packet Checklist', coverLetter: 'Cover Letter' };
-                  printContent(outputs[key], titles[key]);
-                }}>
-                  <PrinterIcon className="w-3.5 h-3.5 mr-2" /> Print {key === 'actionPlan' ? 'Action Plan' : key === 'checklist' ? 'Checklist' : 'Cover Letter'}
-                </Button>
-              </div>
-            </TabsContent>
-          ))}
+          {(["actionPlan", "checklist", "coverLetter"] as const).map((key) => {
+            const config = docConfig[key];
+            const Icon = config.icon;
+
+            return (
+              <TabsContent key={key} value={key} className="mt-0">
+                <div className="mb-4 flex flex-col gap-3 rounded-xl border border-slate-200 bg-white p-4 sm:flex-row sm:items-center sm:justify-between">
+                  <div className="flex items-start gap-3">
+                    <div className="rounded-lg border border-teal-200 bg-teal-50 p-2 text-teal-700">
+                      <Icon className="h-4 w-4" />
+                    </div>
+                    <div>
+                      <h3 className="text-base font-semibold text-slate-900">{config.title}</h3>
+                      <p className="text-xs text-slate-600">{config.subtitle}</p>
+                    </div>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    <Button variant="outline" size="sm" onClick={() => copyToClipboard(outputs[key])}>
+                      <CopyIcon className="mr-2 h-3.5 w-3.5" />
+                      Copy
+                    </Button>
+                    <Button
+                      className="bg-teal-600 text-white hover:bg-teal-700"
+                      size="sm"
+                      onClick={() => printContent(outputs[key], config.title)}
+                    >
+                      <PrinterIcon className="mr-2 h-3.5 w-3.5" />
+                      Print
+                    </Button>
+                  </div>
+                </div>
+
+                <div className="rounded-xl border border-slate-200 bg-white p-6 text-sm shadow-sm md:p-8">
+                  {renderMarkdown(outputs[key], key === "checklist")}
+                </div>
+              </TabsContent>
+            );
+          })}
         </Tabs>
 
-        <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 text-amber-800 text-sm italic mt-2 mb-6">
-            <strong>Important:</strong> These documents are based on the information you provided. Always follow your embassy&apos;s 221(g) letter instructions if anything differs.
+        <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm italic text-amber-900">
+          <strong>Important:</strong> These documents are generated from your inputs. Always follow your embassy&apos;s 221(g) letter if instructions differ.
         </div>
 
-        <div className="flex flex-wrap gap-4 justify-between items-center pt-2 border-t">
-          <div className="flex gap-3">
-            <Button variant="outline" onClick={goBack}>← Back to Review</Button>
-          </div>
+        <div className="flex flex-wrap items-center justify-between gap-4 border-t pt-2">
+          <Button variant="outline" onClick={goBack}>← Back to Review</Button>
           <Button variant="outline" onClick={resetWizard}>
             Start Over
           </Button>
@@ -1220,13 +1263,13 @@ export default function CombinedIntakeForm({
       </div>
 
       <Dialog open={showWelcome} onOpenChange={handleWelcomeOpenChange}>
-        <DialogContent className="max-w-3xl max-h-[90vh] overflow-hidden border-slate-200 p-0 shadow-2xl">
-          <DialogHeader className="border-b bg-gradient-to-r from-teal-50 via-cyan-50 to-white px-6 py-5 sm:px-8">
+        <DialogContent className="max-w-3xl max-h-[95vh] flex flex-col overflow-hidden border-slate-200 p-0 shadow-2xl">
+          <DialogHeader className="border-b bg-gradient-to-r from-teal-50 via-cyan-50 to-white px-6 py-5 sm:px-8 shrink-0">
             <div className="flex items-start gap-4">
               <div className="mt-1 rounded-xl border border-teal-200 bg-white p-2.5 text-teal-700 shadow-sm">
                 <ShieldCheck className="h-6 w-6" />
               </div>
-              <div className="space-y-1">
+              <div className="space-y-1 text-left">
                 <p className="inline-flex items-center gap-1 rounded-full border border-teal-200 bg-white px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide text-teal-700">
                   <Sparkles className="h-3.5 w-3.5" />
                   Guided Setup
@@ -1241,17 +1284,17 @@ export default function CombinedIntakeForm({
             </div>
           </DialogHeader>
 
-          <div className="max-h-[calc(90vh-180px)] space-y-4 overflow-y-auto px-6 py-5 sm:px-8">
+          <div className="flex-1 min-h-0 space-y-4 overflow-y-auto px-6 py-5 sm:px-8 scrollbar-thin scrollbar-thumb-slate-200">
             <section className="rounded-xl border border-slate-200 bg-slate-50/70 p-4">
               <h3 className="mb-2 flex items-center gap-2 text-base font-semibold text-slate-900">
                 <FileCheck2 className="h-4 w-4 text-teal-700" />
                 What is a 221(g)?
               </h3>
-              <p className="text-sm leading-relaxed text-slate-700">
+              <p className="text-sm leading-relaxed text-slate-700 text-left">
                 Section 221(g) of the Immigration and Nationality Act allows consular officers to temporarily refuse a visa application when additional documents or administrative processing is required. This is{" "}
                 <strong className="text-slate-900">not a permanent denial</strong>; it is a hold pending resolution.
               </p>
-              <p className="mt-2 text-xs italic text-slate-500">Source: U.S. Department of State</p>
+              <p className="mt-2 text-xs italic text-slate-500 text-left">Source: U.S. Department of State</p>
             </section>
 
             <section className="rounded-xl border border-slate-200 bg-white p-4">
@@ -1259,7 +1302,7 @@ export default function CombinedIntakeForm({
                 <ListChecks className="h-4 w-4 text-teal-700" />
                 How This Wizard Works
               </h3>
-              <ol className="space-y-2 text-sm text-slate-700">
+              <ol className="space-y-2 text-sm text-slate-700 text-left">
                 <li><strong className="text-slate-900">1.</strong> Replicate your 221(g) checklist letter using the guided form.</li>
                 <li><strong className="text-slate-900">2.</strong> Review and confirm your case details before generation.</li>
                 <li><strong className="text-slate-900">3.</strong> Generate an action plan, packet checklist, and cover letter.</li>
@@ -1268,25 +1311,32 @@ export default function CombinedIntakeForm({
             </section>
 
             <section className="rounded-xl border border-slate-200 bg-white p-4">
-              <h3 className="mb-2 text-base font-semibold text-slate-900">What You&apos;ll Need</h3>
-              <ul className="space-y-2 text-sm text-slate-700">
-                <li>221(g) letter from the embassy</li>
-                <li>Case details (interview date, visa category, CEAC status)</li>
-                <li>Sponsor information if financial evidence is requested</li>
+              <h3 className="mb-2 text-base font-semibold text-slate-900 text-left">What You&apos;ll Need</h3>
+              <ul className="space-y-2 text-sm text-slate-700 text-left">
+                <li className="flex items-center gap-2">✓ 221(g) letter from the embassy</li>
+                <li className="flex items-center gap-2">✓ Case details (interview date, visa category, ceac status)</li>
+                <li className="flex items-center gap-2">✓ Sponsor information if financial evidence is requested</li>
               </ul>
             </section>
 
-            <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-xs leading-relaxed text-amber-900">
+            <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-xs leading-relaxed text-amber-900 text-left">
               <strong>Important disclaimer:</strong> This tool provides general guidance and is not legal advice. Always follow your embassy&apos;s 221(g) letter instructions if anything differs. For complex cases, consult an immigration attorney.
             </div>
           </div>
 
-          <DialogFooter className="flex flex-col items-center justify-between gap-3 border-t bg-slate-50 px-6 py-4 sm:flex-row sm:px-8">
+          <DialogFooter className="shrink-0 flex flex-col items-center justify-between gap-4 border-t bg-slate-50 px-6 py-4 sm:flex-row sm:px-8">
             <div className="flex items-center space-x-2">
-              <Checkbox id="dontShowAgain" checked={dontShowAgain} onCheckedChange={(v) => setDontShowAgain(!!v)} />
-              <Label htmlFor="dontShowAgain" className="cursor-pointer text-xs text-slate-600">Don&apos;t show this again</Label>
+              <Checkbox 
+                id="dontShowAgain" 
+                checked={dontShowAgain} 
+                onCheckedChange={(v) => setDontShowAgain(!!v)}
+                className="hover:border-teal-500 transition-colors"
+              />
+              <Label htmlFor="dontShowAgain" className="cursor-pointer text-xs font-medium text-slate-600 select-none">
+                Don&apos;t show this again
+              </Label>
             </div>
-            <Button onClick={handleStartWizard} className="w-full bg-teal-600 px-8 text-white hover:bg-teal-700 sm:w-auto">
+            <Button onClick={handleStartWizard} className="w-full bg-teal-600 px-10 text-white hover:bg-teal-700 sm:w-auto shadow-md transition-all active:scale-95">
               Start Wizard
               <ArrowRight className="ml-2 h-4 w-4" />
             </Button>
