@@ -127,7 +127,7 @@ export default function SettingsPage() {
     } else if (userId) {
       setLoading(false);
     }
-  }, [userId, isLoading, router, fetchSettings, fetchProfile]);
+  }, [userId, isLoading, router, fetchSettings, fetchProfile, user]);
 
   const handleNotificationChange = (type: string) => {
     setNotifications((prev) => ({
@@ -254,7 +254,7 @@ export default function SettingsPage() {
                 Notification Preferences
               </CardTitle>
             </CardHeader>
-            <CardContent className="pt-4 sm:pt-6 space-y-6">
+            <CardContent className="pt-2 sm:pt-6 space-y-6">
               <div className="flex items-center justify-between gap-4">
                 <div className="space-y-0.5">
                   <Label
@@ -321,7 +321,7 @@ export default function SettingsPage() {
                 Account Settings
               </CardTitle>
             </CardHeader>
-            <CardContent className="pt-4 sm:pt-6 space-y-6">
+            <CardContent className="pt-2 sm:pt-6 space-y-6">
               <div className="flex flex-col gap-4 sm:gap-2">
                 <div className="flex items-center justify-between gap-4">
                   <div className="space-y-0.5">
@@ -388,7 +388,7 @@ export default function SettingsPage() {
                 Security
               </CardTitle>
             </CardHeader>
-            <CardContent className="pt-4 sm:pt-6 space-y-6">
+            <CardContent className="pt-2 sm:pt-6 space-y-6">
               <div className="space-y-4">
                 <div>
                   <Label className="text-base font-medium">

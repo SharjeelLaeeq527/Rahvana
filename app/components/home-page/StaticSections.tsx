@@ -8,7 +8,7 @@ export function HomeSection({ onNavigate, isSignedIn }: { onNavigate: (section: 
         <section id="home" className="block">
             <div className="max-w-[1400px] mx-auto px-6 py-[60px]">
                 {/* Hero */}
-                <div className="bg-gradient-to-br from-[#0d9488]/10 to-[#f59e0b]/10 py-20 px-6 text-center rounded-xl mb-[60px]">
+                <div className="bg-linear-to-br from-[#0d9488]/10 to-[#f59e0b]/10 py-20 px-6 text-center rounded-xl mb-[60px]">
                     <h1 className="text-3xl md:text-5xl font-extrabold text-slate-900 mb-4 leading-tight">Your U.S. visa journey, guided step-by-step</h1>
                     <p className="text-lg md:text-xl text-slate-500 mb-8 max-w-[700px] mx-auto">Navigate complex immigration processes with confidence. From petition to visa, we`re with you every step of the way.</p>
                     <div className="flex gap-4 justify-center flex-wrap">
@@ -302,7 +302,7 @@ export function IR1JourneyDetail({ isSignedIn, onToggleAuth, children }: { isSig
                                     </div>
                                     {/* Connectivity Line for Desktop */}
                                     {stage !== 'V' && (
-                                        <div className="hidden lg:flex absolute top-1/2 left-[calc(100%+8px)] -translate-x-1/2 -translate-y-1/2 z-[20] items-center justify-center w-6 h-6">
+                                        <div className="hidden lg:flex absolute top-1/2 left-[calc(100%+8px)] -translate-x-1/2 -translate-y-1/2 z-20 items-center justify-center w-6 h-6">
                                             <ArrowRight className="w-5 h-5 text-slate-300" />
                                         </div>
                                     )}

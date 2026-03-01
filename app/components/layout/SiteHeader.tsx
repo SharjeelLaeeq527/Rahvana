@@ -499,7 +499,7 @@ export function SiteHeader({
                     initial={{ opacity: 0, scale: 0.95, y: 10 }}
                     animate={{ opacity: 1, scale: 1, y: 0 }}
                     exit={{ opacity: 0, scale: 0.95, y: 10 }}
-                    className="absolute right-0 top-full mt-2 w-72 max-h-[80vh] overflow-y-auto rounded-xl shadow-xl border border-border bg-card z-50 transform origin-top-right"
+                    className="absolute right-0 top-full mt-2 w-72 max-h-[80vh] overflow-y-auto rounded-xl shadow-xl border border-border bg-card z-9999 transform origin-top-right"
                   >
                     {/* Header */}
                     <div className="px-5 py-4 border-b border-border bg-muted/30">

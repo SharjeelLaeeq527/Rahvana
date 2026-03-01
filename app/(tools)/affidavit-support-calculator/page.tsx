@@ -37,7 +37,7 @@ import {
   BookOpen,
 } from "lucide-react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+// import { useRouter } from "next/navigation";
 
 // ============================================================================
 // POVERTY GUIDELINES DATA (2025 HHS Poverty Guidelines)
@@ -228,7 +228,7 @@ function CurrencyInput({
 
   return (
     <div className={`relative ${className}`}>
-      <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 font-semibold text-2xl pointer-events-none">
+      <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 font-semibold text-xl sm:text-2xl pointer-events-none">
         $
       </span>
       <input
@@ -240,7 +240,7 @@ function CurrencyInput({
         onChange={handleChange}
         onFocus={handleFocus}
         onBlur={handleBlur}
-        className="w-full pl-10 pr-4 py-4 text-2xl font-bold text-slate-900 bg-slate-50 border-2 border-slate-200 rounded-xl focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100 transition-all text-left placeholder:text-slate-400"
+        className="w-full pl-8 sm:pl-10 pr-4 py-3 sm:py-4 text-xl sm:text-2xl font-bold text-slate-900 bg-slate-50 border-2 border-slate-200 rounded-xl focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100 transition-all text-left placeholder:text-slate-400"
       />
     </div>
   );
@@ -256,7 +256,7 @@ import { mapProfileToGenericForm } from "@/lib/autoFill/mapper";
 import { MasterProfile } from "@/types/profile";
 
 export default function AffidavitSupportCalculator() {
-  const router = useRouter();
+  // const router = useRouter();
   const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState<FormData>({
     sponsorStatus: null,
@@ -285,7 +285,7 @@ export default function AffidavitSupportCalculator() {
   const { user } = useAuth();
   const supabase = createBrowserClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
   );
 
   useEffect(() => {
@@ -299,9 +299,9 @@ export default function AffidavitSupportCalculator() {
 
       try {
         const { data } = await supabase
-          .from('user_profiles')
-          .select('profile_details')
-          .eq('id', user.id)
+          .from("user_profiles")
+          .select("profile_details")
+          .eq("id", user.id)
           .single();
 
         if (data?.profile_details && !profileLoaded) {
@@ -328,9 +328,9 @@ export default function AffidavitSupportCalculator() {
             isSpecialImmigrant: formData.isSpecialImmigrant,
           });
 
-          setFormData(prev => ({
+          setFormData((prev) => ({
             ...prev,
-            ...mappedData
+            ...mappedData,
           }));
           setProfileLoaded(true);
         }
@@ -1131,7 +1131,7 @@ export default function AffidavitSupportCalculator() {
         </p>
       </div>
 
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <button
           onClick={() => setFormData({ ...formData, sponsorStatus: "citizen" })}
           className={`p-4 rounded-xl border-2 transition-all ${
@@ -1170,7 +1170,7 @@ export default function AffidavitSupportCalculator() {
           <p className="text-sm font-semibold text-slate-900 mb-3">
             Are you active-duty US Military?
           </p>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <button
               onClick={() => setFormData({ ...formData, isMilitary: true })}
               className={`p-4 rounded-xl border-2 transition-all ${
@@ -1213,7 +1213,7 @@ export default function AffidavitSupportCalculator() {
         <p className="text-slate-600 mt-2">Are you married?</p>
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <button
           onClick={() => setFormData({ ...formData, isMarried: true })}
           className={`p-6 rounded-xl border-2 transition-all ${
@@ -1359,7 +1359,7 @@ export default function AffidavitSupportCalculator() {
         </p>
       </div>
 
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <button
           onClick={() =>
             setFormData({ ...formData, hasPreviousSponsorship: true })
@@ -1556,7 +1556,9 @@ export default function AffidavitSupportCalculator() {
 
         <CurrencyInput
           value={formData.annualIncome || 0}
-          onChange={(value) => setFormData({ ...formData, annualIncome: value })}
+          onChange={(value) =>
+            setFormData({ ...formData, annualIncome: value })
+          }
           placeholder="0.00"
         />
 
@@ -1683,7 +1685,11 @@ export default function AffidavitSupportCalculator() {
                       </div>
                       <CurrencyInput
                         value={member.annualIncome || 0}
-                        onChange={(value) => updateHouseholdMember(member.id, { annualIncome: value })}
+                        onChange={(value) =>
+                          updateHouseholdMember(member.id, {
+                            annualIncome: value,
+                          })
+                        }
                         placeholder="0.00"
                         className="text-sm"
                       />
@@ -1783,7 +1789,11 @@ export default function AffidavitSupportCalculator() {
                       </div>
                       <CurrencyInput
                         value={sponsor.annualIncome || 0}
-                        onChange={(value) => updateJointSponsor(sponsor.id, { annualIncome: value })}
+                        onChange={(value) =>
+                          updateJointSponsor(sponsor.id, {
+                            annualIncome: value,
+                          })
+                        }
                         placeholder="0.00"
                         className="text-sm"
                       />
@@ -1883,7 +1893,7 @@ export default function AffidavitSupportCalculator() {
                 <p className="font-medium text-slate-900">
                   Did the sponsor pass away?
                 </p>
-                <div className="flex gap-3">
+                <div className="flex flex-col sm:flex-row gap-3">
                   <button
                     onClick={() =>
                       setFormData({ ...formData, sponsorDeceased: true })
@@ -1968,7 +1978,7 @@ export default function AffidavitSupportCalculator() {
         </div>
 
         {/* Navigation */}
-        <div className="flex gap-3 pt-4 border-t border-slate-200">
+        <div className="flex flex-col-reverse sm:flex-row gap-3 pt-4 border-t border-slate-200">
           <Button variant="outline" onClick={handlePrevious} className="flex-1">
             <ChevronLeft className="w-4 h-4 mr-2" />
             Add More Supporters
@@ -2051,7 +2061,9 @@ export default function AffidavitSupportCalculator() {
                   </label>
                   <CurrencyInput
                     value={formData.assetValue || 0}
-                    onChange={(value) => setFormData({ ...formData, assetValue: value })}
+                    onChange={(value) =>
+                      setFormData({ ...formData, assetValue: value })
+                    }
                     placeholder="0.00"
                   />
                 </div>
@@ -2181,7 +2193,7 @@ export default function AffidavitSupportCalculator() {
         </div>
 
         {/* Navigation */}
-        <div className="flex gap-3 pt-4 border-t border-slate-200">
+        <div className="flex flex-col-reverse sm:flex-row gap-3 pt-4 border-t border-slate-200">
           <Button variant="outline" onClick={handlePrevious} className="flex-1">
             <ChevronLeft className="w-4 h-4 mr-2" />
             Back
@@ -2345,7 +2357,7 @@ export default function AffidavitSupportCalculator() {
         )}
 
         {/* Stats */}
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <Card className="border-0 shadow-md">
             <CardContent className="p-6">
               <div className="flex items-center gap-3">
@@ -2489,7 +2501,7 @@ export default function AffidavitSupportCalculator() {
         )}
 
         {/* Actions */}
-        <div className="flex gap-3">
+        <div className="flex flex-col sm:flex-row gap-3">
           <Button variant="outline" onClick={handlePrevious} className="flex-1">
             <ChevronLeft className="w-4 h-4 mr-2" />
             Add More Supporters
@@ -2558,16 +2570,16 @@ export default function AffidavitSupportCalculator() {
     <div className="min-h-screen bg-linear-to-br from-slate-50 to-slate-100 p-4 md:p-8">
       <div className="max-w-2xl mx-auto">
         {/* Header */}
-        <div className="mb-6 flex items-center justify-between gap-4">
+        <div className="mb-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div className="flex items-center gap-4">
-            <Button
+            {/* <Button
               variant="outline"
               size="icon"
               onClick={() => router.back()}
               className="rounded-xl"
             >
               <ChevronLeft className="w-5 h-5" />
-            </Button>
+            </Button> */}
             <div>
               <h1 className="text-2xl font-bold text-slate-900">
                 Affidavit Calculator
@@ -2618,13 +2630,13 @@ export default function AffidavitSupportCalculator() {
             </div>
 
             {/* Navigation */}
-            <div className="mt-8 flex items-center justify-between gap-3 pt-6 border-t border-slate-200">
-              <div className="flex gap-3">
+            <div className="mt-8 flex flex-col-reverse sm:flex-row sm:items-center justify-between gap-3 pt-6 border-t border-slate-200">
+              <div className="flex gap-3 w-full sm:w-auto">
                 {currentStep > 1 && currentStep < 11 && (
                   <Button
                     variant="outline"
                     onClick={handlePrevious}
-                    className="rounded-xl"
+                    className="rounded-xl flex-1 sm:flex-none"
                   >
                     <ChevronLeft className="w-4 h-4 mr-2" /> Back
                   </Button>
@@ -2633,7 +2645,7 @@ export default function AffidavitSupportCalculator() {
                   <Button
                     variant="outline"
                     onClick={handlePrevious}
-                    className="rounded-xl"
+                    className="rounded-xl flex-1 sm:flex-none"
                   >
                     <ChevronLeft className="w-4 h-4 mr-2" /> Back
                   </Button>
@@ -2643,7 +2655,7 @@ export default function AffidavitSupportCalculator() {
                 <Button
                   onClick={handleNext}
                   disabled={!canProceed()}
-                  className="rounded-xl bg-blue-600 hover:bg-blue-700"
+                  className="rounded-xl bg-blue-600 hover:bg-blue-700 w-full sm:w-auto"
                 >
                   {currentStep === 7
                     ? "Check Eligibility"

@@ -27,6 +27,7 @@ import {
   Video,
   Link as LinkIcon,
   RotateCcw,
+  X,
 } from "lucide-react";
 
 interface DocumentWizardProps {
@@ -108,14 +109,26 @@ export function DocumentWizard({
   if (wizardSteps.length === 0) {
     return (
       <Dialog open={open} onOpenChange={onClose}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>{documentDef.name}</DialogTitle>
+        <DialogContent className="w-[95vw] sm:w-full p-4 sm:p-6">
+          <DialogHeader className="relative">
+            <DialogTitle className="pr-8">{documentDef.name}</DialogTitle>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 rounded-full absolute -top-2 -right-2"
+              onClick={onClose}
+            >
+              <X className="w-4 h-4" />
+            </Button>
           </DialogHeader>
-          <p className="text-muted-foreground">
+          <p className="text-sm sm:text-base text-muted-foreground mt-2">
             No step-by-step guide available for this document yet.
           </p>
-          <Button onClick={onClose}>Close</Button>
+          <div className="mt-4">
+            <Button onClick={onClose} className="w-full sm:w-auto">
+              Close
+            </Button>
+          </div>
         </DialogContent>
       </Dialog>
     );
@@ -136,16 +149,20 @@ export function DocumentWizard({
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="max-w-5xl max-h-[85vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <span>How to Obtain: {documentDef.name}</span>
+      <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto p-4 sm:p-6 w-[95vw] sm:w-full">
+        <DialogHeader className="relative pb-2 mb-2 sm:mb-4 border-b">
+          <DialogTitle className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 pr-8">
+            <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
+              <span className="text-lg sm:text-xl leading-tight">
+                How to Obtain: {documentDef.name}
+              </span>
               {isDocumentUploaded && (
-                <Badge className="bg-green-500">Document Uploaded ✓</Badge>
+                <Badge className="bg-green-500 w-fit">
+                  Document Uploaded ✓
+                </Badge>
               )}
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 self-start sm:self-auto shrink-0">
               <Badge variant="outline">
                 Step {currentStep + 1} of {wizardSteps.length}
               </Badge>
@@ -165,6 +182,14 @@ export function DocumentWizard({
               )}
             </div>
           </DialogTitle>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8 rounded-full absolute -top-2 -right-2"
+            onClick={onClose}
+          >
+            <X className="w-4 h-4" />
+          </Button>
         </DialogHeader>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

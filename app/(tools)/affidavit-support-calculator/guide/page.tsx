@@ -110,7 +110,7 @@ export default function AffidavitGuidePage() {
       </div>
 
       {/* Hero Section */}
-      <section className="relative pt-24 pb-32">
+      <section className="relative pt-10 md:pt-20 pb-7 md:pb-20">
         <div className="container mx-auto px-4 relative z-10">
           <motion.div
             initial="hidden"
@@ -145,7 +145,7 @@ export default function AffidavitGuidePage() {
             </p>
 
             <motion.div
-              className="flex flex-wrap justify-center gap-6 pt-8"
+              className="flex flex-col sm:flex-row justify-center gap-4 sm:gap-6 pt-8"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.5, duration: 0.5 }}
@@ -153,7 +153,7 @@ export default function AffidavitGuidePage() {
               <Button
                 asChild
                 size="lg"
-                className="bg-blue-600 hover:bg-blue-700 text-white rounded-full px-8 h-14 text-lg shadow-lg hover:shadow-blue-200 hover:-translate-y-1 transition-all duration-300"
+                className="bg-primary hover:bg-primary/90 text-white rounded-full px-8 h-14 text-lg shadow-lg hover:shadow-blue-200 hover:-translate-y-1 transition-all duration-300 w-full sm:w-auto"
               >
                 <Link href="/affidavit-support-calculator">
                   <Calculator className="mr-2 h-5 w-5" />
@@ -163,7 +163,7 @@ export default function AffidavitGuidePage() {
               <Button
                 variant="outline"
                 size="lg"
-                className="rounded-full px-8 h-14 text-lg border-2 border-slate-200 hover:border-blue-200 hover:bg-blue-50/50 text-slate-700"
+                className="rounded-full px-8 h-14 text-lg border-2 border-slate-200 hover:border-blue-200 hover:bg-blue-50/50 text-slate-700 w-full sm:w-auto"
                 onClick={() =>
                   document
                     .getElementById("core-concepts")
@@ -177,7 +177,7 @@ export default function AffidavitGuidePage() {
         </div>
       </section>
 
-      <div className="container mx-auto px-4 py-12 max-w-6xl relative z-10">
+      <div className="container mx-auto px-4 py-8 md:py-12 max-w-6xl relative z-10">
         {/* Core Concepts Grid */}
         <div id="core-concepts" className="scroll-mt-24">
           <motion.div
@@ -185,7 +185,7 @@ export default function AffidavitGuidePage() {
             initial="hidden"
             whileInView="visible"
             viewport={{ once: true, margin: "-50px" }}
-            className="grid md:grid-cols-3 gap-8 mb-32"
+            className="grid md:grid-cols-3 gap-8 mb-10 md:mb-20"
           >
             <ConceptCard
               icon={Shield}
@@ -214,21 +214,21 @@ export default function AffidavitGuidePage() {
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true, margin: "-50px" }}
-          className="mb-32"
+          className="mb-10 md:mb-20"
         >
           <div className="text-center mb-16 space-y-4">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              className="inline-block p-3 rounded-2xl bg-indigo-50 text-indigo-600 mb-4"
+              className="inline-block p-3 rounded-2xl bg-indigo-50 text-indigo-600 mb-1 md:pb-4"
             >
               <Briefcase className="w-8 h-8" />
             </motion.div>
-            <h2 className="text-4xl font-bold text-slate-900">
+            <h2 className="text-3xl md:text-4xl font-bold text-slate-900">
               10 Ways to Qualify
             </h2>
-            <p className="text-xl text-slate-600 max-w-2xl mx-auto">
+            <p className="text-lg md:text-xl text-slate-600 max-w-2xl mx-auto">
               No two cases are alike. Our tool intelligently determines which
               pathway fits your specific situation.
             </p>
@@ -356,9 +356,9 @@ export default function AffidavitGuidePage() {
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true, margin: "-100px" }}
-          className="bg-white/80 backdrop-blur-xl rounded-[40px] border border-white/50 shadow-2xl overflow-hidden mb-32 ring-1 ring-slate-900/5"
+          className="bg-white/80 backdrop-blur-xl rounded-[40px] border border-white/50 shadow-2xl overflow-hidden mb-10 md:mb-20 ring-1 ring-slate-900/5"
         >
-          <div className="p-8 md:p-12 bg-linear-to-b from-slate-50/80 to-white/50 border-b border-slate-100">
+          <div className="p-4 md:p-12 bg-linear-to-b from-slate-50/80 to-white/50 border-b border-slate-100">
             <h2 className="text-3xl md:text-4xl font-bold text-slate-900 mb-4 text-center">
               Forms Decoded
             </h2>
@@ -368,7 +368,7 @@ export default function AffidavitGuidePage() {
             </p>
           </div>
 
-          <div className="p-8 md:p-12 grid gap-6">
+          <div className="p-4 md:p-12 grid gap-6">
             <FormAccordion
               id="i864"
               title="Form I-864 (Affidavit of Support)"
@@ -416,10 +416,10 @@ export default function AffidavitGuidePage() {
           initial={{ opacity: 0, scale: 0.95 }}
           whileInView={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.8, type: "spring" }}
-          className="text-center pb-20"
+          className="text-center pb-8 md:pb-14"
         >
           <div className="inline-block p-1.5 rounded-[40px] bg-linear-to-r from-blue-500 via-indigo-500 to-emerald-500 shadow-2xl shadow-blue-200/50">
-            <div className="bg-white rounded-[36px] px-8 py-16 md:px-24 md:py-20 relative overflow-hidden">
+            <div className="bg-white rounded-[36px] px-4 sm:px-8 py-16 md:px-24 md:py-20 relative overflow-hidden">
               <div className="absolute inset-0 bg-[url('/grid-pattern.svg')] opacity-[0.03] pointer-events-none"></div>
 
               <motion.div
@@ -436,10 +436,10 @@ export default function AffidavitGuidePage() {
                 </div>
               </motion.div>
 
-              <h2 className="text-4xl font-bold text-slate-900 mb-6 tracking-tight">
+              <h2 className="text-3xl md:text-4xl font-bold text-slate-900 mb-6 tracking-tight">
                 Ready to find your path?
               </h2>
-              <p className="text-xl text-slate-600 mb-10 max-w-lg mx-auto">
+              <p className="text-lg md:text-xl text-slate-600 mb-10 max-w-lg mx-auto">
                 Get your personalized assessment and document checklist in under
                 2 minutes.
               </p>
@@ -447,7 +447,7 @@ export default function AffidavitGuidePage() {
               <Button
                 asChild
                 size="lg"
-                className="bg-slate-900 text-white hover:bg-slate-800 rounded-full px-12 h-16 text-xl shadow-xl hover:shadow-2xl transition-all hover:-translate-y-1"
+                className="bg-slate-900 text-white hover:bg-slate-800 rounded-full px-8 md:px-12 h-14 md:h-16 text-lg md:text-xl shadow-xl hover:shadow-2xl transition-all hover:-translate-y-1 w-full md:w-auto"
               >
                 <Link href="/affidavit-support-calculator">
                   Start Free Assessment <ArrowRight className="ml-3 w-6 h-6" />
@@ -496,12 +496,14 @@ function ConceptCard({
           >
             <Icon className="w-7 h-7" />
           </div>
-          <CardTitle className="text-2xl font-bold text-slate-900 group-hover:text-blue-700 transition-colors">
+          <CardTitle className="text-xl md:text-2xl font-bold text-slate-900 group-hover:text-blue-700 transition-colors">
             {title}
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-slate-600 leading-relaxed text-lg">{desc}</p>
+          <p className="text-slate-600 leading-relaxed text-base md:text-lg">
+            {desc}
+          </p>
         </CardContent>
       </Card>
     </motion.div>
@@ -549,10 +551,12 @@ function ScenarioCard({
         >
           <Icon className="w-7 h-7" />
         </div>
-        <h4 className="text-xl font-bold text-slate-900 mb-3 group-hover:text-blue-700 transition-colors">
+        <h4 className="text-lg md:text-xl font-bold text-slate-900 mb-3 group-hover:text-blue-700 transition-colors">
           {title}
         </h4>
-        <p className="text-slate-600 text-base leading-relaxed">{desc}</p>
+        <p className="text-slate-600 text-sm md:text-base leading-relaxed">
+          {desc}
+        </p>
 
         {/* Decorative corner blob */}
         <div
@@ -575,10 +579,10 @@ function FormAccordion({
   return (
     <Accordion type="single" collapsible className="w-full">
       <AccordionItem value={id} className="border-b-0 mb-4">
-        <AccordionTrigger className="text-lg font-semibold text-slate-900 bg-white p-6 rounded-2xl border border-slate-100 hover:border-blue-200 hover:bg-blue-50/50 transition-all data-[state=open]:rounded-b-none data-[state=open]:bg-blue-50/30">
+        <AccordionTrigger className="text-base md:text-lg font-semibold text-slate-900 bg-white p-5 md:p-6 rounded-2xl border border-slate-100 hover:border-blue-200 hover:bg-blue-50/50 transition-all data-[state=open]:rounded-b-none data-[state=open]:bg-blue-50/30 text-left">
           {title}
         </AccordionTrigger>
-        <AccordionContent className="text-slate-600 leading-relaxed text-base bg-white p-6 pt-2 rounded-b-2xl border border-t-0 border-slate-100">
+        <AccordionContent className="text-slate-600 leading-relaxed text-sm md:text-base bg-white p-5 md:p-6 pt-2 rounded-b-2xl border border-t-0 border-slate-100">
           {content}
         </AccordionContent>
       </AccordionItem>

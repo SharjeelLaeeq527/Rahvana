@@ -454,7 +454,7 @@ export default function PoliceVerificationGuide() {
                 className="w-full flex items-center justify-between p-4 bg-white hover:bg-slate-50 border border-slate-200 hover:border-primary/40 rounded-xl transition-all shadow-sm group"
               >
                 <span className="font-bold text-slate-700 group-hover:text-primary transition-colors flex items-center gap-2">
-                  <FileText size={18} /> Generate Letter
+                  <FileText size={18} /> Create Purpose Letter
                 </span>
                 <ArrowRight
                   size={18}
@@ -467,7 +467,7 @@ export default function PoliceVerificationGuide() {
               className="w-full flex items-center justify-between p-4 bg-white hover:bg-slate-50 border border-slate-200 hover:border-primary/40 rounded-xl transition-all shadow-sm group"
             >
               <span className="font-bold text-slate-700 group-hover:text-primary transition-colors flex items-center gap-2">
-                <UserCheck size={18} /> Authority Letter
+                <UserCheck size={18} /> Create Authority Letter
               </span>
               <ArrowRight
                 size={18}

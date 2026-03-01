@@ -1,10 +1,10 @@
 import React, { useState } from "react";
 import { WizardState } from "../../(main)/dashboard/hooks/useWizard";
 import { roadmapData } from "../../../data/roadmap";
-import { ProgressTree } from "./ProgressTree";
-import { StepDetail } from "./StepDetail";
-import { DocumentVault } from "./DocumentVault";
 import { useWizard } from "../../(main)/dashboard/hooks/useWizard";
+import { ProgressTree } from "@/app/(tools)/(visa)/visa-category/ir-category/ir1-journey/components/ProgressTree";
+import { StepDetail } from "@/app/(tools)/(visa)/visa-category/ir-category/ir1-journey/components/StepDetail";
+import { DocumentVault } from "@/app/(tools)/(visa)/visa-category/ir-category/ir1-journey/components/DocumentVault";
 
 type WizardActions = ReturnType<typeof useWizard>["actions"];
 

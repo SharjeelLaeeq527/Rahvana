@@ -1,7 +1,16 @@
 import React from "react";
-import { WizardState } from "../../(main)/dashboard/hooks/useWizard";
-import { roadmapData } from "../../../data/roadmap";
-import { CheckCircle2, Circle, ArrowRight, ArrowLeft, Users, MapPin, Info, ClipboardList } from 'lucide-react';
+import { WizardState } from "@/app/(main)/dashboard/hooks/useWizard";
+import { roadmapData } from "@/data/roadmap";
+import {
+  CheckCircle2,
+  Circle,
+  ArrowRight,
+  ArrowLeft,
+  Users,
+  MapPin,
+  Info,
+  ClipboardList,
+} from "lucide-react";
 
 type RoadmapStage = (typeof roadmapData.stages)[number];
 type RoadmapStep = RoadmapStage["steps"][number];
@@ -30,20 +39,23 @@ export function StepDetail({
   const isCompleted = state.completedSteps.has(step.id);
 
   return (
-    <div id="step-content" className="animate-in fade-in slide-in-from-bottom-2 duration-300">
+    <div
+      id="step-content"
+      className="animate-in fade-in slide-in-from-bottom-2 duration-300"
+    >
       <div className="mb-8">
         <div className="inline-flex items-center gap-2 px-3 py-1 bg-slate-100/80 text-slate-500 rounded-full text-[12px] font-bold uppercase tracking-wider mb-4 border border-slate-200/50">
           <Info className="w-3.5 h-3.5" />
           Stage {stage.id} • Step {step.id}
         </div>
-        
-        <div className="flex flex-col md:flex-row md:items-start justify-between gap-6 mb-6">
-          <h2 className="text-3xl md:text-4xl font-extrabold text-slate-900 leading-tight">
+
+        <div className="flex flex-col md:flex-row md:items-start justify-between gap-4 md:gap-6 mb-6">
+          <h2 className="text-2xl md:text-4xl font-extrabold text-slate-900 leading-tight">
             {step.name}
           </h2>
           <button
             onClick={(e) => onToggleComplete(step.id, e)}
-            className={`flex items-center gap-2 px-6 py-3 rounded-xl font-bold text-base transition-all whitespace-nowrap active:scale-95 shadow-sm ${
+            className={`w-full md:w-auto flex items-center justify-center space-x-2 md:justify-start gap-2 px-6 py-3 rounded-xl font-bold text-base transition-all whitespace-nowrap active:scale-95 shadow-sm ${
               isCompleted
                 ? "bg-emerald-50 text-emerald-600 border border-emerald-200"
                 : "bg-primary text-white hover:bg-primary/90 shadow-primary/20"
@@ -63,7 +75,7 @@ export function StepDetail({
           </button>
         </div>
 
-        <div className="text-slate-600 text-[17px] leading-relaxed pb-8 mb-8 border-b border-slate-100 max-w-3xl">
+        <div className="text-slate-600 text-[15px] md:text-[17px] leading-relaxed pb-6 md:pb-8 mb-6 md:mb-8 border-b border-slate-100 max-w-3xl">
           {step.notes ||
             `This step involves preparing and submitting the necessary ${step.name} documents.`}
         </div>
@@ -79,7 +91,7 @@ export function StepDetail({
         </div>
 
         {/* Actions Required */}
-        <div className="bg-slate-50/50 rounded-2xl p-6 md:p-8 mb-10 border border-slate-100">
+        <div className="bg-slate-50/50 rounded-2xl p-5 md:p-8 mb-8 md:mb-10 border border-slate-100">
           <h4 className="flex items-center gap-2 text-[14px] font-black mb-6 text-slate-900 uppercase tracking-widest">
             <ClipboardList className="w-4 h-4 text-primary" />
             Actions Required
@@ -91,7 +103,7 @@ export function StepDetail({
                 className="flex gap-4 items-start text-[16px] text-slate-700 font-medium group"
               >
                 <div className="w-6 h-6 rounded-full bg-white border-2 border-slate-200 flex items-center justify-center shrink-0 mt-0.5 group-hover:border-primary/50 transition-colors">
-                    <div className="w-1.5 h-1.5 rounded-full bg-slate-300 group-hover:bg-primary transition-colors" />
+                  <div className="w-1.5 h-1.5 rounded-full bg-slate-300 group-hover:bg-primary transition-colors" />
                 </div>
                 <div className="leading-snug">{action}</div>
               </li>
@@ -102,9 +114,14 @@ export function StepDetail({
                 className="flex gap-4 items-start text-[16px] text-slate-700 font-medium group"
               >
                 <div className="w-6 h-6 rounded-full bg-white border-2 border-slate-200 flex items-center justify-center shrink-0 mt-0.5 group-hover:border-primary/50 transition-colors">
-                    <div className="w-1.5 h-1.5 rounded-full bg-slate-300 group-hover:bg-primary transition-colors" />
+                  <div className="w-1.5 h-1.5 rounded-full bg-slate-300 group-hover:bg-primary transition-colors" />
                 </div>
-                <div className="leading-snug">{doc} <span className="text-slate-400 text-sm font-normal ml-2">(Document Required)</span></div>
+                <div className="leading-snug">
+                  {doc}{" "}
+                  <span className="text-slate-400 text-sm font-normal ml-2">
+                    (Document Required)
+                  </span>
+                </div>
               </li>
             ))}
           </ul>
@@ -124,11 +141,11 @@ export function StepDetail({
       </div>
 
       {/* Modern Navigation */}
-      <div className="flex flex-col sm:flex-row justify-between items-center gap-4 mt-12 pt-8 border-t border-slate-100">
+      <div className="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-3 sm:gap-4 mt-8 md:mt-12 pt-6 md:pt-8 border-t border-slate-100">
         <button
           onClick={onPrev}
           disabled={isFirst}
-          className={`flex items-center gap-2 px-6 py-3 rounded-xl font-bold transition-all border ${
+          className={`w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-3 rounded-xl font-bold transition-all border ${
             isFirst
               ? "text-slate-300 border-slate-100 cursor-not-allowed"
               : "text-slate-600 border-slate-200 hover:bg-slate-50 hover:border-slate-300 active:scale-95"
@@ -136,17 +153,15 @@ export function StepDetail({
         >
           <ArrowLeft className="w-4 h-4" /> Previous Step
         </button>
-        
-        <div className="flex items-center gap-4 w-full sm:w-auto">
-          {!isLast && (
-            <button
-              onClick={onNext}
-              className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-8 py-3 bg-primary text-white rounded-xl font-extrabold hover:bg-primary/90 transition-all shadow-lg shadow-primary/10 active:scale-95 whitespace-nowrap"
-            >
-              Next Step <ArrowRight className="w-4 h-4" />
-            </button>
-          )}
-        </div>
+
+        {!isLast && (
+          <button
+            onClick={onNext}
+            className="w-full sm:w-auto flex items-center justify-center gap-2 px-8 py-3 bg-primary text-white rounded-xl font-extrabold hover:bg-primary/90 transition-all shadow-lg shadow-primary/10 active:scale-95 whitespace-nowrap"
+          >
+            Next Step <ArrowRight className="w-4 h-4" />
+          </button>
+        )}
       </div>
     </div>
   );

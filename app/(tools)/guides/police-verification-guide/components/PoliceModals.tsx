@@ -174,7 +174,7 @@ export function LetterModal({
         <div className="p-5 md:p-8 overflow-y-auto">
           <div className="flex items-center justify-between mb-3">
             <h2 className="text-xl md:text-2xl font-bold text-gray-900">
-              Generate Letter
+              Create Purpose Letter
             </h2>
             <button
               onClick={onClose}
@@ -454,7 +454,7 @@ function LetterContent({
 }) {
   return (
     <div
-      className="bg-white text-black min-h-[auto] md:min-h-[297mm] p-6 md:p-12 lg:p-[20mm]"
+      className="bg-white text-black min-h-auto md:min-h-[297mm] p-6 md:p-12 lg:p-[20mm]"
       style={{
         fontFamily: "'Times New Roman', Times, serif",
         lineHeight: "1.6",
@@ -630,7 +630,7 @@ export function AuthorityLetterModal({
         <div className="p-5 md:p-8 overflow-y-auto bg-white">
           <div className="flex items-center justify-between mb-3">
             <h2 className="text-xl md:text-2xl font-bold text-gray-800">
-              Generate Authority Letter
+              Create Authority Letter
             </h2>
             <button
               onClick={onClose}
@@ -969,7 +969,7 @@ export function AuthorityLetterPreviewModal({
           </button>
         </div>
         <div className="flex-1 overflow-y-auto p-0 md:p-8 bg-gray-50 flex justify-center">
-          <div className="shadow-none md:shadow-lg w-full max-w-[210mm] bg-white p-6 md:p-12 lg:p-20 min-h-[auto] md:min-h-[297mm] font-serif transition-all">
+          <div className="shadow-none md:shadow-lg w-full max-w-[210mm] bg-white p-6 md:p-12 lg:p-20 min-h-auto md:min-h-[297mm] font-serif transition-all">
             <AuthorityLetterContent formData={formData} province={province} />
           </div>
         </div>

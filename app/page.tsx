@@ -5,14 +5,14 @@ import { useSearchParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import * as Icons from "lucide-react";
 import { useRouter } from "next/navigation";
-import { Wizard } from "./test/components/Wizard";
-import { Dashboard } from "./test/components/Dashboard";
+import { Wizard } from "./components/home-page/Wizard";
+import { Dashboard } from "./components/home-page/Dashboard";
 import {
   VisaCategorySection,
   ToolsSection,
   PricingSection,
   IR1JourneyDetail,
-} from "./test/components/StaticSections";
+} from "./components/home-page/StaticSections";
 import { useWizard } from "./(main)/dashboard/hooks/useWizard";
 import Image from "next/image";
 import { StackedCarousel } from "./components/StackedCarousel";
@@ -1056,32 +1056,40 @@ function HomePageContent() {
                           <div className="flex justify-between items-start mb-8 border-b border-border/50 pb-6">
                             <div className="w-16 h-16 md:w-20 md:h-20 rounded-2xl bg-linear-to-br from-rahvana-primary to-rahvana-primary-light flex items-center justify-center text-white shadow-lg shadow-rahvana-primary/20 [&>svg]:text-white! [&>svg]:w-8 [&>svg]:h-8 md:[&>svg]:w-10 md:[&>svg]:h-10">
                               {
-                                ALL_SERVICES.filter((s) => !s.disabled  && s.href !== "/book-consultation")[
-                                  activeService
-                                ]?.icon
+                                ALL_SERVICES.filter(
+                                  (s) =>
+                                    !s.disabled &&
+                                    s.href !== "/book-consultation",
+                                )[activeService]?.icon
                               }
                             </div>
                             <div className="inline-block px-4 py-1.5 text-xs font-bold uppercase tracking-wider rounded-full bg-rahvana-primary-pale text-rahvana-primary">
                               {
-                                ALL_SERVICES.filter((s) => !s.disabled  && s.href !== "/book-consultation")[
-                                  activeService
-                                ]?.category
+                                ALL_SERVICES.filter(
+                                  (s) =>
+                                    !s.disabled &&
+                                    s.href !== "/book-consultation",
+                                )[activeService]?.category
                               }
                             </div>
                           </div>
 
                           <h3 className="text-2xl md:text-3xl lg:text-4xl font-bold text-foreground mb-4 leading-tight">
                             {
-                              ALL_SERVICES.filter((s) => !s.disabled  && s.href !== "/book-consultation")[
-                                activeService
-                              ]?.title
+                              ALL_SERVICES.filter(
+                                (s) =>
+                                  !s.disabled &&
+                                  s.href !== "/book-consultation",
+                              )[activeService]?.title
                             }
                           </h3>
                           <p className="text-muted-foreground text-base md:text-lg leading-relaxed mb-8 flex-1">
                             {
-                              ALL_SERVICES.filter((s) => !s.disabled && s.href !== "/book-consultation")[
-                                activeService
-                              ]?.description
+                              ALL_SERVICES.filter(
+                                (s) =>
+                                  !s.disabled &&
+                                  s.href !== "/book-consultation",
+                              )[activeService]?.description
                             }
                           </p>
 
@@ -1089,7 +1097,9 @@ function HomePageContent() {
                             <HydrationSafeButton
                               onClick={() => {
                                 const href = ALL_SERVICES.filter(
-                                  (s) => !s.disabled  && s.href !== "/book-consultation",
+                                  (s) =>
+                                    !s.disabled &&
+                                    s.href !== "/book-consultation",
                                 )[activeService]?.href;
                                 if (href && href !== "#") {
                                   router.push(href);
