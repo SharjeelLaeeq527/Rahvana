@@ -1193,16 +1193,16 @@ function HomePageContent() {
                     className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-rahvana-primary-pale text-rahvana-primary text-sm font-semibold my-2"
                   >
                     <Icons.Route className="w-4 h-4" />
-                    See steps below for a typical US immigration journey
+                    See steps below for how rahvana works
                   </motion.span>
                 </div>
 
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-start">
                   <motion.div
-                    initial={{ opacity: 0, x: -20 }}
-                    whileInView={{ opacity: 1, x: 0 }}
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    whileInView={{ opacity: 1, scale: 1 }}
                     viewport={{ once: true }}
-                    className="relative aspect-square max-w-[300px] md:max-w-125 mx-auto w-full"
+                    className="relative aspect-square max-w-[340px] md:max-w-[480px] mx-auto w-full"
                   >
                     {/* SVG Layer for all lines */}
                     <svg
@@ -1213,7 +1213,7 @@ function HomePageContent() {
                       <circle
                         cx="50"
                         cy="50"
-                        r="40"
+                        r="35"
                         stroke="currentColor"
                         strokeWidth="0.2"
                         strokeDasharray="1 2"
@@ -1225,7 +1225,7 @@ function HomePageContent() {
                       <motion.circle
                         cx="50"
                         cy="50"
-                        r="40"
+                        r="35"
                         stroke="currentColor"
                         strokeWidth="0.8"
                         strokeLinecap="round"
@@ -1272,14 +1272,14 @@ function HomePageContent() {
                             animate={{
                               scale: isActive ? 1.25 : 1,
                             }}
-                            className={`absolute w-10 h-10 md:w-16 md:h-16 rounded-full flex items-center justify-center transition-all duration-500 z-10 ${
+                            className={`absolute w-12 h-12 md:w-16 md:h-16 rounded-full flex items-center justify-center transition-all duration-500 z-10 ${
                               isActive
                                 ? "bg-rahvana-primary text-white shadow-xl ring-4 md:ring-8 ring-rahvana-primary/10"
                                 : "bg-card text-muted-foreground border border-border hover:border-rahvana-primary hover:text-rahvana-primary hover:scale-110 shadow-md"
                             }`}
                             style={{
-                              left: `${(50 + 40 * Math.sin((angle * Math.PI) / 180)).toFixed(3)}%`,
-                              top: `${(50 - 40 * Math.cos((angle * Math.PI) / 180)).toFixed(3)}%`,
+                              left: `${(50 + 35 * Math.sin((angle * Math.PI) / 180)).toFixed(3)}%`,
+                              top: `${(50 - 35 * Math.cos((angle * Math.PI) / 180)).toFixed(3)}%`,
                               translate: "-50% -50%",
                             }}
                           >
