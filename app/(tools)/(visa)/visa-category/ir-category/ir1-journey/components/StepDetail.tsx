@@ -12,8 +12,26 @@ import {
   ClipboardList,
 } from "lucide-react";
 
+interface RoadmapStep {
+  id: string;
+  name: string;
+  who: string;
+  where: string;
+  actions: string[];
+  output?: string;
+  notes?: string;
+  timeline?: string;
+  documents?: string[];
+  pakistanSpecific?: string;
+  fee?: string;
+  filingType?: string;
+  inputs?: string[];
+  officialSource?: string;
+  nextTrigger?: string;
+  possibleOutcomes?: string[];
+}
+
 type RoadmapStage = (typeof roadmapData.stages)[number];
-type RoadmapStep = RoadmapStage["steps"][number];
 
 interface StepDetailProps {
   step: RoadmapStep;
