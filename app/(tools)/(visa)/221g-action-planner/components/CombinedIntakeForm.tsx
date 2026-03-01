@@ -23,12 +23,14 @@ import {
 import { Checkbox } from "@/components/ui/checkbox";
 import Actual221GFormChecker from "./Actual221GFormChecker";
 import { FormData, FormSelections } from "../types/221g";
+import { classifySituation } from "../utils/classifier";
 
 interface CombinedIntakeFormProps {
   onSubmit: (data: FormData, selectedItems: FormSelections) => void;
   onSaveToProfile?: () => Promise<void>;
   initialData?: FormData | null;
   initialSelections?: FormSelections | null;
+  smartModeEnabled?: boolean;
 }
 
 // Steps matching the reference HTML wizard
@@ -85,6 +87,7 @@ export default function CombinedIntakeForm({
   onSaveToProfile,
   initialData,
   initialSelections,
+  smartModeEnabled = false,
 }: CombinedIntakeFormProps) {
   const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState<FormData>(initialData ?? EMPTY_FORM);
@@ -139,6 +142,14 @@ export default function CombinedIntakeForm({
     setCurrentStep(4);
     onSubmit(formData, selected221gItems);
   };
+
+  const selectedBooleanKeys = Object.entries(selected221gItems)
+    .filter(([, value]) => typeof value === "boolean" && value)
+    .map(([key]) => key);
+
+  const smartClassification = smartModeEnabled
+    ? classifySituation(formData, selectedBooleanKeys)
+    : null;
 
   const resetWizard = () => {
     if (confirm("Are you sure you want to start over? All progress will be lost.")) {
@@ -267,6 +278,22 @@ export default function CombinedIntakeForm({
     
     if (cl.i864_affidavit) {
         plan += `### I-864 Affidavit of Support Package\n\n`;
+        if (smartModeEnabled && cl.i864_sponsor_structure) {
+            plan += `**Sponsor structure selected:** ${cl.i864_sponsor_structure.replace(/-/g, " ")}\n`;
+            if (cl.i864_petitioner_name) {
+                plan += `**Petitioner:** ${cl.i864_petitioner_name}\n`;
+            }
+            if (cl.i864_joint_sponsor_name) {
+                plan += `**Joint Sponsor:** ${cl.i864_joint_sponsor_name}\n`;
+            }
+            if (cl.i864_household_member_name) {
+                plan += `**Household Member:** ${cl.i864_household_member_name}\n`;
+            }
+            if (cl.i864_tax_years) {
+                plan += `**Tax years noted:** ${cl.i864_tax_years}\n`;
+            }
+            plan += `\n`;
+        }
         plan += `**Expected submissions:**\n`;
         
         plan += `1. Form I-864 Affidavit of Support (signed and dated)\n`;
@@ -371,6 +398,17 @@ export default function CombinedIntakeForm({
     plan += `✓ For complex cases, consult an immigration attorney\n\n`;
     
     plan += `This action plan is based on your inputs and general guidance. It is not legal advice.\n`;
+
+    if (smartModeEnabled && smartClassification) {
+      plan += `\n## SMART INSIGHT SUMMARY\n\n`;
+      plan += `Scenario: ${smartClassification.description}\n`;
+      plan += `Confidence: ${smartClassification.confidence.toUpperCase()}\n\n`;
+      plan += `Recommended next steps:\n`;
+      smartClassification.nextSteps.forEach((step, i) => {
+        plan += `${i + 1}. ${step}\n`;
+      });
+      plan += `\n`;
+    }
     
     return plan;
   };
@@ -501,6 +539,24 @@ export default function CombinedIntakeForm({
     letter += `- Interview Date: ${formatDate(cb.interviewDate)}\n`;
     if (cb.caseNumber) letter += `- Case Number: ${cb.caseNumber}\n`;
     letter += `- Visa Category: ${cb.visaCategory}\n\n`;
+
+    if (smartModeEnabled && cl.i864_affidavit && cl.i864_sponsor_structure) {
+        letter += `**Financial Sponsorship Structure:**\n`;
+        letter += `- Structure: ${cl.i864_sponsor_structure.replace(/-/g, " ")}\n`;
+        if (cl.i864_petitioner_name) {
+            letter += `- Petitioner: ${cl.i864_petitioner_name}\n`;
+        }
+        if (cl.i864_joint_sponsor_name) {
+            letter += `- Joint Sponsor: ${cl.i864_joint_sponsor_name}\n`;
+        }
+        if (cl.i864_household_member_name) {
+            letter += `- Household Member: ${cl.i864_household_member_name}\n`;
+        }
+        if (cl.i864_tax_years) {
+            letter += `- Tax Years: ${cl.i864_tax_years}\n`;
+        }
+        letter += `\n`;
+    }
 
     letter += `**Enclosed Documents:**\n\n`;
 
@@ -720,6 +776,7 @@ export default function CombinedIntakeForm({
         selectedItems={selected221gItems}
         onSelectionChange={setSelected221gItems}
         onNext={goNext}
+        smartModeEnabled={smartModeEnabled}
       />
 
       <div className="flex gap-3 pt-4 border-t">
@@ -732,7 +789,9 @@ export default function CombinedIntakeForm({
   // Step 3 – Review & Generate
   // ──────────────────────────────────────────────
   const StepReviewGenerate = () => {
-    const selectedCount = Object.values(selected221gItems).filter(Boolean).length;
+    const selectedCount = Object.values(selected221gItems).filter(
+      (value) => typeof value === "boolean" && value,
+    ).length;
     
     return (
       <div className="space-y-6">
@@ -794,18 +853,46 @@ export default function CombinedIntakeForm({
                                 </tr>
                             </thead>
                             <tbody className="divide-y">
-                                {Object.entries(selected221gItems).filter(([_, v]) => v).map(([key, _]) => (
+                                {Object.entries(selected221gItems)
+                                  .filter(([, v]) => typeof v === "boolean" && v)
+                                  .map(([key]) => (
                                     <tr key={key}>
                                         <td className="p-3 capitalize">{key.replace(/_/g, " ")}</td>
                                         <td className="p-3 opacity-70">As indicated</td>
                                         <td className="p-3 opacity-70">Courier/Letter</td>
                                     </tr>
-                                ))}
+                                  ))}
                             </tbody>
                         </table>
                     </div>
                 )}
             </section>
+
+            {smartModeEnabled && smartClassification && (
+              <section>
+                <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
+                  <span className="w-6 h-6 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center text-xs">
+                    S
+                  </span>
+                  Smart Insights
+                </h3>
+                <div className="rounded-lg border border-emerald-200 bg-emerald-50/60 p-4">
+                  <p className="text-sm text-emerald-900">
+                    <span className="font-semibold">Scenario:</span>{" "}
+                    {smartClassification.description}
+                  </p>
+                  <p className="mt-1 text-sm text-emerald-900">
+                    <span className="font-semibold">Confidence:</span>{" "}
+                    {smartClassification.confidence.toUpperCase()}
+                  </p>
+                  <ul className="mt-3 list-disc space-y-1 pl-5 text-sm text-emerald-900">
+                    {smartClassification.nextSteps.map((step, idx) => (
+                      <li key={`${idx}-${step}`}>{step}</li>
+                    ))}
+                  </ul>
+                </div>
+              </section>
+            )}
         </div>
 
         <div className="flex gap-3 pt-6 border-t font-semibold">

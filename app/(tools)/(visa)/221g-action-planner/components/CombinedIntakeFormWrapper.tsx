@@ -23,6 +23,7 @@ interface CombinedIntakeFormWrapperProps {
   onSaveToProfile?: () => Promise<void>;
   initialData?: import("../types/221g").FormData | null;
   initialSelections?: import("../types/221g").FormSelections | null;
+  smartModeEnabled?: boolean;
 }
 
 export default function CombinedIntakeFormWrapper({
@@ -30,6 +31,7 @@ export default function CombinedIntakeFormWrapper({
   onSaveToProfile,
   initialData,
   initialSelections,
+  smartModeEnabled = false,
 }: CombinedIntakeFormWrapperProps) {
   return (
     <DynamicCombinedIntakeForm
@@ -37,6 +39,7 @@ export default function CombinedIntakeFormWrapper({
       onSaveToProfile={onSaveToProfile}
       initialData={initialData}
       initialSelections={initialSelections}
+      smartModeEnabled={smartModeEnabled}
     />
   );
 }

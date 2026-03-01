@@ -33,6 +33,11 @@ export interface FormSelections {
   irs_transcript?: boolean;
   proof_citizenship?: boolean;
   domicile?: boolean;
+  i864_sponsor_structure?: "petitioner-only" | "petitioner-hm" | "joint-sponsor" | "joint-sponsor-hm";
+  i864_petitioner_name?: string;
+  i864_joint_sponsor_name?: string;
+  i864_household_member_name?: string;
+  i864_tax_years?: string;
   dna_test?: boolean;
   dna_test_name?: string;
   other?: boolean;

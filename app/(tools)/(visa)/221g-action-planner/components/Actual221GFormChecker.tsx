@@ -9,6 +9,13 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface FormSelections {
   admin_processing?: boolean;
@@ -43,6 +50,11 @@ interface FormSelections {
   irs_transcript?: boolean;
   proof_citizenship?: boolean;
   domicile?: boolean;
+  i864_sponsor_structure?: "petitioner-only" | "petitioner-hm" | "joint-sponsor" | "joint-sponsor-hm";
+  i864_petitioner_name?: string;
+  i864_joint_sponsor_name?: string;
+  i864_household_member_name?: string;
+  i864_tax_years?: string;
   dna_test?: boolean;
   dna_test_name?: string;
   other?: boolean;
@@ -53,12 +65,14 @@ interface Actual221GFormCheckerProps {
   selectedItems: FormSelections;
   onSelectionChange: (selected: FormSelections) => void;
   onNext: () => void;
+  smartModeEnabled?: boolean;
 }
 
 export default function Actual221GFormChecker({
   selectedItems,
   onSelectionChange,
   onNext,
+  smartModeEnabled = false,
 }: Actual221GFormCheckerProps) {
   const handleCheckboxChange = <T extends keyof FormSelections>(
     fieldId: T,
@@ -70,6 +84,14 @@ export default function Actual221GFormChecker({
     } as FormSelections;
     onSelectionChange(newSelected);
   };
+
+  const sponsorStructure = selectedItems.i864_sponsor_structure || "";
+  const showJointSponsorName =
+    sponsorStructure === "joint-sponsor" ||
+    sponsorStructure === "joint-sponsor-hm";
+  const showHouseholdMemberName =
+    sponsorStructure === "petitioner-hm" ||
+    sponsorStructure === "joint-sponsor-hm";
 
   const handleInputChange = <T extends keyof FormSelections>(
     fieldId: T,
@@ -93,6 +115,13 @@ export default function Actual221GFormChecker({
         </CardDescription>
       </CardHeader>
       <CardContent>
+        {smartModeEnabled && (
+          <div className="mb-4 rounded-md border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs font-medium text-emerald-800">
+            Premium smart mode enabled: I-864 section now supports conditional
+            sponsor details.
+          </div>
+        )}
+
         <div className="mb-6 p-4 bg-primary/10 rounded-lg border border-primary/20">
           <h3 className="font-semibold text-primary text-center text-lg">
             U.S. Embassy Islamabad, Pakistan
@@ -506,7 +535,7 @@ export default function Actual221GFormChecker({
               </div>
             </div>
 
-            {/* I-864 Affidavit of Support */}
+            {/* I-864 Affidavit of Support (Restructured) */}
             <div className="flex items-start space-x-2 mb-3">
               <Checkbox
                 id="i864_affidavit"
@@ -525,198 +554,458 @@ export default function Actual221GFormChecker({
                     I-864 Affidavit of Support
                   </span>
                 </Label>
-                <div className="ml-6 mt-1 flex items-center space-x-3 text-muted-foreground italic text-xs">
-                  <span>(submit via</span>
-                  <div className="flex items-center space-x-1">
-                    <Checkbox
-                      id="i864_courier"
-                      checked={!!selectedItems.i864_courier}
-                      onCheckedChange={(checked) =>
-                        handleCheckboxChange("i864_courier", checked as boolean)
-                      }
-                    />
-                    <Label
-                      htmlFor="i864_courier"
-                      className="text-xs cursor-pointer italic text-muted-foreground"
-                    >
-                      courier /
-                    </Label>
-                  </div>
-                  <div className="flex items-center space-x-1">
-                    <Checkbox
-                      id="i864_online"
-                      checked={!!selectedItems.i864_online}
-                      onCheckedChange={(checked) =>
-                        handleCheckboxChange("i864_online", checked as boolean)
-                      }
-                    />
-                    <Label
-                      htmlFor="i864_online"
-                      className="text-xs cursor-pointer italic text-muted-foreground"
-                    >
-                      online)
-                    </Label>
-                  </div>
-                </div>
-                <div className="ml-6 mt-1 flex flex-wrap items-center gap-3">
-                  <div className="flex items-center space-x-1">
-                    <Checkbox
-                      id="i864_petitioner"
-                      checked={!!selectedItems.i864_petitioner}
-                      onCheckedChange={(checked) =>
-                        handleCheckboxChange(
-                          "i864_petitioner",
-                          checked as boolean,
-                        )
-                      }
-                    />
-                    <Label
-                      htmlFor="i864_petitioner"
-                      className="text-xs cursor-pointer"
-                    >
-                      Petitioner
-                    </Label>
-                  </div>
-                  <div className="flex items-center space-x-1">
-                    <Checkbox
-                      id="i864_joint_sponsor"
-                      checked={!!selectedItems.i864_joint_sponsor}
-                      onCheckedChange={(checked) =>
-                        handleCheckboxChange(
-                          "i864_joint_sponsor",
-                          checked as boolean,
-                        )
-                      }
-                    />
-                    <Label
-                      htmlFor="i864_joint_sponsor"
-                      className="text-xs cursor-pointer"
-                    >
-                      Joint Sponsor
-                    </Label>
-                  </div>
-                </div>
-                <div className="ml-6 mt-1 flex flex-wrap items-center gap-x-3 gap-y-1">
-                  <div className="flex items-center space-x-1">
-                    <Checkbox
-                      id="i864a"
-                      checked={!!selectedItems.i864a}
-                      onCheckedChange={(checked) =>
-                        handleCheckboxChange("i864a", checked as boolean)
-                      }
-                    />
-                    <Label htmlFor="i864a" className="text-xs cursor-pointer">
-                      I-864A
-                    </Label>
-                  </div>
-                  <div className="flex items-center space-x-1">
-                    <Checkbox
-                      id="i134"
-                      checked={!!selectedItems.i134}
-                      onCheckedChange={(checked) =>
-                        handleCheckboxChange("i134", checked as boolean)
-                      }
-                    />
-                    <Label htmlFor="i134" className="text-xs cursor-pointer">
-                      I-134
-                    </Label>
-                  </div>
-                  <div className="flex items-center space-x-1">
-                    <Checkbox
-                      id="i864w"
-                      checked={!!selectedItems.i864w}
-                      onCheckedChange={(checked) =>
-                        handleCheckboxChange("i864w", checked as boolean)
-                      }
-                    />
-                    <Label htmlFor="i864w" className="text-xs cursor-pointer">
-                      I-864W
-                    </Label>
-                  </div>
-                  <div className="flex items-center space-x-1">
-                    <Checkbox
-                      id="tax_1040"
-                      checked={!!selectedItems.tax_1040}
-                      onCheckedChange={(checked) =>
-                        handleCheckboxChange("tax_1040", checked as boolean)
-                      }
-                    />
-                    <Label
-                      htmlFor="tax_1040"
-                      className="text-xs cursor-pointer"
-                    >
-                      1040
-                    </Label>
-                  </div>
-                  <div className="flex items-center space-x-1">
-                    <Checkbox
-                      id="w2"
-                      checked={!!selectedItems.w2}
-                      onCheckedChange={(checked) =>
-                        handleCheckboxChange("w2", checked as boolean)
-                      }
-                    />
-                    <Label htmlFor="w2" className="text-xs cursor-pointer">
-                      W-2
-                    </Label>
-                  </div>
-                  <div className="flex items-center space-x-1">
-                    <Checkbox
-                      id="irs_transcript"
-                      checked={!!selectedItems.irs_transcript}
-                      onCheckedChange={(checked) =>
-                        handleCheckboxChange(
-                          "irs_transcript",
-                          checked as boolean,
-                        )
-                      }
-                    />
-                    <Label
-                      htmlFor="irs_transcript"
-                      className="text-xs cursor-pointer"
-                    >
-                      IRS tax transcript
-                    </Label>
-                  </div>
-                </div>
-                <div className="ml-6 mt-1 flex flex-wrap items-center gap-x-3 gap-y-1">
-                  <div className="flex items-center space-x-1">
-                    <Checkbox
-                      id="proof_citizenship"
-                      checked={!!selectedItems.proof_citizenship}
-                      onCheckedChange={(checked) =>
-                        handleCheckboxChange(
-                          "proof_citizenship",
-                          checked as boolean,
-                        )
-                      }
-                    />
-                    <Label
-                      htmlFor="proof_citizenship"
-                      className="text-xs cursor-pointer"
-                    >
-                      Proof of U.S. citizenship or LPR status
-                    </Label>
-                  </div>
-                  <div className="flex items-center space-x-1">
-                    <Checkbox
-                      id="domicile"
-                      checked={!!selectedItems.domicile}
-                      onCheckedChange={(checked) =>
-                        handleCheckboxChange("domicile", checked as boolean)
-                      }
-                    />
-                    <Label
-                      htmlFor="domicile"
-                      className="text-xs cursor-pointer"
-                    >
-                      Domicile
-                    </Label>
-                  </div>
-                </div>
+
+                {smartModeEnabled ? (
+                  // --- PREMIUM SEQUENTIAL LAYOUT (Only for Smart Mode) ---
+                  <>
+                    <div className="ml-6 mt-1 flex items-center space-x-3 text-muted-foreground italic text-[10px] font-medium">
+                      <span>(submit via</span>
+                      <div className="flex items-center space-x-1">
+                        <Checkbox
+                          id="i864_courier"
+                          checked={!!selectedItems.i864_courier}
+                          onCheckedChange={(checked) =>
+                            handleCheckboxChange("i864_courier", checked as boolean)
+                          }
+                        />
+                        <Label
+                          htmlFor="i864_courier"
+                          className="text-[10px] cursor-pointer italic text-muted-foreground"
+                        >
+                          courier /
+                        </Label>
+                      </div>
+                      <div className="flex items-center space-x-1">
+                        <Checkbox
+                          id="i864_online"
+                          checked={!!selectedItems.i864_online}
+                          onCheckedChange={(checked) =>
+                            handleCheckboxChange("i864_online", checked as boolean)
+                          }
+                        />
+                        <Label
+                          htmlFor="i864_online"
+                          className="text-[10px] cursor-pointer italic text-muted-foreground"
+                        >
+                          online)
+                        </Label>
+                      </div>
+                    </div>
+
+                    {!!selectedItems.i864_affidavit && (
+                      <div className="ml-6 mt-4 space-y-6 rounded-xl border border-emerald-200 bg-emerald-50/40 p-5 shadow-sm animate-in fade-in slide-in-from-top-2 duration-500">
+{/* Sponsor Structure */}
+                        <div className="space-y-2">
+                          <Label className="text-sm font-semibold text-foreground flex items-center group">
+                            Sponsor Structure *
+                          </Label>
+                          <Select
+                            value={selectedItems.i864_sponsor_structure || ""}
+                            onValueChange={(value) =>
+                              handleInputChange("i864_sponsor_structure", value)
+                            }
+                          >
+                            <SelectTrigger className="h-10 bg-white border-emerald-200 focus:ring-emerald-500 focus:border-emerald-500 shadow-none hover:bg-emerald-50/50 transition-colors">
+                              <SelectValue placeholder="How are you sponsoring?" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="petitioner-only">
+                                Petitioner only
+                              </SelectItem>
+                              <SelectItem value="petitioner-hm">
+                                Petitioner + Household Member (I-864A)
+                              </SelectItem>
+                              <SelectItem value="joint-sponsor">
+                                Joint Sponsor (separate I-864)
+                              </SelectItem>
+                              <SelectItem value="joint-sponsor-hm">
+                                Joint Sponsor + Household Member (I-864A)
+                              </SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+
+                        {/* Step 2: Sponsor Names */}
+                        {!!sponsorStructure && (
+                          <div className="space-y-4 animate-in fade-in duration-500">
+                            <Label className="text-sm font-semibold text-foreground flex items-center">
+                              Sponsor Identification
+                            </Label>
+                            <div className="grid grid-cols-1 gap-4 md:grid-cols-2 ml-7">
+                              <div className="space-y-1.5 focus-within:ring-0">
+                                <Label className="text-[11px] font-medium text-emerald-800/70 ml-1">
+                                  Petitioner Full Name
+                                </Label>
+                                <Input
+                                  type="text"
+                                  value={selectedItems.i864_petitioner_name || ""}
+                                  onChange={(e) =>
+                                    handleInputChange("i864_petitioner_name", e.target.value)
+                                  }
+                                  placeholder="Full name as on I-864"
+                                  className="h-10 bg-white border-emerald-100 focus:border-emerald-500 shadow-none focus:ring-1 focus:ring-emerald-500 hover:border-emerald-200 transition-all font-medium"
+                                />
+                              </div>
+
+                              {showJointSponsorName && (
+                                <div className="space-y-1.5 animate-in slide-in-from-left-2 duration-500">
+                                  <Label className="text-[11px] font-medium text-emerald-800/70 ml-1">
+                                    Joint Sponsor Full Name
+                                  </Label>
+                                  <Input
+                                    type="text"
+                                    value={selectedItems.i864_joint_sponsor_name || ""}
+                                    onChange={(e) =>
+                                      handleInputChange("i864_joint_sponsor_name", e.target.value)
+                                    }
+                                    placeholder="Full name of joint sponsor"
+                                    className="h-10 bg-white border-emerald-100 focus:border-emerald-500 shadow-none focus:ring-1 focus:ring-emerald-500 font-medium"
+                                  />
+                                </div>
+                              )}
+
+                              {showHouseholdMemberName && (
+                                <div className="space-y-1.5 animate-in slide-in-from-left-2 duration-500">
+                                  <Label className="text-[11px] font-medium text-emerald-800/70 ml-1">
+                                    Household Member Name
+                                  </Label>
+                                  <Input
+                                    type="text"
+                                    value={selectedItems.i864_household_member_name || ""}
+                                    onChange={(e) =>
+                                      handleInputChange("i864_household_member_name", e.target.value)
+                                    }
+                                    placeholder="Name from I-864A contract"
+                                    className="h-10 bg-white border-emerald-100 focus:border-emerald-500 shadow-none focus:ring-1 focus:ring-emerald-500 font-medium"
+                                  />
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Step 3: Forms Requested */}
+                        <div className="space-y-3">
+                          <Label className="text-sm font-semibold text-foreground flex items-center">
+                            Forms Requested
+                          </Label>
+                          <div className="grid grid-cols-2 md:grid-cols-4 gap-2 ml-7">
+                            {[
+                              { id: "i864_petitioner", label: "I-864" },
+                              { id: "i864a", label: "I-864A" },
+                              { id: "i134", label: "I-134" },
+                              { id: "i864w", label: "I-864W" },
+                            ].map((form) => (
+                              <div
+                                key={form.id}
+                                className="flex items-center space-x-2 p-2 rounded-lg bg-white border border-emerald-50 hover:border-emerald-300 transition-all shadow-[0_1px_2px_rgba(0,0,0,0.03)] group"
+                              >
+                                <Checkbox
+                                  id={`premium_${form.id}`}
+                                  checked={!!selectedItems[form.id as keyof FormSelections]}
+                                  onCheckedChange={(checked) =>
+                                    handleCheckboxChange(form.id as keyof FormSelections, checked as boolean)
+                                  }
+                                  className="data-[state=checked]:bg-emerald-600 data-[state=checked]:border-emerald-600"
+                                />
+                                <Label
+                                  htmlFor={`premium_${form.id}`}
+                                  className="text-[11px] font-semibold cursor-pointer group-hover:text-emerald-700 transition-colors"
+                                >
+                                  {form.label}
+                                </Label>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+
+                        {/* Step 4: Evidence Required */}
+                        <div className="space-y-3">
+                          <Label className="text-sm font-semibold text-foreground flex items-center">
+                            Financial Evidence Checklist
+                          </Label>
+                          <div className="grid grid-cols-1 md:grid-cols-3 gap-2 ml-7">
+                            {[
+                              { id: "tax_1040", label: "Signed Form 1040" },
+                              { id: "w2", label: "W-2 Tax Statements" },
+                              { id: "irs_transcript", label: "IRS Tax Transcript" },
+                            ].map((ev) => (
+                              <div
+                                key={ev.id}
+                                className="flex items-center space-x-2 p-2 rounded-lg bg-white border border-emerald-50 hover:border-emerald-300 transition-all shadow-[0_1px_2px_rgba(0,0,0,0.03)] group"
+                              >
+                                <Checkbox
+                                  id={`premium_${ev.id}`}
+                                  checked={!!selectedItems[ev.id as keyof FormSelections]}
+                                  onCheckedChange={(checked) =>
+                                    handleCheckboxChange(ev.id as keyof FormSelections, checked as boolean)
+                                  }
+                                  className="data-[state=checked]:bg-emerald-600 data-[state=checked]:border-emerald-600"
+                                />
+                                <Label
+                                  htmlFor={`premium_${ev.id}`}
+                                  className="text-[11px] font-semibold cursor-pointer group-hover:text-emerald-700"
+                                >
+                                  {ev.label}
+                                </Label>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+
+                        {/* Step 5: Status Documentation */}
+                        <div className="space-y-3">
+                          <Label className="text-sm font-semibold text-foreground flex items-center">
+                            Legal Status Proof
+                          </Label>
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-2 ml-7">
+                            {[
+                              { id: "proof_citizenship", label: "U.S. Citizen/LPR Proof" },
+                              { id: "domicile", label: "Proof of Domicile" },
+                            ].map((status) => (
+                              <div
+                                key={status.id}
+                                className="flex items-center space-x-2 p-2 rounded-lg bg-white border border-emerald-50 hover:border-emerald-300 transition-all shadow-[0_1px_2px_rgba(0,0,0,0.03)] group"
+                              >
+                                <Checkbox
+                                  id={`premium_${status.id}`}
+                                  checked={!!selectedItems[status.id as keyof FormSelections]}
+                                  onCheckedChange={(checked) =>
+                                    handleCheckboxChange(status.id as keyof FormSelections, checked as boolean)
+                                  }
+                                  className="data-[state=checked]:bg-emerald-600 data-[state=checked]:border-emerald-600"
+                                />
+                                <Label
+                                  htmlFor={`premium_${status.id}`}
+                                  className="text-[11px] font-semibold cursor-pointer group-hover:text-emerald-700"
+                                >
+                                  {status.label}
+                                </Label>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+
+                        {/* Step 6: Tax Years */}
+                        <div className="space-y-2">
+                          <Label className="text-sm font-semibold text-foreground flex items-center">
+                            Tax Year(s) Requested
+                          </Label>
+                          <div className="ml-7">
+                            <Input
+                              type="text"
+                              value={selectedItems.i864_tax_years || ""}
+                              onChange={(e) =>
+                                handleInputChange("i864_tax_years", e.target.value)
+                              }
+                              placeholder="e.g., 2024, 2023, 2022"
+                              className="h-10 bg-white border-emerald-100 focus:border-emerald-500 shadow-none focus:ring-1 focus:ring-emerald-500"
+                            />
+                            <div className="flex items-start mt-2 ml-1 text-[10px] text-emerald-700/80 font-medium">
+                               <span className="mr-1.5 flex-shrink-0">⚙️</span>
+                               <span>Only provide years expressly mentioned on your 221(g) letter.</span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </>
+                ) : (
+                  // --- ORIGINAL DEFAULT LAYOUT (For non-premium users) ---
+                  <>
+                    <div className="ml-6 mt-1 flex items-center space-x-3 text-muted-foreground italic text-xs">
+                      <span>(submit via</span>
+                      <div className="flex items-center space-x-1">
+                        <Checkbox
+                          id="i864_courier"
+                          checked={!!selectedItems.i864_courier}
+                          onCheckedChange={(checked) =>
+                            handleCheckboxChange("i864_courier", checked as boolean)
+                          }
+                        />
+                        <Label
+                          htmlFor="i864_courier"
+                          className="text-xs cursor-pointer italic text-muted-foreground"
+                        >
+                          courier /
+                        </Label>
+                      </div>
+                      <div className="flex items-center space-x-1">
+                        <Checkbox
+                          id="i864_online"
+                          checked={!!selectedItems.i864_online}
+                          onCheckedChange={(checked) =>
+                            handleCheckboxChange("i864_online", checked as boolean)
+                          }
+                        />
+                        <Label
+                          htmlFor="i864_online"
+                          className="text-xs cursor-pointer italic text-muted-foreground"
+                        >
+                          online)
+                        </Label>
+                      </div>
+                    </div>
+                    <div className="ml-6 mt-1 flex flex-wrap items-center gap-3">
+                      <div className="flex items-center space-x-1">
+                        <Checkbox
+                          id="i864_petitioner"
+                          checked={!!selectedItems.i864_petitioner}
+                          onCheckedChange={(checked) =>
+                            handleCheckboxChange(
+                              "i864_petitioner",
+                              checked as boolean,
+                            )
+                          }
+                        />
+                        <Label
+                          htmlFor="i864_petitioner"
+                          className="text-xs cursor-pointer"
+                        >
+                          Petitioner
+                        </Label>
+                      </div>
+                      <div className="flex items-center space-x-1">
+                        <Checkbox
+                          id="i864_joint_sponsor"
+                          checked={!!selectedItems.i864_joint_sponsor}
+                          onCheckedChange={(checked) =>
+                            handleCheckboxChange(
+                              "i864_joint_sponsor",
+                              checked as boolean,
+                            )
+                          }
+                        />
+                        <Label
+                          htmlFor="i864_joint_sponsor"
+                          className="text-xs cursor-pointer"
+                        >
+                          Joint Sponsor
+                        </Label>
+                      </div>
+                    </div>
+                    <div className="ml-6 mt-1 flex flex-wrap items-center gap-x-3 gap-y-1">
+                      <div className="flex items-center space-x-1">
+                        <Checkbox
+                          id="i864a"
+                          checked={!!selectedItems.i864a}
+                          onCheckedChange={(checked) =>
+                            handleCheckboxChange("i864a", checked as boolean)
+                          }
+                        />
+                        <Label htmlFor="i864a" className="text-xs cursor-pointer">
+                          I-864A
+                        </Label>
+                      </div>
+                      <div className="flex items-center space-x-1">
+                        <Checkbox
+                          id="i134"
+                          checked={!!selectedItems.i134}
+                          onCheckedChange={(checked) =>
+                            handleCheckboxChange("i134", checked as boolean)
+                          }
+                        />
+                        <Label htmlFor="i134" className="text-xs cursor-pointer">
+                          I-134
+                        </Label>
+                      </div>
+                      <div className="flex items-center space-x-1">
+                        <Checkbox
+                          id="i864w"
+                          checked={!!selectedItems.i864w}
+                          onCheckedChange={(checked) =>
+                            handleCheckboxChange("i864w", checked as boolean)
+                          }
+                        />
+                        <Label htmlFor="i864w" className="text-xs cursor-pointer">
+                          I-864W
+                        </Label>
+                      </div>
+                      <div className="flex items-center space-x-1">
+                        <Checkbox
+                          id="tax_1040"
+                          checked={!!selectedItems.tax_1040}
+                          onCheckedChange={(checked) =>
+                            handleCheckboxChange("tax_1040", checked as boolean)
+                          }
+                        />
+                        <Label
+                          htmlFor="tax_1040"
+                          className="text-xs cursor-pointer"
+                        >
+                          1040
+                        </Label>
+                      </div>
+                      <div className="flex items-center space-x-1">
+                        <Checkbox
+                          id="w2"
+                          checked={!!selectedItems.w2}
+                          onCheckedChange={(checked) =>
+                            handleCheckboxChange("w2", checked as boolean)
+                          }
+                        />
+                        <Label htmlFor="w2" className="text-xs cursor-pointer">
+                          W-2
+                        </Label>
+                      </div>
+                      <div className="flex items-center space-x-1">
+                        <Checkbox
+                          id="irs_transcript"
+                          checked={!!selectedItems.irs_transcript}
+                          onCheckedChange={(checked) =>
+                            handleCheckboxChange(
+                              "irs_transcript",
+                              checked as boolean,
+                            )
+                          }
+                        />
+                        <Label
+                          htmlFor="irs_transcript"
+                          className="text-xs cursor-pointer"
+                        >
+                          IRS tax transcript
+                        </Label>
+                      </div>
+                    </div>
+                    <div className="ml-6 mt-1 flex flex-wrap items-center gap-x-3 gap-y-1">
+                      <div className="flex items-center space-x-1">
+                        <Checkbox
+                          id="proof_citizenship"
+                          checked={!!selectedItems.proof_citizenship}
+                          onCheckedChange={(checked) =>
+                            handleCheckboxChange(
+                              "proof_citizenship",
+                              checked as boolean,
+                            )
+                          }
+                        />
+                        <Label
+                          htmlFor="proof_citizenship"
+                          className="text-xs cursor-pointer"
+                        >
+                          Proof of U.S. citizenship or LPR status
+                        </Label>
+                      </div>
+                      <div className="flex items-center space-x-1">
+                        <Checkbox
+                          id="domicile"
+                          checked={!!selectedItems.domicile}
+                          onCheckedChange={(checked) =>
+                            handleCheckboxChange("domicile", checked as boolean)
+                          }
+                        />
+                        <Label
+                          htmlFor="domicile"
+                          className="text-xs cursor-pointer"
+                        >
+                          Domicile
+                        </Label>
+                      </div>
+                    </div>
+                  </>
+                )}
               </div>
             </div>
-
             {/* DNA test */}
             <div className="flex items-start space-x-2 mb-3">
               <Checkbox
