@@ -5,6 +5,18 @@ import { useAuth } from "@/app/context/AuthContext";
 import { useWizard } from "../dashboard/hooks/useWizard";
 import { roadmapData } from "../../../data/roadmap";
 import { useRouter } from "next/navigation";
+import {
+  Camera,
+  Calculator,
+  MessageSquare,
+  Sparkles,
+  Flag,
+  PlusCircle,
+  ClipboardList,
+  Wrench,
+  Star,
+} from "lucide-react";
+import Link from "next/link";
 
 interface PoliceRequest {
   id: string;
@@ -77,24 +89,27 @@ export default function DashboardPage() {
 
   return (
     <section id="dashboard" className="block">
-      <div className="max-w-[1400px] mx-auto px-6 py-[60px]">
-        <h1 className="text-[40px] font-bold mb-4">Your Dashboard</h1>
-        <p className="text-muted-foreground text-lg mb-12">
+      <div className="max-w-[1400px] mx-auto px-4 md:px-6 py-8 md:py-[60px]">
+        <h1 className="text-3xl md:text-[40px] font-bold mb-2 md:mb-4">
+          Your Dashboard
+        </h1>
+        <p className="text-muted-foreground text-base md:text-lg mb-8 md:mb-12">
           Track your active journeys and access recommended tools.
         </p>
 
         {!isSignedIn && (
           <div id="guest-dashboard-msg">
-            <div className="bg-[#f59e0b]/5 border-2 border-[#f59e0b]/20 p-8 rounded-xl text-center">
-              <h4 className="text-xl font-bold mb-2">
-                👋 Sign in to access your dashboard
+            <div className="bg-[#f59e0b]/5 border-2 border-[#f59e0b]/20 p-6 md:p-8 rounded-xl text-center">
+              <h4 className="text-lg md:text-xl font-bold mb-2 flex items-center justify-center gap-2">
+                <Sparkles className="w-5 h-5 text-amber-500" /> Sign in to
+                access your dashboard
               </h4>
-              <p className="text-muted-foreground mb-6">
+              <p className="text-muted-foreground text-sm md:text-base mb-6">
                 Track journeys, save progress across devices, and get
                 personalized recommendations.
               </p>
               <button
-                className="px-6 py-3 rounded-lg bg-[#0d9488] text-white font-bold hover:bg-[#0f766e] transition-colors shadow-sm"
+                className="px-6 py-3 rounded-lg bg-[#0d9488] text-white font-bold hover:bg-[#0f766e] transition-colors shadow-sm w-full sm:w-auto"
                 onClick={handleToggleAuth}
               >
                 Sign In Free
@@ -105,8 +120,6 @@ export default function DashboardPage() {
 
         {isSignedIn && (
           <div id="signed-in-dashboard">
-
-
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-10">
               <div className="lg:col-span-2">
                 {/* Police Verification Requests Section */}
@@ -119,20 +132,20 @@ export default function DashboardPage() {
                       {policeRequests.map((req) => (
                         <div
                           key={req.id}
-                          className="bg-card border border-border rounded-xl p-6 shadow-sm"
+                          className="bg-card border border-border rounded-xl p-4 sm:p-6 shadow-sm"
                         >
-                          <div className="flex justify-between items-start mb-4">
+                          <div className="flex flex-col sm:flex-row justify-between items-start gap-3 sm:gap-4 mb-4">
                             <div>
-                              <h4 className="font-bold text-lg mb-1">
+                              <h4 className="font-bold text-lg mb-1 break-all sm:break-normal">
                                 {req.request_id}
                               </h4>
-                              <p className="text-muted-foreground text-sm">
+                              <p className="text-muted-foreground text-xs sm:text-sm">
                                 Submitted on{" "}
                                 {new Date(req.created_at).toLocaleDateString()}
                               </p>
                             </div>
                             <span
-                              className={`px-3 py-1 rounded-full text-xs font-bold ${
+                              className={`self-start px-3 py-1 rounded-full text-xs font-bold whitespace-nowrap ${
                                 req.status === "completed"
                                   ? "bg-green-100 text-green-700"
                                   : req.status === "rejected"
@@ -145,7 +158,7 @@ export default function DashboardPage() {
                               {req.status?.toUpperCase().replace("_", " ")}
                             </span>
                           </div>
-                          <div className="grid grid-cols-2 gap-4 text-sm">
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 text-sm mt-2">
                             <div>
                               <p className="text-muted-foreground">Applicant</p>
                               <p className="font-medium">{req.full_name}</p>
@@ -175,8 +188,9 @@ export default function DashboardPage() {
 
                 <h3 className="text-xl font-bold mb-5">Your Active Journeys</h3>
                 <div className="bg-card border border-border rounded-xl p-6 shadow-sm">
-                  <h4 className="text-lg font-bold mb-2">
-                    🇺🇸 IR-1/CR-1 Spouse Visa
+                  <h4 className="text-lg font-bold mb-2 flex items-center gap-2">
+                    <Flag className="w-5 h-5 text-[#0d9488]" /> IR-1/CR-1 Spouse
+                    Visa
                   </h4>
                   <p className="text-muted-foreground text-sm mb-3">
                     Started Dec 21, 2025
@@ -196,20 +210,22 @@ export default function DashboardPage() {
                     </span>
                   </div>
                   <button
-                    className=" px-8 py-3 rounded-lg bg-[#0d9488] text-white font-bold hover:bg-[#0f766e] transition-colors shadow-lg"
+                    className="w-full sm:w-auto px-8 py-3 rounded-lg bg-[#0d9488] text-white font-bold hover:bg-[#0f766e] transition-colors shadow-lg"
                     onClick={handleContinue}
                   >
                     Continue Journey →
                   </button>
                 </div>
 
-                <div className="mt-6 bg-card border border-border rounded-xl p-6 shadow-sm opacity-60">
-                  <h4 className="font-bold mb-2">➕ Start Another Journey</h4>
+                <div className="mt-6 bg-card border border-border rounded-xl p-4 sm:p-6 shadow-sm opacity-60">
+                  <h4 className="font-bold mb-2 flex items-center gap-2">
+                    <PlusCircle className="w-5 h-5" /> Start Another Journey
+                  </h4>
                   <p className="text-muted-foreground text-sm mb-3">
                     IR-5 Parents, K-1 Fiancé, and more coming soon.
                   </p>
                   <button
-                    className="px-4 py-2 rounded-lg bg-muted text-muted-foreground font-bold border border-border cursor-not-allowed"
+                    className="w-full sm:w-auto px-4 py-2 rounded-lg bg-muted text-muted-foreground font-bold border border-border cursor-not-allowed"
                     disabled
                   >
                     Coming Soon
@@ -221,65 +237,81 @@ export default function DashboardPage() {
                 <h3 className="text-xl font-bold mb-5">
                   Tools You May Need Next
                 </h3>
-                <div className="grid grid-cols-1 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-4">
                   <ToolCard
-                    title="Passport Photo Tool"
-                    description="You'll need 2x2 photos for Stage I and II."
-                    icon="📸"
+                    title="Photo Booth"
+                    description="Make a compliant passport/visa photo in minutes."
+                    icon={
+                      <Camera className="w-5 h-5 text-rose-600 dark:text-rose-400" />
+                    }
                     badge="free"
+                    onClick={() => router.push("/passport")}
                   />
                   <ToolCard
-                    title="I-864 Calculator"
-                    description="Calculate income requirements early."
-                    icon="💰"
+                    title="Sponsorship Calculator"
+                    description="Auto-check income/assets and tell you what you still need."
+                    icon={
+                      <Calculator className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+                    }
                     badge="free"
+                    onClick={() => router.push("/affidavit-support-calculator")}
                   />
                   <ToolCard
                     title="Interview Prep"
-                    description="Start preparing early with 50+ questions."
-                    icon="🎯"
+                    description="Prepare smarter and deliver confident answers when it matters most."
+                    icon={
+                      <MessageSquare className="w-5 h-5 text-violet-600 dark:text-violet-400" />
+                    }
                     badge="premium"
+                    onClick={() => router.push("/interview-prep")}
                   />
                 </div>
               </div>
             </div>
 
-            <div className="mt-12">
+            <div className="mt-8 md:mt-12">
               <h3 className="text-xl font-bold mb-5">Quick Actions</h3>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 md:gap-6">
                 <button
-                  className="bg-card border border-border rounded-xl p-6 shadow-sm text-center hover:shadow-md transition-all group"
+                  className="bg-card w-full h-full border border-border rounded-xl p-4 sm:p-6 shadow-sm text-center hover:shadow-md transition-all group flex flex-col items-center justify-center"
                   onClick={() => handleNavigate("ir1-journey")}
                 >
-                  <h4 className="text-lg font-bold mb-1 group-hover:text-[#0d9488] transition-colors">
-                    📋 Open IR-1 Wizard
+                  <h4 className="text-lg font-bold mb-1 group-hover:text-[#0d9488] transition-colors flex items-center justify-center gap-2">
+                    <ClipboardList className="w-5 h-5" /> Open IR-1 Wizard
                   </h4>
                   <p className="text-sm text-muted-foreground">
                     Continue your journey
                   </p>
                 </button>
-                <button
-                  className="bg-card border border-border rounded-xl p-6 shadow-sm text-center hover:shadow-md transition-all group"
-                  onClick={() => handleNavigate("tools")}
-                >
-                  <h4 className="text-lg font-bold mb-1 group-hover:text-[#0d9488] transition-colors">
-                    🛠️ Browse Tools
-                  </h4>
-                  <p className="text-sm text-muted-foreground">
-                    Document prep & planning
-                  </p>
-                </button>
-                <button
-                  className="bg-card border border-border rounded-xl p-6 shadow-sm text-center hover:shadow-md transition-all group"
-                  onClick={() => handleNavigate("pricing")}
-                >
-                  <h4 className="text-lg font-bold mb-1 group-hover:text-[#0d9488] transition-colors">
-                    ⭐ View Premium
-                  </h4>
-                  <p className="text-sm text-muted-foreground">
-                    Unlock all features
-                  </p>
-                </button>
+                <Link href="/tools" className="block w-full h-full">
+                  {" "}
+                  <button
+                    className="bg-card w-full h-full border border-border rounded-xl p-4 sm:p-6 shadow-sm text-center hover:shadow-md transition-all group flex flex-col items-center justify-center"
+                    // onClick={() => handleNavigate("tools")}
+                  >
+                    <h4 className="text-lg font-bold mb-1 group-hover:text-[#0d9488] transition-colors flex items-center justify-center gap-2">
+                      <Wrench className="w-5 h-5" /> Browse Tools
+                    </h4>
+                    <p className="text-sm text-muted-foreground">
+                      Document prep & planning
+                    </p>
+                  </button>
+                </Link>
+
+                <Link href="/pricing" className="block w-full h-full">
+                  {" "}
+                  <button
+                    className="bg-card w-full h-full border border-border rounded-xl p-4 sm:p-6 shadow-sm text-center hover:shadow-md transition-all group flex flex-col items-center justify-center"
+                    // onClick={() => handleNavigate("/pricing")}
+                  >
+                    <h4 className="text-lg font-bold mb-1 group-hover:text-[#0d9488] transition-colors flex items-center justify-center gap-2">
+                      <Star className="w-5 h-5 fill-current" /> View Premium
+                    </h4>
+                    <p className="text-sm text-muted-foreground">
+                      Unlock all features
+                    </p>
+                  </button>
+                </Link>
               </div>
             </div>
           </div>
@@ -298,7 +330,7 @@ function ToolCard({
 }: {
   title: string;
   description: string;
-  icon: string;
+  icon: React.ReactNode;
   badge: "free" | "premium";
   onClick?: () => void;
 }) {
@@ -308,7 +340,7 @@ function ToolCard({
       className="bg-card border border-border rounded-xl p-4 shadow-sm hover:shadow-md transition-all cursor-pointer flex flex-col items-start text-left group"
     >
       <div className="flex items-center gap-2 mb-2">
-        <span className="text-lg transition-transform group-hover:scale-110 duration-200">
+        <span className="flex items-center justify-center text-muted-foreground group-hover:text-[#0d9488] transition-all group-hover:scale-110 duration-200">
           {icon}
         </span>
         <h4 className="font-bold text-foreground text-[15px] transition-colors group-hover:text-[#0d9488]">
@@ -324,8 +356,8 @@ function ToolCard({
             Free
           </span>
         ) : (
-          <span className="px-3 py-1 rounded-full bg-[--premium-bg] text-[--premium-text] text-[11px] font-bold">
-            ⭐ Premium
+          <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-[--premium-bg] text-[--premium-text] text-[11px] font-bold">
+            <Star className="w-3 h-3 fill-current" /> Premium
           </span>
         )}
       </div>

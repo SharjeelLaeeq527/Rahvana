@@ -97,30 +97,6 @@ const useExtensionCleanup = () => {
   }, []);
 };
 
-/* -------------------------------------------------------------------------- */
-/*  Hover-dropdown hook (unchanged)                                           */
-/* -------------------------------------------------------------------------- */
-
-// const useHoverDropdown = () => {
-//   const [isOpen, setIsOpen] = useState(false);
-//   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
-
-//   const handleMouseEnter = () => {
-//     if (timeoutRef.current) clearTimeout(timeoutRef.current);
-//     setIsOpen(true);
-//   };
-//   const handleMouseLeave = () => {
-//     if (timeoutRef.current) clearTimeout(timeoutRef.current);
-//     timeoutRef.current = setTimeout(() => setIsOpen(false), 1000);
-//     // setIsOpen(false);
-//   };
-
-//   return { isOpen, handleMouseEnter, handleMouseLeave };
-// };
-
-/* -------------------------------------------------------------------------- */
-/*  SiteHeader component                                                      */
-/* -------------------------------------------------------------------------- */
 export function SiteHeader({
   activeSection,
   onNavigate,
@@ -169,7 +145,6 @@ export function SiteHeader({
       if (e) e.preventDefault();
       onNavigate(id);
     } else {
-      // Fallback: Use router navigation if no handler is provided (e.g., in layout.tsx)
       const routes: Record<string, string> = {
         home: "/",
         journeys: "/visa-category/ir-category",
@@ -285,19 +260,6 @@ export function SiteHeader({
           </Link>
 
           <nav className="hidden lg:flex items-center gap-1">
-            {/* <Link
-              href="/"
-              onClick={(e) => handleNav("home", e)}
-              className={`px-4 py-2 text-sm font-semibold rounded-lg transition-all ${
-                isActive("home", "/")
-                  ? "bg-primary text-white shadow-md shadow-primary/20"
-                  : "text-muted-foreground hover:bg-muted hover:text-primary"
-              }`}
-            >
-              Home
-            </Link> */}
-
-            {/* Explore Journeys */}
             <div
               className="relative py-2"
               onMouseEnter={() => handleMenuEnter("journeys")}
@@ -389,20 +351,6 @@ export function SiteHeader({
               Pricing
             </Link>
 
-            {/* {isSignedIn && (
-              <Link
-                href="/user-dashboard"
-                onClick={(e) => handleNav("user-dashboard", e)}
-                className={`px-4 py-2 text-sm font-semibold rounded-lg transition-all ${
-                  isActive("dashboard", "/user-dashboard")
-                    ? "bg-primary text-white shadow-md shadow-primary/20"
-                    : "text-slate-600 hover:bg-slate-100 hover:text-primary"
-                }`}
-              >
-                Dashboard
-              </Link>
-            )} */}
-
             <Link
               href="/#contact"
               onClick={(e) => handleNav("contact", e)}
@@ -448,17 +396,6 @@ export function SiteHeader({
         {/* Right side – Search + Login */}
 
         <div className="flex items-center gap-3">
-          {/* Theme Toggle (Logged Out / Shared) */}
-          {/* <HydrationSafeButton
-            variant="ghost"
-            size="icon"
-            onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-            className="bg-transparent hover:bg-primary/10 p-2 rounded-md relative text-muted-foreground hover:text-primary"
-            aria-label="Toggle Theme"
-          >
-            <Sun className="h-5 w-5 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
-            <Moon className="absolute h-5 w-5 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100 top-2 left-2" />
-          </HydrationSafeButton> */}
 
           {isLoading && !user
             ? null
@@ -499,7 +436,7 @@ export function SiteHeader({
                     initial={{ opacity: 0, scale: 0.95, y: 10 }}
                     animate={{ opacity: 1, scale: 1, y: 0 }}
                     exit={{ opacity: 0, scale: 0.95, y: 10 }}
-                    className="absolute right-0 top-full mt-2 w-72 max-h-[80vh] overflow-y-auto rounded-xl shadow-xl border border-border bg-card z-50 transform origin-top-right"
+                    className="absolute right-0 top-full mt-2 w-72 max-h-[80vh] overflow-y-auto rounded-xl shadow-xl border border-border bg-card z-9999 transform origin-top-right"
                   >
                     {/* Header */}
                     <div className="px-5 py-4 border-b border-border bg-muted/30">

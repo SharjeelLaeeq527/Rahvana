@@ -523,12 +523,10 @@ export default function Actual221GFormChecker({
                 >
                   <span className="font-semibold">
                     I-864 Affidavit of Support
-                  </span>{" "}
-                  <span className="italic text-muted-foreground">
-                    (submit via
                   </span>
                 </Label>
-                <div className="ml-6 mt-1 flex items-center space-x-3">
+                <div className="ml-6 mt-1 flex items-center space-x-3 text-muted-foreground italic text-xs">
+                  <span>(submit via</span>
                   <div className="flex items-center space-x-1">
                     <Checkbox
                       id="i864_courier"

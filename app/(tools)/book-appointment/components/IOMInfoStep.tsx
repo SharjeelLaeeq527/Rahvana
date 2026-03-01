@@ -1,7 +1,13 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface IOMInfoStepProps {
   formData: {
@@ -16,31 +22,45 @@ interface IOMInfoStepProps {
   };
   error: string | null;
   onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  onSelectChange: (name: keyof {
-    fullName?: string;
-    passportNumber?: string;
-    dateOfBirth?: string;
-    visaType?: string;
-    contactNumber?: string;
-    email?: string;
-    preferredLocation?: string;
-    destinationCountry?: string;
-  }) => (value: string) => void;
+  onSelectChange: (
+    name: keyof {
+      fullName?: string;
+      passportNumber?: string;
+      dateOfBirth?: string;
+      visaType?: string;
+      contactNumber?: string;
+      email?: string;
+      preferredLocation?: string;
+      destinationCountry?: string;
+    },
+  ) => (value: string) => void;
   onNext: () => void;
   onBack: () => void;
 }
 
-const IOMInfoStep = ({ formData, error, onChange, onSelectChange, onNext, onBack }: IOMInfoStepProps) => {
+const IOMInfoStep = ({
+  formData,
+  error,
+  onChange,
+  onSelectChange,
+  onNext,
+  onBack,
+}: IOMInfoStepProps) => {
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-2 mb-6">
-        <div className="bg-blue-600 text-white px-3 py-1 rounded font-semibold">IOM</div>
-        <h2 className="text-2xl font-bold text-slate-900">IOM Islamabad Required Information</h2>
+        <div className="bg-blue-600 text-white px-3 py-1 rounded font-semibold text-sm sm:text-base">
+          IOM
+        </div>
+        <h2 className="text-xl sm:text-2xl font-bold text-slate-900">
+          IOM Islamabad Required Information
+        </h2>
       </div>
 
-      <div className="bg-linear-to-br from-blue-50 to-blue-100 border border-blue-200 rounded-xl p-8 space-y-6">
-        <p className="text-lg text-slate-700">
-          Please provide the following mandatory information for your IOM Islamabad appointment:
+      <div className="bg-linear-to-br from-blue-50 to-blue-100 border border-blue-200 rounded-xl p-4 sm:p-8 space-y-6">
+        <p className="text-base sm:text-lg text-slate-700">
+          Please provide the following mandatory information for your IOM
+          Islamabad appointment:
         </p>
 
         <div className="space-y-6">
@@ -67,7 +87,9 @@ const IOMInfoStep = ({ formData, error, onChange, onSelectChange, onNext, onBack
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="dateOfBirth">Date of Birth as printed on passport *</Label>
+            <Label htmlFor="dateOfBirth">
+              Date of Birth as printed on passport *
+            </Label>
             <Input
               id="dateOfBirth"
               name="dateOfBirth"
@@ -79,13 +101,18 @@ const IOMInfoStep = ({ formData, error, onChange, onSelectChange, onNext, onBack
 
           <div className="space-y-2">
             <Label htmlFor="visaType">Visa Type you are applying for *</Label>
-            <Select value={formData.visaType || ""} onValueChange={onSelectChange("visaType")}>
+            <Select
+              value={formData.visaType || ""}
+              onValueChange={onSelectChange("visaType")}
+            >
               <SelectTrigger id="visaType">
                 <SelectValue placeholder="Select visa type" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="Immigrant Visa">Immigrant Visa</SelectItem>
-                <SelectItem value="Non-immigrant Visa">Non-immigrant Visa</SelectItem>
+                <SelectItem value="Non-immigrant Visa">
+                  Non-immigrant Visa
+                </SelectItem>
                 <SelectItem value="K-1 Fiance Visa">K-1 Fiancé Visa</SelectItem>
                 <SelectItem value="Student Visa">Student Visa</SelectItem>
                 <SelectItem value="Work Visa">Work Visa</SelectItem>
@@ -126,8 +153,13 @@ const IOMInfoStep = ({ formData, error, onChange, onSelectChange, onNext, onBack
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="preferredLocation">Preferred IOM Health Assessment Center Location *</Label>
-            <Select value={formData.preferredLocation || ""} onValueChange={onSelectChange("preferredLocation")}>
+            <Label htmlFor="preferredLocation">
+              Preferred IOM Health Assessment Center Location *
+            </Label>
+            <Select
+              value={formData.preferredLocation || ""}
+              onValueChange={onSelectChange("preferredLocation")}
+            >
               <SelectTrigger id="preferredLocation">
                 <SelectValue placeholder="Select location" />
               </SelectTrigger>
@@ -138,8 +170,13 @@ const IOMInfoStep = ({ formData, error, onChange, onSelectChange, onNext, onBack
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="destinationCountry">Destination Country for Health Assessment *</Label>
-            <Select value={formData.destinationCountry || ""} onValueChange={onSelectChange("destinationCountry")}>
+            <Label htmlFor="destinationCountry">
+              Destination Country for Health Assessment *
+            </Label>
+            <Select
+              value={formData.destinationCountry || ""}
+              onValueChange={onSelectChange("destinationCountry")}
+            >
               <SelectTrigger id="destinationCountry">
                 <SelectValue placeholder="Select destination country" />
               </SelectTrigger>
@@ -162,10 +199,17 @@ const IOMInfoStep = ({ formData, error, onChange, onSelectChange, onNext, onBack
         )}
 
         <div className="flex justify-between pt-4">
-          <Button onClick={onBack} variant="outline" className="bg-teal-600 hover:bg-teal-700 text-white">
+          <Button
+            onClick={onBack}
+            variant="outline"
+            className="bg-teal-600 hover:bg-teal-700 text-white"
+          >
             Back
           </Button>
-          <Button onClick={onNext} className="bg-teal-600 hover:bg-teal-700 text-white">
+          <Button
+            onClick={onNext}
+            className="bg-teal-600 hover:bg-teal-700 text-white"
+          >
             Submit Information
           </Button>
         </div>

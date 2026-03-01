@@ -1,14 +1,14 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { useDocumentVaultStore } from '@/lib/document-vault/store';
-import { VisaCategory, ScenarioFlags } from '@/lib/document-vault/types';
-import { getVisaCategoryDisplayName } from '@/lib/document-vault/personalization-engine';
-import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
-import { Label } from '@/components/ui/label';
-import { Input } from '@/components/ui/input';
-import { Checkbox } from '@/components/ui/checkbox';
+import { useState } from "react";
+import { useDocumentVaultStore } from "@/lib/document-vault/store";
+import { VisaCategory, ScenarioFlags } from "@/lib/document-vault/types";
+import { getVisaCategoryDisplayName } from "@/lib/document-vault/personalization-engine";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { Checkbox } from "@/components/ui/checkbox";
 
 interface ConfigurationWizardProps {
   userId: string;
@@ -16,16 +16,16 @@ interface ConfigurationWizardProps {
 }
 
 const VISA_CATEGORIES: VisaCategory[] = [
-  'IR-1',
-  'CR-1',
-  'IR-2',
-  'CR-2',
-  'IR-5',
-  'F1',
-  'F2A',
-  'F2B',
-  'F3',
-  'F4',
+  "IR-1",
+  "CR-1",
+  "IR-2",
+  "CR-2",
+  "IR-5",
+  "F1",
+  "F2A",
+  "F2B",
+  "F3",
+  "F4",
 ];
 
 export function ConfigurationWizard({
@@ -33,12 +33,12 @@ export function ConfigurationWizard({
   onComplete,
 }: ConfigurationWizardProps) {
   const [step, setStep] = useState(1);
-  const [visaCategory, setVisaCategory] = useState<VisaCategory>('IR-1');
+  const [visaCategory, setVisaCategory] = useState<VisaCategory>("IR-1");
   const [scenarioFlags, setScenarioFlags] = useState<ScenarioFlags>({});
-  const [caseId, setCaseId] = useState('');
-  const [petitionerName, setPetitionerName] = useState('');
-  const [beneficiaryName, setBeneficiaryName] = useState('');
-  const [jointSponsorName, setJointSponsorName] = useState('');
+  const [caseId, setCaseId] = useState("");
+  const [petitionerName, setPetitionerName] = useState("");
+  const [beneficiaryName, setBeneficiaryName] = useState("");
+  const [jointSponsorName, setJointSponsorName] = useState("");
 
   const { setConfig } = useDocumentVaultStore();
 
@@ -65,10 +65,12 @@ export function ConfigurationWizard({
   };
 
   return (
-    <div className="max-w-3xl mx-auto p-6">
-      <Card className="p-8">
-        <div className="mb-8">
-          <h2 className="text-2xl font-bold mb-2">Document Vault Setup</h2>
+    <div className="max-w-3xl mx-auto p-4 sm:p-6">
+      <Card className="p-5 sm:p-8">
+        <div className="mb-6 sm:mb-8">
+          <h2 className="text-xl sm:text-2xl font-bold mb-2">
+            Document Vault Setup
+          </h2>
           <p className="text-muted-foreground">
             Let&apos;s configure your personalized document checklist
           </p>
@@ -77,7 +79,7 @@ export function ConfigurationWizard({
               <div
                 key={s}
                 className={`h-2 flex-1 rounded ${
-                  s <= step ? 'bg-brand' : 'bg-muted'
+                  s <= step ? "bg-brand" : "bg-muted"
                 }`}
               />
             ))}
@@ -96,8 +98,8 @@ export function ConfigurationWizard({
                     key={category}
                     className={`flex items-center p-4 border rounded-lg cursor-pointer transition-colors ${
                       visaCategory === category
-                        ? 'border-brand bg-brand/5'
-                        : 'border-border hover:border-brand/50'
+                        ? "border-brand bg-brand/5"
+                        : "border-border hover:border-brand/50"
                     }`}
                   >
                     <input
@@ -113,7 +115,7 @@ export function ConfigurationWizard({
                     <div>
                       <div className="font-medium">{category}</div>
                       <div className="text-sm text-muted-foreground">
-                        {getVisaCategoryDisplayName(category).split(': ')[1]}
+                        {getVisaCategoryDisplayName(category).split(": ")[1]}
                       </div>
                     </div>
                   </label>
@@ -139,19 +141,19 @@ export function ConfigurationWizard({
 
               <div className="space-y-4">
                 {/* Marriage/Relationship flags */}
-                {(visaCategory === 'IR-1' || visaCategory === 'CR-1') && (
+                {(visaCategory === "IR-1" || visaCategory === "CR-1") && (
                   <>
                     <div className="space-y-3">
-                      <h4 className="font-medium text-sm">
-                        Marriage History
-                      </h4>
+                      <h4 className="font-medium text-sm">Marriage History</h4>
                       <label className="flex items-start space-x-3">
                         <Checkbox
-                          checked={scenarioFlags.prior_marriage_petitioner || false}
+                          checked={
+                            scenarioFlags.prior_marriage_petitioner || false
+                          }
                           onCheckedChange={(checked) =>
                             handleFlagChange(
-                              'prior_marriage_petitioner',
-                              checked as boolean
+                              "prior_marriage_petitioner",
+                              checked as boolean,
                             )
                           }
                         />
@@ -172,8 +174,8 @@ export function ConfigurationWizard({
                           }
                           onCheckedChange={(checked) =>
                             handleFlagChange(
-                              'prior_marriage_beneficiary',
-                              checked as boolean
+                              "prior_marriage_beneficiary",
+                              checked as boolean,
                             )
                           }
                         />
@@ -192,8 +194,8 @@ export function ConfigurationWizard({
                           checked={scenarioFlags.name_change_any_party || false}
                           onCheckedChange={(checked) =>
                             handleFlagChange(
-                              'name_change_any_party',
-                              checked as boolean
+                              "name_change_any_party",
+                              checked as boolean,
                             )
                           }
                         />
@@ -209,14 +211,14 @@ export function ConfigurationWizard({
                 )}
 
                 {/* Children flags */}
-                {(visaCategory === 'IR-2' || visaCategory === 'CR-2') && (
+                {(visaCategory === "IR-2" || visaCategory === "CR-2") && (
                   <div className="space-y-3">
                     <h4 className="font-medium text-sm">Child Information</h4>
                     <label className="flex items-start space-x-3">
                       <Checkbox
                         checked={scenarioFlags.child_adopted || false}
                         onCheckedChange={(checked) =>
-                          handleFlagChange('child_adopted', checked as boolean)
+                          handleFlagChange("child_adopted", checked as boolean)
                         }
                       />
                       <div>
@@ -231,7 +233,10 @@ export function ConfigurationWizard({
                       <Checkbox
                         checked={scenarioFlags.child_stepchild || false}
                         onCheckedChange={(checked) =>
-                          handleFlagChange('child_stepchild', checked as boolean)
+                          handleFlagChange(
+                            "child_stepchild",
+                            checked as boolean,
+                          )
                         }
                       />
                       <div>
@@ -251,7 +256,10 @@ export function ConfigurationWizard({
                     <Checkbox
                       checked={scenarioFlags.joint_sponsor_used || false}
                       onCheckedChange={(checked) =>
-                        handleFlagChange('joint_sponsor_used', checked as boolean)
+                        handleFlagChange(
+                          "joint_sponsor_used",
+                          checked as boolean,
+                        )
                       }
                     />
                     <div>
@@ -267,8 +275,8 @@ export function ConfigurationWizard({
                       checked={scenarioFlags.household_member_used || false}
                       onCheckedChange={(checked) =>
                         handleFlagChange(
-                          'household_member_used',
-                          checked as boolean
+                          "household_member_used",
+                          checked as boolean,
                         )
                       }
                     />
@@ -288,7 +296,7 @@ export function ConfigurationWizard({
                     <Checkbox
                       checked={scenarioFlags.military_service || false}
                       onCheckedChange={(checked) =>
-                        handleFlagChange('military_service', checked as boolean)
+                        handleFlagChange("military_service", checked as boolean)
                       }
                     />
                     <div>
@@ -303,7 +311,7 @@ export function ConfigurationWizard({
                     <Checkbox
                       checked={scenarioFlags.criminal_history || false}
                       onCheckedChange={(checked) =>
-                        handleFlagChange('criminal_history', checked as boolean)
+                        handleFlagChange("criminal_history", checked as boolean)
                       }
                     />
                     <div>
@@ -318,7 +326,11 @@ export function ConfigurationWizard({
             </div>
 
             <div className="flex gap-3">
-              <Button variant="outline" onClick={() => setStep(1)} className="flex-1">
+              <Button
+                variant="outline"
+                onClick={() => setStep(1)}
+                className="flex-1"
+              >
                 Back
               </Button>
               <Button onClick={() => setStep(3)} className="flex-1">
@@ -389,7 +401,11 @@ export function ConfigurationWizard({
             </div>
 
             <div className="flex gap-3">
-              <Button variant="outline" onClick={() => setStep(2)} className="flex-1">
+              <Button
+                variant="outline"
+                onClick={() => setStep(2)}
+                className="flex-1"
+              >
                 Back
               </Button>
               <Button onClick={handleComplete} className="flex-1">

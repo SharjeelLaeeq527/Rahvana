@@ -20,18 +20,21 @@ interface CombinedIntakeFormWrapperProps {
     data: import("../types/221g").FormData,
     selected221gItems: import("../types/221g").FormSelections,
   ) => void;
+  onSaveToProfile?: () => Promise<void>;
   initialData?: import("../types/221g").FormData | null;
   initialSelections?: import("../types/221g").FormSelections | null;
 }
 
 export default function CombinedIntakeFormWrapper({
   onSubmit,
+  onSaveToProfile,
   initialData,
   initialSelections,
 }: CombinedIntakeFormWrapperProps) {
   return (
     <DynamicCombinedIntakeForm
       onSubmit={onSubmit}
+      onSaveToProfile={onSaveToProfile}
       initialData={initialData}
       initialSelections={initialSelections}
     />

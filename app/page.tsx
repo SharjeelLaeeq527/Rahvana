@@ -5,14 +5,14 @@ import { useSearchParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import * as Icons from "lucide-react";
 import { useRouter } from "next/navigation";
-import { Wizard } from "./test/components/Wizard";
-import { Dashboard } from "./test/components/Dashboard";
+import { Wizard } from "./components/home-page/Wizard";
+import { Dashboard } from "./components/home-page/Dashboard";
 import {
   VisaCategorySection,
   ToolsSection,
   PricingSection,
   IR1JourneyDetail,
-} from "./test/components/StaticSections";
+} from "./components/home-page/StaticSections";
 import { useWizard } from "./(main)/dashboard/hooks/useWizard";
 import Image from "next/image";
 import { StackedCarousel } from "./components/StackedCarousel";
@@ -24,6 +24,11 @@ import { createClient } from "@/lib/supabase/client";
 import GetInTouch from "./components/Contact/GetInTouch";
 import { AuthRequiredModal } from "./components/shared/AuthRequiredModal";
 import { MfaPromptModal } from "./components/shared/MFAPromptModal";
+import { NAV_DATA } from "@/app/components/layout/navigationData";
+
+const ALL_SERVICES = NAV_DATA.services.tabs.flatMap((tab) =>
+  tab.items ? tab.items.map((item) => ({ ...item, category: tab.label })) : [],
+);
 
 const JOURNEYS = [
   // Family & Protection
@@ -392,74 +397,74 @@ const JOURNEYS = [
 const LIFECYCLE_STEPS = [
   {
     step: 1,
-    title: "Preparation",
-    icon: Icons.FileText,
-    desc: "The foundation of a successful immigration case starts with thorough preparation. Gather all required documents, verify your eligibility, and understand the timeline ahead.",
+    title: "Create Profile & Start Case",
+    icon: Icons.UserPlus,
+    desc: "User creates an account, adds basic case details, and opens a dedicated immigration workspace to begin the journey.",
     items: [
-      "Verify petitioner eligibility",
-      "Gather identity documents",
-      "Collect marriage evidence",
-      "Prepare financial documents",
+      "Sign up and verify account",
+      "Add applicant and spouse basics",
+      "Set country and embassy context",
+      "Open personal immigration workspace",
     ],
   },
   {
     step: 2,
-    title: "USCIS Filing",
-    icon: Icons.CheckCircle,
-    desc: "Submit your Form I-130 petition to USCIS. This establishes the family relationship and begins your official immigration journey.",
+    title: "Select the Correct Journey",
+    icon: Icons.Route,
+    desc: "User selects the visa pathway and enters a guided roadmap tailored to the selected category.",
     items: [
-      "Complete Form I-130",
-      "Compile supporting documents",
-      "Submit filing fee",
-      "Track receipt notice",
+      "Review available journey options",
+      "Choose a visa category",
+      "Enter guided roadmap flow",
+      "Align process with case goals",
     ],
   },
   {
     step: 3,
-    title: "NVC Processing",
-    icon: Icons.Layout,
-    desc: "After USCIS approval, your case moves to the National Visa Center for document collection and interview scheduling.",
+    title: "Start the Live IR-1/CR-1 Track",
+    icon: Icons.HeartHandshake,
+    desc: "Current primary live journey supports IR-1 / CR-1 (Spouse of U.S. Citizen) with structured stage-by-stage execution.",
     items: [
-      "Pay NVC fees",
-      "Submit DS-260 application",
-      "Upload civil documents",
-      "Complete financial documents",
+      "Confirm IR-1 / CR-1 eligibility path",
+      "View stage-based workflow",
+      "Understand immediate priorities",
+      "Follow live journey checkpoints",
     ],
   },
   {
     step: 4,
-    title: "Embassy Interview",
-    icon: Icons.Users,
-    desc: "Attend your visa interview at the U.S. embassy in your country. This is the final review before visa issuance.",
+    title: "Use Productivity Tools",
+    icon: Icons.Wrench,
+    desc: "Users complete tasks faster with built-in tools that support planning, form completion, interview prep, and document formatting.",
     items: [
-      "Complete medical exam",
-      "Prepare interview documents",
-      "Attend visa interview",
-      "Respond to any requests",
+      "Run case strength checker",
+      "Use visa bulletin checker",
+      "Prepare with interview prep module",
+      "Use PDF/photo/signature tools and form autofill",
     ],
   },
   {
     step: 5,
-    title: "Visa Issuance",
-    icon: Icons.IdCard,
-    desc: "Upon interview approval, your immigrant visa will be printed.",
+    title: "Organize Documents Centrally",
+    icon: Icons.FolderKanban,
+    desc: "Document Vault stores files, notes, and checklist progress in one place to keep the case embassy/NVC ready.",
     items: [
-      "Receive visa in passport",
-      "Review visa details",
-      "Pay USCIS immigrant fee",
-      "Plan travel to U.S.",
+      "Upload and categorize documents",
+      "Track checklist completion",
+      "Maintain case notes and history",
+      "Stay prepared for NVC and embassy review",
     ],
   },
   {
     step: 6,
-    title: "Entry & Green Card",
-    icon: Icons.Plane,
-    desc: "Enter the United States as a lawful permanent resident. Your green card will arrive by mail within weeks.",
+    title: "Get Expert Support",
+    icon: Icons.UserRoundCog,
+    desc: "Users can book consultations and request support services such as appointment booking and translation before final submission/interview.",
     items: [
-      "Enter U.S. before visa expiry",
-      "Complete port of entry process",
-      "Receive green card by mail",
-      "Apply for Social Security",
+      "Book expert consultation sessions",
+      "Request appointment booking help",
+      "Use translation and support services",
+      "Reduce risk before final interview/submission",
     ],
   },
 ];
@@ -543,6 +548,7 @@ function HomePageContent() {
   const [activeStep, setActiveStep] = useState(1);
   const [showComingSoon, setShowComingSoon] = useState(false);
   const [openFAQ, setOpenFAQ] = useState<number | null>(null);
+  const [activeService, setActiveService] = useState(0);
 
   // Lifted wizard state to share with Dashboard
   const { state, actions, isLoaded } = useWizard();
@@ -890,7 +896,7 @@ function HomePageContent() {
                       className="group relative bg-muted/30 rounded-2xl p-8 border border-border transition-all hover:border-rahvana-primary/30 hover:shadow-xl cursor-pointer overflow-hidden"
                     >
                       <div className="absolute inset-0 bg-linear-to-tr from-rahvana-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                      <div className="w-14 h-14 rounded-xl bg-linear-to-br from-rahvana-primary to-rahvana-primary-light flex items-center justify-center text-white mb-6 transform group-hover:scale-110 transition-transform [&>svg]:!text-white">
+                      <div className="w-14 h-14 rounded-xl bg-linear-to-br from-rahvana-primary to-rahvana-primary-light flex items-center justify-center text-white mb-6 transform group-hover:scale-110 transition-transform [&>svg]:text-white!">
                         {tool.icon}
                       </div>
                       <h3 className="text-xl font-bold text-foreground mb-2">
@@ -912,6 +918,203 @@ function HomePageContent() {
                   >
                     Explore all tools <Icons.ArrowRight className="w-5 h-5" />
                   </HydrationSafeButton>
+                </div>
+              </div>
+            </section>
+
+            {/* SERVICES SECTION */}
+            <section
+              className="relative py-12 md:py-24 bg-muted/10 overflow-hidden"
+              id="services"
+            >
+              <div className="container mx-auto px-6">
+                <div className="text-center max-w-3xl mx-auto mb-16">
+                  <motion.span
+                    initial={{ opacity: 0, y: 10 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-rahvana-primary-pale text-rahvana-primary text-sm font-semibold mb-4"
+                  >
+                    <Icons.Briefcase className="w-4 h-4" />
+                    Premium Services
+                  </motion.span>
+                  <motion.h2
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.1 }}
+                    viewport={{ once: true }}
+                    className="text-3xl md:text-5xl font-bold text-foreground mb-4"
+                  >
+                    Expert Help & Done-for-You Cases
+                  </motion.h2>
+                  <motion.p
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.2 }}
+                    viewport={{ once: true }}
+                    className="text-lg text-muted-foreground"
+                  >
+                    Get the personalized support you need, from quick
+                    consultations to full document preparation and review.
+                  </motion.p>
+                </div>
+
+                <div className="flex flex-col lg:flex-row gap-8 lg:gap-12 w-full max-w-6xl mx-auto">
+                  {/* Left Column: Interactive List */}
+                  <div className="w-full lg:w-5/12 flex flex-col gap-3">
+                    {ALL_SERVICES.filter(
+                      (s) => !s.disabled && s.href !== "/book-consultation",
+                    )
+                      .slice(0, 5)
+                      .map((service, idx) => {
+                        const isActive = activeService === idx;
+                        return (
+                          <motion.div
+                            key={idx}
+                            initial={{ opacity: 0, x: -20 }}
+                            whileInView={{ opacity: 1, x: 0 }}
+                            transition={{ delay: idx * 0.1, duration: 0.4 }}
+                            viewport={{ once: true }}
+                            onClick={() => setActiveService(idx)}
+                            className={`group relative flex items-center p-4 rounded-2xl cursor-pointer transition-all duration-300 border ${
+                              isActive
+                                ? "bg-card border-rahvana-primary shadow-md"
+                                : "bg-transparent border-transparent hover:bg-muted/50 hover:border-border"
+                            }`}
+                          >
+                            <div
+                              className={`flex items-center justify-center w-12 h-12 rounded-xl transition-all duration-300 mr-4 shrink-0 ${
+                                isActive
+                                  ? "bg-rahvana-primary text-white shadow-md shadow-rahvana-primary/20 scale-110 [&>svg]:text-current!"
+                                  : "bg-muted text-muted-foreground group-hover:bg-primary/90 group-hover:text-white [&>svg]:text-current!"
+                              }`}
+                            >
+                              {React.cloneElement(
+                                service.icon as React.ReactElement<{
+                                  className?: string;
+                                }>,
+                                {
+                                  className: "w-5 h-5",
+                                },
+                              )}
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <h4
+                                className={`font-bold text-base truncate transition-colors ${
+                                  isActive
+                                    ? "text-foreground"
+                                    : "text-muted-foreground group-hover:text-foreground"
+                                }`}
+                              >
+                                {service.title}
+                              </h4>
+                              <p className="text-xs text-muted-foreground truncate opacity-80 uppercase tracking-wider mt-1">
+                                {service.category}
+                              </p>
+                            </div>
+                            {/* Active indicator line */}
+                            {/* {isActive && (
+                              <motion.div
+                                layoutId="activeIndicator"
+                                className="absolute left-0 w-1 h-1/2 bg-rahvana-primary rounded-r-full"
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                transition={{ duration: 0.3 }}
+                              />
+                            )} */}
+                          </motion.div>
+                        );
+                      })}
+
+                    <div className="mt-6 pl-4">
+                      <HydrationSafeButton
+                        onClick={() => router.push("/services")}
+                        className="inline-flex items-center gap-2 text-sm font-bold text-rahvana-primary hover:text-rahvana-primary-dark transition-colors"
+                      >
+                        View all services{" "}
+                        <Icons.ArrowRight className="w-4 h-4" />
+                      </HydrationSafeButton>
+                    </div>
+                  </div>
+
+                  {/* Right Column: Dynamic Showcase Card */}
+                  <div className="w-full lg:w-7/12 relative min-h-[400px]">
+                    <AnimatePresence mode="wait">
+                      <motion.div
+                        key={activeService}
+                        initial={{ opacity: 0, y: 20, scale: 0.98 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        exit={{ opacity: 0, y: -20, scale: 0.98 }}
+                        transition={{ duration: 0.4, ease: "easeOut" }}
+                        className="absolute inset-0 rounded-3xl bg-card border border-border overflow-hidden shadow-2xl flex flex-col justify-between"
+                      >
+                        {/* Decorative Background */}
+                        <div className="absolute top-0 right-0 w-64 h-64 bg-rahvana-primary-pale/30 rounded-full blur-3xl -mx-20 -my-20 pointer-events-none"></div>
+                        <div className="absolute bottom-0 left-0 w-48 h-48 bg-rahvana-primary-pale/20 rounded-full blur-2xl -mx-10 -my-10 pointer-events-none"></div>
+
+                        <div className="relative z-10 p-8 md:p-12 flex-1 flex flex-col">
+                          <div className="flex justify-between items-start mb-8 border-b border-border/50 pb-6">
+                            <div className="w-16 h-16 md:w-20 md:h-20 rounded-2xl bg-linear-to-br from-rahvana-primary to-rahvana-primary-light flex items-center justify-center text-white shadow-lg shadow-rahvana-primary/20 [&>svg]:text-white! [&>svg]:w-8 [&>svg]:h-8 md:[&>svg]:w-10 md:[&>svg]:h-10">
+                              {
+                                ALL_SERVICES.filter(
+                                  (s) =>
+                                    !s.disabled &&
+                                    s.href !== "/book-consultation",
+                                )[activeService]?.icon
+                              }
+                            </div>
+                            <div className="inline-block px-4 py-1.5 text-xs font-bold uppercase tracking-wider rounded-full bg-rahvana-primary-pale text-rahvana-primary">
+                              {
+                                ALL_SERVICES.filter(
+                                  (s) =>
+                                    !s.disabled &&
+                                    s.href !== "/book-consultation",
+                                )[activeService]?.category
+                              }
+                            </div>
+                          </div>
+
+                          <h3 className="text-2xl md:text-3xl lg:text-4xl font-bold text-foreground mb-4 leading-tight">
+                            {
+                              ALL_SERVICES.filter(
+                                (s) =>
+                                  !s.disabled &&
+                                  s.href !== "/book-consultation",
+                              )[activeService]?.title
+                            }
+                          </h3>
+                          <p className="text-muted-foreground text-base md:text-lg leading-relaxed mb-8 flex-1">
+                            {
+                              ALL_SERVICES.filter(
+                                (s) =>
+                                  !s.disabled &&
+                                  s.href !== "/book-consultation",
+                              )[activeService]?.description
+                            }
+                          </p>
+
+                          <div className="mt-auto">
+                            <HydrationSafeButton
+                              onClick={() => {
+                                const href = ALL_SERVICES.filter(
+                                  (s) =>
+                                    !s.disabled &&
+                                    s.href !== "/book-consultation",
+                                )[activeService]?.href;
+                                if (href && href !== "#") {
+                                  router.push(href);
+                                }
+                              }}
+                              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-4 text-base font-bold text-white bg-rahvana-primary rounded-xl hover:bg-rahvana-primary-dark transition-all shadow-md hover:shadow-xl hover:-translate-y-1"
+                            >
+                              Get Started{" "}
+                              <Icons.ArrowRight className="w-5 h-5" />
+                            </HydrationSafeButton>
+                          </div>
+                        </div>
+                      </motion.div>
+                    </AnimatePresence>
+                  </div>
                 </div>
               </div>
             </section>
@@ -977,11 +1180,11 @@ function HomePageContent() {
                     Your Journey
                   </motion.span>
                   <h2 className="text-3xl md:text-5xl font-bold text-foreground mb-4">
-                    How Typical US Immigration Journey Works
+                    How Rahvana Works
                   </h2>
                   <p className="text-lg text-muted-foreground">
-                    From preparation to arrival, we guide you through every step
-                    of your immigration journey.
+                    From onboarding to interview readiness, Rahvana guides each
+                    case through a clear, trackable workflow.
                   </p>
                   <motion.span
                     initial={{ opacity: 0, y: 10 }}
@@ -990,16 +1193,16 @@ function HomePageContent() {
                     className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-rahvana-primary-pale text-rahvana-primary text-sm font-semibold my-2"
                   >
                     <Icons.Route className="w-4 h-4" />
-                    See steps below for a typical US immigration journey
+                    See steps below for how rahvana works
                   </motion.span>
                 </div>
 
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-start">
                   <motion.div
-                    initial={{ opacity: 0, x: -20 }}
-                    whileInView={{ opacity: 1, x: 0 }}
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    whileInView={{ opacity: 1, scale: 1 }}
                     viewport={{ once: true }}
-                    className="relative aspect-square max-w-[300px] md:max-w-125 mx-auto w-full"
+                    className="relative aspect-square max-w-[340px] md:max-w-[480px] mx-auto w-full"
                   >
                     {/* SVG Layer for all lines */}
                     <svg
@@ -1010,7 +1213,7 @@ function HomePageContent() {
                       <circle
                         cx="50"
                         cy="50"
-                        r="40"
+                        r="35"
                         stroke="currentColor"
                         strokeWidth="0.2"
                         strokeDasharray="1 2"
@@ -1022,7 +1225,7 @@ function HomePageContent() {
                       <motion.circle
                         cx="50"
                         cy="50"
-                        r="40"
+                        r="35"
                         stroke="currentColor"
                         strokeWidth="0.8"
                         strokeLinecap="round"
@@ -1054,8 +1257,9 @@ function HomePageContent() {
                       whileInView="visible"
                       viewport={{ once: true }}
                     >
-                      {[0, 60, 120, 180, 240, 300].map((angle, i) => {
+                      {LIFECYCLE_STEPS.map((stepData, i) => {
                         const step = i + 1;
+                        const angle = (360 / LIFECYCLE_STEPS.length) * i;
                         const isActive = activeStep === step;
                         return (
                           <motion.div
@@ -1068,20 +1272,20 @@ function HomePageContent() {
                             animate={{
                               scale: isActive ? 1.25 : 1,
                             }}
-                            className={`absolute w-10 h-10 md:w-16 md:h-16 rounded-full flex items-center justify-center transition-all duration-500 z-10 ${
+                            className={`absolute w-12 h-12 md:w-16 md:h-16 rounded-full flex items-center justify-center transition-all duration-500 z-10 ${
                               isActive
                                 ? "bg-rahvana-primary text-white shadow-xl ring-4 md:ring-8 ring-rahvana-primary/10"
                                 : "bg-card text-muted-foreground border border-border hover:border-rahvana-primary hover:text-rahvana-primary hover:scale-110 shadow-md"
                             }`}
                             style={{
-                              left: `${(50 + 40 * Math.sin((angle * Math.PI) / 180)).toFixed(3)}%`,
-                              top: `${(50 - 40 * Math.cos((angle * Math.PI) / 180)).toFixed(3)}%`,
+                              left: `${(50 + 35 * Math.sin((angle * Math.PI) / 180)).toFixed(3)}%`,
+                              top: `${(50 - 35 * Math.cos((angle * Math.PI) / 180)).toFixed(3)}%`,
                               translate: "-50% -50%",
                             }}
                           >
                             <HydrationSafeButton className="w-full h-full rounded-full flex items-center justify-center p-0 bg-transparent border-0">
                               <span className="sr-only">Step {step}</span>
-                              {React.createElement(LIFECYCLE_STEPS[i].icon, {
+                              {React.createElement(stepData.icon, {
                                 className:
                                   "w-4 h-4 md:w-6 md:h-6 pointer-events-none",
                               })}

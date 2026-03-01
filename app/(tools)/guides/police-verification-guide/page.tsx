@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo, useRef } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import WizardHeader from "../../../components/guides/WizardHeader";
 import WizardSidebar from "../../../components/guides/WizardSidebar";
@@ -85,6 +85,8 @@ export default function PoliceVerificationGuide() {
     uploadedFile: false,
     checkedDocuments: [],
   });
+
+  const hasInitializedModal = useRef(false);
 
   const { saveWizardStep, session, loading } = useWizardSession(
     "police-verification-guide",
@@ -186,11 +188,25 @@ export default function PoliceVerificationGuide() {
   }, [currentStep, state]);
 
   useEffect(() => {
-    const dontShow = localStorage.getItem(
-      "hide_whats_this_modal_police_verification",
-    );
-    if (!dontShow) setShowWhatsThis(true);
-  }, []);
+    if (!session) return;
+
+    // Only run once per page load
+    if (hasInitializedModal.current) return;
+
+    hasInitializedModal.current = true;
+
+    if (!session.hide_intro_modal) {
+      setShowWhatsThis(true);
+    } else {
+      setShowWhatsThis(false);
+    }
+  }, [session]);
+
+  useEffect(() => {
+    if (session?.saved) {
+      setIsSaved(true);
+    }
+  }, [session]);
 
   useNavigationGuard(
     hasProgress && !isSaved,
@@ -342,7 +358,7 @@ export default function PoliceVerificationGuide() {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[#f5f7fa] pt-14">
-        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-teal-600" />
+        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-primary" />
       </div>
     );
   }
@@ -454,7 +470,7 @@ export default function PoliceVerificationGuide() {
                 className="w-full flex items-center justify-between p-4 bg-white hover:bg-slate-50 border border-slate-200 hover:border-primary/40 rounded-xl transition-all shadow-sm group"
               >
                 <span className="font-bold text-slate-700 group-hover:text-primary transition-colors flex items-center gap-2">
-                  <FileText size={18} /> Generate Letter
+                  <FileText size={18} /> Create Purpose Letter
                 </span>
                 <ArrowRight
                   size={18}
@@ -467,7 +483,7 @@ export default function PoliceVerificationGuide() {
               className="w-full flex items-center justify-between p-4 bg-white hover:bg-slate-50 border border-slate-200 hover:border-primary/40 rounded-xl transition-all shadow-sm group"
             >
               <span className="font-bold text-slate-700 group-hover:text-primary transition-colors flex items-center gap-2">
-                <UserCheck size={18} /> Authority Letter
+                <UserCheck size={18} /> Create Authority Letter
               </span>
               <ArrowRight
                 size={18}
@@ -494,15 +510,10 @@ export default function PoliceVerificationGuide() {
 
       <WhatsThisModal
         open={showWhatsThis}
-        onClose={() => {
-          setShowWhatsThis(false);
-          localStorage.setItem(
-            "hide_whats_this_modal_police_verification",
-            "true",
-          );
-        }}
+        onClose={() => setShowWhatsThis(false)}
         data={guideData.wizard.whats_this}
         documentLabel="Police Verification"
+        guideSlug="police-verification-guide"
       />
 
       <FeedbackButton

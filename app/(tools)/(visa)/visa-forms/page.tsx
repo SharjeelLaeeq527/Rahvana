@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   FileText,
   CheckCircle,
@@ -9,6 +9,7 @@ import {
   Copy,
   Plus,
   ExternalLink,
+  Filter,
 } from "lucide-react";
 
 interface VisaForm {
@@ -594,6 +595,20 @@ export default function VisaFormSelector() {
     message: string;
     type: "success" | "info";
   } | null>(null);
+  const [isMobileFiltersOpen, setIsMobileFiltersOpen] = useState(false);
+
+  useEffect(() => {
+    if (isMobileFiltersOpen) {
+      document.body.classList.add("overflow-hidden");
+    } else {
+      document.body.classList.remove("overflow-hidden");
+    }
+
+    // Cleanup when component unmounts
+    return () => {
+      document.body.classList.remove("overflow-hidden");
+    };
+  }, [isMobileFiltersOpen]);
 
   const handleStartForm = (formCode: string): void => {
     const normalized = formCode.replace(/[^a-zA-Z0-9]/g, "").toLowerCase();
@@ -672,16 +687,16 @@ export default function VisaFormSelector() {
 
   return (
     <div className="min-h-screen bg-linear-to-br from-primary/10 via-white to-primary/5">
-      <div className="max-w-7xl mx-auto px-4 py-12 sm:px-6 lg:px-8">
+      <div className="max-w-7xl mx-auto px-4 py-8 md:py-12 sm:px-6 lg:px-8">
         {/* Header */}
-        <div className="text-center mb-12">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-primary/10 rounded-full mb-4">
-            <FileText className="w-8 h-8 text-primary/90" />
+        <div className="text-center mb-8 md:mb-12">
+          <div className="inline-flex items-center justify-center w-12 h-12 md:w-16 md:h-16 bg-primary/10 rounded-full mb-4">
+            <FileText className="w-6 h-6 md:w-8 md:h-8 text-primary/90" />
           </div>
-          <h1 className="text-4xl font-bold text-gray-900 mb-3">
+          <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-3">
             Immigration Forms Library
           </h1>
-          <p className="text-xl text-gray-600 mb-2">
+          <p className="text-lg md:text-xl text-gray-600 mb-2 max-w-3xl mx-auto">
             Browse all forms organized by your journey stage, or search
             instantly to find exactly what you need.
           </p>
@@ -724,15 +739,43 @@ export default function VisaFormSelector() {
         {/* Search & View Toggle Section */}
 
         {/* Content Grid */}
-        <div className="grid md:grid-cols-[280px_1fr] gap-8 items-start mb-12">
+        <div className="grid lg:grid-cols-[280px_1fr] gap-6 lg:gap-8 items-start mb-12">
+          {/* Sidebar Filters Mobile Backdrop */}
+          {isMobileFiltersOpen && (
+            <div
+              className="lg:hidden fixed inset-0 z-100 bg-black/50 backdrop-blur-sm transition-opacity"
+              onClick={() => setIsMobileFiltersOpen(false)}
+            />
+          )}
+
           {/* Sidebar Filters */}
-          <aside className="sticky top-24 self-start space-y-6 max-h-[calc(100vh-8rem)] overflow-y-auto pr-2 overflow-x-hidden custom-scrollbar">
-            <div className="bg-white border border-gray-200 rounded-xl shadow-sm p-6">
+          <aside
+            className={`
+              w-[280px] sm:w-[320px] lg:w-full space-y-6 lg:self-start lg:sticky lg:top-24 lg:max-h-[calc(100vh-8rem)] lg:overflow-y-auto lg:pr-2 lg:overflow-x-hidden custom-scrollbar
+              ${
+                isMobileFiltersOpen
+                  ? "fixed inset-y-0 right-0 z-110 bg-white p-5 shadow-2xl overflow-y-auto"
+                  : "hidden lg:block lg:relative lg:z-auto lg:bg-transparent lg:p-0 lg:shadow-none"
+              }
+            `}
+          >
+            <div className="bg-white lg:border lg:border-gray-200 lg:rounded-xl lg:shadow-sm lg:p-5 lg:md:p-6">
+              {/* Mobile Close Button */}
+              <div className="lg:hidden flex items-center justify-between mb-6 pb-4 border-b border-gray-100">
+                <span className="text-lg font-bold text-gray-900">Filters</span>
+                <button
+                  onClick={() => setIsMobileFiltersOpen(false)}
+                  className="p-2 hover:bg-gray-100 rounded-full transition-colors text-gray-500 hover:text-gray-900"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
               {/* Search Filter */}
 
               {/* Journey Filter (Only in Journey View) */}
 
-              <div className="text-xs font-extrabold tracking-wider uppercase text-gray-400 mb-5">
+              <div className="hidden lg:block text-xs font-extrabold tracking-wider uppercase text-gray-400 mb-5">
                 Filters
               </div>
               <div className="mb-6 pb-6 border-b border-gray-100">
@@ -832,27 +875,43 @@ export default function VisaFormSelector() {
           </aside>
 
           {/* Main Content */}
-          <main>
+          <main className="min-w-0">
             {/* Search & Tabs (Moved Inside Main Content) */}
-            <div className="mb-10">
-              <div className="relative mb-6">
-                <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none">
-                  <Search className="w-4 h-4" />
+            <div className="mb-8 md:mb-10">
+              <div className="flex flex-col sm:flex-row gap-4 mb-6">
+                <div className="relative flex-1">
+                  <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none">
+                    <Search className="w-4 h-4" />
+                  </div>
+                  <input
+                    type="text"
+                    suppressHydrationWarning
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="w-full pl-10 pr-4 py-3 sm:py-4 border border-gray-200 rounded-xl text-sm focus:border-[#0d7377] focus:ring-2 focus:ring-[#0d7377]/10 outline-none transition-all shadow-sm"
+                    placeholder="Search forms..."
+                  />
                 </div>
-                <input
-                  type="text"
-                  suppressHydrationWarning
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-10 pr-4 py-4 border border-gray-200 rounded-xl text-sm focus:border-[#0d7377] focus:ring-2 focus:ring-[#0d7377]/10 outline-none transition-all shadow-sm"
-                  placeholder="Search forms..."
-                />
+                <button
+                  onClick={() => setIsMobileFiltersOpen(!isMobileFiltersOpen)}
+                  className="lg:hidden flex items-center justify-center gap-2 px-6 py-3 sm:py-4 bg-white border border-gray-200 rounded-xl text-sm font-semibold text-gray-700 hover:border-[#0d7377] hover:text-[#0d7377] transition-all shadow-sm"
+                >
+                  <Filter className="w-4 h-4" />
+                  Filters
+                  {(activeFilters.agency.length > 0 ||
+                    activeFilters.category.length > 0) && (
+                    <span className="bg-[#0d7377] text-white text-[10px] font-bold px-2 py-0.5 rounded-full ml-1">
+                      {activeFilters.agency.length +
+                        activeFilters.category.length}
+                    </span>
+                  )}
+                </button>
               </div>
-              <div className="flex gap-4">
+              <div className="flex gap-3 sm:gap-4">
                 <button
                   onClick={() => handleViewChange("journey")}
                   suppressHydrationWarning
-                  className={`flex-1 py-3 px-6 rounded-lg font-semibold text-sm transition-all border-2 ${
+                  className={`flex-1 py-2.5 sm:py-3 px-4 sm:px-6 rounded-lg font-semibold text-sm transition-all border-2 ${
                     currentView === "journey"
                       ? "bg-[#0d7377] border-[#0d7377] text-white"
                       : "bg-white border-gray-200 text-gray-500 hover:border-[#0d7377] hover:text-[#0d7377]"
@@ -863,7 +922,7 @@ export default function VisaFormSelector() {
                 <button
                   onClick={() => handleViewChange("all")}
                   suppressHydrationWarning
-                  className={`flex-1 py-3 px-6 rounded-lg font-semibold text-sm transition-all border-2 ${
+                  className={`flex-1 py-2.5 sm:py-3 px-4 sm:px-6 rounded-lg font-semibold text-sm transition-all border-2 ${
                     currentView === "all"
                       ? "bg-[#0d7377] border-[#0d7377] text-white"
                       : "bg-white border-gray-200 text-gray-500 hover:border-[#0d7377] hover:text-[#0d7377]"
@@ -876,10 +935,10 @@ export default function VisaFormSelector() {
 
             {/* Journey Selector (Only in Journey View) */}
             {currentView === "journey" && (
-              <div className="mb-10">
+              <div className="mb-8 md:mb-10">
                 {/* Metro Map */}
-                <div className="relative overflow-x-auto pb-4 mb-8">
-                  <div className="min-w-175 px-4">
+                <div className="relative overflow-x-auto pb-4 mb-6 md:mb-8 custom-scrollbar">
+                  <div className="min-w-[600px] md:min-w-175 px-4">
                     <div className="relative flex justify-between pt-4">
                       {/* Connection Line */}
                       <div className="absolute top-[26px] left-0 right-0 h-1 bg-gray-200 rounded-full w-full" />
@@ -968,13 +1027,13 @@ export default function VisaFormSelector() {
             )}
 
             {/* Forms Grid */}
-            <div className="grid md:grid-cols-2 gap-6 mb-12">
+            <div className="grid sm:grid-cols-2 lg:grid-cols-2 gap-4 sm:gap-6 mb-12">
               {filteredForms.length > 0 ? (
                 filteredForms.map((form) => {
                   return (
                     <div
                       key={form.code}
-                      className="group relative bg-white rounded-2xl shadow-sm hover:shadow-xl hover:shadow-teal-900/5 hover:-translate-y-1 transition-all duration-300 border border-gray-200 overflow-hidden flex flex-col h-[340px]"
+                      className="group relative bg-white rounded-2xl shadow-sm hover:shadow-xl hover:shadow-teal-900/5 hover:-translate-y-1 transition-all duration-300 border border-gray-200 overflow-hidden flex flex-col h-[320px] sm:h-[340px]"
                     >
                       {/* Top Accent Line */}
                       <div className="absolute top-0 left-0 right-10 h-1 bg-linear-to-r from-[#0d7377] to-teal-400 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-500 origin-left" />
@@ -1195,7 +1254,7 @@ export default function VisaFormSelector() {
           </main>
           {/* Form Detail Modal / Drawer */}
           {selectedForm && (
-            <div className="fixed inset-0 z-100 flex items-center justify-center p-8">
+            <div className="fixed inset-0 z-100 flex items-center justify-center p-4 sm:p-8">
               {/* Backdrop */}
               <div
                 className="absolute inset-0 bg-black/50 backdrop-blur-sm transition-opacity"
@@ -1203,58 +1262,58 @@ export default function VisaFormSelector() {
               />
 
               {/* Modal */}
-              <div className="relative w-full max-w-5xl max-h-[90vh] bg-white rounded-2xl shadow-2xl flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+              <div className="relative w-full max-w-5xl max-h-[95vh] sm:max-h-[90vh] bg-white rounded-2xl shadow-2xl flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-200">
                 {/* Header */}
-                <div className="sticky top-0 bg-white/95 backdrop-blur-md px-8 py-6 border-b border-gray-200 flex justify-between items-center z-10 shrink-0">
-                  <h2 className="text-2xl font-bold text-gray-900">
+                <div className="sticky top-0 bg-white/95 backdrop-blur-md px-5 sm:px-8 py-4 sm:py-6 border-b border-gray-200 flex justify-between items-center z-10 shrink-0">
+                  <h2 className="text-xl sm:text-2xl font-bold text-gray-900">
                     Form Details
                   </h2>
                   <button
                     onClick={() => setSelectedForm(null)}
                     className="p-2 hover:bg-gray-100 rounded-full transition-colors text-gray-500 hover:text-gray-900"
                   >
-                    <X className="w-6 h-6" />
+                    <X className="w-5 h-5 sm:w-6 sm:h-6" />
                   </button>
                 </div>
 
                 {/* Content */}
-                <div className="flex-1 overflow-y-auto">
-                  <div className="p-8 space-y-8 max-w-5xl mx-auto">
+                <div className="flex-1 overflow-y-auto w-full">
+                  <div className="p-5 sm:p-8 space-y-6 sm:space-y-8 max-w-5xl mx-auto w-full">
                     {/* Basic Info */}
-                    <div className="grid grid-cols-2 gap-8">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 sm:gap-8">
                       <div>
-                        <div className="text-sm font-bold text-gray-500 uppercase tracking-wider mb-2">
+                        <div className="text-xs sm:text-sm font-bold text-gray-500 uppercase tracking-wider mb-1 sm:mb-2">
                           Form Code
                         </div>
-                        <div className="text-3xl font-bold text-[#0d7377] font-mono">
+                        <div className="text-2xl sm:text-3xl font-bold text-[#0d7377] font-mono">
                           {selectedForm.code}
                         </div>
                       </div>
                       <div>
-                        <div className="text-sm font-bold text-gray-500 uppercase tracking-wider mb-2">
+                        <div className="text-xs sm:text-sm font-bold text-gray-500 uppercase tracking-wider mb-1 sm:mb-2">
                           Agency
                         </div>
-                        <div className="text-xl text-gray-900 font-medium">
+                        <div className="text-lg sm:text-xl text-gray-900 font-medium">
                           {selectedForm.agency}
                         </div>
                       </div>
                     </div>
 
                     <div>
-                      <div className="text-sm font-bold text-gray-500 uppercase tracking-wider mb-2">
+                      <div className="text-xs sm:text-sm font-bold text-gray-500 uppercase tracking-wider mb-1 sm:mb-2">
                         Full Title
                       </div>
-                      <div className="text-xl text-gray-900 leading-relaxed">
+                      <div className="text-lg sm:text-xl text-gray-900 leading-relaxed">
                         {selectedForm.name}
                       </div>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-8">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 sm:gap-8">
                       <div>
-                        <div className="text-sm font-bold text-gray-500 uppercase tracking-wider mb-2">
+                        <div className="text-xs sm:text-sm font-bold text-gray-500 uppercase tracking-wider mb-1 sm:mb-2">
                           Journey Stage
                         </div>
-                        <div className="text-lg text-gray-900">
+                        <div className="text-base sm:text-lg text-gray-900">
                           {selectedForm.stage}
                         </div>
                       </div>
@@ -1263,7 +1322,7 @@ export default function VisaFormSelector() {
 
                     {/* Categories & Keywords */}
                     <div>
-                      <div className="text-sm font-bold text-gray-500 uppercase tracking-wider mb-3">
+                      <div className="text-xs sm:text-sm font-bold text-gray-500 uppercase tracking-wider mb-2 sm:mb-3">
                         Categories
                       </div>
                       <div className="flex flex-wrap gap-2">
@@ -1279,14 +1338,14 @@ export default function VisaFormSelector() {
                     </div>
 
                     <div>
-                      <div className="text-sm font-bold text-gray-500 uppercase tracking-wider mb-3">
+                      <div className="text-xs sm:text-sm font-bold text-gray-500 uppercase tracking-wider mb-2 sm:mb-3">
                         Keywords
                       </div>
-                      <div className="flex flex-wrap gap-2">
+                      <div className="flex flex-wrap gap-1.5 sm:gap-2">
                         {selectedForm.keywords?.map((kw) => (
                           <span
                             key={kw}
-                            className="px-3 py-1 bg-gray-100 text-gray-600 rounded-md text-sm"
+                            className="px-2 sm:px-3 py-1 bg-gray-100 text-gray-600 rounded-md text-xs sm:text-sm"
                           >
                             {kw}
                           </span>
@@ -1295,10 +1354,10 @@ export default function VisaFormSelector() {
                     </div>
 
                     <div>
-                      <div className="text-sm font-bold text-gray-500 uppercase tracking-wider mb-2">
+                      <div className="text-xs sm:text-sm font-bold text-gray-500 uppercase tracking-wider mb-1 sm:mb-2">
                         Description & Notes
                       </div>
-                      <div className="text-gray-700 leading-relaxed bg-gray-50 p-6 rounded-xl border border-gray-100">
+                      <div className="text-sm sm:text-base text-gray-700 leading-relaxed bg-gray-50 p-4 sm:p-6 rounded-xl border border-gray-100">
                         {selectedForm.description}
                         {selectedForm.notes && (
                           <p className="mt-4 pt-4 border-t border-gray-200 text-gray-600 italic">
@@ -1339,11 +1398,11 @@ export default function VisaFormSelector() {
                     ) : null}
                   </div>
                   {/* Actions Footer */}
-                  <div className="p-8 border-t border-gray-200 bg-gray-50 shrink-0">
-                    <div className="max-w-5xl mx-auto flex flex-col gap-3">
-                      <button className="w-full py-4 bg-[#0d7377] hover:bg-[#0a5a5d] text-white rounded-xl font-bold text-lg shadow-sm hover:shadow-md transition-all flex items-center justify-center gap-2">
-                        <Plus className="w-5 h-5" />
-                        Add to AutoFill Queue
+                  <div className="p-4 sm:p-8 border-t border-gray-200 bg-gray-50 shrink-0">
+                    <div className="max-w-5xl mx-auto flex flex-col sm:flex-row flex-wrap gap-3">
+                      <button className="flex-1 w-full py-3 sm:py-4 bg-[#0d7377] hover:bg-[#0a5a5d] text-white rounded-xl font-bold text-sm lg:text-base shadow-sm hover:shadow-md transition-all flex items-center justify-center gap-2">
+                        <Plus className="w-4 h-4 sm:w-5 sm:h-5 shrink-0" />
+                        <span className="truncate">Add to AutoFill Queue</span>
                       </button>
 
                       {selectedForm.officialLink &&
@@ -1352,10 +1411,10 @@ export default function VisaFormSelector() {
                             onClick={() =>
                               window.open(selectedForm.officialLink, "_blank")
                             }
-                            className="w-full py-4 bg-white hover:bg-gray-50 text-gray-700 border border-gray-200 hover:border-teal-600 hover:text-teal-700 rounded-xl font-bold text-lg shadow-sm transition-all flex items-center justify-center gap-2"
+                            className="flex-1 w-full py-3 sm:py-4 bg-white hover:bg-gray-50 text-gray-700 border border-gray-200 hover:border-teal-600 hover:text-teal-700 rounded-xl font-bold text-sm lg:text-base shadow-sm transition-all flex items-center justify-center gap-2"
                           >
-                            <Download className="w-5 h-5" />
-                            Download PDF
+                            <Download className="w-4 h-4 sm:w-5 sm:h-5 shrink-0" />
+                            <span className="truncate">Download PDF</span>
                           </button>
                         )}
 
@@ -1368,10 +1427,10 @@ export default function VisaFormSelector() {
                           });
                           setTimeout(() => setToast(null), 3000);
                         }}
-                        className="w-full py-4 bg-white hover:bg-gray-50 text-gray-700 border border-gray-200 hover:border-teal-600 hover:text-teal-700 rounded-xl font-bold text-lg shadow-sm transition-all flex items-center justify-center gap-2"
+                        className="flex-1 w-full py-3 sm:py-4 bg-white hover:bg-gray-50 text-gray-700 border border-gray-200 hover:border-teal-600 hover:text-teal-700 rounded-xl font-bold text-sm lg:text-base shadow-sm transition-all flex items-center justify-center gap-2"
                       >
-                        <Copy className="w-5 h-5" />
-                        Copy Form Code
+                        <Copy className="w-4 h-4 sm:w-5 sm:h-5 shrink-0" />
+                        <span className="truncate">Copy Form Code</span>
                       </button>
                     </div>
                   </div>

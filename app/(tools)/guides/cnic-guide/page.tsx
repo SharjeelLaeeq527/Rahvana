@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo, useRef } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import WizardHeader from "../../../components/guides/WizardHeader";
 import WizardSidebar from "../../../components/guides/WizardSidebar";
@@ -70,6 +70,8 @@ const CnicGuide = () => {
     savedOffice: null,
   });
 
+  const hasInitializedModal = useRef(false);
+
   const { saveWizardStep, session, loading } = useWizardSession(
     "cnic-guide",
     state,
@@ -128,9 +130,25 @@ const CnicGuide = () => {
   }, [currentStep, state]);
 
   useEffect(() => {
-    const dontShow = localStorage.getItem("hide_whats_this_modal_cnic");
-    if (!dontShow) setShowWhatsThis(true);
-  }, []);
+    if (!session) return;
+
+    // Only run once per page load
+    if (hasInitializedModal.current) return;
+
+    hasInitializedModal.current = true;
+
+    if (!session.hide_intro_modal) {
+      setShowWhatsThis(true);
+    } else {
+      setShowWhatsThis(false);
+    }
+  }, [session]);
+
+  useEffect(() => {
+    if (session?.saved) {
+      setIsSaved(true);
+    }
+  }, [session]);
 
   useNavigationGuard(
     hasProgress && !isSaved,
@@ -447,6 +465,7 @@ const CnicGuide = () => {
         onClose={() => setShowWhatsThis(false)}
         data={guideData.wizard.whats_this}
         documentLabel="CNIC"
+        guideSlug="cnic-guide"
       />
       <FeedbackButton
         steps={Object.values(STEP_LABELS)}
