@@ -52,7 +52,7 @@ interface Tool {
 const TOOLS: Tool[] = [
   // AI & Planning
   {
-    id: "casepulse",
+    id: "case-strength-analyzer",
     title: "Case Strength Analyzer",
     description:
       "Instant AI case strength score + gaps to fix before NVC/Interview.",
@@ -72,7 +72,7 @@ const TOOLS: Tool[] = [
     badge: "Live",
   },
   {
-    id: "visapath",
+    id: "visa-path",
     title: "VisaPath Finder",
     description:
       "Quick quiz that points you to the right visa path + next steps.",
@@ -82,8 +82,8 @@ const TOOLS: Tool[] = [
     badge: "Live",
   },
   {
-    id: "interviewiq",
-    title: "InterviewIQ",
+    id: "interview-prep",
+    title: "Interview Prep",
     description:
       "Prepare smarter and deliver confident answers when it matters most.",
     category: "AI & Planning",
@@ -94,7 +94,7 @@ const TOOLS: Tool[] = [
 
   // Money & Sponsorship
   {
-    id: "sponsorready",
+    id: "sponsorship-calculator",
     title: "Sponsorship Calculator",
     description: "Auto-check income/assets and tell you what you still need.",
     category: "Money & Sponsorship",
@@ -105,8 +105,8 @@ const TOOLS: Tool[] = [
 
   // Tracking
   {
-    id: "queuewatch",
-    title: "DQ Status Check",
+    id: "queue-watch",
+    title: "QueueWatch",
     description: "Track interview scheduling movement and trends by category.",
     category: "Tracking",
     href: "/iv-tool",
@@ -114,7 +114,7 @@ const TOOLS: Tool[] = [
     badge: "Live",
   },
   {
-    id: "bulletinbuddy",
+    id: "visa-bulletin-monitor",
     title: "Visa Bulletin Monitor",
     description: "Check your priority date progress against the Visa Bulletin.",
     category: "Tracking",
@@ -127,7 +127,7 @@ const TOOLS: Tool[] = [
 
   // Docs & PDFs
   {
-    id: "photopass",
+    id: "photo-booth",
     title: "Photo Booth",
     description: "Make a compliant passport/visa photo in minutes.",
     category: "Docs & PDFs",
@@ -136,8 +136,8 @@ const TOOLS: Tool[] = [
     badge: "Live",
   },
   {
-    id: "pdftoolkit",
-    title: "PDF Tool Kit",
+    id: "pdf-toolkit",
+    title: "PDF ToolKit",
     description: "Merge • compress • convert • edit — all in one toolkit.",
     category: "Docs & PDFs",
     href: "/pdf-processing",
@@ -145,7 +145,7 @@ const TOOLS: Tool[] = [
     badge: "Live",
   },
   {
-    id: "signsnap",
+    id: "snap-sign",
     title: "Snap & Sign",
     description: "Create a clean digital signature for your forms.",
     category: "Docs & PDFs",
@@ -156,7 +156,7 @@ const TOOLS: Tool[] = [
 
   // Forms & Automation
   {
-    id: "formforge",
+    id: "form-forge",
     title: "Smart Form Filler",
     description:
       "Auto-fills your official form and generates a ready-to-upload PDF.",
@@ -168,7 +168,7 @@ const TOOLS: Tool[] = [
 
   // Storage & Organization
   {
-    id: "docvault",
+    id: "doc-vault",
     title: "Document Vault",
     description:
       "Organize docs + build shareable packets when the embassy asks.",

@@ -22,6 +22,7 @@ import { useRouter } from "next/navigation";
 import { ResultPage } from "./result/ResultPage";
 import { InterviewPrepOutput } from "../../../lib/interview-prep/types";
 
+import CountryAutocomplete from "@/app/components/shared/CountryAutoComplete";
 import { ToggleSwitch } from "@/app/components/interview-prep/ToggleSwitch";
 import { useAuth } from "@/app/context/AuthContext";
 import { createBrowserClient } from "@supabase/ssr";
@@ -335,6 +336,7 @@ interface QuestionStepProps {
   formData: FormData;
   error: string | null;
   onChange: (id: keyof FormData, value: unknown) => void;
+  setFormData: React.Dispatch<React.SetStateAction<FormData>>;
   onNext: () => void;
   onBack: () => void;
 }
@@ -346,6 +348,7 @@ const QuestionStep = ({
   formData,
   error,
   onChange,
+  setFormData,
   onNext,
   onBack,
 }: QuestionStepProps) => {
@@ -361,6 +364,22 @@ const QuestionStep = ({
       | number
       | boolean
       | undefined;
+
+    // Beneficiary country: use country autocomplete
+    if (question.key === "beneficiary_country") {
+      return (
+        <CountryAutocomplete
+          formData={formData as unknown as Record<string, unknown>}
+          setFormData={(data) =>
+            setFormData((prev) => ({ ...prev, ...data }))
+          }
+          valueKey="beneficiary_country"
+          hideLabel
+          inputClassName="w-full p-3 border border-border rounded-lg bg-background text-foreground focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-colors"
+          placeholder="Start typing country..."
+        />
+      );
+    }
 
     // All select questions now use dropdowns
     const useDropdown =
@@ -1847,6 +1866,7 @@ export default function InterviewPreparation() {
           formData={formData}
           error={error}
           onChange={handleInputChange}
+          setFormData={setFormData}
           onNext={nextStep}
           onBack={prevStep}
         />,

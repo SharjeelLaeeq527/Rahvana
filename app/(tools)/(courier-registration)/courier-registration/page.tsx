@@ -255,15 +255,17 @@ export default function CourierRegistrationPage() {
     badge?: string;
     children?: React.ReactNode;
   }) => (
-    <div className="relative pl-8 pb-8 border-l-2 border-primary/20 last:border-0 last:pb-0">
+    <div className="relative pl-6 sm:pl-8 pb-6 sm:pb-8 border-l-2 border-primary/20 last:border-0 last:pb-0">
       <div className="absolute left-[-9px] top-0 w-4 h-4 rounded-full bg-primary border-4 border-white shadow-sm" />
-      <div className="space-y-3">
-        <div className="flex items-center gap-3">
-          <h3 className="text-lg font-bold text-gray-900">{title}</h3>
+      <div className="space-y-2 sm:space-y-3">
+        <div className="flex flex-wrap items-center gap-2 sm:gap-3 mt-[-4px]">
+          <h3 className="text-base sm:text-lg font-bold text-gray-900">
+            {title}
+          </h3>
           {badge && (
             <Badge
               variant="secondary"
-              className="bg-primary/10 text-primary border-none"
+              className="bg-primary/10 text-primary border-none text-xs"
             >
               {badge}
             </Badge>
@@ -301,18 +303,18 @@ export default function CourierRegistrationPage() {
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <div className="flex justify-center mb-8">
-            <TabsList className="bg-white p-1 rounded-2xl shadow-md border border-gray-100 h-auto">
+          <div className="flex justify-center mb-6 sm:mb-8 w-full px-2 sm:px-0">
+            <TabsList className="bg-white p-1.5 sm:p-1 rounded-2xl shadow-md border border-gray-100 h-auto flex flex-col sm:flex-row w-full sm:w-auto gap-1 sm:gap-0">
               <TabsTrigger
                 value="guide"
-                className="px-8 py-3 rounded-xl data-[state=active]:bg-primary data-[state=active]:text-white transition-all text-sm font-bold gap-2"
+                className="w-full sm:w-auto px-6 sm:px-8 py-3 rounded-xl data-[state=active]:bg-primary data-[state=active]:text-white transition-all text-sm font-bold gap-2"
               >
                 <Info size={16} /> Registration Guide
               </TabsTrigger>
               <TabsTrigger
                 value="security"
                 onClick={() => fetchUserQuestions()}
-                className="px-8 py-3 rounded-xl data-[state=active]:bg-primary data-[state=active]:text-white transition-all text-sm font-bold gap-2"
+                className="w-full sm:w-auto px-6 sm:px-8 py-3 rounded-xl data-[state=active]:bg-primary data-[state=active]:text-white transition-all text-sm font-bold gap-2"
               >
                 <Lock size={16} /> Security Information
               </TabsTrigger>
@@ -328,8 +330,8 @@ export default function CourierRegistrationPage() {
                 className="grid grid-cols-1 lg:grid-cols-4 gap-8"
               >
                 {/* Sidebar Navigation */}
-                <Card className="lg:col-span-1 border-none shadow-xl shadow-slate-200/50 rounded-3xl bg-white p-4 h-fit">
-                  <div className="space-y-2">
+                <Card className="lg:col-span-1 border-none shadow-xl shadow-slate-200/50 rounded-2xl lg:rounded-3xl bg-white p-2 sm:p-4 h-fit">
+                  <div className="flex lg:flex-col sm:justify-center sm:items-center gap-2 overflow-x-auto pb-2 lg:pb-0 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] snap-x">
                     {[
                       {
                         id: 1,
@@ -348,7 +350,7 @@ export default function CourierRegistrationPage() {
                       <button
                         key={stage.id}
                         onClick={() => setGuideStage(stage.id)}
-                        className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-bold text-sm ${
+                        className={`shrink-0 snap-start lg:w-full flex items-center gap-2 sm:gap-3 px-4 py-2.5 sm:py-3 rounded-xl transition-all font-bold text-xs sm:text-sm ${
                           guideStage === stage.id
                             ? "bg-primary text-white shadow-lg shadow-primary/20"
                             : "text-gray-500 hover:bg-slate-50 hover:text-primary"
@@ -363,8 +365,8 @@ export default function CourierRegistrationPage() {
 
                 {/* Steps Section */}
                 <Card className="lg:col-span-3 border-none shadow-xl shadow-slate-200/50 rounded-3xl overflow-hidden bg-white">
-                  <CardHeader className="border-b border-gray-50 bg-slate-50/50 pb-6">
-                    <div className="flex items-center justify-between">
+                  <CardHeader className="border-b border-gray-50 bg-slate-50/50 p-4 sm:p-6 pb-4 sm:pb-6">
+                    <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                       <div className="space-y-1">
                         <CardTitle className="text-xl font-bold flex items-center gap-2">
                           {guideStage === 1 ? (
@@ -393,10 +395,10 @@ export default function CourierRegistrationPage() {
                           {guideStage === 1
                             ? "Follow these steps to create and access your account."
                             : guideStage === 2
-                            ? "Complete your personal profile and preferences."
-                            : guideStage === 3
-                            ? "Follow these steps to start and fill your visa application."
-                            : "Detailed instructions for creating a group visa request."}
+                              ? "Complete your personal profile and preferences."
+                              : guideStage === 3
+                                ? "Follow these steps to start and fill your visa application."
+                                : "Detailed instructions for creating a group visa request."}
                         </CardDescription>
                       </div>
                       {(guideStage === 1 || guideStage === 3) && (
@@ -404,7 +406,7 @@ export default function CourierRegistrationPage() {
                           href="https://www.usvisascheduling.com/"
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="flex items-center gap-1 text-sm font-bold text-primary hover:underline group"
+                          className="flex items-center gap-1 text-sm font-bold text-primary hover:underline group w-fit"
                         >
                           Visit Portal{" "}
                           <ExternalLink
@@ -415,7 +417,7 @@ export default function CourierRegistrationPage() {
                       )}
                     </div>
                   </CardHeader>
-                  <CardContent className="pt-8 px-8">
+                  <CardContent className="pt-6 sm:pt-8 px-4 sm:px-8">
                     <div className="space-y-4">
                       {guideStage === 1 && (
                         <>
@@ -723,18 +725,18 @@ export default function CourierRegistrationPage() {
               >
                 <div className="space-y-6">
                   <Card className="border-none shadow-2xl shadow-primary/5 rounded-[2.5rem] bg-white overflow-hidden border border-gray-100">
-                    <CardHeader className="bg-slate-50/50 border-b border-gray-100 p-8">
-                      <div className="flex items-center justify-between gap-4">
-                        <div className="space-y-1">
-                          <CardTitle className="text-2xl font-black text-gray-900">
+                    <CardHeader className="bg-slate-50/50 border-b border-gray-100 p-6 sm:p-8">
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                        <div className="space-y-1 text-center sm:text-left">
+                          <CardTitle className="text-xl sm:text-2xl font-black text-gray-900">
                             Security Vault
                           </CardTitle>
-                          <p className="text-sm text-gray-500 font-medium">
+                          <p className="text-xs sm:text-sm text-gray-500 font-medium">
                             Store your portal security questions for future
                             logins.
                           </p>
                         </div>
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center justify-center sm:justify-end gap-2">
                           <Button
                             variant="outline"
                             size="icon"
@@ -763,7 +765,7 @@ export default function CourierRegistrationPage() {
                         </div>
                       </div>
                     </CardHeader>
-                    <CardContent className="p-8 space-y-8">
+                    <CardContent className="p-4 sm:p-8 space-y-6 sm:space-y-8">
                       {isLoading ? (
                         <div className="flex flex-col items-center justify-center py-12 space-y-4">
                           <div className="w-12 h-12 border-4 border-primary/20 border-t-primary rounded-full animate-spin" />
@@ -776,7 +778,7 @@ export default function CourierRegistrationPage() {
                           <div className="space-y-6">
                             {/* Portal Username */}
                             <div className="space-y-3">
-                              <Label className="text-sm font-bold text-gray-700 ml-1 uppercase tracking-wider flex items-center gap-2">
+                              <Label className="text-xs sm:text-sm font-bold text-gray-700 ml-1 uppercase tracking-wider flex flex-wrap items-center gap-2">
                                 <Badge className="bg-primary/10 text-primary hover:bg-primary/20 transition-colors border-none">
                                   <User size={14} />
                                 </Badge>
@@ -795,7 +797,7 @@ export default function CourierRegistrationPage() {
 
                             {/* Question 1 */}
                             <div className="space-y-3">
-                              <Label className="text-sm font-bold text-gray-700 ml-1 uppercase tracking-wider flex items-center gap-2">
+                              <Label className="text-xs sm:text-sm font-bold text-gray-700 ml-1 uppercase tracking-wider flex flex-wrap items-center gap-2">
                                 <Badge className="bg-primary/10 text-primary hover:bg-primary/20 transition-colors border-none">
                                   1
                                 </Badge>
@@ -838,7 +840,7 @@ export default function CourierRegistrationPage() {
 
                             {/* Question 2 */}
                             <div className="space-y-3">
-                              <Label className="text-sm font-bold text-gray-700 ml-1 uppercase tracking-wider flex items-center gap-2">
+                              <Label className="text-xs sm:text-sm font-bold text-gray-700 ml-1 uppercase tracking-wider flex flex-wrap items-center gap-2">
                                 <Badge className="bg-primary/10 text-primary hover:bg-primary/20 transition-colors border-none">
                                   2
                                 </Badge>
@@ -881,7 +883,7 @@ export default function CourierRegistrationPage() {
 
                             {/* Question 3 */}
                             <div className="space-y-3">
-                              <Label className="text-sm font-bold text-gray-700 ml-1 uppercase tracking-wider flex items-center gap-2">
+                              <Label className="text-xs sm:text-sm font-bold text-gray-700 ml-1 uppercase tracking-wider flex flex-wrap items-center gap-2">
                                 <Badge className="bg-primary/10 text-primary hover:bg-primary/20 transition-colors border-none">
                                   3
                                 </Badge>
@@ -1004,11 +1006,11 @@ export default function CourierRegistrationPage() {
 
                   {/* Footer Info */}
                   {user && (
-                    <div className="flex items-center gap-4 px-8 py-6 bg-slate-100/50 rounded-3xl border border-slate-200/50">
-                      <div className="p-2 bg-white rounded-xl shadow-sm">
+                    <div className="flex flex-col sm:flex-row items-center gap-4 px-6 sm:px-8 py-6 bg-slate-100/50 rounded-2xl sm:rounded-3xl border border-slate-200/50 text-center sm:text-left">
+                      <div className="p-2 bg-white rounded-xl shadow-sm shrink-0">
                         <User className="text-slate-400" size={20} />
                       </div>
-                      <div className="flex-1">
+                      <div className="flex-1 flex flex-col items-center sm:items-start break-all">
                         <p className="text-xs font-bold text-slate-500 uppercase">
                           Authenticated User
                         </p>
@@ -1016,7 +1018,10 @@ export default function CourierRegistrationPage() {
                           {user.email}
                         </p>
                       </div>
-                      <ShieldCheck className="text-green-500" size={24} />
+                      <ShieldCheck
+                        className="text-green-500 shrink-0"
+                        size={24}
+                      />
                     </div>
                   )}
                 </div>

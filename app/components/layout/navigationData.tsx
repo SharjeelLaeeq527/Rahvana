@@ -77,7 +77,7 @@ export const NAV_DATA: Record<string, NavSection> = {
                 icon: <Heart className="h-5 w-5" />,
                 title: "IR-1 / CR-1",
                 description: "Spouse of U.S. Citizen",
-                href: "#",
+                href: "/visa-category/ir-category/ir1-journey",
                 // badge: "Live",
               },
               {
@@ -928,6 +928,7 @@ export const NAV_DATA: Record<string, NavSection> = {
             description:
               "Human review of your documents + a tailored improvement plan.",
             href: "#",
+            disabled: true,
             // badge: "Soon",
           },
         ],
@@ -942,7 +943,8 @@ export const NAV_DATA: Record<string, NavSection> = {
             ),
             title: "PCC Filing Service — Sindh",
             description: "Done-for-you police certificate filing for Sindh.",
-            href: "/guides/police-verification-guide",
+            href: "/police-verification/apply?province=Sindh",
+            // href: "/guides/police-verification-guide",
             // badge: "Soon",
           },
           {

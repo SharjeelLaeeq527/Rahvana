@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, Suspense } from "react";
-import { useSearchParams, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   ShieldCheck,
@@ -24,10 +24,10 @@ import {
 import { useAuth } from "@/app/context/AuthContext";
 
 function PoliceApplyContent() {
-  const searchParams = useSearchParams();
+  // const searchParams = useSearchParams();
   const router = useRouter();
   const { user } = useAuth();
-  const province = searchParams.get("province") || "";
+  // const province = searchParams.get("province") || "";
   const [currentStep, setCurrentStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -103,7 +103,7 @@ function PoliceApplyContent() {
   const handleChange = (
     e: React.ChangeEvent<
       HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
-    >
+    >,
   ) => {
     const { name, value } = e.target;
     let newValue = value;
@@ -162,7 +162,7 @@ function PoliceApplyContent() {
 
   const handleFileChange = (
     e: React.ChangeEvent<HTMLInputElement>,
-    name: string
+    name: string,
   ) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -265,7 +265,7 @@ function PoliceApplyContent() {
       if (!isValid)
         alert(
           "Please upload all required documents" +
-            (formData.arrested === "Yes" ? " including arrest details." : ".")
+            (formData.arrested === "Yes" ? " including arrest details." : "."),
         );
     }
 
@@ -317,20 +317,20 @@ function PoliceApplyContent() {
             if (!uploadRes.ok) {
               console.error(`Failed to upload ${key}`);
             }
-          }
+          },
         );
 
         await Promise.all(fileUploadPromises);
 
         alert(
-          `Application Submitted Successfully! Your Request ID is: ${requestId}`
+          `Application Submitted Successfully! Your Request ID is: ${requestId}`,
         );
         router.push("/user-dashboard");
       } catch (error) {
         console.error(error);
         alert(
           "Failed to submit application: " +
-            (error instanceof Error ? error.message : "Unknown error")
+            (error instanceof Error ? error.message : "Unknown error"),
         );
       } finally {
         setIsSubmitting(false);
@@ -351,18 +351,19 @@ function PoliceApplyContent() {
   };
 
   return (
-    <div className="min-h-screen w-full bg-[#f8fafc] flex flex-col items-center py-12 px-4">
-      <div className="w-full max-w-4xl bg-white rounded-[2.5rem] shadow-2xl shadow-gray-200/50 overflow-hidden flex flex-col min-h-[700px] border border-gray-100">
+    <div className="min-h-screen w-full bg-[#f8fafc] flex flex-col items-center py-6 md:py-12 px-4">
+      <div className="w-full max-w-4xl bg-white rounded-3xl md:rounded-[2.5rem] shadow-2xl shadow-gray-200/50 overflow-hidden flex flex-col min-h-[700px] border border-gray-100">
         {/* Header */}
-        <div className="p-8 pb-6 border-b border-gray-100 bg-white/80 backdrop-blur-md sticky top-0 z-20">
-          <div className="flex items-center justify-between mb-6">
-            <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-3">
-              <div className="p-2.5 bg-primary/10 rounded-2xl">
+        <div className="p-6 md:p-8 pb-4 md:pb-6 border-b border-gray-100 bg-white/80 backdrop-blur-md sticky top-0 z-20">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 sm:gap-6 mb-6">
+            <h1 className="text-xl sm:text-2xl font-bold text-gray-900 flex items-center gap-3">
+              <div className="p-2 sm:p-2.5 bg-primary/10 rounded-xl sm:rounded-2xl shrink-0">
                 <ShieldCheck className="text-primary" size={28} />
               </div>
-              {province} Police Verification Form
+              {/* {province} */}
+              Sindh Police Verification Form
             </h1>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 shrink-0">
               {[1, 2, 3].map((s) => (
                 <div
                   key={s}
@@ -370,15 +371,18 @@ function PoliceApplyContent() {
                     s === currentStep
                       ? "w-8 bg-primary"
                       : s < currentStep
-                      ? "w-4 bg-primary/40"
-                      : "w-4 bg-gray-200"
+                        ? "w-4 bg-primary/40"
+                        : "w-4 bg-gray-200"
                   }`}
                 />
               ))}
             </div>
           </div>
-          <div className="flex items-center gap-6">
-            <div className="flex items-center gap-2 text-sm">
+          <div
+            className="flex items-center gap-4 md:gap-6 overflow-x-auto pb-4 md:pb-0"
+            style={{ scrollbarWidth: "none" }}
+          >
+            <div className="flex items-center gap-2 text-sm shrink-0">
               <span
                 className={`w-6 h-6 rounded-full flex items-center justify-center font-bold text-xs ${
                   currentStep >= 1
@@ -398,8 +402,8 @@ function PoliceApplyContent() {
                 Personal Info
               </span>
             </div>
-            <div className="w-8 h-px bg-gray-200" />
-            <div className="flex items-center gap-2 text-sm">
+            <div className="w-4 md:w-8 h-px bg-gray-200 shrink-0" />
+            <div className="flex items-center gap-2 text-sm shrink-0">
               <span
                 className={`w-6 h-6 rounded-full flex items-center justify-center font-bold text-xs ${
                   currentStep >= 2
@@ -419,8 +423,8 @@ function PoliceApplyContent() {
                 Details of Deponents/Guarantor
               </span>
             </div>
-            <div className="w-8 h-px bg-gray-200" />
-            <div className="flex items-center gap-2 text-sm">
+            <div className="w-4 md:w-8 h-px bg-gray-200 shrink-0" />
+            <div className="flex items-center gap-2 text-sm shrink-0">
               <span
                 className={`w-6 h-6 rounded-full flex items-center justify-center font-bold text-xs ${
                   currentStep >= 3
@@ -444,12 +448,14 @@ function PoliceApplyContent() {
         </div>
 
         {/* Form Body */}
-
-        {/* Form Body */}
-        <div className="flex-1 p-8 md:p-12 overflow-y-auto">
+        <div className="flex-1 p-6 md:p-12 overflow-y-auto">
           <AnimatePresence mode="wait">
             {currentStep === 1 && (
-              <motion.div key="step1" {...fadeIn} className="space-y-8">
+              <motion.div
+                key="step1"
+                {...fadeIn}
+                className="space-y-6 md:space-y-8"
+              >
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-2">
                     <label className="text-sm font-bold text-gray-700 ml-1">
@@ -786,11 +792,11 @@ function PoliceApplyContent() {
                   </select>
                 </div>
 
-                <div className="bg-gray-50 p-8 rounded-[2.5rem] border border-gray-100 space-y-6">
+                <div className="bg-gray-50 p-6 md:p-8 rounded-3xl md:rounded-[2.5rem] border border-gray-100 space-y-6">
                   <label className="text-sm font-bold text-gray-700 ml-1">
                     Presently Residing
                   </label>
-                  <div className="flex gap-8">
+                  <div className="flex flex-col sm:flex-row gap-4 sm:gap-8">
                     <button
                       type="button"
                       onClick={() =>
@@ -881,23 +887,23 @@ function PoliceApplyContent() {
                 </div>
 
                 {/* Arrest History & Review Moved inside Step 3 for compact flow */}
-                <div className="bg-orange-50 border border-orange-100 p-8 rounded-[2.5rem] space-y-6">
+                <div className="bg-orange-50 border border-orange-100 p-6 md:p-8 rounded-3xl md:rounded-[2.5rem] space-y-6">
                   <div className="flex items-center gap-3">
-                    <div className="p-2.5 bg-orange-100 rounded-2xl">
+                    <div className="p-2.5 bg-orange-100 rounded-2xl shrink-0">
                       <AlertCircle className="text-orange-600" size={24} />
                     </div>
                     <div>
                       <h3 className="font-bold text-gray-900">
                         Arrest History
                       </h3>
-                      <p className="text-sm text-gray-500">
+                      <p className="text-xs sm:text-sm text-gray-500">
                         In case you were arrested by Police. Please attach
                         documents if applicable.
                       </p>
                     </div>
                   </div>
 
-                  <div className="flex gap-8 px-1">
+                  <div className="flex flex-col sm:flex-row gap-4 sm:gap-8 px-1">
                     <button
                       type="button"
                       onClick={() =>
@@ -1050,18 +1056,22 @@ function PoliceApplyContent() {
             )}
 
             {currentStep === 2 && (
-              <motion.div key="step2" {...fadeIn} className="space-y-8">
+              <motion.div
+                key="step2"
+                {...fadeIn}
+                className="space-y-6 md:space-y-8"
+              >
                 {/* Witness 1 */}
-                <div className="bg-white p-8 rounded-[2.5rem] border border-gray-100 shadow-sm space-y-6">
+                <div className="bg-white p-6 md:p-8 rounded-3xl md:rounded-[2.5rem] border border-gray-100 shadow-sm space-y-6">
                   <div className="flex items-center gap-3 border-b border-gray-100 pb-4">
-                    <div className="p-2.5 bg-primary/10 rounded-2xl">
+                    <div className="p-2.5 bg-primary/10 rounded-2xl shrink-0">
                       <User className="text-primary" size={20} />
                     </div>
                     <div>
-                      <h3 className="text-lg font-bold text-gray-900">
+                      <h3 className="text-base sm:text-lg font-bold text-gray-900">
                         Full Name ( Witness 1 )
                       </h3>
-                      <p className="text-sm text-gray-400">
+                      <p className="text-xs sm:text-sm text-gray-400">
                         Enter first guarantor details
                       </p>
                     </div>
@@ -1159,16 +1169,16 @@ function PoliceApplyContent() {
                 </div>
 
                 {/* Witness 2 */}
-                <div className="bg-white p-8 rounded-[2.5rem] border border-gray-100 shadow-sm space-y-6">
+                <div className="bg-white p-6 md:p-8 rounded-3xl md:rounded-[2.5rem] border border-gray-100 shadow-sm space-y-6">
                   <div className="flex items-center gap-3 border-b border-gray-100 pb-4">
-                    <div className="p-2.5 bg-primary/10 rounded-2xl">
+                    <div className="p-2.5 bg-primary/10 rounded-2xl shrink-0">
                       <User className="text-primary" size={20} />
                     </div>
                     <div>
-                      <h3 className="text-lg font-bold text-gray-900">
+                      <h3 className="text-base sm:text-lg font-bold text-gray-900">
                         Full Name ( Witness 2 )
                       </h3>
-                      <p className="text-sm text-gray-400">
+                      <p className="text-xs sm:text-sm text-gray-400">
                         Enter second guarantor details
                       </p>
                     </div>
@@ -1268,17 +1278,21 @@ function PoliceApplyContent() {
             )}
 
             {currentStep === 3 && (
-              <motion.div key="step3" {...fadeIn} className="space-y-8">
-                <div className="bg-white p-8 rounded-[2.5rem] border border-gray-100 shadow-sm space-y-8">
+              <motion.div
+                key="step3"
+                {...fadeIn}
+                className="space-y-6 md:space-y-8"
+              >
+                <div className="bg-white p-6 md:p-8 rounded-3xl md:rounded-[2.5rem] border border-gray-100 shadow-sm space-y-6 md:space-y-8">
                   <div className="flex items-center gap-3 border-b border-gray-100 pb-4">
-                    <div className="p-2.5 bg-primary/10 rounded-2xl">
+                    <div className="p-2.5 bg-primary/10 rounded-2xl shrink-0">
                       <Upload className="text-primary" size={20} />
                     </div>
                     <div>
-                      <h3 className="text-lg font-bold text-gray-900">
+                      <h3 className="text-base sm:text-lg font-bold text-gray-900">
                         Documents Required
                       </h3>
-                      <p className="text-sm text-gray-400">
+                      <p className="text-xs sm:text-sm text-gray-400">
                         Please upload necessary legal documents
                       </p>
                     </div>
@@ -1435,44 +1449,46 @@ function PoliceApplyContent() {
                   </div>
                 </div>
 
-                <div className="bg-gray-50 p-8 rounded-[2.5rem] border border-gray-100 space-y-6">
+                <div className="bg-gray-50 p-6 md:p-8 rounded-3xl md:rounded-[2.5rem] border border-gray-100 space-y-6">
                   <h3 className="font-bold text-gray-900 border-b border-gray-200 pb-4">
                     Application Review
                   </h3>
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+                  <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
                     <div>
-                      <p className="text-xs text-gray-400 uppercase font-bold">
+                      <p className="text-[10px] sm:text-xs text-gray-400 uppercase font-bold">
                         Province
                       </p>
-                      <p className="font-semibold text-gray-700">{province}</p>
+                      <p className="font-semibold text-gray-700 text-sm sm:text-base">
+                        {/* {province} */} Sindh
+                      </p>
                     </div>
                     <div>
-                      <p className="text-xs text-gray-400 uppercase font-bold">
+                      <p className="text-[10px] sm:text-xs text-gray-400 uppercase font-bold">
                         Purpose
                       </p>
-                      <p className="font-semibold text-gray-700">
+                      <p className="font-semibold text-gray-700 text-sm sm:text-base">
                         {formData.purpose}
                       </p>
                     </div>
                     <div>
-                      <p className="text-xs text-gray-400 uppercase font-bold">
+                      <p className="text-[10px] sm:text-xs text-gray-400 uppercase font-bold">
                         Delivery
                       </p>
-                      <p className="font-semibold text-gray-700">
+                      <p className="font-semibold text-gray-700 text-sm sm:text-base truncate">
                         {formData.deliveryType || "-"}
                       </p>
                     </div>
                     <div>
-                      <p className="text-xs text-gray-400 uppercase font-bold">
+                      <p className="text-[10px] sm:text-xs text-gray-400 uppercase font-bold">
                         District
                       </p>
-                      <p className="font-semibold text-gray-700">
+                      <p className="font-semibold text-gray-700 text-sm sm:text-base">
                         {formData.district || "-"}
                       </p>
                     </div>
                   </div>
                   <div className="p-4 bg-primary/5 rounded-2xl border border-primary/10 flex items-start gap-4">
-                    <div className="p-2 bg-primary/10 rounded-xl">
+                    <div className="p-2 bg-primary/10 rounded-xl shrink-0">
                       <Clock className="text-primary" size={20} />
                     </div>
                     <p className="text-sm text-gray-600 leading-relaxed">
@@ -1488,10 +1504,10 @@ function PoliceApplyContent() {
         </div>
 
         {/* Footer */}
-        <div className="p-8 bg-white border-t border-gray-100 flex items-center justify-between">
+        <div className="p-6 md:p-8 bg-white border-t border-gray-100 flex flex-col-reverse sm:flex-row items-center justify-between gap-4">
           <button
             onClick={handleBack}
-            className="px-8 py-4 rounded-2xl bg-gray-50 text-gray-600 font-bold hover:bg-gray-100 transition-all flex items-center gap-2 group"
+            className="w-full sm:w-auto justify-center px-8 py-4 rounded-2xl bg-gray-50 text-gray-600 font-bold hover:bg-gray-100 transition-all flex items-center gap-2 group"
           >
             <ChevronLeft
               size={20}
@@ -1503,7 +1519,7 @@ function PoliceApplyContent() {
             <button
               onClick={handleNext}
               disabled={Object.keys(errors).length > 0}
-              className="px-10 py-4 rounded-2xl bg-primary text-white font-bold hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center gap-2 group shadow-xl shadow-primary/25"
+              className="w-full sm:w-auto justify-center px-10 py-4 rounded-2xl bg-primary text-white font-bold hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center gap-2 group shadow-xl shadow-primary/25"
             >
               Continue{" "}
               <ChevronRight
@@ -1515,7 +1531,7 @@ function PoliceApplyContent() {
             <button
               onClick={handleSubmit}
               disabled={Object.keys(errors).length > 0 || isSubmitting}
-              className="px-10 py-4 rounded-2xl bg-primary text-white font-bold hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center gap-2 group shadow-xl shadow-green-600/25"
+              className="w-full sm:w-auto justify-center px-10 py-4 rounded-2xl bg-primary text-white font-bold hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center gap-2 group shadow-xl shadow-green-600/25"
             >
               {isSubmitting ? (
                 <>

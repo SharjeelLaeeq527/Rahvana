@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
-import { WizardState } from "../../(main)/dashboard/hooks/useWizard";
-import { roadmapData } from "../../../data/roadmap";
-import { ChevronDown, CheckCircle2, Circle, PlayCircle } from 'lucide-react';
+import { WizardState } from "@/app/(main)/dashboard/hooks/useWizard";
+import { roadmapData } from "@/data/roadmap";
+import { ChevronDown, CheckCircle2, Circle, PlayCircle } from "lucide-react";
 
 interface ProgressTreeProps {
   state: WizardState;
@@ -63,13 +63,19 @@ export function ProgressTree({ state, onSelectStep }: ProgressTreeProps) {
               }}
             >
               <div className="flex justify-between items-center">
-                <span className={`text-[10px] font-black uppercase tracking-widest ${isActiveStage ? "text-primary" : "text-slate-400"}`}>
+                <span
+                  className={`text-[10px] font-black uppercase tracking-widest ${isActiveStage ? "text-primary" : "text-slate-400"}`}
+                >
                   Stage {stage.id}
                 </span>
-                <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-300 ${isExpanded ? "rotate-180" : ""} ${isActiveStage ? "text-primary" : "text-slate-300"}`} />
+                <ChevronDown
+                  className={`w-3.5 h-3.5 transition-transform duration-300 ${isExpanded ? "rotate-180" : ""} ${isActiveStage ? "text-primary" : "text-slate-300"}`}
+                />
               </div>
-              
-              <h4 className={`text-[13px] font-bold leading-tight pr-4 ${isActiveStage ? "text-slate-900" : "text-slate-600 group-hover/stage:text-slate-900"}`}>
+
+              <h4
+                className={`text-[13px] font-bold leading-tight pr-4 ${isActiveStage ? "text-slate-900" : "text-slate-600 group-hover/stage:text-slate-900"}`}
+              >
                 {stage.name.split(":")[1]?.trim() || stage.name}
               </h4>
 
@@ -99,17 +105,23 @@ export function ProgressTree({ state, onSelectStep }: ProgressTreeProps) {
                       }`}
                     >
                       <div className="flex items-center gap-3 min-w-0">
-                        {isCurrentStep && <PlayCircle className="w-3.5 h-3.5 shrink-0 text-primary-light animate-pulse" />}
+                        {isCurrentStep && (
+                          <PlayCircle className="w-3.5 h-3.5 shrink-0 text-primary-light animate-pulse" />
+                        )}
                         <span className="text-[12px] truncate leading-tight">
                           {step.name}
                         </span>
                       </div>
-                      
+
                       <div className="shrink-0">
                         {isStepCompleted ? (
-                          <CheckCircle2 className={`w-4 h-4 ${isCurrentStep ? "text-emerald-400" : "text-emerald-500"}`} />
+                          <CheckCircle2
+                            className={`w-4 h-4 ${isCurrentStep ? "text-emerald-400" : "text-emerald-500"}`}
+                          />
                         ) : (
-                          <Circle className={`w-3.5 h-3.5 ${isCurrentStep ? "text-slate-600" : "text-slate-300"}`} />
+                          <Circle
+                            className={`w-3.5 h-3.5 ${isCurrentStep ? "text-slate-600" : "text-slate-300"}`}
+                          />
                         )}
                       </div>
                     </button>

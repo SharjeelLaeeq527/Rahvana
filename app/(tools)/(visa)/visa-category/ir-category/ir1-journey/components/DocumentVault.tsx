@@ -1,6 +1,6 @@
 import React from "react";
-import { roadmapData } from "../../../data/roadmap";
-import { WizardState } from "../../(main)/dashboard/hooks/useWizard";
+import { roadmapData } from "@/data/roadmap";
+import { WizardState } from "@/app/(main)/dashboard/hooks/useWizard";
 
 interface DocumentVaultProps {
   isOpen: boolean;
@@ -33,7 +33,7 @@ export function DocumentVault({
   };
 
   return (
-    <div className="fixed inset-0 z-[1000] flex items-center justify-center p-4">
+    <div className="fixed inset-0 z-1000 flex items-center justify-center p-4">
       {/* Overlay */}
       <div
         className="absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity duration-300"
@@ -41,14 +41,14 @@ export function DocumentVault({
       />
 
       {/* Content */}
-      <div className="relative bg-white rounded-2xl w-full max-w-[800px] max-h-[90vh] overflow-hidden shadow-2xl flex flex-col animate-in fade-in zoom-in duration-200">
+      <div className="relative bg-white rounded-2xl w-full max-w-[800px] max-h-[90vh] md:max-h-[85vh] overflow-hidden shadow-2xl flex flex-col animate-in fade-in zoom-in duration-200">
         {/* Header */}
-        <div className="p-6 border-b border-slate-200 flex justify-between items-center bg-white shrink-0">
-          <div>
-            <h2 className="text-2xl font-bold text-slate-900">
+        <div className="p-5 md:p-6 border-b border-slate-200 flex justify-between items-start md:items-center bg-white shrink-0">
+          <div className="pr-4">
+            <h2 className="text-xl md:text-2xl font-bold text-slate-900">
               📋 Document Vault
             </h2>
-            <p className="text-slate-500 text-sm mt-1">
+            <p className="text-slate-500 text-xs md:text-sm mt-1">
               Track and manage your required documents.
             </p>
           </div>
@@ -73,7 +73,7 @@ export function DocumentVault({
         </div>
 
         {/* Body */}
-        <div className="p-6 overflow-y-auto flex-grow bg-slate-50/30">
+        <div className="p-4 md:p-6 overflow-y-auto grow bg-slate-50/30">
           {/* Privacy Note Tooltip replaced highlighted box */}
 
           <div className="space-y-4">
@@ -129,7 +129,7 @@ export function DocumentVault({
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
                     <div className="space-y-2">
                       <label className="text-[11px] font-bold uppercase tracking-wider text-slate-400 block px-1">
                         Notes
@@ -146,7 +146,7 @@ export function DocumentVault({
                         File Attachment
                       </label>
                       <div className="flex gap-2">
-                        <div className="relative flex-grow">
+                        <div className="relative grow">
                           <input
                             type="file"
                             className="absolute inset-0 opacity-0 cursor-pointer z-10"
@@ -176,10 +176,10 @@ export function DocumentVault({
         </div>
 
         {/* Footer */}
-        <div className="p-6 border-t border-slate-200 bg-slate-50 shrink-0 flex justify-end">
+        <div className="p-4 md:p-6 border-t border-slate-200 bg-slate-50 shrink-0 flex justify-end">
           <button
             onClick={onClose}
-            className="px-8 py-3 bg-[#334155] text-white rounded-lg font-bold hover:bg-[#1e293b] transition-all shadow-md hover:-translate-y-px"
+            className="w-full md:w-auto px-8 py-3 bg-[#334155] text-white rounded-lg font-bold hover:bg-[#1e293b] transition-all shadow-md hover:-translate-y-px"
           >
             Close Vault
           </button>

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   X,
@@ -14,6 +14,23 @@ import {
   ExternalLink,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
+
+let scrollLockCount = 0;
+
+function useScrollLock(isOpen: boolean) {
+  useEffect(() => {
+    if (isOpen) {
+      scrollLockCount++;
+      document.body.style.overflow = "hidden";
+      return () => {
+        scrollLockCount--;
+        if (scrollLockCount === 0) {
+          document.body.style.overflow = "unset";
+        }
+      };
+    }
+  }, [isOpen]);
+}
 
 // External Imports for PKM Locator
 import {
@@ -76,6 +93,7 @@ export function LetterModal({
   setFormData: React.Dispatch<React.SetStateAction<FormData>>;
   province: string;
 }) {
+  useScrollLock(isOpen);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   const formatCNIC = (value: string) => {
@@ -151,23 +169,24 @@ export function LetterModal({
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
         exit={{ opacity: 0, scale: 0.95 }}
-        className="bg-white w-full max-w-2xl my-auto rounded-3xl shadow-2xl overflow-hidden flex flex-col border border-gray-200"
+        className="bg-white w-full max-w-2xl my-auto rounded-3xl shadow-2xl overflow-hidden flex flex-col border border-gray-200 max-h-[90vh] md:max-h-[95vh]"
       >
-        <div className="p-6 md:p-8 overflow-y-auto">
+        <div className="p-5 md:p-8 overflow-y-auto">
           <div className="flex items-center justify-between mb-3">
-            <h2 className="text-2xl font-bold text-gray-900">
-              Generate Letter
+            <h2 className="text-xl md:text-2xl font-bold text-gray-900">
+              Create Purpose Letter
             </h2>
             <button
               onClick={onClose}
-              className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+              className="p-2 hover:bg-gray-100 rounded-full transition-colors bg-gray-100"
             >
               <X size={24} className="text-gray-500" />
             </button>
           </div>
 
           <div className="pb-4 text-sm text-gray-600">
-            It’s a letter where you write why you need the police verification certificate.
+            It’s a letter where you write why you need the police verification
+            certificate.
           </div>
 
           <form className="space-y-4 text-left">
@@ -314,7 +333,7 @@ export function LetterModal({
               </div>
             </div>
 
-            <div className="pt-6 flex flex-col sm:flex-row gap-4">
+            <div className="pt-6 flex flex-col sm:flex-row gap-3 md:gap-4">
               <button
                 type="button"
                 onClick={onOpenPreview}
@@ -323,7 +342,7 @@ export function LetterModal({
                   !formData.fullName ||
                   !formData.cnic
                 }
-                className="flex-1 py-4 bg-gray-100 text-gray-600 font-bold rounded-2xl hover:bg-gray-200 transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex-1 py-3 md:py-4 bg-gray-100 text-gray-600 font-bold rounded-2xl hover:bg-gray-200 transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <Eye size={20} /> Preview
               </button>
@@ -335,7 +354,7 @@ export function LetterModal({
                   !formData.fullName ||
                   !formData.cnic
                 }
-                className="flex-1 py-4 bg-primary text-white font-bold rounded-2xl shadow-lg hover:shadow-primary/20 transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex-1 py-3 md:py-4 bg-primary text-white font-bold rounded-2xl shadow-lg hover:shadow-primary/20 transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <Download size={20} /> Download PDF
               </button>
@@ -358,6 +377,8 @@ export function PreviewModal({
   province: string;
   formData: FormData;
 }) {
+  useScrollLock(isOpen);
+
   const downloadPDF = async () => {
     const apiUrl =
       process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000/api/v1";
@@ -387,32 +408,35 @@ export function PreviewModal({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/60 backdrop-blur-md overflow-y-auto">
+    <div className="fixed inset-0 z-60 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md overflow-y-auto">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, y: 20 }}
-        className="bg-white w-full max-w-4xl rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[95vh] border border-gray-200"
+        className="bg-white w-full max-w-4xl rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh] md:max-h-[95vh] border border-gray-200"
       >
-        <div className="p-6 border-b border-gray-200 flex items-center justify-between bg-white sticky top-0 z-10">
-          <div className="flex items-center gap-4">
-            <h2 className="text-xl font-bold text-gray-900">Letter Preview</h2>
+        <div className="p-4 md:p-6 border-b border-gray-200 flex flex-col sm:flex-row items-start sm:items-center justify-between bg-white sticky top-0 z-10 gap-4 sm:gap-0">
+          <div className="flex items-center gap-3 sm:gap-4 w-full sm:w-auto">
+            <h2 className="text-lg md:text-xl font-bold text-gray-900 flex-1 sm:flex-none">
+              Letter Preview
+            </h2>
             <button
               onClick={downloadPDF}
-              className="px-4 py-2 bg-primary text-white text-sm font-semibold rounded-lg hover:bg-primary/90 transition-all flex items-center gap-2 shadow-sm"
+              className="px-3 md:px-4 py-1.5 md:py-2 bg-primary text-white text-sm font-semibold rounded-lg hover:bg-primary/90 transition-all flex items-center gap-2 shadow-sm whitespace-nowrap"
             >
-              <Download size={16} /> Download
+              <Download size={16} />{" "}
+              <span className="hidden xs:inline">Download</span>
             </button>
           </div>
           <button
             onClick={onClose}
-            className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+            className="absolute top-4 right-4 sm:static p-2 hover:bg-gray-100 rounded-full transition-colors"
           >
             <X size={24} className="text-gray-500" />
           </button>
         </div>
-        <div className="flex-1 overflow-y-auto p-4 md:p-8 bg-gray-50 flex justify-center">
-          <div className="shadow-lg w-full max-w-[210mm] bg-white">
+        <div className="flex-1 overflow-y-auto p-0 md:p-8 bg-gray-50 flex justify-center">
+          <div className="shadow-none md:shadow-lg w-full max-w-[210mm] bg-white">
             <LetterContent formData={formData} province={province} />
           </div>
         </div>
@@ -430,29 +454,17 @@ function LetterContent({
 }) {
   return (
     <div
+      className="bg-white text-black min-h-auto md:min-h-[297mm] p-6 md:p-12 lg:p-[20mm]"
       style={{
         fontFamily: "'Times New Roman', Times, serif",
         lineHeight: "1.6",
         textAlign: "left",
         margin: "0 auto",
         fontSize: "12pt",
-        width: "210mm",
-        minHeight: "297mm",
         boxSizing: "border-box",
-        backgroundColor: "#ffffff",
-        color: "#000000",
-        padding: "20mm",
       }}
     >
-      <div
-        style={{
-          textAlign: "center",
-          fontWeight: "bold",
-          fontSize: "1.25rem",
-          textDecoration: "underline",
-          marginBottom: "2.5rem",
-        }}
-      >
+      <div className="mb-6 md:mb-10 text-lg md:text-xl font-bold underline text-center">
         Application for Issuance of Police Character Certificate
       </div>
       <div style={{ fontWeight: "bold", marginBottom: "0.25rem" }}>To,</div>
@@ -546,6 +558,9 @@ export function AuthorityLetterModal({
   setFormData: React.Dispatch<React.SetStateAction<AuthorityFormData>>;
   province: string;
 }) {
+  useScrollLock(isOpen);
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   const formatCNIC = (value: string) => {
@@ -610,16 +625,16 @@ export function AuthorityLetterModal({
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
         exit={{ opacity: 0, scale: 0.95 }}
-        className="bg-white w-full max-w-2xl my-auto rounded-3xl shadow-2xl overflow-hidden flex flex-col"
+        className="bg-white w-full max-w-2xl my-auto rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh] md:max-h-[95vh]"
       >
-        <div className="p-6 md:p-8 overflow-y-auto bg-white">
+        <div className="p-5 md:p-8 overflow-y-auto bg-white">
           <div className="flex items-center justify-between mb-3">
-            <h2 className="text-2xl font-bold text-gray-800">
-              Generate Authority Letter
+            <h2 className="text-xl md:text-2xl font-bold text-gray-800">
+              Create Authority Letter
             </h2>
             <button
               onClick={onClose}
-              className="p-2 hover:bg-primary/30 rounded-full transition-colors bg-primary/10"
+              className="p-2 hover:bg-primary/30 rounded-full transition-colors bg-gray-100"
             >
               <X size={24} className="text-gray-500 " />
             </button>
@@ -859,12 +874,12 @@ export function AuthorityLetterModal({
               </div>
             </div>
 
-            <div className="pt-6 flex flex-col sm:flex-row gap-4">
+            <div className="pt-6 flex flex-col sm:flex-row gap-3 md:gap-4">
               <button
                 type="button"
                 onClick={onOpenPreview}
                 disabled={!formData.fullName || !formData.authFullName}
-                className="flex-1 py-4 bg-gray-100 text-gray-800 font-bold rounded-2xl hover:bg-gray-200 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+                className="flex-1 py-3 md:py-4 bg-gray-100 text-gray-800 font-bold rounded-2xl hover:bg-gray-200 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
               >
                 <Eye size={20} /> Preview
               </button>
@@ -872,7 +887,7 @@ export function AuthorityLetterModal({
                 type="button"
                 onClick={downloadPDF}
                 disabled={!formData.fullName || !formData.authFullName}
-                className="flex-1 py-4 bg-primary text-white font-bold rounded-2xl shadow-lg hover:shadow-primary/20 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+                className="flex-1 py-3 md:py-4 bg-primary text-white font-bold rounded-2xl shadow-lg hover:shadow-primary/20 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
               >
                 <Download size={20} /> Download PDF
               </button>
@@ -895,6 +910,8 @@ export function AuthorityLetterPreviewModal({
   formData: AuthorityFormData;
   province: string;
 }) {
+  useScrollLock(isOpen);
+
   const downloadPDF = async () => {
     const apiUrl =
       process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000/api/v1";
@@ -924,32 +941,35 @@ export function AuthorityLetterPreviewModal({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/60 backdrop-blur-md overflow-y-auto">
+    <div className="fixed inset-0 z-60 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md overflow-y-auto">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, y: 20 }}
-        className="bg-white w-full max-w-4xl rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[95vh]"
+        className="bg-white w-full max-w-4xl rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh] md:max-h-[95vh]"
       >
-        <div className="p-6 border-b border-gray-100 flex items-center justify-between bg-white sticky top-0 z-10">
-          <div className="flex items-center gap-4">
-            <h2 className="text-xl font-bold text-gray-800">Preview</h2>
+        <div className="p-4 md:p-6 border-b border-gray-100 flex flex-col sm:flex-row items-start sm:items-center justify-between bg-white sticky top-0 z-10 gap-4 sm:gap-0">
+          <div className="flex items-center gap-3 sm:gap-4 w-full sm:w-auto">
+            <h2 className="text-lg md:text-xl font-bold text-gray-800 flex-1 sm:flex-none">
+              Preview
+            </h2>
             <button
               onClick={downloadPDF}
-              className="px-4 py-2 bg-primary text-white text-sm font-semibold rounded-lg flex items-center gap-2 whitespace-nowrap"
+              className="px-3 md:px-4 py-1.5 md:py-2 bg-primary text-white text-sm font-semibold rounded-lg flex items-center gap-2 whitespace-nowrap"
             >
-              <Download size={16} /> Download
+              <Download size={16} />{" "}
+              <span className="hidden xs:inline">Download</span>
             </button>
           </div>
           <button
             onClick={onClose}
-            className="p-2 hover:bg-gray-100 rounded-full"
+            className="absolute top-4 right-4 sm:static p-2 hover:bg-gray-100 rounded-full"
           >
             <X size={24} className="text-gray-500" />
           </button>
         </div>
-        <div className="flex-1 overflow-y-auto p-4 md:p-8 bg-gray-50 flex justify-center">
-          <div className="shadow-lg w-full max-w-[210mm] bg-white p-20 min-h-[297mm] font-serif transition-all">
+        <div className="flex-1 overflow-y-auto p-0 md:p-8 bg-gray-50 flex justify-center">
+          <div className="shadow-none md:shadow-lg w-full max-w-[210mm] bg-white p-6 md:p-12 lg:p-20 min-h-auto md:min-h-[297mm] font-serif transition-all">
             <AuthorityLetterContent formData={formData} province={province} />
           </div>
         </div>
@@ -967,16 +987,16 @@ function AuthorityLetterContent({
 }) {
   return (
     <div
-      className="space-y-8 text-black"
+      className="space-y-6 md:space-y-8 text-black"
       style={{ fontSize: "12pt", lineHeight: "1.8" }}
     >
-      <div className="text-right italic underline text-sm">
+      <div className="text-right italic underline text-xs md:text-sm">
         Specimen Authority Letter
       </div>
-      <div className="text-center font-bold text-xl underline uppercase tracking-wider">
+      <div className="text-center font-bold text-lg md:text-xl underline uppercase tracking-wider">
         Authority Letter
       </div>
-      <div className="space-y-4 pt-10">
+      <div className="space-y-3 md:space-y-4 pt-6 md:pt-10">
         <div>
           I, Mr./Mrs. <b>{formData.fullName || "________________________"}</b>
         </div>
@@ -1010,7 +1030,7 @@ function AuthorityLetterContent({
           {formData.officeLocation || province || "Islamabad"}.
         </div>
       </div>
-      <div className="pt-20 space-y-2 w-1/2 ml-auto">
+      <div className="pt-12 md:pt-20 space-y-2 w-full sm:w-1/2 ml-auto">
         <div>Signature ___________________________</div>
         <div>
           Name: <b>{formData.fullName || "________________________"}</b>
@@ -1051,6 +1071,7 @@ export function SindhApplyModal({
   isOpen: boolean;
   onClose: () => void;
 }) {
+  useScrollLock(isOpen);
   const router = useRouter();
 
   if (!isOpen) return null;
@@ -1061,22 +1082,24 @@ export function SindhApplyModal({
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
         exit={{ opacity: 0, scale: 0.95 }}
-        className="bg-white w-full max-w-lg rounded-3xl shadow-2xl p-6 md:p-8 flex flex-col items-center text-center"
+        className="bg-white w-full max-w-lg my-auto rounded-3xl shadow-2xl p-6 md:p-8 flex flex-col items-center text-center mx-4 max-h-[90vh] md:max-h-[95vh] overflow-y-auto"
       >
-        <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mb-6">
-          <Building2 size={40} className="text-primary" />
+        <div className="w-16 h-16 md:w-20 md:h-20 bg-primary/10 rounded-full flex items-center justify-center mb-4 md:mb-6">
+          <Building2 className="text-primary w-8 h-8 md:w-10 md:h-10" />
         </div>
-        <h2 className="text-2xl font-bold text-gray-900 mb-2">Apply Online</h2>
-        <p className="text-gray-500 mb-8 leading-relaxed">
+        <h2 className="text-xl md:text-2xl font-bold text-gray-900 mb-2">
+          Apply Online
+        </h2>
+        <p className="text-gray-500 mb-6 md:mb-8 text-sm md:text-base leading-relaxed">
           We are directly providing you with this official service. By clicking{" "}
           <b>Apply Now</b>, you will be redirected to the comprehensive Police
           Verification form. Provide accurate information to proceed.
         </p>
 
-        <div className="flex w-full gap-4">
+        <div className="flex flex-col sm:flex-row w-full gap-3 md:gap-4">
           <button
             onClick={onClose}
-            className="flex-1 py-4 bg-gray-100 text-gray-700 font-semibold rounded-2xl hover:bg-gray-200 transition-colors"
+            className="flex-1 py-3 md:py-4 bg-gray-100 text-gray-700 font-semibold rounded-2xl hover:bg-gray-200 transition-colors"
           >
             Cancel
           </button>
@@ -1085,7 +1108,7 @@ export function SindhApplyModal({
               onClose();
               router.push(`/police-verification/apply?province=Sindh`);
             }}
-            className="flex-1 py-4 bg-primary text-white font-semibold rounded-2xl shadow-lg hover:shadow-primary/20 transition-all flex items-center justify-center gap-2"
+            className="flex-1 py-3 md:py-4 bg-primary text-white font-semibold rounded-2xl shadow-lg hover:shadow-primary/20 transition-all flex items-center justify-center gap-2"
           >
             Apply Now <ExternalLink size={18} />
           </button>
@@ -1108,6 +1131,8 @@ export function PKMLocatorModal({
   onClose: () => void;
   province: string;
 }) {
+  useScrollLock(isOpen);
+
   const [searchQuery, setSearchQuery] = useState("");
   const [loading, setLoading] = useState(false);
   const [nearestCenters, setNearestCenters] = useState<
@@ -1182,114 +1207,116 @@ export function PKMLocatorModal({
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, y: 20 }}
-        className="bg-white w-full max-w-3xl rounded-3xl shadow-2xl p-6 md:p-8 relative"
+        className="bg-white w-full max-w-3xl rounded-3xl shadow-2xl p-0 relative my-auto max-h-[90vh] md:max-h-[95vh] flex flex-col overflow-hidden"
       >
         <button
           onClick={onClose}
-          className="absolute top-6 right-6 p-2 bg-gray-100 hover:bg-gray-200 rounded-full transition-colors"
+          className="absolute top-4 right-4 md:top-6 md:right-6 p-2 bg-gray-100 hover:bg-gray-200 rounded-full transition-colors z-10"
         >
-          <X size={24} className="text-gray-500" />
+          <X size={20} className="text-gray-500" />
         </button>
 
-        <div className="mb-8">
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">
-            Find Nearest PKM Center
-          </h2>
-          <p className="text-gray-500">
-            Locate the closest Police Khidmat Markaz for your character
-            certificate.
-          </p>
-        </div>
-
-        <div className="space-y-6">
-          <div className="flex flex-col md:flex-row gap-4">
-            <button
-              onClick={getBrowserLocation}
-              disabled={loading}
-              className="flex-1 flex items-center justify-center gap-2 p-4 rounded-2xl bg-primary/5 text-primary font-semibold hover:bg-primary/10 transition-all border border-primary/20"
-            >
-              {loading ? (
-                <Loader2 className="animate-spin" size={20} />
-              ) : (
-                <Navigation size={20} />
-              )}{" "}
-              Use My Current Location
-            </button>
-            <div className="flex-1">
-              <form onSubmit={handleManualSearch} className="relative">
-                <input
-                  type="text"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Or enter city/area"
-                  className="w-full p-4 pr-12 rounded-2xl border border-gray-200 focus:border-primary focus:ring-2 focus:ring-primary/10 outline-none transition-all"
-                />
-                <button
-                  type="submit"
-                  disabled={loading}
-                  className="absolute right-2 top-2 p-2 rounded-xl bg-primary text-white hover:bg-primary/90 transition-all"
-                >
-                  {loading ? (
-                    <Loader2 className="animate-spin" size={20} />
-                  ) : (
-                    <Search size={20} />
-                  )}
-                </button>
-              </form>
-            </div>
+        <div className="flex-1 overflow-y-auto p-5 md:p-8">
+          <div className="mb-6 md:mb-8 pr-10">
+            <h2 className="text-xl md:text-2xl font-bold text-gray-900 mb-2">
+              Find Nearest PKM Center
+            </h2>
+            <p className="text-gray-500 text-sm md:text-base">
+              Locate the closest Police Khidmat Markaz for your character
+              certificate.
+            </p>
           </div>
 
-          {error && (
-            <div className="flex items-center gap-2 p-4 rounded-xl bg-red-50 text-red-600 text-sm">
-              <AlertCircle size={18} />
-              {error}
-            </div>
-          )}
-
-          <AnimatePresence>
-            {nearestCenters.length > 0 && (
-              <motion.div
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="space-y-4 pt-4 border-t border-gray-100 max-h-[40vh] overflow-y-auto custom-scrollbar pr-2"
+          <div className="space-y-5 md:space-y-6">
+            <div className="flex flex-col sm:flex-row gap-3 md:gap-4">
+              <button
+                onClick={getBrowserLocation}
+                disabled={loading}
+                className="flex-1 flex items-center justify-center gap-2 p-3 md:p-4 rounded-xl md:rounded-2xl bg-primary/5 text-primary text-sm md:text-base font-semibold hover:bg-primary/10 transition-all border border-primary/20"
               >
-                <div className="flex items-center justify-between sticky top-0 bg-white py-2">
-                  <h4 className="font-bold text-gray-800">Nearest Centers</h4>
+                {loading ? (
+                  <Loader2 className="animate-spin w-4 h-4 md:w-5 md:h-5" />
+                ) : (
+                  <Navigation className="w-4 h-4 md:w-5 md:h-5" />
+                )}{" "}
+                Use My Location
+              </button>
+              <div className="flex-1">
+                <form onSubmit={handleManualSearch} className="relative">
+                  <input
+                    type="text"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    placeholder="Or enter city/area"
+                    className="w-full p-3 md:p-4 pr-12 rounded-xl md:rounded-2xl border border-gray-200 focus:border-primary focus:ring-2 focus:ring-primary/10 outline-none transition-all text-sm md:text-base"
+                  />
                   <button
-                    onClick={() => setNearestCenters([])}
-                    className="text-gray-400 hover:text-gray-600"
+                    type="submit"
+                    disabled={loading}
+                    className="absolute right-1.5 md:right-2 top-1.5 md:top-2 p-1.5 md:p-2 rounded-lg md:rounded-xl bg-primary text-white hover:bg-primary/90 transition-all"
                   >
-                    <X size={18} />
+                    {loading ? (
+                      <Loader2 className="animate-spin w-4 h-4 md:w-5 md:h-5" />
+                    ) : (
+                      <Search className="w-4 h-4 md:w-5 md:h-5" />
+                    )}
                   </button>
-                </div>
-                <div className="grid gap-3">
-                  {nearestCenters.map((center, index) => (
-                    <div
-                      key={index}
-                      className="p-4 rounded-2xl bg-gray-50 border border-gray-100 flex items-start gap-4 hover:border-primary/20 transition-all"
-                    >
-                      <div className="p-3 rounded-xl bg-white text-primary shadow-sm">
-                        <Building2 size={20} />
-                      </div>
-                      <div className="flex-1">
-                        <div className="flex items-center justify-between">
-                          <h5 className="font-semibold text-gray-800">
-                            {center.name}
-                          </h5>
-                          <span className="text-xs font-bold text-primary bg-primary/5 px-2 py-1 rounded-full border border-primary/10">
-                            ~{center.distance.toFixed(1)} km
-                          </span>
-                        </div>
-                        <p className="text-sm text-gray-500 mt-1">
-                          {center.address}
-                        </p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </motion.div>
+                </form>
+              </div>
+            </div>
+
+            {error && (
+              <div className="flex items-center gap-2 p-4 rounded-xl bg-red-50 text-red-600 text-sm">
+                <AlertCircle size={18} />
+                {error}
+              </div>
             )}
-          </AnimatePresence>
+
+            <AnimatePresence>
+              {nearestCenters.length > 0 && (
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="space-y-4 pt-4 border-t border-gray-100 max-h-[40vh] pr-2"
+                >
+                  <div className="flex items-center justify-between top-0 bg-white py-2">
+                    <h4 className="font-bold text-gray-800">Nearest Centers</h4>
+                    <button
+                      onClick={() => setNearestCenters([])}
+                      className="text-gray-400 hover:text-gray-600"
+                    >
+                      <X size={18} />
+                    </button>
+                  </div>
+                  <div className="grid gap-3">
+                    {nearestCenters.map((center, index) => (
+                      <div
+                        key={index}
+                        className="p-4 rounded-2xl bg-gray-50 border border-gray-100 flex items-start gap-4 hover:border-primary/20 transition-all"
+                      >
+                        <div className="p-3 rounded-xl bg-white text-primary shadow-sm">
+                          <Building2 size={20} />
+                        </div>
+                        <div className="flex-1">
+                          <div className="flex items-center justify-between">
+                            <h5 className="font-semibold text-gray-800 text-sm md:text-base pr-2">
+                              {center.name}
+                            </h5>
+                            <span className="text-[10px] md:text-xs font-bold text-primary bg-primary/5 px-2 py-1 rounded-full border border-primary/10 whitespace-nowrap">
+                              ~{center.distance.toFixed(1)} km
+                            </span>
+                          </div>
+                          <p className="text-xs md:text-sm text-gray-500 mt-1">
+                            {center.address}
+                          </p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
         </div>
       </motion.div>
     </div>

@@ -1,15 +1,14 @@
-'use client';
+"use client";
 
-import { DocumentDefinition, UploadedDocument } from '@/lib/document-vault/types';
 import {
-  Dialog,
-  DialogContent,
-  DialogTitle,
-} from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
-import { Download, ZoomIn, ZoomOut, Loader2 } from 'lucide-react';
-import { useState, useEffect } from 'react';
-import Image from 'next/image';
+  DocumentDefinition,
+  UploadedDocument,
+} from "@/lib/document-vault/types";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Download, ZoomIn, ZoomOut, Loader2, X } from "lucide-react";
+import { useState, useEffect } from "react";
+import Image from "next/image";
 
 interface DocumentPreviewModalProps {
   open: boolean;
@@ -57,7 +56,7 @@ export function DocumentPreviewModal({
   const loadDocument = async () => {
     setIsLoading(true);
     try {
-      if (uploadedDoc.storagePath.startsWith('http')) {
+      if (uploadedDoc.storagePath.startsWith("http")) {
         setPreviewUrl(uploadedDoc.storagePath);
         setIsLoading(false);
         return;
@@ -69,7 +68,7 @@ export function DocumentPreviewModal({
       setPreviewUrl(url);
       setIsLoading(false);
     } catch (error) {
-      console.error('Failed to load document:', error);
+      console.error("Failed to load document:", error);
       setIsLoading(false);
     }
   };
@@ -77,26 +76,39 @@ export function DocumentPreviewModal({
   const handleZoomIn = () => setZoom((prev) => Math.min(prev + 25, 200));
   const handleZoomOut = () => setZoom((prev) => Math.max(prev - 25, 50));
 
-  const isPdf = uploadedDoc.mimeType === 'application/pdf';
-  const isImage = uploadedDoc.mimeType?.startsWith('image/');
+  const isPdf = uploadedDoc.mimeType === "application/pdf";
+  const isImage = uploadedDoc.mimeType?.startsWith("image/");
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="max-w-4xl p-0">
+      <DialogContent className="max-w-4xl w-[95vw] sm:w-full p-0 overflow-hidden sm:rounded-xl">
         {/* Screen reader accessible title */}
         <DialogTitle className="sr-only">{documentDef.name}</DialogTitle>
 
         {/* Header with Title */}
-        <div className="p-4 border-b bg-slate-50 dark:bg-slate-900">
-          <h2 className="text-xl font-semibold">{documentDef.name}</h2>
+        <div className="p-4 sm:p-6 border-b bg-slate-50 dark:bg-slate-900 flex justify-between items-center gap-4">
+          <h2 className="text-lg sm:text-xl font-semibold line-clamp-1">
+            {documentDef.name}
+          </h2>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8 rounded-full shrink-0"
+            onClick={onClose}
+          >
+            <X className="h-4 w-4" />
+            <span className="sr-only">Close</span>
+          </Button>
         </div>
 
         {/* Preview Content */}
-        <div className="relative overflow-auto bg-slate-100 dark:bg-slate-900 flex items-center justify-center p-4" style={{ height: '600px' }}>
+        <div className="relative overflow-auto bg-slate-100 dark:bg-slate-900 flex items-center justify-center p-4 min-h-[50vh] h-[60vh] sm:h-[600px]">
           {isLoading && (
             <div className="text-center">
               <Loader2 className="h-8 w-8 animate-spin text-muted-foreground mx-auto mb-2" />
-              <p className="text-sm text-muted-foreground">Loading preview...</p>
+              <p className="text-sm text-muted-foreground">
+                Loading preview...
+              </p>
             </div>
           )}
 
@@ -108,14 +120,19 @@ export function DocumentPreviewModal({
                   className="w-full h-full border-0 bg-white"
                   style={{
                     transform: `scale(${zoom / 100})`,
-                    transformOrigin: 'center center',
+                    transformOrigin: "center center",
                   }}
                   title={documentDef.name}
                 />
               )}
 
               {isImage && (
-                <div style={{ transform: `scale(${zoom / 100})`, transformOrigin: 'center center' }}>
+                <div
+                  style={{
+                    transform: `scale(${zoom / 100})`,
+                    transformOrigin: "center center",
+                  }}
+                >
                   <Image
                     src={previewUrl}
                     alt={documentDef.name}
@@ -134,9 +151,16 @@ export function DocumentPreviewModal({
                     {documentDef.name}
                   </p>
                   <p className="text-sm text-muted-foreground mb-4">
-                    File type: {uploadedDoc.mimeType || 'Unknown'}
+                    File type: {uploadedDoc.mimeType || "Unknown"}
                   </p>
-                  <Button onClick={() => window.open(`/api/documents/${uploadedDoc.id}/download`, '_blank')}>
+                  <Button
+                    onClick={() =>
+                      window.open(
+                        `/api/documents/${uploadedDoc.id}/download`,
+                        "_blank",
+                      )
+                    }
+                  >
                     <Download className="w-4 h-4 mr-2" />
                     Download to View
                   </Button>
@@ -157,7 +181,9 @@ export function DocumentPreviewModal({
             >
               <ZoomOut className="h-4 w-4" />
             </Button>
-            <span className="text-sm font-medium min-w-[60px] text-center">{zoom}%</span>
+            <span className="text-sm font-medium min-w-[60px] text-center">
+              {zoom}%
+            </span>
             <Button
               variant="outline"
               size="sm"
