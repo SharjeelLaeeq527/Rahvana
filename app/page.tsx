@@ -397,74 +397,74 @@ const JOURNEYS = [
 const LIFECYCLE_STEPS = [
   {
     step: 1,
-    title: "Preparation",
-    icon: Icons.FileText,
-    desc: "The foundation of a successful immigration case starts with thorough preparation. Gather all required documents, verify your eligibility, and understand the timeline ahead.",
+    title: "Create Profile & Start Case",
+    icon: Icons.UserPlus,
+    desc: "User creates an account, adds basic case details, and opens a dedicated immigration workspace to begin the journey.",
     items: [
-      "Verify petitioner eligibility",
-      "Gather identity documents",
-      "Collect marriage evidence",
-      "Prepare financial documents",
+      "Sign up and verify account",
+      "Add applicant and spouse basics",
+      "Set country and embassy context",
+      "Open personal immigration workspace",
     ],
   },
   {
     step: 2,
-    title: "USCIS Filing",
-    icon: Icons.CheckCircle,
-    desc: "Submit your Form I-130 petition to USCIS. This establishes the family relationship and begins your official immigration journey.",
+    title: "Select the Correct Journey",
+    icon: Icons.Route,
+    desc: "User selects the visa pathway and enters a guided roadmap tailored to the selected category.",
     items: [
-      "Complete Form I-130",
-      "Compile supporting documents",
-      "Submit filing fee",
-      "Track receipt notice",
+      "Review available journey options",
+      "Choose a visa category",
+      "Enter guided roadmap flow",
+      "Align process with case goals",
     ],
   },
   {
     step: 3,
-    title: "NVC Processing",
-    icon: Icons.Layout,
-    desc: "After USCIS approval, your case moves to the National Visa Center for document collection and interview scheduling.",
+    title: "Start the Live IR-1/CR-1 Track",
+    icon: Icons.HeartHandshake,
+    desc: "Current primary live journey supports IR-1 / CR-1 (Spouse of U.S. Citizen) with structured stage-by-stage execution.",
     items: [
-      "Pay NVC fees",
-      "Submit DS-260 application",
-      "Upload civil documents",
-      "Complete financial documents",
+      "Confirm IR-1 / CR-1 eligibility path",
+      "View stage-based workflow",
+      "Understand immediate priorities",
+      "Follow live journey checkpoints",
     ],
   },
   {
     step: 4,
-    title: "Embassy Interview",
-    icon: Icons.Users,
-    desc: "Attend your visa interview at the U.S. embassy in your country. This is the final review before visa issuance.",
+    title: "Use Productivity Tools",
+    icon: Icons.Wrench,
+    desc: "Users complete tasks faster with built-in tools that support planning, form completion, interview prep, and document formatting.",
     items: [
-      "Complete medical exam",
-      "Prepare interview documents",
-      "Attend visa interview",
-      "Respond to any requests",
+      "Run case strength checker",
+      "Use visa bulletin checker",
+      "Prepare with interview prep module",
+      "Use PDF/photo/signature tools and form autofill",
     ],
   },
   {
     step: 5,
-    title: "Visa Issuance",
-    icon: Icons.IdCard,
-    desc: "Upon interview approval, your immigrant visa will be printed.",
+    title: "Organize Documents Centrally",
+    icon: Icons.FolderKanban,
+    desc: "Document Vault stores files, notes, and checklist progress in one place to keep the case embassy/NVC ready.",
     items: [
-      "Receive visa in passport",
-      "Review visa details",
-      "Pay USCIS immigrant fee",
-      "Plan travel to U.S.",
+      "Upload and categorize documents",
+      "Track checklist completion",
+      "Maintain case notes and history",
+      "Stay prepared for NVC and embassy review",
     ],
   },
   {
     step: 6,
-    title: "Entry & Green Card",
-    icon: Icons.Plane,
-    desc: "Enter the United States as a lawful permanent resident. Your green card will arrive by mail within weeks.",
+    title: "Get Expert Support",
+    icon: Icons.UserRoundCog,
+    desc: "Users can book consultations and request support services such as appointment booking and translation before final submission/interview.",
     items: [
-      "Enter U.S. before visa expiry",
-      "Complete port of entry process",
-      "Receive green card by mail",
-      "Apply for Social Security",
+      "Book expert consultation sessions",
+      "Request appointment booking help",
+      "Use translation and support services",
+      "Reduce risk before final interview/submission",
     ],
   },
 ];
@@ -1180,11 +1180,11 @@ function HomePageContent() {
                     Your Journey
                   </motion.span>
                   <h2 className="text-3xl md:text-5xl font-bold text-foreground mb-4">
-                    How Typical US Immigration Journey Works
+                    How Rahvana Works
                   </h2>
                   <p className="text-lg text-muted-foreground">
-                    From preparation to arrival, we guide you through every step
-                    of your immigration journey.
+                    From onboarding to interview readiness, Rahvana guides each
+                    case through a clear, trackable workflow.
                   </p>
                   <motion.span
                     initial={{ opacity: 0, y: 10 }}
@@ -1257,8 +1257,9 @@ function HomePageContent() {
                       whileInView="visible"
                       viewport={{ once: true }}
                     >
-                      {[0, 60, 120, 180, 240, 300].map((angle, i) => {
+                      {LIFECYCLE_STEPS.map((stepData, i) => {
                         const step = i + 1;
+                        const angle = (360 / LIFECYCLE_STEPS.length) * i;
                         const isActive = activeStep === step;
                         return (
                           <motion.div
@@ -1284,7 +1285,7 @@ function HomePageContent() {
                           >
                             <HydrationSafeButton className="w-full h-full rounded-full flex items-center justify-center p-0 bg-transparent border-0">
                               <span className="sr-only">Step {step}</span>
-                              {React.createElement(LIFECYCLE_STEPS[i].icon, {
+                              {React.createElement(stepData.icon, {
                                 className:
                                   "w-4 h-4 md:w-6 md:h-6 pointer-events-none",
                               })}
