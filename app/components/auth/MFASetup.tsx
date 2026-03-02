@@ -179,7 +179,7 @@ export function MFASetup() {
 
   if (step === "initial") {
     return (
-      <Card className="p-6 max-w-md mx-auto">
+      <Card className="p-4 sm:p-6 max-w-md w-full mx-auto">
         {profile && !profile.mfa_enabled && (
           <>
             <h2 className="text-xl font-bold mb-4">
@@ -234,9 +234,9 @@ export function MFASetup() {
           <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
             <div className="bg-card rounded-2xl shadow-xl border border-border w-full max-w-md overflow-hidden">
               {/* Header */}
-              <div className="px-6 pt-6 pb-4 border-b border-border">
-                <div className="flex items-center gap-3 mb-2">
-                  <div className="w-10 h-10 rounded-full bg-destructive/10 flex items-center justify-center">
+              <div className="px-4 sm:px-6 pt-5 sm:pt-6 pb-4 border-b border-border">
+                <div className="flex items-start sm:items-center gap-3 mb-2">
+                  <div className="w-10 h-10 shrink-0 rounded-full bg-destructive/10 flex items-center justify-center">
                     <svg
                       className="w-5 h-5 text-destructive"
                       fill="none"
@@ -261,7 +261,7 @@ export function MFASetup() {
               </div>
 
               {/* Body */}
-              <div className="px-6 py-6">
+              <div className="px-4 sm:px-6 py-5 sm:py-6">
                 <div className="space-y-5">
                   <div className="space-y-2">
                     <label className="block text-sm font-medium text-foreground">
@@ -303,7 +303,7 @@ export function MFASetup() {
               </div>
 
               {/* Footer */}
-              <div className="px-6 py-4 bg-muted/20 border-t border-border flex justify-end gap-3">
+              <div className="px-4 sm:px-6 py-4 bg-muted/20 border-t border-border flex flex-col-reverse sm:flex-row justify-end gap-2 sm:gap-3">
                 <Button
                   variant="outline"
                   onClick={() => {
@@ -312,17 +312,17 @@ export function MFASetup() {
                     setError("");
                   }}
                   disabled={loading}
-                  className="h-11 rounded-xl px-6"
+                  className="h-11 rounded-xl px-6 w-full sm:w-auto"
                 >
                   Cancel
                 </Button>
                 <Button
                   onClick={handleDisableMFA}
                   disabled={loading || disableOTP.trim().length !== 6}
-                  className="h-11 rounded-xl px-6 bg-destructive hover:bg-destructive/90 text-destructive-foreground"
+                  className="h-11 rounded-xl px-6 w-full sm:w-auto bg-destructive hover:bg-destructive/90 text-destructive-foreground"
                 >
                   {loading ? (
-                    <div className="flex items-center gap-2">
+                    <div className="flex justify-center items-center gap-2">
                       <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
                       Disabling...
                     </div>
@@ -340,7 +340,7 @@ export function MFASetup() {
 
   if (step === "qr") {
     return (
-      <Card className="p-6 mt-20 mb-16 max-w-md mx-auto">
+      <Card className="p-4 sm:p-6 mt-10 sm:mt-20 mb-10 sm:mb-16 max-w-md w-full mx-auto">
         <h2 className="text-xl font-bold text-center">Scan QR Code</h2>
         <p className="text-muted-foreground font-medium">
           Scan this QR code with Google Authenticator:
@@ -362,9 +362,9 @@ export function MFASetup() {
             secret key below:
           </p>
 
-          <div className="flex justify-between items-center gap-2">
+          <div className="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-2 sm:gap-3">
             <div className="flex-1">
-              <div className="font-mono text-sm bg-muted p-3 rounded border border-border break-all">
+              <div className="font-mono text-center sm:text-left text-xs sm:text-sm bg-muted p-3 rounded border border-border break-all">
                 {secret.match(/.{1,4}/g)?.join(" ")}
               </div>
             </div>
@@ -378,7 +378,7 @@ export function MFASetup() {
                   button.textContent = originalText;
                 }, 2000);
               }}
-              className="p-3 bg-muted cursor-pointer hover:bg-muted/80 rounded text-sm font-medium transition-colors"
+              className="p-3 bg-muted w-full sm:w-auto cursor-pointer hover:bg-muted/80 rounded text-sm font-medium transition-colors"
             >
               Copy
             </button>
@@ -388,12 +388,12 @@ export function MFASetup() {
             <p className="text-sm font-medium text-foreground mb-2">
               Don&apos;t have Google Authenticator?
             </p>
-            <div className="flex gap-4">
+            <div className="flex flex-col sm:flex-row gap-2 sm:gap-4">
               <a
                 href="https://play.google.com/store/apps/details?id=com.google.android.apps.authenticator2"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="px-4 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition-colors text-sm font-medium shadow-sm"
+                className="px-4 py-2 w-full text-center bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition-colors text-sm font-medium shadow-sm"
               >
                 Download for Android
               </a>
@@ -401,7 +401,7 @@ export function MFASetup() {
                 href="https://apps.apple.com/us/app/google-authenticator/id388497605"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="px-4 py-2 bg-foreground text-background rounded-lg hover:bg-foreground/90 transition-colors text-sm font-medium shadow-sm"
+                className="px-4 py-2 w-full text-center bg-foreground text-background rounded-lg hover:bg-foreground/90 transition-colors text-sm font-medium shadow-sm"
               >
                 Download for iOS
               </a>
