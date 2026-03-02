@@ -52,7 +52,7 @@ export async function loadJourneyProgress(
   
   try {
     const supabase = createClient();
-    const { data, error } = await withTimeout(
+    const { data, error } = await withTimeout<any>(
       supabase
         .from('user_journey_progress')
         .select('*')
@@ -81,7 +81,7 @@ export async function listUserJourneys(userId: string): Promise<JourneyProgressR
 
   try {
     const supabase = createClient();
-    const { data, error } = await withTimeout(
+    const { data, error } = await withTimeout<any>(
       supabase
         .from('user_journey_progress')
         .select('id, journey_id, completed_steps, last_updated_at')
@@ -109,7 +109,7 @@ export async function deleteAllUserJourneys(userId: string): Promise<boolean> {
 
   try {
     const supabase = createClient();
-    const { error } = await withTimeout(
+    const { error } = await withTimeout<any>(
       supabase
         .from('user_journey_progress')
         .delete()
@@ -155,7 +155,7 @@ export async function saveJourneyProgress(
       started: state.started,
     };
 
-    const { error } = await withTimeout(
+    const { error } = await withTimeout<any>(
       supabase
         .from('user_journey_progress')
         .upsert(payload, {
@@ -186,7 +186,7 @@ export async function deleteJourneyProgress(
 
   try {
     const supabase = createClient();
-    const { error } = await withTimeout(
+    const { error } = await withTimeout<any>(
       supabase
         .from('user_journey_progress')
         .delete()
