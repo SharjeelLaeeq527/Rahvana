@@ -4,9 +4,6 @@ import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { CheckCircle2, FolderCheck } from "lucide-react";
-import { Info } from "lucide-react";
-import { ClipboardCheck } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -15,7 +12,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ArrowRight, CircleHelp, CopyIcon, FileCheck2, FileText, ListChecks, Mail, RefreshCcw, ShieldCheck, Sparkles, PrinterIcon, X } from "lucide-react";
+import { ArrowRight, CircleHelp, CopyIcon, FileText, Mail, RefreshCcw, ShieldCheck, Sparkles, PrinterIcon, CheckCircle2, FolderCheck, ClipboardCheck, X, FileCheck2, ListChecks, Info } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -1292,17 +1289,17 @@ export default function CombinedIntakeForm({
                   Welcome to the 221(g) Action Planner
                 </h2>
                 <p className="mt-2 text-sm md:text-base text-white/75 max-w-3xl mx-auto leading-relaxed flex items-center justify-center gap-2">
-                  Follow a step-by-step workflow to build a cleaner, embassy-ready response packet.{" "}
-                  <CheckCircle2 className="w-5 h-5 text-emerald-400" />
+                  Follow a step-by-step workflow to build a cleaner, embassy-ready response packet {" "}
+                  <CheckCircle2 className="w-5 h-5 text-teal-400" />
                 </p>
 
                 {/* Feature boxes */}
-                <div className="mt-6 grid grid-cols-1 sm:grid-cols-3 gap-3 md:gap-4 max-w-5xl mx-auto px-4">
+                <div className="mt-6 grid grid-cols-1 sm:grid-cols-3 gap-3 md:gap-4 max-w-5xl mx-auto px-4 text-left">
                   <div className="rounded-2xl border border-teal-500/40 bg-teal-600/20 backdrop-blur-md p-4 flex gap-3 shadow-[0_16px_34px_rgba(0,0,0,0.15)]">
                     <span className="h-11 w-11 rounded-2xl grid place-items-center shrink-0 border border-white/10 bg-white/10 text-teal-400 shadow-sm">
                       <ShieldCheck className="w-5 h-5" />
                     </span>
-                    <div className="min-w-0 text-left flex-1">
+                    <div className="min-w-0 flex-1">
                       <div className="text-sm font-extrabold text-white leading-snug">Avoid Pitfalls</div>
                       <div className="mt-1 text-xs text-white/70 leading-relaxed">Common mistakes that cause rejections.</div>
                     </div>
@@ -1312,7 +1309,7 @@ export default function CombinedIntakeForm({
                     <span className="h-11 w-11 rounded-2xl grid place-items-center shrink-0 border border-white/10 bg-white/10 text-sky-400 shadow-sm">
                       <ClipboardCheck className="w-5 h-5" />
                     </span>
-                    <div className="min-w-0 text-left flex-1">
+                    <div className="min-w-0 flex-1">
                       <div className="text-sm font-extrabold text-white leading-snug">Guided Workflow</div>
                       <div className="mt-1 text-xs text-white/70 leading-relaxed">Step-by-step situation replication.</div>
                     </div>
@@ -1322,7 +1319,7 @@ export default function CombinedIntakeForm({
                     <span className="h-11 w-11 rounded-2xl grid place-items-center shrink-0 border border-white/10 bg-white/10 text-amber-400 shadow-sm">
                       <FolderCheck className="w-5 h-5" />
                     </span>
-                    <div className="min-w-0 text-left flex-1">
+                    <div className="min-w-0 flex-1">
                       <div className="text-sm font-extrabold text-white leading-snug">Clean Output</div>
                       <div className="mt-1 text-xs text-white/70 leading-relaxed">Embassy-ready Packet & Checklist.</div>
                     </div>
@@ -1343,20 +1340,20 @@ export default function CombinedIntakeForm({
                   >
                     <div>
                       <div className="text-sm font-extrabold tracking-wide text-white/95 uppercase">What is a 221(g)?</div>
-                      {!openWhatIs && <div className="mt-1 text-sm text-white/70">Expand to see description.</div>}
+                      {!openWhatIs && <div className="mt-1 text-sm text-white/70">Expand for description.</div>}
                     </div>
                     <div className="flex items-center gap-2">
-                      <span className="text-sm font-semibold text-white/80">{openWhatIs ? "Hide" : "Learn more"}</span>
-                      <span className={`inline-flex h-9 w-9 items-center justify-center rounded-xl bg-white/10 border border-white/10 text-white/85 transition-transform ${openWhatIs ? "rotate-180" : ""}`}>
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M6 9l6 6 6-6" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"/></svg>
-                      </span>
+                       <span className="text-sm font-semibold text-white/80">{openWhatIs ? "Hide" : "Learn more"}</span>
+                       <span className={`inline-flex h-9 w-9 items-center justify-center rounded-xl bg-white/10 border border-white/10 text-white/85 transition-transform ${openWhatIs ? "rotate-180" : ""}`}>
+                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M6 9l6 6 6-6" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                       </span>
                     </div>
                   </button>
                   <div className={`grid transition-[grid-template-rows] duration-300 ease-out ${openWhatIs ? "grid-rows-[1fr]" : "grid-rows-[0fr]"}`}>
                     <div className="overflow-hidden">
                       <div className="px-5 pb-5 pt-0 text-[14px] md:text-[15px] leading-relaxed text-white/85 space-y-3">
-                        <p>Section 221(g) of the Immigration and Nationality Act allows consular officers to temporarily refuse a visa application when additional documents or administrative processing is required. This is not a permanent denial; it is a hold pending resolution.</p>
-                        <p className="text-xs italic text-white/50">Source: U.S. Department of State</p>
+                         <p>Section 221(g) of the Immigration and Nationality Act allows consular officers to temporarily refuse a visa application when additional documents or administrative processing is required. This is not a permanent denial; it is a hold pending resolution.</p>
+                         <p className="text-xs italic text-white/50">Source: U.S. Department of State</p>
                       </div>
                     </div>
                   </div>
@@ -1371,7 +1368,7 @@ export default function CombinedIntakeForm({
                   >
                     <div>
                       <div className="text-sm font-extrabold tracking-wide text-white/95 uppercase">How this wizard works</div>
-                      {!openFlow && <div className="mt-1 text-sm text-white/70">Fast, step-by-step. Expand to see flow.</div>}
+                      {!openFlow && <div className="mt-1 text-sm text-white/70">Fast, step-by-step flow.</div>}
                     </div>
                     <div className="flex items-center gap-2">
                       <span className="text-sm font-semibold text-white/80">{openFlow ? "Hide" : "Learn more"}</span>
@@ -1382,21 +1379,21 @@ export default function CombinedIntakeForm({
                   </button>
                   <div className={`grid transition-[grid-template-rows] duration-300 ease-out ${openFlow ? "grid-rows-[1fr]" : "grid-rows-[0fr]"}`}>
                     <div className="overflow-hidden">
-                      <div className="px-5 pb-5 pt-0">
-                        <ol className="space-y-3 pt-2">
-                          {[
-                            "Replicate your 221(g) checklist letter using the guided form.",
-                            "Review and confirm your case details before generation.",
-                            "Generate an action plan, packet checklist, and cover letter.",
-                            "Export documents and submit exactly per embassy instructions."
-                          ].map((text, idx) => (
-                            <li key={idx} className="flex items-start gap-4 p-4 rounded-2xl bg-white/5 border border-white/10 group hover:bg-white/10 transition-colors">
-                              <span className="flex h-9 w-9 items-center justify-center rounded-2xl font-extrabold text-sm text-teal-900 bg-white shadow-sm shrink-0 mt-0.5">{idx + 1}</span>
-                              <p className="text-[14px] md:text-[15px] leading-snug text-white/90 font-medium pt-1.5">{text}</p>
-                            </li>
-                          ))}
-                        </ol>
-                      </div>
+                       <div className="px-5 pb-5 pt-0">
+                         <ol className="space-y-3 pt-2">
+                            {[
+                              "Replicate your 221(g) checklist letter using the guided form.",
+                              "Review and confirm your case details before generation.",
+                              "Generate an action plan, packet checklist, and cover letter.",
+                              "Export documents and submit exactly per embassy instructions."
+                            ].map((text, idx) => (
+                              <li key={idx} className="flex items-start gap-4 p-4 rounded-2xl bg-white/5 border border-white/10 group hover:bg-white/10 transition-colors">
+                                <span className="flex h-9 w-9 items-center justify-center rounded-2xl font-extrabold text-sm text-teal-900 bg-white shadow-sm shrink-0 mt-0.5">{idx + 1}</span>
+                                <p className="text-[14px] md:text-[15px] leading-snug text-white/90 font-medium pt-1.5">{text}</p>
+                              </li>
+                            ))}
+                         </ol>
+                       </div>
                     </div>
                   </div>
                 </div>
@@ -1456,7 +1453,7 @@ export default function CombinedIntakeForm({
                 </div>
 
                 {/* Footer */}
-                <div className="pt-8 mt-6 border-t border-white/10 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6 pb-6">
+                <div className="pt-8 mt-6 border-t border-white/10 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6 pb-6 text-left">
                   <label className="flex items-center gap-3 cursor-pointer select-none group">
                     <div className="relative flex items-center justify-center">
                       <input
