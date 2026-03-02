@@ -962,9 +962,7 @@ function HomePageContent() {
                 <div className="flex flex-col lg:flex-row gap-8 lg:gap-12 w-full max-w-6xl mx-auto">
                   {/* Left Column: Interactive List */}
                   <div className="w-full lg:w-5/12 flex flex-col gap-3">
-                    {ALL_SERVICES.filter(
-                      (s) => !s.disabled && s.href !== "/book-consultation",
-                    )
+                    {ALL_SERVICES.filter((s) => s.href !== "/book-consultation")
                       .slice(0, 5)
                       .map((service, idx) => {
                         const isActive = activeService === idx;
@@ -976,16 +974,16 @@ function HomePageContent() {
                             transition={{ delay: idx * 0.1, duration: 0.4 }}
                             viewport={{ once: true }}
                             onClick={() => setActiveService(idx)}
-                            className={`group relative flex items-center p-4 rounded-2xl cursor-pointer transition-all duration-300 border ${
+                            className={`group relative flex items-center p-3 sm:p-4 rounded-xl sm:rounded-2xl cursor-pointer transition-all duration-300 border ${
                               isActive
                                 ? "bg-card border-rahvana-primary shadow-md"
                                 : "bg-transparent border-transparent hover:bg-muted/50 hover:border-border"
                             }`}
                           >
                             <div
-                              className={`flex items-center justify-center w-12 h-12 rounded-xl transition-all duration-300 mr-4 shrink-0 ${
+                              className={`flex items-center justify-center w-10 h-10 sm:w-12 sm:h-12 rounded-lg sm:rounded-xl transition-all duration-300 mr-3 sm:mr-4 shrink-0 ${
                                 isActive
-                                  ? "bg-rahvana-primary text-white shadow-md shadow-rahvana-primary/20 scale-110 [&>svg]:text-current!"
+                                  ? "bg-rahvana-primary text-white shadow-md shadow-rahvana-primary/20 scale-105 sm:scale-110 [&>svg]:text-current!"
                                   : "bg-muted text-muted-foreground group-hover:bg-primary/90 group-hover:text-white [&>svg]:text-current!"
                               }`}
                             >
@@ -994,13 +992,13 @@ function HomePageContent() {
                                   className?: string;
                                 }>,
                                 {
-                                  className: "w-5 h-5",
+                                  className: "w-4 h-4 sm:w-5 sm:h-5",
                                 },
                               )}
                             </div>
                             <div className="flex-1 min-w-0">
                               <h4
-                                className={`font-bold text-base truncate transition-colors ${
+                                className={`font-bold text-sm sm:text-base truncate transition-colors ${
                                   isActive
                                     ? "text-foreground"
                                     : "text-muted-foreground group-hover:text-foreground"
@@ -1008,7 +1006,7 @@ function HomePageContent() {
                               >
                                 {service.title}
                               </h4>
-                              <p className="text-xs text-muted-foreground truncate opacity-80 uppercase tracking-wider mt-1">
+                              <p className="text-[10px] sm:text-xs text-muted-foreground truncate opacity-80 uppercase tracking-wider mt-0.5 sm:mt-1">
                                 {service.category}
                               </p>
                             </div>
@@ -1052,42 +1050,42 @@ function HomePageContent() {
                         <div className="absolute top-0 right-0 w-64 h-64 bg-rahvana-primary-pale/30 rounded-full blur-3xl -mx-20 -my-20 pointer-events-none"></div>
                         <div className="absolute bottom-0 left-0 w-48 h-48 bg-rahvana-primary-pale/20 rounded-full blur-2xl -mx-10 -my-10 pointer-events-none"></div>
 
-                        <div className="relative z-10 p-8 md:p-12 flex-1 flex flex-col">
-                          <div className="flex justify-between items-start mb-8 border-b border-border/50 pb-6">
-                            <div className="w-16 h-16 md:w-20 md:h-20 rounded-2xl bg-linear-to-br from-rahvana-primary to-rahvana-primary-light flex items-center justify-center text-white shadow-lg shadow-rahvana-primary/20 [&>svg]:text-white! [&>svg]:w-8 [&>svg]:h-8 md:[&>svg]:w-10 md:[&>svg]:h-10">
+                        <div className="relative z-10 p-6 sm:p-8 md:p-12 flex-1 flex flex-col">
+                          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 sm:gap-0 mb-6 sm:mb-8 border-b border-border/50 pb-6">
+                            <div className="w-12 h-12 sm:w-16 sm:h-16 md:w-20 md:h-20 rounded-xl sm:rounded-2xl bg-linear-to-br from-rahvana-primary to-rahvana-primary-light flex items-center justify-center text-white shadow-lg shadow-rahvana-primary/20 [&>svg]:text-white! [&>svg]:w-6 [&>svg]:h-6 sm:[&>svg]:w-8 sm:[&>svg]:h-8 md:[&>svg]:w-10 md:[&>svg]:h-10 shrink-0">
                               {
                                 ALL_SERVICES.filter(
                                   (s) =>
-                                    !s.disabled &&
+                                    // !s.disabled &&
                                     s.href !== "/book-consultation",
                                 )[activeService]?.icon
                               }
                             </div>
-                            <div className="inline-block px-4 py-1.5 text-xs font-bold uppercase tracking-wider rounded-full bg-rahvana-primary-pale text-rahvana-primary">
+                            <div className="inline-block px-3 py-1 sm:px-4 sm:py-1.5 text-[10px] sm:text-xs font-bold uppercase tracking-wider rounded-full bg-rahvana-primary-pale text-rahvana-primary">
                               {
                                 ALL_SERVICES.filter(
                                   (s) =>
-                                    !s.disabled &&
+                                    // !s.disabled &&
                                     s.href !== "/book-consultation",
                                 )[activeService]?.category
                               }
                             </div>
                           </div>
 
-                          <h3 className="text-2xl md:text-3xl lg:text-4xl font-bold text-foreground mb-4 leading-tight">
+                          <h3 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold text-foreground mb-3 sm:mb-4 leading-tight">
                             {
                               ALL_SERVICES.filter(
                                 (s) =>
-                                  !s.disabled &&
+                                  // !s.disabled &&
                                   s.href !== "/book-consultation",
                               )[activeService]?.title
                             }
                           </h3>
-                          <p className="text-muted-foreground text-base md:text-lg leading-relaxed mb-8 flex-1">
+                          <p className="text-muted-foreground text-sm sm:text-base md:text-lg leading-relaxed mb-6 sm:mb-8 flex-1">
                             {
                               ALL_SERVICES.filter(
                                 (s) =>
-                                  !s.disabled &&
+                                  // !s.disabled &&
                                   s.href !== "/book-consultation",
                               )[activeService]?.description
                             }
@@ -1095,17 +1093,9 @@ function HomePageContent() {
 
                           <div className="mt-auto">
                             <HydrationSafeButton
-                              onClick={() => {
-                                const href = ALL_SERVICES.filter(
-                                  (s) =>
-                                    !s.disabled &&
-                                    s.href !== "/book-consultation",
-                                )[activeService]?.href;
-                                if (href && href !== "#") {
-                                  router.push(href);
-                                }
-                              }}
-                              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-4 text-base font-bold text-white bg-rahvana-primary rounded-xl hover:bg-rahvana-primary-dark transition-all shadow-md hover:shadow-xl hover:-translate-y-1"
+                              disabled
+                              onClick={() => {}}
+                              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-4 text-base font-bold text-white bg-rahvana-primary rounded-xl transition-all shadow-md opacity-50 cursor-not-allowed"
                             >
                               Get Started{" "}
                               <Icons.ArrowRight className="w-5 h-5" />
@@ -1145,7 +1135,8 @@ function HomePageContent() {
                         </span>
                       </p>
                       <button
-                        onClick={handleConsultationClick}
+                        // onClick={handleConsultationClick}
+                        onClick={() => setShowComingSoon(true)}
                         className="inline-flex items-center px-10 py-5 bg-background text-rahvana-primary text-lg font-bold rounded-xl shadow-lg hover:shadow-2xl hover:-translate-y-1 transition-all"
                       >
                         Book a Consultation

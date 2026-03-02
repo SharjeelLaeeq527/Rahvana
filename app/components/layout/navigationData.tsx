@@ -919,6 +919,7 @@ export const NAV_DATA: Record<string, NavSection> = {
             title: "Book a Consultation",
             description: "Book a call with an expert.",
             href: "/book-consultation",
+            disabled: true,
           },
           {
             icon: (
@@ -944,6 +945,7 @@ export const NAV_DATA: Record<string, NavSection> = {
             title: "PCC Filing Service — Sindh",
             description: "Done-for-you police certificate filing for Sindh.",
             href: "/police-verification/apply?province=Sindh",
+            disabled: true,
             // href: "/guides/police-verification-guide",
             // badge: "Soon",
           },
@@ -993,6 +995,7 @@ export const NAV_DATA: Record<string, NavSection> = {
             title: "Book Medical Appointment",
             description: "Book your panel physician medical exam appointment.",
             href: "/book-appointment",
+            disabled: true,
             // badge: "Live",
           },
         ],
@@ -1009,6 +1012,7 @@ export const NAV_DATA: Record<string, NavSection> = {
             description:
               "Request certified translation + formatting for submission.",
             href: "/document-translation",
+            disabled: true,
           },
         ],
       },
