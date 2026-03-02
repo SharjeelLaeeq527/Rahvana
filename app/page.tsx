@@ -1505,13 +1505,13 @@ function HomePageContent() {
         )}
       </main>
 
-      {showMfaPrompt && (
+      {/* {showMfaPrompt && (
         <MfaPromptModal
           open={showMfaPrompt}
           onEnable={handleEnableMfa}
           onRemindLater={handleRemindLater}
         />
-      )}
+      )} */}
 
       {showComingSoon && (
         <ComingSoonModal

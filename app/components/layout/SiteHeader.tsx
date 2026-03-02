@@ -411,9 +411,9 @@ export function SiteHeader({
               )}
 
           {/* LOGIN / PROFILE toggle */}
-          {isLoading && !user ? (
+          {isLoading ? (
             <div className="w-[88px] h-10 rounded-lg bg-primary/10 animate-pulse" />
-          ) : isSignedIn ? (
+          ) : user ? (
             <div
               className="relative"
               onMouseEnter={() => handleMenuEnter("profile")}

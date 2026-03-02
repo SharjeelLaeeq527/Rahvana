@@ -11,6 +11,7 @@ import {
 } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { AuthError, User, Session } from "@supabase/supabase-js";
+import { sync } from "framer-motion";
 
 // Define types for MFA error metadata
 interface MFAMetadata {
@@ -243,66 +244,55 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const getInitialSession = async () => {
       try {
         // ── STEP 1: Handle PKCE auth code in URL ────────────────────────
-        if (typeof window !== 'undefined') {
+        if (typeof window !== "undefined") {
           const params = new URLSearchParams(window.location.search);
-          const code = params.get('code');
+          const code = params.get("code");
           if (code) {
-            const { error: exchangeError } = await supabase.auth.exchangeCodeForSession(code);
+            const { error: exchangeError } =
+              await supabase.auth.exchangeCodeForSession(code);
             if (exchangeError) {
-              console.error('[AuthContext] PKCE code exchange error:', exchangeError.message);
+              console.error(
+                "[AuthContext] PKCE code exchange error:",
+                exchangeError.message,
+              );
             }
             const cleanUrl = new URL(window.location.href);
-            cleanUrl.searchParams.delete('code');
-            window.history.replaceState({}, '', cleanUrl.pathname + cleanUrl.search);
+            cleanUrl.searchParams.delete("code");
+            window.history.replaceState(
+              {},
+              "",
+              cleanUrl.pathname + cleanUrl.search,
+            );
           }
         }
 
-        // ── STEP 2: Ensure tokens are fresh ──────────────────────────────
-        // CRITICAL: Call getSession() FIRST — it refreshes the access token
-        // if it's expired. getUser() does NOT refresh tokens; it only
-        // validates them. On page refresh with an expired token, calling
-        // getUser() without refreshing first returns null → "Valued User".
+        // Inside getInitialSession()
         const {
           data: { session: currentSession },
         } = await supabase.auth.getSession();
 
-        // ── STEP 3: Validate user server-side ────────────────────────────
         const {
           data: { user: validatedUser },
         } = await supabase.auth.getUser();
 
+        // Immediately set preliminary profile to avoid skeleton forever
         if (validatedUser) {
           setUser(validatedUser);
           setSession(currentSession);
-
-          // ── STEP 4: Set preliminary profile ──────────────────────────
-          // Immediately set a preliminary profile from metadata so the UI 
-          // never shows "Valued User" while we wait for the DB fetch.
-          const preliminaryName = 
-            validatedUser.user_metadata?.full_name || 
-            validatedUser.user_metadata?.name || 
-            validatedUser.email?.split("@")[0] || 
-            "User";
-            
-          setProfile(prev => prev || {
-            full_name: preliminaryName,
-            email: validatedUser.email || "",
-            role: "user",});
-          // ── STEP 5: Unlock UI Immediately ────────────────────────────
-          // As soon as we have the preliminary profile, stop the loading skeleton!
-          // We don't want to wait for the DB trips to finish just to show the header.
-          setIsLoading(false);
-
-          // Now fetch the real profile from the DB for updates/extra fields (in background)
-          fetchProfile(validatedUser.id, {
-            full_name: validatedUser.user_metadata?.full_name,
-            name: validatedUser.user_metadata?.name,
-            email: validatedUser.email,
-          });
-
-          fetchUserProfile(validatedUser.id).then((adminStatus) => {
-            setIsAdmin(adminStatus);
-          });
+          setProfile(
+            (prev) =>
+              prev || {
+                full_name:
+                  validatedUser.user_metadata?.full_name ||
+                  validatedUser.email?.split("@")[0] ||
+                  "User",
+                email: validatedUser.email || "",
+                role: "user",
+              },
+          );
+          setIsLoading(false); // <-- unlock UI immediately
+          fetchProfile(validatedUser.id); // background fetch
+          fetchUserProfile(validatedUser.id).then(setIsAdmin);
         } else {
           setUser(null);
           setSession(null);
@@ -321,43 +311,31 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (event, session) => {
-      // Avoid clearing state if it's already being handled by getInitialSession
-      if (event === 'INITIAL_SESSION' && session?.user) return;
+      // Ignore INITIAL_SESSION if getInitialSession already handled it
+      if (event === "INITIAL_SESSION" && session?.user) return;
 
       setUser(session?.user ?? null);
       setSession(session ?? null);
 
       if (session?.user) {
-        // Set preliminary profile immediately on state change too
-        const preliminaryName = 
-          session.user.user_metadata?.full_name || 
-          session.user.user_metadata?.name || 
-          session.user.email?.split("@")[0] || 
-          "User";
-          
-        setProfile(prev => {
-          if (prev && prev.full_name !== "User" && prev.full_name !== "Valued User") return prev;
-          return {
-            full_name: preliminaryName,
-            email: session.user.email || "",
-            role: "user"
-          };
+        setProfile({
+          full_name:
+            session.user.user_metadata?.full_name ||
+            session.user.email?.split("@")[0] ||
+            "User",
+          email: session.user.email || "",
+          role: "user",
         });
 
-        await fetchProfile(session.user.id, {
-          full_name: session.user.user_metadata?.full_name,
-          name: session.user.user_metadata?.name,
-          email: session.user.email,
-        });
+        await fetchProfile(session.user.id);
         const adminStatus = await fetchUserProfile(session.user.id);
         setIsAdmin(adminStatus);
       } else {
-        // User signed out — clear all user-specific state
         setProfile(null);
         setIsAdmin(false);
       }
 
-      setIsLoading(false);
+      setIsLoading(false); // <-- unlock UI
     });
 
     return () => subscription.unsubscribe();
@@ -424,24 +402,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         challengeId,
         code,
       });
-  
+
       if (error) {
         return { success: false, error: error.message };
       }
-  
+
       // 🔥 Get updated session AFTER successful verification
       const {
         data: { session },
         error: sessionError,
       } = await supabase.auth.getSession();
-  
+
       if (sessionError || !session) {
         return {
           success: false,
           error: "Failed to retrieve upgraded session",
         };
       }
-  
+
       return {
         success: true,
         user: session.user,
@@ -569,43 +547,44 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           const { factorId, challengeId } = extractMFAErrorDetails(error);
 
           if (!factorId || !challengeId) {
-            const { totp: fetchedTotp, error: factorsError } = await listMFACheckFactors();
-      
-              if (factorsError) {
-                return {
-                  error: {
-                    message: "MFA setup error",
-                    code: "mfa_error",
-                  } as unknown as AuthError,
-                };
-              }
+            const { totp: fetchedTotp, error: factorsError } =
+              await listMFACheckFactors();
 
-              if (!fetchedTotp || fetchedTotp.length === 0) {
-                 return {
-                    error: {
-                      message: "No MFA factors found",
-                      code: "mfa_no_factors",
-                    } as unknown as AuthError,
-                  };
-              }
-
-              // Create challenge for the first factor
-              const { data: challengeData, error: challengeError } =
-                await supabase.auth.mfa.challenge({
-                  factorId: fetchedTotp[0].id,
-                });
-
-               if (challengeError) {
-                  return { error: challengeError };
-               }
-
-               return {
-                  error: null,
-                  mfaRequired: true,
-                  factorId: fetchedTotp[0].id,
-                  challengeId: challengeData.id,
+            if (factorsError) {
+              return {
+                error: {
+                  message: "MFA setup error",
+                  code: "mfa_error",
+                } as unknown as AuthError,
               };
-           }
+            }
+
+            if (!fetchedTotp || fetchedTotp.length === 0) {
+              return {
+                error: {
+                  message: "No MFA factors found",
+                  code: "mfa_no_factors",
+                } as unknown as AuthError,
+              };
+            }
+
+            // Create challenge for the first factor
+            const { data: challengeData, error: challengeError } =
+              await supabase.auth.mfa.challenge({
+                factorId: fetchedTotp[0].id,
+              });
+
+            if (challengeError) {
+              return { error: challengeError };
+            }
+
+            return {
+              error: null,
+              mfaRequired: true,
+              factorId: fetchedTotp[0].id,
+              challengeId: challengeData.id,
+            };
+          }
 
           // Return the MFA challenge information
           return {
@@ -624,26 +603,29 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (data?.session) {
         // Use factors from the session if available, otherwise fetch them
         const factors = (data.session.user as any)?.factors || [];
-        const totpFactors = factors.filter((f: any) => f.factor_type === 'totp' && f.status === 'verified');
-        
+        const totpFactors = factors.filter(
+          (f: any) => f.factor_type === "totp" && f.status === "verified",
+        );
+
         if (totpFactors.length > 0) {
-           const factorId = totpFactors[0].id;
-           
-           // Only challenge if we have a valid factor
-           if (factorId) {
-              const { data: challengeData, error: challengeError } = await supabase.auth.mfa.challenge({
-                factorId: factorId
+          const factorId = totpFactors[0].id;
+
+          // Only challenge if we have a valid factor
+          if (factorId) {
+            const { data: challengeData, error: challengeError } =
+              await supabase.auth.mfa.challenge({
+                factorId: factorId,
               });
 
-              if (!challengeError && challengeData) {
-                return {
-                  error: null,
-                  mfaRequired: true,
-                  factorId: factorId,
-                  challengeId: challengeData.id,
-                };
-              }
-           }
+            if (!challengeError && challengeData) {
+              return {
+                error: null,
+                mfaRequired: true,
+                factorId: factorId,
+                challengeId: challengeData.id,
+              };
+            }
+          }
         }
       }
 
@@ -698,15 +680,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // ── SERVER-SIDE SIGN OUT (fire-and-forget) ──────────────────────
     // Don't await this — if the API route hangs (cold start, network),
     // we must not block the UI. The full page reload will handle the rest.
-    fetch('/api/auth/signout', { method: 'POST' }).catch(() => {});
+    fetch("/api/auth/signout", { method: "POST" }).catch(() => {});
 
     // ── LOCAL SIGN OUT (with timeout) ───────────────────────────────
     // supabase.auth.signOut() can sometimes hang in production.
     // Race it against a 3-second timeout so the UI is never stuck.
     try {
       await Promise.race([
-        supabase.auth.signOut({ scope: 'local' }),
-        new Promise(resolve => setTimeout(resolve, 3000)),
+        supabase.auth.signOut({ scope: "local" }),
+        new Promise((resolve) => setTimeout(resolve, 3000)),
       ]);
     } catch {
       // Swallow errors — we're signing out regardless
