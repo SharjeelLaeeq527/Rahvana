@@ -980,6 +980,7 @@ function HomePageContent() {
                                 : "bg-transparent border-transparent hover:bg-muted/50 hover:border-border"
                             }`}
                           >
+                            
                             <div
                               className={`flex items-center justify-center w-10 h-10 sm:w-12 sm:h-12 rounded-lg sm:rounded-xl transition-all duration-300 mr-3 sm:mr-4 shrink-0 ${
                                 isActive
