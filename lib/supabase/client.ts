@@ -9,14 +9,6 @@ import { createBrowserClient } from '@supabase/ssr'
 export function createClient() {
   return createBrowserClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-      {
-    cookieOptions: {
-      name: 'sb-session',
-      sameSite: 'lax',   // 'none' bhi ho sakta hai
-      secure: true,      // production (HTTPS) ke liye لازمی
-      path: '/',
-    },
-  }
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
   )
 }
