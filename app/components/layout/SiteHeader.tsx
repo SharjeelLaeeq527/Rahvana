@@ -126,7 +126,8 @@ export function SiteHeader({
   const [activeMenu, setActiveMenu] = useState<string | null>(null);
   const menuTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  const { profile, isLoading } = useAuth();
+  const { profile, isLoading, user: authUser } = useAuth();
+  const resolvedUser = user ?? authUser;
 
   const handleMenuEnter = (menu: string) => {
     if (menuTimeoutRef.current) clearTimeout(menuTimeoutRef.current);
@@ -397,7 +398,7 @@ export function SiteHeader({
 
         <div className="flex items-center gap-3">
 
-          {isLoading && !user
+          {isLoading && !resolvedUser
             ? null
             : isSignedIn && (
                 <HydrationSafeButton
@@ -411,7 +412,7 @@ export function SiteHeader({
               )}
 
           {/* LOGIN / PROFILE toggle */}
-          {isLoading ? (
+          {isLoading && !resolvedUser ? (
             <div className="w-[88px] h-10 rounded-lg bg-primary/10 animate-pulse" />
           ) : user ? (
             <div
@@ -855,7 +856,7 @@ export function SiteHeader({
             </div>
 
             <div className="p-6 border-t bg-slate-50">
-              {isLoading && !user ? (
+              {isLoading && !resolvedUser ? (
                 <div className="w-full h-[56px] rounded-xl bg-primary/30 animate-pulse" />
               ) : (
                 <HydrationSafeButton

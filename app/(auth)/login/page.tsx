@@ -62,7 +62,14 @@ function LoginContent() {
     }
   }, [searchParams]);
 
-  const redirect = searchParams.get("redirect");
+  const redirectParam =
+    searchParams.get("redirect") || searchParams.get("redirectTo");
+  const redirect =
+    redirectParam &&
+    redirectParam.startsWith("/") &&
+    !redirectParam.startsWith("//")
+      ? redirectParam
+      : null;
 
   useEffect(() => {
     // If MFA screen is active, do NOT redirect

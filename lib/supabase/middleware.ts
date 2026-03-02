@@ -58,6 +58,7 @@ export async function updateSession(request: NextRequest) {
   // Route Definitions
   // =============================
   const protectedRoutes = [
+    "/user-dashboard",
     "/dashboard",
     "/complete-profile",
     "/profile",
