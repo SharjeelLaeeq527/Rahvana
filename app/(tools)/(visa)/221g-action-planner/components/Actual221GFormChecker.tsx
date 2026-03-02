@@ -115,12 +115,7 @@ export default function Actual221GFormChecker({
         </CardDescription>
       </CardHeader>
       <CardContent>
-        {smartModeEnabled && (
-          <div className="mb-4 rounded-md border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs font-medium text-emerald-800">
-            Premium smart mode enabled: I-864 section now supports conditional
-            sponsor details.
-          </div>
-        )}
+
 
         <div className="mb-6 p-4 bg-primary/10 rounded-lg border border-primary/20">
           <h3 className="font-semibold text-primary text-center text-lg">
@@ -558,43 +553,50 @@ export default function Actual221GFormChecker({
                 {smartModeEnabled ? (
                   // --- PREMIUM SEQUENTIAL LAYOUT (Only for Smart Mode) ---
                   <>
-                    <div className="ml-6 mt-1 flex items-center space-x-3 text-muted-foreground italic text-[10px] font-medium">
-                      <span>(submit via</span>
-                      <div className="flex items-center space-x-1">
-                        <Checkbox
-                          id="i864_courier"
-                          checked={!!selectedItems.i864_courier}
-                          onCheckedChange={(checked) =>
-                            handleCheckboxChange("i864_courier", checked as boolean)
-                          }
-                        />
-                        <Label
-                          htmlFor="i864_courier"
-                          className="text-[10px] cursor-pointer italic text-muted-foreground"
-                        >
-                          courier /
-                        </Label>
-                      </div>
-                      <div className="flex items-center space-x-1">
-                        <Checkbox
-                          id="i864_online"
-                          checked={!!selectedItems.i864_online}
-                          onCheckedChange={(checked) =>
-                            handleCheckboxChange("i864_online", checked as boolean)
-                          }
-                        />
-                        <Label
-                          htmlFor="i864_online"
-                          className="text-[10px] cursor-pointer italic text-muted-foreground"
-                        >
-                          online)
-                        </Label>
-                      </div>
-                    </div>
-
                     {!!selectedItems.i864_affidavit && (
                       <div className="ml-6 mt-4 space-y-6 rounded-xl border border-emerald-200 bg-emerald-50/40 p-5 shadow-sm animate-in fade-in slide-in-from-top-2 duration-500">
-{/* Sponsor Structure */}
+                        {/* Submission Method Selection */}
+                        <div className="flex flex-col space-y-2 pb-4 border-b border-emerald-100">
+                          <Label className="text-[11px] font-bold text-emerald-900 uppercase tracking-wider mb-1">
+                            Submission Method *
+                          </Label>
+                          <div className="flex items-center space-x-6">
+                            <div className="flex items-center space-x-2 group">
+                              <Checkbox
+                                id="i864_courier"
+                                checked={!!selectedItems.i864_courier}
+                                onCheckedChange={(checked) =>
+                                  handleCheckboxChange("i864_courier", checked as boolean)
+                                }
+                                className="data-[state=checked]:bg-emerald-600 data-[state=checked]:border-emerald-600"
+                              />
+                              <Label
+                                htmlFor="i864_courier"
+                                className="text-xs font-semibold cursor-pointer text-emerald-800 group-hover:text-emerald-900 transition-colors"
+                              >
+                                Submit via Courier
+                              </Label>
+                            </div>
+                            <div className="flex items-center space-x-2 group">
+                              <Checkbox
+                                id="i864_online"
+                                checked={!!selectedItems.i864_online}
+                                onCheckedChange={(checked) =>
+                                  handleCheckboxChange("i864_online", checked as boolean)
+                                }
+                                className="data-[state=checked]:bg-emerald-600 data-[state=checked]:border-emerald-600"
+                              />
+                              <Label
+                                htmlFor="i864_online"
+                                className="text-xs font-semibold cursor-pointer text-emerald-800 group-hover:text-emerald-900 transition-colors"
+                              >
+                                Submit Online (CEAC)
+                              </Label>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Sponsor Structure */}
                         <div className="space-y-2">
                           <Label className="text-sm font-semibold text-foreground flex items-center group">
                             Sponsor Structure *
@@ -605,20 +607,20 @@ export default function Actual221GFormChecker({
                               handleInputChange("i864_sponsor_structure", value)
                             }
                           >
-                            <SelectTrigger className="h-10 bg-white border-emerald-200 focus:ring-emerald-500 focus:border-emerald-500 shadow-none hover:bg-emerald-50/50 transition-colors">
+                            <SelectTrigger className="h-10 bg-white border-emerald-200 focus:ring-emerald-500 focus:border-emerald-500 shadow-none hover:bg-emerald-50/50 transition-colors text-emerald-900 font-medium">
                               <SelectValue placeholder="How are you sponsoring?" />
                             </SelectTrigger>
                             <SelectContent>
-                              <SelectItem value="petitioner-only">
+                              <SelectItem value="petitioner-only" className="font-medium">
                                 Petitioner only
                               </SelectItem>
-                              <SelectItem value="petitioner-hm">
+                              <SelectItem value="petitioner-hm" className="font-medium">
                                 Petitioner + Household Member (I-864A)
                               </SelectItem>
-                              <SelectItem value="joint-sponsor">
+                              <SelectItem value="joint-sponsor" className="font-medium">
                                 Joint Sponsor (separate I-864)
                               </SelectItem>
-                              <SelectItem value="joint-sponsor-hm">
+                              <SelectItem value="joint-sponsor-hm" className="font-medium">
                                 Joint Sponsor + Household Member (I-864A)
                               </SelectItem>
                             </SelectContent>
@@ -634,7 +636,7 @@ export default function Actual221GFormChecker({
                             <div className="grid grid-cols-1 gap-4 md:grid-cols-2 ml-7">
                               <div className="space-y-1.5 focus-within:ring-0">
                                 <Label className="text-[11px] font-medium text-emerald-800/70 ml-1">
-                                  Petitioner Full Name
+                                  Petitioner Full Name (optional)
                                 </Label>
                                 <Input
                                   type="text"
@@ -650,7 +652,7 @@ export default function Actual221GFormChecker({
                               {showJointSponsorName && (
                                 <div className="space-y-1.5 animate-in slide-in-from-left-2 duration-500">
                                   <Label className="text-[11px] font-medium text-emerald-800/70 ml-1">
-                                    Joint Sponsor Full Name
+                                    Joint Sponsor Full Name (optional)
                                   </Label>
                                   <Input
                                     type="text"
@@ -667,7 +669,7 @@ export default function Actual221GFormChecker({
                               {showHouseholdMemberName && (
                                 <div className="space-y-1.5 animate-in slide-in-from-left-2 duration-500">
                                   <Label className="text-[11px] font-medium text-emerald-800/70 ml-1">
-                                    Household Member Name
+                                    Household Member Name (optional)
                                   </Label>
                                   <Input
                                     type="text"

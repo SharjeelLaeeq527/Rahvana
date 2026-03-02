@@ -10,7 +10,7 @@ import {
   useMemo,
 } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { AuthError, User, Session } from "@supabase/supabase-js";
+import { AuthError, User, Session, AuthChangeEvent } from "@supabase/supabase-js";
 
 // Define types for MFA error metadata
 interface MFAMetadata {
@@ -241,6 +241,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     const getInitialSession = async () => {
+      // Safety timeout: never keep UI blocked forever if Supabase call hangs.
+      const loadingWatchdog = setTimeout(() => {
+        setIsLoading(false);
+      }, 7000);
+
       try {
         // ── STEP 1: Handle PKCE auth code in URL ────────────────────────
         if (typeof window !== 'undefined') {
@@ -264,12 +269,26 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         // getUser() without refreshing first returns null → "Valued User".
         const {
           data: { session: currentSession },
-        } = await supabase.auth.getSession();
+        } = await Promise.race([
+          supabase.auth.getSession(),
+          new Promise<{
+            data: { session: Session | null };
+          }>((resolve) =>
+            setTimeout(() => resolve({ data: { session: null } }), 5000),
+          ),
+        ]);
 
         // ── STEP 3: Validate user server-side ────────────────────────────
         const {
           data: { user: validatedUser },
-        } = await supabase.auth.getUser();
+        } = await Promise.race([
+          supabase.auth.getUser(),
+          new Promise<{
+            data: { user: User | null };
+          }>((resolve) =>
+            setTimeout(() => resolve({ data: { user: null } }), 5000),
+          ),
+        ]);
 
         if (validatedUser) {
           setUser(validatedUser);
@@ -313,6 +332,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       } catch (_error) {
         console.error("Error getting initial session:", _error);
         setIsLoading(false);
+      } finally {
+        clearTimeout(loadingWatchdog);
       }
     };
 
@@ -320,12 +341,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (event, session) => {
-      // Avoid clearing state if it's already being handled by getInitialSession
-      if (event === 'INITIAL_SESSION' && session?.user) return;
-
+    } = supabase.auth.onAuthStateChange(async (event: AuthChangeEvent, session: Session | null) => {
       setUser(session?.user ?? null);
       setSession(session ?? null);
+      // Unlock UI immediately on auth event; profile/admin checks can continue in background.
+      setIsLoading(false);
 
       if (session?.user) {
         // Set preliminary profile immediately on state change too
@@ -344,20 +364,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           };
         });
 
-        await fetchProfile(session.user.id, {
+        fetchProfile(session.user.id, {
           full_name: session.user.user_metadata?.full_name,
           name: session.user.user_metadata?.name,
           email: session.user.email,
         });
-        const adminStatus = await fetchUserProfile(session.user.id);
-        setIsAdmin(adminStatus);
+        fetchUserProfile(session.user.id).then((adminStatus) => {
+          setIsAdmin(adminStatus);
+        });
       } else {
         // User signed out — clear all user-specific state
         setProfile(null);
         setIsAdmin(false);
       }
-
-      setIsLoading(false);
     });
 
     return () => subscription.unsubscribe();
@@ -623,8 +642,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       // Check if user has MFA factors but is only at AAL1
       if (data?.session) {
         // Use factors from the session if available, otherwise fetch them
-        const factors = (data.session.user as any)?.factors || [];
-        const totpFactors = factors.filter((f: any) => f.factor_type === 'totp' && f.status === 'verified');
+        const userWithFactors = data.session.user as User & { factors?: Array<{ id: string; factor_type: string; status: string }> };
+        const factors = userWithFactors?.factors || [];
+        const totpFactors = factors.filter((f) => f.factor_type === 'totp' && f.status === 'verified');
         
         if (totpFactors.length > 0) {
            const factorId = totpFactors[0].id;
