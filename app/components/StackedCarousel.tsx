@@ -143,7 +143,7 @@ export const StackedCarousel = ({
                   {journey.desc}
                 </p>
 
-                <div className="flex items-center justify-between pt-6 border-t border-border mt-6 w-full">
+                <div className="flex items-center justify-between pt-6 border-t border-border mt-6 w-full gap-2">
                   {journey.live ? (
                     <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-100">
                       <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
@@ -164,7 +164,7 @@ export const StackedCarousel = ({
                         onNotify();
                       }
                     }}
-                    className={`px-5 py-2.5 rounded-xl text-sm font-bold transition-all shadow-sm ${
+                    className={`w-full sm:w-auto px-5 py-2.5 rounded-xl text-sm font-bold transition-all shadow-sm ${
                       journey.live
                         ? "text-white bg-linear-to-r from-rahvana-primary to-rahvana-primary-light hover:shadow-md hover:-translate-y-0.5"
                         : "text-rahvana-primary hover:bg-rahvana-primary-pale"
