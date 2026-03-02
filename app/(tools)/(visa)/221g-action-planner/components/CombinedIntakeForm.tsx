@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -12,7 +12,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { CopyIcon, PrinterIcon, RefreshCcw } from "lucide-react";
+import { ArrowRight, CircleHelp, CopyIcon, FileCheck2, FileText, ListChecks, Mail, RefreshCcw, ShieldCheck, Sparkles, PrinterIcon } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -23,12 +23,14 @@ import {
 import { Checkbox } from "@/components/ui/checkbox";
 import Actual221GFormChecker from "./Actual221GFormChecker";
 import { FormData, FormSelections } from "../types/221g";
+import { classifySituation } from "../utils/classifier";
 
 interface CombinedIntakeFormProps {
   onSubmit: (data: FormData, selectedItems: FormSelections) => void;
   onSaveToProfile?: () => Promise<void>;
   initialData?: FormData | null;
   initialSelections?: FormSelections | null;
+  smartModeEnabled?: boolean;
 }
 
 // Steps matching the reference HTML wizard
@@ -85,6 +87,7 @@ export default function CombinedIntakeForm({
   onSaveToProfile,
   initialData,
   initialSelections,
+  smartModeEnabled = false,
 }: CombinedIntakeFormProps) {
   const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState<FormData>(initialData ?? EMPTY_FORM);
@@ -103,18 +106,25 @@ export default function CombinedIntakeForm({
   const [showWelcome, setShowWelcome] = useState(false);
   const [dontShowAgain, setDontShowAgain] = useState(false);
 
-  useState(() => {
+  useEffect(() => {
     if (typeof window !== "undefined") {
       const saved = localStorage.getItem("hide221gWelcome");
       if (!saved) setShowWelcome(true);
     }
-  });
+  }, []);
 
   const handleStartWizard = () => {
     if (dontShowAgain) {
       localStorage.setItem("hide221gWelcome", "true");
     }
     setShowWelcome(false);
+  };
+
+  const handleWelcomeOpenChange = (open: boolean) => {
+    if (!open && dontShowAgain && typeof window !== "undefined") {
+      localStorage.setItem("hide221gWelcome", "true");
+    }
+    setShowWelcome(open);
   };
 
   const handleField = (field: keyof FormData, value: string) => {
@@ -139,6 +149,14 @@ export default function CombinedIntakeForm({
     setCurrentStep(4);
     onSubmit(formData, selected221gItems);
   };
+
+  const selectedBooleanKeys = Object.entries(selected221gItems)
+    .filter(([, value]) => typeof value === "boolean" && value)
+    .map(([key]) => key);
+
+  const smartClassification = smartModeEnabled
+    ? classifySituation(formData, selectedBooleanKeys)
+    : null;
 
   const resetWizard = () => {
     if (confirm("Are you sure you want to start over? All progress will be lost.")) {
@@ -267,6 +285,22 @@ export default function CombinedIntakeForm({
     
     if (cl.i864_affidavit) {
         plan += `### I-864 Affidavit of Support Package\n\n`;
+        if (smartModeEnabled && cl.i864_sponsor_structure) {
+            plan += `**Sponsor structure selected:** ${cl.i864_sponsor_structure.replace(/-/g, " ")}\n`;
+            if (cl.i864_petitioner_name) {
+                plan += `**Petitioner:** ${cl.i864_petitioner_name}\n`;
+            }
+            if (cl.i864_joint_sponsor_name) {
+                plan += `**Joint Sponsor:** ${cl.i864_joint_sponsor_name}\n`;
+            }
+            if (cl.i864_household_member_name) {
+                plan += `**Household Member:** ${cl.i864_household_member_name}\n`;
+            }
+            if (cl.i864_tax_years) {
+                plan += `**Tax years noted:** ${cl.i864_tax_years}\n`;
+            }
+            plan += `\n`;
+        }
         plan += `**Expected submissions:**\n`;
         
         plan += `1. Form I-864 Affidavit of Support (signed and dated)\n`;
@@ -371,6 +405,17 @@ export default function CombinedIntakeForm({
     plan += `✓ For complex cases, consult an immigration attorney\n\n`;
     
     plan += `This action plan is based on your inputs and general guidance. It is not legal advice.\n`;
+
+    if (smartModeEnabled && smartClassification) {
+      plan += `\n## SMART INSIGHT SUMMARY\n\n`;
+      plan += `Scenario: ${smartClassification.description}\n`;
+      plan += `Confidence: ${smartClassification.confidence.toUpperCase()}\n\n`;
+      plan += `Recommended next steps:\n`;
+      smartClassification.nextSteps.forEach((step, i) => {
+        plan += `${i + 1}. ${step}\n`;
+      });
+      plan += `\n`;
+    }
     
     return plan;
   };
@@ -501,6 +546,24 @@ export default function CombinedIntakeForm({
     letter += `- Interview Date: ${formatDate(cb.interviewDate)}\n`;
     if (cb.caseNumber) letter += `- Case Number: ${cb.caseNumber}\n`;
     letter += `- Visa Category: ${cb.visaCategory}\n\n`;
+
+    if (smartModeEnabled && cl.i864_affidavit && cl.i864_sponsor_structure) {
+        letter += `**Financial Sponsorship Structure:**\n`;
+        letter += `- Structure: ${cl.i864_sponsor_structure.replace(/-/g, " ")}\n`;
+        if (cl.i864_petitioner_name) {
+            letter += `- Petitioner: ${cl.i864_petitioner_name}\n`;
+        }
+        if (cl.i864_joint_sponsor_name) {
+            letter += `- Joint Sponsor: ${cl.i864_joint_sponsor_name}\n`;
+        }
+        if (cl.i864_household_member_name) {
+            letter += `- Household Member: ${cl.i864_household_member_name}\n`;
+        }
+        if (cl.i864_tax_years) {
+            letter += `- Tax Years: ${cl.i864_tax_years}\n`;
+        }
+        letter += `\n`;
+    }
 
     letter += `**Enclosed Documents:**\n\n`;
 
@@ -720,6 +783,7 @@ export default function CombinedIntakeForm({
         selectedItems={selected221gItems}
         onSelectionChange={setSelected221gItems}
         onNext={goNext}
+        smartModeEnabled={smartModeEnabled}
       />
 
       <div className="flex gap-3 pt-4 border-t">
@@ -732,7 +796,9 @@ export default function CombinedIntakeForm({
   // Step 3 – Review & Generate
   // ──────────────────────────────────────────────
   const StepReviewGenerate = () => {
-    const selectedCount = Object.values(selected221gItems).filter(Boolean).length;
+    const selectedCount = Object.values(selected221gItems).filter(
+      (value) => typeof value === "boolean" && value,
+    ).length;
     
     return (
       <div className="space-y-6">
@@ -794,18 +860,46 @@ export default function CombinedIntakeForm({
                                 </tr>
                             </thead>
                             <tbody className="divide-y">
-                                {Object.entries(selected221gItems).filter(([_, v]) => v).map(([key, _]) => (
+                                {Object.entries(selected221gItems)
+                                  .filter(([, v]) => typeof v === "boolean" && v)
+                                  .map(([key]) => (
                                     <tr key={key}>
                                         <td className="p-3 capitalize">{key.replace(/_/g, " ")}</td>
                                         <td className="p-3 opacity-70">As indicated</td>
                                         <td className="p-3 opacity-70">Courier/Letter</td>
                                     </tr>
-                                ))}
+                                  ))}
                             </tbody>
                         </table>
                     </div>
                 )}
             </section>
+
+            {smartModeEnabled && smartClassification && (
+              <section>
+                <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
+                  <span className="w-6 h-6 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center text-xs">
+                    S
+                  </span>
+                  Smart Insights
+                </h3>
+                <div className="rounded-lg border border-emerald-200 bg-emerald-50/60 p-4">
+                  <p className="text-sm text-emerald-900">
+                    <span className="font-semibold">Scenario:</span>{" "}
+                    {smartClassification.description}
+                  </p>
+                  <p className="mt-1 text-sm text-emerald-900">
+                    <span className="font-semibold">Confidence:</span>{" "}
+                    {smartClassification.confidence.toUpperCase()}
+                  </p>
+                  <ul className="mt-3 list-disc space-y-1 pl-5 text-sm text-emerald-900">
+                    {smartClassification.nextSteps.map((step, idx) => (
+                      <li key={`${idx}-${step}`}>{step}</li>
+                    ))}
+                  </ul>
+                </div>
+              </section>
+            )}
         </div>
 
         <div className="flex gap-3 pt-6 border-t font-semibold">
@@ -930,6 +1024,7 @@ export default function CombinedIntakeForm({
 
 
     // ── Checkbox state for the Packet Checklist tab
+    // eslint-disable-next-line react-hooks/rules-of-hooks
     const [checkedItems, setCheckedItems] = useState<Record<number, boolean>>({});
     const toggleCheck = (i: number) => setCheckedItems(prev => ({ ...prev, [i]: !prev[i] }));
 
@@ -1045,49 +1140,92 @@ export default function CombinedIntakeForm({
         )}</>;
     };
 
+    const docConfig = {
+      actionPlan: {
+        title: "Action Plan",
+        subtitle: "Prioritized next steps and follow-up timeline.",
+        icon: FileText,
+      },
+      checklist: {
+        title: "Packet Checklist",
+        subtitle: "Track required documents before final submission.",
+        icon: ListChecks,
+      },
+      coverLetter: {
+        title: "Cover Letter",
+        subtitle: "Ready-to-print letter for embassy packet assembly.",
+        icon: Mail,
+      },
+    } as const;
+
     return (
       <div className="space-y-6">
-        <div className="border-b pb-4">
-          <h2 className="text-2xl font-bold text-foreground">Your 221(g) Response Package</h2>
-          <p className="text-muted-foreground mt-1 text-sm">Your personalized documents are ready. Review, print, or copy as needed.</p>
+        <div className="rounded-2xl border border-slate-200 bg-gradient-to-r from-slate-50 via-white to-teal-50/70 p-5 md:p-6">
+          <h2 className="text-2xl font-bold text-slate-900">Your 221(g) Response Package</h2>
+          <p className="mt-1 text-sm text-slate-600">
+            Review each document, copy or print instantly, and finalize your response packet.
+          </p>
         </div>
 
         <Tabs defaultValue="actionPlan" className="w-full">
-          <TabsList className="grid w-full grid-cols-3 mb-4">
-            <TabsTrigger value="actionPlan">Action Plan</TabsTrigger>
-            <TabsTrigger value="checklist">Packet Checklist</TabsTrigger>
-            <TabsTrigger value="coverLetter">Cover Letter</TabsTrigger>
+          <TabsList className="mb-5 grid h-auto w-full grid-cols-1 gap-2 rounded-xl border border-slate-200 bg-slate-50 p-2 sm:grid-cols-3">
+            <TabsTrigger value="actionPlan" className="rounded-lg py-2.5 text-slate-700 data-[state=active]:bg-white data-[state=active]:text-teal-700 data-[state=active]:shadow-sm">
+              Action Plan
+            </TabsTrigger>
+            <TabsTrigger value="checklist" className="rounded-lg py-2.5 text-slate-700 data-[state=active]:bg-white data-[state=active]:text-teal-700 data-[state=active]:shadow-sm">
+              Packet Checklist
+            </TabsTrigger>
+            <TabsTrigger value="coverLetter" className="rounded-lg py-2.5 text-slate-700 data-[state=active]:bg-white data-[state=active]:text-teal-700 data-[state=active]:shadow-sm">
+              Cover Letter
+            </TabsTrigger>
           </TabsList>
 
-          {(["actionPlan", "checklist", "coverLetter"] as const).map((key) => (
-            <TabsContent key={key} value={key} className="mt-0">
-              {/* No max-h, no scroll — shows full content like reference HTML */}
-              <div className="border border-slate-200 rounded-xl p-6 md:p-8 bg-white text-sm font-sans">
-                {renderMarkdown(outputs[key], key === 'checklist')}
-              </div>
-              <div className="flex flex-wrap gap-2 mt-4">
-                <Button variant="outline" size="sm" onClick={() => copyToClipboard(outputs[key])}>
-                  <CopyIcon className="w-3.5 h-3.5 mr-2" /> Copy to Clipboard
-                </Button>
-                <Button className="bg-teal-600 hover:bg-teal-700 text-white" size="sm" onClick={() => {
-                  const titles: Record<string, string> = { actionPlan: 'Action Plan', checklist: 'Packet Checklist', coverLetter: 'Cover Letter' };
-                  printContent(outputs[key], titles[key]);
-                }}>
-                  <PrinterIcon className="w-3.5 h-3.5 mr-2" /> Print {key === 'actionPlan' ? 'Action Plan' : key === 'checklist' ? 'Checklist' : 'Cover Letter'}
-                </Button>
-              </div>
-            </TabsContent>
-          ))}
+          {(["actionPlan", "checklist", "coverLetter"] as const).map((key) => {
+            const config = docConfig[key];
+            const Icon = config.icon;
+
+            return (
+              <TabsContent key={key} value={key} className="mt-0">
+                <div className="mb-4 flex flex-col gap-3 rounded-xl border border-slate-200 bg-white p-4 sm:flex-row sm:items-center sm:justify-between">
+                  <div className="flex items-start gap-3">
+                    <div className="rounded-lg border border-teal-200 bg-teal-50 p-2 text-teal-700">
+                      <Icon className="h-4 w-4" />
+                    </div>
+                    <div>
+                      <h3 className="text-base font-semibold text-slate-900">{config.title}</h3>
+                      <p className="text-xs text-slate-600">{config.subtitle}</p>
+                    </div>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    <Button variant="outline" size="sm" onClick={() => copyToClipboard(outputs[key])}>
+                      <CopyIcon className="mr-2 h-3.5 w-3.5" />
+                      Copy
+                    </Button>
+                    <Button
+                      className="bg-teal-600 text-white hover:bg-teal-700"
+                      size="sm"
+                      onClick={() => printContent(outputs[key], config.title)}
+                    >
+                      <PrinterIcon className="mr-2 h-3.5 w-3.5" />
+                      Print
+                    </Button>
+                  </div>
+                </div>
+
+                <div className="rounded-xl border border-slate-200 bg-white p-6 text-sm shadow-sm md:p-8">
+                  {renderMarkdown(outputs[key], key === "checklist")}
+                </div>
+              </TabsContent>
+            );
+          })}
         </Tabs>
 
-        <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 text-amber-800 text-sm italic mt-2 mb-6">
-            <strong>Important:</strong> These documents are based on the information you provided. Always follow your embassy's 221(g) letter instructions if anything differs.
+        <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm italic text-amber-900">
+          <strong>Important:</strong> These documents are generated from your inputs. Always follow your embassy&apos;s 221(g) letter if instructions differ.
         </div>
 
-        <div className="flex flex-wrap gap-4 justify-between items-center pt-2 border-t">
-          <div className="flex gap-3">
-            <Button variant="outline" onClick={goBack}>← Back to Review</Button>
-          </div>
+        <div className="flex flex-wrap items-center justify-between gap-4 border-t pt-2">
+          <Button variant="outline" onClick={goBack}>← Back to Review</Button>
           <Button variant="outline" onClick={resetWizard}>
             Start Over
           </Button>
@@ -1101,7 +1239,20 @@ export default function CombinedIntakeForm({
   // ──────────────────────────────────────────────
   return (
     <div className="w-full space-y-6 max-w-5xl mx-auto py-8">
-      <ProgressIndicator />
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+        <div className="min-w-0 flex-1">
+          <ProgressIndicator />
+        </div>
+        <Button
+          type="button"
+          variant="outline"
+          onClick={() => setShowWelcome(true)}
+          className="self-start border-slate-300 text-slate-700 hover:bg-slate-100"
+        >
+          <CircleHelp className="mr-2 h-4 w-4" />
+          What&apos;s this?
+        </Button>
+      </div>
       <div className="bg-card rounded-2xl border border-border shadow-2xl overflow-hidden">
         <div className="p-6 md:p-10">
             {currentStep === 1 && <StepCaseBasics />}
@@ -1111,52 +1262,83 @@ export default function CombinedIntakeForm({
         </div>
       </div>
 
-      <Dialog open={showWelcome} onOpenChange={setShowWelcome}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle className="text-2xl font-bold">Welcome to the 221(g) Action Planner</DialogTitle>
+      <Dialog open={showWelcome} onOpenChange={handleWelcomeOpenChange}>
+        <DialogContent className="max-w-3xl max-h-[95vh] flex flex-col overflow-hidden border-slate-200 p-0 shadow-2xl">
+          <DialogHeader className="border-b bg-gradient-to-r from-teal-50 via-cyan-50 to-white px-6 py-5 sm:px-8 shrink-0">
+            <div className="flex items-start gap-4">
+              <div className="mt-1 rounded-xl border border-teal-200 bg-white p-2.5 text-teal-700 shadow-sm">
+                <ShieldCheck className="h-6 w-6" />
+              </div>
+              <div className="space-y-1 text-left">
+                <p className="inline-flex items-center gap-1 rounded-full border border-teal-200 bg-white px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide text-teal-700">
+                  <Sparkles className="h-3.5 w-3.5" />
+                  Guided Setup
+                </p>
+                <DialogTitle className="text-xl font-bold text-slate-900 sm:text-2xl">
+                  Welcome to the 221(g) Action Planner
+                </DialogTitle>
+                <p className="text-sm text-slate-600">
+                  Follow a step-by-step workflow to build a cleaner, embassy-ready response packet.
+                </p>
+              </div>
+            </div>
           </DialogHeader>
-          
-          <div className="space-y-6 pt-4 text-sm leading-relaxed">
-            <section>
-              <h3 className="font-bold text-lg text-teal-700 mb-2">What is a 221(g)?</h3>
-              <p className="text-muted-foreground">
-                Section 221(g) of the Immigration and Nationality Act allows consular officers to temporarily refuse a visa application when additional documents or administrative processing is required. This is <strong className="text-foreground">not a permanent denial</strong> – it's a hold pending resolution.
+
+          <div className="flex-1 min-h-0 space-y-4 overflow-y-auto px-6 py-5 sm:px-8 scrollbar-thin scrollbar-thumb-slate-200">
+            <section className="rounded-xl border border-slate-200 bg-slate-50/70 p-4">
+              <h3 className="mb-2 flex items-center gap-2 text-base font-semibold text-slate-900">
+                <FileCheck2 className="h-4 w-4 text-teal-700" />
+                What is a 221(g)?
+              </h3>
+              <p className="text-sm leading-relaxed text-slate-700 text-left">
+                Section 221(g) of the Immigration and Nationality Act allows consular officers to temporarily refuse a visa application when additional documents or administrative processing is required. This is{" "}
+                <strong className="text-slate-900">not a permanent denial</strong>; it is a hold pending resolution.
               </p>
-              <p className="text-xs mt-2 italic">Source: U.S. Department of State</p>
+              <p className="mt-2 text-xs italic text-slate-500 text-left">Source: U.S. Department of State</p>
             </section>
 
-            <section>
-              <h3 className="font-bold text-lg text-teal-700 mb-2">How This Wizard Works</h3>
-              <ol className="list-decimal pl-5 space-y-2 text-muted-foreground">
-                <li><strong className="text-foreground">Manually replicate</strong> your 221(g) checklist letter using our form</li>
-                <li><strong className="text-foreground">Review</strong> and confirm your case details</li>
-                <li><strong className="text-foreground">Generate</strong> a personalized action plan, packet checklist, and cover letter</li>
-                <li><strong className="text-foreground">Export</strong> your documents and submit per your embassy's instructions</li>
+            <section className="rounded-xl border border-slate-200 bg-white p-4">
+              <h3 className="mb-2 flex items-center gap-2 text-base font-semibold text-slate-900">
+                <ListChecks className="h-4 w-4 text-teal-700" />
+                How This Wizard Works
+              </h3>
+              <ol className="space-y-2 text-sm text-slate-700 text-left">
+                <li><strong className="text-slate-900">1.</strong> Replicate your 221(g) checklist letter using the guided form.</li>
+                <li><strong className="text-slate-900">2.</strong> Review and confirm your case details before generation.</li>
+                <li><strong className="text-slate-900">3.</strong> Generate an action plan, packet checklist, and cover letter.</li>
+                <li><strong className="text-slate-900">4.</strong> Export documents and submit exactly per embassy instructions.</li>
               </ol>
             </section>
 
-            <section>
-              <h3 className="font-bold text-lg text-teal-700 mb-2">What You'll Need</h3>
-              <ul className="list-disc pl-5 space-y-1 text-muted-foreground">
-                <li>Your 221(g) letter from the embassy</li>
-                <li>Case details (interview date, visa category, etc.)</li>
-                <li>Sponsor information (if financial documents are requested)</li>
+            <section className="rounded-xl border border-slate-200 bg-white p-4">
+              <h3 className="mb-2 text-base font-semibold text-slate-900 text-left">What You&apos;ll Need</h3>
+              <ul className="space-y-2 text-sm text-slate-700 text-left">
+                <li className="flex items-center gap-2">✓ 221(g) letter from the embassy</li>
+                <li className="flex items-center gap-2">✓ Case details (interview date, visa category, ceac status)</li>
+                <li className="flex items-center gap-2">✓ Sponsor information if financial evidence is requested</li>
               </ul>
             </section>
 
-            <div className="bg-muted p-4 rounded-lg border text-xs italic">
-              <strong>Important Disclaimer:</strong> This tool provides general guidance and is not legal advice. Always follow your embassy's 221(g) letter instructions if anything differs. For complex cases, consult an immigration attorney.
+            <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-xs leading-relaxed text-amber-900 text-left">
+              <strong>Important disclaimer:</strong> This tool provides general guidance and is not legal advice. Always follow your embassy&apos;s 221(g) letter instructions if anything differs. For complex cases, consult an immigration attorney.
             </div>
           </div>
 
-          <DialogFooter className="flex flex-col sm:flex-row items-center justify-between gap-4 mt-6 border-t pt-4">
+          <DialogFooter className="shrink-0 flex flex-col items-center justify-between gap-4 border-t bg-slate-50 px-6 py-4 sm:flex-row sm:px-8">
             <div className="flex items-center space-x-2">
-              <Checkbox id="dontShowAgain" checked={dontShowAgain} onCheckedChange={(v) => setDontShowAgain(!!v)} />
-              <Label htmlFor="dontShowAgain" className="text-xs text-muted-foreground cursor-pointer">Don't show this again</Label>
+              <Checkbox 
+                id="dontShowAgain" 
+                checked={dontShowAgain} 
+                onCheckedChange={(v) => setDontShowAgain(!!v)}
+                className="hover:border-teal-500 transition-colors"
+              />
+              <Label htmlFor="dontShowAgain" className="cursor-pointer text-xs font-medium text-slate-600 select-none">
+                Don&apos;t show this again
+              </Label>
             </div>
-            <Button onClick={handleStartWizard} className="bg-teal-600 hover:bg-teal-700 w-full sm:w-auto px-8">
+            <Button onClick={handleStartWizard} className="w-full bg-teal-600 px-10 text-white hover:bg-teal-700 sm:w-auto shadow-md transition-all active:scale-95">
               Start Wizard
+              <ArrowRight className="ml-2 h-4 w-4" />
             </Button>
           </DialogFooter>
         </DialogContent>
