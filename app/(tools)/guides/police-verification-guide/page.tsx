@@ -370,7 +370,7 @@ export default function PoliceVerificationGuide() {
         title={guideData.wizard.title}
       />
 
-      <div className="flex flex-1 overflow-hidden h-[calc(100vh-56px)] flex-col lg:flex-row">
+      <div className="flex flex-1 overflow-y-auto xl:overflow-hidden h-[calc(100vh-56px)] flex-col xl:flex-row">
         <WizardSidebar
           currentStep={STEP_IDS.indexOf(currentStepId)}
           steps={STEP_IDS}
@@ -383,7 +383,7 @@ export default function PoliceVerificationGuide() {
           session={session}
         />
 
-        <main className="flex-1 overflow-y-auto p-4 sm:p-8 relative">
+        <main className="flex-1 xl:overflow-y-auto p-4 sm:p-8 relative min-h-min">
           <div
             className="fixed inset-0 pointer-events-none z-0"
             style={{
