@@ -17,7 +17,7 @@ export default function Compress() {
   const [error, setError] = useState("");
   
 const API_BASE =
-  process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:8000/api/v1";
+  process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
 
   useEffect(() => {
     setMounted(true);
