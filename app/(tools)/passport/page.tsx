@@ -6,7 +6,7 @@ import NextImage from "next/image";
 import { Upload, AlertCircle, Download, CheckCircle, X } from "lucide-react";
 
 const API_BASE =
-  process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:8000/api/v1";
+  process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000/api/v1";
 
 // Photo size presets (width x height in pixels at 300 DPI)
 const SIZE_PRESETS = [
