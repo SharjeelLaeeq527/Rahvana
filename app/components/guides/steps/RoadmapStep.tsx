@@ -102,7 +102,7 @@ const RoadmapStep = ({
       </h2>
 
       {/* Flashcard Timeline */}
-      <div className="mb-20">
+      <div className="mb-8">
         <div
           onClick={() => hasOnlinePhases && setIsFlipped(!isFlipped)}
           className={`relative w-full min-h-[260px] ${hasOnlinePhases ? "cursor-pointer" : ""} transition-transform duration-700 ${
@@ -148,6 +148,7 @@ const RoadmapStep = ({
         </div>
       </div>
 
+      <div className="h-10"></div>
       {/* Checklist Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4 mt-8 pt-5">
         <div
@@ -425,10 +426,10 @@ const TimelinePhases = ({
                     activeId === phase.id
                       ? type === "Onsite Application"
                         ? "bg-primary border-[#0a5a5d] ring-4 ring-primary/20"
-                        : "bg-[#0d47a1] border-[#14a0a6] ring-4 ring-[#0d47a1]/20"
+                        : "bg-[#0d47a1] border-[#063275] ring-4 ring-[#0d47a1]/20"
                       : type === "Onsite Application"
                         ? "bg-linear-to-br from-primary to-[#0a5a5d] border-[#0a5a5d] group-hover:ring-2 group-hover:ring-primary/30"
-                        : "bg-linear-to-br from-[#0d47a1] to-[#14a0a6] border-[#14a0a6] group-hover:ring-2 group-hover:ring-[#0d47a1]/30"
+                        : "bg-linear-to-br from-[#0d47a1] to-[#0d47a1] border-[#063275] group-hover:ring-2 group-hover:ring-[#0d47a1]/30"
                   }`}
                   >
                     {phase.id}
