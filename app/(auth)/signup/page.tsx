@@ -25,7 +25,7 @@ export default function SignupPage() {
   // Redirect if already logged in
   useEffect(() => {
     if (user && !isLoading) {
-      router.push("/dashboard");
+      router.push("/user-dashboard");
     }
   }, [user, isLoading, router]);
 
