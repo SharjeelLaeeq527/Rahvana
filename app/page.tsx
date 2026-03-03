@@ -26,6 +26,25 @@ import { AuthRequiredModal } from "./components/shared/AuthRequiredModal";
 import { MfaPromptModal } from "./components/shared/MFAPromptModal";
 import { NAV_DATA } from "@/app/components/layout/navigationData";
 
+const renderWithAbbr = (text: string) => {
+  if (!text || typeof text !== "string" || !text.includes("PCC")) return text;
+  const parts = text.split("PCC");
+  return parts.reduce((acc, part, i) => {
+    if (i === 0) return [part];
+    return [
+      ...acc,
+      <abbr
+        key={i}
+        title="Police Clearance Certificate"
+        className="cursor-help decoration-slate-400"
+      >
+        PCC
+      </abbr>,
+      part,
+    ];
+  }, [] as React.ReactNode[]);
+};
+
 const ALL_SERVICES = NAV_DATA.services.tabs.flatMap((tab) =>
   tab.items ? tab.items.map((item) => ({ ...item, category: tab.label })) : [],
 );
@@ -1004,7 +1023,7 @@ function HomePageContent() {
                                     : "text-muted-foreground group-hover:text-foreground"
                                 }`}
                               >
-                                {service.title}
+                                {renderWithAbbr(service.title)}
                               </h4>
                               <p className="text-[10px] sm:text-xs text-muted-foreground truncate opacity-80 uppercase tracking-wider mt-0.5 sm:mt-1">
                                 {service.category}
@@ -1073,22 +1092,22 @@ function HomePageContent() {
                           </div>
 
                           <h3 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold text-foreground mb-3 sm:mb-4 leading-tight">
-                            {
+                            {renderWithAbbr(
                               ALL_SERVICES.filter(
                                 (s) =>
                                   // !s.disabled &&
                                   s.href !== "/book-consultation",
-                              )[activeService]?.title
-                            }
+                              )[activeService]?.title || "",
+                            )}
                           </h3>
                           <p className="text-muted-foreground text-sm sm:text-base md:text-lg leading-relaxed mb-6 sm:mb-8 flex-1">
-                            {
+                            {renderWithAbbr(
                               ALL_SERVICES.filter(
                                 (s) =>
                                   // !s.disabled &&
                                   s.href !== "/book-consultation",
-                              )[activeService]?.description
-                            }
+                              )[activeService]?.description || "",
+                            )}
                           </p>
 
                           <div className="mt-auto">
