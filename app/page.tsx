@@ -980,7 +980,6 @@ function HomePageContent() {
                                 : "bg-transparent border-transparent hover:bg-muted/50 hover:border-border"
                             }`}
                           >
-                            
                             <div
                               className={`flex items-center justify-center w-10 h-10 sm:w-12 sm:h-12 rounded-lg sm:rounded-xl transition-all duration-300 mr-3 sm:mr-4 shrink-0 ${
                                 isActive
@@ -1094,9 +1093,9 @@ function HomePageContent() {
 
                           <div className="mt-auto">
                             <HydrationSafeButton
-                              disabled
-                              onClick={() => {}}
-                              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-4 text-base font-bold text-white bg-rahvana-primary rounded-xl transition-all shadow-md opacity-50 cursor-not-allowed"
+                             // disabled
+                              onClick={() => setShowComingSoon(true)}
+                              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-4 text-base font-bold text-white bg-rahvana-primary rounded-xl transition-all shadow-md"
                             >
                               Get Started{" "}
                               <Icons.ArrowRight className="w-5 h-5" />
@@ -1497,13 +1496,13 @@ function HomePageContent() {
         )}
       </main>
 
-      {/* {showMfaPrompt && (
+      {showMfaPrompt && (
         <MfaPromptModal
           open={showMfaPrompt}
           onEnable={handleEnableMfa}
           onRemindLater={handleRemindLater}
         />
-      )} */}
+      )}
 
       {showComingSoon && (
         <ComingSoonModal
