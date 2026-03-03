@@ -23,7 +23,7 @@ import { createClient as createClientJs } from '@supabase/supabase-js';
 // NVC/USCIS file size limit (4MB)
 const NVC_FILE_SIZE_LIMIT = 4 * 1024 * 1024;
 // Python backend URL for PDF compression
-const COMPRESSION_API_URL = process.env.COMPRESSION_API_URL || 'http://localhost:8000';
+const COMPRESSION_API_URL = process.env.COMPRESSION_API_URL ?? 'http://localhost:8000';
 
 /**
  * Get Supabase client with SERVICE ROLE key (bypasses RLS)
