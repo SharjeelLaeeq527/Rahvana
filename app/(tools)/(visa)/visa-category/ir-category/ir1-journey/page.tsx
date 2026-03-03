@@ -18,6 +18,7 @@ import {
   Users,
   IdCard,
   Plane,
+  Folder,
 } from "lucide-react";
 import { roadmapData } from "@/data/roadmap";
 import { ConfirmationModal } from "@/app/components/shared/ConfirmationModal";
@@ -371,9 +372,10 @@ function Wizard({ state, actions, isLoaded, isSignedIn }: WizardProps) {
         <div className="flex items-center gap-3 w-full md:w-auto">
           <button
             onClick={() => setIsVaultOpen(true)}
-            className="flex-1 md:flex-none flex items-center justify-center gap-2 px-5 py-2.5 bg-rahvana-primary text-white rounded-xl font-bold hover:bg-rahvana-primary-dark transition-all shadow-md hover:shadow-lg active:scale-95"
+            className="flex-1 md:flex-none flex items-center justify-center gap-2 px-5 py-2.5 bg-white border border-slate-200 text-slate-900 rounded-xl font-bold hover:bg-slate-50 hover:border-slate-300 transition-all shadow-sm active:scale-95"
           >
-             Document Vault
+            <Folder className="w-5 h-5 text-amber-500" />
+            Document Vault
           </button>
         </div>
       </div>
