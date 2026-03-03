@@ -12,7 +12,9 @@ type Props = {
 
 export default function SignatureTool({ onSignature }: Props) {
   const [showModal, setShowModal] = useState(false);
-  const [signatureMode, setSignatureMode] = useState<"draw" | "type" | "upload">("draw");
+  const [signatureMode, setSignatureMode] = useState<
+    "draw" | "type" | "upload"
+  >("draw");
 
   const handleCloseModal = () => setShowModal(false);
 
@@ -39,31 +41,43 @@ export default function SignatureTool({ onSignature }: Props) {
 
       {/* Modal */}
       {showModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-          <div className="w-full max-w-2xl mx-4 bg-white rounded-xl shadow-2xl overflow-hidden">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 sm:p-6">
+          <div className="w-full max-w-2xl bg-white rounded-xl shadow-2xl flex flex-col max-h-full overflow-hidden">
             {/* Header */}
-            <div className="flex items-center justify-between border-b px-6 py-4">
-              <h2 className="text-xl font-semibold text-gray-900">Create Signature</h2>
+            <div className="shrink-0 flex items-center justify-between border-b p-4 sm:px-6 sm:py-4">
+              <h2 className="text-xl font-semibold text-gray-900">
+                Create Signature
+              </h2>
               <button
                 type="button"
                 onClick={handleCloseModal}
                 className="text-gray-400 hover:text-gray-600 transition"
                 aria-label="Close modal"
               >
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                <svg
+                  className="w-6 h-6"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M6 18L18 6M6 6l12 12"
+                  />
                 </svg>
               </button>
             </div>
 
             {/* Tabs */}
-            <div className="flex gap-2 border-b px-6 py-4 bg-gray-50">
+            <div className="shrink-0 flex gap-2 border-b p-4 sm:px-6 sm:py-4 bg-gray-50 overflow-x-auto custom-scrollbar">
               {(["draw", "type", "upload"] as const).map((mode) => (
                 <button
                   key={mode}
                   type="button"
                   onClick={() => setSignatureMode(mode)}
-                  className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+                  className={`px-4 py-2 rounded-lg font-medium transition-colors whitespace-nowrap ${
                     signatureMode === mode
                       ? "bg-blue-600 text-white"
                       : "bg-white text-gray-700 border border-gray-300 hover:bg-gray-100"
@@ -77,10 +91,25 @@ export default function SignatureTool({ onSignature }: Props) {
             </div>
 
             {/* Content */}
-            <div className="p-6 min-h-96">
-              {signatureMode === "draw" && <SignaturePad onSave={onSignature} closeModal={handleCloseModal} />}
-              {signatureMode === "type" && <TextSignature onGenerate={onSignature} closeModal={handleCloseModal} />}
-              {signatureMode === "upload" && <UploadImage onUpload={onSignature} closeModal={handleCloseModal} />}
+            <div className="p-4 sm:p-6 min-h-[300px] sm:min-h-96 overflow-y-auto custom-scrollbar">
+              {signatureMode === "draw" && (
+                <SignaturePad
+                  onSave={onSignature}
+                  closeModal={handleCloseModal}
+                />
+              )}
+              {signatureMode === "type" && (
+                <TextSignature
+                  onGenerate={onSignature}
+                  closeModal={handleCloseModal}
+                />
+              )}
+              {signatureMode === "upload" && (
+                <UploadImage
+                  onUpload={onSignature}
+                  closeModal={handleCloseModal}
+                />
+              )}
             </div>
           </div>
         </div>

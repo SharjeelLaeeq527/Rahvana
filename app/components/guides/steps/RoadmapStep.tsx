@@ -102,7 +102,7 @@ const RoadmapStep = ({
       </h2>
 
       {/* Flashcard Timeline */}
-      <div className="mb-14">
+      <div className="mb-20">
         <div
           onClick={() => hasOnlinePhases && setIsFlipped(!isFlipped)}
           className={`relative w-full min-h-[260px] ${hasOnlinePhases ? "cursor-pointer" : ""} transition-transform duration-700 ${
