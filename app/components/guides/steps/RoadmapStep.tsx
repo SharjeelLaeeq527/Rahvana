@@ -102,7 +102,7 @@ const RoadmapStep = ({
       </h2>
 
       {/* Flashcard Timeline */}
-      <div className="mb-14">
+      <div className="mb-8">
         <div
           onClick={() => hasOnlinePhases && setIsFlipped(!isFlipped)}
           className={`relative w-full min-h-[260px] ${hasOnlinePhases ? "cursor-pointer" : ""} transition-transform duration-700 ${
@@ -148,6 +148,7 @@ const RoadmapStep = ({
         </div>
       </div>
 
+      <div className="h-14 sm:h-10"></div>
       {/* Checklist Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4 mt-8 pt-5">
         <div
@@ -344,14 +345,14 @@ const TimelinePhases = ({
           : "bg-linear-to-br from-[#e8f6f6] to-[#0d47a1]/20 border-[#0d47a1]/30"
       }`}
     >
-      <div className="flex justify-between items-center mb-6">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-0 mb-2">
         <h4
           className={`text-lg font-bold ${type === "Onsite Application" ? "text-primary" : "text-[#0d47a1]"}`}
         >
           {type}
         </h4>
         {hasOnlinePhases ? (
-          <div className="flex items-center gap-1 bg-slate-100/80 p-1 rounded-full border border-slate-200/60 shadow-inner">
+          <div className="flex items-center gap-1 bg-slate-100/80 p-1 rounded-full border border-slate-200/60 shadow-inner shrink-0">
             <span
               className={`px-3 py-1 text-[0.7rem] font-bold rounded-full transition-all duration-300 uppercase tracking-wider ${
                 type === "Onsite Application"
@@ -425,10 +426,10 @@ const TimelinePhases = ({
                     activeId === phase.id
                       ? type === "Onsite Application"
                         ? "bg-primary border-[#0a5a5d] ring-4 ring-primary/20"
-                        : "bg-[#0d47a1] border-[#14a0a6] ring-4 ring-[#0d47a1]/20"
+                        : "bg-[#0d47a1] border-[#063275] ring-4 ring-[#0d47a1]/20"
                       : type === "Onsite Application"
                         ? "bg-linear-to-br from-primary to-[#0a5a5d] border-[#0a5a5d] group-hover:ring-2 group-hover:ring-primary/30"
-                        : "bg-linear-to-br from-[#0d47a1] to-[#14a0a6] border-[#14a0a6] group-hover:ring-2 group-hover:ring-[#0d47a1]/30"
+                        : "bg-linear-to-br from-[#0d47a1] to-[#0d47a1] border-[#063275] group-hover:ring-2 group-hover:ring-[#0d47a1]/30"
                   }`}
                   >
                     {phase.id}

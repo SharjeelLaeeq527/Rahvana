@@ -26,6 +26,25 @@ import { AuthRequiredModal } from "./components/shared/AuthRequiredModal";
 import { MfaPromptModal } from "./components/shared/MFAPromptModal";
 import { NAV_DATA } from "@/app/components/layout/navigationData";
 
+const renderWithAbbr = (text: string) => {
+  if (!text || typeof text !== "string" || !text.includes("PCC")) return text;
+  const parts = text.split("PCC");
+  return parts.reduce((acc, part, i) => {
+    if (i === 0) return [part];
+    return [
+      ...acc,
+      <abbr
+        key={i}
+        title="Police Clearance Certificate"
+        className="cursor-help decoration-slate-400"
+      >
+        PCC
+      </abbr>,
+      part,
+    ];
+  }, [] as React.ReactNode[]);
+};
+
 const ALL_SERVICES = NAV_DATA.services.tabs.flatMap((tab) =>
   tab.items ? tab.items.map((item) => ({ ...item, category: tab.label })) : [],
 );
@@ -980,7 +999,6 @@ function HomePageContent() {
                                 : "bg-transparent border-transparent hover:bg-muted/50 hover:border-border"
                             }`}
                           >
-                            
                             <div
                               className={`flex items-center justify-center w-10 h-10 sm:w-12 sm:h-12 rounded-lg sm:rounded-xl transition-all duration-300 mr-3 sm:mr-4 shrink-0 ${
                                 isActive
@@ -1005,7 +1023,7 @@ function HomePageContent() {
                                     : "text-muted-foreground group-hover:text-foreground"
                                 }`}
                               >
-                                {service.title}
+                                {renderWithAbbr(service.title)}
                               </h4>
                               <p className="text-[10px] sm:text-xs text-muted-foreground truncate opacity-80 uppercase tracking-wider mt-0.5 sm:mt-1">
                                 {service.category}
@@ -1074,29 +1092,29 @@ function HomePageContent() {
                           </div>
 
                           <h3 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold text-foreground mb-3 sm:mb-4 leading-tight">
-                            {
+                            {renderWithAbbr(
                               ALL_SERVICES.filter(
                                 (s) =>
                                   // !s.disabled &&
                                   s.href !== "/book-consultation",
-                              )[activeService]?.title
-                            }
+                              )[activeService]?.title || "",
+                            )}
                           </h3>
                           <p className="text-muted-foreground text-sm sm:text-base md:text-lg leading-relaxed mb-6 sm:mb-8 flex-1">
-                            {
+                            {renderWithAbbr(
                               ALL_SERVICES.filter(
                                 (s) =>
                                   // !s.disabled &&
                                   s.href !== "/book-consultation",
-                              )[activeService]?.description
-                            }
+                              )[activeService]?.description || "",
+                            )}
                           </p>
 
                           <div className="mt-auto">
                             <HydrationSafeButton
-                              disabled
-                              onClick={() => {}}
-                              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-4 text-base font-bold text-white bg-rahvana-primary rounded-xl transition-all shadow-md opacity-50 cursor-not-allowed"
+                             // disabled
+                              onClick={() => setShowComingSoon(true)}
+                              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-4 text-base font-bold text-white bg-rahvana-primary rounded-xl transition-all shadow-md"
                             >
                               Get Started{" "}
                               <Icons.ArrowRight className="w-5 h-5" />
@@ -1497,13 +1515,13 @@ function HomePageContent() {
         )}
       </main>
 
-      {/* {showMfaPrompt && (
+      {showMfaPrompt && (
         <MfaPromptModal
           open={showMfaPrompt}
           onEnable={handleEnableMfa}
           onRemindLater={handleRemindLater}
         />
-      )} */}
+      )}
 
       {showComingSoon && (
         <ComingSoonModal

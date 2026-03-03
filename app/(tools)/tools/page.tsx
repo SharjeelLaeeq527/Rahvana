@@ -106,7 +106,7 @@ const TOOLS: Tool[] = [
   // Tracking
   {
     id: "queue-watch",
-    title: "QueueWatch",
+    title: "DQ Status Check",
     description: "Track interview scheduling movement and trends by category.",
     category: "Tracking",
     href: "/iv-tool",
@@ -290,7 +290,6 @@ export default function ToolsPage() {
       </div>
 
       <div className="max-w-7xl mx-auto px-6 py-8">
-
         {/* Hero Section */}
         <section className="text-center mb-5 md:mb-10">
           <h1 className="text-3xl md:text-5xl font-bold mb-4 bg-clip-text text-transparent bg-linear-to-r from-foreground to-muted-foreground animate-fade-up">
@@ -315,7 +314,10 @@ export default function ToolsPage() {
         </div>
 
         {/* Categories */}
-        <div ref={containerRef} className="relative w-full mb-8 flex justify-center">
+        <div
+          ref={containerRef}
+          className="relative w-full mb-8 flex justify-center"
+        >
           {/* Hidden container for measuring */}
           <div
             ref={measureRef}
@@ -535,8 +537,7 @@ function ToolCard({ tool, index }: { tool: Tool; index: number }) {
 
       {/* Footer / Action */}
       <div className="relative z-10 flex items-center justify-between pt-4 border-t border-border mt-auto">
-        <span className="text-xs font-medium text-muted-foreground flex items-center gap-1">
-        </span>
+        <span className="text-xs font-medium text-muted-foreground flex items-center gap-1"></span>
 
         {isClickable ? (
           <span

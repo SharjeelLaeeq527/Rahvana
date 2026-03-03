@@ -14,7 +14,11 @@ import {
 interface FeedbackButtonProps {
   steps: string[];
   currentStepName: string;
-  onSubmit?: (feedbackType: string, description: string, attachment?: File) => Promise<any>;
+  onSubmit?: (
+    feedbackType: string,
+    description: string,
+    attachment?: File,
+  ) => Promise<any>;
 }
 
 export default function FeedbackButton({
@@ -117,11 +121,11 @@ export default function FeedbackButton({
       {/* Sticky Feedback Button */}
       <button
         onClick={() => setIsOpen(true)}
-        className="fixed bottom-6 right-6 z-40 inline-flex items-center gap-2 bg-teal-600 text-white px-5 py-3 rounded-full shadow-lg hover:bg-teal-700 transition-all duration-200 hover:scale-[1.03] focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-600/70 focus-visible:ring-offset-2"
+        className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-40 inline-flex items-center justify-center gap-2 bg-teal-600 text-white p-3 sm:px-5 sm:py-3 rounded-full shadow-lg hover:bg-teal-700 transition-all duration-200 hover:scale-[1.03] focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-600/70 focus-visible:ring-offset-2"
         aria-label="Provide feedback"
       >
         <MessageCircle className="w-5 h-5" />
-        <span className="text-sm font-semibold tracking-wide">
+        <span className="text-sm font-semibold tracking-wide hidden sm:inline">
           Provide feedback
         </span>
       </button>
@@ -151,139 +155,136 @@ export default function FeedbackButton({
               </div>
 
               <form onSubmit={handleSubmit} className="space-y-5">
-                  {/* Feedback Type */}
-                  <div className="mt-4">
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Feedback Type
-                    </label>
-                    <Select
-                      value={feedback.category}
-                      onValueChange={(val) =>
-                        setFeedback((prev) => ({ ...prev, category: val }))
-                      }
-                    >
-                      <SelectTrigger className="w-full">
-                        <SelectValue placeholder="Select a category" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="incorrect_information">
-                          Incorrect information
-                        </SelectItem>
-                        <SelectItem value="ui_ux_issue">UI/UX issue</SelectItem>
-                        <SelectItem value="bug">
-                          Bug / Something broken
-                        </SelectItem>
-                        <SelectItem value="suggestion">
-                          Suggestion / Improvement
-                        </SelectItem>
-                        <SelectItem value="other">Other</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
+                {/* Feedback Type */}
+                <div className="mt-4">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Feedback Type
+                  </label>
+                  <Select
+                    value={feedback.category}
+                    onValueChange={(val) =>
+                      setFeedback((prev) => ({ ...prev, category: val }))
+                    }
+                  >
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="Select a category" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="incorrect_information">
+                        Incorrect information
+                      </SelectItem>
+                      <SelectItem value="ui_ux_issue">UI/UX issue</SelectItem>
+                      <SelectItem value="bug">
+                        Bug / Something broken
+                      </SelectItem>
+                      <SelectItem value="suggestion">
+                        Suggestion / Improvement
+                      </SelectItem>
+                      <SelectItem value="other">Other</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
 
-                  {/* Step */}
-                  <div className="mt-4">
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Where did this happen?
-                    </label>
-                    <Select
-                      value={feedback.step}
-                      onValueChange={(val) =>
-                        setFeedback((prev) => ({ ...prev, step: val }))
-                      }
-                    >
-                      <SelectTrigger className="w-full">
-                        <SelectValue placeholder="Select a step" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {steps.map((s) => (
-                          <SelectItem key={s} value={s}>
-                            {s}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
+                {/* Step */}
+                <div className="mt-4">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Where did this happen?
+                  </label>
+                  <Select
+                    value={feedback.step}
+                    onValueChange={(val) =>
+                      setFeedback((prev) => ({ ...prev, step: val }))
+                    }
+                  >
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="Select a step" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {steps.map((s) => (
+                        <SelectItem key={s} value={s}>
+                          {s}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
 
-                  {/* Description */}
-                  <div>
-                    <label className="block text-sm font-medium text-slate-700 mb-2">
-                      Description
-                    </label>
-                    <textarea
-                      value={feedback.description}
-                      onChange={(e) =>
-                        setFeedback((prev) => ({
-                          ...prev,
-                          description: e.target.value,
-                        }))
-                      }
-                      className="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 min-h-[120px] shadow-sm resize-y"
-                      placeholder="Please describe your feedback in detail..."
-                      required
+                {/* Description */}
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-2">
+                    Description
+                  </label>
+                  <textarea
+                    value={feedback.description}
+                    onChange={(e) =>
+                      setFeedback((prev) => ({
+                        ...prev,
+                        description: e.target.value,
+                      }))
+                    }
+                    className="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 min-h-[120px] shadow-sm resize-y"
+                    placeholder="Please describe your feedback in detail..."
+                    required
+                  />
+                </div>
+
+                {/* Attachments */}
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-2">
+                    Attachments (optional)
+                  </label>
+
+                  <div className="flex items-center gap-3">
+                    <input
+                      id="feedback-files"
+                      type="file"
+                      multiple
+                      onChange={handleFileChange}
+                      className="hidden"
                     />
-                  </div>
-
-                  {/* Attachments */}
-                  <div>
-                    <label className="block text-sm font-medium text-slate-700 mb-2">
-                      Attachments (optional)
-                    </label>
-
-                    <div className="flex items-center gap-3">
-                      <input
-                        id="feedback-files"
-                        type="file"
-                        multiple
-                        onChange={handleFileChange}
-                        className="hidden"
-                      />
-                      <label
-                        htmlFor="feedback-files"
-                        className="cursor-pointer"
-                      >
-                        <span className="inline-flex items-center gap-2 px-4 py-2 border border-slate-300 rounded-lg bg-white hover:bg-slate-50 transition-colors text-sm font-medium text-slate-700 shadow-sm">
-                          <Upload className="w-4 h-4" />
-                          Add files
-                        </span>
-                      </label>
-                      <span className="text-xs text-slate-500">
-                        Screenshots help a lot.
+                    <label htmlFor="feedback-files" className="cursor-pointer">
+                      <span className="inline-flex items-center gap-2 px-4 py-2 border border-slate-300 rounded-lg bg-white hover:bg-slate-50 transition-colors text-sm font-medium text-slate-700 shadow-sm">
+                        <Upload className="w-4 h-4" />
+                        Add files
                       </span>
+                    </label>
+                    <span className="text-xs text-slate-500">
+                      Screenshots help a lot.
+                    </span>
+                  </div>
+
+                  {feedback.attachments.length > 0 && (
+                    <div className="mt-3 space-y-2">
+                      {feedback.attachments.map((file, idx) => (
+                        <div
+                          key={`${file.name}-${idx}`}
+                          className="text-sm text-slate-700 bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 truncate"
+                        >
+                          {file.name}
+                        </div>
+                      ))}
                     </div>
+                  )}
+                </div>
 
-                    {feedback.attachments.length > 0 && (
-                      <div className="mt-3 space-y-2">
-                        {feedback.attachments.map((file, idx) => (
-                          <div
-                            key={`${file.name}-${idx}`}
-                            className="text-sm text-slate-700 bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 truncate"
-                          >
-                            {file.name}
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Actions */}
-                  <div className="pt-4 flex items-center justify-end gap-3 border-t border-slate-100">
-                    <button
-                      type="button"
-                      onClick={() => setIsOpen(false)}
-                      className="px-4 py-2 text-sm font-medium text-slate-700 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500"
-                    >
-                      Cancel
-                    </button>
-                    <button
-                      type="submit"
-                      disabled={isSubmitting}
-                      className="px-4 py-2 text-sm font-medium text-white bg-teal-600 border border-transparent rounded-lg hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500 disabled:opacity-50"
-                    >
-                      {isSubmitting ? "Submitting..." : "Submit Feedback"}
-                    </button>
-                  </div>
-                </form>
+                {/* Actions */}
+                <div className="pt-4 flex items-center justify-end gap-3 border-t border-slate-100">
+                  <button
+                    type="button"
+                    onClick={() => setIsOpen(false)}
+                    className="px-4 py-2 text-sm font-medium text-slate-700 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={isSubmitting}
+                    className="px-4 py-2 text-sm font-medium text-white bg-teal-600 border border-transparent rounded-lg hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500 disabled:opacity-50"
+                  >
+                    {isSubmitting ? "Submitting..." : "Submit Feedback"}
+                  </button>
+                </div>
+              </form>
             </div>
           </div>
         </div>

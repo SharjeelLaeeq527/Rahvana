@@ -322,7 +322,7 @@ export default function SettingsPage() {
               </CardTitle>
             </CardHeader>
             <CardContent className="pt-2 sm:pt-6 space-y-6">
-              {/* <div className="flex flex-col gap-4 sm:gap-2">
+              <div className="flex flex-col gap-4 sm:gap-2">
                 <div className="flex items-center justify-between gap-4">
                   <div className="space-y-0.5">
                     <Label
@@ -356,7 +356,7 @@ export default function SettingsPage() {
                     {profile?.mfa_enabled ? "Manage 2FA" : "Setup 2FA"}
                   </span>
                 </Button>
-              </div> */}
+              </div>
 
               <div className="flex items-center justify-between gap-4">
                 <div className="space-y-0.5">

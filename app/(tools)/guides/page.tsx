@@ -40,10 +40,10 @@ type GuideCategory =
   // | "Embassy Logistics"
   // | "Arrival & Travel"
   // | "Financial & Sponsorship"
-  | "Medical & Exam"
-  // | "Relationship Evidence"
-  // | "Education & Process"
-  // | "Visa Strategy";
+  | "Medical & Exam";
+// | "Relationship Evidence"
+// | "Education & Process"
+// | "Visa Strategy";
 
 interface Guide {
   id: string;
@@ -99,6 +99,14 @@ const GUIDES: Guide[] = [
     category: "Pakistan Docs",
     href: "/guides/passport-guide",
     icon: Globe,
+  },
+  {
+    id: "police-verification",
+    icon: Shield,
+    title: "Police Verification Guide",
+    description: "How to obtain Police Verification Certificate.",
+    href: "/guides/police-verification-guide",
+    category: "Pakistan Docs",
   },
   // {
   //   id: "pcc-reference",
@@ -401,17 +409,17 @@ export default function GuidesPage() {
 
       <div className="max-w-7xl mx-auto px-6 py-8">
         {/* Hero Section */}
-        <section className="text-center mb-5 md:mb-10 relative">
-          <div className="absolute top-0 right-0">
-             <Link 
+        <section className="text-center mb-5 md:mb-10 relative flex flex-col items-center">
+          <div className="w-full flex justify-end mb-6 md:absolute md:top-0 md:right-0 md:mb-0 md:w-auto md:block">
+            <Link
               href="/guides/my-guides"
               className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 rounded-full text-sm font-bold text-slate-600 hover:text-teal-600 hover:border-teal-200 shadow-sm transition-all"
-             >
-               <LayoutGrid size={16} />
-               My Guides
-             </Link>
+            >
+              <LayoutGrid size={16} />
+              My Guides
+            </Link>
           </div>
-          <h1 className="text-3xl md:text-5xl font-bold mb-4 bg-clip-text text-transparent bg-linear-to-r from-foreground to-muted-foreground animate-fade-up">
+          <h1 className="text-3xl md:text-5xl font-bold mb-4 mt-2 md:mt-0 bg-clip-text text-transparent bg-linear-to-r from-foreground to-muted-foreground animate-fade-up">
             Master the Paperwork.
           </h1>
           <p className="text-muted-foreground text-base md:text-lg max-w-2xl mx-auto animate-fade-up [animation-delay:100ms]">
@@ -433,7 +441,10 @@ export default function GuidesPage() {
         </div>
 
         {/* Categories */}
-        <div ref={containerRef} className="relative w-full mb-8 flex justify-center">
+        <div
+          ref={containerRef}
+          className="relative w-full mb-8 flex justify-center"
+        >
           {/* Hidden container for measuring */}
           <div
             ref={measureRef}
