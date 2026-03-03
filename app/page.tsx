@@ -1093,7 +1093,7 @@ function HomePageContent() {
 
                           <div className="mt-auto">
                             <HydrationSafeButton
-                              disabled
+                             // disabled
                               onClick={() => setShowComingSoon(true)}
                               className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-4 text-base font-bold text-white bg-rahvana-primary rounded-xl transition-all shadow-md opacity-50 cursor-not-allowed"
                             >
