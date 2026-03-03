@@ -1095,7 +1095,7 @@ function HomePageContent() {
                             <HydrationSafeButton
                              // disabled
                               onClick={() => setShowComingSoon(true)}
-                              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-4 text-base font-bold text-white bg-rahvana-primary rounded-xl transition-all shadow-md opacity-50 cursor-not-allowed"
+                              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-4 text-base font-bold text-white bg-rahvana-primary rounded-xl transition-all shadow-md cursor-not-allowed"
                             >
                               Get Started{" "}
                               <Icons.ArrowRight className="w-5 h-5" />
