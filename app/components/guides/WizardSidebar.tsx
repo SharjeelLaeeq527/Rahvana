@@ -89,27 +89,24 @@ const WizardSidebar = ({
 
   return (
     <>
-      <aside
-        className="h-full flex flex-col bg-white border-r border-slate-200 rounded-xl mx-4 my-3"
-        style={{ height: "660px", width: "320px" }}
-      >
+      <aside className="flex shrink-0 flex-col bg-white border-b xl:border-b-0 xl:border-r border-slate-200 rounded-xl mx-4 my-3 xl:w-[320px] xl:h-[660px]">
         {/* Add to Active Wizards Button */}
-{(!session || !session.saved) && (
-  <div className="p-4 border-b border-slate-200 rounded-t-xl">
-    <motion.button
-      whileHover={{ scale: 1.02 }}
-      whileTap={{ scale: 0.98 }}
-      onClick={handleSaveClick}
-      disabled={saving || session?.saved}
-      className="w-full flex items-center justify-center gap-2
+        {(!session || !session.saved) && (
+          <div className="p-4 border-b border-slate-200 rounded-t-xl">
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              onClick={handleSaveClick}
+              disabled={saving || session?.saved}
+              className="w-full flex items-center justify-center gap-2
                  px-4 py-2.5 rounded-lg font-medium transition-all
                  bg-primary text-white hover:bg-primary/80 disabled:opacity-60 disabled:cursor-not-allowed"
-    >
-      <Bookmark className="w-5 h-5" />
-      {saving ? "Saving..." : "Add to My Guides"}
-    </motion.button>
-  </div>
-)}
+            >
+              <Bookmark className="w-5 h-5" />
+              {saving ? "Saving..." : "Add to My Guides"}
+            </motion.button>
+          </div>
+        )}
 
         {/* Steps */}
         <nav className="flex-1 overflow-y-auto p-4 custom-scrollbar">
