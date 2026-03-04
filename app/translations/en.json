@@ -71,5 +71,391 @@
     "loading": "Loading...",
     "success": "Success!",
     "error": "Error occurred"
+  },
+  "navData": {
+    "journeys": {
+      "label": "Explore Journeys",
+      "footerLink": "Explore all journeys",
+      "tabs": {
+        "family": {
+          "label": "Family & Protection",
+          "categories": {
+            "spousePartner": "Spouse/Partner",
+            "familyPreferences": "Family Preferences",
+            "humanitarian": "Humanitarian"
+          }
+        },
+        "work": {
+          "label": "Work & Business",
+          "categories": {
+            "proWork": "Pro Work",
+            "talent": "Talent",
+            "sportsArts": "Sports/Arts",
+            "tradeInvestment": "Trade / Investment",
+            "cultureFaith": "Culture / Faith",
+            "media": "Media",
+            "seasonal": "Seasonal (Conditional)",
+            "training": "Training"
+          }
+        },
+        "greenCards": {
+          "label": "Work Green Cards",
+          "categories": {
+            "highImpact": "High Impact",
+            "advanced": "Advanced",
+            "career": "Career",
+            "special": "Special",
+            "investment": "Investment",
+            "lottery": "Lottery"
+          }
+        },
+        "students": {
+          "label": "Students & Visitors",
+          "categories": {
+            "visit": "Visit",
+            "study": "Study",
+            "exchange": "Exchange"
+          }
+        }
+      },
+      "items": {
+        "ir1": {
+          "title": "IR-1 / CR-1",
+          "description": "Spouse of U.S. Citizen"
+        },
+        "k1": {
+          "title": "K-1",
+          "description": "Fiancé(e) of U.S. Citizen"
+        },
+        "k3": {
+          "title": "K-3",
+          "description": "Spouse (short-separation option)"
+        },
+        "ir5": {
+          "title": "IR-5",
+          "description": "Parent of U.S. Citizen (21+)"
+        },
+        "ir2": {
+          "title": "IR-2 / CR-2",
+          "description": "Child of U.S. Citizen"
+        },
+        "ir3": {
+          "title": "IR-3 / IR-4 (and Hague variants)",
+          "description": "Intercountry Adoption"
+        },
+        "f1": {
+          "title": "F-1",
+          "description": "Adult Child (Unmarried) of U.S. Citizen"
+        },
+        "f2a": {
+          "title": "F-2A",
+          "description": "Spouse/Child of Green Card Holder"
+        },
+        "f2b": {
+          "title": "F-2B",
+          "description": "Adult Child (Unmarried) of Green Card Holder"
+        },
+        "f3": {
+          "title": "F-3",
+          "description": "Adult Child (Married) of U.S. Citizen"
+        },
+        "f4": {
+          "title": "F-4",
+          "description": "Sibling of U.S. Citizen"
+        },
+        "refugee": {
+          "title": "Refugee",
+          "description": "Refugee (USRAP)"
+        },
+        "asylum": {
+          "title": "Asylum",
+          "description": "Asylum (typically filed in U.S.)"
+        },
+        "parole": {
+          "title": "Parole",
+          "description": "Humanitarian Parole (case-by-case)"
+        },
+        "h1b": {
+          "title": "H-1B",
+          "description": "Specialty Job (Tech / Engineer / Analyst)"
+        },
+        "l1a": {
+          "title": "L-1A / L-1B",
+          "description": "Company Transfer (Manager / Specialist)"
+        },
+        "o1": {
+          "title": "O-1A / O-1B",
+          "description": "Extraordinary Talent (Science / Business / Arts)"
+        },
+        "o2": {
+          "title": "O-2",
+          "description": "Support Staff for O-1"
+        },
+        "p1": {
+          "title": "P-1 / P-2 / P-3",
+          "description": "Athlete / Entertainer / Tour Group"
+        },
+        "e1": {
+          "title": "E-1",
+          "description": "Treaty Trader"
+        },
+        "e2": {
+          "title": "E-2",
+          "description": "Treaty Investor"
+        },
+        "r1": {
+          "title": "R-1",
+          "description": "Religious Worker"
+        },
+        "q1": {
+          "title": "Q-1",
+          "description": "Cultural Exchange (Work + Culture)"
+        },
+        "i": {
+          "title": "I",
+          "description": "Journalist / Media"
+        },
+        "h2a": {
+          "title": "H-2A",
+          "description": "Seasonal Agriculture (eligibility list applies)"
+        },
+        "h2b": {
+          "title": "H-2B",
+          "description": "Seasonal Non-Agriculture (eligibility list applies)"
+        },
+        "h3": {
+          "title": "H-3",
+          "description": "Trainee / Special Education Exchange"
+        },
+        "eb1": {
+          "title": "EB-1",
+          "description": "Extraordinary Ability / Top Talent"
+        },
+        "eb2": {
+          "title": "EB-2",
+          "description": "Advanced Degree / Exceptional Ability"
+        },
+        "eb2niw": {
+          "title": "EB-2 (NIW Path)",
+          "description": "National Interest Waiver (NIW)"
+        },
+        "eb3": {
+          "title": "EB-3",
+          "description": "Skilled Worker / Professional"
+        },
+        "eb4": {
+          "title": "EB-4",
+          "description": "Special Immigrants (varies)"
+        },
+        "eb5": {
+          "title": "EB-5",
+          "description": "Investor Green Card"
+        },
+        "dv": {
+          "title": "DV",
+          "description": "Diversity Visa (DV Lottery)"
+        },
+        "b2": {
+          "title": "B-2",
+          "description": "Tourism / Family Visit"
+        },
+        "b1": {
+          "title": "B-1",
+          "description": "Business Visitor"
+        },
+        "f1_study": {
+          "title": "F-1",
+          "description": "University / College Student"
+        },
+        "f2_study": {
+          "title": "F-2",
+          "description": "Student Dependent"
+        },
+        "m1": {
+          "title": "M-1",
+          "description": "Vocational / Technical Student"
+        },
+        "m2": {
+          "title": "M-2",
+          "description": "Vocational Dependent"
+        },
+        "j1": {
+          "title": "J-1",
+          "description": "Exchange Visitor (Programs)"
+        },
+        "j2": {
+          "title": "J-2",
+          "description": "Exchange Dependent"
+        }
+      }
+    },
+    "tools": {
+      "label": "Toolbox",
+      "footerLink": "View all tools",
+      "tabs": {
+        "aiPlanning": {
+          "label": "AI & Planning"
+        },
+        "moneySponsorship": {
+          "label": "Money & Sponsorship"
+        },
+        "tracking": {
+          "label": "Tracking"
+        },
+        "docsPdfs": {
+          "label": "Docs & PDFs"
+        },
+        "formsAutomation": {
+          "label": "Forms & Automation"
+        },
+        "storage": {
+          "label": "Storage & Organization"
+        }
+      },
+      "items": {
+        "caseAnalyzer": {
+          "title": "Case Strength Analyzer",
+          "description": "Instant AI case strength score + gaps to fix before NVC/Interview."
+        },
+        "actionPlanner": {
+          "title": "221(g) Action Planner",
+          "description": "Step-by-step next moves after 221(g) or Administrative Processing."
+        },
+        "visaPath": {
+          "title": "VisaPath Finder",
+          "description": "Quick quiz that points you to the right visa path + next steps."
+        },
+        "interviewPrep": {
+          "title": "Interview Prep",
+          "description": "Prepare smarter and deliver confident answers when it matters most."
+        },
+        "sponsorshipCalc": {
+          "title": "Sponsorship Calculator",
+          "description": "Auto-check income/assets and tell you what you still need."
+        },
+        "dqStatus": {
+          "title": "DQ Status Check",
+          "description": "Track interview scheduling movement and trends by category."
+        },
+        "visaBulletin": {
+          "title": "Visa Bulletin Monitor",
+          "description": "Check your priority date progress against the Visa Bulletin."
+        },
+        "photoBooth": {
+          "title": "Photo Booth",
+          "description": "Make a compliant passport/visa photo in minutes."
+        },
+        "pdfToolkit": {
+          "title": "PDF Tool Kit",
+          "description": "Merge • compress • convert • edit — all in one toolkit."
+        },
+        "snapSign": {
+          "title": "Snap & Sign",
+          "description": "Create a clean digital signature for your forms."
+        },
+        "smartForm": {
+          "title": "Smart Form Filler",
+          "description": "Auto-fills your official form and generates a ready-to-upload PDF."
+        },
+        "documentVault": {
+          "title": "Document Vault",
+          "description": "Organize docs + build shareable packets when the embassy asks."
+        }
+      }
+    },
+    "guides": {
+      "label": "Guides",
+      "footerLink": "Browse all guides",
+      "tabs": {
+        "pakistanDocs": {
+          "label": "Pakistan Docs"
+        },
+        "medicalExam": {
+          "label": "Medical & Exam"
+        }
+      },
+      "items": {
+        "passportGuide": {
+          "title": "Passport Guide",
+          "description": "Obtaining or renewing your Pakistani passport."
+        },
+        "cnicGuide": {
+          "title": "CNIC Guide",
+          "description": "Obtaining and renewing your NADRA CNIC."
+        },
+        "birthCert": {
+          "title": "Birth Certificate Guide",
+          "description": "NADRA CRC, B-Form, and birth documentation."
+        },
+        "frcGuide": {
+          "title": "FRC Guide",
+          "description": "Family Registration Certificate (FRC) guide."
+        },
+        "marriageCert": {
+          "title": "Marriage Certificate Guide",
+          "description": "Nikahnama and MRC guide."
+        },
+        "policeVerify": {
+          "title": "Police Verification Guide",
+          "description": "How to obtain Police Verification Certificate."
+        },
+        "polioVaccine": {
+          "title": "Polio Vaccination Guide",
+          "description": "CDC-required vaccinations and polio certificate."
+        }
+      }
+    },
+    "services": {
+      "label": "Services",
+      "footerLink": "Explore all services",
+      "tabs": {
+        "expertHelp": {
+          "label": "Expert Help"
+        },
+        "pakistanDocsSevices": {
+          "label": "Pakistan Docs"
+        },
+        "medical": {
+          "label": "Medical"
+        },
+        "documents": {
+          "label": "Documents"
+        }
+      },
+      "items": {
+        "bookConsultation": {
+          "title": "Book a Consultation",
+          "description": "Book a call with an expert."
+        },
+        "expertCaseReview": {
+          "title": "Expert Case Review",
+          "description": "Human review of your documents + a tailored improvement plan."
+        },
+        "pccSindh": {
+          "title": "PCC Filing Service — Sindh",
+          "description": "Done-for-you police certificate filing for Sindh."
+        },
+        "pccPunjab": {
+          "title": "PCC Filing Service — Punjab (Coming Soon)",
+          "description": "Join the waitlist for done-for-you PCC filing in Punjab."
+        },
+        "pccKpk": {
+          "title": "PCC Filing Service — KPK (Coming Soon)",
+          "description": "Join the waitlist for done-for-you PCC filing in KPK."
+        },
+        "pccBalochistan": {
+          "title": "PCC Filing Service — Balochistan (Coming Soon)",
+          "description": "Join the waitlist for done-for-you PCC filing in Balochistan."
+        },
+        "bookMedical": {
+          "title": "Book Medical Appointment",
+          "description": "Book your panel physician medical exam appointment."
+        },
+        "urduEnglish": {
+          "title": "Urdu → English Translation",
+          "description": "Request certified translation + formatting for submission."
+        }
+      }
+    }
   }
 }
