@@ -1,6 +1,7 @@
 "use client"
 
 import type { Field } from "@/lib/formConfig/types";
+import { Loader2 } from "lucide-react";
 
 interface ReviewPageProps {
   formData: Record<string, string>
@@ -9,6 +10,8 @@ interface ReviewPageProps {
   onBackToForm: () => void
   onPreviewPDF: () => void
   onDownloadPDF: () => void
+  isPreviewing?: boolean
+  isDownloading?: boolean
 }
 
 export function ReviewPage({
@@ -18,6 +21,8 @@ export function ReviewPage({
   onBackToForm,
   onPreviewPDF,
   onDownloadPDF,
+  isPreviewing,
+  isDownloading,
 }: ReviewPageProps) {
   return (
     <div className="space-y-6">
@@ -90,16 +95,32 @@ export function ReviewPage({
 
         <button
           onClick={onPreviewPDF}
-          className="px-8 py-3 bg-primary hover:bg-primary/80 text-white font-semibold rounded-lg transition"
+          disabled={isPreviewing || isDownloading}
+          className="px-8 py-3 bg-primary hover:bg-primary/80 disabled:opacity-70 disabled:cursor-not-allowed text-white font-semibold rounded-lg transition flex items-center justify-center gap-2"
         >
-          Preview PDF
+          {isPreviewing ? (
+            <>
+              <Loader2 className="w-4 h-4 animate-spin" />
+              <span>Previewing...</span>
+            </>
+          ) : (
+            "Preview PDF"
+          )}
         </button>
 
         <button
           onClick={onDownloadPDF}
-          className="px-8 py-3 bg-primary hover:bg-primary/80 text-white font-semibold rounded-lg transition"
+          disabled={isPreviewing || isDownloading}
+          className="px-8 py-3 bg-primary hover:bg-primary/80 disabled:opacity-70 disabled:cursor-not-allowed text-white font-semibold rounded-lg transition flex items-center justify-center gap-2"
         >
-          Download PDF
+          {isDownloading ? (
+            <>
+              <Loader2 className="w-4 h-4 animate-spin" />
+              <span>Downloading...</span>
+            </>
+          ) : (
+            "Download PDF"
+          )}
         </button>
       </div>
     </div>

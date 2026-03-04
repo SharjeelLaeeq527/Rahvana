@@ -26,6 +26,8 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const { user } = useAuth();
   const [profileLoaded, setProfileLoaded] = useState(false);
+  const [isPreviewing, setIsPreviewing] = useState(false);
+  const [isDownloading, setIsDownloading] = useState(false);
   const supabase = createBrowserClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
@@ -169,6 +171,7 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
     const apiUrl =
       process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000/api/v1";
 
+    setIsPreviewing(true);
     try {
       const res = await fetch(`${apiUrl}/fill-pdf`, {
         method: "POST",
@@ -186,6 +189,8 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
       if (err instanceof Error)
         alert(`Preview failed: ${err.message}. Please check console.`);
       else alert("Preview failed. Please check console.");
+    } finally {
+      setIsPreviewing(false);
     }
   };
 
@@ -194,6 +199,7 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
     const apiUrl =
       process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000/api/v1";
 
+    setIsDownloading(true);
     try {
       const res = await fetch(`${apiUrl}/fill-pdf`, {
         method: "POST",
@@ -214,6 +220,8 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
       if (err instanceof Error)
         alert(`Download failed: ${err.message}. Please check console.`);
       else alert("Download failed. Please check console.");
+    } finally {
+      setIsDownloading(false);
     }
   };
 
@@ -452,6 +460,8 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
                 onBackToForm={() => setView("form")}
                 onPreviewPDF={handlePreviewPDF}
                 onDownloadPDF={handleDownloadPDF}
+                isPreviewing={isPreviewing}
+                isDownloading={isDownloading}
               />
             </div>
           )}
