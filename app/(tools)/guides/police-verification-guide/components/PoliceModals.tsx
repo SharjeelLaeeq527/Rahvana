@@ -185,8 +185,8 @@ export function LetterModal({
           </div>
 
           <div className="pb-4 text-sm text-gray-600">
-            It’s a letter where you write why you need the police verification
-            certificate.
+            This letter is required to explain the reason for requesting a
+            Police Verification Certificate.
           </div>
 
           <form className="space-y-4 text-left">
