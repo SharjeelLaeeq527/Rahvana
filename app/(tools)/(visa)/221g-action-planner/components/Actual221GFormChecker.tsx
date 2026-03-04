@@ -66,6 +66,8 @@ interface Actual221GFormCheckerProps {
   onSelectionChange: (selected: FormSelections) => void;
   onNext: () => void;
   smartModeEnabled?: boolean;
+  consularPost?: string;
+  visaType?: string;
 }
 
 export default function Actual221GFormChecker({
@@ -73,7 +75,13 @@ export default function Actual221GFormChecker({
   onSelectionChange,
   onNext,
   smartModeEnabled = false,
+  consularPost,
+  visaType,
 }: Actual221GFormCheckerProps) {
+  const visaUnitLabel =
+    visaType?.toLowerCase() === "nonimmigrant"
+      ? "Nonimmigrant Visa Unit"
+      : "Immigrant Visa Unit";
   const handleCheckboxChange = <T extends keyof FormSelections>(
     fieldId: T,
     value: boolean = true,
@@ -119,10 +127,10 @@ export default function Actual221GFormChecker({
 
         <div className="mb-6 p-4 bg-primary/10 rounded-lg border border-primary/20">
           <h3 className="font-semibold text-primary text-center text-lg">
-            U.S. Embassy Islamabad, Pakistan
+            {consularPost || "Your Embassy / Consulate"}
           </h3>
           <h4 className="font-medium text-primary text-center">
-            Immigrant Visa Unit
+            {visaUnitLabel}
           </h4>
         </div>
 

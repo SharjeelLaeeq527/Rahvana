@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -12,7 +12,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ArrowRight, CircleHelp, CopyIcon, FileText, Mail, RefreshCcw, ShieldCheck, Sparkles, PrinterIcon, CheckCircle2, FolderCheck, ClipboardCheck, X, FileCheck2, ListChecks, Info } from "lucide-react";
+import { ArrowRight, CircleHelp, CopyIcon, FileText, Mail, ShieldCheck, Sparkles, PrinterIcon, CheckCircle2, FolderCheck, ClipboardCheck, X, ListChecks, Info, MapPin, ChevronDown, Search, Download, FileDown } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -39,6 +39,77 @@ const STEPS = [
   { id: 2, label: "Replicate Checklist" },
   { id: 3, label: "Review & Generate" },
   { id: 4, label: "Export Packet" },
+];
+
+const EMBASSY_OPTIONS = [
+  // Pakistan
+  { value: "U.S. Embassy Islamabad", label: "U.S. Embassy Islamabad", country: "Pakistan" },
+  { value: "U.S. Consulate Karachi", label: "U.S. Consulate Karachi", country: "Pakistan" },
+  { value: "U.S. Consulate Lahore", label: "U.S. Consulate Lahore", country: "Pakistan" },
+  // India
+  { value: "U.S. Embassy New Delhi", label: "U.S. Embassy New Delhi", country: "India" },
+  { value: "U.S. Consulate Mumbai", label: "U.S. Consulate Mumbai", country: "India" },
+  { value: "U.S. Consulate Chennai", label: "U.S. Consulate Chennai", country: "India" },
+  { value: "U.S. Consulate Hyderabad", label: "U.S. Consulate Hyderabad", country: "India" },
+  { value: "U.S. Consulate Kolkata", label: "U.S. Consulate Kolkata", country: "India" },
+  // Bangladesh
+  { value: "U.S. Embassy Dhaka", label: "U.S. Embassy Dhaka", country: "Bangladesh" },
+  // Sri Lanka
+  { value: "U.S. Embassy Colombo", label: "U.S. Embassy Colombo", country: "Sri Lanka" },
+  // Nepal
+  { value: "U.S. Embassy Kathmandu", label: "U.S. Embassy Kathmandu", country: "Nepal" },
+  // Philippines
+  { value: "U.S. Embassy Manila", label: "U.S. Embassy Manila", country: "Philippines" },
+  // Mexico
+  { value: "U.S. Embassy Mexico City", label: "U.S. Embassy Mexico City", country: "Mexico" },
+  { value: "U.S. Consulate Guadalajara", label: "U.S. Consulate Guadalajara", country: "Mexico" },
+  { value: "U.S. Consulate Monterrey", label: "U.S. Consulate Monterrey", country: "Mexico" },
+  { value: "U.S. Consulate Ciudad Juarez", label: "U.S. Consulate Ciudad Juarez", country: "Mexico" },
+  // UK
+  { value: "U.S. Embassy London", label: "U.S. Embassy London", country: "United Kingdom" },
+  // Germany
+  { value: "U.S. Embassy Berlin", label: "U.S. Embassy Berlin", country: "Germany" },
+  { value: "U.S. Consulate Frankfurt", label: "U.S. Consulate Frankfurt", country: "Germany" },
+  { value: "U.S. Consulate Munich", label: "U.S. Consulate Munich", country: "Germany" },
+  // France
+  { value: "U.S. Embassy Paris", label: "U.S. Embassy Paris", country: "France" },
+  // Canada
+  { value: "U.S. Embassy Ottawa", label: "U.S. Embassy Ottawa", country: "Canada" },
+  { value: "U.S. Consulate Toronto", label: "U.S. Consulate Toronto", country: "Canada" },
+  { value: "U.S. Consulate Montreal", label: "U.S. Consulate Montreal", country: "Canada" },
+  { value: "U.S. Consulate Vancouver", label: "U.S. Consulate Vancouver", country: "Canada" },
+  // China
+  { value: "U.S. Embassy Beijing", label: "U.S. Embassy Beijing", country: "China" },
+  { value: "U.S. Consulate Shanghai", label: "U.S. Consulate Shanghai", country: "China" },
+  { value: "U.S. Consulate Guangzhou", label: "U.S. Consulate Guangzhou", country: "China" },
+  { value: "U.S. Consulate Chengdu", label: "U.S. Consulate Chengdu", country: "China" },
+  // South Korea
+  { value: "U.S. Embassy Seoul", label: "U.S. Embassy Seoul", country: "South Korea" },
+  // Japan
+  { value: "U.S. Embassy Tokyo", label: "U.S. Embassy Tokyo", country: "Japan" },
+  { value: "U.S. Consulate Osaka", label: "U.S. Consulate Osaka", country: "Japan" },
+  // Nigeria
+  { value: "U.S. Embassy Abuja", label: "U.S. Embassy Abuja", country: "Nigeria" },
+  { value: "U.S. Consulate Lagos", label: "U.S. Consulate Lagos", country: "Nigeria" },
+  // Egypt
+  { value: "U.S. Embassy Cairo", label: "U.S. Embassy Cairo", country: "Egypt" },
+  // Saudi Arabia
+  { value: "U.S. Embassy Riyadh", label: "U.S. Embassy Riyadh", country: "Saudi Arabia" },
+  { value: "U.S. Consulate Jeddah", label: "U.S. Consulate Jeddah", country: "Saudi Arabia" },
+  // UAE
+  { value: "U.S. Embassy Abu Dhabi", label: "U.S. Embassy Abu Dhabi", country: "UAE" },
+  { value: "U.S. Consulate Dubai", label: "U.S. Consulate Dubai", country: "UAE" },
+  // Brazil
+  { value: "U.S. Embassy Brasilia", label: "U.S. Embassy Brasilia", country: "Brazil" },
+  { value: "U.S. Consulate Sao Paulo", label: "U.S. Consulate Sao Paulo", country: "Brazil" },
+  // Colombia
+  { value: "U.S. Embassy Bogota", label: "U.S. Embassy Bogota", country: "Colombia" },
+  // Ghana
+  { value: "U.S. Embassy Accra", label: "U.S. Embassy Accra", country: "Ghana" },
+  // Ethiopia
+  { value: "U.S. Embassy Addis Ababa", label: "U.S. Embassy Addis Ababa", country: "Ethiopia" },
+  // Kenya
+  { value: "U.S. Embassy Nairobi", label: "U.S. Embassy Nairobi", country: "Kenya" },
 ];
 
 const VISA_TYPES = [
@@ -108,6 +179,10 @@ export default function CombinedIntakeForm({
   const [openFlow, setOpenFlow] = useState(false);
   const [openNeed, setOpenNeed] = useState(false);
   const [dontShowAgain, setDontShowAgain] = useState(false);
+  // Embassy combobox state
+  const [embassySearchText, setEmbassySearchText] = useState(formData.consularPost ?? "");
+  const [showEmbassySuggestions, setShowEmbassySuggestions] = useState(false);
+  const embassyRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -115,6 +190,28 @@ export default function CombinedIntakeForm({
       if (!saved) setShowWelcome(true);
     }
   }, []);
+
+  // Close embassy dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (embassyRef.current && !embassyRef.current.contains(e.target as Node)) {
+        setShowEmbassySuggestions(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  // Sync embassySearchText when formData.consularPost changes externally
+  useEffect(() => {
+    setEmbassySearchText(formData.consularPost ?? "");
+  }, [formData.consularPost]);
+
+  const filteredEmbassies = EMBASSY_OPTIONS.filter(
+    (e) =>
+      e.label.toLowerCase().includes(embassySearchText.toLowerCase()) ||
+      e.country.toLowerCase().includes(embassySearchText.toLowerCase())
+  );
 
   const handleStartWizard = () => {
     if (dontShowAgain) {
@@ -196,26 +293,51 @@ export default function CombinedIntakeForm({
     plan += `This action plan is based on the information you provided and is for general guidance only. It is NOT legal advice. Always follow your embassy's 221(g) letter instructions if anything differs from this plan. For complex cases, consult an immigration attorney. Processing times vary and we cannot guarantee visa issuance or specific timelines.\n\n`;
     
     plan += `## SUMMARY\n\n`;
-    plan += `Your visa interview on ${formatDate(cb.interviewDate)} at ${cb.consularPost} resulted in a temporary refusal under INA Section 221(g). This means the consular officer needs additional documents or administrative processing before making a final decision.\n\n`;
-    
-    const itemCount = Object.values(cl).filter(Boolean).length;
-    plan += `Based on your checklist, you must submit the following:\n`;
-    plan += `- ${itemCount} total items requested\n`;
-    if (cl.i864_affidavit) plan += `- Financial sponsorship documents (I-864 package)\n`;
-    if (cl.passport) plan += `- Your passport for visa placement\n`;
-    if (cl.admin_processing) plan += `- Additional administrative processing (timing varies)\n\n`;
+    // Contextual summary based on CEAC status and selected items
+    const isAdminOnly = !cl.passport && !cl.medical_examination && !cl.i864_affidavit &&
+      !cl.nadra_family_reg && !cl.nadra_birth_cert && !cl.nadra_marriage_cert &&
+      !cl.nikah_nama && !cl.nadra_divorce_cert && !cl.us_divorce_decree &&
+      !cl.death_certificate && !cl.police_certificate && !cl.english_translation &&
+      !cl.dna_test && !cl.other && cl.admin_processing;
+    const isAdminProcessingStatus = cb.ceacStatus?.toLowerCase().includes('administrative');
+
+    if (isAdminOnly || isAdminProcessingStatus) {
+      plan += `Your case is currently under Administrative Processing following the visa interview on ${formatDate(cb.interviewDate)} at ${cb.consularPost}. Under INA Section 221(g), additional review is being conducted before a final decision can be made. No additional documents have been specifically requested at this time — you are advised to monitor your CEAC status and wait for further instructions from the embassy.\n\n`;
+    } else {
+      plan += `Your visa interview on ${formatDate(cb.interviewDate)} at ${cb.consularPost} resulted in a temporary hold under INA Section 221(g). The consular officer requires the documents listed below before a final decision can be made. This is NOT a permanent denial.\n\n`;
+    }
+
+    const docItemCount = Object.entries(cl)
+      .filter(([, v]) => typeof v === 'boolean' && v)
+      .length;
+    if (docItemCount > 0) {
+      plan += `Based on your checklist, the following items have been identified:\n`;
+      if (cl.i864_affidavit) plan += `- Financial sponsorship documents (I-864 package)\n`;
+      if (cl.passport) plan += `- Your passport for visa placement\n`;
+      if (cl.medical_examination) plan += `- Completed medical examination\n`;
+      if (cl.nadra_family_reg || cl.nadra_birth_cert || cl.nadra_marriage_cert || cl.nikah_nama) plan += `- Civil/NADRA registration documents\n`;
+      if (cl.police_certificate) plan += `- Police certificate\n`;
+      if (cl.english_translation) plan += `- Certified English translations\n`;
+      if (cl.dna_test) plan += `- DNA test\n`;
+      if (cl.admin_processing) plan += `- Administrative processing (no action needed from you)\n`;
+      plan += `\n`;
+    }
     
     plan += `## IMMEDIATE NEXT STEPS\n\n`;
     plan += `1. **Gather Documents by Provider**\n\n`;
     
     // Beneficiary docs
-    const benDocs = [];
-    if (cl.passport) benDocs.push('Passport');
-    if (cl.medical_examination) benDocs.push('Medical examination results');
-    if (cl.police_certificate) benDocs.push(`Police certificate (${cl.police_certificate_country || 'specified country'})`);
+    const benDocs: string[] = [];
+    if (cl.passport) benDocs.push('Passport (original)');
+    if (cl.medical_examination) benDocs.push('Medical examination results (DS-2054, sealed)');
+    if (cl.police_certificate) benDocs.push(`Police certificate – ${cl.police_certificate_country || 'specified country'}`);
     if (cl.nadra_birth_cert_beneficiary) benDocs.push('NADRA Birth Certificate');
-    if (cl.nadra_divorce_cert_beneficiary) benDocs.push('NADRA Divorce Certificate');
-    if (cl.death_certificate) benDocs.push(`Death Certificate (${cl.death_certificate_name || 'specified person'})`);
+    if (cl.nadra_birth_cert && !cl.nadra_birth_cert_beneficiary && !cl.nadra_birth_cert_petitioner) benDocs.push('NADRA Birth Certificate');
+    if (cl.nadra_family_reg) benDocs.push('NADRA Family Registration Certificate');
+    if (cl.nadra_marriage_cert) benDocs.push('NADRA Marriage Certificate');
+    if (cl.nikah_nama) benDocs.push('Nikah Nama');
+    if (cl.nadra_divorce_cert_beneficiary) benDocs.push('NADRA Divorce Certificate (beneficiary)');
+    if (cl.death_certificate) benDocs.push(`Death Certificate – ${cl.death_certificate_name || 'specified person'}`);
     
     if (benDocs.length > 0) {
         plan += `   **Beneficiary to provide:**\n`;
@@ -224,14 +346,21 @@ export default function CombinedIntakeForm({
     }
     
     // Petitioner docs
-    const petDocs = [];
+    const petDocs: string[] = [];
     if (cl.i864_affidavit || cl.i864_petitioner) {
-        petDocs.push('I-864 Affidavit of Support');
-        petDocs.push('Tax returns and financial evidence');
+        const sponsorName = cl.i864_petitioner_name ? ` (${cl.i864_petitioner_name})` : '';
+        petDocs.push(`I-864 Affidavit of Support${sponsorName}`);
+        if (cl.irs_transcript) petDocs.push(`IRS Tax Transcript${cl.i864_tax_years ? ` – year(s): ${cl.i864_tax_years}` : ''}`);
+        else if (cl.tax_1040) petDocs.push(`Signed IRS Form 1040${cl.i864_tax_years ? ` – year(s): ${cl.i864_tax_years}` : ''}`);
+        else petDocs.push(`Tax and financial evidence${cl.i864_tax_years ? ` – year(s): ${cl.i864_tax_years}` : ''}`);
+        if (cl.w2) petDocs.push('W-2 Tax Statements');
+        if (cl.proof_citizenship) petDocs.push('Proof of U.S. citizenship / LPR status');
+        if (cl.domicile) petDocs.push('Proof of U.S. domicile');
     }
-    if (cl.us_divorce_decree) petDocs.push('U.S. Divorce Decree');
-    if (cl.nadra_birth_cert_petitioner) petDocs.push('NADRA Birth Certificate');
-    if (cl.nadra_divorce_cert_petitioner) petDocs.push('NADRA Divorce Certificate');
+    if (cl.i864a) petDocs.push(`I-864A (Household Member contract${cl.i864_household_member_name ? ` – ${cl.i864_household_member_name}` : ''})`);
+    if (cl.us_divorce_decree) petDocs.push('U.S. Divorce Decree (original or certified copy)');
+    if (cl.nadra_birth_cert_petitioner) petDocs.push('NADRA Birth Certificate (petitioner)');
+    if (cl.nadra_divorce_cert_petitioner) petDocs.push('NADRA Divorce Certificate (petitioner)');
     
     if (petDocs.length > 0) {
         plan += `   **Petitioner to provide:**\n`;
@@ -241,10 +370,11 @@ export default function CombinedIntakeForm({
 
     // Joint sponsor
     if (cl.i864_joint_sponsor) {
-        plan += `   **Joint Sponsor to provide:**\n`;
+        const jsName = cl.i864_joint_sponsor_name ? ` (${cl.i864_joint_sponsor_name})` : '';
+        plan += `   **Joint Sponsor${jsName} to provide:**\n`;
         plan += `   - I-864 Affidavit of Support\n`;
-        plan += `   - Tax returns and financial evidence\n`;
-        plan += `   - Proof of U.S. status and domicile\n\n`;
+        plan += `   - Tax and financial evidence${cl.i864_tax_years ? ` – year(s): ${cl.i864_tax_years}` : ''}\n`;
+        plan += `   - Proof of U.S. citizenship / LPR status and domicile\n\n`;
     }
     
     plan += `2. **Prepare Translations**\n`;
@@ -319,14 +449,27 @@ export default function CombinedIntakeForm({
         }
 
         plan += `3. Tax Evidence (for each sponsor):\n`;
-        plan += `   - **IRS Tax Return Transcript (PREFERRED):** Order at https://www.irs.gov/individuals/get-transcript\n`;
-        plan += `     This is the IRS-generated transcript of your tax return, not the return itself.\n`;
-        plan += `   - Form 1040 (if transcript unavailable): Photocopy of complete return\n`;
-        plan += `   - W-2 forms: For all employment income\n\n`;
+        if (cl.irs_transcript) {
+            plan += `   - **IRS Tax Return Transcript (as requested):** Order at https://www.irs.gov/individuals/get-transcript\n`;
+            plan += `     - Tax year(s): ${cl.i864_tax_years || 'most recent 3 years'}\n`;
+        } else if (cl.tax_1040) {
+            plan += `   - **Signed IRS Form 1040** for year(s): ${cl.i864_tax_years || 'most recent 3 years'}\n`;
+        } else {
+            plan += `   - **IRS Tax Return Transcript (PREFERRED):** Order at https://www.irs.gov/individuals/get-transcript\n`;
+            plan += `     This is the IRS-generated transcript of your tax return, not the return itself.\n`;
+            if (cl.i864_tax_years) plan += `   - Tax year(s) requested: ${cl.i864_tax_years}\n`;
+        }
+        if (cl.w2) plan += `   - **W-2 Forms:** For all employment income for year(s): ${cl.i864_tax_years || 'as requested'}\n`;
+        plan += `\n`;
 
-        plan += `4. Proof of Status:\n`;
-        plan += `   - U.S. Birth Certificate, U.S. Passport, or Naturalization Certificate\n`;
-        plan += `   - Proof of U.S. domicile: Lease, mortgage, utility bills, employment letter\n\n`;
+        plan += `4. Proof of U.S. Status and Domicile:\n`;
+        if (cl.proof_citizenship) plan += `   - U.S. Birth Certificate, U.S. Passport, or Naturalization Certificate\n`;
+        if (cl.domicile) plan += `   - Proof of U.S. domicile: Lease, mortgage, utility bills, employment letter\n`;
+        if (!cl.proof_citizenship && !cl.domicile) {
+            plan += `   - U.S. Birth Certificate, U.S. Passport, or Naturalization Certificate\n`;
+            plan += `   - Proof of U.S. domicile: Lease, mortgage, utility bills, employment letter\n`;
+        }
+        plan += `\n`;
 
         plan += `**Common mistakes to avoid:**\n`;
         plan += `- Using an outdated I-864 form version\n`;
@@ -360,11 +503,12 @@ export default function CombinedIntakeForm({
 
     if (cl.dna_test) {
         plan += `### DNA Test\n`;
-        plan += `**What to submit:** DNA test results from a AABB-accredited laboratory.\n`;
-        plan += `**Who provides:** ${cl.dna_test_name || 'Specified parties'}\n`;
-        plan += `**How to prepare:** Contact the embassy for approved laboratory list. Both parties must test at approved facilities.\n`;
+        plan += `**What to submit:** DNA test results from an AABB-accredited laboratory.\n`;
+        plan += `**Parties being tested:** ${cl.dna_test_name || 'As specified on your 221(g) letter'}\n`;
+        plan += `**Who to contact:** Contact ${cb.consularPost || 'the embassy'} for the approved laboratory list.\n`;
+        plan += `**How to prepare:** Both parties must test at an approved AABB-accredited lab. Results should be sent directly to the embassy.\n`;
         plan += `**Common mistakes to avoid:**\n`;
-        plan += `- Using a non-approved laboratory\n`;
+        plan += `- Using a non-AABB-accredited laboratory\n`;
         plan += `- Incomplete chain of custody documentation\n\n`;
     }
 
@@ -530,9 +674,14 @@ export default function CombinedIntakeForm({
     
     const today = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
     
+    const visaUnitType = cb.visaType?.toLowerCase() === 'nonimmigrant'
+      ? 'Nonimmigrant'
+      : 'Immigrant';
+    const visaCategoryFull = VISA_CATEGORIES.find(c => c.value === cb.visaCategory)?.label || cb.visaCategory;
+
     let letter = `${today}\n\n`;
     letter += `${cb.consularPost}\n`;
-    letter += `Immigrant Visa Unit\n\n`;
+    letter += `${visaUnitType} Visa Unit\n\n`;
     letter += `**Subject: Response to INA 221(g) Refusal`;
     if (cb.caseNumber) letter += ` – Case Number: ${cb.caseNumber}`;
     if (cb.beneficiaryName) letter += ` – ${cb.beneficiaryName}`;
@@ -540,7 +689,7 @@ export default function CombinedIntakeForm({
     
     letter += `Dear Consular Officer,\n\n`;
     
-    letter += `I am writing in response to the Section 221(g) refusal issued following my immigrant visa interview on ${formatDate(cb.interviewDate)}. `;
+    letter += `I am writing in response to the Section 221(g) refusal issued following my ${visaUnitType.toLowerCase()} visa interview on ${formatDate(cb.interviewDate)}. `;
     letter += `I am submitting the requested documents as instructed.\n\n`;
     
     letter += `**Applicant Information:**\n`;
@@ -548,7 +697,9 @@ export default function CombinedIntakeForm({
     if (cb.passportNumber) letter += `- Passport Number: ${cb.passportNumber}\n`;
     letter += `- Interview Date: ${formatDate(cb.interviewDate)}\n`;
     if (cb.caseNumber) letter += `- Case Number: ${cb.caseNumber}\n`;
-    letter += `- Visa Category: ${cb.visaCategory}\n\n`;
+    letter += `- Visa Category: ${visaCategoryFull}\n`;
+    if (cb.ceacStatus) letter += `- Current CEAC Status: ${cb.ceacStatus}\n`;
+    letter += `\n`;
 
     if (smartModeEnabled && cl.i864_affidavit && cl.i864_sponsor_structure) {
         letter += `**Financial Sponsorship Structure:**\n`;
@@ -682,118 +833,20 @@ export default function CombinedIntakeForm({
     </div>
   );
 
-  // ──────────────────────────────────────────────
-  // Step 1 – Case Basics
-  // ──────────────────────────────────────────────
-  const StepCaseBasics = () => (
-    <div className="space-y-6">
-      <div className="border-b pb-4">
-        <h2 className="text-2xl font-bold text-foreground">Case Basics</h2>
-        <p className="text-muted-foreground mt-1 text-sm">
-          Provide your basic case information to personalise your action plan.
-        </p>
-      </div>
+  // Embassy combobox helpers (defined here so they can be used inline in render)
+  const handleEmbassyInputChange = (val: string) => {
+    setEmbassySearchText(val);
+    handleField("consularPost", val);
+    setShowEmbassySuggestions(true);
+  };
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div className="space-y-2">
-          <Label htmlFor="visaType">Visa Type *</Label>
-          <Select value={formData.visaType} onValueChange={(v) => handleField("visaType", v)}>
-            <SelectTrigger id="visaType">
-              <SelectValue placeholder="Select..." />
-            </SelectTrigger>
-            <SelectContent>
-              {VISA_TYPES.map((t) => (
-                <SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
+  const handleEmbassySelect = (val: string) => {
+    setEmbassySearchText(val);
+    handleField("consularPost", val);
+    setShowEmbassySuggestions(false);
+  };
 
-        <div className="space-y-2">
-          <Label htmlFor="visaCategory">Visa Category *</Label>
-          <Select value={formData.visaCategory} onValueChange={(v) => handleField("visaCategory", v)}>
-            <SelectTrigger id="visaCategory">
-              <SelectValue placeholder="Select..." />
-            </SelectTrigger>
-            <SelectContent>
-              {VISA_CATEGORIES.map((c) => (
-                <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-      </div>
 
-      {formData.visaCategory === "other" && (
-        <div className="space-y-2">
-          <Label htmlFor="visaTypeOther">Specify Other Category</Label>
-          <Input id="visaTypeOther" value={formData.visaTypeOther} onChange={(e) => handleField("visaTypeOther", e.target.value)} />
-        </div>
-      )}
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div className="space-y-2">
-          <Label htmlFor="interviewDate">Interview Date *</Label>
-          <Input id="interviewDate" type="date" value={formData.interviewDate} onChange={(e) => handleField("interviewDate", e.target.value)} />
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="ceacStatus">Current CEAC Status</Label>
-          <Select value={formData.ceacStatus} onValueChange={(v) => handleField("ceacStatus", v)}>
-            <SelectTrigger id="ceacStatus">
-              <SelectValue placeholder="Select..." />
-            </SelectTrigger>
-            <SelectContent>
-              {CEAC_STATUSES.map((s) => (
-                <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-      </div>
-
-      <div className="space-y-2">
-        <Label htmlFor="consularPost">Consular Post / Embassy Location *</Label>
-        <Input id="consularPost" value={formData.consularPost} onChange={(e) => handleField("consularPost", e.target.value)} placeholder="e.g. U.S. Embassy Islamabad" />
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div className="space-y-2">
-          <Label htmlFor="caseNumber">Case Number (optional)</Label>
-          <Input id="caseNumber" value={formData.caseNumber} onChange={(e) => handleField("caseNumber", e.target.value)} placeholder="ISL2024..." />
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="beneficiaryName">Beneficiary Name (optional)</Label>
-          <Input id="beneficiaryName" value={formData.beneficiaryName} onChange={(e) => handleField("beneficiaryName", e.target.value)} />
-        </div>
-      </div>
-
-      <div className="flex justify-end pt-4 border-t">
-        <Button onClick={goNext} disabled={!formData.visaType || !formData.visaCategory || !formData.interviewDate || !formData.consularPost}>
-          Continue to Checklist →
-        </Button>
-      </div>
-    </div>
-  );
-
-  // ──────────────────────────────────────────────
-  // Step 2 – Replicate Checklist
-  // ──────────────────────────────────────────────
-  const StepChecklistReplication = () => (
-    <div className="space-y-6">
-
-      <Actual221GFormChecker
-        selectedItems={selected221gItems}
-        onSelectionChange={setSelected221gItems}
-        onNext={goNext}
-        smartModeEnabled={smartModeEnabled}
-      />
-
-      <div className="flex gap-3 pt-4 border-t">
-        <Button variant="outline" onClick={goBack}>← Back</Button>
-      </div>
-    </div>
-  );
 
   // ──────────────────────────────────────────────
   // Step 3 – Review & Generate
@@ -926,17 +979,17 @@ export default function CombinedIntakeForm({
       alert("Copied to clipboard!");
     };
 
-    const printContent = (text: string, title: string) => {
+    const generateHtmlContent = (text: string, title: string) => {
         let htmlBody = '';
         let isTableOpen = false;
 
         text.split('\n').forEach((line) => {
-            if (line.startsWith('# ')) { htmlBody += `<h1 class="font-bold text-2xl mt-6 mb-4 border-b pb-2">${line.substring(2)}</h1>`; return; }
-            if (line.startsWith('## ')) { htmlBody += `<h2 class="font-bold text-xl mt-6 mb-3 text-teal-700">${line.substring(3)}</h2>`; return; }
-            if (line.startsWith('### ')) { htmlBody += `<h3 class="font-bold text-lg mt-4 mb-2">${line.substring(4)}</h3>`; return; }
+            if (line.startsWith('# ')) { htmlBody += `<h1 style="font-size:24pt; font-weight:bold; margin-top:20pt; margin-bottom:12pt; border-bottom:1px solid #ddd; padding-bottom:5pt;">${line.substring(2)}</h1>`; return; }
+            if (line.startsWith('## ')) { htmlBody += `<h2 style="font-size:18pt; font-weight:bold; margin-top:16pt; margin-bottom:10pt; color:#0d9488;">${line.substring(3)}</h2>`; return; }
+            if (line.startsWith('### ')) { htmlBody += `<h3 style="font-size:14pt; font-weight:bold; margin-top:12pt; margin-bottom:8pt;">${line.substring(4)}</h3>`; return; }
             
             if (line.match(/^\*\*(.*?)\*\*$/)) {
-               htmlBody += `<p class="font-bold my-2 text-slate-900">${line.replace(/\*\*/g, '')}</p>`; return;
+               htmlBody += `<p style="font-weight:bold; margin-top:8pt; margin-bottom:8pt; color:#111;">${line.replace(/\*\*/g, '')}</p>`; return;
             }
 
             if (line.match(/^\|.+\|$/) && !line.match(/^\|[-\s|]+\|$/)) {
@@ -945,14 +998,14 @@ export default function CombinedIntakeForm({
                 
                 if (isHeader) {
                     isTableOpen = true;
-                    htmlBody += `<table style="width:100%; text-align:left; border-collapse:collapse; margin:20px 0; border: 1px solid #e2e8f0;">`;
-                    htmlBody += `<thead style="background:#f8fafc; color:#334155;"><tr>`;
-                    cells.forEach(c => htmlBody += `<th style="padding:10px; border:1px solid #e2e8f0;">${c.trim()}</th>`);
+                    htmlBody += `<table style="width:100%; text-align:left; border-collapse:collapse; margin:15pt 0; border: 1px solid #ddd;">`;
+                    htmlBody += `<thead style="background:#f9fafb; color:#374151;"><tr>`;
+                    cells.forEach(c => htmlBody += `<th style="padding:8pt; border:1px solid #ddd; font-weight:bold;">${c.trim()}</th>`);
                     htmlBody += `</tr></thead><tbody>`;
                     return;
                 } else {
                     htmlBody += `<tr>`;
-                    cells.forEach(c => htmlBody += `<td style="padding:10px; border:1px solid #e2e8f0; color:#475569;">${c.trim()}</td>`);
+                    cells.forEach(c => htmlBody += `<td style="padding:8pt; border:1px solid #ddd; color:#4b5563;">${c.trim()}</td>`);
                     htmlBody += `</tr>`;
                     return;
                 }
@@ -965,24 +1018,24 @@ export default function CombinedIntakeForm({
             }
 
             if (line.startsWith('☐ ')) {
-                htmlBody += `<div style="display:flex; align-items:flex-start; margin-bottom:8px; line-height:1.2;">
-                    <span style="font-size:24px; margin-right:8px; display:inline-block; font-family:sans-serif;">&#9744;</span>
-                    <span style="display:inline-block; margin-top:4px;">${line.substring(2)}</span>
-                </div>`;
+                htmlBody += `<p style="margin-bottom:8pt; margin-top:4pt;">
+                    <span style="font-size:16pt; margin-right:8pt; font-family:serif;">&#9744;</span>
+                    ${line.substring(2)}
+                </p>`;
                 return;
             }
 
             if (line.startsWith('* ') || line.startsWith('- ')) {
                 const txt = line.substring(2).trim();
-                htmlBody += `<li style="margin-left:24px; margin-bottom:8px; padding-left:8px;">${txt}</li>`;
+                htmlBody += `<li style="margin-left:20pt; margin-bottom:6pt;">${txt}</li>`;
                 return;
             }
             if (line.match(/^\d+\.\s/)) {
-                htmlBody += `<li style="margin-left:24px; margin-bottom:8px; padding-left:8px;">${line.replace(/^\d+\.\s/, '')}</li>`;
+                htmlBody += `<li style="margin-left:20pt; margin-bottom:6pt;">${line.replace(/^\d+\.\s/, '')}</li>`;
                 return;
             }
 
-            if (line.trim() === '') { htmlBody += `<div style="height:16px;"></div>`; return; }
+            if (line.trim() === '') { htmlBody += `<div style="height:10pt;"></div>`; return; }
 
             const parts = line.split(/(\*\*.*?\*\*)/g);
             let pContent = '';
@@ -990,39 +1043,61 @@ export default function CombinedIntakeForm({
                 if (p.startsWith('**') && p.endsWith('**')) pContent += `<strong>${p.replace(/\*\*/g, '')}</strong>`;
                 else pContent += p;
             });
-            htmlBody += `<p style="margin-bottom:8px;">${pContent}</p>`;
+            htmlBody += `<p style="margin-bottom:8pt;">${pContent}</p>`;
         });
 
         if (isTableOpen) htmlBody += `</tbody></table>`;
 
+        return `
+            <html>
+                <head>
+                    <meta charset="utf-8">
+                    <title>${title}</title>
+                    <style>
+                        body { font-family: "Segoe UI", Tahoma, sans-serif; padding: 1in; line-height: 1.5; color: #333; }
+                        h1, h2, h3 { color: #000; }
+                        li { margin-bottom: 0.1in; }
+                        table { border-collapse: collapse; width: 100%; border: 1pt solid #ccc; }
+                        th, td { border: 1pt solid #ccc; padding: 8pt; text-align: left; }
+                        @page { margin: 1in; }
+                        @media print {
+                            body { padding: 0; }
+                        }
+                    </style>
+                </head>
+                <body>
+                    ${htmlBody}
+                </body>
+            </html>
+        `;
+    };
+
+    const handleDownloadPDF = (text: string, title: string) => {
+        const titleLabel = `221g_${title.replace(/\s+/g, '_')}_${formData.caseNumber || ''}`.replace(/_+$/, '');
+        const content = generateHtmlContent(text, title);
         const win = window.open("", "_blank");
         if (win) {
-            win.document.write(`
-                <html>
-                    <head>
-                        <title>${title}</title>
-                        <style>
-                            body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; padding: 40px; line-height: 1.6; max-width: 800px; margin: 0 auto; color: #334155; }
-                            h1, h2, h3 { color: #0f172a; }
-                            .header { border-bottom: 2px solid #e2e8f0; margin-bottom: 30px; padding-bottom: 10px; }
-                            h1 { font-size: 24px; font-weight: bold; margin-bottom:16px;}
-                            h2 { font-size: 20px; font-weight: bold; margin-top: 32px; margin-bottom:16px; color:#0f766e;}
-                            h3 { font-size: 18px; font-weight: bold; margin-top: 24px; margin-bottom:8px;}
-                            @media print {
-                                body { padding: 0; max-width: none; }
-                                .header { display:none; }
-                            }
-                        </style>
-                    </head>
-                    <body>
-                        <div class="header"><h1>${title}</h1></div>
-                        ${htmlBody}
-                        <script>window.print(); setTimeout(() => window.close(), 500);</script>
-                    </body>
-                </html>
-            `);
+            win.document.open();
+            win.document.write(content);
+            win.document.write(`<script>window.print(); setTimeout(() => window.close(), 1000);</script>`);
             win.document.close();
         }
+    };
+
+    const handleDownloadWord = (text: string, title: string) => {
+        const titleLabel = `221g_${title.replace(/\s+/g, '_')}_${formData.caseNumber || ''}`.replace(/_+$/, '');
+        const content = generateHtmlContent(text, title);
+        const blob = new Blob(['\ufeff', content], {
+            type: 'application/msword'
+        });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `${titleLabel}.doc`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
     };
 
 
@@ -1205,12 +1280,21 @@ export default function CombinedIntakeForm({
                       Copy
                     </Button>
                     <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleDownloadPDF(outputs[key], config.title)}
+                      className="border-teal-200 text-teal-700 hover:bg-teal-50"
+                    >
+                      <FileText className="mr-2 h-3.5 w-3.5" />
+                      Download as PDF
+                    </Button>
+                    <Button
                       className="bg-teal-600 text-white hover:bg-teal-700"
                       size="sm"
-                      onClick={() => printContent(outputs[key], config.title)}
+                      onClick={() => handleDownloadWord(outputs[key], config.title)}
                     >
-                      <PrinterIcon className="mr-2 h-3.5 w-3.5" />
-                      Print
+                      <FileDown className="mr-2 h-3.5 w-3.5" />
+                      Download as Word
                     </Button>
                   </div>
                 </div>
@@ -1258,8 +1342,223 @@ export default function CombinedIntakeForm({
       </div>
       <div className="bg-card rounded-2xl border border-border shadow-2xl overflow-hidden">
         <div className="p-6 md:p-10">
-            {currentStep === 1 && <StepCaseBasics />}
-            {currentStep === 2 && <StepChecklistReplication />}
+            {/* ── Step 1: Case Basics (inlined to prevent re-mount focus loss) ── */}
+            {currentStep === 1 && (
+              <div className="space-y-6">
+                <div className="border-b pb-4">
+                  <h2 className="text-2xl font-bold text-foreground">Case Basics</h2>
+                  <p className="text-muted-foreground mt-1 text-sm">
+                    Provide your basic case information to personalise your action plan.
+                  </p>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="visaType">Visa Type *</Label>
+                    <Select value={formData.visaType} onValueChange={(v) => handleField("visaType", v)}>
+                      <SelectTrigger id="visaType">
+                        <SelectValue placeholder="Select..." />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {VISA_TYPES.map((t) => (
+                          <SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="visaCategory">Visa Category *</Label>
+                    <Select value={formData.visaCategory} onValueChange={(v) => handleField("visaCategory", v)}>
+                      <SelectTrigger id="visaCategory">
+                        <SelectValue placeholder="Select..." />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {VISA_CATEGORIES.map((c) => (
+                          <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+
+                {formData.visaCategory === "other" && (
+                  <div className="space-y-2">
+                    <Label htmlFor="visaTypeOther">Specify Other Category</Label>
+                    <Input
+                      id="visaTypeOther"
+                      value={formData.visaTypeOther}
+                      onChange={(e) => handleField("visaTypeOther", e.target.value)}
+                    />
+                  </div>
+                )}
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="interviewDate">Interview Date *</Label>
+                    <Input
+                      id="interviewDate"
+                      type="date"
+                      value={formData.interviewDate}
+                      onChange={(e) => handleField("interviewDate", e.target.value)}
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="ceacStatus">Current CEAC Status</Label>
+                    <Select value={formData.ceacStatus} onValueChange={(v) => handleField("ceacStatus", v)}>
+                      <SelectTrigger id="ceacStatus">
+                        <SelectValue placeholder="Select..." />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {CEAC_STATUSES.map((s) => (
+                          <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+
+                {/* Embassy Combobox */}
+                <div className="space-y-2">
+                  <Label htmlFor="consularPost">Consular Post / Embassy Location *</Label>
+                  <div className="relative" ref={embassyRef}>
+                    <div className="relative">
+                      <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+                      <Input
+                        id="consularPost"
+                        autoComplete="off"
+                        value={embassySearchText}
+                        onChange={(e) => handleEmbassyInputChange(e.target.value)}
+                        onFocus={() => setShowEmbassySuggestions(true)}
+                        placeholder="Search embassy or country…"
+                        className="pl-9 pr-9"
+                      />
+                      <ChevronDown
+                        className={`absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground transition-transform ${showEmbassySuggestions ? "rotate-180" : ""}`}
+                      />
+                    </div>
+
+                    {showEmbassySuggestions && (
+                      <div className="absolute z-50 mt-1 w-full rounded-xl border border-border bg-popover shadow-xl overflow-hidden">
+                        {/* Search hint */}
+                        {embassySearchText && (
+                          <div className="flex items-center gap-2 px-3 py-2 border-b border-border bg-muted/40">
+                            <Search className="h-3.5 w-3.5 text-muted-foreground" />
+                            <span className="text-xs text-muted-foreground">Showing results for &ldquo;{embassySearchText}&rdquo;</span>
+                          </div>
+                        )}
+                        <div className="max-h-64 overflow-y-auto">
+                          {filteredEmbassies.length === 0 ? (
+                            <div className="px-4 py-6 text-center text-sm text-muted-foreground">
+                              <MapPin className="h-6 w-6 mx-auto mb-2 opacity-40" />
+                              No embassy found. You can type a custom location.
+                            </div>
+                          ) : (
+                            (() => {
+                              const grouped: Record<string, typeof filteredEmbassies> = {};
+                              filteredEmbassies.forEach((e) => {
+                                if (!grouped[e.country]) grouped[e.country] = [];
+                                grouped[e.country].push(e);
+                              });
+                              return Object.entries(grouped).map(([country, items]) => (
+                                <div key={country}>
+                                  <div className="px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest text-muted-foreground bg-muted/50 sticky top-0">
+                                    {country}
+                                  </div>
+                                  {items.map((embassy) => (
+                                    <button
+                                      key={embassy.value}
+                                      type="button"
+                                      className={`w-full flex items-center gap-3 px-4 py-2.5 text-sm text-left transition-colors hover:bg-primary/5 focus:bg-primary/5 focus:outline-none ${
+                                        formData.consularPost === embassy.value
+                                          ? "bg-primary/10 text-primary font-semibold"
+                                          : "text-foreground"
+                                      }`}
+                                      onMouseDown={(e) => {
+                                        e.preventDefault(); // prevent input blur
+                                        handleEmbassySelect(embassy.value);
+                                      }}
+                                    >
+                                      <MapPin className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+                                      {embassy.label}
+                                      {formData.consularPost === embassy.value && (
+                                        <span className="ml-auto text-primary text-xs">✓</span>
+                                      )}
+                                    </button>
+                                  ))}
+                                </div>
+                              ));
+                            })()
+                          )}
+                        </div>
+                        {/* Custom entry option */}
+                        {embassySearchText && !EMBASSY_OPTIONS.find(e => e.value.toLowerCase() === embassySearchText.toLowerCase()) && (
+                          <div className="border-t border-border">
+                            <button
+                              type="button"
+                              className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-left text-muted-foreground hover:bg-muted/50 transition-colors"
+                              onMouseDown={(e) => {
+                                e.preventDefault();
+                                handleEmbassySelect(embassySearchText);
+                              }}
+                            >
+                              <Search className="h-3.5 w-3.5 shrink-0" />
+                              Use &ldquo;{embassySearchText}&rdquo; as custom location
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="caseNumber">Case Number (optional)</Label>
+                    <Input
+                      id="caseNumber"
+                      value={formData.caseNumber}
+                      onChange={(e) => handleField("caseNumber", e.target.value)}
+                      placeholder="ISL2024..."
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="beneficiaryName">Beneficiary Name (optional)</Label>
+                    <Input
+                      id="beneficiaryName"
+                      value={formData.beneficiaryName}
+                      onChange={(e) => handleField("beneficiaryName", e.target.value)}
+                    />
+                  </div>
+                </div>
+
+                <div className="flex justify-end pt-4 border-t">
+                  <Button
+                    onClick={goNext}
+                    disabled={!formData.visaType || !formData.visaCategory || !formData.interviewDate || !formData.consularPost}
+                  >
+                    Continue to Checklist →
+                  </Button>
+                </div>
+              </div>
+            )}
+            {/* ── Step 2: Replicate Checklist ── */}
+            {currentStep === 2 && (
+              <div className="space-y-6">
+                <Actual221GFormChecker
+                  selectedItems={selected221gItems}
+                  onSelectionChange={setSelected221gItems}
+                  onNext={goNext}
+                  smartModeEnabled={smartModeEnabled}
+                  consularPost={formData.consularPost}
+                  visaType={formData.visaType}
+                />
+                <div className="flex gap-3 pt-4 border-t">
+                  <Button variant="outline" onClick={goBack}>← Back</Button>
+                </div>
+              </div>
+            )}
             {currentStep === 3 && <StepReviewGenerate />}
             {currentStep === 4 && <StepExportPacket />}
         </div>

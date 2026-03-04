@@ -6,6 +6,7 @@ import { AuthProvider } from "./context/AuthContext";
 import { ClientWidgets } from "./components/layout/ClientWidgets";
 import Footer from "./components/layout/Footer";
 import { ToastProvider } from "./components/shared/ToastProvider";
+import { LanguageProvider } from "./context/LanguageContext";
 
 export const metadata: Metadata = {
   title: "Rahvana",
@@ -22,6 +23,7 @@ export default function RootLayout({
       <body suppressHydrationWarning className="bg-background">
         <ToastProvider>
         <AuthProvider>
+          <LanguageProvider>
           {/* <ThemeProvider
             attribute="class"
             // un comment if you want bydefault device theme
@@ -34,6 +36,7 @@ export default function RootLayout({
             <ClientWidgets />
             <Footer />
           {/* </ThemeProvider> */}
+          </LanguageProvider>
         </AuthProvider>
         </ToastProvider>
       </body>
