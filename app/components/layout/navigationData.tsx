@@ -761,7 +761,7 @@ export const NAV_DATA: Record<string, NavSection> = {
             icon: (
               <Shield className="h-5 w-5 text-green-600 dark:text-green-400" />
             ),
-            title: "Police Certificate Guide",
+            title: "Police Verification Guide",
             description: "How to obtain Police Verification Certificate.",
             href: "/guides/police-verification-guide",
             // badge: "Live",

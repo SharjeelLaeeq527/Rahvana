@@ -11,6 +11,25 @@ interface MenuItemProps {
   simple?: boolean;
 }
 
+const renderWithAbbr = (text: string) => {
+  if (!text.includes("PCC")) return text;
+  const parts = text.split("PCC");
+  return parts.reduce((acc, part, i) => {
+    if (i === 0) return [part];
+    return [
+      ...acc,
+      <abbr
+        key={i}
+        title="Police Clearance Certificate"
+        className="cursor-help underline decoration-dashed decoration-slate-400"
+      >
+        PCC
+      </abbr>,
+      part,
+    ];
+  }, [] as React.ReactNode[]);
+};
+
 export const MenuItem = ({ item, index, simple = false }: MenuItemProps) => (
   <motion.div
     initial={{ opacity: 0, x: -10 }}
@@ -37,7 +56,7 @@ export const MenuItem = ({ item, index, simple = false }: MenuItemProps) => (
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2">
           <span className="text-sm font-semibold text-slate-700 group-hover:text-primary transition-colors">
-            {item.title}
+            {renderWithAbbr(item.title)}
           </span>
           {item.badge && (
             <span
@@ -53,7 +72,7 @@ export const MenuItem = ({ item, index, simple = false }: MenuItemProps) => (
         </div>
         {!simple && (
           <p className="text-xs text-slate-500 line-clamp-1 truncate">
-            {item.description}
+            {renderWithAbbr(item.description)}
           </p>
         )}
       </div>

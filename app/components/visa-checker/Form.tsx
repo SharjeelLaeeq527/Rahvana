@@ -72,7 +72,7 @@ export default function Form() {
     try {
       // --- SMART URL LOGIC START ---
       // Step 1: Env variable uthao ya Localhost fallback lo
-      let baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+      let baseUrl = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
 
       // Step 2: Trailing slash (/) hata do agar last mein hai
       baseUrl = baseUrl.replace(/\/$/, "");

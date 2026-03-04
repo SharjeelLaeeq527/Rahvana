@@ -243,18 +243,18 @@ const WhatsThisModal = ({
             onClick={(e) => e.stopPropagation()}
           >
             <div className="absolute top-5 right-5 z-20">
-            <button
-  onClick={handleClose}
-  className="p-2 rounded-2xl bg-white/10 border border-white/10 hover:bg-white/15 transition-colors focus:outline-none focus:ring-2 focus:ring-white/50 backdrop-blur-md shadow-sm"
-  aria-label="Close modal"
-  type="button"
->
-  <X className="w-5 h-5 text-white/85" />
-</button>
+              <button
+                onClick={handleClose}
+                className="p-2 rounded-2xl bg-white/10 border border-white/10 hover:bg-white/15 transition-colors focus:outline-none focus:ring-2 focus:ring-white/50 backdrop-blur-md shadow-sm"
+                aria-label="Close modal"
+                type="button"
+              >
+                <X className="w-5 h-5 text-white/85" />
+              </button>
             </div>
 
             <div className="flex-1 overflow-y-auto custom-scrollbar w-full">
-              <div className="px-6 pt-12 pb-4 bg-linear-to-b from-black/15 to-transparent backdrop-blur-sm">
+              <div className="px-4 sm:px-6 pt-12 pb-4 bg-linear-to-b from-black/15 to-transparent backdrop-blur-sm">
                 <div className="text-center">
                   <h2
                     id="whats-this-welcome-title"
@@ -294,7 +294,7 @@ const WhatsThisModal = ({
               </div>
 
               {/* Body content */}
-              <div className="px-6 pb-6 mt-4">
+              <div className="px-4 sm:px-6 pb-6 mt-4">
                 <div className="space-y-4 max-w-4xl mx-auto">
                   <ExpandSection
                     title={`What is a ${documentLabel}?`}
@@ -351,31 +351,33 @@ const WhatsThisModal = ({
 
                   {/* Footer controls */}
                   <div className="pt-6 mt-4 border-t border-white/10 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6">
-                    {isAuthenticated && <label className="flex items-center gap-3 cursor-pointer select-none group">
-                      <div className="relative flex items-center justify-center">
-                        <input
-                          type="checkbox"
-                          checked={dontShowAgain}
-                          onChange={(e) => setDontShowAgain(e.target.checked)}
-                          className="peer w-5 h-5 appearance-none rounded border-2 border-white/30 bg-white/10 checked:bg-emerald-500 checked:border-emerald-500 transition-all focus:outline-none focus:ring-2 focus:ring-emerald-500/40"
-                        />
-                        <svg
-                          className="absolute w-3 h-3 text-white opacity-0 peer-checked:opacity-100 pointer-events-none transition-opacity"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="3"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                        >
-                          <polyline points="20 6 9 17 4 12"></polyline>
-                        </svg>
-                      </div>
-                      <span className="text-sm font-medium text-white/80 group-hover:text-white transition-colors">
-                        Don&apos;t show this again{" "}
-                        {hideLoading && "(Saving...)"}
-                      </span>
-                    </label>}
+                    {isAuthenticated && (
+                      <label className="flex items-center gap-3 cursor-pointer select-none group">
+                        <div className="relative flex items-center justify-center">
+                          <input
+                            type="checkbox"
+                            checked={dontShowAgain}
+                            onChange={(e) => setDontShowAgain(e.target.checked)}
+                            className="peer w-5 h-5 appearance-none rounded border-2 border-white/30 bg-white/10 checked:bg-emerald-500 checked:border-emerald-500 transition-all focus:outline-none focus:ring-2 focus:ring-emerald-500/40"
+                          />
+                          <svg
+                            className="absolute w-3 h-3 text-white opacity-0 peer-checked:opacity-100 pointer-events-none transition-opacity"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="3"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          >
+                            <polyline points="20 6 9 17 4 12"></polyline>
+                          </svg>
+                        </div>
+                        <span className="text-sm font-medium text-white/80 group-hover:text-white transition-colors">
+                          Don&apos;t show this again{" "}
+                          {hideLoading && "(Saving...)"}
+                        </span>
+                      </label>
+                    )}
 
                     <div className="flex flex-col sm:flex-row gap-3 sm:ml-auto">
                       {/* <button

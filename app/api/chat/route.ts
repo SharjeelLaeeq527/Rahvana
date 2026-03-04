@@ -14,7 +14,7 @@ export async function POST(req: NextRequest) {
 
     // --- SMART URL LOGIC START ---
     // Production me NEXT_PUBLIC_API_URL use karega, Local me localhost fallback
-    let baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+    let baseUrl = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
     
     // Trailing slash safe remove
     baseUrl = baseUrl.replace(/\/$/, "");
