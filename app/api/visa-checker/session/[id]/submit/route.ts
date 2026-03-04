@@ -1,26 +1,27 @@
-import { NextRequest } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { VisaCheckerSupabaseService } from "@/lib/visa-checker/supabase";
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id: sessionId } = await params;
+    const { id: sessionId } = await context.params;
 
-    const response = await VisaCheckerSupabaseService.submitForScoring(
-      sessionId,
-    );
+    const response =
+      await VisaCheckerSupabaseService.submitForScoring(sessionId);
 
-    return new Response(JSON.stringify(response), {
-      status: 200,
-      headers: { "Content-Type": "application/json" },
-    });
+    return NextResponse.json(response);
   } catch (error) {
-    console.error("Error submitting questionnaire:", error);
-    const message = error instanceof Error ? error.message : String(error);
-    return new Response(
-      JSON.stringify({ error: message || "Failed to submit questionnaire" }),
+    console.error("Error submitting session:", error);
+
+    return NextResponse.json(
+      {
+        error:
+          error instanceof Error
+            ? error.message
+            : "Failed to submit session",
+      },
       { status: 500 }
     );
   }

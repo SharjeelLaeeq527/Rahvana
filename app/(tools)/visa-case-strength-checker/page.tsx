@@ -1840,14 +1840,6 @@ export default function VisaCaseStrengthChecker() {
           },
           body: JSON.stringify({
             caseType: formData.caseType,
-            userEmail:
-              typeof window !== "undefined"
-                ? localStorage.getItem("userEmail") || "guest@example.com"
-                : "guest@example.com",
-            userName:
-              typeof window !== "undefined"
-                ? localStorage.getItem("userName") || "Guest User"
-                : "Guest User",
           }),
         });
 
