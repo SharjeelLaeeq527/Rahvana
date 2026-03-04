@@ -1,4 +1,4 @@
-import { supabase } from "../supabaseClient";
+import { createClient } from "@/lib/supabase/server";
 import {
   CreateSessionRequest,
   SaveAnswersRequest,
@@ -7,23 +7,31 @@ import {
 } from "./types";
 
 export class VisaCheckerSupabaseService {
-  // Create a new assessment session
+  // ------------------------------
+  // CREATE SESSION
+  // ------------------------------
   static async createSession(request: CreateSessionRequest) {
+    const supabase = await createClient();
+
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
+    if (authError || !user) throw new Error("User not authenticated");
+
     const { data, error } = await supabase
       .from("user_case_sessions")
       .insert({
-        user_id: request.userId,
-        user_email: request.userEmail,
-        user_name: request.userName,
+        user_id: user.id,
+        user_email: user.email,
+        user_name: user.user_metadata?.full_name || null,
         case_type: request.caseType,
-        risk_level: "PENDING" as RiskLevel,
+        risk_level: "PENDING",
       })
       .select()
       .single();
 
-    if (error) {
-      throw new Error(`Failed to create session: ${error.message}`);
-    }
+    if (error) throw new Error(`Failed to create session: ${error.message}`);
 
     return {
       sessionId: data.id,
@@ -31,75 +39,78 @@ export class VisaCheckerSupabaseService {
     };
   }
 
-  // Save answers for a session
-  static async saveAnswers(
-    sessionId: string,
-    answers: SaveAnswersRequest["answers"]
-  ) {
-    // First, delete existing answers for this session
+  // ------------------------------
+  // SAVE ANSWERS
+  // ------------------------------
+  static async saveAnswers(sessionId: string, answers: SaveAnswersRequest["answers"]) {
+    const supabase = await createClient();
+
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
+    if (authError || !user) throw new Error("User not authenticated");
+
+    // Verify session ownership
+    const { data: session } = await supabase
+      .from("user_case_sessions")
+      .select("user_id")
+      .eq("id", sessionId)
+      .single();
+    if (!session || session.user_id !== user.id) throw new Error("Unauthorized");
+
+    // Delete existing answers
     const { error: deleteError } = await supabase
       .from("user_case_answers")
       .delete()
       .eq("session_id", sessionId);
-
-    if (deleteError) {
-      throw new Error(
-        `Failed to delete existing answers: ${deleteError.message}`
-      );
-    }
-
-    // Prepare answer records
-    const answerRecords = Object.entries(answers).map(
-      ([questionKey, answerValue]) => ({
-        session_id: sessionId,
-        question_key: questionKey,
-        answer_value: answerValue,
-      })
-    );
+    if (deleteError) throw new Error(`Failed to delete existing answers: ${deleteError.message}`);
 
     // Insert new answers
+    const answerRecords = Object.entries(answers).map(([key, value]) => ({
+      session_id: sessionId,
+      question_key: key,
+      answer_value: value,
+    }));
+
     if (answerRecords.length > 0) {
       const { error: insertError } = await supabase
         .from("user_case_answers")
         .insert(answerRecords);
-
-      if (insertError) {
-        throw new Error(`Failed to save answers: ${insertError.message}`);
-      }
+      if (insertError) throw new Error(`Failed to save answers: ${insertError.message}`);
     }
 
     return { message: "Answers saved successfully", sessionId };
   }
 
-  // Get session details
+  // ------------------------------
+  // GET SESSION DETAILS
+  // ------------------------------
   static async getSessionDetails(sessionId: string) {
-    // Get session info
+    const supabase = await createClient();
+
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
+    if (authError || !user) throw new Error("User not authenticated");
+
     const { data: sessionData, error: sessionError } = await supabase
       .from("user_case_sessions")
       .select("*")
       .eq("id", sessionId)
       .single();
+    if (sessionError) throw new Error(`Failed to get session: ${sessionError.message}`);
+    if (!sessionData || sessionData.user_id !== user.id) throw new Error("Unauthorized");
 
-    if (sessionError) {
-      throw new Error(`Failed to get session: ${sessionError.message}`);
-    }
-
-    if (!sessionData) {
-      throw new Error("Session not found");
-    }
-
-    // Get answers
     const { data: answersData, error: answersError } = await supabase
       .from("user_case_answers")
       .select("question_key, answer_value")
       .eq("session_id", sessionId);
-
-    if (answersError) {
-      throw new Error(`Failed to get answers: ${answersError.message}`);
-    }
+    if (answersError) throw new Error(`Failed to get answers: ${answersError.message}`);
 
     const answers: Record<string, unknown> = {};
-    answersData.forEach((item) => {
+    answersData?.forEach((item) => {
       answers[item.question_key] = item.answer_value;
     });
 
@@ -118,23 +129,24 @@ export class VisaCheckerSupabaseService {
     };
   }
 
-  // Submit session for scoring
+  // ------------------------------
+  // SUBMIT FOR SCORING
+  // ------------------------------
   static async submitForScoring(sessionId: string) {
-    // Get current session and answers
+    const supabase = await createClient();
+
     const sessionDetails = await this.getSessionDetails(sessionId);
 
-    // Calculate score using the scoring rules
     const {
       totalScore,
       allRisks,
       riskLevel,
       summaryReasons,
       improvementSuggestions,
-    } = await import("./scoring-rules").then((rules) => {
-      return rules.ScoringRules.calculateTotalScore(sessionDetails.answers);
-    });
-    
-    // Update session with calculated score
+    } = await import("./scoring-rules").then((rules) =>
+      rules.ScoringRules.calculateTotalScore(sessionDetails.answers),
+    );
+
     const { error: updateError } = await supabase
       .from("user_case_sessions")
       .update({
@@ -146,24 +158,15 @@ export class VisaCheckerSupabaseService {
         updated_at: new Date().toISOString(),
       })
       .eq("id", sessionId);
+    if (updateError) throw new Error(`Failed to update session: ${updateError.message}`);
 
-    if (updateError) {
-      throw new Error(`Failed to update session: ${updateError.message}. Score value: ${totalScore}`);
-    }
-
-    // Clear existing risk flags for this session
+    // Delete existing risk flags
     const { error: deleteFlagsError } = await supabase
       .from("risk_flags")
       .delete()
       .eq("session_id", sessionId);
+    if (deleteFlagsError) throw new Error(`Failed to clear risk flags: ${deleteFlagsError.message}`);
 
-    if (deleteFlagsError) {
-      throw new Error(
-        `Failed to clear risk flags: ${deleteFlagsError.message}`
-      );
-    }
-
-    // Insert new risk flags if any exist
     if (allRisks.length > 0) {
       const { RISK_POINTS_DEDUCTION } = await import("./scoring-config");
       const flagRecords = allRisks.map((flag) => ({
@@ -179,12 +182,7 @@ export class VisaCheckerSupabaseService {
       const { error: insertFlagsError } = await supabase
         .from("risk_flags")
         .insert(flagRecords);
-
-      if (insertFlagsError) {
-        throw new Error(
-          `Failed to save risk flags: ${insertFlagsError.message}`
-        );
-      }
+      if (insertFlagsError) throw new Error(`Failed to save risk flags: ${insertFlagsError.message}`);
     }
 
     return {
@@ -197,33 +195,28 @@ export class VisaCheckerSupabaseService {
     };
   }
 
-  // Get scoring results
+  // ------------------------------
+  // GET SCORING RESULTS
+  // ------------------------------
   static async getScoringResults(sessionId: string) {
-    // Get session info
+    const supabase = await createClient();
+
     const { data: sessionData, error: sessionError } = await supabase
       .from("user_case_sessions")
-      .select("id, overall_score, risk_level, summary_reasons, improvement_suggestions, updated_at")
+      .select(
+        "id, overall_score, risk_level, summary_reasons, improvement_suggestions, updated_at",
+      )
       .eq("id", sessionId)
       .single();
+    if (sessionError) throw new Error(`Failed to get session: ${sessionError.message}`);
+    if (!sessionData) throw new Error("Session not found or not scored yet");
 
-    if (sessionError) {
-      throw new Error(`Failed to get session: ${sessionError.message}`);
-    }
-
-    if (!sessionData) {
-      throw new Error("Session not found or not scored yet");
-    }
-
-    // Get risk flags
     const { data: riskFlagsData, error: flagsError } = await supabase
       .from("risk_flags")
       .select("*")
       .eq("session_id", sessionId)
       .order("points_deducted", { ascending: false });
-
-    if (flagsError) {
-      throw new Error(`Failed to get risk flags: ${flagsError.message}`);
-    }
+    if (flagsError) throw new Error(`Failed to get risk flags: ${flagsError.message}`);
 
     return {
       sessionId: sessionData.id,
@@ -242,37 +235,29 @@ export class VisaCheckerSupabaseService {
     };
   }
 
-  // Delete a session
+  // ------------------------------
+  // DELETE SESSION
+  // ------------------------------
   static async deleteSession(sessionId: string) {
-    // Delete risk flags
+    const supabase = await createClient();
+
     const { error: flagsError } = await supabase
       .from("risk_flags")
       .delete()
       .eq("session_id", sessionId);
+    if (flagsError) throw new Error(`Failed to delete risk flags: ${flagsError.message}`);
 
-    if (flagsError) {
-      throw new Error(`Failed to delete risk flags: ${flagsError.message}`);
-    }
-
-    // Delete answers
     const { error: answersError } = await supabase
       .from("user_case_answers")
       .delete()
       .eq("session_id", sessionId);
+    if (answersError) throw new Error(`Failed to delete answers: ${answersError.message}`);
 
-    if (answersError) {
-      throw new Error(`Failed to delete answers: ${answersError.message}`);
-    }
-
-    // Delete session
     const { error: sessionError } = await supabase
       .from("user_case_sessions")
       .delete()
       .eq("id", sessionId);
-
-    if (sessionError) {
-      throw new Error(`Failed to delete session: ${sessionError.message}`);
-    }
+    if (sessionError) throw new Error(`Failed to delete session: ${sessionError.message}`);
 
     return {
       sessionId,
@@ -281,20 +266,27 @@ export class VisaCheckerSupabaseService {
     };
   }
 
-  // Get User Requests
-  static async getUserRequests(email: string, limit: number = 50, offset: number = 0) {
+  // ------------------------------
+  // GET USER REQUESTS
+  // ------------------------------
+  static async getUserRequests(limit = 50, offset = 0) {
+    const supabase = await createClient();
+
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
+    if (authError || !user) throw new Error("User not authenticated");
+
     const { data, error } = await supabase
-      .from('user_case_sessions')
-      .select('*')
-      .eq('user_email', email)
-      .order('created_at', { ascending: false })
+      .from("user_case_sessions")
+      .select("*")
+      .eq("user_id", user.id)
+      .order("created_at", { ascending: false })
       .range(offset, offset + limit - 1);
+    if (error) throw new Error(error.message);
 
-    if (error) {
-      throw new Error(`Failed to get user requests: ${error.message}`);
-    }
-
-    return data.map(item => ({
+    return data.map((item) => ({
       sessionId: item.id,
       userEmail: item.user_email,
       userName: item.user_name,
@@ -303,11 +295,13 @@ export class VisaCheckerSupabaseService {
       riskLevel: item.risk_level as RiskLevel,
       completed: item.completed,
       createdAt: item.created_at,
-      updatedAt: item.updated_at
+      updatedAt: item.updated_at,
     }));
   }
 
-  // Convert severity to priority number (1=HIGH, 2=MEDIUM, 3=LOW)
+  // ------------------------------
+  // HELPER: PRIORITY NUMBER
+  // ------------------------------
   private static getPriorityNumber(severity: string): number {
     switch (severity) {
       case "HIGH":
