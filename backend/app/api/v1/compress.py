@@ -21,61 +21,7 @@ class PDFProcessor:
     """Handle EXTREME PDF compression with logging and speed optimization"""
     
     @staticmethod
-    def process_image(img_data: tuple, doc, max_dimension: int = 1024, img_quality: int = 20):
-        """Process a single image (for parallel processing)"""
-        img_index, img, page_num = img_data
-        xref = img[0]
-        
-        try:
-            s = doc.extract_image(xref)
-            
-            # Skip small/already compressed JPEGs
-            if s['ext'].lower() in ('jpeg', 'jpg') and s['size'] < 50 * 1024:
-                return None
-            
-            image_bytes = s["image"]
-            pil_image = Image.open(io.BytesIO(image_bytes))
-            width, height = pil_image.size
-
-            # Check and resize only if needed
-            should_resize = width > max_dimension or height > max_dimension
-            
-            if should_resize:
-                ratio = min(max_dimension/width, max_dimension/height)
-                new_width = int(width * ratio)
-                new_height = int(height * ratio)
-                
-                # Use LANCZOS for better quality at similar speed
-                pil_image = pil_image.resize(
-                    (new_width, new_height),
-                    Image.Resampling.LANCZOS
-                )
-                
-            if pil_image.mode != 'RGB':
-                pil_image = pil_image.convert('RGB')
-            
-            # Aggressive JPEG compression
-            img_buffer = io.BytesIO()
-            pil_image.save(
-                img_buffer,
-                format='JPEG',
-                quality=img_quality, 
-                optimize=True
-            )
-            compressed_image_bytes = img_buffer.getvalue()
-            
-            return (xref, compressed_image_bytes)
-            
-        except Exception as e:
-            logger.warning(f"Failed to process image {img_index} on page {page_num + 1}: {e}")
-            return None
-    
-    @staticmethod
-    async def compress_pdf(
-        input_bytes: bytes,
-        password: Optional[str] = None
-    ) -> tuple[bytes, dict]:
-        
+    def process_pdf_sync(input_bytes: bytes, password: Optional[str] = None) -> tuple[bytes, dict]:
         original_size = len(input_bytes)
         temp_files = []
         
@@ -95,90 +41,94 @@ class PDFProcessor:
             logger.info(f"Starting compression. Original size: {original_size} bytes.")
             
             # Hardcoded settings
-            target_dpi = 72
-            img_quality = 80
+            img_quality = 60
             max_dimension = 1024
             
-            # --- STEP 1: Parallel Image Processing ---
+            # --- STEP 1: Sequential Image Processing ---
             doc = fitz.open(input_path)
             
-            # Collect all images with their page numbers
-            all_images = []
+            logger.info(f"Processing PDF with {len(doc)} pages...")
             for page_num in range(len(doc)):
                 page = doc[page_num]
-                image_list = page.get_images(full=True)
-                for img_index, img in enumerate(image_list):
-                    all_images.append((img_index, img, page_num))
-            
-            if all_images:
-                logger.info(f"Processing {len(all_images)} images across {len(doc)} pages...")
+                image_list = page.get_images()
                 
-                # Process images in parallel using ThreadPoolExecutor
-                loop = asyncio.get_event_loop()
-                with ThreadPoolExecutor(max_workers=4) as executor:
-                    tasks = [
-                        loop.run_in_executor(
-                            executor,
-                            PDFProcessor.process_image,
-                            img_data,
-                            doc,
-                            max_dimension,
-                            img_quality
-                        )
-                        for img_data in all_images
-                    ]
-                    results = await asyncio.gather(*tasks)
-                
-                # Apply compressed images back to pages
-                for page_num in range(len(doc)):
-                    page = doc[page_num]
-                    for result in results:
-                        if result:
-                            xref, compressed_bytes = result
-                            try:
-                                page.replace_image(xref, stream=compressed_bytes)
-                            except:
-                                pass  # Image might not be on this page
+                for img_info in image_list:
+                    xref = img_info[0]
+                    try:
+                        extracted = doc.extract_image(xref)
+                        if not extracted:
+                            continue
+                        
+                        # Skip small/already compressed JPEGs
+                        if extracted['ext'].lower() in ('jpeg', 'jpg') and extracted['size'] < 50 * 1024:
+                            continue
+                        
+                        image_bytes = extracted["image"]
+                        pil_image = Image.open(io.BytesIO(image_bytes))
+                        width, height = pil_image.size
+                        
+                        # Check and resize only if needed
+                        should_resize = width > max_dimension or height > max_dimension
+                        if should_resize:
+                            ratio = min(max_dimension/width, max_dimension/height)
+                            new_width = int(width * ratio)
+                            new_height = int(height * ratio)
+                            pil_image = pil_image.resize((new_width, new_height), Image.Resampling.LANCZOS)
+                        
+                        if pil_image.mode != 'RGB':
+                            pil_image = pil_image.convert('RGB')
+                        
+                        # Aggressive JPEG compression
+                        img_buffer = io.BytesIO()
+                        pil_image.save(img_buffer, format='JPEG', quality=img_quality, optimize=True)
+                        compressed_image_bytes = img_buffer.getvalue()
+                        
+                        # Update the image in the PDF
+                        page.replace_image(xref, stream=compressed_image_bytes)
+                        
+                    except Exception as e:
+                        logger.warning(f"Failed to process image {xref} on page {page_num + 1}: {e}")
             
             logger.info("Image optimization complete. Starting structural saving.")
             
-            # Save with aggressive settings
+            # Save with aggressive structure settings
             doc.save(
                 intermediate_path,
                 garbage=4,
                 deflate=True,
-                clean=True,
-                pretty=False  # Faster saving
+                clean=True
             )
             doc.close()
             
-            # --- STEP 2: Quick Structure Cleanup ---
-            def pikepdf_process():
-                with pikepdf.open(intermediate_path, password=password or '') as pdf:
-                    try:
-                        with pdf.open_metadata() as meta:
-                            meta.clear()
-                    except Exception:
-                        pass
-                    
-                    pdf.save(
-                        output_path,
-                        compress_streams=True,
-                        stream_decode_level=pikepdf.StreamDecodeLevel.generalized,
-                        object_stream_mode=pikepdf.ObjectStreamMode.generate,
-                        linearize=True  # Enable linearization for faster web viewing
-                    )
-            
-            # Run pikepdf in thread pool
-            loop = asyncio.get_event_loop()
-            await loop.run_in_executor(None, pikepdf_process)
+            # --- STEP 2: Quick Structure Cleanup with pikepdf ---
+            with pikepdf.open(intermediate_path, password=password or '') as pdf:
+                try:
+                    with pdf.open_metadata() as meta:
+                        meta.clear()
+                except Exception:
+                    pass
+                
+                pdf.save(
+                    output_path,
+                    compress_streams=True,
+                    stream_decode_level=pikepdf.StreamDecodeLevel.generalized,
+                    object_stream_mode=pikepdf.ObjectStreamMode.generate,
+                    linearize=True  # Enable linearization for faster web viewing
+                )
             
             # Read final file
             with open(output_path, 'rb') as f:
                 compressed_bytes = f.read()
             
             compressed_size = len(compressed_bytes)
-            reduction = ((original_size - compressed_size) / original_size) * 100
+            
+            # Fallback if compressed is larger than original
+            if compressed_size >= original_size:
+                compressed_bytes = input_bytes
+                compressed_size = original_size
+                reduction = 0.0
+            else:
+                reduction = ((original_size - compressed_size) / original_size) * 100
             
             metadata = {
                 'original_size': original_size,
@@ -205,7 +155,21 @@ class PDFProcessor:
                         os.unlink(path)
                     except OSError:
                         pass
-
+    
+    @staticmethod
+    async def compress_pdf(
+        input_bytes: bytes,
+        password: Optional[str] = None
+    ) -> tuple[bytes, dict]:
+        # Offload the entire CPU-bound compression process to thread pool safely
+        loop = asyncio.get_running_loop()
+        with ThreadPoolExecutor(max_workers=3) as pool:
+            return await loop.run_in_executor(
+                pool, 
+                PDFProcessor.process_pdf_sync, 
+                input_bytes, 
+                password
+            )
 
 @router.post("/compress")
 async def compress_pdf(
@@ -221,6 +185,7 @@ async def compress_pdf(
     
     content = await file.read()
     
+    # Render and Vercel limits exist, we reject >100MB here, and proxy handles what it handles
     if len(content) > 100 * 1024 * 1024:
         logger.error(f"File size {len(content)} exceeds 100MB limit.")
         raise HTTPException(status_code=413, detail="File too large. Maximum size is 100MB")

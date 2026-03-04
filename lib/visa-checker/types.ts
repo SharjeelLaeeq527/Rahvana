@@ -99,7 +99,6 @@ export type FlagCode =
   | 'DUAL_USE_TECHNOLOGY_RISK';
 
 export interface CreateSessionRequest {
-  userId?: string;
   userEmail?: string;
   userName?: string;
   caseType: CaseType;
