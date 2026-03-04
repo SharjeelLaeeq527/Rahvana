@@ -21,11 +21,13 @@ import {
   BookOpen,
   FolderLock,
   Wand2,
+  Globe,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import MegaMenu from "./MegaMenu";
 import { User } from "@supabase/supabase-js";
 import { useAuth, UserProfile } from "@/app/context/AuthContext";
+import { useLanguage } from "@/app/context/LanguageContext";
 import { NAV_DATA } from "./navigationData";
 import { ConfirmationModal } from "../shared/ConfirmationModal";
 // import { useTheme } from "next-themes";
@@ -128,6 +130,7 @@ export function SiteHeader({
 
   const { profile, isLoading, user: authUser } = useAuth();
   const resolvedUser = user ?? authUser;
+  const { language, setLanguage } = useLanguage();
 
   const handleMenuEnter = (menu: string) => {
     if (menuTimeoutRef.current) clearTimeout(menuTimeoutRef.current);
@@ -397,6 +400,15 @@ export function SiteHeader({
         {/* Right side – Search + Login */}
 
         <div className="flex items-center gap-3">
+          {/* Language Toggle */}
+          <HydrationSafeButton
+            onClick={() => setLanguage(language === "en" ? "ur" : "en")}
+            className="flex items-center gap-1 p-2 rounded-md hover:bg-muted text-muted-foreground transition-colors font-medium border border-border"
+            title="Toggle Language"
+          >
+            <Globe className="w-4 h-4" />
+            <span className="text-xs uppercase leading-none mt-0.5">{language === "en" ? "اردو" : "EN"}</span>
+          </HydrationSafeButton>
 
           {isLoading && !resolvedUser
             ? null
