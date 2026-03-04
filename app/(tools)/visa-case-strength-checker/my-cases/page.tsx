@@ -97,11 +97,7 @@ export default function MyCases() {
     const fetchUserCases = async () => {
       try {
         setLoading(true);
-        const userEmail = "guest@example.com";
-
-        const response = await fetch(
-          `/api/visa-checker/results?email=${encodeURIComponent(userEmail)}`,
-        );
+        const response = await fetch(`/api/visa-checker/results`);
 
         const data = await response.json();
 

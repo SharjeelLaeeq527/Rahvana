@@ -1,26 +1,27 @@
-import { NextRequest } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { VisaCheckerSupabaseService } from "@/lib/visa-checker/supabase";
-import { SessionDetailsResponse } from "@/lib/visa-checker/types";
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id: sessionId } = await params;
+    const { id: sessionId } = await context.params;
 
-    const response: SessionDetailsResponse =
+    const response =
       await VisaCheckerSupabaseService.getSessionDetails(sessionId);
 
-    return new Response(JSON.stringify(response), {
-      status: 200,
-      headers: { "Content-Type": "application/json" },
-    });
+    return NextResponse.json(response);
   } catch (error) {
     console.error("Error fetching session details:", error);
-    const message = error instanceof Error ? error.message : String(error);
-    return new Response(
-      JSON.stringify({ error: message || "Failed to fetch session details" }),
+
+    return NextResponse.json(
+      {
+        error:
+          error instanceof Error
+            ? error.message
+            : "Failed to fetch session details",
+      },
       { status: 500 }
     );
   }
