@@ -1285,14 +1285,14 @@
           "description": "Request certified translation + formatting for submission."
         }
       }
-    },
-    "homePage": {
-      "trustedBy": "Trusted by families worldwide",
-      "heroTitle1": "Your Immigration Journey,",
-      "heroTitle2": "Simplified",
-      "heroDescription": "Navigate the complexities of immigration with confidence. Rahvana provides step-by-step guidance, smart tools, and expert support to help you reunite with loved ones.",
-      "resumeJourney": "Resume My Journey",
-      "exploreJourneys": "Explore Journeys"
     }
+  },
+  "homePage": {
+    "trustedBy": "Trusted by families worldwide",
+    "heroTitle1": "Your Immigration Journey,",
+    "heroTitle2": "Simplified",
+    "heroDescription": "Navigate the complexities of immigration with confidence. Rahvana provides step-by-step guidance, smart tools, and expert support to help you reunite with loved ones.",
+    "resumeJourney": "Resume My Journey",
+    "exploreJourneys": "Explore Journeys"
   }
 }
