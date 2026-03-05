@@ -25,6 +25,7 @@ import GetInTouch from "./components/Contact/GetInTouch";
 import { AuthRequiredModal } from "./components/shared/AuthRequiredModal";
 import { MfaPromptModal } from "./components/shared/MFAPromptModal";
 import { NAV_DATA } from "@/app/components/layout/navigationData";
+import { useLanguage } from "@/app/context/LanguageContext";
 
 const renderWithAbbr = (text: string) => {
   if (!text || typeof text !== "string" || !text.includes("PCC")) return text;
@@ -571,6 +572,7 @@ function HomePageContent() {
 
   // Lifted wizard state to share with Dashboard
   const { state, actions, isLoaded } = useWizard();
+  const { t } = useLanguage();
 
   const handleNavigate = (section: string) => {
     if (section === "contact") {
@@ -670,19 +672,17 @@ function HomePageContent() {
                   >
                     <div className="inline-flex items-center gap-2 px-4 py-2 mb-6 text-sm font-medium rounded-full bg-rahvana-primary-pale text-rahvana-primary">
                       <Icons.ShieldCheck className="w-4 h-4" />
-                      Trusted by families worldwide
+                      {t("homePage.trustedBy")}
                     </div>
                     <h1 className="text-3xl md:text-5xl lg:text-6xl font-bold leading-tight text-foreground mb-6">
-                      Your Immigration Journey,
+                      {t("homePage.heroTitle1")}
                       <br />
                       <span className="bg-linear-to-r from-rahvana-primary to-rahvana-primary-light bg-clip-text text-fill-transparent">
-                        Simplified
+                        {t("homePage.heroTitle2")}
                       </span>
                     </h1>
                     <p className="text-lg text-muted-foreground leading-relaxed mb-8">
-                      Navigate the complexities of immigration with confidence.
-                      Rahvana provides step-by-step guidance, smart tools, and
-                      expert support to help you reunite with loved ones.
+                      {t("homePage.heroDescription")}
                     </p>
                     <div className="flex flex-wrap gap-4 mb-10">
                       {user && (
@@ -691,7 +691,7 @@ function HomePageContent() {
                             onClick={() => {}}
                             className="inline-flex items-center gap-2 px-8 py-4 text-base font-semibold text-white rounded-lg bg-linear-to-r from-rahvana-primary to-rahvana-primary-light shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all"
                           >
-                            Resume My Journey
+                            {t("homePage.resumeJourney")}
                             <Icons.ArrowRight className="w-5 h-5" />
                           </HydrationSafeButton>
                         </Link>
@@ -705,7 +705,7 @@ function HomePageContent() {
                               : "inline-flex items-center px-8 py-4 text-base font-semibold text-white rounded-lg bg-linear-to-r from-rahvana-primary to-rahvana-primary-light shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all"
                           }
                         >
-                          Explore Journeys
+                          {t("homePage.exploreJourneys")}
                         </HydrationSafeButton>
                       </Link>
                     </div>
