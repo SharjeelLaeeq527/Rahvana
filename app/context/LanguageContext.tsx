@@ -64,8 +64,8 @@ export const LanguageProvider: React.FC<LanguageProviderProps> = ({ children }) 
       }
     }
 
-    // Return the translated string or the key itself if not found
-    return typeof value === 'string' ? value : key;
+    // Return the translated string or empty string if not found, to allow fallbacks
+    return typeof value === 'string' ? value : '';
   };
 
   const value: LanguageContextType = {

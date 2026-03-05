@@ -711,11 +711,11 @@ function HomePageContent() {
                     </div>
                     <div className="flex flex-wrap gap-8">
                       {[
-                        { icon: Icons.Lock, text: "Secure Vault" },
-                        { icon: Icons.Cpu, text: "AI Insights" },
+                        { icon: Icons.Lock, text: t("homePage.heroFeatures.0") || "Secure Vault" },
+                        { icon: Icons.Cpu, text: t("homePage.heroFeatures.1") || "AI Insights" },
                         {
                           icon: Icons.CheckCircle,
-                          text: "Step-by-Step Guidance",
+                          text: t("homePage.heroFeatures.2") || "Step-by-Step Guidance",
                         },
                       ].map((item, i) => (
                         <div key={i} className="flex items-center gap-3">
@@ -786,7 +786,7 @@ function HomePageContent() {
                     className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-rahvana-primary-pale text-rahvana-primary text-sm font-semibold mb-4"
                   >
                     <Icons.Compass className="w-4 h-4" />
-                    Find Your Path
+                    {t("homePage.journeysBadge")}
                   </motion.span>
                   <motion.h2
                     initial={{ opacity: 0, y: 20 }}
@@ -795,7 +795,7 @@ function HomePageContent() {
                     viewport={{ once: true }}
                     className="text-3xl md:text-5xl font-bold text-foreground mb-4"
                   >
-                    Explore Immigration Journeys
+                    {t("homePage.journeysTitle")}
                   </motion.h2>
                   <motion.p
                     initial={{ opacity: 0, y: 20 }}
@@ -804,8 +804,7 @@ function HomePageContent() {
                     viewport={{ once: true }}
                     className="text-lg text-muted-foreground"
                   >
-                    Select your visa category to access personalized guidance,
-                    document checklists, and timeline tracking.
+                    {t("homePage.journeysDescription")}
                   </motion.p>
                 </div>
 
@@ -825,15 +824,18 @@ function HomePageContent() {
                           : "bg-background border-border text-muted-foreground hover:border-rahvana-primary hover:text-rahvana-primary"
                       }`}
                     >
-                      {tab.charAt(0).toUpperCase() +
-                        tab.slice(1).replace("-", " ")}
+                      {t(`homePage.categoryLabels.${tab}`) || tab}
                     </HydrationSafeButton>
                   ))}
                 </div>
 
                 <div className="relative group min-h-125 flex items-center justify-center">
                   <StackedCarousel
-                    items={JOURNEYS.filter((j) => j.category === journeyTab)}
+                    items={JOURNEYS.map((j) => ({
+                      ...j,
+                      title: t(`homePage.journeysObj.${j.category}.${j.code}.title`) || j.title,
+                      desc: t(`homePage.journeysObj.${j.category}.${j.code}.desc`) || j.desc
+                    })).filter((j) => j.category === journeyTab)}
                     onNavigate={handleNavigate}
                     onNotify={() => setShowComingSoon(true)}
                   />
@@ -855,14 +857,13 @@ function HomePageContent() {
                     className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-rahvana-primary-pale text-rahvana-primary text-sm font-semibold mb-4"
                   >
                     <Icons.Wrench className="w-4 h-4" />
-                    Power Tools
+                    {t("homePage.toolsBadge")}
                   </motion.span>
                   <h2 className="text-3xl md:text-5xl font-bold text-foreground mb-4">
-                    Quick Tools at Your Fingertips
+                    {t("homePage.toolsTitle")}
                   </h2>
                   <p className="text-lg text-muted-foreground">
-                    Powerful tools designed to streamline your immigration
-                    process and keep you informed.
+                    {t("homePage.toolsDescription")}
                   </p>
                 </div>
 
@@ -870,38 +871,38 @@ function HomePageContent() {
                   {[
                     {
                       icon: <Icons.Brain className="w-7 h-7 " />,
-                      title: "Case Strength Analyzer",
-                      desc: "Get AI-powered insights into your case status, processing times, and what to expect next.",
+                      title: t("homePage.toolsItems.0.title") || "Case Strength Analyzer",
+                      desc: t("homePage.toolsItems.0.desc") || "Get AI-powered insights into your case status, processing times, and what to expect next.",
                       url: "/visa-case-strength-checker",
                     },
                     {
                       icon: <Icons.LifeBuoy className="w-7 h-7 " />,
-                      title: "221(g) Action Planner",
-                      desc: "Navigate administrative processing with step-by-step guidance and status tracking.",
+                      title: t("homePage.toolsItems.1.title") || "221(g) Action Planner",
+                      desc: t("homePage.toolsItems.1.desc") || "Navigate administrative processing with step-by-step guidance and status tracking.",
                       url: "/221g-action-planner",
                     },
                     {
                       icon: <Icons.Compass className="w-7 h-7" />,
-                      title: "VisaPath Finder",
-                      desc: "Answer a few questions and discover the best visa options for your unique situation.",
+                      title: t("homePage.toolsItems.2.title") || "VisaPath Finder",
+                      desc: t("homePage.toolsItems.2.desc") || "Answer a few questions and discover the best visa options for your unique situation.",
                       url: "/visa-eligibility",
                     },
                     {
                       icon: <Icons.Calculator className="w-7 h-7" />,
-                      title: "Sponsorship Calculator",
-                      desc: "Calculate financial requirements and determine if you meet the sponsorship threshold.",
+                      title: t("homePage.toolsItems.3.title") || "Sponsorship Calculator",
+                      desc: t("homePage.toolsItems.3.desc") || "Calculate financial requirements and determine if you meet the sponsorship threshold.",
                       url: "/affidavit-support-calculator",
                     },
                     {
                       icon: <Icons.Files className="w-7 h-7 " />,
-                      title: "PDF ToolKit",
-                      desc: "Merge, split, and organize your immigration documents with ease.",
+                      title: t("homePage.toolsItems.4.title") || "PDF ToolKit",
+                      desc: t("homePage.toolsItems.4.desc") || "Merge, split, and organize your immigration documents with ease.",
                       url: "/pdf-processing",
                     },
                     {
                       icon: <Icons.Wand2 className="w-7 h-7" />,
-                      title: "Smart Form Filler",
-                      desc: "Auto-complete immigration forms with your saved profile data.",
+                      title: t("homePage.toolsItems.5.title") || "Smart Form Filler",
+                      desc: t("homePage.toolsItems.5.desc") || "Auto-complete immigration forms with your saved profile data.",
                       url: "/visa-forms",
                     },
                   ].map((tool, i) => (
@@ -925,7 +926,7 @@ function HomePageContent() {
                         {tool.desc}
                       </p>
                       <div className="flex items-center gap-2 text-sm font-bold text-rahvana-primary group-hover:gap-3 transition-all">
-                        Try it out <Icons.ArrowRight className="w-4 h-4" />
+                        {t("homePage.toolTryItOut")} <Icons.ArrowRight className="w-4 h-4" />
                       </div>
                     </motion.div>
                   ))}
@@ -935,7 +936,7 @@ function HomePageContent() {
                     onClick={() => router.push("/tools")}
                     className="inline-flex items-center gap-2 px-8 py-3 text-base font-bold text-rahvana-primary border-2 border-rahvana-primary rounded-full hover:bg-rahvana-primary hover:text-white transition-all cursor-pointer"
                   >
-                    Explore all tools <Icons.ArrowRight className="w-5 h-5" />
+                    {t("homePage.toolsExploreAll")} <Icons.ArrowRight className="w-5 h-5" />
                   </HydrationSafeButton>
                 </div>
               </div>
@@ -955,7 +956,7 @@ function HomePageContent() {
                     className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-rahvana-primary-pale text-rahvana-primary text-sm font-semibold mb-4"
                   >
                     <Icons.Briefcase className="w-4 h-4" />
-                    Premium Services
+                    {t("homePage.servicesBadge")}
                   </motion.span>
                   <motion.h2
                     initial={{ opacity: 0, y: 20 }}
@@ -964,7 +965,7 @@ function HomePageContent() {
                     viewport={{ once: true }}
                     className="text-3xl md:text-5xl font-bold text-foreground mb-4"
                   >
-                    Expert Help & Done-for-You Cases
+                    {t("homePage.servicesTitle")}
                   </motion.h2>
                   <motion.p
                     initial={{ opacity: 0, y: 20 }}
@@ -973,8 +974,7 @@ function HomePageContent() {
                     viewport={{ once: true }}
                     className="text-lg text-muted-foreground"
                   >
-                    Get the personalized support you need, from quick
-                    consultations to full document preparation and review.
+                    {t("homePage.servicesDescription")}
                   </motion.p>
                 </div>
 
@@ -1023,10 +1023,12 @@ function HomePageContent() {
                                     : "text-muted-foreground group-hover:text-foreground"
                                 }`}
                               >
-                                {renderWithAbbr(service.title)}
+                                {renderWithAbbr(
+                                  t(`homePage.servicesList.${idx}.title`) || service.title
+                                )}
                               </h4>
                               <p className="text-[10px] sm:text-xs text-muted-foreground truncate opacity-80 uppercase tracking-wider mt-0.5 sm:mt-1">
-                                {service.category}
+                                {t(`homePage.categoryLabels.${service.category}`) || service.category}
                               </p>
                             </div>
                             {/* Active indicator line */}
@@ -1048,7 +1050,7 @@ function HomePageContent() {
                         onClick={() => router.push("/services")}
                         className="inline-flex items-center gap-2 text-sm font-bold text-rahvana-primary hover:text-rahvana-primary-dark transition-colors"
                       >
-                        View all services{" "}
+                        {t("homePage.servicesViewAll")}{" "}
                         <Icons.ArrowRight className="w-4 h-4" />
                       </HydrationSafeButton>
                     </div>
@@ -1082,6 +1084,11 @@ function HomePageContent() {
                             </div>
                             <div className="inline-block px-3 py-1 sm:px-4 sm:py-1.5 text-[10px] sm:text-xs font-bold uppercase tracking-wider rounded-full bg-rahvana-primary-pale text-rahvana-primary">
                               {
+                                t(`homePage.categoryLabels.${ALL_SERVICES.filter(
+                                  (s) =>
+                                    // !s.disabled &&
+                                    s.href !== "/book-consultation",
+                                )[activeService]?.category}`) ||
                                 ALL_SERVICES.filter(
                                   (s) =>
                                     // !s.disabled &&
@@ -1093,6 +1100,7 @@ function HomePageContent() {
 
                           <h3 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold text-foreground mb-3 sm:mb-4 leading-tight">
                             {renderWithAbbr(
+                              t(`homePage.servicesList.${activeService}.title`) ||
                               ALL_SERVICES.filter(
                                 (s) =>
                                   // !s.disabled &&
@@ -1102,6 +1110,7 @@ function HomePageContent() {
                           </h3>
                           <p className="text-muted-foreground text-sm sm:text-base md:text-lg leading-relaxed mb-6 sm:mb-8 flex-1">
                             {renderWithAbbr(
+                              t(`homePage.servicesList.${activeService}.desc`) ||
                               ALL_SERVICES.filter(
                                 (s) =>
                                   // !s.disabled &&
@@ -1116,7 +1125,7 @@ function HomePageContent() {
                               onClick={() => setShowComingSoon(true)}
                               className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-4 text-base font-bold text-white bg-rahvana-primary rounded-xl transition-all shadow-md"
                             >
-                              Get Started{" "}
+                              {t("homePage.servicesGetStarted")}{" "}
                               <Icons.ArrowRight className="w-5 h-5" />
                             </HydrationSafeButton>
                           </div>
@@ -1141,16 +1150,15 @@ function HomePageContent() {
                     <div className="p-6 md:p-10 lg:p-16 text-white self-center">
                       <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/20 text-sm font-semibold mb-6">
                         <Icons.MessageSquare className="w-4 h-4" />
-                        Expert Guidance
+                        {t("homePage.consultationBadge")}
                       </div>
                       <h2 className="text-3xl lg:text-5xl font-bold mb-6">
-                        Book a Consultation
+                        {t("homePage.consultationTitle")}
                       </h2>
                       <p className="text-lg opacity-90 leading-relaxed mb-8">
-                        Get personalized advice from immigration specialists who
-                        understand your journey.{" "}
+                        {t("homePage.consultationDescription")}{" "}
                         <span className="inline-block px-3 py-1 rounded-md bg-white/20 font-bold">
-                          Sign up now.
+                          {t("homePage.consultationSignUp")}
                         </span>
                       </p>
                       <button
@@ -1158,7 +1166,7 @@ function HomePageContent() {
                         onClick={() => setShowComingSoon(true)}
                         className="inline-flex items-center px-10 py-5 bg-background text-rahvana-primary text-lg font-bold rounded-xl shadow-lg hover:shadow-2xl hover:-translate-y-1 transition-all"
                       >
-                        Book a Consultation
+                        {t("homePage.consultationButton")}
                       </button>
                     </div>
                     <div className="relative h-64 lg:h-full min-h-100 rounded-r-2xl">
@@ -1187,14 +1195,13 @@ function HomePageContent() {
                     className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-rahvana-primary-pale text-rahvana-primary text-sm font-semibold mb-4"
                   >
                     <Icons.TrendingUp className="w-4 h-4" />
-                    Your Journey
+                    {t("homePage.howItWorksBadge1")}
                   </motion.span>
                   <h2 className="text-3xl md:text-5xl font-bold text-foreground mb-4">
-                    How Rahvana Works
+                    {t("homePage.howItWorksTitle")}
                   </h2>
                   <p className="text-lg text-muted-foreground">
-                    From onboarding to interview readiness, Rahvana guides each
-                    case through a clear, trackable workflow.
+                    {t("homePage.howItWorksDescription")}
                   </p>
                   <motion.span
                     initial={{ opacity: 0, y: 10 }}
@@ -1203,7 +1210,7 @@ function HomePageContent() {
                     className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-rahvana-primary-pale text-rahvana-primary text-sm font-semibold my-2"
                   >
                     <Icons.Route className="w-4 h-4" />
-                    See steps below for how rahvana works
+                    {t("homePage.howItWorksBadge2")}
                   </motion.span>
                 </div>
 
@@ -1320,11 +1327,11 @@ function HomePageContent() {
                             0{activeStep}
                           </div>
                           <h3 className="text-2xl font-bold text-foreground">
-                            {LIFECYCLE_STEPS[activeStep - 1].title}
+                            {t(`homePage.steps.step${activeStep}.title`) || LIFECYCLE_STEPS[activeStep - 1].title}
                           </h3>
                         </div>
                         <p className="text-muted-foreground leading-relaxed mb-8 text-lg">
-                          {LIFECYCLE_STEPS[activeStep - 1].desc}
+                          {t(`homePage.steps.step${activeStep}.desc`) || LIFECYCLE_STEPS[activeStep - 1].desc}
                         </p>
                         <ul className="space-y-4 mb-10">
                           {LIFECYCLE_STEPS[activeStep - 1].items.map(
@@ -1334,7 +1341,7 @@ function HomePageContent() {
                                 className="flex items-center gap-3 text-foreground font-medium bg-muted/50 p-3 rounded-xl border border-border"
                               >
                                 <Icons.Check className="w-5 h-5 text-rahvana-primary" />
-                                {item}
+                                {t(`homePage.steps.step${activeStep}.items.${i}`) || item}
                               </li>
                             ),
                           )}
@@ -1353,7 +1360,7 @@ function HomePageContent() {
                             }`}
                           >
                             <Icons.ChevronLeft className="w-5 h-5" />
-                            Previous
+                            {t("homePage.howItWorksPrevious")}
                           </button>
 
                           <div className="flex gap-1.5">
@@ -1378,7 +1385,7 @@ function HomePageContent() {
                                 : "bg-rahvana-primary text-white shadow-lg hover:bg-rahvana-primary-dark hover:-translate-y-0.5"
                             }`}
                           >
-                            Next
+                            {t("homePage.howItWorksNext")}
                             <Icons.ChevronRight className="w-5 h-5" />
                           </button>
                         </div>
@@ -1400,10 +1407,10 @@ function HomePageContent() {
                     className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-rahvana-primary-pale text-rahvana-primary text-sm font-semibold mb-4"
                   >
                     <Icons.HelpCircle className="w-4 h-4" />
-                    Common Questions
+                    {t("homePage.faqBadge")}
                   </motion.span>
                   <h2 className="text-3xl md:text-5xl font-bold text-foreground mb-4">
-                    Frequently Asked Questions
+                    {t("homePage.faqTitle") || "Frequently Asked Questions"}
                   </h2>
                 </div>
 
@@ -1426,7 +1433,7 @@ function HomePageContent() {
                         className="w-full px-5 md:px-8 py-6 text-left flex items-center justify-between"
                       >
                         <span className="text-lg font-bold text-foreground pr-4 md:pr-8">
-                          {faq.q}
+                          {t(`homePage.faqs.q${i + 1}.q`) || faq.q}
                         </span>
                         <div
                           className={`w-6 h-6 md:h-8 md:w-8 shrink-0 rounded-full  border flex items-center justify-center transition-all ${
@@ -1447,7 +1454,7 @@ function HomePageContent() {
                             className="overflow-hidden"
                           >
                             <div className="px-8 pb-6 text-muted-foreground leading-relaxed border-t border-rahvana-primary/10 pt-4">
-                              {faq.a}
+                              {t(`homePage.faqs.q${i + 1}.a`) || faq.a}
                             </div>
                           </motion.div>
                         )}

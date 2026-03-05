@@ -13,6 +13,7 @@ import {
   Facebook,
 } from "lucide-react";
 import { submitContactForm } from "./contact-action";
+import { useLanguage } from "../../context/LanguageContext";
 const XIcon = ({ size = 20 }: { size?: number }) => (
   <svg
     width={size}
@@ -31,6 +32,7 @@ export default function GetInTouch() {
   const [status, setStatus] = useState<"idle" | "success" | "error">("idle");
   const [errorMessage, setErrorMessage] = useState("");
   const formRef = useRef<HTMLFormElement>(null);
+  const { t } = useLanguage();
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -48,12 +50,12 @@ export default function GetInTouch() {
       } else {
         setStatus("error");
         setErrorMessage(
-          result.error || "Something went wrong. Please try again.",
+          result.error || t("homePage.contactSection.error") || "Something went wrong. Please try again.",
         );
       }
     } catch {
       setStatus("error");
-      setErrorMessage("An unexpected error occurred. Please try again.");
+      setErrorMessage(t("homePage.contactSection.error") || "An unexpected error occurred. Please try again.");
     } finally {
       setIsSubmitting(false);
     }
@@ -81,13 +83,13 @@ export default function GetInTouch() {
         <div className="text-center mb-12">
           <span className="inline-flex items-center gap-2 px-4 py-2 bg-primary/10 text-primary text-sm font-medium rounded-full mb-5">
             <MessageSquare size={16} />
-            Let&#39;s Connect
+            {t("homePage.contactSection.badge") || "Let's Connect"}
           </span>
           <h2 className="text-4xl font-bold text-foreground mb-4">
-            Get in Touch
+            {t("homePage.contactSection.title") || "Get in Touch"}
           </h2>
           <p className="text-lg text-muted-foreground">
-            Have questions or need support? We&#39;re here to help.
+            {t("homePage.contactSection.description") || "Have questions or need support? We're here to help."}
           </p>
         </div>
 
@@ -95,7 +97,7 @@ export default function GetInTouch() {
           {/* Social Column */}
           <div>
             <h3 className="text-xl font-semibold text-foreground mb-6">
-              Follow Us
+              {t("homePage.contactSection.followUs") || "Follow Us"}
             </h3>
             <div className="grid grid-cols-2 gap-4">
               <SocialCard
@@ -138,15 +140,14 @@ export default function GetInTouch() {
           {/* Contact Form Wrapper */}
           <div>
             <h3 className="text-xl font-semibold text-foreground mb-6">
-              Send a Message
+              {t("homePage.contactSection.sendMessage") || "Send a Message"}
             </h3>
 
             {status === "success" && (
               <div className="mb-6 p-4 bg-green-500/10 border border-green-500/20 rounded-lg flex items-center gap-3 text-green-600 dark:text-green-400">
                 <CheckCircle2 size={20} className="shrink-0" />
                 <p className="text-sm font-medium">
-                  Thank you! Your message has been sent successfully. We&#39;ll
-                  get back to you soon.
+                  {t("homePage.contactSection.success") || "Thank you! Your message has been sent successfully. We'll get back to you soon."}
                 </p>
               </div>
             )}
@@ -170,13 +171,13 @@ export default function GetInTouch() {
                     htmlFor="firstName"
                     className="text-sm font-medium text-foreground"
                   >
-                    First Name
+                    {t("homePage.contactSection.firstName") || "First Name"}
                   </label>
                   <input
                     type="text"
                     id="firstName"
                     name="firstName"
-                    placeholder="John"
+                    placeholder={t("homePage.contactSection.placeholderFirstName") || "John"}
                     required
                     disabled={isSubmitting}
                     className="p-3 border border-border rounded-lg text-base bg-muted/50 focus:bg-background focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all disabled:opacity-60"
@@ -188,13 +189,13 @@ export default function GetInTouch() {
                     htmlFor="lastName"
                     className="text-sm font-medium text-foreground"
                   >
-                    Last Name
+                    {t("homePage.contactSection.lastName") || "Last Name"}
                   </label>
                   <input
                     type="text"
                     id="lastName"
                     name="lastName"
-                    placeholder="Doe"
+                    placeholder={t("homePage.contactSection.placeholderLastName") || "Doe"}
                     required
                     disabled={isSubmitting}
                     className="p-3 border border-border rounded-lg text-base bg-muted/50 focus:bg-background focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all disabled:opacity-60"
@@ -207,13 +208,13 @@ export default function GetInTouch() {
                   htmlFor="email"
                   className="text-sm font-medium text-foreground"
                 >
-                  Email Address
+                  {t("homePage.contactSection.email") || "Email Address"}
                 </label>
                 <input
                   type="email"
                   id="email"
                   name="email"
-                  placeholder="john@example.com"
+                  placeholder={t("homePage.contactSection.placeholderEmail") || "john@example.com"}
                   required
                   disabled={isSubmitting}
                   className="p-3 border border-border rounded-lg text-base bg-muted/50 focus:bg-background focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all disabled:opacity-60"
@@ -230,7 +231,7 @@ export default function GetInTouch() {
                 <textarea
                   id="message"
                   name="message"
-                  placeholder="How can we help you?"
+                  placeholder={t("homePage.contactSection.placeholderMessage") || "How can we help you?"}
                   required
                   disabled={isSubmitting}
                   className="p-3 border border-border rounded-lg text-base bg-muted/50 min-h-28 resize-y focus:bg-background focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all disabled:opacity-60"
@@ -245,12 +246,12 @@ export default function GetInTouch() {
               >
                 {isSubmitting ? (
                   <>
-                    Sending...
+                    {t("homePage.contactSection.sending") || "Sending..."}
                     <Loader2 size={18} className="animate-spin" />
                   </>
                 ) : (
                   <>
-                    Send Message
+                    {t("homePage.contactSection.sendButton") || "Send Message"}
                     <Send size={18} />
                   </>
                 )}

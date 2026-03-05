@@ -32,7 +32,16 @@
     "about": "About Rahvana",
     "disclaimerTitle": "Legal Disclaimer",
     "disclaimerText": "Rahvana is not a law firm and does not provide legal advice. All information provided is for educational purposes only and should not be construed as legal advice. Immigration laws are complex and subject to change. For legal guidance specific to your situation, please consult a licensed immigration attorney. Use of this platform does not create an attorney-client relationship.",
-    "tagline": "Your visa journey companion"
+    "tagline": "Your visa journey companion",
+    "description": "Simplifying immigration journeys with guidance, tools, and expert support. Your path to reuniting with loved ones starts here.",
+    "journeys": "Journeys",
+    "exploreAllJourneys": "Explore all Journeys",
+    "tools": "Tools",
+    "exploreAllTools": "Explore all Tools",
+    "company": "Company",
+    "connectWithUs": "Connect With Us",
+    "rightsReserved": "© 2026 Rahvana. All rights reserved.",
+    "cookiePolicy": "Cookie Policy"
   },
   "buttons": {
     "submit": "Submit",
@@ -77,7 +86,401 @@
     "heroTitle1": "Your Immigration Journey,",
     "heroTitle2": "Simplified",
     "heroDescription": "Navigate the complexities of immigration with confidence. Rahvana provides step-by-step guidance, smart tools, and expert support to help you reunite with loved ones.",
+    "heroFeatures": [
+      "Secure Vault",
+      "AI Insights",
+      "Step-by-Step Guidance"
+    ],
     "resumeJourney": "Resume My Journey",
-    "exploreJourneys": "Explore Journeys"
+    "exploreJourneys": "Explore Journeys",
+    "journeysBadge": "Find Your Path",
+    "journeysTitle": "Explore Immigration Journeys",
+    "journeysDescription": "Select your visa category to access personalized guidance, document checklists, and timeline tracking.",
+    "journeyTabs": {
+      "family": "Family & Protection",
+      "work": "Work & Business",
+      "greenCards": "Work Green Cards",
+      "students": "Students & Visitors"
+    },
+    "toolsBadge": "Power Tools",
+    "toolsTitle": "Quick Tools at Your Fingertips",
+    "toolsDescription": "Powerful tools designed to streamline your immigration process and keep you informed.",
+    "toolsExploreAll": "Explore all tools",
+    "toolTryItOut": "Try it out",
+    "servicesBadge": "Premium Services",
+    "servicesTitle": "Expert Help & Done-for-You Cases",
+    "servicesDescription": "Get the personalized support you need, from quick consultations to full document preparation and review.",
+    "servicesViewAll": "View all services",
+    "servicesGetStarted": "Get Started",
+    "consultationBadge": "Expert Guidance",
+    "consultationTitle": "Book a Consultation",
+    "consultationDescription": "Get personalized advice from immigration specialists who understand your journey.",
+    "consultationSignUp": "Sign up now.",
+    "consultationButton": "Book a Consultation",
+    "howItWorksBadge1": "Your Journey",
+    "howItWorksTitle": "How Rahvana Works",
+    "howItWorksDescription": "From onboarding to interview readiness, Rahvana guides each case through a clear, trackable workflow.",
+    "howItWorksBadge2": "See steps below for how rahvana works",
+    "howItWorksPrevious": "Previous",
+    "howItWorksNext": "Next",
+    "faqBadge": "Common Questions",
+    "faqTitle": "Frequently Asked Questions",
+    "toolsItems": [
+      {
+        "title": "Case Strength Analyzer",
+        "desc": "Get AI-powered insights into your case status, processing times, and what to expect next."
+      },
+      {
+        "title": "221(g) Action Planner",
+        "desc": "Navigate administrative processing with step-by-step guidance and status tracking."
+      },
+      {
+        "title": "VisaPath Finder",
+        "desc": "Answer a few questions and discover the best visa options for your unique situation."
+      },
+      {
+        "title": "Sponsorship Calculator",
+        "desc": "Calculate financial requirements and determine if you meet the sponsorship threshold."
+      },
+      {
+        "title": "PDF ToolKit",
+        "desc": "Merge, split, and organize your immigration documents with ease."
+      },
+      {
+        "title": "Smart Form Filler",
+        "desc": "Auto-complete immigration forms with your saved profile data."
+      }
+    ],
+    "contactSection": {
+      "badge": "Let's Connect",
+      "title": "Get in Touch",
+      "description": "Have questions or need support? We're here to help.",
+      "followUs": "Follow Us",
+      "sendMessage": "Send a Message",
+      "success": "Thank you! Your message has been sent successfully. We'll get back to you soon.",
+      "error": "Something went wrong. Please try again.",
+      "firstName": "First Name",
+      "lastName": "Last Name",
+      "email": "Email Address",
+      "message": "Message",
+      "placeholderFirstName": "John",
+      "placeholderLastName": "Doe",
+      "placeholderEmail": "john@example.com",
+      "placeholderMessage": "How can we help you?",
+      "sending": "Sending...",
+      "sendButton": "Send Message"
+    },
+    "steps": {
+      "step1": {
+        "title": "Create Profile & Start Case",
+        "desc": "User creates an account, adds basic case details, and opens a dedicated immigration workspace to begin the journey.",
+        "items": [
+          "Sign up and verify account",
+          "Add applicant and spouse basics",
+          "Set country and embassy context",
+          "Open personal immigration workspace"
+        ]
+      },
+      "step2": {
+        "title": "Select the Correct Journey",
+        "desc": "User selects the visa pathway and enters a guided roadmap tailored to the selected category.",
+        "items": [
+          "Review available journey options",
+          "Choose a visa category",
+          "Enter guided roadmap flow",
+          "Align process with case goals"
+        ]
+      },
+      "step3": {
+        "title": "Start the Live IR-1/CR-1 Track",
+        "desc": "Current primary live journey supports IR-1 / CR-1 (Spouse of U.S. Citizen) with structured stage-by-stage execution.",
+        "items": [
+          "Confirm IR-1 / CR-1 eligibility path",
+          "View stage-based workflow",
+          "Understand immediate priorities",
+          "Follow live journey checkpoints"
+        ]
+      },
+      "step4": {
+        "title": "Use Productivity Tools",
+        "desc": "Users complete tasks faster with built-in tools that support planning, form completion, interview prep, and document formatting.",
+        "items": [
+          "Run case strength checker",
+          "Use visa bulletin checker",
+          "Prepare with interview prep module",
+          "Use PDF/photo/signature tools and form autofill"
+        ]
+      },
+      "step5": {
+        "title": "Organize Documents Centrally",
+        "desc": "Document Vault stores files, notes, and checklist progress in one place to keep the case embassy/NVC ready.",
+        "items": [
+          "Upload and categorize documents",
+          "Track checklist completion",
+          "Maintain case notes and history",
+          "Stay prepared for NVC and embassy review"
+        ]
+      },
+      "step6": {
+        "title": "Get Expert Support",
+        "desc": "Users can book consultations and request support services such as appointment booking and translation before final submission/interview.",
+        "items": [
+          "Book expert consultation sessions",
+          "Request appointment booking help",
+          "Use translation and support services",
+          "Reduce risk before final interview/submission"
+        ]
+      }
+    },
+    "faqs": {
+      "q1": {
+        "q": "How does Rahvana help simplify my visa journey?",
+        "a": "Rahvana acts as your personal digital guide, breaking down the complex U.S. immigration process into clear, manageable steps. We combine expert-level roadmaps (specific to your location) with AI-powered tools to automate paperwork, track timelines, and prepare you for your interview, reducing the stress and uncertainty of doing it alone."
+      },
+      "q2": {
+        "q": "Is the Roadmap tailored for the Islamabad Embassy?",
+        "a": "Yes! Rahvana includes specific guidance for Pakistan, including NADRA document requirements, Union Council registrations, local police certificate procedures, and IOM medical exam details specific to Islamabad, Karachi, and Lahore."
+      },
+      "q3": {
+        "q": "Can Rahvana really auto-fill my USCIS forms?",
+        "a": "Absolutely. Our AI 'Brain' takes your profile data and maps it directly onto official USCIS PDFs like the I-130 and Form I-864, generating a perfectly filled, compliant form in seconds, ready for your review and submission."
+      },
+      "q4": {
+        "q": "Does Rahvana provide legal representation?",
+        "a": "No, Rahvana is an educational AI assistant designed to simplify your journey. While we provide expert-level guidance and tools, we are not a law firm. We always recommend consulting a licensed attorney for complex legal cases."
+      },
+      "q5": {
+        "q": "How accurate is the Interview Prep Question Bank?",
+        "a": "Our bank contains 50+ real-world questions reported from the Islamabad Embassy, with suggested answers and tips on how to present your case honestly and effectively based on successful approval historical data."
+      },
+      "q6": {
+        "q": "Is my document data secure in the Vault?",
+        "a": "Yes. We use bank-level encryption (AES-256) to secure your files. For Free users, progress is stored locally in your browser. Plus users benefit from secure, encrypted cloud synchronization across all devices."
+      }
+    },
+    "servicesList": [
+      {
+        "title": "Expert Case Review",
+        "desc": "Human review of your documents + a tailored improvement plan."
+      },
+      {
+        "title": "PCC Filing Service — Sindh",
+        "desc": "Done-for-you police certificate filing for Sindh."
+      },
+      {
+        "title": "PCC Filing Service — Punjab (Coming Soon)",
+        "desc": "Join the waitlist for done-for-you PCC filing in Punjab."
+      },
+      {
+        "title": "PCC Filing Service — KPK (Coming Soon)",
+        "desc": "Join the waitlist for done-for-you PCC filing in KPK."
+      },
+      {
+        "title": "PCC Filing Service — Balochistan (Coming Soon)",
+        "desc": "Join the waitlist for done-for-you PCC filing in Balochistan."
+      },
+      {
+        "title": "Book Medical Appointment",
+        "desc": "Book your panel physician medical exam appointment."
+      },
+      {
+        "title": "Urdu → English Translation",
+        "desc": "Request certified translation + formatting for submission."
+      }
+    ],
+    "journeysObj": {
+      "Family & Protection": {
+        "IR-1/CR-1": {
+          "title": "Spouse of U.S. Citizen",
+          "desc": "Bring your spouse to the United States through the immediate relative visa process."
+        },
+        "K-1": {
+          "title": "Fiancé(e) Visa",
+          "desc": "Bring your fiancé(e) to the U.S. to marry within 90 days of arrival."
+        },
+        "K-3": {
+          "title": "Spouse (short-separation option)",
+          "desc": "Spouse (short-separation option)"
+        },
+        "IR-5": {
+          "title": "Parent of U.S. Citizen",
+          "desc": "Petition for your parent as an immediate relative of a U.S. citizen."
+        },
+        "IR-2 / CR-2": {
+          "title": "Child of U.S. Citizen",
+          "desc": "Child of U.S. Citizen"
+        },
+        "IR-3 / IR-4": {
+          "title": "Intercountry Adoption",
+          "desc": "Intercountry Adoption"
+        },
+        "F-1": {
+          "title": "Adult Child (Unmarried) of U.S. Citizen",
+          "desc": "Adult Child (Unmarried) of U.S. Citizen"
+        },
+        "F-2A": {
+          "title": "Spouse/Child of Green Card Holder",
+          "desc": "Spouse/Child of Green Card Holder"
+        },
+        "F-2B": {
+          "title": "Adult Child (Unmarried) of Green Card Holder",
+          "desc": "Adult Child (Unmarried) of Green Card Holder"
+        },
+        "F-3": {
+          "title": "Adult Child (Married) of U.S. Citizen",
+          "desc": "Adult Child (Married) of U.S. Citizen"
+        },
+        "F-4": {
+          "title": "Sibling of U.S. Citizen",
+          "desc": "Sibling of U.S. Citizen"
+        },
+        "Refugee": {
+          "title": "Refugee (USRAP)",
+          "desc": "Refugee (USRAP)"
+        },
+        "Asylum": {
+          "title": "Asylum (typically filed in U.S.)",
+          "desc": "Asylum (typically filed in U.S.)"
+        },
+        "Parole": {
+          "title": "Humanitarian Parole (case-by-case)",
+          "desc": "Humanitarian Parole (case-by-case)"
+        }
+      },
+      "Work & Business": {
+        "H-1B": {
+          "title": "Specialty Occupation",
+          "desc": "Work in the U.S. in a specialty occupation requiring a bachelor's degree."
+        },
+        "L-1A / L-1B": {
+          "title": "Company Transfer (Manager / Specialist)",
+          "desc": "Company Transfer (Manager / Specialist)"
+        },
+        "O-1A / O-1B": {
+          "title": "Extraordinary Talent (Science / Business / Arts)",
+          "desc": "Extraordinary Talent (Science / Business / Arts)"
+        },
+        "O-2": {
+          "title": "Support Staff for O-1",
+          "desc": "Support Staff for O-1"
+        },
+        "P-1 / P-2 / P-3": {
+          "title": "Athlete / Entertainer / Tour Group",
+          "desc": "Athlete / Entertainer / Tour Group"
+        },
+        "E-1": {
+          "title": "Treaty Trader",
+          "desc": "Treaty Trader"
+        },
+        "E-2": {
+          "title": "Treaty Investor",
+          "desc": "Treaty Investor"
+        },
+        "R-1": {
+          "title": "Religious Worker",
+          "desc": "Religious Worker"
+        },
+        "Q-1": {
+          "title": "Cultural Exchange (Work + Culture)",
+          "desc": "Cultural Exchange (Work + Culture)"
+        },
+        "I": {
+          "title": "Journalist / Media",
+          "desc": "Journalist / Media"
+        },
+        "H-2A": {
+          "title": "Seasonal Agriculture (eligibility list applies)",
+          "desc": "Seasonal Agriculture (eligibility list applies)"
+        },
+        "H-2B": {
+          "title": "Seasonal Non-Agriculture (eligibility list applies)",
+          "desc": "Seasonal Non-Agriculture (eligibility list applies)"
+        },
+        "H-3": {
+          "title": "Trainee / Special Education Exchange",
+          "desc": "Trainee / Special Education Exchange"
+        }
+      },
+      "Work Green Cards": {
+        "EB-1": {
+          "title": "Priority Workers",
+          "desc": "For persons of extraordinary ability, outstanding researchers, and multinational executives."
+        },
+        "EB-2": {
+          "title": "Advanced Degree / Exceptional Ability",
+          "desc": "Advanced Degree / Exceptional Ability"
+        },
+        "EB-2 (NIW Path)": {
+          "title": "National Interest Waiver",
+          "desc": "Self-petition without employer sponsorship based on national interest."
+        },
+        "EB-3": {
+          "title": "Skilled Worker / Professional",
+          "desc": "Skilled Worker / Professional"
+        },
+        "EB-4": {
+          "title": "Special Immigrants (varies)",
+          "desc": "Special Immigrants (varies)"
+        },
+        "EB-5": {
+          "title": "Investor Green Card",
+          "desc": "Investor Green Card"
+        },
+        "DV": {
+          "title": "Diversity Visa (DV Lottery)",
+          "desc": "Diversity Visa (DV Lottery)"
+        }
+      },
+      "Students & Visitors": {
+        "B-2": {
+          "title": "Tourism / Family Visit",
+          "desc": "Tourism / Family Visit"
+        },
+        "B-1": {
+          "title": "Business Visitor",
+          "desc": "Business Visitor"
+        },
+        "F-1": {
+          "title": "Student Visa",
+          "desc": "Study at a U.S. academic institution or English language program."
+        },
+        "F-2": {
+          "title": "Student Dependent",
+          "desc": "Student Dependent"
+        },
+        "M-1": {
+          "title": "Vocational / Technical Student",
+          "desc": "Vocational / Technical Student"
+        },
+        "M-2": {
+          "title": "Vocational Dependent",
+          "desc": "Vocational Dependent"
+        },
+        "J-1": {
+          "title": "Exchange Visitor (Programs)",
+          "desc": "Exchange Visitor (Programs)"
+        },
+        "J-2": {
+          "title": "Exchange Dependent",
+          "desc": "Exchange Dependent"
+        }
+      }
+    },
+    "carousel": {
+      "active": "Active",
+      "comingSoon": "Coming Soon",
+      "startJourney": "Start Journey",
+      "getEarlyAccess": "Get Early Access"
+    },
+    "categoryLabels": {
+      "Family & Protection": "Family & Protection",
+      "Work & Business": "Work & Business",
+      "Work Green Cards": "Work Green Cards",
+      "Students & Visitors": "Students & Visitors",
+      "Expert Help": "Expert Help",
+      "Pakistan Docs": "Pakistan Docs",
+      "Medical": "Medical",
+      "Documents": "Documents"
+    }
   }
 }
