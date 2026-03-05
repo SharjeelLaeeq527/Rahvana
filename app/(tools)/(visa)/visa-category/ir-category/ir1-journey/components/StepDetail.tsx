@@ -1,6 +1,7 @@
 import React from "react";
 import { WizardState } from "@/app/(main)/dashboard/hooks/useWizard";
 import { roadmapData } from "@/data/roadmap";
+import { useLanguage } from "@/app/context/LanguageContext";
 import {
   CheckCircle2,
   Circle,
@@ -54,6 +55,7 @@ export function StepDetail({
   isFirst,
   isLast,
 }: StepDetailProps) {
+  const { t } = useLanguage();
   const isCompleted = state.completedSteps.has(step.id);
 
   return (
@@ -64,7 +66,7 @@ export function StepDetail({
       <div className="mb-8">
         <div className="inline-flex items-center gap-2 px-3 py-1 bg-slate-100/80 text-slate-500 rounded-full text-[12px] font-bold uppercase tracking-wider mb-4 border border-slate-200/50">
           <Info className="w-3.5 h-3.5" />
-          Stage {stage.id} • Step {step.id}
+          {t("stepDetail.info", { stageId: stage.id, stepId: step.id })}
         </div>
 
         <div className="flex flex-col md:flex-row md:items-start justify-between gap-4 md:gap-6 mb-6">
@@ -82,29 +84,30 @@ export function StepDetail({
             {isCompleted ? (
               <>
                 <CheckCircle2 className="w-5 h-5" />
-                Completed
+                {t("stepDetail.completed")}
               </>
             ) : (
               <>
                 <Circle className="w-5 h-5" />
-                Mark Complete
+                {t("stepDetail.markComplete")}
               </>
             )}
           </button>
         </div>
 
         <div className="text-slate-600 text-[15px] md:text-[17px] leading-relaxed pb-6 md:pb-8 mb-6 md:mb-8 border-b border-slate-100 max-w-3xl">
-          {step.notes ||
-            `This step involves preparing and submitting the necessary ${step.name} documents.`}
+          {step.notes || t("stepDetail.defaultNotes", { stepName: step.name })}
         </div>
 
         {/* Professional Badges */}
         <div className="flex flex-wrap gap-3 mb-10">
           <div className="flex items-center gap-2 px-3.5 py-1.5 bg-slate-50 text-slate-600 rounded-xl text-sm font-bold border border-slate-200">
-            <Users className="w-4 h-4 text-slate-400" /> Both
+            <Users className="w-4 h-4 text-slate-400" />{" "}
+            {t("stepDetail.professionalBadges.both")}
           </div>
           <div className="flex items-center gap-2 px-3.5 py-1.5 bg-indigo-50 text-indigo-600 rounded-xl text-sm font-bold border border-indigo-100">
-            <MapPin className="w-4 h-4 text-indigo-400" /> Self-assessment
+            <MapPin className="w-4 h-4 text-indigo-400" />{" "}
+            {t("stepDetail.professionalBadges.selfAssessment")}
           </div>
         </div>
 
@@ -112,7 +115,7 @@ export function StepDetail({
         <div className="bg-slate-50/50 rounded-2xl p-5 md:p-8 mb-8 md:mb-10 border border-slate-100">
           <h4 className="flex items-center gap-2 text-[14px] font-black mb-6 text-slate-900 uppercase tracking-widest">
             <ClipboardList className="w-4 h-4 text-primary" />
-            Actions Required
+            {t("stepDetail.actionsRequired")}
           </h4>
           <ul className="space-y-4">
             {step.actions?.map((action: string, idx: number) => (
@@ -137,7 +140,7 @@ export function StepDetail({
                 <div className="leading-snug">
                   {doc}{" "}
                   <span className="text-slate-400 text-sm font-normal ml-2">
-                    (Document Required)
+                    {t("stepDetail.documentRequired")}
                   </span>
                 </div>
               </li>
@@ -149,7 +152,7 @@ export function StepDetail({
         {step.output && (
           <div className="p-6 bg-emerald-50/40 rounded-2xl border border-emerald-100 mb-10">
             <h4 className="text-[13px] font-black mb-3 text-emerald-700 uppercase tracking-widest">
-              Success Condition
+              {t("stepDetail.successCondition")}
             </h4>
             <p className="text-emerald-900 text-[16px] font-bold leading-relaxed">
               {step.output}
@@ -169,7 +172,7 @@ export function StepDetail({
               : "text-slate-600 border-slate-200 hover:bg-slate-50 hover:border-slate-300 active:scale-95"
           }`}
         >
-          <ArrowLeft className="w-4 h-4" /> Previous Step
+          <ArrowLeft className="w-4 h-4" /> {t("stepDetail.prevStep")}
         </button>
 
         {!isLast && (
@@ -177,7 +180,7 @@ export function StepDetail({
             onClick={onNext}
             className="w-full sm:w-auto flex items-center justify-center gap-2 px-8 py-3 bg-primary text-white rounded-xl font-extrabold hover:bg-primary/90 transition-all shadow-lg shadow-primary/10 active:scale-95 whitespace-nowrap"
           >
-            Next Step <ArrowRight className="w-4 h-4" />
+            {t("stepDetail.nextStep")} <ArrowRight className="w-4 h-4" />
           </button>
         )}
       </div>

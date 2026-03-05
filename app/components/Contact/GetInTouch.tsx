@@ -105,19 +105,19 @@ export default function GetInTouch() {
                 target="_blank"
                 ariaLabel="Follow us on Instagram"
               />
-              {/* <SocialCard
+              <SocialCard
                 icon={<Linkedin size={20} />}
                 label="LinkedIn"
-                href="#"
+                href="https://www.linkedin.com/company/rahvana/posts/?feedView=all"
                 ariaLabel="Connect on LinkedIn"
-              /> */}
-              <SocialCard
+              />
+              {/* <SocialCard
                 icon={<Youtube size={20} />}
                 label="Youtube"
                 href="https://youtube.com/@rahvana_co?si=Mb5-OwJmc5ThTxJs"
                 target="_blank"
                 ariaLabel="Follow us on Youtube"
-              />
+              /> */}
               <SocialCard
                 icon={<XIcon size={20} />}
                 label="X"

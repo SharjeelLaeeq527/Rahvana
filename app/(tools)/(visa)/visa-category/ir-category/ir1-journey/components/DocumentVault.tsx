@@ -1,6 +1,7 @@
 import React from "react";
 import { roadmapData } from "@/data/roadmap";
 import { WizardState } from "@/app/(main)/dashboard/hooks/useWizard";
+import { useLanguage } from "@/app/context/LanguageContext";
 
 interface DocumentVaultProps {
   isOpen: boolean;
@@ -21,6 +22,8 @@ export function DocumentVault({
   onUpload,
   onClearUpload,
 }: DocumentVaultProps) {
+  const { t } = useLanguage();
+
   if (!isOpen) return null;
 
   const handleFileChange = (
@@ -46,10 +49,10 @@ export function DocumentVault({
         <div className="p-5 md:p-6 border-b border-slate-200 flex justify-between items-start md:items-center bg-white shrink-0">
           <div className="pr-4">
             <h2 className="text-xl md:text-2xl font-bold text-slate-900">
-              📋 Document Vault
+              {t("documentVault.title")}
             </h2>
             <p className="text-slate-500 text-xs md:text-sm mt-1">
-              Track and manage your required documents.
+              {t("documentVault.subtitle")}
             </p>
           </div>
           <button
@@ -117,11 +120,13 @@ export function DocumentVault({
                                 : "bg-slate-100 text-slate-400"
                             }`}
                           >
-                            {isChecked ? "Collected" : "Pending"}
+                            {isChecked
+                              ? t("status.collected")
+                              : t("status.pending")}
                           </span>
                           {upload && (
                             <span className="text-[11px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider bg-amber-100 text-amber-700">
-                              Uploaded
+                              {t("documentVault.status.uploaded")}
                             </span>
                           )}
                         </div>
@@ -132,10 +137,10 @@ export function DocumentVault({
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
                     <div className="space-y-2">
                       <label className="text-[11px] font-bold uppercase tracking-wider text-slate-400 block px-1">
-                        Notes
+                        {t("documentVault.labels.notes")}
                       </label>
                       <input
-                        placeholder="Add private note..."
+                        placeholder={t("documentVault.placeholders.addNote")}
                         value={note}
                         onChange={(e) => onUpdateNote(doc, e.target.value)}
                         className="w-full h-10 px-3 flex-1 text-sm bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:border-[#0d9488] focus:bg-white transition-all"
@@ -143,7 +148,7 @@ export function DocumentVault({
                     </div>
                     <div className="space-y-2">
                       <label className="text-[11px] font-bold uppercase tracking-wider text-slate-400 block px-1">
-                        File Attachment
+                        {t("documentVault.labels.fileAttachment")}
                       </label>
                       <div className="flex gap-2">
                         <div className="relative grow">
@@ -154,14 +159,16 @@ export function DocumentVault({
                             onChange={(e) => handleFileChange(doc, e)}
                           />
                           <div className="w-full h-10 px-3 flex items-center text-sm font-medium bg-[#ebf5f4] text-[#0d9488] rounded-lg border border-[#0d9488]/20 hover:bg-[#ebf5f4]/80 transition-all truncate">
-                            {upload ? upload.name : "Choose File..."}
+                            {upload
+                              ? upload.name
+                              : t("documentVault.placeholders.chooseFile")}
                           </div>
                         </div>
                         {upload && (
                           <button
                             onClick={() => onClearUpload(doc)}
                             className="w-10 h-10 flex items-center justify-center bg-red-50 text-red-500 rounded-lg border border-red-100 hover:bg-red-100 transition-all shrink-0"
-                            aria-label="Clear file"
+                            aria-label={t("documentVault.aria.clearFile")}
                           >
                             ✕
                           </button>
@@ -181,7 +188,7 @@ export function DocumentVault({
             onClick={onClose}
             className="w-full md:w-auto px-8 py-3 bg-[#334155] text-white rounded-lg font-bold hover:bg-[#1e293b] transition-all shadow-md hover:-translate-y-px"
           >
-            Close Vault
+            {t("documentVault.closeBtn")}
           </button>
         </div>
       </div>

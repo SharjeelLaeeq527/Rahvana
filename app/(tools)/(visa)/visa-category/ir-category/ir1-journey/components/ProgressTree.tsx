@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { WizardState } from "@/app/(main)/dashboard/hooks/useWizard";
 import { roadmapData } from "@/data/roadmap";
 import { ChevronDown, CheckCircle2, Circle, PlayCircle } from "lucide-react";
+import { useLanguage } from "@/app/context/LanguageContext";
 
 interface ProgressTreeProps {
   state: WizardState;
@@ -9,6 +10,7 @@ interface ProgressTreeProps {
 }
 
 export function ProgressTree({ state, onSelectStep }: ProgressTreeProps) {
+  const { t } = useLanguage();
   const [expandedStages, setExpandedStages] = useState<Record<number, boolean>>(
     {},
   );
@@ -32,10 +34,10 @@ export function ProgressTree({ state, onSelectStep }: ProgressTreeProps) {
     <div id="sidebar-stages" className="space-y-3">
       <div className="px-2 mb-6">
         <h3 className="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em] mb-1">
-          Journey Map
+          {t("progressTree.journeyMap")}
         </h3>
         <p className="text-xs text-slate-500 font-medium font-['Plus_Jakarta_Sans',sans-serif]">
-          Consular Processing Track
+          {t("progressTree.track")}
         </p>
       </div>
 
@@ -66,7 +68,7 @@ export function ProgressTree({ state, onSelectStep }: ProgressTreeProps) {
                 <span
                   className={`text-[10px] font-black uppercase tracking-widest ${isActiveStage ? "text-primary" : "text-slate-400"}`}
                 >
-                  Stage {stage.id}
+                  {t("progressTree.stage", { id: stage.id })}
                 </span>
                 <ChevronDown
                   className={`w-3.5 h-3.5 transition-transform duration-300 ${isExpanded ? "rotate-180" : ""} ${isActiveStage ? "text-primary" : "text-slate-300"}`}
