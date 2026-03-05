@@ -1,13 +1,14 @@
-import { NextRequest } from "next/server";
-import { VisaCheckerSupabaseService } from "@/lib/visa-checker/supabase";
+import { NextRequest, NextResponse } from "next/server";
 import { SaveAnswersRequest } from "@/lib/visa-checker/types";
+import { VisaCheckerSupabaseService } from "@/lib/visa-checker/supabase";
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id: sessionId } = await params;
+    const { id: sessionId } = await context.params;
+
     const reqBody: SaveAnswersRequest = await request.json();
 
     const response = await VisaCheckerSupabaseService.saveAnswers(
@@ -15,15 +16,17 @@ export async function POST(
       reqBody.answers
     );
 
-    return new Response(JSON.stringify(response), {
-      status: 200,
-      headers: { "Content-Type": "application/json" },
-    });
+    return NextResponse.json(response);
   } catch (error) {
     console.error("Error saving answers:", error);
-    const message = error instanceof Error ? error.message : String(error);
-    return new Response(
-      JSON.stringify({ error: message || "Failed to save answers" }),
+
+    return NextResponse.json(
+      {
+        error:
+          error instanceof Error
+            ? error.message
+            : "Failed to save answers",
+      },
       { status: 500 }
     );
   }
