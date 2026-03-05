@@ -25,10 +25,12 @@ import { ConfirmationModal } from "@/app/components/shared/ConfirmationModal";
 import { ProgressTree } from "./components/ProgressTree";
 import { StepDetail } from "./components/StepDetail";
 import { DocumentVault } from "./components/DocumentVault";
+import { useLanguage } from "@/app/context/LanguageContext";
 
 export default function IR1JourneyPage() {
   const { user } = useAuth();
   const userId = user?.id ?? null;
+  const { t, language } = useLanguage();
 
   const { state, actions, isLoaded, hasExistingProgress, isSyncing } =
     useWizard({
@@ -83,7 +85,7 @@ export default function IR1JourneyPage() {
         <div className="flex flex-col items-center gap-4">
           <div className="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin" />
           <p className="text-muted-foreground text-sm">
-            Loading your journey...
+            {t("ir1Journey.loadingJourney")}
           </p>
         </div>
       </div>
@@ -98,12 +100,10 @@ export default function IR1JourneyPage() {
           <div className="flex flex-col md:flex-row md:items-start justify-between gap-4 mb-4">
             <div className="flex-1">
               <h1 className="text-3xl md:text-5xl font-bold mb-3 md:mb-4">
-                IR-1/CR-1 Spouse Visa Journey
+                {t("ir1Journey.title")}
               </h1>
               <p className="text-slate-500 mb-6 md:mb-8 text-base md:text-lg max-w-2xl">
-                Comprehensive roadmap for bringing your spouse to the United
-                States via consular processing at U.S. Embassy Islamabad,
-                Pakistan.
+                {t("ir1Journey.description")}
               </p>
             </div>
             {/* Sync indicator */}
@@ -112,13 +112,13 @@ export default function IR1JourneyPage() {
                 {isSyncing ? (
                   <>
                     <Loader2 className="w-4 h-4 animate-spin text-primary" />
-                    <span>Saving...</span>
+                    <span>{t("ir1Journey.saving")}</span>
                   </>
                 ) : (
                   <>
                     <Save className="w-4 h-4 text-emerald-500" />
                     <span className="text-emerald-600 font-medium">
-                      Auto-saved
+                      {t("ir1Journey.autoSaved")}
                     </span>
                   </>
                 )}
@@ -131,7 +131,7 @@ export default function IR1JourneyPage() {
             <div className="flex items-center gap-3 mb-6 md:mb-8">
               <div className="w-1 h-6 md:h-8 bg-primary rounded-full" />
               <h2 className="text-xl md:text-2xl font-bold text-slate-900 tracking-tight">
-                The 5 Stages of Your Journey
+                {t("ir1Journey.stagesTitle")}
               </h2>
             </div>
 
@@ -139,35 +139,35 @@ export default function IR1JourneyPage() {
               {[
                 {
                   stage: "I",
-                  title: "USCIS Petition",
+                  title: t("ir1Journey.stageNames.1"),
                   time: "17-65 months",
                   icon: FileText,
                   color: "bg-blue-50 text-blue-600",
                 },
                 {
                   stage: "II",
-                  title: "NVC Processing",
+                  title: t("ir1Journey.stageNames.2"),
                   time: "4-9 months",
                   icon: Layout,
                   color: "bg-indigo-50 text-indigo-600",
                 },
                 {
                   stage: "III",
-                  title: "Med + Interview",
+                  title: t("ir1Journey.stageNames.3"),
                   time: "2-4 weeks",
                   icon: Users,
                   color: "bg-emerald-50 text-emerald-600",
                 },
                 {
                   stage: "IV",
-                  title: "Visa & Travel",
+                  title: t("ir1Journey.stageNames.4"),
                   time: "1-2 weeks",
                   icon: IdCard,
                   color: "bg-amber-50 text-amber-600",
                 },
                 {
                   stage: "V",
-                  title: "U.S. Arrival",
+                  title: t("ir1Journey.stageNames.5"),
                   time: "90 days",
                   icon: Plane,
                   color: "bg-rose-50 text-rose-600",
@@ -181,7 +181,7 @@ export default function IR1JourneyPage() {
                       <Icon className="w-5 h-5" />
                     </div>
                     <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">
-                      Stage {stage}
+                      {t("ir1Journey.stageShort", { stage })}
                     </span>
                     <h4 className="font-bold text-slate-800 text-[15px] mb-2 leading-tight">
                       {title}
@@ -217,10 +217,10 @@ export default function IR1JourneyPage() {
                   </div>
                   <div>
                     <h3 className="text-lg md:text-xl font-bold text-slate-900">
-                      Welcome Back!
+                      {t("ir1Journey.welcomeBack")}
                     </h3>
                     <p className="text-slate-500 text-xs md:text-sm">
-                      You have an existing IR-1 journey in progress.
+                      {t("ir1Journey.existingJourney")}
                     </p>
                   </div>
                 </div>
@@ -229,10 +229,10 @@ export default function IR1JourneyPage() {
                 <div className="bg-slate-50 rounded-xl p-4 mb-6">
                   <div className="flex justify-between items-center mb-2">
                     <span className="text-sm font-semibold text-slate-600">
-                      Journey Progress
+                      {t("ir1Journey.journeyProgress")}
                     </span>
                     <span className="text-sm font-bold text-primary">
-                      {state.completedSteps.size} steps completed
+                      {t("ir1Journey.stepsCompleted", { count: state.completedSteps.size.toString() })}
                     </span>
                   </div>
                   <div className="h-2 bg-slate-200 rounded-full overflow-hidden">
@@ -251,8 +251,10 @@ export default function IR1JourneyPage() {
                     />
                   </div>
                   <p className="text-xs text-slate-400 mt-2">
-                    Currently at: Stage {state.currentStage + 1} —{" "}
-                    {roadmapData.stages[state.currentStage]?.name ?? ""}
+                    {t("ir1Journey.currentlyAt", { 
+                        stage: (state.currentStage + 1).toString(), 
+                        name: roadmapData.stages[state.currentStage]?.name ?? "" 
+                    })}
                   </p>
                 </div>
 
@@ -261,7 +263,7 @@ export default function IR1JourneyPage() {
                     onClick={handleResume}
                     className="flex-1 flex items-center justify-center gap-2 px-6 py-3 bg-primary text-white font-bold rounded-xl hover:bg-primary/90 transition-all shadow-md hover:shadow-lg active:scale-95"
                   >
-                    Resume My Journey
+                    {t("ir1Journey.resumeJourney")}
                     <ArrowRight className="w-4 h-4" />
                   </button>
                   <button
@@ -269,7 +271,7 @@ export default function IR1JourneyPage() {
                     className="flex items-center justify-center gap-2 px-6 py-3 bg-white border-2 border-slate-200 text-slate-600 font-semibold rounded-xl hover:border-red-300 hover:text-red-600 hover:bg-red-50 transition-all"
                   >
                     <RotateCcw className="w-4 h-4" />
-                    Start Fresh
+                    {t("ir1Journey.startFresh")}
                   </button>
                 </div>
               </motion.div>
@@ -291,9 +293,9 @@ export default function IR1JourneyPage() {
       <ConfirmationModal
         open={startFreshModalOpen}
         onOpenChange={setStartFreshModalOpen}
-        title="Start Fresh?"
-        description="Are you sure you want to reset all progress? This action cannot be undone."
-        confirmText="Start Fresh"
+        title={t("ir1Journey.startFreshTitle")}
+        description={t("ir1Journey.startFreshDesc")}
+        confirmText={t("ir1Journey.startFresh")}
         onConfirm={confirmStartFresh}
       />
     </section>
@@ -310,12 +312,13 @@ interface WizardProps {
 }
 
 function Wizard({ state, actions, isLoaded, isSignedIn }: WizardProps) {
+  const { t } = useLanguage();
   const [isVaultOpen, setIsVaultOpen] = useState(false);
 
   if (!isLoaded) {
     return (
       <div className="p-20 text-center text-slate-400">
-        Loading your journey...
+        {t("generic.loading")}
       </div>
     );
   }
@@ -356,10 +359,10 @@ function Wizard({ state, actions, isLoaded, isSignedIn }: WizardProps) {
         <div className="flex-1">
           <div className="flex justify-between items-center mb-2">
             <span className="text-xs md:text-sm font-bold text-slate-500 uppercase tracking-wider">
-              Overall Journey Progress
+              {t("ir1Journey.overallProgress")}
             </span>
             <span className="text-xs md:text-sm font-bold text-rahvana-primary">
-              {progressPercent}% ({completedTotal}/{totalSteps} steps)
+              {progressPercent}% ({completedTotal}/{totalSteps} {(t("ir1Journey.stepsCompleted", { count: "" }) as string).replace(/\{count\}/, "").trim()})
             </span>
           </div>
           <div className="h-2 bg-slate-100 rounded-full overflow-hidden">
@@ -375,7 +378,7 @@ function Wizard({ state, actions, isLoaded, isSignedIn }: WizardProps) {
             className="flex-1 md:flex-none flex items-center justify-center gap-2 px-5 py-2.5 bg-white border border-slate-200 text-slate-900 rounded-xl font-bold hover:bg-slate-50 hover:border-slate-300 transition-all shadow-sm active:scale-95"
           >
             <Folder className="w-5 h-5 text-amber-500" />
-            Document Vault
+            {t("ir1Journey.documentVault")}
           </button>
         </div>
       </div>

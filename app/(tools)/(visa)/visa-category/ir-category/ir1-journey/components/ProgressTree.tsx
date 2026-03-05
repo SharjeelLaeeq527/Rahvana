@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { WizardState } from "@/app/(main)/dashboard/hooks/useWizard";
 import { roadmapData } from "@/data/roadmap";
+import { useLanguage } from "@/app/context/LanguageContext";
 import { ChevronDown, CheckCircle2, Circle, PlayCircle } from "lucide-react";
 
 interface ProgressTreeProps {
@@ -9,6 +10,8 @@ interface ProgressTreeProps {
 }
 
 export function ProgressTree({ state, onSelectStep }: ProgressTreeProps) {
+  const { t, language } = useLanguage();
+  const isUrdu = language === "ur";
   const [expandedStages, setExpandedStages] = useState<Record<number, boolean>>(
     {},
   );
@@ -32,10 +35,10 @@ export function ProgressTree({ state, onSelectStep }: ProgressTreeProps) {
     <div id="sidebar-stages" className="space-y-3">
       <div className="px-2 mb-6">
         <h3 className="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em] mb-1">
-          Journey Map
+          {t("ir1Journey.journeyMap")}
         </h3>
         <p className="text-xs text-slate-500 font-medium font-['Plus_Jakarta_Sans',sans-serif]">
-          Consular Processing Track
+          {t("ir1Journey.consularTrack")}
         </p>
       </div>
 
@@ -48,6 +51,12 @@ export function ProgressTree({ state, onSelectStep }: ProgressTreeProps) {
         const stageProgress = Math.round(
           (completedInStage / stage.steps.length) * 100,
         );
+
+        // Get stage name without the prefix "Stage I: " if it exists
+        const stageNameFull = (isUrdu && (stage as any).nameUr) ? (stage as any).nameUr : stage.name;
+        const stageNameDisplay = stageNameFull.includes(":") 
+          ? stageNameFull.split(":")[1]?.trim() 
+          : stageNameFull;
 
         return (
           <div key={stage.id} className="group/stage">
@@ -66,7 +75,7 @@ export function ProgressTree({ state, onSelectStep }: ProgressTreeProps) {
                 <span
                   className={`text-[10px] font-black uppercase tracking-widest ${isActiveStage ? "text-primary" : "text-slate-400"}`}
                 >
-                  Stage {stage.id}
+                  {t("ir1Journey.stageShort", { stage: stage.id.toString() })}
                 </span>
                 <ChevronDown
                   className={`w-3.5 h-3.5 transition-transform duration-300 ${isExpanded ? "rotate-180" : ""} ${isActiveStage ? "text-primary" : "text-slate-300"}`}
@@ -76,7 +85,7 @@ export function ProgressTree({ state, onSelectStep }: ProgressTreeProps) {
               <h4
                 className={`text-[13px] font-bold leading-tight pr-4 ${isActiveStage ? "text-slate-900" : "text-slate-600 group-hover/stage:text-slate-900"}`}
               >
-                {stage.name.split(":")[1]?.trim() || stage.name}
+                {stageNameDisplay}
               </h4>
 
               <div className="w-full bg-slate-100/80 rounded-full h-1 mt-1 overflow-hidden">
@@ -93,6 +102,7 @@ export function ProgressTree({ state, onSelectStep }: ProgressTreeProps) {
                   const isCurrentStep =
                     state.currentStep === stIdx && isActiveStage;
                   const isStepCompleted = state.completedSteps.has(step.id);
+                  const stepNameDisplay = (isUrdu && (step as any).nameUr) ? (step as any).nameUr : step.name;
 
                   return (
                     <button
@@ -109,7 +119,7 @@ export function ProgressTree({ state, onSelectStep }: ProgressTreeProps) {
                           <PlayCircle className="w-3.5 h-3.5 shrink-0 text-primary-light animate-pulse" />
                         )}
                         <span className="text-[12px] truncate leading-tight">
-                          {step.name}
+                          {stepNameDisplay}
                         </span>
                       </div>
 

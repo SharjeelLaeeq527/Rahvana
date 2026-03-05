@@ -406,8 +406,8 @@ export function SiteHeader({
             className="flex items-center gap-1 p-2 rounded-md hover:bg-muted text-muted-foreground transition-colors font-medium border border-border"
             title="Toggle Language"
           >
-            {/* <Globe className="w-4 h-4" /> */}
-            {/* <span className="text-xs uppercase leading-none mt-0.5">{language === "en" ? "اردو" : "EN"}</span> */}
+            <Globe className="w-4 h-4" />
+            <span className="text-xs uppercase leading-none mt-0.5">{language === "en" ? "اردو" : "EN"}</span>
           </HydrationSafeButton>
 
           {isLoading && !resolvedUser

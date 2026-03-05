@@ -9,7 +9,7 @@ export type Language = 'en' | 'ur';
 interface LanguageContextType {
   language: Language;
   setLanguage: (lang: Language) => void;
-  t: (key: string) => string; // Translation function
+  t: (key: string, params?: Record<string, string | number | boolean | any>) => any; // Translation function with interpolation
 }
 
 // Create the context with default values
@@ -47,25 +47,44 @@ export const LanguageProvider: React.FC<LanguageProviderProps> = ({ children }) 
   }, [language]);
 
   // Translation function using nested object access
-  const t = (key: string): string => {
+  const t = (key: string, params?: Record<string, any>): any => {
     // Select the appropriate translation object based on current language
     const translations = language === 'ur' ? urTranslations : enTranslations;
 
     // Split the key by dots to access nested properties
     const keys = key.split('.');
-    let value: string | Record<string, unknown> | undefined = translations;
+    let value: any = translations;
 
     for (const k of keys) {
       if (value && typeof value === 'object' && k in value) {
-        value = value[k as keyof typeof value] as string | Record<string, unknown> | undefined;
+        value = (value as Record<string, any>)[k];
       } else {
         value = undefined;
         break;
       }
     }
 
-    // Return the translated string or empty string if not found, to allow fallbacks
-    return typeof value === 'string' ? value : '';
+    if (value === undefined) return key;
+
+    // If it's an object or array and user asked for it (or implicitly via params having returnObjects)
+    if (typeof value !== 'string' && params?.returnObjects) {
+      return value;
+    }
+
+    if (typeof value !== 'string') return key;
+
+    // Handle interpolation
+    if (params) {
+      let interpolated = value;
+      Object.entries(params).forEach(([k, v]) => {
+        if (k !== 'returnObjects') {
+          interpolated = interpolated.replace(new RegExp(`{${k}}`, 'g'), String(v));
+        }
+      });
+      return interpolated;
+    }
+
+    return value;
   };
 
   const value: LanguageContextType = {

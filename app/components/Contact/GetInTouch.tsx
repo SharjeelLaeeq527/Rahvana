@@ -226,7 +226,7 @@ export default function GetInTouch() {
                   htmlFor="message"
                   className="text-sm font-medium text-foreground"
                 >
-                  Message
+                  {t("homePage.contactSection.message") || "Message"}
                 </label>
                 <textarea
                   id="message"

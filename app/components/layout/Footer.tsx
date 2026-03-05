@@ -123,25 +123,25 @@ export default function Footer() {
                 href="/visa-case-strength-checker"
                 className="text-slate-400 hover:text-white transition-colors"
               >
-                CasePulse AI
+                {t("toolsPage.toolsItems.case-strength-analyzer.title")}
               </Link>
               <Link
                 href="/visa-eligibility"
                 className="text-slate-400 hover:text-white transition-colors"
               >
-                VisaPath Finder
+                {t("toolsPage.toolsItems.visa-path.title")}
               </Link>
               <Link
                 href="/affidavit-support-calculator"
                 className="text-slate-400 hover:text-white transition-colors"
               >
-                SponsorReady
+                {t("toolsPage.toolsItems.sponsorship-calculator.title")}
               </Link>
               <Link
                 href="/pdf-processing"
                 className="text-slate-400 hover:text-white transition-colors"
               >
-                PDF ToolKit
+                {t("toolsPage.toolsItems.pdf-toolkit.title")}
               </Link>
               <Link
                 href="/tools"
@@ -192,7 +192,7 @@ export default function Footer() {
                   size={18}
                   className="group-hover:scale-110 transition-transform"
                 />
-                Instagram
+                {t("footer.instagram") || "Instagram"}
               </Link>
               <Link
                 href="https://www.facebook.com/profile.php?id=61587967827317&mibextid=wwXIfr"
@@ -204,7 +204,7 @@ export default function Footer() {
                   size={18}
                   className="group-hover:scale-110 transition-transform"
                 />
-                Facebook
+                {t("footer.facebook") || "Facebook"}
               </Link>
               <Link
                 href="https://x.com/rahvanaco?s=21&t=a8CQwdRgHqBFZmUfsX8Gpg"
@@ -219,7 +219,7 @@ export default function Footer() {
                 >
                   <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"></path>
                 </svg>
-                X
+                {t("footer.x") || "X"}
               </Link>
               <Link
                 href="https://youtube.com/@rahvana_co?si=Mb5-OwJmc5ThTxJs"
@@ -231,7 +231,7 @@ export default function Footer() {
                   size={18}
                   className="group-hover:scale-110 transition-transform"
                 />
-                Youtube
+                {t("footer.youtube") || "Youtube"}
               </Link>
               {/* <Link
                 href="#"

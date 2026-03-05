@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import * as Icons from "lucide-react";
+import { useLanguage } from "@/app/context/LanguageContext";
 
 interface JourneyRouteMapProps {
   selectedOrigin: string;
@@ -17,6 +18,7 @@ export default function JourneyRouteMap({
   selectedDestination,
   setSelectedDestination,
 }: JourneyRouteMapProps) {
+  const { t, language } = useLanguage();
   // Zoom & Panning State
   const [zoom, setZoom] = useState(1);
   const containerRef = React.useRef<HTMLDivElement>(null);
@@ -402,7 +404,7 @@ export default function JourneyRouteMap({
             value={country}
             disabled={!isFunctional}
           >
-            {country} {!isFunctional ? "(Coming Soon)" : ""}
+            {country} {!isFunctional ? `(${t("visaCategory.map.comingSoon")})` : ""}
           </option>
         );
       });
@@ -420,7 +422,7 @@ export default function JourneyRouteMap({
             value={country}
             disabled={!isFunctional}
           >
-            {country} {!isFunctional ? "(Coming Soon)" : ""}
+            {country} {!isFunctional ? `(${t("visaCategory.map.comingSoon")})` : ""}
           </option>
         );
       });
@@ -537,7 +539,7 @@ export default function JourneyRouteMap({
       {/* Map Instruction Header */}
       <div className="max-w-7xl mx-auto mb-8">
         <h2 className="text-2xl md:text-3xl font-bold text-primary/90 text-center mb-6">
-          Select Your Journey Route
+          {t("visaCategory.map.selectRoute")}
         </h2>
 
         {/* Step Indicator */}
@@ -546,7 +548,7 @@ export default function JourneyRouteMap({
             <span className="w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold bg-primary text-white">
               1
             </span>
-            <span className="font-medium">Select Origin</span>
+            <span className="font-medium">{t("visaCategory.map.selectOrigin")}</span>
           </div>
 
           <svg
@@ -563,7 +565,7 @@ export default function JourneyRouteMap({
             <span className="w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold bg-primary text-white">
               2
             </span>
-            <span className="font-medium">Select Destination</span>
+            <span className="font-medium">{t("visaCategory.map.selectDestination")}</span>
           </div>
         </div>
       </div>
@@ -624,7 +626,7 @@ export default function JourneyRouteMap({
                     {hoveredCountry !== "Pakistan" &&
                       hoveredCountry !== "United States" && (
                         <span className="text-[10px] text-gray-400 mt-1 uppercase tracking-wider font-bold">
-                          Coming Soon
+                          {t("visaCategory.map.comingSoon")}
                         </span>
                       )}
                   </div>
@@ -2260,7 +2262,7 @@ export default function JourneyRouteMap({
               htmlFor="originSelect"
               className="block text-sm font-medium text-gray-700 mb-2"
             >
-              Origin
+              {t("visaCategory.origin")}
             </label>
             <div className="relative">
               <select
@@ -2269,7 +2271,7 @@ export default function JourneyRouteMap({
                 onChange={(e) => setSelectedOrigin(e.target.value)}
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg bg-white text-gray-900 focus:ring-2 focus:ring-primary focus:border-primary transition-colors appearance-none cursor-pointer"
               >
-                <option value="">Select origin country</option>
+                <option value="">{t("visaCategory.selectOrigin")}</option>
                 {getOriginOptions()}
               </select>
               <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-gray-500">
@@ -2296,7 +2298,7 @@ export default function JourneyRouteMap({
             onClick={handleSwap}
             disabled={!selectedOrigin && !selectedDestination}
             className="mt-6 md:mt-0 p-3 border border-gray-300 rounded-lg bg-white hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-            aria-label="Swap origin and destination"
+            aria-label={t("visaCategory.swap")}
           >
             <svg
               width="16"
@@ -2316,7 +2318,7 @@ export default function JourneyRouteMap({
               htmlFor="destinationSelect"
               className="block text-sm font-medium text-gray-700 mb-2"
             >
-              Destination
+              {t("visaCategory.destination")}
             </label>
             <div className="relative">
               <select
@@ -2325,7 +2327,7 @@ export default function JourneyRouteMap({
                 onChange={(e) => setSelectedDestination(e.target.value)}
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg bg-white text-gray-900 focus:ring-2 focus:ring-primary focus:border-primary transition-colors appearance-none cursor-pointer"
               >
-                <option value="">Select destination country</option>
+                <option value="">{t("visaCategory.selectDestination")}</option>
                 {getDestinationOptions()}
               </select>
               <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-gray-500">
@@ -2351,7 +2353,7 @@ export default function JourneyRouteMap({
             onClick={handleReset}
             disabled={!selectedOrigin && !selectedDestination}
             className="mt-6 md:mt-0 px-4 py-3 border border-gray-300 rounded-lg bg-white hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
-            aria-label="Reset selection"
+            aria-label={t("visaCategory.resetAria")}
           >
             <svg
               width="16"
@@ -2363,7 +2365,7 @@ export default function JourneyRouteMap({
             >
               <path d="M2 8a6 6 0 0 1 10.5-4M14 8a6 6 0 0 1-10.5 4M2 3v5h5M14 13V8h-5" />
             </svg>
-            Reset
+            {t("visaCategory.reset")}
           </button>
         </div>
       </div>

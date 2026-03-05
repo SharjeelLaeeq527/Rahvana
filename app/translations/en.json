@@ -43,7 +43,11 @@
     "rightsReserved": "© 2026 Rahvana. All rights reserved.",
     "cookiePolicy": "Cookie Policy",
     "privacyPolicy": "Privacy Policy",
-    "termsOfService": "Terms of Service"
+    "termsOfService": "Terms of Service",
+    "instagram": "Instagram",
+    "facebook": "Facebook",
+    "youtube": "Youtube",
+    "x": "X"
   },
   "buttons": {
     "submit": "Submit",
@@ -98,6 +102,16 @@
     "journeysBadge": "Find Your Path",
     "journeysTitle": "Explore Immigration Journeys",
     "journeysDescription": "Select your visa category to access personalized guidance, document checklists, and timeline tracking.",
+    "categoryLabels": {
+      "Family & Protection": "Family & Protection",
+      "Work & Business": "Work & Business",
+      "Work Green Cards": "Work Green Cards",
+      "Students & Visitors": "Students & Visitors",
+      "Expert Help": "Expert Help",
+      "Pakistan Docs": "Pakistan Docs",
+      "Medical": "Medical",
+      "Documents": "Documents"
+    },
     "journeyTabs": {
       "family": "Family & Protection",
       "work": "Work & Business",
@@ -473,16 +487,6 @@
       "comingSoon": "Coming Soon",
       "startJourney": "Start Journey",
       "getEarlyAccess": "Get Early Access"
-    },
-    "categoryLabels": {
-      "Family & Protection": "Family & Protection",
-      "Work & Business": "Work & Business",
-      "Work Green Cards": "Work Green Cards",
-      "Students & Visitors": "Students & Visitors",
-      "Expert Help": "Expert Help",
-      "Pakistan Docs": "Pakistan Docs",
-      "Medical": "Medical",
-      "Documents": "Documents"
     }
   },
   "toolsPage": {
@@ -551,6 +555,138 @@
         "title": "Document Vault",
         "desc": "Organize docs + build shareable packets when the embassy asks."
       }
+    }
+  },
+  "myJourneys": {
+    "title": "My Immigration",
+    "professionalJourneys": "Professional Journeys",
+    "description": "Your centralized command center for visa tracking. Every document, step, and milestone is synced in real-time.",
+    "deleteAll": "Delete All",
+    "startNewJourney": "Start New Journey",
+    "noActiveJourneys": "No active journeys found",
+    "noJourneysDescription": "It looks like you haven't started any immigration journeys yet. Choose a visa category to begin your step-by-step guided process.",
+    "exploreCategories": "Explore Visa Categories",
+    "resumeJourney": "Resume Journey",
+    "lastActivity": "Last activity:",
+    "initializing": "Initializing secure session...",
+    "syncActive": "Live Sync Active",
+    "certifiedSecure": "Certified Secure Portal",
+    "deleteJourneyTitle": "Delete Journey?",
+    "deleteJourneyDesc": "Are you sure you want to delete this journey? All progress will be lost forever.",
+    "confirmDelete": "Delete",
+    "deleteAllTitle": "Delete All Journeys?",
+    "deleteAllDesc": "Are you sure you want to delete ALL ({count}) journeys? This cannot be undone.",
+    "confirmDeleteAll": "Delete All",
+    "journeyNames": {
+      "ir1": "IR-1 Spouse Visa",
+      "ir5": "IR-5 Parents Visa",
+      "k1": "K-1 Fiancé Visa"
+    },
+    "journeyDescriptions": {
+      "ir1": "Immigration journey for a spouse of a U.S. citizen.",
+      "ir5": "Immigration journey for Parents of U.S. citizens.",
+      "k1": "Immigration journey for a Fiancé of a U.S. citizen."
+    }
+  },
+  "ir1Journey": {
+    "title": "IR-1/CR-1 Spouse Visa Journey",
+    "description": "Comprehensive roadmap for bringing your spouse to the United States via consular processing at U.S. Embassy Islamabad, Pakistan.",
+    "stagesTitle": "The 5 Stages of Your Journey",
+    "welcomeBack": "Welcome Back!",
+    "existingJourney": "You have an existing IR-1 journey in progress.",
+    "journeyProgress": "Journey Progress",
+    "stepsCompleted": "{count} steps completed",
+    "currentlyAt": "Currently at: Stage {stage} — {name}",
+    "resumeJourney": "Resume My Journey",
+    "startFresh": "Start Fresh",
+    "startFreshTitle": "Start Fresh?",
+    "startFreshDesc": "Are you sure you want to reset all progress? This action cannot be undone.",
+    "overallProgress": "Overall Journey Progress",
+    "documentVault": "Document Vault",
+    "loadingJourney": "Loading your journey...",
+    "saving": "Saving...",
+    "autoSaved": "Auto-saved",
+    "stageNames": {
+      "1": "USCIS Petition",
+      "2": "NVC Processing",
+      "3": "Med + Interview",
+      "4": "Visa & Travel",
+      "5": "U.S. Arrival"
+    },
+    "stageShort": "Stage {stage}",
+    "vaultTitle": "📋 Document Vault",
+    "vaultDesc": "Track and manage your required documents.",
+    "collected": "Collected",
+    "pending": "Pending",
+    "uploaded": "Uploaded",
+    "notesLabel": "Notes",
+    "notesPlaceholder": "Add private note...",
+    "fileLabel": "File Attachment",
+    "chooseFile": "Choose File...",
+    "closeVault": "Close Vault",
+    "journeyMap": "Journey Map",
+    "consularTrack": "Consular Processing Track",
+    "stageStep": "Stage {stage}, Step {step}",
+    "completed": "Completed",
+    "markComplete": "Mark as Complete",
+    "actionsRequired": "Actions Required",
+    "docRequired": "(Document Required)",
+    "successTitle": "How do I know this step is finished?",
+    "prevStep": "Previous Step",
+    "nextStep": "Next Step"
+  },
+  "visaCategory": {
+    "feature": "Feature",
+    "visaCode": "Visa Code",
+    "bestFor": "Best For",
+    "stations": "Stations",
+    "difficulty": "Difficulty",
+    "timeline": "Timeline",
+    "matched": "Matched",
+    "exploreFilters": "Explore Filters",
+    "journeyComparison": "Journey Comparison",
+    "journeyComparisonDesc": "Comparison table for selected visa journeys.",
+    "visaChecker": "Visa Eligibility Checker",
+    "unknown": "Unknown",
+    "processes": {
+      "All": "All",
+      "Consular": "Consular Processing",
+      "Adjustment of Status": "Adjustment of Status"
+    },
+    "match": "Match",
+    "completePercent": "{percent}% Complete",
+    "inProgress": "In Progress",
+    "compare": "Compare",
+    "checking": "Checking...",
+    "resumeJourney": "Resume Journey",
+    "startJourney": "Start Journey",
+    "watchIntro": "Watch Intro",
+    "highApproval": "High Approval Rate",
+    "bestMatches": "Best Matches",
+    "all": "All Journeys",
+    "route": "Route",
+    "origin": "Origin",
+    "destination": "Destination",
+    "visaCategory": "Visa Category",
+    "categories": {
+      "all": "All",
+      "Family": "Family",
+      "Work": "Work",
+      "Study": "Study",
+      "Humanitarian": "Humanitarian",
+      "Visit": "Visit",
+      "Other": "Other"
+    },
+    "processingMethod": "Processing Method",
+    "consularTitle": "Consular Processing",
+    "consularTooltip": "Apply for a visa at a U.S. embassy or consulate in your home country before traveling.",
+    "aosTitle": "Adjustment of Status (AOS)",
+    "aosTooltip": "Apply for a green card while already in the U.S. No interview abroad required.",
+    "map": {
+      "selectRoute": "Select Your Journey Route",
+      "selectOrigin": "Select Origin",
+      "selectDestination": "Select Destination",
+      "comingSoon": "Coming Soon"
     }
   }
 }
