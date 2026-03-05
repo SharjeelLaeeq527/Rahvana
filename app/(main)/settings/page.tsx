@@ -170,10 +170,10 @@ export default function SettingsPage() {
         throw error;
       }
 
-      setMessage(t("messages.success"));
+      setMessage(t("pages.settings.messages.success"));
     } catch (error) {
       console.error("Error saving settings:", error);
-      setMessage(t("messages.saveError"));
+      setMessage(t("pages.settings.messages.saveError"));
     } finally {
       setLoading(false);
     }
@@ -210,7 +210,7 @@ export default function SettingsPage() {
       router.push("/");
     } catch (error) {
       console.error("Error deleting account:", error);
-      setMessage(t("messages.deleteError"));
+      setMessage(t("pages.settings.messages.deleteError"));
       setLoading(false);
     }
   };
@@ -245,7 +245,7 @@ export default function SettingsPage() {
         {message && (
           <div
             className={`mb-6 p-4 rounded-lg border ${
-              message === t("messages.success")
+              message === t("pages.settings.messages.success")
                 ? "bg-green-50 border-green-200 text-green-700"
                 : "bg-red-50 border-red-200 text-red-700"
             }`}
@@ -357,13 +357,13 @@ export default function SettingsPage() {
                 >
                   <span className="hidden sm:inline">
                     {profile?.mfa_enabled
-                      ? t("account.mfaManage")
-                      : t("account.mfaSetup")}
+                      ? t("pages.settings.account.mfaManage")
+                      : t("pages.settings.account.mfaSetup")}
                   </span>
                   <span className="sm:hidden">
                     {profile?.mfa_enabled
-                      ? t("account.mfaManageMobile")
-                      : t("account.mfaSetupMobile")}
+                      ? t("pages.settings.account.mfaManageMobile")
+                      : t("pages.settings.account.mfaSetupMobile")}
                   </span>
                 </Button>
               </div>

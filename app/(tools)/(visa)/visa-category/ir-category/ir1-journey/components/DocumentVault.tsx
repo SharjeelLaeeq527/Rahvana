@@ -161,7 +161,7 @@ export function DocumentVault({
                           <div className="w-full h-10 px-3 flex items-center text-sm font-medium bg-[#ebf5f4] text-[#0d9488] rounded-lg border border-[#0d9488]/20 hover:bg-[#ebf5f4]/80 transition-all truncate">
                             {upload
                               ? upload.name
-                              : t("placeholders.chooseFile")}
+                              : t("documentVault.placeholders.chooseFile")}
                           </div>
                         </div>
                         {upload && (

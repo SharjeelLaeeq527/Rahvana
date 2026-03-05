@@ -169,7 +169,7 @@ export default function SecurityQuestionsPreviewPage() {
                     className="rounded-2xl border-gray-200 hover:bg-white hover:border-primary transition-all font-bold gap-2 w-full sm:w-auto justify-center h-11"
                   >
                     {showAnswers ? <EyeOff size={16} /> : <Eye size={16} />}
-                    {showAnswers ? t("vault.mask") : t("vault.reveal")}{" "}
+                    {showAnswers ? t("pages.courierRegistration.securityPreview.vault.mask") : t("pages.courierRegistration.securityPreview.vault.reveal")}{" "}
                     {t("pages.courierRegistration.securityPreview.vault.data")}
                   </Button>
                 </div>
@@ -186,7 +186,7 @@ export default function SecurityQuestionsPreviewPage() {
                       )}
                     </Label>
                     <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100 font-mono text-base sm:text-lg font-bold text-gray-800 break-all">
-                      {data?.portal_username || t("vault.notSet")}
+                      {data?.portal_username || t("pages.courierRegistration.securityPreview.vault.notSet")}
                     </div>
                   </div>
                 </div>
@@ -210,7 +210,7 @@ export default function SecurityQuestionsPreviewPage() {
                       </div>
                       <div className="space-y-3 pl-0 sm:pl-9">
                         <p className="text-gray-900 font-bold text-base sm:text-lg leading-tight">
-                          {item.q || t("vault.noQuestion")}
+                          {item.q || t("pages.courierRegistration.securityPreview.vault.noQuestion")}
                         </p>
                         <div className="p-4 bg-primary/2 rounded-2xl border border-primary/5 font-mono text-sm sm:text-base font-bold text-primary transition-all">
                           {showAnswers ? (

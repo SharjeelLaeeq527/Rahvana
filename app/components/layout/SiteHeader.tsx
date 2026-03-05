@@ -407,7 +407,9 @@ export function SiteHeader({
             title="Toggle Language"
           >
             <Globe className="w-4 h-4" />
-            <span className="text-xs uppercase leading-none mt-0.5">{language === "en" ? "اردو" : "EN"}</span>
+            <span className="text-xs uppercase leading-none mt-0.5">
+              {language === "en" ? "اردو" : "EN"}
+            </span>
           </HydrationSafeButton>
 
           {isLoading && !resolvedUser

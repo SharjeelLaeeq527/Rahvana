@@ -123,7 +123,7 @@ export default function CourierRegistrationPage() {
     if (!user) {
       setMessage({
         type: "error",
-        text: t("messages.loginRequired"),
+        text: t("pages.courierRegistration.messages.loginRequired"),
       });
       return;
     }
@@ -138,7 +138,7 @@ export default function CourierRegistrationPage() {
     ) {
       setMessage({
         type: "error",
-        text: t("messages.fillAll"),
+        text: t("pages.courierRegistration.messages.fillAll"),
       });
       return;
     }
@@ -155,16 +155,20 @@ export default function CourierRegistrationPage() {
       if (response.ok) {
         setMessage({
           type: "success",
-          text: t("messages.saveSuccess"),
+          text: t("pages.courierRegistration.messages.saveSuccess"),
         });
       } else {
         setMessage({
           type: "error",
-          text: result.error || t("messages.saveError"),
+          text:
+            result.error || t("pages.courierRegistration.messages.saveError"),
         });
       }
     } catch (error) {
-      setMessage({ type: "error", text: t("messages.unexpectedError") });
+      setMessage({
+        type: "error",
+        text: t("pages.courierRegistration.messages.unexpectedError"),
+      });
       console.error("Error saving questions:", error);
     } finally {
       setIsSaving(false);
@@ -182,34 +186,50 @@ export default function CourierRegistrationPage() {
     doc.setTextColor(255, 255, 255);
     doc.setFontSize(24);
     doc.setFont("helvetica", "bold");
-    doc.text(t("pdf.title"), 20, 25);
+    doc.text(t("pages.courierRegistration.pdf.title"), 20, 25);
 
     doc.setFontSize(10);
     doc.setFont("helvetica", "normal");
-    doc.text(t("pdf.header"), 20, 32);
+    doc.text(t("pages.courierRegistration.pdf.header"), 20, 32);
 
     // Content Section
     doc.setTextColor(31, 41, 55);
     doc.setFontSize(12);
     doc.setFont("helvetica", "bold");
-    doc.text(t("pdf.credentials"), 20, 55);
+    doc.text(t("pages.courierRegistration.pdf.credentials"), 20, 55);
 
     doc.setDrawColor(229, 231, 235);
     doc.line(20, 58, 190, 58);
 
     doc.setFont("helvetica", "normal");
-    doc.text(t("pdf.usernameLabel"), 20, 70);
+    doc.text(t("pages.courierRegistration.pdf.usernameLabel"), 20, 70);
     doc.setFont("helvetica", "bold");
-    doc.text(portalUsername || t("pdf.notProvided"), 60, 70);
+    doc.text(
+      portalUsername || t("pages.courierRegistration.pdf.notProvided"),
+      60,
+      70,
+    );
 
     doc.setFont("helvetica", "bold");
-    doc.text(t("pdf.securityQuestions"), 20, 90);
+    doc.text(t("pages.courierRegistration.pdf.securityQuestions"), 20, 90);
     doc.line(20, 93, 190, 93);
 
     const questionsList = [
-      { q: questions.q1, a: questions.a1, label: t("pdf.q1") },
-      { q: questions.q2, a: questions.a2, label: t("pdf.q2") },
-      { q: questions.q3, a: questions.a3, label: t("pdf.q3") },
+      {
+        q: questions.q1,
+        a: questions.a1,
+        label: t("pages.courierRegistration.pdf.q1"),
+      },
+      {
+        q: questions.q2,
+        a: questions.a2,
+        label: t("pages.courierRegistration.pdf.q2"),
+      },
+      {
+        q: questions.q3,
+        a: questions.a3,
+        label: t("pages.courierRegistration.pdf.q3"),
+      },
     ];
 
     let currentY = 105;
@@ -226,9 +246,13 @@ export default function CourierRegistrationPage() {
       currentY += qLines.length * 7 + 8;
 
       doc.setFont("helvetica", "bold");
-      doc.text(t("pdf.answerLabel"), 20, currentY);
+      doc.text(t("pages.courierRegistration.pdf.answerLabel"), 20, currentY);
       doc.setFont("helvetica", "normal");
-      doc.text(item.a || t("pdf.notProvided"), 40, currentY);
+      doc.text(
+        item.a || t("pages.courierRegistration.pdf.notProvided"),
+        40,
+        currentY,
+      );
 
       currentY += 15;
     });
@@ -243,7 +267,7 @@ export default function CourierRegistrationPage() {
       20,
       278,
     );
-    doc.text(t("pdf.footerText"), 190, 278, {
+    doc.text(t("pages.courierRegistration.pdf.footerText"), 190, 278, {
       align: "right",
     });
 
@@ -344,16 +368,23 @@ export default function CourierRegistrationPage() {
                     {[
                       {
                         id: 1,
-                        title: t("sidebar.signup"),
+                        title: t("pages.courierRegistration.sidebar.signup"),
                       },
-                      { id: 2, title: t("sidebar.profile") },
+                      {
+                        id: 2,
+                        title: t("pages.courierRegistration.sidebar.profile"),
+                      },
                       {
                         id: 3,
-                        title: t("sidebar.application"),
+                        title: t(
+                          "pages.courierRegistration.sidebar.application",
+                        ),
                       },
                       {
                         id: 4,
-                        title: t("sidebar.groupRequest"),
+                        title: t(
+                          "pages.courierRegistration.sidebar.groupRequest",
+                        ),
                       },
                     ].map((stage) => (
                       <button
@@ -410,12 +441,20 @@ export default function CourierRegistrationPage() {
                         </CardTitle>
                         <CardDescription>
                           {guideStage === 1
-                            ? t("guide.descriptions.signup")
+                            ? t(
+                                "pages.courierRegistration.guide.descriptions.signup",
+                              )
                             : guideStage === 2
-                              ? t("guide.descriptions.profile")
+                              ? t(
+                                  "pages.courierRegistration.guide.descriptions.profile",
+                                )
                               : guideStage === 3
-                                ? t("guide.descriptions.application")
-                                : t("guide.descriptions.groupRequest")}
+                                ? t(
+                                    "pages.courierRegistration.guide.descriptions.application",
+                                  )
+                                : t(
+                                    "pages.courierRegistration.guide.descriptions.groupRequest",
+                                  )}
                         </CardDescription>
                       </div>
                       {(guideStage === 1 || guideStage === 3) && (
@@ -982,7 +1021,7 @@ export default function CourierRegistrationPage() {
                       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                         <div className="space-y-1 text-center sm:text-left">
                           <CardTitle className="text-xl sm:text-2xl font-black text-gray-900">
-                            Security Vault
+                            {t("pages.courierRegistration.securityVault.title")}
                           </CardTitle>
                           <p className="text-xs sm:text-sm text-gray-500 font-medium">
                             {t(
@@ -1268,8 +1307,12 @@ export default function CourierRegistrationPage() {
                                   <Save size={20} />
                                 )}
                                 {isSaving
-                                  ? t("pages.courierRegistration.securityVault.savingBtn")
-                                  : t("pages.courierRegistration.securityVault.saveBtn")}
+                                  ? t(
+                                      "pages.courierRegistration.securityVault.savingBtn",
+                                    )
+                                  : t(
+                                      "pages.courierRegistration.securityVault.saveBtn",
+                                    )}
                               </Button>
                             ) : (
                               <Button

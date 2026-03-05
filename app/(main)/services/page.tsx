@@ -62,7 +62,7 @@ export default function ServicesPage() {
     );
 
     const categoriesList: CategoryOption[] = [
-      { id: "All", label: t("allCategory") },
+      { id: "All", label: t("pages.services.allCategory") },
       ...NAV_DATA.services.tabs.map((tab) => ({
         id: tab.id,
         label: tab.translationKey
