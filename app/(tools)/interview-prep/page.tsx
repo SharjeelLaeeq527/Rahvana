@@ -1532,14 +1532,14 @@ export default function InterviewPreparation() {
           },
           body: JSON.stringify({
             case_type: formData.caseType,
-            user_email:
-              typeof window !== "undefined"
-                ? localStorage.getItem("userEmail") || "test@example.com"
-                : "test@example.com",
-            user_name:
-              typeof window !== "undefined"
-                ? localStorage.getItem("userName") || "John Doe"
-                : "John Doe",
+            // user_email:
+            //   typeof window !== "undefined"
+            //     ? localStorage.getItem("userEmail") || "test@example.com"
+            //     : "test@example.com",
+            // user_name:
+            //   typeof window !== "undefined"
+            //     ? localStorage.getItem("userName") || "John Doe"
+            //     : "John Doe",
           }),
         });
 

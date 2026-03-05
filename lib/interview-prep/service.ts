@@ -731,7 +731,7 @@ async function loadData(): Promise<{
 
 // Creates a new interview prep session
 export async function createInterviewSession(
-  sessionData: InterviewSessionInput,
+  sessionData: Omit<InterviewSessionInput, "user_id">,
 ): Promise<InterviewSession> {
   return await createInterviewSessionDB(sessionData);
 }

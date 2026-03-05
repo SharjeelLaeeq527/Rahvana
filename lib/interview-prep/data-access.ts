@@ -1,3 +1,4 @@
+// lib/interview-prep/data-access.ts
 import { createClient } from "../supabase/server";
 import {
   InterviewSession,
@@ -6,19 +7,30 @@ import {
   InterviewSessionInput,
 } from "./types";
 
-// Creates a new interview prep session
-export async function createInterviewSessionDB(
-  sessionData: InterviewSessionInput,
-): Promise<InterviewSession> {
+async function getSupabaseWithUser() {
   const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) throw new Error("Unauthorized");
+
+  return { supabase, user };
+}
+
+// Create new session
+export async function createInterviewSessionDB(
+  sessionData: Omit<InterviewSessionInput, "user_id">
+): Promise<InterviewSession> {
+  const { supabase, user } = await getSupabaseWithUser();
 
   const { data, error } = await supabase
     .from("interview_prep_sessions")
     .insert([
       {
-        user_id: sessionData.user_id,
-        user_email: sessionData.user_email,
-        user_name: sessionData.user_name,
+        user_id: user.id,
+        user_email: user.email,
+        user_name: user.user_metadata?.full_name || null,
         case_type: sessionData.case_type,
         completed: false,
       },
@@ -26,134 +38,126 @@ export async function createInterviewSessionDB(
     .select()
     .single();
 
-  if (error) {
-    throw new Error(`Failed to create interview session: ${error.message}`);
-  }
+  if (error) throw new Error(error.message);
 
   return data as InterviewSession;
 }
 
-// Retrieves an interview prep session by ID
+// Get session (enforce ownership)
 export async function getInterviewSessionDB(
-  sessionId: string,
+  sessionId: string
 ): Promise<InterviewSession | null> {
-  const supabase = await createClient();
+  const { supabase, user } = await getSupabaseWithUser();
 
   const { data, error } = await supabase
     .from("interview_prep_sessions")
     .select("*")
     .eq("id", sessionId)
+    .eq("user_id", user.id)
     .single();
 
   if (error) {
-    if (error.code === "PGRST116") {
-      // Record not found
-      return null;
-    }
-    throw new Error(`Failed to fetch interview session: ${error.message}`);
+    if (error.code === "PGRST116") return null;
+    throw new Error(error.message);
   }
 
   return data as InterviewSession;
 }
 
-// Updates an interview prep session
+// Update session
 export async function updateInterviewSessionDB(
   sessionId: string,
-  updateData: Partial<InterviewSession>,
+  updateData: Partial<InterviewSession>
 ): Promise<InterviewSession> {
-  const supabase = await createClient();
+  const { supabase, user } = await getSupabaseWithUser();
 
   const { data, error } = await supabase
     .from("interview_prep_sessions")
     .update(updateData)
     .eq("id", sessionId)
+    .eq("user_id", user.id)
     .select()
     .single();
 
-  if (error) {
-    throw new Error(`Failed to update interview session: ${error.message}`);
-  }
+  if (error) throw new Error(error.message);
 
   return data as InterviewSession;
 }
 
-// Saves multiple interview answers for a session
+// Save answers
 export async function saveInterviewAnswersDB(
   sessionId: string,
-  answers: Array<{ question_key: string; answer_value: unknown }>,
-): Promise<void> {
-  const supabase = await createClient();
+  answers: Array<{ question_key: string; answer_value: unknown }>
+) {
+  const { supabase, user } = await getSupabaseWithUser();
 
-  // Prepare answers for bulk insert/update
-  const answersToInsert = answers.map((answer) => ({
+  // Ensure session belongs to user
+  const session = await getInterviewSessionDB(sessionId);
+  if (!session) throw new Error("Session not found");
+
+  const answersToInsert = answers.map((a) => ({
     session_id: sessionId,
-    question_key: answer.question_key,
-    answer_value: answer.answer_value,
+    question_key: a.question_key,
+    answer_value: a.answer_value,
   }));
 
-  // Use upsert to handle both new and existing answers
   const { error } = await supabase
     .from("interview_prep_answers")
-    .upsert(answersToInsert, {
-      onConflict: "session_id, question_key",
-    });
+    .upsert(answersToInsert, { onConflict: "session_id, question_key" });
 
-  if (error) {
-    throw new Error(`Failed to save interview answers: ${error.message}`);
-  }
+  if (error) throw new Error(error.message);
 }
 
-// Retrieves all answers for a specific session
+// Get answers
 export async function getSessionAnswersDB(
-  sessionId: string,
+  sessionId: string
 ): Promise<InterviewAnswer[]> {
-  const supabase = await createClient();
+  const { supabase, user } = await getSupabaseWithUser();
+
+  // Enforce ownership
+  const session = await getInterviewSessionDB(sessionId);
+  if (!session) throw new Error("Session not found");
 
   const { data, error } = await supabase
     .from("interview_prep_answers")
     .select("*")
     .eq("session_id", sessionId);
 
-  if (error) {
-    throw new Error(`Failed to fetch session answers: ${error.message}`);
-  }
+  if (error) throw new Error(error.message);
 
   return data as InterviewAnswer[];
 }
 
-// Saves the generated interview prep results
+// Save results
 export async function saveInterviewResultsDB(
   sessionId: string,
-  generatedQuestions: unknown[],
+  generatedQuestions: unknown[]
 ): Promise<InterviewResult> {
-  const supabase = await createClient();
+  const { supabase, user } = await getSupabaseWithUser();
+
+  // Ensure session ownership
+  const session = await getInterviewSessionDB(sessionId);
+  if (!session) throw new Error("Session not found");
 
   const { data, error } = await supabase
     .from("interview_prep_results")
-    .upsert(
-      {
-        session_id: sessionId,
-        generated_questions: generatedQuestions,
-      },
-      {
-        onConflict: "session_id",
-      },
-    )
+    .upsert({ session_id: sessionId, generated_questions: generatedQuestions }, { onConflict: "session_id" })
     .select()
     .single();
 
-  if (error) {
-    throw new Error(`Failed to save interview results: ${error.message}`);
-  }
+  if (error) throw new Error(error.message);
 
   return data as InterviewResult;
 }
 
-// Retrieves the generated interview prep results for a session
+// Get results
 export async function getInterviewResultsDB(
-  sessionId: string,
+  sessionId: string
 ): Promise<InterviewResult | null> {
-  const supabase = await createClient();
+  const { supabase, user } = await getSupabaseWithUser();
+
+  const session = await getInterviewSessionDB(sessionId);
+  if (!session) return null;
 
   const { data, error } = await supabase
     .from("interview_prep_results")
@@ -162,11 +166,8 @@ export async function getInterviewResultsDB(
     .single();
 
   if (error) {
-    if (error.code === "PGRST116") {
-      // Record not found
-      return null;
-    }
-    throw new Error(`Failed to fetch interview results: ${error.message}`);
+    if (error.code === "PGRST116") return null;
+    throw new Error(error.message);
   }
 
   return data as InterviewResult;

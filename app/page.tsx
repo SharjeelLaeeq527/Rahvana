@@ -27,6 +27,7 @@ import { MfaPromptModal } from "./components/shared/MFAPromptModal";
 import { NAV_DATA } from "@/app/components/layout/navigationData";
 import { useLanguage } from "@/app/context/LanguageContext";
 import { FAQS, JOURNEYS, LIFECYCLE_STEPS } from "@/data/home-page-data";
+import { Loader } from "@/components/ui/spinner";
 
 const renderWithAbbr = (text: string) => {
   if (!text || typeof text !== "string" || !text.includes("PCC")) return text;
@@ -55,8 +56,27 @@ export default function HomePage() {
   return (
     <Suspense
       fallback={
-        <div className="flex items-center justify-center h-screen">
-          Loading...
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+            height: "100vh",
+            gap: 16,
+          }}
+        >
+          <Loader size="lg" />
+          <p
+            style={{
+              color: "#0d7377",
+              fontSize: 14,
+              fontWeight: 500,
+              marginTop: 8,
+            }}
+          >
+            Loading
+          </p>
         </div>
       }
     >
@@ -647,7 +667,7 @@ function HomePageContent() {
 
                           <div className="mt-auto">
                             <HydrationSafeButton
-                             // disabled
+                              // disabled
                               onClick={() => setShowComingSoon(true)}
                               className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-4 text-base font-bold text-white bg-rahvana-primary rounded-xl transition-all shadow-md"
                             >
