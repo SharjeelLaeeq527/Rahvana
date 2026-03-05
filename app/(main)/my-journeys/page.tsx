@@ -23,7 +23,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { ConfirmationModal } from "@/app/components/shared/ConfirmationModal";
-import { useTranslations } from "next-intl";
+import { useLanguage } from "@/app/context/LanguageContext";
 
 const JOURNEY_ROUTES: Record<string, string> = {
   ir1: "/visa-category/ir-category/ir1-journey",
@@ -32,7 +32,7 @@ const JOURNEY_ROUTES: Record<string, string> = {
 };
 
 export default function MyJourneysPage() {
-  const t = useTranslations("myJourneys");
+  const { t } = useLanguage();
   const { user, isLoading: authLoading } = useAuth();
   const router = useRouter();
 
@@ -141,7 +141,7 @@ export default function MyJourneysPage() {
       <div className="min-h-[80vh] flex flex-col items-center justify-center gap-4">
         <Loader2 className="w-10 h-10 animate-spin text-primary" />
         <p className="text-muted-foreground font-medium animate-pulse">
-          {t("loading")}
+          {t("myJourneys.loading")}
         </p>
       </div>
     );
@@ -157,21 +157,21 @@ export default function MyJourneysPage() {
               <div className="flex items-center gap-2">
                 <div className="flex items-center gap-1.5 px-2.5 py-1 bg-primary/10 text-primary rounded-full text-[10px] font-black uppercase tracking-widest border border-primary/20">
                   <Shield className="w-3 h-3" />{" "}
-                  {t("header.badges.securePortal")}
+                  {t("myJourneys.header.badges.securePortal")}
                 </div>
                 <div className="flex items-center gap-1.5 px-2.5 py-1 bg-emerald-50 text-emerald-600 rounded-full text-[10px] font-black uppercase tracking-widest border border-emerald-100">
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />{" "}
-                  {t("header.badges.liveSync")}
+                  {t("myJourneys.header.badges.liveSync")}
                 </div>
               </div>
               <h1 className="text-5xl font-black text-slate-900 tracking-tight leading-[1.1]">
-                {t("header.title.main")} <br />
+                {t("myJourneys.header.title.main")} <br />
                 <span className="text-primary bg-linear-to-r from-primary to-secondary bg-clip-text">
-                  {t("header.title.highlight")}
+                  {t("myJourneys.header.title.highlight")}
                 </span>
               </h1>
               <p className="text-slate-500 max-w-lg text-lg font-medium leading-relaxed">
-                {t("header.description")}
+                {t("myJourneys.header.description")}
               </p>
             </div>
 
@@ -189,7 +189,7 @@ export default function MyJourneysPage() {
                     ) : (
                       <Trash2 className="w-4 h-4 mr-2" />
                     )}
-                    Delete All
+                    {t("myJourneys.header.actions.deleteAll")}
                   </Button>
                 )}
                 <Button
@@ -197,7 +197,7 @@ export default function MyJourneysPage() {
                   className="bg-primary hover:bg-primary/90 text-white shadow-xl shadow-primary/20"
                 >
                   <Plus className="w-4 h-4 mr-2" />
-                  Start New Journey
+                  {t("myJourneys.header.actions.startNew")}
                 </Button>
               </div>
             )}
@@ -249,17 +249,17 @@ export default function MyJourneysPage() {
                     <Briefcase className="w-10 h-10 text-primary" />
                   </div>
                   <h2 className="text-2xl font-bold text-slate-900 mb-3">
-                    {t("emptyState.title")}
+                    {t("myJourneys.emptyState.title")}
                   </h2>
                   <p className="text-slate-500 max-w-md mx-auto mb-8">
-                    {t("emptyState.description")}
+                    {t("myJourneys.emptyState.description")}
                   </p>
                   <Button
                     size="lg"
                     onClick={() => router.push("/visa-category/ir-category")}
                     className="bg-primary hover:bg-primary/90 text-white rounded-full px-8 py-6 text-lg font-bold shadow-lg shadow-primary/20"
                   >
-                    {t("emptyState.button")}{" "}
+                    {t("myJourneys.emptyState.button")}{" "}
                     <ChevronRight className="ml-2 w-5 h-5" />
                   </Button>
                 </motion.div>
@@ -274,11 +274,11 @@ export default function MyJourneysPage() {
                       journeyId,
                     );
                     const journeyName = isValidJourney
-                      ? t(`journeyNames.${journeyId}`)
+                      ? t(`myJourneys.journeyNames.${journeyId}`)
                       : j.journey_id.toUpperCase();
                     const description = isValidJourney
-                      ? t(`journeyDescriptions.${journeyId}`)
-                      : t("journeyDescriptions.fallback");
+                      ? t(`myJourneys.journeyDescriptions.${journeyId}`)
+                      : t("myJourneys.journeyDescriptions.fallback");
                     const route = JOURNEY_ROUTES[j.journey_id] || "/";
 
                     return (
@@ -300,7 +300,7 @@ export default function MyJourneysPage() {
                                 handleDelete(j.journey_id);
                               }}
                               className="p-2 text-red-500 hover:bg-red-50 rounded-xl transition-all"
-                              title={t("journeyCard.deleteTooltip")}
+                              title={t("myJourneys.journeyCard.deleteTooltip")}
                               disabled={deletingId === j.journey_id}
                             >
                               {deletingId === j.journey_id ? (
@@ -330,7 +330,9 @@ export default function MyJourneysPage() {
                               <div className="flex items-center justify-between text-sm font-bold">
                                 <span className="text-slate-600 uppercase tracking-tighter flex items-center gap-1.5">
                                   <Clock className="w-3.5 h-3.5" />
-                                  {t("journeyCard.lastActivity")}{" "}
+                                  {t(
+                                    "myJourneys.journeyCard.lastActivity",
+                                  )}{" "}
                                   {new Date(
                                     j.last_updated_at,
                                   ).toLocaleDateString()}
@@ -357,7 +359,7 @@ export default function MyJourneysPage() {
 
                             <div className="mt-8 flex items-center justify-between pt-6 border-t border-slate-100 gap-4">
                               <Button className="rounded-full bg-primary text-white shadow-lg shadow-primary/20 transition-all font-bold px-6 border-transparent hover:bg-primary/90">
-                                {t("journeyCard.resumeBtn")}{" "}
+                                {t("myJourneys.journeyCard.resumeBtn")}{" "}
                                 <ArrowRight className="ml-2 w-4 h-4 group-hover:translate-x-1 transition-transform" />
                               </Button>
                             </div>
@@ -388,20 +390,20 @@ export default function MyJourneysPage() {
       <ConfirmationModal
         open={deleteModalOpen}
         onOpenChange={setDeleteModalOpen}
-        title={t("modals.deleteJourney.title")}
-        description={t("modals.deleteJourney.description")}
-        confirmText={t("modals.deleteJourney.confirmBtn")}
+        title={t("myJourneys.modals.deleteJourney.title")}
+        description={t("myJourneys.modals.deleteJourney.description")}
+        confirmText={t("myJourneys.modals.deleteJourney.confirmBtn")}
         onConfirm={confirmDelete}
       />
 
       <ConfirmationModal
         open={deleteAllModalOpen}
         onOpenChange={setDeleteAllModalOpen}
-        title={t("modals.deleteAllJourneys.title")}
-        description={t("modals.deleteAllJourneys.description", {
+        title={t("myJourneys.modals.deleteAllJourneys.title")}
+        description={t("myJourneys.modals.deleteAllJourneys.description", {
           count: journeys.length,
         })}
-        confirmText={t("modals.deleteAllJourneys.confirmBtn")}
+        confirmText={t("myJourneys.modals.deleteAllJourneys.confirmBtn")}
         onConfirm={confirmDeleteAll}
       />
     </div>

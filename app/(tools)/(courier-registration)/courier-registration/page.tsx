@@ -40,7 +40,7 @@ import {
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import jsPDF from "jspdf";
-import { useTranslations } from "next-intl";
+import { useLanguage } from "@/app/context/LanguageContext";
 
 // const SECURITY_QUESTIONS_1 = [
 //   "What is your mother's maiden name?",
@@ -67,7 +67,7 @@ import { useTranslations } from "next-intl";
 // ];
 
 export default function CourierRegistrationPage() {
-  const t = useTranslations("pages.courierRegistration");
+  const { t, tRaw } = useLanguage();
   const { user } = useAuth();
   const [activeTab, setActiveTab] = useState("guide");
   const [guideStage, setGuideStage] = useState(1);
@@ -238,7 +238,11 @@ export default function CourierRegistrationPage() {
     doc.line(20, 270, 190, 270);
     doc.setFontSize(8);
     doc.setTextColor(156, 163, 175);
-    doc.text(`${t("pdf.generatedOn")}: ${timestamp}`, 20, 278);
+    doc.text(
+      `${t("pages.courierRegistration.pdf.generatedOn")}: ${timestamp}`,
+      20,
+      278,
+    );
     doc.text(t("pdf.footerText"), 190, 278, {
       align: "right",
     });
@@ -295,11 +299,13 @@ export default function CourierRegistrationPage() {
           </motion.div>
           <div className="space-y-2">
             <h1 className="text-4xl font-black tracking-tight text-gray-900 sm:text-5xl">
-              {t("title.main")}{" "}
-              <span className="text-primary">{t("title.highlight")}</span>
+              {t("pages.courierRegistration.title.main")}{" "}
+              <span className="text-primary">
+                {t("pages.courierRegistration.title.highlight")}
+              </span>
             </h1>
             <p className="text-lg text-gray-500 max-w-2xl mx-auto font-medium">
-              {t("subtitle")}
+              {t("pages.courierRegistration.subtitle")}
             </p>
           </div>
         </div>
@@ -311,14 +317,15 @@ export default function CourierRegistrationPage() {
                 value="guide"
                 className="w-full sm:w-auto px-6 sm:px-8 py-3 rounded-xl data-[state=active]:bg-primary data-[state=active]:text-white transition-all text-sm font-bold gap-2"
               >
-                <Info size={16} /> {t("tabs.guide")}
+                <Info size={16} /> {t("pages.courierRegistration.tabs.guide")}
               </TabsTrigger>
               <TabsTrigger
                 value="security"
                 onClick={() => fetchUserQuestions()}
                 className="w-full sm:w-auto px-6 sm:px-8 py-3 rounded-xl data-[state=active]:bg-primary data-[state=active]:text-white transition-all text-sm font-bold gap-2"
               >
-                <Lock size={16} /> {t("tabs.security")}
+                <Lock size={16} />{" "}
+                {t("pages.courierRegistration.tabs.security")}
               </TabsTrigger>
             </TabsList>
           </div>
@@ -374,22 +381,30 @@ export default function CourierRegistrationPage() {
                           {guideStage === 1 ? (
                             <>
                               <UserPlus className="text-primary" />{" "}
-                              {t("guide.titles.signup")}
+                              {t(
+                                "pages.courierRegistration.guide.titles.signup",
+                              )}
                             </>
                           ) : guideStage === 2 ? (
                             <>
                               <User className="text-primary" />{" "}
-                              {t("guide.titles.profile")}
+                              {t(
+                                "pages.courierRegistration.guide.titles.profile",
+                              )}
                             </>
                           ) : guideStage === 3 ? (
                             <>
                               <ExternalLink className="text-primary" />{" "}
-                              {t("guide.titles.application")}
+                              {t(
+                                "pages.courierRegistration.guide.titles.application",
+                              )}
                             </>
                           ) : (
                             <>
                               <UserPlus className="text-primary" />{" "}
-                              {t("guide.titles.groupRequest")}
+                              {t(
+                                "pages.courierRegistration.guide.titles.groupRequest",
+                              )}
                             </>
                           )}
                         </CardTitle>
@@ -410,7 +425,7 @@ export default function CourierRegistrationPage() {
                           rel="noopener noreferrer"
                           className="flex items-center gap-1 text-sm font-bold text-primary hover:underline group w-fit"
                         >
-                          {t("guide.visitPortal")}{" "}
+                          {t("pages.courierRegistration.guide.visitPortal")}{" "}
                           <ExternalLink
                             size={14}
                             className="group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform"
@@ -424,8 +439,12 @@ export default function CourierRegistrationPage() {
                       {guideStage === 1 && (
                         <>
                           <GuideStep
-                            title={t("guide.steps.signup.s1.title")}
-                            description={t("guide.steps.signup.s1.desc")}
+                            title={t(
+                              "pages.courierRegistration.guide.steps.signup.s1.title",
+                            )}
+                            description={t(
+                              "pages.courierRegistration.guide.steps.signup.s1.desc",
+                            )}
                           >
                             <a
                               href="https://www.usvisascheduling.com/"
@@ -433,7 +452,7 @@ export default function CourierRegistrationPage() {
                               rel="noopener noreferrer"
                               className="flex items-center gap-1 text-sm font-bold text-primary hover:underline group w-fit"
                             >
-                              {t("guide.visitPortal")}{" "}
+                              {t("pages.courierRegistration.guide.visitPortal")}{" "}
                               <ExternalLink
                                 size={14}
                                 className="group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform"
@@ -441,13 +460,23 @@ export default function CourierRegistrationPage() {
                             </a>
                           </GuideStep>
                           <GuideStep
-                            title={t("guide.steps.signup.s2.title")}
-                            description={t("guide.steps.signup.s2.desc")}
-                            badge={t("guide.badges.mandatory")}
+                            title={t(
+                              "pages.courierRegistration.guide.steps.signup.s2.title",
+                            )}
+                            description={t(
+                              "pages.courierRegistration.guide.steps.signup.s2.desc",
+                            )}
+                            badge={t(
+                              "pages.courierRegistration.guide.badges.mandatory",
+                            )}
                           />
                           <GuideStep
-                            title={t("guide.steps.signup.s3.title")}
-                            description={t("guide.steps.signup.s3.desc")}
+                            title={t(
+                              "pages.courierRegistration.guide.steps.signup.s3.title",
+                            )}
+                            description={t(
+                              "pages.courierRegistration.guide.steps.signup.s3.desc",
+                            )}
                           >
                             <div className="bg-orange-50 border border-orange-100 p-4 rounded-xl flex items-start gap-3 mt-2">
                               <AlertCircle
@@ -462,16 +491,26 @@ export default function CourierRegistrationPage() {
                             </div>
                           </GuideStep>
                           <GuideStep
-                            title={t("guide.steps.signup.s4.title")}
-                            description={t("guide.steps.signup.s4.desc")}
+                            title={t(
+                              "pages.courierRegistration.guide.steps.signup.s4.title",
+                            )}
+                            description={t(
+                              "pages.courierRegistration.guide.steps.signup.s4.desc",
+                            )}
                           />
                           <GuideStep
-                            title={t("guide.steps.signup.s5.title")}
+                            title={t(
+                              "pages.courierRegistration.guide.steps.signup.s5.title",
+                            )}
                             description=""
-                            badge={t("guide.badges.critical")}
+                            badge={t(
+                              "pages.courierRegistration.guide.badges.critical",
+                            )}
                           >
                             <p className="text-gray-600 text-sm leading-relaxed">
-                              {t("guide.steps.signup.s5.desc")}{" "}
+                              {t(
+                                "pages.courierRegistration.guide.steps.signup.s5.desc",
+                              )}{" "}
                               <button
                                 onClick={() => {
                                   setActiveTab("security");
@@ -479,30 +518,64 @@ export default function CourierRegistrationPage() {
                                 }}
                                 className="text-primary font-bold hover:underline cursor-pointer inline-flex items-center gap-1"
                               >
-                                {t("guide.steps.signup.s5.link")}
+                                {t(
+                                  "pages.courierRegistration.guide.steps.signup.s5.link",
+                                )}
                               </button>{" "}
-                              {t("guide.steps.signup.s8.q1End")}
+                              {t(
+                                "pages.courierRegistration.guide.steps.signup.s8.q1End",
+                              )}
                             </p>
                           </GuideStep>
                           <GuideStep
-                            title={t("guide.steps.signup.s6.title")}
-                            description={t("guide.steps.signup.s6.desc")}
+                            title={t(
+                              "pages.courierRegistration.guide.steps.signup.s6.title",
+                            )}
+                            description={t(
+                              "pages.courierRegistration.guide.steps.signup.s6.desc",
+                            )}
                           />
                           <GuideStep
-                            title={t("guide.steps.signup.s7.title")}
-                            description={t("guide.steps.signup.s7.desc")}
+                            title={t(
+                              "pages.courierRegistration.guide.steps.signup.s7.title",
+                            )}
+                            description={t(
+                              "pages.courierRegistration.guide.steps.signup.s7.desc",
+                            )}
                           />
                           <GuideStep
-                            title={t("guide.steps.signup.s8.title")}
-                            description={t("guide.steps.signup.s8.desc")}
-                            badge={t("guide.badges.required")}
+                            title={t(
+                              "pages.courierRegistration.guide.steps.signup.s8.title",
+                            )}
+                            description={t(
+                              "pages.courierRegistration.guide.steps.signup.s8.desc",
+                            )}
+                            badge={t(
+                              "pages.courierRegistration.guide.badges.required",
+                            )}
                           >
                             <div className="space-y-2 text-sm text-gray-600">
                               <p>
-                                • <strong>{t("guide.steps.signup.s8.username")}</strong> {t("guide.steps.signup.s8.usernameDesc")}
+                                •{" "}
+                                <strong>
+                                  {t(
+                                    "pages.courierRegistration.guide.steps.signup.s8.username",
+                                  )}
+                                </strong>{" "}
+                                {t(
+                                  "pages.courierRegistration.guide.steps.signup.s8.usernameDesc",
+                                )}
                               </p>
                               <p>
-                                • <strong>{t("guide.steps.signup.s8.q1")}</strong> {t("guide.steps.signup.s8.q1Desc")}{" "}
+                                •{" "}
+                                <strong>
+                                  {t(
+                                    "pages.courierRegistration.guide.steps.signup.s8.q1",
+                                  )}
+                                </strong>{" "}
+                                {t(
+                                  "pages.courierRegistration.guide.steps.signup.s8.q1Desc",
+                                )}{" "}
                                 <button
                                   onClick={() => {
                                     setActiveTab("security");
@@ -510,19 +583,39 @@ export default function CourierRegistrationPage() {
                                   }}
                                   className="text-primary font-bold hover:underline cursor-pointer inline-flex items-center gap-1"
                                 >
-                                  {t("guide.steps.signup.s8.q1Link")}
+                                  {t(
+                                    "pages.courierRegistration.guide.steps.signup.s8.q1Link",
+                                  )}
                                 </button>{" "}
-                                {t("guide.steps.signup.s8.q1End")}
+                                {t(
+                                  "pages.courierRegistration.guide.steps.signup.s8.q1End",
+                                )}
                               </p>
                               <p>
-                                • <strong>{t("guide.steps.signup.s8.q2")}</strong> {t("guide.steps.signup.s8.q2Desc")}
+                                •{" "}
+                                <strong>
+                                  {t(
+                                    "pages.courierRegistration.guide.steps.signup.s8.q2",
+                                  )}
+                                </strong>{" "}
+                                {t(
+                                  "pages.courierRegistration.guide.steps.signup.s8.q2Desc",
+                                )}
                               </p>
-                              <p>{t("guide.steps.signup.s8.continue")}</p>
+                              <p>
+                                {t(
+                                  "pages.courierRegistration.guide.steps.signup.s8.continue",
+                                )}
+                              </p>
                             </div>
                           </GuideStep>
                           <GuideStep
-                            title={t("guide.steps.signup.s9.title")}
-                            description={t("guide.steps.signup.s9.desc")}
+                            title={t(
+                              "pages.courierRegistration.guide.steps.signup.s9.title",
+                            )}
+                            description={t(
+                              "pages.courierRegistration.guide.steps.signup.s9.desc",
+                            )}
                           />
                         </>
                       )}
@@ -530,21 +623,39 @@ export default function CourierRegistrationPage() {
                       {guideStage === 2 && (
                         <>
                           <GuideStep
-                            title={t("guide.steps.profile.s1.title")}
-                            description={t("guide.steps.profile.s1.desc")}
-                            badge={t("guide.badges.important")}
+                            title={t(
+                              "pages.courierRegistration.guide.steps.profile.s1.title",
+                            )}
+                            description={t(
+                              "pages.courierRegistration.guide.steps.profile.s1.desc",
+                            )}
+                            badge={t(
+                              "pages.courierRegistration.guide.badges.important",
+                            )}
                           />
                           <GuideStep
-                            title={t("guide.steps.profile.s2.title")}
-                            description={t("guide.steps.profile.s2.desc")}
+                            title={t(
+                              "pages.courierRegistration.guide.steps.profile.s2.title",
+                            )}
+                            description={t(
+                              "pages.courierRegistration.guide.steps.profile.s2.desc",
+                            )}
                           />
                           <GuideStep
-                            title={t("guide.steps.profile.s3.title")}
-                            description={t("guide.steps.profile.s3.desc")}
+                            title={t(
+                              "pages.courierRegistration.guide.steps.profile.s3.title",
+                            )}
+                            description={t(
+                              "pages.courierRegistration.guide.steps.profile.s3.desc",
+                            )}
                           />
                           <GuideStep
-                            title={t("guide.steps.profile.s4.title")}
-                            description={t("guide.steps.profile.s4.desc")}
+                            title={t(
+                              "pages.courierRegistration.guide.steps.profile.s4.title",
+                            )}
+                            description={t(
+                              "pages.courierRegistration.guide.steps.profile.s4.desc",
+                            )}
                           />
                         </>
                       )}
@@ -552,76 +663,165 @@ export default function CourierRegistrationPage() {
                       {guideStage === 3 && (
                         <>
                           <GuideStep
-                            title={t("guide.steps.application.s1.title")}
-                            description={t("guide.steps.application.s1.desc")}
+                            title={t(
+                              "pages.courierRegistration.guide.steps.application.s1.title",
+                            )}
+                            description={t(
+                              "pages.courierRegistration.guide.steps.application.s1.desc",
+                            )}
                           />
                           <GuideStep
-                            title={t("guide.steps.application.s2.title")}
-                            description={t("guide.steps.application.s2.desc")}
+                            title={t(
+                              "pages.courierRegistration.guide.steps.application.s2.title",
+                            )}
+                            description={t(
+                              "pages.courierRegistration.guide.steps.application.s2.desc",
+                            )}
                           >
                             <ul className="space-y-2 text-sm text-gray-600 ml-4 list-disc">
                               <li>
                                 <strong>
-                                  {t("guide.steps.application.s2.country")}
+                                  {t(
+                                    "pages.courierRegistration.guide.steps.application.s2.country",
+                                  )}
                                 </strong>{" "}
-                                {t("guide.steps.application.s2.countryDesc")}
+                                {t(
+                                  "pages.courierRegistration.guide.steps.application.s2.countryDesc",
+                                )}
                               </li>
                               <li>
-                                <strong>{t("guide.steps.application.s2.name")}</strong> {t("guide.steps.application.s2.nameDesc")}
+                                <strong>
+                                  {t(
+                                    "pages.courierRegistration.guide.steps.application.s2.name",
+                                  )}
+                                </strong>{" "}
+                                {t(
+                                  "pages.courierRegistration.guide.steps.application.s2.nameDesc",
+                                )}
                               </li>
                               <li>
-                                <strong>{t("guide.steps.application.s2.birth")}</strong> {t("guide.steps.application.s2.birthDesc")}
+                                <strong>
+                                  {t(
+                                    "pages.courierRegistration.guide.steps.application.s2.birth",
+                                  )}
+                                </strong>{" "}
+                                {t(
+                                  "pages.courierRegistration.guide.steps.application.s2.birthDesc",
+                                )}
                               </li>
                             </ul>
                           </GuideStep>
                           <GuideStep
-                            title={t("guide.steps.application.s3.title")}
-                            description={t("guide.steps.application.s3.desc")}
+                            title={t(
+                              "pages.courierRegistration.guide.steps.application.s3.title",
+                            )}
+                            description={t(
+                              "pages.courierRegistration.guide.steps.application.s3.desc",
+                            )}
                           >
                             <ul className="space-y-2 text-sm text-gray-600 ml-4 list-disc">
                               <li>
-                                <strong>{t("guide.steps.application.s3.phone")}</strong> {t("guide.steps.application.s3.phoneDesc")}
+                                <strong>
+                                  {t(
+                                    "pages.courierRegistration.guide.steps.application.s3.phone",
+                                  )}
+                                </strong>{" "}
+                                {t(
+                                  "pages.courierRegistration.guide.steps.application.s3.phoneDesc",
+                                )}
                               </li>
                               <li>
-                                <strong>{t("guide.steps.application.s3.email")}</strong> {t("guide.steps.application.s3.emailDesc")}
+                                <strong>
+                                  {t(
+                                    "pages.courierRegistration.guide.steps.application.s3.email",
+                                  )}
+                                </strong>{" "}
+                                {t(
+                                  "pages.courierRegistration.guide.steps.application.s3.emailDesc",
+                                )}
                               </li>
                             </ul>
                           </GuideStep>
                           <GuideStep
-                            title={t("guide.steps.application.s4.title")}
-                            description={t("guide.steps.application.s4.desc")}
+                            title={t(
+                              "pages.courierRegistration.guide.steps.application.s4.title",
+                            )}
+                            description={t(
+                              "pages.courierRegistration.guide.steps.application.s4.desc",
+                            )}
                           />
                           <GuideStep
-                            title={t("guide.steps.application.s5.title")}
-                            description={t("guide.steps.application.s5.desc")}
+                            title={t(
+                              "pages.courierRegistration.guide.steps.application.s5.title",
+                            )}
+                            description={t(
+                              "pages.courierRegistration.guide.steps.application.s5.desc",
+                            )}
                           >
                             <ul className="space-y-2 text-sm text-gray-600 ml-4 list-disc">
                               <li>
-                                <strong>{t("guide.steps.application.s5.pasport")}</strong> {t("guide.steps.application.s5.pasportDesc")}
+                                <strong>
+                                  {t(
+                                    "pages.courierRegistration.guide.steps.application.s5.pasport",
+                                  )}
+                                </strong>{" "}
+                                {t(
+                                  "pages.courierRegistration.guide.steps.application.s5.pasportDesc",
+                                )}
                               </li>
                               <li>
-                                <strong>{t("guide.steps.application.s5.dates")}</strong>{" "}
-                                {t("guide.steps.application.s5.datesDesc")}
+                                <strong>
+                                  {t(
+                                    "pages.courierRegistration.guide.steps.application.s5.dates",
+                                  )}
+                                </strong>{" "}
+                                {t(
+                                  "pages.courierRegistration.guide.steps.application.s5.datesDesc",
+                                )}
                               </li>
                               <li>
-                                <strong>{t("guide.steps.application.s5.place")}</strong>{" "}
-                                {t("guide.steps.application.s5.placeDesc")}
+                                <strong>
+                                  {t(
+                                    "pages.courierRegistration.guide.steps.application.s5.place",
+                                  )}
+                                </strong>{" "}
+                                {t(
+                                  "pages.courierRegistration.guide.steps.application.s5.placeDesc",
+                                )}
                               </li>
                             </ul>
                           </GuideStep>
                           <GuideStep
-                            title={t("guide.steps.application.s6.title")}
-                            description={t("guide.steps.application.s6.desc")}
+                            title={t(
+                              "pages.courierRegistration.guide.steps.application.s6.title",
+                            )}
+                            description={t(
+                              "pages.courierRegistration.guide.steps.application.s6.desc",
+                            )}
                           >
                             <div className="space-y-2 text-sm text-gray-600">
                               <p>
-                                • <strong>{t("guide.steps.application.s6.id")}</strong> {t("guide.steps.application.s6.idDesc")}
+                                •{" "}
+                                <strong>
+                                  {t(
+                                    "pages.courierRegistration.guide.steps.application.s6.id",
+                                  )}
+                                </strong>{" "}
+                                {t(
+                                  "pages.courierRegistration.guide.steps.application.s6.idDesc",
+                                )}
                               </p>
                               <p>
-                                • {t("guide.steps.application.s6.review")}
+                                •{" "}
+                                {t(
+                                  "pages.courierRegistration.guide.steps.application.s6.review",
+                                )}
                               </p>
                               <p>
-                                • {t("guide.steps.application.s6.submit")}
+                                •{" "}
+                                {t(
+                                  "pages.courierRegistration.guide.steps.application.s6.submit",
+                                )}
                               </p>
                             </div>
                           </GuideStep>
@@ -631,57 +831,133 @@ export default function CourierRegistrationPage() {
                       {guideStage === 4 && (
                         <>
                           <GuideStep
-                            title={t("guide.steps.groupRequest.s1.title")}
-                            description={t("guide.steps.groupRequest.s1.desc")}
+                            title={t(
+                              "pages.courierRegistration.guide.steps.groupRequest.s1.title",
+                            )}
+                            description={t(
+                              "pages.courierRegistration.guide.steps.groupRequest.s1.desc",
+                            )}
                           />
                           <GuideStep
-                            title={t("guide.steps.groupRequest.s2.title")}
-                            description={t("guide.steps.groupRequest.s2.desc")}
+                            title={t(
+                              "pages.courierRegistration.guide.steps.groupRequest.s2.title",
+                            )}
+                            description={t(
+                              "pages.courierRegistration.guide.steps.groupRequest.s2.desc",
+                            )}
                           >
                             <ul className="space-y-2 text-sm text-gray-600 ml-4 list-disc">
                               <li>
-                                <strong>{t("guide.steps.groupRequest.s2.name")}</strong> {t("guide.steps.groupRequest.s2.nameDesc")}
+                                <strong>
+                                  {t(
+                                    "pages.courierRegistration.guide.steps.groupRequest.s2.name",
+                                  )}
+                                </strong>{" "}
+                                {t(
+                                  "pages.courierRegistration.guide.steps.groupRequest.s2.nameDesc",
+                                )}
                               </li>
                               <li>
-                                <strong>{t("guide.steps.groupRequest.s2.date")}</strong> {t("guide.steps.groupRequest.s2.dateDesc")}
+                                <strong>
+                                  {t(
+                                    "pages.courierRegistration.guide.steps.groupRequest.s2.date",
+                                  )}
+                                </strong>{" "}
+                                {t(
+                                  "pages.courierRegistration.guide.steps.groupRequest.s2.dateDesc",
+                                )}
                               </li>
                               <li>
-                                <strong>{t("guide.steps.groupRequest.s2.reason")}</strong> {t("guide.steps.groupRequest.s2.reasonDesc")}
+                                <strong>
+                                  {t(
+                                    "pages.courierRegistration.guide.steps.groupRequest.s2.reason",
+                                  )}
+                                </strong>{" "}
+                                {t(
+                                  "pages.courierRegistration.guide.steps.groupRequest.s2.reasonDesc",
+                                )}
                               </li>
                             </ul>
                           </GuideStep>
                           <GuideStep
-                            title={t("guide.steps.groupRequest.s3.title")}
-                            description={t("guide.steps.groupRequest.s3.desc")}
+                            title={t(
+                              "pages.courierRegistration.guide.steps.groupRequest.s3.title",
+                            )}
+                            description={t(
+                              "pages.courierRegistration.guide.steps.groupRequest.s3.desc",
+                            )}
                           >
                             <ul className="space-y-2 text-sm text-gray-600 ml-4 list-disc">
                               <li>
-                                <strong>{t("guide.steps.groupRequest.s3.local")}</strong> {t("guide.steps.groupRequest.s3.localDesc")}
+                                <strong>
+                                  {t(
+                                    "pages.courierRegistration.guide.steps.groupRequest.s3.local",
+                                  )}
+                                </strong>{" "}
+                                {t(
+                                  "pages.courierRegistration.guide.steps.groupRequest.s3.localDesc",
+                                )}
                               </li>
                               <li>
-                                <strong>{t("guide.steps.groupRequest.s3.us")}</strong> {t("guide.steps.groupRequest.s3.usDesc")}
+                                <strong>
+                                  {t(
+                                    "pages.courierRegistration.guide.steps.groupRequest.s3.us",
+                                  )}
+                                </strong>{" "}
+                                {t(
+                                  "pages.courierRegistration.guide.steps.groupRequest.s3.usDesc",
+                                )}
                               </li>
                               <li>
-                                <strong>{t("guide.steps.groupRequest.s3.address")}</strong>{" "}
-                                {t("guide.steps.groupRequest.s3.addressDesc")}
+                                <strong>
+                                  {t(
+                                    "pages.courierRegistration.guide.steps.groupRequest.s3.address",
+                                  )}
+                                </strong>{" "}
+                                {t(
+                                  "pages.courierRegistration.guide.steps.groupRequest.s3.addressDesc",
+                                )}
                               </li>
                             </ul>
                           </GuideStep>
                           <GuideStep
-                            title={t("guide.steps.groupRequest.s4.title")}
-                            description={t("guide.steps.groupRequest.s4.desc")}
+                            title={t(
+                              "pages.courierRegistration.guide.steps.groupRequest.s4.title",
+                            )}
+                            description={t(
+                              "pages.courierRegistration.guide.steps.groupRequest.s4.desc",
+                            )}
                           >
                             <ul className="space-y-2 text-sm text-gray-600 ml-4 list-disc">
                               <li>
-                                <strong>{t("guide.steps.groupRequest.s4.embassy")}</strong>{" "}
-                                {t("guide.steps.groupRequest.s4.embassyDesc")}
+                                <strong>
+                                  {t(
+                                    "pages.courierRegistration.guide.steps.groupRequest.s4.embassy",
+                                  )}
+                                </strong>{" "}
+                                {t(
+                                  "pages.courierRegistration.guide.steps.groupRequest.s4.embassyDesc",
+                                )}
                               </li>
                               <li>
-                                <strong>{t("guide.steps.groupRequest.s4.attach")}</strong> {t("guide.steps.groupRequest.s4.attachDesc")}
+                                <strong>
+                                  {t(
+                                    "pages.courierRegistration.guide.steps.groupRequest.s4.attach",
+                                  )}
+                                </strong>{" "}
+                                {t(
+                                  "pages.courierRegistration.guide.steps.groupRequest.s4.attachDesc",
+                                )}
                               </li>
                               <li>
-                                <strong>{t("guide.steps.groupRequest.s4.submit")}</strong>{" "}
-                                {t("guide.steps.groupRequest.s4.submitDesc")}
+                                <strong>
+                                  {t(
+                                    "pages.courierRegistration.guide.steps.groupRequest.s4.submit",
+                                  )}
+                                </strong>{" "}
+                                {t(
+                                  "pages.courierRegistration.guide.steps.groupRequest.s4.submitDesc",
+                                )}
                               </li>
                             </ul>
                           </GuideStep>
@@ -709,7 +985,9 @@ export default function CourierRegistrationPage() {
                             Security Vault
                           </CardTitle>
                           <p className="text-xs sm:text-sm text-gray-500 font-medium">
-                            {t("securityVault.subtitle")}
+                            {t(
+                              "pages.courierRegistration.securityVault.subtitle",
+                            )}
                           </p>
                         </div>
                         <div className="flex items-center justify-center sm:justify-end gap-2">
@@ -719,7 +997,9 @@ export default function CourierRegistrationPage() {
                             onClick={() => fetchUserQuestions()}
                             disabled={isLoading}
                             className="rounded-xl border-gray-200 hover:bg-white hover:border-primary transition-all font-bold"
-                            title={t("securityVault.refreshTitle")}
+                            title={t(
+                              "pages.courierRegistration.securityVault.refreshTitle",
+                            )}
                           >
                             <RefreshCw
                               size={16}
@@ -736,7 +1016,16 @@ export default function CourierRegistrationPage() {
                             ) : (
                               <Eye size={16} />
                             )}
-                            {showAnswers ? t("securityVault.hideBtn") : t("securityVault.showBtn")} {t("securityVault.answersLabel")}
+                            {showAnswers
+                              ? t(
+                                  "pages.courierRegistration.securityVault.hideBtn",
+                                )
+                              : t(
+                                  "pages.courierRegistration.securityVault.showBtn",
+                                )}{" "}
+                            {t(
+                              "pages.courierRegistration.securityVault.answersLabel",
+                            )}
                           </Button>
                         </div>
                       </div>
@@ -746,7 +1035,9 @@ export default function CourierRegistrationPage() {
                         <div className="flex flex-col items-center justify-center py-12 space-y-4">
                           <div className="w-12 h-12 border-4 border-primary/20 border-t-primary rounded-full animate-spin" />
                           <p className="text-sm font-bold text-gray-400">
-                            {t("securityVault.loading")}
+                            {t(
+                              "pages.courierRegistration.securityVault.loading",
+                            )}
                           </p>
                         </div>
                       ) : (
@@ -758,11 +1049,15 @@ export default function CourierRegistrationPage() {
                                 <Badge className="bg-primary/10 text-primary hover:bg-primary/20 transition-colors border-none">
                                   <User size={14} />
                                 </Badge>
-                                {t("securityVault.portalUsername")}
+                                {t(
+                                  "pages.courierRegistration.securityVault.portalUsername",
+                                )}
                               </Label>
                               <Input
                                 type="text"
-                                placeholder={t("securityVault.portalUsernamePlaceholder")}
+                                placeholder={t(
+                                  "pages.courierRegistration.securityVault.portalUsernamePlaceholder",
+                                )}
                                 value={portalUsername}
                                 onChange={(e) =>
                                   setPortalUsername(e.target.value)
@@ -777,7 +1072,9 @@ export default function CourierRegistrationPage() {
                                 <Badge className="bg-primary/10 text-primary hover:bg-primary/20 transition-colors border-none">
                                   1
                                 </Badge>
-                                {t("securityVault.questionOne")}
+                                {t(
+                                  "pages.courierRegistration.securityVault.questionOne",
+                                )}
                               </Label>
                               <Select
                                 value={questions.q1}
@@ -789,7 +1086,11 @@ export default function CourierRegistrationPage() {
                                   <SelectValue placeholder="Select Question" />
                                 </SelectTrigger>
                                 <SelectContent className="rounded-2xl border-gray-100 shadow-xl">
-                                  {t.raw("questions.set1").map((q: string) => (
+                                  {(
+                                    tRaw(
+                                      "pages.courierRegistration.questions.set1",
+                                    ) as string[]
+                                  ).map((q: string) => (
                                     <SelectItem
                                       key={q}
                                       value={q}
@@ -802,7 +1103,9 @@ export default function CourierRegistrationPage() {
                               </Select>
                               <Input
                                 type={showAnswers ? "text" : "password"}
-                                placeholder={t("securityVault.answerPlaceholder")}
+                                placeholder={t(
+                                  "pages.courierRegistration.securityVault.answerPlaceholder",
+                                )}
                                 value={questions.a1}
                                 onChange={(e) =>
                                   setQuestions({
@@ -820,7 +1123,9 @@ export default function CourierRegistrationPage() {
                                 <Badge className="bg-primary/10 text-primary hover:bg-primary/20 transition-colors border-none">
                                   2
                                 </Badge>
-                                {t("securityVault.questionTwo")}
+                                {t(
+                                  "pages.courierRegistration.securityVault.questionTwo",
+                                )}
                               </Label>
                               <Select
                                 value={questions.q2}
@@ -832,7 +1137,11 @@ export default function CourierRegistrationPage() {
                                   <SelectValue placeholder="Select Question" />
                                 </SelectTrigger>
                                 <SelectContent className="rounded-2xl border-gray-100 shadow-xl">
-                                  {t.raw("questions.set2").map((q: string) => (
+                                  {(
+                                    tRaw(
+                                      "pages.courierRegistration.questions.set2",
+                                    ) as string[]
+                                  ).map((q: string) => (
                                     <SelectItem
                                       key={q}
                                       value={q}
@@ -845,7 +1154,9 @@ export default function CourierRegistrationPage() {
                               </Select>
                               <Input
                                 type={showAnswers ? "text" : "password"}
-                                placeholder={t("securityVault.answerPlaceholder")}
+                                placeholder={t(
+                                  "pages.courierRegistration.securityVault.answerPlaceholder",
+                                )}
                                 value={questions.a2}
                                 onChange={(e) =>
                                   setQuestions({
@@ -863,7 +1174,9 @@ export default function CourierRegistrationPage() {
                                 <Badge className="bg-primary/10 text-primary hover:bg-primary/20 transition-colors border-none">
                                   3
                                 </Badge>
-                                {t("securityVault.questionThree")}
+                                {t(
+                                  "pages.courierRegistration.securityVault.questionThree",
+                                )}
                               </Label>
                               <Select
                                 value={questions.q3}
@@ -875,7 +1188,11 @@ export default function CourierRegistrationPage() {
                                   <SelectValue placeholder="Select Question" />
                                 </SelectTrigger>
                                 <SelectContent className="rounded-2xl border-gray-100 shadow-xl">
-                                  {t.raw("questions.set3").map((q: string) => (
+                                  {(
+                                    tRaw(
+                                      "pages.courierRegistration.questions.set3",
+                                    ) as string[]
+                                  ).map((q: string) => (
                                     <SelectItem
                                       key={q}
                                       value={q}
@@ -888,7 +1205,9 @@ export default function CourierRegistrationPage() {
                               </Select>
                               <Input
                                 type={showAnswers ? "text" : "password"}
-                                placeholder={t("securityVault.answerPlaceholder")}
+                                placeholder={t(
+                                  "pages.courierRegistration.securityVault.answerPlaceholder",
+                                )}
                                 value={questions.a3}
                                 onChange={(e) =>
                                   setQuestions({
@@ -932,7 +1251,9 @@ export default function CourierRegistrationPage() {
                               className="h-16 rounded-2xl font-black text-lg border-gray-200 hover:border-primary transition-all active:scale-[0.98] gap-3"
                             >
                               <Download size={20} />
-                              {t("securityVault.downloadPdf")}
+                              {t(
+                                "pages.courierRegistration.securityVault.downloadPdf",
+                              )}
                             </Button>
 
                             {user ? (
@@ -947,8 +1268,8 @@ export default function CourierRegistrationPage() {
                                   <Save size={20} />
                                 )}
                                 {isSaving
-                                  ? t("securityVault.savingBtn")
-                                  : t("securityVault.saveBtn")}
+                                  ? t("pages.courierRegistration.securityVault.savingBtn")
+                                  : t("pages.courierRegistration.securityVault.saveBtn")}
                               </Button>
                             ) : (
                               <Button
@@ -956,7 +1277,10 @@ export default function CourierRegistrationPage() {
                                 className="h-16 rounded-2xl font-black text-lg shadow-xl shadow-primary/20 transition-all active:scale-[0.98] gap-3"
                               >
                                 <Link href="/login">
-                                  {t("securityVault.loginToSave")} <ChevronRight size={20} />
+                                  {t(
+                                    "pages.courierRegistration.securityVault.loginToSave",
+                                  )}{" "}
+                                  <ChevronRight size={20} />
                                 </Link>
                               </Button>
                             )}
@@ -969,7 +1293,9 @@ export default function CourierRegistrationPage() {
                                 size={18}
                               />
                               <p className="text-xs text-orange-800 font-medium">
-                                {t("securityVault.notLoggedInWarning")}
+                                {t(
+                                  "pages.courierRegistration.securityVault.notLoggedInWarning",
+                                )}
                               </p>
                             </div>
                           )}
@@ -986,7 +1312,9 @@ export default function CourierRegistrationPage() {
                       </div>
                       <div className="flex-1 flex flex-col items-center sm:items-start break-all">
                         <p className="text-xs font-bold text-slate-500 uppercase">
-                          {t("securityVault.authenticatedUser")}
+                          {t(
+                            "pages.courierRegistration.securityVault.authenticatedUser",
+                          )}
                         </p>
                         <p className="text-sm font-bold text-slate-800">
                           {user.email}
