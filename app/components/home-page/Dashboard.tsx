@@ -113,7 +113,7 @@ export function Dashboard({
                   <p
                     className="text-sm text-slate-500 mb-4"
                     dangerouslySetInnerHTML={{
-                      __html: t("documentVault.description").replace(
+                      __html: t("dashboard.documentVault.description").replace(
                         "{{count}}",
                         String(Object.keys(state.docUploads || {}).length),
                       ),

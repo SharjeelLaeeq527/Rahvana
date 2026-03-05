@@ -96,7 +96,7 @@ export function StepDetail({
         </div>
 
         <div className="text-slate-600 text-[15px] md:text-[17px] leading-relaxed pb-6 md:pb-8 mb-6 md:mb-8 border-b border-slate-100 max-w-3xl">
-          {step.notes || t("defaultNotes", { stepName: step.name })}
+          {step.notes || t("stepDetail.defaultNotes", { stepName: step.name })}
         </div>
 
         {/* Professional Badges */}
