@@ -73,6 +73,7 @@ export async function updateSession(request: NextRequest) {
     "/visa-checker",
     "/visa-eligibility",
     "/visa-category/ir-category/ir1-journey",
+    "/interview-prep",
   ];
 
   const adminRoutes = ["/admin"];
