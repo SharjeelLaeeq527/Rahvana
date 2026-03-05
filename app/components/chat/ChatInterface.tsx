@@ -5,7 +5,7 @@ import { useState, useRef, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card } from "@/components/ui/card"
-import { Spinner } from "@/components/ui/spinner"
+import { Loader } from "@/components/ui/spinner"
 import { Send, MessageCircle } from "lucide-react"
 
 interface Message {
@@ -124,7 +124,7 @@ export function ChatInterface() {
         {loading && (
           <div className="flex justify-start">
             <div className="bg-muted px-4 py-3 rounded-lg rounded-bl-none flex items-center gap-2">
-              <Spinner className="w-4 h-4" />
+              <Loader size="md" />
               <span className="text-sm text-muted-foreground">Searching chat history...</span>
             </div>
           </div>

@@ -40,32 +40,34 @@ import {
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import jsPDF from "jspdf";
+import { useTranslations } from "next-intl";
 
-const SECURITY_QUESTIONS_1 = [
-  "What is your mother's maiden name?",
-  "What was the name of your first/current/favorite pet?",
-  "What was your first car?",
-  "What elementary school did you attend?",
-  "What is the name of the town/city where you were born?",
-];
+// const SECURITY_QUESTIONS_1 = [
+//   "What is your mother's maiden name?",
+//   "What was the name of your first/current/favorite pet?",
+//   "What was your first car?",
+//   "What elementary school did you attend?",
+//   "What is the name of the town/city where you were born?",
+// ];
 
-const SECURITY_QUESTIONS_2 = [
-  "What is the name of the road/street you grew up on?",
-  "What is your least favorite food?",
-  "What was the first company that you worked for?",
-  "What is your favorite food?",
-  "What high school did you attend?",
-];
+// const SECURITY_QUESTIONS_2 = [
+//   "What is the name of the road/street you grew up on?",
+//   "What is your least favorite food?",
+//   "What was the first company that you worked for?",
+//   "What is your favorite food?",
+//   "What high school did you attend?",
+// ];
 
-const SECURITY_QUESTIONS_3 = [
-  "Where did you meet your spouse?",
-  "What is your sibling's middle name?",
-  "Who was your childhood hero?",
-  "In what city or town was your first job?",
-  "What is the name of a college you applied to but didn't attend?",
-];
+// const SECURITY_QUESTIONS_3 = [
+//   "Where did you meet your spouse?",
+//   "What is your sibling's middle name?",
+//   "Who was your childhood hero?",
+//   "In what city or town was your first job?",
+//   "What is the name of a college you applied to but didn't attend?",
+// ];
 
 export default function CourierRegistrationPage() {
+  const t = useTranslations("pages.courierRegistration");
   const { user } = useAuth();
   const [activeTab, setActiveTab] = useState("guide");
   const [guideStage, setGuideStage] = useState(1);
@@ -121,7 +123,7 @@ export default function CourierRegistrationPage() {
     if (!user) {
       setMessage({
         type: "error",
-        text: "Please log in to save security questions.",
+        text: t("messages.loginRequired"),
       });
       return;
     }
@@ -136,7 +138,7 @@ export default function CourierRegistrationPage() {
     ) {
       setMessage({
         type: "error",
-        text: "Please fill all security questions and answers.",
+        text: t("messages.fillAll"),
       });
       return;
     }
@@ -153,16 +155,16 @@ export default function CourierRegistrationPage() {
       if (response.ok) {
         setMessage({
           type: "success",
-          text: "Security questions saved successfully!",
+          text: t("messages.saveSuccess"),
         });
       } else {
         setMessage({
           type: "error",
-          text: result.error || "Failed to save questions.",
+          text: result.error || t("messages.saveError"),
         });
       }
     } catch (error) {
-      setMessage({ type: "error", text: "An unexpected error occurred." });
+      setMessage({ type: "error", text: t("messages.unexpectedError") });
       console.error("Error saving questions:", error);
     } finally {
       setIsSaving(false);
@@ -180,34 +182,34 @@ export default function CourierRegistrationPage() {
     doc.setTextColor(255, 255, 255);
     doc.setFontSize(24);
     doc.setFont("helvetica", "bold");
-    doc.text("Rahvana", 20, 25);
+    doc.text(t("pdf.title"), 20, 25);
 
     doc.setFontSize(10);
     doc.setFont("helvetica", "normal");
-    doc.text("US Visa Portal Security Information", 20, 32);
+    doc.text(t("pdf.header"), 20, 32);
 
     // Content Section
     doc.setTextColor(31, 41, 55);
     doc.setFontSize(12);
     doc.setFont("helvetica", "bold");
-    doc.text("Portal Credentials", 20, 55);
+    doc.text(t("pdf.credentials"), 20, 55);
 
     doc.setDrawColor(229, 231, 235);
     doc.line(20, 58, 190, 58);
 
     doc.setFont("helvetica", "normal");
-    doc.text("Portal Username:", 20, 70);
+    doc.text(t("pdf.usernameLabel"), 20, 70);
     doc.setFont("helvetica", "bold");
-    doc.text(portalUsername || "Not provided", 60, 70);
+    doc.text(portalUsername || t("pdf.notProvided"), 60, 70);
 
     doc.setFont("helvetica", "bold");
-    doc.text("Security Questions", 20, 90);
+    doc.text(t("pdf.securityQuestions"), 20, 90);
     doc.line(20, 93, 190, 93);
 
     const questionsList = [
-      { q: questions.q1, a: questions.a1, label: "Question 1" },
-      { q: questions.q2, a: questions.a2, label: "Question 2" },
-      { q: questions.q3, a: questions.a3, label: "Question 3" },
+      { q: questions.q1, a: questions.a1, label: t("pdf.q1") },
+      { q: questions.q2, a: questions.a2, label: t("pdf.q2") },
+      { q: questions.q3, a: questions.a3, label: t("pdf.q3") },
     ];
 
     let currentY = 105;
@@ -224,9 +226,9 @@ export default function CourierRegistrationPage() {
       currentY += qLines.length * 7 + 8;
 
       doc.setFont("helvetica", "bold");
-      doc.text("Answer:", 20, currentY);
+      doc.text(t("pdf.answerLabel"), 20, currentY);
       doc.setFont("helvetica", "normal");
-      doc.text(item.a || "Not provided", 40, currentY);
+      doc.text(item.a || t("pdf.notProvided"), 40, currentY);
 
       currentY += 15;
     });
@@ -236,8 +238,8 @@ export default function CourierRegistrationPage() {
     doc.line(20, 270, 190, 270);
     doc.setFontSize(8);
     doc.setTextColor(156, 163, 175);
-    doc.text(`Generated on: ${timestamp}`, 20, 278);
-    doc.text("Rahvana - Your US Visa Journey Companion", 190, 278, {
+    doc.text(`${t("pdf.generatedOn")}: ${timestamp}`, 20, 278);
+    doc.text(t("pdf.footerText"), 190, 278, {
       align: "right",
     });
 
@@ -293,11 +295,11 @@ export default function CourierRegistrationPage() {
           </motion.div>
           <div className="space-y-2">
             <h1 className="text-4xl font-black tracking-tight text-gray-900 sm:text-5xl">
-              US Visa <span className="text-primary">Scheduling Portal</span>
+              {t("title.main")}{" "}
+              <span className="text-primary">{t("title.highlight")}</span>
             </h1>
             <p className="text-lg text-gray-500 max-w-2xl mx-auto font-medium">
-              Complete registration guide and secure security questions
-              management for your US Visa appointment.
+              {t("subtitle")}
             </p>
           </div>
         </div>
@@ -309,14 +311,14 @@ export default function CourierRegistrationPage() {
                 value="guide"
                 className="w-full sm:w-auto px-6 sm:px-8 py-3 rounded-xl data-[state=active]:bg-primary data-[state=active]:text-white transition-all text-sm font-bold gap-2"
               >
-                <Info size={16} /> Registration Guide
+                <Info size={16} /> {t("tabs.guide")}
               </TabsTrigger>
               <TabsTrigger
                 value="security"
                 onClick={() => fetchUserQuestions()}
                 className="w-full sm:w-auto px-6 sm:px-8 py-3 rounded-xl data-[state=active]:bg-primary data-[state=active]:text-white transition-all text-sm font-bold gap-2"
               >
-                <Lock size={16} /> Security Information
+                <Lock size={16} /> {t("tabs.security")}
               </TabsTrigger>
             </TabsList>
           </div>
@@ -335,16 +337,16 @@ export default function CourierRegistrationPage() {
                     {[
                       {
                         id: 1,
-                        title: "1. Signup & Login",
+                        title: t("sidebar.signup"),
                       },
-                      { id: 2, title: "2. Profile" },
+                      { id: 2, title: t("sidebar.profile") },
                       {
                         id: 3,
-                        title: "3. Application",
+                        title: t("sidebar.application"),
                       },
                       {
                         id: 4,
-                        title: "4. Group Request",
+                        title: t("sidebar.groupRequest"),
                       },
                     ].map((stage) => (
                       <button
@@ -371,34 +373,34 @@ export default function CourierRegistrationPage() {
                         <CardTitle className="text-xl font-bold flex items-center gap-2">
                           {guideStage === 1 ? (
                             <>
-                              <UserPlus className="text-primary" /> Signup
-                              Process Guide
+                              <UserPlus className="text-primary" />{" "}
+                              {t("guide.titles.signup")}
                             </>
                           ) : guideStage === 2 ? (
                             <>
-                              <User className="text-primary" /> Profile Setup
-                              Guide
+                              <User className="text-primary" />{" "}
+                              {t("guide.titles.profile")}
                             </>
                           ) : guideStage === 3 ? (
                             <>
-                              <ExternalLink className="text-primary" /> Visa
-                              Application Guide
+                              <ExternalLink className="text-primary" />{" "}
+                              {t("guide.titles.application")}
                             </>
                           ) : (
                             <>
-                              <UserPlus className="text-primary" /> Group
-                              Request Guide
+                              <UserPlus className="text-primary" />{" "}
+                              {t("guide.titles.groupRequest")}
                             </>
                           )}
                         </CardTitle>
                         <CardDescription>
                           {guideStage === 1
-                            ? "Follow these steps to create and access your account."
+                            ? t("guide.descriptions.signup")
                             : guideStage === 2
-                              ? "Complete your personal profile and preferences."
+                              ? t("guide.descriptions.profile")
                               : guideStage === 3
-                                ? "Follow these steps to start and fill your visa application."
-                                : "Detailed instructions for creating a group visa request."}
+                                ? t("guide.descriptions.application")
+                                : t("guide.descriptions.groupRequest")}
                         </CardDescription>
                       </div>
                       {(guideStage === 1 || guideStage === 3) && (
@@ -408,7 +410,7 @@ export default function CourierRegistrationPage() {
                           rel="noopener noreferrer"
                           className="flex items-center gap-1 text-sm font-bold text-primary hover:underline group w-fit"
                         >
-                          Visit Portal{" "}
+                          {t("guide.visitPortal")}{" "}
                           <ExternalLink
                             size={14}
                             className="group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform"
@@ -422,8 +424,8 @@ export default function CourierRegistrationPage() {
                       {guideStage === 1 && (
                         <>
                           <GuideStep
-                            title="1. Initiate Signup"
-                            description="Navigate to the portal and click the 'Sign up now' link at the bottom of the login panel."
+                            title={t("guide.steps.signup.s1.title")}
+                            description={t("guide.steps.signup.s1.desc")}
                           >
                             <a
                               href="https://www.usvisascheduling.com/"
@@ -431,7 +433,7 @@ export default function CourierRegistrationPage() {
                               rel="noopener noreferrer"
                               className="flex items-center gap-1 text-sm font-bold text-primary hover:underline group w-fit"
                             >
-                              Visit Portal{" "}
+                              {t("guide.visitPortal")}{" "}
                               <ExternalLink
                                 size={14}
                                 className="group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform"
@@ -439,13 +441,13 @@ export default function CourierRegistrationPage() {
                             </a>
                           </GuideStep>
                           <GuideStep
-                            title="2. Account Details"
-                            description="Provide a unique username and a strong password (at least 8 characters, include letters, numbers, and symbols)."
-                            badge="Mandatory"
+                            title={t("guide.steps.signup.s2.title")}
+                            description={t("guide.steps.signup.s2.desc")}
+                            badge={t("guide.badges.mandatory")}
                           />
                           <GuideStep
-                            title="3. Email Verification"
-                            description="Enter your email address and click 'Send Verification Code'."
+                            title={t("guide.steps.signup.s3.title")}
+                            description={t("guide.steps.signup.s3.desc")}
                           >
                             <div className="bg-orange-50 border border-orange-100 p-4 rounded-xl flex items-start gap-3 mt-2">
                               <AlertCircle
@@ -460,19 +462,16 @@ export default function CourierRegistrationPage() {
                             </div>
                           </GuideStep>
                           <GuideStep
-                            title="4. Personal Information"
-                            description="Input your legal Given Name and Surname as they appear on your passport."
+                            title={t("guide.steps.signup.s4.title")}
+                            description={t("guide.steps.signup.s4.desc")}
                           />
                           <GuideStep
-                            title="5. Security Questions"
+                            title={t("guide.steps.signup.s5.title")}
                             description=""
-                            badge="Critical"
+                            badge={t("guide.badges.critical")}
                           >
                             <p className="text-gray-600 text-sm leading-relaxed">
-                              Select three distinct security questions from the
-                              dropdowns and provide answers. You MUST remember
-                              these for future logins. We are providing facility
-                              to remember your security questions.{" "}
+                              {t("guide.steps.signup.s5.desc")}{" "}
                               <button
                                 onClick={() => {
                                   setActiveTab("security");
@@ -480,34 +479,30 @@ export default function CourierRegistrationPage() {
                                 }}
                                 className="text-primary font-bold hover:underline cursor-pointer inline-flex items-center gap-1"
                               >
-                                Go to Security Questions tab
+                                {t("guide.steps.signup.s5.link")}
                               </button>{" "}
-                              to view and save your security questions.
+                              {t("guide.steps.signup.s8.q1End")}
                             </p>
                           </GuideStep>
                           <GuideStep
-                            title="6. Finalize Signup"
-                            description="Review all fields and click 'Create'. Solve the visual captcha if prompted to complete the registration."
+                            title={t("guide.steps.signup.s6.title")}
+                            description={t("guide.steps.signup.s6.desc")}
                           />
                           <GuideStep
-                            title="7. Now Login to your account"
-                            description="Now login to your account using your username and password. Captcha will be required for login."
+                            title={t("guide.steps.signup.s7.title")}
+                            description={t("guide.steps.signup.s7.desc")}
                           />
                           <GuideStep
-                            title="8. User Details & Security Questions"
-                            description="Fill in your profile details and set up your security layer."
-                            badge="Required"
+                            title={t("guide.steps.signup.s8.title")}
+                            description={t("guide.steps.signup.s8.desc")}
+                            badge={t("guide.badges.required")}
                           >
                             <div className="space-y-2 text-sm text-gray-600">
                               <p>
-                                • <strong>Username:</strong> Your pre-filled
-                                username will appear here otherwise fill your
-                                username.
+                                • <strong>{t("guide.steps.signup.s8.username")}</strong> {t("guide.steps.signup.s8.usernameDesc")}
                               </p>
                               <p>
-                                • <strong>Security Question 1:</strong> Answer
-                                to the security question 1. <br /> If you do not
-                                remember your security questions then go to{" "}
+                                • <strong>{t("guide.steps.signup.s8.q1")}</strong> {t("guide.steps.signup.s8.q1Desc")}{" "}
                                 <button
                                   onClick={() => {
                                     setActiveTab("security");
@@ -515,20 +510,19 @@ export default function CourierRegistrationPage() {
                                   }}
                                   className="text-primary font-bold hover:underline cursor-pointer inline-flex items-center gap-1"
                                 >
-                                  Security Questions tab
+                                  {t("guide.steps.signup.s8.q1Link")}
                                 </button>{" "}
-                                and view your security questions.
+                                {t("guide.steps.signup.s8.q1End")}
                               </p>
                               <p>
-                                • <strong>Security Question 2:</strong> Answer
-                                to the security question 2.
+                                • <strong>{t("guide.steps.signup.s8.q2")}</strong> {t("guide.steps.signup.s8.q2Desc")}
                               </p>
-                              <p>Click on Continue button to proceed.</p>
+                              <p>{t("guide.steps.signup.s8.continue")}</p>
                             </div>
                           </GuideStep>
                           <GuideStep
-                            title="9. Agree & Continue"
-                            description="Read and agree to the terms and conditions and click on Continue button to proceed."
+                            title={t("guide.steps.signup.s9.title")}
+                            description={t("guide.steps.signup.s9.desc")}
                           />
                         </>
                       )}
@@ -536,21 +530,21 @@ export default function CourierRegistrationPage() {
                       {guideStage === 2 && (
                         <>
                           <GuideStep
-                            title="1. Passport Name Match"
-                            description="Verify that your First Name and Last Name match your passport. These fields are locked once you move forward."
-                            badge="Important"
+                            title={t("guide.steps.profile.s1.title")}
+                            description={t("guide.steps.profile.s1.desc")}
+                            badge={t("guide.badges.important")}
                           />
                           <GuideStep
-                            title="2. Contact Details"
-                            description="Enter your 'Contact Email' where you wish to receive updates. Your 'Primary Email' is pre-filled from your registration."
+                            title={t("guide.steps.profile.s2.title")}
+                            description={t("guide.steps.profile.s2.desc")}
                           />
                           <GuideStep
-                            title="3. Language and Location"
-                            description="Choose your 'Preferred Language' and the 'Country' you are applying from using the dropdown menus."
+                            title={t("guide.steps.profile.s3.title")}
+                            description={t("guide.steps.profile.s3.desc")}
                           />
                           <GuideStep
-                            title="4. Submit Profile"
-                            description="Click the 'Submit' button to save your profile information."
+                            title={t("guide.steps.profile.s4.title")}
+                            description={t("guide.steps.profile.s4.desc")}
                           />
                         </>
                       )}
@@ -558,86 +552,76 @@ export default function CourierRegistrationPage() {
                       {guideStage === 3 && (
                         <>
                           <GuideStep
-                            title="1. Start Application"
-                            description="Now you will see a screen; click the 'Start Application' button located at the top left to begin your visa process."
+                            title={t("guide.steps.application.s1.title")}
+                            description={t("guide.steps.application.s1.desc")}
                           />
                           <GuideStep
-                            title="2. Applicant Details"
-                            description="Review and complete the following mandatory fields:"
+                            title={t("guide.steps.application.s2.title")}
+                            description={t("guide.steps.application.s2.desc")}
                           >
                             <ul className="space-y-2 text-sm text-gray-600 ml-4 list-disc">
                               <li>
                                 <strong>
-                                  Country from which you are applying:
+                                  {t("guide.steps.application.s2.country")}
                                 </strong>{" "}
-                                Confirm your current location.
+                                {t("guide.steps.application.s2.countryDesc")}
                               </li>
                               <li>
-                                <strong>First Name & Last Name:</strong> Must
-                                exactly match your passport.
+                                <strong>{t("guide.steps.application.s2.name")}</strong> {t("guide.steps.application.s2.nameDesc")}
                               </li>
                               <li>
-                                <strong>Country of Birth:</strong> Select your
-                                birth country from the dropdown.
+                                <strong>{t("guide.steps.application.s2.birth")}</strong> {t("guide.steps.application.s2.birthDesc")}
                               </li>
                             </ul>
                           </GuideStep>
                           <GuideStep
-                            title="3. Contact Information"
-                            description="Provide accurate contact details for visa correspondence:"
+                            title={t("guide.steps.application.s3.title")}
+                            description={t("guide.steps.application.s3.desc")}
                           >
                             <ul className="space-y-2 text-sm text-gray-600 ml-4 list-disc">
                               <li>
-                                <strong>Home & Mobile Phone:</strong> Enter your
-                                numbers without the country code.
+                                <strong>{t("guide.steps.application.s3.phone")}</strong> {t("guide.steps.application.s3.phoneDesc")}
                               </li>
                               <li>
-                                <strong>Email:</strong> Verify the email address
-                                is correct for receiving alerts.
+                                <strong>{t("guide.steps.application.s3.email")}</strong> {t("guide.steps.application.s3.emailDesc")}
                               </li>
                             </ul>
                           </GuideStep>
                           <GuideStep
-                            title="4. Mailing Address"
-                            description="Enter your current residential or mailing address (Street, City, State/Province, and Zip Code)."
+                            title={t("guide.steps.application.s4.title")}
+                            description={t("guide.steps.application.s4.desc")}
                           />
                           <GuideStep
-                            title="5. Passport Details"
-                            description="Enter your document information with extreme care:"
+                            title={t("guide.steps.application.s5.title")}
+                            description={t("guide.steps.application.s5.desc")}
                           >
                             <ul className="space-y-2 text-sm text-gray-600 ml-4 list-disc">
                               <li>
-                                <strong>Passport Number:</strong> Enter the
-                                number exactly as it appears.
+                                <strong>{t("guide.steps.application.s5.pasport")}</strong> {t("guide.steps.application.s5.pasportDesc")}
                               </li>
                               <li>
-                                <strong>Issuance & Expiration Dates:</strong>{" "}
-                                Use the MM/DD/YYYY format.
+                                <strong>{t("guide.steps.application.s5.dates")}</strong>{" "}
+                                {t("guide.steps.application.s5.datesDesc")}
                               </li>
                               <li>
-                                <strong>Place of Issue & Nationality:</strong>{" "}
-                                Select according to your document.
+                                <strong>{t("guide.steps.application.s5.place")}</strong>{" "}
+                                {t("guide.steps.application.s5.placeDesc")}
                               </li>
                             </ul>
                           </GuideStep>
                           <GuideStep
-                            title="6. Finalizing Application"
-                            description="Complete the last few fields and submit:"
+                            title={t("guide.steps.application.s6.title")}
+                            description={t("guide.steps.application.s6.desc")}
                           >
                             <div className="space-y-2 text-sm text-gray-600">
                               <p>
-                                • <strong>National ID:</strong> Enter your
-                                National ID number (Citizenship ID) exactly as
-                                it appears on your identity document.
+                                • <strong>{t("guide.steps.application.s6.id")}</strong> {t("guide.steps.application.s6.idDesc")}
                               </p>
                               <p>
-                                • Review all the information carefully to ensure
-                                there are no errors.
+                                • {t("guide.steps.application.s6.review")}
                               </p>
                               <p>
-                                • Finally, click the{" "}
-                                <strong>&apos;Submit&apos;</strong> button to
-                                proceed with your application.
+                                • {t("guide.steps.application.s6.submit")}
                               </p>
                             </div>
                           </GuideStep>
@@ -647,64 +631,57 @@ export default function CourierRegistrationPage() {
                       {guideStage === 4 && (
                         <>
                           <GuideStep
-                            title="1. Initiate Group Request"
-                            description="Identify the 'Create Group Request' option in the sidebar navigation and click it to begin."
+                            title={t("guide.steps.groupRequest.s1.title")}
+                            description={t("guide.steps.groupRequest.s1.desc")}
                           />
                           <GuideStep
-                            title="2. Group Information"
-                            description="Provide general details about your travel group:"
+                            title={t("guide.steps.groupRequest.s2.title")}
+                            description={t("guide.steps.groupRequest.s2.desc")}
                           >
                             <ul className="space-y-2 text-sm text-gray-600 ml-4 list-disc">
                               <li>
-                                <strong>Group Name:</strong> Enter a unique name
-                                for your group.
+                                <strong>{t("guide.steps.groupRequest.s2.name")}</strong> {t("guide.steps.groupRequest.s2.nameDesc")}
                               </li>
                               <li>
-                                <strong>Date of Travel:</strong> Use the
-                                calendar or type in MM/DD/YYYY format.
+                                <strong>{t("guide.steps.groupRequest.s2.date")}</strong> {t("guide.steps.groupRequest.s2.dateDesc")}
                               </li>
                               <li>
-                                <strong>Reason for Travel:</strong> Briefly
-                                explain the purpose of the group trip.
+                                <strong>{t("guide.steps.groupRequest.s2.reason")}</strong> {t("guide.steps.groupRequest.s2.reasonDesc")}
                               </li>
                             </ul>
                           </GuideStep>
                           <GuideStep
-                            title="3. Contact Details"
-                            description="Enter both Local and U.S. based contact information:"
+                            title={t("guide.steps.groupRequest.s3.title")}
+                            description={t("guide.steps.groupRequest.s3.desc")}
                           >
                             <ul className="space-y-2 text-sm text-gray-600 ml-4 list-disc">
                               <li>
-                                <strong>Local Contact:</strong> Full Name and
-                                Phone number.
+                                <strong>{t("guide.steps.groupRequest.s3.local")}</strong> {t("guide.steps.groupRequest.s3.localDesc")}
                               </li>
                               <li>
-                                <strong>U.S. Contact:</strong> Name, Email, and
-                                Phone number.
+                                <strong>{t("guide.steps.groupRequest.s3.us")}</strong> {t("guide.steps.groupRequest.s3.usDesc")}
                               </li>
                               <li>
-                                <strong>Complete U.S. Street Address:</strong>{" "}
-                                Where the group will be staying.
+                                <strong>{t("guide.steps.groupRequest.s3.address")}</strong>{" "}
+                                {t("guide.steps.groupRequest.s3.addressDesc")}
                               </li>
                             </ul>
                           </GuideStep>
                           <GuideStep
-                            title="4. Embassy & Submission"
-                            description="Finalize your group request:"
+                            title={t("guide.steps.groupRequest.s4.title")}
+                            description={t("guide.steps.groupRequest.s4.desc")}
                           >
                             <ul className="space-y-2 text-sm text-gray-600 ml-4 list-disc">
                               <li>
-                                <strong>Embassy/Consulate/OFC:</strong> Select
-                                the relevant office from the dropdown.
+                                <strong>{t("guide.steps.groupRequest.s4.embassy")}</strong>{" "}
+                                {t("guide.steps.groupRequest.s4.embassyDesc")}
                               </li>
                               <li>
-                                <strong>Attach a file:</strong> Upload any
-                                required supporting documents.
+                                <strong>{t("guide.steps.groupRequest.s4.attach")}</strong> {t("guide.steps.groupRequest.s4.attachDesc")}
                               </li>
                               <li>
-                                <strong>Submit:</strong> Click the{" "}
-                                <strong>&apos;Next&apos;</strong> button to
-                                proceed with the request.
+                                <strong>{t("guide.steps.groupRequest.s4.submit")}</strong>{" "}
+                                {t("guide.steps.groupRequest.s4.submitDesc")}
                               </li>
                             </ul>
                           </GuideStep>
@@ -732,8 +709,7 @@ export default function CourierRegistrationPage() {
                             Security Vault
                           </CardTitle>
                           <p className="text-xs sm:text-sm text-gray-500 font-medium">
-                            Store your portal security questions for future
-                            logins.
+                            {t("securityVault.subtitle")}
                           </p>
                         </div>
                         <div className="flex items-center justify-center sm:justify-end gap-2">
@@ -743,7 +719,7 @@ export default function CourierRegistrationPage() {
                             onClick={() => fetchUserQuestions()}
                             disabled={isLoading}
                             className="rounded-xl border-gray-200 hover:bg-white hover:border-primary transition-all font-bold"
-                            title="Refresh Questions"
+                            title={t("securityVault.refreshTitle")}
                           >
                             <RefreshCw
                               size={16}
@@ -760,7 +736,7 @@ export default function CourierRegistrationPage() {
                             ) : (
                               <Eye size={16} />
                             )}
-                            {showAnswers ? "Hide" : "Show"} Answers
+                            {showAnswers ? t("securityVault.hideBtn") : t("securityVault.showBtn")} {t("securityVault.answersLabel")}
                           </Button>
                         </div>
                       </div>
@@ -770,7 +746,7 @@ export default function CourierRegistrationPage() {
                         <div className="flex flex-col items-center justify-center py-12 space-y-4">
                           <div className="w-12 h-12 border-4 border-primary/20 border-t-primary rounded-full animate-spin" />
                           <p className="text-sm font-bold text-gray-400">
-                            Loading your questions...
+                            {t("securityVault.loading")}
                           </p>
                         </div>
                       ) : (
@@ -782,11 +758,11 @@ export default function CourierRegistrationPage() {
                                 <Badge className="bg-primary/10 text-primary hover:bg-primary/20 transition-colors border-none">
                                   <User size={14} />
                                 </Badge>
-                                Portal Username
+                                {t("securityVault.portalUsername")}
                               </Label>
                               <Input
                                 type="text"
-                                placeholder="Enter your Portal Username"
+                                placeholder={t("securityVault.portalUsernamePlaceholder")}
                                 value={portalUsername}
                                 onChange={(e) =>
                                   setPortalUsername(e.target.value)
@@ -801,7 +777,7 @@ export default function CourierRegistrationPage() {
                                 <Badge className="bg-primary/10 text-primary hover:bg-primary/20 transition-colors border-none">
                                   1
                                 </Badge>
-                                Security Question One
+                                {t("securityVault.questionOne")}
                               </Label>
                               <Select
                                 value={questions.q1}
@@ -813,7 +789,7 @@ export default function CourierRegistrationPage() {
                                   <SelectValue placeholder="Select Question" />
                                 </SelectTrigger>
                                 <SelectContent className="rounded-2xl border-gray-100 shadow-xl">
-                                  {SECURITY_QUESTIONS_1.map((q) => (
+                                  {t.raw("questions.set1").map((q: string) => (
                                     <SelectItem
                                       key={q}
                                       value={q}
@@ -826,7 +802,7 @@ export default function CourierRegistrationPage() {
                               </Select>
                               <Input
                                 type={showAnswers ? "text" : "password"}
-                                placeholder="Enter your answer"
+                                placeholder={t("securityVault.answerPlaceholder")}
                                 value={questions.a1}
                                 onChange={(e) =>
                                   setQuestions({
@@ -844,7 +820,7 @@ export default function CourierRegistrationPage() {
                                 <Badge className="bg-primary/10 text-primary hover:bg-primary/20 transition-colors border-none">
                                   2
                                 </Badge>
-                                Security Question Two
+                                {t("securityVault.questionTwo")}
                               </Label>
                               <Select
                                 value={questions.q2}
@@ -856,7 +832,7 @@ export default function CourierRegistrationPage() {
                                   <SelectValue placeholder="Select Question" />
                                 </SelectTrigger>
                                 <SelectContent className="rounded-2xl border-gray-100 shadow-xl">
-                                  {SECURITY_QUESTIONS_2.map((q) => (
+                                  {t.raw("questions.set2").map((q: string) => (
                                     <SelectItem
                                       key={q}
                                       value={q}
@@ -869,7 +845,7 @@ export default function CourierRegistrationPage() {
                               </Select>
                               <Input
                                 type={showAnswers ? "text" : "password"}
-                                placeholder="Enter your answer"
+                                placeholder={t("securityVault.answerPlaceholder")}
                                 value={questions.a2}
                                 onChange={(e) =>
                                   setQuestions({
@@ -887,7 +863,7 @@ export default function CourierRegistrationPage() {
                                 <Badge className="bg-primary/10 text-primary hover:bg-primary/20 transition-colors border-none">
                                   3
                                 </Badge>
-                                Security Question Three
+                                {t("securityVault.questionThree")}
                               </Label>
                               <Select
                                 value={questions.q3}
@@ -899,7 +875,7 @@ export default function CourierRegistrationPage() {
                                   <SelectValue placeholder="Select Question" />
                                 </SelectTrigger>
                                 <SelectContent className="rounded-2xl border-gray-100 shadow-xl">
-                                  {SECURITY_QUESTIONS_3.map((q) => (
+                                  {t.raw("questions.set3").map((q: string) => (
                                     <SelectItem
                                       key={q}
                                       value={q}
@@ -912,7 +888,7 @@ export default function CourierRegistrationPage() {
                               </Select>
                               <Input
                                 type={showAnswers ? "text" : "password"}
-                                placeholder="Enter your answer"
+                                placeholder={t("securityVault.answerPlaceholder")}
                                 value={questions.a3}
                                 onChange={(e) =>
                                   setQuestions({
@@ -956,7 +932,7 @@ export default function CourierRegistrationPage() {
                               className="h-16 rounded-2xl font-black text-lg border-gray-200 hover:border-primary transition-all active:scale-[0.98] gap-3"
                             >
                               <Download size={20} />
-                              Download PDF
+                              {t("securityVault.downloadPdf")}
                             </Button>
 
                             {user ? (
@@ -971,8 +947,8 @@ export default function CourierRegistrationPage() {
                                   <Save size={20} />
                                 )}
                                 {isSaving
-                                  ? "Saving Responses..."
-                                  : "Save Securely"}
+                                  ? t("securityVault.savingBtn")
+                                  : t("securityVault.saveBtn")}
                               </Button>
                             ) : (
                               <Button
@@ -980,7 +956,7 @@ export default function CourierRegistrationPage() {
                                 className="h-16 rounded-2xl font-black text-lg shadow-xl shadow-primary/20 transition-all active:scale-[0.98] gap-3"
                               >
                                 <Link href="/login">
-                                  Login to Save <ChevronRight size={20} />
+                                  {t("securityVault.loginToSave")} <ChevronRight size={20} />
                                 </Link>
                               </Button>
                             )}
@@ -993,9 +969,7 @@ export default function CourierRegistrationPage() {
                                 size={18}
                               />
                               <p className="text-xs text-orange-800 font-medium">
-                                You are currently not logged in. You can still
-                                download your information as a PDF, but it will
-                                not be saved in our secure database.
+                                {t("securityVault.notLoggedInWarning")}
                               </p>
                             </div>
                           )}
@@ -1012,7 +986,7 @@ export default function CourierRegistrationPage() {
                       </div>
                       <div className="flex-1 flex flex-col items-center sm:items-start break-all">
                         <p className="text-xs font-bold text-slate-500 uppercase">
-                          Authenticated User
+                          {t("securityVault.authenticatedUser")}
                         </p>
                         <p className="text-sm font-bold text-slate-800">
                           {user.email}

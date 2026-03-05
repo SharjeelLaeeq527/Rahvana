@@ -32,6 +32,7 @@ export interface NavItem {
   title: string;
   description: string;
   href: string;
+  translationKey?: string;
   // badge?: "Soon" | "Live";
   disabled?: boolean;
 }
@@ -44,6 +45,7 @@ export interface NavCategory {
 export interface NavTab {
   id: string;
   label: string;
+  translationKey?: string;
   categories?: NavCategory[]; // For Journeys
   items?: NavItem[]; // For Tools, Guides, Services
 }
@@ -921,12 +923,14 @@ export const NAV_DATA: Record<string, NavSection> = {
       {
         id: "expert-help",
         label: "Expert Help",
+        translationKey: "expertHelp",
         items: [
           {
             icon: (
               <MessageSquare className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
             ),
             title: "Book a Consultation",
+            translationKey: "bookConsultation",
             description: "Book a call with an expert.",
             href: "/book-consultation",
             disabled: true,
@@ -936,6 +940,7 @@ export const NAV_DATA: Record<string, NavSection> = {
               <Users className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
             ),
             title: "Expert Case Review",
+            translationKey: "expertCaseReview",
             description:
               "Human review of your documents + a tailored improvement plan.",
             href: "#",
@@ -947,12 +952,14 @@ export const NAV_DATA: Record<string, NavSection> = {
       {
         id: "pakistan-docs-services",
         label: "Pakistan Docs",
+        translationKey: "pakistanDocsSevices",
         items: [
           {
             icon: (
               <Shield className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
             ),
             title: "PCC Filing Service — Sindh",
+            translationKey: "pccSindh",
             description: "Done-for-you police certificate filing for Sindh.",
             href: "/police-verification/apply?province=Sindh",
             disabled: true,
@@ -964,6 +971,7 @@ export const NAV_DATA: Record<string, NavSection> = {
               <Shield className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
             ),
             title: "PCC Filing Service — Punjab (Coming Soon)",
+            translationKey: "pccPunjab",
             description:
               "Join the waitlist for done-for-you PCC filing in Punjab.",
             href: "#",
@@ -975,6 +983,7 @@ export const NAV_DATA: Record<string, NavSection> = {
               <Shield className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
             ),
             title: "PCC Filing Service — KPK (Coming Soon)",
+            translationKey: "pccKpk",
             description:
               "Join the waitlist for done-for-you PCC filing in KPK.",
             href: "#",
@@ -986,6 +995,7 @@ export const NAV_DATA: Record<string, NavSection> = {
               <Shield className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
             ),
             title: "PCC Filing Service — Balochistan (Coming Soon)",
+            translationKey: "pccBalochistan",
             description:
               "Join the waitlist for done-for-you PCC filing in Balochistan.",
             href: "#",
@@ -997,12 +1007,14 @@ export const NAV_DATA: Record<string, NavSection> = {
       {
         id: "medical",
         label: "Medical",
+        translationKey: "medical",
         items: [
           {
             icon: (
               <Heart className="h-5 w-5 text-rose-600 dark:text-rose-400" />
             ),
             title: "Book Medical Appointment",
+            translationKey: "bookMedical",
             description: "Book your panel physician medical exam appointment.",
             href: "/book-appointment",
             disabled: true,
@@ -1013,12 +1025,14 @@ export const NAV_DATA: Record<string, NavSection> = {
       {
         id: "documents",
         label: "Documents",
+        translationKey: "documents",
         items: [
           {
             icon: (
               <FileUp className="h-5 w-5 text-amber-600 dark:text-amber-400" />
             ),
             title: "Urdu → English Translation",
+            translationKey: "urduEnglish",
             description:
               "Request certified translation + formatting for submission.",
             href: "/document-translation",
