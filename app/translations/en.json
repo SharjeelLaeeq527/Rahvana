@@ -41,7 +41,9 @@
     "company": "Company",
     "connectWithUs": "Connect With Us",
     "rightsReserved": "© 2026 Rahvana. All rights reserved.",
-    "cookiePolicy": "Cookie Policy"
+    "cookiePolicy": "Cookie Policy",
+    "privacyPolicy": "Privacy Policy",
+    "termsOfService": "Terms of Service"
   },
   "buttons": {
     "submit": "Submit",
@@ -481,6 +483,74 @@
       "Pakistan Docs": "Pakistan Docs",
       "Medical": "Medical",
       "Documents": "Documents"
+    }
+  },
+  "toolsPage": {
+    "heroTitle": "Create. Check. Comply.",
+    "heroDescription": "A suite of powerful tools designed to simplify complex processes and boost your productivity.",
+    "searchPlaceholder": "Search tools...",
+    "categories": {
+      "All": "All",
+      "AI & Planning": "AI & Planning",
+      "Money & Sponsorship": "Money & Sponsorship",
+      "Tracking": "Tracking",
+      "Docs & PDFs": "Docs & PDFs",
+      "Forms & Automation": "Forms & Automation",
+      "Storage & Organization": "Storage & Organization"
+    },
+    "noToolsFound": "No tools found matching your search.",
+    "openTool": "Open Tool",
+    "comingSoon": "Coming Soon",
+    "more": "More",
+    "toolsItems": {
+      "case-strength-analyzer": {
+        "title": "Case Strength Analyzer",
+        "desc": "Instant AI case strength score + gaps to fix before NVC/Interview."
+      },
+      "221g-planner": {
+        "title": "221(g) Action Planner",
+        "desc": "Step-by-step next moves after 221(g) or Administrative Processing."
+      },
+      "visa-path": {
+        "title": "VisaPath Finder",
+        "desc": "Quick quiz that points you to the right visa path + next steps."
+      },
+      "interview-prep": {
+        "title": "Interview Prep",
+        "desc": "Prepare smarter and deliver confident answers when it matters most."
+      },
+      "sponsorship-calculator": {
+        "title": "Sponsorship Calculator",
+        "desc": "Auto-check income/assets and tell you what you still need."
+      },
+      "queue-watch": {
+        "title": "DQ Status Check",
+        "desc": "Track interview scheduling movement and trends by category."
+      },
+      "visa-bulletin-monitor": {
+        "title": "Visa Bulletin Monitor",
+        "desc": "Check your priority date progress against the Visa Bulletin."
+      },
+      "photo-booth": {
+        "title": "Photo Booth",
+        "desc": "Make a compliant passport/visa photo in minutes."
+      },
+      "pdf-toolkit": {
+        "title": "PDF ToolKit",
+        "desc": "Merge • compress • convert • edit — all in one toolkit."
+      },
+      "snap-sign": {
+        "title": "Snap & Sign",
+        "desc": "Create a clean digital signature for your forms."
+      },
+      "form-forge": {
+        "title": "Smart Form Filler",
+        "desc": "Auto-fills your official form and generates a ready-to-upload PDF."
+      },
+      "doc-vault": {
+        "title": "Document Vault",
+        "desc": "Organize docs + build shareable packets when the embassy asks."
+      }
     }
   }
 }
