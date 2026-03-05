@@ -61,10 +61,839 @@
       "title": "About Us - Immigration Assistant"
     },
     "services": {
-      "title": "Services - Immigration Assistant"
+      "title": "Services - Immigration Assistant",
+      "heroTitle": "Expert Services & Support",
+      "heroDescription": "Professional assistance for every step of your immigration journey. From document preparation to expert consultations.",
+      "searchPlaceholder": "Search services...",
+      "allCategory": "All",
+      "more": "More",
+      "noResults": "No services found matching your search.",
+      "openService": "Open Service",
+      "comingSoon": "Coming Soon"
     },
     "contact": {
       "title": "Contact - Immigration Assistant"
+    },
+    "settings": {
+      "title": "Settings",
+      "subtitle": "Manage your account settings and preferences",
+      "loading": "Loading settings...",
+      "messages": {
+        "success": "Settings saved successfully!",
+        "saveError": "Error saving settings. Please try again.",
+        "deleteError": "Error deleting account. Please try again."
+      },
+      "notifications": {
+        "title": "Notification Preferences",
+        "emailLabel": "Email Notifications",
+        "emailDesc": "Receive updates and alerts via email",
+        "smsLabel": "SMS Notifications",
+        "smsDesc": "Receive important updates via SMS",
+        "pushLabel": "Push Notifications",
+        "pushDesc": "Receive notifications in the browser/app"
+      },
+      "account": {
+        "title": "Account Settings",
+        "mfaLabel": "Two-Factor Authentication",
+        "mfaDesc": "Add an extra layer of security to your account",
+        "mfaSetup": "Setup Two-Factor Authentication",
+        "mfaManage": "Manage Two-Factor Authentication",
+        "mfaSetupMobile": "Setup 2FA",
+        "mfaManageMobile": "Manage 2FA",
+        "autoBackupLabel": "Auto Backup",
+        "autoBackupDesc": "Automatically backup your data"
+      },
+      "security": {
+        "title": "Security",
+        "changePasswordLabel": "Change Password",
+        "changePasswordDesc": "Update your account password",
+        "signOutLabel": "Sign Out",
+        "signOutDesc": "Log out of all devices",
+        "deleteAccountLabel": "Delete Account",
+        "deleteAccountDesc": "Permanently remove your account and all data"
+      },
+      "saveBtn": "Save All Settings",
+      "deleteModal": {
+        "title": "Delete Account?",
+        "description": "Are you sure you want to delete your account? This action cannot be undone and all your data will be permanently removed.",
+        "confirm": "Delete Account"
+      }
+    },
+    "courierRegistration": {
+      "title": {
+        "main": "US Visa",
+        "highlight": "Scheduling Portal"
+      },
+      "subtitle": "Complete registration guide and secure security questions management for your US Visa appointment.",
+      "tabs": {
+        "guide": "Registration Guide",
+        "security": "Security Information"
+      },
+      "sidebar": {
+        "signup": "1. Signup & Login",
+        "profile": "2. Profile",
+        "application": "3. Application",
+        "groupRequest": "4. Group Request"
+      },
+      "guide": {
+        "visitPortal": "Visit Portal",
+        "badges": {
+          "mandatory": "Mandatory",
+          "critical": "Critical",
+          "required": "Required",
+          "important": "Important"
+        },
+        "titles": {
+          "signup": "Signup Process Guide",
+          "profile": "Profile Setup Guide",
+          "application": "Visa Application Guide",
+          "groupRequest": "Group Request Guide"
+        },
+        "descriptions": {
+          "signup": "Follow these steps to create and access your account.",
+          "profile": "Complete your personal profile and preferences.",
+          "application": "Follow these steps to start and fill your visa application.",
+          "groupRequest": "Detailed instructions for creating a group visa request."
+        },
+        "steps": {
+          "signup": {
+            "s1": {
+              "title": "1. Initiate Signup",
+              "desc": "Navigate to the portal and click the 'Sign up now' link at the bottom of the login panel."
+            },
+            "s2": {
+              "title": "2. Account Details",
+              "desc": "Provide a unique username and a strong password (at least 8 characters, include letters, numbers, and symbols)."
+            },
+            "s3": {
+              "title": "3. Email Verification",
+              "desc": "Enter your email address and click 'Send Verification Code'.",
+              "note": "Check your inbox (and spam folder) for a 6-digit code. Enter it into the portal and click `Verify Code` to proceed."
+            },
+            "s4": {
+              "title": "4. Personal Information",
+              "desc": "Input your legal Given Name and Surname as they appear on your passport."
+            },
+            "s5": {
+              "title": "5. Security Questions",
+              "desc": "Select three distinct security questions from the dropdowns and provide answers. You MUST remember these for future logins. We are providing facility to remember your security questions.",
+              "link": "Go to Security Questions tab"
+            },
+            "s6": {
+              "title": "6. Finalize Signup",
+              "desc": "Review all fields and click 'Create'. Solve the visual captcha if prompted to complete the registration."
+            },
+            "s7": {
+              "title": "7. Now Login to your account",
+              "desc": "Now login to your account using your username and password. Captcha will be required for login."
+            },
+            "s8": {
+              "title": "8. User Details & Security Questions",
+              "desc": "Fill in your profile details and set up your security layer.",
+              "username": "Username:",
+              "usernameDesc": "Your pre-filled username will appear here otherwise fill your username.",
+              "q1": "Security Question 1:",
+              "q1Desc": "Answer to the security question 1. If you do not remember your security questions then go to",
+              "q1Link": "Security Questions tab",
+              "q1End": "and view your security questions.",
+              "q2": "Security Question 2:",
+              "q2Desc": "Answer to the security question 2.",
+              "continue": "Click on Continue button to proceed."
+            },
+            "s9": {
+              "title": "9. Agree & Continue",
+              "desc": "Read and agree to the terms and conditions and click on Continue button to proceed."
+            }
+          },
+          "profile": {
+            "s1": {
+              "title": "1. Passport Name Match",
+              "desc": "Verify that your First Name and Last Name match your passport. These fields are locked once you move forward."
+            },
+            "s2": {
+              "title": "2. Contact Details",
+              "desc": "Enter your 'Contact Email' where you wish to receive updates. Your 'Primary Email' is pre-filled from your registration."
+            },
+            "s3": {
+              "title": "3. Language and Location",
+              "desc": "Choose your 'Preferred Language' and the 'Country' you are applying from using the dropdown menus."
+            },
+            "s4": {
+              "title": "4. Submit Profile",
+              "desc": "Click the 'Submit' button to save your profile information."
+            }
+          },
+          "application": {
+            "s1": {
+              "title": "1. Start Application",
+              "desc": "Now you will see a screen; click the 'Start Application' button located at the top left to begin your visa process."
+            },
+            "s2": {
+              "title": "2. Applicant Details",
+              "desc": "Review and complete the following mandatory fields:",
+              "country": "Country from which you are applying:",
+              "countryDesc": "Confirm your current location.",
+              "name": "First Name & Last Name:",
+              "nameDesc": "Must exactly match your passport.",
+              "birth": "Country of Birth:",
+              "birthDesc": "Select your birth country from the dropdown."
+            },
+            "s3": {
+              "title": "3. Contact Information",
+              "desc": "Provide accurate contact details for visa correspondence:",
+              "phone": "Home & Mobile Phone:",
+              "phoneDesc": "Enter your numbers without the country code.",
+              "email": "Email:",
+              "emailDesc": "Verify the email address is correct for receiving alerts."
+            },
+            "s4": {
+              "title": "4. Mailing Address",
+              "desc": "Enter your current residential or mailing address (Street, City, State/Province, and Zip Code)."
+            },
+            "s5": {
+              "title": "5. Passport Details",
+              "desc": "Enter your document information with extreme care:",
+              "pasport": "Passport Number:",
+              "pasportDesc": "Enter the number exactly as it appears.",
+              "dates": "Issuance & Expiration Dates:",
+              "datesDesc": "Use the MM/DD/YYYY format.",
+              "place": "Place of Issue & Nationality:",
+              "placeDesc": "Select according to your document."
+            },
+            "s6": {
+              "title": "6. Finalizing Application",
+              "desc": "Complete the last few fields and submit:",
+              "id": "National ID:",
+              "idDesc": "Enter your National ID number (Citizenship ID) exactly as it appears on your identity document.",
+              "review": "Review all the information carefully to ensure there are no errors.",
+              "submit": "Finally, click the 'Submit' button to proceed with your application."
+            }
+          },
+          "groupRequest": {
+            "s1": {
+              "title": "1. Initiate Group Request",
+              "desc": "Identify the 'Create Group Request' option in the sidebar navigation and click it to begin."
+            },
+            "s2": {
+              "title": "2. Group Information",
+              "desc": "Provide general details about your travel group:",
+              "name": "Group Name:",
+              "nameDesc": "Enter a unique name for your group.",
+              "date": "Date of Travel:",
+              "dateDesc": "Use the calendar or type in MM/DD/YYYY format.",
+              "reason": "Reason for Travel:",
+              "reasonDesc": "Briefly explain the purpose of the group trip."
+            },
+            "s3": {
+              "title": "3. Contact Details",
+              "desc": "Enter both Local and U.S. based contact information:",
+              "local": "Local Contact:",
+              "localDesc": "Full Name and Phone number.",
+              "us": "U.S. Contact:",
+              "usDesc": "Name, Email, and Phone number.",
+              "address": "Complete U.S. Street Address:",
+              "addressDesc": "Where the group will be staying."
+            },
+            "s4": {
+              "title": "4. Embassy & Submission",
+              "desc": "Finalize your group request:",
+              "embassy": "Embassy/Consulate/OFC:",
+              "embassyDesc": "Select the relevant office from the dropdown.",
+              "attach": "Attach a file:",
+              "attachDesc": "Upload any required supporting documents.",
+              "submit": "Submit:",
+              "submitDesc": "Click the 'Next' button to proceed with the request."
+            }
+          }
+        }
+      },
+      "securityVault": {
+        "title": "Security Vault",
+        "subtitle": "Store your portal security questions for future logins.",
+        "refreshTitle": "Refresh Questions",
+        "showBtn": "Show",
+        "hideBtn": "Hide",
+        "answersLabel": "Answers",
+        "loading": "Loading your questions...",
+        "portalUsername": "Portal Username",
+        "portalUsernamePlaceholder": "Enter your Portal Username",
+        "questionOne": "Security Question One",
+        "questionTwo": "Security Question Two",
+        "questionThree": "Security Question Three",
+        "selectPlaceholder": "Select Question",
+        "answerPlaceholder": "Enter your answer",
+        "saveBtn": "Save Securely",
+        "savingBtn": "Saving Responses...",
+        "downloadPdf": "Download PDF",
+        "loginToSave": "Login to Save",
+        "notLoggedInWarning": "You are currently not logged in. You can still download your information as a PDF, but it will not be saved in our secure database.",
+        "authenticatedUser": "Authenticated User"
+      },
+      "securityPreview": {
+        "loadingSession": "Securing Session...",
+        "back": "Back",
+        "encryptedPreview": "Encrypted Preview",
+        "title": {
+          "main": "Security",
+          "highlight": "Preview"
+        },
+        "subtitle": "Review your saved portal credentials and security responses.",
+        "noData": {
+          "title": "No Data Found",
+          "description": "You haven't saved any security questions yet.",
+          "button": "Go to Registration"
+        },
+        "vault": {
+          "title": "Credentials Vault",
+          "verified": "Verified for",
+          "mask": "Mask",
+          "reveal": "Reveal",
+          "data": "Data",
+          "username": "Portal Username",
+          "notSet": "Not set",
+          "questionLabel": "Security Question",
+          "noQuestion": "Question not selected"
+        },
+        "notice": {
+          "title": "Security Notice",
+          "description": "This page is for previewing your saved information. For your security, always ensure you are in a private location before revealing masked data."
+        }
+      },
+      "questions": {
+        "set1": [
+          "What is your mother's maiden name?",
+          "What was the name of your first/current/favorite pet?",
+          "What was your first car?",
+          "What elementary school did you attend?",
+          "What is the name of the town/city where you were born?"
+        ],
+        "set2": [
+          "What is the name of the road/street you grew up on?",
+          "What is your least favorite food?",
+          "What was the first company that you worked for?",
+          "What is your favorite food?",
+          "What high school did you attend?"
+        ],
+        "set3": [
+          "Where did you meet your spouse?",
+          "What is your sibling's middle name?",
+          "Who was your childhood hero?",
+          "In what city or town was your first job?",
+          "What is the name of a college you applied to but didn't attend?"
+        ]
+      },
+      "messages": {
+        "loginRequired": "Please log in to save security questions.",
+        "fillAll": "Please fill all security questions and answers.",
+        "saveSuccess": "Security questions saved successfully!",
+        "saveError": "Failed to save questions.",
+        "unexpectedError": "An unexpected error occurred."
+      },
+      "pdf": {
+        "title": "Rahvana",
+        "header": "US Visa Portal Security Information",
+        "credentials": "Portal Credentials",
+        "usernameLabel": "Portal Username:",
+        "notProvided": "Not provided",
+        "securityQuestions": "Security Questions",
+        "q1": "Question 1",
+        "q2": "Question 2",
+        "q3": "Question 3",
+        "answerLabel": "Answer:",
+        "notSelected": "Not selected",
+        "footerTagline": "Rahvana - Your US Visa Journey Companion"
+      }
+    }
+  },
+  "dashboard": {
+    "title": "Your Dashboard",
+    "subtitle": "Track your active journeys and access recommended tools.",
+    "guest": {
+      "headline": "Sign in to access your dashboard",
+      "description": "Track journeys, save progress across devices, and get personalized recommendations.",
+      "signInBtn": "Sign In Free"
+    },
+    "activeJourneys": {
+      "title": "Your Active Journeys",
+      "ir1Title": "🇺🇸 IR-1/CR-1 Spouse Visa",
+      "startedOn": "Started Dec 21, 2025",
+      "continueBtn": "Continue Journey →",
+      "startAnother": "Start Another Journey",
+      "startAnotherDesc": "IR-5 Parents, K-1 Fiancé, and more coming soon."
+    },
+    "documentVault": {
+      "title": "Document Overview",
+      "description": "You have <strong className=\"mx-1\">{{count}}</strong> documents in your vault.",
+      "openVaultBtn": "Open Vault",
+      "upcomingMilestone": "Upcoming Milestone",
+      "milestoneTitle": "NVC/CEAC Processing",
+      "waitText": "Typical wait: 4-9 months"
+    },
+    "quickActions": {
+      "title": "Quick Actions",
+      "openWizard": "Open IR-1 Wizard",
+      "openWizardDesc": "Continue your journey",
+      "browseTools": "Browse Tools",
+      "browseToolsDesc": "Document prep & planning",
+      "viewPremium": "View Premium",
+      "viewPremiumDesc": "Unlock all features"
+    }
+  },
+  "wizard": {
+    "loading": "Loading your journey...",
+    "progress": {
+      "title": "Overall Journey Progress",
+      "stats": "{{percent}}% ({{completed}}/{{total}} steps)"
+    },
+    "documentVaultBtn": "Document Vault"
+  },
+  "progressTree": {
+    "journeyMap": "Journey Map",
+    "track": "Consular Processing Track",
+    "stage": "Stage {{id}}"
+  },
+  "stepDetail": {
+    "info": "Stage {{stageId}} • Step {{stepId}}",
+    "completed": "Completed",
+    "markComplete": "Mark Complete",
+    "defaultNotes": "This step involves preparing and submitting the necessary {{stepName}} documents.",
+    "professionalBadges": {
+      "both": "Both",
+      "selfAssessment": "Self-assessment"
+    },
+    "actionsRequired": "Actions Required",
+    "documentRequired": "(Document Required)",
+    "successCondition": "Success Condition",
+    "prevStep": "Previous Step",
+    "nextStep": "Next Step"
+  },
+  "documentVault": {
+    "title": "📋 Document Vault",
+    "subtitle": "Track and manage your required documents.",
+    "status": {
+      "collected": "Collected",
+      "pending": "Pending",
+      "uploaded": "Uploaded"
+    },
+    "labels": {
+      "notes": "Notes",
+      "fileAttachment": "File Attachment"
+    },
+    "placeholders": {
+      "addNote": "Add private note...",
+      "chooseFile": "Choose File..."
+    },
+    "aria": {
+      "clearFile": "Clear file"
+    },
+    "closeBtn": "Close Vault"
+  },
+  "myJourneys": {
+    "journeyNames": {
+      "ir1": "IR-1 Spouse Visa",
+      "ir5": "IR-5 Parents Visa",
+      "k1": "K-1 Fiancé Visa"
+    },
+    "journeyDescriptions": {
+      "ir1": "Immigration journey for a spouse of a U.S. citizen.",
+      "ir5": "Immigration journey for Parents of U.S. citizens.",
+      "k1": "Immigration journey for a Fiancé of a U.S. citizen.",
+      "fallback": "Active immigration track."
+    },
+    "loading": "Initializing secure session...",
+    "header": {
+      "badges": {
+        "securePortal": "Certified Secure Portal",
+        "liveSync": "Live Sync Active"
+      },
+      "title": {
+        "main": "My Immigration",
+        "highlight": "Professional Journeys"
+      },
+      "description": "Your centralized command center for visa tracking. Every document, step, and milestone is synced in real-time.",
+      "actions": {
+        "deleteAll": "Delete All",
+        "startNew": "Start New Journey"
+      }
+    },
+    "emptyState": {
+      "title": "No active journeys found",
+      "description": "It looks like you haven't started any immigration journeys yet. Choose a visa category to begin your step-by-step guided process.",
+      "button": "Explore Visa Categories"
+    },
+    "journeyCard": {
+      "deleteTooltip": "Delete Journey",
+      "lastActivity": "Last activity:",
+      "resumeBtn": "Resume Journey"
+    },
+    "modals": {
+      "deleteJourney": {
+        "title": "Delete Journey?",
+        "description": "Are you sure you want to delete this journey? All progress will be lost forever.",
+        "confirmBtn": "Delete"
+      },
+      "deleteAllJourneys": {
+        "title": "Delete All Journeys?",
+        "description": "Are you sure you want to delete ALL ({{count}}) journeys? This cannot be undone.",
+        "confirmBtn": "Delete All"
+      }
+    }
+  },
+  "pricing": {
+    "title": "Pricing Plan",
+    "subtitle": "Use the roadmap for free. Upgrade for automation and experts.",
+    "plans": {
+      "core": {
+        "name": "Rahvana Core",
+        "price": "$0",
+        "priceSuffix": "Free Forever",
+        "features": [
+          "Full IR-1/CR-1 Step Roadmap",
+          "Pakistan Specific Checklists",
+          "Browser Progress Saving"
+        ],
+        "cta": "Get Started Free"
+      },
+      "plus": {
+        "name": "Rahvana Plus",
+        "price": "$24.99",
+        "priceSuffix": "one-time",
+        "badge": "Popular",
+        "features": [
+          "Everything in Core",
+          "Cloud Backup (Cross-device)",
+          "Form Filling Masterclass",
+          "NVC Document Verification"
+        ],
+        "loading": "Loading...",
+        "upgradeCta": "Upgrade to Plus →",
+        "signInCta": "Sign In to Upgrade"
+      },
+      "pro": {
+        "name": "Rahvana Pro",
+        "status": "Coming Soon",
+        "statusSuffix": "Expert Assistance",
+        "features": [
+          "Everything in Plus",
+          "Document Review by Experts",
+          "Mock Interview Preparation"
+        ],
+        "cta": "In Beta"
+      }
+    }
+  },
+  "profile": {
+    "title": "Your Profile",
+    "subtitle": "Manage your data for auto-filling forms",
+    "completeness": "Profile Completeness",
+    "successMessage": "Profile updated successfully!",
+    "errorMessage": "Error updating profile. Please try again.",
+    "buttons": {
+      "completeProfile": "Complete Master Profile",
+      "editProfile": "Edit Profile",
+      "save": "Save",
+      "cancel": "Cancel"
+    },
+    "sections": {
+      "personal": "Personal Information",
+      "contact": "Contact & Address",
+      "family": "Family Background",
+      "employment": "Employment & Education",
+      "immigration": "Immigration History",
+      "relationship": "Relationship Details",
+      "documents": "Documents & Financial",
+      "affidavit": "Affidavit Support Calculator",
+      "visaContext": "Visa Application Context",
+      "visaEligibility": "Legal & Eligibility Details"
+    },
+    "fields": {
+      "firstName": "First Name",
+      "middleName": "Middle Name",
+      "lastName": "Last Name",
+      "dob": "Date of Birth",
+      "cityOfBirth": "City of Birth",
+      "countryOfBirth": "Country of Birth",
+      "sex": {
+        "label": "Sex",
+        "options": {
+          "male": "Male",
+          "female": "Female"
+        }
+      },
+      "nationality": "Nationality",
+      "citizenshipStatus": {
+        "label": "Citizenship Status",
+        "options": {
+          "usCitizen": "U.S. Citizen",
+          "lpr": "Legal Permanent Resident",
+          "other": "Other"
+        }
+      },
+      "maritalStatus": {
+        "label": "Marital Status",
+        "options": {
+          "single": "Single",
+          "married": "Married",
+          "divorced": "Divorced",
+          "widowed": "Widowed",
+          "separated": "Separated",
+          "annulled": "Annulled"
+        }
+      },
+      "passportNumber": "Passport Number",
+      "passportIssueDate": "Passport Issue Date",
+      "passportExpiry": "Passport Expiry",
+      "passportCountry": "Passport Issuing Country",
+      "ssn": "SSN (if any)",
+      "alienNumber": "A-Number (if any)",
+      "uscisAccount": "USCIS Account #",
+      "phone": "Phone",
+      "email": "Email",
+      "cnic": "CNIC / National ID",
+      "address": "Street Address",
+      "city": "City",
+      "state": "State",
+      "zipCode": "Zip Code",
+      "country": "Country",
+      "mailingAddress": "Mailing Address",
+      "sameAsCurrent": "Mailing address is the same as physical address",
+      "father": {
+        "header": "Father's Details",
+        "firstName": "Father's First Name",
+        "middleName": "Father's Middle Name",
+        "lastName": "Father's Last Name"
+      },
+      "mother": {
+        "header": "Mother's Details",
+        "firstName": "Mother's First Name",
+        "middleName": "Mother's Middle Name",
+        "lastName": "Mother's Last Name"
+      },
+      "deceased": "Person is deceased",
+      "cityOfResidence": "Current City of Residence",
+      "countryOfResidence": "Current Country of Residence",
+      "occupation": "Occupation",
+      "jobTitle": "Job Title",
+      "employerName": "Employer Name",
+      "annualIncome": "Annual Income",
+      "industrySector": {
+        "label": "Industry Sector",
+        "options": {
+          "technology": "Technology",
+          "healthcare": "Healthcare",
+          "education": "Education",
+          "finance": "Finance",
+          "construction": "Construction",
+          "manufacturing": "Manufacturing",
+          "retail": "Retail",
+          "government": "Government",
+          "military": "Military/Defense",
+          "other": "Other"
+        }
+      },
+      "educationLevel": {
+        "label": "Education Level",
+        "options": {
+          "notGraduate": "Did not graduate high school",
+          "highSchool": "High School",
+          "someCollege": "Some College",
+          "associate": "Associate Degree",
+          "bachelor": "Bachelor's Degree",
+          "master": "Master's Degree",
+          "doctorate": "Doctorate (PhD)"
+        }
+      },
+      "fieldOfStudy": "Field of Study",
+      "immigrationHistory": {
+        "previousVisa": "Previous US Visa Applications",
+        "visaDenial": "Previous Visa Denials",
+        "overstay": "Overstay or Violation",
+        "criminalRecord": "Criminal Record",
+        "removal": "Removed or Deported",
+        "militaryService": "Prior Military Service",
+        "weaponsTraining": "Specialized Weapons Training",
+        "armedGroups": "Unofficial Armed Groups"
+      },
+      "relationshipType": {
+        "label": "Relationship Type",
+        "options": {
+          "spouse": "Spouse",
+          "fiance": "Fiance(e)"
+        }
+      },
+      "relationshipStart": "Relationship Start Date",
+      "marriageDate": "Marriage Date",
+      "visits": "Number of In-Person Visits",
+      "howMet": "How did you meet?",
+      "evidence": {
+        "header": "Available Evidence",
+        "cohabitation": "Cohabitation Proof (Lease/Deed)",
+        "sharing": "Shared Financial Accounts",
+        "wedding": "Wedding Photos",
+        "comm": "Communication Logs",
+        "money": "Money Transfer Receipts",
+        "meet": "Meeting Proof"
+      },
+      "identityDocs": "Identity Documents",
+      "financialDocs": "Financial Documents",
+      "docs": {
+        "passport": "Valid Passport",
+        "birth": "Birth Certificate",
+        "marriage": "Marriage Certificate",
+        "police": "Police Certificate"
+      },
+      "financial": {
+        "tax": "Tax Returns (Last 3 Years)",
+        "paystubs": "Paystubs (Recent)",
+        "bank": "Bank Statements"
+      },
+      "sponsorStatus": {
+        "label": "Sponsor Status",
+        "options": {
+          "citizen": "US Citizen",
+          "greenCard": "Green Card Holder"
+        }
+      },
+      "activeMilitary": "Active-Duty Military",
+      "married": "Married",
+      "numChildren": "Number of Children",
+      "taxDependents": "Tax Dependents",
+      "prevSponsorship": "Previous Sponsorship",
+      "prevSponsorshipCount": "Previous Sponsored Count",
+      "sponsoringApplicant": "Sponsoring Applicant",
+      "sponsoringSpouse": "Sponsoring Spouse",
+      "sponsoringChildren": "Sponsoring Children",
+      "sponsorDeceased": "Sponsor Deceased",
+      "assetValue": "Asset Value",
+      "relationshipToApplicant": "Relationship to Applicant",
+      "vawa": "VAWA Self-Petitioner",
+      "widow": "Widow of US Citizen",
+      "specialImmigrant": "Special Immigrant",
+      "applicationDetails": "Application Details",
+      "visaType": {
+        "label": "Visa Type",
+        "options": {
+          "ir1": "IR-1 - Spouse of US Citizen (2+ yrs)",
+          "cr1": "CR-1 - Spouse of US Citizen (<2 yrs)",
+          "k1": "K-1 - Fiancé(e) Visa",
+          "ir5": "IR-5 - Parent of US Citizen",
+          "f1": "F-1 - Student Visa",
+          "h1b": "H-1B - Specialty Occupation",
+          "b1b2": "B1/B2 - Visitor Visa",
+          "other": "Other"
+        }
+      },
+      "visaCategory": "Visa Category / Sub-category",
+      "sponsorHeader": "Sponsor Details",
+      "sponsorFirstName": "Sponsor First Name",
+      "sponsorMiddleName": "Sponsor Middle Name",
+      "sponsorLastName": "Sponsor Last Name",
+      "sponsorPhone": "Sponsor Phone",
+      "beneficiaryHeader": "Beneficiary Details",
+      "beneficiaryFirstName": "Beneficiary First Name",
+      "beneficiaryMiddleName": "Beneficiary Middle Name",
+      "beneficiaryLastName": "Beneficiary Last Name",
+      "petitionerDetails": "Petitioner Details",
+      "petitionerStatus": {
+        "label": "Petitioner Status",
+        "options": {
+          "usCitizen": "US Citizen",
+          "lpr": "US Permanent Resident",
+          "none": "None"
+        }
+      },
+      "petitionerAge": {
+        "label": "Petitioner Age Group",
+        "options": {
+          "under21": "Under 21",
+          "over21": "21 or older"
+        }
+      },
+      "statusIntent": "Status & Intent",
+      "statusOrigin": {
+        "label": "Status Origin",
+        "options": {
+          "birth": "By Birth",
+          "naturalized": "Naturalized",
+          "greenCard": "Green Card"
+        }
+      },
+      "intent": {
+        "label": "Intent of Stay",
+        "options": {
+          "permanent": "Permanent",
+          "temporary": "Temporary"
+        }
+      },
+      "sponsorBase": {
+        "label": "Sponsorship Base",
+        "options": {
+          "family": "Family-Based",
+          "employment": "Employment-Based",
+          "investment": "Investment",
+          "humanitarian": "Humanitarian"
+        }
+      },
+      "historyLegal": "History & Legal",
+      "violationHistory": {
+        "label": "Visa Violation History",
+        "options": {
+          "yes": "Yes",
+          "no": "No",
+          "unsure": "Not Sure"
+        }
+      },
+      "legalStatus": {
+        "label": "Legal Relationship Status",
+        "options": {
+          "registered": "Registered Marriage",
+          "biological": "Biological",
+          "adoptive": "Adoptive",
+          "step": "Step-Child/Parent"
+        }
+      }
+    },
+    "placeholders": {
+      "firstName": "Enter first name",
+      "middleName": "Enter middle name",
+      "lastName": "Enter last name",
+      "city": "Enter city",
+      "country": "Enter country",
+      "nationality": "Enter nationality",
+      "passport": "Enter passport number",
+      "ssn": "000-00-0000",
+      "alien": "A-123456789",
+      "uscis": "123456789012",
+      "phone": "+1 (555) 000-0000",
+      "cnic": "Enter national ID",
+      "street": "123 Main Street",
+      "state": "Enter state",
+      "zip": "Enter zip code",
+      "poBox": "PO Box 123",
+      "newYork": "New York",
+      "ny": "NY",
+      "zip10001": "10001",
+      "usa": "United States",
+      "occupation": "Enter occupation",
+      "jobTitle": "Exact title on employment letter",
+      "employer": "Enter employer name",
+      "annualIncome": "Enter annual income",
+      "sector": "Select an option",
+      "education": "Select level",
+      "fieldStudy": "e.g. Computer Science",
+      "visaType": "Select visa type",
+      "visaCategory": "e.g. EB-2, NIW, Priority Date",
+      "relMeet": "e.g. at university, online, through family...",
+      "relApplicant": "e.g. spouse, parent, other",
+      "selectStatus": "Select status",
+      "selectAge": "Select age group",
+      "selectOrigin": "Select origin",
+      "selectIntent": "Select intent",
+      "selectBase": "Select base",
+      "selectGeneric": "Select..."
+    },
+    "helpText": {
+      "alien": "Alien Registration Number"
     }
   },
   "generic": {

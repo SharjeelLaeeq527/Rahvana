@@ -9,8 +9,10 @@ import { Switch } from "@/components/ui/switch";
 import { useAuth } from "@/app/context/AuthContext";
 import { useRouter } from "next/navigation";
 import { ConfirmationModal } from "@/app/components/shared/ConfirmationModal";
+import { useTranslations } from "next-intl";
 
 export default function SettingsPage() {
+  const t = useTranslations("pages.settings");
   const { user, isLoading, signOut } = useAuth();
   const router = useRouter();
   const supabase = createBrowserClient(
@@ -168,10 +170,10 @@ export default function SettingsPage() {
         throw error;
       }
 
-      setMessage("Settings saved successfully!");
+      setMessage(t("messages.success"));
     } catch (error) {
       console.error("Error saving settings:", error);
-      setMessage("Error saving settings. Please try again.");
+      setMessage(t("messages.saveError"));
     } finally {
       setLoading(false);
     }
@@ -208,7 +210,7 @@ export default function SettingsPage() {
       router.push("/");
     } catch (error) {
       console.error("Error deleting account:", error);
-      setMessage("Error deleting account. Please try again.");
+      setMessage(t("messages.deleteError"));
       setLoading(false);
     }
   };
@@ -218,7 +220,7 @@ export default function SettingsPage() {
       <div className="min-h-screen flex items-center justify-center bg-linear-to-br from-slate-50 to-slate-100 p-4">
         <div className="text-center">
           <div className="inline-block animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-slate-900 mb-4"></div>
-          <p className="text-slate-700">Loading settings...</p>
+          <p className="text-slate-700">{t("loading")}</p>
         </div>
       </div>
     );
@@ -233,15 +235,21 @@ export default function SettingsPage() {
       <div className="max-w-4xl mx-auto pb-2 sm:py-4 md:py-6">
         <div className="mb-6 sm:mb-8">
           <h1 className="text-2xl sm:text-3xl font-bold text-slate-900">
-            Settings
+            {t("title")}
           </h1>
           <p className="text-sm sm:text-base text-slate-600 mt-1 sm:mt-2">
-            Manage your account settings and preferences
+            {t("subtitle")}
           </p>
         </div>
 
         {message && (
-          <div className="mb-6 p-4 bg-green-50 border border-green-200 text-green-700 rounded-lg">
+          <div
+            className={`mb-6 p-4 rounded-lg border ${
+              message === t("messages.success")
+                ? "bg-green-50 border-green-200 text-green-700"
+                : "bg-red-50 border-red-200 text-red-700"
+            }`}
+          >
             {message}
           </div>
         )}
@@ -251,7 +259,7 @@ export default function SettingsPage() {
           <Card className="px-2 sm:px-4 py-4 sm:p-6 bg-white shadow-lg border-0">
             <CardHeader className="border-b border-slate-200 pb-4">
               <CardTitle className="text-lg sm:text-xl text-slate-900">
-                Notification Preferences
+                {t("notifications.title")}
               </CardTitle>
             </CardHeader>
             <CardContent className="pt-2 sm:pt-6 space-y-6">
@@ -261,10 +269,10 @@ export default function SettingsPage() {
                     htmlFor="email-notifications"
                     className="text-base font-medium"
                   >
-                    Email Notifications
+                    {t("notifications.emailLabel")}
                   </Label>
                   <p className="text-sm text-slate-500">
-                    Receive updates and alerts via email
+                    {t("notifications.emailDesc")}
                   </p>
                 </div>
                 <Switch
@@ -280,10 +288,10 @@ export default function SettingsPage() {
                     htmlFor="sms-notifications"
                     className="text-base font-medium"
                   >
-                    SMS Notifications
+                    {t("notifications.smsLabel")}
                   </Label>
                   <p className="text-sm text-slate-500">
-                    Receive important updates via SMS
+                    {t("notifications.smsDesc")}
                   </p>
                 </div>
                 <Switch
@@ -299,10 +307,10 @@ export default function SettingsPage() {
                     htmlFor="push-notifications"
                     className="text-base font-medium"
                   >
-                    Push Notifications
+                    {t("notifications.pushLabel")}
                   </Label>
                   <p className="text-sm text-slate-500">
-                    Receive notifications in the browser/app
+                    {t("notifications.pushDesc")}
                   </p>
                 </div>
                 <Switch
@@ -318,7 +326,7 @@ export default function SettingsPage() {
           <Card className="px-2 sm:px-4 py-4 sm:p-6 bg-white shadow-lg border-0">
             <CardHeader className="border-b border-slate-200 pb-4">
               <CardTitle className="text-lg sm:text-xl text-slate-900">
-                Account Settings
+                {t("account.title")}
               </CardTitle>
             </CardHeader>
             <CardContent className="pt-2 sm:pt-6 space-y-6">
@@ -329,10 +337,10 @@ export default function SettingsPage() {
                       htmlFor="two-factor"
                       className="text-base font-medium"
                     >
-                      Two-Factor Authentication
+                      {t("account.mfaLabel")}
                     </Label>
                     <p className="text-sm text-slate-500">
-                      Add an extra layer of security to your account
+                      {t("account.mfaDesc")}
                     </p>
                   </div>
                   <Switch
@@ -349,11 +357,13 @@ export default function SettingsPage() {
                 >
                   <span className="hidden sm:inline">
                     {profile?.mfa_enabled
-                      ? "Manage Two-Factor Authentication"
-                      : "Setup Two-Factor Authentication"}
+                      ? t("account.mfaManage")
+                      : t("account.mfaSetup")}
                   </span>
                   <span className="sm:hidden">
-                    {profile?.mfa_enabled ? "Manage 2FA" : "Setup 2FA"}
+                    {profile?.mfa_enabled
+                      ? t("account.mfaManageMobile")
+                      : t("account.mfaSetupMobile")}
                   </span>
                 </Button>
               </div>
@@ -364,10 +374,10 @@ export default function SettingsPage() {
                     htmlFor="auto-backup"
                     className="text-base font-medium"
                   >
-                    Auto Backup
+                    {t("account.autoBackupLabel")}
                   </Label>
                   <p className="text-sm text-slate-500">
-                    Automatically backup your data
+                    {t("account.autoBackupDesc")}
                   </p>
                 </div>
                 <Switch
@@ -385,53 +395,55 @@ export default function SettingsPage() {
           <Card className="px-2 sm:px-4 py-4 sm:p-6 bg-white shadow-lg border-0">
             <CardHeader className="border-b border-slate-200 pb-4">
               <CardTitle className="text-lg sm:text-xl text-slate-900">
-                Security
+                {t("security.title")}
               </CardTitle>
             </CardHeader>
             <CardContent className="pt-2 sm:pt-6 space-y-6">
               <div className="space-y-4">
                 <div>
                   <Label className="text-base font-medium">
-                    Change Password
+                    {t("security.changePasswordLabel")}
                   </Label>
                   <p className="text-sm text-slate-500 mb-3 sm:mb-4">
-                    Update your account password
+                    {t("security.changePasswordDesc")}
                   </p>
                   <Button
                     variant="outline"
                     className="w-full sm:w-auto border-slate-300"
                   >
-                    Change Password
+                    {t("security.changePasswordLabel")}
                   </Button>
                 </div>
 
                 <div className="pt-4 border-t border-slate-200">
-                  <Label className="text-base font-medium">Sign Out</Label>
+                  <Label className="text-base font-medium">
+                    {t("security.signOutLabel")}
+                  </Label>
                   <p className="text-sm text-slate-500 mb-3 sm:mb-4">
-                    Log out of all devices
+                    {t("security.signOutDesc")}
                   </p>
                   <Button
                     variant="outline"
                     className="w-full sm:w-auto border-red-300 text-red-700 hover:bg-red-50"
                     onClick={handleSignOut}
                   >
-                    Sign Out
+                    {t("security.signOutLabel")}
                   </Button>
                 </div>
 
                 <div className="pt-4 border-t border-slate-200">
                   <Label className="text-base font-medium text-red-700">
-                    Delete Account
+                    {t("security.deleteAccountLabel")}
                   </Label>
                   <p className="text-sm text-slate-500 mb-3 sm:mb-4">
-                    Permanently remove your account and all data
+                    {t("security.deleteAccountDesc")}
                   </p>
                   <Button
                     variant="destructive"
                     className="w-full sm:w-auto"
                     onClick={handleDeleteAccount}
                   >
-                    Delete Account
+                    {t("security.deleteAccountLabel")}
                   </Button>
                 </div>
               </div>
@@ -444,7 +456,7 @@ export default function SettingsPage() {
               className="w-full sm:w-auto bg-slate-900 hover:bg-slate-800 text-white px-8"
               disabled={loading}
             >
-              Save All Settings
+              {t("saveBtn")}
             </Button>
           </div>
         </div>
@@ -453,9 +465,9 @@ export default function SettingsPage() {
       <ConfirmationModal
         open={deleteAccountModalOpen}
         onOpenChange={setDeleteAccountModalOpen}
-        title="Delete Account?"
-        description="Are you sure you want to delete your account? This action cannot be undone and all your data will be permanently removed."
-        confirmText="Delete Account"
+        title={t("deleteModal.title")}
+        description={t("deleteModal.description")}
+        confirmText={t("deleteModal.confirm")}
         onConfirm={confirmDeleteAccount}
       />
     </div>
