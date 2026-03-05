@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import Link from "next/link";
 import { Search, ArrowRight, ChevronDown } from "lucide-react";
 import { NAV_DATA } from "@/app/components/layout/navigationData";
@@ -10,43 +10,69 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { useLanguage } from "@/app/context/LanguageContext";
 
-// --- Data & Types ---
+// --- Types ---
 interface Service {
   id: string;
   title: string;
   description: string;
-  category: string;
+  categoryLabel: string;
+  categoryId: string;
   href: string;
   icon: React.ReactNode;
-  //   badge?: "Live" | "Soon";
   disabled?: boolean;
 }
 
-// Flatten the services from NAV_DATA
-const SERVICES: Service[] = NAV_DATA.services.tabs.flatMap((tab) =>
-  (tab.items || []).map((item) => ({
-    id: item.title.toLowerCase().replace(/\s+/g, "-"),
-    title: item.title,
-    description: item.description,
-    category: tab.label, // Use the tab label as category
-    href: item.href,
-    icon: item.icon,
-    // badge: item.badge,
-    disabled: item.disabled,
-  })),
-);
-
-const CATEGORIES = ["All", ...NAV_DATA.services.tabs.map((tab) => tab.label)];
+interface CategoryOption {
+  id: string;
+  label: string;
+}
 
 // --- Components ---
 export default function ServicesPage() {
+  const { t } = useLanguage();
+
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState("All");
+  const [selectedCategoryId, setSelectedCategoryId] = useState("All");
   const [visibleCount, setVisibleCount] = useState(7); // Default to all
 
   const containerRef = React.useRef<HTMLDivElement>(null);
   const measureRef = React.useRef<HTMLDivElement>(null);
+
+  // Memoize services and categories to avoid recalculation on every render
+  const { services, categories } = useMemo(() => {
+    const servicesList: Service[] = NAV_DATA.services.tabs.flatMap((tab) =>
+      (tab.items || []).map((item) => ({
+        id: item.title.toLowerCase().replace(/\s+/g, "-"),
+        title: item.translationKey
+          ? t(`navData.services.items.${item.translationKey}.title`)
+          : item.title,
+        description: item.translationKey
+          ? t(`navData.services.items.${item.translationKey}.description`)
+          : item.description,
+        categoryLabel: tab.translationKey
+          ? t(`navData.services.tabs.${tab.translationKey}.label`)
+          : tab.label,
+        categoryId: tab.id,
+        href: item.href,
+        icon: item.icon,
+        disabled: item.disabled,
+      })),
+    );
+
+    const categoriesList: CategoryOption[] = [
+      { id: "All", label: t("pages.services.allCategory") },
+      ...NAV_DATA.services.tabs.map((tab) => ({
+        id: tab.id,
+        label: tab.translationKey
+          ? t(`navData.services.tabs.${tab.translationKey}.label`)
+          : tab.label,
+      })),
+    ];
+
+    return { services: servicesList, categories: categoriesList };
+  }, [t]);
 
   React.useEffect(() => {
     const calculateVisible = () => {
@@ -76,7 +102,7 @@ export default function ServicesPage() {
       }
 
       if (totalWidth <= containerWidth) {
-        setVisibleCount(CATEGORIES.length);
+        setVisibleCount(categories.length);
         return;
       }
 
@@ -86,7 +112,6 @@ export default function ServicesPage() {
       for (let i = 0; i < categoryEls.length; i++) {
         const itemWidth = categoryEls[i].offsetWidth;
         // Check if adding this item + gap + MoreButton exceeds container
-        // Current accumulated + this item + (gap if not first) + gap + MoreButton
         const gapWidth = i > 0 ? gap : 0;
         const projectedWidth =
           totalWidth + gapWidth + itemWidth + gap + moreButtonWidth;
@@ -111,20 +136,25 @@ export default function ServicesPage() {
     }
 
     return () => observer.disconnect();
-  }, []);
+  }, [categories]);
 
-  const visibleCategories = CATEGORIES.slice(0, visibleCount);
-  const hiddenCategories = CATEGORIES.slice(visibleCount);
-  const isMoreSelected = hiddenCategories.includes(selectedCategory);
+  const visibleCategories = categories.slice(0, visibleCount);
+  const hiddenCategories = categories.slice(visibleCount);
+  const isMoreSelected = hiddenCategories.some(
+    (c) => c.id === selectedCategoryId,
+  );
 
-  const filteredServices = SERVICES.filter((service) => {
-    const matchesSearch =
-      service.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      service.description.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesCategory =
-      selectedCategory === "All" || service.category === selectedCategory;
-    return matchesSearch && matchesCategory;
-  }).sort((a, b) => a.title.localeCompare(b.title));
+  const filteredServices = services
+    .filter((service) => {
+      const matchesSearch =
+        service.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        service.description.toLowerCase().includes(searchQuery.toLowerCase());
+      const matchesCategory =
+        selectedCategoryId === "All" ||
+        service.categoryId === selectedCategoryId;
+      return matchesSearch && matchesCategory;
+    })
+    .sort((a, b) => a.title.localeCompare(b.title));
 
   return (
     <div className="min-h-screen bg-background text-foreground font-sans overflow-x-hidden selection:bg-primary selection:text-primary-foreground">
@@ -138,11 +168,10 @@ export default function ServicesPage() {
         {/* Hero Section */}
         <section className="text-center mb-5 md:mb-10">
           <h1 className="text-3xl md:text-5xl font-bold mb-4 bg-clip-text text-transparent bg-linear-to-r from-foreground to-muted-foreground animate-fade-up">
-            Expert Services & Support
+            {t("pages.services.heroTitle")}
           </h1>
           <p className="text-muted-foreground text-base md:text-lg max-w-2xl mx-auto animate-fade-up [animation-delay:100ms]">
-            Professional assistance for every step of your immigration journey.
-            From document preparation to expert consultations.
+            {t("pages.services.heroDescription")}
           </p>
         </section>
 
@@ -151,7 +180,7 @@ export default function ServicesPage() {
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground w-5 h-5 pointer-events-none" />
           <input
             type="text"
-            placeholder="Search services..."
+            placeholder={t("pages.services.searchPlaceholder")}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="w-full bg-card border-2 border-border pl-11 pr-4 py-3 rounded-full text-foreground focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all shadow-sm placeholder:text-muted-foreground"
@@ -167,17 +196,18 @@ export default function ServicesPage() {
             className="absolute top-0 left-0 w-full flex flex-wrap gap-3 pointer-events-none opacity-0 z-[-1]"
           >
             {/* Render all categories to measure them */}
-            {CATEGORIES.map((cat) => (
+            {categories.map((cat) => (
               <div
-                key={cat}
+                key={cat.id}
                 className="px-5 py-2.5 text-sm font-medium whitespace-nowrap border"
               >
-                {cat}
+                {cat.label}
               </div>
             ))}
             {/* Force render the More button to measure it */}
             <div className="px-5 py-2.5 text-sm font-medium whitespace-nowrap border flex items-center gap-1">
-              More <ChevronDown className="w-4 h-4 ml-1" />
+              {t("pages.services.more")}{" "}
+              <ChevronDown className="w-4 h-4 ml-1" />
             </div>
           </div>
 
@@ -185,15 +215,15 @@ export default function ServicesPage() {
           <div className="flex flex-wrap gap-3 animate-fade-in [animation-delay:300ms]">
             {visibleCategories.map((cat) => (
               <button
-                key={cat}
-                onClick={() => setSelectedCategory(cat)}
+                key={cat.id}
+                onClick={() => setSelectedCategoryId(cat.id)}
                 className={`px-5 py-2.5 rounded-full text-sm font-medium whitespace-nowrap border transition-all duration-200 ${
-                  selectedCategory === cat
+                  selectedCategoryId === cat.id
                     ? "bg-primary text-primary-foreground border-primary shadow-md"
                     : "bg-card text-muted-foreground border-border hover:border-primary hover:bg-primary/5 hover:text-primary"
                 }`}
               >
-                {cat}
+                {cat.label}
               </button>
             ))}
 
@@ -207,21 +237,22 @@ export default function ServicesPage() {
                         : "bg-card text-muted-foreground border-border hover:border-primary hover:bg-primary/5 hover:text-primary"
                     }`}
                   >
-                    More <ChevronDown className="w-4 h-4 ml-1" />
+                    {t("pages.services.more")}{" "}
+                    <ChevronDown className="w-4 h-4 ml-1" />
                   </button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="start" className="w-[200px]">
                   {hiddenCategories.map((cat) => (
                     <DropdownMenuItem
-                      key={cat}
-                      onClick={() => setSelectedCategory(cat)}
+                      key={cat.id}
+                      onClick={() => setSelectedCategoryId(cat.id)}
                       className={`cursor-pointer ${
-                        selectedCategory === cat
+                        selectedCategoryId === cat.id
                           ? "bg-primary/10 text-primary font-semibold"
                           : ""
                       }`}
                     >
-                      {cat}
+                      {cat.label}
                     </DropdownMenuItem>
                   ))}
                 </DropdownMenuContent>
@@ -238,7 +269,7 @@ export default function ServicesPage() {
             ))
           ) : (
             <div className="col-span-full text-center py-12 text-muted-foreground">
-              No services found matching your search.
+              {t("pages.services.noResults")}
             </div>
           )}
         </div>
@@ -258,28 +289,28 @@ const CATEGORY_STYLES: Record<
     borderGradient: string;
   }
 > = {
-  "Expert Help": {
+  "expert-help": {
     iconBox: "bg-indigo-600 text-white border-transparent dark:bg-indigo-500",
     innerBox: "bg-white/20",
     link: "text-indigo-600 dark:text-indigo-400",
     borderGradient:
       "from-indigo-400 to-indigo-300 dark:from-indigo-400 dark:to-indigo-300",
   },
-  "Pakistan Docs": {
+  "pakistan-docs-services": {
     iconBox: "bg-emerald-600 text-white border-transparent dark:bg-emerald-500",
     innerBox: "bg-white/20",
     link: "text-emerald-600 dark:text-emerald-400",
     borderGradient:
       "from-emerald-400 to-emerald-300 dark:from-emerald-400 dark:to-emerald-300",
   },
-  Medical: {
+  medical: {
     iconBox: "bg-rose-600 text-white border-transparent dark:bg-rose-500",
     innerBox: "bg-white/20",
     link: "text-rose-600 dark:text-rose-400",
     borderGradient:
       "from-rose-400 to-rose-300 dark:from-rose-400 dark:to-rose-300",
   },
-  Documents: {
+  documents: {
     iconBox: "bg-amber-600 text-white border-transparent dark:bg-amber-500",
     innerBox: "bg-white/20",
     link: "text-amber-600 dark:text-amber-400",
@@ -297,10 +328,11 @@ const CATEGORY_STYLES: Record<
 };
 
 function ServiceCard({ service, index }: { service: Service; index: number }) {
+  const { t } = useLanguage();
   const isClickable = !service.disabled;
   const CardWrapper = isClickable ? Link : "div";
   const styles =
-    CATEGORY_STYLES[service.category] || CATEGORY_STYLES["Default"];
+    CATEGORY_STYLES[service.categoryId] || CATEGORY_STYLES["Default"];
 
   return (
     <CardWrapper
@@ -351,7 +383,7 @@ function ServiceCard({ service, index }: { service: Service; index: number }) {
         </h3>
         <div className="mb-3">
           <span className="text-[11px] font-bold uppercase tracking-wide text-muted-foreground/80 bg-muted px-2 py-0.5 rounded">
-            {service.category}
+            {service.categoryLabel}
           </span>
         </div>
         <p className="text-muted-foreground dark:text-white text-sm leading-relaxed mb-6 grow">
@@ -361,18 +393,17 @@ function ServiceCard({ service, index }: { service: Service; index: number }) {
 
       {/* Footer / Action */}
       <div className="relative z-10 flex items-center justify-between pt-4 border-t border-border mt-auto">
-        <span className="text-xs font-medium text-muted-foreground flex items-center gap-1">
-        </span>
+        <span className="text-xs font-medium text-muted-foreground flex items-center gap-1"></span>
 
         {isClickable ? (
           <span
             className={`text-sm font-semibold flex items-center gap-1.5 group-hover:underline decoration-2 underline-offset-2 ${styles.link}`}
           >
-            Open Service <ArrowRight className="w-4 h-4" />
+            {t("pages.services.openService")} <ArrowRight className="w-4 h-4" />
           </span>
         ) : (
           <span className="text-sm font-semibold text-muted-foreground/50 flex items-center gap-1.5 cursor-not-allowed">
-            Coming Soon
+            {t("pages.services.comingSoon")}
           </span>
         )}
       </div>

@@ -508,7 +508,7 @@ export const RapidFireModePage = ({
                   color-coded tabs to review the Q&A.
                 </p>
               </div>
-              <div className="flex gap-1 mb-4">
+              <div className="flex gap-1 mb-4 mt-2">
                 {shuffledQuestions.map((_, index) => {
                   const response = questionResponses.find(
                     (r) => r.index === index,

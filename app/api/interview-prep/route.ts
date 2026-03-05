@@ -7,7 +7,6 @@ export async function POST(request: NextRequest) {
     
     // Create a new interview session
     const session = await createInterviewSession({
-      user_id: body.user_id,
       user_email: body.user_email,
       user_name: body.user_name,
       case_type: body.case_type || 'Spouse',
