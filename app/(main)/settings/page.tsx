@@ -9,10 +9,10 @@ import { Switch } from "@/components/ui/switch";
 import { useAuth } from "@/app/context/AuthContext";
 import { useRouter } from "next/navigation";
 import { ConfirmationModal } from "@/app/components/shared/ConfirmationModal";
-import { useTranslations } from "next-intl";
+import { useLanguage } from "@/app/context/LanguageContext";
 
 export default function SettingsPage() {
-  const t = useTranslations("pages.settings");
+  const { t } = useLanguage();
   const { user, isLoading, signOut } = useAuth();
   const router = useRouter();
   const supabase = createBrowserClient(
@@ -220,7 +220,7 @@ export default function SettingsPage() {
       <div className="min-h-screen flex items-center justify-center bg-linear-to-br from-slate-50 to-slate-100 p-4">
         <div className="text-center">
           <div className="inline-block animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-slate-900 mb-4"></div>
-          <p className="text-slate-700">{t("loading")}</p>
+          <p className="text-slate-700">{t("pages.settings.loading")}</p>
         </div>
       </div>
     );
@@ -235,10 +235,10 @@ export default function SettingsPage() {
       <div className="max-w-4xl mx-auto pb-2 sm:py-4 md:py-6">
         <div className="mb-6 sm:mb-8">
           <h1 className="text-2xl sm:text-3xl font-bold text-slate-900">
-            {t("title")}
+            {t("pages.settings.title")}
           </h1>
           <p className="text-sm sm:text-base text-slate-600 mt-1 sm:mt-2">
-            {t("subtitle")}
+            {t("pages.settings.subtitle")}
           </p>
         </div>
 
@@ -259,7 +259,7 @@ export default function SettingsPage() {
           <Card className="px-2 sm:px-4 py-4 sm:p-6 bg-white shadow-lg border-0">
             <CardHeader className="border-b border-slate-200 pb-4">
               <CardTitle className="text-lg sm:text-xl text-slate-900">
-                {t("notifications.title")}
+                {t("pages.settings.notifications.title")}
               </CardTitle>
             </CardHeader>
             <CardContent className="pt-2 sm:pt-6 space-y-6">
@@ -269,10 +269,10 @@ export default function SettingsPage() {
                     htmlFor="email-notifications"
                     className="text-base font-medium"
                   >
-                    {t("notifications.emailLabel")}
+                    {t("pages.settings.notifications.emailLabel")}
                   </Label>
                   <p className="text-sm text-slate-500">
-                    {t("notifications.emailDesc")}
+                    {t("pages.settings.notifications.emailDesc")}
                   </p>
                 </div>
                 <Switch
@@ -288,10 +288,10 @@ export default function SettingsPage() {
                     htmlFor="sms-notifications"
                     className="text-base font-medium"
                   >
-                    {t("notifications.smsLabel")}
+                    {t("pages.settings.notifications.smsLabel")}
                   </Label>
                   <p className="text-sm text-slate-500">
-                    {t("notifications.smsDesc")}
+                    {t("pages.settings.notifications.smsDesc")}
                   </p>
                 </div>
                 <Switch
@@ -307,10 +307,10 @@ export default function SettingsPage() {
                     htmlFor="push-notifications"
                     className="text-base font-medium"
                   >
-                    {t("notifications.pushLabel")}
+                    {t("pages.settings.notifications.pushLabel")}
                   </Label>
                   <p className="text-sm text-slate-500">
-                    {t("notifications.pushDesc")}
+                    {t("pages.settings.notifications.pushDesc")}
                   </p>
                 </div>
                 <Switch
@@ -326,7 +326,7 @@ export default function SettingsPage() {
           <Card className="px-2 sm:px-4 py-4 sm:p-6 bg-white shadow-lg border-0">
             <CardHeader className="border-b border-slate-200 pb-4">
               <CardTitle className="text-lg sm:text-xl text-slate-900">
-                {t("account.title")}
+                {t("pages.settings.account.title")}
               </CardTitle>
             </CardHeader>
             <CardContent className="pt-2 sm:pt-6 space-y-6">
@@ -337,10 +337,10 @@ export default function SettingsPage() {
                       htmlFor="two-factor"
                       className="text-base font-medium"
                     >
-                      {t("account.mfaLabel")}
+                      {t("pages.settings.account.mfaLabel")}
                     </Label>
                     <p className="text-sm text-slate-500">
-                      {t("account.mfaDesc")}
+                      {t("pages.settings.account.mfaDesc")}
                     </p>
                   </div>
                   <Switch
@@ -374,10 +374,10 @@ export default function SettingsPage() {
                     htmlFor="auto-backup"
                     className="text-base font-medium"
                   >
-                    {t("account.autoBackupLabel")}
+                    {t("pages.settings.account.autoBackupLabel")}
                   </Label>
                   <p className="text-sm text-slate-500">
-                    {t("account.autoBackupDesc")}
+                    {t("pages.settings.account.autoBackupDesc")}
                   </p>
                 </div>
                 <Switch
@@ -395,55 +395,55 @@ export default function SettingsPage() {
           <Card className="px-2 sm:px-4 py-4 sm:p-6 bg-white shadow-lg border-0">
             <CardHeader className="border-b border-slate-200 pb-4">
               <CardTitle className="text-lg sm:text-xl text-slate-900">
-                {t("security.title")}
+                {t("pages.settings.security.title")}
               </CardTitle>
             </CardHeader>
             <CardContent className="pt-2 sm:pt-6 space-y-6">
               <div className="space-y-4">
                 <div>
                   <Label className="text-base font-medium">
-                    {t("security.changePasswordLabel")}
+                    {t("pages.settings.security.changePasswordLabel")}
                   </Label>
                   <p className="text-sm text-slate-500 mb-3 sm:mb-4">
-                    {t("security.changePasswordDesc")}
+                    {t("pages.settings.security.changePasswordDesc")}
                   </p>
                   <Button
                     variant="outline"
                     className="w-full sm:w-auto border-slate-300"
                   >
-                    {t("security.changePasswordLabel")}
+                    {t("pages.settings.security.changePasswordLabel")}
                   </Button>
                 </div>
 
                 <div className="pt-4 border-t border-slate-200">
                   <Label className="text-base font-medium">
-                    {t("security.signOutLabel")}
+                    {t("pages.settings.security.signOutLabel")}
                   </Label>
                   <p className="text-sm text-slate-500 mb-3 sm:mb-4">
-                    {t("security.signOutDesc")}
+                    {t("pages.settings.security.signOutDesc")}
                   </p>
                   <Button
                     variant="outline"
                     className="w-full sm:w-auto border-red-300 text-red-700 hover:bg-red-50"
                     onClick={handleSignOut}
                   >
-                    {t("security.signOutLabel")}
+                    {t("pages.settings.security.signOutLabel")}
                   </Button>
                 </div>
 
                 <div className="pt-4 border-t border-slate-200">
                   <Label className="text-base font-medium text-red-700">
-                    {t("security.deleteAccountLabel")}
+                    {t("pages.settings.security.deleteAccountLabel")}
                   </Label>
                   <p className="text-sm text-slate-500 mb-3 sm:mb-4">
-                    {t("security.deleteAccountDesc")}
+                    {t("pages.settings.security.deleteAccountDesc")}
                   </p>
                   <Button
                     variant="destructive"
                     className="w-full sm:w-auto"
                     onClick={handleDeleteAccount}
                   >
-                    {t("security.deleteAccountLabel")}
+                    {t("pages.settings.security.deleteAccountLabel")}
                   </Button>
                 </div>
               </div>
@@ -456,7 +456,7 @@ export default function SettingsPage() {
               className="w-full sm:w-auto bg-slate-900 hover:bg-slate-800 text-white px-8"
               disabled={loading}
             >
-              {t("saveBtn")}
+              {t("pages.settings.saveBtn")}
             </Button>
           </div>
         </div>
@@ -465,9 +465,9 @@ export default function SettingsPage() {
       <ConfirmationModal
         open={deleteAccountModalOpen}
         onOpenChange={setDeleteAccountModalOpen}
-        title={t("deleteModal.title")}
-        description={t("deleteModal.description")}
-        confirmText={t("deleteModal.confirm")}
+        title={t("pages.settings.deleteModal.title")}
+        description={t("pages.settings.deleteModal.description")}
+        confirmText={t("pages.settings.deleteModal.confirm")}
         onConfirm={confirmDeleteAccount}
       />
     </div>

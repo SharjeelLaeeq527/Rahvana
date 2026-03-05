@@ -5,7 +5,7 @@ import { useWizard } from "../../(main)/dashboard/hooks/useWizard";
 import { ProgressTree } from "@/app/(tools)/(visa)/visa-category/ir-category/ir1-journey/components/ProgressTree";
 import { StepDetail } from "@/app/(tools)/(visa)/visa-category/ir-category/ir1-journey/components/StepDetail";
 import { DocumentVault } from "@/app/(tools)/(visa)/visa-category/ir-category/ir1-journey/components/DocumentVault";
-import { useTranslations } from "next-intl";
+import { useLanguage } from "@/app/context/LanguageContext";
 
 type WizardActions = ReturnType<typeof useWizard>["actions"];
 
@@ -17,11 +17,11 @@ interface WizardProps {
 
 export function Wizard({ state, actions, isLoaded }: WizardProps) {
   const [isVaultOpen, setIsVaultOpen] = useState(false);
-  const t = useTranslations("wizard");
+  const { t } = useLanguage();
 
   if (!isLoaded) {
     return (
-      <div className="p-20 text-center text-slate-400">{t("loading")}</div>
+      <div className="p-20 text-center text-slate-400">{t("wizard.loading")}</div>
     );
   }
 
@@ -64,10 +64,10 @@ export function Wizard({ state, actions, isLoaded }: WizardProps) {
         <div className="flex-1">
           <div className="flex justify-between items-center mb-2">
             <span className="text-sm font-bold text-slate-500 uppercase tracking-wider">
-              {t("progress.title")}
+              {t("wizard.progress.title")}
             </span>
             <span className="text-sm font-bold text-rahvana-primary">
-              {t("progress.stats", {
+              {t("wizard.progress.stats", {
                 percent: progressPercent,
                 completed: completedTotal,
                 total: totalSteps,
@@ -85,7 +85,7 @@ export function Wizard({ state, actions, isLoaded }: WizardProps) {
           onClick={() => setIsVaultOpen(true)}
           className="flex items-center gap-2 px-5 py-2.5 bg-rahvana-primary text-white rounded-xl font-bold hover:bg-rahvana-primary-dark transition-all shadow-md hover:shadow-lg active:scale-95"
         >
-          {t("documentVaultBtn")}
+          {t("wizard.documentVaultBtn")}
         </button>
       </div>
 

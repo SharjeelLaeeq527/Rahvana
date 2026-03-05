@@ -10,7 +10,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useTranslations } from "next-intl";
+import { useLanguage } from "@/app/context/LanguageContext";
 
 // --- Types ---
 interface Service {
@@ -31,8 +31,7 @@ interface CategoryOption {
 
 // --- Components ---
 export default function ServicesPage() {
-  const t = useTranslations("pages.services");
-  const t_nav = useTranslations("navData.services");
+  const { t } = useLanguage();
 
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategoryId, setSelectedCategoryId] = useState("All");
@@ -47,13 +46,13 @@ export default function ServicesPage() {
       (tab.items || []).map((item) => ({
         id: item.title.toLowerCase().replace(/\s+/g, "-"),
         title: item.translationKey
-          ? t_nav(`items.${item.translationKey}.title`)
+          ? t(`navData.services.items.${item.translationKey}.title`)
           : item.title,
         description: item.translationKey
-          ? t_nav(`items.${item.translationKey}.description`)
+          ? t(`navData.services.items.${item.translationKey}.description`)
           : item.description,
         categoryLabel: tab.translationKey
-          ? t_nav(`tabs.${tab.translationKey}.label`)
+          ? t(`navData.services.tabs.${tab.translationKey}.label`)
           : tab.label,
         categoryId: tab.id,
         href: item.href,
@@ -67,13 +66,13 @@ export default function ServicesPage() {
       ...NAV_DATA.services.tabs.map((tab) => ({
         id: tab.id,
         label: tab.translationKey
-          ? t_nav(`tabs.${tab.translationKey}.label`)
+          ? t(`navData.services.tabs.${tab.translationKey}.label`)
           : tab.label,
       })),
     ];
 
     return { services: servicesList, categories: categoriesList };
-  }, [t, t_nav]);
+  }, [t]);
 
   React.useEffect(() => {
     const calculateVisible = () => {
@@ -169,10 +168,10 @@ export default function ServicesPage() {
         {/* Hero Section */}
         <section className="text-center mb-5 md:mb-10">
           <h1 className="text-3xl md:text-5xl font-bold mb-4 bg-clip-text text-transparent bg-linear-to-r from-foreground to-muted-foreground animate-fade-up">
-            {t("heroTitle")}
+            {t("pages.services.heroTitle")}
           </h1>
           <p className="text-muted-foreground text-base md:text-lg max-w-2xl mx-auto animate-fade-up [animation-delay:100ms]">
-            {t("heroDescription")}
+            {t("pages.services.heroDescription")}
           </p>
         </section>
 
@@ -181,7 +180,7 @@ export default function ServicesPage() {
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground w-5 h-5 pointer-events-none" />
           <input
             type="text"
-            placeholder={t("searchPlaceholder")}
+            placeholder={t("pages.services.searchPlaceholder")}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="w-full bg-card border-2 border-border pl-11 pr-4 py-3 rounded-full text-foreground focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all shadow-sm placeholder:text-muted-foreground"
@@ -207,7 +206,8 @@ export default function ServicesPage() {
             ))}
             {/* Force render the More button to measure it */}
             <div className="px-5 py-2.5 text-sm font-medium whitespace-nowrap border flex items-center gap-1">
-              {t("more")} <ChevronDown className="w-4 h-4 ml-1" />
+              {t("pages.services.more")}{" "}
+              <ChevronDown className="w-4 h-4 ml-1" />
             </div>
           </div>
 
@@ -237,7 +237,8 @@ export default function ServicesPage() {
                         : "bg-card text-muted-foreground border-border hover:border-primary hover:bg-primary/5 hover:text-primary"
                     }`}
                   >
-                    {t("more")} <ChevronDown className="w-4 h-4 ml-1" />
+                    {t("pages.services.more")}{" "}
+                    <ChevronDown className="w-4 h-4 ml-1" />
                   </button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="start" className="w-[200px]">
@@ -268,7 +269,7 @@ export default function ServicesPage() {
             ))
           ) : (
             <div className="col-span-full text-center py-12 text-muted-foreground">
-              {t("noResults")}
+              {t("pages.services.noResults")}
             </div>
           )}
         </div>
@@ -327,7 +328,7 @@ const CATEGORY_STYLES: Record<
 };
 
 function ServiceCard({ service, index }: { service: Service; index: number }) {
-  const t = useTranslations("pages.services");
+  const { t } = useLanguage();
   const isClickable = !service.disabled;
   const CardWrapper = isClickable ? Link : "div";
   const styles =
@@ -398,11 +399,11 @@ function ServiceCard({ service, index }: { service: Service; index: number }) {
           <span
             className={`text-sm font-semibold flex items-center gap-1.5 group-hover:underline decoration-2 underline-offset-2 ${styles.link}`}
           >
-            {t("openService")} <ArrowRight className="w-4 h-4" />
+            {t("pages.services.openService")} <ArrowRight className="w-4 h-4" />
           </span>
         ) : (
           <span className="text-sm font-semibold text-muted-foreground/50 flex items-center gap-1.5 cursor-not-allowed">
-            {t("comingSoon")}
+            {t("pages.services.comingSoon")}
           </span>
         )}
       </div>

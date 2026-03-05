@@ -18,10 +18,10 @@ import {
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { Label } from "@/components/ui/label";
-import { useTranslations } from "next-intl";
+import { useLanguage } from "@/app/context/LanguageContext";
 
 export default function SecurityQuestionsPreviewPage() {
-  const t = useTranslations("pages.courierRegistration.securityPreview");
+  const { t } = useLanguage();
   const { user, isLoading: authLoading } = useAuth();
   const router = useRouter();
   const [showAnswers, setShowAnswers] = useState(false);
@@ -70,7 +70,7 @@ export default function SecurityQuestionsPreviewPage() {
         <div className="flex flex-col items-center gap-4">
           <div className="w-12 h-12 border-4 border-primary/20 border-t-primary rounded-full animate-spin" />
           <p className="text-sm font-bold text-gray-400 uppercase tracking-widest">
-            {t("loadingSession")}
+            {t("pages.courierRegistration.securityPreview.loadingSession")}
           </p>
         </div>
       </div>
@@ -89,12 +89,13 @@ export default function SecurityQuestionsPreviewPage() {
             onClick={() => router.back()}
             className="rounded-xl hover:bg-white font-bold gap-2 text-gray-500"
           >
-            <ArrowLeft size={18} /> {t("back")}
+            <ArrowLeft size={18} />{" "}
+            {t("pages.courierRegistration.securityPreview.back")}
           </Button>
           <div className="flex items-center gap-2">
             <ShieldCheck className="text-green-500" size={20} />
             <span className="text-xs font-black uppercase tracking-tighter text-gray-400">
-              {t("encryptedPreview")}
+              {t("pages.courierRegistration.securityPreview.encryptedPreview")}
             </span>
           </div>
         </div>
@@ -102,11 +103,13 @@ export default function SecurityQuestionsPreviewPage() {
         {/* Title Section */}
         <div className="text-center space-y-2">
           <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-gray-900">
-            {t("title.main")}{" "}
-            <span className="text-primary">{t("title.highlight")}</span>
+            {t("pages.courierRegistration.securityPreview.title.main")}{" "}
+            <span className="text-primary">
+              {t("pages.courierRegistration.securityPreview.title.highlight")}
+            </span>
           </h1>
           <p className="text-sm sm:text-base text-gray-500 font-medium px-4">
-            {t("subtitle")}
+            {t("pages.courierRegistration.securityPreview.subtitle")}
           </p>
         </div>
 
@@ -120,17 +123,20 @@ export default function SecurityQuestionsPreviewPage() {
               </div>
               <div className="space-y-2">
                 <h2 className="text-2xl font-bold text-gray-900">
-                  {t("noData.title")}
+                  {t("pages.courierRegistration.securityPreview.noData.title")}
                 </h2>
                 <p className="text-gray-500 max-w-sm mx-auto">
-                  {t("noData.description")}
+                  {t(
+                    "pages.courierRegistration.securityPreview.noData.description",
+                  )}
                 </p>
               </div>
               <Button
                 onClick={() => router.push("/courier-registration")}
                 className="rounded-2xl px-8 py-6 h-auto font-black shadow-lg"
               >
-                {t("noData.button")} <ChevronRight size={18} />
+                {t("pages.courierRegistration.securityPreview.noData.button")}{" "}
+                <ChevronRight size={18} />
               </Button>
             </CardContent>
           </Card>
@@ -146,10 +152,15 @@ export default function SecurityQuestionsPreviewPage() {
                   <div className="space-y-1">
                     <CardTitle className="text-lg sm:text-xl font-black text-gray-900 flex items-center gap-2">
                       <Lock className="text-primary" size={20} />{" "}
-                      {t("vault.title")}
+                      {t(
+                        "pages.courierRegistration.securityPreview.vault.title",
+                      )}
                     </CardTitle>
                     <p className="text-[10px] sm:text-xs text-gray-400 font-bold uppercase tracking-wider">
-                      {t("vault.verified")} {user.email}
+                      {t(
+                        "pages.courierRegistration.securityPreview.vault.verified",
+                      )}{" "}
+                      {user.email}
                     </p>
                   </div>
                   <Button
@@ -159,7 +170,7 @@ export default function SecurityQuestionsPreviewPage() {
                   >
                     {showAnswers ? <EyeOff size={16} /> : <Eye size={16} />}
                     {showAnswers ? t("vault.mask") : t("vault.reveal")}{" "}
-                    {t("vault.data")}
+                    {t("pages.courierRegistration.securityPreview.vault.data")}
                   </Button>
                 </div>
               </CardHeader>
@@ -170,7 +181,9 @@ export default function SecurityQuestionsPreviewPage() {
                   <div className="relative space-y-3">
                     <Label className="text-[10px] sm:text-xs font-black text-gray-400 uppercase tracking-[0.2em] flex items-center gap-2 mb-1">
                       <User size={14} className="text-primary" />{" "}
-                      {t("vault.username")}
+                      {t(
+                        "pages.courierRegistration.securityPreview.vault.username",
+                      )}
                     </Label>
                     <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100 font-mono text-base sm:text-lg font-bold text-gray-800 break-all">
                       {data?.portal_username || t("vault.notSet")}
@@ -190,7 +203,9 @@ export default function SecurityQuestionsPreviewPage() {
                           {item.id}
                         </Badge>
                         <span className="text-[10px] sm:text-sm font-bold text-gray-500 uppercase tracking-widest">
-                          {t("vault.questionLabel")}
+                          {t(
+                            "pages.courierRegistration.securityPreview.vault.questionLabel",
+                          )}
                         </span>
                       </div>
                       <div className="space-y-3 pl-0 sm:pl-9">
@@ -217,10 +232,12 @@ export default function SecurityQuestionsPreviewPage() {
               </div>
               <div className="space-y-1">
                 <p className="text-sm font-bold text-blue-900">
-                  {t("notice.title")}
+                  {t("pages.courierRegistration.securityPreview.notice.title")}
                 </p>
                 <p className="text-xs text-blue-700 font-medium leading-relaxed">
-                  {t("notice.description")}
+                  {t(
+                    "pages.courierRegistration.securityPreview.notice.description",
+                  )}
                 </p>
               </div>
             </div>
