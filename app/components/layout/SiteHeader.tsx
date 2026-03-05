@@ -476,20 +476,6 @@ export function SiteHeader({
                         My Dashboard
                       </button>
                       <button
-                        onClick={() => handleNav("my-journeys")}
-                        className="flex items-center gap-3 w-full py-2.5 px-5 text-muted-foreground hover:bg-muted hover:text-primary transition-colors text-sm font-medium"
-                      >
-                        <Briefcase className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
-                        My Journeys
-                      </button>
-                      <button
-                        onClick={() => handleNav("my-guides")}
-                        className="flex items-center gap-3 w-full py-2.5 px-5 text-muted-foreground hover:bg-muted hover:text-primary transition-colors text-sm font-medium"
-                      >
-                        <BookOpen className="w-4 h-4 text-amber-600 dark:text-amber-400" />
-                        My Guides
-                      </button>
-                      <button
                         onClick={() => handleNav("profile")}
                         className="flex items-center gap-3 w-full py-2.5 px-5 text-muted-foreground hover:bg-muted hover:text-primary transition-colors text-sm font-medium"
                       >
@@ -502,13 +488,6 @@ export function SiteHeader({
                       >
                         <FolderLock className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
                         Document Vault
-                      </button>
-                      <button
-                        onClick={() => handleNav("services")}
-                        className="flex items-center gap-3 w-full py-2.5 px-5 text-muted-foreground hover:bg-muted hover:text-primary transition-colors text-sm font-medium"
-                      >
-                        <TagIcon className="w-4 h-4 text-rose-600 dark:text-rose-400" />
-                        My Services
                       </button>
                       <button
                         onClick={() => {}} // Placeholder
@@ -546,7 +525,7 @@ export function SiteHeader({
                         className="flex items-center gap-3 w-full py-2.5 px-5 text-muted-foreground hover:bg-muted hover:text-primary transition-colors text-sm font-medium"
                       >
                         <Shield className="w-4 h-4 text-emerald-500 dark:text-emerald-400" />
-                        Security & Login
+                        My Credentials
                       </button>
                       <button
                         onClick={() => {}} // Placeholder

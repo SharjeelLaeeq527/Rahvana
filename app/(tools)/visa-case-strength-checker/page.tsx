@@ -97,6 +97,7 @@ interface CaseTypeStepProps {
   formData: FormData;
   error: string | null;
   onCaseTypeChange: (caseType: CaseType) => void;
+  isAuthenticated: boolean;
   onNext: () => void;
   onBack: () => void;
 }
@@ -105,6 +106,7 @@ const CaseTypeStep = ({
   formData,
   error,
   onCaseTypeChange,
+  isAuthenticated,
   onNext,
   onBack,
 }: CaseTypeStepProps) => (
@@ -116,17 +118,18 @@ const CaseTypeStep = ({
       <p className="text-lg text-slate-600 max-w-2xl mx-auto leading-relaxed">
         Please select the type of visa case you want to assess.
       </p>
-      <div className="mt-4">
-        <button
-          onClick={() =>
-            (window.location.href = "/visa-case-strength-checker/my-cases")
-          }
-          suppressHydrationWarning
+      {isAuthenticated && (
+        <div className="mt-4">
+          <button
+            onClick={() =>
+              (window.location.href = "/visa-case-strength-checker/my-cases")
+            }
+            suppressHydrationWarning
           className="text-teal-600 hover:text-teal-700 hover:underline text-base font-medium"
         >
           See your cases →
         </button>
-      </div>
+      </div>)}
     </div>
 
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -584,8 +587,8 @@ const QuestionStep = ({
           <Button
             onClick={onBack}
             variant="outline"
-            className="bg-secondary hover:bg-secondary/80 text-secondary-foreground border-input py-4 md:py-6 text-lg"
-          >
+            className="bg-white hover:bg-slate-50 text-secondary-foreground border-input py-6 text-lg"
+            >
             ← Previous
           </Button>
           <div className="flex flex-row gap-3">
@@ -1459,8 +1462,8 @@ const ReviewStep = ({
           <Button
             onClick={onBack}
             variant="outline"
-            className="bg-secondary hover:bg-secondary/80 text-secondary-foreground border-input py-4 md:py-6 text-lg"
-          >
+            className="bg-white hover:bg-slate-50 text-secondary-foreground border-input py-6 text-lg"
+            >
             ← Previous
           </Button>
           <div className="flex flex-row gap-3">
@@ -1489,6 +1492,8 @@ export default function VisaCaseStrengthChecker() {
   const [sessionId, setSessionId] = useState<string | null>(null);
   const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
+  const {isAuthenticated} = useAuth();
+
   const supabase = createBrowserClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
@@ -1500,7 +1505,7 @@ export default function VisaCaseStrengthChecker() {
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "smooth" });
-  }, []);
+  }, [step]);
 
   // Auto-fill profile data & Restore saved session
   useEffect(() => {
@@ -2206,6 +2211,7 @@ export default function VisaCaseStrengthChecker() {
           error={error}
           onCaseTypeChange={handleCaseTypeChange}
           onNext={nextStep}
+          isAuthenticated={isAuthenticated}
           onBack={() => window.history.back()}
         />
       );
