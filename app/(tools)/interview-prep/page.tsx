@@ -1229,6 +1229,10 @@ export default function InterviewPreparation() {
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
   );
 
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }, [step]);
+
   // Auto-fill profile data
   useEffect(() => {
     const fetchProfile = async () => {
@@ -1740,9 +1744,6 @@ export default function InterviewPreparation() {
       return;
     }
 
-    // Scroll to top
-    window.scrollTo({ top: 0, behavior: "smooth" });
-
     setLoading(true);
     setError(null);
 
@@ -1793,8 +1794,6 @@ export default function InterviewPreparation() {
 
         // Increment step to show results on the same page
         setStep((prev) => prev + 1);
-        // Scroll to top when results appear
-        window.scrollTo({ top: 0, behavior: "smooth" });
       } else {
         const errorData = await submitResponse.text();
         console.error("Submit response error:", errorData);

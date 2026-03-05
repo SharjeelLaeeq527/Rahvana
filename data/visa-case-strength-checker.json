@@ -356,7 +356,7 @@
         },
         {
           "id": "passport_photos_2x2",
-          "label": "Do you have two U.S.-size passport photos (2×2 inches)?",
+          "label": "Do you have two U.S. size passport photographs (2×2 inches)?",
           "type": "boolean",
           "risk_tag": "NO_PASSPORT_PHOTOS_2X2"
         }

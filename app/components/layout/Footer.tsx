@@ -232,8 +232,8 @@ export default function Footer() {
                 />
                 Youtube
               </Link>
-              {/* <Link
-                href="#"
+              <Link
+                href="https://www.linkedin.com/company/rahvana/posts/?feedView=all"
                 className="flex items-center gap-2 text-slate-400 hover:text-white transition-colors group"
               >
                 <Linkedin
@@ -241,7 +241,7 @@ export default function Footer() {
                   className="group-hover:scale-110 transition-transform"
                 />
                 LinkedIn
-              </Link> */}
+              </Link>
             </nav>
           </div>
         </div>
