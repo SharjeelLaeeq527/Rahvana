@@ -394,7 +394,8 @@ export default function JourneyRouteMap({
 
   // Helper to get dropdown options (filtered)
   const getOriginOptions = () => {
-       return countries.filter((country) => country !== selectedDestination)
+    return countries
+      .filter((country) => country !== selectedDestination)
       .map((country) => {
         const isFunctional =
           country === "Pakistan" || country === "United States";
@@ -404,7 +405,8 @@ export default function JourneyRouteMap({
             value={country}
             disabled={!isFunctional}
           >
-            {country} {!isFunctional ? `(${t("visaCategory.map.comingSoon")})` : ""}
+            {country}{" "}
+            {!isFunctional ? `(${t("visaCategory.map.comingSoon")})` : ""}
           </option>
         );
       });
@@ -422,13 +424,15 @@ export default function JourneyRouteMap({
             value={country}
             disabled={!isFunctional}
           >
-            {country} {!isFunctional ? `(${t("visaCategory.map.comingSoon")})` : ""}
+            {country}{" "}
+            {!isFunctional ? `(${t("visaCategory.map.comingSoon")})` : ""}
           </option>
         );
       });
   };
 
   // Helper to get path class names
+  useEffect(() => {
     const getCountryCenterByName = (name: string) => {
       const el = document.querySelector(
         `.map-country[data-title="${name.replace(/"/g, '\\"')}"]`,
@@ -511,20 +515,20 @@ export default function JourneyRouteMap({
       routeArc.appendChild(pin(x2, y2, "pin-dest"));
     };
 
-  //   drawRouteArc();
-  // }, [selectedOrigin, selectedDestination, zoom]);
+    drawRouteArc();
+  }, [selectedOrigin, selectedDestination, zoom]);
 
   const getPathClassName = (countryTitle: string) => {
     const isFunctional =
       countryTitle === "Pakistan" || countryTitle === "United States";
     const baseClass = `map-country transition-colors duration-300 ${isFunctional ? "cursor-pointer" : "cursor-default"}`;
 
-    // if (countryTitle === selectedOrigin) {
-    //   return `${baseClass} fill-[#138b8b] stroke-[#0d6363] stroke-2 filter drop-shadow-[0_0_8px_rgba(19,159,159,0.4)]`;
-    // }
-    // if (countryTitle === selectedDestination) {
-    //   return `${baseClass} fill-[#f8f5f0] stroke-[#138b8b] stroke-2`;
-    // }
+    if (countryTitle === selectedOrigin) {
+      return `${baseClass} fill-[#138b8b] stroke-[#0d6363] stroke-2 filter drop-shadow-[0_0_8px_rgba(19,159,159,0.4)]`;
+    }
+    if (countryTitle === selectedDestination) {
+      return `${baseClass} fill-[#f8f5f0] stroke-[#138b8b] stroke-2`;
+    }
 
     if (isFunctional) {
       return `${baseClass} stroke-white stroke-1 fill-gray-300 hover:fill-[#138b8b]/40`;
@@ -547,7 +551,9 @@ export default function JourneyRouteMap({
             <span className="w-6 h-6 sm:w-8 sm:h-8 rounded-full shrink-0 flex items-center justify-center text-xs sm:text-sm font-semibold bg-primary text-white shadow-sm">
               1
             </span>
-            <span className="font-semibold text-sm md:text-base">{t("visaCategory.map.selectOrigin")}</span>
+            <span className="font-semibold text-sm md:text-base">
+              {t("visaCategory.map.selectOrigin")}
+            </span>
           </div>
 
           <div className="hidden sm:block">
@@ -561,7 +567,9 @@ export default function JourneyRouteMap({
             <span className="w-6 h-6 sm:w-8 sm:h-8 rounded-full shrink-0 flex items-center justify-center text-xs sm:text-sm font-semibold bg-primary text-white shadow-sm">
               2
             </span>
-            <span className="font-semibold text-sm md:text-base">{t("visaCategory.map.selectDestination")}</span>
+            <span className="font-semibold text-sm md:text-base">
+              {t("visaCategory.map.selectDestination")}
+            </span>
           </div>
         </div>
       </div>
