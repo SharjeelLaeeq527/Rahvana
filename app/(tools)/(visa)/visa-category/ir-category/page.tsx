@@ -25,7 +25,8 @@ export default function IRCategorySection() {
   // const [isRoadmapOpen, setIsRoadmapOpen] = useState(false);
   // const [activeRoadmap, setActiveRoadmap] = useState({ title: "" });
   const [selectedOrigin, setSelectedOrigin] = useState<string>("Pakistan");
-  const [selectedDestination, setSelectedDestination] = useState<string>("United States");
+  const [selectedDestination, setSelectedDestination] =
+    useState<string>("United States");
 
   // IR Category items
   // const items: IRItem[] = [
@@ -53,7 +54,7 @@ export default function IRCategorySection() {
   // };
 
   return (
-    <section id="ir-category" className="container mx-auto px-6 py-20">
+    <section id="ir-category" className="container mx-auto px-6 py-8 sm:py-14">
       <JourneyRouteMap
         selectedOrigin={selectedOrigin}
         setSelectedOrigin={setSelectedOrigin}
@@ -61,7 +62,11 @@ export default function IRCategorySection() {
         setSelectedDestination={setSelectedDestination}
       />
 
-      <Suspense fallback={<div className="h-64 w-full bg-gray-100 animate-pulse rounded-lg" />}>
+      <Suspense
+        fallback={
+          <div className="h-64 w-full bg-gray-100 animate-pulse rounded-lg" />
+        }
+      >
         <ExploreJourneys
           origin={selectedOrigin}
           destination={selectedDestination}

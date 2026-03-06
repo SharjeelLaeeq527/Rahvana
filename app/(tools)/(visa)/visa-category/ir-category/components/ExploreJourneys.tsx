@@ -1086,26 +1086,28 @@ export default function ExploreJourneys({
   // Check if logged-in user has an existing IR-1 journey
   useEffect(() => {
     let active = true;
-    
+
     if (!user?.id) {
       setIr1Progress(null);
       setCheckingProgress(false);
       return;
     }
-    
+
     setCheckingProgress(true);
-    loadJourneyProgress(user.id, "ir1").then((record) => {
-      if (!active) return;
-      if (record && record.started) {
-        setIr1Progress(record);
-      } else {
-        setIr1Progress(null);
-      }
-      setCheckingProgress(false);
-    }).catch(() => {
-      if (!active) return;
-      setCheckingProgress(false);
-    });
+    loadJourneyProgress(user.id, "ir1")
+      .then((record) => {
+        if (!active) return;
+        if (record && record.started) {
+          setIr1Progress(record);
+        } else {
+          setIr1Progress(null);
+        }
+        setCheckingProgress(false);
+      })
+      .catch(() => {
+        if (!active) return;
+        setCheckingProgress(false);
+      });
 
     return () => {
       active = false;
@@ -1464,7 +1466,7 @@ export default function ExploreJourneys({
                     key={cat}
                     onClick={() => {
                       setSelectedCategory(cat);
-                      router.push(`?category=${cat}`, {scroll: false});
+                      router.push(`?category=${cat}`, { scroll: false });
                     }}
                     className={cn(
                       "px-3 py-1.5 rounded-full text-sm font-medium transition-all",
@@ -2051,7 +2053,13 @@ function JourneyCard({
       {/* Action Buttons */}
       <div className="flex items-center flex-wrap gap-3">
         {journey.id === "ir1" ? (
-          <Link href={hasProgress ? "/my-journeys" : "/visa-category/ir-category/ir1-journey"}>
+          <Link
+            href={
+              hasProgress
+                ? "/my-journeys"
+                : "/visa-category/ir-category/ir1-journey"
+            }
+          >
             <Button
               disabled={isLoading}
               className={cn(
@@ -2059,7 +2067,7 @@ function JourneyCard({
                 hasProgress
                   ? "bg-teal-600 text-white hover:bg-teal-700"
                   : "bg-teal-700 text-white hover:bg-teal-800",
-                isLoading && "opacity-80"
+                isLoading && "opacity-80",
               )}
             >
               {isLoading ? (

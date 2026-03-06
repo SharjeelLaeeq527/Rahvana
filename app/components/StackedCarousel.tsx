@@ -108,6 +108,16 @@ export const StackedCarousel = ({
               <motion.div
                 key={journey.code} // Use unique ID
                 layout
+                drag="x"
+                dragConstraints={{ left: 0, right: 0 }}
+                onDragEnd={(_, info) => {
+                  const swipeThreshold = 50;
+                  if (info.offset.x < -swipeThreshold) {
+                    handleNext();
+                  } else if (info.offset.x > swipeThreshold) {
+                    handlePrev();
+                  }
+                }}
                 animate={{
                   opacity: style.opacity,
                   scale: style.scale,
