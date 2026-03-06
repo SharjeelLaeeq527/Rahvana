@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { WizardState } from "@/app/(main)/dashboard/hooks/useWizard";
 import { roadmapData } from "@/data/roadmap";
-import { ChevronDown, CheckCircle2, Circle, PlayCircle } from "lucide-react";
 import { useLanguage } from "@/app/context/LanguageContext";
+import { ChevronDown, CheckCircle2, Circle, PlayCircle } from "lucide-react";
+
 
 interface ProgressTreeProps {
   state: WizardState;
@@ -10,7 +11,8 @@ interface ProgressTreeProps {
 }
 
 export function ProgressTree({ state, onSelectStep }: ProgressTreeProps) {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
+  const isUrdu = language === "ur";
   const [expandedStages, setExpandedStages] = useState<Record<number, boolean>>(
     {},
   );
@@ -51,6 +53,10 @@ export function ProgressTree({ state, onSelectStep }: ProgressTreeProps) {
           (completedInStage / stage.steps.length) * 100,
         );
 
+        // Get stage name from translations
+        const stageNameFull = t(`ir1Journey.stageNames.${stage.id}`) || stage.name;
+        const stageNameDisplay = stageNameFull;
+
         return (
           <div key={stage.id} className="group/stage">
             <div
@@ -78,7 +84,7 @@ export function ProgressTree({ state, onSelectStep }: ProgressTreeProps) {
               <h4
                 className={`text-[13px] font-bold leading-tight pr-4 ${isActiveStage ? "text-slate-900" : "text-slate-600 group-hover/stage:text-slate-900"}`}
               >
-                {stage.name.split(":")[1]?.trim() || stage.name}
+                {stageNameDisplay}
               </h4>
 
               <div className="w-full bg-slate-100/80 rounded-full h-1 mt-1 overflow-hidden">
@@ -95,6 +101,7 @@ export function ProgressTree({ state, onSelectStep }: ProgressTreeProps) {
                   const isCurrentStep =
                     state.currentStep === stIdx && isActiveStage;
                   const isStepCompleted = state.completedSteps.has(step.id);
+                  const stepNameDisplay = (isUrdu && (step as any).nameUr) ? (step as any).nameUr : step.name;
 
                   return (
                     <button
@@ -111,7 +118,7 @@ export function ProgressTree({ state, onSelectStep }: ProgressTreeProps) {
                           <PlayCircle className="w-3.5 h-3.5 shrink-0 text-primary-light animate-pulse" />
                         )}
                         <span className="text-[12px] truncate leading-tight">
-                          {step.name}
+                          {stepNameDisplay}
                         </span>
                       </div>
 

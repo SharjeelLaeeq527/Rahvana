@@ -15,7 +15,7 @@ export type Language = "en" | "ur";
 interface LanguageContextType {
   language: Language;
   setLanguage: (lang: Language) => void;
-  t: (key: string, variables?: Record<string, string | number>) => string; // Translation function
+  t: (key: string, params?: Record<string, any>) => any; // Translation function with interpolation and object support
   tRaw: (key: string) => any; // Raw translation function for arrays/objects
 }
 
@@ -58,47 +58,7 @@ export const LanguageProvider: React.FC<LanguageProviderProps> = ({
   }, [language]);
 
   // Translation function using nested object access
-  const t = (
-    key: string,
-    variables?: Record<string, string | number>,
-  ): string => {
-    // Select the appropriate translation object based on current language
-    const translations = language === "ur" ? urTranslations : enTranslations;
-
-    // Split the key by dots to access nested properties
-    const keys = key.split(".");
-    let value: string | Record<string, unknown> | undefined = translations;
-
-    for (const k of keys) {
-      if (value && typeof value === "object" && k in value) {
-        value = value[k as keyof typeof value] as
-          | string
-          | Record<string, unknown>
-          | undefined;
-      } else {
-        value = undefined;
-        break;
-      }
-    }
-
-    // Return the translated string or the key itself if not found
-    let translatedString = typeof value === "string" ? value : key;
-
-    // Handle string interpolation if variables are provided
-    if (variables) {
-      Object.entries(variables).forEach(([k, v]) => {
-        translatedString = translatedString.replace(
-          new RegExp(`{{${k}}}`, "g"),
-          String(v),
-        );
-      });
-    }
-
-    return translatedString;
-  };
-
-  // Raw translation function for arrays/objects
-  const tRaw = (key: string): any => {
+  const t = (key: string, params?: Record<string, any>): any => {
     // Select the appropriate translation object based on current language
     const translations = language === "ur" ? urTranslations : enTranslations;
 
@@ -108,7 +68,51 @@ export const LanguageProvider: React.FC<LanguageProviderProps> = ({
 
     for (const k of keys) {
       if (value && typeof value === "object" && k in value) {
-        value = value[k as keyof typeof value];
+        value = (value as Record<string, any>)[k];
+      } else {
+        value = undefined;
+        break;
+      }
+    }
+
+    if (value === undefined) return key;
+
+    // If it's an object or array and user asked for it (or implicitly via params having returnObjects)
+    if (typeof value !== "string" && (params?.returnObjects || !params)) {
+      return value;
+    }
+
+    if (typeof value !== "string") return key;
+
+    // Handle interpolation
+    if (params) {
+      let interpolated = value;
+      Object.entries(params).forEach(([k, v]) => {
+        // Support both {key} and {{key}} patterns
+        interpolated = interpolated.replace(
+          new RegExp(`{${k}}`, "g"),
+          String(v),
+        );
+        interpolated = interpolated.replace(
+          new RegExp(`{{${k}}}`, "g"),
+          String(v),
+        );
+      });
+      return interpolated;
+    }
+
+    return value;
+  };
+
+  // Raw translation function for arrays/objects
+  const tRaw = (key: string): any => {
+    const translations = language === "ur" ? urTranslations : enTranslations;
+    const keys = key.split(".");
+    let value: any = translations;
+
+    for (const k of keys) {
+      if (value && typeof value === "object" && k in value) {
+        value = value[k];
       } else {
         return key;
       }

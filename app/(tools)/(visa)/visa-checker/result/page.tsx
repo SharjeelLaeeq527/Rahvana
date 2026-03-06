@@ -1,12 +1,12 @@
-// frontend/app/result/page.tsx
-'use client';
+"use client";
 
-import Result from '@/app/components/visa-checker/Result';
-import { useEffect, useState } from 'react';
+import Result from "@/app/components/visa-checker/Result";
+import { useEffect, useState } from "react";
+import { useLanguage } from "@/app/context/LanguageContext";
 
 // Define the exact shape here (or import from a shared types file)
 type VisaData = {
-  status: 'current' | 'waiting' | 'unavailable' | string;
+  status: "current" | "waiting" | "unavailable" | string;
   categoryFull: string;
   priorityDate: string;
   country: string;
@@ -23,30 +23,36 @@ type VisaData = {
 };
 
 export default function ResultPage() {
+  const { t } = useLanguage();
   const [result, setResult] = useState<VisaData | null>(null);
 
   useEffect(() => {
     try {
-      const saved = localStorage.getItem('visaResult');
+      const saved = localStorage.getItem("visaResult");
       if (saved) {
         const parsed = JSON.parse(saved);
 
         // Optional: basic validation to avoid crashes from corrupted data
-        if (parsed && typeof parsed === 'object' && 'status' in parsed && 'priorityDate' in parsed) {
+        if (
+          parsed &&
+          typeof parsed === "object" &&
+          "status" in parsed &&
+          "priorityDate" in parsed
+        ) {
           setResult(parsed as VisaData);
         } else {
-          console.warn('Invalid visa result data in localStorage');
+          console.warn("Invalid visa result data in localStorage");
         }
       }
     } catch (err) {
-      console.error('Failed to parse visaResult from localStorage', err);
+      console.error("Failed to parse visaResult from localStorage", err);
     }
   }, []);
 
   if (!result) {
     return (
       <div className="text-center p-10">
-        <p>No result found. Please go back and check again.</p>
+        <p>{t("visaChecker.result.noResult")}</p>
       </div>
     );
   }

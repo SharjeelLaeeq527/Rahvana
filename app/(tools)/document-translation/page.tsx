@@ -108,13 +108,13 @@ export default function DocumentTranslationUpload() {
   };
 
   return (
-    <div className="min-h-screen bg-linear-to-br from-slate-50 to-slate-100 text-gray-800 flex flex-col items-center py-12 px-4">
+    <div className="min-h-screen bg-linear-to-br from-slate-50 to-slate-100 text-gray-800 flex flex-col items-center py-8 md:py-12 px-4 sm:px-6">
       {/* Header */}
-      <header className="text-center mb-10">
-        <h1 className="text-4xl md:text-5xl font-bold text-primary/90">
+      <header className="text-center mb-8 md:mb-10 w-full max-w-4xl">
+        <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-primary/90 leading-tight">
           Document Translation
         </h1>
-        <p className="mt-2 text-lg text-gray-600">
+        <p className="mt-3 text-base sm:text-lg text-gray-600 max-w-2xl mx-auto">
           Upload your Urdu document for true English translation
         </p>
       </header>
@@ -122,13 +122,13 @@ export default function DocumentTranslationUpload() {
       {!uploadSuccess ? (
         <>
           {/* Requirements Section */}
-          <section className="w-full max-w-4xl mb-12 bg-white rounded-xl shadow-lg p-6 md:p-8">
-            <h2 className="flex items-center gap-2 text-2xl font-semibold text-primary/90 mb-6">
-              <AlertCircle className="w-6 h-6" />
+          <section className="w-full max-w-4xl mb-8 md:mb-12 bg-white rounded-xl shadow-lg p-5 sm:p-6 md:p-8 border border-slate-100">
+            <h2 className="flex items-center gap-2 text-xl sm:text-2xl font-semibold text-primary/90 mb-5 sm:mb-6">
+              <AlertCircle className="w-5 h-5 sm:w-6 sm:h-6" />
               Document Requirements
             </h2>
 
-            <ul className="grid md:grid-cols-2 gap-6 text-gray-700">
+            <ul className="grid sm:grid-cols-2 gap-4 sm:gap-6 text-gray-700">
               {[
                 "Submit clear, legible PDF files",
                 "Original documents in Urdu language",
@@ -137,10 +137,10 @@ export default function DocumentTranslationUpload() {
                 "Scanned documents should be high resolution",
                 "No password protected PDFs",
               ].map((req, i) => (
-                <li key={i} className="flex items-start gap-3 md:col-span-1">
+                <li key={i} className="flex items-start gap-3">
                   <CheckCircle className="w-5 h-5 text-green-600 mt-0.5 shrink-0" />
-                  <span>
-                    <strong>{i + 1}.</strong> {req}
+                  <span className="text-sm sm:text-base">
+                    <strong className="mr-1">{i + 1}.</strong> {req}
                   </span>
                 </li>
               ))}
@@ -149,13 +149,13 @@ export default function DocumentTranslationUpload() {
 
           {/* Upload Section */}
           <section className="w-full max-w-md">
-            <div className="bg-white rounded-xl shadow-md p-6">
+            <div className="bg-white rounded-xl shadow-md p-5 sm:p-6 border border-slate-100">
               <label className="block text-sm font-medium text-gray-700 mb-3">
                 Upload Your Document
               </label>
 
               <div
-                className={`border-2 border-dashed rounded-lg p-6 text-center transition-colors cursor-pointer
+                className={`border-2 border-dashed rounded-lg p-5 sm:p-6 text-center transition-colors cursor-pointer
                   ${file ? "border-indigo-500 bg-indigo-50" : "border-gray-300 hover:border-gray-400"}`}
                 onClick={() => fileInputRef.current?.click()}
               >
@@ -167,13 +167,13 @@ export default function DocumentTranslationUpload() {
                   onChange={handleFileChange}
                 />
                 {file ? (
-                  <div className="flex items-center justify-center gap-2">
-                    <FileText className="w-10 h-10 text-indigo-600" />
-                    <div className="text-left">
-                      <p className="font-medium truncate max-w-[200px]">
+                  <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+                    <FileText className="w-10 h-10 text-indigo-600 shrink-0" />
+                    <div className="text-center sm:text-left overflow-hidden">
+                      <p className="font-medium truncate max-w-[250px]">
                         {file.name}
                       </p>
-                      <p className="text-sm text-gray-500">
+                      <p className="text-xs sm:text-sm text-gray-500">
                         {(file.size / 1024 / 1024).toFixed(2)} MB
                       </p>
                     </div>
@@ -181,7 +181,9 @@ export default function DocumentTranslationUpload() {
                 ) : (
                   <div className="flex flex-col items-center text-gray-500">
                     <Upload className="w-10 h-10 mb-2" />
-                    <p className="text-sm">Click to upload or drag & drop</p>
+                    <p className="text-sm font-medium">
+                      Click to upload or drag & drop
+                    </p>
                     <p className="text-xs mt-1">PDF only, max 50MB</p>
                   </div>
                 )}

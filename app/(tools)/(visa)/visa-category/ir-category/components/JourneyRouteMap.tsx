@@ -3,6 +3,8 @@
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import * as Icons from "lucide-react";
+import { useLanguage } from "@/app/context/LanguageContext";
+import SearchableIndexedDropdown from "./SearchableIndexedDropdown";
 
 interface JourneyRouteMapProps {
   selectedOrigin: string;
@@ -17,6 +19,7 @@ export default function JourneyRouteMap({
   selectedDestination,
   setSelectedDestination,
 }: JourneyRouteMapProps) {
+  const { t, language } = useLanguage();
   // Zoom & Panning State
   const [zoom, setZoom] = useState(1);
   const containerRef = React.useRef<HTMLDivElement>(null);
@@ -402,7 +405,8 @@ export default function JourneyRouteMap({
             value={country}
             disabled={!isFunctional}
           >
-            {country} {!isFunctional ? "(Coming Soon)" : ""}
+            {country}{" "}
+            {!isFunctional ? `(${t("visaCategory.map.comingSoon")})` : ""}
           </option>
         );
       });
@@ -420,7 +424,8 @@ export default function JourneyRouteMap({
             value={country}
             disabled={!isFunctional}
           >
-            {country} {!isFunctional ? "(Coming Soon)" : ""}
+            {country}{" "}
+            {!isFunctional ? `(${t("visaCategory.map.comingSoon")})` : ""}
           </option>
         );
       });
@@ -533,51 +538,51 @@ export default function JourneyRouteMap({
   };
 
   return (
-    <section className="w-full py-12 px-4 md:px-6 bg-linear-to-br from-blue-50 to-white">
+    <section className="w-full py-4 md:py-8 px-2 md:px-6 bg-linear-to-br from-blue-50 to-white relative z-30">
       {/* Map Instruction Header */}
       <div className="max-w-7xl mx-auto mb-8">
         <h2 className="text-2xl md:text-3xl font-bold text-primary/90 text-center mb-6">
-          Select Your Journey Route
+          {t("visaCategory.map.selectRoute")}
         </h2>
 
         {/* Step Indicator */}
-        <div className="flex items-center justify-center gap-4">
-          <div className="flex items-center gap-2 text-primary">
-            <span className="w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold bg-primary text-white">
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-8">
+          <div className="flex items-center gap-3 text-primary">
+            <span className="w-6 h-6 sm:w-8 sm:h-8 rounded-full shrink-0 flex items-center justify-center text-xs sm:text-sm font-semibold bg-primary text-white shadow-sm">
               1
             </span>
-            <span className="font-medium">Select Origin</span>
+            <span className="font-semibold text-sm md:text-base">
+              {t("visaCategory.map.selectOrigin")}
+            </span>
           </div>
 
-          <svg
-            width="16"
-            height="16"
-            viewBox="0 0 16 16"
-            fill="currentColor"
-            className="text-gray-400"
-          >
-            <path d="M6 4l4 4-4 4" />
-          </svg>
+          <div className="hidden sm:block">
+            <Icons.ChevronRight className="w-5 h-5 text-gray-400" />
+          </div>
+          <div className="sm:hidden -my-2">
+            <Icons.ChevronDown className="w-5 h-5 text-gray-400" />
+          </div>
 
-          <div className="flex items-center gap-2 text-primary">
-            <span className="w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold bg-primary text-white">
+          <div className="flex items-center gap-3 text-primary">
+            <span className="w-6 h-6 sm:w-8 sm:h-8 rounded-full shrink-0 flex items-center justify-center text-xs sm:text-sm font-semibold bg-primary text-white shadow-sm">
               2
             </span>
-            <span className="font-medium">Select Destination</span>
+            <span className="font-semibold text-sm md:text-base">
+              {t("visaCategory.map.selectDestination")}
+            </span>
           </div>
         </div>
       </div>
 
       {/* Map Container */}
       <div className="max-w-7xl mx-auto mb-8">
-        <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-4 md:p-8">
+        <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-2 sm:p-4 md:p-8">
           <div
             ref={containerRef}
-            className="relative w-full h-[500px] md:h-[600px] lg:h-[830px] overflow-auto rounded-xl bg-blue-50/30 scrollbar-hide"
-            // style={{ height: "600px" }}
+            className="relative w-full h-[350px] sm:h-[500px] md:h-[600px] lg:h-[830px] overflow-auto rounded-xl bg-blue-50/30 scrollbar-hide"
           >
-            {/* UI Controls Layer - FIXED POSITION via CSS class or absolute but container needs to be relative */}
-            <div className="sticky top-4 left-[calc(100%-60px)] flex flex-col gap-2 z-10 w-10">
+            {/* UI Controls Layer */}
+            <div className="absolute top-4 right-4 flex flex-col gap-2 z-10 w-10">
               <button
                 onClick={(e) => {
                   e.stopPropagation();
@@ -607,7 +612,7 @@ export default function JourneyRouteMap({
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: 5 }}
                   transition={{ duration: 0.15 }}
-                  className="fixed z-50 pointer-events-none bg-gray-900/95 text-white px-3 py-1.5 rounded-lg text-sm font-medium shadow-xl backdrop-blur-sm border border-white/10"
+                  className="fixed z-50 pointer-events-none bg-gray-900/95 text-white px-3 py-1.5 rounded-lg text-sm font-medium shadow-xl backdrop-blur-sm border border-white/10 hidden md:block"
                   style={{
                     left:
                       mousePos.x +
@@ -624,7 +629,7 @@ export default function JourneyRouteMap({
                     {hoveredCountry !== "Pakistan" &&
                       hoveredCountry !== "United States" && (
                         <span className="text-[10px] text-gray-400 mt-1 uppercase tracking-wider font-bold">
-                          Coming Soon
+                          {t("visaCategory.map.comingSoon")}
                         </span>
                       )}
                   </div>
@@ -2255,39 +2260,18 @@ export default function JourneyRouteMap({
       <div className="max-w-3xl mx-auto">
         <div className="flex flex-col md:flex-row items-center md:items-end gap-4">
           {/* Origin Select */}
-          <div className="flex-1 w-full">
-            <label
-              htmlFor="originSelect"
-              className="block text-sm font-medium text-gray-700 mb-2"
-            >
-              Origin
-            </label>
-            <div className="relative">
-              <select
-                id="originSelect"
-                value={selectedOrigin}
-                onChange={(e) => setSelectedOrigin(e.target.value)}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg bg-white text-gray-900 focus:ring-2 focus:ring-primary focus:border-primary transition-colors appearance-none cursor-pointer"
-              >
-                <option value="">Select origin country</option>
-                {getOriginOptions()}
-              </select>
-              <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-gray-500">
-                <svg
-                  className="h-5 w-5"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M19 9l-7 7-7-7"
-                  />
-                </svg>
-              </div>
-            </div>
+          <div className="flex-1 w-full px-4 sm:px-0">
+            <SearchableIndexedDropdown
+              id="originSelect"
+              label="Origin"
+              value={selectedOrigin}
+              onChange={setSelectedOrigin}
+              options={countries}
+              placeholder="Select origin country"
+              disabledOptions={countries.filter(
+                (c) => c !== "Pakistan" && c !== "United States",
+              )}
+            />
           </div>
 
           {/* Swap Button */}
@@ -2296,7 +2280,7 @@ export default function JourneyRouteMap({
             onClick={handleSwap}
             disabled={!selectedOrigin && !selectedDestination}
             className="mt-6 md:mt-0 p-3 border border-gray-300 rounded-lg bg-white hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-            aria-label="Swap origin and destination"
+            aria-label={t("visaCategory.swap")}
           >
             <svg
               width="16"
@@ -2311,39 +2295,18 @@ export default function JourneyRouteMap({
           </button>
 
           {/* Destination Select */}
-          <div className="flex-1 w-full">
-            <label
-              htmlFor="destinationSelect"
-              className="block text-sm font-medium text-gray-700 mb-2"
-            >
-              Destination
-            </label>
-            <div className="relative">
-              <select
-                id="destinationSelect"
-                value={selectedDestination}
-                onChange={(e) => setSelectedDestination(e.target.value)}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg bg-white text-gray-900 focus:ring-2 focus:ring-primary focus:border-primary transition-colors appearance-none cursor-pointer"
-              >
-                <option value="">Select destination country</option>
-                {getDestinationOptions()}
-              </select>
-              <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-gray-500">
-                <svg
-                  className="h-5 w-5"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M19 9l-7 7-7-7"
-                  />
-                </svg>
-              </div>
-            </div>
+          <div className="flex-1 w-full px-4 sm:px-0">
+            <SearchableIndexedDropdown
+              id="destinationSelect"
+              label="Destination"
+              value={selectedDestination}
+              onChange={setSelectedDestination}
+              options={countries}
+              placeholder="Select destination country"
+              disabledOptions={countries.filter(
+                (c) => c !== "Pakistan" && c !== "United States",
+              )}
+            />
           </div>
 
           {/* Reset Button */}
@@ -2351,7 +2314,7 @@ export default function JourneyRouteMap({
             onClick={handleReset}
             disabled={!selectedOrigin && !selectedDestination}
             className="mt-6 md:mt-0 px-4 py-3 border border-gray-300 rounded-lg bg-white hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
-            aria-label="Reset selection"
+            aria-label={t("visaCategory.resetAria")}
           >
             <svg
               width="16"
@@ -2363,7 +2326,7 @@ export default function JourneyRouteMap({
             >
               <path d="M2 8a6 6 0 0 1 10.5-4M14 8a6 6 0 0 1-10.5 4M2 3v5h5M14 13V8h-5" />
             </svg>
-            Reset
+            {t("visaCategory.reset")}
           </button>
         </div>
       </div>

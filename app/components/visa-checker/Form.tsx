@@ -6,8 +6,10 @@ import { mapProfileToGenericForm } from "@/lib/autoFill/mapper";
 import { MasterProfile } from "@/types/profile";
 import { useAuth } from "@/app/context/AuthContext";
 import { createBrowserClient } from "@supabase/ssr";
+import { useLanguage } from "@/app/context/LanguageContext";
 
 export default function Form() {
+  const { t } = useLanguage();
   const [form, setForm] = useState({
     category: "EB-2",
     priorityDate: "",
@@ -63,28 +65,20 @@ export default function Form() {
 
   const handleSubmit = async () => {
     if (!form.priorityDate) {
-      setError("Please enter your Priority Date");
+      setError(t("visaChecker.form.errors.noPriorityDate"));
       return;
     }
     setError("");
     setLoading(true);
 
     try {
-      // --- SMART URL LOGIC START ---
-      // Step 1: Env variable uthao ya Localhost fallback lo
       let baseUrl = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
-
-      // Step 2: Trailing slash (/) hata do agar last mein hai
       baseUrl = baseUrl.replace(/\/$/, "");
-
-      // Step 3: Check kro ke '/api/v1' already URL mein hai ya nahi
-      // Agar tumne Vercel me '/api/v1' lagaya hai, to hum dobara nahi lagayenge.
       const endpoint = baseUrl.includes("/api/v1")
-        ? `${baseUrl}/visa-checker/check` // Agar api/v1 hai -> seedha endpoint
-        : `${baseUrl}/api/v1/visa-checker/check`; // Agar nahi hai -> api/v1 add kro
+        ? `${baseUrl}/visa-checker/check`
+        : `${baseUrl}/api/v1/visa-checker/check`;
 
-      console.log("Fetching from:", endpoint); // Debugging ke liye best hai
-      // --- SMART URL LOGIC END ---
+      console.log("Fetching from:", endpoint);
 
       const res = await fetch(endpoint, {
         method: "POST",
@@ -104,7 +98,7 @@ export default function Form() {
       setError(
         err instanceof Error
           ? err.message
-          : "Something went wrong. Please try again.",
+          : t("visaChecker.form.errors.general"),
       );
     } finally {
       setLoading(false);
@@ -124,7 +118,7 @@ export default function Form() {
         {/* Visa Category */}
         <div>
           <label className="block text-sm sm:text-base font-bold text-gray-700 mb-1.5 sm:mb-2">
-            Visa Category
+            {t("visaChecker.form.categoryLabel")}
           </label>
           <select
             suppressHydrationWarning
@@ -132,23 +126,21 @@ export default function Form() {
             value={form.category}
             onChange={(e) => setForm({ ...form, category: e.target.value })}
           >
-            <option value="EB-1">EB-1 (Priority Workers)</option>
-            <option value="EB-2">EB-2 (Advanced Degree)</option>
-            <option value="EB-3">EB-3 (Skilled Workers)</option>
-            <option value="F1">
-              F1 (Unmarried Sons/Daughters of Citizens)
-            </option>
-            <option value="F2A">F2A (Spouses & Children of LPR)</option>
-            <option value="F2B">F2B (Unmarried Sons/Daughters of LPR)</option>
-            <option value="F3">F3 (Married Sons/Daughters of Citizens)</option>
-            <option value="F4">F4 (Brothers/Sisters of Citizens)</option>
+            <option value="EB-1">{t("visaChecker.form.categories.eb1")}</option>
+            <option value="EB-2">{t("visaChecker.form.categories.eb2")}</option>
+            <option value="EB-3">{t("visaChecker.form.categories.eb3")}</option>
+            <option value="F1">{t("visaChecker.form.categories.f1")}</option>
+            <option value="F2A">{t("visaChecker.form.categories.f2a")}</option>
+            <option value="F2B">{t("visaChecker.form.categories.f2b")}</option>
+            <option value="F3">{t("visaChecker.form.categories.f3")}</option>
+            <option value="F4">{t("visaChecker.form.categories.f4")}</option>
           </select>
         </div>
 
         {/* Priority Date */}
         <div>
           <label className="block text-sm sm:text-base font-bold text-gray-700 mb-1.5 sm:mb-2">
-            Priority Date
+            {t("visaChecker.form.priorityDateLabel")}
           </label>
           <input
             suppressHydrationWarning
@@ -159,14 +151,14 @@ export default function Form() {
             required
           />
           <p className="text-sm text-gray-500 mt-1">
-            Found on your I-797, I-140, or PERM approval
+            {t("visaChecker.form.priorityDateHint")}
           </p>
         </div>
 
         {/* Country */}
         <div>
           <label className="block text-sm sm:text-base font-bold text-gray-700 mb-1.5 sm:mb-2">
-            Country of Chargeability
+            {t("visaChecker.form.countryLabel")}
           </label>
           <select
             suppressHydrationWarning
@@ -174,20 +166,18 @@ export default function Form() {
             value={form.country}
             onChange={(e) => setForm({ ...form, country: e.target.value })}
           >
-            <option value="All Other Countries">
-              All Chargeability Areas Except Those Listed
-            </option>
-            <option value="China">China (mainland born)</option>
-            <option value="India">India</option>
-            <option value="Mexico">Mexico</option>
-            <option value="Philippines">Philippines</option>
+            <option value="All Other Countries">{t("visaChecker.form.countries.all")}</option>
+            <option value="China">{t("visaChecker.form.countries.china")}</option>
+            <option value="India">{t("visaChecker.form.countries.india")}</option>
+            <option value="Mexico">{t("visaChecker.form.countries.mexico")}</option>
+            <option value="Philippines">{t("visaChecker.form.countries.philippines")}</option>
           </select>
         </div>
 
         {/* Application Type */}
         <div>
           <label className="block text-sm sm:text-base font-bold text-gray-700 mb-1.5 sm:mb-2">
-            Application Type
+            {t("visaChecker.form.appTypeLabel")}
           </label>
           <select
             suppressHydrationWarning
@@ -198,10 +188,10 @@ export default function Form() {
             }
           >
             <option value="Consular Processing">
-              Consular Processing (Outside USA)
+              {t("visaChecker.form.appTypes.consular")}
             </option>
             <option value="Adjustment of Status">
-              Adjustment of Status (I-485 in USA)
+              {t("visaChecker.form.appTypes.aos")}
             </option>
           </select>
         </div>
@@ -230,10 +220,10 @@ export default function Form() {
                 />
                 <path fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
               </svg>
-              Checking...
+              {t("visaChecker.form.checking")}
             </span>
           ) : (
-            "Check My Status"
+            t("visaChecker.form.checkBtn")
           )}
         </button>
       </div>

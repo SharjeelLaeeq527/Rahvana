@@ -77,8 +77,6 @@ export function DocumentVault({
 
         {/* Body */}
         <div className="p-4 md:p-6 overflow-y-auto grow bg-slate-50/30">
-          {/* Privacy Note Tooltip replaced highlighted box */}
-
           <div className="space-y-4">
             {roadmapData.documents.map((doc) => {
               const isChecked = state.documentChecklist[doc] || false;
@@ -121,8 +119,8 @@ export function DocumentVault({
                             }`}
                           >
                             {isChecked
-                              ? t("status.collected")
-                              : t("status.pending")}
+                              ? t("documentVault.status.collected")
+                              : t("documentVault.status.pending")}
                           </span>
                           {upload && (
                             <span className="text-[11px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider bg-amber-100 text-amber-700">

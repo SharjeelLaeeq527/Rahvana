@@ -16,13 +16,20 @@ import {
 interface RoadmapStep {
   id: string;
   name: string;
+  nameUr?: string;
   who: string;
+  whoUr?: string;
   where: string;
+  whereUr?: string;
   actions: string[];
+  actionsUr?: string[];
   output?: string;
+  outputUr?: string;
   notes?: string;
+  notesUr?: string;
   timeline?: string;
   documents?: string[];
+  documentsUr?: string[];
   pakistanSpecific?: string;
   fee?: string;
   filingType?: string;
@@ -55,8 +62,9 @@ export function StepDetail({
   isFirst,
   isLast,
 }: StepDetailProps) {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const isCompleted = state.completedSteps.has(step.id);
+  const isUrdu = language === "ur";
 
   return (
     <div
@@ -66,12 +74,12 @@ export function StepDetail({
       <div className="mb-8">
         <div className="inline-flex items-center gap-2 px-3 py-1 bg-slate-100/80 text-slate-500 rounded-full text-[12px] font-bold uppercase tracking-wider mb-4 border border-slate-200/50">
           <Info className="w-3.5 h-3.5" />
-          {t("stepDetail.info", { stageId: stage.id, stepId: step.id })}
+          {t("ir1Journey.stageStep", { stage: stage.id.toString(), step: step.id.toString() })}
         </div>
 
         <div className="flex flex-col md:flex-row md:items-start justify-between gap-4 md:gap-6 mb-6">
           <h2 className="text-2xl md:text-4xl font-extrabold text-slate-900 leading-tight">
-            {step.name}
+            {isUrdu && step.nameUr ? step.nameUr : step.name}
           </h2>
           <button
             onClick={(e) => onToggleComplete(step.id, e)}
@@ -96,18 +104,17 @@ export function StepDetail({
         </div>
 
         <div className="text-slate-600 text-[15px] md:text-[17px] leading-relaxed pb-6 md:pb-8 mb-6 md:mb-8 border-b border-slate-100 max-w-3xl">
-          {step.notes || t("stepDetail.defaultNotes", { stepName: step.name })}
+          {isUrdu && step.notesUr ? step.notesUr : (step.notes ||
+            t("stepDetail.defaultNotes", { stepName: step.name }))}
         </div>
 
         {/* Professional Badges */}
         <div className="flex flex-wrap gap-3 mb-10">
           <div className="flex items-center gap-2 px-3.5 py-1.5 bg-slate-50 text-slate-600 rounded-xl text-sm font-bold border border-slate-200">
-            <Users className="w-4 h-4 text-slate-400" />{" "}
-            {t("stepDetail.professionalBadges.both")}
+            <Users className="w-4 h-4 text-slate-400" /> {isUrdu && step.whoUr ? step.whoUr : step.who}
           </div>
           <div className="flex items-center gap-2 px-3.5 py-1.5 bg-indigo-50 text-indigo-600 rounded-xl text-sm font-bold border border-indigo-100">
-            <MapPin className="w-4 h-4 text-indigo-400" />{" "}
-            {t("stepDetail.professionalBadges.selfAssessment")}
+            <MapPin className="w-4 h-4 text-indigo-400" /> {isUrdu && step.whereUr ? step.whereUr : step.where}
           </div>
         </div>
 
@@ -118,7 +125,7 @@ export function StepDetail({
             {t("stepDetail.actionsRequired")}
           </h4>
           <ul className="space-y-4">
-            {step.actions?.map((action: string, idx: number) => (
+            {(isUrdu && step.actionsUr ? step.actionsUr : step.actions)?.map((action: string, idx: number) => (
               <li
                 key={`action-${idx}`}
                 className="flex gap-4 items-start text-[16px] text-slate-700 font-medium group"
@@ -129,7 +136,7 @@ export function StepDetail({
                 <div className="leading-snug">{action}</div>
               </li>
             ))}
-            {step.documents?.map((doc: string, idx: number) => (
+            {(isUrdu && step.documentsUr ? step.documentsUr : step.documents)?.map((doc: string, idx: number) => (
               <li
                 key={`doc-${idx}`}
                 className="flex gap-4 items-start text-[16px] text-slate-700 font-medium group"
@@ -149,13 +156,13 @@ export function StepDetail({
         </div>
 
         {/* Success Condition */}
-        {step.output && (
+        {(isUrdu && step.outputUr ? step.outputUr : step.output) && (
           <div className="p-6 bg-emerald-50/40 rounded-2xl border border-emerald-100 mb-10">
             <h4 className="text-[13px] font-black mb-3 text-emerald-700 uppercase tracking-widest">
               {t("stepDetail.successCondition")}
             </h4>
             <p className="text-emerald-900 text-[16px] font-bold leading-relaxed">
-              {step.output}
+              {isUrdu && step.outputUr ? step.outputUr : step.output}
             </p>
           </div>
         )}
