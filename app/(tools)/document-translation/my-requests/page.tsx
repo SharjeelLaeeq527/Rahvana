@@ -111,9 +111,7 @@ export default function MyTranslationRequests() {
   useEffect(() => {
     const fetchRequests = async () => {
       try {
-        const response = await fetch(
-          `/api/document-translation/list`
-        );
+        const response = await fetch(`/api/document-translation/list`);
         const data = await response.json();
 
         if (response.ok) {
@@ -150,22 +148,24 @@ export default function MyTranslationRequests() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 text-gray-800 py-12 px-4">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 text-gray-800 py-8 md:py-12 px-4 sm:px-6">
       <div className="max-w-6xl mx-auto">
-        <header className="mb-10">
-          <h1 className="text-3xl md:text-4xl font-bold text-primary/90">
+        <header className="mb-8 md:mb-10">
+          <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-primary/90">
             My Translation Requests
           </h1>
-          <p className="mt-2 text-gray-600">
+          <p className="mt-2 text-sm sm:text-base text-gray-600">
             Track the status of your document translation requests
           </p>
         </header>
 
-        <div className="flex justify-between items-center mb-8">
-          <h2 className="text-xl font-semibold text-gray-800">All Requests</h2>
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-8">
+          <h2 className="text-lg sm:text-xl font-semibold text-gray-800">
+            All Requests
+          </h2>
           <Button
             onClick={() => (window.location.href = "/document-translation")}
-            className="bg-primary hover:bg-primary/90 cursor-pointer"
+            className="bg-primary hover:bg-primary/90 cursor-pointer w-full sm:w-auto"
           >
             <Upload className="w-4 h-4 mr-2" />
             Upload New Document
@@ -179,12 +179,12 @@ export default function MyTranslationRequests() {
         ) : (
           <>
             {requests.length === 0 ? (
-              <div className="bg-white rounded-xl shadow-md overflow-hidden text-center py-12">
-                <FileText className="w-12 h-12 text-gray-300 mx-auto mb-4" />
-                <h3 className="text-lg font-medium text-gray-900 mb-1">
+              <div className="bg-white rounded-xl shadow-md overflow-hidden text-center py-10 px-4 sm:py-12">
+                <FileText className="w-10 h-10 sm:w-12 sm:h-12 text-gray-300 mx-auto mb-4" />
+                <h3 className="text-base sm:text-lg font-medium text-gray-900 mb-1">
                   No translation requests
                 </h3>
-                <p className="text-gray-500">
+                <p className="text-sm text-gray-500">
                   You haven&apos;t submitted any documents for translation yet.
                 </p>
                 <div className="mt-6">
@@ -192,7 +192,7 @@ export default function MyTranslationRequests() {
                     onClick={() =>
                       (window.location.href = "/document-translation")
                     }
-                    className="bg-primary hover:bg-primary/90"
+                    className="bg-primary hover:bg-primary/90 w-full sm:w-auto"
                   >
                     <Upload className="w-4 h-4 mr-2" />
                     Upload Your First Document
@@ -200,32 +200,44 @@ export default function MyTranslationRequests() {
                 </div>
               </div>
             ) : (
-              <div className="bg-white rounded-xl shadow-md overflow-hidden">
+              <div className="bg-white rounded-xl shadow-md overflow-hidden border border-slate-100">
                 <div className="overflow-x-auto">
                   <Table>
-                    <TableHeader>
+                    <TableHeader className="bg-slate-50/50">
                       <TableRow>
-                        <TableHead>Document Type</TableHead>
-                        <TableHead>Submitted Date</TableHead>
-                        <TableHead>Status</TableHead>
-                        <TableHead className="text-right">Actions</TableHead>
+                        <TableHead className="font-semibold">
+                          Document Type
+                        </TableHead>
+                        <TableHead className="font-semibold hidden sm:table-cell">
+                          Submitted Date
+                        </TableHead>
+                        <TableHead className="font-semibold">Status</TableHead>
+                        <TableHead className="text-right font-semibold">
+                          Actions
+                        </TableHead>
                       </TableRow>
                     </TableHeader>
 
                     <TableBody>
                       {currentRequests.map((request) => (
-                        <TableRow key={request.id} className="hover:bg-gray-50">
+                        <TableRow
+                          key={request.id}
+                          className="hover:bg-slate-50/50 transition-colors"
+                        >
                           <TableCell>
                             <div className="flex items-center">
-                              <FileText className="w-5 h-5 text-primary/80 mr-2" />
-                              <div className="text-sm font-medium text-gray-900">
+                              <FileText className="w-5 h-5 text-primary/80 mr-2 shrink-0" />
+                              <div className="text-xs sm:text-sm font-medium text-gray-900 truncate max-w-[120px] sm:max-w-none">
                                 {request.document_type.charAt(0).toUpperCase() +
                                   request.document_type.slice(1)}
+                                <div className="sm:hidden text-[10px] text-gray-500 font-normal mt-0.5">
+                                  {formatDate(request.created_at)}
+                                </div>
                               </div>
                             </div>
                           </TableCell>
 
-                          <TableCell>
+                          <TableCell className="hidden sm:table-cell">
                             <div className="flex items-center">
                               <Calendar className="w-4 h-4 text-gray-400 mr-2" />
                               <div className="text-sm text-gray-500">
@@ -248,10 +260,13 @@ export default function MyTranslationRequests() {
                               onClick={() =>
                                 (window.location.href = `/document-translation/request/${request.id}`)
                               }
-                              className="text-primary cursor-pointer hover:text-primary/90"
+                              className="text-primary cursor-pointer hover:text-primary/90 text-[10px] sm:text-xs h-8 sm:h-9"
                             >
-                              <Eye className="w-4 h-4 mr-1" />
-                              View Details
+                              <Eye className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
+                              <span className="hidden xs:inline">
+                                View Details
+                              </span>
+                              <span className="xs:hidden">View</span>
                             </Button>
                           </TableCell>
                         </TableRow>
@@ -260,9 +275,9 @@ export default function MyTranslationRequests() {
 
                     {/* Pagination - only show if there are requests and multiple pages */}
                     {requests.length > 0 && totalPages > 1 && (
-                      <TableRow>
+                      <TableRow className="hover:bg-transparent">
                         <TableCell colSpan={4}>
-                          <div className="w-full flex justify-center py-4">
+                          <div className="w-full flex justify-center py-4 overflow-x-auto">
                             <Pagination
                               currentPage={currentPage}
                               totalItems={requests.length}

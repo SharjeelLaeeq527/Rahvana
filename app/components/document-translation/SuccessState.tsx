@@ -26,7 +26,7 @@ export default function SuccessState({ onGoToRequests }: SuccessStateProps) {
       </div>
 
       <p className="text-gray-700 mb-8">
-        Our team will review your document and provide a ture English
+        Our team will review your document and provide a true English
         translation. You can check the status of your request anytime in{" "}
         <span className="font-semibold">My Translation Requests.</span>
       </p>
