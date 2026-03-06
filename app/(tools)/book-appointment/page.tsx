@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/select";
 import IOMInfoStep from "./components/IOMInfoStep";
 import { useAuth } from "@/app/context/AuthContext";
+import { useLanguage } from "@/app/context/LanguageContext";
 import { createBrowserClient } from "@supabase/ssr";
 import { mapProfileToGenericForm } from "@/lib/autoFill/mapper";
 import { MasterProfile } from "@/types/profile";
@@ -85,111 +86,133 @@ const LocationStep = ({
   onLocationChange,
   onProviderChange,
   onNext,
-}: LocationStepProps) => (
-  <div className="space-y-6">
-    <h2 className="text-xl sm:text-2xl font-bold text-slate-900 mb-6">
-      Select Location
-    </h2>
-    <p className="text-slate-600 mb-8">
-      Please select the city where you want to book your appointment:
-    </p>
+}: LocationStepProps) => {
+  const { t } = useLanguage();
 
+  return (
     <div className="space-y-6">
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <button
-          type="button"
-          className={`p-4 sm:p-6 border-2 rounded-xl text-center transition-all ${
-            formData.location === "karachi"
-              ? "border-teal-600 bg-teal-50"
-              : "border-gray-200 hover:border-teal-400"
-          }`}
-          onClick={() => onLocationChange("karachi")}
-        >
-          <h3 className="font-semibold text-lg mb-2">Karachi</h3>
-          <p className="text-sm text-slate-600">Wilcare Medical Centre</p>
-        </button>
+      <h2 className="text-xl sm:text-2xl font-bold text-slate-900 mb-6">
+        {t("bookAppointment.locationStep.title")}
+      </h2>
+      <p className="text-slate-600 mb-8">
+        {t("bookAppointment.locationStep.subtitle")}
+      </p>
 
-        <button
-          type="button"
-          className={`p-4 sm:p-6 border-2 rounded-xl text-center transition-all ${
-            formData.location === "lahore"
-              ? "border-teal-600 bg-teal-50"
-              : "border-gray-200 hover:border-teal-400"
-          }`}
-          onClick={() => onLocationChange("lahore")}
-        >
-          <h3 className="font-semibold text-lg mb-2">Lahore</h3>
-          <p className="text-sm text-slate-600">Wilcare Medical Centre</p>
-        </button>
+      <div className="space-y-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <button
+            type="button"
+            className={`p-4 sm:p-6 border-2 rounded-xl text-center transition-all ${
+              formData.location === "karachi"
+                ? "border-teal-600 bg-teal-50"
+                : "border-gray-200 hover:border-teal-400"
+            }`}
+            onClick={() => onLocationChange("karachi")}
+          >
+            <h3 className="font-semibold text-lg mb-2">
+              {t("bookAppointment.locationStep.karachi")}
+            </h3>
+            <p className="text-sm text-slate-600">
+              {t("bookAppointment.locationStep.wilcareMedical")}
+            </p>
+          </button>
 
-        <button
-          type="button"
-          className={`p-4 sm:p-6 border-2 rounded-xl text-center transition-all ${
-            formData.location === "islamabad"
-              ? "border-teal-600 bg-teal-50"
-              : "border-gray-200 hover:border-teal-400"
-          }`}
-          onClick={() => onLocationChange("islamabad")}
-        >
-          <h3 className="font-semibold text-lg mb-2">Islamabad</h3>
-          <p className="text-sm text-slate-600">Choose Provider Below</p>
-        </button>
-      </div>
+          <button
+            type="button"
+            className={`p-4 sm:p-6 border-2 rounded-xl text-center transition-all ${
+              formData.location === "lahore"
+                ? "border-teal-600 bg-teal-50"
+                : "border-gray-200 hover:border-teal-400"
+            }`}
+            onClick={() => onLocationChange("lahore")}
+          >
+            <h3 className="font-semibold text-lg mb-2">
+              {t("bookAppointment.locationStep.lahore")}
+            </h3>
+            <p className="text-sm text-slate-600">
+              {t("bookAppointment.locationStep.wilcareMedical")}
+            </p>
+          </button>
 
-      {formData.location === "islamabad" && (
-        <div className="space-y-4 p-4 sm:p-6 bg-blue-50 border border-blue-200 rounded-lg">
-          <h3 className="font-semibold text-lg text-slate-900">
-            Select Provider in Islamabad:
-          </h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <button
-              type="button"
-              className={`p-4 border-2 rounded-lg text-center transition-all ${
-                formData.islamabadProvider === "amc"
-                  ? "border-blue-600 bg-blue-100"
-                  : "border-gray-300 hover:border-blue-400"
-              }`}
-              onClick={() => onProviderChange("amc")}
-            >
-              <h4 className="font-semibold mb-1">AMC</h4>
-              <p className="text-xs text-slate-600">American Medical Center</p>
-            </button>
+          <button
+            type="button"
+            className={`p-4 sm:p-6 border-2 rounded-xl text-center transition-all ${
+              formData.location === "islamabad"
+                ? "border-teal-600 bg-teal-50"
+                : "border-gray-200 hover:border-teal-400"
+            }`}
+            onClick={() => onLocationChange("islamabad")}
+          >
+            <h3 className="font-semibold text-lg mb-2">
+              {t("bookAppointment.locationStep.islamabad")}
+            </h3>
+            <p className="text-sm text-slate-600">
+              {t("bookAppointment.locationStep.chooseProviderBelow")}
+            </p>
+          </button>
+        </div>
 
-            <button
-              type="button"
-              className={`p-4 border-2 rounded-lg text-center transition-all ${
-                formData.islamabadProvider === "iom"
-                  ? "border-blue-600 bg-blue-100"
-                  : "border-gray-300 hover:border-blue-400"
-              }`}
-              onClick={() => onProviderChange("iom")}
-            >
-              <h4 className="font-semibold mb-1">IOM</h4>
-              <p className="text-xs text-slate-600">
-                International Organization for Migration
-              </p>
-            </button>
+        {formData.location === "islamabad" && (
+          <div className="space-y-4 p-4 sm:p-6 bg-blue-50 border border-blue-200 rounded-lg">
+            <h3 className="font-semibold text-lg text-slate-900">
+              {t("bookAppointment.locationStep.selectProviderTitle")}
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <button
+                type="button"
+                className={`p-4 border-2 rounded-lg text-center transition-all ${
+                  formData.islamabadProvider === "amc"
+                    ? "border-blue-600 bg-blue-100"
+                    : "border-gray-300 hover:border-blue-400"
+                }`}
+                onClick={() => onProviderChange("amc")}
+              >
+                <h4 className="font-semibold mb-1">
+                  {t("bookAppointment.locationStep.amc")}
+                </h4>
+                <p className="text-xs text-slate-600">
+                  {t("bookAppointment.locationStep.amcDesc")}
+                </p>
+              </button>
+
+              <button
+                type="button"
+                className={`p-4 border-2 rounded-lg text-center transition-all ${
+                  formData.islamabadProvider === "iom"
+                    ? "border-blue-600 bg-blue-100"
+                    : "border-gray-300 hover:border-blue-400"
+                }`}
+                onClick={() => onProviderChange("iom")}
+              >
+                <h4 className="font-semibold mb-1">
+                  {t("bookAppointment.locationStep.iom")}
+                </h4>
+                <p className="text-xs text-slate-600">
+                  {t("bookAppointment.locationStep.iomDesc")}
+                </p>
+              </button>
+            </div>
           </div>
-        </div>
-      )}
+        )}
 
-      {error && (
-        <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
-          {error}
-        </div>
-      )}
+        {error && (
+          <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+            {error}
+          </div>
+        )}
 
-      <div className="flex justify-end pt-4">
-        <Button
-          onClick={onNext}
-          className="bg-teal-600 hover:bg-teal-700 text-white"
-        >
-          Next
-        </Button>
+        <div className="flex justify-end pt-4">
+          <Button
+            onClick={onNext}
+            className="bg-teal-600 hover:bg-teal-700 text-white"
+          >
+            {t("bookAppointment.locationStep.nextBtn")}
+          </Button>
+        </div>
       </div>
     </div>
-  </div>
-);
+  );
+};
 
 interface BasicInfoStepProps {
   formData: FormData;
@@ -211,247 +234,355 @@ const BasicInfoStep = ({
   onSelectChange,
   onNext,
   onBack,
-}: BasicInfoStepProps) => (
-  <div className="space-y-6">
-    <div className="flex items-center gap-2 mb-6">
-      <div className="bg-teal-600 text-white px-3 py-1 rounded font-semibold">
-        {isAMC ? "AMC Info" : "HI"}
-      </div>
-      <h2 className="text-xl sm:text-2xl font-bold text-slate-900">
-        Basic Information
-      </h2>
-    </div>
+}: BasicInfoStepProps) => {
+  const { t } = useLanguage();
 
+  return (
     <div className="space-y-6">
-      {isAMC && (
-        <>
-          <div className="space-y-2">
-            <Label htmlFor="interviewDate">Interview Date *</Label>
+      <div className="flex items-center gap-2 mb-6">
+        <div className="bg-teal-600 text-white px-3 py-1 rounded font-semibold">
+          {isAMC
+            ? t("bookAppointment.basicInfoStep.amcBadge")
+            : t("bookAppointment.basicInfoStep.hiBadge")}
+        </div>
+        <h2 className="text-xl sm:text-2xl font-bold text-slate-900">
+          {t("bookAppointment.basicInfoStep.title")}
+        </h2>
+      </div>
+
+      <div className="space-y-6">
+        {isAMC && (
+          <>
+            <div className="space-y-2">
+              <Label htmlFor="interviewDate">
+                {t("bookAppointment.basicInfoStep.interviewDate")}
+              </Label>
+              <Input
+                id="interviewDate"
+                name="interviewDate"
+                type="date"
+                value={formData.interviewDate}
+                onChange={onChange}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="visaCategory">
+                {t("bookAppointment.basicInfoStep.visaCategory")}
+              </Label>
+              <Select
+                value={formData.visaCategory}
+                onValueChange={onSelectChange("visaCategory")}
+              >
+                <SelectTrigger id="visaCategory">
+                  <SelectValue
+                    placeholder={t(
+                      "bookAppointment.basicInfoStep.selectVisaCategory",
+                    )}
+                  />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Immigrant Visa">
+                    {t(
+                      "bookAppointment.basicInfoStep.visaCategories.immigrant",
+                    )}
+                  </SelectItem>
+                  <SelectItem value="Non-immigrant Visa">
+                    {t(
+                      "bookAppointment.basicInfoStep.visaCategories.nonImmigrant",
+                    )}
+                  </SelectItem>
+                  <SelectItem value="K-1 Fiance Visa">
+                    {t("bookAppointment.basicInfoStep.visaCategories.k1Fiance")}
+                  </SelectItem>
+                  <SelectItem value="Student Visa">
+                    {t("bookAppointment.basicInfoStep.visaCategories.student")}
+                  </SelectItem>
+                  <SelectItem value="Work Visa">
+                    {t("bookAppointment.basicInfoStep.visaCategories.work")}
+                  </SelectItem>
+                  <SelectItem value="Tourist Visa">
+                    {t("bookAppointment.basicInfoStep.visaCategories.tourist")}
+                  </SelectItem>
+                  <SelectItem value="Other">
+                    {t("bookAppointment.basicInfoStep.visaCategories.other")}
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="hadMedicalBefore">
+                {t("bookAppointment.basicInfoStep.hadMedicalBefore")}
+              </Label>
+              <Select
+                value={formData.hadMedicalBefore}
+                onValueChange={onSelectChange("hadMedicalBefore")}
+              >
+                <SelectTrigger>
+                  <SelectValue
+                    placeholder={t("bookAppointment.basicInfoStep.selectYesNo")}
+                  />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Yes">
+                    {t("bookAppointment.basicInfoStep.yes")}
+                  </SelectItem>
+                  <SelectItem value="No">
+                    {t("bookAppointment.basicInfoStep.no")}
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </>
+        )}
+
+        <div className="space-y-2">
+          <Label htmlFor="primaryContact">
+            {t("bookAppointment.basicInfoStep.mobileNo")}
+          </Label>
+          <div className="flex gap-2">
+            <div className="flex items-center justify-center w-24 px-3 py-2 border border-gray-300 rounded-md bg-gray-50 text-sm font-medium">
+              🇵🇰 92
+            </div>
             <Input
-              id="interviewDate"
-              name="interviewDate"
-              type="date"
-              value={formData.interviewDate}
+              id="primaryContact"
+              name="primaryContact"
+              value={formData.primaryContact}
               onChange={onChange}
+              placeholder="3001234567"
+              type="tel"
+              className="flex-1"
             />
           </div>
+        </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="visaCategory">Visa Category *</Label>
-            <Select
-              value={formData.visaCategory}
-              onValueChange={onSelectChange("visaCategory")}
-            >
-              <SelectTrigger id="visaCategory">
-                <SelectValue placeholder="Select visa category" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="Immigrant Visa">Immigrant Visa</SelectItem>
-                <SelectItem value="Non-immigrant Visa">
-                  Non-immigrant Visa
-                </SelectItem>
-                <SelectItem value="K-1 Fiance Visa">K-1 Fiancé Visa</SelectItem>
-                <SelectItem value="Student Visa">Student Visa</SelectItem>
-                <SelectItem value="Work Visa">Work Visa</SelectItem>
-                <SelectItem value="Tourist Visa">Tourist Visa</SelectItem>
-                <SelectItem value="Other">Other</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="hadMedicalBefore">
-              Have you had medical examination done before for USA? *
-            </Label>
-            <Select
-              value={formData.hadMedicalBefore}
-              onValueChange={onSelectChange("hadMedicalBefore")}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Select Yes or No" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="Yes">Yes</SelectItem>
-                <SelectItem value="No">No</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-        </>
-      )}
-
-      <div className="space-y-2">
-        <Label htmlFor="primaryContact">Mobile No. in Pakistan *</Label>
-        <div className="flex gap-2">
-          <div className="flex items-center justify-center w-24 px-3 py-2 border border-gray-300 rounded-md bg-gray-50 text-sm font-medium">
-            🇵🇰 92
-          </div>
+        <div className="space-y-2">
+          <Label htmlFor="email">
+            {t("bookAppointment.basicInfoStep.email")}
+          </Label>
           <Input
-            id="primaryContact"
-            name="primaryContact"
-            value={formData.primaryContact}
+            id="email"
+            name="email"
+            type="email"
+            value={formData.email}
             onChange={onChange}
-            placeholder="3001234567"
-            type="tel"
-            className="flex-1"
+            placeholder="abc@gmail.com"
           />
         </div>
-      </div>
 
-      <div className="space-y-2">
-        <Label htmlFor="email">Email *</Label>
-        <Input
-          id="email"
-          name="email"
-          type="email"
-          value={formData.email}
-          onChange={onChange}
-          placeholder="abc@gmail.com"
-        />
-      </div>
+        {isAMC && (
+          <>
+            <div className="space-y-2">
+              <Label htmlFor="city">
+                {t("bookAppointment.basicInfoStep.city")}
+              </Label>
+              <Input
+                id="city"
+                name="city"
+                value={formData.city}
+                onChange={onChange}
+                placeholder={t("bookAppointment.basicInfoStep.enterCity")}
+              />
+            </div>
 
-      {isAMC && (
-        <>
-          <div className="space-y-2">
-            <Label htmlFor="city">City *</Label>
-            <Input
-              id="city"
-              name="city"
-              value={formData.city}
-              onChange={onChange}
-              placeholder="Enter city"
-            />
-          </div>
+            <div className="space-y-2">
+              <Label htmlFor="caseRef">
+                {t("bookAppointment.basicInfoStep.caseRef")}
+              </Label>
+              <Input
+                id="caseRef"
+                name="caseRef"
+                value={formData.caseRef}
+                onChange={onChange}
+                placeholder={t("bookAppointment.basicInfoStep.enterCaseRef")}
+              />
+            </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="caseRef">Case Ref *</Label>
-            <Input
-              id="caseRef"
-              name="caseRef"
-              value={formData.caseRef}
-              onChange={onChange}
-              placeholder="Enter case reference"
-            />
-          </div>
+            <div className="space-y-2">
+              <Label htmlFor="numberOfApplicants">
+                {t("bookAppointment.basicInfoStep.numberOfApplicants")}
+              </Label>
+              <Select
+                value={formData.numberOfApplicants}
+                onValueChange={onSelectChange("numberOfApplicants")}
+              >
+                <SelectTrigger>
+                  <SelectValue
+                    placeholder={t(
+                      "bookAppointment.basicInfoStep.selectNumber",
+                    )}
+                  />
+                </SelectTrigger>
+                <SelectContent>
+                  {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((num) => (
+                    <SelectItem key={num} value={num.toString()}>
+                      {num}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </>
+        )}
 
-          <div className="space-y-2">
-            <Label htmlFor="numberOfApplicants">Number of Applicants *</Label>
-            <Select
-              value={formData.numberOfApplicants}
-              onValueChange={onSelectChange("numberOfApplicants")}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Select number" />
-              </SelectTrigger>
-              <SelectContent>
-                {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((num) => (
-                  <SelectItem key={num} value={num.toString()}>
-                    {num}
+        {isWilcare && (
+          <>
+            <div className="space-y-2">
+              <Label htmlFor="appointmentType">
+                {t("bookAppointment.basicInfoStep.appointmentType")}
+              </Label>
+              <Select
+                value={formData.appointmentType}
+                onValueChange={onSelectChange("appointmentType")}
+              >
+                <SelectTrigger>
+                  <SelectValue
+                    placeholder={t(
+                      "bookAppointment.basicInfoStep.selectAppointmentType",
+                    )}
+                  />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Individual">
+                    {t(
+                      "bookAppointment.basicInfoStep.appointmentTypes.individual",
+                    )}
                   </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-        </>
-      )}
+                  <SelectItem value="Family">
+                    {t("bookAppointment.basicInfoStep.appointmentTypes.family")}
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
 
-      {isWilcare && (
-        <>
-          <div className="space-y-2">
-            <Label htmlFor="appointmentType">Appointment Type</Label>
-            <Select
-              value={formData.appointmentType}
-              onValueChange={onSelectChange("appointmentType")}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Select appointment type" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="Individual">Individual</SelectItem>
-                <SelectItem value="Family">Family</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+            <div className="space-y-2">
+              <Label htmlFor="visaType">
+                {t("bookAppointment.basicInfoStep.visaType")}
+              </Label>
+              <Select
+                value={formData.visaType}
+                onValueChange={onSelectChange("visaType")}
+              >
+                <SelectTrigger id="visaType">
+                  <SelectValue
+                    placeholder={t(
+                      "bookAppointment.basicInfoStep.selectVisaType",
+                    )}
+                  />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="B-2">
+                    {t("bookAppointment.basicInfoStep.visaTypes.b2")}
+                  </SelectItem>
+                  <SelectItem value="B-1/B-2">
+                    {t("bookAppointment.basicInfoStep.visaTypes.b1b2")}
+                  </SelectItem>
+                  <SelectItem value="F-1">
+                    {t("bookAppointment.basicInfoStep.visaTypes.f1")}
+                  </SelectItem>
+                  <SelectItem value="H-1B">
+                    {t("bookAppointment.basicInfoStep.visaTypes.h1b")}
+                  </SelectItem>
+                  <SelectItem value="K-1">
+                    {t("bookAppointment.basicInfoStep.visaTypes.k1")}
+                  </SelectItem>
+                  <SelectItem value="IR-1">
+                    {t("bookAppointment.basicInfoStep.visaTypes.ir1")}
+                  </SelectItem>
+                  <SelectItem value="CR-1">
+                    {t("bookAppointment.basicInfoStep.visaTypes.cr1")}
+                  </SelectItem>
+                  <SelectItem value="Other">
+                    {t("bookAppointment.basicInfoStep.visaTypes.other")}
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="visaType">Visa Type</Label>
-            <Select
-              value={formData.visaType}
-              onValueChange={onSelectChange("visaType")}
-            >
-              <SelectTrigger id="visaType">
-                <SelectValue placeholder="Select visa type" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="B-2">B-2 (Medical / Tourist)</SelectItem>
-                <SelectItem value="B-1/B-2">B-1/B-2</SelectItem>
-                <SelectItem value="F-1">F-1 (Student)</SelectItem>
-                <SelectItem value="H-1B">H-1B (Work)</SelectItem>
-                <SelectItem value="K-1">K-1 (Fiancé)</SelectItem>
-                <SelectItem value="IR-1">IR-1 (Spouse)</SelectItem>
-                <SelectItem value="CR-1">CR-1 (Spouse)</SelectItem>
-                <SelectItem value="Other">Other</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+            <div className="space-y-2">
+              <Label htmlFor="originalPassport">
+                {t("bookAppointment.basicInfoStep.originalPassport")}
+              </Label>
+              <Select
+                value={formData.originalPassport}
+                onValueChange={onSelectChange("originalPassport")}
+              >
+                <SelectTrigger>
+                  <SelectValue
+                    placeholder={t(
+                      "bookAppointment.basicInfoStep.originalPassportOptions.yes",
+                    )}
+                  />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="YES">
+                    {t(
+                      "bookAppointment.basicInfoStep.originalPassportOptions.yes",
+                    )}
+                  </SelectItem>
+                  <SelectItem value="NO">
+                    {t(
+                      "bookAppointment.basicInfoStep.originalPassportOptions.no",
+                    )}
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="originalPassport">Original Passport</Label>
-            <Select
-              value={formData.originalPassport}
-              onValueChange={onSelectChange("originalPassport")}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Select Yes or No" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="YES">YES</SelectItem>
-                <SelectItem value="NO">NO</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+            <div className="space-y-2">
+              <Label htmlFor="medicalType">
+                {t("bookAppointment.basicInfoStep.medicalType")}
+              </Label>
+              <Select
+                value={formData.medicalType}
+                onValueChange={onSelectChange("medicalType")}
+              >
+                <SelectTrigger>
+                  <SelectValue
+                    placeholder={t(
+                      "bookAppointment.basicInfoStep.selectMedicalType",
+                    )}
+                  />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="First Medical">
+                    {t("bookAppointment.basicInfoStep.medicalTypes.first")}
+                  </SelectItem>
+                  <SelectItem value="Re-Medical">
+                    {t("bookAppointment.basicInfoStep.medicalTypes.reMedical")}
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </>
+        )}
 
-          <div className="space-y-2">
-            <Label htmlFor="medicalType">Medical Type</Label>
-            <Select
-              value={formData.medicalType}
-              onValueChange={onSelectChange("medicalType")}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Select medical type" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="First Medical">First Medical</SelectItem>
-                <SelectItem value="Re-Medical">Re-Medical</SelectItem>
-              </SelectContent>
-            </Select>
+        {error && (
+          <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+            {error}
           </div>
-        </>
-      )}
+        )}
 
-      {error && (
-        <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
-          {error}
+        <div className="flex justify-between pt-4">
+          <Button
+            onClick={onBack}
+            variant="outline"
+            className="bg-teal-600 hover:bg-teal-700 text-white"
+          >
+            {t("bookAppointment.basicInfoStep.prevBtn")}
+          </Button>
+          <Button
+            onClick={onNext}
+            className="bg-teal-600 hover:bg-teal-700 text-white"
+          >
+            {t("bookAppointment.basicInfoStep.nextBtn")}
+          </Button>
         </div>
-      )}
-
-      <div className="flex justify-between pt-4">
-        <Button
-          onClick={onBack}
-          variant="outline"
-          className="bg-teal-600 hover:bg-teal-700 text-white"
-        >
-          Prev
-        </Button>
-        <Button
-          onClick={onNext}
-          className="bg-teal-600 hover:bg-teal-700 text-white"
-        >
-          Next
-        </Button>
       </div>
     </div>
-  </div>
-);
+  );
+};
 
 interface ApplicantInfoProps {
   applicant: Applicant;
@@ -459,64 +590,84 @@ interface ApplicantInfoProps {
   onChange: (index: number, field: keyof Applicant, value: string) => void;
 }
 
-const ApplicantInfo = ({ applicant, index, onChange }: ApplicantInfoProps) => (
-  <div className="border border-gray-200 rounded-lg p-4 sm:p-6 mb-6 bg-gray-50">
-    <h3 className="text-lg font-semibold text-slate-900 mb-4">
-      Applicant #{index + 1}
-    </h3>
+const ApplicantInfo = ({ applicant, index, onChange }: ApplicantInfoProps) => {
+  const { t } = useLanguage();
+  return (
+    <div className="border border-gray-200 rounded-lg p-4 sm:p-6 mb-6 bg-gray-50">
+      <h3 className="text-lg font-semibold text-slate-900 mb-4">
+        {t("bookAppointment.personalInfoStep.applicantNumber").replace(
+          "{index}",
+          (index + 1).toString(),
+        )}
+      </h3>
 
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-      <div className="space-y-2">
-        <Label htmlFor={`applicant-${index}-surname`}>Surname *</Label>
-        <Input
-          id={`applicant-${index}-surname`}
-          value={applicant.surname}
-          onChange={(e) => onChange(index, "surname", e.target.value)}
-          placeholder="Enter surname"
-        />
-      </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="space-y-2">
+          <Label htmlFor={`applicant-${index}-surname`}>
+            {t("bookAppointment.personalInfoStep.surname")}
+          </Label>
+          <Input
+            id={`applicant-${index}-surname`}
+            value={applicant.surname}
+            onChange={(e) => onChange(index, "surname", e.target.value)}
+            placeholder={t("bookAppointment.personalInfoStep.enterSurname")}
+          />
+        </div>
 
-      <div className="space-y-2">
-        <Label htmlFor={`applicant-${index}-givenName`}>Given Name *</Label>
-        <Input
-          id={`applicant-${index}-givenName`}
-          value={applicant.givenName}
-          onChange={(e) => onChange(index, "givenName", e.target.value)}
-          placeholder="Enter given name"
-        />
-      </div>
+        <div className="space-y-2">
+          <Label htmlFor={`applicant-${index}-givenName`}>
+            {t("bookAppointment.personalInfoStep.givenName")}
+          </Label>
+          <Input
+            id={`applicant-${index}-givenName`}
+            value={applicant.givenName}
+            onChange={(e) => onChange(index, "givenName", e.target.value)}
+            placeholder={t("bookAppointment.personalInfoStep.enterGivenName")}
+          />
+        </div>
 
-      <div className="space-y-2">
-        <Label htmlFor={`applicant-${index}-gender`}>Gender *</Label>
-        <Select
-          value={applicant.gender}
-          onValueChange={(value) => onChange(index, "gender", value)}
-        >
-          <SelectTrigger>
-            <SelectValue placeholder="Select gender" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="M">Male</SelectItem>
-            <SelectItem value="F">Female</SelectItem>
-            <SelectItem value="Other">Other</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
+        <div className="space-y-2">
+          <Label htmlFor={`applicant-${index}-gender`}>
+            {t("bookAppointment.personalInfoStep.gender")}
+          </Label>
+          <Select
+            value={applicant.gender}
+            onValueChange={(value) => onChange(index, "gender", value)}
+          >
+            <SelectTrigger>
+              <SelectValue
+                placeholder={t("bookAppointment.personalInfoStep.selectGender")}
+              />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="M">
+                {t("bookAppointment.personalInfoStep.genders.m")}
+              </SelectItem>
+              <SelectItem value="F">
+                {t("bookAppointment.personalInfoStep.genders.f")}
+              </SelectItem>
+              <SelectItem value="Other">
+                {t("bookAppointment.personalInfoStep.genders.other")}
+              </SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
 
-      <div className="space-y-2">
-        <Label htmlFor={`applicant-${index}-dateOfBirth`}>
-          Date of Birth *
-        </Label>
-        <Input
-          id={`applicant-${index}-dateOfBirth`}
-          type="date"
-          value={applicant.dateOfBirth}
-          onChange={(e) => onChange(index, "dateOfBirth", e.target.value)}
-        />
+        <div className="space-y-2">
+          <Label htmlFor={`applicant-${index}-dateOfBirth`}>
+            {t("bookAppointment.personalInfoStep.dateOfBirth")}
+          </Label>
+          <Input
+            id={`applicant-${index}-dateOfBirth`}
+            type="date"
+            value={applicant.dateOfBirth}
+            onChange={(e) => onChange(index, "dateOfBirth", e.target.value)}
+          />
+        </div>
       </div>
     </div>
-  </div>
-);
+  );
+};
 
 interface PersonalInfoStepProps {
   formData: FormData;
@@ -540,118 +691,141 @@ const PersonalInfoStep = ({
   onApplicantChange,
   onNext,
   onBack,
-}: PersonalInfoStepProps) => (
-  <div className="space-y-6">
-    <div className="flex items-center gap-2 mb-6">
-      <div className="bg-teal-600 text-white px-3 py-1 rounded font-semibold">
-        Info
-      </div>
-      <h2 className="text-xl sm:text-2xl font-bold text-slate-900">
-        Personal Information
-      </h2>
-    </div>
-
+}: PersonalInfoStepProps) => {
+  const { t } = useLanguage();
+  return (
     <div className="space-y-6">
-      {/* Primary applicant information */}
-      <div className="border border-blue-200 rounded-lg p-4 sm:p-6 bg-blue-50">
-        <h3 className="text-lg font-semibold text-slate-900 mb-4">
-          Primary Applicant
-        </h3>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="space-y-2">
-            <Label htmlFor="surname">Surname *</Label>
-            <Input
-              id="surname"
-              name="surname"
-              value={formData.surname}
-              onChange={onChange}
-              placeholder="Enter surname"
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="givenName">Given Name *</Label>
-            <Input
-              id="givenName"
-              name="givenName"
-              value={formData.givenName}
-              onChange={onChange}
-              placeholder="Enter given name"
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="gender">Gender *</Label>
-            <Select
-              value={formData.gender}
-              onValueChange={onSelectChange("gender")}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Select gender" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="M">Male</SelectItem>
-                <SelectItem value="F">Female</SelectItem>
-                <SelectItem value="Other">Other</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="dateOfBirth">Date of Birth *</Label>
-            <Input
-              id="dateOfBirth"
-              name="dateOfBirth"
-              type="date"
-              value={formData.dateOfBirth}
-              onChange={onChange}
-            />
-          </div>
+      <div className="flex items-center gap-2 mb-6">
+        <div className="bg-teal-600 text-white px-3 py-1 rounded font-semibold">
+          {t("bookAppointment.personalInfoStep.badge")}
         </div>
+        <h2 className="text-xl sm:text-2xl font-bold text-slate-900">
+          {t("bookAppointment.personalInfoStep.title")}
+        </h2>
       </div>
 
-      {/* Additional applicants if any */}
-      {parseInt(formData.numberOfApplicants) > 1 && (
-        <div>
+      <div className="space-y-6">
+        {/* Primary applicant information */}
+        <div className="border border-blue-200 rounded-lg p-4 sm:p-6 bg-blue-50">
           <h3 className="text-lg font-semibold text-slate-900 mb-4">
-            Additional Applicants
+            {t("bookAppointment.personalInfoStep.primaryApplicantTitle")}
           </h3>
-          {formData.applicants.map((applicant, index) => (
-            <ApplicantInfo
-              key={applicant.id}
-              applicant={applicant}
-              index={index}
-              onChange={onApplicantChange}
-            />
-          ))}
-        </div>
-      )}
 
-      {error && (
-        <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
-          {error}
-        </div>
-      )}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="space-y-2">
+              <Label htmlFor="surname">
+                {t("bookAppointment.personalInfoStep.surname")}
+              </Label>
+              <Input
+                id="surname"
+                name="surname"
+                value={formData.surname}
+                onChange={onChange}
+                placeholder={t("bookAppointment.personalInfoStep.enterSurname")}
+              />
+            </div>
 
-      <div className="flex justify-between pt-4">
-        <Button
-          onClick={onBack}
-          variant="outline"
-          className="bg-teal-600 hover:bg-teal-700 text-white"
-        >
-          Prev
-        </Button>
-        <Button
-          onClick={onNext}
-          className="bg-teal-600 hover:bg-teal-700 text-white"
-        >
-          Next
-        </Button>
+            <div className="space-y-2">
+              <Label htmlFor="givenName">
+                {t("bookAppointment.personalInfoStep.givenName")}
+              </Label>
+              <Input
+                id="givenName"
+                name="givenName"
+                value={formData.givenName}
+                onChange={onChange}
+                placeholder={t(
+                  "bookAppointment.personalInfoStep.enterGivenName",
+                )}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="gender">
+                {t("bookAppointment.personalInfoStep.gender")}
+              </Label>
+              <Select
+                value={formData.gender}
+                onValueChange={onSelectChange("gender")}
+              >
+                <SelectTrigger>
+                  <SelectValue
+                    placeholder={t(
+                      "bookAppointment.personalInfoStep.selectGender",
+                    )}
+                  />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="M">
+                    {t("bookAppointment.personalInfoStep.genders.m")}
+                  </SelectItem>
+                  <SelectItem value="F">
+                    {t("bookAppointment.personalInfoStep.genders.f")}
+                  </SelectItem>
+                  <SelectItem value="Other">
+                    {t("bookAppointment.personalInfoStep.genders.other")}
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="dateOfBirth">
+                {t("bookAppointment.personalInfoStep.dateOfBirth")}
+              </Label>
+              <Input
+                id="dateOfBirth"
+                name="dateOfBirth"
+                type="date"
+                value={formData.dateOfBirth}
+                onChange={onChange}
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Additional applicants if any */}
+        {parseInt(formData.numberOfApplicants) > 1 && (
+          <div>
+            <h3 className="text-lg font-semibold text-slate-900 mb-4">
+              {t("bookAppointment.personalInfoStep.additionalApplicantsTitle")}
+            </h3>
+            {formData.applicants.map((applicant, index) => (
+              <ApplicantInfo
+                key={applicant.id}
+                applicant={applicant}
+                index={index}
+                onChange={onApplicantChange}
+              />
+            ))}
+          </div>
+        )}
+
+        {error && (
+          <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+            {error}
+          </div>
+        )}
+
+        <div className="flex justify-between pt-4">
+          <Button
+            onClick={onBack}
+            variant="outline"
+            className="bg-teal-600 hover:bg-teal-700 text-white"
+          >
+            {t("bookAppointment.personalInfoStep.prevBtn")}
+          </Button>
+          <Button
+            onClick={onNext}
+            className="bg-teal-600 hover:bg-teal-700 text-white"
+          >
+            {t("bookAppointment.personalInfoStep.nextBtn")}
+          </Button>
+        </div>
       </div>
     </div>
-  </div>
-);
+  );
+};
 
 interface ApplicantPassportInfoProps {
   applicant: Applicant;
@@ -665,77 +839,95 @@ const ApplicantPassportInfo = ({
   index,
   isAMC,
   onChange,
-}: ApplicantPassportInfoProps) => (
-  <div className="border border-gray-200 rounded-lg p-4 sm:p-6 mb-6 bg-gray-50">
-    <h3 className="text-lg font-semibold text-slate-900 mb-4">
-      Applicant #{index + 1} Passport Details
-    </h3>
+}: ApplicantPassportInfoProps) => {
+  const { t } = useLanguage();
+  return (
+    <div className="border border-gray-200 rounded-lg p-4 sm:p-6 mb-6 bg-gray-50">
+      <h3 className="text-lg font-semibold text-slate-900 mb-4">
+        {t("bookAppointment.passportDetailsStep.applicantNumber").replace(
+          "{index}",
+          (index + 1).toString(),
+        )}
+      </h3>
 
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-      <div className="space-y-2">
-        <Label htmlFor={`applicant-${index}-passportNumber`}>
-          Passport Number *
-        </Label>
-        <Input
-          id={`applicant-${index}-passportNumber`}
-          value={applicant.passportNumber}
-          onChange={(e) => onChange(index, "passportNumber", e.target.value)}
-          placeholder="Enter passport number"
-        />
-      </div>
-
-      <div className="space-y-2">
-        <Label htmlFor={`applicant-${index}-passportIssueDate`}>
-          Passport Issue Date
-        </Label>
-        <Input
-          id={`applicant-${index}-passportIssueDate`}
-          type="date"
-          value={applicant.passportIssueDate}
-          onChange={(e) => onChange(index, "passportIssueDate", e.target.value)}
-        />
-      </div>
-
-      <div className="space-y-2">
-        <Label htmlFor={`applicant-${index}-passportExpiryDate`}>
-          Passport Exp Date
-        </Label>
-        <Input
-          id={`applicant-${index}-passportExpiryDate`}
-          type="date"
-          value={applicant.passportExpiryDate}
-          onChange={(e) =>
-            onChange(index, "passportExpiryDate", e.target.value)
-          }
-        />
-      </div>
-
-      {!isAMC && (
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div className="space-y-2">
-          <Label htmlFor={`applicant-${index}-caseNumber`}>Case No</Label>
+          <Label htmlFor={`applicant-${index}-passportNumber`}>
+            {t("bookAppointment.passportDetailsStep.passportNumber")}
+          </Label>
           <Input
-            id={`applicant-${index}-caseNumber`}
-            value={applicant.caseNumber}
-            onChange={(e) => onChange(index, "caseNumber", e.target.value)}
-            placeholder="Enter case number (e.g., ISL)"
+            id={`applicant-${index}-passportNumber`}
+            value={applicant.passportNumber}
+            onChange={(e) => onChange(index, "passportNumber", e.target.value)}
+            placeholder={t(
+              "bookAppointment.passportDetailsStep.enterPassportNumber",
+            )}
           />
         </div>
-      )}
 
-      {isAMC && (
         <div className="space-y-2">
-          <Label htmlFor={`applicant-${index}-caseRef`}>Case Ref *</Label>
+          <Label htmlFor={`applicant-${index}-passportIssueDate`}>
+            {t("bookAppointment.passportDetailsStep.issueDate")}
+          </Label>
           <Input
-            id={`applicant-${index}-caseRef`}
-            value={applicant.caseRef}
-            onChange={(e) => onChange(index, "caseRef", e.target.value)}
-            placeholder="Enter case reference"
+            id={`applicant-${index}-passportIssueDate`}
+            type="date"
+            value={applicant.passportIssueDate}
+            onChange={(e) =>
+              onChange(index, "passportIssueDate", e.target.value)
+            }
           />
         </div>
-      )}
+
+        <div className="space-y-2">
+          <Label htmlFor={`applicant-${index}-passportExpiryDate`}>
+            {t("bookAppointment.passportDetailsStep.expiryDate")}
+          </Label>
+          <Input
+            id={`applicant-${index}-passportExpiryDate`}
+            type="date"
+            value={applicant.passportExpiryDate}
+            onChange={(e) =>
+              onChange(index, "passportExpiryDate", e.target.value)
+            }
+          />
+        </div>
+
+        {!isAMC && (
+          <div className="space-y-2">
+            <Label htmlFor={`applicant-${index}-caseNumber`}>
+              {t("bookAppointment.passportDetailsStep.caseNumber")}
+            </Label>
+            <Input
+              id={`applicant-${index}-caseNumber`}
+              value={applicant.caseNumber}
+              onChange={(e) => onChange(index, "caseNumber", e.target.value)}
+              placeholder={t(
+                "bookAppointment.passportDetailsStep.enterCaseNumber",
+              )}
+            />
+          </div>
+        )}
+
+        {isAMC && (
+          <div className="space-y-2">
+            <Label htmlFor={`applicant-${index}-caseRef`}>
+              {t("bookAppointment.passportDetailsStep.caseRef")}
+            </Label>
+            <Input
+              id={`applicant-${index}-caseRef`}
+              value={applicant.caseRef}
+              onChange={(e) => onChange(index, "caseRef", e.target.value)}
+              placeholder={t(
+                "bookAppointment.passportDetailsStep.enterCaseRef",
+              )}
+            />
+          </div>
+        )}
+      </div>
     </div>
-  </div>
-);
+  );
+};
 
 interface PassportDetailsStepProps {
   formData: FormData;
@@ -759,128 +951,149 @@ const PassportDetailsStep = ({
   onApplicantChange,
   onNext,
   onBack,
-}: PassportDetailsStepProps) => (
-  <div className="space-y-6">
-    <div className="flex items-center gap-2 mb-6">
-      <div className="bg-teal-600 text-white px-3 py-1 rounded font-semibold">
-        More info
-      </div>
-      <h2 className="text-xl sm:text-2xl font-bold text-slate-900">
-        Passport Details
-      </h2>
-    </div>
-
+}: PassportDetailsStepProps) => {
+  const { t } = useLanguage();
+  return (
     <div className="space-y-6">
-      {/* Primary applicant passport details */}
-      <div className="border border-blue-200 rounded-lg p-4 sm:p-6 bg-blue-50">
-        <h3 className="text-lg font-semibold text-slate-900 mb-4">
-          Primary Applicant Passport Details
-        </h3>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="space-y-2">
-            <Label htmlFor="passportNumber">Passport Number *</Label>
-            <Input
-              id="passportNumber"
-              name="passportNumber"
-              value={formData.passportNumber}
-              onChange={onChange}
-              placeholder="Enter passport number"
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="passportIssueDate">Passport Issue Date</Label>
-            <Input
-              id="passportIssueDate"
-              name="passportIssueDate"
-              type="date"
-              value={formData.passportIssueDate}
-              onChange={onChange}
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="passportExpiryDate">Passport Exp Date</Label>
-            <Input
-              id="passportExpiryDate"
-              name="passportExpiryDate"
-              type="date"
-              value={formData.passportExpiryDate}
-              onChange={onChange}
-            />
-          </div>
-
-          {!isAMC && (
-            <div className="space-y-2">
-              <Label htmlFor="caseNumber">Case No</Label>
-              <Input
-                id="caseNumber"
-                name="caseNumber"
-                value={formData.caseNumber}
-                onChange={onChange}
-                placeholder="Enter case number (e.g., ISL)"
-              />
-            </div>
-          )}
-
-          {isAMC && (
-            <div className="space-y-2">
-              <Label htmlFor="caseRef">Case Ref *</Label>
-              <Input
-                id="caseRef"
-                name="caseRef"
-                value={formData.caseRef}
-                onChange={onChange}
-                placeholder="Enter case reference"
-              />
-            </div>
-          )}
+      <div className="flex items-center gap-2 mb-6">
+        <div className="bg-teal-600 text-white px-3 py-1 rounded font-semibold">
+          {t("bookAppointment.passportDetailsStep.badge")}
         </div>
+        <h2 className="text-xl sm:text-2xl font-bold text-slate-900">
+          {t("bookAppointment.passportDetailsStep.title")}
+        </h2>
       </div>
 
-      {/* Additional applicants if any */}
-      {parseInt(formData.numberOfApplicants) > 1 && (
-        <div>
+      <div className="space-y-6">
+        {/* Primary applicant passport details */}
+        <div className="border border-blue-200 rounded-lg p-4 sm:p-6 bg-blue-50">
           <h3 className="text-lg font-semibold text-slate-900 mb-4">
-            Additional Applicants Passport Details
+            {t("bookAppointment.passportDetailsStep.primaryApplicantTitle")}
           </h3>
-          {formData.applicants.map((applicant, index) => (
-            <ApplicantPassportInfo
-              key={applicant.id}
-              applicant={applicant}
-              index={index}
-              isAMC={isAMC}
-              onChange={onApplicantChange}
-            />
-          ))}
-        </div>
-      )}
 
-      {error && (
-        <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
-          {error}
-        </div>
-      )}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="space-y-2">
+              <Label htmlFor="passportNumber">
+                {t("bookAppointment.passportDetailsStep.passportNumber")}
+              </Label>
+              <Input
+                id="passportNumber"
+                name="passportNumber"
+                value={formData.passportNumber}
+                onChange={onChange}
+                placeholder={t(
+                  "bookAppointment.passportDetailsStep.enterPassportNumber",
+                )}
+              />
+            </div>
 
-      <div className="flex justify-between pt-4">
-        <Button
-          onClick={onBack}
-          variant="outline"
-          className="bg-teal-600 hover:bg-teal-700 text-white"
-        >
-          Prev
-        </Button>
-        <Button
-          onClick={onNext}
-          className="bg-teal-600 hover:bg-teal-700 text-white"
-        >
-          Next
-        </Button>
+            <div className="space-y-2">
+              <Label htmlFor="passportIssueDate">
+                {t("bookAppointment.passportDetailsStep.issueDate")}
+              </Label>
+              <Input
+                id="passportIssueDate"
+                name="passportIssueDate"
+                type="date"
+                value={formData.passportIssueDate}
+                onChange={onChange}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="passportExpiryDate">
+                {t("bookAppointment.passportDetailsStep.expiryDate")}
+              </Label>
+              <Input
+                id="passportExpiryDate"
+                name="passportExpiryDate"
+                type="date"
+                value={formData.passportExpiryDate}
+                onChange={onChange}
+              />
+            </div>
+
+            {!isAMC && (
+              <div className="space-y-2">
+                <Label htmlFor="caseNumber">
+                  {t("bookAppointment.passportDetailsStep.caseNumber")}
+                </Label>
+                <Input
+                  id="caseNumber"
+                  name="caseNumber"
+                  value={formData.caseNumber}
+                  onChange={onChange}
+                  placeholder={t(
+                    "bookAppointment.passportDetailsStep.enterCaseNumber",
+                  )}
+                />
+              </div>
+            )}
+
+            {isAMC && (
+              <div className="space-y-2">
+                <Label htmlFor="caseRef">
+                  {t("bookAppointment.passportDetailsStep.caseRef")}
+                </Label>
+                <Input
+                  id="caseRef"
+                  name="caseRef"
+                  value={formData.caseRef}
+                  onChange={onChange}
+                  placeholder={t(
+                    "bookAppointment.passportDetailsStep.enterCaseRef",
+                  )}
+                />
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Additional applicants if any */}
+        {parseInt(formData.numberOfApplicants) > 1 && (
+          <div>
+            <h3 className="text-lg font-semibold text-slate-900 mb-4">
+              {t(
+                "bookAppointment.passportDetailsStep.additionalApplicantsTitle",
+              )}
+            </h3>
+            {formData.applicants.map((applicant, index) => (
+              <ApplicantPassportInfo
+                key={applicant.id}
+                applicant={applicant}
+                index={index}
+                isAMC={isAMC}
+                onChange={onApplicantChange}
+              />
+            ))}
+          </div>
+        )}
+
+        {error && (
+          <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+            {error}
+          </div>
+        )}
+
+        <div className="flex justify-between pt-4">
+          <Button
+            onClick={onBack}
+            variant="outline"
+            className="bg-teal-600 hover:bg-teal-700 text-white"
+          >
+            {t("bookAppointment.passportDetailsStep.prevBtn")}
+          </Button>
+          <Button
+            onClick={onNext}
+            className="bg-teal-600 hover:bg-teal-700 text-white"
+          >
+            {t("bookAppointment.passportDetailsStep.nextBtn")}
+          </Button>
+        </div>
       </div>
     </div>
-  </div>
-);
+  );
+};
 
 interface DocumentsStepProps {
   formData: FormData;
@@ -898,63 +1111,94 @@ const DocumentsStep = ({
   onFileChange,
   onNext,
   onBack,
-}: DocumentsStepProps) => (
-  <div className="space-y-6">
-    <div className="flex items-center gap-2 mb-6">
-      <div className="bg-teal-600 text-white px-3 py-1 rounded font-semibold">
-        Docs
-      </div>
-      <h2 className="text-xl sm:text-2xl font-bold text-slate-900">
-        Upload Documents
-      </h2>
-    </div>
-
+}: DocumentsStepProps) => {
+  const { t } = useLanguage();
+  return (
     <div className="space-y-6">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="space-y-2">
-          <Label>Surname</Label>
-          <Input value={formData.surname} disabled className="bg-gray-50" />
+      <div className="flex items-center gap-2 mb-6">
+        <div className="bg-teal-600 text-white px-3 py-1 rounded font-semibold">
+          {t("bookAppointment.documentsStep.badge")}
+        </div>
+        <h2 className="text-xl sm:text-2xl font-bold text-slate-900">
+          {t("bookAppointment.documentsStep.title")}
+        </h2>
+      </div>
+
+      <div className="space-y-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="space-y-2">
+            <Label>{t("bookAppointment.documentsStep.surname")}</Label>
+            <Input value={formData.surname} disabled className="bg-gray-50" />
+          </div>
+
+          <div className="space-y-2">
+            <Label>{t("bookAppointment.documentsStep.givenName")}</Label>
+            <Input value={formData.givenName} disabled className="bg-gray-50" />
+          </div>
         </div>
 
         <div className="space-y-2">
-          <Label>Given Name</Label>
-          <Input value={formData.givenName} disabled className="bg-gray-50" />
+          <Label>{t("bookAppointment.documentsStep.scannedPassport")}</Label>
+          <label
+            htmlFor="scannedPassport"
+            className="flex flex-col items-center justify-center w-full cursor-pointer h-24 rounded-lg border-2 border-dashed border-gray-300 bg-gray-50 hover:bg-teal-50 hover:border-teal-500 hover:text-teal-600 transition-colors text-slate-500"
+          >
+            <svg
+              className="w-6 h-6 mb-2"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"
+              />
+            </svg>
+            <span className="text-sm font-medium">
+              {t("bookAppointment.documentsStep.clickToChoose")}
+            </span>
+          </label>
+          <Input
+            id="scannedPassport"
+            name="scannedPassport"
+            type="file"
+            onChange={onFileChange("scannedPassport")}
+            accept=".pdf,.jpg,.jpeg,.png"
+            className="hidden"
+          />
+          {formData.scannedPassport && (
+            <p className="text-sm text-green-600 flex items-center gap-2">
+              <svg
+                className="w-4 h-4"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M5 13l4 4L19 7"
+                ></path>
+              </svg>
+              {formData.scannedPassport.name}
+            </p>
+          )}
+          <p className="text-xs text-slate-500">
+            {t("bookAppointment.documentsStep.uploadScannedDesc")}
+          </p>
         </div>
-      </div>
 
-      <div className="space-y-2">
-        <Label>Scanned Passport *</Label>
-        <label
-          htmlFor="scannedPassport"
-          className="flex flex-col items-center justify-center w-full cursor-pointer h-24 rounded-lg border-2 border-dashed border-gray-300 bg-gray-50 hover:bg-teal-50 hover:border-teal-500 hover:text-teal-600 transition-colors text-slate-500"
-        >
-          <svg
-            className="w-6 h-6 mb-2"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
+        <div className="space-y-2">
+          <Label>{t("bookAppointment.documentsStep.k1Letter")}</Label>
+          <label
+            htmlFor="kOneLetter"
+            className="flex flex-col items-center justify-center w-full cursor-pointer h-24 rounded-lg border-2 border-dashed border-gray-300 bg-gray-50 hover:bg-teal-50 hover:border-teal-500 hover:text-teal-600 transition-colors text-slate-500"
           >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth="2"
-              d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"
-            />
-          </svg>
-          <span className="text-sm font-medium">Click to choose file</span>
-        </label>
-        <Input
-          id="scannedPassport"
-          name="scannedPassport"
-          type="file"
-          onChange={onFileChange("scannedPassport")}
-          accept=".pdf,.jpg,.jpeg,.png"
-          className="hidden"
-        />
-        {formData.scannedPassport && (
-          <p className="text-sm text-green-600 flex items-center gap-2">
             <svg
-              className="w-4 h-4"
+              className="w-6 h-6 mb-2"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -963,145 +1207,123 @@ const DocumentsStep = ({
                 strokeLinecap="round"
                 strokeLinejoin="round"
                 strokeWidth="2"
-                d="M5 13l4 4L19 7"
-              ></path>
+                d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"
+              />
             </svg>
-            {formData.scannedPassport.name}
+            <span className="text-sm font-medium">
+              {t("bookAppointment.documentsStep.clickToChoose")}
+            </span>
+          </label>
+          <Input
+            id="kOneLetter"
+            name="kOneLetter"
+            type="file"
+            onChange={onFileChange("kOneLetter")}
+            accept=".pdf,.jpg,.jpeg,.png"
+            className="hidden"
+          />
+          {formData.kOneLetter && (
+            <p className="text-sm text-green-600 flex items-center gap-2">
+              <svg
+                className="w-4 h-4"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M5 13l4 4L19 7"
+                ></path>
+              </svg>
+              {formData.kOneLetter.name}
+            </p>
+          )}
+          <p className="text-xs text-slate-500">
+            {t("bookAppointment.documentsStep.uploadK1Desc")}
           </p>
-        )}
-        <p className="text-xs text-slate-500">
-          Upload a scanned copy of your passport (PDF, JPG, PNG)
-        </p>
-      </div>
-
-      <div className="space-y-2">
-        <Label>K-1 Letter</Label>
-        <label
-          htmlFor="kOneLetter"
-          className="flex flex-col items-center justify-center w-full cursor-pointer h-24 rounded-lg border-2 border-dashed border-gray-300 bg-gray-50 hover:bg-teal-50 hover:border-teal-500 hover:text-teal-600 transition-colors text-slate-500"
-        >
-          <svg
-            className="w-6 h-6 mb-2"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth="2"
-              d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"
-            />
-          </svg>
-          <span className="text-sm font-medium">Click to choose file</span>
-        </label>
-        <Input
-          id="kOneLetter"
-          name="kOneLetter"
-          type="file"
-          onChange={onFileChange("kOneLetter")}
-          accept=".pdf,.jpg,.jpeg,.png"
-          className="hidden"
-        />
-        {formData.kOneLetter && (
-          <p className="text-sm text-green-600 flex items-center gap-2">
-            <svg
-              className="w-4 h-4"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                d="M5 13l4 4L19 7"
-              ></path>
-            </svg>
-            {formData.kOneLetter.name}
-          </p>
-        )}
-        <p className="text-xs text-slate-500">
-          Upload your K-1 visa letter (PDF, JPG, PNG)
-        </p>
-      </div>
-
-      <div className="space-y-2">
-        <Label>Appointment confirmation letter</Label>
-        <label
-          htmlFor="appointmentConfirmationLetter"
-          className="flex flex-col items-center justify-center w-full cursor-pointer h-24 rounded-lg border-2 border-dashed border-gray-300 bg-gray-50 hover:bg-teal-50 hover:border-teal-500 hover:text-teal-600 transition-colors text-slate-500"
-        >
-          <svg
-            className="w-6 h-6 mb-2"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth="2"
-              d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"
-            />
-          </svg>
-          <span className="text-sm font-medium">Click to choose file</span>
-        </label>
-        <Input
-          id="appointmentConfirmationLetter"
-          name="appointmentConfirmationLetter"
-          type="file"
-          onChange={onFileChange("appointmentConfirmationLetter")}
-          accept=".pdf,.jpg,.jpeg,.png"
-          className="hidden"
-        />
-        {formData.appointmentConfirmationLetter && (
-          <p className="text-sm text-green-600 flex items-center gap-2">
-            <svg
-              className="w-4 h-4"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                d="M5 13l4 4L19 7"
-              ></path>
-            </svg>
-            {formData.appointmentConfirmationLetter.name}
-          </p>
-        )}
-        <p className="text-xs text-slate-500">
-          Upload your appointment confirmation letter (PDF, JPG, PNG)
-        </p>
-      </div>
-
-      {error && (
-        <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
-          {error}
         </div>
-      )}
 
-      <div className="flex justify-between pt-4">
-        <Button
-          onClick={onBack}
-          variant="outline"
-          className="bg-teal-600 hover:bg-teal-700 text-white"
-        >
-          Prev
-        </Button>
-        <Button
-          onClick={onNext}
-          className="bg-teal-600 hover:bg-teal-700 text-white"
-        >
-          Next
-        </Button>
+        <div className="space-y-2">
+          <Label>{t("bookAppointment.documentsStep.appointmentLetter")}</Label>
+          <label
+            htmlFor="appointmentConfirmationLetter"
+            className="flex flex-col items-center justify-center w-full cursor-pointer h-24 rounded-lg border-2 border-dashed border-gray-300 bg-gray-50 hover:bg-teal-50 hover:border-teal-500 hover:text-teal-600 transition-colors text-slate-500"
+          >
+            <svg
+              className="w-6 h-6 mb-2"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"
+              />
+            </svg>
+            <span className="text-sm font-medium">
+              {t("bookAppointment.documentsStep.clickToChoose")}
+            </span>
+          </label>
+          <Input
+            id="appointmentConfirmationLetter"
+            name="appointmentConfirmationLetter"
+            type="file"
+            onChange={onFileChange("appointmentConfirmationLetter")}
+            accept=".pdf,.jpg,.jpeg,.png"
+            className="hidden"
+          />
+          {formData.appointmentConfirmationLetter && (
+            <p className="text-sm text-green-600 flex items-center gap-2">
+              <svg
+                className="w-4 h-4"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M5 13l4 4L19 7"
+                ></path>
+              </svg>
+              {formData.appointmentConfirmationLetter.name}
+            </p>
+          )}
+          <p className="text-xs text-slate-500">
+            {t("bookAppointment.documentsStep.uploadAppointmentDesc")}
+          </p>
+        </div>
+
+        {error && (
+          <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+            {error}
+          </div>
+        )}
+
+        <div className="flex justify-between pt-4">
+          <Button
+            onClick={onBack}
+            variant="outline"
+            className="bg-teal-600 hover:bg-teal-700 text-white"
+          >
+            {t("bookAppointment.documentsStep.prevBtn")}
+          </Button>
+          <Button
+            onClick={onNext}
+            className="bg-teal-600 hover:bg-teal-700 text-white"
+          >
+            {t("bookAppointment.documentsStep.nextBtn")}
+          </Button>
+        </div>
       </div>
     </div>
-  </div>
-);
+  );
+};
 
 interface ScheduleStepProps {
   formData: FormData;
@@ -1121,95 +1343,106 @@ const ScheduleStep = ({
   onSelectChange,
   onSubmit,
   onBack,
-}: ScheduleStepProps) => (
-  <div className="space-y-6">
-    <div className="flex items-center gap-2 mb-6">
-      <div className="bg-teal-600 text-white px-3 py-1 rounded font-semibold">
-        When
-      </div>
-      <h2 className="text-xl sm:text-2xl font-bold text-slate-900">
-        Appointment Schedule
-      </h2>
-    </div>
-
-    <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
-      <p className="font-semibold text-lg">
-        {formData.surname}, {formData.givenName}
-      </p>
-    </div>
-
+}: ScheduleStepProps) => {
+  const { t } = useLanguage();
+  return (
     <div className="space-y-6">
-      <div className="space-y-2">
-        <Label htmlFor="estimatedCharges">Est Charges</Label>
-        <Input
-          id="estimatedCharges"
-          name="estimatedCharges"
-          value={formData.estimatedCharges}
-          onChange={onChange}
-          placeholder="97,458"
-        />
-      </div>
-
-      <div className="space-y-2">
-        <Label htmlFor="preferredAppointmentDate">
-          Preferred Appointment Date
-        </Label>
-        <Input
-          id="preferredAppointmentDate"
-          name="preferredAppointmentDate"
-          type="date"
-          value={formData.preferredAppointmentDate}
-          onChange={onChange}
-        />
-      </div>
-
-      <div className="space-y-2">
-        <Label htmlFor="preferredTime">Time</Label>
-        <Select
-          value={formData.preferredTime}
-          onValueChange={onSelectChange("preferredTime")}
-        >
-          <SelectTrigger>
-            <SelectValue placeholder="Select time slot" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="08:00-08:30">08:00 AM - 08:30 AM</SelectItem>
-            <SelectItem value="08:30-09:00">08:30 AM - 09:00 AM</SelectItem>
-            <SelectItem value="09:00-09:30">09:00 AM - 09:30 AM</SelectItem>
-            <SelectItem value="09:30-10:00">09:30 AM - 10:00 AM</SelectItem>
-            <SelectItem value="10:00-10:30">10:00 AM - 10:30 AM</SelectItem>
-            <SelectItem value="10:30-11:00">10:30 AM - 11:00 AM</SelectItem>
-            <SelectItem value="11:00-11:30">11:00 AM - 11:30 AM</SelectItem>
-            <SelectItem value="11:30-12:00">11:30 AM - 12:00 PM</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
-
-      {error && (
-        <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
-          {error}
+      <div className="flex items-center gap-2 mb-6">
+        <div className="bg-teal-600 text-white px-3 py-1 rounded font-semibold">
+          {t("bookAppointment.scheduleStep.badge")}
         </div>
-      )}
+        <h2 className="text-xl sm:text-2xl font-bold text-slate-900">
+          {t("bookAppointment.scheduleStep.title")}
+        </h2>
+      </div>
 
-      <div className="flex justify-between pt-4">
-        <Button
-          onClick={onBack}
-          variant="outline"
-          className="bg-teal-600 hover:bg-teal-700 text-white"
-        >
-          Prev
-        </Button>
-        <Button
-          onClick={onSubmit}
-          disabled={loading}
-          className="bg-teal-600 hover:bg-teal-700 text-white"
-        >
-          {loading ? "Submitting..." : "Review & Submit"}
-        </Button>
+      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+        <p className="font-semibold text-lg">
+          {formData.surname}, {formData.givenName}
+        </p>
+      </div>
+
+      <div className="space-y-6">
+        <div className="space-y-2">
+          <Label htmlFor="estimatedCharges">
+            {t("bookAppointment.scheduleStep.estCharges")}
+          </Label>
+          <Input
+            id="estimatedCharges"
+            name="estimatedCharges"
+            value={formData.estimatedCharges}
+            onChange={onChange}
+            placeholder="97,458"
+          />
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="preferredAppointmentDate">
+            {t("bookAppointment.scheduleStep.preferredDate")}
+          </Label>
+          <Input
+            id="preferredAppointmentDate"
+            name="preferredAppointmentDate"
+            type="date"
+            value={formData.preferredAppointmentDate}
+            onChange={onChange}
+          />
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="preferredTime">
+            {t("bookAppointment.scheduleStep.time")}
+          </Label>
+          <Select
+            value={formData.preferredTime}
+            onValueChange={onSelectChange("preferredTime")}
+          >
+            <SelectTrigger>
+              <SelectValue
+                placeholder={t("bookAppointment.scheduleStep.selectTimeSlot")}
+              />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="08:00-08:30">08:00 AM - 08:30 AM</SelectItem>
+              <SelectItem value="08:30-09:00">08:30 AM - 09:00 AM</SelectItem>
+              <SelectItem value="09:00-09:30">09:00 AM - 09:30 AM</SelectItem>
+              <SelectItem value="09:30-10:00">09:30 AM - 10:00 AM</SelectItem>
+              <SelectItem value="10:00-10:30">10:00 AM - 10:30 AM</SelectItem>
+              <SelectItem value="10:30-11:00">10:30 AM - 11:00 AM</SelectItem>
+              <SelectItem value="11:00-11:30">11:00 AM - 11:30 AM</SelectItem>
+              <SelectItem value="11:30-12:00">11:30 AM - 12:00 PM</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
+        {error && (
+          <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+            {error}
+          </div>
+        )}
+
+        <div className="flex justify-between pt-4">
+          <Button
+            onClick={onBack}
+            variant="outline"
+            className="bg-teal-600 hover:bg-teal-700 text-white"
+          >
+            {t("bookAppointment.scheduleStep.prevBtn")}
+          </Button>
+          <Button
+            onClick={onSubmit}
+            disabled={loading}
+            className="bg-teal-600 hover:bg-teal-700 text-white"
+          >
+            {loading
+              ? t("bookAppointment.scheduleStep.submitting")
+              : t("bookAppointment.scheduleStep.reviewBtn")}
+          </Button>
+        </div>
       </div>
     </div>
-  </div>
-);
+  );
+};
 
 interface ReviewStepProps {
   formData: FormData;
@@ -1231,494 +1464,573 @@ const ReviewStep = ({
   onSubmit,
   onBack,
   formatDate,
-}: ReviewStepProps) => (
-  <div className="space-y-6">
-    <div className="flex items-center gap-2 mb-6">
-      <div className="bg-teal-600 text-white px-3 py-1 rounded font-semibold">
-        Preview
-      </div>
-      <h2 className="text-xl sm:text-2xl font-bold text-slate-900">
-        Review Your Information
-      </h2>
-    </div>
-
+}: ReviewStepProps) => {
+  const { t } = useLanguage();
+  return (
     <div className="space-y-6">
-      <div className="bg-slate-50 rounded-lg p-4 sm:p-6">
-        <h3 className="text-lg font-semibold text-slate-900 mb-4 flex items-center gap-2">
-          <svg
-            className="w-5 h-5 text-teal-600"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth="2"
-              d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
-            ></path>
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth="2"
-              d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
-            ></path>
-          </svg>
-          Location
-        </h3>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div>
-            <p className="text-sm text-slate-600">Selected Centre</p>
-            <p className="font-medium capitalize">
-              {formData.location}
-              {formData.location === "islamabad" &&
-                formData.islamabadProvider &&
-                ` - ${formData.islamabadProvider.toUpperCase()}`}
-              {(formData.location === "karachi" ||
-                formData.location === "lahore") &&
-                " - Wilcare Medical"}
-            </p>
-          </div>
+      <div className="flex items-center gap-2 mb-6">
+        <div className="bg-teal-600 text-white px-3 py-1 rounded font-semibold">
+          {t("bookAppointment.reviewStep.badge")}
         </div>
+        <h2 className="text-xl sm:text-2xl font-bold text-slate-900">
+          {t("bookAppointment.reviewStep.title")}
+        </h2>
       </div>
 
-      <div className="bg-slate-50 rounded-lg p-4 sm:p-6">
-        <h3 className="text-lg font-semibold text-slate-900 mb-4 flex items-center gap-2">
-          <svg
-            className="w-5 h-5 text-teal-600"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth="2"
-              d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-            ></path>
-          </svg>
-          Basic Information
-        </h3>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div>
-            <p className="text-sm text-slate-600">Primary Contact</p>
-            <p className="font-medium">+92 {formData.primaryContact}</p>
-          </div>
-          <div>
-            <p className="text-sm text-slate-600">Email</p>
-            <p className="font-medium">{formData.email}</p>
-          </div>
-          {formData.interviewDate && (
+      <div className="space-y-6">
+        <div className="bg-slate-50 rounded-lg p-4 sm:p-6">
+          <h3 className="text-lg font-semibold text-slate-900 mb-4 flex items-center gap-2">
+            <svg
+              className="w-5 h-5 text-teal-600"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
+              ></path>
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
+              ></path>
+            </svg>
+            {t("bookAppointment.reviewStep.locationSection")}
+          </h3>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <p className="text-sm text-slate-600">Interview Date</p>
-              <p className="font-medium">
-                {formatDate(formData.interviewDate)}
+              <p className="text-sm text-slate-600">
+                {t("bookAppointment.reviewStep.selectedCentre")}
+              </p>
+              <p className="font-medium capitalize">
+                {formData.location}
+                {formData.location === "islamabad" &&
+                  formData.islamabadProvider &&
+                  ` - ${formData.islamabadProvider.toUpperCase()}`}
+                {(formData.location === "karachi" ||
+                  formData.location === "lahore") &&
+                  " - Wilcare Medical"}
               </p>
             </div>
-          )}
-          {formData.visaCategory && (
-            <div>
-              <p className="text-sm text-slate-600">Visa Category</p>
-              <p className="font-medium">{formData.visaCategory}</p>
-            </div>
-          )}
-          {formData.appointmentType && (
-            <div>
-              <p className="text-sm text-slate-600">Appointment Type</p>
-              <p className="font-medium">{formData.appointmentType}</p>
-            </div>
-          )}
-          {formData.visaType && (
-            <div>
-              <p className="text-sm text-slate-600">Visa Type</p>
-              <p className="font-medium">{formData.visaType}</p>
-            </div>
-          )}
-          {/* IOM specific fields */}
-          {isIOM && (
-            <>
-              <div>
-                <p className="text-sm text-slate-600">Full Name</p>
-                <p className="font-medium">{formData.fullName}</p>
-              </div>
-              <div>
-                <p className="text-sm text-slate-600">Contact Number</p>
-                <p className="font-medium">+92 {formData.contactNumber}</p>
-              </div>
-              <div>
-                <p className="text-sm text-slate-600">Preferred Location</p>
-                <p className="font-medium">{formData.preferredLocation}</p>
-              </div>
-              <div>
-                <p className="text-sm text-slate-600">Destination Country</p>
-                <p className="font-medium">{formData.destinationCountry}</p>
-              </div>
-            </>
-          )}
-        </div>
-      </div>
-
-      <div className="bg-slate-50 rounded-lg p-4 sm:p-6">
-        <h3 className="text-lg font-semibold text-slate-900 mb-4 flex items-center gap-2">
-          <svg
-            className="w-5 h-5 text-teal-600"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth="2"
-              d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1m-4 0a2 2 0 104 0m-5 8a2 2 0 100-4 2 2 0 000 4zm0 0c1.306 0 2.417.835 2.83 2M9 14a3.001 3.001 0 00-2.83 2M15 11h3m-3 4h2"
-            ></path>
-          </svg>
-          Personal Information
-        </h3>
-        <div className="space-y-6">
-          {/* Primary applicant */}
-          <div className="border border-blue-200 rounded-lg p-4 bg-blue-50">
-            <h4 className="font-semibold text-slate-900 mb-3">
-              Primary Applicant
-            </h4>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
-                <p className="text-sm text-slate-600">Surname</p>
-                <p className="font-medium">{formData.surname}</p>
-              </div>
-              <div>
-                <p className="text-sm text-slate-600">Given Name</p>
-                <p className="font-medium">{formData.givenName}</p>
-              </div>
-              <div>
-                <p className="text-sm text-slate-600">Gender</p>
-                <p className="font-medium">{formData.gender}</p>
-              </div>
-              <div>
-                <p className="text-sm text-slate-600">Date of Birth</p>
-                <p className="font-medium">
-                  {formData.dateOfBirth
-                    ? formatDate(formData.dateOfBirth)
-                    : "Not specified"}
-                </p>
-              </div>
-            </div>
           </div>
+        </div>
 
-          {/* Additional applicants if any */}
-          {parseInt(formData.numberOfApplicants) > 1 &&
-            formData.applicants.length > 0 && (
+        <div className="bg-slate-50 rounded-lg p-4 sm:p-6">
+          <h3 className="text-lg font-semibold text-slate-900 mb-4 flex items-center gap-2">
+            <svg
+              className="w-5 h-5 text-teal-600"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+              ></path>
+            </svg>
+            {t("bookAppointment.reviewStep.basicInfoSection")}
+          </h3>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <p className="text-sm text-slate-600">
+                {t("bookAppointment.reviewStep.primaryContact")}
+              </p>
+              <p className="font-medium">+92 {formData.primaryContact}</p>
+            </div>
+            <div>
+              <p className="text-sm text-slate-600">
+                {t("bookAppointment.reviewStep.email")}
+              </p>
+              <p className="font-medium">{formData.email}</p>
+            </div>
+            {formData.interviewDate && (
               <div>
-                <h4 className="font-semibold text-slate-900 mb-3">
-                  Additional Applicants
-                </h4>
-                {formData.applicants.map((applicant, index) => (
-                  <div
-                    key={applicant.id}
-                    className="border border-gray-200 rounded-lg p-4 mb-4 bg-gray-50"
-                  >
-                    <h5 className="font-semibold text-slate-900 mb-2">
-                      Applicant #{index + 1}
-                    </h5>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      <div>
-                        <p className="text-sm text-slate-600">Surname</p>
-                        <p className="font-medium">{applicant.surname}</p>
-                      </div>
-                      <div>
-                        <p className="text-sm text-slate-600">Given Name</p>
-                        <p className="font-medium">{applicant.givenName}</p>
-                      </div>
-                      <div>
-                        <p className="text-sm text-slate-600">Gender</p>
-                        <p className="font-medium">{applicant.gender}</p>
-                      </div>
-                      <div>
-                        <p className="text-sm text-slate-600">Date of Birth</p>
-                        <p className="font-medium">
-                          {applicant.dateOfBirth
-                            ? formatDate(applicant.dateOfBirth)
-                            : "Not specified"}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                ))}
+                <p className="text-sm text-slate-600">
+                  {t("bookAppointment.reviewStep.interviewDate")}
+                </p>
+                <p className="font-medium">
+                  {formatDate(formData.interviewDate)}
+                </p>
               </div>
             )}
-        </div>
-      </div>
-
-      <div className="bg-slate-50 rounded-lg p-4 sm:p-6">
-        <h3 className="text-lg font-semibold text-slate-900 mb-4 flex items-center gap-2">
-          <svg
-            className="w-5 h-5 text-teal-600"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth="2"
-              d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-            ></path>
-          </svg>
-          Passport Details
-        </h3>
-        <div className="space-y-6">
-          {/* Primary applicant */}
-          <div className="border border-blue-200 rounded-lg p-4 bg-blue-50">
-            <h4 className="font-semibold text-slate-900 mb-3">
-              Primary Applicant
-            </h4>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {formData.visaCategory && (
               <div>
-                <p className="text-sm text-slate-600">Passport Number</p>
-                <p className="font-medium">{formData.passportNumber}</p>
-              </div>
-              <div>
-                <p className="text-sm text-slate-600">Issue Date</p>
-                <p className="font-medium">
-                  {formData.passportIssueDate
-                    ? formatDate(formData.passportIssueDate)
-                    : "Not specified"}
+                <p className="text-sm text-slate-600">
+                  {t("bookAppointment.reviewStep.visaCategory")}
                 </p>
+                <p className="font-medium">{formData.visaCategory}</p>
               </div>
+            )}
+            {formData.appointmentType && (
               <div>
-                <p className="text-sm text-slate-600">Expiry Date</p>
-                <p className="font-medium">
-                  {formData.passportExpiryDate
-                    ? formatDate(formData.passportExpiryDate)
-                    : "Not specified"}
+                <p className="text-sm text-slate-600">
+                  {t("bookAppointment.reviewStep.appointmentType")}
                 </p>
+                <p className="font-medium">{formData.appointmentType}</p>
               </div>
-              {formData.caseNumber && (
+            )}
+            {formData.visaType && (
+              <div>
+                <p className="text-sm text-slate-600">
+                  {t("bookAppointment.reviewStep.visaType")}
+                </p>
+                <p className="font-medium">{formData.visaType}</p>
+              </div>
+            )}
+            {/* IOM specific fields */}
+            {isIOM && (
+              <>
                 <div>
-                  <p className="text-sm text-slate-600">Case Number</p>
-                  <p className="font-medium">{formData.caseNumber}</p>
+                  <p className="text-sm text-slate-600">
+                    {t("bookAppointment.reviewStep.fullName")}
+                  </p>
+                  <p className="font-medium">{formData.fullName}</p>
                 </div>
-              )}
-              {isAMC && formData.caseRef && (
                 <div>
-                  <p className="text-sm text-slate-600">Case Reference</p>
-                  <p className="font-medium">{formData.caseRef}</p>
+                  <p className="text-sm text-slate-600">
+                    {t("bookAppointment.reviewStep.contactNumber")}
+                  </p>
+                  <p className="font-medium">+92 {formData.contactNumber}</p>
                 </div>
-              )}
-            </div>
+                <div>
+                  <p className="text-sm text-slate-600">
+                    {t("bookAppointment.reviewStep.preferredLocation")}
+                  </p>
+                  <p className="font-medium">{formData.preferredLocation}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-slate-600">
+                    {t("bookAppointment.reviewStep.destinationCountry")}
+                  </p>
+                  <p className="font-medium">{formData.destinationCountry}</p>
+                </div>
+              </>
+            )}
           </div>
+        </div>
 
-          {/* Additional applicants if any */}
-          {parseInt(formData.numberOfApplicants) > 1 &&
-            formData.applicants.length > 0 && (
-              <div>
-                <h4 className="font-semibold text-slate-900 mb-3">
-                  Additional Applicants
-                </h4>
-                {formData.applicants.map((applicant, index) => (
-                  <div
-                    key={applicant.id}
-                    className="border border-gray-200 rounded-lg p-4 mb-4 bg-gray-50"
-                  >
-                    <h5 className="font-semibold text-slate-900 mb-2">
-                      Applicant #{index + 1}
-                    </h5>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      <div>
-                        <p className="text-sm text-slate-600">
-                          Passport Number
-                        </p>
-                        <p className="font-medium">
-                          {applicant.passportNumber}
-                        </p>
-                      </div>
-                      <div>
-                        <p className="text-sm text-slate-600">Issue Date</p>
-                        <p className="font-medium">
-                          {applicant.passportIssueDate
-                            ? formatDate(applicant.passportIssueDate)
-                            : "Not specified"}
-                        </p>
-                      </div>
-                      <div>
-                        <p className="text-sm text-slate-600">Expiry Date</p>
-                        <p className="font-medium">
-                          {applicant.passportExpiryDate
-                            ? formatDate(applicant.passportExpiryDate)
-                            : "Not specified"}
-                        </p>
-                      </div>
-                      <div>
-                        <p className="text-sm text-slate-600">Case Number</p>
-                        <p className="font-medium">{applicant.caseNumber}</p>
-                      </div>
-                      {isAMC && (
+        <div className="bg-slate-50 rounded-lg p-4 sm:p-6">
+          <h3 className="text-lg font-semibold text-slate-900 mb-4 flex items-center gap-2">
+            <svg
+              className="w-5 h-5 text-teal-600"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1m-4 0a2 2 0 104 0m-5 8a2 2 0 100-4 2 2 0 000 4zm0 0c1.306 0 2.417.835 2.83 2M9 14a3.001 3.001 0 00-2.83 2M15 11h3m-3 4h2"
+              ></path>
+            </svg>
+            {t("bookAppointment.reviewStep.personalInfoSection")}
+          </h3>
+          <div className="space-y-6">
+            {/* Primary applicant */}
+            <div className="border border-blue-200 rounded-lg p-4 bg-blue-50">
+              <h4 className="font-semibold text-slate-900 mb-3">
+                {t("bookAppointment.reviewStep.primaryApplicant")}
+              </h4>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <p className="text-sm text-slate-600">
+                    {t("bookAppointment.reviewStep.surname")}
+                  </p>
+                  <p className="font-medium">{formData.surname}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-slate-600">
+                    {t("bookAppointment.reviewStep.givenName")}
+                  </p>
+                  <p className="font-medium">{formData.givenName}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-slate-600">
+                    {t("bookAppointment.reviewStep.gender")}
+                  </p>
+                  <p className="font-medium">{formData.gender}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-slate-600">
+                    {t("bookAppointment.reviewStep.dateOfBirth")}
+                  </p>
+                  <p className="font-medium">
+                    {formData.dateOfBirth
+                      ? formatDate(formData.dateOfBirth)
+                      : t("bookAppointment.reviewStep.notSpecified")}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Additional applicants if any */}
+            {parseInt(formData.numberOfApplicants) > 1 &&
+              formData.applicants.length > 0 && (
+                <div>
+                  <h4 className="font-semibold text-slate-900 mb-3">
+                    {t("bookAppointment.reviewStep.additionalApplicants")}
+                  </h4>
+                  {formData.applicants.map((applicant, index) => (
+                    <div
+                      key={applicant.id}
+                      className="border border-gray-200 rounded-lg p-4 mb-4 bg-gray-50"
+                    >
+                      <h5 className="font-semibold text-slate-900 mb-2">
+                        {t("bookAppointment.reviewStep.applicantIndex").replace(
+                          "{index}",
+                          (index + 1).toString(),
+                        )}
+                      </h5>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
                           <p className="text-sm text-slate-600">
-                            Case Reference
+                            {t("bookAppointment.reviewStep.surname")}
                           </p>
-                          <p className="font-medium">{applicant.caseRef}</p>
+                          <p className="font-medium">{applicant.surname}</p>
                         </div>
-                      )}
+                        <div>
+                          <p className="text-sm text-slate-600">
+                            {t("bookAppointment.reviewStep.givenName")}
+                          </p>
+                          <p className="font-medium">{applicant.givenName}</p>
+                        </div>
+                        <div>
+                          <p className="text-sm text-slate-600">
+                            {t("bookAppointment.reviewStep.gender")}
+                          </p>
+                          <p className="font-medium">{applicant.gender}</p>
+                        </div>
+                        <div>
+                          <p className="text-sm text-slate-600">
+                            {t("bookAppointment.reviewStep.dob")}
+                          </p>
+                          <p className="font-medium">
+                            {applicant.dateOfBirth
+                              ? formatDate(applicant.dateOfBirth)
+                              : t("bookAppointment.reviewStep.notSpecified")}
+                          </p>
+                        </div>
+                      </div>
                     </div>
+                  ))}
+                </div>
+              )}
+          </div>
+        </div>
+
+        <div className="bg-slate-50 rounded-lg p-4 sm:p-6">
+          <h3 className="text-lg font-semibold text-slate-900 mb-4 flex items-center gap-2">
+            <svg
+              className="w-5 h-5 text-teal-600"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+              ></path>
+            </svg>
+            {t("bookAppointment.reviewStep.passportDetailsSection")}
+          </h3>
+          <div className="space-y-6">
+            {/* Primary applicant */}
+            <div className="border border-blue-200 rounded-lg p-4 bg-blue-50">
+              <h4 className="font-semibold text-slate-900 mb-3">
+                {t("bookAppointment.reviewStep.primaryApplicant")}
+              </h4>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <p className="text-sm text-slate-600">
+                    {t("bookAppointment.reviewStep.passportNumber")}
+                  </p>
+                  <p className="font-medium">{formData.passportNumber}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-slate-600">
+                    {t("bookAppointment.reviewStep.issueDate")}
+                  </p>
+                  <p className="font-medium">
+                    {formData.passportIssueDate
+                      ? formatDate(formData.passportIssueDate)
+                      : t("bookAppointment.reviewStep.notSpecified")}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-sm text-slate-600">
+                    {t("bookAppointment.reviewStep.expiryDate")}
+                  </p>
+                  <p className="font-medium">
+                    {formData.passportExpiryDate
+                      ? formatDate(formData.passportExpiryDate)
+                      : t("bookAppointment.reviewStep.notSpecified")}
+                  </p>
+                </div>
+                {formData.caseNumber && (
+                  <div>
+                    <p className="text-sm text-slate-600">
+                      {t("bookAppointment.reviewStep.caseNumber")}
+                    </p>
+                    <p className="font-medium">{formData.caseNumber}</p>
                   </div>
-                ))}
+                )}
+                {isAMC && formData.caseRef && (
+                  <div>
+                    <p className="text-sm text-slate-600">
+                      {t("bookAppointment.reviewStep.caseRef")}
+                    </p>
+                    <p className="font-medium">{formData.caseRef}</p>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Additional applicants if any */}
+            {parseInt(formData.numberOfApplicants) > 1 &&
+              formData.applicants.length > 0 && (
+                <div>
+                  <h4 className="font-semibold text-slate-900 mb-3">
+                    {t("bookAppointment.reviewStep.additionalApplicants")}
+                  </h4>
+                  {formData.applicants.map((applicant, index) => (
+                    <div
+                      key={applicant.id}
+                      className="border border-gray-200 rounded-lg p-4 mb-4 bg-gray-50"
+                    >
+                      <h5 className="font-semibold text-slate-900 mb-2">
+                        {t("bookAppointment.reviewStep.applicantIndex").replace(
+                          "{index}",
+                          (index + 1).toString(),
+                        )}
+                      </h5>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                          <p className="text-sm text-slate-600">
+                            {t("bookAppointment.reviewStep.passportNumber")}
+                          </p>
+                          <p className="font-medium">
+                            {applicant.passportNumber}
+                          </p>
+                        </div>
+                        <div>
+                          <p className="text-sm text-slate-600">
+                            {t("bookAppointment.reviewStep.issueDate")}
+                          </p>
+                          <p className="font-medium">
+                            {applicant.passportIssueDate
+                              ? formatDate(applicant.passportIssueDate)
+                              : t("bookAppointment.reviewStep.notSpecified")}
+                          </p>
+                        </div>
+                        <div>
+                          <p className="text-sm text-slate-600">
+                            {t("bookAppointment.reviewStep.expiryDate")}
+                          </p>
+                          <p className="font-medium">
+                            {applicant.passportExpiryDate
+                              ? formatDate(applicant.passportExpiryDate)
+                              : t("bookAppointment.reviewStep.notSpecified")}
+                          </p>
+                        </div>
+                        <div>
+                          <p className="text-sm text-slate-600">
+                            {t("bookAppointment.reviewStep.caseNumber")}
+                          </p>
+                          <p className="font-medium">{applicant.caseNumber}</p>
+                        </div>
+                        {isAMC && (
+                          <div>
+                            <p className="text-sm text-slate-600">
+                              {t("bookAppointment.reviewStep.caseRef")}
+                            </p>
+                            <p className="font-medium">{applicant.caseRef}</p>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+          </div>
+        </div>
+
+        <div className="bg-slate-50 rounded-lg p-4 sm:p-6">
+          <h3 className="text-lg font-semibold text-slate-900 mb-4 flex items-center gap-2">
+            <svg
+              className="w-5 h-5 text-teal-600"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"
+              ></path>
+            </svg>
+            {t("bookAppointment.reviewStep.uploadedDocsSection")}
+          </h3>
+          <div className="space-y-3">
+            <div className="flex items-center justify-between p-3 bg-white rounded border">
+              <span className="text-sm text-slate-600">
+                {t("bookAppointment.reviewStep.scannedPassport")}
+              </span>
+              <span className="text-sm font-medium text-green-600">
+                {formData.scannedPassport
+                  ? formData.scannedPassport.name
+                  : t("bookAppointment.reviewStep.notUploaded")}
+              </span>
+            </div>
+            <div className="flex items-center justify-between p-3 bg-white rounded border">
+              <span className="text-sm text-slate-600">
+                {t("bookAppointment.reviewStep.k1Letter")}
+              </span>
+              <span className="text-sm font-medium text-green-600">
+                {formData.kOneLetter
+                  ? formData.kOneLetter.name
+                  : t("bookAppointment.reviewStep.notUploaded")}
+              </span>
+            </div>
+            <div className="flex items-center justify-between p-3 bg-white rounded border">
+              <span className="text-sm text-slate-600">
+                {t("bookAppointment.reviewStep.appointmentConfirmation")}
+              </span>
+              <span className="text-sm font-medium text-green-600">
+                {formData.appointmentConfirmationLetter
+                  ? formData.appointmentConfirmationLetter.name
+                  : t("bookAppointment.reviewStep.notUploaded")}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-slate-50 rounded-lg p-4 sm:p-6">
+          <h3 className="text-lg font-semibold text-slate-900 mb-4 flex items-center gap-2">
+            <svg
+              className="w-5 h-5 text-teal-600"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+              ></path>
+            </svg>
+            {t("bookAppointment.reviewStep.appointmentScheduleSection")}
+          </h3>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {formData.estimatedCharges && (
+              <div>
+                <p className="text-sm text-slate-600">
+                  {t("bookAppointment.reviewStep.estimatedCharges")}
+                </p>
+                <p className="font-medium">{formData.estimatedCharges}</p>
               </div>
             )}
-        </div>
-      </div>
-
-      <div className="bg-slate-50 rounded-lg p-4 sm:p-6">
-        <h3 className="text-lg font-semibold text-slate-900 mb-4 flex items-center gap-2">
-          <svg
-            className="w-5 h-5 text-teal-600"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth="2"
-              d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"
-            ></path>
-          </svg>
-          Uploaded Documents
-        </h3>
-        <div className="space-y-3">
-          <div className="flex items-center justify-between p-3 bg-white rounded border">
-            <span className="text-sm text-slate-600">Scanned Passport</span>
-            <span className="text-sm font-medium text-green-600">
-              {formData.scannedPassport
-                ? formData.scannedPassport.name
-                : "Not uploaded"}
-            </span>
-          </div>
-          <div className="flex items-center justify-between p-3 bg-white rounded border">
-            <span className="text-sm text-slate-600">K-1 Letter</span>
-            <span className="text-sm font-medium text-green-600">
-              {formData.kOneLetter ? formData.kOneLetter.name : "Not uploaded"}
-            </span>
-          </div>
-          <div className="flex items-center justify-between p-3 bg-white rounded border">
-            <span className="text-sm text-slate-600">
-              Appointment Confirmation Letter
-            </span>
-            <span className="text-sm font-medium text-green-600">
-              {formData.appointmentConfirmationLetter
-                ? formData.appointmentConfirmationLetter.name
-                : "Not uploaded"}
-            </span>
-          </div>
-        </div>
-      </div>
-
-      <div className="bg-slate-50 rounded-lg p-4 sm:p-6">
-        <h3 className="text-lg font-semibold text-slate-900 mb-4 flex items-center gap-2">
-          <svg
-            className="w-5 h-5 text-teal-600"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth="2"
-              d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
-            ></path>
-          </svg>
-          Appointment Schedule
-        </h3>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          {formData.estimatedCharges && (
             <div>
-              <p className="text-sm text-slate-600">Estimated Charges</p>
-              <p className="font-medium">{formData.estimatedCharges}</p>
+              <p className="text-sm text-slate-600">
+                {t("bookAppointment.reviewStep.preferredDate")}
+              </p>
+              <p className="font-medium">
+                {formData.preferredAppointmentDate
+                  ? formatDate(formData.preferredAppointmentDate)
+                  : t("bookAppointment.reviewStep.notSpecified")}
+              </p>
             </div>
-          )}
-          <div>
-            <p className="text-sm text-slate-600">Preferred Date</p>
-            <p className="font-medium">
-              {formData.preferredAppointmentDate
-                ? formatDate(formData.preferredAppointmentDate)
-                : "Not specified"}
-            </p>
-          </div>
-          <div className="col-span-2">
-            <p className="text-sm text-slate-600">Time Slot</p>
-            <p className="font-medium">
-              {formData.preferredTime || "Not specified"}
-            </p>
+            <div className="col-span-2">
+              <p className="text-sm text-slate-600">
+                {t("bookAppointment.reviewStep.timeSlot")}
+              </p>
+              <p className="font-medium">
+                {formData.preferredTime ||
+                  t("bookAppointment.reviewStep.notSpecified")}
+              </p>
+            </div>
           </div>
         </div>
-      </div>
 
-      {error && (
-        <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
-          {error}
+        {error && (
+          <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+            {error}
+          </div>
+        )}
+
+        <div className="flex justify-between pt-4">
+          <Button
+            onClick={onBack}
+            variant="outline"
+            className="bg-teal-600 hover:bg-teal-700 text-white"
+          >
+            {t("bookAppointment.reviewStep.backToEditBtn")}
+          </Button>
+          <Button
+            onClick={onSubmit}
+            disabled={loading}
+            className="bg-teal-600 hover:bg-teal-700 text-white"
+          >
+            {loading
+              ? t("bookAppointment.reviewStep.submitting")
+              : t("bookAppointment.reviewStep.confirmBtn")}
+          </Button>
         </div>
-      )}
-
-      <div className="flex justify-between pt-4">
-        <Button
-          onClick={onBack}
-          variant="outline"
-          className="bg-teal-600 hover:bg-teal-700 text-white"
-        >
-          Back to Edit
-        </Button>
-        <Button
-          onClick={onSubmit}
-          disabled={loading}
-          className="bg-teal-600 hover:bg-teal-700 text-white"
-        >
-          {loading ? "Submitting..." : "Confirm & Submit"}
-        </Button>
       </div>
     </div>
-  </div>
-);
+  );
+};
 
 interface SuccessStepProps {
   onReset: () => void;
 }
 
-const SuccessStep = ({ onReset }: SuccessStepProps) => (
-  <div className="text-center py-12">
-    <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
-      <svg
-        className="w-10 h-10 text-green-600"
-        fill="none"
-        stroke="currentColor"
-        viewBox="0 0 24 24"
-      >
-        <path
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          strokeWidth="2"
-          d="M5 13l4 4L19 7"
-        ></path>
-      </svg>
+const SuccessStep = ({ onReset }: SuccessStepProps) => {
+  const { t } = useLanguage();
+  return (
+    <div className="text-center py-12">
+      <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
+        <svg
+          className="w-10 h-10 text-green-600"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth="2"
+            d="M5 13l4 4L19 7"
+          ></path>
+        </svg>
+      </div>
+      <h2 className="text-xl sm:text-2xl font-bold text-slate-900 mb-4">
+        {t("bookAppointment.successStep.title")}
+      </h2>
+      <p className="text-slate-600 mb-8">
+        {t("bookAppointment.successStep.desc")}
+      </p>
+      <div className="flex justify-center gap-4">
+        <Button
+          onClick={onReset}
+          className="bg-teal-600 hover:bg-teal-700 text-white"
+        >
+          {t("bookAppointment.successStep.bookAnotherBtn")}
+        </Button>
+      </div>
     </div>
-    <h2 className="text-xl sm:text-2xl font-bold text-slate-900 mb-4">
-      Appointment Request Submitted!
-    </h2>
-    <p className="text-slate-600 mb-8">
-      Your appointment request has been received. Our team will process your
-      request and book the appointment on your behalf. You will receive a
-      confirmation once the appointment is booked.
-    </p>
-    <div className="flex justify-center gap-4">
-      <Button
-        onClick={onReset}
-        className="bg-teal-600 hover:bg-teal-700 text-white"
-      >
-        Book Another Appointment
-      </Button>
-    </div>
-  </div>
-);
+  );
+};
 
 export default function WilcareAppointmentForm() {
   const [step, setStep] = useState(1);
@@ -1761,6 +2073,7 @@ export default function WilcareAppointmentForm() {
   const [error, setError] = useState<string | null>(null);
   const [profileLoaded, setProfileLoaded] = useState(false);
   const { user } = useAuth();
+  const { t } = useLanguage();
   const supabase = createBrowserClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
@@ -1913,11 +2226,11 @@ export default function WilcareAppointmentForm() {
   const handleNextStep = () => {
     if (step === 1) {
       if (!formData.location) {
-        setError("Please select a location");
+        setError(t("bookAppointment.validation.reqLocation"));
         return;
       }
       if (formData.location === "islamabad" && !formData.islamabadProvider) {
-        setError("Please select a provider (AMC or IOM)");
+        setError(t("bookAppointment.validation.reqProvider"));
         return;
       }
       setError(null);
@@ -1937,12 +2250,12 @@ export default function WilcareAppointmentForm() {
           !formData.primaryContact ||
           !formData.email
         ) {
-          setError("Please fill in all required fields");
+          setError(t("bookAppointment.validation.reqAllProviderFields"));
           return;
         }
       } else if (isWilcare) {
         if (!formData.primaryContact || !formData.email) {
-          setError("Please fill in Primary Contact and Email");
+          setError(t("bookAppointment.validation.reqPrimaryContactEmail"));
           return;
         }
       }
@@ -1959,9 +2272,7 @@ export default function WilcareAppointmentForm() {
         !formData.gender ||
         !formData.dateOfBirth
       ) {
-        setError(
-          "Please fill in all required fields for the primary applicant",
-        );
+        setError(t("bookAppointment.validation.reqPrimaryApplicantFields"));
         return;
       }
 
@@ -1976,7 +2287,10 @@ export default function WilcareAppointmentForm() {
             !applicant.dateOfBirth
           ) {
             setError(
-              `Please fill in all required fields for applicant #${i + 1}`,
+              t("bookAppointment.validation.reqApplicantIndexFields").replace(
+                "{index}",
+                (i + 1).toString(),
+              ),
             );
             return;
           }
@@ -1991,7 +2305,7 @@ export default function WilcareAppointmentForm() {
     if (step === 4) {
       // Validate primary applicant
       if (!formData.passportNumber) {
-        setError("Please fill in Passport Number for the primary applicant");
+        setError(t("bookAppointment.validation.reqPrimaryPassportNumber"));
         return;
       }
 
@@ -2000,13 +2314,22 @@ export default function WilcareAppointmentForm() {
         for (let i = 0; i < formData.applicants.length; i++) {
           const applicant = formData.applicants[i];
           if (!applicant.passportNumber) {
-            setError(`Please fill in Passport Number for applicant #${i + 1}`);
+            setError(
+              t(
+                "bookAppointment.validation.reqApplicantPassportNumber",
+              ).replace("{index}", (i + 1).toString()),
+            );
             return;
           }
 
           // For AMC, also validate caseRef
           if (isAMC && !applicant.caseRef) {
-            setError(`Please fill in Case Ref for applicant #${i + 1}`);
+            setError(
+              t("bookAppointment.validation.reqApplicantCaseRef").replace(
+                "{index}",
+                (i + 1).toString(),
+              ),
+            );
             return;
           }
         }
@@ -2048,7 +2371,7 @@ export default function WilcareAppointmentForm() {
         !formData.preferredLocation ||
         !formData.destinationCountry
       ) {
-        setError("Please fill in all required fields for IOM");
+        setError(t("bookAppointment.validation.reqIomFields"));
         return;
       }
       setError(null);
@@ -2082,7 +2405,8 @@ export default function WilcareAppointmentForm() {
 
       if (!appointmentResponse.ok) {
         throw new Error(
-          appointmentResult.error || "Failed to create appointment",
+          appointmentResult.error ||
+            t("bookAppointment.validation.submitError"),
         );
       }
 
@@ -2141,7 +2465,9 @@ export default function WilcareAppointmentForm() {
 
         if (uploadErrors.length > 0) {
           const errorText = await uploadErrors[0].text();
-          throw new Error(errorText || "Failed to upload some documents");
+          throw new Error(
+            errorText || t("bookAppointment.validation.uploadError"),
+          );
         }
       }
 
@@ -2324,21 +2650,25 @@ export default function WilcareAppointmentForm() {
       <div className="max-w-4xl mx-auto">
         <div className="mb-6 sm:mb-8 text-center">
           <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 mb-2">
-            Medical Appointment Booking
+            {t("bookAppointment.title")}
           </h1>
           <p className="text-slate-600 text-sm sm:text-base">
-            Book your medical appointment
+            {t("bookAppointment.description")}
           </p>
 
           {step > 1 && step < 8 && step !== 9 && !isIOM && (
             <div className="mt-6">
               <div className="flex justify-between text-[10px] sm:text-xs text-slate-600 mb-2 px-1 sm:px-0">
-                <span>Location</span>
-                <span>{isAMC ? "AMC Info" : "HI"}</span>
-                <span>Info</span>
-                <span>Passport</span>
-                <span>Docs</span>
-                <span>When</span>
+                <span>{t("bookAppointment.progressSteps.location")}</span>
+                <span>
+                  {isAMC
+                    ? t("bookAppointment.progressSteps.amcInfo")
+                    : t("bookAppointment.progressSteps.hi")}
+                </span>
+                <span>{t("bookAppointment.progressSteps.info")}</span>
+                <span>{t("bookAppointment.progressSteps.passport")}</span>
+                <span>{t("bookAppointment.progressSteps.docs")}</span>
+                <span>{t("bookAppointment.progressSteps.when")}</span>
               </div>
               <div className="w-full h-2 bg-slate-200 rounded-full">
                 <div
@@ -2351,9 +2681,9 @@ export default function WilcareAppointmentForm() {
           {isIOM && step === 9 && (
             <div className="mt-6">
               <div className="flex justify-between text-xs text-slate-600 mb-2">
-                <span>Location</span>
-                <span>IOM Info</span>
-                <span>Review</span>
+                <span>{t("bookAppointment.progressSteps.location")}</span>
+                <span>{t("bookAppointment.progressSteps.iomInfo")}</span>
+                <span>{t("bookAppointment.progressSteps.review")}</span>
               </div>
               <div className="w-full h-2 bg-slate-200 rounded-full">
                 <div
