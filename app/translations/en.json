@@ -1879,5 +1879,164 @@
       "selectDestination": "Select Destination",
       "comingSoon": "Coming Soon"
     }
+  },
+  "passportPhoto": {
+    "title": "Passport Photo Maker",
+    "subtitle": "Upload your photo → Get a compliant passport photo with clean white background",
+    "requirementsTitle": "Official Passport Photo Requirements",
+    "requirements": {
+      "1": "Submit one color photo",
+      "2": "Photo taken in the last 6 months",
+      "3": "Clear image of your full face",
+      "4": "No editing, filters, or AI alterations",
+      "5": "Face the camera straight, no head tilt",
+      "6": "Remove eyeglasses",
+      "7": "Plain white or off-white background – no shadows, textures, or lines"
+    },
+    "uploadLabel": "Upload Your Photo",
+    "dropzone": "Click to upload or drag & drop",
+    "fileSize": "JPG, PNG up to 10MB",
+    "removePhoto": "Remove Photo",
+    "generate": "Generate Passport Photo",
+    "processing": "Processing...",
+    "steps": {
+      "uploading": "Uploading image...",
+      "removing": "AI removing background...",
+      "finalizing": "Finalizing photo..."
+    },
+    "ready": "Photo Ready!",
+    "download": "Download Photo",
+    "errors": {
+      "invalid": "Please upload a valid image file.",
+      "large": "Image size must be under 10 MB.",
+      "general": "An unknown error occurred."
+    },
+    "presets": {
+      "us": "2x2 inch (US Passport)",
+      "usDesc": "Standard US passport size",
+      "uk": "35x45 mm (UK/EU)",
+      "ukDesc": "UK and European passport",
+      "india": "35x35 mm (India)",
+      "indiaDesc": "Indian passport size",
+      "canada": "33x48 mm (Canada)",
+      "canadaDesc": "Canadian passport",
+      "custom": "Custom",
+      "customDesc": "Set your own dimensions"
+    }
+  },
+  "ivTool": {
+    "title": "IV Scheduling Status Tool",
+    "subtitle": "Check when your immigrant visa interview might be scheduled",
+    "description": {
+      "p1": "The Immigrant Visa (IV) Scheduling Status Tool shows when the National Visa Center (NVC) is scheduling interviews at specific U.S. embassies or consulates. Interviews are scheduled based on the date your case became \"documentarily complete\" (when you paid all fees and submitted required documents).",
+      "p2": "Important: Interviews can only be scheduled if a visa is available. For preference visa cases, check the monthly Visa Bulletin to confirm visa availability."
+    },
+    "visaBulletin": "Visa Bulletin",
+    "findStatus": "Find Your Scheduling Status",
+    "categoryLabel": "Visa Category",
+    "categories": {
+      "immediate": "Immediate Relative",
+      "family": "Family-Sponsored Preference",
+      "employment": "Employment-Based Preference"
+    },
+    "cityLabel": "U.S. Embassy or Consulate City",
+    "cityExamples": "Examples: Islamabad, Mumbai, Dubai, Ankara, New Delhi",
+    "cityPlaceholder": "Start typing city name...",
+    "cityError": "Please enter a city name.",
+    "search": "Search",
+    "loading": "Loading...",
+    "errors": {
+      "fetch": "Failed to fetch scheduling data",
+      "noResults": "No results found for this city and category.",
+      "general": "An error occurred. Please try again.",
+      "title": "Error"
+    },
+    "results": {
+      "title": "Scheduling Information",
+      "visaCategory": "Visa Category",
+      "docCompleteDate": "Documentarily Complete Date",
+      "caseComplete": "Case Complete"
+    },
+    "suggestions": {
+      "notfound": "We couldn't find {city}",
+      "didYouMean": "Did you mean one of these countries? Select whether you need an Embassy or Consulate:",
+      "embassy": "Embassy",
+      "consulate": "Consulate",
+      "noPosts": "No posts available for your visa category"
+    }
+  },
+  "visaChecker": {
+    "pageTitle": "Visa Progress Checker",
+    "pageSubtitle": "Enter your USCIS Case Number – We will auto-fetch your Priority Date!",
+    "form": {
+      "categoryLabel": "Visa Category",
+      "categories": {
+        "eb1": "EB-1 (Priority Workers)",
+        "eb2": "EB-2 (Advanced Degree)",
+        "eb3": "EB-3 (Skilled Workers)",
+        "f1": "F1 (Unmarried Sons/Daughters of Citizens)",
+        "f2a": "F2A (Spouses & Children of LPR)",
+        "f2b": "F2B (Unmarried Sons/Daughters of LPR)",
+        "f3": "F3 (Married Sons/Daughters of Citizens)",
+        "f4": "F4 (Brothers/Sisters of Citizens)"
+      },
+      "priorityDateLabel": "Priority Date",
+      "priorityDateHint": "Found on your I-797, I-140, or PERM approval",
+      "countryLabel": "Country of Chargeability",
+      "countries": {
+        "all": "All Chargeability Areas Except Those Listed",
+        "china": "China (mainland born)",
+        "india": "India",
+        "mexico": "Mexico",
+        "philippines": "Philippines"
+      },
+      "appTypeLabel": "Application Type",
+      "appTypes": {
+        "consular": "Consular Processing (Outside USA)",
+        "aos": "Adjustment of Status (I-485 in USA)"
+      },
+      "checkBtn": "Check My Status",
+      "checking": "Checking...",
+      "errors": {
+        "noPriorityDate": "Please enter your Priority Date",
+        "general": "Something went wrong. Please try again."
+      }
+    },
+    "result": {
+      "noResult": "No result found. Please go back and check again.",
+      "statusCurrent": "Your Priority Date is Current!",
+      "statusWaiting": "You're Still Waiting in Line",
+      "statusUnavailable": "Category Temporarily Unavailable",
+      "yourInfo": "Your Information:",
+      "infoCategory": "Category",
+      "infoPriDate": "Priority Date",
+      "infoCountry": "Country",
+      "infoAppType": "Application Type",
+      "bulletinTitle": "Current Visa Bulletin",
+      "chartUsed": "Chart Used",
+      "cutoffDate": "Cut-off Date",
+      "waitingDesc": "You filed your petition on {date}. The government is currently processing cases from {cutoff}.",
+      "youAre": "You are:",
+      "behindCutoff": "behind the current cut-off date",
+      "estimatedWait": "Estimated Wait Time:",
+      "estimateDesc": "Based on the last 12 months of Visa Bulletin movement for {category}:",
+      "avgMovement": "Average monthly forward movement:",
+      "estTime": "Estimated time until current:",
+      "approxYear": "Approximate year:",
+      "estimateNote": "Note: This is an ESTIMATE only. Actual wait times can vary.",
+      "greatNews": "Great News! Your visa number is available.",
+      "fileNow": "File Form I-485 immediately. Act fast before retrogression!",
+      "whatToDo": "What You Should Do:",
+      "actions": {
+        "1": "Check the Visa Bulletin monthly (8th-15th)",
+        "2": "Prepare documents now (don't wait)",
+        "3": "Keep USCIS updated on address changes",
+        "4": "Consider alternative categories if situation changes"
+      },
+      "wantUpdates": "Want Updates?",
+      "updateDesc": "Enter your email to receive monthly notifications",
+      "emailPlaceholder": "your@email.com",
+      "subscribe": "Subscribe"
+    }
   }
 }

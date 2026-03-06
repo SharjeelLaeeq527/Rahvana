@@ -10,6 +10,7 @@ import {
   Building2,
   MapPin,
 } from "lucide-react";
+import { useLanguage } from "@/app/context/LanguageContext";
 
 interface SchedulingResult {
   Post: string;
@@ -186,6 +187,7 @@ const CITY_SUGGESTIONS = [
 ].sort();
 
 export default function Home() {
+  const { t } = useLanguage();
   const [visaCategory, setVisaCategory] =
     useState<string>("immediate-relative");
   const [city, setCity] = useState<string>("");
@@ -229,7 +231,7 @@ export default function Home() {
 
   const submitSearch = async (searchCity: string) => {
     if (!searchCity.trim()) {
-      setError("Please enter a city name.");
+      setError(t("ivTool.cityError"));
       return;
     }
 
@@ -250,7 +252,7 @@ export default function Home() {
       const data = await response.json();
 
       if (!response.ok) {
-        setError(data.error || "Failed to fetch scheduling data");
+        setError(data.error || t("ivTool.errors.fetch"));
         return;
       }
 
@@ -260,7 +262,7 @@ export default function Home() {
           setError(null);
         } else {
           setError(
-            data.message || "No results found for this city and category.",
+            data.message || t("ivTool.errors.noResults"),
           );
           setCountryOptions([]);
         }
@@ -270,7 +272,7 @@ export default function Home() {
       setResults(data.data);
       setCountryOptions([]);
     } catch (err) {
-      setError("An error occurred. Please try again.");
+      setError(t("ivTool.errors.general"));
       console.error(err);
     } finally {
       setLoading(false);
@@ -306,55 +308,41 @@ export default function Home() {
     <div className="min-h-screen bg-linear-to-b from-primary/10 to-white py-10 px-4">
       <div className="max-w-4xl mx-auto">
         <h1 className="text-3xl font-bold text-primary mb-2">
-          IV Scheduling Status Tool
+          {t("ivTool.title")}
         </h1>
         <p className="text-gray-600 mb-6">
-          Check when your immigrant visa interview might be scheduled
+          {t("ivTool.subtitle")}
         </p>
 
         <div className="bg-white p-6 rounded-lg shadow-md mb-8 text-gray-700 text-sm leading-relaxed">
           <p className="mb-3">
-            The Immigrant Visa (IV) Scheduling Status Tool shows when the
-            National Visa Center (NVC) is scheduling interviews at specific U.S.
-            embassies or consulates. Interviews are scheduled based on the date
-            your case became &quot;documentarily complete&quot; (when you paid
-            all fees and submitted required documents).
+            {t("ivTool.description.p1")}
           </p>
           <p>
-            <strong>Important:</strong> Interviews can only be scheduled if a
-            visa is available. For preference visa cases, check the monthly{" "}
-            <a
-              href="https://travel.state.gov/content/travel/en/legal/visa-law0/visa-bulletin.html"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-blue-600 underline font-medium hover:text-blue-800"
-            >
-              Visa Bulletin
-            </a>{" "}
-            to confirm visa availability.
+            <strong>Important:</strong> {t("ivTool.description.p2")}
           </p>
         </div>
 
         <div className="bg-gray-100 p-8 rounded-lg shadow-sm mb-8">
           <h2 className="text-xl font-semibold text-gray-800 mb-6">
-            Find Your Scheduling Status
+            {t("ivTool.findStatus")}
           </h2>
 
           <div className="space-y-6">
             <div>
               <label className="block text-sm font-semibold text-gray-800 mb-4">
-                Visa Category <span className="text-red-600">*</span>
+                {t("ivTool.categoryLabel")} <span className="text-red-600">*</span>
               </label>
               <div className="space-y-3">
                 {[
-                  { value: "immediate-relative", label: "Immediate Relative" },
+                  { value: "immediate-relative", label: t("ivTool.categories.immediate") },
                   {
                     value: "family-sponsored",
-                    label: "Family-Sponsored Preference",
+                    label: t("ivTool.categories.family"),
                   },
                   {
                     value: "employment-based",
-                    label: "Employment-Based Preference",
+                    label: t("ivTool.categories.employment"),
                   },
                 ].map((option) => (
                   <label
@@ -380,18 +368,18 @@ export default function Home() {
                 htmlFor="city"
                 className="block text-sm font-semibold text-gray-800 mb-2"
               >
-                U.S. Embassy or Consulate City{" "}
+                {t("ivTool.cityLabel")}{" "}
                 <span className="text-red-600">*</span>
               </label>
               <p className="text-xs text-gray-600 mb-2">
-                Examples: Islamabad, Mumbai, Dubai, Ankara, New Delhi
+                {t("ivTool.cityExamples")}
               </p>
               <div className="relative">
                 <input
                   id="city"
                   ref={inputRef}
                   type="text"
-                  placeholder="Start typing city name..."
+                  placeholder={t("ivTool.cityPlaceholder")}
                   value={city}
                   onChange={(e) => setCity(e.target.value)}
                   onFocus={() => city.length >= 2 && setShowSuggestions(true)}
@@ -435,10 +423,10 @@ export default function Home() {
               {loading ? (
                 <>
                   <Loader className="h-4 w-4 animate-spin" />
-                  Loading...
+                  {t("ivTool.loading")}
                 </>
               ) : (
-                "Search"
+                t("ivTool.search")
               )}
             </button>
           </div>
@@ -448,7 +436,7 @@ export default function Home() {
           <div className="bg-red-50 border border-red-200 p-4 rounded-lg mb-8 flex gap-3 items-start">
             <AlertCircle className="h-5 w-5 text-red-600 shrink-0 mt-0.5" />
             <div>
-              <p className="font-semibold text-red-900">Error</p>
+              <p className="font-semibold text-red-900">{t("ivTool.errors.title")}</p>
               <p className="text-red-700 text-sm">{error}</p>
             </div>
           </div>
@@ -462,11 +450,10 @@ export default function Home() {
                 <HelpCircle className="h-6 w-6 text-amber-600 shrink-0 mt-0.5" />
                 <div>
                   <h3 className="text-lg font-semibold text-amber-900 mb-2">
-                    We couldnt find {searchTerm}
+                    {t("ivTool.suggestions.notfound", { city: searchTerm })}
                   </h3>
                   <p className="text-sm text-amber-800">
-                    Did you mean one of these countries? Select whether you need
-                    an Embassy or Consulate:
+                    {t("ivTool.suggestions.didYouMean")}
                   </p>
                 </div>
               </div>
@@ -487,7 +474,7 @@ export default function Home() {
                         <div className="flex items-center gap-2 mb-3">
                           <Building2 className="h-5 w-5 text-primary" />
                           <span className="font-semibold text-gray-700">
-                            Embassy
+                            {t("ivTool.suggestions.embassy")}
                           </span>
                         </div>
                         <div className="space-y-2 ml-7">
@@ -501,7 +488,7 @@ export default function Home() {
                                 {embassy.Post}
                               </p>
                               <p className="text-xs text-primary mt-1">
-                                ✓ Case Complete:{" "}
+                                ✓ {t("ivTool.results.caseComplete")}:{" "}
                                 {embassy["Case Documentarily Complete"]}
                               </p>
                             </button>
@@ -516,7 +503,7 @@ export default function Home() {
                         <div className="flex items-center gap-2 mb-3">
                           <MapPin className="h-5 w-5 text-primary" />
                           <span className="font-semibold text-gray-700">
-                            Consulate
+                            {t("ivTool.suggestions.consulate")}
                           </span>
                         </div>
                         <div className="space-y-2 ml-7">
@@ -530,7 +517,7 @@ export default function Home() {
                                 {consulate.Post}
                               </p>
                               <p className="text-xs text-primary mt-1">
-                                ✓ Case Complete:{" "}
+                                ✓ {t("ivTool.results.caseComplete")}:{" "}
                                 {consulate["Case Documentarily Complete"]}
                               </p>
                             </button>
@@ -542,7 +529,7 @@ export default function Home() {
                     {option.embassies.length === 0 &&
                       option.consulates.length === 0 && (
                         <p className="text-gray-600 text-sm">
-                          No posts available for your visa category
+                          {t("ivTool.suggestions.noPosts")}
                         </p>
                       )}
                   </div>
@@ -558,7 +545,7 @@ export default function Home() {
             <div className="flex items-center gap-2 mb-4">
               <CheckCircle2 className="h-6 w-6 text-primary" />
               <h3 className="text-lg font-semibold text-gray-800">
-                Scheduling Information
+                {t("ivTool.results.title")}
               </h3>
             </div>
 
@@ -575,7 +562,7 @@ export default function Home() {
                     <div className="space-y-2">
                       <div>
                         <span className="text-xs font-semibold text-gray-600 uppercase tracking-wide">
-                          Visa Category
+                          {t("ivTool.results.visaCategory")}
                         </span>
                         <p className="text-sm text-gray-800 font-medium">
                           {result["Visa Category"]}
@@ -583,7 +570,7 @@ export default function Home() {
                       </div>
                       <div>
                         <span className="text-xs font-semibold text-gray-600 uppercase tracking-wide">
-                          Documentarily Complete Date
+                          {t("ivTool.results.docCompleteDate")}
                         </span>
                         <p className="text-lg font-bold text-primary">
                           {result["Case Documentarily Complete"]}
