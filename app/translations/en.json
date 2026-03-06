@@ -1839,6 +1839,7 @@
     "journeyComparisonDesc": "Comparison table for selected visa journeys.",
     "visaChecker": "Visa Eligibility Checker",
     "unknown": "Unknown",
+    "reset": "Reset",
     "processes": {
       "All": "All",
       "Consular": "Consular Processing",

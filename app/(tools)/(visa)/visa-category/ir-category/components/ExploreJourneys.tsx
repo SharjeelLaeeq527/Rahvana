@@ -1905,14 +1905,14 @@ export default function ExploreJourneys({
       )}
 
       {/* 60-Second Matcher Mock */}
-      <div className="fixed bottom-6 right-6 z-40">
+      {/* <div className="fixed bottom-6 right-6 z-40">
         <Button
           onClick={() => setIsMatcherOpen(true)}
           className="h-14 w-14 rounded-full bg-linear-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600 text-white shadow-lg shadow-rose-500/30 flex items-center justify-center p-0"
         >
           <Clock className="w-6 h-6" />
         </Button>
-      </div>
+      </div> */}
     </div>
   );
 }
