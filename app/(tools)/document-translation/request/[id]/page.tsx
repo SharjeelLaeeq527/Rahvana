@@ -23,6 +23,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { useLanguage } from "@/app/context/LanguageContext";
 
 type TranslationStatus =
   | "PENDING"
@@ -59,6 +60,8 @@ const StatusBadge = ({
   status: string;
   version?: number;
 }) => {
+  const { t } = useLanguage();
+
   const statusConfig: Record<
     TranslationStatus,
     { color: string; icon: ElementType; label: string }
@@ -66,32 +69,32 @@ const StatusBadge = ({
     PENDING: {
       color: "bg-yellow-100 text-yellow-800",
       icon: Clock,
-      label: "Pending Review",
+      label: t("documentTranslation.statusLabels.PENDING"),
     },
     IN_REVIEW: {
       color: "bg-blue-100 text-blue-800",
       icon: FileText,
-      label: "In Review",
+      label: t("documentTranslation.statusLabels.IN_REVIEW"),
     },
     TRANSLATED: {
       color: "bg-purple-100 text-purple-800",
       icon: CheckCircle,
-      label: "Translated",
+      label: t("documentTranslation.statusLabels.TRANSLATED"),
     },
     USER_CONFIRMED: {
       color: "bg-green-100 text-green-800",
       icon: CheckCheck,
-      label: "User Confirmed",
+      label: t("documentTranslation.statusLabels.USER_CONFIRMED"),
     },
     CHANGES_REQUESTED: {
       color: "bg-orange-100 text-orange-800",
       icon: AlertTriangle,
-      label: "Changes Requested",
+      label: t("documentTranslation.statusLabels.CHANGES_REQUESTED"),
     },
     VERIFIED: {
       color: "bg-green-600 text-white",
       icon: BadgeCheck,
-      label: "Verified & Certified",
+      label: t("documentTranslation.statusLabels.VERIFIED"),
     },
   };
 
@@ -121,6 +124,7 @@ export default function TranslationRequestDetails({
 }: {
   params: Promise<{ id: string }>;
 }) {
+  const { t } = useLanguage();
   const [request, setRequest] = useState<TranslationRequest | null>(null);
   const [loading, setLoading] = useState(true);
   const [showChangeRequestModal, setShowChangeRequestModal] = useState(false);
@@ -177,7 +181,9 @@ export default function TranslationRequestDetails({
 
       if (response.ok) {
         // Show success toast
-        toast.success("Translation confirmed successfully!");
+        toast.success(
+          t("documentTranslation.requestDetailsPage.messages.confirmSuccess"),
+        );
 
         // Update the request status with a forced update
         setRequest((prevRequest) => ({
@@ -186,7 +192,10 @@ export default function TranslationRequestDetails({
         }));
       } else {
         console.error("Error confirming translation:", data.error);
-        toast.error(data.error || "Failed to confirm translation");
+        toast.error(
+          data.error ||
+            t("documentTranslation.requestDetailsPage.messages.confirmFailed"),
+        );
       }
     } catch (error) {
       console.error("Error confirming translation:", error);
@@ -214,7 +223,9 @@ export default function TranslationRequestDetails({
 
       if (response.ok) {
         // Show success toast
-        toast.success("Change request submitted successfully!");
+        toast.success(
+          t("documentTranslation.requestDetailsPage.messages.changeSuccess"),
+        );
 
         // Update the request status
         setRequest((prevRequest) => ({
@@ -223,7 +234,10 @@ export default function TranslationRequestDetails({
         }));
       } else {
         console.error("Error requesting changes:", data.error);
-        toast.error(data.error || "Failed to submit change request");
+        toast.error(
+          data.error ||
+            t("documentTranslation.requestDetailsPage.messages.changeFailed"),
+        );
       }
     } catch (error) {
       console.error("Error requesting changes:", error);
@@ -252,11 +266,10 @@ export default function TranslationRequestDetails({
           <div className="bg-white rounded-xl shadow-md p-8 text-center">
             <XCircle className="w-16 h-16 text-red-500 mx-auto mb-4" />
             <h2 className="text-2xl font-bold text-gray-800 mb-2">
-              Request Not Found
+              {t("documentTranslation.requestDetailsPage.notFound.title")}
             </h2>
             <p className="text-gray-600 mb-6">
-              The translation request you&apos;re looking for doesn&apos;t
-              exist.
+              {t("documentTranslation.requestDetailsPage.notFound.desc")}
             </p>
             <Button
               onClick={() =>
@@ -264,7 +277,7 @@ export default function TranslationRequestDetails({
               }
               className="bg-primary hover:bg-primary/90"
             >
-              Back to My Requests
+              {t("documentTranslation.requestDetailsPage.notFound.backBtn")}
             </Button>
           </div>
         </div>
@@ -278,10 +291,10 @@ export default function TranslationRequestDetails({
         {/* Header */}
         <header className="mb-8">
           <h1 className="text-3xl md:text-4xl font-bold text-primary/90">
-            Translation Request Details
+            {t("documentTranslation.requestDetailsPage.title")}
           </h1>
           <p className="mt-2 text-gray-600">
-            View details and status of your document translation request
+            {t("documentTranslation.requestDetailsPage.subtitle")}
           </p>
         </header>
 
@@ -292,7 +305,7 @@ export default function TranslationRequestDetails({
             onClick={() => window.history.back()}
             className="flex items-center gap-2"
           >
-            ← Back to My Requests
+            {t("documentTranslation.requestDetailsPage.backBtn")}
           </Button>
         </div>
 
@@ -301,10 +314,14 @@ export default function TranslationRequestDetails({
           <div className="bg-green-600 text-white p-6 rounded-xl mb-8 text-center">
             <div className="flex items-center justify-center gap-3 mb-2">
               <BadgeCheck className="w-8 h-8" />
-              <h2 className="text-2xl font-bold">Translation Verified</h2>
+              <h2 className="text-2xl font-bold">
+                {t(
+                  "documentTranslation.requestDetailsPage.verifiedBanner.title",
+                )}
+              </h2>
             </div>
             <p className="text-green-100">
-              This document has been verified by our team.
+              {t("documentTranslation.requestDetailsPage.verifiedBanner.desc")}
             </p>
           </div>
         )}
@@ -314,16 +331,21 @@ export default function TranslationRequestDetails({
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <h3 className="text-lg font-semibold text-gray-800 mb-4">
-                Document Information
+                {t("documentTranslation.requestDetailsPage.docInfo.title")}
               </h3>
               <div className="space-y-3">
                 <div className="flex items-start">
                   <FileText className="w-5 h-5 text-primary/80 mt-0.5 mr-3 shrink-0" />
                   <div>
-                    <p className="text-sm text-gray-500">Document Type</p>
+                    <p className="text-sm text-gray-500">
+                      {t(
+                        "documentTranslation.requestDetailsPage.docInfo.typeLabel",
+                      )}
+                    </p>
                     <p className="font-medium">
-                      {request.document_type.charAt(0).toUpperCase() +
-                        request.document_type.slice(1)}
+                      {t(
+                        `documentTranslation.uploadPage.types.${request.document_type}`,
+                      )}
                     </p>
                   </div>
                 </div>
@@ -331,7 +353,11 @@ export default function TranslationRequestDetails({
                 <div className="flex items-start">
                   <Calendar className="w-5 h-5 text-primary/80 mt-0.5 mr-3 shrink-0" />
                   <div>
-                    <p className="text-sm text-gray-500">Submitted Date</p>
+                    <p className="text-sm text-gray-500">
+                      {t(
+                        "documentTranslation.requestDetailsPage.docInfo.submittedLabel",
+                      )}
+                    </p>
                     <p className="font-medium">
                       {formatDate(request.created_at)}
                     </p>
@@ -342,7 +368,11 @@ export default function TranslationRequestDetails({
                   <div className="flex items-start">
                     <Clock className="w-5 h-5 text-primary/80 mt-0.5 mr-3 shrink-0" />
                     <div>
-                      <p className="text-sm text-gray-500">Translated On</p>
+                      <p className="text-sm text-gray-500">
+                        {t(
+                          "documentTranslation.requestDetailsPage.docInfo.translatedLabel",
+                        )}
+                      </p>
                       <p className="font-medium">
                         {formatDate(request.translatedUploadedAt)}
                       </p>
@@ -354,7 +384,9 @@ export default function TranslationRequestDetails({
 
             <div>
               <h3 className="text-lg font-semibold text-gray-800 mb-4">
-                Status & Actions
+                {t(
+                  "documentTranslation.requestDetailsPage.statusAndActions.title",
+                )}
               </h3>
               <div className="flex flex-col gap-4">
                 <div className="flex items-center">
@@ -378,7 +410,9 @@ export default function TranslationRequestDetails({
                       </div>
                       <div className="text-left">
                         <p className="font-medium text-gray-900 text-sm">
-                          Original Urdu PDF
+                          {t(
+                            "documentTranslation.requestDetailsPage.statusAndActions.originalPdf",
+                          )}
                         </p>
                         <p className="text-xs text-gray-500 truncate max-w-[150px]">
                           {request.original_filename ||
@@ -387,7 +421,11 @@ export default function TranslationRequestDetails({
                       </div>
                     </div>
                     <div className="flex items-center gap-2 text-blue-600">
-                      <span className="text-sm font-medium">Download</span>
+                      <span className="text-sm font-medium">
+                        {t(
+                          "documentTranslation.requestDetailsPage.statusAndActions.download",
+                        )}
+                      </span>
                       <Download className="w-4 h-4" />
                     </div>
                   </a>
@@ -405,7 +443,9 @@ export default function TranslationRequestDetails({
                         </div>
                         <div className="text-left">
                           <p className="font-medium text-gray-900 text-sm">
-                            Translated English PDF
+                            {t(
+                              "documentTranslation.requestDetailsPage.statusAndActions.translatedPdf",
+                            )}
                           </p>
                           <p className="text-xs text-gray-500 truncate max-w-[150px]">
                             {request.translated_filename ||
@@ -414,7 +454,11 @@ export default function TranslationRequestDetails({
                         </div>
                       </div>
                       <div className="flex items-center gap-2 text-green-600">
-                        <span className="text-sm font-medium">Download</span>
+                        <span className="text-sm font-medium">
+                          {t(
+                            "documentTranslation.requestDetailsPage.statusAndActions.download",
+                          )}
+                        </span>
                         <Download className="w-4 h-4" />
                       </div>
                     </a>
@@ -431,11 +475,14 @@ export default function TranslationRequestDetails({
             <div className="flex items-center mb-4">
               <User className="w-5 h-5 text-primary/80 mr-2" />
               <h3 className="text-lg font-semibold text-gray-800">
-                Your Notes
+                {t(
+                  "documentTranslation.requestDetailsPage.notes.yourNotesTitle",
+                )}
               </h3>
             </div>
             <p className="text-gray-700">
-              {request.user_notes || "No notes provided."}
+              {request.user_notes ||
+                t("documentTranslation.requestDetailsPage.notes.noUserNotes")}
             </p>
           </div>
 
@@ -443,11 +490,14 @@ export default function TranslationRequestDetails({
             <div className="flex items-center mb-4">
               <MessageSquare className="w-5 h-5 text-primary/80 mr-2" />
               <h3 className="text-lg font-semibold text-gray-800">
-                Admin Notes
+                {t(
+                  "documentTranslation.requestDetailsPage.notes.adminNotesTitle",
+                )}
               </h3>
             </div>
             <p className="text-gray-700">
-              {request.admin_notes || "No notes from admin yet."}
+              {request.admin_notes ||
+                t("documentTranslation.requestDetailsPage.notes.noAdminNotes")}
             </p>
           </div>
         </div>
@@ -456,7 +506,7 @@ export default function TranslationRequestDetails({
         {request.status === "TRANSLATED" && (
           <div className="bg-white rounded-xl shadow-md p-6 mb-8">
             <h3 className="text-lg font-semibold text-gray-800 mb-4">
-              Actions
+              {t("documentTranslation.requestDetailsPage.actions.title")}
             </h3>
             <div className="flex flex-col sm:flex-row gap-3">
               <Button
@@ -464,7 +514,9 @@ export default function TranslationRequestDetails({
                 className="bg-green-600 hover:bg-green-700 flex items-center gap-2 flex-1 cursor-pointer"
               >
                 <CheckCircle className="w-5 h-5" />
-                Confirm Translation is Correct
+                {t(
+                  "documentTranslation.requestDetailsPage.actions.confirmCorrectBtn",
+                )}
               </Button>
 
               <Dialog
@@ -477,28 +529,41 @@ export default function TranslationRequestDetails({
                     className="border-red-500 text-red-600 hover:bg-red-50 flex-1 cursor-pointer"
                   >
                     <AlertTriangle className="w-5 h-5" />
-                    Request Changes
+                    {t(
+                      "documentTranslation.requestDetailsPage.actions.requestChangesBtn",
+                    )}
                   </Button>
                 </DialogTrigger>
                 <DialogContent className="sm:max-w-md">
                   <DialogHeader>
                     <DialogTitle className="text-lg font-semibold text-gray-900">
-                      Request Changes to Translation
+                      {t(
+                        "documentTranslation.requestDetailsPage.actions.modalTitle",
+                      )}
                     </DialogTitle>
                   </DialogHeader>
                   <div className="py-2">
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Reason for requesting changes
+                      {t(
+                        "documentTranslation.requestDetailsPage.actions.reasonLabel",
+                      )}
                     </label>
                     <textarea
                       value={changeRequestReason}
                       onChange={(e) => setChangeRequestReason(e.target.value)}
-                      placeholder="Describe what needs to be corrected..."
+                      placeholder={t(
+                        "documentTranslation.requestDetailsPage.actions.reasonPlaceholder",
+                      )}
                       className="w-full border border-gray-300 rounded-lg p-3 min-h-[100px] focus:ring-2 focus:ring-primary focus:border-transparent"
                       maxLength={500}
                     />
                     <p className="text-xs text-gray-500 mt-1 text-right">
-                      {changeRequestReason.length}/500 characters
+                      {t(
+                        "documentTranslation.requestDetailsPage.actions.characters",
+                      ).replace(
+                        "{length}",
+                        changeRequestReason.length.toString(),
+                      )}
                     </p>
                   </div>
                   <div className="flex justify-end gap-3 pt-2">
@@ -510,14 +575,18 @@ export default function TranslationRequestDetails({
                         setChangeRequestReason("");
                       }}
                     >
-                      Cancel
+                      {t(
+                        "documentTranslation.requestDetailsPage.actions.cancelBtn",
+                      )}
                     </Button>
                     <Button
                       onClick={handleRequestChanges}
                       disabled={!changeRequestReason.trim()}
                       className="px-4 bg-red-600 hover:bg-red-700 cursor-pointer"
                     >
-                      Submit Request
+                      {t(
+                        "documentTranslation.requestDetailsPage.actions.submitRequestBtn",
+                      )}
                     </Button>
                   </div>
                 </DialogContent>

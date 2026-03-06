@@ -23,6 +23,7 @@ import {
 } from "@/components/ui/table";
 import Pagination from "@/components/ui/pagination";
 import { ElementType } from "react";
+import { useLanguage } from "@/app/context/LanguageContext";
 
 type TranslationStatus =
   | "PENDING"
@@ -47,6 +48,8 @@ const StatusBadge = ({
   status: TranslationStatus;
   version: number;
 }) => {
+  const { t } = useLanguage();
+
   const statusConfig: Record<
     TranslationStatus,
     { color: string; icon: ElementType; label: string }
@@ -54,32 +57,32 @@ const StatusBadge = ({
     PENDING: {
       color: "bg-yellow-100 text-yellow-800",
       icon: Clock,
-      label: "Pending Review",
+      label: t("documentTranslation.statusLabels.PENDING"),
     },
     IN_REVIEW: {
       color: "bg-blue-100 text-blue-800",
       icon: FileText,
-      label: "In Review",
+      label: t("documentTranslation.statusLabels.IN_REVIEW"),
     },
     TRANSLATED: {
       color: "bg-purple-100 text-purple-800",
       icon: CheckCircle,
-      label: "Translated",
+      label: t("documentTranslation.statusLabels.TRANSLATED"),
     },
     USER_CONFIRMED: {
       color: "bg-green-100 text-green-800",
       icon: CheckCheck,
-      label: "User Confirmed",
+      label: t("documentTranslation.statusLabels.USER_CONFIRMED"),
     },
     CHANGES_REQUESTED: {
       color: "bg-orange-100 text-orange-800",
       icon: AlertTriangle,
-      label: "Changes Requested",
+      label: t("documentTranslation.statusLabels.CHANGES_REQUESTED"),
     },
     VERIFIED: {
       color: "bg-green-600 text-white",
       icon: BadgeCheck,
-      label: "Verified & Certified",
+      label: t("documentTranslation.statusLabels.VERIFIED"),
     },
   };
 
@@ -100,6 +103,7 @@ const StatusBadge = ({
 };
 
 export default function MyTranslationRequests() {
+  const { t } = useLanguage();
   const [requests, setRequests] = useState<Requests[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -152,23 +156,23 @@ export default function MyTranslationRequests() {
       <div className="max-w-6xl mx-auto">
         <header className="mb-8 md:mb-10">
           <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-primary/90">
-            My Translation Requests
+            {t("documentTranslation.myRequestsPage.title")}
           </h1>
           <p className="mt-2 text-sm sm:text-base text-gray-600">
-            Track the status of your document translation requests
+            {t("documentTranslation.myRequestsPage.subtitle")}
           </p>
         </header>
 
         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-8">
           <h2 className="text-lg sm:text-xl font-semibold text-gray-800">
-            All Requests
+            {t("documentTranslation.myRequestsPage.allRequests")}
           </h2>
           <Button
             onClick={() => (window.location.href = "/document-translation")}
             className="bg-primary hover:bg-primary/90 cursor-pointer w-full sm:w-auto"
           >
             <Upload className="w-4 h-4 mr-2" />
-            Upload New Document
+            {t("documentTranslation.myRequestsPage.uploadNewBtn")}
           </Button>
         </div>
 
@@ -182,10 +186,10 @@ export default function MyTranslationRequests() {
               <div className="bg-white rounded-xl shadow-md overflow-hidden text-center py-10 px-4 sm:py-12">
                 <FileText className="w-10 h-10 sm:w-12 sm:h-12 text-gray-300 mx-auto mb-4" />
                 <h3 className="text-base sm:text-lg font-medium text-gray-900 mb-1">
-                  No translation requests
+                  {t("documentTranslation.myRequestsPage.noRequestsTitle")}
                 </h3>
                 <p className="text-sm text-gray-500">
-                  You haven&apos;t submitted any documents for translation yet.
+                  {t("documentTranslation.myRequestsPage.noRequestsDesc")}
                 </p>
                 <div className="mt-6">
                   <Button
@@ -195,7 +199,7 @@ export default function MyTranslationRequests() {
                     className="bg-primary hover:bg-primary/90 w-full sm:w-auto"
                   >
                     <Upload className="w-4 h-4 mr-2" />
-                    Upload Your First Document
+                    {t("documentTranslation.myRequestsPage.uploadFirstBtn")}
                   </Button>
                 </div>
               </div>
@@ -206,14 +210,22 @@ export default function MyTranslationRequests() {
                     <TableHeader className="bg-slate-50/50">
                       <TableRow>
                         <TableHead className="font-semibold">
-                          Document Type
+                          {t(
+                            "documentTranslation.myRequestsPage.table.documentType",
+                          )}
                         </TableHead>
                         <TableHead className="font-semibold hidden sm:table-cell">
-                          Submitted Date
+                          {t(
+                            "documentTranslation.myRequestsPage.table.submittedDate",
+                          )}
                         </TableHead>
-                        <TableHead className="font-semibold">Status</TableHead>
+                        <TableHead className="font-semibold">
+                          {t("documentTranslation.myRequestsPage.table.status")}
+                        </TableHead>
                         <TableHead className="text-right font-semibold">
-                          Actions
+                          {t(
+                            "documentTranslation.myRequestsPage.table.actions",
+                          )}
                         </TableHead>
                       </TableRow>
                     </TableHeader>
@@ -228,8 +240,9 @@ export default function MyTranslationRequests() {
                             <div className="flex items-center">
                               <FileText className="w-5 h-5 text-primary/80 mr-2 shrink-0" />
                               <div className="text-xs sm:text-sm font-medium text-gray-900 truncate max-w-[120px] sm:max-w-none">
-                                {request.document_type.charAt(0).toUpperCase() +
-                                  request.document_type.slice(1)}
+                                {t(
+                                  `documentTranslation.uploadPage.types.${request.document_type}`,
+                                )}
                                 <div className="sm:hidden text-[10px] text-gray-500 font-normal mt-0.5">
                                   {formatDate(request.created_at)}
                                 </div>
@@ -264,9 +277,15 @@ export default function MyTranslationRequests() {
                             >
                               <Eye className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
                               <span className="hidden xs:inline">
-                                View Details
+                                {t(
+                                  "documentTranslation.myRequestsPage.table.viewDetails",
+                                )}
                               </span>
-                              <span className="xs:hidden">View</span>
+                              <span className="xs:hidden">
+                                {t(
+                                  "documentTranslation.myRequestsPage.table.view",
+                                )}
+                              </span>
                             </Button>
                           </TableCell>
                         </TableRow>
