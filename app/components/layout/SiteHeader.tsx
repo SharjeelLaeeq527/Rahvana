@@ -490,7 +490,7 @@ export function SiteHeader({
                         Document Vault
                       </button>
                       <button
-                        onClick={() => handleNav("portal-wallet")}
+                        onClick={() => {}} // Placeholder
                         className="flex items-center gap-3 w-full py-2.5 px-5 text-muted-foreground hover:bg-muted hover:text-primary transition-colors text-sm font-medium"
                       >
                         <LockIcon className="w-4 h-4 text-indigo-500 dark:text-indigo-400" />
