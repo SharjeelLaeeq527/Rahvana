@@ -266,11 +266,19 @@ function HomePageContent() {
                     </div>
                     <div className="flex flex-wrap gap-8">
                       {[
-                        { icon: Icons.Lock, text: t("homePage.heroFeatures.0") || "Secure Vault" },
-                        { icon: Icons.Cpu, text: t("homePage.heroFeatures.1") || "AI Insights" },
+                        {
+                          icon: Icons.Lock,
+                          text: t("homePage.heroFeatures.0") || "Secure Vault",
+                        },
+                        {
+                          icon: Icons.Cpu,
+                          text: t("homePage.heroFeatures.1") || "AI Insights",
+                        },
                         {
                           icon: Icons.CheckCircle,
-                          text: t("homePage.heroFeatures.2") || "Step-by-Step Guidance",
+                          text:
+                            t("homePage.heroFeatures.2") ||
+                            "Step-by-Step Guidance",
                         },
                       ].map((item, i) => (
                         <div key={i} className="flex items-center gap-3">
@@ -388,8 +396,14 @@ function HomePageContent() {
                   <StackedCarousel
                     items={JOURNEYS.map((j) => ({
                       ...j,
-                      title: t(`homePage.journeysObj.${j.category}.${j.code}.title`) || j.title,
-                      desc: t(`homePage.journeysObj.${j.category}.${j.code}.desc`) || j.desc
+                      title:
+                        t(
+                          `homePage.journeysObj.${j.category}.${j.code}.title`,
+                        ) || j.title,
+                      desc:
+                        t(
+                          `homePage.journeysObj.${j.category}.${j.code}.desc`,
+                        ) || j.desc,
                     })).filter((j) => j.category === journeyTab)}
                     onNavigate={handleNavigate}
                     onNotify={() => setShowComingSoon(true)}
@@ -426,38 +440,58 @@ function HomePageContent() {
                   {[
                     {
                       icon: <Icons.Brain className="w-7 h-7 " />,
-                      title: t("homePage.toolsItems.0.title") || "Case Strength Analyzer",
-                      desc: t("homePage.toolsItems.0.desc") || "Get AI-powered insights into your case status, processing times, and what to expect next.",
+                      title:
+                        t("homePage.toolsItems.0.title") ||
+                        "Case Strength Analyzer",
+                      desc:
+                        t("homePage.toolsItems.0.desc") ||
+                        "Get AI-powered insights into your case status, processing times, and what to expect next.",
                       url: "/visa-case-strength-checker",
                     },
                     {
                       icon: <Icons.LifeBuoy className="w-7 h-7 " />,
-                      title: t("homePage.toolsItems.1.title") || "221(g) Action Planner",
-                      desc: t("homePage.toolsItems.1.desc") || "Navigate administrative processing with step-by-step guidance and status tracking.",
+                      title:
+                        t("homePage.toolsItems.1.title") ||
+                        "221(g) Action Planner",
+                      desc:
+                        t("homePage.toolsItems.1.desc") ||
+                        "Navigate administrative processing with step-by-step guidance and status tracking.",
                       url: "/221g-action-planner",
                     },
                     {
                       icon: <Icons.Compass className="w-7 h-7" />,
-                      title: t("homePage.toolsItems.2.title") || "VisaPath Finder",
-                      desc: t("homePage.toolsItems.2.desc") || "Answer a few questions and discover the best visa options for your unique situation.",
+                      title:
+                        t("homePage.toolsItems.2.title") || "VisaPath Finder",
+                      desc:
+                        t("homePage.toolsItems.2.desc") ||
+                        "Answer a few questions and discover the best visa options for your unique situation.",
                       url: "/visa-eligibility",
                     },
                     {
                       icon: <Icons.Calculator className="w-7 h-7" />,
-                      title: t("homePage.toolsItems.3.title") || "Sponsorship Calculator",
-                      desc: t("homePage.toolsItems.3.desc") || "Calculate financial requirements and determine if you meet the sponsorship threshold.",
+                      title:
+                        t("homePage.toolsItems.3.title") ||
+                        "Sponsorship Calculator",
+                      desc:
+                        t("homePage.toolsItems.3.desc") ||
+                        "Calculate financial requirements and determine if you meet the sponsorship threshold.",
                       url: "/affidavit-support-calculator",
                     },
                     {
                       icon: <Icons.Files className="w-7 h-7 " />,
-                      title: t("homePage.toolsItems.4.title") || "PDF ToolKit",
-                      desc: t("homePage.toolsItems.4.desc") || "Merge, split, and organize your immigration documents with ease.",
+                      title: t("homePage.toolsItems.4.title") || "PDF Tool Kit",
+                      desc:
+                        t("homePage.toolsItems.4.desc") ||
+                        "Merge, split, and organize your immigration documents with ease.",
                       url: "/pdf-processing",
                     },
                     {
                       icon: <Icons.Wand2 className="w-7 h-7" />,
-                      title: t("homePage.toolsItems.5.title") || "Smart Form Filler",
-                      desc: t("homePage.toolsItems.5.desc") || "Auto-complete immigration forms with your saved profile data.",
+                      title:
+                        t("homePage.toolsItems.5.title") || "Smart Form Filler",
+                      desc:
+                        t("homePage.toolsItems.5.desc") ||
+                        "Auto-complete immigration forms with your saved profile data.",
                       url: "/visa-forms",
                     },
                   ].map((tool, i) => (
@@ -481,7 +515,8 @@ function HomePageContent() {
                         {tool.desc}
                       </p>
                       <div className="flex items-center gap-2 text-sm font-bold text-rahvana-primary group-hover:gap-3 transition-all">
-                        {t("homePage.toolTryItOut")} <Icons.ArrowRight className="w-4 h-4" />
+                        {t("homePage.toolTryItOut")}{" "}
+                        <Icons.ArrowRight className="w-4 h-4" />
                       </div>
                     </motion.div>
                   ))}
@@ -491,7 +526,8 @@ function HomePageContent() {
                     onClick={() => router.push("/tools")}
                     className="inline-flex items-center gap-2 px-8 py-3 text-base font-bold text-rahvana-primary border-2 border-rahvana-primary rounded-full hover:bg-rahvana-primary hover:text-white transition-all cursor-pointer"
                   >
-                    {t("homePage.toolsExploreAll")} <Icons.ArrowRight className="w-5 h-5" />
+                    {t("homePage.toolsExploreAll")}{" "}
+                    <Icons.ArrowRight className="w-5 h-5" />
                   </HydrationSafeButton>
                 </div>
               </div>
@@ -579,11 +615,14 @@ function HomePageContent() {
                                 }`}
                               >
                                 {renderWithAbbr(
-                                  t(`homePage.servicesList.${idx}.title`) || service.title
+                                  t(`homePage.servicesList.${idx}.title`) ||
+                                    service.title,
                                 )}
                               </h4>
                               <p className="text-[10px] sm:text-xs text-muted-foreground truncate opacity-80 uppercase tracking-wider mt-0.5 sm:mt-1">
-                                {t(`homePage.categoryLabels.${service.category}`) || service.category}
+                                {t(
+                                  `homePage.categoryLabels.${service.category}`,
+                                ) || service.category}
                               </p>
                             </div>
                             {/* Active indicator line */}
@@ -638,39 +677,47 @@ function HomePageContent() {
                               }
                             </div>
                             <div className="inline-block px-3 py-1 sm:px-4 sm:py-1.5 text-[10px] sm:text-xs font-bold uppercase tracking-wider rounded-full bg-rahvana-primary-pale text-rahvana-primary">
-                              {
-                                t(`homePage.categoryLabels.${ALL_SERVICES.filter(
-                                  (s) =>
-                                    // !s.disabled &&
-                                    s.href !== "/book-consultation",
-                                )[activeService]?.category}`) ||
+                              {t(
+                                `homePage.categoryLabels.${
+                                  ALL_SERVICES.filter(
+                                    (s) =>
+                                      // !s.disabled &&
+                                      s.href !== "/book-consultation",
+                                  )[activeService]?.category
+                                }`,
+                              ) ||
                                 ALL_SERVICES.filter(
                                   (s) =>
                                     // !s.disabled &&
                                     s.href !== "/book-consultation",
-                                )[activeService]?.category
-                              }
+                                )[activeService]?.category}
                             </div>
                           </div>
 
                           <h3 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold text-foreground mb-3 sm:mb-4 leading-tight">
                             {renderWithAbbr(
-                              t(`homePage.servicesList.${activeService}.title`) ||
-                              ALL_SERVICES.filter(
-                                (s) =>
-                                  // !s.disabled &&
-                                  s.href !== "/book-consultation",
-                              )[activeService]?.title || "",
+                              t(
+                                `homePage.servicesList.${activeService}.title`,
+                              ) ||
+                                ALL_SERVICES.filter(
+                                  (s) =>
+                                    // !s.disabled &&
+                                    s.href !== "/book-consultation",
+                                )[activeService]?.title ||
+                                "",
                             )}
                           </h3>
                           <p className="text-muted-foreground text-sm sm:text-base md:text-lg leading-relaxed mb-6 sm:mb-8 flex-1">
                             {renderWithAbbr(
-                              t(`homePage.servicesList.${activeService}.desc`) ||
-                              ALL_SERVICES.filter(
-                                (s) =>
-                                  // !s.disabled &&
-                                  s.href !== "/book-consultation",
-                              )[activeService]?.description || "",
+                              t(
+                                `homePage.servicesList.${activeService}.desc`,
+                              ) ||
+                                ALL_SERVICES.filter(
+                                  (s) =>
+                                    // !s.disabled &&
+                                    s.href !== "/book-consultation",
+                                )[activeService]?.description ||
+                                "",
                             )}
                           </p>
 
@@ -882,11 +929,13 @@ function HomePageContent() {
                             0{activeStep}
                           </div>
                           <h3 className="text-2xl font-bold text-foreground">
-                            {t(`homePage.steps.step${activeStep}.title`) || LIFECYCLE_STEPS[activeStep - 1].title}
+                            {t(`homePage.steps.step${activeStep}.title`) ||
+                              LIFECYCLE_STEPS[activeStep - 1].title}
                           </h3>
                         </div>
                         <p className="text-muted-foreground leading-relaxed mb-8 text-lg">
-                          {t(`homePage.steps.step${activeStep}.desc`) || LIFECYCLE_STEPS[activeStep - 1].desc}
+                          {t(`homePage.steps.step${activeStep}.desc`) ||
+                            LIFECYCLE_STEPS[activeStep - 1].desc}
                         </p>
                         <ul className="space-y-4 mb-10">
                           {LIFECYCLE_STEPS[activeStep - 1].items.map(
@@ -896,7 +945,9 @@ function HomePageContent() {
                                 className="flex items-center gap-3 text-foreground font-medium bg-muted/50 p-3 rounded-xl border border-border"
                               >
                                 <Icons.Check className="w-5 h-5 text-rahvana-primary" />
-                                {t(`homePage.steps.step${activeStep}.items.${i}`) || item}
+                                {t(
+                                  `homePage.steps.step${activeStep}.items.${i}`,
+                                ) || item}
                               </li>
                             ),
                           )}
