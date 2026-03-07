@@ -32,7 +32,22 @@
     "about": "About Rahvana",
     "disclaimerTitle": "Legal Disclaimer",
     "disclaimerText": "Rahvana is not a law firm and does not provide legal advice. All information provided is for educational purposes only and should not be construed as legal advice. Immigration laws are complex and subject to change. For legal guidance specific to your situation, please consult a licensed immigration attorney. Use of this platform does not create an attorney-client relationship.",
-    "tagline": "Your visa journey companion"
+    "tagline": "Your visa journey companion",
+    "description": "Simplifying immigration journeys with guidance, tools, and expert support. Your path to reuniting with loved ones starts here.",
+    "journeys": "Journeys",
+    "exploreAllJourneys": "Explore all Journeys",
+    "tools": "Tools",
+    "exploreAllTools": "Explore all Tools",
+    "company": "Company",
+    "connectWithUs": "Connect With Us",
+    "rightsReserved": "© 2026 Rahvana. All rights reserved.",
+    "cookiePolicy": "Cookie Policy",
+    "privacyPolicy": "Privacy Policy",
+    "termsOfService": "Terms of Service",
+    "instagram": "Instagram",
+    "facebook": "Facebook",
+    "youtube": "Youtube",
+    "x": "X"
   },
   "buttons": {
     "submit": "Submit",
@@ -487,6 +502,369 @@
       "clearFile": "Clear file"
     },
     "closeBtn": "Close Vault"
+  },
+  "documentVaultPage": {
+    "page": {
+      "title": "Document Vault",
+      "subtitle": "Compliance-Ready Repository",
+      "case": "Case",
+      "guide": "Guide",
+      "actions": "Actions",
+      "vaultManagement": "Vault Management",
+      "exportEntireVault": "Export Entire Vault",
+      "forceStatusSync": "Force Status Sync",
+      "purgeAllDocuments": "Purge All Documents",
+      "syncProgress": "Sync Progress",
+      "itemsReady": "Items Ready",
+      "criticalMissing": "Critical Missing",
+      "alertsExpiring": "Alerts/Expiring",
+      "bankGradeEncryption": "Bank-Grade Encryption Active",
+      "nvcTipTitle": "NVC/USCIS Tip",
+      "nvcTipDesc": "Always use the original color scans. Documents over 4MB will be auto-compressed by Rahvana's NVC engine.",
+      "actionRequired": "Action Required",
+      "alerts": "Alerts",
+      "fixNow": "Fix Now",
+      "allMasterChecklist": "All Master Checklist",
+      "more": "More",
+      "searchPlaceholder": "Search documents...",
+      "comprehensiveMasterChecklist": "Comprehensive Master Checklist",
+      "searchPrefix": "Search: ",
+      "foundPrefix": "Found",
+      "matchingDocuments": "matching documents",
+      "noDocumentsFound": "No documents found",
+      "noDocumentsDescPrefix": "We couldn't find any documents matching \"",
+      "noDocumentsDescSuffix": "\". Try a different keyword.",
+      "clearSearch": "Clear Search",
+      "messages": {
+        "loading": "Loading...",
+        "downloaded": "Document downloaded",
+        "downloadFailed": "Failed to download document",
+        "preparingZip": "Preparing ZIP with original + compressed...",
+        "preparingExport": "Preparing export...",
+        "zipExported": "ZIP exported with original + NVC-compliant compressed version",
+        "documentExported": "Document exported",
+        "exportFailed": "Failed to export document",
+        "deleteConfirm": "Are you sure you want to delete this document?",
+        "deleting": "Deleting document...",
+        "deleted": "Document deleted",
+        "deleteFailed": "Failed to delete document",
+        "exportCompleted": "Export completed",
+        "exportAllFailed": "Failed to export documents",
+        "deleteAllConfirmWarning": "⚠️ Are you sure you want to delete ALL documents? This action cannot be undone!",
+        "deleteAllFinalConfirm": "⚠️ Final confirmation: Delete ALL uploaded documents?",
+        "deletingAll": "Deleting all documents...",
+        "deletedAllSuccess": "✅ Deleted {{count}} documents successfully!",
+        "deleteAllFailed": "Failed to delete all documents"
+      }
+    },
+    "components": {
+      "documentCard": {
+        "status": {
+          "missing": "Missing",
+          "uploaded": "Uploaded",
+          "expiringSoon": "Expiring Soon",
+          "expired": "Expired"
+        },
+        "owner": "Owner",
+        "process": "Process",
+        "activeVersion": "Active Version",
+        "validity": "Validity",
+        "upload": "Upload",
+        "learnHow": "Learn How",
+        "preview": "Preview",
+        "files": "Files",
+        "replace": "Replace",
+        "exportZip": "Export ZIP",
+        "instructions": "Instructions",
+        "delete": "Delete"
+      },
+      "tableView": {
+        "missing": "Missing",
+        "completed": "Completed",
+        "expiring": "Expiring",
+        "expired": "Expired",
+        "columns": {
+          "documentName": "Document Name",
+          "requiredFor": "Required For",
+          "status": "Status",
+          "fileInfo": "File Info",
+          "validity": "Validity",
+          "actions": "Actions"
+        },
+        "zip": "ZIP",
+        "noFileUploaded": "No file uploaded",
+        "howToObtain": "How to obtain",
+        "preview": "Preview",
+        "manageDocument": "Manage Document",
+        "download": "Download",
+        "export": "Export",
+        "exportZip": "Export ZIP",
+        "replace": "Replace",
+        "instructions": "Instructions",
+        "delete": "Delete"
+      },
+      "previewModal": {
+        "close": "Close",
+        "loading": "Loading preview...",
+        "fileType": "File type: ",
+        "unknown": "Unknown",
+        "downloadToView": "Download to View"
+      },
+      "uploadModal": {
+        "fileSizeError": "File size must be less than 10MB",
+        "fileTypeError": "Only PDF, JPG, PNG, and GIF files are allowed",
+        "uploading": "Uploading document...",
+        "uploadFailed": "Upload failed",
+        "uploadSuccess": "✅ Document uploaded successfully!",
+        "titlePrefix": "Upload Document: ",
+        "close": "Close",
+        "selectFile": "Select File",
+        "clickToSelect": "Click to select file",
+        "allowedTypes": "PDF, JPG, PNG, GIF (max 10MB)",
+        "providedBy": "Provided By",
+        "expirationDate": "Expiration Date",
+        "expirationRequired": "Required: Enter the expiration date for this document",
+        "expirationOptional": "Optional: Enter expiration date if known",
+        "notes": "Notes (Optional)",
+        "notesPlaceholder": "Add any notes about this document...",
+        "namingPreview": "📄 USCIS Naming Preview",
+        "displayName": "Display Name:",
+        "petitioner": "Petitioner",
+        "beneficiary": "Beneficiary",
+        "jointSponsor": "Joint Sponsor",
+        "standardizedFilename": "Standardized Filename:",
+        "sizePrefix": "Size: ",
+        "typePrefix": "Type: ",
+        "warning": "⚠️ Warning: Set Case Information in left panel for proper USCIS naming!",
+        "cancel": "Cancel",
+        "uploadBtnLoading": "Uploading...",
+        "uploadBtn": "Upload Document"
+      },
+      "wizard": {
+        "noGuide": "No step-by-step guide available for this document yet.",
+        "close": "Close",
+        "howToObtain": "How to Obtain: ",
+        "documentUploaded": "Document Uploaded ✓",
+        "stepProgress": "Step {{current}} of {{total}}",
+        "resetConfirm": "Reset progress for this document?",
+        "resetProgress": "Reset Progress",
+        "progressOverview": "Progress Overview",
+        "clickToMark": "Click steps to mark complete",
+        "tip": "💡 Tip: Click on any step in the progress tree to mark it as complete. All steps will automatically be marked complete once you upload the document.",
+        "tipsHeading": "Tips",
+        "helpfulResources": "Helpful Resources",
+        "previous": "Previous",
+        "next": "Next",
+        "done": "Done"
+      },
+      "configWizard": {
+        "title": "Document Vault Setup",
+        "subtitle": "Let's configure your personalized document checklist",
+        "step1Title": "Step 1: Select Your Visa Category",
+        "step2Title": "Step 2: Additional Information",
+        "step2Subtitle": "Select any that apply to your case:",
+        "marriageHistory": "Marriage History",
+        "petitionerMarried": "Prior Marriage (Petitioner)",
+        "petitionerMarriedDesc": "Petitioner was previously married",
+        "beneficiaryMarried": "Prior Marriage (Beneficiary)",
+        "beneficiaryMarriedDesc": "Beneficiary was previously married",
+        "nameChange": "Name Change",
+        "nameChangeDesc": "Any party changed their name",
+        "childInfo": "Child Information",
+        "adoptedChild": "Adopted Child",
+        "adoptedChildDesc": "Child is adopted",
+        "stepchild": "Stepchild",
+        "stepchildDesc": "Child is a stepchild",
+        "financialSupport": "Financial",
+        "jointSponsor": "Joint Sponsor Used",
+        "jointSponsorDesc": "Using a joint sponsor for financial support",
+        "householdMember": "Household Member Used",
+        "householdMemberDesc": "Including household member income",
+        "background": "Background",
+        "militaryService": "Military Service",
+        "militaryServiceDesc": "Beneficiary served in military",
+        "criminalHistory": "Criminal History",
+        "criminalHistoryDesc": "Beneficiary has criminal history",
+        "previousViolations": "Previous Immigration Violations",
+        "previousViolationsDesc": "Previous visa overstay or violations",
+        "back": "Back",
+        "continue": "Continue",
+        "step3Title": "Step 3: Case Information (Optional)",
+        "step3Subtitle": "This information will be used for file naming and organization",
+        "caseId": "Case ID / Receipt Number (Optional)",
+        "caseIdDesc": "USCIS receipt number or NVC case number",
+        "petitionerName": "Petitioner Name",
+        "beneficiaryName": "Beneficiary Name",
+        "jointSponsorName": "Joint Sponsor Name",
+        "completeSetup": "Complete Setup"
+      },
+      "liveConfigPanel": {
+        "requiredFieldsError": "❌ Please fill all required fields (Case ID, Petitioner, Beneficiary)",
+        "saveSuccess": "✅ Case Information Saved Successfully!",
+        "saveSuccessDesc": "All future uploads will use USCIS naming:",
+        "configuration": "Configuration",
+        "visaCategory": "Visa Category",
+        "selectVisaType": "Select your visa type",
+        "active": "Active",
+        "additionalInfo": "Additional Information",
+        "selectApplies": "Select what applies to your case",
+        "caseInfo": "Case Information",
+        "caseInfoRequiredDesc": "Required for USCIS/NVC compliant file naming",
+        "caseIdReq": "Case/Receipt Number",
+        "petitionerNameReq": "Petitioner Name",
+        "petitionerNameDesc": "Full legal name → normalized as JOHN_MICHAEL_DOE",
+        "beneficiaryNameReq": "Beneficiary Name",
+        "beneficiaryNameDesc": "Full legal name → normalized as JANE_ELIZABETH_SMITH",
+        "jointSponsorNameReq": "Joint Sponsor Name",
+        "jointSponsorNameDesc": "Full legal name (if using joint sponsor)",
+        "saving": "Saving...",
+        "fillRequiredAbove": "Fill Required Fields Above",
+        "saveCaseInfo": "Save Case Information",
+        "namingPreview": "📋 Naming Preview:",
+        "requiredWarning": "⚠️ Required for USCIS naming!",
+        "requiredWarningDesc": "Fill all fields above to enable proper file naming."
+      },
+      "notificationCenter": {
+        "title": "Notifications",
+        "new": " new",
+        "subtitle": "Stay updated on your document status",
+        "markAllRead": "Mark all read",
+        "snoozeAll": "Snooze all",
+        "1hour": "1 hour",
+        "4hours": "4 hours",
+        "24hours": "24 hours",
+        "emptyTitle": "No notifications",
+        "emptyDesc": "You're all caught up! New alerts will appear here.",
+        "uploadDocument": "Upload Document",
+        "markAsRead": "Mark as read",
+        "snooze": "Snooze"
+      },
+      "notificationTestPanel": {
+        "title": "Notification Testing",
+        "devModeDesc": "Dev mode only - Test expiry notifications",
+        "activeNotifications": "Active Notifications",
+        "errors": "errors",
+        "warnings": "warnings",
+        "info": "info",
+        "quickActions": "Quick Test Scenarios",
+        "simulateAll": "Simulate All Scenarios",
+        "simulateDesc": "Sets: Expired, 3 days, 15 days, 45 days, 120 days",
+        "setSpecific": "Set Specific Expiry",
+        "expiredDays": "Expired (-5d)",
+        "3days": "3 days",
+        "15days": "15 days",
+        "45days": "45 days",
+        "resetAll": "Reset All (6 months)",
+        "note": "Note:",
+        "tempChangeDesc": "These changes are temporary and only for testing.",
+        "refreshRestore": "Refresh page to restore original dates.",
+        "testNotifications": "Test Notifications",
+        "noDocsError": "No documents uploaded yet!",
+        "noDocsWithExpiryError": "No documents with expiration dates found",
+        "testExpiryApplied": "Test expiry dates applied!",
+        "expiryResetSuccess": "Expiry dates reset to 6 months from now",
+        "setExpirySuccess": "Set expiry to {days} days from now"
+      }
+    },
+    "categories": {
+      "CIVIL": "Civil Documents",
+      "FINANCIAL": "Financial / Sponsor Documents",
+      "RELATIONSHIP": "Relationship Evidence",
+      "POLICE": "Police / Court / Military",
+      "MEDICAL": "Medical Documents",
+      "PHOTOS": "Photographs",
+      "TRANSLATIONS": "Translations / Certifications",
+      "MISC": "Miscellaneous / Case Evidence",
+      "EDUCATION": "Education Documents",
+      "WORK": "Work / Employment Documents",
+      "TRAVEL": "Travel Documents",
+      "IDENTITY": "Identity Documents",
+      "PROPERTY": "Property & Assets",
+      "IMMIGRATION": "Immigration History",
+      "TAX": "Tax Documents (Pakistan)",
+      "LEGAL": "Legal Documents",
+      "HEALTH_INSURANCE": "Health Insurance",
+      "SOCIAL_MEDIA": "Social Media",
+      "ADDRESS_PROOF": "Address Proof",
+      "OTHER": "Other Documents"
+    },
+    "visaCategories": {
+      "IR-1": "IR-1: Spouse of U.S. Citizen",
+      "CR-1": "CR-1: Spouse of U.S. Citizen (Conditional)",
+      "IR-2": "IR-2: Unmarried Child under 21",
+      "CR-2": "CR-2: Unmarried Child under 21 (Conditional)",
+      "IR-5": "IR-5: Parent of U.S. Citizen",
+      "F1": "F1: Unmarried Sons/Daughters of U.S. Citizens",
+      "F2A": "F2A: Spouses/Children of LPR",
+      "F2B": "F2B: Unmarried Sons/Daughters of LPR",
+      "F3": "F3: Married Sons/Daughters of U.S. Citizens",
+      "F4": "F4: Siblings of U.S. Citizens"
+    },
+    "roles": {
+      "BENEFICIARY": "Beneficiary",
+      "PETITIONER": "Petitioner",
+      "JOINT_SPONSOR": "Joint Sponsor"
+    },
+    "stages": {
+      "USCIS": "USCIS",
+      "NVC": "NVC",
+      "INTERVIEW": "Interview",
+      "DS260_SUBMISSION": "DS-260"
+    },
+    "documents": {
+      "birth-cert-beneficiary": {
+        "name": "Birth Certificate (Beneficiary)",
+        "description": "Official birth certificate for the beneficiary"
+      },
+      "marriage-cert": {
+        "name": "Marriage Certificate",
+        "description": "Official marriage certificate (Nikkah Nama)"
+      },
+      "passport-bio": {
+        "name": "Passport Biographical Page",
+        "description": "Clear scan of the passport page with photo and details"
+      },
+      "police-cert-pakistan": {
+        "name": "Police Character Certificate (Pakistan)",
+        "description": "Police character certificate from all districts of residence"
+      },
+      "photos-us-spec": {
+        "name": "US Visa Specification Photos",
+        "description": "Photos meeting US visa requirements (2x2 inches, white background)"
+      },
+      "nikah-nama": {
+        "name": "Nikah Nama / Marriage Certificate",
+        "description": "Original Nikah Nama with English translation"
+      },
+      "passport-beneficiary": {
+        "name": "Passport Copy (Beneficiary)",
+        "description": "Valid passport copy (biographical page)"
+      },
+      "cnic-beneficiary": {
+        "name": "CNIC (National Identity Card)",
+        "description": "Copy of Pakistani CNIC (both sides)"
+      },
+      "divorce-decree-beneficiary": {
+        "name": "Divorce Decree / Talaq Nama",
+        "description": "Official divorce decree with translation if prior marriage"
+      },
+      "death-cert-prior-spouse": {
+        "name": "Death Certificate of Former Spouse",
+        "description": "Death certificate if prior spouse is deceased"
+      },
+      "i-864-affidavit": {
+        "name": "Form I-864 (Affidavit of Support)",
+        "description": "Completed and signed I-864 form"
+      },
+      "tax-returns-petitioner": {
+        "name": "IRS Tax Returns (3 years)",
+        "description": "Federal tax transcripts or returns for last 3 years"
+      },
+      "employment-letter": {
+        "name": "Employment Verification Letter",
+        "description": "Letter from employer confirming employment and salary"
+      }
+    }
   },
   "myJourneys": {
     "journeyNames": {
@@ -1292,7 +1670,1124 @@
     "heroTitle1": "Your Immigration Journey,",
     "heroTitle2": "Simplified",
     "heroDescription": "Navigate the complexities of immigration with confidence. Rahvana provides step-by-step guidance, smart tools, and expert support to help you reunite with loved ones.",
+    "heroFeatures": [
+      "Secure Vault",
+      "AI Insights",
+      "Step-by-Step Guidance"
+    ],
     "resumeJourney": "Resume My Journey",
-    "exploreJourneys": "Explore Journeys"
+    "exploreJourneys": "Explore Journeys",
+    "journeysBadge": "Find Your Path",
+    "journeysTitle": "Explore Immigration Journeys",
+    "journeysDescription": "Select your visa category to access personalized guidance, document checklists, and timeline tracking.",
+    "categoryLabels": {
+      "Family & Protection": "Family & Protection",
+      "Work & Business": "Work & Business",
+      "Work Green Cards": "Work Green Cards",
+      "Students & Visitors": "Students & Visitors",
+      "Expert Help": "Expert Help",
+      "Pakistan Docs": "Pakistan Docs",
+      "Medical": "Medical",
+      "Documents": "Documents"
+    },
+    "journeyTabs": {
+      "family": "Family & Protection",
+      "work": "Work & Business",
+      "greenCards": "Work Green Cards",
+      "students": "Students & Visitors"
+    },
+    "toolsBadge": "Power Tools",
+    "toolsTitle": "Quick Tools at Your Fingertips",
+    "toolsDescription": "Powerful tools designed to streamline your immigration process and keep you informed.",
+    "toolsExploreAll": "Explore all tools",
+    "toolTryItOut": "Try it out",
+    "servicesBadge": "Premium Services",
+    "servicesTitle": "Expert Help & Done-for-You Cases",
+    "servicesDescription": "Get the personalized support you need, from quick consultations to full document preparation and review.",
+    "servicesViewAll": "View all services",
+    "servicesGetStarted": "Get Started",
+    "consultationBadge": "Expert Guidance",
+    "consultationTitle": "Book a Consultation",
+    "consultationDescription": "Get personalized advice from immigration specialists who understand your journey.",
+    "consultationSignUp": "Sign up now.",
+    "consultationButton": "Book a Consultation",
+    "howItWorksBadge1": "Your Journey",
+    "howItWorksTitle": "How Rahvana Works",
+    "howItWorksDescription": "From onboarding to interview readiness, Rahvana guides each case through a clear, trackable workflow.",
+    "howItWorksBadge2": "See steps below for how rahvana works",
+    "howItWorksPrevious": "Previous",
+    "howItWorksNext": "Next",
+    "faqBadge": "Common Questions",
+    "faqTitle": "Frequently Asked Questions",
+    "toolsItems": [
+      {
+        "title": "Case Strength Analyzer",
+        "desc": "Get AI-powered insights into your case status, processing times, and what to expect next."
+      },
+      {
+        "title": "221(g) Action Planner",
+        "desc": "Navigate administrative processing with step-by-step guidance and status tracking."
+      },
+      {
+        "title": "VisaPath Finder",
+        "desc": "Answer a few questions and discover the best visa options for your unique situation."
+      },
+      {
+        "title": "Sponsorship Calculator",
+        "desc": "Calculate financial requirements and determine if you meet the sponsorship threshold."
+      },
+      {
+        "title": "PDF ToolKit",
+        "desc": "Merge, split, and organize your immigration documents with ease."
+      },
+      {
+        "title": "Smart Form Filler",
+        "desc": "Auto-complete immigration forms with your saved profile data."
+      }
+    ],
+    "contactSection": {
+      "badge": "Let's Connect",
+      "title": "Get in Touch",
+      "description": "Have questions or need support? We're here to help.",
+      "followUs": "Follow Us",
+      "sendMessage": "Send a Message",
+      "success": "Thank you! Your message has been sent successfully. We'll get back to you soon.",
+      "error": "Something went wrong. Please try again.",
+      "firstName": "First Name",
+      "lastName": "Last Name",
+      "email": "Email Address",
+      "message": "Message",
+      "placeholderFirstName": "John",
+      "placeholderLastName": "Doe",
+      "placeholderEmail": "john@example.com",
+      "placeholderMessage": "How can we help you?",
+      "sending": "Sending...",
+      "sendButton": "Send Message"
+    },
+    "steps": {
+      "step1": {
+        "title": "Create Profile & Start Case",
+        "desc": "User creates an account, adds basic case details, and opens a dedicated immigration workspace to begin the journey.",
+        "items": [
+          "Sign up and verify account",
+          "Add applicant and spouse basics",
+          "Set country and embassy context",
+          "Open personal immigration workspace"
+        ]
+      },
+      "step2": {
+        "title": "Select the Correct Journey",
+        "desc": "User selects the visa pathway and enters a guided roadmap tailored to the selected category.",
+        "items": [
+          "Review available journey options",
+          "Choose a visa category",
+          "Enter guided roadmap flow",
+          "Align process with case goals"
+        ]
+      },
+      "step3": {
+        "title": "Start the Live IR-1/CR-1 Track",
+        "desc": "Current primary live journey supports IR-1 / CR-1 (Spouse of U.S. Citizen) with structured stage-by-stage execution.",
+        "items": [
+          "Confirm IR-1 / CR-1 eligibility path",
+          "View stage-based workflow",
+          "Understand immediate priorities",
+          "Follow live journey checkpoints"
+        ]
+      },
+      "step4": {
+        "title": "Use Productivity Tools",
+        "desc": "Users complete tasks faster with built-in tools that support planning, form completion, interview prep, and document formatting.",
+        "items": [
+          "Run case strength checker",
+          "Use visa bulletin checker",
+          "Prepare with interview prep module",
+          "Use PDF/photo/signature tools and form autofill"
+        ]
+      },
+      "step5": {
+        "title": "Organize Documents Centrally",
+        "desc": "Document Vault stores files, notes, and checklist progress in one place to keep the case embassy/NVC ready.",
+        "items": [
+          "Upload and categorize documents",
+          "Track checklist completion",
+          "Maintain case notes and history",
+          "Stay prepared for NVC and embassy review"
+        ]
+      },
+      "step6": {
+        "title": "Get Expert Support",
+        "desc": "Users can book consultations and request support services such as appointment booking and translation before final submission/interview.",
+        "items": [
+          "Book expert consultation sessions",
+          "Request appointment booking help",
+          "Use translation and support services",
+          "Reduce risk before final interview/submission"
+        ]
+      }
+    },
+    "faqs": {
+      "q1": {
+        "q": "How does Rahvana help simplify my visa journey?",
+        "a": "Rahvana acts as your personal digital guide, breaking down the complex U.S. immigration process into clear, manageable steps. We combine expert-level roadmaps (specific to your location) with AI-powered tools to automate paperwork, track timelines, and prepare you for your interview, reducing the stress and uncertainty of doing it alone."
+      },
+      "q2": {
+        "q": "Is the Roadmap tailored for the Islamabad Embassy?",
+        "a": "Yes! Rahvana includes specific guidance for Pakistan, including NADRA document requirements, Union Council registrations, local police certificate procedures, and IOM medical exam details specific to Islamabad, Karachi, and Lahore."
+      },
+      "q3": {
+        "q": "Can Rahvana really auto-fill my USCIS forms?",
+        "a": "Absolutely. Our AI 'Brain' takes your profile data and maps it directly onto official USCIS PDFs like the I-130 and Form I-864, generating a perfectly filled, compliant form in seconds, ready for your review and submission."
+      },
+      "q4": {
+        "q": "Does Rahvana provide legal representation?",
+        "a": "No, Rahvana is an educational AI assistant designed to simplify your journey. While we provide expert-level guidance and tools, we are not a law firm. We always recommend consulting a licensed attorney for complex legal cases."
+      },
+      "q5": {
+        "q": "How accurate is the Interview Prep Question Bank?",
+        "a": "Our bank contains 50+ real-world questions reported from the Islamabad Embassy, with suggested answers and tips on how to present your case honestly and effectively based on successful approval historical data."
+      },
+      "q6": {
+        "q": "Is my document data secure in the Vault?",
+        "a": "Yes. We use bank-level encryption (AES-256) to secure your files. For Free users, progress is stored locally in your browser. Plus users benefit from secure, encrypted cloud synchronization across all devices."
+      }
+    },
+    "servicesList": [
+      {
+        "title": "Expert Case Review",
+        "desc": "Human review of your documents + a tailored improvement plan."
+      },
+      {
+        "title": "PCC Filing Service — Sindh",
+        "desc": "Done-for-you police certificate filing for Sindh."
+      },
+      {
+        "title": "PCC Filing Service — Punjab (Coming Soon)",
+        "desc": "Join the waitlist for done-for-you PCC filing in Punjab."
+      },
+      {
+        "title": "PCC Filing Service — KPK (Coming Soon)",
+        "desc": "Join the waitlist for done-for-you PCC filing in KPK."
+      },
+      {
+        "title": "PCC Filing Service — Balochistan (Coming Soon)",
+        "desc": "Join the waitlist for done-for-you PCC filing in Balochistan."
+      },
+      {
+        "title": "Book Medical Appointment",
+        "desc": "Book your panel physician medical exam appointment."
+      },
+      {
+        "title": "Urdu → English Translation",
+        "desc": "Request certified translation + formatting for submission."
+      }
+    ],
+    "journeysObj": {
+      "Family & Protection": {
+        "IR-1/CR-1": {
+          "title": "Spouse of U.S. Citizen",
+          "desc": "Bring your spouse to the United States through the immediate relative visa process."
+        },
+        "K-1": {
+          "title": "Fiancé(e) Visa",
+          "desc": "Bring your fiancé(e) to the U.S. to marry within 90 days of arrival."
+        },
+        "K-3": {
+          "title": "Spouse (short-separation option)",
+          "desc": "Spouse (short-separation option)"
+        },
+        "IR-5": {
+          "title": "Parent of U.S. Citizen",
+          "desc": "Petition for your parent as an immediate relative of a U.S. citizen."
+        },
+        "IR-2 / CR-2": {
+          "title": "Child of U.S. Citizen",
+          "desc": "Child of U.S. Citizen"
+        },
+        "IR-3 / IR-4": {
+          "title": "Intercountry Adoption",
+          "desc": "Intercountry Adoption"
+        },
+        "F-1": {
+          "title": "Adult Child (Unmarried) of U.S. Citizen",
+          "desc": "Adult Child (Unmarried) of U.S. Citizen"
+        },
+        "F-2A": {
+          "title": "Spouse/Child of Green Card Holder",
+          "desc": "Spouse/Child of Green Card Holder"
+        },
+        "F-2B": {
+          "title": "Adult Child (Unmarried) of Green Card Holder",
+          "desc": "Adult Child (Unmarried) of Green Card Holder"
+        },
+        "F-3": {
+          "title": "Adult Child (Married) of U.S. Citizen",
+          "desc": "Adult Child (Married) of U.S. Citizen"
+        },
+        "F-4": {
+          "title": "Sibling of U.S. Citizen",
+          "desc": "Sibling of U.S. Citizen"
+        },
+        "Refugee": {
+          "title": "Refugee (USRAP)",
+          "desc": "Refugee (USRAP)"
+        },
+        "Asylum": {
+          "title": "Asylum (typically filed in U.S.)",
+          "desc": "Asylum (typically filed in U.S.)"
+        },
+        "Parole": {
+          "title": "Humanitarian Parole (case-by-case)",
+          "desc": "Humanitarian Parole (case-by-case)"
+        }
+      },
+      "Work & Business": {
+        "H-1B": {
+          "title": "Specialty Occupation",
+          "desc": "Work in the U.S. in a specialty occupation requiring a bachelor's degree."
+        },
+        "L-1A / L-1B": {
+          "title": "Company Transfer (Manager / Specialist)",
+          "desc": "Company Transfer (Manager / Specialist)"
+        },
+        "O-1A / O-1B": {
+          "title": "Extraordinary Talent (Science / Business / Arts)",
+          "desc": "Extraordinary Talent (Science / Business / Arts)"
+        },
+        "O-2": {
+          "title": "Support Staff for O-1",
+          "desc": "Support Staff for O-1"
+        },
+        "P-1 / P-2 / P-3": {
+          "title": "Athlete / Entertainer / Tour Group",
+          "desc": "Athlete / Entertainer / Tour Group"
+        },
+        "E-1": {
+          "title": "Treaty Trader",
+          "desc": "Treaty Trader"
+        },
+        "E-2": {
+          "title": "Treaty Investor",
+          "desc": "Treaty Investor"
+        },
+        "R-1": {
+          "title": "Religious Worker",
+          "desc": "Religious Worker"
+        },
+        "Q-1": {
+          "title": "Cultural Exchange (Work + Culture)",
+          "desc": "Cultural Exchange (Work + Culture)"
+        },
+        "I": {
+          "title": "Journalist / Media",
+          "desc": "Journalist / Media"
+        },
+        "H-2A": {
+          "title": "Seasonal Agriculture (eligibility list applies)",
+          "desc": "Seasonal Agriculture (eligibility list applies)"
+        },
+        "H-2B": {
+          "title": "Seasonal Non-Agriculture (eligibility list applies)",
+          "desc": "Seasonal Non-Agriculture (eligibility list applies)"
+        },
+        "H-3": {
+          "title": "Trainee / Special Education Exchange",
+          "desc": "Trainee / Special Education Exchange"
+        }
+      },
+      "Work Green Cards": {
+        "EB-1": {
+          "title": "Priority Workers",
+          "desc": "For persons of extraordinary ability, outstanding researchers, and multinational executives."
+        },
+        "EB-2": {
+          "title": "Advanced Degree / Exceptional Ability",
+          "desc": "Advanced Degree / Exceptional Ability"
+        },
+        "EB-2 (NIW Path)": {
+          "title": "National Interest Waiver",
+          "desc": "Self-petition without employer sponsorship based on national interest."
+        },
+        "EB-3": {
+          "title": "Skilled Worker / Professional",
+          "desc": "Skilled Worker / Professional"
+        },
+        "EB-4": {
+          "title": "Special Immigrants (varies)",
+          "desc": "Special Immigrants (varies)"
+        },
+        "EB-5": {
+          "title": "Investor Green Card",
+          "desc": "Investor Green Card"
+        },
+        "DV": {
+          "title": "Diversity Visa (DV Lottery)",
+          "desc": "Diversity Visa (DV Lottery)"
+        }
+      },
+      "Students & Visitors": {
+        "B-2": {
+          "title": "Tourism / Family Visit",
+          "desc": "Tourism / Family Visit"
+        },
+        "B-1": {
+          "title": "Business Visitor",
+          "desc": "Business Visitor"
+        },
+        "F-1": {
+          "title": "Student Visa",
+          "desc": "Study at a U.S. academic institution or English language program."
+        },
+        "F-2": {
+          "title": "Student Dependent",
+          "desc": "Student Dependent"
+        },
+        "M-1": {
+          "title": "Vocational / Technical Student",
+          "desc": "Vocational / Technical Student"
+        },
+        "M-2": {
+          "title": "Vocational Dependent",
+          "desc": "Vocational Dependent"
+        },
+        "J-1": {
+          "title": "Exchange Visitor (Programs)",
+          "desc": "Exchange Visitor (Programs)"
+        },
+        "J-2": {
+          "title": "Exchange Dependent",
+          "desc": "Exchange Dependent"
+        }
+      }
+    },
+    "carousel": {
+      "active": "Active",
+      "comingSoon": "Coming Soon",
+      "startJourney": "Start Journey",
+      "getEarlyAccess": "Get Early Access"
+    }
+  },
+  "toolsPage": {
+    "heroTitle": "Create. Check. Comply.",
+    "heroDescription": "A suite of powerful tools designed to simplify complex processes and boost your productivity.",
+    "searchPlaceholder": "Search tools...",
+    "categories": {
+      "All": "All",
+      "AI & Planning": "AI & Planning",
+      "Money & Sponsorship": "Money & Sponsorship",
+      "Tracking": "Tracking",
+      "Docs & PDFs": "Docs & PDFs",
+      "Forms & Automation": "Forms & Automation",
+      "Storage & Organization": "Storage & Organization"
+    },
+    "noToolsFound": "No tools found matching your search.",
+    "openTool": "Open Tool",
+    "comingSoon": "Coming Soon",
+    "more": "More",
+    "toolsItems": {
+      "case-strength-analyzer": {
+        "title": "Case Strength Analyzer",
+        "desc": "Instant AI case strength score + gaps to fix before NVC/Interview."
+      },
+      "221g-planner": {
+        "title": "221(g) Action Planner",
+        "desc": "Step-by-step next moves after 221(g) or Administrative Processing."
+      },
+      "visa-path": {
+        "title": "VisaPath Finder",
+        "desc": "Quick quiz that points you to the right visa path + next steps."
+      },
+      "interview-prep": {
+        "title": "Interview Prep",
+        "desc": "Prepare smarter and deliver confident answers when it matters most."
+      },
+      "sponsorship-calculator": {
+        "title": "Sponsorship Calculator",
+        "desc": "Auto-check income/assets and tell you what you still need."
+      },
+      "queue-watch": {
+        "title": "DQ Status Check",
+        "desc": "Track interview scheduling movement and trends by category."
+      },
+      "visa-bulletin-monitor": {
+        "title": "Visa Bulletin Monitor",
+        "desc": "Check your priority date progress against the Visa Bulletin."
+      },
+      "photo-booth": {
+        "title": "Photo Booth",
+        "desc": "Make a compliant passport/visa photo in minutes."
+      },
+      "pdf-toolkit": {
+        "title": "PDF ToolKit",
+        "desc": "Merge • compress • convert • edit — all in one toolkit."
+      },
+      "snap-sign": {
+        "title": "Snap & Sign",
+        "desc": "Create a clean digital signature for your forms."
+      },
+      "form-forge": {
+        "title": "Smart Form Filler",
+        "desc": "Auto-fills your official form and generates a ready-to-upload PDF."
+      },
+      "doc-vault": {
+        "title": "Document Vault",
+        "desc": "Organize docs + build shareable packets when the embassy asks."
+      }
+    }
+  },
+  "ir1Journey": {
+    "title": "IR-1/CR-1 Spouse Visa Journey",
+    "description": "Comprehensive roadmap for bringing your spouse to the United States via consular processing at U.S. Embassy Islamabad, Pakistan.",
+    "stagesTitle": "The 5 Stages of Your Journey",
+    "stageTimes": {
+      "1": "17-65 months",
+      "2": "4-9 months",
+      "3": "2-4 weeks",
+      "4": "1-2 weeks",
+      "5": "90 days"
+    },
+    "welcomeBack": "Welcome Back!",
+    "existingJourney": "You have an existing IR-1 journey in progress.",
+    "journeyProgress": "Journey Progress",
+    "stepsCompleted": "{count} steps completed",
+    "currentlyAt": "Currently at: Stage {stage} — {name}",
+    "resumeJourney": "Resume My Journey",
+    "startFresh": "Start Fresh",
+    "startFreshTitle": "Start Fresh?",
+    "startFreshDesc": "Are you sure you want to reset all progress? This action cannot be undone.",
+    "overallProgress": "Overall Journey Progress",
+    "documentVault": "Document Vault",
+    "loadingJourney": "Loading your journey...",
+    "saving": "Saving...",
+    "autoSaved": "Auto-saved",
+    "stageNames": {
+      "1": "USCIS Petition",
+      "2": "NVC Processing",
+      "3": "Med + Interview",
+      "4": "Visa & Travel",
+      "5": "U.S. Arrival"
+    },
+    "stageShort": "Stage {stage}",
+    "vaultTitle": "📋 Document Vault",
+    "vaultDesc": "Track and manage your required documents.",
+    "collected": "Collected",
+    "pending": "Pending",
+    "uploaded": "Uploaded",
+    "notesLabel": "Notes",
+    "notesPlaceholder": "Add private note...",
+    "fileLabel": "File Attachment",
+    "chooseFile": "Choose File...",
+    "closeVault": "Close Vault",
+    "journeyMap": "Journey Map",
+    "consularTrack": "Consular Processing Track",
+    "stageStep": "Stage {stage}, Step {step}",
+    "completed": "Completed",
+    "markComplete": "Mark as Complete",
+    "actionsRequired": "Actions Required",
+    "docRequired": "(Document Required)",
+    "successTitle": "How do I know this step is finished?",
+    "prevStep": "Previous Step",
+    "nextStep": "Next Step"
+  },
+  "visaCategory": {
+    "feature": "Feature",
+    "visaCode": "Visa Code",
+    "bestFor": "Best For",
+    "stations": "Stations",
+    "difficulty": "Difficulty",
+    "timeline": "Timeline",
+    "matched": "Matched",
+    "exploreFilters": "Explore Filters",
+    "journeyComparison": "Journey Comparison",
+    "journeyComparisonDesc": "Comparison table for selected visa journeys.",
+    "visaChecker": "Visa Eligibility Checker",
+    "unknown": "Unknown",
+    "reset": "Reset",
+    "processes": {
+      "All": "All",
+      "Consular": "Consular Processing",
+      "Adjustment of Status": "Adjustment of Status"
+    },
+    "match": "Match",
+    "completePercent": "{percent}% Complete",
+    "inProgress": "In Progress",
+    "compare": "Compare",
+    "checking": "Checking...",
+    "resumeJourney": "Resume Journey",
+    "startJourney": "Start Journey",
+    "watchIntro": "Watch Intro",
+    "highApproval": "High Approval Rate",
+    "bestMatches": "Best Matches",
+    "all": "All Journeys",
+    "route": "Route",
+    "origin": "Origin",
+    "destination": "Destination",
+    "visaCategory": "Visa Category",
+    "categories": {
+      "all": "All",
+      "Family": "Family",
+      "Work": "Work",
+      "Study": "Study",
+      "Humanitarian": "Humanitarian",
+      "Visit": "Visit",
+      "Other": "Other"
+    },
+    "processingMethod": "Processing Method",
+    "consularTitle": "Consular Processing",
+    "consularTooltip": "Apply for a visa at a U.S. embassy or consulate in your home country before traveling.",
+    "aosTitle": "Adjustment of Status (AOS)",
+    "aosTooltip": "Apply for a green card while already in the U.S. No interview abroad required.",
+    "map": {
+      "selectRoute": "Select Your Journey Route",
+      "selectOrigin": "Select Origin",
+      "selectDestination": "Select Destination",
+      "comingSoon": "Coming Soon"
+    }
+  },
+  "passportPhoto": {
+    "title": "Passport Photo Maker",
+    "subtitle": "Upload your photo → Get a compliant passport photo with clean white background",
+    "requirementsTitle": "Official Passport Photo Requirements",
+    "requirements": {
+      "1": "Submit one color photo",
+      "2": "Photo taken in the last 6 months",
+      "3": "Clear image of your full face",
+      "4": "No editing, filters, or AI alterations",
+      "5": "Face the camera straight, no head tilt",
+      "6": "Remove eyeglasses",
+      "7": "Plain white or off-white background – no shadows, textures, or lines"
+    },
+    "uploadLabel": "Upload Your Photo",
+    "dropzone": "Click to upload or drag & drop",
+    "fileSize": "JPG, PNG up to 10MB",
+    "removePhoto": "Remove Photo",
+    "generate": "Generate Passport Photo",
+    "processing": "Processing...",
+    "steps": {
+      "uploading": "Uploading image...",
+      "removing": "AI removing background...",
+      "finalizing": "Finalizing photo..."
+    },
+    "ready": "Photo Ready!",
+    "download": "Download Photo",
+    "errors": {
+      "invalid": "Please upload a valid image file.",
+      "large": "Image size must be under 10 MB.",
+      "general": "An unknown error occurred."
+    },
+    "presets": {
+      "us": "2x2 inch (US Passport)",
+      "usDesc": "Standard US passport size",
+      "uk": "35x45 mm (UK/EU)",
+      "ukDesc": "UK and European passport",
+      "india": "35x35 mm (India)",
+      "indiaDesc": "Indian passport size",
+      "canada": "33x48 mm (Canada)",
+      "canadaDesc": "Canadian passport",
+      "custom": "Custom",
+      "customDesc": "Set your own dimensions"
+    }
+  },
+  "ivTool": {
+    "title": "IV Scheduling Status Tool",
+    "subtitle": "Check when your immigrant visa interview might be scheduled",
+    "description": {
+      "p1": "The Immigrant Visa (IV) Scheduling Status Tool shows when the National Visa Center (NVC) is scheduling interviews at specific U.S. embassies or consulates. Interviews are scheduled based on the date your case became \"documentarily complete\" (when you paid all fees and submitted required documents).",
+      "p2": "Important: Interviews can only be scheduled if a visa is available. For preference visa cases, check the monthly Visa Bulletin to confirm visa availability."
+    },
+    "visaBulletin": "Visa Bulletin",
+    "findStatus": "Find Your Scheduling Status",
+    "categoryLabel": "Visa Category",
+    "categories": {
+      "immediate": "Immediate Relative",
+      "family": "Family-Sponsored Preference",
+      "employment": "Employment-Based Preference"
+    },
+    "cityLabel": "U.S. Embassy or Consulate City",
+    "cityExamples": "Examples: Islamabad, Mumbai, Dubai, Ankara, New Delhi",
+    "cityPlaceholder": "Start typing city name...",
+    "cityError": "Please enter a city name.",
+    "search": "Search",
+    "loading": "Loading...",
+    "errors": {
+      "fetch": "Failed to fetch scheduling data",
+      "noResults": "No results found for this city and category.",
+      "general": "An error occurred. Please try again.",
+      "title": "Error"
+    },
+    "results": {
+      "title": "Scheduling Information",
+      "visaCategory": "Visa Category",
+      "docCompleteDate": "Documentarily Complete Date",
+      "caseComplete": "Case Complete"
+    },
+    "suggestions": {
+      "notfound": "We couldn't find {city}",
+      "didYouMean": "Did you mean one of these countries? Select whether you need an Embassy or Consulate:",
+      "embassy": "Embassy",
+      "consulate": "Consulate",
+      "noPosts": "No posts available for your visa category"
+    }
+  },
+  "visaChecker": {
+    "pageTitle": "Visa Progress Checker",
+    "pageSubtitle": "Enter your USCIS Case Number – We will auto-fetch your Priority Date!",
+    "form": {
+      "categoryLabel": "Visa Category",
+      "categories": {
+        "eb1": "EB-1 (Priority Workers)",
+        "eb2": "EB-2 (Advanced Degree)",
+        "eb3": "EB-3 (Skilled Workers)",
+        "f1": "F1 (Unmarried Sons/Daughters of Citizens)",
+        "f2a": "F2A (Spouses & Children of LPR)",
+        "f2b": "F2B (Unmarried Sons/Daughters of LPR)",
+        "f3": "F3 (Married Sons/Daughters of Citizens)",
+        "f4": "F4 (Brothers/Sisters of Citizens)"
+      },
+      "priorityDateLabel": "Priority Date",
+      "priorityDateHint": "Found on your I-797, I-140, or PERM approval",
+      "countryLabel": "Country of Chargeability",
+      "countries": {
+        "all": "All Chargeability Areas Except Those Listed",
+        "china": "China (mainland born)",
+        "india": "India",
+        "mexico": "Mexico",
+        "philippines": "Philippines"
+      },
+      "appTypeLabel": "Application Type",
+      "appTypes": {
+        "consular": "Consular Processing (Outside USA)",
+        "aos": "Adjustment of Status (I-485 in USA)"
+      },
+      "checkBtn": "Check My Status",
+      "checking": "Checking...",
+      "errors": {
+        "noPriorityDate": "Please enter your Priority Date",
+        "general": "Something went wrong. Please try again."
+      }
+    },
+    "result": {
+      "noResult": "No result found. Please go back and check again.",
+      "statusCurrent": "Your Priority Date is Current!",
+      "statusWaiting": "You're Still Waiting in Line",
+      "statusUnavailable": "Category Temporarily Unavailable",
+      "yourInfo": "Your Information:",
+      "infoCategory": "Category",
+      "infoPriDate": "Priority Date",
+      "infoCountry": "Country",
+      "infoAppType": "Application Type",
+      "bulletinTitle": "Current Visa Bulletin",
+      "chartUsed": "Chart Used",
+      "cutoffDate": "Cut-off Date",
+      "waitingDesc": "You filed your petition on {date}. The government is currently processing cases from {cutoff}.",
+      "youAre": "You are:",
+      "behindCutoff": "behind the current cut-off date",
+      "estimatedWait": "Estimated Wait Time:",
+      "estimateDesc": "Based on the last 12 months of Visa Bulletin movement for {category}:",
+      "avgMovement": "Average monthly forward movement:",
+      "estTime": "Estimated time until current:",
+      "approxYear": "Approximate year:",
+      "estimateNote": "Note: This is an ESTIMATE only. Actual wait times can vary.",
+      "greatNews": "Great News! Your visa number is available.",
+      "fileNow": "File Form I-485 immediately. Act fast before retrogression!",
+      "whatToDo": "What You Should Do:",
+      "actions": {
+        "1": "Check the Visa Bulletin monthly (8th-15th)",
+        "2": "Prepare documents now (don't wait)",
+        "3": "Keep USCIS updated on address changes",
+        "4": "Consider alternative categories if situation changes"
+      },
+      "wantUpdates": "Want Updates?",
+      "updateDesc": "Enter your email to receive monthly notifications",
+      "emailPlaceholder": "your@email.com",
+      "subscribe": "Subscribe"
+    }
+  },
+  "bookAppointment": {
+    "title": "Medical Appointment Booking",
+    "description": "Book your medical appointment",
+    "progressSteps": {
+      "location": "Location",
+      "amcInfo": "AMC Info",
+      "hi": "HI",
+      "info": "Info",
+      "passport": "Passport",
+      "docs": "Docs",
+      "when": "When",
+      "iomInfo": "IOM Info",
+      "review": "Review"
+    },
+    "locationStep": {
+      "title": "Select Location",
+      "subtitle": "Please select the city where you want to book your appointment:",
+      "karachi": "Karachi",
+      "lahore": "Lahore",
+      "islamabad": "Islamabad",
+      "wilcareMedical": "Wilcare Medical Centre",
+      "chooseProviderBelow": "Choose Provider Below",
+      "selectProviderTitle": "Select Provider in Islamabad:",
+      "amc": "AMC",
+      "amcDesc": "American Medical Center",
+      "iom": "IOM",
+      "iomDesc": "International Organization for Migration",
+      "nextBtn": "Next",
+      "errors": {
+        "selectLocation": "Please select a location",
+        "selectProvider": "Please select a provider (AMC or IOM)"
+      }
+    },
+    "basicInfoStep": {
+      "amcBadge": "AMC Info",
+      "hiBadge": "HI",
+      "title": "Basic Information",
+      "interviewDate": "Interview Date *",
+      "visaCategory": "Visa Category *",
+      "selectVisaCategory": "Select visa category",
+      "visaCategories": {
+        "immigrant": "Immigrant Visa",
+        "nonImmigrant": "Non-immigrant Visa",
+        "k1Fiance": "K-1 Fiancé Visa",
+        "student": "Student Visa",
+        "work": "Work Visa",
+        "tourist": "Tourist Visa",
+        "other": "Other"
+      },
+      "hadMedicalBefore": "Have you had medical examination done before for USA? *",
+      "selectYesNo": "Select Yes or No",
+      "yes": "Yes",
+      "no": "No",
+      "mobileNo": "Mobile No. in Pakistan *",
+      "email": "Email *",
+      "city": "City *",
+      "enterCity": "Enter city",
+      "caseRef": "Case Ref *",
+      "enterCaseRef": "Enter case reference",
+      "numberOfApplicants": "Number of Applicants *",
+      "selectNumber": "Select number",
+      "appointmentType": "Appointment Type",
+      "selectAppointmentType": "Select appointment type",
+      "appointmentTypes": {
+        "individual": "Individual",
+        "family": "Family"
+      },
+      "visaType": "Visa Type",
+      "selectVisaType": "Select visa type",
+      "visaTypes": {
+        "b2": "B-2 (Medical / Tourist)",
+        "b1b2": "B-1/B-2",
+        "f1": "F-1 (Student)",
+        "h1b": "H-1B (Work)",
+        "k1": "K-1 (Fiancé)",
+        "ir1": "IR-1 (Spouse)",
+        "cr1": "CR-1 (Spouse)",
+        "other": "Other"
+      },
+      "originalPassport": "Original Passport",
+      "originalPassportOptions": {
+        "yes": "YES",
+        "no": "NO"
+      },
+      "medicalType": "Medical Type",
+      "selectMedicalType": "Select medical type",
+      "medicalTypes": {
+        "first": "First Medical",
+        "reMedical": "Re-Medical"
+      },
+      "prevBtn": "Prev",
+      "nextBtn": "Next"
+    },
+    "personalInfoStep": {
+      "badge": "Info",
+      "title": "Personal Information",
+      "primaryApplicantTitle": "Primary Applicant",
+      "surname": "Surname *",
+      "enterSurname": "Enter surname",
+      "givenName": "Given Name *",
+      "enterGivenName": "Enter given name",
+      "gender": "Gender *",
+      "selectGender": "Select gender",
+      "genders": {
+        "m": "Male",
+        "f": "Female",
+        "other": "Other"
+      },
+      "dateOfBirth": "Date of Birth *",
+      "additionalApplicantsTitle": "Additional Applicants",
+      "applicantNumber": "Applicant #{index}",
+      "prevBtn": "Prev",
+      "nextBtn": "Next"
+    },
+    "passportDetailsStep": {
+      "badge": "More info",
+      "title": "Passport Details",
+      "primaryApplicantTitle": "Primary Applicant Passport Details",
+      "passportNumber": "Passport Number *",
+      "enterPassportNumber": "Enter passport number",
+      "issueDate": "Passport Issue Date",
+      "expiryDate": "Passport Exp Date",
+      "caseNumber": "Case No",
+      "enterCaseNumber": "Enter case number (e.g., ISL)",
+      "caseRef": "Case Ref *",
+      "enterCaseRef": "Enter case reference",
+      "additionalApplicantsTitle": "Additional Applicants Passport Details",
+      "applicantNumber": "Applicant #{index} Passport Details",
+      "prevBtn": "Prev",
+      "nextBtn": "Next"
+    },
+    "documentsStep": {
+      "badge": "Docs",
+      "title": "Upload Documents",
+      "surname": "Surname",
+      "givenName": "Given Name",
+      "scannedPassport": "Scanned Passport *",
+      "clickToChoose": "Click to choose file",
+      "uploadScannedDesc": "Upload a scanned copy of your passport (PDF, JPG, PNG)",
+      "k1Letter": "K-1 Letter",
+      "uploadK1Desc": "Upload your K-1 visa letter (PDF, JPG, PNG)",
+      "appointmentLetter": "Appointment confirmation letter",
+      "uploadAppointmentDesc": "Upload your appointment confirmation letter (PDF, JPG, PNG)",
+      "prevBtn": "Prev",
+      "nextBtn": "Next"
+    },
+    "scheduleStep": {
+      "badge": "When",
+      "title": "Appointment Schedule",
+      "estCharges": "Est Charges",
+      "preferredDate": "Preferred Appointment Date",
+      "time": "Time",
+      "selectTimeSlot": "Select time slot",
+      "prevBtn": "Prev",
+      "reviewBtn": "Review & Submit",
+      "submitting": "Submitting..."
+    },
+    "reviewStep": {
+      "badge": "Preview",
+      "title": "Review Your Information",
+      "locationSection": "Location",
+      "selectedCentre": "Selected Centre",
+      "amcSuffix": " - AMC",
+      "iomSuffix": " - IOM",
+      "wilcareSuffix": " - Wilcare Medical",
+      "basicInfoSection": "Basic Information",
+      "primaryContact": "Primary Contact",
+      "email": "Email",
+      "interviewDate": "Interview Date",
+      "visaCategory": "Visa Category",
+      "appointmentType": "Appointment Type",
+      "visaType": "Visa Type",
+      "fullName": "Full Name",
+      "contactNumber": "Contact Number",
+      "preferredLocation": "Preferred Location",
+      "destinationCountry": "Destination Country",
+      "personalInfoSection": "Personal Information",
+      "primaryApplicant": "Primary Applicant",
+      "surname": "Surname",
+      "givenName": "Given Name",
+      "gender": "Gender",
+      "dateOfBirth": "Date of Birth",
+      "notSpecified": "Not specified",
+      "additionalApplicants": "Additional Applicants",
+      "applicantIndex": "Applicant #{index}",
+      "passportDetailsSection": "Passport Details",
+      "passportNumber": "Passport Number",
+      "issueDate": "Issue Date",
+      "expiryDate": "Expiry Date",
+      "caseNumber": "Case Number",
+      "caseReference": "Case Reference",
+      "uploadedDocsSection": "Uploaded Documents",
+      "scannedPassport": "Scanned Passport",
+      "k1Letter": "K-1 Letter",
+      "appointmentConfirmation": "Appointment Confirmation Letter",
+      "notUploaded": "Not uploaded",
+      "appointmentScheduleSection": "Appointment Schedule",
+      "estCharges": "Estimated Charges",
+      "preferredDate": "Preferred Date",
+      "timeSlot": "Time Slot",
+      "backToEditBtn": "Back to Edit",
+      "confirmBtn": "Confirm & Submit",
+      "submitting": "Submitting..."
+    },
+    "successStep": {
+      "title": "Appointment Request Submitted!",
+      "desc": "Your appointment request has been received. Our team will process your request and book the appointment on your behalf. You will receive a confirmation once the appointment is booked.",
+      "bookAnotherBtn": "Book Another Appointment"
+    },
+    "validation": {
+      "reqLocation": "Please select a location",
+      "reqProvider": "Please select a provider (AMC or IOM)",
+      "reqAllProviderFields": "Please fill in all required fields",
+      "reqPrimaryContactEmail": "Please fill in Primary Contact and Email",
+      "reqPrimaryApplicantFields": "Please fill in all required fields for the primary applicant",
+      "reqApplicantIndexFields": "Please fill in all required fields for applicant #{index}",
+      "reqPrimaryPassportNumber": "Please fill in Passport Number for the primary applicant",
+      "reqApplicantPassportNumber": "Please fill in Passport Number for applicant #{index}",
+      "reqApplicantCaseRef": "Please fill in Case Ref for applicant #{index}",
+      "reqIomFields": "Please fill in all required fields for IOM",
+      "submitError": "Failed to create appointment",
+      "uploadError": "Failed to upload some documents"
+    },
+    "iomInfoStep": {
+      "badge": "IOM",
+      "title": "IOM Islamabad Required Information",
+      "subtitle": "Please provide the following mandatory information for your IOM Islamabad appointment:",
+      "fullName": "Full Name as printed on passport *",
+      "fullNamePlaceholder": "Enter your full name as printed on passport",
+      "passportNumber": "Passport Number *",
+      "passportNumberPlaceholder": "Enter your passport number",
+      "dateOfBirth": "Date of Birth as printed on passport *",
+      "visaType": "Visa Type you are applying for *",
+      "selectVisaType": "Select visa type",
+      "visaTypes": {
+        "immigrant": "Immigrant Visa",
+        "nonImmigrant": "Non-immigrant Visa",
+        "k1Fiance": "K-1 Fiancé Visa",
+        "student": "Student Visa",
+        "work": "Work Visa",
+        "tourist": "Tourist Visa",
+        "other": "Other"
+      },
+      "contactNumber": "Local Contact Number *",
+      "contactNumberPlaceholder": "3001234567",
+      "email": "Email Address *",
+      "emailPlaceholder": "your.email@example.com",
+      "preferredLocation": "Preferred IOM Health Assessment Center Location *",
+      "selectLocation": "Select location",
+      "islamabad": "Islamabad",
+      "destinationCountry": "Destination Country for Health Assessment *",
+      "selectDestinationCountry": "Select destination country",
+      "countries": {
+        "us": "United States",
+        "canada": "Canada",
+        "australia": "Australia",
+        "uk": "United Kingdom",
+        "newZealand": "New Zealand",
+        "other": "Other"
+      },
+      "backBtn": "Back",
+      "submitBtn": "Submit Information"
+    }
+  },
+  "documentTranslation": {
+    "uploadPage": {
+      "title": "Document Translation",
+      "subtitle": "Upload your Urdu document for true English translation",
+      "requirementsTitle": "Document Requirements",
+      "requirements": {
+        "1": "Submit clear, legible PDF files",
+        "2": "Original documents in Urdu language",
+        "3": "Maximum file size: 50 MB",
+        "4": "Ensure all text is readable",
+        "5": "Scanned documents should be high resolution",
+        "6": "No password protected PDFs"
+      },
+      "uploadSectionTitle": "Upload Your Document",
+      "clickDragDrop": "Click to upload or drag & drop",
+      "pdfOnlyMax": "PDF only, max 50MB",
+      "removeDocument": "Remove Document",
+      "documentTypeLabel": "Document Type",
+      "selectTypePlaceholder": "Select document type",
+      "types": {
+        "marriage": "Marriage Certificate",
+        "birth": "Birth Certificate",
+        "divorce": "Divorce Certificate",
+        "death": "Death Certificate"
+      },
+      "additionalNotesLabel": "Additional Notes (Optional)",
+      "notesPlaceholder": "Any specific instructions for translators...",
+      "processingBtn": "Processing...",
+      "uploadBtn": "Upload Document",
+      "seeMyRequestsBtn": "See my translation requests",
+      "validation": {
+        "invalidPdf": "Please upload a valid PDF file.",
+        "fileTooLarge": "File size must be under 50 MB.",
+        "missingFileOrType": "Please select a file and document type.",
+        "uploadFailed": "Upload failed",
+        "unexpectedError": "An error occurred during upload"
+      }
+    },
+    "myRequestsPage": {
+      "title": "My Translation Requests",
+      "subtitle": "Track the status of your document translation requests",
+      "allRequests": "All Requests",
+      "uploadNewBtn": "Upload New Document",
+      "noRequestsTitle": "No translation requests",
+      "noRequestsDesc": "You haven't submitted any documents for translation yet.",
+      "uploadFirstBtn": "Upload Your First Document",
+      "table": {
+        "documentType": "Document Type",
+        "submittedDate": "Submitted Date",
+        "status": "Status",
+        "actions": "Actions",
+        "viewDetails": "View Details",
+        "view": "View"
+      }
+    },
+    "requestDetailsPage": {
+      "title": "Translation Request Details",
+      "subtitle": "View details and status of your document translation request",
+      "backBtn": "← Back to My Requests",
+      "verifiedBanner": {
+        "title": "Translation Verified",
+        "desc": "This document has been verified by our team."
+      },
+      "docInfo": {
+        "title": "Document Information",
+        "typeLabel": "Document Type",
+        "submittedLabel": "Submitted Date",
+        "translatedLabel": "Translated On"
+      },
+      "statusAndActions": {
+        "title": "Status & Actions",
+        "originalPdf": "Original Urdu PDF",
+        "translatedPdf": "Translated English PDF",
+        "download": "Download"
+      },
+      "notes": {
+        "yourNotesTitle": "Your Notes",
+        "noUserNotes": "No notes provided.",
+        "adminNotesTitle": "Admin Notes",
+        "noAdminNotes": "No notes from admin yet."
+      },
+      "actions": {
+        "title": "Actions",
+        "confirmCorrectBtn": "Confirm Translation is Correct",
+        "requestChangesBtn": "Request Changes",
+        "modalTitle": "Request Changes to Translation",
+        "reasonLabel": "Reason for requesting changes",
+        "reasonPlaceholder": "Describe what needs to be corrected...",
+        "characters": "{length}/500 characters",
+        "cancelBtn": "Cancel",
+        "submitRequestBtn": "Submit Request"
+      },
+      "notFound": {
+        "title": "Request Not Found",
+        "desc": "The translation request you're looking for doesn't exist.",
+        "backBtn": "Back to My Requests"
+      },
+      "messages": {
+        "confirmSuccess": "Translation confirmed successfully!",
+        "confirmFailed": "Failed to confirm translation",
+        "changeSuccess": "Change request submitted successfully!",
+        "changeFailed": "Failed to submit change request"
+      }
+    },
+    "statusLabels": {
+      "PENDING": "Pending Review",
+      "IN_REVIEW": "In Review",
+      "TRANSLATED": "Translated",
+      "USER_CONFIRMED": "User Confirmed",
+      "CHANGES_REQUESTED": "Changes Requested",
+      "VERIFIED": "Verified & Certified"
+    },
+    "successState": {
+      "title": "Document Submitted Successfully!",
+      "description": "Your document has been received and is being processed by our team.",
+      "statusLabel": "Status:",
+      "pendingStatus": "PENDING",
+      "infoPart1": "Our team will review your document and provide a true English translation. You can check the status of your request anytime in ",
+      "infoPart2": "My Translation Requests.",
+      "infoPart3": "",
+      "buttonText": "Go to My Requests"
+    }
   }
 }

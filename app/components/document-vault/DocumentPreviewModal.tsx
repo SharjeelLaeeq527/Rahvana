@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Download, ZoomIn, ZoomOut, Loader2, X } from "lucide-react";
 import { useState, useEffect } from "react";
 import Image from "next/image";
+import { useLanguage } from "@/app/context/LanguageContext";
 
 interface DocumentPreviewModalProps {
   open: boolean;
@@ -26,6 +27,7 @@ export function DocumentPreviewModal({
   const [zoom, setZoom] = useState(100);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const { t } = useLanguage();
 
   // Load document when modal opens
   useEffect(() => {
@@ -83,12 +85,20 @@ export function DocumentPreviewModal({
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent className="max-w-4xl w-[95vw] sm:w-full p-0 overflow-hidden sm:rounded-xl">
         {/* Screen reader accessible title */}
-        <DialogTitle className="sr-only">{documentDef.name}</DialogTitle>
+        <DialogTitle className="sr-only">
+          {t(`documentVaultPage.documents.${documentDef.id}.name`) !==
+          `documentVaultPage.documents.${documentDef.id}.name`
+            ? t(`documentVaultPage.documents.${documentDef.id}.name`)
+            : documentDef.name}
+        </DialogTitle>
 
         {/* Header with Title */}
         <div className="p-4 sm:p-6 border-b bg-slate-50 dark:bg-slate-900 flex justify-between items-center gap-4">
           <h2 className="text-lg sm:text-xl font-semibold line-clamp-1">
-            {documentDef.name}
+            {t(`documentVaultPage.documents.${documentDef.id}.name`) !==
+            `documentVaultPage.documents.${documentDef.id}.name`
+              ? t(`documentVaultPage.documents.${documentDef.id}.name`)
+              : documentDef.name}
           </h2>
           <Button
             variant="ghost"
@@ -97,7 +107,9 @@ export function DocumentPreviewModal({
             onClick={onClose}
           >
             <X className="h-4 w-4" />
-            <span className="sr-only">Close</span>
+            <span className="sr-only">
+              {t("documentVaultPage.components.previewModal.close")}
+            </span>
           </Button>
         </div>
 
@@ -107,7 +119,7 @@ export function DocumentPreviewModal({
             <div className="text-center">
               <Loader2 className="h-8 w-8 animate-spin text-muted-foreground mx-auto mb-2" />
               <p className="text-sm text-muted-foreground">
-                Loading preview...
+                {t("documentVaultPage.components.previewModal.loading")}
               </p>
             </div>
           )}
@@ -122,7 +134,12 @@ export function DocumentPreviewModal({
                     transform: `scale(${zoom / 100})`,
                     transformOrigin: "center center",
                   }}
-                  title={documentDef.name}
+                  title={
+                    t(`documentVaultPage.documents.${documentDef.id}.name`) !==
+                    `documentVaultPage.documents.${documentDef.id}.name`
+                      ? t(`documentVaultPage.documents.${documentDef.id}.name`)
+                      : documentDef.name
+                  }
                 />
               )}
 
@@ -135,7 +152,15 @@ export function DocumentPreviewModal({
                 >
                   <Image
                     src={previewUrl}
-                    alt={documentDef.name}
+                    alt={
+                      t(
+                        `documentVaultPage.documents.${documentDef.id}.name`,
+                      ) !== `documentVaultPage.documents.${documentDef.id}.name`
+                        ? t(
+                            `documentVaultPage.documents.${documentDef.id}.name`,
+                          )
+                        : documentDef.name
+                    }
                     width={800}
                     height={600}
                     className="max-w-full max-h-full object-contain shadow-lg"
@@ -148,10 +173,15 @@ export function DocumentPreviewModal({
                 <div className="text-center p-8">
                   <div className="text-6xl mb-4">📄</div>
                   <p className="text-muted-foreground text-lg mb-2">
-                    {documentDef.name}
+                    {t(`documentVaultPage.documents.${documentDef.id}.name`) !==
+                    `documentVaultPage.documents.${documentDef.id}.name`
+                      ? t(`documentVaultPage.documents.${documentDef.id}.name`)
+                      : documentDef.name}
                   </p>
                   <p className="text-sm text-muted-foreground mb-4">
-                    File type: {uploadedDoc.mimeType || "Unknown"}
+                    {t("documentVaultPage.components.previewModal.fileType")}
+                    {uploadedDoc.mimeType ||
+                      t("documentVaultPage.components.previewModal.unknown")}
                   </p>
                   <Button
                     onClick={() =>
@@ -162,7 +192,9 @@ export function DocumentPreviewModal({
                     }
                   >
                     <Download className="w-4 h-4 mr-2" />
-                    Download to View
+                    {t(
+                      "documentVaultPage.components.previewModal.downloadToView",
+                    )}
                   </Button>
                 </div>
               )}

@@ -20,6 +20,8 @@ import {
   ChevronDown,
 } from "lucide-react";
 
+import { useLanguage } from "@/app/context/LanguageContext";
+
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -197,6 +199,7 @@ export default function ToolsPage() {
     "All" | ToolCategory
   >("All");
   const [visibleCount, setVisibleCount] = useState(7); // Default to all
+  const { t } = useLanguage();
 
   const containerRef = React.useRef<HTMLDivElement>(null);
   const measureRef = React.useRef<HTMLDivElement>(null);
@@ -293,11 +296,10 @@ export default function ToolsPage() {
         {/* Hero Section */}
         <section className="text-center mb-5 md:mb-10">
           <h1 className="text-3xl md:text-5xl font-bold mb-4 bg-clip-text text-transparent bg-linear-to-r from-foreground to-muted-foreground animate-fade-up">
-            Create. Check. Comply.
+            {t("toolsPage.heroTitle") || "Create. Check. Comply."}
           </h1>
           <p className="text-muted-foreground text-base md:text-lg max-w-2xl mx-auto animate-fade-up [animation-delay:100ms]">
-            A suite of powerful tools designed to simplify complex processes and
-            boost your productivity.
+            {t("toolsPage.heroDescription") || "A suite of powerful tools designed to simplify complex processes and boost your productivity."}
           </p>
         </section>
 
@@ -306,7 +308,7 @@ export default function ToolsPage() {
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground w-5 h-5 pointer-events-none" />
           <input
             type="text"
-            placeholder="Search tools..."
+            placeholder={t("toolsPage.searchPlaceholder") || "Search tools..."}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="w-full bg-card border-2 border-border pl-11 pr-4 py-3 rounded-full text-foreground focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all shadow-sm placeholder:text-muted-foreground"
@@ -331,7 +333,7 @@ export default function ToolsPage() {
                 className="px-4 py-2.5 text-sm font-medium whitespace-nowrap border"
                 data-category={cat}
               >
-                {cat}
+                {t(`toolsPage.categories.${cat}`) || cat}
               </div>
             ))}
             {/* Force render the More button to measure it */}
@@ -339,7 +341,7 @@ export default function ToolsPage() {
               data-more-button="true"
               className="px-4 py-2.5 text-sm font-medium whitespace-nowrap border flex items-center gap-1"
             >
-              More <ChevronDown className="w-4 h-4 ml-1" />
+              {t("toolsPage.more") || "More"} <ChevronDown className="w-4 h-4 ml-1" />
             </div>
           </div>
 
@@ -355,7 +357,7 @@ export default function ToolsPage() {
                     : "bg-card text-muted-foreground border-border hover:border-primary hover:bg-primary/5 hover:text-primary"
                 }`}
               >
-                {cat}
+                {t(`toolsPage.categories.${cat}`) || cat}
               </button>
             ))}
 
@@ -369,7 +371,7 @@ export default function ToolsPage() {
                         : "bg-card text-muted-foreground border-border hover:border-primary hover:bg-primary/5 hover:text-primary"
                     }`}
                   >
-                    More <ChevronDown className="w-4 h-4 ml-1" />
+                    {t("toolsPage.more") || "More"} <ChevronDown className="w-4 h-4 ml-1" />
                   </button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="start" className="w-[200px]">
@@ -383,7 +385,7 @@ export default function ToolsPage() {
                           : ""
                       }`}
                     >
-                      {cat}
+                      {t(`toolsPage.categories.${cat}`) || cat}
                     </DropdownMenuItem>
                   ))}
                 </DropdownMenuContent>
@@ -400,7 +402,7 @@ export default function ToolsPage() {
             ))
           ) : (
             <div className="col-span-full text-center py-12 text-muted-foreground">
-              No tools found matching your search.
+              {t("toolsPage.noToolsFound") || "No tools found matching your search."}
             </div>
           )}
         </div>
@@ -469,6 +471,7 @@ function ToolCard({ tool, index }: { tool: Tool; index: number }) {
   const isClickable = !tool.disabled;
   const CardWrapper = isClickable ? Link : "div";
   const styles = CATEGORY_STYLES[tool.category];
+  const { t } = useLanguage();
 
   return (
     <CardWrapper
@@ -523,15 +526,15 @@ function ToolCard({ tool, index }: { tool: Tool; index: number }) {
       {/* Content */}
       <div className="relative z-10 flex flex-col grow pt-2">
         <h3 className="text-xl font-bold text-foreground mb-1 transition-colors">
-          {tool.title}
+          {t(`toolsPage.toolsItems.${tool.id}.title`) || tool.title}
         </h3>
         <div className="mb-3">
           <span className="text-[11px] font-bold uppercase tracking-wide text-muted-foreground/80 bg-muted px-2 py-0.5 rounded">
-            {tool.category}
+            {t(`toolsPage.categories.${tool.category}`) || tool.category}
           </span>
         </div>
         <p className="text-muted-foreground dark:text-white text-sm leading-relaxed mb-6 grow">
-          {tool.description}
+          {t(`toolsPage.toolsItems.${tool.id}.desc`) || tool.description}
         </p>
       </div>
 
@@ -543,11 +546,11 @@ function ToolCard({ tool, index }: { tool: Tool; index: number }) {
           <span
             className={`text-sm font-semibold flex items-center gap-1.5 group-hover:underline decoration-2 underline-offset-2 ${styles.link}`}
           >
-            Open Tool <ArrowRight className="w-4 h-4" />
+            {t("toolsPage.openTool") || "Open Tool"} <ArrowRight className="w-4 h-4" />
           </span>
         ) : (
           <span className="text-sm font-semibold text-muted-foreground/50 flex items-center gap-1.5 cursor-not-allowed">
-            Coming Soon
+            {t("toolsPage.comingSoon") || "Coming Soon"}
           </span>
         )}
       </div>

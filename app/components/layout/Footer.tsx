@@ -11,10 +11,12 @@ import {
   ArrowRight,
   Youtube,
 } from "lucide-react";
+import { useLanguage } from "../../context/LanguageContext";
 
 export default function Footer() {
   const pathname = usePathname();
   const router = useRouter();
+  const { t } = useLanguage();
 
   const [comingSoonOpen, setComingSoonOpen] = useState(false);
 
@@ -67,46 +69,45 @@ export default function Footer() {
               </svg>
             </div>
             <p className="text-sm text-slate-400 leading-relaxed">
-              Simplifying immigration journeys with guidance, tools, and expert
-              support. Your path to reuniting with loved ones starts here.
+              {t("footer.description") || "Simplifying immigration journeys with guidance, tools, and expert support. Your path to reuniting with loved ones starts here."}
             </p>
           </div>
 
           {/* Journeys Column */}
           <div>
             <h4 className="text-sm font-bold text-white uppercase tracking-wider mb-6">
-              Journeys
+              {t("footer.journeys") || "Journeys"}
             </h4>
             <nav className="flex flex-col gap-4 text-sm">
               <Link
                 href="/visa-category/ir-category?category=Family"
                 className="text-slate-400 hover:text-white transition-colors"
               >
-                Family & Protection
+                {t("homePage.categoryLabels.Family & Protection") || "Family & Protection"}
               </Link>
               <Link
                 href="/visa-category/ir-category?category=Work"
                 className="text-slate-400 hover:text-white transition-colors"
               >
-                Work & Business
+                {t("homePage.categoryLabels.Work & Business") || "Work & Business"}
               </Link>
               <Link
                 href="/visa-category/ir-category?category=Work"
                 className="text-slate-400 hover:text-white transition-colors"
               >
-                Work Green Cards
+                {t("homePage.categoryLabels.Work Green Cards") || "Work Green Cards"}
               </Link>
               <Link
                 href="/visa-category/ir-category?category=Study"
                 className="text-slate-400 hover:text-white transition-colors"
               >
-                Students & Visitors
+                {t("homePage.categoryLabels.Students & Visitors") || "Students & Visitors"}
               </Link>
               <Link
                 href="/visa-category/ir-category"
                 className="text-white font-medium underline hover:text-slate-200 transition-colors"
               >
-                Explore all Journeys
+                {t("footer.exploreAllJourneys") || "Explore all Journeys"}
                 <ArrowRight size={14} className="inline-block ml-1" />
               </Link>
             </nav>
@@ -115,38 +116,38 @@ export default function Footer() {
           {/* Tools Column */}
           <div>
             <h4 className="text-sm font-bold text-white uppercase tracking-wider mb-6">
-              Tools
+              {t("footer.tools") || "Tools"}
             </h4>
             <nav className="flex flex-col gap-4 text-sm">
               <Link
                 href="/visa-case-strength-checker"
                 className="text-slate-400 hover:text-white transition-colors"
               >
-                CasePulse AI
+                {t("toolsPage.toolsItems.case-strength-analyzer.title")}
               </Link>
               <Link
                 href="/visa-eligibility"
                 className="text-slate-400 hover:text-white transition-colors"
               >
-                VisaPath Finder
+                {t("toolsPage.toolsItems.visa-path.title")}
               </Link>
               <Link
                 href="/affidavit-support-calculator"
                 className="text-slate-400 hover:text-white transition-colors"
               >
-                SponsorReady
+                {t("toolsPage.toolsItems.sponsorship-calculator.title")}
               </Link>
               <Link
                 href="/pdf-processing"
                 className="text-slate-400 hover:text-white transition-colors"
               >
-                PDF ToolKit
+                {t("toolsPage.toolsItems.pdf-toolkit.title")}
               </Link>
               <Link
                 href="/tools"
                 className="text-white font-medium underline hover:text-slate-200 transition-colors"
               >
-                Explore all Tools
+                {t("footer.exploreAllTools") || "Explore all Tools"}
                 <ArrowRight size={14} className="inline-block ml-1" />
               </Link>
             </nav>
@@ -155,7 +156,7 @@ export default function Footer() {
           {/* Company Column */}
           <div>
             <h4 className="text-sm font-bold text-white uppercase tracking-wider mb-6">
-              Company
+              {t("footer.company") || "Company"}
             </h4>
             <nav className="flex flex-col gap-4 text-sm">
               <Link
@@ -163,14 +164,14 @@ export default function Footer() {
                 onClick={(e) => handleNav("about", e)}
                 className="text-slate-400 hover:text-white transition-colors"
               >
-                About Us
+                {t("navigation.about") || "About Us"}
               </Link>
               <Link
                 href="/#contact"
                 onClick={(e) => handleNav("contact", e)}
                 className="text-slate-400 hover:text-white transition-colors"
               >
-                Contact
+                {t("navigation.contact") || "Contact"}
               </Link>
             </nav>
           </div>
@@ -178,7 +179,7 @@ export default function Footer() {
           {/* Social Column */}
           <div>
             <h4 className="text-sm font-bold text-white uppercase tracking-wider mb-6">
-              Connect With Us
+              {t("footer.connectWithUs") || "Connect With Us"}
             </h4>
             <nav className="flex flex-col gap-4 text-sm">
               <Link
@@ -191,7 +192,7 @@ export default function Footer() {
                   size={18}
                   className="group-hover:scale-110 transition-transform"
                 />
-                Instagram
+                {t("footer.instagram") || "Instagram"}
               </Link>
               <Link
                 href="https://www.facebook.com/profile.php?id=61587967827317&mibextid=wwXIfr"
@@ -203,7 +204,7 @@ export default function Footer() {
                   size={18}
                   className="group-hover:scale-110 transition-transform"
                 />
-                Facebook
+                {t("footer.facebook") || "Facebook"}
               </Link>
               <Link
                 href="https://x.com/rahvanaco?s=21&t=a8CQwdRgHqBFZmUfsX8Gpg"
@@ -218,7 +219,7 @@ export default function Footer() {
                 >
                   <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"></path>
                 </svg>
-                X
+                {t("footer.x") || "X"}
               </Link>
               <Link
                 href="https://youtube.com/@rahvana_co?si=Mb5-OwJmc5ThTxJs"
@@ -230,7 +231,7 @@ export default function Footer() {
                   size={18}
                   className="group-hover:scale-110 transition-transform"
                 />
-                Youtube
+                {t("footer.youtube") || "Youtube"}
               </Link>
               <Link
                 href="https://www.linkedin.com/company/rahvana/posts/?feedView=all"
@@ -248,7 +249,7 @@ export default function Footer() {
 
         {/* Bottom Bar */}
         <div className="pt-8 border-t border-white/10 flex flex-col md:flex-row justify-between items-center gap-6 text-sm text-slate-500">
-          <p>© {2026} Rahvana. All rights reserved.</p>
+          <p>{t("footer.rightsReserved") || "© 2026 Rahvana. All rights reserved."}</p>
           <div className="flex gap-8">
             <Link
               href="#"
@@ -258,7 +259,7 @@ export default function Footer() {
               }}
               className="hover:text-white transition-colors"
             >
-              Privacy Policy
+              {t("footer.privacyPolicy") || "Privacy Policy"}
             </Link>
             <Link
               href="#"
@@ -268,7 +269,7 @@ export default function Footer() {
               }}
               className="hover:text-white transition-colors"
             >
-              Terms of Service
+              {t("footer.termsOfService") || "Terms of Service"}
             </Link>
             <Link
               href="#"
@@ -278,7 +279,7 @@ export default function Footer() {
               }}
               className="hover:text-white transition-colors"
             >
-              Cookie Policy
+              {t("footer.cookiePolicy") || "Cookie Policy"}
             </Link>
           </div>
         </div>

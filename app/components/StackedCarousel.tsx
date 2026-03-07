@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import { motion } from "framer-motion";
 import * as Icons from "lucide-react";
 import HydrationSafeButton from "./HydrationSafeButton";
+import { useLanguage } from "../context/LanguageContext";
 
 interface Journey {
   category: string;
@@ -26,6 +27,7 @@ export const StackedCarousel = ({
   onNotify,
 }: StackedCarouselProps) => {
   const [activeIndex, setActiveIndex] = useState(0);
+  const { t } = useLanguage();
 
   const handleNext = () => {
     setActiveIndex((prev) => (prev + 1) % items.length);
@@ -106,6 +108,16 @@ export const StackedCarousel = ({
               <motion.div
                 key={journey.code} // Use unique ID
                 layout
+                drag="x"
+                dragConstraints={{ left: 0, right: 0 }}
+                onDragEnd={(_, info) => {
+                  const swipeThreshold = 50;
+                  if (info.offset.x < -swipeThreshold) {
+                    handleNext();
+                  } else if (info.offset.x > swipeThreshold) {
+                    handlePrev();
+                  }
+                }}
                 animate={{
                   opacity: style.opacity,
                   scale: style.scale,
@@ -147,11 +159,11 @@ export const StackedCarousel = ({
                   {journey.live ? (
                     <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-100">
                       <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                      Active
+                      {t("homePage.carousel.active") || "Active"}
                     </span>
                   ) : (
                     <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider bg-muted/50 px-3 py-1 rounded-full border border-border">
-                      Coming Soon
+                      {t("homePage.carousel.comingSoon") || "Coming Soon"}
                     </span>
                   )}
 
@@ -170,7 +182,7 @@ export const StackedCarousel = ({
                         : "text-rahvana-primary hover:bg-rahvana-primary-pale"
                     }`}
                   >
-                    {journey.live ? "Start Journey" : "Get Early Access"}
+                    {journey.live ? (t("homePage.carousel.startJourney") || "Start Journey") : (t("homePage.carousel.getEarlyAccess") || "Get Early Access")}
                   </HydrationSafeButton>
                 </div>
               </motion.div>

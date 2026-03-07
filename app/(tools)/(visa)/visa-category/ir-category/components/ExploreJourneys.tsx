@@ -37,6 +37,7 @@ import {
 } from "@/lib/journey/journeyProgressService";
 import { useRouter } from "next/navigation";
 import { roadmapData } from "@/data/roadmap";
+import { useLanguage } from "@/app/context/LanguageContext";
 
 // Mock Data
 type Journey = {
@@ -1071,6 +1072,7 @@ export default function ExploreJourneys({
   destination,
 }: ExploreJourneysProps) {
   const { user } = useAuth();
+  const { t, language } = useLanguage();
   const [ir1Progress, setIr1Progress] = useState<JourneyProgressRecord | null>(
     null,
   );
@@ -1084,26 +1086,28 @@ export default function ExploreJourneys({
   // Check if logged-in user has an existing IR-1 journey
   useEffect(() => {
     let active = true;
-    
+
     if (!user?.id) {
       setIr1Progress(null);
       setCheckingProgress(false);
       return;
     }
-    
+
     setCheckingProgress(true);
-    loadJourneyProgress(user.id, "ir1").then((record) => {
-      if (!active) return;
-      if (record && record.started) {
-        setIr1Progress(record);
-      } else {
-        setIr1Progress(null);
-      }
-      setCheckingProgress(false);
-    }).catch(() => {
-      if (!active) return;
-      setCheckingProgress(false);
-    });
+    loadJourneyProgress(user.id, "ir1")
+      .then((record) => {
+        if (!active) return;
+        if (record && record.started) {
+          setIr1Progress(record);
+        } else {
+          setIr1Progress(null);
+        }
+        setCheckingProgress(false);
+      })
+      .catch(() => {
+        if (!active) return;
+        setCheckingProgress(false);
+      });
 
     return () => {
       active = false;
@@ -1111,6 +1115,17 @@ export default function ExploreJourneys({
   }, [user?.id]);
 
   const ir1HasProgress = !!ir1Progress;
+  const isUrdu = language === "ur";
+
+  const getTranslated = (journey: Journey, prop: keyof Journey): any => {
+    if (prop === "quickRoadmap") {
+      const roadmap = t(`visaCategory.journeys.${journey.id}.quickRoadmap`, { returnObjects: true });
+      return Array.isArray(roadmap) ? roadmap : journey.quickRoadmap;
+    }
+    const val = t(`visaCategory.journeys.${journey.id}.${prop}`);
+    const key = `visaCategory.journeys.${journey.id}.${prop}`;
+    return val !== key ? val : journey[prop];
+  };
 
   // Calculate progress percentage for IR-1 if it exists
   const ir1ProgressPercent = React.useMemo(() => {
@@ -1191,7 +1206,7 @@ export default function ExploreJourneys({
           <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-6">
             <h3 className="text-lg font-semibold text-slate-800 flex items-center gap-2">
               <Search className="w-5 h-5 text-primary" />
-              Explore Filters
+              {t("visaCategory.exploreFilters")}
             </h3>
             <div className="flex items-center gap-4"></div>
           </div>
@@ -1202,9 +1217,9 @@ export default function ExploreJourneys({
           >
             <DialogContent className="max-h-[85vh] overflow-y-auto w-[95%] max-w-4xl p-4 md:p-6 rounded-xl gap-4">
               <DialogHeader>
-                <DialogTitle className="pr-8">Journey Comparison</DialogTitle>
+                <DialogTitle className="pr-8">{t("visaCategory.journeyComparison")}</DialogTitle>
                 <DialogDescription className="sr-only">
-                  Comparison table for selected visa journeys.
+                  {t("visaCategory.journeyComparisonDesc")}
                 </DialogDescription>
               </DialogHeader>
 
@@ -1215,7 +1230,7 @@ export default function ExploreJourneys({
                   className="gap-2 bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100 hover:text-emerald-800"
                 >
                   <CheckCircle className="w-4 h-4" />
-                  Not sure? Check Best Visa
+                  {t("visaCategory.visaChecker")}
                 </Button>
               </div>
 
@@ -1224,7 +1239,7 @@ export default function ExploreJourneys({
                   <thead>
                     <tr className="border-b border-slate-200">
                       <th className="py-4 px-4 font-bold text-slate-800 w-32">
-                        Feature
+                        {t("visaCategory.feature")}
                       </th>
                       {selectedJourneys.map((id) => {
                         const journey = JOURNEYS.find((j) => j.id === id);
@@ -1233,7 +1248,7 @@ export default function ExploreJourneys({
                             key={id}
                             className="py-4 px-4 font-bold text-slate-900 min-w-50"
                           >
-                            {journey?.title || "Unknown"}
+                            {journey ? getTranslated(journey, "title") : t("visaCategory.unknown")}
                           </th>
                         );
                       })}
@@ -1242,7 +1257,7 @@ export default function ExploreJourneys({
                   <tbody className="divide-y divide-slate-100">
                     <tr>
                       <td className="py-4 px-4 font-bold text-slate-800">
-                        Visa Code
+                        {t("visaCategory.visaCode")}
                       </td>
                       {selectedJourneys.map((id) => {
                         const journey = JOURNEYS.find((j) => j.id === id);
@@ -1255,7 +1270,7 @@ export default function ExploreJourneys({
                     </tr>
                     <tr>
                       <td className="py-4 px-4 font-bold text-slate-800">
-                        Best For
+                        {t("visaCategory.bestFor")}
                       </td>
                       {selectedJourneys.map((id) => {
                         const journey = JOURNEYS.find((j) => j.id === id);
@@ -1264,14 +1279,14 @@ export default function ExploreJourneys({
                             key={id}
                             className="py-4 px-4 text-slate-600 leading-relaxed"
                           >
-                            {journey?.bestFor}
+                            {journey ? getTranslated(journey, "bestFor") : ""}
                           </td>
                         );
                       })}
                     </tr>
                     <tr>
                       <td className="py-4 px-4 font-bold text-slate-800">
-                        Stations
+                        {t("visaCategory.stations")}
                       </td>
                       {selectedJourneys.map((id) => {
                         const journey = JOURNEYS.find((j) => j.id === id);
@@ -1284,7 +1299,7 @@ export default function ExploreJourneys({
                     </tr>
                     <tr>
                       <td className="py-4 px-4 font-bold text-slate-800">
-                        Difficulty
+                        {t("visaCategory.difficulty")}
                       </td>
                       {selectedJourneys.map((id) => {
                         const journey = JOURNEYS.find((j) => j.id === id);
@@ -1297,7 +1312,7 @@ export default function ExploreJourneys({
                     </tr>
                     <tr>
                       <td className="py-4 px-4 font-bold text-slate-800">
-                        Priority Path
+                        {t("visaCategory.priorityPath")}
                       </td>
                       {selectedJourneys.map((id) => {
                         const journey = JOURNEYS.find((j) => j.id === id);
@@ -1423,19 +1438,19 @@ export default function ExploreJourneys({
             {/* Route */}
             <div className="md:col-span-3 lg:col-span-2 space-y-2">
               <div className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
-                Route
+                {t("visaCategory.route")}
               </div>
               <div className="flex items-center gap-2 bg-slate-100 rounded-lg p-2 border border-slate-200 text-sm font-medium text-slate-700">
-                <span className="truncate">{origin || "Origin"}</span>
+                <span className="truncate">{origin || t("visaCategory.origin")}</span>
                 <ArrowRight className="w-4 h-4 text-slate-400 shrink-0" />
-                <span className="truncate">{destination || "Destination"}</span>
+                <span className="truncate">{destination || t("visaCategory.destination")}</span>
               </div>
             </div>
 
             {/* Visa Category */}
             <div className="md:col-span-9 lg:col-span-6 space-y-2">
               <div className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
-                Visa Category
+                {t("visaCategory.visaCategory")}
               </div>
               <div className="flex flex-wrap gap-2">
                 {[
@@ -1451,7 +1466,7 @@ export default function ExploreJourneys({
                     key={cat}
                     onClick={() => {
                       setSelectedCategory(cat);
-                      router.push(`?category=${cat}`, {scroll: false});
+                      router.push(`?category=${cat}`, { scroll: false });
                     }}
                     className={cn(
                       "px-3 py-1.5 rounded-full text-sm font-medium transition-all",
@@ -1460,7 +1475,7 @@ export default function ExploreJourneys({
                         : "bg-white text-slate-600 border border-slate-200 hover:bg-slate-50 hover:border-slate-300",
                     )}
                   >
-                    {cat === "all" ? "All" : cat}
+                    {t(`visaCategory.categories.${cat}`) || cat}
                   </button>
                 ))}
               </div>
@@ -1469,8 +1484,10 @@ export default function ExploreJourneys({
             {/* Process & Stage */}
             <div className="md:col-span-12 lg:col-span-4 grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <div className="flex items-center gap-1.5 text-xs font-semibold text-slate-500 uppercase tracking-wider">
-                  Process Type
+                <div className="flex items-center gap-2 mb-2">
+                  <div className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                    {t("visaCategory.processingMethod")}
+                  </div>
                   <TooltipProvider>
                     <Tooltip>
                       <TooltipTrigger asChild>
@@ -1480,17 +1497,15 @@ export default function ExploreJourneys({
                         <div className="space-y-3 text-sm">
                           <p>
                             <span className="font-bold text-slate-900">
-                              • Consular Processing:
+                              • {t("visaCategory.consularTitle")}
                             </span>{" "}
-                            Apply abroad at a U.S. embassy. You&apos;ll attend
-                            an interview outside the U.S.
+                            {t("visaCategory.consularTooltip")}
                           </p>
                           <p>
                             <span className="font-bold text-slate-900">
-                              • Adjustment of Status (AOS):
+                              • {t("visaCategory.aosTitle")}
                             </span>{" "}
-                            Apply for a green card while already in the U.S. No
-                            interview abroad required.
+                            {t("visaCategory.aosTooltip")}
                           </p>
                         </div>
                       </TooltipContent>
@@ -1509,7 +1524,7 @@ export default function ExploreJourneys({
                           : "text-slate-500 hover:text-slate-700",
                       )}
                     >
-                      {proc}
+                      {proc === "Consular" ? t("visaCategory.processes.Consular") : t("visaCategory.processes.Adjustment of Status")}
                     </button>
                   ))}
                 </div>
@@ -1521,7 +1536,7 @@ export default function ExploreJourneys({
                   className="w-full h-13.5 bg-linear-to-br from-teal-600 to-teal-700 hover:from-teal-500 hover:to-teal-600 text-white font-bold rounded-xl shadow-lg shadow-teal-900/20 transition-all flex items-center justify-center gap-3 group active:scale-[0.98] border border-teal-500/30"
                 >
                   <CheckCircle className="w-5 h-5 group-hover:rotate-12 transition-transform" />
-                  Check Your Visa Eligibility
+                  {t("visaCategory.visaChecker")}
                 </Button>
               </div>
             </div>
@@ -1538,7 +1553,7 @@ export default function ExploreJourneys({
               <div className="flex items-center gap-2">
                 <div className="h-6 w-1 bg-linear-to-b from-primary to-emerald-400 rounded-full"></div>
                 <h2 className="text-xl font-bold text-slate-800">
-                  Best matches
+                  {t("visaCategory.bestMatches")}
                 </h2>
               </div>
               <div className="grid gap-4">
@@ -1565,7 +1580,7 @@ export default function ExploreJourneys({
           <div className="space-y-4">
             <div className="flex items-center gap-2">
               <div className="h-6 w-1 bg-slate-300 rounded-full"></div>
-              <h2 className="text-xl font-bold text-slate-800">All Journeys</h2>
+              <h2 className="text-xl font-bold text-slate-800">{t("visaCategory.all")}</h2>
             </div>
             {otherJourneys.length > 0 ? (
               <div className="grid gap-4">
@@ -1588,7 +1603,7 @@ export default function ExploreJourneys({
               </div>
             ) : (
               <div className="p-8 text-center bg-white rounded-xl border border-dashed border-slate-300 text-slate-500">
-                No journeys found for these filters.
+                {t("visaCategory.noJourneysFound")}
               </div>
             )}
           </div>
@@ -1890,14 +1905,14 @@ export default function ExploreJourneys({
       )}
 
       {/* 60-Second Matcher Mock */}
-      <div className="fixed bottom-6 right-6 z-40">
+      {/* <div className="fixed bottom-6 right-6 z-40">
         <Button
           onClick={() => setIsMatcherOpen(true)}
           className="h-14 w-14 rounded-full bg-linear-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600 text-white shadow-lg shadow-rose-500/30 flex items-center justify-center p-0"
         >
           <Clock className="w-6 h-6" />
         </Button>
-      </div>
+      </div> */}
     </div>
   );
 }
@@ -1923,6 +1938,18 @@ function JourneyCard({
   progressPercent?: number;
   isLoading?: boolean;
 }) {
+  const { t } = useLanguage();
+
+  const getTranslated = (prop: keyof Journey): any => {
+    if (prop === "quickRoadmap") {
+      const roadmap = t(`visaCategory.journeys.${journey.id}.quickRoadmap`, { returnObjects: true });
+      return Array.isArray(roadmap) ? roadmap : journey.quickRoadmap;
+    }
+    const val = t(`visaCategory.journeys.${journey.id}.${prop}`);
+    const key = `visaCategory.journeys.${journey.id}.${prop}`;
+    return val !== key ? val : (journey[prop] as any);
+  };
+
   return (
     <div
       onClick={onSelect}
@@ -1941,13 +1968,13 @@ function JourneyCard({
               "px-3 py-1 rounded-full text-xs font-semibold bg-white border border-slate-200 text-slate-600",
             )}
           >
-            {journey.category}
+            {t(`visaCategory.categories.${journey.category}`) || journey.category}
           </span>
           {journey.matchScore > 90 && (
             <span className="hidden md:block">
               {" "}
               <span className="text-xs font-bold text-emerald-600 bg-emerald-50 px-2 py-1 rounded-full border border-emerald-100 flex items-center gap-1 ">
-                <CheckCircle className="w-3 h-3 " /> {journey.matchScore}% Match
+                <CheckCircle className="w-3 h-3 " /> {journey.matchScore}% {t("visaCategory.match") || "Match"}
               </span>
             </span>
           )}
@@ -1956,8 +1983,8 @@ function JourneyCard({
             <span className="text-xs font-bold text-teal-700 bg-teal-50 px-2 py-1 rounded-full border border-teal-200 flex items-center gap-1">
               <Clock className="w-3 h-3" />
               {progressPercent !== undefined
-                ? `${progressPercent}% Complete`
-                : "In Progress"}
+                ? t("visaCategory.completePercent", { percent: progressPercent.toString() })
+                : t("visaCategory.inProgress")}
             </span>
           )}
         </div>
@@ -1985,7 +2012,7 @@ function JourneyCard({
                 : "text-slate-400 group-hover/compare:text-teal-600",
             )}
           >
-            Compare
+            {t("visaCategory.compare")}
           </span>
         </div>
       </div>
@@ -1993,7 +2020,7 @@ function JourneyCard({
       {/* Title Section */}
       <div className="mb-4">
         <h3 className="text-xl font-bold text-slate-900 mb-1">
-          {journey.title}
+          {getTranslated("title")}
         </h3>
         <p className="text-sm font-medium text-slate-500 uppercase tracking-wide">
           {journey.visaCode}
@@ -2003,10 +2030,10 @@ function JourneyCard({
       {/* Best For Highlight */}
       <div className="mb-3">
         <h4 className="text-sm font-semibold text-teal-700 mb-1">
-          {journey.bestFor}
+          {getTranslated("bestFor")}
         </h4>
         <p className="text-sm text-slate-600 leading-relaxed line-clamp-2">
-          {journey.description}
+          {getTranslated("description")}
         </p>
       </div>
 
@@ -2014,11 +2041,11 @@ function JourneyCard({
       <div className="flex flex-wrap gap-3 mb-6">
         <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-slate-100 border border-slate-200 text-xs font-medium text-slate-700">
           <div className="w-1.5 h-1.5 rounded-full bg-slate-500"></div>
-          {journey.stations} stations
+          {journey.stations} {t("visaCategory.stations")}
         </div>
         {journey.matchScore > 95 && (
           <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-emerald-50 border border-emerald-200 text-xs font-medium text-emerald-700">
-            High Approval Rate
+            {t("visaCategory.highApproval")}
           </div>
         )}
       </div>
@@ -2026,7 +2053,13 @@ function JourneyCard({
       {/* Action Buttons */}
       <div className="flex items-center flex-wrap gap-3">
         {journey.id === "ir1" ? (
-          <Link href={hasProgress ? "/my-journeys" : "/visa-category/ir-category/ir1-journey"}>
+          <Link
+            href={
+              hasProgress
+                ? "/my-journeys"
+                : "/visa-category/ir-category/ir1-journey"
+            }
+          >
             <Button
               disabled={isLoading}
               className={cn(
@@ -2034,19 +2067,19 @@ function JourneyCard({
                 hasProgress
                   ? "bg-teal-600 text-white hover:bg-teal-700"
                   : "bg-teal-700 text-white hover:bg-teal-800",
-                isLoading && "opacity-80"
+                isLoading && "opacity-80",
               )}
             >
               {isLoading ? (
                 <>
-                  <Loader2 className="w-4 h-4 mr-1 animate-spin" /> Checking...
+                  <Loader2 className="w-4 h-4 mr-1 animate-spin" /> {t("visaCategory.checking")}
                 </>
               ) : hasProgress ? (
                 <>
-                  <ArrowRight className="w-4 h-4 mr-1" /> Resume Journey
+                  <ArrowRight className="w-4 h-4 mr-1" /> {t("visaCategory.resumeJourney")}
                 </>
               ) : (
-                "Start Journey"
+                t("visaCategory.startJourney")
               )}
             </Button>
           </Link>
@@ -2055,7 +2088,7 @@ function JourneyCard({
             disabled
             className="h-9 px-4 rounded-lg font-medium bg-slate-100 text-slate-400 border-slate-200 cursor-not-allowed"
           >
-            Coming Soon
+            {t("visaCategory.map.comingSoon")}
           </Button>
         )}
         {journey.id === "ir1" && (
@@ -2066,7 +2099,7 @@ function JourneyCard({
               onWatchIntro();
             }}
           >
-            Watch intro
+            {t("visaCategory.watchIntro")}
           </button>
         )}
       </div>

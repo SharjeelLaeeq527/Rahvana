@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/select";
 import { AuthRequiredModal } from "@/app/components/shared/AuthRequiredModal";
 import { useAuth } from "@/app/context/AuthContext";
+import { useLanguage } from "@/app/context/LanguageContext";
 
 export default function DocumentTranslationUpload() {
   const [file, setFile] = useState<File | null>(null);
@@ -23,6 +24,7 @@ export default function DocumentTranslationUpload() {
   const [showAuthModal, setShowAuthModal] = useState(false);
 
   const { isAuthenticated } = useAuth();
+  const { t } = useLanguage();
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -44,13 +46,13 @@ export default function DocumentTranslationUpload() {
 
     // Validate file type (PDF only)
     if (!selected.type.includes("application/pdf")) {
-      setError("Please upload a valid PDF file.");
+      setError(t("documentTranslation.uploadPage.validation.invalidPdf"));
       return;
     }
 
     // Validate file size (max 50MB)
     if (selected.size > 50 * 1024 * 1024) {
-      setError("File size must be under 50 MB.");
+      setError(t("documentTranslation.uploadPage.validation.fileTooLarge"));
       return;
     }
 
@@ -66,7 +68,9 @@ export default function DocumentTranslationUpload() {
     }
 
     if (!file || !documentType) {
-      setError("Please select a file and document type.");
+      setError(
+        t("documentTranslation.uploadPage.validation.missingFileOrType"),
+      );
       return;
     }
 
@@ -89,7 +93,10 @@ export default function DocumentTranslationUpload() {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || "Upload failed");
+        throw new Error(
+          data.error ||
+            t("documentTranslation.uploadPage.validation.uploadFailed"),
+        );
       }
 
       setUploadSuccess(true);
@@ -100,7 +107,9 @@ export default function DocumentTranslationUpload() {
       }, 100);
     } catch (err) {
       setError(
-        err instanceof Error ? err.message : "An error occurred during upload",
+        err instanceof Error
+          ? err.message
+          : t("documentTranslation.uploadPage.validation.unexpectedError"),
       );
     } finally {
       setUploading(false);
@@ -108,39 +117,39 @@ export default function DocumentTranslationUpload() {
   };
 
   return (
-    <div className="min-h-screen bg-linear-to-br from-slate-50 to-slate-100 text-gray-800 flex flex-col items-center py-12 px-4">
+    <div className="min-h-screen bg-linear-to-br from-slate-50 to-slate-100 text-gray-800 flex flex-col items-center py-8 md:py-12 px-4 sm:px-6">
       {/* Header */}
-      <header className="text-center mb-10">
-        <h1 className="text-4xl md:text-5xl font-bold text-primary/90">
-          Document Translation
+      <header className="text-center mb-8 md:mb-10 w-full max-w-4xl">
+        <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-primary/90 leading-tight">
+          {t("documentTranslation.uploadPage.title")}
         </h1>
-        <p className="mt-2 text-lg text-gray-600">
-          Upload your Urdu document for true English translation
+        <p className="mt-3 text-base sm:text-lg text-gray-600 max-w-2xl mx-auto">
+          {t("documentTranslation.uploadPage.subtitle")}
         </p>
       </header>
 
       {!uploadSuccess ? (
         <>
           {/* Requirements Section */}
-          <section className="w-full max-w-4xl mb-12 bg-white rounded-xl shadow-lg p-6 md:p-8">
-            <h2 className="flex items-center gap-2 text-2xl font-semibold text-primary/90 mb-6">
-              <AlertCircle className="w-6 h-6" />
-              Document Requirements
+          <section className="w-full max-w-4xl mb-8 md:mb-12 bg-white rounded-xl shadow-lg p-5 sm:p-6 md:p-8 border border-slate-100">
+            <h2 className="flex items-center gap-2 text-xl sm:text-2xl font-semibold text-primary/90 mb-5 sm:mb-6">
+              <AlertCircle className="w-5 h-5 sm:w-6 sm:h-6" />
+              {t("documentTranslation.uploadPage.requirementsTitle")}
             </h2>
 
-            <ul className="grid md:grid-cols-2 gap-6 text-gray-700">
+            <ul className="grid sm:grid-cols-2 gap-4 sm:gap-6 text-gray-700">
               {[
-                "Submit clear, legible PDF files",
-                "Original documents in Urdu language",
-                "Maximum file size: 50 MB",
-                "Ensure all text is readable",
-                "Scanned documents should be high resolution",
-                "No password protected PDFs",
+                t("documentTranslation.uploadPage.requirements.1"),
+                t("documentTranslation.uploadPage.requirements.2"),
+                t("documentTranslation.uploadPage.requirements.3"),
+                t("documentTranslation.uploadPage.requirements.4"),
+                t("documentTranslation.uploadPage.requirements.5"),
+                t("documentTranslation.uploadPage.requirements.6"),
               ].map((req, i) => (
-                <li key={i} className="flex items-start gap-3 md:col-span-1">
+                <li key={i} className="flex items-start gap-3">
                   <CheckCircle className="w-5 h-5 text-green-600 mt-0.5 shrink-0" />
-                  <span>
-                    <strong>{i + 1}.</strong> {req}
+                  <span className="text-sm sm:text-base">
+                    <strong className="mr-1">{i + 1}.</strong> {req}
                   </span>
                 </li>
               ))}
@@ -149,13 +158,13 @@ export default function DocumentTranslationUpload() {
 
           {/* Upload Section */}
           <section className="w-full max-w-md">
-            <div className="bg-white rounded-xl shadow-md p-6">
+            <div className="bg-white rounded-xl shadow-md p-5 sm:p-6 border border-slate-100">
               <label className="block text-sm font-medium text-gray-700 mb-3">
-                Upload Your Document
+                {t("documentTranslation.uploadPage.uploadSectionTitle")}
               </label>
 
               <div
-                className={`border-2 border-dashed rounded-lg p-6 text-center transition-colors cursor-pointer
+                className={`border-2 border-dashed rounded-lg p-5 sm:p-6 text-center transition-colors cursor-pointer
                   ${file ? "border-indigo-500 bg-indigo-50" : "border-gray-300 hover:border-gray-400"}`}
                 onClick={() => fileInputRef.current?.click()}
               >
@@ -167,13 +176,13 @@ export default function DocumentTranslationUpload() {
                   onChange={handleFileChange}
                 />
                 {file ? (
-                  <div className="flex items-center justify-center gap-2">
-                    <FileText className="w-10 h-10 text-indigo-600" />
-                    <div className="text-left">
-                      <p className="font-medium truncate max-w-[200px]">
+                  <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+                    <FileText className="w-10 h-10 text-indigo-600 shrink-0" />
+                    <div className="text-center sm:text-left overflow-hidden">
+                      <p className="font-medium truncate max-w-[250px]">
                         {file.name}
                       </p>
-                      <p className="text-sm text-gray-500">
+                      <p className="text-xs sm:text-sm text-gray-500">
                         {(file.size / 1024 / 1024).toFixed(2)} MB
                       </p>
                     </div>
@@ -181,8 +190,12 @@ export default function DocumentTranslationUpload() {
                 ) : (
                   <div className="flex flex-col items-center text-gray-500">
                     <Upload className="w-10 h-10 mb-2" />
-                    <p className="text-sm">Click to upload or drag & drop</p>
-                    <p className="text-xs mt-1">PDF only, max 50MB</p>
+                    <p className="text-sm font-medium">
+                      {t("documentTranslation.uploadPage.clickDragDrop")}
+                    </p>
+                    <p className="text-xs mt-1">
+                      {t("documentTranslation.uploadPage.pdfOnlyMax")}
+                    </p>
                   </div>
                 )}
               </div>
@@ -195,26 +208,37 @@ export default function DocumentTranslationUpload() {
                   }}
                   className="mt-3 text-sm text-white flex items-center gap-1 mx-auto bg-red-500 rounded-md p-2 cursor-pointer hover:bg-red-600"
                 >
-                  <X className="w-4 h-4" /> Remove Document
+                  <X className="w-4 h-4" />{" "}
+                  {t("documentTranslation.uploadPage.removeDocument")}
                 </button>
               )}
 
               {/* Document Type Selection */}
               <div className="mt-4">
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Document Type
+                  {t("documentTranslation.uploadPage.documentTypeLabel")}
                 </label>
                 <Select value={documentType} onValueChange={setDocumentType}>
                   <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Select document type" />
+                    <SelectValue
+                      placeholder={t(
+                        "documentTranslation.uploadPage.selectTypePlaceholder",
+                      )}
+                    />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="marriage">
-                      Marriage Certificate
+                      {t("documentTranslation.uploadPage.types.marriage")}
                     </SelectItem>
-                    <SelectItem value="birth">Birth Certificate</SelectItem>
-                    <SelectItem value="divorce">Divorce Certificate</SelectItem>
-                    <SelectItem value="death">Death Certificate</SelectItem>
+                    <SelectItem value="birth">
+                      {t("documentTranslation.uploadPage.types.birth")}
+                    </SelectItem>
+                    <SelectItem value="divorce">
+                      {t("documentTranslation.uploadPage.types.divorce")}
+                    </SelectItem>
+                    <SelectItem value="death">
+                      {t("documentTranslation.uploadPage.types.death")}
+                    </SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -222,12 +246,14 @@ export default function DocumentTranslationUpload() {
               {/* Optional Notes */}
               <div className="mt-4">
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Additional Notes (Optional)
+                  {t("documentTranslation.uploadPage.additionalNotesLabel")}
                 </label>
                 <textarea
                   value={userNotes}
                   onChange={(e) => setUserNotes(e.target.value)}
-                  placeholder="Any specific instructions for translators..."
+                  placeholder={t(
+                    "documentTranslation.uploadPage.notesPlaceholder",
+                  )}
                   className="w-full border rounded-md p-2 min-h-[80px]"
                   maxLength={500}
                 />
@@ -253,11 +279,11 @@ export default function DocumentTranslationUpload() {
                   }`}
               >
                 {uploading ? (
-                  <>Processing...</>
+                  <>{t("documentTranslation.uploadPage.processingBtn")}</>
                 ) : (
                   <>
                     <Upload className="w-5 h-5" />
-                    Upload Document
+                    {t("documentTranslation.uploadPage.uploadBtn")}
                   </>
                 )}
               </button>
@@ -271,7 +297,7 @@ export default function DocumentTranslationUpload() {
                     }
                     className="text-primary hover:underline text-sm cursor-pointer"
                   >
-                    See my translation requests
+                    {t("documentTranslation.uploadPage.seeMyRequestsBtn")}
                   </button>
                 </div>
               )}

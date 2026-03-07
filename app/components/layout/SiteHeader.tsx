@@ -162,7 +162,7 @@ export function SiteHeader({
         pricing: "/pricing",
         dashboard: "/user-dashboard",
         mfa: "/mfa-setup",
-        contact: "/#contact",
+        // contact: "/#contact",
         passport: "/passport",
         "passport-guide": "/guides/passport-guide",
         "visa-strength-guide": "/guides/visa-strength-guide",
@@ -355,7 +355,7 @@ export function SiteHeader({
               Pricing
             </Link>
 
-            <Link
+            {/* <Link
               href="/#contact"
               onClick={(e) => handleNav("contact", e)}
               className={`px-4 py-2 text-sm font-semibold rounded-lg transition-all ${
@@ -365,7 +365,7 @@ export function SiteHeader({
               }`}
             >
               Contact
-            </Link>
+            </Link> */}
           </nav>
         </div>
 
@@ -834,7 +834,7 @@ export function SiteHeader({
                     </HydrationSafeButton>
                   </>
                 )}
-                <HydrationSafeButton
+                {/* <HydrationSafeButton
                   onClick={() => handleNav("contact")}
                   className={`flex items-center gap-3 px-4 py-3 rounded-xl text-left transition-all ${
                     isActive("contact")
@@ -844,7 +844,7 @@ export function SiteHeader({
                 >
                   <Mail className="w-5 h-5 text-rose-500 dark:text-rose-400" />
                   <span className="font-bold">Contact</span>
-                </HydrationSafeButton>
+                </HydrationSafeButton> */}
               </nav>
             </div>
 
