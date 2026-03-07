@@ -197,7 +197,7 @@ export function DocumentTableView({
                         )}
                       </div>
                       <div className="flex items-center gap-2 text-[10px] text-muted-foreground">
-                        <span>{formatFileSize(uploadedDoc.fileSize)}</span>
+                        <span>{formatFileSize(uploadedDoc.fileSize, t)}</span>
                         <span>•</span>
                         <span>v{uploadedDoc.version}</span>
                         {uploadedDoc.hasCompressedVersion && (
@@ -227,7 +227,7 @@ export function DocumentTableView({
                       }`}
                     >
                       <Clock className="w-3 h-3" />
-                      {formatExpirationDate(uploadedDoc.expirationDate)}
+                      {formatExpirationDate(uploadedDoc.expirationDate, t)}
                     </div>
                   ) : (
                     <span className="text-xs text-muted-foreground">—</span>

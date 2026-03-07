@@ -21,7 +21,6 @@ import {
   Package,
   Eye,
   MoreVertical,
-  ChevronDown,
   Zap,
   FileText,
   Upload,
@@ -140,7 +139,7 @@ export function DocumentCard({
     return (
       <div className={`text-sm ${colorClass} flex items-center gap-1`}>
         <Clock className="w-4 h-4" />
-        {formatExpirationDate(uploadedDoc.expirationDate)}
+        {formatExpirationDate(uploadedDoc.expirationDate, t)}
       </div>
     );
   };
@@ -232,7 +231,7 @@ export function DocumentCard({
                 )}
               </p>
               <div className="flex items-center gap-2 text-[10px] font-bold text-slate-400 uppercase tracking-tighter">
-                <span>{formatFileSize(uploadedDoc.fileSize)}</span>
+                <span>{formatFileSize(uploadedDoc.fileSize, t)}</span>
                 <span className="h-1 w-1 rounded-full bg-slate-300"></span>
                 <span>
                   {new Date(uploadedDoc.uploadedAt).toLocaleDateString()}
@@ -267,14 +266,14 @@ export function DocumentCard({
                 className="flex-1 font-bold h-10 shadow-lg shadow-primary/20 bg-primary hover:bg-primary/95"
               >
                 <Upload className="w-4 h-4 mr-2" />
-                {t("documentVaultPage.components.documentCard.button.upload")}
+                {t("documentVaultPage.components.documentCard.upload")}
               </Button>
               <Button
                 onClick={onOpenWizard}
                 variant="outline"
                 className="flex-1 font-bold h-10 border-2"
               >
-                {t("documentVaultPage.components.documentCard.button.learnHow")}
+                {t("documentVaultPage.components.documentCard.learnHow")}
               </Button>
             </div>
           ) : (
@@ -284,9 +283,7 @@ export function DocumentCard({
                 variant="secondary"
                 size="sm"
                 className="h-9 px-3 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200"
-                title={t(
-                  "documentVaultPage.components.documentCard.button.preview",
-                )}
+                title={t("documentVaultPage.components.documentCard.preview")}
               >
                 <Eye className="w-4 h-4" />
               </Button>
@@ -299,7 +296,7 @@ export function DocumentCard({
                   className="flex-1 h-9 font-bold text-xs border-2"
                 >
                   <Download className="w-3.5 h-3.5 mr-1.5" />
-                  {t("documentVaultPage.components.documentCard.button.files")}
+                  {t("documentVaultPage.components.documentCard.files")}
                 </Button>
 
                 <DropdownMenu>
@@ -315,22 +312,20 @@ export function DocumentCard({
                   <DropdownMenuContent align="end" className="w-48">
                     <DropdownMenuItem onClick={onUpload}>
                       <Upload className="w-4 h-4 mr-2" />{" "}
-                      {t(
-                        "documentVaultPage.components.documentCard.button.replace",
-                      )}
+                      {t("documentVaultPage.components.documentCard.replace")}
                     </DropdownMenuItem>
                     {onExport && (
                       <DropdownMenuItem onClick={onExport}>
                         <Package className="w-4 h-4 mr-2" />{" "}
                         {t(
-                          "documentVaultPage.components.documentCard.button.exportZip",
+                          "documentVaultPage.components.documentCard.exportZip",
                         )}
                       </DropdownMenuItem>
                     )}
                     <DropdownMenuItem onClick={onOpenWizard}>
                       <Info className="w-4 h-4 mr-2" />{" "}
                       {t(
-                        "documentVaultPage.components.documentCard.button.instructions",
+                        "documentVaultPage.components.documentCard.instructions",
                       )}
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
@@ -339,9 +334,7 @@ export function DocumentCard({
                       className="text-destructive focus:text-destructive focus:bg-destructive/10"
                     >
                       <Trash2 className="w-4 h-4 mr-2" />{" "}
-                      {t(
-                        "documentVaultPage.components.documentCard.button.delete",
-                      )}
+                      {t("documentVaultPage.components.documentCard.delete")}
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>

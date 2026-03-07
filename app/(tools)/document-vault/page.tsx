@@ -162,7 +162,7 @@ export default function DocumentVaultPage() {
 
     if (user && !initialized) {
       setIsInitializing(true);
-      initialize(user.id)
+      initialize(user.id, t)
         .then(() => {
           setInitialized(true);
           setIsInitializing(false);
@@ -171,7 +171,7 @@ export default function DocumentVaultPage() {
           setIsInitializing(false);
         });
     }
-  }, [user, authLoading, router, initialized, initialize]);
+  }, [user, authLoading, router, initialized, initialize, t]);
 
   useEffect(() => {
     // Check if config exists after initialization
@@ -184,17 +184,17 @@ export default function DocumentVaultPage() {
     // Refresh document statuses and notifications on mount and periodically
     if (config) {
       refreshDocumentStatuses();
-      refreshNotifications();
+      refreshNotifications(t);
 
       const interval = setInterval(() => {
         refreshDocumentStatuses();
-        refreshNotifications();
+        refreshNotifications(t);
       }, 60000); // Every minute
 
       return () => clearInterval(interval);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [config]);
+  }, [config, t, refreshNotifications, refreshDocumentStatuses]);
 
   // Categories for tabs
   const categories = useMemo(() => {
@@ -316,7 +316,7 @@ export default function DocumentVaultPage() {
 
       // Reload all data from database to ensure store is in sync
       if (user) {
-        await initialize(user.id);
+        await initialize(user.id, t);
       }
 
       toast.success(t("documentVaultPage.page.messages.deleted"), {
@@ -406,7 +406,7 @@ export default function DocumentVaultPage() {
 
       // Reload data
       if (user) {
-        await initialize(user.id);
+        await initialize(user.id, t);
       }
     } catch (error) {
       console.error("Delete all error:", error);
@@ -874,7 +874,7 @@ export default function DocumentVaultPage() {
                           <div className="flex items-center gap-3">
                             <div className="h-1 w-8 sm:w-12 bg-primary rounded-full shrink-0"></div>
                             <h3 className="text-xs sm:text-sm font-black uppercase tracking-widest text-slate-400">
-                              {getCategoryDisplayName(category)}
+                              {getCategoryDisplayName(category, t)}
                             </h3>
                           </div>
 
@@ -1011,7 +1011,7 @@ export default function DocumentVaultPage() {
             onUploadComplete={async () => {
               // Reload all data from database
               if (user) {
-                await initialize(user.id);
+                await initialize(user.id, t);
               }
             }}
           />

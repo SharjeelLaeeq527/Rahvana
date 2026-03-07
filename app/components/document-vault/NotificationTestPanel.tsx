@@ -82,7 +82,7 @@ export function NotificationTestPanel() {
       updateDocument(doc.id, { expirationDate: newExpiry });
     });
 
-    refreshNotifications();
+    refreshNotifications(t);
     toast.success(
       t("documentVaultPage.components.notificationTestPanel.testExpiryApplied"),
     );
@@ -101,7 +101,7 @@ export function NotificationTestPanel() {
       updateDocument(doc.id, { expirationDate: newExpiry });
     });
 
-    refreshNotifications();
+    refreshNotifications(t);
     toast.success(
       t(
         "documentVaultPage.components.notificationTestPanel.expiryResetSuccess",
@@ -125,7 +125,7 @@ export function NotificationTestPanel() {
     const docWithExpiry = uploadedDocuments.find((d) => d.expirationDate);
     if (docWithExpiry) {
       updateDocument(docWithExpiry.id, { expirationDate: newExpiry });
-      refreshNotifications();
+      refreshNotifications(t);
       toast.success(
         t(
           "documentVaultPage.components.notificationTestPanel.setExpirySuccess",

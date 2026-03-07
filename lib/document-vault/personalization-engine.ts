@@ -7,8 +7,10 @@ import {
   ScenarioFlags,
   DocumentVaultConfig,
   UploadedDocument,
-} from './types';
-import { ALL_DOCUMENTS } from './document-definitions';
+} from "./types";
+import { ALL_DOCUMENTS } from "./document-definitions";
+
+type TranslateFn = (key: string, options?: Record<string, unknown>) => string;
 
 /**
  * Evaluates if a document is required based on visa category and scenario flags
@@ -16,7 +18,7 @@ import { ALL_DOCUMENTS } from './document-definitions';
 function isDocumentRequired(
   doc: DocumentDefinition,
   visaCategory: VisaCategory,
-  scenarioFlags: ScenarioFlags
+  scenarioFlags: ScenarioFlags,
 ): boolean {
   // If document has no conditional requirements, return its base required status
   if (!doc.requiredWhen) {
@@ -52,13 +54,13 @@ function isDocumentRequired(
  */
 export function generateRequiredDocuments(
   config: DocumentVaultConfig,
-  includeOptional: boolean = true
+  includeOptional: boolean = true,
 ): DocumentDefinition[] {
   const { visaCategory, scenarioFlags } = config;
 
   // Filter documents based on requirements
   const requiredDocs = ALL_DOCUMENTS.filter((doc) =>
-    isDocumentRequired(doc, visaCategory, scenarioFlags)
+    isDocumentRequired(doc, visaCategory, scenarioFlags),
   );
 
   // If includeOptional is true, also add documents that are optional but applicable
@@ -87,9 +89,11 @@ export function generateRequiredDocuments(
 
       // If scenarioFlags are set, only show if they match
       if (requiredFlags) {
-        const flagsMatch = Object.entries(requiredFlags).every(([flag, value]) => {
-          return scenarioFlags[flag as keyof ScenarioFlags] === value;
-        });
+        const flagsMatch = Object.entries(requiredFlags).every(
+          ([flag, value]) => {
+            return scenarioFlags[flag as keyof ScenarioFlags] === value;
+          },
+        );
         if (!flagsMatch) {
           return false;
         }
@@ -115,7 +119,7 @@ export function generateRequiredDocuments(
  */
 export function getDocumentsByCategory(
   config: DocumentVaultConfig,
-  includeOptional: boolean = true
+  includeOptional: boolean = true,
 ) {
   const requiredDocs = generateRequiredDocuments(config, includeOptional);
 
@@ -136,26 +140,27 @@ export function getDocumentsByCategory(
  */
 export function calculateDocumentStats(
   requiredDocs: DocumentDefinition[],
-  uploadedDocs: UploadedDocument[]
+  uploadedDocs: UploadedDocument[],
 ) {
-  const mandatoryDocs = requiredDocs.filter(d => d.required);
+  const mandatoryDocs = requiredDocs.filter((d) => d.required);
   const total = mandatoryDocs.length;
-  
-  const uploaded = mandatoryDocs.filter(
-    md => uploadedDocs.some(
-      (ud) => ud.documentDefId === md.id && (ud.status === 'UPLOADED' || ud.status === 'NEEDS_ATTENTION')
-    )
+
+  const uploaded = mandatoryDocs.filter((md) =>
+    uploadedDocs.some(
+      (ud) =>
+        ud.documentDefId === md.id &&
+        (ud.status === "UPLOADED" || ud.status === "NEEDS_ATTENTION"),
+    ),
   ).length;
 
   const missing = mandatoryDocs.filter(
-    (md) =>
-      !uploadedDocs.some(
-        (ud) => ud.documentDefId === md.id
-      )
+    (md) => !uploadedDocs.some((ud) => ud.documentDefId === md.id),
   ).length;
 
-  const expiring = uploadedDocs.filter((d) => d.status === 'NEEDS_ATTENTION').length;
-  const expired = uploadedDocs.filter((d) => d.status === 'EXPIRED').length;
+  const expiring = uploadedDocs.filter(
+    (d) => d.status === "NEEDS_ATTENTION",
+  ).length;
+  const expired = uploadedDocs.filter((d) => d.status === "EXPIRED").length;
 
   return {
     total,
@@ -170,9 +175,10 @@ export function calculateDocumentStats(
 /**
  * Validates scenario flags for consistency
  */
-export function validateScenarioFlags(
-  flags: ScenarioFlags
-): { valid: boolean; warnings: string[] } {
+export function validateScenarioFlags(flags: ScenarioFlags): {
+  valid: boolean;
+  warnings: string[];
+} {
   const warnings: string[] = [];
 
   // Example validation: if joint sponsor is used, at least one financial flag should be set
@@ -192,30 +198,40 @@ export function validateScenarioFlags(
 /**
  * Gets category display name
  */
-export function getCategoryDisplayName(category: string): string {
+export function getCategoryDisplayName(
+  category: string,
+  t?: TranslateFn,
+): string {
+  if (t) {
+    const translated = t(`documentVaultPage.categories.${category}`);
+    if (translated !== `documentVaultPage.categories.${category}`) {
+      return translated;
+    }
+  }
+
   const names: Record<string, string> = {
     // Original categories
-    CIVIL: 'Civil Documents',
-    FINANCIAL: 'Financial / Sponsor Documents',
-    RELATIONSHIP: 'Relationship Evidence',
-    POLICE: 'Police / Court / Military',
-    MEDICAL: 'Medical Documents',
-    PHOTOS: 'Photographs',
-    TRANSLATIONS: 'Translations / Certifications',
-    MISC: 'Miscellaneous / Case Evidence',
+    CIVIL: "Civil Documents",
+    FINANCIAL: "Financial / Sponsor Documents",
+    RELATIONSHIP: "Relationship Evidence",
+    POLICE: "Police / Court / Military",
+    MEDICAL: "Medical Documents",
+    PHOTOS: "Photographs",
+    TRANSLATIONS: "Translations / Certifications",
+    MISC: "Miscellaneous / Case Evidence",
     // New comprehensive categories
-    EDUCATION: 'Education Documents',
-    WORK: 'Work / Employment Documents',
-    TRAVEL: 'Travel Documents',
-    IDENTITY: 'Identity Documents',
-    PROPERTY: 'Property & Assets',
-    IMMIGRATION: 'Immigration History',
-    TAX: 'Tax Documents (Pakistan)',
-    LEGAL: 'Legal Documents',
-    HEALTH_INSURANCE: 'Health Insurance',
-    SOCIAL_MEDIA: 'Social Media',
-    ADDRESS_PROOF: 'Address Proof',
-    OTHER: 'Other Documents',
+    EDUCATION: "Education Documents",
+    WORK: "Work / Employment Documents",
+    TRAVEL: "Travel Documents",
+    IDENTITY: "Identity Documents",
+    PROPERTY: "Property & Assets",
+    IMMIGRATION: "Immigration History",
+    TAX: "Tax Documents (Pakistan)",
+    LEGAL: "Legal Documents",
+    HEALTH_INSURANCE: "Health Insurance",
+    SOCIAL_MEDIA: "Social Media",
+    ADDRESS_PROOF: "Address Proof",
+    OTHER: "Other Documents",
   };
 
   return names[category] || category;
@@ -224,18 +240,30 @@ export function getCategoryDisplayName(category: string): string {
 /**
  * Gets visa category display name
  */
-export function getVisaCategoryDisplayName(category: VisaCategory): string {
+export function getVisaCategoryDisplayName(
+  category: VisaCategory,
+  t?: TranslateFn,
+): string {
+  if (t) {
+    const translated = t(`documentVaultPage.visaCategories.${category}`);
+    if (translated !== `documentVaultPage.visaCategories.${category}`) {
+      // Return translated but keep the ID prefix if desired (e.g., "IR-1: ...")
+      // In ur.json I already added IR-1: prefix to the translations
+      return translated;
+    }
+  }
+
   const names: Record<VisaCategory, string> = {
-    'IR-1': 'IR-1: Immediate Relative - Spouse of U.S. Citizen',
-    'CR-1': 'CR-1: Conditional Resident - Spouse of U.S. Citizen',
-    'IR-2': 'IR-2: Immediate Relative - Unmarried Child under 21',
-    'CR-2': 'CR-2: Conditional Resident - Unmarried Child under 21',
-    'IR-5': 'IR-5: Immediate Relative - Parent of U.S. Citizen',
-    F1: 'F1: Unmarried Sons/Daughters of U.S. Citizens',
-    F2A: 'F2A: Spouses/Children of Lawful Permanent Residents',
-    F2B: 'F2B: Unmarried Sons/Daughters of LPR',
-    F3: 'F3: Married Sons/Daughters of U.S. Citizens',
-    F4: 'F4: Siblings of U.S. Citizens',
+    "IR-1": "IR-1: Immediate Relative - Spouse of U.S. Citizen",
+    "CR-1": "CR-1: Conditional Resident - Spouse of U.S. Citizen",
+    "IR-2": "IR-2: Immediate Relative - Unmarried Child under 21",
+    "CR-2": "CR-2: Conditional Resident - Unmarried Child under 21",
+    "IR-5": "IR-5: Immediate Relative - Parent of U.S. Citizen",
+    F1: "F1: Unmarried Sons/Daughters of U.S. Citizens",
+    F2A: "F2A: Spouses/Children of Lawful Permanent Residents",
+    F2B: "F2B: Unmarried Sons/Daughters of LPR",
+    F3: "F3: Married Sons/Daughters of U.S. Citizens",
+    F4: "F4: Siblings of U.S. Citizens",
   };
 
   return names[category] || category;
@@ -244,9 +272,7 @@ export function getVisaCategoryDisplayName(category: VisaCategory): string {
 /**
  * Determines if police certificate is required based on age and residency
  */
-export function isPoliceCertificateRequired(
-  beneficiaryAge: number,
-): boolean {
+export function isPoliceCertificateRequired(beneficiaryAge: number): boolean {
   // Police certificate required if:
   // 1. Beneficiary is 16+ years old
   // 2. And lived in any country for 12+ months after age 16
@@ -265,18 +291,27 @@ export function isPoliceCertificateRequired(
  */
 export function getDocumentRequirementReason(
   doc: DocumentDefinition,
-  config: DocumentVaultConfig
+  config: DocumentVaultConfig,
+  t?: TranslateFn,
 ): string[] {
   const reasons: string[] = [];
 
   if (doc.required) {
-    reasons.push('Required for all ' + config.visaCategory + ' cases');
+    reasons.push(
+      t
+        ? t("documentVaultPage.logic.requirements.requiredForAll", {
+            category: config.visaCategory,
+          })
+        : "Required for all " + config.visaCategory + " cases",
+    );
   }
 
   if (doc.requiredWhen?.visaCategories) {
     reasons.push(
-      'Required for visa categories: ' +
-        doc.requiredWhen.visaCategories.join(', ')
+      (t
+        ? t("documentVaultPage.logic.requirements.requiredForVisa")
+        : "Required for visa categories: ") +
+        doc.requiredWhen.visaCategories.join(", "),
     );
   }
 
@@ -285,7 +320,9 @@ export function getDocumentRequirementReason(
     flags.forEach(([flag, value]) => {
       if (config.scenarioFlags[flag as keyof ScenarioFlags] === value) {
         reasons.push(
-          'Required because: ' + flag.replace(/_/g, ' ').toLowerCase()
+          (t
+            ? t("documentVaultPage.logic.requirements.requiredBecause")
+            : "Required because: ") + flag.replace(/_/g, " ").toLowerCase(),
         );
       }
     });

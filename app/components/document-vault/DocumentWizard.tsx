@@ -56,10 +56,20 @@ export function DocumentWizard({
     (state) => state.uploadedDocuments,
   );
 
-  const wizardSteps = useMemo(
-    () => documentDef.wizardSteps || [],
-    [documentDef.wizardSteps],
-  );
+  const wizardSteps = useMemo(() => {
+    const translatedSteps = t(
+      `documentVaultPage.documents.${documentDef.id}.wizardSteps`,
+      { returnObjects: true },
+    );
+    if (
+      Array.isArray(translatedSteps) &&
+      translatedSteps.length > 0 &&
+      typeof translatedSteps[0] !== "string"
+    ) {
+      return translatedSteps;
+    }
+    return documentDef.wizardSteps || [];
+  }, [documentDef.id, documentDef.wizardSteps, t]);
 
   const isDocumentUploaded = useMemo(
     () =>
