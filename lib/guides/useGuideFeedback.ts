@@ -20,12 +20,16 @@ export function useGuideFeedback() {
       formData.append("stepKey", stepKey);
       formData.append("feedbackType", feedbackType);
       formData.append("description", description);
+      formData.append(
+        "pageUrl",
+        typeof window !== "undefined" ? window.location.href : `/${slug}`,
+      );
 
       if (attachment) {
         formData.append("attachment", attachment);
       }
 
-      const response = await fetch("/api/guides/submit-feedback", {
+      const response = await fetch("/api/feedback", {
         method: "POST",
         body: formData,
       });
