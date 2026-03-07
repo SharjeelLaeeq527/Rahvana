@@ -22,7 +22,8 @@ export async function GET() {
     const { count: totalGuides } = await supabase
       .from("user_guides")
       .select("*", { count: "exact", head: true })
-      .eq("user_id", userId);
+      .eq("user_id", userId)
+      .eq("saved", true);
 
     // JOURNEYS
     const { count: journeysCount } = await supabase
