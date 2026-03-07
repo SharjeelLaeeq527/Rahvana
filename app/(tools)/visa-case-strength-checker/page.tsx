@@ -98,6 +98,7 @@ interface CaseTypeStepProps {
   error: string | null;
   onCaseTypeChange: (caseType: CaseType) => void;
   isAuthenticated: boolean;
+  loading?: boolean;
   onNext: () => void;
   onBack: () => void;
 }
@@ -107,6 +108,7 @@ const CaseTypeStep = ({
   error,
   onCaseTypeChange,
   isAuthenticated,
+  loading = false,
   onNext,
   onBack,
 }: CaseTypeStepProps) => (
@@ -346,10 +348,10 @@ const CaseTypeStep = ({
       <Button
         onClick={onNext}
         suppressHydrationWarning
-        className="bg-teal-600 hover:bg-teal-700 text-white py-4 md:py-6 text-lg"
-        disabled={!formData.caseType}
+        className="bg-teal-600 hover:bg-teal-700 text-white py-4 md:py-6 text-lg disabled:opacity-60 disabled:cursor-not-allowed"
+        disabled={!formData.caseType || loading}
       >
-        Next →
+        {loading ? "Creating Session..." : "Next →"}
       </Button>
     </div>
   </div>
@@ -367,6 +369,7 @@ interface QuestionStepProps {
   }>;
   formData: FormData;
   error: string | null;
+  loading?: boolean;
   onChange: (id: keyof FormData, value: unknown) => void;
   setFormData: React.Dispatch<React.SetStateAction<FormData>>;
   onNext: () => void;
@@ -380,6 +383,7 @@ const QuestionStep = ({
   questions,
   formData,
   error,
+  loading = false,
   onChange,
   setFormData,
   onNext,
@@ -587,7 +591,8 @@ const QuestionStep = ({
           <Button
             onClick={onBack}
             variant="outline"
-            className="bg-white hover:bg-slate-50 text-secondary-foreground border-input py-6 text-lg"
+            disabled={loading}
+            className="bg-white hover:bg-slate-50 text-secondary-foreground border-input py-6 text-lg disabled:opacity-60 disabled:cursor-not-allowed"
             >
             ← Previous
           </Button>
@@ -595,9 +600,10 @@ const QuestionStep = ({
             <Button
               onClick={onNext}
               suppressHydrationWarning
-              className="bg-teal-600 hover:bg-teal-700 text-white py-4 md:py-6 text-lg"
+              disabled={loading}
+              className="bg-teal-600 hover:bg-teal-700 text-white py-4 md:py-6 text-lg disabled:opacity-60 disabled:cursor-not-allowed"
             >
-              Next →
+              {loading ? "Please wait..." : "Next →"}
             </Button>
           </div>
         </div>
@@ -1491,6 +1497,8 @@ export default function VisaCaseStrengthChecker() {
   const [saveNotification, setSaveNotification] = useState<string | null>(null);
   const [sessionId, setSessionId] = useState<string | null>(null);
   const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const isNavigatingRef = useRef<boolean>(false);
+  const [isNavigating, setIsNavigating] = useState(false);
 
   const {isAuthenticated} = useAuth();
 
@@ -1828,9 +1836,16 @@ export default function VisaCaseStrengthChecker() {
   };
 
   const nextStep = async () => {
+    // Prevent rapid/double clicks from bypassing validation
+    if (isNavigatingRef.current) return;
+    isNavigatingRef.current = true;
+    setIsNavigating(true);
+
     // Validate current step if needed
     if (step === 0 && !formData.caseType) {
       setError("Please select a case type");
+      isNavigatingRef.current = false;
+      setIsNavigating(false);
       return;
     }
 
@@ -1897,6 +1912,8 @@ export default function VisaCaseStrengthChecker() {
             : "Failed to create session. Please try again.",
         );
         setLoading(false);
+        isNavigatingRef.current = false;
+        setIsNavigating(false);
         return;
       } finally {
         setLoading(false);
@@ -1937,6 +1954,7 @@ export default function VisaCaseStrengthChecker() {
               fieldValue === ""
             ) {
               setError(`Please select an option for: ${question.label}`);
+              isNavigatingRef.current = false;
               return;
             }
           } else {
@@ -1946,6 +1964,7 @@ export default function VisaCaseStrengthChecker() {
               fieldValue === ""
             ) {
               setError(`Please fill in all required fields: ${question.label}`);
+              isNavigatingRef.current = false;
               return;
             }
           }
@@ -1956,6 +1975,7 @@ export default function VisaCaseStrengthChecker() {
             isNaN(Number(fieldValue))
           ) {
             setError(`Please enter a valid number for ${question.label}`);
+            isNavigatingRef.current = false;
             return;
           }
 
@@ -1965,6 +1985,7 @@ export default function VisaCaseStrengthChecker() {
             fieldValue === ""
           ) {
             setError(`Please enter a valid date for ${question.label}`);
+            isNavigatingRef.current = false;
             return;
           }
 
@@ -1976,6 +1997,7 @@ export default function VisaCaseStrengthChecker() {
             setError(
               `Please enter a valid positive number for ${question.label}`,
             );
+            isNavigatingRef.current = false;
             return;
           }
 
@@ -1995,6 +2017,7 @@ export default function VisaCaseStrengthChecker() {
               setError(
                 `Date of birth must be in the past for ${question.label}`,
               );
+              isNavigatingRef.current = false;
               return;
             }
           }
@@ -2006,9 +2029,18 @@ export default function VisaCaseStrengthChecker() {
     if (error) {
       setError(null);
     }
+    // Release the navigation lock after a short delay to allow React to re-render
+    setTimeout(() => {
+      isNavigatingRef.current = false;
+      setIsNavigating(false);
+    }, 400);
   };
 
   const prevStep = async () => {
+    if (isNavigatingRef.current) return;
+    isNavigatingRef.current = true;
+    setIsNavigating(true);
+
     // Save answers before moving to previous step if we have a session ID
     if (sessionId) {
       try {
@@ -2046,6 +2078,11 @@ export default function VisaCaseStrengthChecker() {
     if (error) {
       setError(null);
     }
+
+    setTimeout(() => {
+      isNavigatingRef.current = false;
+      setIsNavigating(false);
+    }, 400);
   };
 
   const handleSaveForLater = async () => {
@@ -2212,6 +2249,7 @@ export default function VisaCaseStrengthChecker() {
           onCaseTypeChange={handleCaseTypeChange}
           onNext={nextStep}
           isAuthenticated={isAuthenticated}
+          loading={loading || isNavigating}
           onBack={() => window.history.back()}
         />
       );
@@ -2239,6 +2277,7 @@ export default function VisaCaseStrengthChecker() {
           }))}
           formData={formData}
           error={error}
+          loading={loading || isNavigating}
           onChange={handleInputChange}
           setFormData={setFormData}
           onNext={nextStep}
@@ -2309,7 +2348,7 @@ export default function VisaCaseStrengthChecker() {
     const sections = questionnaireData.sections;
     const currentSectionIndex = step - 1;
     const totalSteps = questionnaireData.sections.length + 2; // +2 for review and results steps
-    const progressPercentage = Math.round(((step - 1) / totalSteps) * 100);
+    const progressPercentage = Math.max(0, Math.min(100, Math.round((step / totalSteps) * 100)));
 
     return (
       <div className="mb-8">

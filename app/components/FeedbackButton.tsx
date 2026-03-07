@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import { MessageCircle, X, Upload, CheckCircle2 } from "lucide-react";
 import { useToast } from "./shared/ToastProvider";
+import { usePathname } from "next/navigation";
 import {
   Select,
   SelectContent,
@@ -12,8 +13,8 @@ import {
 } from "@/components/ui/select";
 
 interface FeedbackButtonProps {
-  steps: string[];
-  currentStepName: string;
+  steps?: string[];
+  currentStepName?: string;
   onSubmit?: (
     feedbackType: string,
     description: string,
@@ -22,11 +23,12 @@ interface FeedbackButtonProps {
 }
 
 export default function FeedbackButton({
-  steps,
-  currentStepName,
+  steps = [],
+  currentStepName = "",
   onSubmit,
 }: FeedbackButtonProps) {
   const [isOpen, setIsOpen] = useState(false);
+  const pathname = usePathname();
   const [feedback, setFeedback] = useState({
     category: "",
     step: currentStepName || "",
@@ -73,16 +75,41 @@ export default function FeedbackButton({
         return;
       }
 
-      // If onSubmit callback is provided, use the API
+      // If onSubmit callback is provided, use it
       if (onSubmit) {
-        // Submit to API - only send first attachment if available
         await onSubmit(
           feedback.category,
           feedback.description,
           feedback.attachments[0],
         );
       } else {
-        throw new Error("Feedback submission is not configured for this page.");
+        // Default global submission
+        const formData = new FormData();
+        const isGuide = pathname.includes("/guides/");
+        const slug = isGuide ? pathname.split("/").pop() : "general";
+        // Capture the full page URL so the sheet shows exactly where the user was
+        const fullPageUrl =
+          typeof window !== "undefined" ? window.location.href : pathname;
+
+        formData.append("slug", slug || "general");
+        formData.append("stepKey", feedback.step || pathname);
+        formData.append("feedbackType", feedback.category);
+        formData.append("description", feedback.description);
+        formData.append("pageUrl", fullPageUrl);        // ← new: full URL
+        
+        if (feedback.attachments[0]) {
+          formData.append("attachment", feedback.attachments[0]);
+        }
+
+        const response = await fetch("/api/feedback", {
+          method: "POST",
+          body: formData,
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({}));
+          throw new Error(errorData.error || "Failed to submit feedback");
+        }
       }
 
       showToast(
@@ -107,6 +134,7 @@ export default function FeedbackButton({
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+
     if (e.target.files && e.target.files.length > 0) {
       const files = Array.from(e.target.files);
       setFeedback((prev) => ({
@@ -186,28 +214,30 @@ export default function FeedbackButton({
                 </div>
 
                 {/* Step */}
-                <div className="mt-4">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Where did this happen?
-                  </label>
-                  <Select
-                    value={feedback.step}
-                    onValueChange={(val) =>
-                      setFeedback((prev) => ({ ...prev, step: val }))
-                    }
-                  >
-                    <SelectTrigger className="w-full">
-                      <SelectValue placeholder="Select a step" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {steps.map((s) => (
-                        <SelectItem key={s} value={s}>
-                          {s}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
+                {steps.length > 0 && (
+                  <div className="mt-4">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Where did this happen?
+                    </label>
+                    <Select
+                      value={feedback.step}
+                      onValueChange={(val) =>
+                        setFeedback((prev) => ({ ...prev, step: val }))
+                      }
+                    >
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder="Select a step" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {steps.map((s) => (
+                          <SelectItem key={s} value={s}>
+                            {s}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
 
                 {/* Description */}
                 <div>

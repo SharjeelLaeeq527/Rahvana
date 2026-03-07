@@ -1,7 +1,10 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { DocumentDefinition } from "@/lib/document-vault/types";
+import {
+  DocumentDefinition,
+  DocumentWizardStep,
+} from "@/lib/document-vault/types";
 import { useLanguage } from "@/app/context/LanguageContext";
 import { useDocumentVaultStore } from "@/lib/document-vault/store";
 import {
@@ -56,10 +59,20 @@ export function DocumentWizard({
     (state) => state.uploadedDocuments,
   );
 
-  const wizardSteps = useMemo(
-    () => documentDef.wizardSteps || [],
-    [documentDef.wizardSteps],
-  );
+  const wizardSteps = useMemo(() => {
+    const translatedSteps = t(
+      `documentVaultPage.documents.${documentDef.id}.wizardSteps`,
+      { returnObjects: true },
+    );
+    if (
+      Array.isArray(translatedSteps) &&
+      translatedSteps.length > 0 &&
+      typeof translatedSteps[0] !== "string"
+    ) {
+      return translatedSteps;
+    }
+    return documentDef.wizardSteps || [];
+  }, [documentDef.id, documentDef.wizardSteps, t]);
 
   const isDocumentUploaded = useMemo(
     () =>
@@ -275,7 +288,7 @@ export function DocumentWizard({
                       {t("documentVaultPage.components.wizard.tipsHeading")}
                     </h4>
                     <ul className="space-y-1 text-sm text-blue-800 dark:text-blue-200">
-                      {step.tips.map((tip, index) => (
+                      {(step.tips || []).map((tip: string, index: number) => (
                         <li key={index} className="flex items-start gap-2">
                           <span className="text-blue-600 dark:text-blue-400 mt-0.5">
                             •
@@ -296,21 +309,28 @@ export function DocumentWizard({
                   {t("documentVaultPage.components.wizard.helpfulResources")}
                 </h4>
                 <div className="space-y-2">
-                  {step.resources.map((resource, index) => (
-                    <a
-                      key={index}
-                      href={resource.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex items-center gap-2 p-3 border rounded-lg hover:border-brand hover:bg-brand/5 transition-colors"
-                    >
-                      {getResourceIcon(resource.type)}
-                      <span className="flex-1 font-medium">
-                        {resource.name}
-                      </span>
-                      <ExternalLink className="w-4 h-4 text-muted-foreground" />
-                    </a>
-                  ))}
+                  {(step.resources || []).map(
+                    (
+                      resource: NonNullable<
+                        DocumentWizardStep["resources"]
+                      >[number],
+                      index: number,
+                    ) => (
+                      <a
+                        key={index}
+                        href={resource.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-2 p-3 border rounded-lg hover:border-brand hover:bg-brand/5 transition-colors"
+                      >
+                        {getResourceIcon(resource.type)}
+                        <span className="flex-1 font-medium">
+                          {resource.name}
+                        </span>
+                        <ExternalLink className="w-4 h-4 text-muted-foreground" />
+                      </a>
+                    ),
+                  )}
                 </div>
               </div>
             )}

@@ -139,7 +139,7 @@ const TOOLS: Tool[] = [
   },
   {
     id: "pdf-toolkit",
-    title: "PDF ToolKit",
+    title: "PDF Tool Kit",
     description: "Merge • compress • convert • edit — all in one toolkit.",
     category: "Docs & PDFs",
     href: "/pdf-processing",

@@ -764,6 +764,39 @@
         "testExpiryApplied": "Test expiry dates applied!",
         "expiryResetSuccess": "Expiry dates reset to 6 months from now",
         "setExpirySuccess": "Set expiry to {days} days from now"
+      },
+      "logic": {
+        "expiration": {
+          "expiredAgo": "Expired {days} days ago",
+          "expiresToday": "Expires today",
+          "expiresTomorrow": "Expires tomorrow",
+          "expiresInDays": "Expires in {days} days",
+          "expiresInWeeks": "Expires in {weeks} weeks",
+          "expiresInMonths": "Expires in {months} months"
+        },
+        "validation": {
+          "pastDate": "Expiration date cannot be in the past",
+          "beforeUpload": "Expiration date cannot be before upload date",
+          "tooFarFuture": "Expiration date cannot be more than {years} years in the future"
+        },
+        "notifications": {
+          "missingDocTitle": "Missing Required Document",
+          "missingDocMessage": "{name} is required but not yet uploaded. Upload it to complete your document package.",
+          "expiredTitle": "Document Expired",
+          "expiredMessage": "{name} expired {days} day(s) ago. Please upload a renewed version immediately.",
+          "expiringSoonTitle": "Document Expiring Soon",
+          "expiringSoonActionTitle": "Document Expiring Soon - Action Required",
+          "expiringInDays": "{name} expires in {days} days.",
+          "expiresToday": "{name} expires today.",
+          "expiresTomorrow": "{name} expires tomorrow.",
+          "renewImmediately": "Upload a renewed version immediately.",
+          "considerRenewing": "Consider uploading a renewed version."
+        },
+        "requirements": {
+          "requiredForAll": "Required for all {category} cases",
+          "requiredForVisa": "Required for visa categories: {categories}",
+          "requiredBecause": "Required because: {reason}"
+        }
       }
     },
     "categories": {
@@ -813,8 +846,30 @@
     },
     "documents": {
       "birth-cert-beneficiary": {
-        "name": "Birth Certificate (Beneficiary)",
-        "description": "Official birth certificate for the beneficiary"
+        "name": "Birth Certificate",
+        "description": "Official birth certificate with English translation",
+        "wizardSteps": {
+          "step1": {
+            "title": "Obtain Original Birth Certificate",
+            "description": "Visit NADRA office or apply online to get your original birth certificate (Form-B or computerized NICOP/CNIC with date of birth).",
+            "tips": [
+              "Ensure the certificate shows your full name exactly as in your passport",
+              "If name differs from passport, get a name match certificate"
+            ],
+            "estimatedTime": "1-3 days",
+            "cost": "PKR 400-800"
+          },
+          "step2": {
+            "title": "Get English Translation",
+            "description": "If certificate is in Urdu, get it translated by a certified translator.",
+            "tips": [
+              "Translator must certify that translation is accurate",
+              "Include translator credentials and stamp"
+            ],
+            "estimatedTime": "1-2 days",
+            "cost": "PKR 1,000-2,000"
+          }
+        }
       },
       "marriage-cert": {
         "name": "Marriage Certificate",
@@ -833,20 +888,82 @@
         "description": "Photos meeting US visa requirements (2x2 inches, white background)"
       },
       "nikah-nama": {
-        "name": "Nikah Nama / Marriage Certificate",
-        "description": "Original Nikah Nama with English translation"
+        "name": "Nikah Nama (Marriage Certificate)",
+        "description": "Original Nikah Nama with English translation",
+        "wizardSteps": {
+          "step1": {
+            "title": "Locate Original Nikah Nama",
+            "description": "Find your original Nikah Nama document issued at the time of marriage.",
+            "tips": [
+              "Must be signed by Nikah Registrar",
+              "Should have serial number and registration details"
+            ]
+          },
+          "step2": {
+            "title": "Get Certified Translation",
+            "description": "Get a certified English translation of the Nikah Nama.",
+            "estimatedTime": "2-3 days",
+            "cost": "PKR 2,000-5,000"
+          }
+        }
       },
       "passport-beneficiary": {
-        "name": "Passport Copy (Beneficiary)",
-        "description": "Valid passport copy (biographical page)"
+        "name": "Passport Copy",
+        "description": "Valid passport copy (biographical page)",
+        "wizardSteps": {
+          "step1": {
+            "title": "Check Passport Validity",
+            "description": "Ensure your passport is valid for at least 6 months beyond your intended travel date.",
+            "tips": [
+              "If passport expires soon, renew it before uploading",
+              "Scan the biographical page (page with photo and details)"
+            ]
+          },
+          "step2": {
+            "title": "Scan Biographical Page",
+            "description": "Scan or take a clear photo of the biographical page of your passport.",
+            "tips": [
+              "Ensure all text is readable",
+              "No shadows or reflections",
+              "Save as PDF or high-quality JPG"
+            ]
+          }
+        }
       },
       "cnic-beneficiary": {
-        "name": "CNIC (National Identity Card)",
-        "description": "Copy of Pakistani CNIC (both sides)"
+        "name": "CNIC (Computerized National Identity Card)",
+        "description": "Copy of Pakistani CNIC (both sides)",
+        "wizardSteps": {
+          "step1": {
+            "title": "Scan Both Sides of CNIC",
+            "description": "Make clear scans or photos of both front and back of your CNIC.",
+            "tips": [
+              "Ensure CNIC is not expired",
+              "If expired, renew at NADRA office",
+              "Combine both sides into one PDF file"
+            ]
+          }
+        }
       },
       "divorce-decree-beneficiary": {
         "name": "Divorce Decree / Talaq Nama",
-        "description": "Official divorce decree with translation if prior marriage"
+        "description": "Official divorce decree with translation if prior marriage",
+        "wizardSteps": {
+          "step1": {
+            "title": "Obtain Divorce Certificate",
+            "description": "Get certified copy of divorce decree from Family Court or Union Council.",
+            "tips": [
+              "Court-issued decrees must be certified copies",
+              "Union Council certificates should have registration number"
+            ]
+          },
+          "step2": {
+            "title": "Get English Translation",
+            "description": "If document is in Urdu, get certified English translation.",
+            "estimatedTime": "2-3 days",
+            "cost": "PKR 2,000-4,000"
+          }
+        }
       },
       "death-cert-prior-spouse": {
         "name": "Death Certificate of Former Spouse",
@@ -854,15 +971,581 @@
       },
       "i-864-affidavit": {
         "name": "Form I-864 (Affidavit of Support)",
-        "description": "Completed and signed I-864 form"
+        "description": "Completed and signed I-864 form",
+        "wizardSteps": {
+          "step1": {
+            "title": "Download Form I-864",
+            "description": "Download the latest version of Form I-864 from USCIS website.",
+            "tips": [
+              "Always use the latest version of the form",
+              "Fill out completely - no blank fields"
+            ]
+          },
+          "step2": {
+            "title": "Complete and Sign",
+            "description": "Fill out all sections accurately and sign the form.",
+            "tips": [
+              "Use your legal name as it appears on tax returns",
+              "Include household size calculation",
+              "Sign and date - signature must be original"
+            ]
+          }
+        }
       },
       "tax-returns-petitioner": {
         "name": "IRS Tax Returns (3 years)",
-        "description": "Federal tax transcripts or returns for last 3 years"
+        "description": "Federal tax transcripts or returns for last 3 years",
+        "wizardSteps": {
+          "step1": {
+            "title": "Request IRS Tax Transcripts",
+            "description": "Order tax transcripts from IRS website or by mail.",
+            "tips": [
+              "Tax transcripts are preferred over returns",
+              "Need last 3 years (most recent)",
+              "Free service from IRS"
+            ],
+            "estimatedTime": "5-10 business days (by mail)",
+            "cost": "Free"
+          }
+        }
       },
       "employment-letter": {
         "name": "Employment Verification Letter",
-        "description": "Letter from employer confirming employment and salary"
+        "description": "Letter from employer confirming employment and salary",
+        "wizardSteps": {
+          "step1": {
+            "title": "Request Letter from Employer",
+            "description": "Contact your HR department to request an employment verification letter.",
+            "tips": [
+              "Letter must be on company letterhead",
+              "Include: job title, salary, start date, employment type (full-time/part-time)",
+              "Should be dated within 6 months of submission",
+              "Include HR contact information"
+            ]
+          }
+        }
+      },
+      "pay-stubs": {
+        "name": "Recent Pay Stubs",
+        "description": "Most recent 6 pay stubs or pay statements"
+      },
+      "w2-forms": {
+        "name": "W-2 Forms",
+        "description": "W-2 forms for last tax year"
+      },
+      "bank-statements": {
+        "name": "Bank Statements",
+        "description": "Recent bank statements (last 12 months)"
+      },
+      "wedding-photos": {
+        "name": "Wedding Photos",
+        "description": "Photos from wedding ceremony"
+      },
+      "relationship-photos": {
+        "name": "Relationship Photos",
+        "description": "Photos together throughout relationship"
+      },
+      "communication-evidence": {
+        "name": "Communication Evidence",
+        "description": "Chat logs, call records, emails demonstrating ongoing relationship"
+      },
+      "joint-financial-docs": {
+        "name": "Joint Financial Documents",
+        "description": "Joint bank accounts, property, insurance, etc."
+      },
+      "police-certificate-pakistan": {
+        "name": "Police Certificate (Pakistan)",
+        "description": "Police clearance certificate from Pakistan",
+        "wizardSteps": {
+          "step1": {
+            "title": "Apply at Local Police Station",
+            "description": "Visit your local police station or apply through NADRA for a police clearance certificate.",
+            "tips": [
+              "Bring original CNIC",
+              "May require fingerprinting",
+              "Valid for 1 year from issue date"
+            ],
+            "estimatedTime": "2-4 weeks",
+            "cost": "PKR 500-1,500"
+          },
+          "step2": {
+            "title": "Get English Translation",
+            "description": "If certificate is in Urdu, get certified translation.",
+            "estimatedTime": "2-3 days",
+            "cost": "PKR 1,500-3,000"
+          }
+        }
+      },
+      "court-records": {
+        "name": "Court Records",
+        "description": "Records of any arrests, convictions, or court proceedings"
+      },
+      "military-records": {
+        "name": "Military Service Records",
+        "description": "Military service records if applicable"
+      },
+      "medical-exam-ds2019": {
+        "name": "Medical Examination (Form DS-2019)",
+        "description": "Medical examination report from panel physician",
+        "wizardSteps": {
+          "step1": {
+            "title": "Schedule Medical Exam",
+            "description": "Book appointment with panel physician approved by U.S. Embassy Islamabad.",
+            "tips": [
+              "Schedule only after receiving interview date",
+              "Bring passport, photos, and vaccination records",
+              "Exam includes physical, blood tests, and X-ray"
+            ],
+            "estimatedTime": "3-4 hours for exam",
+            "cost": "Approximately PKR 20,000-30,000"
+          },
+          "step2": {
+            "title": "Collect Medical Report",
+            "description": "Pick up sealed medical report - DO NOT OPEN",
+            "tips": [
+              "Report is sealed and must remain sealed",
+              "Bring to interview appointment",
+              "Valid for 6 months"
+            ]
+          }
+        }
+      },
+      "vaccination-records": {
+        "name": "Vaccination Records",
+        "description": "Proof of required vaccinations"
+      },
+      "polio-vaccine-cert": {
+        "name": "Polio Vaccination Certificate",
+        "description": "Official International Certificate of Vaccination (issued within last 12 months)",
+        "wizardSteps": {
+          "step1": {
+            "title": "Visit Government Hospital or Health Office",
+            "description": "Get a fresh dose of Oral Polio Vaccine (OPV) from any government-approved vaccination center or hospital.",
+            "tips": [
+              "Must be recorded on the official Yellow Card or NADRA system",
+              "Make sure the date of vaccination is within 1 year of your travel date"
+            ],
+            "estimatedTime": "1 day",
+            "cost": "Free (Government Centers) / Nominal (Private)"
+          },
+          "step2": {
+            "title": "Get NADRA Immunization Certificate",
+            "description": "If vaccinated through the official system, you can also download a computerized certificate from the NADRA website.",
+            "tips": [
+              "NADRA certificate is more professional and widely accepted",
+              "Keep both original and computerized copy"
+            ],
+            "estimatedTime": "10 minutes (online)",
+            "cost": "PKR 100"
+          }
+        }
+      },
+      "passport-photos": {
+        "name": "Passport-Style Photos",
+        "description": "U.S. visa-compliant passport photos (2x2 inches)",
+        "wizardSteps": {
+          "step1": {
+            "title": "Get Compliant Photos",
+            "description": "Get 2x2 inch photos that meet U.S. visa photo requirements.",
+            "tips": [
+              "White or off-white background",
+              "Taken within last 6 months",
+              "Face directly facing camera",
+              "No glasses, headphones, or accessories",
+              "Neutral expression"
+            ],
+            "estimatedTime": "30 minutes",
+            "cost": "PKR 500-1,000"
+          }
+        }
+      },
+      "translator-certification": {
+        "name": "Translator Certification",
+        "description": "Certification statement from translator for all translated documents"
+      },
+      "ds-260": {
+        "name": "Form DS-260",
+        "description": "Online Immigrant Visa Application confirmation page"
+      },
+      "i-130-approval": {
+        "name": "Form I-130 Approval Notice",
+        "description": "USCIS approval notice for Form I-130"
+      },
+      "nvc-fee-receipts": {
+        "name": "NVC Fee Payment Receipts",
+        "description": "Proof of payment for NVC processing fees"
+      },
+      "matric-certificate": {
+        "name": "Matriculation Certificate",
+        "description": "SSC/Matriculation certificate from Pakistan",
+        "wizardSteps": {
+          "step1": {
+            "title": "Obtain Matric Certificate",
+            "description": "Get your original Matriculation certificate from respective board.",
+            "tips": [
+              "Must be original or certified copy",
+              "Get English translation if in Urdu"
+            ]
+          }
+        }
+      },
+      "intermediate-certificate": {
+        "name": "Intermediate Certificate",
+        "description": "HSSC/Intermediate certificate from Pakistan"
+      },
+      "bachelor-degree": {
+        "name": "Bachelor's Degree",
+        "description": "Bachelor's degree certificate and transcripts",
+        "wizardSteps": {
+          "step1": {
+            "title": "Collect Degree and Transcripts",
+            "description": "Get both the degree certificate and detailed transcripts.",
+            "tips": [
+              "HEC attestation recommended for foreign use",
+              "English translation required if in Urdu"
+            ]
+          }
+        }
+      },
+      "master-degree": {
+        "name": "Master's Degree",
+        "description": "Master's degree certificate and transcripts"
+      },
+      "professional-certificate": {
+        "name": "Professional Certifications",
+        "description": "Professional certifications and licenses (e.g., ACCA, CA, PMP)"
+      },
+      "hec-attestation": {
+        "name": "HEC Attestation",
+        "description": "HEC attested educational documents",
+        "wizardSteps": {
+          "step1": {
+            "title": "Get HEC Attestation",
+            "description": "Apply for HEC attestation through HEC website or office.",
+            "tips": [
+              "Required for foreign use of Pakistani degrees",
+              "Apply online first, then visit HEC office"
+            ],
+            "estimatedTime": "1-2 weeks",
+            "cost": "PKR 2,000-5,000"
+          }
+        }
+      },
+      "experience-letter-pakistan": {
+        "name": "Work Experience Letter (Pakistan)",
+        "description": "Experience letter from Pakistani employers",
+        "wizardSteps": {
+          "step1": {
+            "title": "Request Experience Letter",
+            "description": "Get a formal experience letter from each employer.",
+            "tips": [
+              "Must be on company letterhead",
+              "Include job title, duration, responsibilities",
+              "Include salary information",
+              "English translation required if in Urdu"
+            ]
+          }
+        }
+      },
+      "employment-contract-pakistan": {
+        "name": "Employment Contract (Pakistan)",
+        "description": "Employment contracts from Pakistani employers"
+      },
+      "salary-slips-pakistan": {
+        "name": "Salary Slips (Pakistan)",
+        "description": "Recent salary slips from Pakistani employment"
+      },
+      "noc-pakistan": {
+        "name": "No Objection Certificate (NOC)",
+        "description": "NOC from current Pakistani employer",
+        "wizardSteps": {
+          "step1": {
+            "title": "Request NOC from Employer",
+            "description": "Get No Objection Certificate from current employer.",
+            "tips": [
+              "Required for some government or sensitive positions",
+              "Should state no objection to visa issuance"
+            ]
+          }
+        }
+      },
+      "eobi-certificate": {
+        "name": "EOBI Certificate",
+        "description": "Employees' Old-Age Benefits Institution certificate",
+        "wizardSteps": {
+          "step1": {
+            "title": "Get EOBI Certificate",
+            "description": "Obtain EOBI certificate if you have EOBI registration.",
+            "tips": [
+              "Shows employment history in Pakistan",
+              "Useful for proving work experience"
+            ]
+          }
+        }
+      },
+      "previous-visa-stamps": {
+        "name": "Previous Visa Stamps",
+        "description": "Scans of previous visas in passport"
+      },
+      "travel-history": {
+        "name": "Travel History Record",
+        "description": "List of previous international travel with dates"
+      },
+      "old-passport-copies": {
+        "name": "Old Passport Copies",
+        "description": "Copies of previous/old passports",
+        "wizardSteps": {
+          "step1": {
+            "title": "Collect Old Passports",
+            "description": "Gather all previous passports showing travel history.",
+            "tips": [
+              "Scan biographical pages",
+              "Scan all visa stamps",
+              "Scan entry/exit stamps"
+            ]
+          }
+        }
+      },
+      "travel-itinerary": {
+        "name": "Previous Travel Itineraries",
+        "description": "Previous flight itineraries or boarding passes"
+      },
+      "driving-license-pakistan": {
+        "name": "Driving License (Pakistan)",
+        "description": "Pakistani driving license copy",
+        "wizardSteps": {
+          "step1": {
+            "title": "Scan Driving License",
+            "description": "Get clear scans of your Pakistani driving license.",
+            "tips": [
+              "Both front and back",
+              "Ensure all text is readable",
+              "English translation if in Urdu"
+            ]
+          }
+        }
+      },
+      "domicile-certificate": {
+        "name": "Domicile Certificate",
+        "description": "District domicile certificate from Pakistan",
+        "wizardSteps": {
+          "step1": {
+            "title": "Obtain Domicile Certificate",
+            "description": "Get your domicile certificate from the district administration.",
+            "tips": [
+              "Issued by District Commissioner",
+              "Shows permanent residence",
+              "English translation if in Urdu"
+            ]
+          }
+        }
+      },
+      "prc-certificate": {
+        "name": "PRC (Permanent Residence Certificate)",
+        "description": "Permanent Residence Certificate from Pakistan"
+      },
+      "nicop-cnic": {
+        "name": "NICOP/CNIC with Photo",
+        "description": "NICOP or CNIC with clear photo"
+      },
+      "property-ownership-docs": {
+        "name": "Property Ownership Documents",
+        "description": "Property deeds, registry papers, fard documents",
+        "wizardSteps": {
+          "step1": {
+            "title": "Collect Property Documents",
+            "description": "Gather all property ownership documents.",
+            "tips": [
+              "Fard/registry from Patwari office",
+              "Property deed/registry",
+              "English translation if in Urdu",
+              "Valuation certificate helpful"
+            ]
+          }
+        }
+      },
+      "vehicle-registration": {
+        "name": "Vehicle Registration Papers",
+        "description": "Vehicle registration documents in Pakistan"
+      },
+      "bank-assets-pakistan": {
+        "name": "Bank Assets in Pakistan",
+        "description": "Bank account statements, fixed deposit certificates"
+      },
+      "nra-certificate": {
+        "name": "NRA (Non-Resident Alien) Certificate",
+        "description": "NRA certificate from Pakistan"
+      },
+      "investment-certificates": {
+        "name": "Investment Certificates",
+        "description": "Stocks, bonds, mutual fund certificates"
+      },
+      "prior-visa-denials": {
+        "name": "Prior Visa Denial Letters",
+        "description": "Letters explaining prior visa denials (if any)"
+      },
+      "immigration-court-docs": {
+        "name": "Immigration Court Documents",
+        "description": "Any prior immigration court proceedings or removal orders"
+      },
+      "reentry-permit": {
+        "name": "Re-entry Permit (if any)",
+        "description": "Re-entry permit documents"
+      },
+      "prior-petition-docs": {
+        "name": "Prior Immigration Petition Documents",
+        "description": "Documents from prior immigration petitions"
+      },
+      "arrival-departure-records": {
+        "name": "Arrival/Departure Records (I-94)",
+        "description": "I-94 records from previous US visits"
+      },
+      "fbr-tax-returns": {
+        "name": "FBR Tax Returns (Pakistan)",
+        "description": "FBR tax returns from Pakistan",
+        "wizardSteps": {
+          "step1": {
+            "title": "Get FBR Tax Returns",
+            "description": "Download your tax returns from FBR portal.",
+            "tips": [
+              "Last 3 years recommended",
+              "NTN certificate also helpful"
+            ]
+          }
+        }
+      },
+      "ntn-certificate": {
+        "name": "NTN Certificate (National Tax Number)",
+        "description": "NTN certificate from FBR"
+      },
+      "tax-clearance-certificate": {
+        "name": "Tax Clearance Certificate",
+        "description": "Tax clearance certificate from FBR"
+      },
+      "affidavit-bona-fide": {
+        "name": "Affidavit of Bona Fide Marriage",
+        "description": "Affidavit from friends/family regarding marriage",
+        "wizardSteps": {
+          "step1": {
+            "title": "Get Affidavits from Witnesses",
+            "description": "Request affidavits from friends/family who can attest to your marriage.",
+            "tips": [
+              "Notarized by oath commissioner",
+              "Include witness contact details",
+              "Describe how they know the couple",
+              "Mention attending wedding"
+            ],
+            "estimatedTime": "2-3 days",
+            "cost": "PKR 500-1,000 per affidavit"
+          }
+        }
+      },
+      "notarized-documents": {
+        "name": "Notarized Documents",
+        "description": "Any documents requiring notarization"
+      },
+      "name-change-docs": {
+        "name": "Name Change Documents",
+        "description": "Legal name change documents (if applicable)",
+        "wizardSteps": {
+          "step1": {
+            "title": "Collect Name Change Documents",
+            "description": "Get all legal name change documentation.",
+            "tips": [
+              "Court order for name change",
+              "Gazette notification",
+              "NADRA updated documents",
+              "English translation if in Urdu"
+            ]
+          }
+        }
+      },
+      "guardianship-docs": {
+        "name": "Guardianship/Custody Documents",
+        "description": "Legal custody or guardianship documents for minors"
+      },
+      "health-insurance-policy": {
+        "name": "Health Insurance Policy",
+        "description": "Health insurance policy documents"
+      },
+      "insurance-coverage-letter": {
+        "name": "Insurance Coverage Letter",
+        "description": "Letter confirming health insurance coverage"
+      },
+      "social-media-list": {
+        "name": "Social Media Platforms List",
+        "description": "List of social media platforms used in last 5 years",
+        "wizardSteps": {
+          "step1": {
+            "title": "List Social Media Accounts",
+            "description": "Create a list of all social media platforms you've used.",
+            "tips": [
+              "Include platforms: Facebook, Instagram, Twitter, LinkedIn, TikTok, etc.",
+              "Include all usernames/handles",
+              "Include accounts you've deleted",
+              "Required for DS-260 form"
+            ]
+          }
+        }
+      },
+      "social-media-screenshots": {
+        "name": "Social Media Profile Screenshots",
+        "description": "Screenshots of social media profiles (if requested)"
+      },
+      "utility-bills-pakistan": {
+        "name": "Utility Bills (Pakistan)",
+        "description": "Electricity, gas, water, telephone bills",
+        "wizardSteps": {
+          "step1": {
+            "title": "Collect Utility Bills",
+            "description": "Gather recent utility bills showing your address.",
+            "tips": [
+              "Last 6 months recommended",
+              "Include name on bill",
+              "English translation if in Urdu",
+              "Shows proof of residence"
+            ]
+          }
+        }
+      },
+      "rent-agreement-pakistan": {
+        "name": "Rent Agreement",
+        "description": "Rental lease agreement",
+        "wizardSteps": {
+          "step1": {
+            "title": "Get Rent Agreement",
+            "description": "Ensure you have a valid rental agreement.",
+            "tips": [
+              "Should be notarized",
+              "Include both parties' details",
+              "English translation if in Urdu"
+            ]
+          }
+        }
+      },
+      "property-tax-bills": {
+        "name": "Property Tax Bills",
+        "description": "Property tax payment receipts"
+      },
+      "post-office-box-proof": {
+        "name": "PO Box Address Proof",
+        "description": "PO Box rental receipt or ownership proof"
+      },
+      "cover-letter": {
+        "name": "Cover Letter",
+        "description": "Cover letter explaining the case"
+      },
+      "timeline-document": {
+        "name": "Relationship Timeline",
+        "description": "Detailed timeline of relationship events"
+      },
+      "correspondence-logs": {
+        "name": "Correspondence Logs",
+        "description": "Logs of all official correspondence"
+      },
+      "consular-interview-notes": {
+        "name": "Consular Interview Notes",
+        "description": "Preparation notes for consular interview"
       }
     }
   },
@@ -1737,7 +2420,7 @@
         "desc": "Calculate financial requirements and determine if you meet the sponsorship threshold."
       },
       {
-        "title": "PDF ToolKit",
+        "title": "PDF Tool Kit",
         "desc": "Merge, split, and organize your immigration documents with ease."
       },
       {
@@ -2118,7 +2801,7 @@
         "desc": "Make a compliant passport/visa photo in minutes."
       },
       "pdf-toolkit": {
-        "title": "PDF ToolKit",
+        "title": "PDF Tool Kit",
         "desc": "Merge • compress • convert • edit — all in one toolkit."
       },
       "snap-sign": {
