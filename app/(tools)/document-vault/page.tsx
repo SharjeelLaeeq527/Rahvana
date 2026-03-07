@@ -181,11 +181,16 @@ export default function DocumentVaultPage() {
   }, [initialized, config]);
 
   useEffect(() => {
-    // Refresh document statuses and notifications on mount and periodically
+    // Initial data refresh on mount/config change
     if (config) {
       refreshDocumentStatuses();
       refreshNotifications(t);
+    }
+  }, [config, t, refreshDocumentStatuses, refreshNotifications]);
 
+  useEffect(() => {
+    // Periodic refresh (stable interval)
+    if (config) {
       const interval = setInterval(() => {
         refreshDocumentStatuses();
         refreshNotifications(t);
@@ -193,8 +198,7 @@ export default function DocumentVaultPage() {
 
       return () => clearInterval(interval);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [config, t, refreshNotifications, refreshDocumentStatuses]);
+  }, [config, t, refreshDocumentStatuses, refreshNotifications]);
 
   // Categories for tabs
   const categories = useMemo(() => {
