@@ -11,6 +11,7 @@ import {
   CheckCheck,
 } from "lucide-react";
 import { useDocumentVaultStore } from "@/lib/document-vault/store";
+import { useLanguage } from "@/app/context/LanguageContext";
 import { NotificationMessage } from "@/lib/document-vault/types";
 import { Button } from "@/components/ui/button";
 import {
@@ -63,6 +64,7 @@ export function NotificationBell() {
 }
 
 export function NotificationCenter() {
+  const { t } = useLanguage();
   const notifications = useDocumentVaultStore((state) =>
     state.getNotifications(),
   );
@@ -79,15 +81,18 @@ export function NotificationCenter() {
     <div className="flex flex-col h-full">
       <SheetHeader className="px-1 text-left">
         <div className="flex items-center justify-between gap-2 pr-8">
-          <SheetTitle className="text-xl sm:text-2xl">Notifications</SheetTitle>
+          <SheetTitle className="text-xl sm:text-2xl">
+            {t("documentVaultPage.components.notificationCenter.title")}
+          </SheetTitle>
           {unreadCount > 0 && (
             <Badge variant="secondary" className="shrink-0">
-              {unreadCount} new
+              {unreadCount}{" "}
+              {t("documentVaultPage.components.notificationCenter.new")}
             </Badge>
           )}
         </div>
         <SheetDescription className="text-sm sm:text-base">
-          Stay updated on your document status
+          {t("documentVaultPage.components.notificationCenter.subtitle")}
         </SheetDescription>
       </SheetHeader>
 
@@ -101,7 +106,7 @@ export function NotificationCenter() {
             className="flex-1 sm:flex-none justify-center h-9 text-xs sm:text-sm font-semibold"
           >
             <CheckCheck className="h-4 w-4 mr-1.5 sm:mr-2 shrink-0" />
-            Mark all read
+            {t("documentVaultPage.components.notificationCenter.markAllRead")}
           </Button>
 
           <DropdownMenu>
@@ -112,18 +117,18 @@ export function NotificationCenter() {
                 className="flex-1 sm:flex-none justify-center h-9 text-xs sm:text-sm font-semibold"
               >
                 <Clock className="h-4 w-4 mr-1.5 sm:mr-2 shrink-0" />
-                Snooze all
+                {t("documentVaultPage.components.notificationCenter.snoozeAll")}
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               <DropdownMenuItem onClick={() => snoozeAll(1)}>
-                1 hour
+                {t("documentVaultPage.components.notificationCenter.1hour")}
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => snoozeAll(4)}>
-                4 hours
+                {t("documentVaultPage.components.notificationCenter.4hours")}
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => snoozeAll(24)}>
-                24 hours
+                {t("documentVaultPage.components.notificationCenter.24hours")}
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -137,10 +142,10 @@ export function NotificationCenter() {
               <Bell className="h-8 w-8 text-slate-400 dark:text-slate-500" />
             </div>
             <p className="text-lg font-bold text-slate-900 dark:text-slate-100">
-              No notifications
+              {t("documentVaultPage.components.notificationCenter.emptyTitle")}
             </p>
             <p className="text-sm text-slate-500 max-w-[200px] mt-2 leading-relaxed">
-              You&apos;re all caught up! New alerts will appear here.
+              {t("documentVaultPage.components.notificationCenter.emptyDesc")}
             </p>
           </div>
         ) : (
@@ -171,6 +176,7 @@ function NotificationItem({
   const openUploadModal = useDocumentVaultStore(
     (state) => state.openUploadModal,
   );
+  const { t } = useLanguage();
 
   const getIcon = () => {
     switch (notification.severity) {
@@ -233,7 +239,9 @@ function NotificationItem({
                 onClick={handleClick}
                 className="h-8 text-xs font-bold w-full sm:w-auto"
               >
-                Upload Document
+                {t(
+                  "documentVaultPage.components.notificationCenter.uploadDocument",
+                )}
               </Button>
             )}
 
@@ -245,7 +253,9 @@ function NotificationItem({
                   onClick={() => markAsRead(notification.id)}
                   className="h-8 text-xs font-semibold flex-1 sm:flex-none"
                 >
-                  Mark as read
+                  {t(
+                    "documentVaultPage.components.notificationCenter.markAsRead",
+                  )}
                 </Button>
               )}
 
@@ -257,18 +267,24 @@ function NotificationItem({
                     className="h-8 text-xs font-semibold flex-1 sm:flex-none"
                   >
                     <Clock className="h-3 w-3 mr-1.5 shrink-0" />
-                    Snooze
+                    {t(
+                      "documentVaultPage.components.notificationCenter.snooze",
+                    )}
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
                   <DropdownMenuItem onClick={() => snooze(notification.id, 1)}>
-                    1 hour
+                    {t("documentVaultPage.components.notificationCenter.1hour")}
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => snooze(notification.id, 4)}>
-                    4 hours
+                    {t(
+                      "documentVaultPage.components.notificationCenter.4hours",
+                    )}
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => snooze(notification.id, 24)}>
-                    24 hours
+                    {t(
+                      "documentVaultPage.components.notificationCenter.24hours",
+                    )}
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>

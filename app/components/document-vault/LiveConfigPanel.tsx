@@ -1,40 +1,46 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import { useDocumentVaultStore } from '@/lib/document-vault/store';
-import { VisaCategory, ScenarioFlags } from '@/lib/document-vault/types';
-import { getVisaCategoryDisplayName } from '@/lib/document-vault/personalization-engine';
-import { Card } from '@/components/ui/card';
-import { Label } from '@/components/ui/label';
-import { Input } from '@/components/ui/input';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { ChevronDown, ChevronUp, Settings, Save } from 'lucide-react';
-import { toast } from 'sonner';
+import { useState, useEffect } from "react";
+import { useDocumentVaultStore } from "@/lib/document-vault/store";
+import { useLanguage } from "@/app/context/LanguageContext";
+import { VisaCategory, ScenarioFlags } from "@/lib/document-vault/types";
+import { Card } from "@/components/ui/card";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { ChevronDown, ChevronUp, Settings, Save } from "lucide-react";
+import { toast } from "sonner";
 
 const VISA_CATEGORIES: VisaCategory[] = [
-  'IR-1',
-  'CR-1',
-  'IR-2',
-  'CR-2',
-  'IR-5',
-  'F1',
-  'F2A',
-  'F2B',
-  'F3',
-  'F4',
+  "IR-1",
+  "CR-1",
+  "IR-2",
+  "CR-2",
+  "IR-5",
+  "F1",
+  "F2A",
+  "F2B",
+  "F3",
+  "F4",
 ];
 
 export function LiveConfigPanel() {
-  const { config, setConfig, updateScenarioFlags, setVisaCategory } = useDocumentVaultStore();
+  const { config, setConfig, updateScenarioFlags, setVisaCategory } =
+    useDocumentVaultStore();
+  const { t } = useLanguage();
   const [isExpanded, setIsExpanded] = useState(true);
-  const [localCategory, setLocalCategory] = useState<VisaCategory>(config?.visaCategory || 'IR-1');
-  const [localFlags, setLocalFlags] = useState<ScenarioFlags>(config?.scenarioFlags || {});
-  const [caseId, setCaseId] = useState('');
-  const [petitionerName, setPetitionerName] = useState('');
-  const [beneficiaryName, setBeneficiaryName] = useState('');
-  const [jointSponsorName, setJointSponsorName] = useState('');
+  const [localCategory, setLocalCategory] = useState<VisaCategory>(
+    config?.visaCategory || "IR-1",
+  );
+  const [localFlags, setLocalFlags] = useState<ScenarioFlags>(
+    config?.scenarioFlags || {},
+  );
+  const [caseId, setCaseId] = useState("");
+  const [petitionerName, setPetitionerName] = useState("");
+  const [beneficiaryName, setBeneficiaryName] = useState("");
+  const [jointSponsorName, setJointSponsorName] = useState("");
   const [isSaving, setIsSaving] = useState(false);
 
   // Update only category and flags from config, keep inputs empty
@@ -63,16 +69,19 @@ export function LiveConfigPanel() {
     if (config) {
       // Validate required fields
       if (!caseId.trim() || !petitionerName.trim() || !beneficiaryName.trim()) {
-        toast.error('❌ Please fill all required fields (Case ID, Petitioner, Beneficiary)', {
-          duration: 3000,
-        });
+        toast.error(
+          t("documentVaultPage.components.liveConfigPanel.requiredFieldsError"),
+          {
+            duration: 3000,
+          },
+        );
         return;
       }
 
       setIsSaving(true);
 
       // Simulate save delay for better UX
-      await new Promise(resolve => setTimeout(resolve, 500));
+      await new Promise((resolve) => setTimeout(resolve, 500));
 
       setConfig({
         ...config,
@@ -83,31 +92,40 @@ export function LiveConfigPanel() {
       });
 
       // Show success with preview
-      const normalizedCaseId = caseId.trim().replace(/[^a-zA-Z0-9]/g, '').toUpperCase();
-      const normalizedName = petitionerName.trim()
-        .normalize('NFD')
-        .replace(/[\u0300-\u036f]/g, '')
-        .replace(/[^a-zA-Z0-9\s]/g, '')
+      const normalizedCaseId = caseId
         .trim()
-        .replace(/\s+/g, '_')
+        .replace(/[^a-zA-Z0-9]/g, "")
+        .toUpperCase();
+      const normalizedName = petitionerName
+        .trim()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .replace(/[^a-zA-Z0-9\s]/g, "")
+        .trim()
+        .replace(/\s+/g, "_")
         .toUpperCase()
         .substring(0, 30);
 
       toast.success(
         <div className="space-y-1">
-          <p className="font-bold text-sm">✅ Case Information Saved Successfully!</p>
-          <p className="text-xs opacity-90">All future uploads will use USCIS naming:</p>
+          <p className="font-bold text-sm">
+            {t("documentVaultPage.components.liveConfigPanel.saveSuccess")}
+          </p>
+          <p className="text-xs opacity-90">
+            {t("documentVaultPage.components.liveConfigPanel.saveSuccessDesc")}
+          </p>
           <code className="text-xs block bg-green-800 bg-opacity-20 p-1 rounded mt-1">
-            {normalizedCaseId}_PETITIONER_{normalizedName}_PASSPORT_2024-12-24_v1.pdf
+            {normalizedCaseId}_PETITIONER_{normalizedName}
+            _PASSPORT_2024-12-24_v1.pdf
           </code>
         </div>,
         {
           duration: 6000,
           style: {
-            background: '#10b981',
-            color: 'white',
+            background: "#10b981",
+            color: "white",
           },
-        }
+        },
       );
 
       setIsSaving(false);
@@ -126,9 +144,15 @@ export function LiveConfigPanel() {
         >
           <div className="flex items-center gap-2">
             <Settings className="w-5 h-5 text-brand" />
-            <h3 className="font-semibold text-lg">Configuration</h3>
+            <h3 className="font-semibold text-lg">
+              {t("documentVaultPage.components.liveConfigPanel.configuration")}
+            </h3>
           </div>
-          {isExpanded ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
+          {isExpanded ? (
+            <ChevronUp className="w-5 h-5" />
+          ) : (
+            <ChevronDown className="w-5 h-5" />
+          )}
         </button>
       </Card>
 
@@ -137,9 +161,13 @@ export function LiveConfigPanel() {
           {/* Visa Category Selection */}
           <Card className="p-4">
             <div className="mb-3">
-              <Label className="text-sm font-semibold">Visa Category</Label>
+              <Label className="text-sm font-semibold">
+                {t("documentVaultPage.components.liveConfigPanel.visaCategory")}
+              </Label>
               <p className="text-xs text-muted-foreground mt-1">
-                Select your visa type
+                {t(
+                  "documentVaultPage.components.liveConfigPanel.selectVisaType",
+                )}
               </p>
             </div>
             <div className="space-y-2">
@@ -148,8 +176,8 @@ export function LiveConfigPanel() {
                   key={category}
                   className={`flex items-center p-3 border rounded-lg cursor-pointer transition-all ${
                     localCategory === category
-                      ? 'border-brand bg-brand/10 ring-2 ring-brand/20'
-                      : 'border-border hover:border-brand/50 hover:bg-brand/5'
+                      ? "border-brand bg-brand/10 ring-2 ring-brand/20"
+                      : "border-border hover:border-brand/50 hover:bg-brand/5"
                   }`}
                 >
                   <input
@@ -163,14 +191,24 @@ export function LiveConfigPanel() {
                     className="mr-3 accent-brand"
                   />
                   <div className="flex-1">
-                    <div className="font-medium text-sm">{category}</div>
+                    <div className="font-medium text-sm">
+                      {
+                        t(`documentVaultPage.visaCategories.${category}`).split(
+                          ": ",
+                        )[0]
+                      }
+                    </div>
                     <div className="text-xs text-muted-foreground">
-                      {getVisaCategoryDisplayName(category).split(': ')[1]}
+                      {
+                        t(`documentVaultPage.visaCategories.${category}`).split(
+                          ": ",
+                        )[1]
+                      }
                     </div>
                   </div>
                   {localCategory === category && (
                     <Badge variant="default" className="text-xs">
-                      Active
+                      {t("documentVaultPage.components.liveConfigPanel.active")}
                     </Badge>
                   )}
                 </label>
@@ -181,30 +219,47 @@ export function LiveConfigPanel() {
           {/* Additional Information */}
           <Card className="p-4">
             <div className="mb-3">
-              <Label className="text-sm font-semibold">Additional Information</Label>
+              <Label className="text-sm font-semibold">
+                {t(
+                  "documentVaultPage.components.liveConfigPanel.additionalInfo",
+                )}
+              </Label>
               <p className="text-xs text-muted-foreground mt-1">
-                Select what applies to your case
+                {t(
+                  "documentVaultPage.components.liveConfigPanel.selectApplies",
+                )}
               </p>
             </div>
 
             <div className="space-y-4">
               {/* Marriage/Relationship flags */}
-              {(localCategory === 'IR-1' || localCategory === 'CR-1') && (
+              {(localCategory === "IR-1" || localCategory === "CR-1") && (
                 <div className="space-y-3">
                   <h4 className="font-medium text-sm text-muted-foreground">
-                    Marriage History
+                    {t(
+                      "documentVaultPage.components.configWizard.marriageHistory",
+                    )}
                   </h4>
                   <label className="flex items-start space-x-3 cursor-pointer">
                     <Checkbox
                       checked={localFlags.prior_marriage_petitioner || false}
                       onCheckedChange={(checked) =>
-                        handleFlagChange('prior_marriage_petitioner', checked as boolean)
+                        handleFlagChange(
+                          "prior_marriage_petitioner",
+                          checked as boolean,
+                        )
                       }
                     />
                     <div className="flex-1">
-                      <span className="text-sm font-medium">Prior Marriage (Petitioner)</span>
+                      <span className="text-sm font-medium">
+                        {t(
+                          "documentVaultPage.components.configWizard.petitionerMarried",
+                        )}
+                      </span>
                       <p className="text-xs text-muted-foreground">
-                        Petitioner was previously married
+                        {t(
+                          "documentVaultPage.components.configWizard.petitionerMarriedDesc",
+                        )}
                       </p>
                     </div>
                   </label>
@@ -212,13 +267,22 @@ export function LiveConfigPanel() {
                     <Checkbox
                       checked={localFlags.prior_marriage_beneficiary || false}
                       onCheckedChange={(checked) =>
-                        handleFlagChange('prior_marriage_beneficiary', checked as boolean)
+                        handleFlagChange(
+                          "prior_marriage_beneficiary",
+                          checked as boolean,
+                        )
                       }
                     />
                     <div className="flex-1">
-                      <span className="text-sm font-medium">Prior Marriage (Beneficiary)</span>
+                      <span className="text-sm font-medium">
+                        {t(
+                          "documentVaultPage.components.configWizard.beneficiaryMarried",
+                        )}
+                      </span>
                       <p className="text-xs text-muted-foreground">
-                        Beneficiary was previously married
+                        {t(
+                          "documentVaultPage.components.configWizard.beneficiaryMarriedDesc",
+                        )}
                       </p>
                     </div>
                   </label>
@@ -227,18 +291,26 @@ export function LiveConfigPanel() {
 
               {/* Children */}
               <div className="space-y-3">
-                <h4 className="font-medium text-sm text-muted-foreground">Children</h4>
+                <h4 className="font-medium text-sm text-muted-foreground">
+                  {t("documentVaultPage.components.configWizard.childInfo")}
+                </h4>
                 <label className="flex items-start space-x-3 cursor-pointer">
                   <Checkbox
                     checked={localFlags.child_adopted || false}
                     onCheckedChange={(checked) =>
-                      handleFlagChange('child_adopted', checked as boolean)
+                      handleFlagChange("child_adopted", checked as boolean)
                     }
                   />
                   <div className="flex-1">
-                    <span className="text-sm font-medium">Adopted Child</span>
+                    <span className="text-sm font-medium">
+                      {t(
+                        "documentVaultPage.components.configWizard.adoptedChild",
+                      )}
+                    </span>
                     <p className="text-xs text-muted-foreground">
-                      Child is adopted
+                      {t(
+                        "documentVaultPage.components.configWizard.adoptedChildDesc",
+                      )}
                     </p>
                   </div>
                 </label>
@@ -246,13 +318,17 @@ export function LiveConfigPanel() {
                   <Checkbox
                     checked={localFlags.child_stepchild || false}
                     onCheckedChange={(checked) =>
-                      handleFlagChange('child_stepchild', checked as boolean)
+                      handleFlagChange("child_stepchild", checked as boolean)
                     }
                   />
                   <div className="flex-1">
-                    <span className="text-sm font-medium">Stepchild</span>
+                    <span className="text-sm font-medium">
+                      {t("documentVaultPage.components.configWizard.stepchild")}
+                    </span>
                     <p className="text-xs text-muted-foreground">
-                      Child is a stepchild
+                      {t(
+                        "documentVaultPage.components.configWizard.stepchildDesc",
+                      )}
                     </p>
                   </div>
                 </label>
@@ -260,18 +336,28 @@ export function LiveConfigPanel() {
 
               {/* Financial */}
               <div className="space-y-3">
-                <h4 className="font-medium text-sm text-muted-foreground">Financial</h4>
+                <h4 className="font-medium text-sm text-muted-foreground">
+                  {t(
+                    "documentVaultPage.components.configWizard.financialSupport",
+                  )}
+                </h4>
                 <label className="flex items-start space-x-3 cursor-pointer">
                   <Checkbox
                     checked={localFlags.joint_sponsor_used || false}
                     onCheckedChange={(checked) =>
-                      handleFlagChange('joint_sponsor_used', checked as boolean)
+                      handleFlagChange("joint_sponsor_used", checked as boolean)
                     }
                   />
                   <div className="flex-1">
-                    <span className="text-sm font-medium">Joint Sponsor Used</span>
+                    <span className="text-sm font-medium">
+                      {t(
+                        "documentVaultPage.components.configWizard.jointSponsor",
+                      )}
+                    </span>
                     <p className="text-xs text-muted-foreground">
-                      Using a joint sponsor for financial support
+                      {t(
+                        "documentVaultPage.components.configWizard.jointSponsorDesc",
+                      )}
                     </p>
                   </div>
                 </label>
@@ -279,13 +365,22 @@ export function LiveConfigPanel() {
                   <Checkbox
                     checked={localFlags.household_member_used || false}
                     onCheckedChange={(checked) =>
-                      handleFlagChange('household_member_used', checked as boolean)
+                      handleFlagChange(
+                        "household_member_used",
+                        checked as boolean,
+                      )
                     }
                   />
                   <div className="flex-1">
-                    <span className="text-sm font-medium">Household Member Used</span>
+                    <span className="text-sm font-medium">
+                      {t(
+                        "documentVaultPage.components.configWizard.householdMember",
+                      )}
+                    </span>
                     <p className="text-xs text-muted-foreground">
-                      Including household member income
+                      {t(
+                        "documentVaultPage.components.configWizard.householdMemberDesc",
+                      )}
                     </p>
                   </div>
                 </label>
@@ -293,32 +388,51 @@ export function LiveConfigPanel() {
 
               {/* Background */}
               <div className="space-y-3">
-                <h4 className="font-medium text-sm text-muted-foreground">Background</h4>
+                <h4 className="font-medium text-sm text-muted-foreground">
+                  {t("documentVaultPage.components.configWizard.background")}
+                </h4>
                 <label className="flex items-start space-x-3 cursor-pointer">
                   <Checkbox
                     checked={localFlags.criminal_history || false}
                     onCheckedChange={(checked) =>
-                      handleFlagChange('criminal_history', checked as boolean)
+                      handleFlagChange("criminal_history", checked as boolean)
                     }
                   />
                   <div className="flex-1">
-                    <span className="text-sm font-medium">Criminal History</span>
+                    <span className="text-sm font-medium">
+                      {t(
+                        "documentVaultPage.components.configWizard.criminalHistory",
+                      )}
+                    </span>
                     <p className="text-xs text-muted-foreground">
-                      Beneficiary has criminal history
+                      {t(
+                        "documentVaultPage.components.configWizard.criminalHistoryDesc",
+                      )}
                     </p>
                   </div>
                 </label>
                 <label className="flex items-start space-x-3 cursor-pointer">
                   <Checkbox
-                    checked={localFlags.previous_immigration_violations || false}
+                    checked={
+                      localFlags.previous_immigration_violations || false
+                    }
                     onCheckedChange={(checked) =>
-                      handleFlagChange('previous_immigration_violations', checked as boolean)
+                      handleFlagChange(
+                        "previous_immigration_violations",
+                        checked as boolean,
+                      )
                     }
                   />
                   <div className="flex-1">
-                    <span className="text-sm font-medium">Previous Immigration Violations</span>
+                    <span className="text-sm font-medium">
+                      {t(
+                        "documentVaultPage.components.configWizard.previousViolations",
+                      )}
+                    </span>
                     <p className="text-xs text-muted-foreground">
-                      Previous visa overstay or violations
+                      {t(
+                        "documentVaultPage.components.configWizard.previousViolationsDesc",
+                      )}
                     </p>
                   </div>
                 </label>
@@ -329,15 +443,20 @@ export function LiveConfigPanel() {
           {/* Case Information - For USCIS Naming Convention */}
           <Card className="p-4">
             <div className="mb-3">
-              <Label className="text-sm font-semibold">Case Information</Label>
+              <Label className="text-sm font-semibold">
+                {t("documentVaultPage.components.liveConfigPanel.caseInfo")}
+              </Label>
               <p className="text-xs text-muted-foreground mt-1">
-                Required for USCIS/NVC compliant file naming
+                {t(
+                  "documentVaultPage.components.liveConfigPanel.caseInfoRequiredDesc",
+                )}
               </p>
             </div>
             <div className="space-y-3">
               <div>
                 <Label htmlFor="caseId" className="text-xs font-medium">
-                  Case/Receipt Number <span className="text-red-500">*</span>
+                  {t("documentVaultPage.components.liveConfigPanel.caseIdReq")}{" "}
+                  <span className="text-red-500">*</span>
                 </Label>
                 <Input
                   id="caseId"
@@ -348,13 +467,16 @@ export function LiveConfigPanel() {
                   className="text-sm"
                 />
                 <p className="text-xs text-muted-foreground mt-1">
-                  USCIS Receipt or NVC Case Number
+                  {t("documentVaultPage.components.configWizard.caseIdDesc")}
                 </p>
               </div>
 
               <div>
                 <Label htmlFor="petitionerName" className="text-xs font-medium">
-                  Petitioner Name <span className="text-red-500">*</span>
+                  {t(
+                    "documentVaultPage.components.liveConfigPanel.petitionerNameReq",
+                  )}{" "}
+                  <span className="text-red-500">*</span>
                 </Label>
                 <Input
                   id="petitionerName"
@@ -365,13 +487,21 @@ export function LiveConfigPanel() {
                   className="text-sm"
                 />
                 <p className="text-xs text-muted-foreground mt-1">
-                  Full legal name → normalized as JOHN_MICHAEL_DOE
+                  {t(
+                    "documentVaultPage.components.liveConfigPanel.petitionerNameDesc",
+                  )}
                 </p>
               </div>
 
               <div>
-                <Label htmlFor="beneficiaryName" className="text-xs font-medium">
-                  Beneficiary Name <span className="text-red-500">*</span>
+                <Label
+                  htmlFor="beneficiaryName"
+                  className="text-xs font-medium"
+                >
+                  {t(
+                    "documentVaultPage.components.liveConfigPanel.beneficiaryNameReq",
+                  )}{" "}
+                  <span className="text-red-500">*</span>
                 </Label>
                 <Input
                   id="beneficiaryName"
@@ -382,14 +512,21 @@ export function LiveConfigPanel() {
                   className="text-sm"
                 />
                 <p className="text-xs text-muted-foreground mt-1">
-                  Full legal name → normalized as JANE_ELIZABETH_SMITH
+                  {t(
+                    "documentVaultPage.components.liveConfigPanel.beneficiaryNameDesc",
+                  )}
                 </p>
               </div>
 
               {localFlags.joint_sponsor_used && (
                 <div>
-                  <Label htmlFor="jointSponsorName" className="text-xs font-medium">
-                    Joint Sponsor Name
+                  <Label
+                    htmlFor="jointSponsorName"
+                    className="text-xs font-medium"
+                  >
+                    {t(
+                      "documentVaultPage.components.liveConfigPanel.jointSponsorNameReq",
+                    )}
                   </Label>
                   <Input
                     id="jointSponsorName"
@@ -400,7 +537,9 @@ export function LiveConfigPanel() {
                     className="text-sm"
                   />
                   <p className="text-xs text-muted-foreground mt-1">
-                    Full legal name (if using joint sponsor)
+                    {t(
+                      "documentVaultPage.components.liveConfigPanel.jointSponsorNameDesc",
+                    )}
                   </p>
                 </div>
               )}
@@ -409,39 +548,48 @@ export function LiveConfigPanel() {
                 size="sm"
                 onClick={handleSaveCaseInfo}
                 className="w-full bg-green-600 hover:bg-green-700"
-                disabled={!caseId || !petitionerName || !beneficiaryName || isSaving}
+                disabled={
+                  !caseId || !petitionerName || !beneficiaryName || isSaving
+                }
               >
                 {isSaving ? (
                   <>
                     <div className="w-4 h-4 mr-2 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                    Saving...
+                    {t("documentVaultPage.components.liveConfigPanel.saving")}
                   </>
                 ) : (
                   <>
                     <Save className="w-4 h-4 mr-2" />
-                    {(!caseId || !petitionerName || !beneficiaryName)
-                      ? 'Fill Required Fields Above'
-                      : 'Save Case Information'}
+                    {!caseId || !petitionerName || !beneficiaryName
+                      ? t(
+                          "documentVaultPage.components.liveConfigPanel.fillRequiredAbove",
+                        )
+                      : t(
+                          "documentVaultPage.components.liveConfigPanel.saveCaseInfo",
+                        )}
                   </>
                 )}
               </Button>
 
-              {(caseId && petitionerName && beneficiaryName) && (
+              {caseId && petitionerName && beneficiaryName && (
                 <div className="bg-blue-50 dark:bg-blue-950 border border-blue-200 dark:border-blue-800 rounded p-2">
                   <p className="text-xs text-blue-900 dark:text-blue-100 font-medium mb-1">
-                    📋 Naming Preview:
+                    {t(
+                      "documentVaultPage.components.liveConfigPanel.namingPreview",
+                    )}
                   </p>
                   <code className="text-xs text-blue-800 dark:text-blue-200 block break-all">
-                    {caseId.replace(/[^a-zA-Z0-9]/g, '').toUpperCase()}_{'{ROLE}'}_{
-                      petitionerName
-                        .normalize('NFD')
-                        .replace(/[\u0300-\u036f]/g, '')
-                        .replace(/[^a-zA-Z0-9\s]/g, '')
-                        .trim()
-                        .replace(/\s+/g, '_')
-                        .toUpperCase()
-                        .substring(0, 30)
-                    }_{'{DOC_KEY}'}_2024-12-24_v1.pdf
+                    {caseId.replace(/[^a-zA-Z0-9]/g, "").toUpperCase()}_
+                    {"{ROLE}"}_
+                    {petitionerName
+                      .normalize("NFD")
+                      .replace(/[\u0300-\u036f]/g, "")
+                      .replace(/[^a-zA-Z0-9\s]/g, "")
+                      .trim()
+                      .replace(/\s+/g, "_")
+                      .toUpperCase()
+                      .substring(0, 30)}
+                    _{"{DOC_KEY}"}_2024-12-24_v1.pdf
                   </code>
                 </div>
               )}
@@ -449,14 +597,18 @@ export function LiveConfigPanel() {
               {(!caseId || !petitionerName || !beneficiaryName) && (
                 <div className="bg-red-50 dark:bg-red-900/50 border border-red-200 dark:border-red-800 rounded p-2">
                   <p className="text-xs text-red-800 dark:text-red-200">
-                    ⚠️ <strong>Required for USCIS naming!</strong><br/>
-                    Fill all fields above to enable proper file naming.
+                    {t(
+                      "documentVaultPage.components.liveConfigPanel.requiredWarning",
+                    )}
+                    <br />
+                    {t(
+                      "documentVaultPage.components.liveConfigPanel.requiredWarningDesc",
+                    )}
                   </p>
                 </div>
               )}
             </div>
           </Card>
-
         </>
       )}
     </div>

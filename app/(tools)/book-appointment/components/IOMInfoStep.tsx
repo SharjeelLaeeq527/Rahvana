@@ -8,6 +8,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useLanguage } from "@/app/context/LanguageContext";
 
 interface IOMInfoStepProps {
   formData: {
@@ -46,49 +47,56 @@ const IOMInfoStep = ({
   onNext,
   onBack,
 }: IOMInfoStepProps) => {
+  const { t } = useLanguage();
+
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-2 mb-6">
         <div className="bg-blue-600 text-white px-3 py-1 rounded font-semibold text-sm sm:text-base">
-          IOM
+          {t("bookAppointment.iomInfoStep.badge")}
         </div>
         <h2 className="text-xl sm:text-2xl font-bold text-slate-900">
-          IOM Islamabad Required Information
+          {t("bookAppointment.iomInfoStep.title")}
         </h2>
       </div>
 
       <div className="bg-linear-to-br from-blue-50 to-blue-100 border border-blue-200 rounded-xl p-4 sm:p-8 space-y-6">
         <p className="text-base sm:text-lg text-slate-700">
-          Please provide the following mandatory information for your IOM
-          Islamabad appointment:
+          {t("bookAppointment.iomInfoStep.subtitle")}
         </p>
 
         <div className="space-y-6">
           <div className="space-y-2">
-            <Label htmlFor="fullName">Full Name as printed on passport *</Label>
+            <Label htmlFor="fullName">
+              {t("bookAppointment.iomInfoStep.fullName")}
+            </Label>
             <Input
               id="fullName"
               name="fullName"
               value={formData.fullName || ""}
               onChange={onChange}
-              placeholder="Enter your full name as printed on passport"
+              placeholder={t("bookAppointment.iomInfoStep.fullNamePlaceholder")}
             />
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="passportNumber">Passport Number *</Label>
+            <Label htmlFor="passportNumber">
+              {t("bookAppointment.iomInfoStep.passportNumber")}
+            </Label>
             <Input
               id="passportNumber"
               name="passportNumber"
               value={formData.passportNumber || ""}
               onChange={onChange}
-              placeholder="Enter your passport number"
+              placeholder={t(
+                "bookAppointment.iomInfoStep.passportNumberPlaceholder",
+              )}
             />
           </div>
 
           <div className="space-y-2">
             <Label htmlFor="dateOfBirth">
-              Date of Birth as printed on passport *
+              {t("bookAppointment.iomInfoStep.dateOfBirth")}
             </Label>
             <Input
               id="dateOfBirth"
@@ -100,30 +108,48 @@ const IOMInfoStep = ({
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="visaType">Visa Type you are applying for *</Label>
+            <Label htmlFor="visaType">
+              {t("bookAppointment.iomInfoStep.visaType")}
+            </Label>
             <Select
               value={formData.visaType || ""}
               onValueChange={onSelectChange("visaType")}
             >
               <SelectTrigger id="visaType">
-                <SelectValue placeholder="Select visa type" />
+                <SelectValue
+                  placeholder={t("bookAppointment.iomInfoStep.selectVisaType")}
+                />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="Immigrant Visa">Immigrant Visa</SelectItem>
-                <SelectItem value="Non-immigrant Visa">
-                  Non-immigrant Visa
+                <SelectItem value="Immigrant Visa">
+                  {t("bookAppointment.iomInfoStep.visaTypes.immigrant")}
                 </SelectItem>
-                <SelectItem value="K-1 Fiance Visa">K-1 Fiancé Visa</SelectItem>
-                <SelectItem value="Student Visa">Student Visa</SelectItem>
-                <SelectItem value="Work Visa">Work Visa</SelectItem>
-                <SelectItem value="Tourist Visa">Tourist Visa</SelectItem>
-                <SelectItem value="Other">Other</SelectItem>
+                <SelectItem value="Non-immigrant Visa">
+                  {t("bookAppointment.iomInfoStep.visaTypes.nonImmigrant")}
+                </SelectItem>
+                <SelectItem value="K-1 Fiance Visa">
+                  {t("bookAppointment.iomInfoStep.visaTypes.k1Fiance")}
+                </SelectItem>
+                <SelectItem value="Student Visa">
+                  {t("bookAppointment.iomInfoStep.visaTypes.student")}
+                </SelectItem>
+                <SelectItem value="Work Visa">
+                  {t("bookAppointment.iomInfoStep.visaTypes.work")}
+                </SelectItem>
+                <SelectItem value="Tourist Visa">
+                  {t("bookAppointment.iomInfoStep.visaTypes.tourist")}
+                </SelectItem>
+                <SelectItem value="Other">
+                  {t("bookAppointment.iomInfoStep.visaTypes.other")}
+                </SelectItem>
               </SelectContent>
             </Select>
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="contactNumber">Local Contact Number *</Label>
+            <Label htmlFor="contactNumber">
+              {t("bookAppointment.iomInfoStep.contactNumber")}
+            </Label>
             <div className="flex gap-2">
               <div className="flex items-center justify-center w-24 px-3 py-2 border border-gray-300 rounded-md bg-gray-50 text-sm font-medium">
                 🇵🇰 92
@@ -133,7 +159,9 @@ const IOMInfoStep = ({
                 name="contactNumber"
                 value={formData.contactNumber || ""}
                 onChange={onChange}
-                placeholder="3001234567"
+                placeholder={t(
+                  "bookAppointment.iomInfoStep.contactNumberPlaceholder",
+                )}
                 type="tel"
                 className="flex-1"
               />
@@ -141,52 +169,74 @@ const IOMInfoStep = ({
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="email">Email Address *</Label>
+            <Label htmlFor="email">
+              {t("bookAppointment.iomInfoStep.email")}
+            </Label>
             <Input
               id="email"
               name="email"
               type="email"
               value={formData.email || ""}
               onChange={onChange}
-              placeholder="your.email@example.com"
+              placeholder={t("bookAppointment.iomInfoStep.emailPlaceholder")}
             />
           </div>
 
           <div className="space-y-2">
             <Label htmlFor="preferredLocation">
-              Preferred IOM Health Assessment Center Location *
+              {t("bookAppointment.iomInfoStep.preferredLocation")}
             </Label>
             <Select
               value={formData.preferredLocation || ""}
               onValueChange={onSelectChange("preferredLocation")}
             >
               <SelectTrigger id="preferredLocation">
-                <SelectValue placeholder="Select location" />
+                <SelectValue
+                  placeholder={t("bookAppointment.iomInfoStep.selectLocation")}
+                />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="islamabad">Islamabad</SelectItem>
+                <SelectItem value="islamabad">
+                  {t("bookAppointment.iomInfoStep.islamabad")}
+                </SelectItem>
               </SelectContent>
             </Select>
           </div>
 
           <div className="space-y-2">
             <Label htmlFor="destinationCountry">
-              Destination Country for Health Assessment *
+              {t("bookAppointment.iomInfoStep.destinationCountry")}
             </Label>
             <Select
               value={formData.destinationCountry || ""}
               onValueChange={onSelectChange("destinationCountry")}
             >
               <SelectTrigger id="destinationCountry">
-                <SelectValue placeholder="Select destination country" />
+                <SelectValue
+                  placeholder={t(
+                    "bookAppointment.iomInfoStep.selectDestinationCountry",
+                  )}
+                />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="United States">United States</SelectItem>
-                <SelectItem value="Canada">Canada</SelectItem>
-                <SelectItem value="Australia">Australia</SelectItem>
-                <SelectItem value="United Kingdom">United Kingdom</SelectItem>
-                <SelectItem value="New Zealand">New Zealand</SelectItem>
-                <SelectItem value="Other">Other</SelectItem>
+                <SelectItem value="United States">
+                  {t("bookAppointment.iomInfoStep.countries.us")}
+                </SelectItem>
+                <SelectItem value="Canada">
+                  {t("bookAppointment.iomInfoStep.countries.canada")}
+                </SelectItem>
+                <SelectItem value="Australia">
+                  {t("bookAppointment.iomInfoStep.countries.australia")}
+                </SelectItem>
+                <SelectItem value="United Kingdom">
+                  {t("bookAppointment.iomInfoStep.countries.uk")}
+                </SelectItem>
+                <SelectItem value="New Zealand">
+                  {t("bookAppointment.iomInfoStep.countries.newZealand")}
+                </SelectItem>
+                <SelectItem value="Other">
+                  {t("bookAppointment.iomInfoStep.countries.other")}
+                </SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -204,13 +254,13 @@ const IOMInfoStep = ({
             variant="outline"
             className="bg-teal-600 hover:bg-teal-700 text-white"
           >
-            Back
+            {t("bookAppointment.iomInfoStep.backBtn")}
           </Button>
           <Button
             onClick={onNext}
             className="bg-teal-600 hover:bg-teal-700 text-white"
           >
-            Submit Information
+            {t("bookAppointment.iomInfoStep.submitBtn")}
           </Button>
         </div>
       </div>
