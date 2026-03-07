@@ -3,7 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 
 export async function GET(
   req: Request,
-  context: { params: Promise<{ portalType: string }> }
+  context: { params: Promise<{ portalType: string }> },
 ) {
   try {
     const supabase = await createClient();
@@ -18,15 +18,19 @@ export async function GET(
 
     const { data, error } = await supabase
       .from("portal_wallet_credentials")
-      .select(`
+      .select(
+        `
         id,
         portal_type,
         username,
+        nvc_case_number,
+        nvc_invoice_id,
         portal_wallet_security_questions (
           id,
           question
         )
-      `)
+      `,
+      )
       .eq("user_id", user.id)
       .eq("portal_type", (await context.params).portalType)
       .single();
@@ -34,19 +38,21 @@ export async function GET(
     if (error) {
       return NextResponse.json(
         { error: "Credential not found" },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
     const response = {
       ...data,
-      password: "••••••••",
+      password: data.portal_type === "NVC" ? null : "••••••••",
       security_questions:
-        data.portal_wallet_security_questions?.map((q: any) => ({
-          id: q.id,
-          question: q.question,
-          answer: "••••••",
-        })) || [],
+        data.portal_type === "NVC"
+          ? []
+          : data.portal_wallet_security_questions?.map((q: any) => ({
+              id: q.id,
+              question: q.question,
+              answer: "••••••",
+            })) || [],
     };
 
     return NextResponse.json(response);
@@ -54,7 +60,7 @@ export async function GET(
     console.error("Error fetching portal:", error);
     return NextResponse.json(
       { error: "Internal server error" },
-      { status: 500 }
+      { status: 500 },
     );
   }
-} 
+}

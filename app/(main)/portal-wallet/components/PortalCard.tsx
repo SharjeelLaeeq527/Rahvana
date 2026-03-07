@@ -56,7 +56,7 @@ const PortalCard: React.FC<PortalCardProps> = ({
       {!hasCredentials ? (
         <button
           onClick={onAdd}
-          className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-gradient-to-r from-[#0d7377] to-[#14a0a6] text-white text-[13px] font-semibold hover:from-[#0a5a5d] hover:to-[#0d7377] transition-all duration-200 shadow-sm hover:shadow-md"
+          className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-primary text-white text-[13px] font-semibold hover:from-[#0a5a5d] hover:to-[#0d7377] transition-all duration-200 shadow-sm hover:shadow-md"
         >
           <Plus size={15} />
           Add Credentials

@@ -13,6 +13,12 @@ import securityQuestionsData from "../../../../data/portal-wallet-security-quest
 
 type PortalType = "USCIS" | "NVC" | "COURIER";
 
+const portalQuestionLimit: Record<PortalType, number> = {
+  USCIS: 5,
+  NVC: 0,
+  COURIER: 3,
+};
+
 interface SecurityQuestionField {
   question: string;
   answer: string;
@@ -29,10 +35,12 @@ interface CredentialFormModalProps {
     securityQuestions: { id?: string; question: string; answer: string }[];
   };
   onSubmit: (data: {
-    portalType: string;
-    username: string;
-    password: string;
-    securityQuestions: { question: string; answer: string }[];
+    portalType: PortalType;
+    username?: string;
+    password?: string;
+    nvcCaseNumber?: string;
+    nvcInvoiceId?: string;
+    securityQuestions?: { question: string; answer: string }[];
   }) => void;
   isSubmitting: boolean;
 }
@@ -52,13 +60,17 @@ const CredentialFormModal: React.FC<CredentialFormModalProps> = ({
   onSubmit,
   isSubmitting,
 }) => {
+  const questionLimit = portalQuestionLimit[portalType];
+
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [nvcCaseNumber, setNvcCaseNumber] = useState("");
+  const [nvcInvoiceId, setNvcInvoiceId] = useState("");
   const [securityQuestions, setSecurityQuestions] = useState<
     SecurityQuestionField[]
   >(
-    Array(5)
+    Array(questionLimit)
       .fill(null)
       .map(() => ({ question: "", answer: "" })),
   );
@@ -74,7 +86,7 @@ const CredentialFormModal: React.FC<CredentialFormModalProps> = ({
         setPassword("");
         const sq = initialData.securityQuestions || [];
         setSecurityQuestions(
-          Array(5)
+          Array(questionLimit)
             .fill(null)
             .map((_, i) => ({
               question: sq[i]?.question || "",
@@ -84,14 +96,16 @@ const CredentialFormModal: React.FC<CredentialFormModalProps> = ({
       } else {
         setUsername("");
         setPassword("");
+        setNvcCaseNumber("");
+        setNvcInvoiceId("");
         setSecurityQuestions(
-          Array(5)
+          Array(questionLimit)
             .fill(null)
             .map(() => ({ question: "", answer: "" })),
         );
       }
     }
-  }, [isOpen, mode, initialData]);
+  }, [isOpen, mode, initialData, questionLimit]);
 
   const handleQuestionChange = (index: number, question: string) => {
     setSecurityQuestions((prev) =>
@@ -115,11 +129,23 @@ const CredentialFormModal: React.FC<CredentialFormModalProps> = ({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (portalType === "NVC") {
+      onSubmit({
+        portalType,
+        nvcCaseNumber,
+        nvcInvoiceId,
+      });
+
+      return;
+    }
+
     const filledQuestions = securityQuestions.filter(
       (sq) => sq.question && sq.answer,
     );
+
     onSubmit({
-      portalType: portalTypeMap[portalType],
+      portalType,
       username,
       password,
       securityQuestions: filledQuestions,
@@ -166,97 +192,141 @@ const CredentialFormModal: React.FC<CredentialFormModalProps> = ({
 
         {/* Form */}
         <form onSubmit={handleSubmit} className="px-6 py-5 space-y-5">
-          {/* Username */}
-          <div>
-            <label className="block text-[12px] font-semibold text-[#0a1128] mb-1.5 uppercase tracking-wide">
-              Username / Email
-            </label>
-            <input
-              type="text"
-              required
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              placeholder="Enter your portal username or email"
-              className="w-full h-11 px-4 rounded-xl border border-[#e0f0f0] bg-[#f8fafa] text-[14px] text-[#0a1128] placeholder:text-[#c0c7ce] focus:outline-none focus:border-[#0d7377] focus:ring-2 focus:ring-[#0d7377]/10 transition-all"
-            />
-          </div>
+          {portalType !== "NVC" && (
+            <>
+              {/* Username */}
+              <div>
+                <label className="block text-[12px] font-semibold text-[#0a1128] mb-1.5 uppercase tracking-wide">
+                  Username / Email
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  placeholder="Enter your portal username or email"
+                  className="w-full h-11 px-4 rounded-xl border border-[#e0f0f0] bg-[#f8fafa] text-[14px] text-[#0a1128] placeholder:text-[#c0c7ce] focus:outline-none focus:border-[#0d7377] focus:ring-2 focus:ring-[#0d7377]/10 transition-all"
+                />
+              </div>
 
-          {/* Password */}
-          <div>
-            <label className="block text-[12px] font-semibold text-[#0a1128] mb-1.5 uppercase tracking-wide">
-              Password
-            </label>
-            <div className="relative">
-              <input
-                type={showPassword ? "text" : "password"}
-                required={mode === "add"}
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder={"Enter your portal password"}
-                className="w-full h-11 px-4 pr-11 rounded-xl border border-[#e0f0f0] bg-[#f8fafa] text-[14px] text-[#0a1128] placeholder:text-[#c0c7ce] focus:outline-none focus:border-[#0d7377] focus:ring-2 focus:ring-[#0d7377]/10 transition-all"
-              />
-              <button
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-[#9ca3af] hover:text-[#0d7377] transition-colors"
-              >
-                {showPassword ? <Eye size={16} /> : <EyeOff size={16} />}
-              </button>
-            </div>
-          </div>
+              {/* Password */}
+              <div>
+                <label className="block text-[12px] font-semibold text-[#0a1128] mb-1.5 uppercase tracking-wide">
+                  Password
+                </label>
+                <div className="relative">
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    required={mode === "add"}
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder={"Enter your portal password"}
+                    className="w-full h-11 px-4 pr-11 rounded-xl border border-[#e0f0f0] bg-[#f8fafa] text-[14px] text-[#0a1128] placeholder:text-[#c0c7ce] focus:outline-none focus:border-[#0d7377] focus:ring-2 focus:ring-[#0d7377]/10 transition-all"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-[#9ca3af] hover:text-[#0d7377] transition-colors"
+                  >
+                    {showPassword ? <Eye size={16} /> : <EyeOff size={16} />}
+                  </button>
+                </div>
+              </div>
+            </>
+          )}
+
+          {portalType === "NVC" && (
+            <>
+              {/* Case Number */}
+              <div>
+                <label className="block text-[12px] font-semibold text-[#0a1128] mb-1.5 uppercase tracking-wide">
+                  NVC Case Number
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={nvcCaseNumber}
+                  onChange={(e) => setNvcCaseNumber(e.target.value)}
+                  placeholder="Enter NVC case number"
+                  className="w-full h-11 px-4 rounded-xl border border-[#e0f0f0] bg-[#f8fafa]"
+                />
+              </div>
+
+              {/* Invoice ID */}
+              <div>
+                <label className="block text-[12px] font-semibold text-[#0a1128] mb-1.5 uppercase tracking-wide">
+                  Invoice ID Number
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={nvcInvoiceId}
+                  onChange={(e) => setNvcInvoiceId(e.target.value)}
+                  placeholder="Enter invoice ID number"
+                  className="w-full h-11 px-4 rounded-xl border border-[#e0f0f0] bg-[#f8fafa]"
+                />
+              </div>
+            </>
+          )}
 
           {/* Divider */}
-          <div className="flex items-center gap-3">
-            <div className="flex-1 h-px bg-[#e0f0f0]" />
-            <span className="text-[11px] font-semibold text-[#9ca3af] uppercase tracking-wider">
-              Security Questions
-            </span>
-            <div className="flex-1 h-px bg-[#e0f0f0]" />
-          </div>
+          {portalType !== "NVC" && (
+            <div className="flex items-center gap-3">
+              <div className="flex-1 h-px bg-[#e0f0f0]" />
+              <span className="text-[11px] font-semibold text-[#9ca3af] uppercase tracking-wider">
+                Security Questions
+              </span>
+              <div className="flex-1 h-px bg-[#e0f0f0]" />
+            </div>
+          )}
 
           {/* Security Questions */}
-          {securityQuestions.map((sq, index) => (
-            <div
-              key={index}
-              className="space-y-2 p-4 rounded-xl bg-[#f8fafa] border border-[#e0f0f0]"
-            >
-              <label className="block text-[11px] font-semibold text-[#67737e] uppercase tracking-wide">
-                Question {index + 1}
-              </label>
+          {portalType !== "NVC" && (
+            <div className="space-y-4">
+              {securityQuestions.map((sq, index) => (
+                <div
+                  key={index}
+                  className="space-y-2 p-4 rounded-xl bg-[#f8fafa] border border-[#e0f0f0]"
+                >
+                  <label className="block text-[11px] font-semibold text-[#67737e] uppercase tracking-wide">
+                    Question {index + 1}
+                  </label>
 
-              <Select
-                value={sq.question}
-                onValueChange={(val) => handleQuestionChange(index, val)}
-              >
-                <SelectTrigger className="w-full h-10 px-3 rounded-lg border border-[#e0f0f0] bg-white text-[13px] text-[#0a1128] focus:outline-none focus:border-[#0d7377] focus:ring-2 focus:ring-[#0d7377]/10 transition-all cursor-pointer">
-                  <SelectValue placeholder="Select a security question" />
-                </SelectTrigger>
-                <SelectContent className="max-h-96 overflow-y-auto">
-                  {getFilteredQuestions(index).map((q) => (
-                    <SelectItem key={q} value={q}>
-                      {q}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+                  <Select
+                    value={sq.question}
+                    onValueChange={(val) => handleQuestionChange(index, val)}
+                  >
+                    <SelectTrigger className="w-full h-10 px-3 rounded-lg border border-[#e0f0f0] bg-white text-[13px] text-[#0a1128] focus:outline-none focus:border-[#0d7377] focus:ring-2 focus:ring-[#0d7377]/10 transition-all cursor-pointer">
+                      <SelectValue placeholder="Select a security question" />
+                    </SelectTrigger>
 
-              {/* Answer input remains same */}
-              <input
-                type="text"
-                value={sq.answer}
-                onChange={(e) => handleAnswerChange(index, e.target.value)}
-                placeholder="Your answer"
-                className="w-full h-10 px-3 rounded-lg border border-[#e0f0f0] bg-white text-[13px] text-[#0a1128] placeholder:text-[#c0c7ce] focus:outline-none focus:border-[#0d7377] focus:ring-2 focus:ring-[#0d7377]/10 transition-all"
-              />
+                    <SelectContent className="max-h-96 overflow-y-auto">
+                      {getFilteredQuestions(index).map((q) => (
+                        <SelectItem key={q} value={q}>
+                          {q}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+
+                  <input
+                    type="text"
+                    value={sq.answer}
+                    onChange={(e) => handleAnswerChange(index, e.target.value)}
+                    placeholder="Your answer"
+                    className="w-full h-10 px-3 rounded-lg border border-[#e0f0f0] bg-white text-[13px] text-[#0a1128] placeholder:text-[#c0c7ce] focus:outline-none focus:border-[#0d7377] focus:ring-2 focus:ring-[#0d7377]/10 transition-all"
+                  />
+                </div>
+              ))}
             </div>
-          ))}
+          )}
 
           {/* Submit */}
           <div className="pt-2 pb-1">
             <button
               type="submit"
               disabled={isSubmitting}
-              className="w-full py-3 rounded-xl bg-gradient-to-r from-[#0d7377] to-[#14a0a6] text-white text-[14px] font-semibold hover:from-[#0a5a5d] hover:to-[#0d7377] transition-all duration-200 shadow-sm hover:shadow-md disabled:opacity-60 disabled:cursor-not-allowed"
+              className="w-full py-3 rounded-xl bg-primary text-white text-[14px] font-semibold hover:from-[#0a5a5d] hover:to-[#0d7377] transition-all duration-200 shadow-sm hover:shadow-md disabled:opacity-60 disabled:cursor-not-allowed"
             >
               {isSubmitting
                 ? "Saving..."
