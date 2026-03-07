@@ -17,17 +17,21 @@ export async function GET() {
 
     const { data, error } = await supabase
       .from("portal_wallet_credentials")
-      .select(`
+      .select(
+        `
         id,
         portal_type,
         username,
+        nvc_case_number,
+        nvc_invoice_id,
         created_at,
         updated_at,
         portal_wallet_security_questions (
           id,
           question
         )
-      `)
+      `,
+      )
       .eq("user_id", user.id)
       .order("created_at", { ascending: false });
 
@@ -35,7 +39,7 @@ export async function GET() {
       console.error("Error fetching credentials:", error);
       return NextResponse.json(
         { error: "Failed to fetch portal credentials" },
-        { status: 500 }
+        { status: 500 },
       );
     }
 
@@ -43,14 +47,21 @@ export async function GET() {
       data?.map((cred) => ({
         id: cred.id,
         portal_type: cred.portal_type,
+
         username: cred.username,
-        password: "••••••••",
+        nvc_case_number: cred.nvc_case_number,
+        nvc_invoice_id: cred.nvc_invoice_id,
+
+        password: cred.portal_type === "NVC" ? null : "••••••••",
+
         security_questions:
-          cred.portal_wallet_security_questions?.map((q: any) => ({
-            id: q.id,
-            question: q.question,
-            answer: "••••••",
-          })) || [],
+          cred.portal_type === "NVC"
+            ? []
+            : cred.portal_wallet_security_questions?.map((q: any) => ({
+                id: q.id,
+                question: q.question,
+                answer: "••••••",
+              })) || [],
       })) || [];
 
     return NextResponse.json({ credentials: response });
@@ -58,7 +69,7 @@ export async function GET() {
     console.error("Unexpected error in GET portal-wallet:", error);
     return NextResponse.json(
       { error: "Internal server error" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -78,16 +89,42 @@ export async function POST(req: Request) {
 
     const body = await req.json();
 
-    const { portalType, username, password, securityQuestions } = body;
+    const {
+      portalType,
+      username,
+      password,
+      securityQuestions,
+      nvcCaseNumber,
+      nvcInvoiceId,
+    } = body;
 
-    if (!portalType || !username || !password) {
+    if (!portalType) {
       return NextResponse.json(
-        { error: "Missing required fields" },
-        { status: 400 }
+        { error: "Portal type required" },
+        { status: 400 },
       );
     }
 
-    const encryptedPassword = encrypt(password);
+    if (portalType === "NVC") {
+      if (!nvcCaseNumber || !nvcInvoiceId) {
+        return NextResponse.json(
+          { error: "NVC Case Number and Invoice ID required" },
+          { status: 400 },
+        );
+      }
+    } else {
+      if (!username || !password) {
+        return NextResponse.json(
+          { error: "Username and password required" },
+          { status: 400 },
+        );
+      }
+    }
+
+    const encryptedPassword = password ? encrypt(password) : null;
+    const encryptedCaseNumber = nvcCaseNumber ? encrypt(nvcCaseNumber) : null;
+
+    const encryptedInvoiceId = nvcInvoiceId ? encrypt(nvcInvoiceId) : null;
 
     const { data: credential, error } = await supabase
       .from("portal_wallet_credentials")
@@ -95,10 +132,14 @@ export async function POST(req: Request) {
         {
           user_id: user.id,
           portal_type: portalType,
-          username,
+
+          username: username || null,
           encrypted_password: encryptedPassword,
+
+          nvc_case_number: encryptedCaseNumber,
+          nvc_invoice_id: encryptedInvoiceId,
         },
-        { onConflict: "user_id,portal_type" }
+        { onConflict: "user_id,portal_type" },
       )
       .select()
       .single();
@@ -107,11 +148,11 @@ export async function POST(req: Request) {
       console.error("Error saving credentials:", error);
       return NextResponse.json(
         { error: "Failed to save credentials" },
-        { status: 500 }
+        { status: 500 },
       );
     }
 
-    if (securityQuestions?.length) {
+    if (portalType !== "NVC" && securityQuestions?.length) {
       await supabase
         .from("portal_wallet_security_questions")
         .delete()
@@ -140,7 +181,7 @@ export async function POST(req: Request) {
     console.error("Unexpected error in POST portal-wallet:", error);
     return NextResponse.json(
       { error: "Internal server error" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

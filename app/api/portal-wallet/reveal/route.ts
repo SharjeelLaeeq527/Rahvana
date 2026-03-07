@@ -28,6 +28,8 @@ export async function POST(req: Request) {
       .from("portal_wallet_credentials")
       .select(`
         encrypted_password,
+        nvc_case_number,
+        nvc_invoice_id,
         portal_wallet_security_questions (
           id,
           question,
@@ -43,6 +45,24 @@ export async function POST(req: Request) {
         { error: "Credential not found" },
         { status: 404 }
       );
+    }
+
+    // NVC case number reveal
+    if (type === "nvc_case_number") {
+      const value = decrypt(credential.nvc_case_number);
+    
+      return NextResponse.json({
+        value,
+      });
+    }
+    
+    // NVC invoice ID reveal
+    if (type === "nvc_invoice_id") {
+      const value = decrypt(credential.nvc_invoice_id);
+    
+      return NextResponse.json({
+        value,
+      });
     }
 
     // PASSWORD REVEAL

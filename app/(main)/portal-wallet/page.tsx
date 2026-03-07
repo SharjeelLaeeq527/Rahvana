@@ -20,8 +20,13 @@ interface SecurityQuestion {
 interface Credential {
   id: string;
   portal_type: string;
+
   username: string;
   password: string | null;
+
+  nvc_case_number?: string | null;
+  nvc_invoice_id?: string | null;
+
   security_questions: SecurityQuestion[];
 }
 
@@ -97,12 +102,7 @@ const PortalWallet: React.FC = () => {
       (c) => c.portal_type.toUpperCase() === portalType.toUpperCase(),
     );
 
-  const handleAddOrEdit = async (data: {
-    portalType: string;
-    username: string;
-    password: string;
-    securityQuestions: { question: string; answer: string }[];
-  }) => {
+  const handleAddOrEdit = async (data: any) => {
     setIsSubmitting(true);
     try {
       const res = await fetch(API_BASE, {
@@ -176,6 +176,62 @@ const PortalWallet: React.FC = () => {
     return data.value || "";
   };
 
+  const handleRevealNVCCaseNumber = async (
+    credentialId: string,
+  ): Promise<string> => {
+    const cred = credentials.find((c) => c.id === credentialId);
+
+    const res = await fetch(`${API_BASE}/reveal`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        credentialId,
+        portalType: cred?.portal_type,
+        type: "nvc_case_number",
+      }),
+    });
+
+    const data = await res.json();
+
+    if (data.value) {
+      setCredentials((prev) =>
+        prev.map((c) =>
+          c.id === credentialId ? { ...c, nvc_case_number: data.value } : c,
+        ),
+      );
+    }
+
+    return data.value || "";
+  };
+
+  const handleRevealNVCInvoiceID = async (
+    credentialId: string,
+  ): Promise<string> => {
+    const cred = credentials.find((c) => c.id === credentialId);
+
+    const res = await fetch(`${API_BASE}/reveal`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        credentialId,
+        portalType: cred?.portal_type,
+        type: "nvc_invoice_id",
+      }),
+    });
+
+    const data = await res.json();
+
+    if (data.value) {
+      setCredentials((prev) =>
+        prev.map((c) =>
+          c.id === credentialId ? { ...c, nvc_invoice_id: data.value } : c,
+        ),
+      );
+    }
+
+    return data.value || "";
+  };
+
   const handleRevealAnswer = async (
     credentialId: string,
     questionId: string,
@@ -230,7 +286,7 @@ const PortalWallet: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-[#f8fafa]">
-      <div className="max-w-[1100px] mx-auto px-6 py-10">
+      <div className="max-w-275 mx-auto px-6 py-10">
         {/* Header */}
         <div className="text-center mb-10">
           <div className="flex items-center justify-center gap-2 mb-2">
@@ -241,7 +297,6 @@ const PortalWallet: React.FC = () => {
           </div>
           <h1
             className="text-[28px] font-bold text-[#0a1128] mb-2"
-            style={{ fontFamily: "Inter, sans-serif" }}
           >
             Your Secure Credential Vault
           </h1>
@@ -334,6 +389,8 @@ const PortalWallet: React.FC = () => {
         credential={activeCredential || null}
         onRevealPassword={handleRevealPassword}
         onRevealAnswer={handleRevealAnswer}
+        onRevealCaseNumber={handleRevealNVCCaseNumber}
+        onRevealInvoiceId={handleRevealNVCInvoiceID}
       />
 
       {/* Confirmation Modal */}
