@@ -633,7 +633,7 @@ export const NAV_DATA: Record<string, NavSection> = {
             title: "Photo Booth",
             description: "Make a compliant passport/visa photo in minutes.",
             href: "/passport",
-            // badge: "Live",
+            // badge: "Live"
           },
           {
             icon: (
