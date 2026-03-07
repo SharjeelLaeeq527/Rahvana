@@ -211,7 +211,7 @@
       "questions": [
         {
           "id": "sponsor_annual_income",
-          "label": "What is the Sponsor annual income (in local currency)?",
+          "label": "What is the Sponsor annual income (in US currency)?",
           "type": "number",
           "risk_tag": "SPONSOR_INCOME_BELOW_GUIDELINE"
         },

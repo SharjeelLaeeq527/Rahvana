@@ -503,6 +503,1052 @@
     },
     "closeBtn": "Close Vault"
   },
+  "documentVaultPage": {
+    "page": {
+      "title": "Document Vault",
+      "subtitle": "Compliance-Ready Repository",
+      "case": "Case",
+      "guide": "Guide",
+      "actions": "Actions",
+      "vaultManagement": "Vault Management",
+      "exportEntireVault": "Export Entire Vault",
+      "forceStatusSync": "Force Status Sync",
+      "purgeAllDocuments": "Purge All Documents",
+      "syncProgress": "Sync Progress",
+      "itemsReady": "Items Ready",
+      "criticalMissing": "Critical Missing",
+      "alertsExpiring": "Alerts/Expiring",
+      "bankGradeEncryption": "Bank-Grade Encryption Active",
+      "nvcTipTitle": "NVC/USCIS Tip",
+      "nvcTipDesc": "Always use the original color scans. Documents over 4MB will be auto-compressed by Rahvana's NVC engine.",
+      "actionRequired": "Action Required",
+      "alerts": "Alerts",
+      "fixNow": "Fix Now",
+      "allMasterChecklist": "All Master Checklist",
+      "more": "More",
+      "searchPlaceholder": "Search documents...",
+      "comprehensiveMasterChecklist": "Comprehensive Master Checklist",
+      "searchPrefix": "Search: ",
+      "foundPrefix": "Found",
+      "matchingDocuments": "matching documents",
+      "noDocumentsFound": "No documents found",
+      "noDocumentsDescPrefix": "We couldn't find any documents matching \"",
+      "noDocumentsDescSuffix": "\". Try a different keyword.",
+      "clearSearch": "Clear Search",
+      "messages": {
+        "loading": "Loading...",
+        "downloaded": "Document downloaded",
+        "downloadFailed": "Failed to download document",
+        "preparingZip": "Preparing ZIP with original + compressed...",
+        "preparingExport": "Preparing export...",
+        "zipExported": "ZIP exported with original + NVC-compliant compressed version",
+        "documentExported": "Document exported",
+        "exportFailed": "Failed to export document",
+        "deleteConfirm": "Are you sure you want to delete this document?",
+        "deleting": "Deleting document...",
+        "deleted": "Document deleted",
+        "deleteFailed": "Failed to delete document",
+        "exportCompleted": "Export completed",
+        "exportAllFailed": "Failed to export documents",
+        "deleteAllConfirmWarning": "⚠️ Are you sure you want to delete ALL documents? This action cannot be undone!",
+        "deleteAllFinalConfirm": "⚠️ Final confirmation: Delete ALL uploaded documents?",
+        "deletingAll": "Deleting all documents...",
+        "deletedAllSuccess": "✅ Deleted {{count}} documents successfully!",
+        "deleteAllFailed": "Failed to delete all documents"
+      }
+    },
+    "components": {
+      "documentCard": {
+        "status": {
+          "missing": "Missing",
+          "uploaded": "Uploaded",
+          "expiringSoon": "Expiring Soon",
+          "expired": "Expired"
+        },
+        "owner": "Owner",
+        "process": "Process",
+        "activeVersion": "Active Version",
+        "validity": "Validity",
+        "upload": "Upload",
+        "learnHow": "Learn How",
+        "preview": "Preview",
+        "files": "Files",
+        "replace": "Replace",
+        "exportZip": "Export ZIP",
+        "instructions": "Instructions",
+        "delete": "Delete"
+      },
+      "tableView": {
+        "missing": "Missing",
+        "completed": "Completed",
+        "expiring": "Expiring",
+        "expired": "Expired",
+        "columns": {
+          "documentName": "Document Name",
+          "requiredFor": "Required For",
+          "status": "Status",
+          "fileInfo": "File Info",
+          "validity": "Validity",
+          "actions": "Actions"
+        },
+        "zip": "ZIP",
+        "noFileUploaded": "No file uploaded",
+        "howToObtain": "How to obtain",
+        "preview": "Preview",
+        "manageDocument": "Manage Document",
+        "download": "Download",
+        "export": "Export",
+        "exportZip": "Export ZIP",
+        "replace": "Replace",
+        "instructions": "Instructions",
+        "delete": "Delete"
+      },
+      "previewModal": {
+        "close": "Close",
+        "loading": "Loading preview...",
+        "fileType": "File type: ",
+        "unknown": "Unknown",
+        "downloadToView": "Download to View"
+      },
+      "uploadModal": {
+        "fileSizeError": "File size must be less than 10MB",
+        "fileTypeError": "Only PDF, JPG, PNG, and GIF files are allowed",
+        "uploading": "Uploading document...",
+        "uploadFailed": "Upload failed",
+        "uploadSuccess": "✅ Document uploaded successfully!",
+        "titlePrefix": "Upload Document: ",
+        "close": "Close",
+        "selectFile": "Select File",
+        "clickToSelect": "Click to select file",
+        "allowedTypes": "PDF, JPG, PNG, GIF (max 10MB)",
+        "providedBy": "Provided By",
+        "expirationDate": "Expiration Date",
+        "expirationRequired": "Required: Enter the expiration date for this document",
+        "expirationOptional": "Optional: Enter expiration date if known",
+        "notes": "Notes (Optional)",
+        "notesPlaceholder": "Add any notes about this document...",
+        "namingPreview": "📄 USCIS Naming Preview",
+        "displayName": "Display Name:",
+        "petitioner": "Petitioner",
+        "beneficiary": "Beneficiary",
+        "jointSponsor": "Joint Sponsor",
+        "standardizedFilename": "Standardized Filename:",
+        "sizePrefix": "Size: ",
+        "typePrefix": "Type: ",
+        "warning": "⚠️ Warning: Set Case Information in left panel for proper USCIS naming!",
+        "cancel": "Cancel",
+        "uploadBtnLoading": "Uploading...",
+        "uploadBtn": "Upload Document"
+      },
+      "wizard": {
+        "noGuide": "No step-by-step guide available for this document yet.",
+        "close": "Close",
+        "howToObtain": "How to Obtain: ",
+        "documentUploaded": "Document Uploaded ✓",
+        "stepProgress": "Step {{current}} of {{total}}",
+        "resetConfirm": "Reset progress for this document?",
+        "resetProgress": "Reset Progress",
+        "progressOverview": "Progress Overview",
+        "clickToMark": "Click steps to mark complete",
+        "tip": "💡 Tip: Click on any step in the progress tree to mark it as complete. All steps will automatically be marked complete once you upload the document.",
+        "tipsHeading": "Tips",
+        "helpfulResources": "Helpful Resources",
+        "previous": "Previous",
+        "next": "Next",
+        "done": "Done"
+      },
+      "configWizard": {
+        "title": "Document Vault Setup",
+        "subtitle": "Let's configure your personalized document checklist",
+        "step1Title": "Step 1: Select Your Visa Category",
+        "step2Title": "Step 2: Additional Information",
+        "step2Subtitle": "Select any that apply to your case:",
+        "marriageHistory": "Marriage History",
+        "petitionerMarried": "Prior Marriage (Petitioner)",
+        "petitionerMarriedDesc": "Petitioner was previously married",
+        "beneficiaryMarried": "Prior Marriage (Beneficiary)",
+        "beneficiaryMarriedDesc": "Beneficiary was previously married",
+        "nameChange": "Name Change",
+        "nameChangeDesc": "Any party changed their name",
+        "childInfo": "Child Information",
+        "adoptedChild": "Adopted Child",
+        "adoptedChildDesc": "Child is adopted",
+        "stepchild": "Stepchild",
+        "stepchildDesc": "Child is a stepchild",
+        "financialSupport": "Financial",
+        "jointSponsor": "Joint Sponsor Used",
+        "jointSponsorDesc": "Using a joint sponsor for financial support",
+        "householdMember": "Household Member Used",
+        "householdMemberDesc": "Including household member income",
+        "background": "Background",
+        "militaryService": "Military Service",
+        "militaryServiceDesc": "Beneficiary served in military",
+        "criminalHistory": "Criminal History",
+        "criminalHistoryDesc": "Beneficiary has criminal history",
+        "previousViolations": "Previous Immigration Violations",
+        "previousViolationsDesc": "Previous visa overstay or violations",
+        "back": "Back",
+        "continue": "Continue",
+        "step3Title": "Step 3: Case Information (Optional)",
+        "step3Subtitle": "This information will be used for file naming and organization",
+        "caseId": "Case ID / Receipt Number (Optional)",
+        "caseIdDesc": "USCIS receipt number or NVC case number",
+        "petitionerName": "Petitioner Name",
+        "beneficiaryName": "Beneficiary Name",
+        "jointSponsorName": "Joint Sponsor Name",
+        "completeSetup": "Complete Setup"
+      },
+      "liveConfigPanel": {
+        "requiredFieldsError": "❌ Please fill all required fields (Case ID, Petitioner, Beneficiary)",
+        "saveSuccess": "✅ Case Information Saved Successfully!",
+        "saveSuccessDesc": "All future uploads will use USCIS naming:",
+        "configuration": "Configuration",
+        "visaCategory": "Visa Category",
+        "selectVisaType": "Select your visa type",
+        "active": "Active",
+        "additionalInfo": "Additional Information",
+        "selectApplies": "Select what applies to your case",
+        "caseInfo": "Case Information",
+        "caseInfoRequiredDesc": "Required for USCIS/NVC compliant file naming",
+        "caseIdReq": "Case/Receipt Number",
+        "petitionerNameReq": "Petitioner Name",
+        "petitionerNameDesc": "Full legal name → normalized as JOHN_MICHAEL_DOE",
+        "beneficiaryNameReq": "Beneficiary Name",
+        "beneficiaryNameDesc": "Full legal name → normalized as JANE_ELIZABETH_SMITH",
+        "jointSponsorNameReq": "Joint Sponsor Name",
+        "jointSponsorNameDesc": "Full legal name (if using joint sponsor)",
+        "saving": "Saving...",
+        "fillRequiredAbove": "Fill Required Fields Above",
+        "saveCaseInfo": "Save Case Information",
+        "namingPreview": "📋 Naming Preview:",
+        "requiredWarning": "⚠️ Required for USCIS naming!",
+        "requiredWarningDesc": "Fill all fields above to enable proper file naming."
+      },
+      "notificationCenter": {
+        "title": "Notifications",
+        "new": " new",
+        "subtitle": "Stay updated on your document status",
+        "markAllRead": "Mark all read",
+        "snoozeAll": "Snooze all",
+        "1hour": "1 hour",
+        "4hours": "4 hours",
+        "24hours": "24 hours",
+        "emptyTitle": "No notifications",
+        "emptyDesc": "You're all caught up! New alerts will appear here.",
+        "uploadDocument": "Upload Document",
+        "markAsRead": "Mark as read",
+        "snooze": "Snooze"
+      },
+      "notificationTestPanel": {
+        "title": "Notification Testing",
+        "devModeDesc": "Dev mode only - Test expiry notifications",
+        "activeNotifications": "Active Notifications",
+        "errors": "errors",
+        "warnings": "warnings",
+        "info": "info",
+        "quickActions": "Quick Test Scenarios",
+        "simulateAll": "Simulate All Scenarios",
+        "simulateDesc": "Sets: Expired, 3 days, 15 days, 45 days, 120 days",
+        "setSpecific": "Set Specific Expiry",
+        "expiredDays": "Expired (-5d)",
+        "3days": "3 days",
+        "15days": "15 days",
+        "45days": "45 days",
+        "resetAll": "Reset All (6 months)",
+        "note": "Note:",
+        "tempChangeDesc": "These changes are temporary and only for testing.",
+        "refreshRestore": "Refresh page to restore original dates.",
+        "testNotifications": "Test Notifications",
+        "noDocsError": "No documents uploaded yet!",
+        "noDocsWithExpiryError": "No documents with expiration dates found",
+        "testExpiryApplied": "Test expiry dates applied!",
+        "expiryResetSuccess": "Expiry dates reset to 6 months from now",
+        "setExpirySuccess": "Set expiry to {days} days from now"
+      },
+      "logic": {
+        "expiration": {
+          "expiredAgo": "Expired {days} days ago",
+          "expiresToday": "Expires today",
+          "expiresTomorrow": "Expires tomorrow",
+          "expiresInDays": "Expires in {days} days",
+          "expiresInWeeks": "Expires in {weeks} weeks",
+          "expiresInMonths": "Expires in {months} months"
+        },
+        "validation": {
+          "pastDate": "Expiration date cannot be in the past",
+          "beforeUpload": "Expiration date cannot be before upload date",
+          "tooFarFuture": "Expiration date cannot be more than {years} years in the future"
+        },
+        "notifications": {
+          "missingDocTitle": "Missing Required Document",
+          "missingDocMessage": "{name} is required but not yet uploaded. Upload it to complete your document package.",
+          "expiredTitle": "Document Expired",
+          "expiredMessage": "{name} expired {days} day(s) ago. Please upload a renewed version immediately.",
+          "expiringSoonTitle": "Document Expiring Soon",
+          "expiringSoonActionTitle": "Document Expiring Soon - Action Required",
+          "expiringInDays": "{name} expires in {days} days.",
+          "expiresToday": "{name} expires today.",
+          "expiresTomorrow": "{name} expires tomorrow.",
+          "renewImmediately": "Upload a renewed version immediately.",
+          "considerRenewing": "Consider uploading a renewed version."
+        },
+        "requirements": {
+          "requiredForAll": "Required for all {category} cases",
+          "requiredForVisa": "Required for visa categories: {categories}",
+          "requiredBecause": "Required because: {reason}"
+        }
+      }
+    },
+    "categories": {
+      "CIVIL": "Civil Documents",
+      "FINANCIAL": "Financial / Sponsor Documents",
+      "RELATIONSHIP": "Relationship Evidence",
+      "POLICE": "Police / Court / Military",
+      "MEDICAL": "Medical Documents",
+      "PHOTOS": "Photographs",
+      "TRANSLATIONS": "Translations / Certifications",
+      "MISC": "Miscellaneous / Case Evidence",
+      "EDUCATION": "Education Documents",
+      "WORK": "Work / Employment Documents",
+      "TRAVEL": "Travel Documents",
+      "IDENTITY": "Identity Documents",
+      "PROPERTY": "Property & Assets",
+      "IMMIGRATION": "Immigration History",
+      "TAX": "Tax Documents (Pakistan)",
+      "LEGAL": "Legal Documents",
+      "HEALTH_INSURANCE": "Health Insurance",
+      "SOCIAL_MEDIA": "Social Media",
+      "ADDRESS_PROOF": "Address Proof",
+      "OTHER": "Other Documents"
+    },
+    "visaCategories": {
+      "IR-1": "IR-1: Spouse of U.S. Citizen",
+      "CR-1": "CR-1: Spouse of U.S. Citizen (Conditional)",
+      "IR-2": "IR-2: Unmarried Child under 21",
+      "CR-2": "CR-2: Unmarried Child under 21 (Conditional)",
+      "IR-5": "IR-5: Parent of U.S. Citizen",
+      "F1": "F1: Unmarried Sons/Daughters of U.S. Citizens",
+      "F2A": "F2A: Spouses/Children of LPR",
+      "F2B": "F2B: Unmarried Sons/Daughters of LPR",
+      "F3": "F3: Married Sons/Daughters of U.S. Citizens",
+      "F4": "F4: Siblings of U.S. Citizens"
+    },
+    "roles": {
+      "BENEFICIARY": "Beneficiary",
+      "PETITIONER": "Petitioner",
+      "JOINT_SPONSOR": "Joint Sponsor"
+    },
+    "stages": {
+      "USCIS": "USCIS",
+      "NVC": "NVC",
+      "INTERVIEW": "Interview",
+      "DS260_SUBMISSION": "DS-260"
+    },
+    "documents": {
+      "birth-cert-beneficiary": {
+        "name": "Birth Certificate",
+        "description": "Official birth certificate with English translation",
+        "wizardSteps": {
+          "step1": {
+            "title": "Obtain Original Birth Certificate",
+            "description": "Visit NADRA office or apply online to get your original birth certificate (Form-B or computerized NICOP/CNIC with date of birth).",
+            "tips": [
+              "Ensure the certificate shows your full name exactly as in your passport",
+              "If name differs from passport, get a name match certificate"
+            ],
+            "estimatedTime": "1-3 days",
+            "cost": "PKR 400-800"
+          },
+          "step2": {
+            "title": "Get English Translation",
+            "description": "If certificate is in Urdu, get it translated by a certified translator.",
+            "tips": [
+              "Translator must certify that translation is accurate",
+              "Include translator credentials and stamp"
+            ],
+            "estimatedTime": "1-2 days",
+            "cost": "PKR 1,000-2,000"
+          }
+        }
+      },
+      "marriage-cert": {
+        "name": "Marriage Certificate",
+        "description": "Official marriage certificate (Nikkah Nama)"
+      },
+      "passport-bio": {
+        "name": "Passport Biographical Page",
+        "description": "Clear scan of the passport page with photo and details"
+      },
+      "police-cert-pakistan": {
+        "name": "Police Character Certificate (Pakistan)",
+        "description": "Police character certificate from all districts of residence"
+      },
+      "photos-us-spec": {
+        "name": "US Visa Specification Photos",
+        "description": "Photos meeting US visa requirements (2x2 inches, white background)"
+      },
+      "nikah-nama": {
+        "name": "Nikah Nama (Marriage Certificate)",
+        "description": "Original Nikah Nama with English translation",
+        "wizardSteps": {
+          "step1": {
+            "title": "Locate Original Nikah Nama",
+            "description": "Find your original Nikah Nama document issued at the time of marriage.",
+            "tips": [
+              "Must be signed by Nikah Registrar",
+              "Should have serial number and registration details"
+            ]
+          },
+          "step2": {
+            "title": "Get Certified Translation",
+            "description": "Get a certified English translation of the Nikah Nama.",
+            "estimatedTime": "2-3 days",
+            "cost": "PKR 2,000-5,000"
+          }
+        }
+      },
+      "passport-beneficiary": {
+        "name": "Passport Copy",
+        "description": "Valid passport copy (biographical page)",
+        "wizardSteps": {
+          "step1": {
+            "title": "Check Passport Validity",
+            "description": "Ensure your passport is valid for at least 6 months beyond your intended travel date.",
+            "tips": [
+              "If passport expires soon, renew it before uploading",
+              "Scan the biographical page (page with photo and details)"
+            ]
+          },
+          "step2": {
+            "title": "Scan Biographical Page",
+            "description": "Scan or take a clear photo of the biographical page of your passport.",
+            "tips": [
+              "Ensure all text is readable",
+              "No shadows or reflections",
+              "Save as PDF or high-quality JPG"
+            ]
+          }
+        }
+      },
+      "cnic-beneficiary": {
+        "name": "CNIC (Computerized National Identity Card)",
+        "description": "Copy of Pakistani CNIC (both sides)",
+        "wizardSteps": {
+          "step1": {
+            "title": "Scan Both Sides of CNIC",
+            "description": "Make clear scans or photos of both front and back of your CNIC.",
+            "tips": [
+              "Ensure CNIC is not expired",
+              "If expired, renew at NADRA office",
+              "Combine both sides into one PDF file"
+            ]
+          }
+        }
+      },
+      "divorce-decree-beneficiary": {
+        "name": "Divorce Decree / Talaq Nama",
+        "description": "Official divorce decree with translation if prior marriage",
+        "wizardSteps": {
+          "step1": {
+            "title": "Obtain Divorce Certificate",
+            "description": "Get certified copy of divorce decree from Family Court or Union Council.",
+            "tips": [
+              "Court-issued decrees must be certified copies",
+              "Union Council certificates should have registration number"
+            ]
+          },
+          "step2": {
+            "title": "Get English Translation",
+            "description": "If document is in Urdu, get certified English translation.",
+            "estimatedTime": "2-3 days",
+            "cost": "PKR 2,000-4,000"
+          }
+        }
+      },
+      "death-cert-prior-spouse": {
+        "name": "Death Certificate of Former Spouse",
+        "description": "Death certificate if prior spouse is deceased"
+      },
+      "i-864-affidavit": {
+        "name": "Form I-864 (Affidavit of Support)",
+        "description": "Completed and signed I-864 form",
+        "wizardSteps": {
+          "step1": {
+            "title": "Download Form I-864",
+            "description": "Download the latest version of Form I-864 from USCIS website.",
+            "tips": [
+              "Always use the latest version of the form",
+              "Fill out completely - no blank fields"
+            ]
+          },
+          "step2": {
+            "title": "Complete and Sign",
+            "description": "Fill out all sections accurately and sign the form.",
+            "tips": [
+              "Use your legal name as it appears on tax returns",
+              "Include household size calculation",
+              "Sign and date - signature must be original"
+            ]
+          }
+        }
+      },
+      "tax-returns-petitioner": {
+        "name": "IRS Tax Returns (3 years)",
+        "description": "Federal tax transcripts or returns for last 3 years",
+        "wizardSteps": {
+          "step1": {
+            "title": "Request IRS Tax Transcripts",
+            "description": "Order tax transcripts from IRS website or by mail.",
+            "tips": [
+              "Tax transcripts are preferred over returns",
+              "Need last 3 years (most recent)",
+              "Free service from IRS"
+            ],
+            "estimatedTime": "5-10 business days (by mail)",
+            "cost": "Free"
+          }
+        }
+      },
+      "employment-letter": {
+        "name": "Employment Verification Letter",
+        "description": "Letter from employer confirming employment and salary",
+        "wizardSteps": {
+          "step1": {
+            "title": "Request Letter from Employer",
+            "description": "Contact your HR department to request an employment verification letter.",
+            "tips": [
+              "Letter must be on company letterhead",
+              "Include: job title, salary, start date, employment type (full-time/part-time)",
+              "Should be dated within 6 months of submission",
+              "Include HR contact information"
+            ]
+          }
+        }
+      },
+      "pay-stubs": {
+        "name": "Recent Pay Stubs",
+        "description": "Most recent 6 pay stubs or pay statements"
+      },
+      "w2-forms": {
+        "name": "W-2 Forms",
+        "description": "W-2 forms for last tax year"
+      },
+      "bank-statements": {
+        "name": "Bank Statements",
+        "description": "Recent bank statements (last 12 months)"
+      },
+      "wedding-photos": {
+        "name": "Wedding Photos",
+        "description": "Photos from wedding ceremony"
+      },
+      "relationship-photos": {
+        "name": "Relationship Photos",
+        "description": "Photos together throughout relationship"
+      },
+      "communication-evidence": {
+        "name": "Communication Evidence",
+        "description": "Chat logs, call records, emails demonstrating ongoing relationship"
+      },
+      "joint-financial-docs": {
+        "name": "Joint Financial Documents",
+        "description": "Joint bank accounts, property, insurance, etc."
+      },
+      "police-certificate-pakistan": {
+        "name": "Police Certificate (Pakistan)",
+        "description": "Police clearance certificate from Pakistan",
+        "wizardSteps": {
+          "step1": {
+            "title": "Apply at Local Police Station",
+            "description": "Visit your local police station or apply through NADRA for a police clearance certificate.",
+            "tips": [
+              "Bring original CNIC",
+              "May require fingerprinting",
+              "Valid for 1 year from issue date"
+            ],
+            "estimatedTime": "2-4 weeks",
+            "cost": "PKR 500-1,500"
+          },
+          "step2": {
+            "title": "Get English Translation",
+            "description": "If certificate is in Urdu, get certified translation.",
+            "estimatedTime": "2-3 days",
+            "cost": "PKR 1,500-3,000"
+          }
+        }
+      },
+      "court-records": {
+        "name": "Court Records",
+        "description": "Records of any arrests, convictions, or court proceedings"
+      },
+      "military-records": {
+        "name": "Military Service Records",
+        "description": "Military service records if applicable"
+      },
+      "medical-exam-ds2019": {
+        "name": "Medical Examination (Form DS-2019)",
+        "description": "Medical examination report from panel physician",
+        "wizardSteps": {
+          "step1": {
+            "title": "Schedule Medical Exam",
+            "description": "Book appointment with panel physician approved by U.S. Embassy Islamabad.",
+            "tips": [
+              "Schedule only after receiving interview date",
+              "Bring passport, photos, and vaccination records",
+              "Exam includes physical, blood tests, and X-ray"
+            ],
+            "estimatedTime": "3-4 hours for exam",
+            "cost": "Approximately PKR 20,000-30,000"
+          },
+          "step2": {
+            "title": "Collect Medical Report",
+            "description": "Pick up sealed medical report - DO NOT OPEN",
+            "tips": [
+              "Report is sealed and must remain sealed",
+              "Bring to interview appointment",
+              "Valid for 6 months"
+            ]
+          }
+        }
+      },
+      "vaccination-records": {
+        "name": "Vaccination Records",
+        "description": "Proof of required vaccinations"
+      },
+      "polio-vaccine-cert": {
+        "name": "Polio Vaccination Certificate",
+        "description": "Official International Certificate of Vaccination (issued within last 12 months)",
+        "wizardSteps": {
+          "step1": {
+            "title": "Visit Government Hospital or Health Office",
+            "description": "Get a fresh dose of Oral Polio Vaccine (OPV) from any government-approved vaccination center or hospital.",
+            "tips": [
+              "Must be recorded on the official Yellow Card or NADRA system",
+              "Make sure the date of vaccination is within 1 year of your travel date"
+            ],
+            "estimatedTime": "1 day",
+            "cost": "Free (Government Centers) / Nominal (Private)"
+          },
+          "step2": {
+            "title": "Get NADRA Immunization Certificate",
+            "description": "If vaccinated through the official system, you can also download a computerized certificate from the NADRA website.",
+            "tips": [
+              "NADRA certificate is more professional and widely accepted",
+              "Keep both original and computerized copy"
+            ],
+            "estimatedTime": "10 minutes (online)",
+            "cost": "PKR 100"
+          }
+        }
+      },
+      "passport-photos": {
+        "name": "Passport-Style Photos",
+        "description": "U.S. visa-compliant passport photos (2x2 inches)",
+        "wizardSteps": {
+          "step1": {
+            "title": "Get Compliant Photos",
+            "description": "Get 2x2 inch photos that meet U.S. visa photo requirements.",
+            "tips": [
+              "White or off-white background",
+              "Taken within last 6 months",
+              "Face directly facing camera",
+              "No glasses, headphones, or accessories",
+              "Neutral expression"
+            ],
+            "estimatedTime": "30 minutes",
+            "cost": "PKR 500-1,000"
+          }
+        }
+      },
+      "translator-certification": {
+        "name": "Translator Certification",
+        "description": "Certification statement from translator for all translated documents"
+      },
+      "ds-260": {
+        "name": "Form DS-260",
+        "description": "Online Immigrant Visa Application confirmation page"
+      },
+      "i-130-approval": {
+        "name": "Form I-130 Approval Notice",
+        "description": "USCIS approval notice for Form I-130"
+      },
+      "nvc-fee-receipts": {
+        "name": "NVC Fee Payment Receipts",
+        "description": "Proof of payment for NVC processing fees"
+      },
+      "matric-certificate": {
+        "name": "Matriculation Certificate",
+        "description": "SSC/Matriculation certificate from Pakistan",
+        "wizardSteps": {
+          "step1": {
+            "title": "Obtain Matric Certificate",
+            "description": "Get your original Matriculation certificate from respective board.",
+            "tips": [
+              "Must be original or certified copy",
+              "Get English translation if in Urdu"
+            ]
+          }
+        }
+      },
+      "intermediate-certificate": {
+        "name": "Intermediate Certificate",
+        "description": "HSSC/Intermediate certificate from Pakistan"
+      },
+      "bachelor-degree": {
+        "name": "Bachelor's Degree",
+        "description": "Bachelor's degree certificate and transcripts",
+        "wizardSteps": {
+          "step1": {
+            "title": "Collect Degree and Transcripts",
+            "description": "Get both the degree certificate and detailed transcripts.",
+            "tips": [
+              "HEC attestation recommended for foreign use",
+              "English translation required if in Urdu"
+            ]
+          }
+        }
+      },
+      "master-degree": {
+        "name": "Master's Degree",
+        "description": "Master's degree certificate and transcripts"
+      },
+      "professional-certificate": {
+        "name": "Professional Certifications",
+        "description": "Professional certifications and licenses (e.g., ACCA, CA, PMP)"
+      },
+      "hec-attestation": {
+        "name": "HEC Attestation",
+        "description": "HEC attested educational documents",
+        "wizardSteps": {
+          "step1": {
+            "title": "Get HEC Attestation",
+            "description": "Apply for HEC attestation through HEC website or office.",
+            "tips": [
+              "Required for foreign use of Pakistani degrees",
+              "Apply online first, then visit HEC office"
+            ],
+            "estimatedTime": "1-2 weeks",
+            "cost": "PKR 2,000-5,000"
+          }
+        }
+      },
+      "experience-letter-pakistan": {
+        "name": "Work Experience Letter (Pakistan)",
+        "description": "Experience letter from Pakistani employers",
+        "wizardSteps": {
+          "step1": {
+            "title": "Request Experience Letter",
+            "description": "Get a formal experience letter from each employer.",
+            "tips": [
+              "Must be on company letterhead",
+              "Include job title, duration, responsibilities",
+              "Include salary information",
+              "English translation required if in Urdu"
+            ]
+          }
+        }
+      },
+      "employment-contract-pakistan": {
+        "name": "Employment Contract (Pakistan)",
+        "description": "Employment contracts from Pakistani employers"
+      },
+      "salary-slips-pakistan": {
+        "name": "Salary Slips (Pakistan)",
+        "description": "Recent salary slips from Pakistani employment"
+      },
+      "noc-pakistan": {
+        "name": "No Objection Certificate (NOC)",
+        "description": "NOC from current Pakistani employer",
+        "wizardSteps": {
+          "step1": {
+            "title": "Request NOC from Employer",
+            "description": "Get No Objection Certificate from current employer.",
+            "tips": [
+              "Required for some government or sensitive positions",
+              "Should state no objection to visa issuance"
+            ]
+          }
+        }
+      },
+      "eobi-certificate": {
+        "name": "EOBI Certificate",
+        "description": "Employees' Old-Age Benefits Institution certificate",
+        "wizardSteps": {
+          "step1": {
+            "title": "Get EOBI Certificate",
+            "description": "Obtain EOBI certificate if you have EOBI registration.",
+            "tips": [
+              "Shows employment history in Pakistan",
+              "Useful for proving work experience"
+            ]
+          }
+        }
+      },
+      "previous-visa-stamps": {
+        "name": "Previous Visa Stamps",
+        "description": "Scans of previous visas in passport"
+      },
+      "travel-history": {
+        "name": "Travel History Record",
+        "description": "List of previous international travel with dates"
+      },
+      "old-passport-copies": {
+        "name": "Old Passport Copies",
+        "description": "Copies of previous/old passports",
+        "wizardSteps": {
+          "step1": {
+            "title": "Collect Old Passports",
+            "description": "Gather all previous passports showing travel history.",
+            "tips": [
+              "Scan biographical pages",
+              "Scan all visa stamps",
+              "Scan entry/exit stamps"
+            ]
+          }
+        }
+      },
+      "travel-itinerary": {
+        "name": "Previous Travel Itineraries",
+        "description": "Previous flight itineraries or boarding passes"
+      },
+      "driving-license-pakistan": {
+        "name": "Driving License (Pakistan)",
+        "description": "Pakistani driving license copy",
+        "wizardSteps": {
+          "step1": {
+            "title": "Scan Driving License",
+            "description": "Get clear scans of your Pakistani driving license.",
+            "tips": [
+              "Both front and back",
+              "Ensure all text is readable",
+              "English translation if in Urdu"
+            ]
+          }
+        }
+      },
+      "domicile-certificate": {
+        "name": "Domicile Certificate",
+        "description": "District domicile certificate from Pakistan",
+        "wizardSteps": {
+          "step1": {
+            "title": "Obtain Domicile Certificate",
+            "description": "Get your domicile certificate from the district administration.",
+            "tips": [
+              "Issued by District Commissioner",
+              "Shows permanent residence",
+              "English translation if in Urdu"
+            ]
+          }
+        }
+      },
+      "prc-certificate": {
+        "name": "PRC (Permanent Residence Certificate)",
+        "description": "Permanent Residence Certificate from Pakistan"
+      },
+      "nicop-cnic": {
+        "name": "NICOP/CNIC with Photo",
+        "description": "NICOP or CNIC with clear photo"
+      },
+      "property-ownership-docs": {
+        "name": "Property Ownership Documents",
+        "description": "Property deeds, registry papers, fard documents",
+        "wizardSteps": {
+          "step1": {
+            "title": "Collect Property Documents",
+            "description": "Gather all property ownership documents.",
+            "tips": [
+              "Fard/registry from Patwari office",
+              "Property deed/registry",
+              "English translation if in Urdu",
+              "Valuation certificate helpful"
+            ]
+          }
+        }
+      },
+      "vehicle-registration": {
+        "name": "Vehicle Registration Papers",
+        "description": "Vehicle registration documents in Pakistan"
+      },
+      "bank-assets-pakistan": {
+        "name": "Bank Assets in Pakistan",
+        "description": "Bank account statements, fixed deposit certificates"
+      },
+      "nra-certificate": {
+        "name": "NRA (Non-Resident Alien) Certificate",
+        "description": "NRA certificate from Pakistan"
+      },
+      "investment-certificates": {
+        "name": "Investment Certificates",
+        "description": "Stocks, bonds, mutual fund certificates"
+      },
+      "prior-visa-denials": {
+        "name": "Prior Visa Denial Letters",
+        "description": "Letters explaining prior visa denials (if any)"
+      },
+      "immigration-court-docs": {
+        "name": "Immigration Court Documents",
+        "description": "Any prior immigration court proceedings or removal orders"
+      },
+      "reentry-permit": {
+        "name": "Re-entry Permit (if any)",
+        "description": "Re-entry permit documents"
+      },
+      "prior-petition-docs": {
+        "name": "Prior Immigration Petition Documents",
+        "description": "Documents from prior immigration petitions"
+      },
+      "arrival-departure-records": {
+        "name": "Arrival/Departure Records (I-94)",
+        "description": "I-94 records from previous US visits"
+      },
+      "fbr-tax-returns": {
+        "name": "FBR Tax Returns (Pakistan)",
+        "description": "FBR tax returns from Pakistan",
+        "wizardSteps": {
+          "step1": {
+            "title": "Get FBR Tax Returns",
+            "description": "Download your tax returns from FBR portal.",
+            "tips": [
+              "Last 3 years recommended",
+              "NTN certificate also helpful"
+            ]
+          }
+        }
+      },
+      "ntn-certificate": {
+        "name": "NTN Certificate (National Tax Number)",
+        "description": "NTN certificate from FBR"
+      },
+      "tax-clearance-certificate": {
+        "name": "Tax Clearance Certificate",
+        "description": "Tax clearance certificate from FBR"
+      },
+      "affidavit-bona-fide": {
+        "name": "Affidavit of Bona Fide Marriage",
+        "description": "Affidavit from friends/family regarding marriage",
+        "wizardSteps": {
+          "step1": {
+            "title": "Get Affidavits from Witnesses",
+            "description": "Request affidavits from friends/family who can attest to your marriage.",
+            "tips": [
+              "Notarized by oath commissioner",
+              "Include witness contact details",
+              "Describe how they know the couple",
+              "Mention attending wedding"
+            ],
+            "estimatedTime": "2-3 days",
+            "cost": "PKR 500-1,000 per affidavit"
+          }
+        }
+      },
+      "notarized-documents": {
+        "name": "Notarized Documents",
+        "description": "Any documents requiring notarization"
+      },
+      "name-change-docs": {
+        "name": "Name Change Documents",
+        "description": "Legal name change documents (if applicable)",
+        "wizardSteps": {
+          "step1": {
+            "title": "Collect Name Change Documents",
+            "description": "Get all legal name change documentation.",
+            "tips": [
+              "Court order for name change",
+              "Gazette notification",
+              "NADRA updated documents",
+              "English translation if in Urdu"
+            ]
+          }
+        }
+      },
+      "guardianship-docs": {
+        "name": "Guardianship/Custody Documents",
+        "description": "Legal custody or guardianship documents for minors"
+      },
+      "health-insurance-policy": {
+        "name": "Health Insurance Policy",
+        "description": "Health insurance policy documents"
+      },
+      "insurance-coverage-letter": {
+        "name": "Insurance Coverage Letter",
+        "description": "Letter confirming health insurance coverage"
+      },
+      "social-media-list": {
+        "name": "Social Media Platforms List",
+        "description": "List of social media platforms used in last 5 years",
+        "wizardSteps": {
+          "step1": {
+            "title": "List Social Media Accounts",
+            "description": "Create a list of all social media platforms you've used.",
+            "tips": [
+              "Include platforms: Facebook, Instagram, Twitter, LinkedIn, TikTok, etc.",
+              "Include all usernames/handles",
+              "Include accounts you've deleted",
+              "Required for DS-260 form"
+            ]
+          }
+        }
+      },
+      "social-media-screenshots": {
+        "name": "Social Media Profile Screenshots",
+        "description": "Screenshots of social media profiles (if requested)"
+      },
+      "utility-bills-pakistan": {
+        "name": "Utility Bills (Pakistan)",
+        "description": "Electricity, gas, water, telephone bills",
+        "wizardSteps": {
+          "step1": {
+            "title": "Collect Utility Bills",
+            "description": "Gather recent utility bills showing your address.",
+            "tips": [
+              "Last 6 months recommended",
+              "Include name on bill",
+              "English translation if in Urdu",
+              "Shows proof of residence"
+            ]
+          }
+        }
+      },
+      "rent-agreement-pakistan": {
+        "name": "Rent Agreement",
+        "description": "Rental lease agreement",
+        "wizardSteps": {
+          "step1": {
+            "title": "Get Rent Agreement",
+            "description": "Ensure you have a valid rental agreement.",
+            "tips": [
+              "Should be notarized",
+              "Include both parties' details",
+              "English translation if in Urdu"
+            ]
+          }
+        }
+      },
+      "property-tax-bills": {
+        "name": "Property Tax Bills",
+        "description": "Property tax payment receipts"
+      },
+      "post-office-box-proof": {
+        "name": "PO Box Address Proof",
+        "description": "PO Box rental receipt or ownership proof"
+      },
+      "cover-letter": {
+        "name": "Cover Letter",
+        "description": "Cover letter explaining the case"
+      },
+      "timeline-document": {
+        "name": "Relationship Timeline",
+        "description": "Detailed timeline of relationship events"
+      },
+      "correspondence-logs": {
+        "name": "Correspondence Logs",
+        "description": "Logs of all official correspondence"
+      },
+      "consular-interview-notes": {
+        "name": "Consular Interview Notes",
+        "description": "Preparation notes for consular interview"
+      }
+    }
+  },
   "myJourneys": {
     "journeyNames": {
       "ir1": "IR-1 Spouse Visa",
@@ -1374,7 +2420,7 @@
         "desc": "Calculate financial requirements and determine if you meet the sponsorship threshold."
       },
       {
-        "title": "PDF ToolKit",
+        "title": "PDF Tool Kit",
         "desc": "Merge, split, and organize your immigration documents with ease."
       },
       {
@@ -1755,7 +2801,7 @@
         "desc": "Make a compliant passport/visa photo in minutes."
       },
       "pdf-toolkit": {
-        "title": "PDF ToolKit",
+        "title": "PDF Tool Kit",
         "desc": "Merge • compress • convert • edit — all in one toolkit."
       },
       "snap-sign": {
@@ -2038,6 +3084,393 @@
       "updateDesc": "Enter your email to receive monthly notifications",
       "emailPlaceholder": "your@email.com",
       "subscribe": "Subscribe"
+    }
+  },
+  "bookAppointment": {
+    "title": "Medical Appointment Booking",
+    "description": "Book your medical appointment",
+    "progressSteps": {
+      "location": "Location",
+      "amcInfo": "AMC Info",
+      "hi": "HI",
+      "info": "Info",
+      "passport": "Passport",
+      "docs": "Docs",
+      "when": "When",
+      "iomInfo": "IOM Info",
+      "review": "Review"
+    },
+    "locationStep": {
+      "title": "Select Location",
+      "subtitle": "Please select the city where you want to book your appointment:",
+      "karachi": "Karachi",
+      "lahore": "Lahore",
+      "islamabad": "Islamabad",
+      "wilcareMedical": "Wilcare Medical Centre",
+      "chooseProviderBelow": "Choose Provider Below",
+      "selectProviderTitle": "Select Provider in Islamabad:",
+      "amc": "AMC",
+      "amcDesc": "American Medical Center",
+      "iom": "IOM",
+      "iomDesc": "International Organization for Migration",
+      "nextBtn": "Next",
+      "errors": {
+        "selectLocation": "Please select a location",
+        "selectProvider": "Please select a provider (AMC or IOM)"
+      }
+    },
+    "basicInfoStep": {
+      "amcBadge": "AMC Info",
+      "hiBadge": "HI",
+      "title": "Basic Information",
+      "interviewDate": "Interview Date *",
+      "visaCategory": "Visa Category *",
+      "selectVisaCategory": "Select visa category",
+      "visaCategories": {
+        "immigrant": "Immigrant Visa",
+        "nonImmigrant": "Non-immigrant Visa",
+        "k1Fiance": "K-1 Fiancé Visa",
+        "student": "Student Visa",
+        "work": "Work Visa",
+        "tourist": "Tourist Visa",
+        "other": "Other"
+      },
+      "hadMedicalBefore": "Have you had medical examination done before for USA? *",
+      "selectYesNo": "Select Yes or No",
+      "yes": "Yes",
+      "no": "No",
+      "mobileNo": "Mobile No. in Pakistan *",
+      "email": "Email *",
+      "city": "City *",
+      "enterCity": "Enter city",
+      "caseRef": "Case Ref *",
+      "enterCaseRef": "Enter case reference",
+      "numberOfApplicants": "Number of Applicants *",
+      "selectNumber": "Select number",
+      "appointmentType": "Appointment Type",
+      "selectAppointmentType": "Select appointment type",
+      "appointmentTypes": {
+        "individual": "Individual",
+        "family": "Family"
+      },
+      "visaType": "Visa Type",
+      "selectVisaType": "Select visa type",
+      "visaTypes": {
+        "b2": "B-2 (Medical / Tourist)",
+        "b1b2": "B-1/B-2",
+        "f1": "F-1 (Student)",
+        "h1b": "H-1B (Work)",
+        "k1": "K-1 (Fiancé)",
+        "ir1": "IR-1 (Spouse)",
+        "cr1": "CR-1 (Spouse)",
+        "other": "Other"
+      },
+      "originalPassport": "Original Passport",
+      "originalPassportOptions": {
+        "yes": "YES",
+        "no": "NO"
+      },
+      "medicalType": "Medical Type",
+      "selectMedicalType": "Select medical type",
+      "medicalTypes": {
+        "first": "First Medical",
+        "reMedical": "Re-Medical"
+      },
+      "prevBtn": "Prev",
+      "nextBtn": "Next"
+    },
+    "personalInfoStep": {
+      "badge": "Info",
+      "title": "Personal Information",
+      "primaryApplicantTitle": "Primary Applicant",
+      "surname": "Surname *",
+      "enterSurname": "Enter surname",
+      "givenName": "Given Name *",
+      "enterGivenName": "Enter given name",
+      "gender": "Gender *",
+      "selectGender": "Select gender",
+      "genders": {
+        "m": "Male",
+        "f": "Female",
+        "other": "Other"
+      },
+      "dateOfBirth": "Date of Birth *",
+      "additionalApplicantsTitle": "Additional Applicants",
+      "applicantNumber": "Applicant #{index}",
+      "prevBtn": "Prev",
+      "nextBtn": "Next"
+    },
+    "passportDetailsStep": {
+      "badge": "More info",
+      "title": "Passport Details",
+      "primaryApplicantTitle": "Primary Applicant Passport Details",
+      "passportNumber": "Passport Number *",
+      "enterPassportNumber": "Enter passport number",
+      "issueDate": "Passport Issue Date",
+      "expiryDate": "Passport Exp Date",
+      "caseNumber": "Case No",
+      "enterCaseNumber": "Enter case number (e.g., ISL)",
+      "caseRef": "Case Ref *",
+      "enterCaseRef": "Enter case reference",
+      "additionalApplicantsTitle": "Additional Applicants Passport Details",
+      "applicantNumber": "Applicant #{index} Passport Details",
+      "prevBtn": "Prev",
+      "nextBtn": "Next"
+    },
+    "documentsStep": {
+      "badge": "Docs",
+      "title": "Upload Documents",
+      "surname": "Surname",
+      "givenName": "Given Name",
+      "scannedPassport": "Scanned Passport *",
+      "clickToChoose": "Click to choose file",
+      "uploadScannedDesc": "Upload a scanned copy of your passport (PDF, JPG, PNG)",
+      "k1Letter": "K-1 Letter",
+      "uploadK1Desc": "Upload your K-1 visa letter (PDF, JPG, PNG)",
+      "appointmentLetter": "Appointment confirmation letter",
+      "uploadAppointmentDesc": "Upload your appointment confirmation letter (PDF, JPG, PNG)",
+      "prevBtn": "Prev",
+      "nextBtn": "Next"
+    },
+    "scheduleStep": {
+      "badge": "When",
+      "title": "Appointment Schedule",
+      "estCharges": "Est Charges",
+      "preferredDate": "Preferred Appointment Date",
+      "time": "Time",
+      "selectTimeSlot": "Select time slot",
+      "prevBtn": "Prev",
+      "reviewBtn": "Review & Submit",
+      "submitting": "Submitting..."
+    },
+    "reviewStep": {
+      "badge": "Preview",
+      "title": "Review Your Information",
+      "locationSection": "Location",
+      "selectedCentre": "Selected Centre",
+      "amcSuffix": " - AMC",
+      "iomSuffix": " - IOM",
+      "wilcareSuffix": " - Wilcare Medical",
+      "basicInfoSection": "Basic Information",
+      "primaryContact": "Primary Contact",
+      "email": "Email",
+      "interviewDate": "Interview Date",
+      "visaCategory": "Visa Category",
+      "appointmentType": "Appointment Type",
+      "visaType": "Visa Type",
+      "fullName": "Full Name",
+      "contactNumber": "Contact Number",
+      "preferredLocation": "Preferred Location",
+      "destinationCountry": "Destination Country",
+      "personalInfoSection": "Personal Information",
+      "primaryApplicant": "Primary Applicant",
+      "surname": "Surname",
+      "givenName": "Given Name",
+      "gender": "Gender",
+      "dateOfBirth": "Date of Birth",
+      "notSpecified": "Not specified",
+      "additionalApplicants": "Additional Applicants",
+      "applicantIndex": "Applicant #{index}",
+      "passportDetailsSection": "Passport Details",
+      "passportNumber": "Passport Number",
+      "issueDate": "Issue Date",
+      "expiryDate": "Expiry Date",
+      "caseNumber": "Case Number",
+      "caseReference": "Case Reference",
+      "uploadedDocsSection": "Uploaded Documents",
+      "scannedPassport": "Scanned Passport",
+      "k1Letter": "K-1 Letter",
+      "appointmentConfirmation": "Appointment Confirmation Letter",
+      "notUploaded": "Not uploaded",
+      "appointmentScheduleSection": "Appointment Schedule",
+      "estCharges": "Estimated Charges",
+      "preferredDate": "Preferred Date",
+      "timeSlot": "Time Slot",
+      "backToEditBtn": "Back to Edit",
+      "confirmBtn": "Confirm & Submit",
+      "submitting": "Submitting..."
+    },
+    "successStep": {
+      "title": "Appointment Request Submitted!",
+      "desc": "Your appointment request has been received. Our team will process your request and book the appointment on your behalf. You will receive a confirmation once the appointment is booked.",
+      "bookAnotherBtn": "Book Another Appointment"
+    },
+    "validation": {
+      "reqLocation": "Please select a location",
+      "reqProvider": "Please select a provider (AMC or IOM)",
+      "reqAllProviderFields": "Please fill in all required fields",
+      "reqPrimaryContactEmail": "Please fill in Primary Contact and Email",
+      "reqPrimaryApplicantFields": "Please fill in all required fields for the primary applicant",
+      "reqApplicantIndexFields": "Please fill in all required fields for applicant #{index}",
+      "reqPrimaryPassportNumber": "Please fill in Passport Number for the primary applicant",
+      "reqApplicantPassportNumber": "Please fill in Passport Number for applicant #{index}",
+      "reqApplicantCaseRef": "Please fill in Case Ref for applicant #{index}",
+      "reqIomFields": "Please fill in all required fields for IOM",
+      "submitError": "Failed to create appointment",
+      "uploadError": "Failed to upload some documents"
+    },
+    "iomInfoStep": {
+      "badge": "IOM",
+      "title": "IOM Islamabad Required Information",
+      "subtitle": "Please provide the following mandatory information for your IOM Islamabad appointment:",
+      "fullName": "Full Name as printed on passport *",
+      "fullNamePlaceholder": "Enter your full name as printed on passport",
+      "passportNumber": "Passport Number *",
+      "passportNumberPlaceholder": "Enter your passport number",
+      "dateOfBirth": "Date of Birth as printed on passport *",
+      "visaType": "Visa Type you are applying for *",
+      "selectVisaType": "Select visa type",
+      "visaTypes": {
+        "immigrant": "Immigrant Visa",
+        "nonImmigrant": "Non-immigrant Visa",
+        "k1Fiance": "K-1 Fiancé Visa",
+        "student": "Student Visa",
+        "work": "Work Visa",
+        "tourist": "Tourist Visa",
+        "other": "Other"
+      },
+      "contactNumber": "Local Contact Number *",
+      "contactNumberPlaceholder": "3001234567",
+      "email": "Email Address *",
+      "emailPlaceholder": "your.email@example.com",
+      "preferredLocation": "Preferred IOM Health Assessment Center Location *",
+      "selectLocation": "Select location",
+      "islamabad": "Islamabad",
+      "destinationCountry": "Destination Country for Health Assessment *",
+      "selectDestinationCountry": "Select destination country",
+      "countries": {
+        "us": "United States",
+        "canada": "Canada",
+        "australia": "Australia",
+        "uk": "United Kingdom",
+        "newZealand": "New Zealand",
+        "other": "Other"
+      },
+      "backBtn": "Back",
+      "submitBtn": "Submit Information"
+    }
+  },
+  "documentTranslation": {
+    "uploadPage": {
+      "title": "Document Translation",
+      "subtitle": "Upload your Urdu document for true English translation",
+      "requirementsTitle": "Document Requirements",
+      "requirements": {
+        "1": "Submit clear, legible PDF files",
+        "2": "Original documents in Urdu language",
+        "3": "Maximum file size: 50 MB",
+        "4": "Ensure all text is readable",
+        "5": "Scanned documents should be high resolution",
+        "6": "No password protected PDFs"
+      },
+      "uploadSectionTitle": "Upload Your Document",
+      "clickDragDrop": "Click to upload or drag & drop",
+      "pdfOnlyMax": "PDF only, max 50MB",
+      "removeDocument": "Remove Document",
+      "documentTypeLabel": "Document Type",
+      "selectTypePlaceholder": "Select document type",
+      "types": {
+        "marriage": "Marriage Certificate",
+        "birth": "Birth Certificate",
+        "divorce": "Divorce Certificate",
+        "death": "Death Certificate"
+      },
+      "additionalNotesLabel": "Additional Notes (Optional)",
+      "notesPlaceholder": "Any specific instructions for translators...",
+      "processingBtn": "Processing...",
+      "uploadBtn": "Upload Document",
+      "seeMyRequestsBtn": "See my translation requests",
+      "validation": {
+        "invalidPdf": "Please upload a valid PDF file.",
+        "fileTooLarge": "File size must be under 50 MB.",
+        "missingFileOrType": "Please select a file and document type.",
+        "uploadFailed": "Upload failed",
+        "unexpectedError": "An error occurred during upload"
+      }
+    },
+    "myRequestsPage": {
+      "title": "My Translation Requests",
+      "subtitle": "Track the status of your document translation requests",
+      "allRequests": "All Requests",
+      "uploadNewBtn": "Upload New Document",
+      "noRequestsTitle": "No translation requests",
+      "noRequestsDesc": "You haven't submitted any documents for translation yet.",
+      "uploadFirstBtn": "Upload Your First Document",
+      "table": {
+        "documentType": "Document Type",
+        "submittedDate": "Submitted Date",
+        "status": "Status",
+        "actions": "Actions",
+        "viewDetails": "View Details",
+        "view": "View"
+      }
+    },
+    "requestDetailsPage": {
+      "title": "Translation Request Details",
+      "subtitle": "View details and status of your document translation request",
+      "backBtn": "← Back to My Requests",
+      "verifiedBanner": {
+        "title": "Translation Verified",
+        "desc": "This document has been verified by our team."
+      },
+      "docInfo": {
+        "title": "Document Information",
+        "typeLabel": "Document Type",
+        "submittedLabel": "Submitted Date",
+        "translatedLabel": "Translated On"
+      },
+      "statusAndActions": {
+        "title": "Status & Actions",
+        "originalPdf": "Original Urdu PDF",
+        "translatedPdf": "Translated English PDF",
+        "download": "Download"
+      },
+      "notes": {
+        "yourNotesTitle": "Your Notes",
+        "noUserNotes": "No notes provided.",
+        "adminNotesTitle": "Admin Notes",
+        "noAdminNotes": "No notes from admin yet."
+      },
+      "actions": {
+        "title": "Actions",
+        "confirmCorrectBtn": "Confirm Translation is Correct",
+        "requestChangesBtn": "Request Changes",
+        "modalTitle": "Request Changes to Translation",
+        "reasonLabel": "Reason for requesting changes",
+        "reasonPlaceholder": "Describe what needs to be corrected...",
+        "characters": "{length}/500 characters",
+        "cancelBtn": "Cancel",
+        "submitRequestBtn": "Submit Request"
+      },
+      "notFound": {
+        "title": "Request Not Found",
+        "desc": "The translation request you're looking for doesn't exist.",
+        "backBtn": "Back to My Requests"
+      },
+      "messages": {
+        "confirmSuccess": "Translation confirmed successfully!",
+        "confirmFailed": "Failed to confirm translation",
+        "changeSuccess": "Change request submitted successfully!",
+        "changeFailed": "Failed to submit change request"
+      }
+    },
+    "statusLabels": {
+      "PENDING": "Pending Review",
+      "IN_REVIEW": "In Review",
+      "TRANSLATED": "Translated",
+      "USER_CONFIRMED": "User Confirmed",
+      "CHANGES_REQUESTED": "Changes Requested",
+      "VERIFIED": "Verified & Certified"
+    },
+    "successState": {
+      "title": "Document Submitted Successfully!",
+      "description": "Your document has been received and is being processed by our team.",
+      "statusLabel": "Status:",
+      "pendingStatus": "PENDING",
+      "infoPart1": "Our team will review your document and provide a true English translation. You can check the status of your request anytime in ",
+      "infoPart2": "My Translation Requests.",
+      "infoPart3": "",
+      "buttonText": "Go to My Requests"
     }
   }
 }

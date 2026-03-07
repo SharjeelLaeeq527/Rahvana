@@ -2,8 +2,8 @@
 
 import { useState } from "react";
 import { useDocumentVaultStore } from "@/lib/document-vault/store";
+import { useLanguage } from "@/app/context/LanguageContext";
 import { VisaCategory, ScenarioFlags } from "@/lib/document-vault/types";
-import { getVisaCategoryDisplayName } from "@/lib/document-vault/personalization-engine";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
@@ -33,6 +33,7 @@ export function ConfigurationWizard({
   onComplete,
 }: ConfigurationWizardProps) {
   const [step, setStep] = useState(1);
+  const { t } = useLanguage();
   const [visaCategory, setVisaCategory] = useState<VisaCategory>("IR-1");
   const [scenarioFlags, setScenarioFlags] = useState<ScenarioFlags>({});
   const [caseId, setCaseId] = useState("");
@@ -69,10 +70,10 @@ export function ConfigurationWizard({
       <Card className="p-5 sm:p-8">
         <div className="mb-6 sm:mb-8">
           <h2 className="text-xl sm:text-2xl font-bold mb-2">
-            Document Vault Setup
+            {t("documentVaultPage.components.configWizard.title")}
           </h2>
           <p className="text-muted-foreground">
-            Let&apos;s configure your personalized document checklist
+            {t("documentVaultPage.components.configWizard.subtitle")}
           </p>
           <div className="flex gap-2 mt-4">
             {[1, 2, 3].map((s) => (
@@ -90,7 +91,7 @@ export function ConfigurationWizard({
           <div className="space-y-6">
             <div>
               <h3 className="text-lg font-semibold mb-4">
-                Step 1: Select Your Visa Category
+                {t("documentVaultPage.components.configWizard.step1Title")}
               </h3>
               <div className="space-y-3">
                 {VISA_CATEGORIES.map((category) => (
@@ -113,9 +114,19 @@ export function ConfigurationWizard({
                       className="mr-3"
                     />
                     <div>
-                      <div className="font-medium">{category}</div>
+                      <div className="font-medium">
+                        {
+                          t(
+                            `documentVaultPage.visaCategories.${category}`,
+                          ).split(": ")[0]
+                        }
+                      </div>
                       <div className="text-sm text-muted-foreground">
-                        {getVisaCategoryDisplayName(category).split(": ")[1]}
+                        {
+                          t(
+                            `documentVaultPage.visaCategories.${category}`,
+                          ).split(": ")[1]
+                        }
                       </div>
                     </div>
                   </label>
@@ -124,7 +135,7 @@ export function ConfigurationWizard({
             </div>
 
             <Button onClick={() => setStep(2)} className="w-full">
-              Continue
+              {t("documentVaultPage.components.configWizard.continue")}
             </Button>
           </div>
         )}
@@ -133,10 +144,10 @@ export function ConfigurationWizard({
           <div className="space-y-6">
             <div>
               <h3 className="text-lg font-semibold mb-4">
-                Step 2: Additional Information
+                {t("documentVaultPage.components.configWizard.step2Title")}
               </h3>
               <p className="text-sm text-muted-foreground mb-4">
-                Select any that apply to your case:
+                {t("documentVaultPage.components.configWizard.step2Subtitle")}
               </p>
 
               <div className="space-y-4">
@@ -144,7 +155,11 @@ export function ConfigurationWizard({
                 {(visaCategory === "IR-1" || visaCategory === "CR-1") && (
                   <>
                     <div className="space-y-3">
-                      <h4 className="font-medium text-sm">Marriage History</h4>
+                      <h4 className="font-medium text-sm">
+                        {t(
+                          "documentVaultPage.components.configWizard.marriageHistory",
+                        )}
+                      </h4>
                       <label className="flex items-start space-x-3">
                         <Checkbox
                           checked={
@@ -159,10 +174,14 @@ export function ConfigurationWizard({
                         />
                         <div>
                           <div className="font-medium">
-                            Petitioner Previously Married
+                            {t(
+                              "documentVaultPage.components.configWizard.petitionerMarried",
+                            )}
                           </div>
                           <div className="text-sm text-muted-foreground">
-                            U.S. citizen was married before
+                            {t(
+                              "documentVaultPage.components.configWizard.petitionerMarriedDesc",
+                            )}
                           </div>
                         </div>
                       </label>
@@ -181,10 +200,14 @@ export function ConfigurationWizard({
                         />
                         <div>
                           <div className="font-medium">
-                            Beneficiary Previously Married
+                            {t(
+                              "documentVaultPage.components.configWizard.beneficiaryMarried",
+                            )}
                           </div>
                           <div className="text-sm text-muted-foreground">
-                            Pakistan-based spouse was married before
+                            {t(
+                              "documentVaultPage.components.configWizard.beneficiaryMarriedDesc",
+                            )}
                           </div>
                         </div>
                       </label>
@@ -200,9 +223,15 @@ export function ConfigurationWizard({
                           }
                         />
                         <div>
-                          <div className="font-medium">Name Change</div>
+                          <div className="font-medium">
+                            {t(
+                              "documentVaultPage.components.configWizard.nameChange",
+                            )}
+                          </div>
                           <div className="text-sm text-muted-foreground">
-                            Any party changed their name
+                            {t(
+                              "documentVaultPage.components.configWizard.nameChangeDesc",
+                            )}
                           </div>
                         </div>
                       </label>
@@ -213,7 +242,9 @@ export function ConfigurationWizard({
                 {/* Children flags */}
                 {(visaCategory === "IR-2" || visaCategory === "CR-2") && (
                   <div className="space-y-3">
-                    <h4 className="font-medium text-sm">Child Information</h4>
+                    <h4 className="font-medium text-sm">
+                      {t("documentVaultPage.components.configWizard.childInfo")}
+                    </h4>
                     <label className="flex items-start space-x-3">
                       <Checkbox
                         checked={scenarioFlags.child_adopted || false}
@@ -222,9 +253,15 @@ export function ConfigurationWizard({
                         }
                       />
                       <div>
-                        <div className="font-medium">Adopted Child</div>
+                        <div className="font-medium">
+                          {t(
+                            "documentVaultPage.components.configWizard.adoptedChild",
+                          )}
+                        </div>
                         <div className="text-sm text-muted-foreground">
-                          Child is adopted
+                          {t(
+                            "documentVaultPage.components.configWizard.adoptedChildDesc",
+                          )}
                         </div>
                       </div>
                     </label>
@@ -240,9 +277,15 @@ export function ConfigurationWizard({
                         }
                       />
                       <div>
-                        <div className="font-medium">Stepchild</div>
+                        <div className="font-medium">
+                          {t(
+                            "documentVaultPage.components.configWizard.stepchild",
+                          )}
+                        </div>
                         <div className="text-sm text-muted-foreground">
-                          Child is a stepchild
+                          {t(
+                            "documentVaultPage.components.configWizard.stepchildDesc",
+                          )}
                         </div>
                       </div>
                     </label>
@@ -251,7 +294,11 @@ export function ConfigurationWizard({
 
                 {/* Financial flags */}
                 <div className="space-y-3">
-                  <h4 className="font-medium text-sm">Financial Support</h4>
+                  <h4 className="font-medium text-sm">
+                    {t(
+                      "documentVaultPage.components.configWizard.financialSupport",
+                    )}
+                  </h4>
                   <label className="flex items-start space-x-3">
                     <Checkbox
                       checked={scenarioFlags.joint_sponsor_used || false}
@@ -263,9 +310,15 @@ export function ConfigurationWizard({
                       }
                     />
                     <div>
-                      <div className="font-medium">Joint Sponsor</div>
+                      <div className="font-medium">
+                        {t(
+                          "documentVaultPage.components.configWizard.jointSponsor",
+                        )}
+                      </div>
                       <div className="text-sm text-muted-foreground">
-                        Using a joint sponsor for financial support
+                        {t(
+                          "documentVaultPage.components.configWizard.jointSponsorDesc",
+                        )}
                       </div>
                     </div>
                   </label>
@@ -281,9 +334,15 @@ export function ConfigurationWizard({
                       }
                     />
                     <div>
-                      <div className="font-medium">Household Member</div>
+                      <div className="font-medium">
+                        {t(
+                          "documentVaultPage.components.configWizard.householdMember",
+                        )}
+                      </div>
                       <div className="text-sm text-muted-foreground">
-                        Including household member income
+                        {t(
+                          "documentVaultPage.components.configWizard.householdMemberDesc",
+                        )}
                       </div>
                     </div>
                   </label>
@@ -291,7 +350,9 @@ export function ConfigurationWizard({
 
                 {/* Background flags */}
                 <div className="space-y-3">
-                  <h4 className="font-medium text-sm">Background</h4>
+                  <h4 className="font-medium text-sm">
+                    {t("documentVaultPage.components.configWizard.background")}
+                  </h4>
                   <label className="flex items-start space-x-3">
                     <Checkbox
                       checked={scenarioFlags.military_service || false}
@@ -300,9 +361,15 @@ export function ConfigurationWizard({
                       }
                     />
                     <div>
-                      <div className="font-medium">Military Service</div>
+                      <div className="font-medium">
+                        {t(
+                          "documentVaultPage.components.configWizard.militaryService",
+                        )}
+                      </div>
                       <div className="text-sm text-muted-foreground">
-                        Beneficiary served in military
+                        {t(
+                          "documentVaultPage.components.configWizard.militaryServiceDesc",
+                        )}
                       </div>
                     </div>
                   </label>
@@ -315,9 +382,15 @@ export function ConfigurationWizard({
                       }
                     />
                     <div>
-                      <div className="font-medium">Criminal History</div>
+                      <div className="font-medium">
+                        {t(
+                          "documentVaultPage.components.configWizard.criminalHistory",
+                        )}
+                      </div>
                       <div className="text-sm text-muted-foreground">
-                        Any arrests, charges, or convictions
+                        {t(
+                          "documentVaultPage.components.configWizard.criminalHistoryDesc",
+                        )}
                       </div>
                     </div>
                   </label>
@@ -331,10 +404,10 @@ export function ConfigurationWizard({
                 onClick={() => setStep(1)}
                 className="flex-1"
               >
-                Back
+                {t("documentVaultPage.components.configWizard.back")}
               </Button>
               <Button onClick={() => setStep(3)} className="flex-1">
-                Continue
+                {t("documentVaultPage.components.configWizard.continue")}
               </Button>
             </div>
           </div>
@@ -344,16 +417,16 @@ export function ConfigurationWizard({
           <div className="space-y-6">
             <div>
               <h3 className="text-lg font-semibold mb-4">
-                Step 3: Case Information (Optional)
+                {t("documentVaultPage.components.configWizard.step3Title")}
               </h3>
               <p className="text-sm text-muted-foreground mb-4">
-                This information will be used for file naming and organization
+                {t("documentVaultPage.components.configWizard.step3Subtitle")}
               </p>
 
               <div className="space-y-4">
                 <div>
                   <Label htmlFor="caseId">
-                    Case ID / Receipt Number (Optional)
+                    {t("documentVaultPage.components.configWizard.caseId")}
                   </Label>
                   <Input
                     id="caseId"
@@ -362,12 +435,16 @@ export function ConfigurationWizard({
                     onChange={(e) => setCaseId(e.target.value)}
                   />
                   <p className="text-xs text-muted-foreground mt-1">
-                    USCIS receipt number or NVC case number
+                    {t("documentVaultPage.components.configWizard.caseIdDesc")}
                   </p>
                 </div>
 
                 <div>
-                  <Label htmlFor="petitionerName">Petitioner Name</Label>
+                  <Label htmlFor="petitionerName">
+                    {t(
+                      "documentVaultPage.components.configWizard.petitionerName",
+                    )}
+                  </Label>
                   <Input
                     id="petitionerName"
                     placeholder="e.g., John Smith"
@@ -377,7 +454,11 @@ export function ConfigurationWizard({
                 </div>
 
                 <div>
-                  <Label htmlFor="beneficiaryName">Beneficiary Name</Label>
+                  <Label htmlFor="beneficiaryName">
+                    {t(
+                      "documentVaultPage.components.configWizard.beneficiaryName",
+                    )}
+                  </Label>
                   <Input
                     id="beneficiaryName"
                     placeholder="e.g., Ahmed Khan"
@@ -388,7 +469,11 @@ export function ConfigurationWizard({
 
                 {scenarioFlags.joint_sponsor_used && (
                   <div>
-                    <Label htmlFor="jointSponsorName">Joint Sponsor Name</Label>
+                    <Label htmlFor="jointSponsorName">
+                      {t(
+                        "documentVaultPage.components.configWizard.jointSponsorName",
+                      )}
+                    </Label>
                     <Input
                       id="jointSponsorName"
                       placeholder="e.g., Jane Doe"
@@ -406,10 +491,10 @@ export function ConfigurationWizard({
                 onClick={() => setStep(2)}
                 className="flex-1"
               >
-                Back
+                {t("documentVaultPage.components.configWizard.back")}
               </Button>
               <Button onClick={handleComplete} className="flex-1">
-                Complete Setup
+                {t("documentVaultPage.components.configWizard.completeSetup")}
               </Button>
             </div>
           </div>

@@ -84,8 +84,8 @@ export function HomeSection({ onNavigate, isSignedIn }: { onNavigate: (section: 
                 <h2 className="text-center mt-[60px] mb-10 text-3xl font-bold">Helpful Tools at Every Stage</h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-10">
                     <div className="bg-white border border-slate-200 rounded-xl p-6 shadow-sm transition-all hover:shadow-md hover:-translate-y-0.5 relative">
-                        <h3 className="text-xl font-bold mb-3">📸 Passport Photo Tool</h3>
-                        <p className="text-slate-500 mb-4">Convert any photo to U.S. visa format (2x2, white background, proper sizing).</p>
+                        <h3 className="text-xl font-bold mb-3">📸 Photo Booth</h3>
+                        <p className="text-slate-500 mb-4">Make a compliant passport/visa photo in minutes.</p>
                         <div className="inline-flex px-4 py-2 bg-primary/10 text-primary rounded-full text-xs font-semibold">Free</div>
                         
                     </div>
@@ -98,7 +98,7 @@ export function HomeSection({ onNavigate, isSignedIn }: { onNavigate: (section: 
                     </div>
                     
                     <div className="bg-white border border-slate-200 rounded-xl p-6 shadow-sm transition-all hover:shadow-md hover:-translate-y-0.5 relative">
-                        <h3 className="text-xl font-bold mb-3">🎯 Passport Photo Tool</h3>
+                        <h3 className="text-xl font-bold mb-3">🎯 Photo Booth </h3>
                         <p className="text-slate-500 mb-4">50+ actual embassy questions with suggested answers and tips.</p>
                         <div className="inline-flex px-4 py-2 bg-orange-100 text-orange-500 rounded-full text-xs font-semibold">⭐ Premium</div>
                     </div>
@@ -163,18 +163,18 @@ export function VisaCategorySection({ onNavigate }: { onNavigate: (section: stri
 export function ToolsSection() {
     const tools = [
         {
-            title: "Passport Photo Tool",
-            desc: "Convert any photo to U.S. visa specs: 2\"x2\", white background, proper cropping and sizing.",
+            title: "Photo Booth",
+            desc: "Make a compliant passport/visa photo in minutes.",
             tags: [{ label: "Free", color: "bg-[#d1fae5] text-[#065f46]" }, { label: "Stage I, II, III", color: "bg-[#dbeafe] text-[#1e40af]" }]
         },
         {
-            title: "PDF Processing Tool",
-            desc: "Merge, compress, convert PDFs to meet CEAC 4MB limit. Batch process multiple documents.",
+            title: "PDF Tool Kit",
+            desc: "Merge • compress • convert • edit — all in one toolkit.",
             tags: [{ label: "Free", color: "bg-[#d1fae5] text-[#065f46]" }, { label: "Stage II", color: "bg-[#dbeafe] text-[#1e40af]" }]
         },
         {
-            title: "Income/Poverty Tool",
-            desc: "Calculate I-864 and I-864A minimum income requirements based on the latest 2025 HHS guidelines.",
+            title: "Sponsorship Calculator",
+            desc: "Auto-check income/assets and tell you what you still need.",
             tags: [{ label: "Free", color: "bg-[#d1fae5] text-[#065f46]" }, { label: "Stage II", color: "bg-[#dbeafe] text-[#1e40af]" }]
         }
     ];

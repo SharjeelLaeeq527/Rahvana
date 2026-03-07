@@ -1,7 +1,11 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { DocumentDefinition } from "@/lib/document-vault/types";
+import {
+  DocumentDefinition,
+  DocumentWizardStep,
+} from "@/lib/document-vault/types";
+import { useLanguage } from "@/app/context/LanguageContext";
 import { useDocumentVaultStore } from "@/lib/document-vault/store";
 import {
   Dialog,
@@ -42,6 +46,7 @@ export function DocumentWizard({
   documentDef,
 }: DocumentWizardProps) {
   const [currentStep, setCurrentStep] = useState(0);
+  const { t } = useLanguage();
 
   const completedSteps = useDocumentVaultStore((state) => state.completedSteps);
   const toggleStepCompletion = useDocumentVaultStore(
@@ -54,10 +59,20 @@ export function DocumentWizard({
     (state) => state.uploadedDocuments,
   );
 
-  const wizardSteps = useMemo(
-    () => documentDef.wizardSteps || [],
-    [documentDef.wizardSteps],
-  );
+  const wizardSteps = useMemo(() => {
+    const translatedSteps = t(
+      `documentVaultPage.documents.${documentDef.id}.wizardSteps`,
+      { returnObjects: true },
+    );
+    if (
+      Array.isArray(translatedSteps) &&
+      translatedSteps.length > 0 &&
+      typeof translatedSteps[0] !== "string"
+    ) {
+      return translatedSteps;
+    }
+    return documentDef.wizardSteps || [];
+  }, [documentDef.id, documentDef.wizardSteps, t]);
 
   const isDocumentUploaded = useMemo(
     () =>
@@ -111,7 +126,12 @@ export function DocumentWizard({
       <Dialog open={open} onOpenChange={onClose}>
         <DialogContent className="w-[95vw] sm:w-full p-4 sm:p-6">
           <DialogHeader className="relative">
-            <DialogTitle className="pr-8">{documentDef.name}</DialogTitle>
+            <DialogTitle className="pr-8">
+              {t(`documentVaultPage.documents.${documentDef.id}.name`) !==
+              `documentVaultPage.documents.${documentDef.id}.name`
+                ? t(`documentVaultPage.documents.${documentDef.id}.name`)
+                : documentDef.name}
+            </DialogTitle>
             <Button
               variant="ghost"
               size="icon"
@@ -122,11 +142,11 @@ export function DocumentWizard({
             </Button>
           </DialogHeader>
           <p className="text-sm sm:text-base text-muted-foreground mt-2">
-            No step-by-step guide available for this document yet.
+            {t("documentVaultPage.components.wizard.noGuide")}
           </p>
           <div className="mt-4">
             <Button onClick={onClose} className="w-full sm:w-auto">
-              Close
+              {t("documentVaultPage.components.wizard.close")}
             </Button>
           </div>
         </DialogContent>
@@ -154,28 +174,39 @@ export function DocumentWizard({
           <DialogTitle className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 pr-8">
             <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
               <span className="text-lg sm:text-xl leading-tight">
-                How to Obtain: {documentDef.name}
+                {t("documentVaultPage.components.wizard.howToObtain")}
+                {t(`documentVaultPage.documents.${documentDef.id}.name`) !==
+                `documentVaultPage.documents.${documentDef.id}.name`
+                  ? t(`documentVaultPage.documents.${documentDef.id}.name`)
+                  : documentDef.name}
               </span>
               {isDocumentUploaded && (
                 <Badge className="bg-green-500 w-fit">
-                  Document Uploaded ✓
+                  {t("documentVaultPage.components.wizard.documentUploaded")}
                 </Badge>
               )}
             </div>
             <div className="flex items-center gap-2 self-start sm:self-auto shrink-0">
               <Badge variant="outline">
-                Step {currentStep + 1} of {wizardSteps.length}
+                {t("documentVaultPage.components.wizard.stepProgress", {
+                  current: currentStep + 1,
+                  total: wizardSteps.length,
+                })}
               </Badge>
               {!isDocumentUploaded && (
                 <Button
                   variant="ghost"
                   size="sm"
                   onClick={() => {
-                    if (confirm("Reset progress for this document?")) {
+                    if (
+                      confirm(
+                        t("documentVaultPage.components.wizard.resetConfirm"),
+                      )
+                    ) {
                       resetDocumentProgress(documentDef.id);
                     }
                   }}
-                  title="Reset Progress"
+                  title={t("documentVaultPage.components.wizard.resetProgress")}
                 >
                   <RotateCcw className="w-4 h-4" />
                 </Button>
@@ -196,10 +227,12 @@ export function DocumentWizard({
           {/* Left side - Progress Tree */}
           <div className="lg:border-r lg:pr-6">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold">Progress Overview</h3>
+              <h3 className="text-lg font-semibold">
+                {t("documentVaultPage.components.wizard.progressOverview")}
+              </h3>
               {!isDocumentUploaded && (
                 <p className="text-xs text-muted-foreground">
-                  Click steps to mark complete
+                  {t("documentVaultPage.components.wizard.clickToMark")}
                 </p>
               )}
             </div>
@@ -214,9 +247,7 @@ export function DocumentWizard({
             {!isDocumentUploaded && (
               <Card className="mt-4 p-3 bg-blue-50 dark:bg-blue-950 border-blue-200">
                 <p className="text-xs text-blue-800 dark:text-blue-200">
-                  💡 <strong>Tip:</strong> Click on any step in the progress
-                  tree to mark it as complete. All steps will automatically be
-                  marked complete once you upload the document.
+                  {t("documentVaultPage.components.wizard.tip")}
                 </p>
               </Card>
             )}
@@ -254,10 +285,10 @@ export function DocumentWizard({
                   <Lightbulb className="w-5 h-5 text-blue-600 dark:text-blue-400 mt-0.5 shrink-0" />
                   <div>
                     <h4 className="font-semibold text-blue-900 dark:text-blue-100 mb-2">
-                      Tips
+                      {t("documentVaultPage.components.wizard.tipsHeading")}
                     </h4>
                     <ul className="space-y-1 text-sm text-blue-800 dark:text-blue-200">
-                      {step.tips.map((tip, index) => (
+                      {(step.tips || []).map((tip: string, index: number) => (
                         <li key={index} className="flex items-start gap-2">
                           <span className="text-blue-600 dark:text-blue-400 mt-0.5">
                             •
@@ -274,23 +305,32 @@ export function DocumentWizard({
             {/* Resources */}
             {step.resources && step.resources.length > 0 && (
               <div>
-                <h4 className="font-semibold mb-2">Helpful Resources</h4>
+                <h4 className="font-semibold mb-2">
+                  {t("documentVaultPage.components.wizard.helpfulResources")}
+                </h4>
                 <div className="space-y-2">
-                  {step.resources.map((resource, index) => (
-                    <a
-                      key={index}
-                      href={resource.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex items-center gap-2 p-3 border rounded-lg hover:border-brand hover:bg-brand/5 transition-colors"
-                    >
-                      {getResourceIcon(resource.type)}
-                      <span className="flex-1 font-medium">
-                        {resource.name}
-                      </span>
-                      <ExternalLink className="w-4 h-4 text-muted-foreground" />
-                    </a>
-                  ))}
+                  {(step.resources || []).map(
+                    (
+                      resource: NonNullable<
+                        DocumentWizardStep["resources"]
+                      >[number],
+                      index: number,
+                    ) => (
+                      <a
+                        key={index}
+                        href={resource.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-2 p-3 border rounded-lg hover:border-brand hover:bg-brand/5 transition-colors"
+                      >
+                        {getResourceIcon(resource.type)}
+                        <span className="flex-1 font-medium">
+                          {resource.name}
+                        </span>
+                        <ExternalLink className="w-4 h-4 text-muted-foreground" />
+                      </a>
+                    ),
+                  )}
                 </div>
               </div>
             )}
@@ -306,7 +346,7 @@ export function DocumentWizard({
             className="flex-1"
           >
             <ChevronLeft className="w-4 h-4 mr-2" />
-            Previous
+            {t("documentVaultPage.components.wizard.previous")}
           </Button>
 
           {currentStep < wizardSteps.length - 1 ? (
@@ -318,12 +358,12 @@ export function DocumentWizard({
               }
               className="flex-1"
             >
-              Next
+              {t("documentVaultPage.components.wizard.next")}
               <ChevronRight className="w-4 h-4 ml-2" />
             </Button>
           ) : (
             <Button onClick={onClose} className="flex-1">
-              Done
+              {t("documentVaultPage.components.wizard.done")}
             </Button>
           )}
         </div>

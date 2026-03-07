@@ -1,6 +1,8 @@
 // Document Expiration Tracking and Notification System
 
-import { UploadedDocument, DocumentDefinition, DocumentStatus } from './types';
+import { UploadedDocument, DocumentDefinition, DocumentStatus } from "./types";
+
+type TranslateFn = (key: string, options?: any) => string;
 
 /**
  * Calculates expiration date based on document definition
@@ -8,22 +10,22 @@ import { UploadedDocument, DocumentDefinition, DocumentStatus } from './types';
 export function calculateExpirationDate(
   documentDef: DocumentDefinition,
   uploadDate: Date,
-  userProvidedDate?: Date
+  userProvidedDate?: Date,
 ): Date | undefined {
   switch (documentDef.validityType) {
-    case 'none':
+    case "none":
       return undefined; // Document doesn't expire
 
-    case 'fixed_days':
+    case "fixed_days":
       if (!documentDef.validityDays) return undefined;
       const expiryDate = new Date(uploadDate);
       expiryDate.setDate(expiryDate.getDate() + documentDef.validityDays);
       return expiryDate;
 
-    case 'user_set':
+    case "user_set":
       return userProvidedDate; // User must provide expiration date
 
-    case 'policy_variable':
+    case "policy_variable":
       return userProvidedDate; // User must provide based on their case specifics
 
     default:
@@ -47,7 +49,7 @@ export function isDocumentExpired(document: UploadedDocument): boolean {
 export function isDocumentExpiringSoon(
   document: UploadedDocument,
   documentDef: DocumentDefinition,
-  warnDays?: number
+  warnDays?: number,
 ): boolean {
   if (!document.expirationDate) return false;
 
@@ -63,14 +65,15 @@ export function isDocumentExpiringSoon(
  * Gets days until expiration (null if no expiration, negative if expired)
  */
 export function getDaysUntilExpiration(
-  document: UploadedDocument
+  document: UploadedDocument,
 ): number | null {
   if (!document.expirationDate) return null;
 
   // Ensure expirationDate is a Date object
-  const expirationDate = document.expirationDate instanceof Date
-    ? document.expirationDate
-    : new Date(document.expirationDate);
+  const expirationDate =
+    document.expirationDate instanceof Date
+      ? document.expirationDate
+      : new Date(document.expirationDate);
 
   const now = new Date();
   const diffTime = expirationDate.getTime() - now.getTime();
@@ -84,22 +87,22 @@ export function getDaysUntilExpiration(
  */
 export function determineDocumentStatus(
   document: UploadedDocument,
-  documentDef: DocumentDefinition
+  documentDef: DocumentDefinition,
 ): DocumentStatus {
   // If no expiration date, status is simply UPLOADED
   if (!document.expirationDate) {
-    return 'UPLOADED';
+    return "UPLOADED";
   }
 
   if (isDocumentExpired(document)) {
-    return 'EXPIRED';
+    return "EXPIRED";
   }
 
   if (isDocumentExpiringSoon(document, documentDef)) {
-    return 'NEEDS_ATTENTION';
+    return "NEEDS_ATTENTION";
   }
 
-  return 'UPLOADED';
+  return "UPLOADED";
 }
 
 /**
@@ -108,7 +111,7 @@ export function determineDocumentStatus(
  */
 export function updateDocumentStatuses(
   documents: UploadedDocument[],
-  documentDefs: Map<string, DocumentDefinition>
+  documentDefs: Map<string, DocumentDefinition>,
 ): UploadedDocument[] {
   return documents.map((doc) => {
     const def = documentDefs.get(doc.documentDefId);
@@ -128,10 +131,10 @@ export function updateDocumentStatuses(
  * Gets documents that need attention (expiring or expired)
  */
 export function getDocumentsNeedingAttention(
-  documents: UploadedDocument[]
+  documents: UploadedDocument[],
 ): UploadedDocument[] {
   return documents.filter(
-    (doc) => doc.status === 'NEEDS_ATTENTION' || doc.status === 'EXPIRED'
+    (doc) => doc.status === "NEEDS_ATTENTION" || doc.status === "EXPIRED",
   );
 }
 
@@ -146,7 +149,7 @@ export interface ExpiringDocumentsGroup {
 }
 
 export function groupExpiringDocuments(
-  documents: UploadedDocument[]
+  documents: UploadedDocument[],
 ): ExpiringDocumentsGroup {
   const result: ExpiringDocumentsGroup = {
     urgent: [],
@@ -178,26 +181,56 @@ export function groupExpiringDocuments(
 /**
  * Formats expiration date for display
  */
-export function formatExpirationDate(date: Date | string): string {
+export function formatExpirationDate(
+  date: Date | string,
+  t?: TranslateFn,
+): string {
   // Ensure date is a Date object
   const expirationDate = date instanceof Date ? date : new Date(date);
   const now = new Date();
   const daysUntil = Math.ceil(
-    (expirationDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)
+    (expirationDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24),
   );
 
+  if (!t) {
+    if (daysUntil < 0) {
+      return `Expired ${Math.abs(daysUntil)} days ago`;
+    } else if (daysUntil === 0) {
+      return "Expires today";
+    } else if (daysUntil === 1) {
+      return "Expires tomorrow";
+    } else if (daysUntil <= 7) {
+      return `Expires in ${daysUntil} days`;
+    } else if (daysUntil <= 30) {
+      return `Expires in ${Math.ceil(daysUntil / 7)} weeks`;
+    } else if (daysUntil <= 90) {
+      return `Expires in ${Math.ceil(daysUntil / 30)} months`;
+    } else {
+      return expirationDate.toLocaleDateString();
+    }
+  }
+
+  // Use translation function if provided
   if (daysUntil < 0) {
-    return `Expired ${Math.abs(daysUntil)} days ago`;
+    return t("documentVaultPage.logic.expiration.expiredAgo", {
+      days: Math.abs(daysUntil),
+    });
   } else if (daysUntil === 0) {
-    return 'Expires today';
+    return t("documentVaultPage.logic.expiration.expiresToday");
   } else if (daysUntil === 1) {
-    return 'Expires tomorrow';
+    return t("documentVaultPage.logic.expiration.expiresTomorrow");
   } else if (daysUntil <= 7) {
-    return `Expires in ${daysUntil} days`;
+    return t("documentVaultPage.logic.expiration.expiresInDays", {
+      days: daysUntil,
+    });
   } else if (daysUntil <= 30) {
-    return `Expires in ${Math.ceil(daysUntil / 7)} weeks`;
+    return t("documentVaultPage.logic.expiration.expiresInWeeks", {
+      weeks: Math.ceil(daysUntil / 7),
+    });
   } else if (daysUntil <= 90) {
-    return `Expires in ${Math.ceil(daysUntil / 30)} months`;
+    return t("documentVaultPage.logic.expiration.expiresInMonths", {
+      months: Math.ceil(daysUntil / 30),
+    });
   } else {
     return expirationDate.toLocaleDateString();
   }
@@ -207,30 +240,35 @@ export function formatExpirationDate(date: Date | string): string {
  * Gets expiration status color
  */
 export function getExpirationStatusColor(
-  document: UploadedDocument
-): 'red' | 'yellow' | 'green' | 'gray' {
-  if (!document.expirationDate) return 'gray';
+  document: UploadedDocument,
+): "red" | "yellow" | "green" | "gray" {
+  if (!document.expirationDate) return "gray";
 
   const daysUntil = getDaysUntilExpiration(document);
-  if (daysUntil === null) return 'gray';
+  if (daysUntil === null) return "gray";
 
-  if (daysUntil < 0) return 'red'; // Expired
-  if (daysUntil <= 7) return 'red'; // Urgent
-  if (daysUntil <= 30) return 'yellow'; // Soon
-  return 'green'; // Valid
+  if (daysUntil < 0) return "red"; // Expired
+  if (daysUntil <= 7) return "red"; // Urgent
+  if (daysUntil <= 30) return "yellow"; // Soon
+  return "green"; // Valid
 }
 
 /**
  * Enhanced notification generation with rate limiting and snooze support
  */
-import { NotificationMessage, NotificationConfig, NotificationPreferences } from './types';
+import {
+  NotificationMessage,
+  NotificationConfig,
+  NotificationPreferences,
+} from "./types";
 
 export function generateNotifications(
   documents: UploadedDocument[],
   documentDefs: Map<string, DocumentDefinition>,
   requiredDocIds: string[],
   config?: NotificationConfig,
-  preferences?: NotificationPreferences
+  preferences?: NotificationPreferences,
+  t?: TranslateFn,
 ): NotificationMessage[] {
   const notifications: NotificationMessage[] = [];
   const now = new Date();
@@ -245,7 +283,7 @@ export function generateNotifications(
     enableMissingDocNotifications: true,
     enableExpiringNotifications: true,
     enableExpiredNotifications: true,
-    missingDocReminderCadence: 'weekly',
+    missingDocReminderCadence: "weekly",
     expiryReminderThresholds: [90, 60, 30, 7],
   };
 
@@ -254,23 +292,40 @@ export function generateNotifications(
     // Check rate limiting for missing doc reminders
     const shouldShowMissingReminders = shouldSendMissingDocReminder(
       config?.lastMissingDocReminder,
-      prefs.missingDocReminderCadence
+      prefs.missingDocReminderCadence,
     );
 
     if (shouldShowMissingReminders) {
       const uploadedDocDefIds = new Set(documents.map((d) => d.documentDefId));
-      const missingDocIds = requiredDocIds.filter((id) => !uploadedDocDefIds.has(id));
+      const missingDocIds = requiredDocIds.filter(
+        (id) => !uploadedDocDefIds.has(id),
+      );
 
       missingDocIds.forEach((docDefId) => {
         const def = documentDefs.get(docDefId);
         if (!def) return;
 
+        const docName = t
+          ? t(`documentVaultPage.documents.${docDefId}.name`)
+          : def.name;
+
         notifications.push({
           id: `missing_${docDefId}`,
-          type: 'DOC_MISSING',
-          severity: 'warning',
-          title: 'Missing Required Document',
-          message: `${def.name} is required but not yet uploaded. Upload it to complete your document package.`,
+          type: "DOC_MISSING",
+          severity: "warning",
+          title: t
+            ? t(
+                "documentVaultPage.components.logic.notifications.missingDocTitle",
+              )
+            : "Missing Required Document",
+          message: t
+            ? t(
+                "documentVaultPage.components.logic.notifications.missingDocMessage",
+                {
+                  name: docName,
+                },
+              )
+            : `${def.name} is required but not yet uploaded. Upload it to complete your document package.`,
           documentDefId: docDefId,
           actionRequired: true,
           createdAt: now,
@@ -288,16 +343,30 @@ export function generateNotifications(
     const daysUntil = getDaysUntilExpiration(doc);
     if (daysUntil === null) return;
 
+    const docName = t
+      ? t(`documentVaultPage.documents.${doc.documentDefId}.name`)
+      : def.name;
+
     if (daysUntil < 0) {
       // Expired documents
       if (prefs.enableExpiredNotifications) {
         const daysSinceExpiry = Math.abs(daysUntil);
         notifications.push({
           id: `expired_${doc.id}`,
-          type: 'DOC_EXPIRED',
-          severity: 'error',
-          title: 'Document Expired',
-          message: `${def.name} expired ${daysSinceExpiry} day${daysSinceExpiry === 1 ? '' : 's'} ago. Please upload a renewed version immediately.`,
+          type: "DOC_EXPIRED",
+          severity: "error",
+          title: t
+            ? t("documentVaultPage.components.logic.notifications.expiredTitle")
+            : "Document Expired",
+          message: t
+            ? t(
+                "documentVaultPage.components.logic.notifications.expiredMessage",
+                {
+                  name: docName,
+                  days: daysSinceExpiry,
+                },
+              )
+            : `${def.name} expired ${daysSinceExpiry} day${daysSinceExpiry === 1 ? "" : "s"} ago. Please upload a renewed version immediately.`,
           documentId: doc.id,
           documentDefId: doc.documentDefId,
           actionRequired: true,
@@ -306,7 +375,7 @@ export function generateNotifications(
         });
       }
     } else if (prefs.enableExpiringNotifications) {
-      // Check if document is within any reminder threshold
+      // Check if document is within any reminder reminder threshold
       const shouldNotify = prefs.expiryReminderThresholds.some((threshold) => {
         // Notify if we're at or below the threshold
         return daysUntil <= threshold;
@@ -315,30 +384,65 @@ export function generateNotifications(
       if (shouldNotify) {
         // Check rate limiting for this specific document
         const lastReminder = config?.lastExpiryReminder?.[doc.id];
-        const shouldShowReminder = shouldSendExpiryReminder(lastReminder, daysUntil);
+        const shouldShowReminder = shouldSendExpiryReminder(
+          lastReminder,
+          daysUntil,
+        );
 
         if (shouldShowReminder) {
           // Determine severity based on days until expiry
-          let severity: 'error' | 'warning' = 'warning';
+          let severity: "error" | "warning" = "warning";
           if (daysUntil <= 7) {
-            severity = 'error'; // Critical: 7 days or less
+            severity = "error"; // Critical: 7 days or less
           }
 
-          let timeMessage = '';
-          if (daysUntil === 0) {
-            timeMessage = 'expires today';
-          } else if (daysUntil === 1) {
-            timeMessage = 'expires tomorrow';
+          let timeMessage = "";
+          if (t) {
+            if (daysUntil === 0) {
+              timeMessage = t(
+                "documentVaultPage.components.logic.notifications.expiresToday",
+                { name: "" },
+              ).trim();
+            } else if (daysUntil === 1) {
+              timeMessage = t(
+                "documentVaultPage.components.logic.notifications.expiresTomorrow",
+                { name: "" },
+              ).trim();
+            } else {
+              timeMessage = t(
+                "documentVaultPage.components.logic.notifications.expiringInDays",
+                { name: "", days: daysUntil },
+              ).trim();
+            }
           } else {
-            timeMessage = `expires in ${daysUntil} days`;
+            if (daysUntil === 0) {
+              timeMessage = "expires today";
+            } else if (daysUntil === 1) {
+              timeMessage = "expires tomorrow";
+            } else {
+              timeMessage = `expires in ${daysUntil} days`;
+            }
           }
 
           notifications.push({
             id: `expiring_${doc.id}`,
-            type: 'DOC_EXPIRING_SOON',
+            type: "DOC_EXPIRING_SOON",
             severity,
-            title: daysUntil <= 7 ? 'Document Expiring Soon - Action Required' : 'Document Expiring Soon',
-            message: `${def.name} ${timeMessage}. ${daysUntil <= 7 ? 'Upload a renewed version immediately.' : 'Consider uploading a renewed version.'}`,
+            title:
+              daysUntil <= 7
+                ? t
+                  ? t(
+                      "documentVaultPage.components.logic.notifications.expiringSoonActionTitle",
+                    )
+                  : "Document Expiring Soon - Action Required"
+                : t
+                  ? t(
+                      "documentVaultPage.components.logic.notifications.expiringSoonTitle",
+                    )
+                  : "Document Expiring Soon",
+            message: t
+              ? `${docName} ${timeMessage}. ${daysUntil <= 7 ? t("documentVaultPage.components.logic.notifications.renewImmediately") : t("documentVaultPage.components.logic.notifications.considerRenewing")}`
+              : `${def.name} ${timeMessage}. ${daysUntil <= 7 ? "Upload a renewed version immediately." : "Consider uploading a renewed version."}`,
             documentId: doc.id,
             documentDefId: doc.documentDefId,
             actionRequired: daysUntil <= 7,
@@ -366,14 +470,14 @@ export function generateNotifications(
  */
 export function shouldSendMissingDocReminder(
   lastReminderDate: Date | undefined,
-  cadence: 'disabled' | 'daily' | 'weekly' | 'monthly'
+  cadence: "disabled" | "daily" | "weekly" | "monthly",
 ): boolean {
-  if (cadence === 'disabled') return false;
+  if (cadence === "disabled") return false;
   if (!lastReminderDate) return true; // Never sent before
 
   const now = new Date();
   const daysSinceLastReminder = Math.floor(
-    (now.getTime() - lastReminderDate.getTime()) / (1000 * 60 * 60 * 24)
+    (now.getTime() - lastReminderDate.getTime()) / (1000 * 60 * 60 * 24),
   );
 
   const cadenceDays = {
@@ -392,13 +496,13 @@ export function shouldSendMissingDocReminder(
  */
 export function shouldSendExpiryReminder(
   lastReminderDate: Date | undefined,
-  daysUntilExpiry: number
+  daysUntilExpiry: number,
 ): boolean {
   if (!lastReminderDate) return true; // Never sent before
 
   const now = new Date();
   const daysSinceLastReminder = Math.floor(
-    (now.getTime() - lastReminderDate.getTime()) / (1000 * 60 * 60 * 24)
+    (now.getTime() - lastReminderDate.getTime()) / (1000 * 60 * 60 * 24),
   );
 
   // Rate limiting rules based on urgency
@@ -422,14 +526,14 @@ export function shouldSendExpiryReminder(
  */
 export function shouldSendReminder(
   lastReminderDate: Date | undefined,
-  reminderFrequencyDays: number
+  reminderFrequencyDays: number,
 ): boolean {
   if (reminderFrequencyDays === 0) return false; // Reminders disabled
   if (!lastReminderDate) return true; // Never sent before
 
   const now = new Date();
   const daysSinceLastReminder = Math.floor(
-    (now.getTime() - lastReminderDate.getTime()) / (1000 * 60 * 60 * 24)
+    (now.getTime() - lastReminderDate.getTime()) / (1000 * 60 * 60 * 24),
   );
 
   return daysSinceLastReminder >= reminderFrequencyDays;
@@ -440,18 +544,26 @@ export function shouldSendReminder(
  */
 export function validateExpirationDate(
   date: Date,
-  uploadDate: Date
+  uploadDate: Date,
+  t?: TranslateFn,
 ): { valid: boolean; error?: string } {
   const now = new Date();
 
   if (date < now) {
-    return { valid: false, error: 'Expiration date cannot be in the past' };
+    return {
+      valid: false,
+      error: t
+        ? t("documentVaultPage.logic.validation.pastDate")
+        : "Expiration date cannot be in the past",
+    };
   }
 
   if (date < uploadDate) {
     return {
       valid: false,
-      error: 'Expiration date cannot be before upload date',
+      error: t
+        ? t("documentVaultPage.logic.validation.beforeUpload")
+        : "Expiration date cannot be before upload date",
     };
   }
 
@@ -463,7 +575,11 @@ export function validateExpirationDate(
   if (date > maxDate) {
     return {
       valid: false,
-      error: `Expiration date cannot be more than ${maxYears} years in the future`,
+      error: t
+        ? t("documentVaultPage.logic.validation.tooFarFuture", {
+            years: maxYears,
+          })
+        : `Expiration date cannot be more than ${maxYears} years in the future`,
     };
   }
 

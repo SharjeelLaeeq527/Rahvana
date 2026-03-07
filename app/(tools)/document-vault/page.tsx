@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useMemo } from "react";
 import { useAuth } from "@/app/context/AuthContext";
+import { useLanguage } from "@/app/context/LanguageContext";
 import { useRouter } from "next/navigation";
 import { useDocumentVaultStore } from "@/lib/document-vault/store";
 import {
@@ -55,6 +56,7 @@ import { motion, AnimatePresence } from "framer-motion";
 
 export default function DocumentVaultPage() {
   const { user, isLoading: authLoading } = useAuth();
+  const { t } = useLanguage();
   const router = useRouter();
 
   const {
@@ -160,7 +162,7 @@ export default function DocumentVaultPage() {
 
     if (user && !initialized) {
       setIsInitializing(true);
-      initialize(user.id)
+      initialize(user.id, t)
         .then(() => {
           setInitialized(true);
           setIsInitializing(false);
@@ -169,7 +171,7 @@ export default function DocumentVaultPage() {
           setIsInitializing(false);
         });
     }
-  }, [user, authLoading, router, initialized, initialize]);
+  }, [user, authLoading, router, initialized, initialize, t]);
 
   useEffect(() => {
     // Check if config exists after initialization
@@ -179,20 +181,24 @@ export default function DocumentVaultPage() {
   }, [initialized, config]);
 
   useEffect(() => {
-    // Refresh document statuses and notifications on mount and periodically
+    // Initial data refresh on mount/config change
     if (config) {
       refreshDocumentStatuses();
-      refreshNotifications();
+      refreshNotifications(t);
+    }
+  }, [config, t, refreshDocumentStatuses, refreshNotifications]);
 
+  useEffect(() => {
+    // Periodic refresh (stable interval)
+    if (config) {
       const interval = setInterval(() => {
         refreshDocumentStatuses();
-        refreshNotifications();
+        refreshNotifications(t);
       }, 60000); // Every minute
 
       return () => clearInterval(interval);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [config]);
+  }, [config, t, refreshDocumentStatuses, refreshNotifications]);
 
   // Categories for tabs
   const categories = useMemo(() => {
@@ -250,10 +256,10 @@ export default function DocumentVaultPage() {
       window.URL.revokeObjectURL(url);
       document.body.removeChild(a);
 
-      toast.success("Document downloaded");
+      toast.success(t("documentVaultPage.page.messages.downloaded"));
     } catch (error) {
       console.error("Download error:", error);
-      toast.error("Failed to download document");
+      toast.error(t("documentVaultPage.page.messages.downloadFailed"));
     }
   };
 
@@ -264,8 +270,8 @@ export default function DocumentVaultPage() {
     try {
       toast.info(
         hasCompressed
-          ? "Preparing ZIP with original + compressed..."
-          : "Preparing export...",
+          ? t("documentVaultPage.page.messages.preparingZip")
+          : t("documentVaultPage.page.messages.preparingExport"),
       );
       const response = await fetch(`/api/documents/${documentId}/export`);
 
@@ -288,20 +294,22 @@ export default function DocumentVaultPage() {
 
       toast.success(
         hasCompressed
-          ? "ZIP exported with original + NVC-compliant compressed version"
-          : "Document exported",
+          ? t("documentVaultPage.page.messages.zipExported")
+          : t("documentVaultPage.page.messages.documentExported"),
       );
     } catch (error) {
       console.error("Export error:", error);
-      toast.error("Failed to export document");
+      toast.error(t("documentVaultPage.page.messages.exportFailed"));
     }
   };
 
   const handleDelete = async (documentId: string) => {
-    if (!confirm("Are you sure you want to delete this document?")) return;
+    if (!confirm(t("documentVaultPage.page.messages.deleteConfirm"))) return;
 
     try {
-      toast.loading("Deleting document...", { id: "delete-doc" });
+      toast.loading(t("documentVaultPage.page.messages.deleting"), {
+        id: "delete-doc",
+      });
       const response = await fetch(`/api/documents/${documentId}`, {
         method: "DELETE",
       });
@@ -312,13 +320,17 @@ export default function DocumentVaultPage() {
 
       // Reload all data from database to ensure store is in sync
       if (user) {
-        await initialize(user.id);
+        await initialize(user.id, t);
       }
 
-      toast.success("Document deleted", { id: "delete-doc" });
+      toast.success(t("documentVaultPage.page.messages.deleted"), {
+        id: "delete-doc",
+      });
     } catch (error) {
       console.error("Delete error:", error);
-      toast.error("Failed to delete document", { id: "delete-doc" });
+      toast.error(t("documentVaultPage.page.messages.deleteFailed"), {
+        id: "delete-doc",
+      });
     }
   };
 
@@ -329,7 +341,7 @@ export default function DocumentVaultPage() {
 
   const handleExport = async () => {
     try {
-      toast.info("Preparing export...");
+      toast.info(t("documentVaultPage.page.messages.preparingExport"));
       const response = await fetch(
         "/api/documents/export?structureByCategory=true",
       );
@@ -348,28 +360,28 @@ export default function DocumentVaultPage() {
       window.URL.revokeObjectURL(url);
       document.body.removeChild(a);
 
-      toast.success("Export completed");
+      toast.success(t("documentVaultPage.page.messages.exportCompleted"));
     } catch (error) {
       console.error("Export error:", error);
-      toast.error("Failed to export documents");
+      toast.error(t("documentVaultPage.page.messages.exportAllFailed"));
     }
   };
 
   const handleDeleteAll = async () => {
     if (
-      !confirm(
-        "⚠️ Are you sure you want to delete ALL documents? This action cannot be undone!",
-      )
+      !confirm(t("documentVaultPage.page.messages.deleteAllConfirmWarning"))
     ) {
       return;
     }
 
-    if (!confirm("⚠️ Final confirmation: Delete ALL uploaded documents?")) {
+    if (!confirm(t("documentVaultPage.page.messages.deleteAllFinalConfirm"))) {
       return;
     }
 
     try {
-      toast.loading("Deleting all documents...", { id: "delete-all" });
+      toast.loading(t("documentVaultPage.page.messages.deletingAll"), {
+        id: "delete-all",
+      });
 
       // Get all uploaded document IDs
       const documentIds = uploadedDocuments.map((doc) => doc.id);
@@ -386,17 +398,25 @@ export default function DocumentVaultPage() {
         }
       }
 
-      toast.success(`✅ Deleted ${deleted} documents successfully!`, {
-        id: "delete-all",
-      });
+      toast.success(
+        t("documentVaultPage.page.messages.deletedAllSuccess").replace(
+          "{{count}}",
+          deleted.toString(),
+        ),
+        {
+          id: "delete-all",
+        },
+      );
 
       // Reload data
       if (user) {
-        await initialize(user.id);
+        await initialize(user.id, t);
       }
     } catch (error) {
       console.error("Delete all error:", error);
-      toast.error("Failed to delete all documents", { id: "delete-all" });
+      toast.error(t("documentVaultPage.page.messages.deleteAllFailed"), {
+        id: "delete-all",
+      });
     }
   };
 
@@ -412,17 +432,20 @@ export default function DocumentVaultPage() {
               </div>
               <div>
                 <h1 className="text-2xl font-extrabold tracking-tight text-slate-900 dark:text-white">
-                  Document Vault
+                  {t("documentVaultPage.page.title")}
                 </h1>
                 <div className="flex items-center gap-2 mt-1">
                   <Badge
                     variant="secondary"
                     className="bg-primary/5 hover:bg-primary/5 text-primary border-primary/20 font-bold px-2.5 py-0.5"
                   >
-                    {config?.visaCategory} Case
+                    {config?.visaCategory &&
+                      t(
+                        `documentVaultPage.visaCategories.${config.visaCategory}`,
+                      )}
                   </Badge>
                   <span className="text-xs text-slate-500 font-medium">
-                    Compliance-Ready Repository
+                    {t("documentVaultPage.page.subtitle")}
                   </span>
                 </div>
               </div>
@@ -436,7 +459,7 @@ export default function DocumentVaultPage() {
                   className="font-semibold gap-2"
                 >
                   <BookOpen className="w-4 h-4" />
-                  Guide
+                  {t("documentVaultPage.page.guide")}
                 </Button>
               </Link>
 
@@ -449,21 +472,25 @@ export default function DocumentVaultPage() {
                     size="sm"
                     className="font-bold border-2"
                   >
-                    Actions
+                    {t("documentVaultPage.page.actions")}
                     <ChevronDown className="w-4 h-4 ml-1" />
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-56">
-                  <DropdownMenuLabel>Vault Management</DropdownMenuLabel>
+                  <DropdownMenuLabel>
+                    {t("documentVaultPage.page.vaultManagement")}
+                  </DropdownMenuLabel>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem
                     onClick={handleExport}
                     disabled={uploadedDocuments.length === 0}
                   >
-                    <Download className="w-4 h-4 mr-2" /> Export Entire Vault
+                    <Download className="w-4 h-4 mr-2" />{" "}
+                    {t("documentVaultPage.page.exportEntireVault")}
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={refreshDocumentStatuses}>
-                    <Clock className="w-4 h-4 mr-2" /> Force Status Sync
+                    <Clock className="w-4 h-4 mr-2" />{" "}
+                    {t("documentVaultPage.page.forceStatusSync")}
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem
@@ -471,7 +498,8 @@ export default function DocumentVaultPage() {
                     onClick={handleDeleteAll}
                     disabled={uploadedDocuments.length === 0}
                   >
-                    <Trash2 className="w-4 h-4 mr-2" /> Purge All Documents
+                    <Trash2 className="w-4 h-4 mr-2" />{" "}
+                    {t("documentVaultPage.page.purgeAllDocuments")}
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
@@ -494,7 +522,7 @@ export default function DocumentVaultPage() {
                       <Zap className="w-4 h-4" />
                     </div>
                     <span className="font-bold tracking-tight uppercase text-xs opacity-80">
-                      Sync Progress
+                      {t("documentVaultPage.page.syncProgress")}
                     </span>
                   </div>
                   <Badge
@@ -512,7 +540,7 @@ export default function DocumentVaultPage() {
                         {stats.uploaded} / {stats.total}
                       </span>
                       <span className="text-white/60 text-sm font-medium self-end mb-1">
-                        Items Ready
+                        {t("documentVaultPage.page.itemsReady")}
                       </span>
                     </div>
                     <Progress
@@ -524,7 +552,7 @@ export default function DocumentVaultPage() {
                   <div className="grid grid-cols-2 gap-3 pt-2">
                     <div className="bg-white/10 rounded-xl p-3 backdrop-blur-sm">
                       <p className="text-white/60 text-[10px] uppercase font-bold tracking-widest mb-1">
-                        Critical Missing
+                        {t("documentVaultPage.page.criticalMissing")}
                       </p>
                       <p
                         className={`text-xl font-black ${stats.missing > 0 ? "text-white" : "text-emerald-300"}`}
@@ -534,7 +562,7 @@ export default function DocumentVaultPage() {
                     </div>
                     <div className="bg-white/10 rounded-xl p-3 backdrop-blur-sm">
                       <p className="text-white/60 text-[10px] uppercase font-bold tracking-widest mb-1">
-                        Alerts/Expiring
+                        {t("documentVaultPage.page.alertsExpiring")}
                       </p>
                       <p
                         className={`text-xl font-black ${stats.expiring > 0 ? "text-amber-300" : "text-white"}`}
@@ -550,7 +578,7 @@ export default function DocumentVaultPage() {
                 <div className="flex items-center gap-2">
                   <CheckCircle className="w-4 h-4 text-emerald-300" />
                   <span className="text-[11px] font-semibold opacity-90">
-                    Bank-Grade Encryption Active
+                    {t("documentVaultPage.page.bankGradeEncryption")}
                   </span>
                 </div>
                 <div className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse"></div>
@@ -568,12 +596,10 @@ export default function DocumentVaultPage() {
                 <AlertCircle className="w-5 h-5 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
                 <div>
                   <h4 className="font-bold text-sm text-amber-900 dark:text-amber-100">
-                    NVC/USCIS Tip
+                    {t("documentVaultPage.page.nvcTipTitle")}
                   </h4>
                   <p className="text-xs text-amber-800 dark:text-amber-200 mt-1 leading-relaxed">
-                    Always use the <strong>original</strong> color scans.
-                    Documents over 4MB will be auto-compressed by Rahvana&apos;s
-                    NVC engine.
+                    {t("documentVaultPage.page.nvcTipDesc")}
                   </p>
                 </div>
               </div>
@@ -601,13 +627,14 @@ export default function DocumentVaultPage() {
                       <div className="flex-1 w-full">
                         <div className="flex items-center justify-between mb-2 sm:mb-1">
                           <h3 className="font-extrabold text-slate-900 dark:text-white text-base sm:text-lg">
-                            Action Required
+                            {t("documentVaultPage.page.actionRequired")}
                           </h3>
                           <Badge
                             variant="outline"
                             className="text-amber-700 bg-amber-50 border-amber-200 font-bold"
                           >
-                            {notifications.length} Alerts
+                            {notifications.length}{" "}
+                            {t("documentVaultPage.page.alerts")}
                           </Badge>
                         </div>
                         <div className="space-y-2 mt-2 sm:mt-3">
@@ -628,7 +655,7 @@ export default function DocumentVaultPage() {
                                   openUploadModal(notif.documentDefId)
                                 }
                               >
-                                Fix Now
+                                {t("documentVaultPage.page.fixNow")}
                               </Button>
                             </div>
                           ))}
@@ -656,8 +683,10 @@ export default function DocumentVaultPage() {
                           className="px-4 sm:px-6 rounded-lg font-bold text-xs data-[state=active]:bg-primary data-[state=active]:text-white transition-all duration-300"
                         >
                           {cat === "all"
-                            ? "All Master Checklist"
-                            : getCategoryDisplayName(cat).split(" ")[0]}
+                            ? t("documentVaultPage.page.allMasterChecklist")
+                            : t(`documentVaultPage.categories.${cat}`).split(
+                                " ",
+                              )[0]}
                         </TabsTrigger>
                       ))}
                       {categories.length > 5 && (
@@ -668,7 +697,8 @@ export default function DocumentVaultPage() {
                               size="sm"
                               className="h-9 px-3 rounded-lg font-bold text-xs gap-1"
                             >
-                              More <ChevronDown className="w-3 h-3" />
+                              {t("documentVaultPage.page.more")}{" "}
+                              <ChevronDown className="w-3 h-3" />
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
@@ -677,7 +707,7 @@ export default function DocumentVaultPage() {
                                 key={cat}
                                 onClick={() => setActiveTab(cat)}
                               >
-                                {getCategoryDisplayName(cat)}
+                                {t(`documentVaultPage.categories.${cat}`)}
                               </DropdownMenuItem>
                             ))}
                           </DropdownMenuContent>
@@ -711,7 +741,9 @@ export default function DocumentVaultPage() {
                   <div className="relative flex-1">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                     <Input
-                      placeholder="Search documents..."
+                      placeholder={t(
+                        "documentVaultPage.page.searchPlaceholder",
+                      )}
                       className="pl-10 h-11 rounded-xl bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 focus:ring-primary/20 w-full"
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
@@ -731,14 +763,15 @@ export default function DocumentVaultPage() {
               <div className="mb-6 xl:mb-8">
                 <h2 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white tracking-tight flex flex-wrap items-center gap-2 sm:gap-3">
                   {activeTab === "all"
-                    ? "Comprehensive Master Checklist"
-                    : getCategoryDisplayName(activeTab)}
+                    ? t("documentVaultPage.page.comprehensiveMasterChecklist")
+                    : t(`documentVaultPage.categories.${activeTab}`)}
                   {searchQuery && (
                     <Badge
                       variant="outline"
                       className="font-bold text-primary border-primary/20 bg-primary/5"
                     >
-                      Search: {searchQuery}
+                      {t("documentVaultPage.page.searchPrefix")}
+                      {searchQuery}
                     </Badge>
                   )}
                 </h2>
@@ -755,8 +788,9 @@ export default function DocumentVaultPage() {
                       <div className="flex items-center gap-3">
                         <div className="h-1 w-8 sm:w-12 bg-primary rounded-full shrink-0"></div>
                         <h3 className="text-xs sm:text-sm font-black uppercase tracking-widest text-slate-400">
-                          Found {flatFilteredDocuments.length} matching
-                          documents
+                          {t("documentVaultPage.page.foundPrefix")}{" "}
+                          {flatFilteredDocuments.length}{" "}
+                          {t("documentVaultPage.page.matchingDocuments")}
                         </h3>
                       </div>
 
@@ -819,18 +853,19 @@ export default function DocumentVaultPage() {
                         <div className="text-center py-12 sm:py-20 px-4 bg-white dark:bg-slate-900 rounded-3xl border-2 border-dashed border-slate-200 dark:border-slate-800">
                           <Search className="w-12 h-12 text-slate-300 mx-auto mb-4" />
                           <h3 className="text-lg font-bold text-slate-900 dark:text-white">
-                            No documents found
+                            {t("documentVaultPage.page.noDocumentsFound")}
                           </h3>
                           <p className="text-slate-500 max-w-xs mx-auto mt-2">
-                            We couldn&apos;t find any documents matching &quot;
-                            {searchQuery}&quot;. Try a different keyword.
+                            {t("documentVaultPage.page.noDocumentsDescPrefix")}
+                            {searchQuery}
+                            {t("documentVaultPage.page.noDocumentsDescSuffix")}
                           </p>
                           <Button
                             variant="link"
                             className="mt-4 text-primary font-bold"
                             onClick={() => setSearchQuery("")}
                           >
-                            Clear Search
+                            {t("documentVaultPage.page.clearSearch")}
                           </Button>
                         </div>
                       )}
@@ -843,7 +878,7 @@ export default function DocumentVaultPage() {
                           <div className="flex items-center gap-3">
                             <div className="h-1 w-8 sm:w-12 bg-primary rounded-full shrink-0"></div>
                             <h3 className="text-xs sm:text-sm font-black uppercase tracking-widest text-slate-400">
-                              {getCategoryDisplayName(category)}
+                              {getCategoryDisplayName(category, t)}
                             </h3>
                           </div>
 
@@ -980,7 +1015,7 @@ export default function DocumentVaultPage() {
             onUploadComplete={async () => {
               // Reload all data from database
               if (user) {
-                await initialize(user.id);
+                await initialize(user.id, t);
               }
             }}
           />
