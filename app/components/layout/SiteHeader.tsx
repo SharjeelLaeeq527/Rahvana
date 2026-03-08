@@ -186,6 +186,7 @@ export function SiteHeader({
         "interview-prep": "/interview-prep",
         profile: "/profile",
         settings: "/settings",
+        "portal-wallet": "/portal-wallet",
       };
 
       const targetRoute = routes[id] || "/";
@@ -490,7 +491,7 @@ export function SiteHeader({
                         Document Vault
                       </button>
                       <button
-                        onClick={() => {}} // Placeholder
+                        onClick={() => handleNav("portal-wallet")}
                         className="flex items-center gap-3 w-full py-2.5 px-5 text-muted-foreground hover:bg-muted hover:text-primary transition-colors text-sm font-medium"
                       >
                         <LockIcon className="w-4 h-4 text-indigo-500 dark:text-indigo-400" />
@@ -520,13 +521,13 @@ export function SiteHeader({
                         <Settings className="w-4 h-4 text-slate-500 dark:text-slate-400" />
                         Account Settings
                       </button>
-                      <button
+                      {/* <button
                         onClick={() => handleNav("view-security-questions")}
                         className="flex items-center gap-3 w-full py-2.5 px-5 text-muted-foreground hover:bg-muted hover:text-primary transition-colors text-sm font-medium"
                       >
                         <Shield className="w-4 h-4 text-emerald-500 dark:text-emerald-400" />
                         My Credentials
-                      </button>
+                      </button> */}
                       <button
                         onClick={() => {}} // Placeholder
                         className="flex items-center gap-3 w-full py-2.5 px-5 text-muted-foreground hover:bg-muted hover:text-primary transition-colors text-sm font-medium"

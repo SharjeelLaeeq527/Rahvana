@@ -63,6 +63,7 @@ export async function updateSession(request: NextRequest) {
     "/complete-profile",
     "/profile",
     "/settings",
+    "/portal-wallet",
     "/221g-action-planner",
     "/visa-case-strength-checker",
     "/document-vault",
