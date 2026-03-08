@@ -132,7 +132,7 @@ const UserDashboard = () => {
 
   const quickActions = [
     {
-      title: "Explore Visa Cateogries",
+      title: "Explore Visa Categories",
       subtitle: "Understand different visa paths and eligibility",
       icon: <Briefcase size={18} />,
       href: "/visa-category/ir-category",
@@ -153,7 +153,7 @@ const UserDashboard = () => {
 
   return (
     <div className="min-h-screen bg-[#f8fafa]">
-      <div className="max-w-[1100px] mx-auto px-6 py-10">
+      <div className="max-w-275 mx-auto px-6 py-10">
         {/* Header */}
         <div className="mb-8">
           <div className="flex items-center gap-2 mb-1">
@@ -199,7 +199,7 @@ const UserDashboard = () => {
           </div>
 
           {/* SIDEBAR */}
-          <div className="w-full lg:w-[280px] flex-shrink-0 space-y-6">
+          <div className="w-full lg:w-70 shrink-0 space-y-6">
             {/* Quick Actions */}
             <div>
               <h3 className="text-[15px] font-semibold text-[#0a1128] mb-3">
