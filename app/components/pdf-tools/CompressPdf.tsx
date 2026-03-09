@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { Upload, Download, FileCheck, AlertCircle } from "lucide-react";
+import { useLanguage } from "@/app/context/LanguageContext";
 
 interface CompressionResult {
   originalSize: number;
@@ -10,6 +11,7 @@ interface CompressionResult {
 }
 
 export default function Compress() {
+  const { t } = useLanguage();
   const [mounted, setMounted] = useState(false);
   const [file, setFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
@@ -28,12 +30,12 @@ const API_BASE =
       const selectedFile = e.target.files[0];
 
       if (!selectedFile.name.toLowerCase().endsWith(".pdf")) {
-        setError("Please select a PDF file");
+        setError(t("pdfProcessing.errors.invalidFile"));
         return;
       }
 
       if (selectedFile.size > 100 * 1024 * 1024) {
-        setError("File is too large. Maximum size is 100MB");
+        setError(t("pdfProcessing.errors.tooLarge"));
         return;
       }
 
@@ -45,7 +47,7 @@ const API_BASE =
 
   const handleCompress = async () => {
     if (!file) {
-      setError("Please select a PDF file");
+      setError(t("pdfProcessing.errors.invalidFile"));
       return;
     }
 
@@ -64,7 +66,7 @@ const API_BASE =
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.detail || "Compression failed");
+        throw new Error(errorData.detail || t("pdfProcessing.errors.failed"));
       }
 
       const originalSizeHeader = response.headers.get("x-original-size");
@@ -106,7 +108,7 @@ const API_BASE =
       const message =
         err instanceof Error
           ? err.message
-          : "Compression failed. Please try again.";
+          : t("pdfProcessing.errors.failed");
       console.error("Compression error:", err);
       setError(message);
     } finally {
@@ -130,7 +132,7 @@ const API_BASE =
     <div className="w-full">
       <div className="bg-primary/90 p-6 md:p-10 text-white rounded-t-2xl">
         <h1 className="text-3xl md:text-5xl font-bold text-center mb-2 md:mb-3">
-          PDF Compressor
+          {t("pdfProcessing.compress.title")}
         </h1>
       </div>
 
@@ -138,7 +140,7 @@ const API_BASE =
         {/* File Upload */}
         <div className="mb-6 md:mb-8">
           <label className="block text-sm font-semibold text-gray-700 mb-3">
-            Select PDF File
+            {t("pdfProcessing.compress.selectLabel")}
           </label>
           <input
             type="file"
@@ -168,16 +170,16 @@ const API_BASE =
                   {formatBytes(file.size)}
                 </p>
                 <p className="text-xs text-gray-400 mt-2">
-                  Click to change file
+                  {t("pdfProcessing.compress.changeFile")}
                 </p>
               </div>
             ) : (
               <div>
                 <p className="text-gray-700 font-medium mb-1">
-                  Click to upload or drag and drop
+                  {t("pdfProcessing.compress.dropzone")}
                 </p>
                 <p className="text-sm text-gray-500">
-                  PDF files only • Max 100MB
+                  {t("pdfProcessing.compress.pdffilesOnly")}
                 </p>
               </div>
             )}
@@ -212,12 +214,12 @@ const API_BASE =
                   d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                 ></path>
               </svg>
-              Maximizing Compression...
+              {t("pdfProcessing.compress.compressing")}
             </>
           ) : (
             <>
               <Download className="mr-2 h-6 w-6" />
-              Compress Now
+              {t("pdfProcessing.compress.compressBtn")}
             </>
           )}
         </button>
@@ -240,12 +242,12 @@ const API_BASE =
           <div className="mt-6 p-6 bg-linear-to-r from-green-50 to-emerald-50 border-l-4 border-green-500 rounded-lg shadow-sm">
             <div className="flex items-center text-green-700 mb-4">
               <FileCheck className="h-6 w-6 mr-3" />
-              <span className="font-bold text-lg">Compression Successful!</span>
+              <span className="font-bold text-lg">{t("pdfProcessing.compress.success")}</span>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
               <div className="bg-white p-4 rounded-lg shadow-sm">
                 <p className="text-gray-500 text-xs font-medium mb-1">
-                  Original Size
+                  {t("pdfProcessing.compress.originalSize")}
                 </p>
                 <p className="text-gray-800 font-bold text-xl">
                   {formatBytes(result.originalSize)}
@@ -253,7 +255,7 @@ const API_BASE =
               </div>
               <div className="bg-white p-4 rounded-lg shadow-sm">
                 <p className="text-gray-500 text-xs font-medium mb-1">
-                  Compressed Size
+                  {t("pdfProcessing.compress.compressedSize")}
                 </p>
                 <p className="text-gray-800 font-bold text-xl">
                   {formatBytes(result.compressedSize)}
@@ -262,7 +264,7 @@ const API_BASE =
             </div>
             <div className="bg-white p-4 rounded-lg shadow-sm">
               <p className="text-gray-500 text-xs font-medium mb-1">
-                Space Saved
+                {t("pdfProcessing.compress.spaceSaved")}
               </p>
               <div className="flex items-baseline">
                 <p className="text-green-600 font-bold text-3xl">
@@ -270,7 +272,7 @@ const API_BASE =
                 </p>
                 <p className="text-gray-500 text-sm ml-2">
                   ({formatBytes(result.originalSize - result.compressedSize)}{" "}
-                  saved)
+                  {t("pdfProcessing.compress.saved")})
                 </p>
               </div>
             </div>

@@ -1,6 +1,7 @@
 "use client"
 import { Bold, Italic, Underline, AlignLeft, AlignCenter, AlignRight, ChevronDown } from "lucide-react"
 import ColorPicker from "../tools/ColorPicker"
+import { useLanguage } from "@/app/context/LanguageContext"
 
 export type TextFormat = {
   font: string
@@ -21,6 +22,7 @@ interface TextFormattingToolbarProps {
 }
 
 export function TextFormattingToolbar({ format, onFormatChange, position }: TextFormattingToolbarProps) {
+  const { t } = useLanguage()
   const fonts = ["Arial", "Helvetica", "Times New Roman", "Courier New", "Georgia", "Verdana"]
 
   const sizes = [8, 10, 12, 14, 16, 18, 20, 24, 28, 32, 36, 48, 72]
@@ -37,7 +39,7 @@ export function TextFormattingToolbar({ format, onFormatChange, position }: Text
     >
       {/* Font Family Dropdown */}
       <div className="flex flex-col gap-1">
-        <label className="text-xs font-medium text-gray-600">Font</label>
+        <label className="text-xs font-medium text-gray-600">{t("pdfProcessing.editor.toolbar.font")}</label>
         <div className="relative">
           <select
             value={format.font}
@@ -57,7 +59,7 @@ export function TextFormattingToolbar({ format, onFormatChange, position }: Text
 
       {/* Font Size Dropdown */}
       <div className="flex flex-col gap-1">
-        <label className="text-xs font-medium text-gray-600">Size</label>
+        <label className="text-xs font-medium text-gray-600">{t("pdfProcessing.editor.toolbar.size")}</label>
         <div className="relative">
           <select
             value={format.size}
@@ -79,7 +81,7 @@ export function TextFormattingToolbar({ format, onFormatChange, position }: Text
 
       {/* Text Color Picker */}
       <div className="flex flex-col gap-1">
-        <label className="text-xs font-medium text-gray-600">Color</label>
+        <label className="text-xs font-medium text-gray-600">{t("pdfProcessing.editor.toolbar.color")}</label>
         <ColorPicker 
           currentColor={format.color}
           onColorChange={(color) => onFormatChange({ color })}
@@ -89,7 +91,7 @@ export function TextFormattingToolbar({ format, onFormatChange, position }: Text
 
       {/* Background Color Picker */}
       <div className="flex flex-col gap-1">
-        <label className="text-xs font-medium text-gray-600">Background</label>
+        <label className="text-xs font-medium text-gray-600">{t("pdfProcessing.editor.toolbar.background")}</label>
         <ColorPicker 
           currentColor={format.bgColor}
           onColorChange={(bgColor) => onFormatChange({ bgColor })}
@@ -99,7 +101,7 @@ export function TextFormattingToolbar({ format, onFormatChange, position }: Text
 
       {/* Opacity Slider */}
       <div className="flex flex-col gap-1">
-        <label className="text-xs font-medium text-gray-600">Opacity</label>
+        <label className="text-xs font-medium text-gray-600">{t("pdfProcessing.editor.toolbar.opacity")}</label>
         <div className="flex items-center gap-2">
           <input
             type="range"
@@ -125,7 +127,7 @@ export function TextFormattingToolbar({ format, onFormatChange, position }: Text
         className={`p-2 rounded transition ${
           format.bold ? "bg-blue-500 text-white" : "bg-gray-100 hover:bg-gray-200 text-gray-700"
         }`}
-        title="Bold (Ctrl+B)"
+        title={t("pdfProcessing.editor.toolbar.bold")}
       >
         <Bold className="w-4 h-4" />
       </button>
@@ -136,7 +138,7 @@ export function TextFormattingToolbar({ format, onFormatChange, position }: Text
         className={`p-2 rounded transition ${
           format.italic ? "bg-blue-500 text-white" : "bg-gray-100 hover:bg-gray-200 text-gray-700"
         }`}
-        title="Italic (Ctrl+I)"
+        title={t("pdfProcessing.editor.toolbar.italic")}
       >
         <Italic className="w-4 h-4" />
       </button>
@@ -147,7 +149,7 @@ export function TextFormattingToolbar({ format, onFormatChange, position }: Text
         className={`p-2 rounded transition ${
           format.underline ? "bg-blue-500 text-white" : "bg-gray-100 hover:bg-gray-200 text-gray-700"
         }`}
-        title="Underline (Ctrl+U)"
+        title={t("pdfProcessing.editor.toolbar.underline")}
       >
         <Underline className="w-4 h-4" />
       </button>
@@ -161,7 +163,7 @@ export function TextFormattingToolbar({ format, onFormatChange, position }: Text
         className={`p-2 rounded transition ${
           format.align === "left" ? "bg-blue-500 text-white" : "bg-gray-100 hover:bg-gray-200 text-gray-700"
         }`}
-        title="Align Left"
+        title={t("pdfProcessing.editor.toolbar.alignLeft")}
       >
         <AlignLeft className="w-4 h-4" />
       </button>
@@ -172,7 +174,7 @@ export function TextFormattingToolbar({ format, onFormatChange, position }: Text
         className={`p-2 rounded transition ${
           format.align === "center" ? "bg-blue-500 text-white" : "bg-gray-100 hover:bg-gray-200 text-gray-700"
         }`}
-        title="Align Center"
+        title={t("pdfProcessing.editor.toolbar.alignCenter")}
       >
         <AlignCenter className="w-4 h-4" />
       </button>
@@ -183,7 +185,7 @@ export function TextFormattingToolbar({ format, onFormatChange, position }: Text
         className={`p-2 rounded transition ${
           format.align === "right" ? "bg-blue-500 text-white" : "bg-gray-100 hover:bg-gray-200 text-gray-700"
         }`}
-        title="Align Right"
+        title={t("pdfProcessing.editor.toolbar.alignRight")}
       >
         <AlignRight className="w-4 h-4" />
       </button>

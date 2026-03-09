@@ -13,6 +13,7 @@ import {
   AlertCircle,
   FileCheck,
 } from "lucide-react";
+import { useLanguage } from "@/app/context/LanguageContext";
 
 interface PDFPage {
   id: string;
@@ -38,6 +39,7 @@ interface MergeResult {
 }
 
 export default function PDFMergeAdvanced() {
+  const { t } = useLanguage();
   const [files, setFiles] = useState<PDFFileInfo[]>([]);
   const [allPages, setAllPages] = useState<PDFPage[]>([]);
   const [loading, setLoading] = useState(false);
@@ -621,7 +623,7 @@ export default function PDFMergeAdvanced() {
       const message =
         err instanceof Error
           ? err.message
-          : "Merging failed. Please try again.";
+          : t("pdfProcessing.errors.failed");
       setError(message);
       console.error("Merge error:", err);
     }
@@ -660,7 +662,7 @@ export default function PDFMergeAdvanced() {
         {/* Top Bar */}
         <div className="flex items-center justify-between p-2 border-b bg-gray-50 rounded-t-xl">
           <span className="text-xs font-bold text-gray-500 bg-white px-2 py-0.5 rounded border">
-            {isEncrypted ? "Encrypted" : `${file.pages.length} Pages`}
+            {isEncrypted ? t("pdfProcessing.merge.encrypted") : `${file.pages.length} ${t("pdfProcessing.merge.pages")}`}
           </span>
           <GripHorizontal
             className="text-gray-300 cursor-grab active:cursor-grabbing"
@@ -674,7 +676,7 @@ export default function PDFMergeAdvanced() {
             <div className="flex flex-col items-center justify-center w-full h-full text-center p-4">
               <AlertCircle className="text-yellow-500 mb-2" size={32} />
               <p className="text-yellow-600 text-sm font-medium">
-                Encrypted PDF
+                {t("pdfProcessing.merge.encrypted")}
               </p>
               <p className="text-gray-500 text-xs mt-1">Can still be merged</p>
             </div>
@@ -690,7 +692,7 @@ export default function PDFMergeAdvanced() {
           ) : (
             <div className="flex flex-col items-center justify-center w-full h-full text-center p-4">
               <AlertCircle className="text-red-500 mb-2" size={32} />
-              <p className="text-red-500 text-sm font-medium">No Preview</p>
+              <p className="text-red-500 text-sm font-medium">{t("pdfProcessing.merge.noPreview")}</p>
               <p className="text-gray-500 text-xs mt-1">
                 Cannot display content
               </p>
@@ -896,7 +898,7 @@ export default function PDFMergeAdvanced() {
               />
             ) : (
               <div className="w-full h-full flex items-center justify-center text-gray-500">
-                <p>Organize pages → preview will appear automatically</p>
+                <p>{t("pdfProcessing.preview.organizePages")}</p>
               </div>
             )}
           </div>
@@ -904,7 +906,7 @@ export default function PDFMergeAdvanced() {
           {/* Pages Sidebar - Increased Width */}
           <div className="bg-white rounded-xl shadow-md p-5 w-full max-w-md">
             <h3 className="text-lg font-semibold mb-4">
-              Pages ({allPages.length})
+              {t("pdfProcessing.preview.pagesTitle", { count: allPages.length })}
             </h3>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 max-h-[70vh] overflow-y-auto">
               {allPages.map((page, i) => (
@@ -922,10 +924,10 @@ export default function PDFMergeAdvanced() {
     <div className="w-full">
       <div className="bg-primary/90 p-6 md:p-10 text-white rounded-t-2xl">
         <h1 className="text-3xl md:text-5xl font-bold text-center mb-2 md:mb-3">
-          PDF Merger
+          {t("pdfProcessing.merge.title")}
         </h1>
-        <p className="text-center text-white/90 text-base md:text-lg">
-          Merge multiple PDF files into one (including encrypted PDFs)
+        <p className="text-center text-white/90 text-sm md:text-lg max-w-2xl mx-auto">
+          {t("pdfProcessing.merge.subtitle")}
         </p>
       </div>
 
@@ -933,7 +935,7 @@ export default function PDFMergeAdvanced() {
         {/* File Upload */}
         <div className="mb-6 md:mb-8">
           <label className="block text-sm font-semibold text-gray-700 mb-3">
-            Select PDF Files
+            {t("pdfProcessing.merge.selectFiles")}
           </label>
           <input
             ref={fileInputRef}
@@ -959,7 +961,7 @@ export default function PDFMergeAdvanced() {
             {files.length > 0 ? (
               <div>
                 <p className="text-primary/90 font-semibold text-lg mb-1">
-                  {files.length} file{files.length > 1 ? "s" : ""} selected
+                  {t("pdfProcessing.merge.filesSelected", { count: files.length })}
                 </p>
                 <p className="text-sm text-gray-500">
                   {files.reduce((total, file) => total + file.file.size, 0) > 0
@@ -972,16 +974,16 @@ export default function PDFMergeAdvanced() {
                     : "0 Bytes"}
                 </p>
                 <p className="text-xs text-gray-400 mt-2">
-                  Click to add more files
+                  {t("pdfProcessing.merge.clickToAddMore")}
                 </p>
               </div>
             ) : (
               <div>
                 <p className="text-gray-700 font-medium mb-1">
-                  Click to upload or drag and drop
+                  {t("pdfProcessing.merge.clickOrDrag")}
                 </p>
                 <p className="text-sm text-gray-500">
-                  PDF files only • Max 100MB each • Encrypted PDFs supported
+                  {t("pdfProcessing.merge.supportedFormats")}
                 </p>
               </div>
             )}
@@ -992,7 +994,7 @@ export default function PDFMergeAdvanced() {
         {files.length > 0 && (
           <div className="mb-8">
             <h3 className="text-lg font-semibold mb-4">
-              Uploaded Files ({files.length})
+              {t("pdfProcessing.merge.uploadedFiles", { count: files.length })}
             </h3>
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
               {files.map((file) => (
@@ -1030,12 +1032,12 @@ export default function PDFMergeAdvanced() {
                   d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                 ></path>
               </svg>
-              Merging...
+              {t("pdfProcessing.merge.merging")}
             </>
           ) : (
             <>
               <Download className="mr-2 h-6 w-6" />
-              Merge Now
+              {t("pdfProcessing.merge.mergeBtn")}
             </>
           )}
         </button>

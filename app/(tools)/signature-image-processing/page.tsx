@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { AlertCircle, Loader2 } from "lucide-react";
 import dynamic from "next/dynamic";
+import { useLanguage } from "@/app/context/LanguageContext";
 
 // Dynamically import components that use browser APIs - disable SSR
 const SignatureUploader = dynamic(
@@ -33,6 +34,7 @@ type ImageProcessorModule = typeof import("@/lib/imageProcessor");
 let imageProcessorModule: ImageProcessorModule | null = null;
 
 export default function SignatureRemoverPage() {
+  const { t } = useLanguage();
   const [originalImage, setOriginalImage] = useState<string | null>(null);
   const [processedImage, setProcessedImage] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
@@ -49,7 +51,7 @@ export default function SignatureRemoverPage() {
 
   const handleFileSelect = async (file: File) => {
     if (!imageProcessorModule) {
-      setError("Image processor is loading, please try again.");
+      setError(t("signatureProcessing.errors.loading"));
       return;
     }
 
@@ -59,7 +61,7 @@ export default function SignatureRemoverPage() {
 
     const validation = imageProcessorModule.validateImageFile(file);
     if (!validation.valid) {
-      setError(validation.error || "Invalid file");
+      setError(validation.error || t("pdfProcessing.errors.invalidFile"));
       return;
     }
 
@@ -88,10 +90,11 @@ export default function SignatureRemoverPage() {
       }, 500);
     } catch (err) {
       console.error("Processing error:", err);
-      setError("Failed to process image. Please try again.");
+      setError(t("signatureProcessing.errors.failed"));
       setIsProcessing(false);
     }
   };
+  
 
   const handleDownload = () => {
     if (processedImage && imageProcessorModule) {
@@ -114,31 +117,30 @@ export default function SignatureRemoverPage() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16">
         <header className="text-center mb-12">
           <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-slate-900 mb-3">
-            Signature Background Remover
+            {t("signatureProcessing.title")}
           </h1>
           <p className="text-slate-600 text-sm sm:text-base md:text-lg max-w-3xl mx-auto">
-            Convert your handwritten signature into a professional, transparent
-            PNG. Ideal for documents, contracts, and digital signing.
+            {t("signatureProcessing.subtitle")}
           </p>
         </header>
 
         <div className="bg-slate-50 rounded-lg border border-slate-200 p-6 sm:p-8 mb-8 max-w-5xl mx-auto">
           <h2 className="text-lg sm:text-xl font-semibold text-slate-900 mb-6">
-            Best Practices
+            {t("signatureProcessing.bestPractices")}
           </h2>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
             {[
               {
-                title: "White Paper",
-                description: "Write on clean, white or light-colored paper",
+                title: t("signatureProcessing.whitePaper.title"),
+                description: t("signatureProcessing.whitePaper.description"),
               },
               {
-                title: "Good Lighting",
-                description: "Ensure even lighting without shadows or glare",
+                title: t("signatureProcessing.goodLighting.title"),
+                description: t("signatureProcessing.goodLighting.description"),
               },
               {
-                title: "Dark Ink",
-                description: "Use blue or black pen for maximum contrast",
+                title: t("signatureProcessing.darkInk.title"),
+                description: t("signatureProcessing.darkInk.description"),
               },
             ].map((item, idx) => (
               <div key={idx} className="border-l-2 border-slate-300 pl-4">

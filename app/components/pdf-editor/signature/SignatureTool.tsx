@@ -5,12 +5,14 @@ import { useState } from "react";
 import SignaturePad from "./SignaturePad";
 import TextSignature from "./TextSignature";
 import UploadImage from "./UploadImage";
+import { useLanguage } from "@/app/context/LanguageContext";
 
 type Props = {
   onSignature: (dataURL: string) => void;
 };
 
 export default function SignatureTool({ onSignature }: Props) {
+  const { t } = useLanguage();
   const [showModal, setShowModal] = useState(false);
   const [signatureMode, setSignatureMode] = useState<
     "draw" | "type" | "upload"
@@ -25,8 +27,8 @@ export default function SignatureTool({ onSignature }: Props) {
         type="button"
         onClick={() => setShowModal(true)}
         className="p-2 rounded transition-colors hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-        title="Create Signature"
-        aria-label="Create Signature"
+        title={t("pdfProcessing.editor.signature.title")}
+        aria-label={t("pdfProcessing.editor.signature.title")}
       >
         <svg
           className="w-5 h-5 text-gray-700"
@@ -46,7 +48,7 @@ export default function SignatureTool({ onSignature }: Props) {
             {/* Header */}
             <div className="shrink-0 flex items-center justify-between border-b p-4 sm:px-6 sm:py-4">
               <h2 className="text-xl font-semibold text-gray-900">
-                Create Signature
+                {t("pdfProcessing.editor.signature.title")}
               </h2>
               <button
                 type="button"
@@ -83,9 +85,9 @@ export default function SignatureTool({ onSignature }: Props) {
                       : "bg-white text-gray-700 border border-gray-300 hover:bg-gray-100"
                   }`}
                 >
-                  {mode === "draw" && "Draw"}
-                  {mode === "type" && "Type"}
-                  {mode === "upload" && "Upload"}
+                  {mode === "draw" && t("pdfProcessing.editor.signature.draw")}
+                  {mode === "type" && t("pdfProcessing.editor.signature.type")}
+                  {mode === "upload" && t("pdfProcessing.editor.signature.upload")}
                 </button>
               ))}
             </div>

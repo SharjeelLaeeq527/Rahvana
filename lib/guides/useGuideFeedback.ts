@@ -9,7 +9,7 @@ export function useGuideFeedback() {
     stepKey: string,
     feedbackType: string,
     description: string,
-    attachment?: File,
+    attachment?: File | File[],
   ) => {
     setSubmitting(true);
     setSubmitError(null);
@@ -26,7 +26,11 @@ export function useGuideFeedback() {
       );
 
       if (attachment) {
-        formData.append("attachment", attachment);
+        if (Array.isArray(attachment)) {
+          attachment.forEach((file) => formData.append("attachment", file));
+        } else {
+          formData.append("attachment", attachment);
+        }
       }
 
       const response = await fetch("/api/feedback", {
