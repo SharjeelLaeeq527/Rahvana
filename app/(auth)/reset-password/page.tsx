@@ -28,6 +28,7 @@ function ResetPasswordContent() {
   const hasUppercase = /[A-Z]/.test(password);
   const hasLowercase = /[a-z]/.test(password);
   const hasNumber = /[0-9]/.test(password);
+  const hasSpecialCharacter = /[\W_]/.test(password);
   const passwordsMatch =
     password === confirmPassword && confirmPassword.length > 0;
 
@@ -36,6 +37,7 @@ function ResetPasswordContent() {
     hasUppercase,
     hasLowercase,
     hasNumber,
+    hasSpecialCharacter,
   ].filter(Boolean).length;
 
   useEffect(() => {

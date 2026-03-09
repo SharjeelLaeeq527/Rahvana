@@ -32,28 +32,59 @@ export default function SignupPage() {
   // Password strength checker
   useEffect(() => {
     let strength = 0;
-    if (password.length >= 6) strength++;
+
+    // Minimum length
     if (password.length >= 8) strength++;
+
+    // Lowercase
+    if (/[a-z]/.test(password)) strength++;
+
+    // Uppercase
     if (/[A-Z]/.test(password)) strength++;
+
+    // Number
     if (/[0-9]/.test(password)) strength++;
+
+    // Special character
     if (/[^A-Za-z0-9]/.test(password)) strength++;
+
     setPasswordStrength(strength);
   }, [password]);
 
   const getStrengthColor = () => {
-    if (passwordStrength <= 1) return "bg-red-500";
-    if (passwordStrength <= 2) return "bg-orange-500";
-    if (passwordStrength <= 3) return "bg-yellow-500";
-    if (passwordStrength <= 4) return "bg-lime-500";
-    return "bg-green-500";
+    switch (passwordStrength) {
+      case 0:
+      case 1:
+        return "bg-red-500";
+      case 2:
+        return "bg-orange-500";
+      case 3:
+        return "bg-yellow-500";
+      case 4:
+        return "bg-lime-500";
+      case 5:
+        return "bg-green-500";
+      default:
+        return "bg-gray-300";
+    }
   };
 
   const getStrengthText = () => {
-    if (passwordStrength <= 1) return "Weak";
-    if (passwordStrength <= 2) return "Fair";
-    if (passwordStrength <= 3) return "Good";
-    if (passwordStrength <= 4) return "Strong";
-    return "Very Strong";
+    switch (passwordStrength) {
+      case 0:
+      case 1:
+        return "Very Weak";
+      case 2:
+        return "Weak";
+      case 3:
+        return "Fair";
+      case 4:
+        return "Strong";
+      case 5:
+        return "Very Strong";
+      default:
+        return "";
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -78,7 +109,7 @@ export default function SignupPage() {
       if (result.error) {
         if (result.error.message.includes("already exists")) {
           setError(
-            "An account with this email already exists. Please sign in."
+            "An account with this email already exists. Please sign in.",
           );
         } else if (result.error.message.includes("password")) {
           setError("Password is too weak. Please use a stronger password.");
@@ -362,8 +393,8 @@ export default function SignupPage() {
                     confirmPassword && password !== confirmPassword
                       ? "border-red-300 focus:border-red-500"
                       : confirmPassword && password === confirmPassword
-                      ? "border-green-300 focus:border-green-500"
-                      : ""
+                        ? "border-green-300 focus:border-green-500"
+                        : ""
                   }`}
                 />
                 <button
