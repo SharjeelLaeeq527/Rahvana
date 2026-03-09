@@ -81,26 +81,6 @@ export function StepDetail({
           <h2 className="text-2xl md:text-4xl font-extrabold text-slate-900 leading-tight">
             {isUrdu && step.nameUr ? step.nameUr : step.name}
           </h2>
-          <button
-            onClick={(e) => onToggleComplete(step.id, e)}
-            className={`w-full md:w-auto flex items-center justify-center space-x-2 md:justify-start gap-2 px-6 py-3 rounded-xl font-bold text-base transition-all whitespace-nowrap active:scale-95 shadow-sm ${
-              isCompleted
-                ? "bg-emerald-50 text-emerald-600 border border-emerald-200"
-                : "bg-primary text-white hover:bg-primary/90 shadow-primary/20"
-            }`}
-          >
-            {isCompleted ? (
-              <>
-                <CheckCircle2 className="w-5 h-5" />
-                {t("stepDetail.completed")}
-              </>
-            ) : (
-              <>
-                <Circle className="w-5 h-5" />
-                {t("stepDetail.markComplete")}
-              </>
-            )}
-          </button>
         </div>
 
         <div className="text-slate-600 text-[15px] md:text-[17px] leading-relaxed pb-6 md:pb-8 mb-6 md:mb-8 border-b border-slate-100 max-w-3xl">
@@ -166,6 +146,29 @@ export function StepDetail({
             </p>
           </div>
         )}
+      </div>
+
+      <div className="flex justify-center mb-8">
+        <button
+          onClick={(e) => onToggleComplete(step.id, e)}
+          className={`w-full md:w-auto flex items-center justify-center space-x-2 md:justify-start gap-2 px-8 py-4 rounded-xl font-bold text-lg transition-all whitespace-nowrap active:scale-95 shadow-lg ${
+            isCompleted
+              ? "bg-emerald-50 text-emerald-600 border border-emerald-200"
+              : "bg-primary text-white hover:bg-primary/90 shadow-primary/30"
+          }`}
+        >
+          {isCompleted ? (
+            <>
+              <CheckCircle2 className="w-6 h-6" />
+              {t("stepDetail.completed")}
+            </>
+          ) : (
+            <>
+              <Circle className="w-6 h-6" />
+              {t("stepDetail.markComplete")}
+            </>
+          )}
+        </button>
       </div>
 
       {/* Modern Navigation */}

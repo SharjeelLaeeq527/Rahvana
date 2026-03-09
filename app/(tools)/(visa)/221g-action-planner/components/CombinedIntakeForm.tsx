@@ -24,6 +24,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import Actual221GFormChecker from "./Actual221GFormChecker";
 import { FormData, FormSelections } from "../types/221g";
 import { classifySituation } from "../utils/classifier";
+import { ConfirmationModal } from "@/app/components/shared/ConfirmationModal";
 
 interface CombinedIntakeFormProps {
   onSubmit: (data: FormData, selectedItems: FormSelections) => void;
@@ -151,6 +152,7 @@ const EMPTY_FORM: FormData = {
   caseNumber: "",
   beneficiaryName: "",
   passportNumber: "",
+  dateOfBirth: "",
 };
 
 export default function CombinedIntakeForm({
@@ -175,6 +177,8 @@ export default function CombinedIntakeForm({
   const [isSaving, setIsSaving] = useState(false);
   const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved" | "error">("idle");
   const [showWelcome, setShowWelcome] = useState(false);
+  const [showResetModal, setShowResetModal] = useState(false);
+  const [dobError, setDobError] = useState<string | null>(null);
   const [openWhatIs, setOpenWhatIs] = useState(false);
   const [openFlow, setOpenFlow] = useState(false);
   const [openNeed, setOpenNeed] = useState(false);
@@ -258,13 +262,35 @@ export default function CombinedIntakeForm({
     ? classifySituation(formData, selectedBooleanKeys)
     : null;
 
+  const validateDob = (value: string): string | null => {
+    if (!value) return null; // DOB is optional
+    const dob = new Date(value);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    if (isNaN(dob.getTime())) return "Please enter a valid date.";
+    if (dob >= today) return "Date of Birth must be in the past.";
+    const minAge = 1;
+    const minDate = new Date(today);
+    minDate.setFullYear(today.getFullYear() - minAge);
+    if (dob > minDate) return "Beneficiary must be at least 1 year old.";
+    const maxAge = 120;
+    const maxDate = new Date(today);
+    maxDate.setFullYear(today.getFullYear() - maxAge);
+    if (dob < maxDate) return "Please enter a valid Date of Birth.";
+    return null;
+  };
+
+  const handleDobChange = (value: string) => {
+    handleField("dateOfBirth", value);
+    setDobError(validateDob(value));
+  };
+
   const resetWizard = () => {
-    if (confirm("Are you sure you want to start over? All progress will be lost.")) {
-      setFormData(EMPTY_FORM);
-      setSelected221gItems({});
-      setOutputs(null);
-      setCurrentStep(1);
-    }
+    setFormData(EMPTY_FORM);
+    setSelected221gItems({});
+    setOutputs(null);
+    setCurrentStep(1);
+    setShowResetModal(false);
   };
 
   const formatDate = (d: string) => {
@@ -1313,7 +1339,11 @@ export default function CombinedIntakeForm({
 
         <div className="flex flex-wrap items-center justify-between gap-4 border-t pt-2">
           <Button variant="outline" onClick={goBack}>← Back to Review</Button>
-          <Button variant="outline" onClick={resetWizard}>
+          <Button
+            variant="outline"
+            onClick={() => setShowResetModal(true)}
+            className="border-red-300 text-red-600 hover:bg-red-50 hover:border-red-400 hover:text-red-700 transition-colors"
+          >
             Start Over
           </Button>
         </div>
@@ -1533,10 +1563,40 @@ export default function CombinedIntakeForm({
                   </div>
                 </div>
 
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="passportNumber">Passport Number (optional)</Label>
+                    <Input
+                      id="passportNumber"
+                      value={formData.passportNumber}
+                      onChange={(e) => handleField("passportNumber", e.target.value)}
+                      placeholder="AA1234567"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="dateOfBirth">Date of Birth (optional)</Label>
+                    <Input
+                      id="dateOfBirth"
+                      type="date"
+                      value={formData.dateOfBirth}
+                      max={new Date(new Date().setFullYear(new Date().getFullYear() - 1)).toISOString().split("T")[0]}
+                      min={new Date(new Date().setFullYear(new Date().getFullYear() - 120)).toISOString().split("T")[0]}
+                      onChange={(e) => handleDobChange(e.target.value)}
+                      className={dobError ? "border-red-500 focus-visible:ring-red-400" : ""}
+                    />
+                    {dobError && (
+                      <p className="text-xs text-red-600 flex items-center gap-1 mt-1">
+                        <span className="inline-block w-3.5 h-3.5 rounded-full bg-red-100 text-red-600 text-center leading-[14px] font-bold text-[10px]">!</span>
+                        {dobError}
+                      </p>
+                    )}
+                  </div>
+                </div>
+
                 <div className="flex justify-end pt-4 border-t">
                   <Button
                     onClick={goNext}
-                    disabled={!formData.visaType || !formData.visaCategory || !formData.interviewDate || !formData.consularPost}
+                    disabled={!formData.visaType || !formData.visaCategory || !formData.interviewDate || !formData.consularPost || !!dobError}
                   >
                     Continue to Checklist →
                   </Button>
@@ -1783,6 +1843,17 @@ export default function CombinedIntakeForm({
           </div>
         </DialogContent>
       </Dialog>
+
+      <ConfirmationModal
+        open={showResetModal}
+        onOpenChange={setShowResetModal}
+        title="Start Over?"
+        description="This will permanently erase all your current progress — your case details, selected checklist items, and any generated documents. This action cannot be undone."
+        confirmText="Yes, Start Over"
+        cancelText="Cancel"
+        confirmVariant="danger"
+        onConfirm={resetWizard}
+      />
     </div>
   );
 }

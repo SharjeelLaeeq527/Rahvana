@@ -5,6 +5,7 @@ import Link from "next/link";
 import React, { useState, useEffect, useRef } from "react";
 import {
   Bell,
+  BellOff,
   ChevronDown,
   User as UserIcon,
   LogOut,
@@ -22,6 +23,7 @@ import {
   FolderLock,
   Wand2,
   Globe,
+  Sparkles,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import MegaMenu from "./MegaMenu";
@@ -124,6 +126,19 @@ export function SiteHeader({
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [expandedSections, setExpandedSections] = useState<string[]>([]);
   const [confirmSignOutOpen, setConfirmSignOutOpen] = useState(false);
+  const [notificationsOpen, setNotificationsOpen] = useState(false);
+  const notifRef = useRef<HTMLDivElement>(null);
+
+  // Close notification dropdown on outside click
+  useEffect(() => {
+    const handleOutsideClick = (e: MouseEvent) => {
+      if (notifRef.current && !notifRef.current.contains(e.target as Node)) {
+        setNotificationsOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleOutsideClick);
+    return () => document.removeEventListener("mousedown", handleOutsideClick);
+  }, []);
 
   const [activeMenu, setActiveMenu] = useState<string | null>(null);
   const menuTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -416,14 +431,68 @@ export function SiteHeader({
           {isLoading && !resolvedUser
             ? null
             : isSignedIn && (
-                <HydrationSafeButton
-                  variant="outline"
-                  size="icon"
-                  aria-label="Search"
-                  className="bg-transparent hover:bg-primary/10 p-2 rounded-md text-muted-foreground hover:text-primary"
-                >
-                  <Bell className="h-5 w-5" aria-hidden="true" />
-                </HydrationSafeButton>
+                <div className="relative" ref={notifRef}>
+                  <HydrationSafeButton
+                    variant="outline"
+                    size="icon"
+                    aria-label="Notifications"
+                    onClick={() => setNotificationsOpen((prev) => !prev)}
+                    className="relative bg-transparent hover:bg-primary/10 p-2 rounded-md text-muted-foreground hover:text-primary transition-colors"
+                  >
+                    <Bell className="h-5 w-5" aria-hidden="true" />
+                  </HydrationSafeButton>
+
+                  <AnimatePresence>
+                    {notificationsOpen && (
+                      <motion.div
+                        initial={{ opacity: 0, scale: 0.95, y: 8 }}
+                        animate={{ opacity: 1, scale: 1, y: 0 }}
+                        exit={{ opacity: 0, scale: 0.95, y: 8 }}
+                        transition={{ duration: 0.18, ease: "easeOut" }}
+                        className="absolute right-0 top-full mt-2 w-80 rounded-xl shadow-xl border border-border bg-card z-[9999] overflow-hidden origin-top-right"
+                      >
+                        {/* Header */}
+                        <div className="flex items-center justify-between px-4 py-3 border-b border-border bg-muted/30">
+                          <div className="flex items-center gap-2">
+                            <Bell className="w-4 h-4 text-primary" />
+                            <span className="text-sm font-bold text-foreground">Notifications</span>
+                          </div>
+                          <span className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground bg-muted px-2 py-0.5 rounded-full">
+                            0 New
+                          </span>
+                        </div>
+
+                        {/* Empty state body */}
+                        <div className="flex flex-col items-center justify-center px-6 py-10 gap-4">
+                          <div className="relative">
+                            <div className="w-16 h-16 rounded-2xl bg-muted flex items-center justify-center shadow-inner">
+                              <BellOff className="w-7 h-7 text-muted-foreground/50" />
+                            </div>
+                            <span className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-primary/10 flex items-center justify-center">
+                              <Sparkles className="w-3 h-3 text-primary" />
+                            </span>
+                          </div>
+                          <div className="text-center space-y-1">
+                            <p className="text-sm font-semibold text-foreground">You&apos;re all caught up!</p>
+                            <p className="text-xs text-muted-foreground leading-relaxed max-w-[200px] mx-auto">
+                              No new notifications right now. We&apos;ll let you know when something needs your attention.
+                            </p>
+                          </div>
+                        </div>
+
+                        {/* Footer */}
+                        <div className="px-4 py-3 border-t border-border bg-muted/20 flex items-center justify-center">
+                          <button
+                            className="text-xs text-muted-foreground hover:text-primary font-medium transition-colors"
+                            onClick={() => setNotificationsOpen(false)}
+                          >
+                            Dismiss
+                          </button>
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
               )}
 
           {/* LOGIN / PROFILE toggle */}
