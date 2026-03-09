@@ -10,8 +10,10 @@ const PDFEditor = dynamic(() => import("@/app/components/pdf-editor/PdfEditor").
 const PDFMergeAdvanced = dynamic(() => import("@/app/components/pdf-tools/PdfMerge"), { ssr: false });
 const CompressPDF = dynamic(() => import("@/app/components/pdf-tools/CompressPdf"), { ssr: false });
 const MultiFormatConverter = dynamic(() => import("@/app/components/pdf-tools/MultiFormatConverter"), { ssr: false });
+import { useLanguage } from "@/app/context/LanguageContext";
 
 export default function PDFProcessingPage() {
+  const { t } = useLanguage();
   const { pdfFile, reset } = usePDFStore();
   // Add "compress" and "convert" to tabs
   const [activeTab, setActiveTab] = useState<"upload" | "merge" | "compress" | "convert">("upload");
@@ -32,7 +34,7 @@ export default function PDFProcessingPage() {
               onClick={handleCloseEditor}
               className="bg-primary text-white px-4 py-2 rounded-lg font-semibold hover:bg-primary/90 transition"
             >
-              ← Back
+              ← {t("pdfProcessing.back")}
             </button>
           </div>
           <div className="h-[calc(100vh-64px)] w-full">
@@ -54,7 +56,7 @@ export default function PDFProcessingPage() {
                   : "text-gray-600 hover:bg-gray-100"
               }`}
             >
-              Edit PDF
+              {t("pdfProcessing.tabs.edit")}
             </button>
             <button
               onClick={() => setActiveTab("merge")}
@@ -64,7 +66,7 @@ export default function PDFProcessingPage() {
                   : "text-gray-600 hover:bg-gray-100"
               }`}
             >
-              Merge PDFs
+              {t("pdfProcessing.tabs.merge")}
             </button>
             <button
               onClick={() => setActiveTab("compress")}
@@ -74,7 +76,7 @@ export default function PDFProcessingPage() {
                   : "text-gray-600 hover:bg-gray-100"
               }`}
             >
-              Compress PDF
+              {t("pdfProcessing.tabs.compress")}
             </button>
             <button
               onClick={() => setActiveTab("convert")}
@@ -84,7 +86,7 @@ export default function PDFProcessingPage() {
                   : "text-gray-600 hover:bg-gray-100"
               }`}
             >
-              Convert to PDF
+              {t("pdfProcessing.tabs.convert")}
             </button>
           </div>
 

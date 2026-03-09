@@ -3086,6 +3086,241 @@
       "subscribe": "Subscribe"
     }
   },
+  "signatureProcessing": {
+    "title": "Signature Background Remover",
+    "subtitle": "Convert your handwritten signature into a professional, transparent PNG. Ideal for documents, contracts, and digital signing.",
+    "bestPractices": "Best Practices",
+    "whitePaper": {
+      "title": "White Paper",
+      "description": "Write on clean, white or light-colored paper"
+    },
+    "goodLighting": {
+      "title": "Good Lighting",
+      "description": "Ensure even lighting without shadows or glare"
+    },
+    "darkInk": {
+      "title": "Dark Ink",
+      "description": "Use blue or black pen for maximum contrast"
+    },
+    "adjust": "Adjust Your Signature",
+    "crop": "Crop",
+    "tilt": "Tilt / Rotate",
+    "done": "Done",
+    "originalPhoto": "Original Photo",
+    "transparentBg": "Transparent Background",
+    "finalSignature": "Final Signature",
+    "download": "Download Signature",
+    "startOver": "Start Over",
+    "uploader": {
+      "dropzone": "Drop your image here",
+      "uploadTitle": "Upload Signature Photo",
+      "browse": "Drag and drop or click to browse your files",
+      "chooseFile": "Choose File",
+      "supported": "Supported: JPG, PNG, HEIC • Max 10MB"
+    },
+    "errors": {
+      "loading": "Image processor is loading, please try again.",
+      "failed": "Failed to process image. Please try again."
+    },
+    "processing": {
+      "title": "Processing Your Signature",
+      "subtitle": "Please wait while we enhance your signature...",
+      "percentComplete": "{percent}% Complete",
+      "steps": {
+        "analyzing": "Analyzing image",
+        "removing": "Removing background",
+        "enhancing": "Enhancing signature",
+        "finalizing": "Finalizing"
+      }
+    }
+  },
+  "pdfProcessing": {
+    "back": "Back",
+    "tabs": {
+      "edit": "Edit PDF",
+      "merge": "Merge PDFs",
+      "compress": "Compress PDF",
+      "convert": "Convert to PDF"
+    },
+    "compress": {
+      "title": "PDF Compressor",
+      "selectLabel": "Select PDF File",
+      "dropzone": "Click to upload or drag and drop",
+      "pdffilesOnly": "PDF files only • Max 100MB",
+      "changeFile": "Click to change file",
+      "compressBtn": "Compress Now",
+      "compressing": "Maximizing Compression...",
+      "success": "Compression Successful!",
+      "originalSize": "Original Size",
+      "compressedSize": "Compressed Size",
+      "spaceSaved": "Space Saved",
+      "saved": "saved"
+    },
+    "convert": {
+      "title": "Multi-Format PDF Converter",
+      "subtitle": "Convert various file formats to PDF instantly",
+      "selectLabel": "Select File",
+      "dropzone": "Click to upload or drag and drop",
+      "supports": "Supports: Text, HTML, Markdown, Images, Word (DOCX) • Max 100MB",
+      "convertBtn": "Convert Now",
+      "converting": "Converting...",
+      "success": "Conversion Successful!",
+      "convertedSize": "Converted Size"
+    },
+    "merge": {
+      "title": "PDF Merger & Organizer",
+      "subtitle": "Combine multiple PDFs and images into one document",
+      "selectLabel": "Select PDF/Image Files",
+      "dropzone": "Click to upload or drag and drop files",
+      "supports": "Supports: PDF, Images (JPG, PNG) • Max 100MB",
+      "mergeBtn": "Merge Now",
+      "merging": "Merging PDFs...",
+      "previewMode": "Preview & Reorder",
+      "mainMode": "Manage Files",
+      "addFiles": "Add Files",
+      "clearAll": "Clear All",
+      "encrypted": "Encrypted",
+      "noPreview": "No Preview",
+      "pages": "Pages",
+      "copy": "Copy",
+      "rotate": "Rotate",
+      "remove": "Remove",
+      "success": "PDFs Merged Successfully!",
+      "mergedSize": "Merged Size",
+      "filesCount": "Files Combined",
+      "downloadBtn": "Download Merged PDF",
+      "selectFiles": "Select PDF Files",
+      "filesSelected": "{count} file(s) selected",
+      "clickToAddMore": "Click to add more files",
+      "clickOrDrag": "Click to upload or drag and drop",
+      "supportedFormats": "PDF files only • Max 100MB each • Encrypted PDFs supported",
+      "uploadedFiles": "Uploaded Files ({count})"
+    },
+    "preview": {
+      "organizePages": "Organize pages → preview will appear automatically",
+      "pagesTitle": "Pages ({count})"
+    },
+    "editor": {
+      "title": "PDF Editor Pro",
+      "uploadSubtitle": "Upload and edit your PDF documents",
+      "loadBtn": "Load PDF",
+      "loading": "Loading PDF...",
+      "successUpload": "PDF Loaded Successfully!",
+      "addText": "Add Text",
+      "signature": {
+        "title": "Create Signature",
+        "draw": "Draw",
+        "type": "Type",
+        "upload": "Upload",
+        "clear": "Clear",
+        "cancel": "Cancel",
+        "create": "Create",
+        "typePlaceholder": "Type your name",
+        "preview": "Preview",
+        "black": "Black",
+        "blue": "Blue",
+        "red": "Red",
+        "uploadPlaceholder": "Click to upload signature image",
+        "processing": "Processing...",
+        "enterName": "Please enter your name"
+      },
+      "shapes": {
+        "title": "Shapes",
+        "check": "Check",
+        "cross": "Cross",
+        "rectangle": "Rectangle",
+        "arrow": "Arrow"
+      },
+      "download": "Download",
+      "save": "Save",
+      "organize": "Organize Pages",
+      "reset": "Reset",
+      "errorLoading": "Error loading PDF file. Please try another file.",
+      "noPdf": "No PDF loaded",
+      "downloadSuccess": "PDF downloaded successfully!",
+      "downloadFail": "Failed to download PDF.",
+      "organizePages": {
+        "title": "Organize Pages",
+        "selected": "{count} page(s) selected",
+        "deleteSelected": "Delete Selected",
+        "lastPageAlert": "Cannot delete the last page!",
+        "deleteConfirm": "Are you sure you want to delete this page?",
+        "bulkDeleteConfirm": "Delete {count} selected page(s)?",
+        "rotateTip": "Rotate 90°",
+        "duplicateTip": "Duplicate page",
+        "deleteTip": "Delete page",
+        "applyChanges": "Apply Changes",
+        "successAlert": "Page organization saved! Changes will appear in the viewer.",
+        "reorderTip": "{count} page(s) • Drag to reorder",
+        "allPagesDeletedAlert": "Cannot delete all pages!"
+      },
+      "crop": {
+        "title": "Adjust Your Signature",
+        "tilt": "Tilt",
+        "rotated": "Rotated {degrees}°",
+        "reset": "Reset",
+        "tip": "Drag the corners to adjust the crop area and use the rotation handle at the top"
+      },
+      "tilt": {
+        "title": "Fix Perspective Tilt (3D Look)",
+        "subtitle": "Use sliders to correct horizontal and vertical tilt with true 3D perspective",
+        "horizontalLabel": "Horizontal Tilt (Y-Axis)",
+        "verticalLabel": "Vertical Tilt (X-Axis)",
+        "resetTilt": "Reset Tilt",
+        "preview": "3D Corrected Preview",
+        "applying": "Applying...",
+        "applyContinue": "Apply & Continue",
+        "left": "Left",
+        "center": "Center",
+        "right": "Right",
+        "up": "Up (Top-Down)",
+        "down": "Down"
+      },
+      "viewer": {
+        "fitWidth": "Fit to Width",
+        "fitHeight": "Fit to Height",
+        "actual": "100%",
+        "fitWidthOpt": "Fit Width",
+        "fitHeightOpt": "Fit Height",
+        "loading": "Loading page...",
+        "insertText": "Insert text"
+      },
+      "editText": {
+        "title": "Edit Text",
+        "premium": "Premium Feature",
+        "comingSoon": "Coming Soon!",
+        "description": "The Edit Text feature is currently in development and will be available soon. This feature will allow you to directly edit and modify text content within your PDF documents.",
+        "willBeAbleTo": "What you will be able to do",
+        "feature1": "Edit existing text in PDFs",
+        "feature2": "Change font styles and sizes",
+        "feature3": "Modify text color and alignment",
+        "feature4": "Unlimited editing capabilities",
+        "proTipTitle": "Pro tip",
+        "proTip": "Use the Add Text feature in the meantime to add new text elements to your PDF.",
+        "gotIt": "Got It"
+      },
+      "toolbar": {
+        "font": "Font",
+        "size": "Size",
+        "color": "Color",
+        "background": "Background",
+        "opacity": "Opacity",
+        "bold": "Bold (Ctrl+B)",
+        "italic": "Italic (Ctrl+I)",
+        "underline": "Underline (Ctrl+U)",
+        "alignLeft": "Align Left",
+        "alignCenter": "Align Center",
+        "alignRight": "Align Right",
+        "line": "Line",
+        "duplicate": "Duplicate"
+      }
+    },
+    "errors": {
+      "invalidFile": "Please select a valid PDF file",
+      "tooLarge": "File is too large. Maximum size is 100MB",
+      "failed": "Processing failed. Please try again."
+    }
+  },
   "bookAppointment": {
     "title": "Medical Appointment Booking",
     "description": "Book your medical appointment",

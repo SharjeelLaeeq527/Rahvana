@@ -50,7 +50,7 @@ export async function POST(request: Request) {
     const feedbackType = (formData.get("feedbackType") as string) || "";
     const description  = (formData.get("description")  as string) || "";
     const pageUrl      = (formData.get("pageUrl")      as string) || "";  // full URL
-    const file         = formData.get("attachment")    as File | null;
+    const files        = formData.getAll("attachment") as File[];
 
     if (!feedbackType || !description) {
       return NextResponse.json(
@@ -71,24 +71,41 @@ export async function POST(request: Request) {
       guideId = guide?.id ?? null;
     }
 
-    // ── 2. File attachment ─────────────────────────────────────────────────
-    let attachmentUrl = "";
+    // ── 2. File attachments (Multiple) ─────────────────────────────────────
+    console.log(`[Feedback] Processing ${files.length} attachments...`);
+    const attachmentUrls: string[] = [];
+    
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      if (file && file.size > 0) {
+        const folder = guideId ? `guides/${guideId}` : "general";
+        // Unique filename: Date + Index + Random string to prevent ANY collision
+        const randomStr = Math.random().toString(36).substring(2, 7);
+        const fileName = `${Date.now()}_${i}_${randomStr}_${file.name.replace(/\s+/g, '_')}`;
+        const filePath = `feedback/${folder}/${user?.id ?? "anon"}/${fileName}`;
 
-    if (file && file.size > 0) {
-      const folder   = guideId ? `guides/${guideId}` : "general";
-      const filePath = `feedback/${folder}/${user?.id ?? "anon"}/${Date.now()}_${file.name}`;
+        console.log(`[Feedback] Uploading file ${i+1}/${files.length}: ${file.name}`);
 
-      const { error: uploadError } = await supabaseAdmin.storage
-        .from("document-vault")
-        .upload(filePath, file, { upsert: true });
-
-      if (!uploadError) {
-        const { data: urlData } = supabaseAdmin.storage
+        const { error: uploadError } = await supabaseAdmin.storage
           .from("document-vault")
-          .getPublicUrl(filePath);
-        attachmentUrl = urlData.publicUrl;
+          .upload(filePath, file, { upsert: true });
+
+        if (!uploadError) {
+          const { data: urlData } = supabaseAdmin.storage
+            .from("document-vault")
+            .getPublicUrl(filePath);
+          attachmentUrls.push(urlData.publicUrl);
+        } else {
+          console.error(`[Feedback] Upload failed for ${file.name}:`, uploadError.message);
+        }
       }
     }
+
+    const finalAttachmentUrl = attachmentUrls.length > 0 
+      ? attachmentUrls.join("\n\n") // Double newline for extra clarity
+      : "";
+    
+    console.log(`[Feedback] Total successful uploads: ${attachmentUrls.length}`);
 
     // ── 3. Silently save to Supabase (backup) ─────────────────────────────
     let fbCreatedAt = new Date().toISOString();
@@ -102,7 +119,7 @@ export async function POST(request: Request) {
           step_key:       stepKey || null,
           feedback_type:  feedbackType,
           description,
-          attachment_url: attachmentUrl || null,
+          attachment_url: finalAttachmentUrl || null,
         })
         .select("created_at")
         .single();
@@ -113,14 +130,24 @@ export async function POST(request: Request) {
       console.error("DB save failed:", e);
     }
 
-    // ── 4. Derive page name ────────────────────────────────────────────────
-    //   Priority: pageUrl → stepKey (guide step) → slug → fallback
-    const resolvedPageUrl  = pageUrl || stepKey || slug || "/";
-    const resolvedPageName =
-      guideId && stepKey                  ? `${pathToPageName(slug)} — ${stepKey}`
-      : pageUrl                           ? pathToPageName(pageUrl)
-      : slug && slug !== "general"        ? pathToPageName(slug)
-      :                                     "General";
+    // ── 4. Derive page name & Priority ─────────────────────────────────────
+    // If it's the home page, just say 'Home Page'.
+    // If it's a guide step, show both guide name and step.
+
+    let resolvedPageName = "General Page";
+    if (guideId && stepKey) {
+      resolvedPageName = `${pathToPageName(slug)} - ${stepKey}`;
+    } else if (pageUrl) {
+      resolvedPageName = pathToPageName(pageUrl);
+    } else if (slug && slug !== "general") {
+      resolvedPageName = pathToPageName(slug);
+    }
+
+    // Auto-priority based on feedback type
+    let priority = "Medium";
+    if (feedbackType === "bug") priority = "High";
+    if (feedbackType === "incorrect_information") priority = "Critical";
+    if (feedbackType === "suggestion") priority = "Low";
 
     // ── 5. Build PKT timestamp ─────────────────────────────────────────────
     const dateObj = new Date(fbCreatedAt);
@@ -130,13 +157,14 @@ export async function POST(request: Request) {
     // ── 6. Sync to Google Sheets ───────────────────────────────────────────
     try {
       await appendFeedbackToSheet({
-        userEmail:    user?.email ?? "Anonymous",
-        pageName:     resolvedPageName,
-        pageUrl:      resolvedPageUrl,
-        feedbackType: FEEDBACK_TYPE_LABELS[feedbackType] ?? feedbackType,
+        userEmail:      user?.email ?? "Anonymous",
+        pageName:       resolvedPageName,
+        pageUrl:        pageUrl || slug || "/",
+        feedbackType:   FEEDBACK_TYPE_LABELS[feedbackType] ?? feedbackType,
         description,
-        attachmentUrl: attachmentUrl || "—",
+        attachmentUrls: finalAttachmentUrl || "—",
         timestamp,
+        priority
       });
     } catch (sheetErr) {
       console.error("Google Sheets sync error (non-fatal):", sheetErr);

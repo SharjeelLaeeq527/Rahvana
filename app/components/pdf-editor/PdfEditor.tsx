@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import { Download, LayoutGrid, Type, Stamp, Check } from "lucide-react";
 import ShapeFormattingToolbar from "./shapes/ShapeFormattingToolbar";
 import SignatureTool from "./signature/SignatureTool";
+import { useLanguage } from "@/app/context/LanguageContext";
 import { OrganizePagesModal } from "./pages/OrganizePagesModal";
 import { EditTextModal } from "./text/EditTextModal";
 import { createEditedPDF, downloadPDF } from "@/lib/pdf-utils";
@@ -31,6 +32,7 @@ const PDFThumbnails = dynamic(
 );
 
 export function PDFEditor() {
+  const { t } = useLanguage();
   const [activeTool, setActiveTool] = useState<
     "text" | "signature" | "shapes" | null
   >(null);
@@ -164,7 +166,7 @@ export function PDFEditor() {
   };
 
   const handleDownload = async () => {
-    if (!pdfFile) return alert("No PDF loaded");
+    if (!pdfFile) return alert(t("pdfProcessing.editor.noPdf"));
     setIsDownloading(true);
     try {
       const editedPdf = await createEditedPDF(
@@ -174,9 +176,9 @@ export function PDFEditor() {
         signatureAnnotations,
       );
       await downloadPDF(editedPdf, "edited-document.pdf");
-      alert("PDF downloaded successfully!");
+      alert(t("pdfProcessing.editor.downloadSuccess"));
     } catch (error) {
-      alert("Failed to download PDF.");
+      alert(t("pdfProcessing.editor.downloadFail"));
       console.error(error);
     }
     setIsDownloading(false);
@@ -196,7 +198,7 @@ export function PDFEditor() {
               <LayoutGrid className="w-5 h-5 text-gray-700" />
             </button>
             <h1 className="text-lg font-bold text-gray-900 hidden sm:block">
-              PDF Editor Pro
+              {t("pdfProcessing.editor.title")}
             </h1>
           </div>
 
@@ -205,6 +207,7 @@ export function PDFEditor() {
             <button
               onClick={() => setShowOrganizeModal(true)}
               className="p-2 hover:bg-gray-100 rounded transition-colors hidden md:block"
+              title={t("pdfProcessing.editor.organize")}
             >
               <LayoutGrid className="w-5 h-5 text-gray-700" />
             </button>
@@ -219,7 +222,7 @@ export function PDFEditor() {
                 setShowShapesDropdown(false);
               }}
               className={`p-2 rounded transition-colors ${activeTool === "text" ? "bg-blue-100" : "hover:bg-gray-100"}`}
-              title="Add Text"
+              title={t("pdfProcessing.editor.addText")}
             >
               <Type
                 className={`w-5 h-5 ${activeTool === "text" ? "text-blue-600" : "text-gray-700"}`}
@@ -234,6 +237,7 @@ export function PDFEditor() {
                 className={`p-2 rounded transition-colors ${
                   activeTool === "shapes" ? "bg-blue-100" : "hover:bg-gray-100"
                 }`}
+                title={t("pdfProcessing.editor.shapes.title")}
               >
                 <Stamp
                   className={`w-5 h-5 ${
@@ -249,7 +253,7 @@ export function PDFEditor() {
                     className="w-full px-4 py-2 text-left hover:bg-gray-50 border-b flex items-center gap-2"
                   >
                     <Check size={18} />
-                    <span>Check</span>
+                    <span>{t("pdfProcessing.editor.shapes.check")}</span>
                   </button>
 
                   <button
@@ -257,7 +261,7 @@ export function PDFEditor() {
                     className="w-full px-4 py-2 text-left hover:bg-gray-50 border-b flex items-center gap-2"
                   >
                     <X size={18} />
-                    <span>Cross</span>
+                    <span>{t("pdfProcessing.editor.shapes.cross")}</span>
                   </button>
 
                   {/* Rectangle instead of Arrow */}
@@ -266,7 +270,7 @@ export function PDFEditor() {
                     className="w-full px-4 py-2 text-left hover:bg-gray-50 flex items-center gap-2"
                   >
                     <Square size={18} />
-                    <span>Rectangle</span>
+                    <span>{t("pdfProcessing.editor.shapes.rectangle")}</span>
                   </button>
 
                   {/* Arrow */}
@@ -275,7 +279,7 @@ export function PDFEditor() {
                     className="w-full px-4 py-2 text-left hover:bg-gray-50 flex items-center gap-2"
                   >
                     <span className="text-lg">↗</span>
-                    <span>Arrow</span>
+                    <span>{t("pdfProcessing.editor.shapes.arrow")}</span>
                   </button>
                 </div>
               )}
@@ -302,14 +306,15 @@ export function PDFEditor() {
               {isDownloading ? (
                 "..."
               ) : (
-                <span className="hidden md:inline">Download</span>
+                <span className="hidden md:inline">{t("pdfProcessing.editor.download")}</span>
               )}
-              <span className="md:hidden">Save</span>
+              <span className="md:hidden">{t("pdfProcessing.editor.save")}</span>
             </Button>
             <Button
               onClick={reset}
               variant="outline"
               className="border-red-200 text-red-600 hover:bg-red-50 px-2 md:px-4"
+              title={t("pdfProcessing.editor.reset")}
             >
               <X className="h-4 w-4" />
             </Button>

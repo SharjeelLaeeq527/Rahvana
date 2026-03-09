@@ -2,6 +2,7 @@
 
 import { useRef, useState } from "react"
 import SignatureCanvas from "react-signature-canvas"
+import { useLanguage } from "@/app/context/LanguageContext"
 
 type Props = {
   onSave: (dataURL: string) => void
@@ -9,13 +10,14 @@ type Props = {
 }
 
 export default function SignaturePad({ onSave, closeModal }: Props) {
+  const { t } = useLanguage()
   const sigRef = useRef<SignatureCanvas | null>(null)
   const [penColor, setPenColor] = useState("#000000")
 
   const colors = [
-    { name: "Black", value: "#000000" },
-    { name: "Blue", value: "#1E40AF" },
-    { name: "Red", value: "#DC2626" },
+    { name: t("pdfProcessing.editor.signature.black"), value: "#000000" },
+    { name: t("pdfProcessing.editor.signature.blue"), value: "#1E40AF" },
+    { name: t("pdfProcessing.editor.signature.red"), value: "#DC2626" },
   ]
 
   const handleSave = () => {
@@ -61,19 +63,19 @@ export default function SignaturePad({ onSave, closeModal }: Props) {
           onClick={handleClear}
           className="flex-1 px-3 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition font-medium"
         >
-          Clear
+          {t("pdfProcessing.editor.signature.clear")}
         </button>
         <button
           onClick={closeModal}
           className="flex-1 px-3 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition font-medium"
         >
-          Cancel
+          {t("pdfProcessing.editor.signature.cancel")}
         </button>
         <button
           onClick={handleSave}
           className="flex-1 px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-medium"
         >
-          Create
+          {t("pdfProcessing.editor.signature.create")}
         </button>
       </div>
     </div>

@@ -1,6 +1,7 @@
 "use client"
 import { Button } from "@/components/ui/button"
 import { X, Lock } from "lucide-react"
+import { useLanguage } from "@/app/context/LanguageContext"
 
 interface EditTextModalProps {
   isOpen: boolean
@@ -8,6 +9,7 @@ interface EditTextModalProps {
 }
 
 export function EditTextModal({ isOpen, onClose }: EditTextModalProps) {
+  const { t } = useLanguage()
   if (!isOpen) return null
 
   return (
@@ -18,8 +20,8 @@ export function EditTextModal({ isOpen, onClose }: EditTextModalProps) {
           <div className="flex items-center gap-3">
             <Lock className="w-6 h-6" />
             <div>
-              <h2 className="text-xl font-bold">Edit Text</h2>
-              <p className="text-blue-100 text-sm">Premium Feature</p>
+              <h2 className="text-xl font-bold">{t("pdfProcessing.editor.editText.title")}</h2>
+              <p className="text-blue-100 text-sm">{t("pdfProcessing.editor.editText.premium")}</p>
             </div>
           </div>
           <button onClick={onClose} className="p-2 hover:bg-white/20 rounded-lg transition">
@@ -40,32 +42,31 @@ export function EditTextModal({ isOpen, onClose }: EditTextModalProps) {
                 />
               </svg>
             </div>
-            <h3 className="text-lg font-bold text-gray-900 mb-2">Coming Soon!</h3>
+            <h3 className="text-lg font-bold text-gray-900 mb-2">{t("pdfProcessing.editor.editText.comingSoon")}</h3>
             <p className="text-gray-600 text-sm mb-4">
-              The Edit Text feature is currently in development and will be available soon. This feature will allow you
-              to directly edit and modify text content within your PDF documents.
+              {t("pdfProcessing.editor.editText.description")}
             </p>
           </div>
 
           {/* Features Preview */}
           <div className="bg-blue-50 rounded-lg p-4 mb-6">
-            <p className="text-sm font-semibold text-blue-900 mb-3">What you willl be able to do:</p>
+            <p className="text-sm font-semibold text-blue-900 mb-3">{t("pdfProcessing.editor.editText.willBeAbleTo")}:</p>
             <ul className="space-y-2 text-sm text-blue-800">
               <li className="flex items-start gap-2">
                 <span className="text-blue-600 font-bold">•</span>
-                <span>Edit existing text in PDFs</span>
+                <span>{t("pdfProcessing.editor.editText.feature1")}</span>
               </li>
               <li className="flex items-start gap-2">
                 <span className="text-blue-600 font-bold">•</span>
-                <span>Change font styles and sizes</span>
+                <span>{t("pdfProcessing.editor.editText.feature2")}</span>
               </li>
               <li className="flex items-start gap-2">
                 <span className="text-blue-600 font-bold">•</span>
-                <span>Modify text color and alignment</span>
+                <span>{t("pdfProcessing.editor.editText.feature3")}</span>
               </li>
               <li className="flex items-start gap-2">
                 <span className="text-blue-600 font-bold">•</span>
-                <span>Unlimited editing capabilities</span>
+                <span>{t("pdfProcessing.editor.editText.feature4")}</span>
               </li>
             </ul>
           </div>
@@ -73,8 +74,7 @@ export function EditTextModal({ isOpen, onClose }: EditTextModalProps) {
           {/* CTA */}
           <div className="bg-linear-to-r from-blue-50 to-purple-50 rounded-lg p-4 mb-6 border border-blue-200">
             <p className="text-sm text-gray-700">
-              <span className="font-semibold text-blue-900">Pro tip:</span> Use the Add Text feature in the meantime
-              to add new text elements to your PDF.
+              <span className="font-semibold text-blue-900">{t("pdfProcessing.editor.editText.proTipTitle")}:</span> {t("pdfProcessing.editor.editText.proTip")}
             </p>
           </div>
         </div>
@@ -82,7 +82,7 @@ export function EditTextModal({ isOpen, onClose }: EditTextModalProps) {
         {/* Footer */}
         <div className="border-t px-6 py-4 bg-gray-50">
           <Button onClick={onClose} className="w-full bg-blue-600 hover:bg-blue-700 text-white">
-            Got It
+            {t("pdfProcessing.editor.editText.gotIt")}
           </Button>
         </div>
       </div>

@@ -19,15 +19,16 @@ function getAuth() {
 }
 
 /**
- * New column order (A → H):
- *  A  User Email
+ * New column order (A → I):
+ *  A  Originator (Email)
  *  B  Page / Section
  *  C  Page URL
- *  D  Feedback Type
+ *  D  Type
  *  E  Description
- *  F  Attachment
- *  G  Status          ← dropdown: Open / In Progress / Resolved
- *  H  Submitted At (PKT)
+ *  F  Attachments
+ *  G  Status          ← Dropdown: Not Started / In Progress / Completed
+ *  H  Priority        ← Dropdown: Low / Medium / High / Critical
+ *  I  Submitted At (PKT)
  */
 export async function appendFeedbackToSheet(row: {
   userEmail: string;
@@ -35,8 +36,9 @@ export async function appendFeedbackToSheet(row: {
   pageUrl: string;
   feedbackType: string;
   description: string;
-  attachmentUrl: string;
+  attachmentUrls: string; // Newline separated URLs
   timestamp: string;
+  priority?: string;
 }) {
   if (!SPREADSHEET_ID) {
     console.warn("GOOGLE_SHEET_ID not set – skipping Google Sheets sync.");
@@ -54,20 +56,20 @@ export async function appendFeedbackToSheet(row: {
     row.pageUrl,
     row.feedbackType,
     row.description,
-    row.attachmentUrl,
-    "Open",          // default status
+    row.attachmentUrls,
+    "Not Started",   // Default status
+    row.priority || "Medium",
     row.timestamp,
   ]];
 
   const appendRes = await sheets.spreadsheets.values.append({
     spreadsheetId: SPREADSHEET_ID,
-    range: `${SHEET_NAME}!A:H`,
+    range: `${SHEET_NAME}!A:I`,
     valueInputOption: "USER_ENTERED",
     insertDataOption: "INSERT_ROWS",
     requestBody: { values },
   });
 
-  // Find the row index that was just added and apply status dropdown + URL formatting
   const updatedRange = appendRes.data.updates?.updatedRange ?? "";
   const match = updatedRange.match(/(\d+)$/);
   if (match) {
@@ -86,28 +88,27 @@ async function ensureSheetHeaders(
     sheets = google.sheets({ version: "v4", auth });
   }
 
-  // Check if headers already exist
   const { data } = await sheets.spreadsheets.values.get({
     spreadsheetId: SPREADSHEET_ID,
     range: `${SHEET_NAME}!A1`,
   });
 
-  if (data.values?.[0]?.[0] === "User Email") return; // already initialised
+  if (data.values?.[0]?.[0] === "Originator") return;
 
-  // Write header row
   await sheets.spreadsheets.values.update({
     spreadsheetId: SPREADSHEET_ID,
-    range: `${SHEET_NAME}!A1:H1`,
+    range: `${SHEET_NAME}!A1:I1`,
     valueInputOption: "USER_ENTERED",
     requestBody: {
       values: [[
-        "User Email",
+        "Originator",
         "Page / Section",
         "Page URL",
-        "Feedback Type",
+        "Type",
         "Description",
-        "Attachment",
+        "Attachments",
         "Status",
+        "Priority",
         "Submitted At (PKT)",
       ]],
     },
@@ -119,50 +120,46 @@ async function ensureSheetHeaders(
     spreadsheetId: SPREADSHEET_ID,
     requestBody: {
       requests: [
-        // ── Bold + teal header background ──────────────────────────────────
+        // Header Formatting: Bold, centered, light gray background (no more teal)
         {
           repeatCell: {
-            range: { sheetId, startRowIndex: 0, endRowIndex: 1, startColumnIndex: 0, endColumnIndex: 8 },
+            range: { sheetId, startRowIndex: 0, endRowIndex: 1, startColumnIndex: 0, endColumnIndex: 9 },
             cell: {
               userEnteredFormat: {
-                textFormat: { bold: true, fontSize: 11, foregroundColor: { red: 1, green: 1, blue: 1 } },
-                backgroundColor: { red: 0.05, green: 0.60, blue: 0.60 },
+                textFormat: { bold: true, fontSize: 11, foregroundColor: { red: 0.2, green: 0.2, blue: 0.2 } },
+                backgroundColor: { red: 0.95, green: 0.95, blue: 0.95 },
                 horizontalAlignment: "CENTER",
                 verticalAlignment: "MIDDLE",
-                wrapStrategy: "CLIP",
               },
             },
-            fields: "userEnteredFormat(textFormat,backgroundColor,horizontalAlignment,verticalAlignment,wrapStrategy)",
+            fields: "userEnteredFormat(textFormat,backgroundColor,horizontalAlignment,verticalAlignment)",
           },
         },
-        // ── Freeze header row ──────────────────────────────────────────────
         {
           updateSheetProperties: {
             properties: { sheetId, gridProperties: { frozenRowCount: 1 } },
             fields: "gridProperties.frozenRowCount",
           },
         },
-        // ── Set column widths (px) ─────────────────────────────────────────
-        ...([220, 180, 320, 160, 380, 220, 130, 190] as const).map(
-          (pixelSize, columnIndex) => ({
-            updateDimensionProperties: {
-              range: { sheetId, dimension: "COLUMNS", startIndex: columnIndex, endIndex: columnIndex + 1 },
-              properties: { pixelSize },
-              fields: "pixelSize",
-            },
-          }),
-        ),
-        // ── Status column header: set data-validation for ALL data rows ─────
+        // Column Widths
+        ...([220, 200, 300, 150, 400, 250, 130, 110, 200] as const).map((pixelSize, i) => ({
+          updateDimensionProperties: {
+            range: { sheetId, dimension: "COLUMNS", startIndex: i, endIndex: i + 1 },
+            properties: { pixelSize },
+            fields: "pixelSize",
+          },
+        })),
+        // Status Dropdown
         {
           setDataValidation: {
-            range: { sheetId, startRowIndex: 1, endRowIndex: 1000, startColumnIndex: 6, endColumnIndex: 7 },
+            range: { sheetId, startRowIndex: 1, endRowIndex: 5000, startColumnIndex: 6, endColumnIndex: 7 },
             rule: {
               condition: {
                 type: "ONE_OF_LIST",
                 values: [
-                  { userEnteredValue: "Open" },
+                  { userEnteredValue: "Not Started" },
                   { userEnteredValue: "In Progress" },
-                  { userEnteredValue: "Resolved" },
+                  { userEnteredValue: "Completed" },
                 ],
               },
               showCustomUi: true,
@@ -170,31 +167,29 @@ async function ensureSheetHeaders(
             },
           },
         },
-        // ── Row height for data rows ───────────────────────────────────────
+        // Priority Dropdown
         {
-          updateDimensionProperties: {
-            range: { sheetId, dimension: "ROWS", startIndex: 1, endIndex: 1000 },
-            properties: { pixelSize: 36 },
-            fields: "pixelSize",
-          },
-        },
-        // ── Alternating row colors (zebra) ─────────────────────────────────
-        {
-          addBanding: {
-            bandedRange: {
-              range: { sheetId, startRowIndex: 1, endRowIndex: 1000, startColumnIndex: 0, endColumnIndex: 8 },
-              rowProperties: {
-                headerColor: { red: 0.05, green: 0.60, blue: 0.60 },
-                firstBandColor: { red: 1, green: 1, blue: 1 },
-                secondBandColor: { red: 0.93, green: 0.98, blue: 0.98 },
+          setDataValidation: {
+            range: { sheetId, startRowIndex: 1, endRowIndex: 5000, startColumnIndex: 7, endColumnIndex: 8 },
+            rule: {
+              condition: {
+                type: "ONE_OF_LIST",
+                values: [
+                  { userEnteredValue: "Low" },
+                  { userEnteredValue: "Medium" },
+                  { userEnteredValue: "High" },
+                  { userEnteredValue: "Critical" },
+                ],
               },
+              showCustomUi: true,
+              strict: true,
             },
           },
         },
-        // ── Wrap description column (E) ────────────────────────────────────
+        // Wrapping for description
         {
           repeatCell: {
-            range: { sheetId, startRowIndex: 1, endRowIndex: 1000, startColumnIndex: 4, endColumnIndex: 5 },
+            range: { sheetId, startRowIndex: 1, endRowIndex: 5000, startColumnIndex: 4, endColumnIndex: 5 },
             cell: { userEnteredFormat: { wrapStrategy: "WRAP", verticalAlignment: "TOP" } },
             fields: "userEnteredFormat(wrapStrategy,verticalAlignment)",
           },
@@ -204,38 +199,20 @@ async function ensureSheetHeaders(
   });
 }
 
-/** Applies status dropdown + makes URL in column C a hyperlink */
 async function applyRowFormatting(
   sheets: ReturnType<typeof google.sheets>,
-  rowIndex: number, // 0-based
+  rowIndex: number,
 ) {
   const sheetId = await getSheetTabId(sheets);
-
   await sheets.spreadsheets.batchUpdate({
     spreadsheetId: SPREADSHEET_ID,
     requestBody: {
       requests: [
-        // Centre-align status cell
         {
           repeatCell: {
-            range: { sheetId, startRowIndex: rowIndex, endRowIndex: rowIndex + 1, startColumnIndex: 6, endColumnIndex: 7 },
-            cell: {
-              userEnteredFormat: {
-                horizontalAlignment: "CENTER",
-                textFormat: { bold: true },
-              },
-            },
+            range: { sheetId, startRowIndex: rowIndex, endRowIndex: rowIndex + 1, startColumnIndex: 6, endColumnIndex: 8 },
+            cell: { userEnteredFormat: { horizontalAlignment: "CENTER", textFormat: { bold: true } } },
             fields: "userEnteredFormat(horizontalAlignment,textFormat)",
-          },
-        },
-        // Centre-align feedback type cell
-        {
-          repeatCell: {
-            range: { sheetId, startRowIndex: rowIndex, endRowIndex: rowIndex + 1, startColumnIndex: 3, endColumnIndex: 4 },
-            cell: {
-              userEnteredFormat: { horizontalAlignment: "CENTER" },
-            },
-            fields: "userEnteredFormat(horizontalAlignment)",
           },
         },
       ],
@@ -243,14 +220,8 @@ async function applyRowFormatting(
   });
 }
 
-export async function initSheetOnce() {
-  await ensureSheetHeaders();
-}
-
-async function getSheetTabId(
-  sheets: ReturnType<typeof google.sheets>,
-): Promise<number> {
+async function getSheetTabId(sheets: ReturnType<typeof google.sheets>): Promise<number> {
   const meta = await sheets.spreadsheets.get({ spreadsheetId: SPREADSHEET_ID });
-  const tab  = meta.data.sheets?.find(s => s.properties?.title === SHEET_NAME);
+  const tab = meta.data.sheets?.find(s => s.properties?.title === SHEET_NAME);
   return tab?.properties?.sheetId ?? 0;
 }

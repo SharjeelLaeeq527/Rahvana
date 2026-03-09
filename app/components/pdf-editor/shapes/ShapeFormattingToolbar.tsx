@@ -3,6 +3,7 @@
 import { Copy } from "lucide-react"
 import ColorPicker from "../tools/ColorPicker"
 import type { ShapeAnnotation } from "@/lib/store"
+import { useLanguage } from "@/app/context/LanguageContext"
 
 export default function ShapeFormattingToolbar({
   shape,
@@ -13,6 +14,7 @@ export default function ShapeFormattingToolbar({
   onUpdate: (id: string, patch: Partial<ShapeAnnotation>) => void
   onDuplicate?: (shape: ShapeAnnotation) => void
 }) {
+  const { t } = useLanguage()
   const strokeWidth = shape.strokeWidth || 2
 
   const handleDuplicate = () => {
@@ -63,7 +65,7 @@ export default function ShapeFormattingToolbar({
         <>
           <div className="w-px h-6 bg-gray-200" />
           <div className="flex items-center gap-1.5">
-            <span className="text-xs text-gray-600">Line:</span>
+            <span className="text-xs text-gray-600">{t("pdfProcessing.editor.toolbar.line")}:</span>
             <button
               onClick={() => onUpdate(shape.id, { strokeWidth: Math.max(1, strokeWidth - 1) })}
               className="w-6 h-6 flex items-center justify-center bg-gray-100 hover:bg-gray-200 rounded border border-gray-300 transition text-gray-600 text-sm"
@@ -98,7 +100,7 @@ export default function ShapeFormattingToolbar({
           <button
             onClick={handleDuplicate}
             className="p-1.5 hover:bg-gray-100 rounded transition-colors group"
-            title="Duplicate"
+            title={t("pdfProcessing.editor.toolbar.duplicate")}
           >
             <Copy className="w-4 h-4 text-gray-600 group-hover:text-blue-600" />
           </button>
