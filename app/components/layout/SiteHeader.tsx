@@ -402,7 +402,7 @@ export function SiteHeader({
 
         <div className="flex items-center gap-3">
           {/* Language Toggle */}
-          <HydrationSafeButton
+          {/* <HydrationSafeButton
             onClick={() => setLanguage(language === "en" ? "ur" : "en")}
             className="flex items-center gap-1 p-2 rounded-md hover:bg-muted text-muted-foreground transition-colors font-medium border border-border"
             title="Toggle Language"
@@ -411,7 +411,7 @@ export function SiteHeader({
             <span className="text-xs uppercase leading-none mt-0.5">
               {language === "en" ? "اردو" : "EN"}
             </span>
-          </HydrationSafeButton>
+          </HydrationSafeButton> */}
 
           {isLoading && !resolvedUser
             ? null
