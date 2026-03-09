@@ -460,7 +460,98 @@
       "title": "Overall Journey Progress",
       "stats": "{{percent}}% ({{completed}}/{{total}} steps)"
     },
-    "documentVaultBtn": "Document Vault"
+    "documentVaultBtn": "Document Vault",
+    "common": {
+      "back": "Back",
+      "continue": "Continue",
+      "stepOf": "Step {current} of {total}",
+      "saving": "Saving...",
+      "addToMyGuides": "Add to My Guides",
+      "completed": "Completed",
+      "inProgress": "In Progress",
+      "upcoming": "Upcoming",
+      "overallProgress": "Overall Progress",
+      "whatsThis": "What's this?",
+      "lastVerified": "Last verified: {date}",
+      "saveConfirmTitle": "Save to My Guides",
+      "saveConfirmDesc": "You've started this guide. Do you want to save it to My Guides?",
+      "dontSave": "Don't Save",
+      "save": "Save",
+      "next": "Next",
+      "finish": "Finish",
+      "skip": "Skip",
+      "onsite": "Onsite",
+      "online": "Online",
+      "onsiteApplication": "Onsite Application",
+      "onlineApplication": "Online Application",
+      "phase": "Phase",
+      "close": "Close",
+      "applicationType": "Application Type",
+      "stepProgress": "Step Progress",
+      "requiredDocs": "Required Documents",
+      "clickToSeeDocs": "Click to see the required documents",
+      "required": "Required",
+      "clickHere": "Click here",
+      "uploadSuccess": "Document Successfully Uploaded to Vault",
+      "secureStore": "Your document has been securely stored",
+      "acceptedFormats": "Accepted formats:",
+      "uploadToVault": "Upload to Vault",
+      "uploadedToVault": "Uploaded to Vault",
+      "criticalIssues": "{count} Critical Issues",
+      "clickToSeeValidations": "Click to see the required validations",
+      "startWizard": "Start Wizard",
+      "notNow": "Not now",
+      "dontShowAgain": "Don't show this again",
+      "avoidPitfalls": "Avoid Pitfalls",
+      "avoidPitfallsDesc": "Find out common mistakes that cause rejections.",
+      "personalizedChecklist": "Personalized Checklist",
+      "personalizedChecklistDesc": "See exactly what you need for your situation.",
+      "clearSteps": "Clear Steps",
+      "clearStepsDesc": "A tailored roadmap for the process.",
+      "whatIsA": "What is a {document}?",
+      "expandToSeeDesc": "Expand to see the description.",
+      "howToUse": "How to use this wizard",
+      "howToUseDesc": "Fast, step-by-step. Expand to see the flow.",
+      "importantNote": "Important Note",
+      "learnMore": "Learn more",
+      "hide": "Hide",
+      "personalizedRoadmap": "Your Personalized Roadmap",
+      "certificateValidation": "Certificate Validation",
+      "validation": "Validation",
+      "roadmap": "Roadmap",
+      "critical": "(Critical)"
+    },
+    "guide": {
+      "tabs": {
+        "tips": "Tips",
+        "pitfalls": "Pitfalls",
+        "links": "Links"
+      },
+      "info": {
+        "noTips": "No tips available for this step.",
+        "noPitfalls": "No pitfalls specified for this step.",
+        "noLinks": "No links available for this step."
+      },
+      "fee": {
+        "defaultTitle": "Fee Structure",
+        "processingTiers": "Processing Tiers",
+        "currency": "Rs."
+      },
+      "office": {
+        "static": {
+          "title": "Find Nearest NADRA Office",
+          "websiteTitle": "NADRA Official Offices Website",
+          "websiteDesc": "Locate the nearest NADRA Registration Center (NRC)",
+          "helplineTitle": "NADRA Helpline",
+          "helplineDesc": "For immediate, direct assistance, you can call the NADRA helpline."
+        },
+        "visitWebsite": "Visit Official Website",
+        "helpline": "Helpline:",
+        "dial": "Dial",
+        "mobileNote": "(from mobile users in Pakistan)",
+        "intHelpline": "International Helpline:"
+      }
+    }
   },
   "progressTree": {
     "journeyMap": "Journey Map",
@@ -555,6 +646,160 @@
         "deletingAll": "Deleting all documents...",
         "deletedAllSuccess": "✅ Deleted {{count}} documents successfully!",
         "deleteAllFailed": "Failed to delete all documents"
+      }
+    },
+    "guide": {
+      "hero": {
+        "badge": "Secure Document Management",
+        "titleLine1": "Your Intelligent",
+        "titleHighlight": "Immigration Vault",
+        "subtitle": "Secure, personalized, and NVC-ready. Managing your case files has never been this smart.",
+        "openVault": "Open My Vault",
+        "howItWorks": "How It Works"
+      },
+      "about": {
+        "title": "What is the Document Vault?",
+        "description": "The Document Vault is your secure, intelligent workspace for managing the complex documentation required for U.S. immigration (Family-Based Visas like IR-1, CR-1, IR-5).",
+        "standardFolderTitle": "Standard Folder",
+        "documentVaultTitle": "Document Vault",
+        "vs": "VS",
+        "folderCons": [
+          "Just basic file storage",
+          "No expiration alerts",
+          "You must figure out what's needed"
+        ],
+        "vaultPros": [
+          {
+            "title": "Smart Scenarios:",
+            "desc": "Automatically adjusts your checklist for prior marriages, military service, and joint sponsors."
+          },
+          {
+            "title": "Active Tracking:",
+            "desc": "Alerts you before certificates get expired."
+          },
+          {
+            "title": "NVC Standard:",
+            "desc": "Organizes your files in an easy, readable format by automatically renaming each document for clarity."
+          }
+        ]
+      },
+      "features": {
+        "personalization": {
+          "title": "Smart Personalization",
+          "description": "Generates a custom checklist based on your visa category (IR-1, CR-1, etc.) and personal history."
+        },
+        "tracking": {
+          "title": "Expiration Tracking",
+          "description": "Automatically tracks validity for documents like Police Certificate, Passport etc. Never miss a renewal."
+        },
+        "exports": {
+          "title": "NVC-Ready Exports",
+          "description": "One-click export creates perfectly organized files, simplifying the individual upload of each document to CEAC."
+        }
+      },
+      "coverage": {
+        "title": "Complete Coverage",
+        "subtitle": "The Vault organizes every document according to your case category.",
+        "categories": {
+          "civil": {
+            "title": "Civil Documents",
+            "items": [
+              "Birth Certificates",
+              "Nikah Nama",
+              "Passports",
+              "CNIC"
+            ]
+          },
+          "financial": {
+            "title": "Financial Support",
+            "items": [
+              "Form I-864",
+              "Tax Transcripts",
+              "Employment Letters",
+              "Pay Stubs"
+            ]
+          },
+          "relationship": {
+            "title": "Relationship Evidence",
+            "items": [
+              "Wedding Photos",
+              "Joint Accounts",
+              "Chat Logs",
+              "Family Pictures"
+            ]
+          },
+          "police": {
+            "title": "Police & Court",
+            "items": [
+              "Police Certificates",
+              "Court Records",
+              "Military Records"
+            ]
+          },
+          "medical": {
+            "title": "Medical & Health",
+            "items": [
+              "Medical Exam (DS-2019)",
+              "Vaccination Records"
+            ]
+          },
+          "photos": {
+            "title": "Visa Photos",
+            "items": [
+              "2x2 Inch Validated Photos",
+              "Digital Copies"
+            ]
+          }
+        }
+      },
+      "steps": {
+        "step1": {
+          "number": "01",
+          "title": "Personalize",
+          "description": "Tell the Vault your visa type and background (e.g., prior marriages). It instantly builds your required document list."
+        },
+        "step2": {
+          "number": "02",
+          "title": "Collect & Upload",
+          "description": "Use our built-in wizards to learn how to get documents like NADRA Birth Certificates, then upload scans directly."
+        },
+        "step3": {
+          "number": "03",
+          "title": "Review Progress",
+          "description": "The system checks your progress and alerts you to missing items or expiring certificates."
+        },
+        "step4": {
+          "number": "04",
+          "title": "Export Package",
+          "description": "When ready, download a ZIP file containing all your documents, renamed and organized for easy upload."
+        }
+      },
+      "faqs": {
+        "title": "Frequently Asked Questions",
+        "subtitle": "Common questions about security and submissions.",
+        "questions": [
+          {
+            "q": "Is my data secure?",
+            "a": "Absolutely. We prioritize your privacy. All your documents are securely stored in our database using advanced encryption protocols. Your sensitive data remains protected and accessible only to you."
+          },
+          {
+            "q": "What if I don't have a document yet?",
+            "a": "No problem. You can mark it as 'Missing' or leave the slot empty. The progress bar will reflect your current status, helping you focus on what's left to do."
+          },
+          {
+            "q": "Why does it say my Police Certificate is expiring?",
+            "a": "For U.S. immigration, Pakistani Police Certificates are generally considered valid for only 1 year from the date of issuance to the interview date. We track this automatically to prevent delays."
+          },
+          {
+            "q": "Does this submit documents to NVC for me?",
+            "a": "No. The Document Vault is a preparation and organization tool. It helps you organize and prepare your documents efficiently. You will still need to upload the final files to the CEAC portal yourself."
+          }
+        ]
+      },
+      "cta": {
+        "title": "Ready to organize your case?",
+        "subtitle": "Stop guessing. Start building your perfect application package today.",
+        "button": "Launch Document Vault"
       }
     },
     "components": {
@@ -2212,7 +2457,7 @@
           "description": "Step-by-step next moves after 221(g) or Administrative Processing."
         },
         "visaPath": {
-          "title": "VisaPath Finder",
+          "title": "Visa Path Finder",
           "description": "Quick quiz that points you to the right visa path + next steps."
         },
         "interviewPrep": {
@@ -2412,7 +2657,7 @@
         "desc": "Navigate administrative processing with step-by-step guidance and status tracking."
       },
       {
-        "title": "VisaPath Finder",
+        "title": "Visa Path Finder",
         "desc": "Answer a few questions and discover the best visa options for your unique situation."
       },
       {
@@ -2777,7 +3022,7 @@
         "desc": "Step-by-step next moves after 221(g) or Administrative Processing."
       },
       "visa-path": {
-        "title": "VisaPath Finder",
+        "title": "Visa Path Finder",
         "desc": "Quick quiz that points you to the right visa path + next steps."
       },
       "interview-prep": {
@@ -3471,6 +3716,389 @@
       "infoPart2": "My Translation Requests.",
       "infoPart3": "",
       "buttonText": "Go to My Requests"
+    }
+  },
+  "birthCertificate": {
+    "overview": {
+      "title": "Pakistan Birth Certificate Guide (Union Council & NADRA)",
+      "description": "The Birth Certificate is an official civil document issued by local Union Councils or NADRA in Pakistan. It serves as primary evidence of birth and is required for legal, educational, and immigration purposes (USCIS, NVC, etc.).",
+      "legalBasis": "Issued under the Births and Deaths Registration Act and NADRA Ordinance 2000. Punjab CM Policy 2026: Free registration up to 7 years late.",
+      "primaryUse": [
+        "Passport and CNIC applications",
+        "School and college admissions",
+        "Visa and immigration processes",
+        "Inheritance and legal matters"
+      ],
+      "issuingAuthority": "Union Council (Local Govt) / NADRA",
+      "validityNote": "Computerized certificates (CBRC) have no expiry but must reflect the latest NADRA record."
+    },
+    "feeStructure": {
+      "title": "Birth Certificate Fee Structure (2026)",
+      "specialNote": {
+        "title": "Punjab Promotion",
+        "description": "Registration and computerized certificates are currently FREE in Punjab for up to 7 years late (CM Policy)."
+      },
+      "tiers": [
+        {
+          "type": "0-60 Days (Normal)",
+          "price": "100 - 200",
+          "days": "Local UC Rate",
+          "badge_variant": "green"
+        },
+        {
+          "type": "2 Months - 2 Years (Late)",
+          "price": "500 - 800",
+          "days": "Late Registration",
+          "badge_variant": "orange"
+        },
+        {
+          "type": "2 - 7 Years (Very Late)",
+          "price": "1,000 - 2,000",
+          "days": "Delayed Entry",
+          "badge_variant": "purple"
+        },
+        {
+          "type": "After 7 Years (Delayed)",
+          "price": "2,500+",
+          "days": "+ Legal Costs",
+          "badge_variant": "blue"
+        },
+        {
+          "type": "B-Form (NADRA) - Normal",
+          "price": "50",
+          "days": "10-15 Working Days",
+          "badge_variant": "blue"
+        },
+        {
+          "type": "B-Form (NADRA) - Executive",
+          "price": "500",
+          "days": "3-5 Working Days",
+          "badge_variant": "orange"
+        }
+      ]
+    },
+    "wizard": {
+      "title": "Birth Certificate Guide",
+      "subtitle": "Union Council CBRC & NADRA B-Form",
+      "lastVerifiedDate": "February 24, 2026",
+      "documentLabel": "Birth Certificate",
+      "whatsThis": {
+        "heading": "Welcome to Birth Certificate Guide",
+        "sub": "Official Procedure 2026",
+        "description": "The Birth Certificate is an official civil document issued by local Union Councils or NADRA in Pakistan. It serves as primary evidence of birth and is required for legal, educational, and immigration purposes (USCIS, NVC, etc.).",
+        "quick_instructions": [
+          "Select the reason for your request and who the certificate is for",
+          "Choose the current age to help us determine the correct process and requirements.",
+          "Provide the information where the birth took place.",
+          "Get a tailored roadmap + checklist (what to request, verify, and upload).",
+          "Validate the final certificate before submission."
+        ],
+        "disclaimer": "This wizard provides general guidance. Requirements vary by province and Union Council. Always verify with local authorities."
+      },
+      "steps": {
+        "documentNeed": "Application Type",
+        "roadmap": "Roadmap",
+        "validation": "Validation"
+      },
+      "documentNeed": {
+        "title": "Application Setup",
+        "description": "Help us customize the process by telling us a bit about your situation.",
+        "questions": [
+          {
+            "id": "applicationType",
+            "title": "What bringing you here?",
+            "description": "Select the option that best describes your current requirement.",
+            "options": [
+              {
+                "id": "new",
+                "title": "New Registration",
+                "description": "First-time CBRC registration at Union Council.",
+                "color": "green",
+                "icon": "new"
+              },
+              {
+                "id": "correction",
+                "title": "Correction",
+                "description": "Fixing errors in existing birth records.",
+                "color": "orange",
+                "icon": "correction"
+              },
+              {
+                "id": "replacement",
+                "title": "Replacement",
+                "description": "Reissuing lost or damaged certificates.",
+                "color": "blue",
+                "icon": "replacement"
+              }
+            ]
+          },
+          {
+            "id": "ageCategory",
+            "title": "Select the person's current age:",
+            "description": "Age group determines biometric requirements and late registration rules.",
+            "options": [
+              {
+                "id": "0-3",
+                "title": "0 to 3 Years",
+                "description": "No biometrics/photo required at NADRA. Infants under 3 only need parent presence.",
+                "color": "green",
+                "icon": "0-3"
+              },
+              {
+                "id": "3-10",
+                "title": "3 to 10 Years",
+                "description": "Photo mandatory; iris optional at advanced centers.",
+                "color": "orange",
+                "icon": "3-10"
+              },
+              {
+                "id": "10-18",
+                "title": "10 to 18 Years",
+                "description": "Full fingerprints, photo, and iris are all mandatory.",
+                "color": "blue",
+                "icon": "10-18"
+              },
+              {
+                "id": "18+",
+                "title": "18 Years & Above",
+                "description": "Full biometrics required. Family linkage verification option available till Dec 2026.",
+                "color": "purple",
+                "icon": "18+"
+              }
+            ]
+          },
+          {
+            "id": "birthSetting",
+            "title": "Where did the birth occur?",
+            "description": "Documentary proof varies based on birth location.",
+            "options": [
+              {
+                "id": "hospital",
+                "title": "Hospital",
+                "description": "Hospital discharge or birth notification slip is required.",
+                "color": "green",
+                "icon": "hospital"
+              },
+              {
+                "id": "home",
+                "title": "At Home",
+                "description": "Affidavit signed by parents and 2 witness CNICs required.",
+                "color": "orange",
+                "icon": "home"
+              },
+              {
+                "id": "overseas",
+                "title": "Overseas",
+                "description": "Requires Embassy S-1 form or consulate birth notification.",
+                "color": "blue",
+                "icon": "overseas"
+              },
+              {
+                "id": "adoption",
+                "title": "Adoption",
+                "description": "Legal court guardian orders are mandatory for registration.",
+                "color": "purple",
+                "icon": "adoption"
+              }
+            ]
+          }
+        ]
+      },
+      "roadmap": {
+        "title": "Personalized Roadmap",
+        "estimatedTimeline": "3-15 Working Days",
+        "onsitePhases": [
+          {
+            "id": 1,
+            "title": "Gather Evidence",
+            "duration": "1-2 Days",
+            "description": "Collect mandatory proofs for your specific age group and birth setting. Original CNICs of parents and Nikah Nama are essential. Vaccination cards or hospital slips should be gathered if available."
+          },
+          {
+            "id": 2,
+            "title": "Union Council (CBRC)",
+            "duration": "2-7 Days",
+            "description": "Visit your local Union Council or Municipal Corporation. Submit the application form along with required documents. Pay the applicable fee. Wait for the processing and pick up your computerized birth certificate (CBRC)."
+          },
+          {
+            "id": 3,
+            "title": "NADRA B-Form",
+            "duration": "Same Day / Urgent",
+            "description": "Present the UC CBRC at a NADRA Registration Center. Complete the biometric process for the child. Pay the NADRA fee (Normal Rs. 50 / Urgent Rs. 500). Receive the token."
+          },
+          {
+            "id": 4,
+            "title": "Collection",
+            "duration": "3-15 Days",
+            "description": "Track your application status via 1777 or SMS. Visit the NADRA center to collect the final B-Form or CNIC. Verify all details and spellings on the document immediately."
+          }
+        ],
+        "onlinePhases": [
+          {
+            "id": 1,
+            "title": "Pak-ID Registration",
+            "duration": "30 Minutes",
+            "description": "Create an account on the Pak-ID Mobile App. Digital app submission is only available in selected Punjab districts. If your district is not covered, you must visit your local Union Council in person. Check app availability for your area before proceeding."
+          },
+          {
+            "id": 2,
+            "title": "Digital Application",
+            "duration": "30 Minutes",
+            "description": "Enter family details and upload scanned copies of required documents like hospital slip or affidavit. Submit for initial digital verification. Note: Even after digital submission, a Union Council visit may still be required for in-person verification in some districts."
+          },
+          {
+            "id": 3,
+            "title": "Fee Payment",
+            "duration": "Same Day",
+            "description": "Pay the application fee online using a debit/credit card. Review your application summary for accuracy."
+          },
+          {
+            "id": 4,
+            "title": "Digital Issuance",
+            "duration": "3-5 Days",
+            "description": "Once approved, download the digital CBRC. For the NADRA B-Form, visiting a NADRA Registration Center for biometrics remains mandatory regardless of digital submission method."
+          }
+        ],
+        "documents_checklist": [
+          {
+            "id": "parent_cnic",
+            "label": "Parents' CNIC / NICOP (Valid)",
+            "description": "Originals of both parents required for verification",
+            "required": true
+          },
+          {
+            "id": "nikah_nama",
+            "label": "Nikah Nama Copy",
+            "description": "Proof of parents' marriage — relationship verification",
+            "required": true
+          },
+          {
+            "id": "proof_of_residence",
+            "label": "Proof of Residence",
+            "description": "Utility bill, tenancy agreement, or domicile certificate",
+            "required": true
+          },
+          {
+            "id": "hospital_slip",
+            "label": "Hospital Discharge / Birth Notification Slip",
+            "description": "Required only for hospital births — primary evidence of birth",
+            "required": false
+          },
+          {
+            "id": "witness_cnic",
+            "label": "2 Witness CNICs",
+            "description": "Required only for home births — witnesses must be non-relatives",
+            "required": false
+          },
+          {
+            "id": "affidavit",
+            "label": "Affidavit (Sworn Statement)",
+            "description": "Mandatory for home births or late registration; signed by both parents",
+            "required": false
+          },
+          {
+            "id": "grandparent_cnic",
+            "label": "Grandparent's CNIC (Conditional)",
+            "description": "Required only if parent's CNIC is unavailable, or for identity verification in specific districts — not a standard requirement",
+            "required": false
+          }
+        ]
+      },
+      "validation": {
+        "title": "Certificate Validation",
+        "description": "Ensure your certificate meets international standards and immigration requirements.",
+        "uploadSection": {
+          "title": "Review your Document",
+          "description": "Upload a scan of your CBRC for automated field verification.",
+          "formats": "PDF, JPG, PNG"
+        },
+        "checklistTitle": "Field Verification",
+        "categories": [
+          {
+            "name": "Mandatory Fields",
+            "items": [
+              {
+                "label": "Computerized (QR Code present)",
+                "critical": true
+              },
+              {
+                "label": "Correct Name Spelling",
+                "critical": true
+              },
+              {
+                "label": "Accurate Date of Birth",
+                "critical": true
+              },
+              {
+                "label": "Parents' Names match CNIC",
+                "critical": true
+              }
+            ]
+          },
+          {
+            "name": "Format & Stamps",
+            "items": [
+              {
+                "label": "Secretary UC Signature",
+                "critical": false
+              },
+              {
+                "label": "Official Union Council Stamp",
+                "critical": true
+              },
+              {
+                "label": "Issue Date visible",
+                "critical": false
+              }
+            ]
+          }
+        ]
+      },
+      "infoPanel": {
+        "document_need": {
+          "tips": [
+            "Always get a Computerized UC Certificate first.",
+            "Punjab registration is free up to 7 years late.",
+            "Check biometric requirements for 10+ minors.",
+            "Keep hospital slips safe; they are primary evidence."
+          ],
+          "pitfalls": [
+            "Applying at NADRA without UC computerized certificate.",
+            "Ignoring age-specific photo requirements.",
+            "Missing witness CNICs for home birth registration."
+          ],
+          "links": {
+            "nadra": "NADRA Official"
+          }
+        },
+        "roadmap": {
+          "tips": [
+            "Union Council (UC) registration is mandatory FIRST — NADRA B-Form cannot be issued without a valid UC CBRC.",
+            "Required documents: Hospital birth slip, parents' CNIC/NICOP copies, Nikah Nama, proof of residence, and affidavit for home births.",
+            "Punjab: Digital registration via Pak-ID app available in selected districts. Sindh: Uses CRMS (Civil Registration Management System). KPK: Integrated with LG&RDD. Balochistan, GB, AJK, ICT: Manual UC registration required — no digital option.",
+            "Executive NADRA processing (Rs. 500) delivers B-Form in 3–5 days instead of 10–15.",
+            "Verify all name spellings and dates on the spot at the UC before leaving — corrections later require a separate process."
+          ],
+          "pitfalls": [
+            "Digital app submission (Pak-ID) is only available in selected Punjab districts — a Union Council visit may still be required for in-person verification even after digital submission.",
+            "Grandparent's CNIC is NOT a standard requirement — it is only needed if the parent's CNIC is unavailable or for verification in specific districts. Do not gather it unless specifically requested.",
+            "Leaving the UC counter without verifying the digital entry — errors are much harder to correct after the fact.",
+            "Going to NADRA directly without first obtaining the UC Computerized Birth Certificate (CBRC) — NADRA will reject the application."
+          ],
+          "links": {
+            "pakId": "Pak-ID App (Punjab Digital Registration)"
+          }
+        },
+        "validation": {
+          "tips": [
+            "Cross-check CBRC with Passport application details.",
+            "Attestation by MOFA is usually required for international use."
+          ],
+          "pitfalls": [
+            "Manual handwritten certificates are NOT accepted for visas."
+          ]
+        }
+      }
     }
   }
 }

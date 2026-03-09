@@ -14,6 +14,7 @@ export type Language = "en" | "ur";
 // Define the context type
 interface LanguageContextType {
   language: Language;
+  isUrdu: boolean;
   setLanguage: (lang: Language) => void;
   t: (key: string, params?: Record<string, any>) => any; // Translation function with interpolation and object support
   tRaw: (key: string) => any; // Raw translation function for arrays/objects
@@ -123,6 +124,7 @@ export const LanguageProvider: React.FC<LanguageProviderProps> = ({
 
   const value: LanguageContextType = {
     language,
+    isUrdu: language === "ur",
     setLanguage,
     t,
     tRaw,

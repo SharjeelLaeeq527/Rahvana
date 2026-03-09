@@ -461,7 +461,7 @@ function HomePageContent() {
                     {
                       icon: <Icons.Compass className="w-7 h-7" />,
                       title:
-                        t("homePage.toolsItems.2.title") || "VisaPath Finder",
+                        t("homePage.toolsItems.2.title") || "Visa Path Finder",
                       desc:
                         t("homePage.toolsItems.2.desc") ||
                         "Answer a few questions and discover the best visa options for your unique situation.",

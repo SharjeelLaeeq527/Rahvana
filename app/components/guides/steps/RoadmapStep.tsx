@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Check, ChevronDown } from "lucide-react";
+import { useLanguage } from "@/app/context/LanguageContext";
 
 interface Phase {
   id: number;
@@ -36,7 +37,8 @@ const RoadmapStep = ({
   onToggleDocument,
   data,
 }: RoadmapStepProps) => {
-  const title = data?.title || "Your Personalized Roadmap";
+  const { t, isUrdu } = useLanguage();
+  const title = data?.title || t("wizard.common.personalizedRoadmap");
   // const estimatedTimeline = data?.estimated_timeline || "";
 
   const onsitePhases = data?.onsitePhases || [];
@@ -95,7 +97,11 @@ const RoadmapStep = ({
   };
 
   return (
-    <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}>
+    <motion.div
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      className={isUrdu ? "font-urdu-body" : ""}
+    >
       {/* Heading */}
       <h2 className="text-[1.75rem] font-extrabold text-[hsl(220_20%_10%)] mb-2">
         {title}
@@ -118,7 +124,7 @@ const RoadmapStep = ({
           >
             <TimelinePhases
               phases={onsitePhases}
-              type="Onsite Application"
+              type={t("wizard.common.onsiteApplication")}
               onSelectPhase={(phase) => {
                 setActivePhase(phase);
                 setHasClickedAnyPhase(true);
@@ -136,7 +142,7 @@ const RoadmapStep = ({
           >
             <TimelinePhases
               phases={onlinePhases}
-              type="Online Application"
+              type={t("wizard.common.onlineApplication")}
               onSelectPhase={(phase) => {
                 setActivePhase(phase);
                 setHasClickedAnyPhase(true);
@@ -156,7 +162,7 @@ const RoadmapStep = ({
           onClick={() => setShowDocuments(!showDocuments)}
         >
           <h3 className="text-[1.15rem] font-bold text-slate-900 group-hover:text-primary transition-colors flex items-center gap-2">
-            Required Documents ({checkedDocuments.length}/
+            {t("wizard.common.requiredDocs")} ({checkedDocuments.length}/
             {documentsChecklist.length})
             <ChevronDown
               className={`w-5 h-5 transition-transform duration-300 ${
@@ -166,7 +172,7 @@ const RoadmapStep = ({
           </h3>
           {!showDocuments && (
             <p className="text-[0.85rem] text-slate-500 mt-0.5">
-              Click to see the required documents
+              {t("wizard.common.clickToSeeDocs")}
             </p>
           )}
         </div>
@@ -210,7 +216,7 @@ const RoadmapStep = ({
                         )}
                       </div>
 
-                      <div>
+                      <div className={isUrdu ? "font-urdu-body" : ""}>
                         <div className="flex items-center gap-2">
                           <span
                             className={`text-[0.9rem] font-bold text-slate-800 ${
@@ -222,7 +228,7 @@ const RoadmapStep = ({
 
                           {doc.required && (
                             <span className="px-2 py-px rounded-md bg-rose-50 text-rose-600 text-[0.7rem] font-bold uppercase tracking-wider">
-                              Required
+                              {t("wizard.common.required")}
                             </span>
                           )}
                         </div>
@@ -262,13 +268,15 @@ const RoadmapStep = ({
                     initial={{ opacity: 0, scale: 0.95, y: 20 }}
                     animate={{ opacity: 1, scale: 1, y: 0 }}
                     exit={{ opacity: 0, scale: 0.95, y: 20 }}
-                    className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 
-                    w-[90%] max-w-lg bg-white rounded-2xl shadow-2xl p-6 z-50 border border-slate-200"
+                    className={`fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 
+                    w-[90%] max-w-lg bg-white rounded-2xl shadow-2xl p-6 z-50 border border-slate-200 ${isUrdu ? "font-urdu-body" : ""}`}
+                    dir={isUrdu ? "rtl" : "ltr"}
                   >
                     <div className="flex justify-between items-center mb-4">
                       <div>
                         <h4 className="text-lg font-bold text-primary">
-                          Phase {activePhase.id}: {activePhase.title}
+                          {t("wizard.common.phase")} {activePhase.id}:{" "}
+                          {activePhase.title}
                         </h4>
                         <p className="text-sm text-slate-500 mt-1">
                           {activePhase.duration}
@@ -299,12 +307,12 @@ const RoadmapStep = ({
                       </ul>
                     </div>
 
-                    <div className="mt-4 flex justify-end">
+                    <div className="mt-4 flex justify-end gap-2">
                       <button
                         onClick={() => setActivePhase(null)}
                         className="px-4 py-2 bg-primary text-white rounded-lg text-sm font-medium hover:bg-primary/90 transition-colors"
                       >
-                        Close
+                        {t("wizard.common.close")}
                       </button>
                     </div>
                   </motion.div>
@@ -335,41 +343,46 @@ const TimelinePhases = ({
   hasClickedAnyPhase,
   hasOnlinePhases = true,
 }: TimelineProps) => {
+  const { t, isUrdu } = useLanguage();
   const [activeId, setActiveId] = useState<number | null>(null);
 
   return (
     <div
       className={`p-6 rounded-2xl border shadow-lg ${
-        type === "Onsite Application"
+        type === t("wizard.common.onsiteApplication")
           ? "bg-linear-to-br from-[#e8f6f6] to-[#d1eeef] border-primary/20"
           : "bg-linear-to-br from-[#e8f6f6] to-[#0d47a1]/20 border-[#0d47a1]/30"
       }`}
+      dir={isUrdu ? "rtl" : "ltr"}
     >
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-0 mb-2">
         <h4
-          className={`text-lg font-bold ${type === "Onsite Application" ? "text-primary" : "text-[#0d47a1]"}`}
+          className={`text-lg font-bold ${type === t("wizard.common.onsiteApplication") ? "text-primary" : "text-[#0d47a1]"}`}
         >
           {type}
         </h4>
         {hasOnlinePhases ? (
-          <div className="flex items-center gap-1 bg-slate-100/80 p-1 rounded-full border border-slate-200/60 shadow-inner shrink-0">
+          <div
+            className="flex items-center gap-1 bg-slate-100/80 p-1 rounded-full border border-slate-200/60 shadow-inner shrink-0"
+            dir="ltr"
+          >
             <span
               className={`px-3 py-1 text-[0.7rem] font-bold rounded-full transition-all duration-300 uppercase tracking-wider ${
-                type === "Onsite Application"
+                type === t("wizard.common.onsiteApplication")
                   ? "bg-white text-primary shadow-sm ring-1 ring-slate-200/50"
                   : "text-slate-400 hover:text-slate-600"
               }`}
             >
-              Onsite
+              {t("wizard.common.onsite")}
             </span>
             <span
               className={`px-3 py-1 text-[0.7rem] font-bold rounded-full transition-all duration-300 uppercase tracking-wider ${
-                type === "Online Application"
+                type === t("wizard.common.onlineApplication")
                   ? "bg-white text-[#0d47a1] shadow-sm ring-1 ring-slate-200/50"
                   : "text-slate-400 hover:text-slate-600"
               }`}
             >
-              Online
+              {t("wizard.common.online")}
             </span>
           </div>
         ) : (
@@ -381,7 +394,9 @@ const TimelinePhases = ({
       </div>
 
       <div className="overflow-x-auto custom-scrollbar pt-10 pb-6 -mx-3 px-3">
-        <div className="flex justify-start items-stretch gap-2 sm:gap-4 min-w-max">
+        <div
+          className={`flex justify-start items-stretch gap-2 sm:gap-4 min-w-max ${isUrdu ? "flex-row-reverse" : ""}`}
+        >
           {phases.map((phase, i) => (
             <div
               key={phase.id}
@@ -389,9 +404,11 @@ const TimelinePhases = ({
             >
               {/* Connecting Line */}
               {i < phases.length - 1 && (
-                <div className="absolute top-[28px] left-[50%] w-full h-1 z-0">
+                <div
+                  className={`absolute top-[28px] ${isUrdu ? "right-[50%]" : "left-[50%]"} w-full h-1 z-0`}
+                >
                   <div
-                    className={`w-full h-full ${type === "Onsite Application" ? "bg-primary/30" : "bg-[#0d47a1]/40"} rounded-full`}
+                    className={`w-full h-full ${type === t("wizard.common.onsiteApplication") ? "bg-primary/30" : "bg-[#0d47a1]/40"} rounded-full`}
                   ></div>
                 </div>
               )}
@@ -406,7 +423,7 @@ const TimelinePhases = ({
               >
                 {i === 0 && !hasClickedAnyPhase && (
                   <div className="absolute -top-8 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity bg-slate-800 text-white text-xs px-2 py-1 rounded whitespace-nowrap pointer-events-none z-20">
-                    Click here
+                    {t("wizard.common.clickHere")}
                   </div>
                 )}
                 <div className="relative">
@@ -415,7 +432,9 @@ const TimelinePhases = ({
                       className="absolute inset-0 rounded-full bg-current opacity-30 animate-ping z-0 pointer-events-none"
                       style={{
                         color:
-                          type === "Onsite Application" ? "#0d7377" : "#0d47a1",
+                          type === t("wizard.common.onsiteApplication")
+                            ? "#0d7377"
+                            : "#0d47a1",
                       }}
                     />
                   )}
@@ -424,10 +443,10 @@ const TimelinePhases = ({
                   font-bold text-white text-lg shadow-lg group-hover:scale-110 transition-transform duration-200 border-2
                   ${
                     activeId === phase.id
-                      ? type === "Onsite Application"
+                      ? type === t("wizard.common.onsiteApplication")
                         ? "bg-primary border-[#0a5a5d] ring-4 ring-primary/20"
                         : "bg-[#0d47a1] border-[#063275] ring-4 ring-[#0d47a1]/20"
-                      : type === "Onsite Application"
+                      : type === t("wizard.common.onsiteApplication")
                         ? "bg-linear-to-br from-primary to-[#0a5a5d] border-[#0a5a5d] group-hover:ring-2 group-hover:ring-primary/30"
                         : "bg-linear-to-br from-[#0d47a1] to-[#0d47a1] border-[#063275] group-hover:ring-2 group-hover:ring-[#0d47a1]/30"
                   }`}

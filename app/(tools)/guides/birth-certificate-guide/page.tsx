@@ -12,7 +12,6 @@ import RoadmapStep from "../../../components/guides/steps/RoadmapStep";
 import ValidationStep from "../../../components/guides/steps/ValidationStep";
 import WhatsThisModal from "../../../components/guides/WhatsThisModal";
 import { type WizardState, WizardStepId } from "@/types/guide-wizard";
-import guideData from "@/data/birth-certificate-guide-data.json";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import FeedbackButton from "@/app/components/FeedbackButton";
 import { useWizardSession } from "@/lib/guides/useWizardSession";
@@ -20,22 +19,12 @@ import { useGuideUpload } from "@/lib/guides/useGuideUpload";
 import { useGuideSave } from "@/lib/guides/useGuideSave";
 import { useGuideFeedback } from "@/lib/guides/useGuideFeedback";
 import { useNavigationGuard } from "@/lib/guides/useNavigationGuard";
+import { useLanguage } from "@/app/context/LanguageContext";
 
 const STEP_IDS: WizardStepId[] = ["document_need", "roadmap", "validation"];
 
-const STEP_LABELS: Record<string, string> = {
-  document_need: "Application Type",
-  roadmap: "Roadmap",
-  validation: "Validation",
-};
-
-const INFO_PANEL_KEYS: Record<string, string> = {
-  document_need: "document_need",
-  roadmap: "roadmap",
-  validation: "validation",
-};
-
 const BirthCertificateGuidePage = () => {
+  const { t, tRaw, isUrdu } = useLanguage();
   const [currentStep, setCurrentStep] = useState(0);
   const [showWhatsThis, setShowWhatsThis] = useState(true);
   const [isSaved, setIsSaved] = useState(false);
@@ -164,16 +153,20 @@ const BirthCertificateGuidePage = () => {
   }, [currentStep, state.documentNeed, isSaved]);
 
   const currentStepId = STEP_IDS[currentStep];
-  const infoPanelKey = INFO_PANEL_KEYS[currentStepId];
-  const infoPanelData = (guideData.wizard.info_panel as any)[
-    infoPanelKey
+  const localizedBirthCertData = tRaw("birthCertificate");
+  const wizardData = localizedBirthCertData.wizard;
+
+  const infoPanelData = (wizardData.infoPanel as any)?.[
+    currentStepId
   ] as unknown as InfoPanelData;
 
   const canGoNext = (): boolean => {
     switch (currentStepId) {
       case "document_need":
-        if (guideData.wizard.document_need.questions) {
-          const numQuestions = guideData.wizard.document_need.questions.length;
+        if (wizardData.documentNeed?.questions) {
+          const numQuestions = Object.keys(
+            wizardData.documentNeed.questions,
+          ).length;
           const answers = state.documentNeed;
           if (typeof answers === "object" && answers !== null) {
             return Object.keys(answers).length === numQuestions;
@@ -262,7 +255,7 @@ const BirthCertificateGuidePage = () => {
           <DocumentNeedStep
             selected={state.documentNeed}
             onSelect={handleDocumentNeedSelect}
-            data={guideData.wizard.document_need as any}
+            data={wizardData.documentNeed as any}
             onNext={goNext}
           />
         );
@@ -271,7 +264,7 @@ const BirthCertificateGuidePage = () => {
           <RoadmapStep
             checkedDocuments={state.checkedDocuments}
             onToggleDocument={toggleDocument}
-            data={guideData.wizard.roadmap as any}
+            data={wizardData.roadmap as any}
           />
         );
       case "validation":
@@ -281,7 +274,7 @@ const BirthCertificateGuidePage = () => {
             onToggleCheck={toggleValidationCheck}
             uploadedFile={state.uploadedFile}
             onUpload={handleUploadFile}
-            data={guideData.wizard.validation as any}
+            data={wizardData.validation as any}
           />
         );
       default:
@@ -298,10 +291,13 @@ const BirthCertificateGuidePage = () => {
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#f5f7fa] pt-14">
+    <div
+      className={`min-h-screen flex flex-col bg-[#f5f7fa] pt-14 ${isUrdu ? "font-urdu-body" : ""}`}
+      dir={isUrdu ? "rtl" : "ltr"}
+    >
       <WizardHeader
         onWhatsThis={() => setShowWhatsThis(true)}
-        title={guideData.wizard.title}
+        title={wizardData.title}
       />
 
       <div className="flex flex-1 overflow-y-auto xl:overflow-hidden h-[calc(100vh-56px)] flex-col xl:flex-row">
@@ -309,7 +305,11 @@ const BirthCertificateGuidePage = () => {
           currentStep={STEP_IDS.indexOf(currentStepId)}
           steps={STEP_IDS}
           onStepClick={(index) => setCurrentStep(index)}
-          stepLabels={STEP_LABELS}
+          stepLabels={{
+            document_need: t("wizard.common.applicationType"),
+            roadmap: t("wizard.common.roadmap"),
+            validation: t("wizard.common.validation"),
+          }}
           guideSlug="birth-certificate-guide"
           onSaveGuide={saveGuide}
           onGuideSaved={() => setIsSaved(true)}
@@ -348,23 +348,31 @@ const BirthCertificateGuidePage = () => {
                   whileHover={{ scale: 1.03 }}
                   whileTap={{ scale: 0.97 }}
                   onClick={goBack}
-                  className="flex items-center gap-1.5 px-5 py-2.5 rounded-xl border border-gray-300 bg-white text-gray-700 font-semibold text-sm cursor-pointer"
+                  className={`flex items-center gap-1.5 px-5 py-2.5 rounded-xl border border-gray-300 bg-white text-gray-700 font-semibold text-sm cursor-pointer ${isUrdu ? "font-urdu-body" : ""}`}
                 >
-                  <ArrowLeft className="w-4 h-4" /> Back
+                  <ArrowLeft
+                    className={`w-4 h-4 ${isUrdu ? "rotate-180" : ""}`}
+                  />{" "}
+                  {t("wizard.common.back")}
                 </motion.button>
               ) : (
                 <div className="hidden sm:block w-20" />
               )}
 
-              <span className="text-sm text-gray-500 font-medium">
-                Step {currentStep + 1} of {STEP_IDS.length}
+              <span
+                className={`text-sm text-gray-500 font-medium ${isUrdu ? "font-urdu-body" : ""}`}
+              >
+                {t("wizard.common.stepProgress", {
+                  current: currentStep + 1,
+                  total: STEP_IDS.length,
+                })}
               </span>
 
               {currentStep < STEP_IDS.length - 1 &&
                 !(
                   currentStepId === "document_need" &&
-                  guideData.wizard.document_need.questions &&
-                  guideData.wizard.document_need.questions.length > 1
+                  wizardData.documentNeed.questions &&
+                  Object.keys(wizardData.documentNeed.questions).length > 1
                 ) && (
                   <motion.button
                     whileHover={{ scale: 1.03 }}
@@ -377,9 +385,13 @@ const BirthCertificateGuidePage = () => {
                         ? "bg-linear-to-br from-teal-600 to-teal-500 text-white shadow-md"
                         : "bg-gray-200 text-gray-400 cursor-not-allowed"
                     }
+                    ${isUrdu ? "font-urdu-body" : ""}
                   `}
                   >
-                    Continue <ArrowRight className="w-4 h-4" />
+                    {t("wizard.common.continue")}{" "}
+                    <ArrowRight
+                      className={`w-4 h-4 ${isUrdu ? "rotate-180" : ""}`}
+                    />
                   </motion.button>
                 )}
             </div>
@@ -388,8 +400,8 @@ const BirthCertificateGuidePage = () => {
 
         <WizardInfoPanel
           data={infoPanelData}
-          lastVerified={guideData.wizard.last_verified}
-          guideData={guideData as Record<string, unknown>}
+          lastVerified={wizardData.lastVerifiedDate}
+          guideData={localizedBirthCertData as any}
           guideType="other"
         />
       </div>
@@ -397,13 +409,17 @@ const BirthCertificateGuidePage = () => {
       <WhatsThisModal
         open={showWhatsThis}
         onClose={() => setShowWhatsThis(false)}
-        data={guideData.wizard.whats_this}
-        documentLabel="Birth Certificate"
+        data={wizardData.whatsThis as any}
+        documentLabel={t("birthCertificate.wizard.documentLabel")}
         guideSlug="birth-certificate-guide"
       />
       <FeedbackButton
-        steps={Object.values(STEP_LABELS)}
-        currentStepName={STEP_LABELS[currentStepId] || ""}
+        steps={[
+          t("wizard.common.applicationType"),
+          t("wizard.common.roadmap"),
+          t("wizard.common.validation"),
+        ]}
+        currentStepName={t(`wizard.common.${currentStepId}`)}
         onSubmit={handleSubmitFeedback}
       />
     </div>

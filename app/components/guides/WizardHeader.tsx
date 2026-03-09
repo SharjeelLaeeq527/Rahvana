@@ -1,15 +1,15 @@
 import { HelpCircle, FileText } from "lucide-react";
 import { motion } from "framer-motion";
+import { useLanguage } from "@/app/context/LanguageContext";
 
 interface WizardHeaderProps {
   onWhatsThis: () => void;
   title?: string;
 }
 
-const WizardHeader = ({
-  onWhatsThis,
-  title = "Family Registration Certificate (FRC)",
-}: WizardHeaderProps) => {
+const WizardHeader = ({ onWhatsThis, title = "Guide" }: WizardHeaderProps) => {
+  const { t } = useLanguage();
+
   return (
     <header
       className="fixed top-0 left-0 w-full z-40 h-14 px-4 sm:px-6
@@ -46,7 +46,7 @@ const WizardHeader = ({
                    transition-colors duration-200"
       >
         <HelpCircle className="w-4 h-4" />
-        <span className="hidden sm:inline">What&apos;s this?</span>
+        <span className="hidden sm:inline">{t("wizard.common.whatsThis")}</span>
       </motion.button>
     </header>
   );

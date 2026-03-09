@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Info,
@@ -11,6 +11,7 @@ import {
   Globe,
   Clock,
 } from "lucide-react";
+import { useLanguage } from "@/app/context/LanguageContext";
 
 interface FeeStructureTier {
   type: string;
@@ -70,42 +71,6 @@ interface WizardInfoPanelProps {
 
 type InfoTab = "tips" | "pitfalls" | "links";
 
-const TAB_CONFIG: {
-  key: InfoTab;
-  label: string;
-  icon: React.ElementType;
-  color: string;
-}[] = [
-  { key: "tips", label: "Tips", icon: Info, color: "hsl(168 80% 30%)" },
-  {
-    key: "pitfalls",
-    label: "Pitfalls",
-    icon: AlertTriangle,
-    color: "hsl(35 90% 50%)",
-  },
-  { key: "links", label: "Links", icon: LinkIcon, color: "hsl(215 70% 50%)" },
-];
-
-const STATIC_OFFICE_LOCATION: OfficeLocation = {
-  title: "Find Nearest NADRA Office",
-  options: [
-    {
-      type: "website",
-      title: "NADRA Official Offices Website",
-      description: "Locate the nearest NADRA Registration Center (NRC)",
-      url: "https://www.nadra.gov.pk/nadraOffices",
-    },
-    {
-      type: "helpline",
-      title: "NADRA Helpline",
-      description:
-        "For immediate, direct assistance, you can call the NADRA helpline.",
-      phone_local: "1777",
-      phone_international: "+92 51 111 786 100",
-    },
-  ],
-};
-
 const WizardInfoPanel = ({
   data,
   lastVerified,
@@ -113,19 +78,62 @@ const WizardInfoPanel = ({
   guideType,
   children,
 }: WizardInfoPanelProps) => {
+  const { t, language, tRaw } = useLanguage();
   const [activeTab, setActiveTab] = useState<InfoTab>("tips");
 
+  const TAB_CONFIG = useMemo(
+    () => [
+      {
+        key: "tips" as const,
+        label: t("wizard.guide.tabs.tips"),
+        icon: Info,
+        color: "hsl(168 80% 30%)",
+      },
+      {
+        key: "pitfalls" as const,
+        label: t("wizard.guide.tabs.pitfalls"),
+        icon: AlertTriangle,
+        color: "hsl(35 90% 50%)",
+      },
+      {
+        key: "links" as const,
+        label: t("wizard.guide.tabs.links"),
+        icon: LinkIcon,
+        color: "hsl(215 70% 50%)",
+      },
+    ],
+    [t],
+  );
+
+  const STATIC_OFFICE_LOCATION: OfficeLocation = useMemo(
+    () => ({
+      title: t("wizard.guide.office.static.title"),
+      options: [
+        {
+          type: "website",
+          title: t("wizard.guide.office.static.websiteTitle"),
+          description: t("wizard.guide.office.static.websiteDesc"),
+          url: "https://www.nadra.gov.pk/nadraOffices",
+        },
+        {
+          type: "helpline",
+          title: t("wizard.guide.office.static.helplineTitle"),
+          description: t("wizard.guide.office.static.helplineDesc"),
+          phone_local: "1777",
+          phone_international: "+92 51 111 786 100",
+        },
+      ],
+    }),
+    [t],
+  );
+
   const feeStructure =
-    data.fee_structure ||
-    guideData?.fee_structure ||
-    guideData?.wizard?.fee_structure ||
-    null;
+    // data.fee_structure ||
+    guideData?.fee_structure || guideData?.wizard?.fee_structure || null;
 
   const officeLocation =
-    data.office_location ||
-    guideData?.office_finder ||
-    guideData?.wizard?.office_finder ||
-    null;
+    // data.office_location ||
+    guideData?.office_finder || guideData?.wizard?.office_finder || null;
 
   // Show office section based on availability of dynamic data or guide type
   const showOfficeSection =
@@ -174,66 +182,71 @@ const WizardInfoPanel = ({
               <div className="space-y-4">
                 {/* Tips */}
                 {activeTab === "tips" &&
-                  (data.tips && data.tips.length > 0 ? (
-                    data.tips.map((tip, i) => (
+                  (data?.tips && data.tips.length > 0 ? (
+                    data.tips.map((tip: string, i: number) => (
                       <div
                         key={i}
                         className="flex gap-3 items-start bg-white p-3 rounded-xl border border-slate-100 shadow-sm"
                       >
-                        <div className="shrink-0 w-6 h-6 bg-primary/10 text-primary rounded-full flex items-center justify-center text-xs font-bold mt-0.5">
+                        <div
+                          className="shrink-0 w-6 h-6 bg-primary/10 text-primary rounded-full flex items-center justify-center text-xs font-bold mt-0.5"
+                          dir="ltr"
+                        >
                           {i + 1}
                         </div>
-                        <p className="text-sm text-slate-700 leading-relaxed">
+                        <p className="text-sm text-slate-700 leading-relaxed font-urdu-body">
                           {tip}
                         </p>
                       </div>
                     ))
                   ) : (
                     <p className="text-sm text-slate-500 text-center py-4">
-                      No tips available for this step.
+                      {t("wizard.guide.info.noTips")}
                     </p>
                   ))}
 
                 {/* Pitfalls */}
                 {activeTab === "pitfalls" &&
-                  (data.pitfalls && data.pitfalls.length > 0 ? (
-                    data.pitfalls.map((pitfall, i) => (
+                  (data?.pitfalls && data.pitfalls.length > 0 ? (
+                    data.pitfalls.map((pitfall: string, i: number) => (
                       <div
                         key={i}
                         className="flex gap-3 p-3 rounded-xl bg-rose-50 border border-rose-100/50"
                       >
                         <AlertTriangle className="shrink-0 w-5 h-5 mt-0.5 text-rose-500" />
-                        <p className="text-sm text-slate-800 leading-relaxed font-medium">
+                        <p className="text-sm text-slate-800 leading-relaxed font-medium font-urdu-body">
                           {pitfall}
                         </p>
                       </div>
                     ))
                   ) : (
                     <p className="text-sm text-slate-500 text-center py-4">
-                      No pitfalls specified for this step.
+                      {t("wizard.guide.info.noPitfalls")}
                     </p>
                   ))}
 
                 {/* Links */}
                 {activeTab === "links" &&
-                  (data.links && data.links.length > 0 ? (
-                    data.links.map((link, i) => (
-                      <a
-                        key={i}
-                        href={link.url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex items-center gap-3 p-3 bg-white hover:bg-slate-50 border border-slate-200 rounded-lg transition-colors group"
-                      >
-                        <ExternalLink className="shrink-0 w-4 h-4 text-primary" />
-                        <span className="text-sm font-medium text-slate-700 group-hover:text-primary truncate">
-                          {link.label}
-                        </span>
-                      </a>
-                    ))
+                  (data?.links && data.links.length > 0 ? (
+                    data.links.map(
+                      (link: { label: string; url: string }, i: number) => (
+                        <a
+                          key={i}
+                          href={link.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex items-center gap-3 p-3 bg-white hover:bg-slate-50 border border-slate-200 rounded-lg transition-colors group"
+                        >
+                          <ExternalLink className="shrink-0 w-4 h-4 text-primary" />
+                          <span className="text-sm font-medium text-slate-700 group-hover:text-primary truncate">
+                            {link.label}
+                          </span>
+                        </a>
+                      ),
+                    )
                   ) : (
                     <p className="text-sm text-slate-500 text-center py-4">
-                      No links available for this step.
+                      {t("wizard.guide.info.noLinks")}
                     </p>
                   ))}
               </div>
@@ -248,7 +261,7 @@ const WizardInfoPanel = ({
             <div className="mt-8 pb-4 border-t border-slate-200 pt-8">
               <div className="mb-6">
                 <h2 className="text-xl font-bold text-slate-900 mb-2 tracking-tight">
-                  {feeStructure?.title || "Fee Structure"}
+                  {feeStructure?.title || t("wizard.guide.fee.defaultTitle")}
                 </h2>
               </div>
 
@@ -259,10 +272,10 @@ const WizardInfoPanel = ({
                       <CreditCard className="w-5 h-5" />
                     </div>
                     <div>
-                      <h3 className="text-lg font-bold mb-1 leading-none">
+                      <h3 className="text-lg font-bold mb-1 leading-none font-urdu-body">
                         {feeStructure.special_note.title}
                       </h3>
-                      <p className="text-white/90 leading-relaxed text-[0.8rem]">
+                      <p className="text-white/90 leading-relaxed text-[0.8rem] font-urdu-body">
                         {feeStructure.special_note.description}
                       </p>
                     </div>
@@ -273,7 +286,7 @@ const WizardInfoPanel = ({
               <div className="mb-8">
                 <h3 className="text-md font-bold text-slate-800 mb-3 flex items-center gap-2">
                   <History className="w-4 h-4 text-slate-400" />
-                  Processing Tiers
+                  {t("wizard.guide.fee.processingTiers")}
                 </h3>
                 <div className="flex flex-col gap-3">
                   {feeStructure?.tiers?.map(
@@ -303,9 +316,12 @@ const WizardInfoPanel = ({
                               {tier.days}
                             </p>
                           </div>
-                          <div className="text-base sm:text-lg font-black text-slate-900 flex items-baseline gap-1 whitespace-nowrap">
+                          <div
+                            className="text-base sm:text-lg font-black text-slate-900 flex items-baseline gap-1 whitespace-nowrap"
+                            dir="ltr"
+                          >
                             <span className="text-[0.65rem] sm:text-xs font-medium text-slate-400">
-                              Rs.
+                              {t("wizard.guide.fee.currency")}
                             </span>
                             {tier.price}
                           </div>
@@ -358,10 +374,10 @@ const WizardInfoPanel = ({
                           <Icon className="w-4 h-4" />
                         </div>
                         <div>
-                          <p className="font-bold text-slate-900 text-[0.8rem] mb-0.5">
+                          <p className="font-bold text-slate-900 text-[0.8rem] mb-0.5 font-urdu-body">
                             {option.title}
                           </p>
-                          <p className="text-[0.75rem] text-slate-500 leading-relaxed">
+                          <p className="text-[0.75rem] text-slate-500 leading-relaxed font-urdu-body">
                             {option.description && (
                               <>
                                 {option.description}
@@ -376,7 +392,7 @@ const WizardInfoPanel = ({
                                 rel="noopener noreferrer"
                                 className="text-primary hover:underline font-medium flex items-center gap-1"
                               >
-                                Visit Official Website
+                                {t("wizard.guide.office.visitWebsite")}
                                 <ExternalLink className="w-3 h-3" />
                               </a>
                             )}
@@ -384,16 +400,21 @@ const WizardInfoPanel = ({
                             {option.phone_local && (
                               <>
                                 <br />
-                                <strong>Helpline:</strong> Dial{" "}
-                                {option.phone_local} (from mobile users in
-                                Pakistan)
+                                <strong>
+                                  {t("wizard.guide.office.helpline")}
+                                </strong>{" "}
+                                {t("wizard.guide.office.dial")}{" "}
+                                {option.phone_local}{" "}
+                                {t("wizard.guide.office.mobileNote")}
                                 <br />
                               </>
                             )}
 
                             {option.phone_international && (
                               <>
-                                <strong>International Helpline:</strong>{" "}
+                                <strong>
+                                  {t("wizard.guide.office.intHelpline")}
+                                </strong>{" "}
                                 {option.phone_international}
                               </>
                             )}
@@ -411,7 +432,7 @@ const WizardInfoPanel = ({
 
       {/* Footer */}
       <div className="p-4 border-t border-slate-200 bg-white text-xs text-slate-500 text-center rounded-b-xl">
-        Last verified: {lastVerified}
+        {t("wizard.common.lastVerified", { date: lastVerified })}
       </div>
     </aside>
   );

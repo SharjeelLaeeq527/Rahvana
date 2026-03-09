@@ -12,6 +12,7 @@ import { ConfirmationModal } from "../shared/ConfirmationModal";
 import { AuthRequiredModal } from "../shared/AuthRequiredModal";
 import { useAuth } from "@/app/context/AuthContext";
 import { useState } from "react";
+import { useLanguage } from "@/app/context/LanguageContext";
 
 const STEP_ICONS: Record<string, React.ElementType> = {
   document_need: ClipboardList,
@@ -60,6 +61,7 @@ const WizardSidebar = ({
   saving,
   session,
 }: WizardSidebarProps) => {
+  const { t, tRaw } = useLanguage();
   const labels = stepLabels || DEFAULT_LABELS;
   const progress = currentStep + 1;
   const total = steps.length;
@@ -103,7 +105,9 @@ const WizardSidebar = ({
                  bg-primary text-white hover:bg-primary/80 disabled:opacity-60 disabled:cursor-not-allowed"
             >
               <Bookmark className="w-5 h-5" />
-              {saving ? "Saving..." : "Add to My Guides"}
+              {saving
+                ? t("wizard.common.saving")
+                : t("wizard.common.addToMyGuides")}
             </motion.button>
           </div>
         )}
@@ -181,10 +185,10 @@ const WizardSidebar = ({
                       }`}
                     >
                       {status === "completed"
-                        ? "Completed"
+                        ? t("wizard.common.completed")
                         : status === "active"
-                          ? "In Progress"
-                          : "Upcoming"}
+                          ? t("wizard.common.inProgress")
+                          : t("wizard.common.upcoming")}
                     </p>
                   </div>
                 </motion.button>
@@ -207,9 +211,9 @@ const WizardSidebar = ({
         {/* Progress Bar */}
         <div className="p-4 border-t border-slate-200 bg-slate-50 rounded-b-xl">
           <div className="flex items-center justify-between text-xs text-slate-500 mb-2 font-medium">
-            <span>Overall Progress</span>
+            <span>{t("wizard.common.overallProgress")}</span>
             <span className="text-primary bg-primary/10 px-2 py-0.5 rounded-full">
-              {progress} / {total} Steps
+              {t("wizard.common.stepOf", { current: progress, total })}
             </span>
           </div>
           <div className="w-full bg-slate-200 rounded-full h-1.5 animate-pulse">
@@ -227,10 +231,10 @@ const WizardSidebar = ({
       <ConfirmationModal
         open={showConfirmation}
         onOpenChange={setShowConfirmation}
-        title="Save to My Guides"
-        description="You've started this guide. Do you want to save it to My Guides?"
-        cancelText="Don't Save"
-        confirmText="Save"
+        title={t("wizard.common.saveConfirmTitle")}
+        description={t("wizard.common.saveConfirmDesc")}
+        cancelText={t("wizard.common.dontSave")}
+        confirmText={t("wizard.common.save")}
         confirmVariant="primary"
         onConfirm={handleConfirmSave}
         loading={saving}

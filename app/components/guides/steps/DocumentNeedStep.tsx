@@ -23,6 +23,7 @@ import {
   Globe,
   Heart,
 } from "lucide-react";
+import { useLanguage } from "@/app/context/LanguageContext";
 
 const ICONS: Record<string, React.ElementType> = {
   new_certificate: FileText,
@@ -122,10 +123,13 @@ const DocumentNeedStep = ({
   data,
   onNext,
 }: DocumentNeedStepProps) => {
+  const { t, tRaw } = useLanguage();
   const [internalStep, setInternalStep] = useState(1);
 
-  const title = data?.title || "Application Setup";
-  const description = data?.description || "";
+  const title =
+    data?.title || t("wizard.documentNeed.title") || "Application Setup";
+  const description =
+    data?.description || t("wizard.documentNeed.description") || "";
   const options = data?.options || [];
   const questions = data?.questions || [];
 
@@ -144,11 +148,13 @@ const DocumentNeedStep = ({
     return (
       <div className="max-w-4xl mx-auto animate-in fade-in slide-in-from-bottom-4 duration-500 pb-2">
         <div className="mb-8">
-          <h2 className="text-3xl font-bold text-slate-900 mb-3 tracking-tight">
+          <h2 className="text-3xl font-bold text-slate-900 mb-3 tracking-tight font-urdu-body">
             {title}
           </h2>
           {description && (
-            <p className="text-slate-600 text-lg max-w-xl">{description}</p>
+            <p className="text-slate-600 text-lg max-w-xl font-urdu-body">
+              {description}
+            </p>
           )}
         </div>
 
@@ -167,25 +173,13 @@ const DocumentNeedStep = ({
                     : "opacity-0 translate-y-4 pointer-events-none hidden"
                 }`}
               >
-                {/* <div
-                  className={`absolute left-0 top-1 w-12 h-12 rounded-full border-4 shadow-sm flex items-center justify-center transition-all z-10 ${
-                    isCompleted || isActive
-                      ? "border-white bg-primary/10 text-primary"
-                      : "border-white bg-slate-100 text-slate-400"
-                  }`}
-                >
-                  {isCompleted ? (
-                    <CheckCircle2 className="w-6 h-6" />
-                  ) : (
-                    <span className="font-bold text-lg">{stepNumber}</span>
-                  )}
-                </div> */}
-
-                <h3 className="text-xl font-bold text-slate-900 mb-4">
+                <h3 className="text-xl font-bold text-slate-900 mb-4 font-urdu-body">
                   {q.title}
                 </h3>
                 {q.description && (
-                  <p className="text-sm text-slate-500 mb-4">{q.description}</p>
+                  <p className="text-sm text-slate-500 mb-4 font-urdu-body">
+                    {q.description}
+                  </p>
                 )}
 
                 <div
@@ -237,17 +231,17 @@ const DocumentNeedStep = ({
                                 <CheckCircle2 className="w-6 h-6 text-white shrink-0" />
                               )}
                             </div>
-                            <h3 className="text-lg font-bold mb-1 tracking-tight w-full wrap-break-words">
+                            <h3 className="text-lg font-bold mb-1 tracking-tight w-full wrap-break-words font-urdu-body">
                               {option.title}
                             </h3>
-                            <p className="text-white/80 leading-snug text-xs mb-4 w-full wrap-break-words">
+                            <p className="text-white/80 leading-snug text-xs mb-4 w-full wrap-break-words font-urdu-body">
                               {option.description}
                             </p>
                             <ul className="space-y-1">
                               {option.features.map((feature, idx) => (
                                 <li
                                   key={idx}
-                                  className="flex items-center gap-2 text-xs text-white/90 font-medium"
+                                  className="flex items-center gap-2 text-xs text-white/90 font-medium font-urdu-body"
                                 >
                                   <div className="w-1 h-1 rounded-full bg-white/80"></div>
                                   {feature}
@@ -281,10 +275,10 @@ const DocumentNeedStep = ({
                           <Icon className={`w-5 h-5 ${iconColor}`} />
                         </div>
                         <div className="w-full min-w-0">
-                          <h4 className="font-bold text-slate-900 leading-tight mb-1 wrap-break-words">
+                          <h4 className="font-bold text-slate-900 leading-tight mb-1 wrap-break-words font-urdu-body">
                             {option.title}
                           </h4>
-                          <p className="text-slate-600 leading-relaxed text-xs font-medium wrap-break-words">
+                          <p className="text-slate-600 leading-relaxed text-xs font-medium wrap-break-words font-urdu-body">
                             {option.description}
                           </p>
                         </div>
@@ -296,7 +290,10 @@ const DocumentNeedStep = ({
                 {q.note && internalStep === stepNumber && (
                   <div className="mt-4 p-3 bg-slate-50 rounded-lg border border-slate-100 flex gap-3 text-slate-600 text-xs shadow-sm">
                     <AlertCircle className="w-4 h-4 text-slate-400 shrink-0" />
-                    <p dangerouslySetInnerHTML={{ __html: q.note }} />
+                    <p
+                      className="font-urdu-body"
+                      dangerouslySetInnerHTML={{ __html: q.note }}
+                    />
                   </div>
                 )}
               </div>
@@ -314,7 +311,7 @@ const DocumentNeedStep = ({
               disabled={internalStep <= 1}
             >
               <ArrowLeft className="w-4 h-4" />
-              Back
+              {t("wizard.common.back")}
             </button>
 
             {(() => {
@@ -340,7 +337,8 @@ const DocumentNeedStep = ({
                       : "bg-gray-200 text-gray-400 cursor-not-allowed"
                   }`}
                 >
-                  Continue <ArrowRight className="w-4 h-4" />
+                  {t("wizard.common.continue")}{" "}
+                  <ArrowRight className="w-4 h-4" />
                 </button>
               );
             })()}
@@ -355,14 +353,14 @@ const DocumentNeedStep = ({
     <div>
       <h2
         className="text-[1.75rem] font-extrabold text-[hsl(220_20%_10%)]
-                     mb-2 font-['Plus_Jakarta_Sans','Inter',system-ui,sans-serif]"
+                     mb-2 font-['Plus_Jakarta_Sans','Inter',system-ui,sans-serif] font-urdu-body"
       >
         {title}
       </h2>
 
       <p
         className="text-[0.95rem] text-[hsl(215_16%_47%)]
-                    mb-8 leading-normal"
+                    mb-8 leading-normal font-urdu-body"
       >
         {description}
       </p>
@@ -427,17 +425,17 @@ const DocumentNeedStep = ({
               <div>
                 <h3
                   className="text-[1.05rem] font-bold
-                               text-[hsl(220_20%_10%)]
-                               mb-1
-                               font-['Plus_Jakarta_Sans','Inter',system-ui,sans-serif]"
+                                text-[hsl(220_20%_10%)]
+                                mb-1
+                                font-['Plus_Jakarta_Sans','Inter',system-ui,sans-serif] font-urdu-body"
                 >
                   {option.title}
                 </h3>
 
                 <p
                   className="text-[0.85rem]
-                              text-[hsl(215_16%_50%)]
-                              leading-[1.4]"
+                               text-[hsl(215_16%_50%)]
+                               leading-[1.4] font-urdu-body"
                 >
                   {option.description}
                 </p>

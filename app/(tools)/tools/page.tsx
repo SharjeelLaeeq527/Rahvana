@@ -36,8 +36,8 @@ type ToolCategory =
   | "Money & Sponsorship"
   | "Tracking"
   | "Docs & PDFs"
-  | "Forms & Automation"
-  | "Storage & Organization";
+  | "Forms & Automation";
+  // | "Storage & Organization";
 
 interface Tool {
   id: string;
@@ -75,7 +75,7 @@ const TOOLS: Tool[] = [
   },
   {
     id: "visa-path",
-    title: "VisaPath Finder",
+    title: "Visa Path Finder",
     description:
       "Quick quiz that points you to the right visa path + next steps.",
     category: "AI & Planning",
@@ -169,16 +169,16 @@ const TOOLS: Tool[] = [
   },
 
   // Storage & Organization
-  {
-    id: "doc-vault",
-    title: "Document Vault",
-    description:
-      "Organize docs + build shareable packets when the embassy asks.",
-    category: "Storage & Organization",
-    href: "/document-vault",
-    icon: FolderLock,
-    badge: "Live",
-  },
+  // {
+  //   id: "doc-vault",
+  //   title: "Document Vault",
+  //   description:
+  //     "Organize docs + build shareable packets when the embassy asks.",
+  //   category: "Storage & Organization",
+  //   href: "/document-vault",
+  //   icon: FolderLock,
+  //   badge: "Live",
+  // },
 ];
 
 const CATEGORIES: ("All" | ToolCategory)[] = [
@@ -188,7 +188,7 @@ const CATEGORIES: ("All" | ToolCategory)[] = [
   "Tracking",
   "Docs & PDFs",
   "Forms & Automation",
-  "Storage & Organization",
+  // "Storage & Organization",
 ];
 
 // --- Components ---
@@ -457,13 +457,13 @@ const CATEGORY_STYLES: Record<
     borderGradient:
       "from-cyan-300 to-cyan-200 dark:from-cyan-300 dark:to-cyan-200",
   },
-  "Storage & Organization": {
-    iconBox: "bg-indigo-600 text-white border-transparent dark:bg-indigo-500",
-    innerBox: "bg-white/20",
-    link: "text-indigo-600 dark:text-indigo-400",
-    borderGradient:
-      "from-indigo-400 to-indigo-300 dark:from-indigo-400 dark:to-indigo-300",
-  },
+  // "Storage & Organization": {
+  //   iconBox: "bg-indigo-600 text-white border-transparent dark:bg-indigo-500",
+  //   innerBox: "bg-white/20",
+  //   link: "text-indigo-600 dark:text-indigo-400",
+  //   borderGradient:
+  //     "from-indigo-400 to-indigo-300 dark:from-indigo-400 dark:to-indigo-300",
+  // },
 };
 
 function ToolCard({ tool, index }: { tool: Tool; index: number }) {

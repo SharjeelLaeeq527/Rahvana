@@ -563,7 +563,7 @@ export const NAV_DATA: Record<string, NavSection> = {
             icon: (
               <Compass className="h-5 w-5 text-violet-600 dark:text-violet-400" />
             ),
-            title: "VisaPath Finder",
+            title: "Visa Path Finder",
             description:
               "Quick quiz that points you to the right visa path + next steps.",
             href: "/visa-eligibility",
@@ -670,21 +670,21 @@ export const NAV_DATA: Record<string, NavSection> = {
           },
         ],
       },
-      {
-        id: "storage",
-        label: "Storage & Organization",
-        items: [
-          {
-            icon: (
-              <FolderLock className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
-            ),
-            title: "Document Vault",
-            description:
-              "Organize docs + build shareable packets when the embassy asks.",
-            href: "/document-vault",
-          },
-        ],
-      },
+      // {
+      //   id: "storage",
+      //   label: "Storage & Organization",
+      //   items: [
+      //     {
+      //       icon: (
+      //         <FolderLock className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
+      //       ),
+      //       title: "Document Vault",
+      //       description:
+      //         "Organize docs + build shareable packets when the embassy asks.",
+      //       href: "/document-vault",
+      //     },
+      //   ],
+      // },
     ],
   },
   guides: {

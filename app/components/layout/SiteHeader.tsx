@@ -162,7 +162,7 @@ export function SiteHeader({
         pricing: "/pricing",
         dashboard: "/user-dashboard",
         mfa: "/mfa-setup",
-        // contact: "/#contact",
+        contact: "/#contact",
         passport: "/passport",
         "passport-guide": "/guides/passport-guide",
         "visa-strength-guide": "/guides/visa-strength-guide",
@@ -356,7 +356,7 @@ export function SiteHeader({
               Pricing
             </Link>
 
-            {/* <Link
+            <Link
               href="/#contact"
               onClick={(e) => handleNav("contact", e)}
               className={`px-4 py-2 text-sm font-semibold rounded-lg transition-all ${
@@ -366,7 +366,7 @@ export function SiteHeader({
               }`}
             >
               Contact
-            </Link> */}
+            </Link>
           </nav>
         </div>
 
@@ -566,7 +566,7 @@ export function SiteHeader({
       {/* Mobile Sidebar Overlay */}
       {/* ------------------------------------------------------------------ */}
       {isMenuOpen && (
-        <div className="fixed inset-0 z-100 h-screen lg:hidden">
+        <div className="fixed inset-0 z-100 h-dvh lg:hidden">
           {/* Backdrop */}
           <div
             className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm transition-opacity"
@@ -574,7 +574,7 @@ export function SiteHeader({
           />
 
           {/* Sidebar Content */}
-          <div className="absolute top-0 left-0 bottom-0 w-70 bg-white shadow-2xl flex flex-col animate-in slide-in-from-left duration-300">
+          <div className="absolute top-0 left-0 bottom-0 w-70 bg-white shadow-2xl flex flex-col h-dvh animate-in slide-in-from-left duration-300">
             <div className="flex items-center justify-between p-5 border-b border-slate-100">
               {/* <Link
                 href="/"
@@ -776,7 +776,7 @@ export function SiteHeader({
                   <CreditCard className="w-5 h-5 text-amber-500 dark:text-amber-400" />
                   <span className="font-bold">Pricing</span>
                 </HydrationSafeButton>
-                {isSignedIn && (
+                {/* {isSignedIn && (
                   <>
                     <HydrationSafeButton
                       onClick={() => handleNav("dashboard")}
@@ -834,8 +834,8 @@ export function SiteHeader({
                       <span className="font-bold">Account Settings</span>
                     </HydrationSafeButton>
                   </>
-                )}
-                {/* <HydrationSafeButton
+                )} */}
+                <HydrationSafeButton
                   onClick={() => handleNav("contact")}
                   className={`flex items-center gap-3 px-4 py-3 rounded-xl text-left transition-all ${
                     isActive("contact")
@@ -845,7 +845,7 @@ export function SiteHeader({
                 >
                   <Mail className="w-5 h-5 text-rose-500 dark:text-rose-400" />
                   <span className="font-bold">Contact</span>
-                </HydrationSafeButton> */}
+                </HydrationSafeButton>
               </nav>
             </div>
 

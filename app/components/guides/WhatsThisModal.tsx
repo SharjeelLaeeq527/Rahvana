@@ -10,6 +10,7 @@ import {
 import { motion, AnimatePresence } from "framer-motion";
 import { useHideIntroModal } from "@/lib/guides/useHideIntro";
 import { useAuth } from "@/app/context/AuthContext";
+import { useLanguage } from "@/app/context/LanguageContext";
 
 export interface WhatsThisData {
   heading: string;
@@ -42,6 +43,7 @@ function ExpandSection({
   onToggle,
   children,
 }: ExpandSectionProps) {
+  const { t } = useLanguage();
   return (
     <div className="rounded-2xl border border-white/10 bg-white/10 backdrop-blur-sm overflow-hidden">
       <button
@@ -61,7 +63,7 @@ function ExpandSection({
 
         <div className="flex items-center gap-2">
           <span className="text-sm font-semibold text-white/80">
-            {isOpen ? "Hide" : "Learn more"}
+            {isOpen ? t("wizard.common.hide") : t("wizard.common.learnMore")}
           </span>
           <span
             className={[
@@ -112,6 +114,7 @@ function FeatureCard({
   variant = "teal",
   Icon,
 }: FeatureCardProps) {
+  const { isUrdu } = useLanguage();
   const styles: Record<string, Record<string, string>> = {
     teal: {
       card: "bg-emerald-600 border-emerald-500/60",
@@ -141,6 +144,7 @@ function FeatureCard({
         "rounded-2xl border backdrop-blur-sm p-4 flex gap-3",
         "shadow-[0_16px_34px_rgba(0,0,0,0.22)]",
         style.card,
+        isUrdu ? "font-urdu-body" : "",
       ].join(" ")}
     >
       <span
@@ -154,7 +158,7 @@ function FeatureCard({
         <Icon className="w-5 h-5" strokeWidth={2.2} />
       </span>
 
-      <div className="min-w-0 text-left flex-1">
+      <div className="min-w-0 text-left flex-1" dir={isUrdu ? "rtl" : "ltr"}>
         <div
           className={[
             "text-sm font-extrabold leading-snug whitespace-nowrap overflow-hidden text-ellipsis",
@@ -179,9 +183,12 @@ const WhatsThisModal = ({
   open,
   onClose,
   data,
-  documentLabel = "Document",
+  documentLabel,
   guideSlug,
 }: WhatsThisModalProps) => {
+  const { t, isUrdu } = useLanguage();
+  const docLabel =
+    documentLabel || t("wizard.common.document", { defaultValue: "Document" });
   const [dontShowAgain, setDontShowAgain] = useState(false);
 
   const [openDoc, setOpenDoc] = useState(false);
@@ -238,11 +245,14 @@ const WhatsThisModal = ({
               "rounded-3xl shadow-2xl",
               "border border-white/10",
               "bg-linear-to-br from-[#062f31] via-[#0b5c5f] to-[#0d7377]",
-              // "bg-linear-to-br from-[#062f31] via-[#0b5c5f] to-[#0d7478]",
+              isUrdu ? "font-urdu-body" : "",
             ].join(" ")}
+            dir={isUrdu ? "rtl" : "ltr"}
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="absolute top-5 right-5 z-20">
+            <div
+              className={`absolute top-5 ${isUrdu ? "left-5" : "right-5"} z-20`}
+            >
               <button
                 onClick={handleClose}
                 className="p-2 rounded-2xl bg-white/10 border border-white/10 hover:bg-white/15 transition-colors focus:outline-none focus:ring-2 focus:ring-white/50 backdrop-blur-md shadow-sm"
@@ -271,22 +281,22 @@ const WhatsThisModal = ({
                   <div className="mt-6 grid grid-cols-1 sm:grid-cols-3 gap-3 md:gap-4 max-w-5xl mx-auto">
                     <FeatureCard
                       variant="teal"
-                      title="Avoid Pitfalls"
-                      subtitle="Find out common mistakes that cause rejections."
+                      title={t("wizard.common.avoidPitfalls")}
+                      subtitle={t("wizard.common.avoidPitfallsDesc")}
                       Icon={ShieldCheck}
                     />
 
                     <FeatureCard
                       variant="blue"
-                      title="Personalized Checklist"
-                      subtitle="See exactly what you need for your situation."
+                      title={t("wizard.common.personalizedChecklist")}
+                      subtitle={t("wizard.common.personalizedChecklistDesc")}
                       Icon={ClipboardCheck}
                     />
 
                     <FeatureCard
                       variant="amber"
-                      title="Clear Steps"
-                      subtitle="A tailored roadmap for the process."
+                      title={t("wizard.common.clearSteps")}
+                      subtitle={t("wizard.common.clearStepsDesc")}
                       Icon={FolderCheck}
                     />
                   </div>
@@ -297,8 +307,8 @@ const WhatsThisModal = ({
               <div className="px-4 sm:px-6 pb-6 mt-4">
                 <div className="space-y-4 max-w-4xl mx-auto">
                   <ExpandSection
-                    title={`What is a ${documentLabel}?`}
-                    subtitle="Expand to see the description."
+                    title={t("wizard.common.whatIsA", { document: docLabel })}
+                    subtitle={t("wizard.common.expandToSeeDesc")}
                     isOpen={openDoc}
                     onToggle={() => setOpenDoc((v) => !v)}
                   >
@@ -308,8 +318,8 @@ const WhatsThisModal = ({
                   </ExpandSection>
 
                   <ExpandSection
-                    title="How to use this wizard"
-                    subtitle="Fast, step-by-step. Expand to see the flow."
+                    title={t("wizard.common.howToUse")}
+                    subtitle={t("wizard.common.howToUseDesc")}
                     isOpen={openSteps}
                     onToggle={() => setOpenSteps((v) => !v)}
                   >
@@ -324,7 +334,7 @@ const WhatsThisModal = ({
                                      bg-linear-to-b from-[#efe3c2] to-[#f6edd5] shadow-sm shrink-0 mt-0.5"
                             aria-hidden="true"
                           >
-                            {idx + 1}
+                            {isUrdu ? idx + 1 : idx + 1}
                           </span>
                           <p className="text-[14px] md:text-[15px] leading-snug text-white/90 font-medium pt-1.5">
                             {text}
@@ -340,7 +350,7 @@ const WhatsThisModal = ({
                       <Info className="w-6 h-6 text-yellow-900 shrink-0 mt-0.5" />
                       <div>
                         <p className="text-[15px] font-extrabold text-yellow-950">
-                          Important Note
+                          {t("wizard.common.importantNote")}
                         </p>
                         <p className="mt-1.5 text-[14px] leading-relaxed text-yellow-950/90 font-medium">
                           {data.disclaimer}
@@ -373,27 +383,20 @@ const WhatsThisModal = ({
                           </svg>
                         </div>
                         <span className="text-sm font-medium text-white/80 group-hover:text-white transition-colors">
-                          Don&apos;t show this again{" "}
-                          {hideLoading && "(Saving...)"}
+                          {t("wizard.common.dontShowAgain")}{" "}
+                          {hideLoading && t("wizard.common.saving")}
                         </span>
                       </label>
                     )}
 
                     <div className="flex flex-col sm:flex-row gap-3 sm:ml-auto">
-                      {/* <button
-                        onClick={handleClose}
-                        className="px-6 py-3 md:py-2.5 rounded-xl font-semibold bg-white/10 hover:bg-white/20 text-white transition-all border border-white/20 focus:outline-none focus:ring-2 focus:ring-white/50"
-                        type="button"
-                      >
-                        Not now
-                      </button> */}
                       <button
                         onClick={handleClose}
                         disabled={hideLoading}
                         className="px-6 py-3 md:py-2.5 rounded-xl font-bold bg-white text-[#062f31] hover:bg-gray-100 hover:scale-[1.02] active:scale-[0.98] transition-all shadow-[0_0_20px_rgba(255,255,255,0.3)] focus:outline-none focus:ring-2 focus:ring-white/50"
                         type="button"
                       >
-                        Start Wizard
+                        {t("wizard.common.startWizard")}
                       </button>
                     </div>
                   </div>
