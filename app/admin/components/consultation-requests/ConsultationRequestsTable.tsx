@@ -335,7 +335,7 @@ const ConsultationRequestsTable = () => {
                 </SelectContent>
               </Select>
               <Button variant="outline" size="icon" onClick={fetchRequests} disabled={loading}>
-                {loading ? <Loader size="xs" /> : <RefreshCw className="h-4 w-4" />}
+                {loading ? <Loader size="sm" /> : <RefreshCw className="h-4 w-4" />}
               </Button>
             </div>
           </div>

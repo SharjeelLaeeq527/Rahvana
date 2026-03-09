@@ -422,7 +422,7 @@ export default function Home() {
             >
               {loading ? (
                 <>
-                  <Loader size="xs" />
+                  <Loader size="sm" />
                   {t("ivTool.loading")}
                 </>
               ) : (
