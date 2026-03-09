@@ -13,6 +13,8 @@ import ValidationStep from "../../../components/guides/steps/ValidationStep";
 import WhatsThisModal from "../../../components/guides/WhatsThisModal";
 import { type WizardState, WizardStepId } from "@/types/guide-wizard";
 import { ArrowLeft, ArrowRight } from "lucide-react";
+import { Loader } from "@/components/ui/spinner";
+
 import FeedbackButton from "@/app/components/FeedbackButton";
 import { useWizardSession } from "@/lib/guides/useWizardSession";
 import { useGuideUpload } from "@/lib/guides/useGuideUpload";
@@ -285,7 +287,7 @@ const BirthCertificateGuidePage = () => {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[#f5f7fa] pt-14">
-        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-teal-600" />
+        <Loader size="md" />
       </div>
     );
   }

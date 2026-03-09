@@ -4,13 +4,13 @@ import { useState, useEffect, useRef } from "react";
 import {
   AlertCircle,
   CheckCircle2,
-  Loader,
   ChevronDown,
   HelpCircle,
   Building2,
   MapPin,
 } from "lucide-react";
 import { useLanguage } from "@/app/context/LanguageContext";
+import { Loader } from "@/components/ui/spinner";
 
 interface SchedulingResult {
   Post: string;
@@ -422,7 +422,7 @@ export default function Home() {
             >
               {loading ? (
                 <>
-                  <Loader className="h-4 w-4 animate-spin" />
+                  <Loader size="xs" />
                   {t("ivTool.loading")}
                 </>
               ) : (

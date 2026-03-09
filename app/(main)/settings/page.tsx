@@ -10,6 +10,7 @@ import { useAuth } from "@/app/context/AuthContext";
 import { useRouter } from "next/navigation";
 import { ConfirmationModal } from "@/app/components/shared/ConfirmationModal";
 import { useLanguage } from "@/app/context/LanguageContext";
+import { Loader } from "@/components/ui/spinner";
 
 export default function SettingsPage() {
   const { t } = useLanguage();
@@ -218,10 +219,7 @@ export default function SettingsPage() {
   if (isLoading || loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-linear-to-br from-slate-50 to-slate-100 p-4">
-        <div className="text-center">
-          <div className="inline-block animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-slate-900 mb-4"></div>
-          <p className="text-slate-700">{t("pages.settings.loading")}</p>
-        </div>
+        <Loader size="lg" text={t("pages.settings.loading")} />
       </div>
     );
   }

@@ -7,6 +7,7 @@ import { MasterProfile } from "@/types/profile";
 import { useAuth } from "@/app/context/AuthContext";
 import { createBrowserClient } from "@supabase/ssr";
 import { useLanguage } from "@/app/context/LanguageContext";
+import { Loader } from "@/components/ui/spinner";
 
 export default function Form() {
   const { t } = useLanguage();
@@ -208,20 +209,7 @@ export default function Form() {
           }`}
         >
           {loading ? (
-            <span className="flex items-center justify-center gap-2">
-              <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
-                <circle
-                  cx="12"
-                  cy="12"
-                  r="10"
-                  stroke="currentColor"
-                  strokeWidth="4"
-                  fill="none"
-                />
-                <path fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
-              </svg>
-              {t("visaChecker.form.checking")}
-            </span>
+            <Loader size="sm" text={t("visaChecker.form.checking")} />
           ) : (
             t("visaChecker.form.checkBtn")
           )}

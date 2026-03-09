@@ -1,5 +1,6 @@
 "use client";
-import { Loader2, CheckCircle2 } from "lucide-react";
+import { CheckCircle2 } from "lucide-react";
+import { Loader } from "@/components/ui/spinner";
 import { useLanguage } from "@/app/context/LanguageContext";
 
 interface SignatureProcessorProps {
@@ -23,9 +24,7 @@ export default function SignatureProcessor({
     <div className="bg-white rounded-lg shadow-sm p-8 sm:p-12 text-center max-w-2xl mx-auto border border-slate-200">
       <div className="relative mb-8">
         <div className="w-16 h-16 mx-auto">
-          <div className="absolute inset-0 bg-slate-900 rounded-full flex items-center justify-center">
-            <Loader2 className="w-8 h-8 text-white animate-spin" />
-          </div>
+          <Loader size="lg" />
         </div>
       </div>
 
@@ -65,7 +64,7 @@ export default function SignatureProcessor({
               {step.id < currentStep ? (
                 <CheckCircle2 className="w-5 h-5 text-slate-600" />
               ) : step.id === currentStep ? (
-                <Loader2 className="w-4 h-4 text-slate-600 animate-spin" />
+                <Loader size="sm" />
               ) : (
                 <div className="w-3 h-3 bg-slate-300 rounded-full" />
               )}

@@ -3,6 +3,7 @@ import React, { useEffect, useRef, useState, useCallback } from "react"
 import { Move, RotateCcw, Check } from "lucide-react"
 import domtoimage from "dom-to-image-more"
 import { useLanguage } from "@/app/context/LanguageContext"
+import { Loader } from "@/components/ui/spinner"
 
 interface TiltCorrectionToolProps {
   processedImage: string
@@ -271,10 +272,7 @@ export default function TiltCorrectionTool({
           className="px-10 py-4 bg-primary/90 hover:bg-primary/100 text-white rounded-xl font-bold transition-all flex items-center gap-3 text-lg shadow-md disabled:opacity-50"
         >
           {isApplying ? (
-            <>
-              <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin" />
-              {t("pdfProcessing.editor.tilt.applying")}
-            </>
+            <Loader size="sm" text={t("pdfProcessing.editor.tilt.applying")} />
           ) : (
             <>
               <Check className="w-6 h-6" />

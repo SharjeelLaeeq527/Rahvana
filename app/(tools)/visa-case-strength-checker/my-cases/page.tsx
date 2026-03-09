@@ -20,6 +20,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import Pagination from "@/components/ui/pagination";
+import { Loader } from "@/components/ui/spinner";
 import { ElementType } from "react";
 
 type RiskLevel = "STRONG" | "MODERATE" | "WEAK" | "PENDING";
@@ -171,7 +172,7 @@ export default function MyCases() {
 
         {loading ? (
           <div className="flex justify-center items-center h-64">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-teal-600"></div>
+            <Loader size="md" />
           </div>
         ) : error ? (
           <div className="bg-white rounded-xl shadow-lg overflow-hidden text-center py-16">

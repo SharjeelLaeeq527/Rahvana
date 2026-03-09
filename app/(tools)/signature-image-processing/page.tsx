@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { AlertCircle, Loader2 } from "lucide-react";
+import { AlertCircle } from "lucide-react";
+import { Loader } from "@/components/ui/spinner";
 import dynamic from "next/dynamic";
 import { useLanguage } from "@/app/context/LanguageContext";
 
@@ -12,7 +13,7 @@ const SignatureUploader = dynamic(
     ssr: false,
     loading: () => (
       <div className="flex justify-center p-8">
-        <Loader2 className="w-8 h-8 animate-spin text-slate-400" />
+        <Loader size="md" />
       </div>
     ),
   },
@@ -23,7 +24,7 @@ const SignaturePreview = dynamic(
     ssr: false,
     loading: () => (
       <div className="flex justify-center p-8">
-        <Loader2 className="w-8 h-8 animate-spin text-slate-400" />
+        <Loader size="md" />
       </div>
     ),
   },

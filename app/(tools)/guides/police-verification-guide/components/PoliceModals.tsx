@@ -7,12 +7,12 @@ import {
   Eye,
   Download,
   AlertCircle,
-  Loader2,
   Navigation,
   Search,
   Building2,
   ExternalLink,
 } from "lucide-react";
+import { Loader } from "@/components/ui/spinner";
 import { useRouter } from "next/navigation";
 
 let scrollLockCount = 0;
@@ -1235,7 +1235,7 @@ export function PKMLocatorModal({
                 className="flex-1 flex items-center justify-center gap-2 p-3 md:p-4 rounded-xl md:rounded-2xl bg-primary/5 text-primary text-sm md:text-base font-semibold hover:bg-primary/10 transition-all border border-primary/20"
               >
                 {loading ? (
-                  <Loader2 className="animate-spin w-4 h-4 md:w-5 md:h-5" />
+                  <Loader size="sm" />
                 ) : (
                   <Navigation className="w-4 h-4 md:w-5 md:h-5" />
                 )}{" "}
@@ -1256,7 +1256,7 @@ export function PKMLocatorModal({
                     className="absolute right-1.5 md:right-2 top-1.5 md:top-2 p-1.5 md:p-2 rounded-lg md:rounded-xl bg-primary text-white hover:bg-primary/90 transition-all"
                   >
                     {loading ? (
-                      <Loader2 className="animate-spin w-4 h-4 md:w-5 md:h-5" />
+                      <Loader size="sm" />
                     ) : (
                       <Search className="w-4 h-4 md:w-5 md:h-5" />
                     )}

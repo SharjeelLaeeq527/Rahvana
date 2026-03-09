@@ -1,5 +1,6 @@
 import React from 'react';
-import { FileText, Layout, Users, IdCard, Plane, ArrowRight, Loader2 } from 'lucide-react';
+import { FileText, Layout, Users, IdCard, Plane, ArrowRight } from 'lucide-react';
+import { Loader } from '@/components/ui/spinner';
 
 
 
@@ -296,7 +297,7 @@ export function IR1JourneyDetail({ isSignedIn, onToggleAuth, children }: { isSig
                                         <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Stage {stage}</span>
                                         <h4 className="font-bold text-slate-800 text-[15px] mb-2 leading-tight">{title}</h4>
                                         <div className="mt-auto pt-2 flex items-center gap-1.5 text-slate-500">
-                                            <Loader2 className="w-3 h-3 animate-spin-slow" />
+                                            <Loader size="sm" className="w-3 h-3" />
                                             <span className="text-[11px] font-medium">{time}</span>
                                         </div>
                                     </div>

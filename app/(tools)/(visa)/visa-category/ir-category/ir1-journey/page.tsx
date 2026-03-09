@@ -12,14 +12,9 @@ import {
   ArrowRight,
   Save,
   CheckCircle2,
-  Loader2,
-  FileText,
-  Layout,
-  Users,
-  IdCard,
-  Plane,
   Folder,
 } from "lucide-react";
+import { Loader } from "@/components/ui/spinner";
 import { roadmapData } from "@/data/roadmap";
 import { ConfirmationModal } from "@/app/components/shared/ConfirmationModal";
 import { ProgressTree } from "./components/ProgressTree";
@@ -81,14 +76,7 @@ export default function IR1JourneyPage() {
   // Loading state
   if (!isLoaded) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <div className="flex flex-col items-center gap-4">
-          <div className="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin" />
-          <p className="text-muted-foreground text-sm">
-            {t("ir1Journey.loadingJourney")}
-          </p>
-        </div>
-      </div>
+      <Loader fullScreen text={t("ir1Journey.loadingJourney")} />
     );
   }
 
@@ -111,7 +99,7 @@ export default function IR1JourneyPage() {
               <div className="flex items-center gap-2 text-sm text-slate-500 mt-2 shrink-0">
                 {isSyncing ? (
                   <>
-                    <Loader2 className="w-4 h-4 animate-spin text-primary" />
+                    <Loader size="sm" />
                     <span>{t("ir1Journey.saving")}</span>
                   </>
                 ) : (
@@ -187,7 +175,7 @@ export default function IR1JourneyPage() {
                       {title}
                     </h4>
                     <div className="mt-auto pt-2 flex items-center gap-1.5 text-slate-500">
-                      <Loader2 className="w-3 h-3 animate-spin-slow" />
+                      <Loader size="sm" className="w-3 h-3" />
                       <span className="text-[11px] font-medium">{time}</span>
                     </div>
                   </div>

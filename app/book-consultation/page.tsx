@@ -17,6 +17,7 @@ import {
   X as CloseIcon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Loader } from "@/components/ui/spinner";
 
 interface Booking {
   id: string;
@@ -1415,7 +1416,7 @@ const ConsultationBookingPage = () => {
             <div className="p-6">
               {loading ? (
                 <div className="flex justify-center py-20">
-                  <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-teal-600"></div>
+                  <Loader size="md" />
                 </div>
               ) : userBookings.length === 0 ? (
                 <div className="text-center py-20">
@@ -1684,7 +1685,11 @@ const ConsultationBookingPage = () => {
                   disabled={!formData.selected_slot || loading}
                   className="bg-teal-600 hover:bg-teal-700 text-xs sm:text-sm gap-1 sm:gap-2 px-2 sm:px-8"
                 >
-                  {loading ? "Processing..." : "Request Appointment"}
+                  {loading ? (
+                    <Loader size="sm" text="Processing..." />
+                  ) : (
+                    "Request Appointment"
+                  )}
                 </Button>
               )}
             </div>

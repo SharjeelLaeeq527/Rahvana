@@ -24,6 +24,7 @@ import {
 import Pagination from "@/components/ui/pagination";
 import { ElementType } from "react";
 import { useLanguage } from "@/app/context/LanguageContext";
+import { Loader } from "@/components/ui/spinner";
 
 type TranslationStatus =
   | "PENDING"
@@ -178,7 +179,7 @@ export default function MyTranslationRequests() {
 
         {loading ? (
           <div className="flex justify-center items-center h-64">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+            <Loader size="md" text="Loading translation requests..." />
           </div>
         ) : (
           <>

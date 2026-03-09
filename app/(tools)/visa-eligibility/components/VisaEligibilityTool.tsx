@@ -23,9 +23,9 @@ import {
   LucideIcon,
   X,
   Save,
-  Loader2,
 } from "lucide-react";
 import { visaCriteria } from "../criteria-data";
+import { Loader } from "@/components/ui/spinner";
 
 type VisaSuggestion = {
   code: string;
@@ -1226,7 +1226,7 @@ export function VisaEligibilityTool() {
                     className="w-full flex items-center justify-center gap-2 py-4 px-6 bg-primary text-white font-bold rounded-2xl hover:bg-primary/90 transition-all shadow-lg shadow-primary/20 disabled:opacity-50"
                   >
                     {saving ? (
-                      <Loader2 size={20} className="animate-spin" />
+                      <Loader size="sm" />
                     ) : (
                       <Save size={20} />
                     )}

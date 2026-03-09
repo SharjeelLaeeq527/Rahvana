@@ -7,11 +7,11 @@ import {
   Instagram,
   Linkedin,
   Youtube,
-  Loader2,
   CheckCircle2,
   AlertCircle,
   Facebook,
 } from "lucide-react";
+import { Loader } from "@/components/ui/spinner";
 import { submitContactForm } from "./contact-action";
 import { useLanguage } from "../../context/LanguageContext";
 const XIcon = ({ size = 20 }: { size?: number }) => (
@@ -247,7 +247,7 @@ export default function GetInTouch() {
                 {isSubmitting ? (
                   <>
                     {t("homePage.contactSection.sending") || "Sending..."}
-                    <Loader2 size={18} className="animate-spin" />
+                    <Loader size="sm" />
                   </>
                 ) : (
                   <>

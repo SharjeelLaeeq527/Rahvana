@@ -7,7 +7,8 @@ import { Button } from "@/components/ui/button";
 import { useAuth } from "@/app/context/AuthContext";
 import { useRouter } from "next/navigation";
 import { MasterProfile } from "@/types/profile";
-import { ChevronDown, Loader2, Pencil, Check, X } from "lucide-react";
+import { ChevronDown, Pencil, Check, X } from "lucide-react";
+import { Loader } from "@/components/ui/spinner";
 import { getProfileCompleteness } from "@/lib/profile/helpers";
 import { FormField, FormSelect, FormCheckbox } from "./form-field";
 import { useLanguage } from "@/app/context/LanguageContext";
@@ -181,13 +182,9 @@ export default function ProfilePage() {
     }));
   };
 
-  if (isLoading || loading) {
-    return (
       <div className="min-h-screen flex items-center justify-center bg-slate-50">
-        <Loader2 className="h-8 w-8 animate-spin text-slate-900" />
+        <Loader size="md" />
       </div>
-    );
-  }
 
   if (!user) return null;
 
@@ -230,7 +227,7 @@ export default function ProfilePage() {
                   className="w-full sm:w-auto h-9 text-sm px-4"
                 >
                   {saving ? (
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    <Loader size="sm" />
                   ) : (
                     <Check className="w-4 h-4 mr-2" />
                   )}

@@ -11,8 +11,8 @@ import {
   ArrowRight,
   X,
   Clock,
-  Loader2,
 } from "lucide-react";
+import { Loader } from "@/components/ui/spinner";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import {
@@ -2072,7 +2072,7 @@ function JourneyCard({
             >
               {isLoading ? (
                 <>
-                  <Loader2 className="w-4 h-4 mr-1 animate-spin" /> {t("visaCategory.checking")}
+                  <Loader size="sm" /> {t("visaCategory.checking")}
                 </>
               ) : hasProgress ? (
                 <>

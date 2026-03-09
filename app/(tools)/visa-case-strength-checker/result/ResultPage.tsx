@@ -6,6 +6,8 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { AlertCircle, AlertTriangle, Info } from "lucide-react";
+import { Loader } from "@/components/ui/spinner";
+
 
 interface RiskFlag {
   flagCode: string;
@@ -67,10 +69,7 @@ export function ResultPage({ sessionId, onRestart, onEdit, onSaveToProfile }: Re
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-teal-600 mx-auto mb-4"></div>
-          <p className="text-slate-600">Analyzing your case...</p>
-        </div>
+        <Loader size="md" text="Analyzing your case..." />
       </div>
     );
   }
@@ -396,7 +395,7 @@ export function ResultPage({ sessionId, onRestart, onEdit, onSaveToProfile }: Re
           disabled={saving}
           className="w-full bg-teal-600 hover:bg-teal-700 text-white text-lg py-6 rounded-2xl"
         >
-          {saving ? "Saving..." : saveMessage || "Save Results to My Profile"}
+          {saving ? <Loader size="sm" text="Saving..." /> : saveMessage || "Save Results to My Profile"}
         </Button>
 
     

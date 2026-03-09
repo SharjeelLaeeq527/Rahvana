@@ -445,10 +445,7 @@ export default function SignupPage() {
               className="w-full h-12 bg-primary hover:bg-primary/90 text-white font-medium rounded-xl transition-all disabled:opacity-50"
             >
               {isSubmitting ? (
-                <div className="flex items-center gap-2">
-                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                  Creating account...
-                </div>
+                <Loader size="sm" text="Creating account..." />
               ) : (
                 "Create Account"
               )}

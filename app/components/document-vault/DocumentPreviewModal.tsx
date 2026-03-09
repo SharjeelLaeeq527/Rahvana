@@ -6,7 +6,8 @@ import {
 } from "@/lib/document-vault/types";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Download, ZoomIn, ZoomOut, Loader2, X } from "lucide-react";
+import { Download, ZoomIn, ZoomOut, X } from "lucide-react";
+import { Loader } from "@/components/ui/spinner";
 import { useState, useEffect } from "react";
 import Image from "next/image";
 import { useLanguage } from "@/app/context/LanguageContext";
@@ -117,10 +118,10 @@ export function DocumentPreviewModal({
         <div className="relative overflow-auto bg-slate-100 dark:bg-slate-900 flex items-center justify-center p-4 min-h-[50vh] h-[60vh] sm:h-[600px]">
           {isLoading && (
             <div className="text-center">
-              <Loader2 className="h-8 w-8 animate-spin text-muted-foreground mx-auto mb-2" />
-              <p className="text-sm text-muted-foreground">
-                {t("documentVaultPage.components.previewModal.loading")}
-              </p>
+              <Loader
+                size="md"
+                text={t("documentVaultPage.components.previewModal.loading")}
+              />
             </div>
           )}
 
