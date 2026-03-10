@@ -386,7 +386,7 @@ function ServiceCard({ service, index }: { service: Service; index: number }) {
             {service.categoryLabel}
           </span>
         </div>
-        <p className="text-muted-foreground dark:text-white text-sm leading-relaxed mb-6 grow">
+        <p className="text-slate-900 dark:text-white text-sm leading-relaxed mb-6 grow">
           {service.description}
         </p>
       </div>

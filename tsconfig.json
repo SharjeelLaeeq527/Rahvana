@@ -40,7 +40,7 @@
     ".next\\dev/types/**/*.ts",
     ".next\\dev/types/**/*.ts",
     "app/(visa)/visa-category/ir-category/ir1-journey"
-  ],
+, "app/(main)/about1"  ],
   "exclude": [
     "node_modules"
   ]

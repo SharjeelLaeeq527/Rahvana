@@ -1828,6 +1828,7 @@
   "pricing": {
     "title": "قیمت کا منصوبہ",
     "subtitle": "روڈ میپ مفت میں استعمال کریں۔ آٹومیشن اور ماہرین کے لیے اپ گریڈ کریں۔",
+    "or": "یا",
     "plans": {
       "core": {
         "name": " Rahvana کور",
@@ -1843,7 +1844,9 @@
       "plus": {
         "name": "Rahvana پلس",
         "price": "$24.99",
-        "priceSuffix": "ایک بار ادائیگی",
+        "priceSuffix": "فی مہینہ",
+        "annualPrice": "$299.99",
+        "annualPriceSuffix": "سالانہ (ایک بار ادائیگی)",
         "badge": "مشہور",
         "features": [
           "کور پلان کی تمام خصوصیات",

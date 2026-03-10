@@ -1848,6 +1848,7 @@
   "pricing": {
     "title": "Pricing Plan",
     "subtitle": "Use the roadmap for free. Upgrade for automation and experts.",
+    "or": "or",
     "plans": {
       "core": {
         "name": "Rahvana Core",
@@ -1863,7 +1864,9 @@
       "plus": {
         "name": "Rahvana Plus",
         "price": "$24.99",
-        "priceSuffix": "one-time",
+        "priceSuffix": "per month",
+        "annualPrice": "$299.99",
+        "annualPriceSuffix": "billed annually",
         "badge": "Popular",
         "features": [
           "Everything in Core",
@@ -2595,7 +2598,7 @@
   },
   "homePage": {
     "trustedBy": "Trusted by families worldwide",
-    "heroTitle1": "Your Immigration Journey,",
+    "heroTitle1": "Your Immigration Journey, ",
     "heroTitle2": "Simplified",
     "heroDescription": "Navigate the complexities of immigration with confidence. Rahvana provides step-by-step guidance, smart tools, and expert support to help you reunite with loved ones.",
     "heroFeatures": [
