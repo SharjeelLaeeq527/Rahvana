@@ -231,7 +231,7 @@ function HomePageContent() {
                     </div>
                     <h1 className="text-3xl md:text-5xl lg:text-6xl font-bold leading-tight text-foreground mb-6">
                       {t("homePage.heroTitle1")}
-                      <br />
+                      {/* <br /> */}
                       <span className="bg-linear-to-r from-rahvana-primary to-rahvana-primary-light bg-clip-text text-fill-transparent">
                         {t("homePage.heroTitle2")}
                       </span>
@@ -319,7 +319,7 @@ function HomePageContent() {
 
             {/* JOURNEYS SECTION */}
             <section
-              className="relative py-12 md:py-24 bg-muted/30 overflow-hidden"
+              className="relative py-8 md:py-12 bg-muted/30 overflow-hidden"
               id="journeys"
             >
               <div className="absolute inset-0 opacity-[0.03] pointer-events-none">
@@ -341,7 +341,7 @@ function HomePageContent() {
                 </svg>
               </div>
               <div className="container mx-auto px-6 relative z-10">
-                <div className="text-center max-w-3xl mx-auto mb-16">
+                <div className="text-center max-w-3xl mx-auto mb-10">
                   <motion.span
                     initial={{ opacity: 0, y: 10 }}
                     whileInView={{ opacity: 1, y: 0 }}
@@ -414,11 +414,11 @@ function HomePageContent() {
 
             {/* QUICK TOOLS SECTION */}
             <section
-              className="relative py-12 md:py-24 bg-background"
+              className="relative py-8 md:py-12 bg-background"
               id="tools"
             >
               <div className="container mx-auto px-6">
-                <div className="text-center max-w-3xl mx-auto mb-16">
+                <div className="text-center max-w-3xl mx-auto mb-10">
                   <motion.span
                     initial={{ opacity: 0, y: 10 }}
                     whileInView={{ opacity: 1, y: 0 }}
@@ -535,11 +535,11 @@ function HomePageContent() {
 
             {/* SERVICES SECTION */}
             <section
-              className="relative py-12 md:py-24 bg-muted/10 overflow-hidden"
+              className="relative py-8 md:py-12 bg-muted/10 overflow-hidden"
               id="services"
             >
               <div className="container mx-auto px-6">
-                <div className="text-center max-w-3xl mx-auto mb-16">
+                <div className="text-center max-w-3xl mx-auto mb-10">
                   <motion.span
                     initial={{ opacity: 0, y: 10 }}
                     whileInView={{ opacity: 1, y: 0 }}
@@ -642,7 +642,7 @@ function HomePageContent() {
                     <div className="mt-6 pl-4">
                       <HydrationSafeButton
                         onClick={() => router.push("/services")}
-                        className="inline-flex items-center gap-2 text-sm font-bold text-rahvana-primary hover:text-rahvana-primary-dark transition-colors"
+                        className="inline-flex items-center gap-2 text-sm font-bold text-rahvana-primary hover:text-rahvana-primary-dark transition-colors cursor-pointer"
                       >
                         {t("homePage.servicesViewAll")}{" "}
                         <Icons.ArrowRight className="w-4 h-4" />
@@ -725,7 +725,7 @@ function HomePageContent() {
                             <HydrationSafeButton
                               // disabled
                               onClick={() => setShowComingSoon(true)}
-                              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-4 text-base font-bold text-white bg-rahvana-primary rounded-xl transition-all shadow-md"
+                              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-4 text-base font-bold text-white bg-rahvana-primary rounded-xl transition-all shadow-md cursor-pointer"
                             >
                               {t("homePage.servicesGetStarted")}{" "}
                               <Icons.ArrowRight className="w-5 h-5" />
@@ -740,7 +740,7 @@ function HomePageContent() {
             </section>
 
             {/* CONSULTATION BANNER */}
-            <section className="py-12 md:py-24 bg-background">
+            <section className="py-8 md:py-12 bg-background">
               <div className="container mx-auto px-6">
                 <motion.div
                   initial={{ opacity: 0, y: 20 }}
@@ -766,7 +766,7 @@ function HomePageContent() {
                       <button
                         // onClick={handleConsultationClick}
                         onClick={() => setShowComingSoon(true)}
-                        className="inline-flex items-center px-10 py-5 bg-background text-rahvana-primary text-lg font-bold rounded-xl shadow-lg hover:shadow-2xl hover:-translate-y-1 transition-all"
+                        className="inline-flex items-center px-10 py-5 bg-background text-rahvana-primary text-lg font-bold rounded-xl shadow-lg hover:shadow-2xl hover:-translate-y-1 transition-all cursor-pointer"
                       >
                         {t("homePage.consultationButton")}
                       </button>
@@ -787,9 +787,9 @@ function HomePageContent() {
             </section>
 
             {/* HOW RAHVANA WORKS SECTION */}
-            <section className="py-12 md:py-24 bg-muted/30" id="about">
+            <section className="py-8 md:py-12 bg-muted/30" id="about">
               <div className="container mx-auto px-6">
-                <div className="text-center max-w-3xl mx-auto mb-16">
+                <div className="text-center max-w-3xl mx-auto mb-10">
                   <motion.span
                     initial={{ opacity: 0, y: 10 }}
                     whileInView={{ opacity: 1, y: 0 }}
@@ -1003,9 +1003,9 @@ function HomePageContent() {
             </section>
 
             {/* FAQ SECTION */}
-            <section className="py-12 md:py-24 bg-background" id="faq">
+            <section className="py-8 md:py-12 bg-background" id="faq">
               <div className="container mx-auto px-6">
-                <div className="text-center max-w-3xl mx-auto mb-16">
+                <div className="text-center max-w-3xl mx-auto mb-5">
                   <motion.span
                     initial={{ opacity: 0, y: 10 }}
                     whileInView={{ opacity: 1, y: 0 }}

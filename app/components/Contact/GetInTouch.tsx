@@ -26,7 +26,6 @@ const XIcon = ({ size = 20 }: { size?: number }) => (
   </svg>
 );
 
-
 export default function GetInTouch() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [status, setStatus] = useState<"idle" | "success" | "error">("idle");
@@ -50,12 +49,17 @@ export default function GetInTouch() {
       } else {
         setStatus("error");
         setErrorMessage(
-          result.error || t("homePage.contactSection.error") || "Something went wrong. Please try again.",
+          result.error ||
+            t("homePage.contactSection.error") ||
+            "Something went wrong. Please try again.",
         );
       }
     } catch {
       setStatus("error");
-      setErrorMessage(t("homePage.contactSection.error") || "An unexpected error occurred. Please try again.");
+      setErrorMessage(
+        t("homePage.contactSection.error") ||
+          "An unexpected error occurred. Please try again.",
+      );
     } finally {
       setIsSubmitting(false);
     }
@@ -63,7 +67,7 @@ export default function GetInTouch() {
 
   return (
     <section
-      className="relative bg-background overflow-hidden py-20 font-sans"
+      className="relative bg-background overflow-hidden py-8 md:py-16 font-sans"
       id="contact"
       suppressHydrationWarning
     >
@@ -89,7 +93,8 @@ export default function GetInTouch() {
             {t("homePage.contactSection.title") || "Get in Touch"}
           </h2>
           <p className="text-lg text-muted-foreground">
-            {t("homePage.contactSection.description") || "Have questions or need support? We're here to help."}
+            {t("homePage.contactSection.description") ||
+              "Have questions or need support? We're here to help."}
           </p>
         </div>
 
@@ -147,7 +152,8 @@ export default function GetInTouch() {
               <div className="mb-6 p-4 bg-green-500/10 border border-green-500/20 rounded-lg flex items-center gap-3 text-green-600 dark:text-green-400">
                 <CheckCircle2 size={20} className="shrink-0" />
                 <p className="text-sm font-medium">
-                  {t("homePage.contactSection.success") || "Thank you! Your message has been sent successfully. We'll get back to you soon."}
+                  {t("homePage.contactSection.success") ||
+                    "Thank you! Your message has been sent successfully. We'll get back to you soon."}
                 </p>
               </div>
             )}
@@ -177,7 +183,10 @@ export default function GetInTouch() {
                     type="text"
                     id="firstName"
                     name="firstName"
-                    placeholder={t("homePage.contactSection.placeholderFirstName") || "John"}
+                    placeholder={
+                      t("homePage.contactSection.placeholderFirstName") ||
+                      "John"
+                    }
                     required
                     disabled={isSubmitting}
                     className="p-3 border border-border rounded-lg text-base bg-muted/50 focus:bg-background focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all disabled:opacity-60"
@@ -195,7 +204,9 @@ export default function GetInTouch() {
                     type="text"
                     id="lastName"
                     name="lastName"
-                    placeholder={t("homePage.contactSection.placeholderLastName") || "Doe"}
+                    placeholder={
+                      t("homePage.contactSection.placeholderLastName") || "Doe"
+                    }
                     required
                     disabled={isSubmitting}
                     className="p-3 border border-border rounded-lg text-base bg-muted/50 focus:bg-background focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all disabled:opacity-60"
@@ -214,7 +225,10 @@ export default function GetInTouch() {
                   type="email"
                   id="email"
                   name="email"
-                  placeholder={t("homePage.contactSection.placeholderEmail") || "john@example.com"}
+                  placeholder={
+                    t("homePage.contactSection.placeholderEmail") ||
+                    "john@example.com"
+                  }
                   required
                   disabled={isSubmitting}
                   className="p-3 border border-border rounded-lg text-base bg-muted/50 focus:bg-background focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all disabled:opacity-60"
@@ -231,7 +245,10 @@ export default function GetInTouch() {
                 <textarea
                   id="message"
                   name="message"
-                  placeholder={t("homePage.contactSection.placeholderMessage") || "How can we help you?"}
+                  placeholder={
+                    t("homePage.contactSection.placeholderMessage") ||
+                    "How can we help you?"
+                  }
                   required
                   disabled={isSubmitting}
                   className="p-3 border border-border rounded-lg text-base bg-muted/50 min-h-28 resize-y focus:bg-background focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all disabled:opacity-60"
