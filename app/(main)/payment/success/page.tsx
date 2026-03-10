@@ -2,8 +2,9 @@
 
 import { useEffect, useState, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
-import { CheckCircle, Loader2 } from 'lucide-react';
+import { CheckCircle } from 'lucide-react';
 import Link from 'next/link';
+import { Loader } from "@/components/ui/spinner";
 
 function PaymentSuccessContent() {
   const searchParams = useSearchParams();
@@ -33,10 +34,7 @@ function PaymentSuccessContent() {
   if (isVerifying) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-linear-to-br from-teal-50 to-cyan-50">
-        <div className="text-center">
-          <Loader2 className="w-16 h-16 animate-spin text-teal-600 mx-auto mb-4" />
-          <p className="text-lg text-slate-600">Verifying your payment...</p>
-        </div>
+        <Loader size="md" text="Verifying your payment..." />
       </div>
     );
   }
@@ -104,10 +102,7 @@ export default function PaymentSuccessPage() {
     <Suspense
       fallback={
         <div className="min-h-screen flex items-center justify-center bg-linear-to-br from-teal-50 to-cyan-50">
-          <div className="text-center">
-            <Loader2 className="w-16 h-16 animate-spin text-teal-600 mx-auto mb-4" />
-            <p className="text-lg text-slate-600">Loading...</p>
-          </div>
+          <Loader size="md" />
         </div>
       }
     >

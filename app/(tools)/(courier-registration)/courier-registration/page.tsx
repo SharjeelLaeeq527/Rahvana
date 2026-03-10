@@ -41,6 +41,7 @@ import {
 import { motion, AnimatePresence } from "framer-motion";
 import jsPDF from "jspdf";
 import { useLanguage } from "@/app/context/LanguageContext";
+import { Loader } from "@/components/ui/spinner";
 
 // const SECURITY_QUESTIONS_1 = [
 //   "What is your mother's maiden name?",
@@ -1072,12 +1073,12 @@ export default function CourierRegistrationPage() {
                     <CardContent className="p-4 sm:p-8 space-y-6 sm:space-y-8">
                       {isLoading ? (
                         <div className="flex flex-col items-center justify-center py-12 space-y-4">
-                          <div className="w-12 h-12 border-4 border-primary/20 border-t-primary rounded-full animate-spin" />
-                          <p className="text-sm font-bold text-gray-400">
-                            {t(
+                          <Loader
+                            size="md"
+                            text={t(
                               "pages.courierRegistration.securityVault.loading",
                             )}
-                          </p>
+                          />
                         </div>
                       ) : (
                         <>
@@ -1302,17 +1303,20 @@ export default function CourierRegistrationPage() {
                                 className="h-16 rounded-2xl font-black text-lg shadow-xl shadow-primary/20 transition-all active:scale-[0.98] gap-3"
                               >
                                 {isSaving ? (
-                                  <div className="w-5 h-5 border-3 border-white/20 border-t-white rounded-full animate-spin" />
-                                ) : (
-                                  <Save size={20} />
-                                )}
-                                {isSaving
-                                  ? t(
+                                  <Loader
+                                    size="sm"
+                                    text={t(
                                       "pages.courierRegistration.securityVault.savingBtn",
-                                    )
-                                  : t(
+                                    )}
+                                  />
+                                ) : (
+                                  <>
+                                    <Save size={20} />
+                                    {t(
                                       "pages.courierRegistration.securityVault.saveBtn",
                                     )}
+                                  </>
+                                )}
                               </Button>
                             ) : (
                               <Button

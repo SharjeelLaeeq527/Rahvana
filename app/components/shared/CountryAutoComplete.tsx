@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect, useCallback } from "react";
+import { Loader } from "@/components/ui/spinner";
 
 export interface CountryAutocompleteProps {
   /** Form data object containing the country value (e.g. formData) */
@@ -166,13 +167,7 @@ export default function CountryAutocomplete({
           role="status"
           aria-live="polite"
         >
-          <span
-            className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent"
-            aria-hidden
-          />
-          <span className="text-sm text-muted-foreground">
-            Searching countries...
-          </span>
+          <Loader size="sm" text="Searching countries..." />
         </div>
       )}
 

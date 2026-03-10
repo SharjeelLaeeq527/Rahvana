@@ -4,6 +4,8 @@ import { useEffect, useState } from "react";
 import NextImage from "next/image";
 import { usePDFStore } from "@/lib/store";
 import { cn } from "@/lib/utils";
+import { Loader } from "@/components/ui/spinner";
+
 import type * as PDFJS from "pdfjs-dist";
 
 let pdfjsLib: typeof PDFJS | null = null;
@@ -109,7 +111,7 @@ export function PDFThumbnails() {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-full p-4">
-        <div className="text-xs text-gray-500">Loading...</div>
+        <Loader size="sm" />
       </div>
     );
   }

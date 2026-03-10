@@ -6,6 +6,7 @@ import { useAuth } from "@/app/context/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
+import { Loader } from "@/components/ui/spinner";
 
 function AdminLoginPageContent() {
   const router = useRouter();
@@ -94,9 +95,7 @@ function AdminLoginPageContent() {
   // ⏳ Loading state
   if (isLoading) {
     return (
-      <div className="flex min-h-screen items-center justify-center">
-        <p>Checking session...</p>
-      </div>
+      <Loader fullScreen text="Checking session..." />
     );
   }
 
@@ -152,10 +151,7 @@ function AdminLoginPageContent() {
               className="w-full h-12 bg-primary hover:bg-primary/90 text-white font-medium rounded-xl transition-all disabled:opacity-50"
             >
               {isSubmitting ? (
-                <div className="flex items-center gap-2">
-                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                  Verifying...
-                </div>
+                <Loader size="sm" text="Verifying..." />
               ) : (
                 "Verify Code"
               )}
@@ -285,11 +281,8 @@ function AdminLoginPageContent() {
               className="w-full h-12 bg-primary hover:bg-primary/90 text-white font-medium rounded-xl transition-all disabled:opacity-50"
             >
               {isSubmitting ? (
-                <div className="flex items-center gap-2">
-                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                  Signing in...
-                </div>
-              ) : (
+              <Loader size="sm" text="Signing in..." />
+            ) : (
                 "Sign In"
               )}
             </Button>
@@ -305,7 +298,7 @@ export default function AdminLoginPage() {
     <Suspense
       fallback={
         <div className="flex min-h-screen items-center justify-center">
-          <p>Checking session...</p>
+          <Loader size="md" text="Checking session..." />
         </div>
       }
     >

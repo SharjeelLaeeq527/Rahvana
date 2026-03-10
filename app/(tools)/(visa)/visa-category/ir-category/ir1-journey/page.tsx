@@ -12,14 +12,14 @@ import {
   ArrowRight,
   Save,
   CheckCircle2,
-  Loader2,
+  Folder,
   FileText,
   Layout,
   Users,
   IdCard,
   Plane,
-  Folder,
 } from "lucide-react";
+import { Loader } from "@/components/ui/spinner";
 import { roadmapData } from "@/data/roadmap";
 import { ConfirmationModal } from "@/app/components/shared/ConfirmationModal";
 import { ProgressTree } from "./components/ProgressTree";
@@ -81,14 +81,7 @@ export default function IR1JourneyPage() {
   // Loading state
   if (!isLoaded) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <div className="flex flex-col items-center gap-4">
-          <div className="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin" />
-          <p className="text-muted-foreground text-sm">
-            {t("ir1Journey.loadingJourney")}
-          </p>
-        </div>
-      </div>
+      <Loader fullScreen text={t("ir1Journey.loadingJourney")} />
     );
   }
 
@@ -111,7 +104,7 @@ export default function IR1JourneyPage() {
               <div className="flex items-center gap-2 text-sm text-slate-500 mt-2 shrink-0">
                 {isSyncing ? (
                   <>
-                    <Loader2 className="w-4 h-4 animate-spin text-primary" />
+                    <Loader size="sm" />
                     <span>{t("ir1Journey.saving")}</span>
                   </>
                 ) : (
@@ -174,9 +167,9 @@ export default function IR1JourneyPage() {
                 },
               ].map(({ stage, title, time, icon: Icon, color }) => (
                 <div key={stage} className="relative group">
-                  <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm transition-all duration-300 hover:shadow-md hover:border-primary/30 hover:-translate-y-1 h-full flex flex-col">
+                  <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm h-full flex flex-col">
                     <div
-                      className={`w-10 h-10 rounded-xl ${color} flex items-center justify-center mb-4 transition-transform group-hover:scale-110`}
+                      className={`w-10 h-10 rounded-xl ${color} flex items-center justify-center mb-4`}
                     >
                       <Icon className="w-5 h-5" />
                     </div>
@@ -187,14 +180,13 @@ export default function IR1JourneyPage() {
                       {title}
                     </h4>
                     <div className="mt-auto pt-2 flex items-center gap-1.5 text-slate-500">
-                      <Loader2 className="w-3 h-3 animate-spin-slow" />
                       <span className="text-[11px] font-medium">{time}</span>
                     </div>
                   </div>
                   {/* Connectivity Line for Desktop */}
                   {stage !== "V" && (
-                    <div className="hidden lg:flex absolute top-1/2 left-[calc(100%+8px)] -translate-x-1/2 -translate-y-1/2 z-20 items-center justify-center w-6 h-6">
-                      <ArrowRight className="w-5 h-5 text-slate-300" />
+                    <div className="hidden lg:flex absolute top-1/2 left-[calc(100%+8px)] -translate-x-1/2 -translate-y-1/2 z-20 items-center justify-center w-10 h-10">
+                      <ArrowRight className="w-8 h-8 text-slate-300" />
                     </div>
                   )}
                 </div>

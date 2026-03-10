@@ -12,13 +12,13 @@ import {
 import {
   Briefcase,
   Trash2,
-  Loader2,
   ChevronRight,
   Plus,
   ArrowRight,
   Clock,
   Shield,
 } from "lucide-react";
+import { Loader } from "@/components/ui/spinner";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -136,16 +136,11 @@ export default function MyJourneysPage() {
   };
 
   // Auth loading state is still blocking to prevent layout shift for unauthenticated users
-  if (authLoading) {
     return (
-      <div className="min-h-[80vh] flex flex-col items-center justify-center gap-4">
-        <Loader2 className="w-10 h-10 animate-spin text-primary" />
-        <p className="text-muted-foreground font-medium animate-pulse">
-          {t("myJourneys.loading")}
-        </p>
+      <div className="min-h-[80vh] flex flex-col items-center justify-center">
+        <Loader size="md" text={t("myJourneys.loading")} />
       </div>
     );
-  }
 
   return (
     <div className="min-h-screen bg-slate-50/50 pb-20">
@@ -185,7 +180,7 @@ export default function MyJourneysPage() {
                     disabled={deletingId === "all"}
                   >
                     {deletingId === "all" ? (
-                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      <Loader size="sm" />
                     ) : (
                       <Trash2 className="w-4 h-4 mr-2" />
                     )}
@@ -304,7 +299,7 @@ export default function MyJourneysPage() {
                               disabled={deletingId === j.journey_id}
                             >
                               {deletingId === j.journey_id ? (
-                                <Loader2 className="w-5 h-5 animate-spin" />
+                                <Loader size="sm" />
                               ) : (
                                 <Trash2 className="w-5 h-5" />
                               )}

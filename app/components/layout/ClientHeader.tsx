@@ -4,6 +4,8 @@ import { useState } from "react";
 import { useAuth } from "@/app/context/AuthContext";
 import { SiteHeader } from "./SiteHeader";
 import { useRouter, usePathname } from "next/navigation";
+import { Loader } from "@/components/ui/spinner";
+
 
 export function ClientHeader() {
   const { user, profile, signOut } = useAuth();
@@ -59,18 +61,12 @@ export function ClientHeader() {
 
       {/* Sign-out loading overlay — only shown during actual sign-out */}
       {isSigningOut && (
-        <div className="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-background/60 backdrop-blur-md transition-all duration-300">
-          <div className="relative">
-            <div className="w-16 h-16 border-4 border-primary/20 border-t-primary rounded-full animate-spin" />
-            <div className="absolute inset-0 flex items-center justify-center">
-              <div className="w-8 h-8 border-4 border-primary/10 border-b-primary rounded-full animate-spin-reverse" />
-            </div>
-          </div>
-          <div className="mt-6 flex flex-col items-center gap-2">
-            <h2 className="text-xl font-bold text-foreground">Signing Out...</h2>
-            <p className="text-muted-foreground animate-pulse">Please wait a moment</p>
-          </div>
-        </div>
+        <Loader 
+          fullScreen 
+          size="lg" 
+          text="Signing Out..." 
+          subText="Please wait a moment" 
+        />
       )}
     </>
   );

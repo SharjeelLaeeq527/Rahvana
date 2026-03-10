@@ -9,6 +9,8 @@ import { Card } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { createBrowserClient } from "@supabase/ssr/dist/main/createBrowserClient";
 import { useToast } from "../shared/ToastProvider";
+import { Loader } from "@/components/ui/spinner";
+
 
 export function MFASetup() {
   const supabase = createBrowserClient(
@@ -172,7 +174,7 @@ export function MFASetup() {
   if (profileLoading) {
     return (
       <div className="flex justify-center items-center">
-        <div className="w-8 h-8 border-4 border-[#0D7478] border-t-transparent rounded-full animate-spin" />
+        <Loader size="md" />
       </div>
     );
   }
@@ -322,10 +324,7 @@ export function MFASetup() {
                   className="h-11 rounded-xl px-6 w-full sm:w-auto bg-destructive hover:bg-destructive/90 text-destructive-foreground"
                 >
                   {loading ? (
-                    <div className="flex justify-center items-center gap-2">
-                      <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
-                      Disabling...
-                    </div>
+                    <Loader size="sm" text="Disabling..." />
                   ) : (
                     "Disable 2FA"
                   )}

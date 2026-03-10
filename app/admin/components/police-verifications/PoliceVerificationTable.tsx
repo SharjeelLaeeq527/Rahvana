@@ -40,6 +40,7 @@ import {
   DialogTitle,
   // DialogTrigger,
 } from "@/components/ui/dialog";
+import { Loader } from "@/components/ui/spinner";
 
 interface PoliceVerificationRequest {
   id: string;
@@ -380,7 +381,7 @@ export default function PoliceVerificationTable() {
         <CardContent>
           {loading ? (
             <div className="flex justify-center items-center h-64">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+              <Loader size="md" text="Loading police verifications..." />
             </div>
           ) : (
             <div className="overflow-x-auto">

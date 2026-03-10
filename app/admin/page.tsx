@@ -8,6 +8,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Globe } from "lucide-react";
 import Link from "next/link";
+import { Loader } from "@/components/ui/spinner";
+
 
 import TranslationQueueTable from "./components/translation-queue/TranslationQueueTable";
 import PoliceVerificationTable from "./components/police-verifications/PoliceVerificationTable";
@@ -45,12 +47,7 @@ export default function AdminPanel() {
   if (authLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background p-6">
-        <div className="text-center">
-          <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto"></div>
-          <p className="mt-4 text-muted-foreground">
-            Checking authorization...
-          </p>
-        </div>
+        <Loader size="md" text="Checking authorization..." />
       </div>
     );
   }

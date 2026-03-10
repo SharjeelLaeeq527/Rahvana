@@ -7,6 +7,7 @@ import { usePDFStore } from "@/lib/store"
 import { Button } from "@/components/ui/button"
 import { Trash2, RotateCw, X, Save, Copy } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { useLanguage } from "@/app/context/LanguageContext"
 
 interface PageItem {
   index: number
@@ -22,6 +23,7 @@ interface OrganizePagesModalProps {
 
 export function OrganizePagesModal({ isOpen, onClose }: OrganizePagesModalProps) {
   const { pdfFile, pageModifications, setPageModifications, setCurrentPage } = usePDFStore()
+  const { t } = useLanguage()
   const [pages, setPages] = useState<PageItem[]>([])
   const [selectedPages, setSelectedPages] = useState<Set<number>>(new Set())
   const [draggedPage, setDraggedPage] = useState<number | null>(null)
@@ -217,10 +219,10 @@ export function OrganizePagesModal({ isOpen, onClose }: OrganizePagesModalProps)
   const handleBulkDelete = () => {
     if (selectedPages.size === 0) return
     if (selectedPages.size >= pages.length) {
-      alert("Cannot delete all pages!")
+      alert(t("pdfProcessing.editor.organizePages.allPagesDeletedAlert"))
       return
     }
-    if (confirm(`Delete ${selectedPages.size} selected page(s)?`)) {
+    if (confirm(t("pdfProcessing.editor.organizePages.bulkDeleteConfirm", { count: selectedPages.size }))) {
       setPages(pages.filter((_, i) => !selectedPages.has(i)))
       setSelectedPages(new Set())
     }
@@ -244,7 +246,7 @@ export function OrganizePagesModal({ isOpen, onClose }: OrganizePagesModalProps)
     onClose()
     
     // Show success message
-    alert("Page organization saved! Changes will appear in the viewer.")
+    alert(t("pdfProcessing.editor.organizePages.successAlert"))
   }
 
   if (!isOpen) return null
@@ -254,7 +256,7 @@ export function OrganizePagesModal({ isOpen, onClose }: OrganizePagesModalProps)
       <div className="bg-white rounded-2xl shadow-2xl max-w-6xl w-full max-h-[90vh] overflow-hidden flex flex-col">
         {/* Header */}
         <div className="flex items-center justify-between border-b px-6 py-4 bg-linear-to-r from-blue-600 to-purple-600 text-white">
-          <h2 className="text-2xl font-bold">Organize Pages</h2>
+          <h2 className="text-2xl font-bold">{t("pdfProcessing.editor.organizePages.title")}</h2>
           <button onClick={onClose} className="p-2 hover:bg-white/20 rounded-lg transition">
             <X className="w-6 h-6" />
           </button>
@@ -263,13 +265,13 @@ export function OrganizePagesModal({ isOpen, onClose }: OrganizePagesModalProps)
         {/* Toolbar */}
         {selectedPages.size > 0 && (
           <div className="bg-blue-50 border-b px-6 py-3 flex items-center gap-3">
-            <span className="text-sm font-semibold text-blue-900">{selectedPages.size} page(s) selected</span>
+            <span className="text-sm font-semibold text-blue-900">{t("pdfProcessing.editor.organizePages.selected", { count: selectedPages.size })}</span>
             <button
               onClick={handleBulkDelete}
               className="ml-auto px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition flex items-center gap-2"
             >
               <Trash2 className="w-4 h-4" />
-              Delete Selected
+              {t("pdfProcessing.editor.organizePages.deleteSelected")}
             </button>
           </div>
         )}
@@ -316,7 +318,7 @@ export function OrganizePagesModal({ isOpen, onClose }: OrganizePagesModalProps)
                       handleRotatePage(index)
                     }}
                     className="p-2 bg-white/90 hover:bg-white rounded-lg transition"
-                    title="Rotate 90°"
+                    title={t("pdfProcessing.editor.organizePages.rotateTip")}
                   >
                     <RotateCw className="w-4 h-4 text-gray-700" />
                   </button>
@@ -326,7 +328,7 @@ export function OrganizePagesModal({ isOpen, onClose }: OrganizePagesModalProps)
                       handleDuplicatePage(index)
                     }}
                     className="p-2 bg-green-500/90 hover:bg-green-600 text-white rounded-lg transition"
-                    title="Duplicate page"
+                    title={t("pdfProcessing.editor.organizePages.duplicateTip")}
                   >
                     <Copy className="w-4 h-4" />
                   </button>
@@ -336,7 +338,7 @@ export function OrganizePagesModal({ isOpen, onClose }: OrganizePagesModalProps)
                       handleDeletePage(index)
                     }}
                     className="p-2 bg-red-500/90 hover:bg-red-600 text-white rounded-lg transition"
-                    title="Delete page"
+                    title={t("pdfProcessing.editor.organizePages.deleteTip")}
                   >
                     <Trash2 className="w-4 h-4" />
                   </button>
@@ -356,18 +358,18 @@ export function OrganizePagesModal({ isOpen, onClose }: OrganizePagesModalProps)
         {/* Footer */}
         <div className="border-t px-6 py-4 bg-gray-50 flex justify-between items-center">
           <p className="text-sm text-gray-600">
-            {pages.length} page(s) • Drag to reorder
+            {t("pdfProcessing.editor.organizePages.reorderTip", { count: pages.length })}
           </p>
           <div className="flex gap-3">
             <Button onClick={onClose} variant="outline">
-              Cancel
+              {t("pdfProcessing.editor.signature.cancel")}
             </Button>
             <Button
               onClick={handleSaveChanges}
               className="bg-blue-600 hover:bg-blue-700 text-white"
             >
               <Save className="w-4 h-4 mr-2" />
-              Apply Changes
+              {t("pdfProcessing.editor.organizePages.applyChanges")}
             </Button>
           </div>
         </div>

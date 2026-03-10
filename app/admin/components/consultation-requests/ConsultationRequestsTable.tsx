@@ -28,6 +28,7 @@ import {
 import { ConsultationBooking, TimeSlot } from '@/types/consultation';
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { cn } from '@/lib/utils';
+import { Loader } from "@/components/ui/spinner";
 
 
 const ConsultationRequestsTable = () => {
@@ -334,7 +335,7 @@ const ConsultationRequestsTable = () => {
                 </SelectContent>
               </Select>
               <Button variant="outline" size="icon" onClick={fetchRequests} disabled={loading}>
-                <RefreshCw className={cn("h-4 w-4", loading && "animate-spin")} />
+                {loading ? <Loader size="sm" /> : <RefreshCw className="h-4 w-4" />}
               </Button>
             </div>
           </div>
@@ -355,13 +356,11 @@ const ConsultationRequestsTable = () => {
               </TableHeader>
               <TableBody>
                 {loading ? (
-                  Array.from({ length: 5 }).map((_, i) => (
-                    <TableRow key={i}>
-                      <TableCell colSpan={7} className="h-16 text-center animate-pulse">
-                        <div className="h-4 bg-muted rounded w-3/4 mx-auto"></div>
-                      </TableCell>
-                    </TableRow>
-                  ))
+                  <TableRow>
+                    <TableCell colSpan={7} className="h-64 py-8">
+                       <Loader size="md" text="Loading requests..." />
+                    </TableCell>
+                  </TableRow>
                 ) : filteredRequests.length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={7} className="h-32 text-center text-muted-foreground">
@@ -622,7 +621,7 @@ const ConsultationRequestsTable = () => {
                 
                 {fetchingSlots ? (
                   <div className="flex justify-center py-8">
-                    <RefreshCw className="h-6 w-6 animate-spin text-teal-600" />
+                    <Loader size="sm" text="Fetching available slots..." />
                   </div>
                 ) : availableSlots.length === 0 ? (
                   <div className="text-center py-6 bg-gray-50 rounded-lg border border-dashed">

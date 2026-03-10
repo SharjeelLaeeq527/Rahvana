@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Loader2 } from 'lucide-react';
+import { Loader } from "@/components/ui/spinner";
 
 interface CheckoutButtonProps {
   productTier?: 'plus' | 'pro';
@@ -70,10 +70,7 @@ export default function CheckoutButton({
         }`}
       >
         {isLoading ? (
-          <span className="flex items-center justify-center gap-2">
-            <Loader2 className="w-4 h-4 animate-spin" />
-            Processing...
-          </span>
+          <Loader size="sm" text="Processing..." />
         ) : (
           children
         )}

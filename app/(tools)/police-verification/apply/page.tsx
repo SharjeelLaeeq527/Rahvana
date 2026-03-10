@@ -19,9 +19,9 @@ import {
   Clock,
   Send,
   Upload,
-  Loader2,
 } from "lucide-react";
 import { useAuth } from "@/app/context/AuthContext";
+import { Loader } from "@/components/ui/spinner";
 
 function PoliceApplyContent() {
   // const searchParams = useSearchParams();
@@ -1534,9 +1534,7 @@ function PoliceApplyContent() {
               className="w-full sm:w-auto justify-center px-10 py-4 rounded-2xl bg-primary text-white font-bold hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center gap-2 group shadow-xl shadow-green-600/25"
             >
               {isSubmitting ? (
-                <>
-                  Running Checks <Loader2 className="animate-spin" size={20} />
-                </>
+                <Loader size="sm" text="Running Checks" />
               ) : (
                 <>
                   Submit Application{" "}
@@ -1556,7 +1554,7 @@ function PoliceApplyContent() {
 
 export default function PoliceApplyPage() {
   return (
-    <Suspense fallback={<div>Loading...</div>}>
+    <Suspense fallback={<Loader fullScreen size="lg" text="Loading..." />}>
       <PoliceApplyContent />
     </Suspense>
   );

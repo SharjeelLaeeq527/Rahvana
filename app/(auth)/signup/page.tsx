@@ -8,6 +8,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import Link from "next/link";
+import { Loader } from "@/components/ui/spinner";
+
 
 export default function SignupPage() {
   const [email, setEmail] = useState("");
@@ -145,10 +147,7 @@ export default function SignupPage() {
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
-        <div className="flex flex-col items-center gap-4">
-          <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin" />
-          <p className="text-muted-foreground">Loading...</p>
-        </div>
+        <Loader size="md" text="Loading..." />
       </div>
     );
   }
@@ -477,10 +476,7 @@ export default function SignupPage() {
               className="w-full h-12 bg-primary hover:bg-primary/90 text-white font-medium rounded-xl transition-all disabled:opacity-50"
             >
               {isSubmitting ? (
-                <div className="flex items-center gap-2">
-                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                  Creating account...
-                </div>
+                <Loader size="sm" text="Creating account..." />
               ) : (
                 "Create Account"
               )}
@@ -502,22 +498,12 @@ export default function SignupPage() {
 
       {/* Full-screen Loading Overlay */}
       {isSubmitting && (
-        <div className="fixed inset-0 z-9999 flex flex-col items-center justify-center bg-background/60 backdrop-blur-md transition-all duration-300">
-          <div className="relative">
-            <div className="w-20 h-20 border-4 border-primary/20 border-t-primary rounded-full animate-spin" />
-            <div className="absolute inset-0 flex items-center justify-center">
-              <div className="w-10 h-10 border-4 border-primary/10 border-b-primary rounded-full animate-spin-reverse" />
-            </div>
-          </div>
-          <div className="mt-8 flex flex-col items-center gap-3">
-            <h2 className="text-2xl font-bold text-foreground">
-              Creating Account...
-            </h2>
-            <p className="text-muted-foreground animate-pulse text-lg">
-              Setting up your secure workspace
-            </p>
-          </div>
-        </div>
+        <Loader 
+          fullScreen 
+          size="xl" 
+          text="Creating Account..." 
+          subText="Setting up your secure workspace" 
+        />
       )}
     </div>
   );

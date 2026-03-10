@@ -24,6 +24,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { useLanguage } from "@/app/context/LanguageContext";
+import { Loader } from "@/components/ui/spinner";
 
 type TranslationStatus =
   | "PENDING"
@@ -252,7 +253,7 @@ export default function TranslationRequestDetails({
       <div className="min-h-screen bg-linear-to-br from-slate-50 to-slate-100 text-gray-800 py-12 px-4">
         <div className="max-w-4xl mx-auto">
           <div className="flex justify-center items-center h-64">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+            <Loader size="lg" text="Loading translation request..." />
           </div>
         </div>
       </div>

@@ -56,4 +56,5 @@ export interface FormData {
   caseNumber: string;
   beneficiaryName: string;
   passportNumber: string;
+  dateOfBirth: string;      // beneficiary DOB (YYYY-MM-DD)
 }

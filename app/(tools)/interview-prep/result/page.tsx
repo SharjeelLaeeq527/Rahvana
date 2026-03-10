@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { ResultPage } from './ResultPage';
 import { InterviewPrepOutput } from '@/lib/interview-prep';
+import { Loader } from "@/components/ui/spinner";
 
 export default function InterviewPrepResultPage() {
   const [loading, setLoading] = useState(true);
@@ -63,7 +64,7 @@ export default function InterviewPrepResultPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-teal-600"></div>
+        <Loader size="lg" text="Loading results..." />
       </div>
     );
   }

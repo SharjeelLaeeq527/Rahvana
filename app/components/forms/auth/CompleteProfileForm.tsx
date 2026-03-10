@@ -6,7 +6,8 @@ import { createBrowserClient } from "@supabase/ssr";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/app/context/AuthContext";
 import { MasterProfile } from "@/types/profile";
-import { ChevronRight, ChevronLeft, Save, Loader2 } from "lucide-react";
+import { ChevronRight, ChevronLeft, Save } from "lucide-react";
+import { Loader } from "@/components/ui/spinner";
 import {
   FormField,
   FormSelect,
@@ -1525,10 +1526,7 @@ export default function CompleteProfileForm() {
             className="h-9 px-4 text-sm min-w-30"
           >
             {loading ? (
-              <>
-                <Loader2 className="w-3.5 h-3.5 mr-1.5 animate-spin" />
-                Saving...
-              </>
+              <Loader size="sm" text="Saving..." />
             ) : currentStep === steps.length - 1 ? (
               <>
                 Save & Complete

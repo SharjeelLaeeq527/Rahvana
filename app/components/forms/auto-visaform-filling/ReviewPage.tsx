@@ -1,7 +1,7 @@
 "use client"
 
 import type { Field } from "@/lib/formConfig/types";
-import { Loader2 } from "lucide-react";
+import { Loader } from "@/components/ui/spinner";
 
 interface ReviewPageProps {
   formData: Record<string, string>
@@ -99,10 +99,7 @@ export function ReviewPage({
           className="px-8 py-3 bg-primary hover:bg-primary/80 disabled:opacity-70 disabled:cursor-not-allowed text-white font-semibold rounded-lg transition flex items-center justify-center gap-2"
         >
           {isPreviewing ? (
-            <>
-              <Loader2 className="w-4 h-4 animate-spin" />
-              <span>Previewing...</span>
-            </>
+            <Loader size="sm" text="Previewing..." />
           ) : (
             "Preview PDF"
           )}
@@ -114,10 +111,7 @@ export function ReviewPage({
           className="px-8 py-3 bg-primary hover:bg-primary/80 disabled:opacity-70 disabled:cursor-not-allowed text-white font-semibold rounded-lg transition flex items-center justify-center gap-2"
         >
           {isDownloading ? (
-            <>
-              <Loader2 className="w-4 h-4 animate-spin" />
-              <span>Downloading...</span>
-            </>
+            <Loader size="sm" text="Downloading..." />
           ) : (
             "Download PDF"
           )}

@@ -30,11 +30,11 @@ import {
   Fingerprint,
   Search,
   Navigation,
-  Loader2,
   X,
   Eye,
   Download,
 } from "lucide-react";
+import { Loader } from "@/components/ui/spinner";
 import { PKMCenter, pkmCenters } from "./(data)/punjab-pkm-centers";
 import { balochistanCenters } from "./(data)/balochistan-pkm-centers";
 import { kpkCenters } from "./(data)/kpk-centers";
@@ -886,7 +886,7 @@ function PKMLocator({ province }: { province: string }) {
           className="flex-1 flex items-center justify-center gap-2 p-4 rounded-2xl bg-primary/5 text-primary font-semibold hover:bg-primary/10 transition-all border border-primary/20"
         >
           {loading ? (
-            <Loader2 className="animate-spin" size={20} />
+            <Loader size="sm" />
           ) : (
             <Navigation size={20} />
           )}
@@ -907,7 +907,7 @@ function PKMLocator({ province }: { province: string }) {
               className="absolute right-2 top-2 p-2 rounded-xl bg-primary text-white hover:bg-primary/90 transition-all"
             >
               {loading ? (
-                <Loader2 className="animate-spin" size={20} />
+                <Loader size="sm" />
               ) : (
                 <Search size={20} />
               )}

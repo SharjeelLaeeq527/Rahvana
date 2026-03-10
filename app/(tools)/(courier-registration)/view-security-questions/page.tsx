@@ -19,6 +19,7 @@ import {
 import { motion } from "framer-motion";
 import { Label } from "@/components/ui/label";
 import { useLanguage } from "@/app/context/LanguageContext";
+import { Loader } from "@/components/ui/spinner";
 
 export default function SecurityQuestionsPreviewPage() {
   const { t } = useLanguage();
@@ -68,10 +69,7 @@ export default function SecurityQuestionsPreviewPage() {
     return (
       <div className="min-h-screen flex items-center justify-center bg-slate-50">
         <div className="flex flex-col items-center gap-4">
-          <div className="w-12 h-12 border-4 border-primary/20 border-t-primary rounded-full animate-spin" />
-          <p className="text-sm font-bold text-gray-400 uppercase tracking-widest">
-            {t("pages.courierRegistration.securityPreview.loadingSession")}
-          </p>
+          <Loader size="lg" text={t("pages.courierRegistration.securityPreview.loadingSession")} />
         </div>
       </div>
     );

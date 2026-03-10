@@ -6,8 +6,8 @@ import {
   X,
   Calendar as CalendarIcon,
   Save,
-  Loader2
 } from 'lucide-react';
+import { Loader } from "@/components/ui/spinner";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -236,7 +236,7 @@ const AvailabilityGrid = () => {
             >
               {saving ? (
                 <>
-                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                  <Loader size="sm" />
                   Creating...
                 </>
               ) : (
@@ -264,7 +264,7 @@ const AvailabilityGrid = () => {
           <CardContent className="p-0">
             {loading ? (
               <div className="flex justify-center py-20">
-                <Loader2 className="h-10 w-10 animate-spin text-teal-600" />
+                <Loader size="lg" />
               </div>
             ) : sortedDates.length === 0 ? (
               <div className="text-center py-20 text-gray-500">

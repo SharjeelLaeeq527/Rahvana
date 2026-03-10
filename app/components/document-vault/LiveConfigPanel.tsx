@@ -12,6 +12,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ChevronDown, ChevronUp, Settings, Save } from "lucide-react";
 import { toast } from "sonner";
+import { Loader } from "@/components/ui/spinner";
 
 const VISA_CATEGORIES: VisaCategory[] = [
   "IR-1",
@@ -553,10 +554,7 @@ export function LiveConfigPanel() {
                 }
               >
                 {isSaving ? (
-                  <>
-                    <div className="w-4 h-4 mr-2 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                    {t("documentVaultPage.components.liveConfigPanel.saving")}
-                  </>
+                  <Loader size="sm" text={t("documentVaultPage.components.liveConfigPanel.saving")} />
                 ) : (
                   <>
                     <Save className="w-4 h-4 mr-2" />
