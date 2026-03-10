@@ -24,7 +24,6 @@ import {
   Files,
   PenTool,
   Wand2,
-  FolderLock,
 } from "lucide-react";
 
 export interface NavItem {
