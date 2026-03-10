@@ -947,7 +947,11 @@ export function SiteHeader({
                     setIsMenuOpen(false);
                   }
                 }}
-                className="w-full py-4 rounded-xl bg-[#0d9488] text-white font-bold shadow-lg hover:bg-[#0f766e] transition-all"
+                className={`w-full py-4 rounded-xl font-bold shadow-lg transition-all ${
+                  isSignedIn
+                    ? "bg-transparent text-red-500 border border-red-500 hover:bg-slate-100"
+                    : "bg-[#0d9488] text-white hover:bg-[#0f766e]"
+                }`}
               >
                 {isSignedIn ? "Sign Out" : "Login"}
               </HydrationSafeButton>
