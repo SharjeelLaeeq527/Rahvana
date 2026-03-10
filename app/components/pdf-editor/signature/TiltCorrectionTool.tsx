@@ -1,9 +1,9 @@
-// src/components/signature-tool/TiltCorrectionTool.tsx
 "use client"
-
 import React, { useEffect, useRef, useState, useCallback } from "react"
 import { Move, RotateCcw, Check } from "lucide-react"
 import domtoimage from "dom-to-image-more"
+import { useLanguage } from "@/app/context/LanguageContext"
+import { Loader } from "@/components/ui/spinner"
 
 interface TiltCorrectionToolProps {
   processedImage: string
@@ -16,6 +16,7 @@ export default function TiltCorrectionTool({
   onApply,
   onCancel,
 }: TiltCorrectionToolProps) {
+  const { t } = useLanguage()
   const [horizontalTilt, setHorizontalTilt] = useState(0) // Y-axis rotation (left-right)
   const [verticalTilt, setVerticalTilt] = useState(0)     // X-axis rotation (up-down)
   const [imageDimensions, setImageDimensions] = useState<{ width: number; height: number } | null>(null)
@@ -96,9 +97,9 @@ export default function TiltCorrectionTool({
       <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-xl p-6 shadow-sm">
         <h2 className="text-2xl font-bold text-gray-900 mb-2 flex items-center gap-3">
           <Move className="w-7 h-7 text-blue-600" />
-          Fix Perspective Tilt (3D Look)
+          {t("pdfProcessing.editor.tilt.title")}
         </h2>
-        <p className="text-gray-700">Use sliders to correct horizontal and vertical tilt with true 3D perspective</p>
+        <p className="text-gray-700">{t("pdfProcessing.editor.tilt.subtitle")}</p>
       </div>
 
       <div className="grid lg:grid-cols-2 gap-6">
@@ -108,7 +109,7 @@ export default function TiltCorrectionTool({
             <div>
               <div className="flex justify-between items-center mb-2">
                 <label className="block text-sm font-medium text-gray-700">
-                  Horizontal Tilt (Y-Axis): <span className="font-bold text-blue-600">{horizontalTilt}°</span>
+                  {t("pdfProcessing.editor.tilt.horizontalLabel")}: <span className="font-bold text-blue-600">{horizontalTilt}°</span>
                 </label>
                 <button
                   onClick={handleResetHorizontal}
@@ -127,16 +128,16 @@ export default function TiltCorrectionTool({
                 className="w-full h-3 bg-gray-200 rounded-lg appearance-none cursor-pointer"
               />
               <div className="flex justify-between text-xs text-gray-500 mt-1">
-                <span>← Left</span>
-                <span>Center</span>
-                <span>Right →</span>
+                <span>{t("pdfProcessing.editor.tilt.left")}</span>
+                <span>{t("pdfProcessing.editor.tilt.center")}</span>
+                <span>{t("pdfProcessing.editor.tilt.right")}</span>
               </div>
             </div>
 
             <div>
               <div className="flex justify-between items-center mb-2">
                 <label className="block text-sm font-medium text-gray-700">
-                  Vertical Tilt (X-Axis): <span className="font-bold text-blue-600">{verticalTilt}°</span>
+                  {t("pdfProcessing.editor.tilt.verticalLabel")}: <span className="font-bold text-blue-600">{verticalTilt}°</span>
                 </label>
                 <button
                   onClick={handleResetVertical}
@@ -155,9 +156,9 @@ export default function TiltCorrectionTool({
                 className="w-full h-3 bg-gray-200 rounded-lg appearance-none cursor-pointer"
               />
               <div className="flex justify-between text-xs text-gray-500 mt-1">
-                <span>↑ Up (Top-Down)</span>
-                <span>Center</span>
-                <span>Down ↓</span>
+                <span>{t("pdfProcessing.editor.tilt.up")}</span>
+                <span>{t("pdfProcessing.editor.tilt.center")}</span>
+                <span>{t("pdfProcessing.editor.tilt.down")}</span>
               </div>
             </div>
 
@@ -167,7 +168,7 @@ export default function TiltCorrectionTool({
               className="w-full px-4 py-2 bg-primary/90 hover:bg-primary/100 text-white rounded-lg transition text-sm flex items-center justify-center gap-2 font-semibold"
             >
               <RotateCcw className="w-4 h-4" />
-              Reset Tilt
+              {t("pdfProcessing.editor.tilt.resetTilt")}
             </button>
           </div>
         </div>
@@ -176,7 +177,7 @@ export default function TiltCorrectionTool({
         <div className="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden">
           <div className="bg-gradient-to-r from-green-50 to-emerald-50 border-b border-green-200 px-6 py-4 font-bold text-gray-900 text-lg flex items-center gap-3">
             <Check className="w-6 h-6 text-green-600" />
-            <span>3D Corrected Preview</span>
+            <span>{t("pdfProcessing.editor.tilt.preview")}</span>
           </div>
           <div
             ref={previewContainerRef}
@@ -263,7 +264,7 @@ export default function TiltCorrectionTool({
           className="px-10 py-4 bg-gray-200 hover:bg-gray-300 text-gray-900 rounded-xl font-bold transition-all flex items-center gap-3 text-lg shadow-md disabled:opacity-50"
         >
           <RotateCcw className="w-6 h-6" />
-          Cancel
+          {t("pdfProcessing.editor.signature.cancel")}
         </button>
         <button
           onClick={handleApply}
@@ -271,14 +272,11 @@ export default function TiltCorrectionTool({
           className="px-10 py-4 bg-primary/90 hover:bg-primary/100 text-white rounded-xl font-bold transition-all flex items-center gap-3 text-lg shadow-md disabled:opacity-50"
         >
           {isApplying ? (
-            <>
-              <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin" />
-              Applying...
-            </>
+            <Loader size="sm" text={t("pdfProcessing.editor.tilt.applying")} />
           ) : (
             <>
               <Check className="w-6 h-6" />
-              Apply & Continue
+              {t("pdfProcessing.editor.tilt.applyContinue")}
             </>
           )}
         </button>

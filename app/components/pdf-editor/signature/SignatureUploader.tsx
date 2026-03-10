@@ -3,6 +3,7 @@
 import type React from "react";
 import { useRef, useState } from "react";
 import { Upload, ImageIcon, type File } from "lucide-react";
+import { useLanguage } from "@/app/context/LanguageContext";
 
 interface SignatureUploaderProps {
   onFileSelect: (file: File) => void;
@@ -13,6 +14,7 @@ export default function SignatureUploader({
   onFileSelect,
   disabled = false,
 }: SignatureUploaderProps) {
+  const { t } = useLanguage();
   const [isDragging, setIsDragging] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -86,11 +88,11 @@ export default function SignatureUploader({
         )}
 
         <h3 className="text-lg font-semibold text-slate-900 mb-2">
-          {isDragging ? "Drop your image here" : "Upload Signature Photo"}
+          {isDragging ? t("signatureProcessing.uploader.dropzone") : t("signatureProcessing.uploader.uploadTitle")}
         </h3>
 
         <p className="text-slate-600 mb-6 text-sm">
-          Drag and drop or click to browse your files
+          {t("signatureProcessing.uploader.browse")}
         </p>
 
         <button
@@ -99,11 +101,11 @@ export default function SignatureUploader({
           className="text-white bg-primary/90 px-6 py-2.5 rounded transition-colors text-sm
                      hover:bg-primary disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          Choose File
+          {t("signatureProcessing.uploader.chooseFile")}
         </button>
 
         <p className="text-xs text-slate-500 mt-4">
-          Supported: JPG, PNG, HEIC • Max 10MB
+          {t("signatureProcessing.uploader.supported")}
         </p>
       </div>
     </div>

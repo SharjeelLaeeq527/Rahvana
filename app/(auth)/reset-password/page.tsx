@@ -6,6 +6,8 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import Link from "next/link";
+import { Loader } from "@/components/ui/spinner";
+
 
 function ResetPasswordContent() {
   const [password, setPassword] = useState("");
@@ -28,6 +30,7 @@ function ResetPasswordContent() {
   const hasUppercase = /[A-Z]/.test(password);
   const hasLowercase = /[a-z]/.test(password);
   const hasNumber = /[0-9]/.test(password);
+  const hasSpecialCharacter = /[\W_]/.test(password);
   const passwordsMatch =
     password === confirmPassword && confirmPassword.length > 0;
 
@@ -36,6 +39,7 @@ function ResetPasswordContent() {
     hasUppercase,
     hasLowercase,
     hasNumber,
+    hasSpecialCharacter,
   ].filter(Boolean).length;
 
   useEffect(() => {
@@ -94,12 +98,7 @@ function ResetPasswordContent() {
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
-        <div className="flex flex-col items-center gap-4">
-          <div className="w-10 h-10 border-4 border-muted border-t-primary rounded-full animate-spin" />
-          <p className="text-muted-foreground font-medium">
-            Verifying your link...
-          </p>
-        </div>
+        <Loader size="md" text="Verifying your link..." />
       </div>
     );
   }
@@ -615,10 +614,7 @@ function ResetPasswordContent() {
                 className="w-full h-12 bg-primary hover:bg-primary/90 text-white font-medium rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-primary/10"
               >
                 {isSubmitting ? (
-                  <div className="flex items-center gap-2">
-                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                    <span>Updating password...</span>
-                  </div>
+                  <Loader size="sm" text="Updating password..." />
                 ) : (
                   "Reset password"
                 )}
@@ -680,10 +676,7 @@ export default function ResetPasswordPage() {
     <Suspense
       fallback={
         <div className="min-h-screen flex items-center justify-center bg-background">
-          <div className="flex flex-col items-center gap-4">
-            <div className="w-10 h-10 border-4 border-muted border-t-primary rounded-full animate-spin" />
-            <p className="text-muted-foreground font-medium">Loading...</p>
-          </div>
+          <Loader size="md" />
         </div>
       }
     >

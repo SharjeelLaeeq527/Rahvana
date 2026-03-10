@@ -9,6 +9,7 @@ import DraggableTextPro from "./text/DraggableTextPro";
 import DraggableShape from "./shapes/DraggableShape";
 import DraggableSignature from "./signature/DraggableSignature";
 import ShapeFormattingToolbar from "./shapes/ShapeFormattingToolbar";
+import { useLanguage } from "@/app/context/LanguageContext";
 
 import type { PDFDocumentProxy, RenderTask } from "pdfjs-dist";
 import type { TextFormat } from "./text/TextFormattingToolbar";
@@ -50,6 +51,7 @@ export function PDFViewer({
   selectedAnnotationId: string | null;
   onSelectAnnotation: (id: string | null) => void;
 }) {
+  const { t } = useLanguage();
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const overlayRef = useRef<HTMLDivElement | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
@@ -228,7 +230,7 @@ export function PDFViewer({
       const id = Date.now().toString();
       addAnnotation({
         id,
-        text: "Insert text",
+        text: t("pdfProcessing.editor.viewer.insertText"),
         x,
         y,
         fontSize: textFormat?.size || 14,
@@ -319,7 +321,7 @@ export function PDFViewer({
             }}
             variant="outline" 
             size="sm"
-            title={fitMode === "width" ? "Fit to Width" : "Fit to Height"}
+            title={fitMode === "width" ? t("pdfProcessing.editor.viewer.fitWidthOpt") : t("pdfProcessing.editor.viewer.fitHeightOpt")}
           >
             <Maximize2 className="h-4 w-4" />
           </Button>
@@ -349,13 +351,13 @@ export function PDFViewer({
           >
             <option value={0.5}>50%</option>
             <option value={0.75}>75%</option>
-            <option value={1}>100% (Actual)</option>
+            <option value={1}>{t("pdfProcessing.editor.viewer.actual")}</option>
             <option value={1.25}>125%</option>
             <option value={1.5}>150%</option>
             <option value={2}>200%</option>
             <option value={3}>300%</option>
-            <option value="fitWidth">Fit Width</option>
-            <option value="fitHeight">Fit Height</option>
+            <option value="fitWidth">{t("pdfProcessing.editor.viewer.fitWidth")}</option>
+            <option value="fitHeight">{t("pdfProcessing.editor.viewer.fitHeight")}</option>
           </select>
         </div>
       </div>
@@ -365,7 +367,7 @@ export function PDFViewer({
         
         {isLoading && (
           <div className="absolute top-1/2 left-1/2 text-gray-500 -translate-x-1/2 -translate-y-1/2 z-50">
-            Loading page...
+            {t("pdfProcessing.editor.viewer.loading")}
           </div>
         )}
 

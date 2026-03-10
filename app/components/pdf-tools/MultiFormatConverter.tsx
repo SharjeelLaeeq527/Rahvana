@@ -2,6 +2,7 @@
 
 import { useState, useRef } from "react";
 import { Upload, Download, AlertCircle, FileCheck } from "lucide-react";
+import { Loader } from "@/components/ui/spinner";
 
 interface ConversionResult {
   originalSize: number;
@@ -9,7 +10,10 @@ interface ConversionResult {
   reduction: string;
 }
 
+import { useLanguage } from "@/app/context/LanguageContext";
+
 export default function PDFConverterApp() {
+  const { t } = useLanguage();
   const [file, setFile] = useState<File | null>(null);
   const [converting, setConverting] = useState(false);
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -40,12 +44,12 @@ export default function PDFConverterApp() {
       "." + selectedFile.name.toLowerCase().split(".").pop();
 
     if (!validExtensions.includes(fileExtension)) {
-      setError("Unsupported file format. Please select a supported file type.");
+      setError(t("pdfProcessing.errors.invalidFile"));
       return;
     }
 
     if (selectedFile.size > 100 * 1024 * 1024) {
-      setError("File is too large. Maximum size is 100MB");
+      setError(t("pdfProcessing.errors.tooLarge"));
       return;
     }
 
@@ -88,7 +92,7 @@ export default function PDFConverterApp() {
 
       if (!response.ok) {
         const error = await response.json();
-        throw new Error(error.message || "Conversion failed");
+        throw new Error(error.message || t("pdfProcessing.errors.failed"));
       }
 
       const blob = await response.blob();
@@ -125,7 +129,7 @@ export default function PDFConverterApp() {
       }, 3000);
     } catch (error: unknown) {
       const message =
-        error instanceof Error ? error.message : "Conversion failed";
+        error instanceof Error ? error.message : t("pdfProcessing.errors.failed");
       setError(message);
     } finally {
       setConverting(false);
@@ -146,10 +150,10 @@ export default function PDFConverterApp() {
     <div className="w-full">
       <div className="bg-primary/90 p-6 md:p-10 text-white rounded-t-2xl">
         <h1 className="text-3xl md:text-5xl font-bold text-center mb-2 md:mb-3">
-          Multi-Format PDF Converter
+          {t("pdfProcessing.convert.title")}
         </h1>
         <p className="text-center text-white/90 text-base md:text-lg">
-          Convert various file formats to PDF instantly
+          {t("pdfProcessing.convert.subtitle")}
         </p>
       </div>
 
@@ -157,7 +161,7 @@ export default function PDFConverterApp() {
         {/* Upload Area */}
         <div className="mb-6 md:mb-8">
           <label className="block text-sm font-semibold text-gray-700 mb-3">
-            Select File
+            {t("pdfProcessing.convert.selectLabel")}
           </label>
           <input
             ref={fileInputRef}
@@ -188,17 +192,16 @@ export default function PDFConverterApp() {
                   {formatBytes(file.size)}
                 </p>
                 <p className="text-xs text-gray-400 mt-2">
-                  Click to change file
+                  {t("pdfProcessing.compress.changeFile")}
                 </p>
               </div>
             ) : (
               <div>
                 <p className="text-gray-700 font-medium mb-1">
-                  Click to upload or drag and drop
+                  {t("pdfProcessing.convert.dropzone")}
                 </p>
                 <p className="text-sm text-gray-500">
-                  Supports: Text, HTML, Markdown, Images, Word (DOCX) • Max
-                  100MB
+                  {t("pdfProcessing.convert.supports")}
                 </p>
               </div>
             )}
@@ -213,32 +216,12 @@ export default function PDFConverterApp() {
         >
           {converting ? (
             <>
-              <svg
-                className="animate-spin -ml-1 mr-3 h-6 w-6 text-white"
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-              >
-                <circle
-                  className="opacity-25"
-                  cx="12"
-                  cy="12"
-                  r="10"
-                  stroke="currentColor"
-                  strokeWidth="4"
-                ></circle>
-                <path
-                  className="opacity-75"
-                  fill="currentColor"
-                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                ></path>
-              </svg>
-              Converting...
+              <Loader size="sm" text={t("pdfProcessing.convert.converting")} />
             </>
           ) : (
             <>
               <Download className="mr-2 h-6 w-6" />
-              Convert Now
+              {t("pdfProcessing.convert.convertBtn")}
             </>
           )}
         </button>
@@ -261,12 +244,12 @@ export default function PDFConverterApp() {
           <div className="mt-6 p-6 bg-linear-to-r from-green-50 to-emerald-50 border-l-4 border-green-500 rounded-lg shadow-sm">
             <div className="flex items-center text-green-700 mb-4">
               <FileCheck className="h-6 w-6 mr-3" />
-              <span className="font-bold text-lg">Conversion Successful!</span>
+              <span className="font-bold text-lg">{t("pdfProcessing.convert.success")}</span>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
               <div className="bg-white p-4 rounded-lg shadow-sm">
                 <p className="text-gray-500 text-xs font-medium mb-1">
-                  Original Size
+                  {t("pdfProcessing.compress.originalSize")}
                 </p>
                 <p className="text-gray-800 font-bold text-xl">
                   {formatBytes(result.originalSize)}
@@ -274,7 +257,7 @@ export default function PDFConverterApp() {
               </div>
               <div className="bg-white p-4 rounded-lg shadow-sm">
                 <p className="text-gray-500 text-xs font-medium mb-1">
-                  Converted Size
+                  {t("pdfProcessing.convert.convertedSize")}
                 </p>
                 <p className="text-gray-800 font-bold text-xl">
                   {formatBytes(result.convertedSize)}
@@ -283,7 +266,7 @@ export default function PDFConverterApp() {
             </div>
             <div className="bg-white p-4 rounded-lg shadow-sm">
               <p className="text-gray-500 text-xs font-medium mb-1">
-                Space Saved
+                {t("pdfProcessing.compress.spaceSaved")}
               </p>
               <div className="flex items-baseline">
                 <p className="text-green-600 font-bold text-3xl">
@@ -291,7 +274,7 @@ export default function PDFConverterApp() {
                 </p>
                 <p className="text-gray-500 text-sm ml-2">
                   ({formatBytes(result.originalSize - result.convertedSize)}{" "}
-                  saved)
+                  {t("pdfProcessing.compress.saved")})
                 </p>
               </div>
             </div>

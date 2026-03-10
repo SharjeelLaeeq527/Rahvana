@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import Link from "next/link";
+import { Loader } from "@/components/ui/spinner";
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState("");
@@ -171,7 +172,7 @@ export default function ForgotPasswordPage() {
                   className="flex-1 h-11 rounded-xl border-border hover:bg-muted text-foreground font-medium"
                 >
                   {isSubmitting ? (
-                    <div className="w-4 h-4 border-2 border-slate-400 border-t-transparent rounded-full animate-spin" />
+                    <Loader size="sm" />
                   ) : timer > 0 ? (
                     `Resend in ${timer}s`
                   ) : (
@@ -308,10 +309,7 @@ export default function ForgotPasswordPage() {
                 className="w-full h-12 bg-primary hover:bg-primary/90 text-white font-medium rounded-xl transition-all disabled:opacity-50 shadow-lg shadow-primary/10"
               >
                 {isSubmitting ? (
-                  <div className="flex items-center gap-2">
-                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                    <span>Sending reset link...</span>
-                  </div>
+                  <Loader size="sm" text="Sending reset link..." />
                 ) : (
                   "Send reset link"
                 )}

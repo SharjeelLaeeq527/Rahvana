@@ -6,6 +6,7 @@ import { usePDFStore } from "@/lib/store";
 import { loadPDF } from "@/lib/pdf-utils";
 import { Button } from "@/components/ui/button";
 import { Upload, AlertCircle, FileCheck } from "lucide-react";
+import { Loader } from "@/components/ui/spinner";
 
 let pdfjsLib: typeof import("pdfjs-dist") | null = null;
 
@@ -22,7 +23,10 @@ interface UploadResult {
   totalPages: number;
 }
 
+import { useLanguage } from "@/app/context/LanguageContext";
+
 export function PDFUpload() {
+  const { t } = useLanguage();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<UploadResult | null>(null);
@@ -34,12 +38,12 @@ export function PDFUpload() {
     if (!file) return;
 
     if (!file.name.toLowerCase().endsWith(".pdf")) {
-      setError("Please select a PDF file");
+      setError(t("pdfProcessing.errors.invalidFile"));
       return;
     }
 
     if (file.size > 100 * 1024 * 1024) {
-      setError("File is too large. Maximum size is 100MB");
+      setError(t("pdfProcessing.errors.tooLarge"));
       return;
     }
 
@@ -62,7 +66,7 @@ export function PDFUpload() {
       });
     } catch (error) {
       console.error("Error loading PDF:", error);
-      setError("Error loading PDF file. Please try another file.");
+      setError(t("pdfProcessing.editor.errorLoading"));
     } finally {
       setLoading(false);
     }
@@ -100,10 +104,10 @@ export function PDFUpload() {
     <div className="w-full">
       <div className="bg-primary/90 p-6 md:p-10 text-white rounded-t-2xl">
         <h1 className="text-3xl md:text-5xl font-bold text-center mb-2 md:mb-3">
-          PDF Editor
+          {t("pdfProcessing.editor.title")}
         </h1>
         <p className="text-center text-white/90 text-base md:text-lg">
-          Upload and edit your PDF documents
+          {t("pdfProcessing.editor.uploadSubtitle")}
         </p>
       </div>
 
@@ -111,7 +115,7 @@ export function PDFUpload() {
         {/* File Upload */}
         <div className="mb-6 md:mb-8">
           <label className="block text-sm font-semibold text-gray-700 mb-3">
-            Select PDF File
+            {t("pdfProcessing.compress.selectLabel")}
           </label>
           <input
             ref={fileInputRef}
@@ -138,23 +142,22 @@ export function PDFUpload() {
             {result ? (
               <div>
                 <p className="text-primary/90 font-semibold text-lg mb-1">
-                  PDF Loaded Successfully
+                  {t("pdfProcessing.editor.successUpload")}
                 </p>
                 <p className="text-sm text-gray-500">
-                  {formatBytes(result.originalSize)} • {result.totalPages} page
-                  {result.totalPages !== 1 ? "s" : ""}
+                  {formatBytes(result.originalSize)} • {result.totalPages} {t("pdfProcessing.merge.pages")}
                 </p>
                 <p className="text-xs text-gray-400 mt-2">
-                  Click to upload a different file
+                  {t("pdfProcessing.compress.changeFile")}
                 </p>
               </div>
             ) : (
               <div>
                 <p className="text-gray-700 font-medium mb-1">
-                  Click to upload or drag and drop
+                  {t("pdfProcessing.compress.dropzone")}
                 </p>
                 <p className="text-sm text-gray-500">
-                  PDF files only • Max 100MB
+                  {t("pdfProcessing.compress.pdffilesOnly")}
                 </p>
               </div>
             )}
@@ -169,32 +172,12 @@ export function PDFUpload() {
         >
           {loading ? (
             <>
-              <svg
-                className="animate-spin -ml-1 mr-3 h-6 w-6 text-white"
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-              >
-                <circle
-                  className="opacity-25"
-                  cx="12"
-                  cy="12"
-                  r="10"
-                  stroke="currentColor"
-                  strokeWidth="4"
-                ></circle>
-                <path
-                  className="opacity-75"
-                  fill="currentColor"
-                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                ></path>
-              </svg>
-              Loading PDF...
+              <Loader size="sm" text={t("pdfProcessing.editor.loading")} />
             </>
           ) : (
             <>
               <Upload className="mr-2 h-6 w-6" />
-              Load PDF
+              {t("pdfProcessing.editor.loadBtn")}
             </>
           )}
         </Button>
@@ -218,20 +201,20 @@ export function PDFUpload() {
             <div className="flex items-center text-green-700 mb-4">
               <FileCheck className="h-6 w-6 mr-3" />
               <span className="font-bold text-lg">
-                PDF Loaded Successfully!
+                {t("pdfProcessing.editor.successUpload")}
               </span>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
               <div className="bg-white p-4 rounded-lg shadow-sm">
                 <p className="text-gray-500 text-xs font-medium mb-1">
-                  File Size
+                  {t("pdfProcessing.compress.originalSize")}
                 </p>
                 <p className="text-gray-800 font-bold text-xl">
                   {formatBytes(result.originalSize)}
                 </p>
               </div>
               <div className="bg-white p-4 rounded-lg shadow-sm">
-                <p className="text-gray-500 text-xs font-medium mb-1">Pages</p>
+                <p className="text-gray-500 text-xs font-medium mb-1">{t("pdfProcessing.merge.pages")}</p>
                 <p className="text-gray-800 font-bold text-xl">
                   {result.totalPages}
                 </p>

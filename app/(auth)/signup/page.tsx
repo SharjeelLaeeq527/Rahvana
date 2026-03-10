@@ -8,6 +8,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import Link from "next/link";
+import { Loader } from "@/components/ui/spinner";
+
 
 export default function SignupPage() {
   const [email, setEmail] = useState("");
@@ -32,28 +34,59 @@ export default function SignupPage() {
   // Password strength checker
   useEffect(() => {
     let strength = 0;
-    if (password.length >= 6) strength++;
+
+    // Minimum length
     if (password.length >= 8) strength++;
+
+    // Lowercase
+    if (/[a-z]/.test(password)) strength++;
+
+    // Uppercase
     if (/[A-Z]/.test(password)) strength++;
+
+    // Number
     if (/[0-9]/.test(password)) strength++;
+
+    // Special character
     if (/[^A-Za-z0-9]/.test(password)) strength++;
+
     setPasswordStrength(strength);
   }, [password]);
 
   const getStrengthColor = () => {
-    if (passwordStrength <= 1) return "bg-red-500";
-    if (passwordStrength <= 2) return "bg-orange-500";
-    if (passwordStrength <= 3) return "bg-yellow-500";
-    if (passwordStrength <= 4) return "bg-lime-500";
-    return "bg-green-500";
+    switch (passwordStrength) {
+      case 0:
+      case 1:
+        return "bg-red-500";
+      case 2:
+        return "bg-orange-500";
+      case 3:
+        return "bg-yellow-500";
+      case 4:
+        return "bg-lime-500";
+      case 5:
+        return "bg-green-500";
+      default:
+        return "bg-gray-300";
+    }
   };
 
   const getStrengthText = () => {
-    if (passwordStrength <= 1) return "Weak";
-    if (passwordStrength <= 2) return "Fair";
-    if (passwordStrength <= 3) return "Good";
-    if (passwordStrength <= 4) return "Strong";
-    return "Very Strong";
+    switch (passwordStrength) {
+      case 0:
+      case 1:
+        return "Very Weak";
+      case 2:
+        return "Weak";
+      case 3:
+        return "Fair";
+      case 4:
+        return "Strong";
+      case 5:
+        return "Very Strong";
+      default:
+        return "";
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -78,7 +111,7 @@ export default function SignupPage() {
       if (result.error) {
         if (result.error.message.includes("already exists")) {
           setError(
-            "An account with this email already exists. Please sign in."
+            "An account with this email already exists. Please sign in.",
           );
         } else if (result.error.message.includes("password")) {
           setError("Password is too weak. Please use a stronger password.");
@@ -114,10 +147,7 @@ export default function SignupPage() {
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
-        <div className="flex flex-col items-center gap-4">
-          <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin" />
-          <p className="text-muted-foreground">Loading...</p>
-        </div>
+        <Loader size="md" text="Loading..." />
       </div>
     );
   }
@@ -362,8 +392,8 @@ export default function SignupPage() {
                     confirmPassword && password !== confirmPassword
                       ? "border-red-300 focus:border-red-500"
                       : confirmPassword && password === confirmPassword
-                      ? "border-green-300 focus:border-green-500"
-                      : ""
+                        ? "border-green-300 focus:border-green-500"
+                        : ""
                   }`}
                 />
                 <button
@@ -446,10 +476,7 @@ export default function SignupPage() {
               className="w-full h-12 bg-primary hover:bg-primary/90 text-white font-medium rounded-xl transition-all disabled:opacity-50"
             >
               {isSubmitting ? (
-                <div className="flex items-center gap-2">
-                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                  Creating account...
-                </div>
+                <Loader size="sm" text="Creating account..." />
               ) : (
                 "Create Account"
               )}
@@ -471,22 +498,12 @@ export default function SignupPage() {
 
       {/* Full-screen Loading Overlay */}
       {isSubmitting && (
-        <div className="fixed inset-0 z-9999 flex flex-col items-center justify-center bg-background/60 backdrop-blur-md transition-all duration-300">
-          <div className="relative">
-            <div className="w-20 h-20 border-4 border-primary/20 border-t-primary rounded-full animate-spin" />
-            <div className="absolute inset-0 flex items-center justify-center">
-              <div className="w-10 h-10 border-4 border-primary/10 border-b-primary rounded-full animate-spin-reverse" />
-            </div>
-          </div>
-          <div className="mt-8 flex flex-col items-center gap-3">
-            <h2 className="text-2xl font-bold text-foreground">
-              Creating Account...
-            </h2>
-            <p className="text-muted-foreground animate-pulse text-lg">
-              Setting up your secure workspace
-            </p>
-          </div>
-        </div>
+        <Loader 
+          fullScreen 
+          size="xl" 
+          text="Creating Account..." 
+          subText="Setting up your secure workspace" 
+        />
       )}
     </div>
   );

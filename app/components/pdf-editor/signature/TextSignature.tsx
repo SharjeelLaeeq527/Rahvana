@@ -1,5 +1,6 @@
 "use client";
 import React, { useState, useEffect } from "react";
+import { useLanguage } from "@/app/context/LanguageContext";
 
 type Props = {
   onGenerate: (dataURL: string) => void;
@@ -7,6 +8,7 @@ type Props = {
 };
 
 export default function TextSignature({ onGenerate, closeModal }: Props) {
+  const { t } = useLanguage();
   const [name, setName] = useState("");
   const [selectedFont, setSelectedFont] = useState(0);
   const [, setFontsLoaded] = useState(false);
@@ -40,7 +42,7 @@ export default function TextSignature({ onGenerate, closeModal }: Props) {
 
   const handleGenerate = () => {
     if (!name.trim()) {
-      alert("Please enter your name");
+      alert(t("editor.signature.enterName"));
       return;
     }
 
@@ -81,7 +83,7 @@ export default function TextSignature({ onGenerate, closeModal }: Props) {
       }
     } catch (error) {
       console.error("Error generating signature:", error);
-      alert("Failed to generate signature. Please try again.");
+      alert(t("editor.signature.failed"));
     }
   };
 
@@ -91,7 +93,7 @@ export default function TextSignature({ onGenerate, closeModal }: Props) {
       <div>
         <input
           type="text"
-          placeholder="Type your name"
+          placeholder={t("editor.signature.typePlaceholder")}
           value={name}
           onChange={(e) => setName(e.target.value)}
           className="w-full border-2 border-gray-200 rounded-lg px-4 py-3 text-lg focus:border-blue-500 focus:outline-none transition"
@@ -120,7 +122,7 @@ export default function TextSignature({ onGenerate, closeModal }: Props) {
                 color: selectedFont === index ? "#1E40AF" : "#000000"
               }}
             >
-              {name || "Your Name"}
+              {name || t("editor.signature.preview")}
             </div>
             <div className="text-xs text-gray-500">{font.style}</div>
           </button>
@@ -130,7 +132,7 @@ export default function TextSignature({ onGenerate, closeModal }: Props) {
       {/* Preview Section */}
       {name && (
         <div className="bg-white border-2 border-gray-200 rounded-lg p-6 text-center">
-          <p className="text-xs text-gray-500 mb-3 uppercase tracking-wide">Preview</p>
+          <p className="text-xs text-gray-500 mb-3 uppercase tracking-wide">{t("editor.signature.preview")}</p>
           <div className="bg-gray-50 rounded-lg p-8 border border-gray-100 relative overflow-hidden">
             {/* Bottom indicator line */}
             <div className="absolute bottom-8 left-0 right-0 h-0.5 bg-blue-400" />
@@ -158,14 +160,14 @@ export default function TextSignature({ onGenerate, closeModal }: Props) {
           }}
           className="flex-1 px-4 py-2.5 bg-white text-gray-700 border-2 border-gray-300 rounded-lg hover:bg-gray-50 transition font-semibold"
         >
-          Cancel
+          {t("editor.signature.cancel")}
         </button>
         <button
           onClick={handleGenerate}
           disabled={!name.trim()}
           className="flex-1 px-4 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          Create
+          {t("editor.signature.create")}
         </button>
       </div>
 

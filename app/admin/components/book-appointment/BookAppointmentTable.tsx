@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Loader } from "@/components/ui/spinner";
 import {
   Table,
   TableBody,
@@ -288,7 +289,7 @@ export default function BookAppointmentTable() {
         <CardContent>
           {loading ? (
             <div className="flex justify-center items-center h-64">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+              <Loader size="md" text="Loading appointments..." />
             </div>
           ) : (
             <div className="overflow-x-auto">

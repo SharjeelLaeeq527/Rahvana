@@ -95,11 +95,12 @@ export default function FeedbackButton({
         formData.append("stepKey", feedback.step || pathname);
         formData.append("feedbackType", feedback.category);
         formData.append("description", feedback.description);
-        formData.append("pageUrl", fullPageUrl);        // ← new: full URL
+        formData.append("pageUrl", fullPageUrl);
         
-        if (feedback.attachments[0]) {
-          formData.append("attachment", feedback.attachments[0]);
-        }
+        // Append all attachments
+        feedback.attachments.forEach((file) => {
+          formData.append("attachment", file);
+        });
 
         const response = await fetch("/api/feedback", {
           method: "POST",

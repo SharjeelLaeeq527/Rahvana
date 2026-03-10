@@ -4,23 +4,25 @@
 import React, { useState, useEffect } from "react"
 import NextImage from "next/image"
 import { SignatureImageProcessor } from "@/lib/imageProcessor"
+import { useLanguage } from "@/app/context/LanguageContext"
 
 type Props = {
   onUpload: (dataURL: string) => void
   closeModal: () => void
 }
 
-const colors = [
-  { name: "Black", value: "#000000" },
-  { name: "Blue", value: "#2563eb" },
-  { name: "Red", value: "#dc2626" },
-]
-
 export default function UploadImage({ onUpload, closeModal }: Props) {
+  const { t } = useLanguage()
   const [uploadedImage, setUploadedImage] = useState<string | null>(null)
   const [processedImage, setProcessedImage] = useState<string | null>(null)
   const [isProcessing, setIsProcessing] = useState(false)
   const [selectedColor, setSelectedColor] = useState<string>("#000000")
+
+  const colors = [
+    { name: t("pdfProcessing.editor.signature.black"), value: "#000000" },
+    { name: t("pdfProcessing.editor.signature.blue"), value: "#2563eb" },
+    { name: t("pdfProcessing.editor.signature.red"), value: "#dc2626" },
+  ]
 
   useEffect(() => {
     if (uploadedImage) processUploadedImage()
@@ -36,7 +38,7 @@ export default function UploadImage({ onUpload, closeModal }: Props) {
     const file = e.target.files?.[0]
     if (!file) return
     if (!file.type.startsWith("image/")) {
-      alert("Please upload a valid image file")
+      alert(t("pdfProcessing.errors.invalidFile"))
       return
     }
     const reader = new FileReader()
@@ -65,7 +67,7 @@ export default function UploadImage({ onUpload, closeModal }: Props) {
       processor.destroy()
     } catch (err) {
       console.error(err)
-      alert("Failed to process image")
+      alert(t("pdfProcessing.editor.signature.failed"))
     } finally {
       setIsProcessing(false)
     }
@@ -146,14 +148,14 @@ export default function UploadImage({ onUpload, closeModal }: Props) {
                     d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
                   />
                 </svg>
-                <p className="text-sm">Click to upload signature image</p>
+                <p className="text-sm">{t("pdfProcessing.editor.signature.uploadPlaceholder")}</p>
               </div>
             </label>
           </div>
         ) : (
           <div className="absolute inset-0 flex items-center justify-center p-8">
             {isProcessing ? (
-              <div className="text-blue-600 text-sm">Processing...</div>
+              <div className="text-blue-600 text-sm">{t("pdfProcessing.editor.signature.processing")}</div>
             ) : processedImage ? (
               <NextImage src={processedImage} alt="Processed Signature" fill className="object-contain" unoptimized />
             ) : null}
@@ -165,18 +167,18 @@ export default function UploadImage({ onUpload, closeModal }: Props) {
       <div className="flex justify-end gap-3">
         {processedImage && (
           <button onClick={handleClear} className="px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-lg transition">
-            Clear
+            {t("pdfProcessing.editor.signature.clear")}
           </button>
         )}
         <button onClick={closeModal} className="px-5 py-2 text-sm text-gray-700 font-medium border border-gray-300 rounded-lg hover:bg-gray-50 transition">
-          Cancel
+          {t("pdfProcessing.editor.signature.cancel")}
         </button>
         <button
           onClick={handleCreate}
           disabled={!processedImage || isProcessing}
           className="px-6 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition"
         >
-          Create
+          {t("pdfProcessing.editor.signature.create")}
         </button>
       </div>
     </div>

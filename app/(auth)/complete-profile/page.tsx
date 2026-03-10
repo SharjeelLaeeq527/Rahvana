@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { useAuth } from "@/app/context/AuthContext";
 import CompleteProfileForm from "@/app/components/forms/auth/CompleteProfileForm";
-import { Loader2 } from "lucide-react";
+import { Loader } from "@/components/ui/spinner";
 
 export default function CompleteProfilePage() {
   const router = useRouter();
@@ -21,7 +21,7 @@ export default function CompleteProfilePage() {
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-slate-50">
-        <Loader2 className="h-8 w-8 animate-spin text-slate-900" />
+        <Loader size="md" />
       </div>
     );
   }

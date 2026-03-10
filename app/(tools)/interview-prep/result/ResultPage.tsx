@@ -6,6 +6,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { BookOpen, Info, Shuffle, Zap } from "lucide-react";
 import { InterviewPrepOutput, GeneratedQuestion } from "@/lib/interview-prep";
 import { RapidFireModePage } from "../rapid-fire/RapidFireModePage";
+import { Loader } from "@/components/ui/spinner";
 
 interface ResultPageProps {
   sessionId: string;
@@ -92,10 +93,10 @@ export const ResultPage = ({
   if (loading) {
     return (
       <div className="text-center py-8">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-teal-600 mx-auto"></div>
-        <p className="mt-4 text-slate-600">
-          Generating your interview preparation materials...
-        </p>
+        <Loader
+          size="md"
+          text="Generating your interview preparation materials..."
+        />
       </div>
     );
   }

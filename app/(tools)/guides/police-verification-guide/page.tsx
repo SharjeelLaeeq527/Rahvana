@@ -9,6 +9,7 @@ import WizardInfoPanel, {
 } from "../../../components/guides/WizardInfoPanel";
 import WhatsThisModal from "../../../components/guides/WhatsThisModal";
 import FeedbackButton from "@/app/components/FeedbackButton";
+import { Loader } from "@/components/ui/spinner";
 
 import ProvinceSelectionStep from "./components/ProvinceSelectionStep";
 import RoadmapStep from "../../../components/guides/steps/RoadmapStep";
@@ -358,7 +359,7 @@ export default function PoliceVerificationGuide() {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[#f5f7fa] pt-14">
-        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-primary" />
+        <Loader size="md" />
       </div>
     );
   }

@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useRef, useCallback } from "react"
 import { Crop, Move, Check } from "lucide-react"
+import { useLanguage } from "@/app/context/LanguageContext"
 
 interface CropBox {
   x: number
@@ -23,6 +24,7 @@ export default function CropTool({
   onToggleTilt,
   // onExit,
 }: CropToolProps) {
+  const { t } = useLanguage()
   const [cropBox, setCropBox] = useState<CropBox>({ x: 0, y: 0, width: 100, height: 100 })
   const [isDragging, setIsDragging] = useState(false)
   const [dragType, setDragType] = useState<"move" | "nw" | "ne" | "sw" | "se" | "rotate" | null>(null)
@@ -324,7 +326,7 @@ export default function CropTool({
       onApplyCrop(finalImageData)
     } catch (error) {
       console.error("Crop error:", error)
-      alert("Failed to crop image. Please try again.")
+      alert(t("pdfProcessing.editor.signature.failed"))
     }
   }
 
@@ -332,21 +334,21 @@ export default function CropTool({
     <div className="space-y-8 animate-fade-in max-w-7xl mx-auto">
       <div className="bg-gradient-to-r from-purple-50 to-pink-50 border border-purple-200 rounded-xl p-6 shadow-md">
         <div className="flex items-center justify-between flex-wrap gap-4">
-          <h2 className="text-2xl font-bold text-gray-900">Adjust Your Signature</h2>
+          <h2 className="text-2xl font-bold text-gray-900">{t("pdfProcessing.editor.crop.title")}</h2>
           <div className="flex items-center gap-3">
             <button
               onClick={handleApplyCrop}
               className="px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-semibold transition-all flex items-center gap-2 text-base shadow-md"
             >
               <Crop className="w-5 h-5" />
-              Crop
+              {t("signatureProcessing.crop")}
             </button>
             <button
               onClick={onToggleTilt}
               className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold transition-all flex items-center gap-2 text-base shadow-md"
             >
               <Move className="w-5 h-5" />
-              Tilt
+              {t("pdfProcessing.editor.crop.tilt")}
             </button>
             <button
               onClick={async () => {
@@ -357,7 +359,7 @@ export default function CropTool({
               className="px-6 py-3 bg-green-600 hover:bg-green-700 text-white rounded-lg font-semibold transition-all flex items-center gap-2 text-base shadow-md"
             >
               <Check className="w-5 h-5" />
-              Done
+              {t("signatureProcessing.done")}
             </button>
           </div>
         </div>
@@ -486,7 +488,7 @@ export default function CropTool({
                         d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
                       />
                     </svg>
-                    Rotated {rotation}°
+                    {t("editor.crop.rotated", { degrees: rotation })}
                     <button
                       onClick={(e) => {
                         e.stopPropagation()
@@ -494,7 +496,7 @@ export default function CropTool({
                       }}
                       className="ml-2 text-sm bg-white/20 hover:bg-white/30 px-3 py-1 rounded-md transition font-bold"
                     >
-                      Reset
+                      {t("editor.crop.reset")}
                     </button>
                   </div>
                 )}
@@ -507,7 +509,7 @@ export default function CropTool({
       <div className="flex justify-center">
         <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 text-center max-w-2xl">
           <p className="text-gray-700 font-medium">
-            Drag the corners to adjust the crop area and use the rotation handle at the top
+            {t("editor.crop.tip")}
           </p>
         </div>
       </div>

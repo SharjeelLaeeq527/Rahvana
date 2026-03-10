@@ -1,7 +1,8 @@
 "use client";
 
 import React, { useState, useEffect, useCallback } from "react";
-import { Sparkles, Shield, Globe, Truck } from "lucide-react";
+import Image from "next/image";
+import { Shield, Globe, Truck } from "lucide-react";
 import { Loader } from "@/components/ui/spinner";
 import PortalCard from "./components/PortalCard";
 import CredentialFormModal from "./components/CredentialFormModal";
@@ -44,24 +45,48 @@ const portals: {
     title: "USCIS",
     description:
       "U.S. Citizenship and Immigration Services — track cases, forms, and account.",
-    url: "https://my.uscis.gov",
-    icon: <Shield size={28} />,
+    url: "https://myaccount.uscis.gov/sign-in",
+    icon: (
+      <Image
+        src="/uscis.png"
+        alt="USCIS"
+        width={64}
+        height={64}
+        className="object-contain"
+      />
+    ),
   },
   {
     type: "NVC",
     title: "NVC (CEAC)",
     description:
       "National Visa Center — manage documents, affidavits, and case status.",
-    url: "https://ceac.state.gov/ceac",
-    icon: <Globe size={28} />,
+    url: "https://ceac.state.gov/iv/login.aspx",
+    icon: (
+      <Image
+        src="/ceac.png"
+        alt="CEAC"
+        width={64}
+        height={64}
+        className="object-contain"
+      />
+    ),
   },
   {
     type: "COURIER",
     title: "Courier Service",
     description:
       "Track passport delivery, schedule pickups, and manage courier logistics.",
-    url: "https://www.ustraveldocs.com",
-    icon: <Truck size={28} />,
+    url: "https://atlasauth.b2clogin.com/f50ebcfb-eadd-41d8-9099-a7049d073f5c/b2c_1a_atoproduction_atlas_susi/oauth2/v2.0/authorize?client_id=607d08d6-b63b-4735-ad82-05dfcff7efa4&redirect_uri=https%3A%2F%2Fwww.usvisascheduling.com%2Fsignin-aad-b2c_1&response_type=code%20id_token&scope=openid&state=OpenIdConnect.AuthenticationProperties%3D2K23hD4xKzVe12jbVwjyqaABq8BvO9XR4dhxyvhM7SW5r2pLF5Rw4GpLbGg1SrhKGKcppBq4KNWDndIYuM863mlKn1fzE2KBfWVp3CNydelGJjAMx8mKVWAGq8ejU1j_os42RN93Egg5pqqgb_DUyiyluHJiUekQEK3ejCf2cGnJox-DigSRszd4RuUOOihD0Y6c1Hpe6GOOk41Y0gIIquzA9zzqTcrjWjMwx0-VXDCqUcH2fmr6qPDD75ogQTvjDKt9bnqWuV4cvfGquOOyqo0gAVtBE3cfF2JUvI4eP60Ktla_mMBiyIaYOdRC6Nkw3gs-5mKXMz-0ZBpSs8plZLBPAXyRKtKkFntQdtGUjz3OpzjMFUQySSZYlg4KAqk9m6_QhSee5b0ZmVV7hf6r2ocvBlfdHQIJKpjRz6eLgJDzmfKbZWFYxce-gPpLxmcwxOC4za80kv0torvGvZAyDyeY_RONVFzmYFXyMQsGHtua9Ll6wHxDN4ZPF9lEPTsThtgrrfydnrVxWu-BWZVaGzwovnUp3hQzNoa3c8jtS11JAtMC780rjr2dNDAv9EpHWr6ISfsO-Syu-4IdVGizjsHkwqQRLNUZoqKW7YtlTUkWn80R4tDfH3WkcMLRS-4D&response_mode=form_post&nonce=639086504989774135.NDYwYmEzMGMtYjI4Yi00MDBiLTg5ZGItZmU0MTM1ZjVhYTMyNTM0YWI0ZDAtNzI5NC00OGMxLWIxYjctNjZlMzcxYjM3ODk5&ui_locales=en-US&x-client-SKU=ID_NET472&x-client-ver=6.35.0.0",
+    icon: (
+      <Image
+        src="/ceac.png"
+        alt="CEAC"
+        width={64}
+        height={64}
+        className="object-contain"
+      />
+    ),
   },
 ];
 
@@ -289,16 +314,8 @@ const PortalWallet: React.FC = () => {
       <div className="max-w-275 mx-auto px-6 py-10">
         {/* Header */}
         <div className="text-center mb-10">
-          <div className="flex items-center justify-center gap-2 mb-2">
-            <Sparkles size={20} className="text-[#32e0c4]" />
-            <span className="text-[13px] font-semibold text-[#0d7377] uppercase tracking-wider">
-              Portal Wallet
-            </span>
-          </div>
-          <h1
-            className="text-[28px] font-bold text-[#0a1128] mb-2"
-          >
-            Your Secure Credential Vault
+          <h1 className="text-[28px] font-bold text-[#0a1128] mb-2">
+            Portal Wallet - Your Secure Credential Vault
           </h1>
           <p className="text-[15px] text-[#67737e] max-w-lg mx-auto">
             Store, manage, and quickly access your immigration portal logins —
@@ -318,26 +335,16 @@ const PortalWallet: React.FC = () => {
                 icon={portal.icon}
                 portalUrl={portal.url}
                 hasCredentials={!!cred}
-                onAdd={() =>
-                  setFormModal({
-                    open: true,
-                    portalType: portal.type,
-                    mode: "add",
-                  })
-                }
-                onView={() =>
-                  setViewModal({ open: true, portalType: portal.type })
-                }
-                onEdit={() =>
-                  setFormModal({
-                    open: true,
-                    portalType: portal.type,
-                    mode: "edit",
-                  })
-                }
-                onDelete={() => {
-                  setDeletePortal(portal.type);
-                  setShowConfirmation(true);
+                onAction={() => {
+                  if (cred) {
+                    setViewModal({ open: true, portalType: portal.type });
+                  } else {
+                    setFormModal({
+                      open: true,
+                      portalType: portal.type,
+                      mode: "add",
+                    });
+                  }
                 }}
               />
             );
@@ -362,11 +369,14 @@ const PortalWallet: React.FC = () => {
         onClose={() => setFormModal((prev) => ({ ...prev, open: false }))}
         portalType={formModal.portalType}
         mode={formModal.mode}
+        icon={portals.find((p) => p.type === formModal.portalType)?.icon}
         initialData={
           formModal.mode === "edit" && formCredential
             ? {
                 username: formCredential.username,
                 password: "",
+                nvcCaseNumber: formCredential.nvc_case_number || "",
+                nvcInvoiceId: formCredential.nvc_invoice_id || "",
                 securityQuestions: formCredential.security_questions.map(
                   (sq) => ({
                     id: sq.id,
@@ -387,10 +397,26 @@ const PortalWallet: React.FC = () => {
         onClose={() => setViewModal((prev) => ({ ...prev, open: false }))}
         portalType={viewModal.portalType}
         credential={activeCredential || null}
+        icon={portals.find((p) => p.type === viewModal.portalType)?.icon}
         onRevealPassword={handleRevealPassword}
         onRevealAnswer={handleRevealAnswer}
         onRevealCaseNumber={handleRevealNVCCaseNumber}
         onRevealInvoiceId={handleRevealNVCInvoiceID}
+        onEdit={() => {
+          setViewModal({ open: false, portalType: viewModal.portalType });
+        
+          setFormModal({
+            open: true,
+            portalType: viewModal.portalType,
+            mode: "edit",
+          });
+        }}
+        onDelete={() => {
+          setViewModal({ open: false, portalType: viewModal.portalType });
+        
+          setDeletePortal(viewModal.portalType);
+          setShowConfirmation(true);
+        }}
       />
 
       {/* Confirmation Modal */}

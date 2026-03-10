@@ -120,9 +120,7 @@ const UserDashboard = () => {
     },
     {
       title: "Expert Case Review",
-      icon: (
-        <Users className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
-      ),
+      icon: <Users className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />,
       status: "coming-soon" as const,
       description:
         "Human review of your documents + a tailored improvement plan.",
@@ -145,7 +143,8 @@ const UserDashboard = () => {
     },
     {
       title: "Explore all services",
-      subtitle: "View our services for preparing yourself for immigration process",
+      subtitle:
+        "View our services for preparing yourself for immigration process",
       icon: <FileText size={18} />,
       href: "/services",
     },
@@ -156,11 +155,10 @@ const UserDashboard = () => {
       <div className="max-w-275 mx-auto px-6 py-10">
         {/* Header */}
         <div className="mb-8">
-          <div className="flex items-center gap-2 mb-1">
-            <Sparkles size={20} className="text-[#32e0c4]" />
-            <span className="text-[13px] font-semibold text-[#0d7377] uppercase tracking-wider">
+          <div className="flex justify-center mb-2">
+            <h2 className="text-[28px] font-bold text-[#0a1128] mb-2">
               Dashboard
-            </span>
+            </h2>
           </div>
 
           <h1 className="text-[28px] font-bold text-[#0a1128] mb-2">
@@ -245,7 +243,8 @@ const UserDashboard = () => {
               </div>
 
               <p className="text-[12px] text-[#67737e] mb-4 leading-relaxed">
-                Explore how Rahvana helps you to understand any step of your immigration process.
+                Explore how Rahvana helps you to understand any step of your
+                immigration process.
               </p>
 
               <button

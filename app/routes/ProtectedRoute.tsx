@@ -4,6 +4,7 @@
 import { useAuth } from "@/app/context/AuthContext";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
+import { Loader } from "@/components/ui/spinner";
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -27,10 +28,7 @@ export default function ProtectedRoute({
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-linear-to-br from-slate-50 to-slate-100">
-        <div className="flex flex-col items-center gap-4">
-          <div className="w-10 h-10 border-4 border-slate-900 border-t-transparent rounded-full animate-spin" />
-          <p className="text-slate-600 font-medium">Loading...</p>
-        </div>
+        <Loader size="md" text="Loading..." />
       </div>
     );
   }
@@ -39,10 +37,7 @@ export default function ProtectedRoute({
   if (!user) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-linear-to-br from-slate-50 to-slate-100">
-        <div className="flex flex-col items-center gap-4">
-          <div className="w-10 h-10 border-4 border-slate-900 border-t-transparent rounded-full animate-spin" />
-          <p className="text-slate-600 font-medium">Redirecting to login...</p>
-        </div>
+        <Loader size="md" text="Redirecting to login..." />
       </div>
     );
   }

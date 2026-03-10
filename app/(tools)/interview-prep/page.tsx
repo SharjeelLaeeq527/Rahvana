@@ -20,6 +20,8 @@ import {
 
 import { useRouter } from "next/navigation";
 import { ResultPage } from "./result/ResultPage";
+import { Loader } from "@/components/ui/spinner";
+
 import { InterviewPrepOutput } from "../../../lib/interview-prep/types";
 
 import CountryAutocomplete from "@/app/components/shared/CountryAutoComplete";
@@ -1816,11 +1818,7 @@ export default function InterviewPreparation() {
     if (!questionnaireData) {
       return (
         <div className="flex flex-col items-center justify-center py-12 space-y-4  mx-2">
-          <div className="w-12 h-12 border-4 border-teal-200 border-t-teal-600 rounded-full animate-spin"></div>
-          <p className="text-lg font-medium text-slate-600 animate-pulse">
-            Loading...
-            {/* questionnaire... */}
-          </p>
+          <Loader size="md" />
         </div>
       );
     }
@@ -2106,10 +2104,7 @@ export default function InterviewPreparation() {
       <Card className="p-6 shadow-lg">
         {loading ? (
           <div className="flex flex-col items-center justify-center py-12 space-y-4">
-            <div className="w-12 h-12 border-4 border-teal-200 border-t-teal-600 rounded-full animate-spin"></div>
-            <p className="text-lg font-medium text-slate-600 animate-pulse">
-              Loading...
-            </p>
+            <Loader size="md" />
           </div>
         ) : (
           renderStep()

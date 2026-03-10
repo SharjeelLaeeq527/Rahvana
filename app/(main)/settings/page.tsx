@@ -10,6 +10,7 @@ import { useAuth } from "@/app/context/AuthContext";
 import { useRouter } from "next/navigation";
 import { ConfirmationModal } from "@/app/components/shared/ConfirmationModal";
 import { useLanguage } from "@/app/context/LanguageContext";
+import { Loader } from "@/components/ui/spinner";
 
 export default function SettingsPage() {
   const { t } = useLanguage();
@@ -35,6 +36,7 @@ export default function SettingsPage() {
   const [message, setMessage] = useState("");
   const [profile, setProfile] = useState<{ mfa_enabled: boolean } | null>(null);
   const [deleteAccountModalOpen, setDeleteAccountModalOpen] = useState(false);
+  const [confirmSignOutOpen, setConfirmSignOutOpen] = useState(false);
 
   // Track if we've already fetched for this user
   const hasFetchedRef = useRef<string | null>(null);
@@ -218,10 +220,7 @@ export default function SettingsPage() {
   if (isLoading || loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-linear-to-br from-slate-50 to-slate-100 p-4">
-        <div className="text-center">
-          <div className="inline-block animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-slate-900 mb-4"></div>
-          <p className="text-slate-700">{t("pages.settings.loading")}</p>
-        </div>
+        <Loader size="lg" text={t("pages.settings.loading")} />
       </div>
     );
   }
@@ -424,8 +423,8 @@ export default function SettingsPage() {
                   </p>
                   <Button
                     variant="outline"
-                    className="w-full sm:w-auto border-red-300 text-red-700 hover:bg-red-50"
-                    onClick={handleSignOut}
+                    className="w-full sm:w-auto border-red-300 text-red-700 hover:bg-red-50 cursor-pointer"
+                    onClick={() => setConfirmSignOutOpen(true)}
                   >
                     {t("pages.settings.security.signOutLabel")}
                   </Button>
@@ -470,6 +469,19 @@ export default function SettingsPage() {
         confirmText={t("pages.settings.deleteModal.confirm")}
         onConfirm={confirmDeleteAccount}
       />
+
+      <ConfirmationModal
+              open={confirmSignOutOpen}
+              onOpenChange={setConfirmSignOutOpen}
+              title="Sign Out?"
+              description="Are you sure you want to sign out? You will need to log in again to access your account."
+              cancelText="Cancel"
+              confirmText="Sign Out"
+              onConfirm={() => {
+                handleSignOut(); // Sign out
+                setConfirmSignOutOpen(false);
+              }}
+            />
     </div>
   );
 }
