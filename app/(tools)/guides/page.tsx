@@ -650,7 +650,7 @@ function GuideCard({ guide, index }: { guide: Guide; index: number }) {
             {guide.category}
           </span>
         </div>
-        <p className="text-muted-foreground dark:text-white text-sm leading-relaxed mb-6 grow">
+        <p className="text-slate-900 dark:text-white text-sm leading-relaxed mb-6 grow">
           {guide.description}
         </p>
       </div>

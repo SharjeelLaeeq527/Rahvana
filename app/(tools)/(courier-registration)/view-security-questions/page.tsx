@@ -65,7 +65,7 @@ export default function SecurityQuestionsPreviewPage() {
     }
   }, [user]);
 
-  if (authLoading || (!user && isLoading)) {
+  if (authLoading || isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-slate-50">
         <div className="flex flex-col items-center gap-4">
@@ -111,7 +111,7 @@ export default function SecurityQuestionsPreviewPage() {
           </p>
         </div>
 
-        {!data && !isLoading ? (
+        {!data ? (
           <Card className="border-none shadow-xl rounded-[2.5rem] bg-white overflow-hidden text-center py-12">
             <CardContent className="space-y-6">
               <div className="flex justify-center">
@@ -131,7 +131,7 @@ export default function SecurityQuestionsPreviewPage() {
               </div>
               <Button
                 onClick={() => router.push("/courier-registration")}
-                className="rounded-2xl px-8 py-6 h-auto font-black shadow-lg"
+                className="rounded-2xl px-8 py-6 h-auto font-semibold"
               >
                 {t("pages.courierRegistration.securityPreview.noData.button")}{" "}
                 <ChevronRight size={18} />
@@ -167,7 +167,13 @@ export default function SecurityQuestionsPreviewPage() {
                     className="rounded-2xl border-gray-200 hover:bg-white hover:border-primary transition-all font-bold gap-2 w-full sm:w-auto justify-center h-11"
                   >
                     {showAnswers ? <EyeOff size={16} /> : <Eye size={16} />}
-                    {showAnswers ? t("pages.courierRegistration.securityPreview.vault.mask") : t("pages.courierRegistration.securityPreview.vault.reveal")}{" "}
+                    {showAnswers
+                      ? t(
+                          "pages.courierRegistration.securityPreview.vault.mask",
+                        )
+                      : t(
+                          "pages.courierRegistration.securityPreview.vault.reveal",
+                        )}{" "}
                     {t("pages.courierRegistration.securityPreview.vault.data")}
                   </Button>
                 </div>
@@ -184,7 +190,10 @@ export default function SecurityQuestionsPreviewPage() {
                       )}
                     </Label>
                     <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100 font-mono text-base sm:text-lg font-bold text-gray-800 break-all">
-                      {data?.portal_username || t("pages.courierRegistration.securityPreview.vault.notSet")}
+                      {data?.portal_username ||
+                        t(
+                          "pages.courierRegistration.securityPreview.vault.notSet",
+                        )}
                     </div>
                   </div>
                 </div>
@@ -208,7 +217,10 @@ export default function SecurityQuestionsPreviewPage() {
                       </div>
                       <div className="space-y-3 pl-0 sm:pl-9">
                         <p className="text-gray-900 font-bold text-base sm:text-lg leading-tight">
-                          {item.q || t("pages.courierRegistration.securityPreview.vault.noQuestion")}
+                          {item.q ||
+                            t(
+                              "pages.courierRegistration.securityPreview.vault.noQuestion",
+                            )}
                         </p>
                         <div className="p-4 bg-primary/2 rounded-2xl border border-primary/5 font-mono text-sm sm:text-base font-bold text-primary transition-all">
                           {showAnswers ? (

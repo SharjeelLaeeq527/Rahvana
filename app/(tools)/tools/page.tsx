@@ -37,7 +37,7 @@ type ToolCategory =
   | "Tracking"
   | "Docs & PDFs"
   | "Forms & Automation";
-  // | "Storage & Organization";
+// | "Storage & Organization";
 
 interface Tool {
   id: string;
@@ -299,7 +299,8 @@ export default function ToolsPage() {
             {t("toolsPage.heroTitle") || "Create. Check. Comply."}
           </h1>
           <p className="text-muted-foreground text-base md:text-lg max-w-2xl mx-auto animate-fade-up [animation-delay:100ms]">
-            {t("toolsPage.heroDescription") || "A suite of powerful tools designed to simplify complex processes and boost your productivity."}
+            {t("toolsPage.heroDescription") ||
+              "A suite of powerful tools designed to simplify complex processes and boost your productivity."}
           </p>
         </section>
 
@@ -341,7 +342,8 @@ export default function ToolsPage() {
               data-more-button="true"
               className="px-4 py-2.5 text-sm font-medium whitespace-nowrap border flex items-center gap-1"
             >
-              {t("toolsPage.more") || "More"} <ChevronDown className="w-4 h-4 ml-1" />
+              {t("toolsPage.more") || "More"}{" "}
+              <ChevronDown className="w-4 h-4 ml-1" />
             </div>
           </div>
 
@@ -371,7 +373,8 @@ export default function ToolsPage() {
                         : "bg-card text-muted-foreground border-border hover:border-primary hover:bg-primary/5 hover:text-primary"
                     }`}
                   >
-                    {t("toolsPage.more") || "More"} <ChevronDown className="w-4 h-4 ml-1" />
+                    {t("toolsPage.more") || "More"}{" "}
+                    <ChevronDown className="w-4 h-4 ml-1" />
                   </button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="start" className="w-[200px]">
@@ -402,7 +405,8 @@ export default function ToolsPage() {
             ))
           ) : (
             <div className="col-span-full text-center py-12 text-muted-foreground">
-              {t("toolsPage.noToolsFound") || "No tools found matching your search."}
+              {t("toolsPage.noToolsFound") ||
+                "No tools found matching your search."}
             </div>
           )}
         </div>
@@ -533,7 +537,7 @@ function ToolCard({ tool, index }: { tool: Tool; index: number }) {
             {t(`toolsPage.categories.${tool.category}`) || tool.category}
           </span>
         </div>
-        <p className="text-muted-foreground dark:text-white text-sm leading-relaxed mb-6 grow">
+        <p className="text-slate-900 dark:text-white text-sm leading-relaxed mb-6 grow">
           {t(`toolsPage.toolsItems.${tool.id}.desc`) || tool.description}
         </p>
       </div>
@@ -546,7 +550,8 @@ function ToolCard({ tool, index }: { tool: Tool; index: number }) {
           <span
             className={`text-sm font-semibold flex items-center gap-1.5 group-hover:underline decoration-2 underline-offset-2 ${styles.link}`}
           >
-            {t("toolsPage.openTool") || "Open Tool"} <ArrowRight className="w-4 h-4" />
+            {t("toolsPage.openTool") || "Open Tool"}{" "}
+            <ArrowRight className="w-4 h-4" />
           </span>
         ) : (
           <span className="text-sm font-semibold text-muted-foreground/50 flex items-center gap-1.5 cursor-not-allowed">
