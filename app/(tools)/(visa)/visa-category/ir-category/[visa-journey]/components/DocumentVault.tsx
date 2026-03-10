@@ -1,9 +1,10 @@
 import React from "react";
-import { roadmapData } from "@/data/roadmap";
 import { WizardState } from "@/app/(main)/dashboard/hooks/useWizard";
 import { useLanguage } from "@/app/context/LanguageContext";
 
 interface DocumentVaultProps {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  roadmapData: any;
   isOpen: boolean;
   onClose: () => void;
   state: WizardState;
@@ -14,6 +15,7 @@ interface DocumentVaultProps {
 }
 
 export function DocumentVault({
+  roadmapData,
   isOpen,
   onClose,
   state,
@@ -78,7 +80,7 @@ export function DocumentVault({
         {/* Body */}
         <div className="p-4 md:p-6 overflow-y-auto grow bg-slate-50/30">
           <div className="space-y-4">
-            {roadmapData.documents.map((doc) => {
+            {roadmapData?.documents?.map((doc: string) => {
               const isChecked = state.documentChecklist[doc] || false;
               const upload = state.docUploads[doc];
               const note = state.notes[doc] || "";

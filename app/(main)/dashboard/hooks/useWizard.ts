@@ -1,11 +1,11 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { roadmapData } from '../../../../data/roadmap';
 import {
   loadJourneyProgress,
   saveJourneyProgress,
   deleteJourneyProgress,
   recordToWizardState,
 } from '@/lib/journey/journeyProgressService';
+import { RoadmapData, RoadmapStep } from '@/app/(tools)/(visa)/visa-category/ir-category/[visa-journey]/components/types';
 
 export interface WizardState {
   currentStage: number;
@@ -40,10 +40,12 @@ interface UseWizardOptions {
   userId?: string | null;
   /** Journey ID (e.g., 'ir1') */
   journeyId?: string;
+  /** Dynamic roadmap data */
+  roadmapData?: RoadmapData | null;
 }
 
 export function useWizard(options: UseWizardOptions = {}) {
-  const { userId, journeyId = 'ir1' } = options;
+  const { userId, journeyId = 'ir1', roadmapData } = options;
 
   const [state, setState] = useState<WizardState>(DEFAULT_STATE);
   const [isLoaded, setIsLoaded] = useState(false);
@@ -108,6 +110,7 @@ export function useWizard(options: UseWizardOptions = {}) {
   // ─── Normalize State After Load ───────────────────────────────────────────
 
   const normalizeState = useCallback(() => {
+    if (!roadmapData) return;
     setState(prev => {
       let { currentStage, currentStep } = prev;
 
@@ -117,13 +120,15 @@ export function useWizard(options: UseWizardOptions = {}) {
       }
 
       const stage = roadmapData.stages[currentStage];
+      if (!stage) return prev;
 
       if (currentStep === null || currentStep < 0 || currentStep >= stage.steps.length) {
-        const firstIncomplete = stage.steps.findIndex(s => !prev.completedSteps.has(s.id));
+        const firstIncomplete = stage.steps.findIndex((s: RoadmapStep) => !prev.completedSteps.has(s.id));
         currentStep = firstIncomplete === -1 ? 0 : firstIncomplete;
       }
 
-      const stepId = stage.steps[currentStep]?.id;
+      const validStepIndex = currentStep === null ? 0 : currentStep;
+      const stepId = stage.steps[validStepIndex]?.id;
       const newCollapsed = { ...prev.collapsedSteps };
       if (stepId) {
         newCollapsed[stepId] = false;
@@ -131,13 +136,13 @@ export function useWizard(options: UseWizardOptions = {}) {
 
       return { ...prev, currentStage, currentStep, collapsedSteps: newCollapsed };
     });
-  }, []);
+  }, [roadmapData]);
 
   useEffect(() => {
-    if (isLoaded) {
+    if (isLoaded && roadmapData) {
       normalizeState();
     }
-  }, [isLoaded, normalizeState]);
+  }, [isLoaded, roadmapData, normalizeState]);
 
   // ─── Auto-Save on State Change ────────────────────────────────────────────
 
@@ -169,13 +174,16 @@ export function useWizard(options: UseWizardOptions = {}) {
 
   const actions = {
     setStage: (idx: number) => {
+      if (!roadmapData) return;
       setState(prev => ({ ...prev, currentStage: idx, currentStep: null }));
       setTimeout(normalizeState, 0);
     },
 
     setCurrentStep: (idx: number) => {
+      if (!roadmapData) return;
       setState(prev => {
         const stage = roadmapData.stages[prev.currentStage];
+        if (!stage) return prev;
         const step = stage.steps[idx];
         const newCollapsed = { ...prev.collapsedSteps };
         if (step) {
@@ -186,6 +194,7 @@ export function useWizard(options: UseWizardOptions = {}) {
     },
 
     toggleComplete: (stepId: string) => {
+      if (!roadmapData) return;
       setState(prev => {
         const newCompleted = new Set(prev.completedSteps);
         const newCollapsed = { ...prev.collapsedSteps };
@@ -199,11 +208,13 @@ export function useWizard(options: UseWizardOptions = {}) {
           newCollapsed[stepId] = true;
 
           const stage = roadmapData.stages[prev.currentStage];
-          const currentStepId = stage.steps[prev.currentStep ?? 0]?.id;
-          if (currentStepId === stepId) {
-            const nextIdx = stage.steps.findIndex(s => !newCompleted.has(s.id));
-            if (nextIdx !== -1) {
-              newStepIdx = nextIdx;
+          if (stage) {
+            const currentStepId = stage.steps[prev.currentStep ?? 0]?.id;
+            if (currentStepId === stepId) {
+              const nextIdx = stage.steps.findIndex((s: RoadmapStep) => !newCompleted.has(s.id));
+              if (nextIdx !== -1) {
+                newStepIdx = nextIdx;
+              }
             }
           }
         }

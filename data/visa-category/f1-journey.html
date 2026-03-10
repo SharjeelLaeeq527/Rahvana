@@ -1,0 +1,1140 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>F-1 Student Visa Journey (Pakistan → U.S.) • Rahvana</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+  <style>
+    :root{
+      --bg:#f6f8fb;
+      --surface:#ffffff;
+      --text:#0b1220;
+      --muted:#4b5563;
+      --muted2:#6b7280;
+      --border:#e6edf5;
+      --border2:#d7e2ef;
+      --shadow:0 10px 28px rgba(16,24,40,.08);
+      --shadow2:0 8px 18px rgba(16,24,40,.06);
+
+      --brand:#0f766e;
+      --brand2:#0b6b64;
+      --brandSoft:rgba(15,118,110,.10);
+      --brandSoft2:rgba(15,118,110,.16);
+
+      --blue:#2563eb;
+      --violet:#7c3aed;
+      --green:#16a34a;
+      --amber:#f59e0b;
+      --rose:#e11d48;
+      --indigo:#4f46e5;
+
+      --successBg:#ecfdf5;
+      --successBd:#bbf7d0;
+      --successTx:#065f46;
+      --infoBg:#eff6ff;
+      --infoBd:#bfdbfe;
+      --infoTx:#1e40af;
+      --warnBg:#fffbeb;
+      --warnBd:#fde68a;
+      --warnTx:#92400e;
+
+      --radius:14px;
+      --radius2:18px;
+      --container:1120px;
+      --navH:72px;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{margin:0;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;color:var(--text);background:var(--bg)}
+    a{color:inherit;text-decoration:none}
+    button{font-family:inherit}
+    .wrap{width:min(var(--container),calc(100% - 48px));margin:0 auto}
+    :focus-visible{outline:2px solid var(--brand);outline-offset:2px;border-radius:4px}
+
+    /* ── Topbar ── */
+    .topbar{height:var(--navH);background:var(--surface);border-bottom:1px solid var(--border);box-shadow:0 2px 10px rgba(16,24,40,.04);position:sticky;top:0;z-index:50}
+    .topbar .inner{height:100%;display:flex;align-items:center;justify-content:space-between;gap:18px}
+    .brand{display:flex;align-items:center;gap:10px;font-weight:800;letter-spacing:-0.02em}
+    .brand svg{width:32px;height:32px}
+    .nav{display:flex;align-items:center;gap:22px;color:var(--muted);font-size:13px;font-weight:500;white-space:nowrap}
+    .nav .dd{display:flex;align-items:center;gap:6px;padding:10px 6px;border-radius:10px;cursor:pointer}
+    .nav .dd:hover,.nav .link:hover{background:#f3f6fb;color:var(--text)}
+    .nav .link{padding:10px 6px;border-radius:10px;cursor:pointer}
+    .btn{display:inline-flex;align-items:center;justify-content:center;gap:10px;height:40px;padding:0 16px;border-radius:12px;border:1px solid var(--border2);background:var(--surface);color:var(--text);font-weight:700;font-size:13px;box-shadow:0 6px 16px rgba(16,24,40,.06);cursor:pointer;transition:box-shadow .15s,transform .1s}
+    .btn:hover{box-shadow:var(--shadow2);transform:translateY(-1px)}
+    .btn:active{transform:translateY(0)}
+    .btn.primary{background:var(--brand);border-color:rgba(15,118,110,.18);color:#fff;box-shadow:0 10px 22px rgba(15,118,110,.22)}
+    .btn.primary:hover{box-shadow:0 12px 26px rgba(15,118,110,.28)}
+
+    /* ── Hero ── */
+    .hero{padding:36px 0 6px}
+    .hero h1{margin:0;font-size:40px;letter-spacing:-0.03em;line-height:1.1}
+    .hero p{margin:10px 0 0;color:var(--muted);font-size:14px;line-height:1.6;max-width:76ch}
+    .disclaimer{
+      margin:12px 0 0;padding:10px 14px;
+      background:var(--warnBg);border:1px solid var(--warnBd);
+      border-radius:10px;color:var(--warnTx);
+      font-size:12px;line-height:1.6;max-width:76ch;
+    }
+    .disclaimer strong{font-weight:800}
+
+    /* ── Stages ── */
+    .stages{padding:20px 0 6px}
+    .stagesHead{display:flex;align-items:center;gap:12px;color:var(--text);font-weight:800;margin-bottom:14px}
+    .stagesHead::before{content:"";width:3px;height:22px;border-radius:3px;background:var(--brand)}
+    /* scrollable row that adapts to any N */
+    .stageRow{
+      display:flex;gap:10px;align-items:stretch;
+      overflow-x:auto;padding-bottom:6px;
+      scrollbar-width:thin;scrollbar-color:var(--border2) transparent;
+    }
+    .stageRow::-webkit-scrollbar{height:4px}
+    .stageRow::-webkit-scrollbar-track{background:transparent}
+    .stageRow::-webkit-scrollbar-thumb{background:var(--border2);border-radius:4px}
+    .stageCard{
+      flex:0 0 auto;width:clamp(148px,15vw,175px);
+      background:var(--surface);border:1px solid var(--border);
+      border-radius:14px;padding:13px;
+      box-shadow:0 8px 16px rgba(16,24,40,.06);
+    }
+    .stageCard .icon{width:34px;height:34px;border-radius:10px;display:grid;place-items:center;margin-bottom:10px;border:1px solid var(--border);background:#fbfdff}
+    .stageCard .label{font-size:10px;font-weight:800;color:var(--muted2);letter-spacing:.08em}
+    .stageCard .name{margin-top:3px;font-weight:800;font-size:12px;line-height:1.3}
+    .stageCard .time{display:flex;align-items:center;gap:6px;margin-top:12px;color:var(--muted2);font-size:11px;font-weight:600}
+    .stageCard .time svg{width:13px;height:13px;flex:0 0 13px}
+    .arrow{width:18px;display:grid;place-items:center;color:#b7c4d6;flex:0 0 18px}
+    .arrow svg{width:14px;height:14px}
+
+    /* ── Progress strip ── */
+    .progressStrip{padding:18px 0 8px}
+    .progressTop{display:flex;align-items:center;justify-content:space-between;gap:14px;margin-bottom:10px}
+    .progressTitle{color:#64748b;font-weight:900;font-size:11px;letter-spacing:.10em}
+    .progressRight{display:flex;align-items:center;gap:12px}
+    .progressPct{color:var(--brand);font-weight:900;font-size:12px}
+    .docVault{height:34px;padding:0 14px;border-radius:10px;border:1px solid var(--border2);background:var(--surface);box-shadow:0 6px 14px rgba(16,24,40,.05);font-weight:800;font-size:12px;display:inline-flex;align-items:center;gap:10px;cursor:pointer;font-family:inherit;transition:box-shadow .15s}
+    .docVault:hover{box-shadow:var(--shadow2)}
+    .docVault svg{width:16px;height:16px;color:var(--amber)}
+    .stripLine{height:8px;border-radius:999px;background:#ecf2f9;border:1px solid var(--border);overflow:hidden}
+    .stripFill{height:100%;width:0%;background:linear-gradient(90deg,var(--brand),rgba(15,118,110,.65));border-radius:999px;transition:width .4s ease}
+
+    /* ── Main shell ── */
+    .main{padding:10px 0 36px}
+    .shell{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius2);box-shadow:var(--shadow);overflow:hidden}
+    .grid{display:grid;grid-template-columns:310px 1fr;min-height:560px}
+
+    /* ── Sidebar ── */
+    .side{border-right:1px solid var(--border);background:#fbfdff}
+    .sideInner{padding:18px 16px;display:flex;flex-direction:column;gap:12px}
+    .sideHead{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
+    .sideTitle{display:flex;flex-direction:column;gap:4px}
+    .sideTitle .k{font-size:10px;font-weight:900;letter-spacing:.12em;color:#94a3b8}
+    .sideTitle .s{font-size:12px;font-weight:600;color:var(--muted)}
+    .sideScroll{overflow:auto;padding-right:6px;max-height:calc(100vh - 260px)}
+    .stageGroup{border:1px solid var(--border);border-radius:14px;background:var(--surface);box-shadow:0 6px 14px rgba(16,24,40,.05);margin-bottom:12px;overflow:hidden}
+    .stageHdr{padding:12px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;user-select:none;background:#fff;transition:background .12s}
+    .stageHdr:hover{background:#f8fbff}
+    .stageHdr .left{display:flex;flex-direction:column;gap:5px}
+    .stageHdr .tag{font-size:10px;font-weight:900;letter-spacing:.10em;color:#94a3b8}
+    .stageHdr .name{font-size:12px;font-weight:900}
+    .chev{width:22px;height:22px;border-radius:8px;display:grid;place-items:center;border:1px solid var(--border);background:#f8fbff;color:#64748b;transition:transform .2s;flex:0 0 22px}
+    .chev svg{width:14px;height:14px}
+    .stageGroup.open .chev{transform:rotate(180deg)}
+    .stepList{padding:6px 10px 10px;display:none}
+    .stageGroup.open .stepList{display:block}
+    .stepItem{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:10px;cursor:pointer;font-size:12px;color:var(--muted);font-weight:600;transition:background .1s}
+    .stepItem:hover{background:#f3f7fd}
+    .stepItem.active{background:var(--brandSoft);color:var(--brand2);font-weight:800}
+    .stepItem .sLabel{display:flex;align-items:center;gap:10px;flex:1;min-width:0}
+    .stepItem .sLabel span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .dot{width:12px;height:12px;border-radius:999px;border:2px solid #d8e3f2;background:#fff;flex:0 0 12px;transition:all .2s}
+    .stepItem.done .dot{border-color:rgba(15,118,110,.35);background:var(--brand);box-shadow:0 0 0 4px rgba(15,118,110,.12)}
+
+    /* ── Content panel ── */
+    .content{padding:22px 26px;background:#fff}
+    .crumb{display:inline-flex;align-items:center;gap:8px;height:28px;padding:0 10px;border-radius:999px;border:1px solid var(--border);background:#f7fbff;color:#64748b;font-size:11px;font-weight:900;letter-spacing:.08em;text-transform:uppercase}
+    .crumb svg{width:14px;height:14px;color:#64748b}
+    .topRow{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;margin-top:12px}
+    .content h2{margin:0;font-size:36px;letter-spacing:-0.03em;line-height:1.05}
+    .desc{margin-top:10px;color:var(--muted);font-size:13px;line-height:1.65;max-width:90ch}
+    .divider{margin:18px 0;height:1px;background:var(--border)}
+    .pills{display:flex;gap:10px;margin-top:10px;flex-wrap:wrap}
+    .pill{height:28px;padding:0 10px;border-radius:999px;border:1px solid var(--border);background:#f6f9fe;color:var(--muted);font-weight:800;font-size:12px;display:inline-flex;align-items:center;gap:8px;cursor:pointer;transition:all .12s}
+    .pill svg{width:14px;height:14px;color:#64748b}
+    .pill.active{background:rgba(37,99,235,.10);border-color:rgba(37,99,235,.18);color:#1d4ed8}
+    .pill.active svg{color:#1d4ed8}
+    .markBtn{height:42px;padding:0 16px;border-radius:12px;border:1px solid rgba(15,118,110,.18);background:var(--brand);color:#fff;font-weight:900;font-size:13px;display:inline-flex;align-items:center;gap:10px;cursor:pointer;box-shadow:0 12px 24px rgba(15,118,110,.20);flex:0 0 auto;margin-top:8px;transition:box-shadow .15s,transform .1s}
+    .markBtn:hover{box-shadow:0 14px 28px rgba(15,118,110,.26);transform:translateY(-1px)}
+    .markBtn:active{transform:translateY(0)}
+    .markBtn .ring{width:14px;height:14px;border-radius:999px;border:2px solid rgba(255,255,255,.90);background:transparent}
+    .markBtn.done{background:#059669;border-color:rgba(5,150,105,.25)}
+    .markBtn.done .ring{background:#fff;border-color:#fff}
+
+    .infoBox{margin-top:12px;padding:11px 14px;border-radius:12px;border:1px solid var(--infoBd);background:var(--infoBg);color:var(--infoTx);font-size:12px;line-height:1.6}
+    .infoBox strong{font-weight:800}
+    .warnBox{margin-top:12px;padding:11px 14px;border-radius:12px;border:1px solid var(--warnBd);background:var(--warnBg);color:var(--warnTx);font-size:12px;line-height:1.6}
+    .warnBox strong{font-weight:800}
+
+    .cardBox{margin-top:16px;border:1px solid var(--border);border-radius:14px;background:#fbfdff;padding:16px}
+    .cardHdr{display:flex;align-items:center;gap:10px;font-weight:900;letter-spacing:.08em;text-transform:uppercase;font-size:11px;color:var(--text)}
+    .cardHdr svg{width:16px;height:16px;color:var(--brand)}
+    .checkList{margin:12px 0 0;padding:0;list-style:none;display:flex;flex-direction:column;gap:11px}
+    .checkItem{display:flex;align-items:flex-start;gap:12px;color:var(--text);font-size:13px;font-weight:600}
+    .checkItem .c{width:16px;height:16px;border-radius:999px;border:2px solid #d8e3f2;background:#fff;flex:0 0 16px;margin-top:1px;transition:all .2s}
+    .checkItem.done .c{background:var(--brand);border-color:rgba(15,118,110,.35);box-shadow:0 0 0 4px rgba(15,118,110,.10)}
+    .checkItem a{color:var(--blue);text-decoration:underline;font-weight:700}
+    .checkItem a:hover{color:var(--brand)}
+
+    .success{margin-top:16px;border-radius:14px;border:1px solid var(--successBd);background:var(--successBg);padding:14px 16px;color:var(--successTx)}
+    .success .k{font-size:11px;font-weight:900;letter-spacing:.12em;text-transform:uppercase;margin-bottom:8px}
+    .success .v{font-size:13px;font-weight:800}
+
+    .srcBox{margin-top:14px;padding:12px 14px;border-radius:12px;border:1px solid var(--border);background:#f8fbff}
+    .srcBox .sh{font-size:11px;font-weight:900;letter-spacing:.10em;text-transform:uppercase;color:#64748b;margin-bottom:8px}
+    .srcList{list-style:none;margin:0;padding:0;display:flex;flex-wrap:wrap;gap:8px}
+    .srcList li a{
+      display:inline-flex;align-items:center;gap:6px;
+      height:26px;padding:0 10px;border-radius:999px;
+      border:1px solid var(--infoBd);background:var(--infoBg);
+      color:var(--infoTx);font-size:11px;font-weight:700;
+      transition:all .12s;text-decoration:none;
+    }
+    .srcList li a:hover{background:#dbeafe;color:#1e3a8a}
+    .srcList li a svg{width:11px;height:11px;flex:0 0 11px}
+
+    .navBottom{margin-top:18px;padding-top:18px;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:12px}
+    .btnPrev{height:44px;padding:0 16px;border-radius:12px;border:1px solid var(--border);background:#f8fbff;color:#94a3b8;font-weight:900;display:inline-flex;align-items:center;gap:10px;cursor:pointer;font-family:inherit;transition:all .15s}
+    .btnPrev:not([aria-disabled="true"]):hover{background:var(--surface);color:var(--muted);box-shadow:var(--shadow2);transform:translateY(-1px)}
+    .btnPrev[aria-disabled="true"]{cursor:not-allowed;opacity:.5}
+    .btnNext{height:44px;padding:0 18px;border-radius:12px;border:1px solid rgba(15,118,110,.18);background:var(--brand);color:#fff;font-weight:900;display:inline-flex;align-items:center;gap:10px;cursor:pointer;font-family:inherit;box-shadow:0 12px 24px rgba(15,118,110,.18);transition:box-shadow .15s,transform .1s}
+    .btnNext:hover{box-shadow:0 14px 28px rgba(15,118,110,.24);transform:translateY(-1px)}
+    .btnNext:active{transform:translateY(0)}
+    .btnNext[aria-disabled="true"]{opacity:.5;cursor:not-allowed}
+    .btnNext[aria-disabled="true"]:hover{transform:none;box-shadow:none}
+
+    /* ── Footer ── */
+    footer{background:linear-gradient(180deg,#0b1526,#091226);color:rgba(255,255,255,.78);padding:54px 0 22px;margin-top:40px}
+    .footTop{display:grid;grid-template-columns:1.2fr 1fr 1fr 1fr 1fr;gap:26px;align-items:start}
+    .footBrand{display:flex;flex-direction:column;gap:12px}
+    .footBrand .logo{display:flex;align-items:center;gap:10px;font-weight:900;color:#fff;letter-spacing:-0.02em;font-size:22px}
+    .footBrand svg{width:44px;height:44px}
+    .footBrand p{margin:0;color:rgba(255,255,255,.68);font-size:13px;line-height:1.7;max-width:42ch}
+    .footCol h4{margin:10px 0 12px;font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:rgba(255,255,255,.78)}
+    .footCol a{display:block;padding:8px 0;font-size:13px;color:rgba(255,255,255,.70)}
+    .footCol a:hover{color:#fff}
+    .footBottom{margin-top:26px;padding-top:18px;border-top:1px solid rgba(255,255,255,.10);display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;color:rgba(255,255,255,.55);font-size:12px}
+    .footBottom a{color:rgba(255,255,255,.55)}
+    .footBottom a:hover{color:#fff}
+
+    /* ── Responsive ── */
+    @media(max-width:1050px){
+      .arrow{display:none}
+      .grid{grid-template-columns:1fr}
+      .side{border-right:none;border-bottom:1px solid var(--border)}
+      .sideScroll{max-height:none}
+      .content h2{font-size:28px}
+      .hero h1{font-size:32px}
+      .footTop{grid-template-columns:1fr 1fr}
+    }
+    @media(max-width:640px){
+      .wrap{width:min(var(--container),calc(100% - 28px))}
+      .nav{display:none}
+      .hero h1{font-size:26px}
+      .stageCard{width:clamp(140px,42vw,180px)}
+      .footTop{grid-template-columns:1fr}
+      .content{padding:14px}
+      .content h2{font-size:24px}
+    }
+  </style>
+</head>
+<body>
+
+<!-- Topbar -->
+<header class="topbar">
+  <div class="wrap inner">
+    <a href="#" class="brand" aria-label="Rahvana home">
+      <svg viewBox="0 0 64 64" fill="none" aria-hidden="true">
+        <path d="M10 36c14-1 26-7 36-22 2 14-4 28-16 36-10 7-22 8-30 5 5-4 10-9 10-19Z" stroke="#0f766e" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M38 16c6 1 10 4 14 9" stroke="#0f766e" stroke-width="5" stroke-linecap="round"/>
+      </svg>
+      rahvana
+    </a>
+    <nav class="nav" aria-label="Primary navigation">
+      <div class="dd" role="button" tabindex="0">Explore Journeys
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M7 10l5 5 5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
+      <div class="dd" role="button" tabindex="0">Toolbox
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M7 10l5 5 5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
+      <div class="link" role="button" tabindex="0">Guides</div>
+      <div class="link" role="button" tabindex="0">Services</div>
+      <div class="link" role="button" tabindex="0">Pricing</div>
+      <div class="link" role="button" tabindex="0">Contact</div>
+    </nav>
+    <button class="btn primary" type="button">LOGIN</button>
+  </div>
+</header>
+
+<!-- Hero -->
+<section class="hero">
+  <div class="wrap">
+    <h1>F-1 Student Visa Journey</h1>
+    <p>Step-by-step roadmap for Pakistani students pursuing an F-1 nonimmigrant student visa — from school admission through maintaining status in the United States.</p>
+    <div class="disclaimer" role="note">
+      <strong>Disclaimer:</strong> This page is for informational guidance only. Immigration requirements and procedures can change. Always confirm current requirements with your school's Designated School Official (DSO), the <a href="https://pk.usembassy.gov/visas/" target="_blank" rel="noopener" style="color:var(--warnTx);font-weight:800;text-decoration:underline">U.S. Embassy &amp; Consulates in Pakistan</a>, and <a href="https://travel.state.gov/content/travel/en/us-visas/study.html" target="_blank" rel="noopener" style="color:var(--warnTx);font-weight:800;text-decoration:underline">travel.state.gov</a> before taking any action.
+    </div>
+  </div>
+</section>
+
+<!-- Stages overview -->
+<section class="stages" aria-label="Journey stages overview">
+  <div class="wrap">
+    <div class="stagesHead">The 6 Stages of Your Journey</div>
+    <div class="stageRow" id="stageRow" aria-label="Six stages"></div>
+  </div>
+</section>
+
+<!-- Progress -->
+<section class="progressStrip" aria-label="Overall journey progress">
+  <div class="wrap">
+    <div class="progressTop">
+      <div class="progressTitle">OVERALL JOURNEY PROGRESS</div>
+      <div class="progressRight">
+        <div class="progressPct" id="progressText" aria-live="polite" aria-atomic="true">0% (0/0 steps)</div>
+        <button class="docVault" type="button" aria-label="Open Document Vault">
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 6h7l2 2h7v10a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>
+          Document Vault
+        </button>
+      </div>
+    </div>
+    <div class="stripLine" role="progressbar" id="progressBar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" aria-label="Overall progress">
+      <div class="stripFill" id="progressFill"></div>
+    </div>
+  </div>
+</section>
+
+<!-- Main shell -->
+<main class="main">
+  <div class="wrap">
+    <div class="shell">
+      <div class="grid">
+        <aside class="side" aria-label="Journey map">
+          <div class="sideInner">
+            <div class="sideHead">
+              <div class="sideTitle">
+                <div class="k">JOURNEY MAP</div>
+                <div class="s">F-1 Nonimmigrant Student Visa</div>
+              </div>
+            </div>
+            <nav class="sideScroll" id="sideScroll" aria-label="Step navigation"></nav>
+          </div>
+        </aside>
+        <section class="content" id="contentPanel" aria-live="polite" aria-atomic="true"></section>
+      </div>
+    </div>
+  </div>
+</main>
+
+<!-- Footer -->
+<footer>
+  <div class="wrap">
+    <div class="footTop">
+      <div class="footBrand">
+        <div class="logo">
+          <svg viewBox="0 0 64 64" fill="none" aria-hidden="true">
+            <path d="M10 36c14-1 26-7 36-22 2 14-4 28-16 36-10 7-22 8-30 5 5-4 10-9 10-19Z" stroke="#ffffff" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M38 16c6 1 10 4 14 9" stroke="#ffffff" stroke-width="5" stroke-linecap="round"/>
+          </svg>
+          rahvana
+        </div>
+        <p>Simplifying immigration journeys with guidance, tools, and expert support. Your path to studying in the U.S. starts here.</p>
+      </div>
+      <div class="footCol">
+        <h4>Journeys</h4>
+        <a href="#">Family &amp; Protection</a>
+        <a href="#">Work &amp; Business</a>
+        <a href="#">Work Green Cards</a>
+        <a href="#">Students &amp; Visitors</a>
+        <a href="#" style="color:#fff;font-weight:800">Explore all Journeys →</a>
+      </div>
+      <div class="footCol">
+        <h4>Tools</h4>
+        <a href="#">CasePulse AI</a>
+        <a href="#">VisaPath Finder</a>
+        <a href="#">SponsorReady</a>
+        <a href="#">PDF ToolKit</a>
+        <a href="#" style="color:#fff;font-weight:800">Explore all Tools →</a>
+      </div>
+      <div class="footCol">
+        <h4>Company</h4>
+        <a href="#">About Us</a>
+        <a href="#">Contact</a>
+      </div>
+      <div class="footCol">
+        <h4>Connect with us</h4>
+        <a href="#">Instagram</a>
+        <a href="#">Facebook</a>
+        <a href="#">X</a>
+        <a href="#">Youtube</a>
+      </div>
+    </div>
+    <div class="footBottom">
+      <div>© 2026 Rahvana. All rights reserved.</div>
+      <div style="display:flex;gap:18px;flex-wrap:wrap">
+        <a href="#">Privacy Policy</a>
+        <a href="#">Terms of Service</a>
+        <a href="#">Cookie Policy</a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<script>
+// ════════════════════════════════════════════════════════════════════════════
+// F-1 STUDENT VISA JOURNEY DATA
+// Sources: travel.state.gov, studyinthestates.dhs.gov, pk.usembassy.gov
+//
+// Stage structure (6 stages — research-driven):
+//   I.   Admission & I-20
+//   II.  SEVIS & DS-160 Preparation
+//   III. Visa Application & Interview (Pakistan)
+//   IV.  Pre-Departure
+//   V.   U.S. Entry (CBP)
+//   VI.  Maintaining F-1 Status
+// ════════════════════════════════════════════════════════════════════════════
+
+const STAGES = [
+  // ── STAGE I ────────────────────────────────────────────────────────────────
+  {
+    id:1, label:'STAGE I', name:'Admission & I-20',
+    shortName:'Admission & I-20',
+    iconColor:'#2563eb', iconBg:'rgba(37,99,235,.10)', iconBdColor:'rgba(37,99,235,.18)',
+    icon:`<path d="M7 3h10v18H7z" stroke="#2563eb" stroke-width="2" stroke-linejoin="round"/><path d="M9 7h6M9 11h6M9 15h5" stroke="#2563eb" stroke-width="2" stroke-linecap="round"/>`,
+    time:'Variable',
+    sources:[
+      {label:'Study in the States – I-20', url:'https://studyinthestates.dhs.gov/students/understanding-your-form-i-20'},
+      {label:'SEVP – School Certification', url:'https://studyinthestates.dhs.gov/school-officials/working-with-students'}
+    ],
+    steps:[
+      {
+        id:1,
+        title:'Research SEVP-Certified Schools',
+        desc:'You may only pursue F-1 status at a school certified by the Student and Exchange Visitor Program (SEVP). Confirm that your target schools are SEVP-certified before applying.',
+        actions:[
+          'Search the SEVP School Search at studyinthestates.dhs.gov to verify a school is SEVP-certified',
+          'Research programs, admission requirements, deadlines, and tuition at each school',
+          'Check English-language proficiency requirements (e.g., IELTS, TOEFL) for your target programs',
+          'Review scholarship and funding opportunities (school-specific, HEC, Fulbright, etc.)',
+          'Identify the International Student Office (DSO) contact at each school you plan to apply to'
+        ],
+        success:'Target schools confirmed as SEVP-certified; application list finalized'
+      },
+      {
+        id:2,
+        title:'Apply to SEVP-Certified School(s)',
+        desc:'Submit applications to your chosen schools and provide all required documents. Each school sets its own admission requirements and deadlines.',
+        actions:[
+          'Complete each school\'s online application form by the stated deadline',
+          'Submit required academic transcripts (SSC, HSSC, bachelor\'s degree, etc.) with official translations if required',
+          'Submit standardized test scores (SAT, GRE, GMAT, as applicable)',
+          'Submit English proficiency test scores (TOEFL, IELTS, Duolingo, as accepted)',
+          'Provide letters of recommendation, personal statement, and other required materials',
+          'Pay application fees as required by each institution',
+          'Monitor application portals for admission decisions'
+        ],
+        success:'All school applications submitted; confirmation receipts saved'
+      },
+      {
+        id:3,
+        title:'Receive Admission Offer & Accept',
+        desc:'Once accepted, review the offer carefully, confirm financial requirements, and formally accept the offer. The school cannot issue an I-20 until you are admitted and have accepted.',
+        actions:[
+          'Review admission letter: program, start date, tuition, and any conditions',
+          'Confirm you can demonstrate sufficient financial support for the full program (school will require proof for I-20)',
+          'Formally accept the offer by the deadline stated in the admission letter',
+          'Pay any required enrollment or deposit fee',
+          'Contact the International Student Office to begin the I-20 request process'
+        ],
+        success:'Admission accepted; enrollment deposit paid; I-20 request process initiated'
+      },
+      {
+        id:4,
+        title:'Submit Financial Documentation to DSO',
+        desc:'Your Designated School Official (DSO) requires proof of financial support to issue your Form I-20. Acceptable documentation varies by school but typically includes bank statements, sponsor letters, or scholarship award letters.',
+        actions:[
+          'Request a financial documentation checklist from the school\'s International Student Office',
+          'Gather bank statements (personal, family, or sponsor) covering at least one academic year\'s costs',
+          'Obtain a financial guarantee or sponsorship letter if applicable (signed by sponsor)',
+          'If you have a scholarship or funding award, provide the official award letter',
+          'Submit all financial documents to the DSO by their stated deadline',
+          'Ensure documents are in English or accompanied by certified translations'
+        ],
+        success:'Financial documentation submitted to and accepted by the DSO'
+      },
+      {
+        id:5,
+        title:'Receive Form I-20',
+        desc:'Form I-20 (Certificate of Eligibility for Nonimmigrant Student Status) is issued by your school\'s DSO and is required for the F-1 visa application. Review every detail carefully.',
+        info:'The I-20 is issued and maintained in SEVIS (Student and Exchange Visitor Information System). Your I-20 includes a SEVIS ID number (beginning with "N") that you will need throughout the process.',
+        actions:[
+          'Review the I-20 for accuracy: your full legal name (must match passport), date of birth, school, program, program start date, and program end date',
+          'Confirm the SEVIS ID number (starts with "N") — record this number securely',
+          'Confirm the issued I-20 lists the correct school and level of study',
+          'If any information is incorrect, contact your DSO immediately for a correction before proceeding',
+          'Review the I-20 student copy signature page — the DSO must have signed it',
+          'Store the original I-20 safely — you will need it throughout your F-1 status'
+        ],
+        success:'Form I-20 received, all details verified as correct, SEVIS ID recorded'
+      }
+    ]
+  },
+
+  // ── STAGE II ───────────────────────────────────────────────────────────────
+  {
+    id:2, label:'STAGE II', name:'SEVIS Fee & DS-160',
+    shortName:'SEVIS Fee & DS-160',
+    iconColor:'#7c3aed', iconBg:'rgba(124,58,237,.10)', iconBdColor:'rgba(124,58,237,.18)',
+    icon:`<path d="M4 6h16v12H4z" stroke="#7c3aed" stroke-width="2" stroke-linejoin="round"/><path d="M8 10h8M8 14h6" stroke="#7c3aed" stroke-width="2" stroke-linecap="round"/>`,
+    time:'Variable',
+    sources:[
+      {label:'Pay SEVIS Fee – FMJfee.com', url:'https://www.fmjfee.com/i901fee/index.html'},
+      {label:'DS-160 Online Application', url:'https://ceac.state.gov/genniv/'},
+      {label:'travel.state.gov – Student Visas', url:'https://travel.state.gov/content/travel/en/us-visas/study.html'}
+    ],
+    steps:[
+      {
+        id:6,
+        title:'Pay the SEVIS I-901 Fee',
+        desc:'Before applying for an F-1 visa, you must pay the SEVIS I-901 fee at fmjfee.com. This fee supports the SEVIS database. Payment confirmation is required for the visa application.',
+        warn:'Pay the SEVIS fee using the SEVIS ID (beginning with "N") from your I-20. The current fee amount is listed at fmjfee.com — verify before paying. Fees are subject to change.',
+        actions:[
+          'Visit fmjfee.com to pay the SEVIS I-901 fee',
+          'Enter your SEVIS ID (from your I-20) and personal information exactly as they appear on your I-20',
+          'Verify the current SEVIS fee amount at fmjfee.com before paying',
+          'Complete payment using an accepted method (credit/debit card or Western Union Quick Pay)',
+          'Save and print the SEVIS fee payment receipt (Form I-797 receipt confirmation)',
+          'Bring the payment receipt to your visa interview'
+        ],
+        success:'SEVIS I-901 fee paid; payment receipt saved'
+      },
+      {
+        id:7,
+        title:'Gather Visa Application Documents',
+        desc:'Before completing the DS-160 online application, gather all documents you will need. Having accurate information ready reduces errors and prevents having to restart the DS-160.',
+        actions:[
+          'Valid Pakistani passport (must be valid for at least 6 months beyond your intended period of stay)',
+          'Form I-20 (issued by your DSO)',
+          'SEVIS I-901 fee payment receipt',
+          'School acceptance letter',
+          'Financial evidence (bank statements, scholarship letters, sponsor letters)',
+          'Academic transcripts and diplomas',
+          'Standardized test score reports',
+          'Passport-style photograph meeting U.S. visa photo requirements (see travel.state.gov/photos)',
+          'Any prior U.S. visa documentation (if applicable)'
+        ],
+        success:'All required documents gathered and organized'
+      },
+      {
+        id:8,
+        title:'Complete Form DS-160 (Online Nonimmigrant Visa Application)',
+        desc:'Form DS-160 is the online nonimmigrant visa application submitted at the Consular Electronic Application Center (CEAC). Complete it carefully and accurately — it is reviewed by the consular officer.',
+        actions:[
+          'Go to ceac.state.gov and start a new DS-160 application',
+          'Select the correct U.S. embassy or consulate in Pakistan where you will apply (Islamabad, Karachi, or Lahore)',
+          'Complete all required fields accurately and consistently with your other documents',
+          'Upload a compliant passport-style photograph meeting the specifications at travel.state.gov/photos',
+          'Review all answers carefully before submitting — mistakes can cause delays',
+          'Submit the DS-160 and print the confirmation page (barcode page) — you will need this at your interview',
+          'Save your DS-160 application ID in case you need to retrieve or update your application'
+        ],
+        success:'DS-160 submitted; confirmation barcode page printed and saved'
+      }
+    ]
+  },
+
+  // ── STAGE III ──────────────────────────────────────────────────────────────
+  {
+    id:3, label:'STAGE III', name:'Visa Interview (Pakistan)',
+    shortName:'Interview (PK)',
+    iconColor:'#16a34a', iconBg:'rgba(22,163,74,.10)', iconBdColor:'rgba(22,163,74,.18)',
+    icon:`<path d="M8 21h8M12 17v4" stroke="#16a34a" stroke-width="2" stroke-linecap="round"/><path d="M7 8a5 5 0 0 1 10 0c0 5-5 7-5 7S7 13 7 8Z" stroke="#16a34a" stroke-width="2" stroke-linejoin="round"/>`,
+    time:'Variable',
+    sources:[
+      {label:'U.S. Embassy Pakistan – Student Visas', url:'https://pk.usembassy.gov/visas/nonimmigrant-visas/student-visas/'},
+      {label:'Schedule Appointment – CGI Federal', url:'https://www.ustraveldocs.com/pk/'},
+      {label:'travel.state.gov – Interview Tips', url:'https://travel.state.gov/content/travel/en/us-visas/visa-information-resources/interview-tips.html'}
+    ],
+    steps:[
+      {
+        id:9,
+        title:'Pay the MRV Visa Application Fee',
+        desc:'The Machine Readable Visa (MRV) fee is required to schedule a visa interview appointment. This fee is non-refundable. Pay through the official U.S. visa appointment portal for Pakistan (CGI Federal at ustraveldocs.com/pk).',
+        warn:'Verify the current MRV fee at ustraveldocs.com/pk before paying — fee amounts can change. Do not pay through third-party sites.',
+        actions:[
+          'Go to ustraveldocs.com/pk and create an account or log in',
+          'Select Pakistan and the visa category (Student – F)',
+          'Verify the current MRV fee amount and pay using an accepted payment method',
+          'Save the MRV fee payment receipt and transaction number — you will need it to schedule your appointment',
+          'Note: MRV fees are generally non-refundable and non-transferable; confirm the policy on the payment portal'
+        ],
+        success:'MRV visa application fee paid; payment receipt and transaction number saved'
+      },
+      {
+        id:10,
+        title:'Schedule Visa Interview Appointment',
+        desc:'After paying the MRV fee, schedule your visa interview appointment through ustraveldocs.com/pk. U.S. visa interviews for Pakistan are conducted at the U.S. Embassy Islamabad, U.S. Consulate General Karachi, and U.S. Consulate General Lahore.',
+        info:'Appointment wait times vary. Check current wait times at travel.state.gov/waitingtimes or ustraveldocs.com/pk. Apply well in advance of your I-20 program start date — SEVP recommends applying for the F-1 visa no more than 120 days before your I-20 start date.',
+        actions:[
+          'Log in to ustraveldocs.com/pk using your profile and MRV fee receipt number',
+          'Select your preferred consular post (Islamabad, Karachi, or Lahore)',
+          'Select an available appointment date and time',
+          'Confirm the appointment and save or print the appointment confirmation',
+          'Check the current appointment wait time at travel.state.gov/waitingtimes',
+          'Note: you may apply for your F-1 visa up to 120 days before your I-20 program start date — do not schedule earlier than this window per SEVP guidance'
+        ],
+        success:'Visa interview appointment scheduled; appointment confirmation saved'
+      },
+      {
+        id:11,
+        title:'Prepare Interview Documents',
+        desc:'Assemble all documents required for the visa interview. Review the U.S. Embassy Pakistan student visa page for any locally required additions or specific instructions.',
+        actions:[
+          'Valid Pakistani passport (valid for at least 6 months beyond your intended U.S. stay)',
+          'DS-160 confirmation/barcode page (printed)',
+          'MRV fee payment receipt (or appointment confirmation showing fee paid)',
+          'Visa appointment confirmation letter',
+          'Form I-20 (original, signed by DSO)',
+          'SEVIS I-901 fee payment receipt',
+          'School acceptance letter',
+          'Financial documentation (bank statements, sponsor letter, scholarship award letter)',
+          'Academic transcripts and diplomas/certificates (originals and copies)',
+          'Standardized and English proficiency test score reports',
+          'One photograph meeting U.S. visa photo requirements (bring physical copy; digital version already in DS-160)',
+          'Review pk.usembassy.gov for any additional documents required by the Pakistan posts'
+        ],
+        success:'Complete interview document package assembled and organized'
+      },
+      {
+        id:12,
+        title:'Attend the Visa Interview',
+        desc:'Appear at the designated U.S. Embassy or Consulate in Pakistan for your interview. Answer all questions from the consular officer honestly and clearly. The officer will primarily assess your nonimmigrant intent and eligibility.',
+        info:'F-1 applicants must demonstrate nonimmigrant intent — that you intend to study and return home after completing your program. The consular officer may ask about your program of study, funding, ties to Pakistan, and plans after graduation. Answer confidently and truthfully.',
+        actions:[
+          'Arrive at the consulate location at the time specified — follow any security instructions on the appointment confirmation',
+          'Bring all assembled documents in an organized manner',
+          'Do not bring prohibited items (check the consulate\'s prohibited items list at pk.usembassy.gov)',
+          'Answer the consular officer\'s questions about your study plans, school, funding, and ties to Pakistan honestly and clearly',
+          'If approved: note whether the passport will be returned by mail/courier or for in-person pickup — follow the instructions given',
+          'If placed in administrative processing (221(g)): follow the instructions and provide any additional requested documents promptly'
+        ],
+        success:'Visa interview completed; outcome noted (approved / pending / additional processing)'
+      },
+      {
+        id:13,
+        title:'Receive Visa-Stamped Passport',
+        desc:'If approved, the consulate affixes the F-1 visa stamp to your passport. In Pakistan, approved passports are returned by courier/mail or designated pickup. Follow the specific instructions given at interview.',
+        actions:[
+          'Track your passport return through the tracking system at ustraveldocs.com/pk',
+          'Upon receipt, verify the visa stamp: name, date of birth, visa type (F-1), number of entries, and visa expiration date',
+          'Confirm the visa start date — you may NOT enter the U.S. more than 30 days before your I-20 program start date on an F-1 visa',
+          'Report any errors on the visa to the consulate immediately',
+          'Store your passport and I-20 together safely for travel'
+        ],
+        success:'F-1 visa stamp received and verified in passport'
+      }
+    ]
+  },
+
+  // ── STAGE IV ───────────────────────────────────────────────────────────────
+  {
+    id:4, label:'STAGE IV', name:'Pre-Departure',
+    shortName:'Pre-Departure',
+    iconColor:'#f59e0b', iconBg:'rgba(245,158,11,.12)', iconBdColor:'rgba(245,158,11,.22)',
+    icon:`<path d="M4 10h16v10H4z" stroke="#f59e0b" stroke-width="2" stroke-linejoin="round"/><path d="M8 10V7a4 4 0 0 1 8 0v3" stroke="#f59e0b" stroke-width="2" stroke-linecap="round"/>`,
+    time:'Variable',
+    sources:[
+      {label:'Study in the States – Before You Arrive', url:'https://studyinthestates.dhs.gov/students/before-you-arrive'},
+      {label:'CBP Traveler Entry', url:'https://www.cbp.gov/travel/international-visitors'}
+    ],
+    steps:[
+      {
+        id:14,
+        title:'Confirm I-20 Program Start Date & Entry Window',
+        desc:'F-1 students may enter the United States no more than 30 days before the program start date listed on their I-20. Entering earlier than this window is not permitted on an F-1 visa.',
+        warn:'Do not book travel to arrive more than 30 days before your I-20 program start date. This is a legal requirement under F-1 rules.',
+        actions:[
+          'Confirm the program start date on your I-20',
+          'Calculate the earliest permitted U.S. arrival date (30 days before the I-20 start date)',
+          'Book travel to arrive within the permitted 30-day window',
+          'Contact your DSO if you have any questions about your entry window or if you need a deferred start date',
+          'Review Study in the States guidance at studyinthestates.dhs.gov/students/before-you-arrive'
+        ],
+        success:'Entry window confirmed; travel booked within the permitted 30-day window'
+      },
+      {
+        id:15,
+        title:'Book Travel and Accommodations',
+        desc:'Book your flight to the U.S. and confirm housing arrangements. Notify your school\'s International Student Office of your expected arrival date.',
+        actions:[
+          'Book an international flight arriving within your permitted F-1 entry window',
+          'Confirm housing: on-campus dormitory or off-campus arrangement — contact the school housing office well in advance',
+          'Notify the International Student Office / DSO of your expected arrival date',
+          'Research orientation program dates — F-1 students are typically required to attend',
+          'Ensure your carry-on luggage will include all essential travel and immigration documents'
+        ],
+        success:'Flight booked; housing confirmed; DSO notified of arrival date'
+      },
+      {
+        id:16,
+        title:'Organize Travel Documents',
+        desc:'Carry all required immigration documents in your carry-on baggage. These documents are essential for CBP inspection upon arrival in the United States.',
+        actions:[
+          'Valid Pakistani passport with F-1 visa stamp',
+          'Original Form I-20 (signed by DSO) — carry in carry-on, not checked baggage',
+          'SEVIS I-901 fee payment receipt',
+          'School acceptance letter',
+          'Financial documentation showing ability to support yourself',
+          'DS-160 confirmation page (optional but recommended)',
+          'Contact information for your school\'s DSO and U.S. address (dormitory or housing address)',
+          'Keep all documents together in an organized folder in your carry-on'
+        ],
+        success:'All required travel documents organized in carry-on baggage'
+      },
+      {
+        id:17,
+        title:'Attend Pre-Departure Orientation (if available)',
+        desc:'Many Pakistani universities and organizations (e.g., U.S. Embassy Pakistan, Fulbright program, EducationUSA) offer pre-departure orientations for students traveling to the U.S. These sessions cover practical tips for life, academics, and maintaining F-1 status.',
+        actions:[
+          'Check if your school or the U.S. Embassy Pakistan offers a pre-departure orientation',
+          'Check EducationUSA Pakistan at educationusa.state.gov for orientation resources and advising',
+          'Review Study in the States pre-departure guidance at studyinthestates.dhs.gov/students/before-you-arrive',
+          'Research the city and state where your school is located: cost of living, transportation, weather, and cultural norms'
+        ],
+        success:'Pre-departure orientation attended or study materials reviewed'
+      }
+    ]
+  },
+
+  // ── STAGE V ────────────────────────────────────────────────────────────────
+  {
+    id:5, label:'STAGE V', name:'U.S. Entry (CBP)',
+    shortName:'U.S. Entry',
+    iconColor:'#e11d48', iconBg:'rgba(225,29,72,.10)', iconBdColor:'rgba(225,29,72,.18)',
+    icon:`<circle cx="12" cy="12" r="10" stroke="#e11d48" stroke-width="2"/><path d="M12 8v8M8 12l4 4 4-4" stroke="#e11d48" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>`,
+    time:'Day of Travel',
+    sources:[
+      {label:'CBP – Entering the U.S.', url:'https://www.cbp.gov/travel/international-visitors'},
+      {label:'I-94 Arrival/Departure Record', url:'https://i94.cbp.dhs.gov'},
+      {label:'Study in the States – After Arrival', url:'https://studyinthestates.dhs.gov/students/complete-your-arrival-steps'}
+    ],
+    steps:[
+      {
+        id:18,
+        title:'Clear U.S. Customs and Border Protection',
+        desc:'Upon arriving at a U.S. port of entry, you will go through CBP inspection. Present your documents to the CBP officer. The officer determines admissibility and the terms of your admission.',
+        info:'CBP officers may ask about your plans, school, and length of stay. Answer honestly and consistently. Keep your I-20 and passport accessible — do not pack them in checked baggage.',
+        actions:[
+          'Present your valid passport with F-1 visa stamp to the CBP officer',
+          'Present your original Form I-20',
+          'Complete any required CBP arrival forms (paper or electronic, per current CBP procedures)',
+          'Answer the CBP officer\'s questions about your program, school, and stay honestly',
+          'CBP will stamp your passport and note your admission as "F-1 D/S" (Duration of Status)',
+          'Confirm your admission stamp shows "F-1" and "D/S" — Duration of Status means you are admitted for the duration of your F-1 status (not a fixed date)'
+        ],
+        success:'Admitted to the U.S. as F-1 student; passport stamped with F-1 D/S'
+      },
+      {
+        id:19,
+        title:'Retrieve Your I-94 Arrival Record',
+        desc:'CBP automatically creates an electronic I-94 arrival/departure record for most air and sea arrivals. Your I-94 is your official record of admission and must show class of admission "F-1" and "D/S".',
+        actions:[
+          'Visit i94.cbp.dhs.gov within a few days of arrival to retrieve your electronic I-94',
+          'Verify the I-94 shows: your full name, date of birth, class of admission "F-1", and admit-until date "D/S" (Duration of Status)',
+          'Save and print a copy of your I-94 for your records',
+          'If there is any error on the I-94 (wrong class of admission, wrong name, etc.), contact CBP promptly to correct it'
+        ],
+        success:'I-94 retrieved; confirms F-1 admission and D/S (Duration of Status)'
+      },
+      {
+        id:20,
+        title:'Report to Your School & Check In with DSO',
+        desc:'F-1 regulations require you to report to your school by the report date on your I-20. Your DSO must update your SEVIS record to show you have arrived and are enrolled.',
+        warn:'Failure to report to your school and have your DSO update SEVIS can cause your SEVIS record to be terminated. Termination of SEVIS = loss of F-1 status.',
+        actions:[
+          'Arrive at your school campus by or before the I-20 report date',
+          'Check in with the International Student Office and present your passport, visa, I-20, and I-94',
+          'Your DSO will update your SEVIS record to confirm your arrival and enrollment',
+          'Confirm your class registration and review any enrollment requirements',
+          'Attend any mandatory orientation sessions for new international students'
+        ],
+        success:'Reported to school; DSO has updated SEVIS record; enrollment confirmed'
+      }
+    ]
+  },
+
+  // ── STAGE VI ───────────────────────────────────────────────────────────────
+  {
+    id:6, label:'STAGE VI', name:'Maintaining F-1 Status',
+    shortName:'Maintaining Status',
+    iconColor:'#4f46e5', iconBg:'rgba(79,70,229,.10)', iconBdColor:'rgba(79,70,229,.18)',
+    icon:`<path d="M12 2L2 7l10 5 10-5-10-5z" stroke="#4f46e5" stroke-width="2" stroke-linejoin="round"/><path d="M2 17l10 5 10-5" stroke="#4f46e5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M2 12l10 5 10-5" stroke="#4f46e5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>`,
+    time:'Throughout Program',
+    sources:[
+      {label:'Study in the States – Maintaining Status', url:'https://studyinthestates.dhs.gov/students/maintaining-your-status'},
+      {label:'USCIS – OPT Overview', url:'https://www.uscis.gov/working-in-the-united-states/students-and-exchange-visitors/optional-practical-training-opt-for-f-1-students'},
+      {label:'USCIS – CPT Overview', url:'https://www.uscis.gov/working-in-the-united-states/students-and-exchange-visitors/curricular-practical-training-cpt'}
+    ],
+    steps:[
+      {
+        id:21,
+        title:'Understand Full-Time Enrollment Requirements',
+        desc:'F-1 students must maintain a full course load each semester. Dropping below full-time without prior DSO authorization can jeopardize your F-1 status. Know what counts as full-time at your school.',
+        actions:[
+          'Confirm your school\'s definition of full-time enrollment for F-1 purposes (typically 12+ credit hours per semester for undergrad)',
+          'Review Study in the States guidance on enrollment requirements at studyinthestates.dhs.gov/students/maintaining-your-status',
+          'If you need to drop below full-time for medical or academic reasons: consult your DSO before making changes — prior DSO authorization and a SEVIS update are required',
+          'Do not withdraw from courses without first consulting your DSO',
+          'Register for each semester on time to maintain continuous enrollment'
+        ],
+        success:'Full-time enrollment maintained; any reduced course load properly authorized by DSO'
+      },
+      {
+        id:22,
+        title:'Keep Your I-20 and Documents Current',
+        desc:'Your I-20 must accurately reflect your current program, school, and expected graduation date. Any changes — program extension, change of program, change of school — require a new or updated I-20 from your DSO.',
+        actions:[
+          'Review your I-20 program end date regularly — if you need more time to complete your program, request a program extension from your DSO before the current I-20 expires',
+          'If you transfer to a new school: follow the official SEVIS transfer process through your DSO; do not simply start attending a new school',
+          'If you change your major or level of study (e.g., bachelor\'s to master\'s): obtain an updated I-20 from your DSO',
+          'Ensure your U.S. residential address is always current with your DSO (required by F-1 regulations)',
+          'Your passport must remain valid — renew it at the Pakistani Embassy/Consulate in the U.S. well before it expires'
+        ],
+        success:'I-20 current and accurate; address updated with DSO; passport valid'
+      },
+      {
+        id:23,
+        title:'Understand On-Campus and Off-Campus Employment Rules',
+        desc:'F-1 students have limited employment authorization. On-campus employment of up to 20 hours per week during school sessions is generally permitted without additional authorization. Off-campus employment requires specific authorization (CPT or OPT) and cannot begin before authorization is granted.',
+        warn:'Working without authorization is a serious F-1 violation that can result in status termination. Always consult your DSO before accepting any employment.',
+        actions:[
+          'Review the on-campus employment rules with your DSO',
+          'Do not engage in any off-campus employment without prior DSO authorization and, where required, USCIS approval',
+          'If you need work authorization: ask your DSO about Curricular Practical Training (CPT) or Optional Practical Training (OPT) as applicable',
+          'Review USCIS CPT guidance at uscis.gov and OPT guidance at uscis.gov',
+          'Keep copies of any employment authorization documents (EAD card for OPT, CPT notation on I-20)'
+        ],
+        success:'Employment rules understood; any employment is properly authorized'
+      },
+      {
+        id:24,
+        title:'Travel Outside the U.S. (Re-entry Preparation)',
+        desc:'F-1 students may travel outside the U.S. and return, provided their visa is still valid, their I-20 is current, and they have a valid DSO travel signature on their I-20. Plan travel carefully.',
+        actions:[
+          'Ensure your F-1 visa stamp is still valid for re-entry before traveling (a visa stamp issued in Pakistan can expire — check the expiration date)',
+          'Obtain a travel signature from your DSO on your I-20 before departure — travel signatures are required for re-entry and are typically valid for 6 months (12 months for students on OPT)',
+          'Carry your valid passport, valid I-20 with travel signature, and any OPT EAD card when re-entering',
+          'If your visa has expired while in the U.S. and you travel outside: you must apply for a new F-1 visa at a U.S. consulate before returning (you may be able to apply for a new visa in a third country)',
+          'Review Study in the States guidance on travel at studyinthestates.dhs.gov/students/maintaining-your-status'
+        ],
+        success:'Travel signature obtained from DSO; valid visa confirmed; re-entry prepared'
+      },
+      {
+        id:25,
+        title:'Explore OPT (Optional Practical Training)',
+        desc:'F-1 students may apply for OPT — temporary employment authorization directly related to their major area of study. OPT can be used before graduation (pre-completion) or after graduation (post-completion). STEM OPT extension may also be available for qualifying STEM degrees.',
+        info:'OPT applications are filed with USCIS and must be submitted through your DSO. Apply well in advance — USCIS processing can take several months. Review current USCIS OPT guidance at uscis.gov before applying.',
+        actions:[
+          'Consult your DSO about OPT eligibility and timing (generally must have been enrolled full-time for one academic year)',
+          'Determine if you want pre-completion or post-completion OPT',
+          'Request an OPT I-20 recommendation from your DSO',
+          'File Form I-765 (Application for Employment Authorization) with USCIS per current instructions',
+          'Verify the current USCIS filing fee for Form I-765 at uscis.gov/forms/filing-fees',
+          'Do not begin OPT employment until you have received your Employment Authorization Document (EAD) and the EAD start date has passed',
+          'If you have a qualifying STEM degree: ask your DSO about the STEM OPT extension'
+        ],
+        success:'OPT application strategy understood; application filed or deferred based on timeline'
+      },
+      {
+        id:26,
+        title:'Program Completion and Grace Period',
+        desc:'After completing your F-1 program (or OPT), you have a 60-day grace period during which you may prepare to depart, change visa status, or transfer to another school. You may not work during this grace period unless otherwise authorized.',
+        actions:[
+          'Confirm your program completion date (listed on I-20)',
+          'After program completion: you have a 60-day grace period — use it to prepare for departure, apply for a change of status, or transfer to another school program',
+          'During the 60-day grace period you may not work (OPT ends at program completion date unless within authorized EAD dates)',
+          'If you intend to remain in the U.S. after the grace period: consult an immigration attorney or your DSO about a change of status',
+          'If departing the U.S.: ensure you depart within the 60-day grace period',
+          'Review Study in the States guidance at studyinthestates.dhs.gov/students/maintaining-your-status for current program completion rules'
+        ],
+        success:'Program completion timeline known; post-completion plans confirmed'
+      }
+    ]
+  }
+];
+
+// ════════════════════════════════════════════════════════════════════════════
+// STATE & PERSISTENCE
+// ════════════════════════════════════════════════════════════════════════════
+const STORAGE_KEY = 'rahvana_f1pk_v1';
+
+let state = {
+  activeStepId: STAGES[0].steps[0].id,
+  completedSteps: new Set(),
+  activePill: 'both'
+};
+
+function loadState() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return;
+    const p = JSON.parse(raw);
+    if (p.activeStepId != null) state.activeStepId = p.activeStepId;
+    if (Array.isArray(p.completedSteps)) state.completedSteps = new Set(p.completedSteps);
+  } catch(e) {}
+}
+
+function saveState() {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({
+      activeStepId: state.activeStepId,
+      completedSteps: [...state.completedSteps]
+    }));
+  } catch(e) {}
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+// FLAT STEP LIST
+// ════════════════════════════════════════════════════════════════════════════
+function allSteps() {
+  return STAGES.flatMap(s => s.steps.map(st => ({...st, stageId:s.id, stageLabel:s.label, stageName:s.name})));
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+// STAGE ROW
+// ════════════════════════════════════════════════════════════════════════════
+function renderStageRow() {
+  const row = document.getElementById('stageRow');
+  const clockSvg = `<svg viewBox="0 0 24 24" fill="none"><path d="M12 7v6l4 2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" stroke="currentColor" stroke-width="2"/></svg>`;
+  const arrowSvg = `<div class="arrow" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>`;
+  let html = '';
+  STAGES.forEach((s, i) => {
+    if (i > 0) html += arrowSvg;
+    html += `
+      <div class="stageCard">
+        <div class="icon" style="background:${s.iconBg};border-color:${s.iconBdColor}">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" aria-hidden="true">${s.icon}</svg>
+        </div>
+        <div class="label">${s.label}</div>
+        <div class="name">${s.shortName}</div>
+        <div class="time">${clockSvg}${s.time}</div>
+      </div>`;
+  });
+  row.innerHTML = html;
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+// SIDEBAR
+// ════════════════════════════════════════════════════════════════════════════
+function renderSidebar() {
+  const nav = document.getElementById('sideScroll');
+  let html = '';
+  STAGES.forEach(stage => {
+    const isOpen = stage.steps.some(st => st.id === state.activeStepId);
+    html += `
+      <div class="stageGroup${isOpen?' open':''}" data-stage="${stage.id}">
+        <div class="stageHdr" role="button" tabindex="0" aria-expanded="${isOpen}" aria-controls="stepList-${stage.id}">
+          <div class="left">
+            <div class="tag">${stage.label}</div>
+            <div class="name">${stage.name}</div>
+          </div>
+          <div class="chev" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none"><path d="M7 10l5 5 5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+        </div>
+        <div class="stepList" id="stepList-${stage.id}" role="list">`;
+    stage.steps.forEach((step, idx) => {
+      const isActive = step.id === state.activeStepId;
+      const isDone = state.completedSteps.has(step.id);
+      html += `
+          <div class="stepItem${isActive?' active':''}${isDone?' done':''}"
+               role="listitem" data-step="${step.id}"
+               tabindex="${isActive?0:-1}"
+               aria-current="${isActive?'step':'false'}"
+               title="${step.title}">
+            <span class="sLabel"><span class="dot"></span><span>${String(idx+1).padStart(2,'0')}. ${step.title}</span></span>
+          </div>`;
+    });
+    html += `</div></div>`;
+  });
+  nav.innerHTML = html;
+
+  nav.querySelectorAll('.stageHdr').forEach(hdr => {
+    hdr.addEventListener('click', () => toggleStage(hdr));
+    hdr.addEventListener('keydown', e => { if(e.key==='Enter'||e.key===' '){e.preventDefault();toggleStage(hdr)} });
+  });
+  nav.querySelectorAll('.stepItem').forEach(item => {
+    item.addEventListener('click', () => setActiveStep(Number(item.dataset.step)));
+    item.addEventListener('keydown', e => { if(e.key==='Enter'||e.key===' '){e.preventDefault();setActiveStep(Number(item.dataset.step))} });
+  });
+}
+
+function toggleStage(hdr) {
+  const group = hdr.closest('.stageGroup');
+  const open = !group.classList.contains('open');
+  group.classList.toggle('open', open);
+  hdr.setAttribute('aria-expanded', String(open));
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+// CONTENT PANEL
+// ════════════════════════════════════════════════════════════════════════════
+function renderContent() {
+  const steps = allSteps();
+  const step = steps.find(s => s.id === state.activeStepId);
+  if (!step) return;
+
+  const stage = STAGES.find(s => s.id === step.stageId);
+  const stageIdx = stage.steps.findIndex(s => s.id === step.id);
+  const stepLabel = `${stage.label} • STEP ${String(stageIdx+1).padStart(2,'0')}`;
+  const isDone = state.completedSteps.has(step.id);
+  const globalIdx = steps.findIndex(s => s.id === step.id);
+  const isFirst = globalIdx === 0;
+  const isLast = globalIdx === steps.length - 1;
+
+  const actionsHtml = step.actions.map(a =>
+    `<li class="checkItem${isDone?' done':''}"><span class="c" aria-hidden="true"></span>${a}</li>`
+  ).join('');
+
+  const infoHtml = step.info
+    ? `<div class="infoBox" role="note"><strong>ℹ Note:</strong> ${step.info}</div>` : '';
+  const warnHtml = step.warn
+    ? `<div class="warnBox" role="alert"><strong>⚠ Important:</strong> ${step.warn}</div>` : '';
+
+  // sources for this stage
+  const srcHtml = stage.sources?.length ? `
+    <div class="srcBox">
+      <div class="sh">Official Sources</div>
+      <ul class="srcList">${stage.sources.map(src => `
+        <li><a href="${src.url}" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M15 3h6v6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M10 14L21 3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          ${src.label}
+        </a></li>`).join('')}
+      </ul>
+    </div>` : '';
+
+  document.getElementById('contentPanel').innerHTML = `
+    <div class="crumb">
+      <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <path d="M12 7v6l4 2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        <path d="M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" stroke="currentColor" stroke-width="2"/>
+      </svg>
+      ${stepLabel}
+    </div>
+
+    <div class="topRow">
+      <div style="flex:1;min-width:0">
+        <h2>${step.title}</h2>
+        <div class="desc">${step.desc}</div>
+        ${infoHtml}${warnHtml}
+        <div class="divider"></div>
+        <div class="pills" role="group" aria-label="View toggles">
+          <button class="pill${state.activePill==='both'?' active':''}" type="button" id="pillBoth" aria-pressed="${state.activePill==='both'}">
+            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="9" cy="7" r="4" stroke="currentColor" stroke-width="2"/><path d="M22 21v-2a4 4 0 0 0-3-3.87" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M19 7a4 4 0 0 1 0 8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+            Both
+          </button>
+          <button class="pill${state.activePill==='self'?' active':''}" type="button" id="pillSelf" aria-pressed="${state.activePill==='self'}">
+            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 20h9" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L8 18l-4 1 1-4 11.5-11.5Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>
+            Self-assessment
+          </button>
+        </div>
+      </div>
+      <button class="markBtn${isDone?' done':''}" id="markCompleteBtn" type="button" aria-pressed="${isDone}">
+        <span class="ring" aria-hidden="true"></span>
+        ${isDone ? 'Completed' : 'Mark Complete'}
+      </button>
+    </div>
+
+    <div class="cardBox">
+      <div class="cardHdr">
+        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M9 11l3 3L22 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Actions Required
+      </div>
+      <ul class="checkList">${actionsHtml}</ul>
+    </div>
+
+    <div class="success" role="note">
+      <div class="k">SUCCESS CONDITION</div>
+      <div class="v">${step.success}</div>
+    </div>
+
+    ${srcHtml}
+
+    <div class="navBottom">
+      <button class="btnPrev" type="button" id="prevBtn" aria-disabled="${isFirst}">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M15 18l-6-6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Previous Step
+      </button>
+      <button class="btnNext" type="button" id="nextBtn" aria-disabled="${isLast}">
+        Next Step
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+    </div>
+  `;
+
+  document.getElementById('markCompleteBtn').addEventListener('click', toggleComplete);
+  document.getElementById('prevBtn').addEventListener('click', () => { if(!isFirst) setActiveStep(steps[globalIdx-1].id) });
+  document.getElementById('nextBtn').addEventListener('click', () => { if(!isLast) setActiveStep(steps[globalIdx+1].id) });
+  document.getElementById('pillBoth').addEventListener('click', () => { state.activePill='both'; renderContent() });
+  document.getElementById('pillSelf').addEventListener('click', () => { state.activePill='self'; renderContent() });
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+// PROGRESS
+// ════════════════════════════════════════════════════════════════════════════
+function updateProgress() {
+  const steps = allSteps();
+  const total = steps.length;
+  const done = steps.filter(s => state.completedSteps.has(s.id)).length;
+  const pct = total ? Math.round((done/total)*100) : 0;
+  document.getElementById('progressText').textContent = `${pct}% (${done}/${total} steps)`;
+  document.getElementById('progressFill').style.width = `${pct}%`;
+  document.getElementById('progressBar').setAttribute('aria-valuenow', pct);
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+// ACTIONS
+// ════════════════════════════════════════════════════════════════════════════
+function setActiveStep(stepId) {
+  state.activeStepId = stepId;
+  renderSidebar();
+  renderContent();
+  updateProgress();
+  saveState();
+  document.querySelector(`.stepItem[data-step="${stepId}"]`)?.scrollIntoView({block:'nearest',behavior:'smooth'});
+}
+
+function toggleComplete() {
+  const id = state.activeStepId;
+  if (state.completedSteps.has(id)) state.completedSteps.delete(id);
+  else state.completedSteps.add(id);
+  renderSidebar();
+  renderContent();
+  updateProgress();
+  saveState();
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+// INIT
+// ════════════════════════════════════════════════════════════════════════════
+loadState();
+renderStageRow();
+renderSidebar();
+renderContent();
+updateProgress();
+</script>
+</body>
+</html>
