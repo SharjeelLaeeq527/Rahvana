@@ -1,7 +1,7 @@
 {
   "title": "F-1 Student Visa Journey",
   "titleUr": "ایف-۱ سٹوڈنٹ ویزا کا سفر",
-  "description": "Your complete guide to studying in the United States on an F-1 student visa.",
+  "description": "Step-by-step roadmap for Pakistani students pursuing an F-1 nonimmigrant student visa — from school admission through maintaining status in the United States.",
   "descriptionUr": "ایف-۱ سٹوڈنٹ ویزا پر ریاستہائے متحدہ میں تعلیم حاصل کرنے کے لیے آپ کی مکمل رہنمائی۔",
   "stages": [
     {
@@ -10,6 +10,16 @@
       "icon": "FileText",
       "color": "bg-blue-50 text-blue-600",
       "time": "Variable",
+      "sources": [
+        {
+          "label": "Study in the States – I-20",
+          "url": "https://studyinthestates.dhs.gov/students/understanding-your-form-i-20"
+        },
+        {
+          "label": "SEVP – School Certification",
+          "url": "https://studyinthestates.dhs.gov/school-officials/working-with-students"
+        }
+      ],
       "steps": [
         {
           "id": "I-01",
@@ -89,6 +99,20 @@
       "icon": "Layout",
       "color": "bg-indigo-50 text-indigo-600",
       "time": "Variable",
+      "sources": [
+        {
+          "label": "Pay SEVIS Fee – FMJfee.com",
+          "url": "https://www.fmjfee.com/i901fee/index.html"
+        },
+        {
+          "label": "DS-160 Online Application",
+          "url": "https://ceac.state.gov/genniv/"
+        },
+        {
+          "label": "travel.state.gov – Student Visas",
+          "url": "https://travel.state.gov/content/travel/en/us-visas/study.html"
+        }
+      ],
       "steps": [
         {
           "id": "II-01",
@@ -162,6 +186,20 @@
       "icon": "Users",
       "color": "bg-emerald-50 text-emerald-600",
       "time": "Variable",
+      "sources": [
+        {
+          "label": "U.S. Embassy Pakistan – Student Visas",
+          "url": "https://pk.usembassy.gov/visas/nonimmigrant-visas/student-visas/"
+        },
+        {
+          "label": "Schedule Appointment – CGI Federal",
+          "url": "https://www.ustraveldocs.com/pk/"
+        },
+        {
+          "label": "travel.state.gov – Interview Tips",
+          "url": "https://travel.state.gov/content/travel/en/us-visas/visa-information-resources/interview-tips.html"
+        }
+      ],
       "steps": [
         {
           "id": "III-01",
@@ -253,6 +291,16 @@
       "icon": "IdCard",
       "color": "bg-amber-50 text-amber-600",
       "time": "Variable",
+      "sources": [
+        {
+          "label": "Study in the States – Before You Arrive",
+          "url": "https://studyinthestates.dhs.gov/students/before-you-arrive"
+        },
+        {
+          "label": "CBP Traveler Entry",
+          "url": "https://www.cbp.gov/travel/international-visitors"
+        }
+      ],
       "steps": [
         {
           "id": "IV-01",
@@ -316,6 +364,20 @@
       "icon": "Plane",
       "color": "bg-rose-50 text-rose-600",
       "time": "Day of Travel",
+      "sources": [
+        {
+          "label": "CBP – Entering the U.S.",
+          "url": "https://www.cbp.gov/travel/international-visitors"
+        },
+        {
+          "label": "I-94 Arrival/Departure Record",
+          "url": "https://i94.cbp.dhs.gov"
+        },
+        {
+          "label": "Study in the States – After Arrival",
+          "url": "https://studyinthestates.dhs.gov/students/complete-your-arrival-steps"
+        }
+      ],
       "steps": [
         {
           "id": "V-01",
@@ -369,6 +431,20 @@
       "icon": "Save",
       "color": "bg-indigo-50 text-indigo-600",
       "time": "Throughout Program",
+      "sources": [
+        {
+          "label": "Study in the States – Maintaining Status",
+          "url": "https://studyinthestates.dhs.gov/students/maintaining-your-status"
+        },
+        {
+          "label": "USCIS – OPT Overview",
+          "url": "https://www.uscis.gov/working-in-the-united-states/students-and-exchange-visitors/optional-practical-training-opt-for-f-1-students"
+        },
+        {
+          "label": "USCIS – CPT Overview",
+          "url": "https://www.uscis.gov/working-in-the-united-states/students-and-exchange-visitors/curricular-practical-training-cpt"
+        }
+      ],
       "steps": [
         {
           "id": "VI-01",

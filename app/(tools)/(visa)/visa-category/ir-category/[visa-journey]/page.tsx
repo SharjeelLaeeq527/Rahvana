@@ -28,7 +28,7 @@ export default function IR1JourneyPage() {
   const userId = user?.id ?? null;
   const { t, language } = useLanguage();
   const params = useParams();
-  const visaJourney = (params?.['visa-journey'] as string) || "ir-1";
+  const visaJourney = (params?.["visa-journey"] as string) || "ir-1";
 
   const [roadmapData, setRoadmapData] = useState<RoadmapData | null>(null);
   const [dataLoaded, setDataLoaded] = useState(false);
@@ -96,9 +96,7 @@ export default function IR1JourneyPage() {
 
   // Loading state
   if (!isLoaded || !dataLoaded) {
-    return (
-      <Loader fullScreen text={t("ir1Journey.loadingJourney")} />
-    );
+    return <Loader fullScreen text={t("ir1Journey.loadingJourney")} />;
   }
 
   if (!roadmapData) {
@@ -113,16 +111,20 @@ export default function IR1JourneyPage() {
 
   return (
     <section id="ir1-journey" className="block">
-      <div className="max-w-[1400px] mx-auto px-4 md:px-6 py-8 md:py-[60px]">
-        <div className="max-w-5xl mx-auto mb-8 md:mb-12">
+      <div className="w-full px-4 md:px-6 xl:px-8 py-8 md:py-[60px]">
+        <div className="w-full mb-8 md:mb-12">
           {/* Header */}
           <div className="flex flex-col md:flex-row md:items-start justify-between gap-4 mb-4">
             <div className="flex-1">
               <h1 className="text-3xl md:text-5xl font-bold mb-3 md:mb-4">
-                {language === "ur" && roadmapData.titleUr ? roadmapData.titleUr : (roadmapData.title || t("ir1Journey.title"))}
+                {language === "ur" && roadmapData.titleUr
+                  ? roadmapData.titleUr
+                  : roadmapData.title || t("ir1Journey.title")}
               </h1>
               <p className="text-slate-500 mb-6 md:mb-8 text-base md:text-lg max-w-2xl">
-                {language === "ur" && roadmapData.descriptionUr ? roadmapData.descriptionUr : (roadmapData.description || t("ir1Journey.description"))}
+                {language === "ur" && roadmapData.descriptionUr
+                  ? roadmapData.descriptionUr
+                  : roadmapData.description || t("ir1Journey.description")}
               </p>
             </div>
             {/* Sync indicator */}
@@ -150,55 +152,73 @@ export default function IR1JourneyPage() {
             <div className="flex items-center gap-3 mb-6 md:mb-8">
               <div className="w-1 h-6 md:h-8 bg-primary rounded-full" />
               <h2 className="text-xl md:text-2xl font-bold text-slate-900 tracking-tight">
-                {t("ir1Journey.stagesTitle")}
+                The {roadmapData.stages.length} Stages of Your Journey
               </h2>
             </div>
 
-            <div className={`grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-${Math.min(roadmapData.stages.length, 5)} gap-4`}>
-              {roadmapData.stages.map((stageItem: RoadmapStage, idx: number) => {
-                const defaultIcons = ["FileText", "Layout", "Users", "IdCard", "Plane"];
-                const defaultColors = [
-                  "bg-blue-50 text-blue-600",
-                  "bg-indigo-50 text-indigo-600",
-                  "bg-emerald-50 text-emerald-600",
-                  "bg-amber-50 text-amber-600",
-                  "bg-rose-50 text-rose-600",
-                ];
-                
-                const iconName = stageItem.icon || defaultIcons[idx % defaultIcons.length];
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                const Icon = (icons as any)[iconName] || icons.FileText;
-                
-                const color = stageItem.color || defaultColors[idx % defaultColors.length];
-                const isLast = idx === roadmapData.stages.length - 1;
-                
-                return (
-                 <div key={stageItem.id} className="relative group">
-                  <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm h-full flex flex-col">
+            <div className="flex overflow-x-auto gap-4 pb-6 pt-2 snap-x snap-mandatory hide-scrollbar -mx-4 px-4 sm:mx-0 sm:px-0 scroll-smooth">
+              {roadmapData.stages.map(
+                (stageItem: RoadmapStage, idx: number) => {
+                  const defaultIcons = [
+                    "FileText",
+                    "Layout",
+                    "Users",
+                    "IdCard",
+                    "Plane",
+                  ];
+                  const defaultColors = [
+                    "bg-blue-50 text-blue-600",
+                    "bg-indigo-50 text-indigo-600",
+                    "bg-emerald-50 text-emerald-600",
+                    "bg-amber-50 text-amber-600",
+                    "bg-rose-50 text-rose-600",
+                  ];
+
+                  const iconName =
+                    stageItem.icon || defaultIcons[idx % defaultIcons.length];
+                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                  const Icon = (icons as any)[iconName] || icons.FileText;
+
+                  const color =
+                    stageItem.color ||
+                    defaultColors[idx % defaultColors.length];
+                  const isLast = idx === roadmapData.stages.length - 1;
+
+                  return (
                     <div
-                      className={`w-10 h-10 rounded-xl ${color} flex items-center justify-center mb-4`}
+                      key={stageItem.id}
+                      className="relative group shrink-0 w-[260px] sm:w-[280px] lg:w-[300px] snap-center"
                     >
-                      <Icon className="w-5 h-5" />
+                      <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm h-full flex flex-col">
+                        <div
+                          className={`w-10 h-10 rounded-xl ${color} flex items-center justify-center mb-4`}
+                        >
+                          <Icon className="w-5 h-5" />
+                        </div>
+                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">
+                          {t("ir1Journey.stageShort", { stage: idx + 1 })}
+                        </span>
+                        <h4 className="font-bold text-slate-800 text-[15px] mb-2 leading-tight">
+                          {language === "ur" && stageItem.nameUr
+                            ? stageItem.nameUr
+                            : stageItem.name}
+                        </h4>
+                        <div className="mt-auto pt-2 flex items-center gap-1.5 text-slate-500">
+                          <span className="text-[11px] font-medium">
+                            {stageItem.timeline || "Variable"}
+                          </span>
+                        </div>
+                      </div>
+                      {/* Connectivity Line for Desktop */}
+                      {!isLast && (
+                        <div className="hidden lg:flex absolute top-1/2 left-[calc(100%+8px)] -translate-x-1/2 -translate-y-1/2 z-20 items-center justify-center w-10 h-10">
+                          <ArrowRight className="w-6 h-6 text-slate-300" />
+                        </div>
+                      )}
                     </div>
-                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">
-                      {t("ir1Journey.stageShort", { stage: idx + 1 })}
-                    </span>
-                    <h4 className="font-bold text-slate-800 text-[15px] mb-2 leading-tight">
-                      {language === "ur" && stageItem.nameUr ? stageItem.nameUr : stageItem.name}
-                    </h4>
-                    <div className="mt-auto pt-2 flex items-center gap-1.5 text-slate-500">
-                      <span className="text-[11px] font-medium">{stageItem.timeline || "Variable"}</span>
-                    </div>
-                  </div>
-                  {/* Connectivity Line for Desktop */}
-                  {!isLast && (
-                    <div className="hidden lg:flex absolute top-1/2 left-[calc(100%+8px)] -translate-x-1/2 -translate-y-1/2 z-20 items-center justify-center w-10 h-10">
-                      <ArrowRight className="w-8 h-8 text-slate-300" />
-                    </div>
-                  )}
-                 </div>
-                );
-              })}
+                  );
+                },
+              )}
             </div>
           </div>
 
@@ -232,7 +252,9 @@ export default function IR1JourneyPage() {
                       {t("ir1Journey.journeyProgress")}
                     </span>
                     <span className="text-sm font-bold text-primary">
-                      {t("ir1Journey.stepsCompleted", { count: state.completedSteps.size.toString() })}
+                      {t("ir1Journey.stepsCompleted", {
+                        count: state.completedSteps.size.toString(),
+                      })}
                     </span>
                   </div>
                   <div className="h-2 bg-slate-200 rounded-full overflow-hidden">
@@ -242,7 +264,8 @@ export default function IR1JourneyPage() {
                         width: `${Math.round(
                           (state.completedSteps.size /
                             roadmapData.stages.reduce(
-                              (acc: number, s: RoadmapStage) => acc + s.steps.length,
+                              (acc: number, s: RoadmapStage) =>
+                                acc + s.steps.length,
                               0,
                             )) *
                             100,
@@ -251,9 +274,9 @@ export default function IR1JourneyPage() {
                     />
                   </div>
                   <p className="text-xs text-slate-400 mt-2">
-                    {t("ir1Journey.currentlyAt", { 
-                        stage: (state.currentStage + 1).toString(), 
-                        name: roadmapData.stages[state.currentStage]?.name ?? "" 
+                    {t("ir1Journey.currentlyAt", {
+                      stage: (state.currentStage + 1).toString(),
+                      name: roadmapData.stages[state.currentStage]?.name ?? "",
                     })}
                   </p>
                 </div>
@@ -313,7 +336,13 @@ interface WizardProps {
   isSignedIn: boolean;
 }
 
-function Wizard({ roadmapData, state, actions, isLoaded, isSignedIn }: WizardProps) {
+function Wizard({
+  roadmapData,
+  state,
+  actions,
+  isLoaded,
+  isSignedIn,
+}: WizardProps) {
   const { t } = useLanguage();
   const [isVaultOpen, setIsVaultOpen] = useState(false);
 
@@ -364,7 +393,11 @@ function Wizard({ roadmapData, state, actions, isLoaded, isSignedIn }: WizardPro
               {t("ir1Journey.overallProgress")}
             </span>
             <span className="text-xs md:text-sm font-bold text-rahvana-primary">
-              {progressPercent}% ({completedTotal}/{totalSteps} {(t("ir1Journey.stepsCompleted", { count: "" }) as string).replace(/\{count\}/, "").trim()})
+              {progressPercent}% ({completedTotal}/{totalSteps}{" "}
+              {(t("ir1Journey.stepsCompleted", { count: "" }) as string)
+                .replace(/\{count\}/, "")
+                .trim()}
+              )
             </span>
           </div>
           <div className="h-2 bg-slate-100 rounded-full overflow-hidden">

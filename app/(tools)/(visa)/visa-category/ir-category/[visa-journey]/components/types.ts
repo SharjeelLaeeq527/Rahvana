@@ -2,6 +2,8 @@ export interface RoadmapStep {
   id: string;
   name: string;
   nameUr?: string;
+  description?: string;
+  descriptionUr?: string;
   who?: string;
   whoUr?: string;
   where?: string;
@@ -26,6 +28,12 @@ export interface RoadmapStep {
   possibleOutcomes?: string[];
 }
 
+export interface RoadmapSource {
+  label: string;
+  labelUr?: string;
+  url: string;
+}
+
 export interface RoadmapStage {
   id: number | string;
   name: string;
@@ -35,6 +43,7 @@ export interface RoadmapStage {
   timeline?: string;
   icon?: string;
   color?: string;
+  sources?: RoadmapSource[];
   steps: RoadmapStep[];
 }
 

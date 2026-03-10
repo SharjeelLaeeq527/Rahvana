@@ -10,6 +10,7 @@ import {
   MapPin,
   Info,
   ClipboardList,
+  ExternalLink,
 } from "lucide-react";
 import { RoadmapStep, RoadmapStage } from "./types";
 
@@ -55,8 +56,8 @@ export function StepDetail({
           </h2>
         </div>
 
-        <div className="text-slate-600 text-[15px] md:text-[17px] leading-relaxed pb-6 md:pb-8 mb-6 md:mb-8 border-b border-slate-100 max-w-3xl">
-          {isUrdu && step.notesUr ? step.notesUr : (step.notes ||
+        <div className="text-slate-600 text-[15px] md:text-[17px] leading-relaxed pb-6 md:pb-8 mb-6 md:mb-8 border-b border-slate-100">
+          {isUrdu && (step.descriptionUr || step.notesUr) ? (step.descriptionUr || step.notesUr) : (step.description || step.notes ||
             t("stepDetail.defaultNotes", { stepName: step.name }))}
             
           {/* Info Box */}
@@ -138,6 +139,29 @@ export function StepDetail({
             <p className="text-emerald-900 text-[16px] font-bold leading-relaxed">
               {isUrdu && step.outputUr ? step.outputUr : step.output}
             </p>
+          </div>
+        )}
+
+        {/* Official Sources */}
+        {stage.sources && stage.sources.length > 0 && (
+          <div className="bg-slate-50/80 rounded-2xl p-5 md:p-6 mb-8 md:mb-10 border border-slate-200">
+            <h4 className="text-[12px] font-extrabold mb-4 text-slate-500 uppercase tracking-widest">
+              {t("stepDetail.officialSources", { defaultValue: "Official Sources" }) || "Official Sources"}
+            </h4>
+            <div className="flex flex-wrap gap-3">
+              {stage.sources.map((src, idx) => (
+                <a
+                  key={`src-${idx}`}
+                  href={src.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 px-4 py-2 bg-blue-50/50 text-blue-700 text-[13px] font-bold rounded-full border border-blue-200 hover:bg-blue-100/50 hover:border-blue-300 transition-colors"
+                >
+                  <ExternalLink className="w-3.5 h-3.5" />
+                  {isUrdu && src.labelUr ? src.labelUr : src.label}
+                </a>
+              ))}
+            </div>
           </div>
         )}
       </div>

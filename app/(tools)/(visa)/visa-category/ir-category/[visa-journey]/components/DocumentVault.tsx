@@ -46,7 +46,7 @@ export function DocumentVault({
       />
 
       {/* Content */}
-      <div className="relative bg-white rounded-2xl w-full max-w-[800px] max-h-[90vh] md:max-h-[85vh] overflow-hidden shadow-2xl flex flex-col animate-in fade-in zoom-in duration-200">
+      <div className="relative bg-white rounded-2xl w-full max-w-[1200px] max-h-[90vh] md:max-h-[85vh] overflow-hidden shadow-2xl flex flex-col animate-in fade-in zoom-in duration-200">
         {/* Header */}
         <div className="p-5 md:p-6 border-b border-slate-200 flex justify-between items-start md:items-center bg-white shrink-0">
           <div className="pr-4">
