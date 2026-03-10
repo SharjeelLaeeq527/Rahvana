@@ -28,10 +28,13 @@ interface CredentialFormModalProps {
   isOpen: boolean;
   onClose: () => void;
   portalType: PortalType;
+  icon?: React.ReactNode;
   mode: "add" | "edit";
   initialData?: {
     username: string;
     password: string;
+    nvcCaseNumber?: string;
+    nvcInvoiceId?: string;
     securityQuestions: { id?: string; question: string; answer: string }[];
   };
   onSubmit: (data: {
@@ -59,6 +62,7 @@ const CredentialFormModal: React.FC<CredentialFormModalProps> = ({
   initialData,
   onSubmit,
   isSubmitting,
+  icon,
 }) => {
   const questionLimit = portalQuestionLimit[portalType];
 
@@ -84,6 +88,8 @@ const CredentialFormModal: React.FC<CredentialFormModalProps> = ({
       if (mode === "edit" && initialData) {
         setUsername(initialData.username || "");
         setPassword("");
+        setNvcCaseNumber(initialData.nvcCaseNumber || "");
+      setNvcInvoiceId(initialData.nvcInvoiceId || "");
         const sq = initialData.securityQuestions || [];
         setSecurityQuestions(
           Array(questionLimit)
@@ -163,12 +169,12 @@ const CredentialFormModal: React.FC<CredentialFormModalProps> = ({
       />
 
       {/* Modal */}
-      <div className="relative bg-white rounded-2xl w-full max-w-[560px] max-h-[90vh] overflow-y-auto mx-4 shadow-2xl">
-        {/* Header */}
+      <div className="relative bg-white rounded-2xl w-full max-w-xl max-h-[85vh] overflow-hidden mx-4 shadow-2xl flex flex-col">
+        {/* Header */}{" "}
         <div className="sticky top-0 bg-white rounded-t-2xl border-b border-[#e0f0f0] px-6 py-4 flex items-center justify-between z-10">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-[#e8f6f6] flex items-center justify-center text-[#0d7377]">
-              <Shield size={18} />
+            <div className="w-10 h-10 rounded-xl bg-[#e8f6f6] flex items-center justify-center text-[#0d7377]">
+              {icon}
             </div>
             <div>
               <h2
@@ -189,9 +195,8 @@ const CredentialFormModal: React.FC<CredentialFormModalProps> = ({
             <X size={16} />
           </button>
         </div>
-
         {/* Form */}
-        <form onSubmit={handleSubmit} className="px-6 py-5 space-y-5">
+        <form onSubmit={handleSubmit} className="px-6 py-5 space-y-5 overflow-y-auto">
           {portalType !== "NVC" && (
             <>
               {/* Username */}

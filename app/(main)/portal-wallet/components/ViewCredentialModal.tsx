@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { X, Eye, EyeOff, Shield, Copy, Check } from "lucide-react";
+import { X, Eye, EyeOff, Copy, Check } from "lucide-react";
 
 interface SecurityQuestion {
   id: string;
@@ -13,12 +13,11 @@ interface ViewCredentialModalProps {
   isOpen: boolean;
   onClose: () => void;
   portalType: string;
+  icon?: React.ReactNode;
   credential: {
     id: string;
-
     username?: string | null;
     password?: string | null;
-
     nvc_case_number?: string | null;
     nvc_invoice_id?: string | null;
     security_questions: SecurityQuestion[];
@@ -27,6 +26,8 @@ interface ViewCredentialModalProps {
   onRevealAnswer: (credentialId: string, questionId: string) => Promise<string>;
   onRevealCaseNumber: (credentialId: string) => Promise<string>;
   onRevealInvoiceId: (credentialId: string) => Promise<string>;
+  onEdit?: () => void;
+  onDelete?: () => void;
 }
 
 const ViewCredentialModal: React.FC<ViewCredentialModalProps> = ({
@@ -34,19 +35,18 @@ const ViewCredentialModal: React.FC<ViewCredentialModalProps> = ({
   onClose,
   portalType,
   credential,
+  icon,
   onRevealPassword,
   onRevealAnswer,
   onRevealCaseNumber,
   onRevealInvoiceId,
+  onEdit,
+  onDelete,
 }) => {
   const [revealedPassword, setRevealedPassword] = useState<string | null>(null);
   const [revealedAnswers, setRevealedAnswers] = useState<
     Record<string, string>
   >({});
-  const [loadingPassword, setLoadingPassword] = useState(false);
-  const [loadingAnswers, setLoadingAnswers] = useState<Record<string, boolean>>(
-    {},
-  );
   const [revealedCaseNumber, setRevealedCaseNumber] = useState<string | null>(
     null,
   );
@@ -54,131 +54,69 @@ const ViewCredentialModal: React.FC<ViewCredentialModalProps> = ({
     null,
   );
 
+  const [loadingPassword, setLoadingPassword] = useState(false);
   const [loadingCaseNumber, setLoadingCaseNumber] = useState(false);
   const [loadingInvoiceId, setLoadingInvoiceId] = useState(false);
+  const [loadingAnswers, setLoadingAnswers] = useState<Record<string, boolean>>(
+    {},
+  );
+
   const [copiedField, setCopiedField] = useState<string | null>(null);
 
   useEffect(() => {
     if (isOpen) {
       setRevealedPassword(null);
       setRevealedAnswers({});
+      setRevealedCaseNumber(null);
+      setRevealedInvoiceId(null);
     }
-  }, [credential?.id, isOpen]); // reset on new credential or modal open
+  }, [credential?.id, isOpen]);
 
-  useEffect(() => {
-    if (revealedPassword) {
-      const timer = setTimeout(() => setRevealedPassword(null), 20000);
-      return () => clearTimeout(timer);
-    }
-  }, [revealedPassword]);
-
-  useEffect(() => {
-    if (revealedCaseNumber) {
-      const timer = setTimeout(() => setRevealedCaseNumber(null), 20000);
-      return () => clearTimeout(timer);
-    }
-  }, [revealedCaseNumber]);
-
-  useEffect(() => {
-    if (revealedInvoiceId) {
-      const timer = setTimeout(() => setRevealedInvoiceId(null), 20000);
-      return () => clearTimeout(timer);
-    }
-  }, [revealedInvoiceId]);
-
-  useEffect(() => {
-    const timers = Object.keys(revealedAnswers).map((qId) =>
-      setTimeout(() => {
-        setRevealedAnswers((prev) => {
-          const copy = { ...prev };
-          delete copy[qId];
-          return copy;
-        });
-      }, 20000),
-    );
-
-    return () => timers.forEach(clearTimeout);
-  }, [revealedAnswers]);
+  const copyToClipboard = (text: string, field: string) => {
+    navigator.clipboard.writeText(text);
+    setCopiedField(field);
+    setTimeout(() => setCopiedField(null), 1500);
+  };
 
   const handleRevealPassword = async () => {
     if (!credential) return;
 
     setLoadingPassword(true);
-
-    try {
-      const pw = await onRevealPassword(credential.id);
-
-      if (pw) {
-        setRevealedPassword(pw);
-      }
-    } catch {
-      console.error("Failed to reveal password");
-    } finally {
-      setLoadingPassword(false);
-    }
+    const pw = await onRevealPassword(credential.id);
+    setRevealedPassword(pw);
+    setLoadingPassword(false);
   };
 
   const handleRevealNVCCaseNumber = async () => {
     if (!credential) return;
 
     setLoadingCaseNumber(true);
-
-    try {
-      const pw = await onRevealCaseNumber(credential.id);
-
-      if (pw) {
-        setRevealedCaseNumber(pw);
-      }
-    } catch {
-      console.error("Failed to reveal case number");
-    } finally {
-      setLoadingCaseNumber(false);
-    }
+    const val = await onRevealCaseNumber(credential.id);
+    setRevealedCaseNumber(val);
+    setLoadingCaseNumber(false);
   };
 
   const handleRevealNVCInvoiceID = async () => {
     if (!credential) return;
 
     setLoadingInvoiceId(true);
-
-    try {
-      const pw = await onRevealInvoiceId(credential.id);
-
-      if (pw) {
-        setRevealedInvoiceId(pw);
-      }
-    } catch {
-      console.error("Failed to reveal invoice ID");
-    } finally {
-      setLoadingInvoiceId(false);
-    }
+    const val = await onRevealInvoiceId(credential.id);
+    setRevealedInvoiceId(val);
+    setLoadingInvoiceId(false);
   };
 
-  const handleRevealAnswer = async (questionId: string) => {
+  const handleRevealAnswer = async (qid: string) => {
     if (!credential) return;
 
-    setLoadingAnswers((prev) => ({ ...prev, [questionId]: true }));
+    setLoadingAnswers((p) => ({ ...p, [qid]: true }));
+    const val = await onRevealAnswer(credential.id, qid);
 
-    try {
-      const answer = await onRevealAnswer(credential.id, questionId);
+    setRevealedAnswers((p) => ({
+      ...p,
+      [qid]: val,
+    }));
 
-      if (answer) {
-        setRevealedAnswers((prev) => ({
-          ...prev,
-          [questionId]: answer,
-        }));
-      }
-    } catch {
-      console.error("Failed to reveal answer");
-    } finally {
-      setLoadingAnswers((prev) => ({ ...prev, [questionId]: false }));
-    }
-  };
-
-  const copyToClipboard = (text: string, field: string) => {
-    navigator.clipboard.writeText(text);
-    setCopiedField(field);
-    setTimeout(() => setCopiedField(null), 1500);
+    setLoadingAnswers((p) => ({ ...p, [qid]: false }));
   };
 
   const handleClose = () => {
@@ -190,40 +128,43 @@ const ViewCredentialModal: React.FC<ViewCredentialModalProps> = ({
   if (!isOpen || !credential) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      {/* Overlay */}
       <div
         className="absolute inset-0 bg-black/60 backdrop-blur-sm"
         onClick={handleClose}
       />
 
-      <div className="relative bg-white rounded-2xl w-full max-w-[520px] max-h-[85vh] overflow-y-auto mx-4 shadow-2xl">
+      {/* Modal */}
+      <div className="relative bg-white rounded-2xl w-full max-w-xl max-h-[85vh] overflow-hidden shadow-2xl flex flex-col">
         {/* Header */}
-        <div className="sticky top-0 bg-white rounded-t-2xl border-b border-[#e0f0f0] px-6 py-4 flex items-center justify-between z-10">
+        <div className="flex items-center justify-between border-b border-[#e0f0f0] px-6 py-4">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-[#e8f6f6] flex items-center justify-center text-[#0d7377]">
-              <Shield size={18} />
+            <div className="w-10 h-10 rounded-xl bg-[#e8f6f6] flex items-center justify-center text-[#0d7377]">
+              {icon}
             </div>
+
             <div>
-              <h2
-                className="text-[16px] font-bold text-[#0a1128]"
-                style={{ fontFamily: "Inter, sans-serif" }}
-              >
+              <h2 className="text-[16px] font-bold text-[#0a1128]">
                 {portalType} Credentials
               </h2>
+
               <p className="text-[11px] text-[#9ca3af]">
-                Click eye icons to reveal sensitive data.
+                Click eye icon to reveal sensitive data
               </p>
             </div>
           </div>
+
           <button
             onClick={handleClose}
-            className="w-8 h-8 rounded-lg hover:bg-[#f0f2f4] flex items-center justify-center text-[#9ca3af] hover:text-[#0a1128] transition-colors"
+            className="w-8 h-8 rounded-lg hover:bg-[#f0f2f4] flex items-center justify-center text-[#9ca3af] hover:text-[#0a1128]"
           >
             <X size={16} />
           </button>
         </div>
 
-        <div className="px-6 py-5 space-y-4">
+        {/* BODY */}
+        <div className="px-6 py-5 space-y-4 overflow-y-auto">
           {portalType === "NVC" && (
             <>
               {/* Case Number */}
@@ -454,6 +395,23 @@ const ViewCredentialModal: React.FC<ViewCredentialModalProps> = ({
               )}
             </>
           )}
+        </div>
+
+        {/* FOOTER */}
+        <div className="flex justify-between border-t border-[#e0f0f0] px-6 py-4">
+          <button
+            onClick={onDelete}
+            className="text-sm px-4 py-2 rounded-lg bg-red-600 hover:bg-red-700 text-white font-semibold transition-all duration-200 cursor-pointer shadow-sm hover:shadow-md"
+          >
+            Delete
+          </button>
+
+          <button
+            onClick={onEdit}
+            className="text-sm px-4 py-2 rounded-lg bg-primary text-white hover:bg-[#0a5a5d] font-semibold transition-all duration-200 cursor-pointer shadow-sm hover:shadow-md"
+          >
+            Edit Credentials
+          </button>
         </div>
       </div>
     </div>

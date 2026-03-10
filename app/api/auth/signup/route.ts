@@ -4,7 +4,6 @@ import { createClient } from "@supabase/supabase-js";
 import { sendEmail, getEmailConfirmationHtml } from "@/lib/email/resend";
 import crypto from "crypto";
 
-// Create admin client for user creation
 const supabaseAdmin = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_ROLE_KEY!,
@@ -13,59 +12,120 @@ const supabaseAdmin = createClient(
       autoRefreshToken: false,
       persistSession: false,
     },
-  }
+  },
 );
+
+// Strong password validation
+function validatePassword(password: string) {
+  const strongPassword = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,72}$/;
+  return strongPassword.test(password);
+}
+
+// Constant-time comparison
+function safeCompare(a: string, b: string) {
+  const hashA = crypto.createHash("sha256").update(a).digest();
+  const hashB = crypto.createHash("sha256").update(b).digest();
+  if (hashA.length !== hashB.length) return false;
+  return crypto.timingSafeEqual(hashA, hashB);
+}
 
 export async function POST(request: NextRequest) {
   try {
-    const { email, password } = await request.json();
+    const body = await request.json();
+    const email = String(body.email || "")
+      .trim()
+      .toLowerCase()
+      .slice(0, 254);
+    const password = String(body.password || "");
 
-    if (!email || !password) {
+    if (!email || !password)
       return NextResponse.json(
-        { error: "Email and password are required" },
-        { status: 400 }
+        { error: "Invalid signup request" },
+        { status: 400 },
       );
-    }
 
     // Validate email format
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
+    if (!emailRegex.test(email))
       return NextResponse.json(
         { error: "Invalid email format" },
-        { status: 400 }
+        { status: 400 },
       );
-    }
 
-    // Validate password length
-    if (password.length < 6) {
+    // Disposable email check
+    const blockedDomains = [
+      "mailinator.com",
+      "tempmail.com",
+      "10minutemail.com",
+    ];
+    const domain = email.split("@")[1];
+    if (blockedDomains.includes(domain))
       return NextResponse.json(
-        { error: "Password must be at least 6 characters" },
-        { status: 400 }
+        { error: "Disposable emails are not allowed" },
+        { status: 400 },
       );
-    }
 
-    // Check if user already exists
-    const { data: existingUsers } = await supabaseAdmin.auth.admin.listUsers();
-    const existingUser = existingUsers?.users.find(
-      (u) => u.email?.toLowerCase() === email.toLowerCase()
+    // Strong password
+    if (!validatePassword(password))
+      return NextResponse.json(
+        {
+          error:
+            "Password must contain uppercase, lowercase, number, symbol and be 8+ characters",
+        },
+        { status: 400 },
+      );
+
+    // List users to check existing
+    const { data: users } = await supabaseAdmin.auth.admin.listUsers({
+      page: 1,
+      perPage: 100,
+    });
+
+    const existingUser = users?.users?.find((u) =>
+      safeCompare(u.email?.toLowerCase() || "", email),
     );
 
-    if (existingUser) {
-      return NextResponse.json(
-        { error: "An account with this email already exists" },
-        { status: 400 }
-      );
-    }
-
-    // Generate email confirmation token
+    // Build confirmation token & link (for both new and existing unconfirmed users)
     const confirmToken = crypto.randomBytes(32).toString("hex");
     const confirmTokenHash = crypto
       .createHash("sha256")
       .update(confirmToken)
       .digest("hex");
-    const confirmTokenExpiry = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
+    const confirmTokenExpiry = new Date(Date.now() + 24 * 60 * 60 * 1000);
 
-    // Create user with Supabase Admin (email not confirmed yet)
+    const baseUrl =
+      process.env.NEXT_PUBLIC_APP_URL ||
+      request.headers.get("origin") ||
+      "http://localhost:3000";
+    const confirmLink = `${baseUrl}/api/auth/confirm-email?token=${confirmToken}&email=${encodeURIComponent(email)}`;
+
+    const emailHtml = getEmailConfirmationHtml(confirmLink);
+
+    if (existingUser) {
+      // If already exists, only resend confirmation email if not confirmed
+      if (!existingUser.email_confirmed_at) {
+        await supabaseAdmin.auth.admin.updateUserById(existingUser.id, {
+          user_metadata: {
+            confirm_token_hash: confirmTokenHash,
+            confirm_token_expiry: confirmTokenExpiry.toISOString(),
+          },
+        });
+
+        await sendEmail({
+          to: email,
+          subject: "Confirm Your Email - Rahvana",
+          html: emailHtml,
+        });
+      }
+
+      // Prevent enumeration
+      return NextResponse.json({
+        success: true,
+        message: "If the email is valid, a confirmation link will be sent",
+      });
+    }
+
+    // Create new user
     const { data: newUser, error: createError } =
       await supabaseAdmin.auth.admin.createUser({
         email,
@@ -78,80 +138,56 @@ export async function POST(request: NextRequest) {
       });
 
     if (createError) {
-      console.error("Error creating user:", createError);
+      console.error("Create user error:", createError);
       return NextResponse.json(
-        { error: createError.message || "Failed to create account" },
-        { status: 500 }
+        { error: "Unable to create account" },
+        { status: 500 },
       );
     }
 
-    // Wait a moment for the database trigger to complete
-    await new Promise(resolve => setTimeout(resolve, 100));
+    // Wait for DB trigger
+    await new Promise((resolve) => setTimeout(resolve, 100));
 
-    // Check if profile exists (created by trigger), if not create it
+    // Ensure profile exists
     if (newUser?.user?.id) {
       const { data: existingProfile } = await supabaseAdmin
-        .from('profiles')
-        .select('id')
-        .eq('id', newUser.user.id)
+        .from("profiles")
+        .select("id")
+        .eq("id", newUser.user.id)
         .single();
 
       if (!existingProfile) {
-        // Only create profile if trigger didn't create it
-        const { error: profileError } = await supabaseAdmin
-          .from('profiles')
-          .upsert([{
-            id: newUser.user.id,
-            email: email,
-            full_name: email.split('@')[0],
-            role: 'user'
-          }], {
-            onConflict: 'id'
-          });
-
-        if (profileError) {
-          console.error("Error creating user profile:", profileError);
-          // Continue anyway - profile can be created later
-        }
+        await supabaseAdmin.from("profiles").upsert(
+          [
+            {
+              id: newUser.user.id,
+              email,
+              full_name: email.split("@")[0],
+              role: "user",
+            },
+          ],
+          { onConflict: "id" },
+        );
       }
     }
 
-    // Build confirmation URL
-    const baseUrl =
-      process.env.NEXT_PUBLIC_APP_URL ||
-      request.headers.get("origin") ||
-      "http://localhost:3000";
-    const confirmLink = `${baseUrl}/api/auth/confirm-email?token=${confirmToken}&email=${encodeURIComponent(email)}`;
-
-    // Send confirmation email via Resend
-    const emailHtml = getEmailConfirmationHtml(confirmLink);
-    const { success, error: emailError } = await sendEmail({
+    // Send confirmation email
+    await sendEmail({
       to: email,
       subject: "Confirm Your Email - Rahvana",
       html: emailHtml,
     });
 
-    if (!success) {
-      console.error("Email send failed:", emailError);
-      // Delete the user if email fails to send
-      if (newUser?.user?.id) {
-        await supabaseAdmin.auth.admin.deleteUser(newUser.user.id);
-      }
-      return NextResponse.json(
-        { error: "Failed to send confirmation email. Please try again." },
-        { status: 500 }
-      );
-    }
-
+    // Return success
     return NextResponse.json({
       success: true,
-      message: "Please check your email to confirm your account",
+      message: "If the email is valid, a confirmation link will be sent",
     });
   } catch (error) {
     console.error("Signup error:", error);
     return NextResponse.json(
-      { error: "An unexpected error occurred" },
-      { status: 500 }
+      { error: "Unexpected server error" },
+      { status: 500 },
     );
   }
 }
