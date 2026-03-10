@@ -8,6 +8,8 @@ interface PortalCardProps {
   portalUrl: string;
   hasCredentials: boolean;
   onAction: () => void;
+  iconBgColor?: string;
+  iconHoverBgColor?: string;
 }
 
 const PortalCard: React.FC<PortalCardProps> = ({
@@ -17,12 +19,18 @@ const PortalCard: React.FC<PortalCardProps> = ({
   portalUrl,
   hasCredentials,
   onAction,
+  iconBgColor,
+  iconHoverBgColor,
 }) => {
   return (
     <div className="flex flex-col items-center bg-white rounded-2xl border border-[#e0f0f0] p-6 w-full max-w-85 hover:shadow-lg hover:border-[#0d7377]/30 transition-all duration-300 group">
       {/* Icon */}
-      <div className="w-16 h-16 rounded-2xl flex items-center justify-center mb-5  group-hover:text-white text-[#0d7377] transition-colors duration-300">
-        {icon}
+      <div
+        className={`w-16 h-16 rounded-2xl flex items-center justify-center mb-5 
+  text-white transition-all duration-300 py-2 px-1
+  ${iconBgColor} ${iconHoverBgColor} group-hover:scale-105`}
+      >
+        <div className="w-16 h-16 flex items-center justify-center">{icon}</div>
       </div>
 
       {/* Title & description */}
