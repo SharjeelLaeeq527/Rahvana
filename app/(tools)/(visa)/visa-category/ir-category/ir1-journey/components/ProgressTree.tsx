@@ -1,16 +1,16 @@
 import React, { useState, useEffect } from "react";
 import { WizardState } from "@/app/(main)/dashboard/hooks/useWizard";
+import { roadmapData } from "@/data/roadmap";
 import { useLanguage } from "@/app/context/LanguageContext";
 import { ChevronDown, CheckCircle2, Circle, PlayCircle } from "lucide-react";
-import { RoadmapData, RoadmapStage, RoadmapStep } from "./types";
+
 
 interface ProgressTreeProps {
-  roadmapData: RoadmapData;
   state: WizardState;
   onSelectStep: (stageIdx: number, stepIdx: number) => void;
 }
 
-export function ProgressTree({ roadmapData, state, onSelectStep }: ProgressTreeProps) {
+export function ProgressTree({ state, onSelectStep }: ProgressTreeProps) {
   const { t, language } = useLanguage();
   const isUrdu = language === "ur";
   const [expandedStages, setExpandedStages] = useState<Record<number, boolean>>(
@@ -43,18 +43,19 @@ export function ProgressTree({ roadmapData, state, onSelectStep }: ProgressTreeP
         </p>
       </div>
 
-      {roadmapData.stages.map((stage: RoadmapStage, sIdx: number) => {
+      {roadmapData.stages.map((stage, sIdx) => {
         const isActiveStage = state.currentStage === sIdx;
         const isExpanded = expandedStages[sIdx];
-        const completedInStage = stage.steps.filter((s: RoadmapStep) =>
+        const completedInStage = stage.steps.filter((s) =>
           state.completedSteps.has(s.id),
         ).length;
         const stageProgress = Math.round(
           (completedInStage / stage.steps.length) * 100,
         );
 
-        // Get stage name from JSON data
-        const stageNameDisplay = language === "ur" && stage.nameUr ? stage.nameUr : stage.name;
+        // Get stage name from translations
+        const stageNameFull = t(`ir1Journey.stageNames.${stage.id}`) || stage.name;
+        const stageNameDisplay = stageNameFull;
 
         return (
           <div key={stage.id} className="group/stage">
@@ -96,11 +97,11 @@ export function ProgressTree({ roadmapData, state, onSelectStep }: ProgressTreeP
 
             {isExpanded && (
               <div className="mt-1 mb-4 ml-3.5 border-l-2 border-slate-100 pl-3 space-y-1.5 animate-in fade-in slide-in-from-top-1 duration-200">
-                {stage.steps.map((step: RoadmapStep, stIdx: number) => {
+                {stage.steps.map((step, stIdx) => {
                   const isCurrentStep =
                     state.currentStep === stIdx && isActiveStage;
                   const isStepCompleted = state.completedSteps.has(step.id);
-                  const stepNameDisplay = (isUrdu && step.nameUr) ? step.nameUr : step.name;
+                  const stepNameDisplay = (isUrdu && (step as any).nameUr) ? (step as any).nameUr : step.name;
 
                   return (
                     <button
