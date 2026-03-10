@@ -2,9 +2,9 @@ import React, { useState } from "react";
 import { WizardState } from "../../(main)/dashboard/hooks/useWizard";
 import { roadmapData } from "../../../data/roadmap";
 import { useWizard } from "../../(main)/dashboard/hooks/useWizard";
-import { ProgressTree } from "@/app/(tools)/(visa)/visa-category/ir-category/[visa-journey]/components/ProgressTree";
-import { StepDetail } from "@/app/(tools)/(visa)/visa-category/ir-category/[visa-journey]/components/StepDetail";
-import { DocumentVault } from "@/app/(tools)/(visa)/visa-category/ir-category/[visa-journey]/components/DocumentVault";
+import { ProgressTree } from "@/app/(tools)/(visa)/visa-category/ir-category/ir1-journey/components/ProgressTree";
+import { StepDetail } from "@/app/(tools)/(visa)/visa-category/ir-category/ir1-journey/components/StepDetail";
+import { DocumentVault } from "@/app/(tools)/(visa)/visa-category/ir-category/ir1-journey/components/DocumentVault";
 import { useLanguage } from "@/app/context/LanguageContext";
 
 type WizardActions = ReturnType<typeof useWizard>["actions"];
@@ -21,9 +21,7 @@ export function Wizard({ state, actions, isLoaded }: WizardProps) {
 
   if (!isLoaded) {
     return (
-      <div className="p-20 text-center text-slate-400">
-        {t("wizard.loading")}
-      </div>
+      <div className="p-20 text-center text-slate-400">{t("wizard.loading")}</div>
     );
   }
 
