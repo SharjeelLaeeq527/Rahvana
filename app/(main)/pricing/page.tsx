@@ -84,9 +84,9 @@ export default function PricingSection() {
             </div>
 
             <div className="flex flex-wrap items-center justify-center gap-2 lg:gap-3 mb-6 w-full">
-              <span className="text-xs text-slate-400 font-bold uppercase tracking-wider">
+              {/* <span className="text-xs text-slate-400 font-bold uppercase tracking-wider">
                 {t("pricing.or")}
-              </span>
+              </span> */}
               <div className="text-xs lg:text-sm text-[#0d9488] font-medium bg-teal-50 inline-block px-3 py-1 rounded-full border border-teal-100">
                 {t("pricing.plans.plus.annualPrice")}{" "}
                 {t("pricing.plans.plus.annualPriceSuffix")}
