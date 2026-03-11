@@ -89,11 +89,7 @@ const MegaMenu: React.FC<MegaMenuProps> = ({
     : currentItems;
 
   return (
-    <motion.div
-      initial={{ opacity: 0, scale: 0.98 }}
-      animate={{ opacity: 1, scale: 1 }}
-      exit={{ opacity: 0, scale: 0.98 }}
-      transition={{ duration: 0.12, ease: "easeOut" }}
+    <div
       className="relative w-full max-w-[min(1100px,calc(100vw-2rem))] flex flex-col max-h-[80vh] mb-10 mt-0 origin-top shadow-sm"
     >
       {/* Main panel */}
@@ -148,10 +144,10 @@ const MegaMenu: React.FC<MegaMenuProps> = ({
               // ------------- SEARCH RESULTS (FLAT GRID) -------------
               <motion.div
                 key="search-results"
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                transition={{ duration: 0.2 }}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.15 }}
                 className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-6"
               >
                 {filteredItems.map((item, index) => (
@@ -255,7 +251,7 @@ const MegaMenu: React.FC<MegaMenuProps> = ({
         />
       )}
     </div>
-    </motion.div>
+    </div>
   );
 };
 

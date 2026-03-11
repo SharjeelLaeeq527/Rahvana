@@ -441,20 +441,18 @@ export function SiteHeader({
           }}
           onMouseLeave={handleMenuLeave}
         >
-            <AnimatePresence mode="sync">
-              {activeMenu === "journeys" && (
-                <MegaMenu key="journeys" isOpen={true} arrowOffset={arrowOffset} {...NAV_DATA.journeys} />
-              )}
-              {activeMenu === "tools" && (
-                <MegaMenu key="tools" isOpen={true} arrowOffset={arrowOffset} {...NAV_DATA.tools} />
-              )}
-              {activeMenu === "guides" && (
-                <MegaMenu key="guides" isOpen={true} arrowOffset={arrowOffset} {...NAV_DATA.guides} />
-              )}
-              {activeMenu === "services" && (
-                <MegaMenu key="services" isOpen={true} arrowOffset={arrowOffset} {...NAV_DATA.services} />
-              )}
-            </AnimatePresence>
+            {activeMenu === "journeys" && (
+              <MegaMenu key="journeys" isOpen={true} arrowOffset={arrowOffset} {...NAV_DATA.journeys} />
+            )}
+            {activeMenu === "tools" && (
+              <MegaMenu key="tools" isOpen={true} arrowOffset={arrowOffset} {...NAV_DATA.tools} />
+            )}
+            {activeMenu === "guides" && (
+              <MegaMenu key="guides" isOpen={true} arrowOffset={arrowOffset} {...NAV_DATA.guides} />
+            )}
+            {activeMenu === "services" && (
+              <MegaMenu key="services" isOpen={true} arrowOffset={arrowOffset} {...NAV_DATA.services} />
+            )}
         </div>
 
         {/* Right side – Search + Login */}
