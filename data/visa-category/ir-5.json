@@ -1,6 +1,8 @@
 {
   "title": "IR-5 Parent Visa Journey",
+  "titleUr": "آئی آر-۵ والدین کا ویزہ سفر",
   "description": "Comprehensive step-by-step roadmap for U.S. citizens petitioning for an immigrant visa for a parent via consular processing. Follow each stage from USCIS petition through U.S. arrival.",
+  "descriptionUr": "کونسلر پروسیسنگ کے ذریعے والدین کے لیے تارک وطن ویزا کی درخواست دینے والے امریکی شہریوں کے لیے مرحلہ وار جامع روڈ میپ۔ USCIS پٹیشن سے لے کر امریکہ پہنچنے تک ہر مرحلے پر عمل کریں۔",
   "documents": [
     "Petitioner's Proof of U.S. Citizenship",
     "Petitioner's Government Photo ID",
@@ -40,7 +42,10 @@
             "Locate U.S. passport, U.S. birth certificate, or naturalization/citizenship certificate",
             "Review the USCIS immediate relative definition at uscis.gov"
           ],
-          "success": "Petitioner confirmed as U.S. citizen age 21 or older"
+          "success": "Petitioner confirmed as U.S. citizen age 21 or older",
+          "relevantTools": [
+            { "label": "Visa Path Finder", "labelUr": "ویزہ پاتھ فائنڈر", "href": "/visa-eligibility", "type": "tool" }
+          ]
         },
         {
           "id": "2",
@@ -68,7 +73,11 @@
             "If documents are not in English: obtain a certified translation for each",
             "Review the I-130 form instructions on uscis.gov for the current document checklist"
           ],
-          "success": "All required civil documents assembled and translated as needed"
+          "success": "All required civil documents assembled and translated as needed",
+          "relevantTools": [
+            { "label": "Document Translation", "labelUr": "دستاویز کا ترجمہ", "href": "/document-translation", "type": "service" },
+            { "label": "PDF Toolkit", "labelUr": "پی ڈی ایف ٹول کٹ", "href": "/pdf-processing", "type": "tool" }
+          ]
         },
         {
           "id": "4",
@@ -81,7 +90,10 @@
             "Sign and date the petition",
             "Review USCIS I-130 instructions for any recently updated requirements"
           ],
-          "success": "Form I-130 completed, reviewed, and ready for filing"
+          "success": "Form I-130 completed, reviewed, and ready for filing",
+          "relevantTools": [
+            { "label": "Smart Form Filler", "labelUr": "سمارٹ فارم فلر", "href": "/visa-forms", "type": "tool" }
+          ]
         },
         {
           "id": "5",
@@ -119,7 +131,10 @@
             "Use the USCIS case status tool at egov.uscis.gov to monitor progress",
             "Contact USCIS if the notice does not arrive within the expected timeframe per their website"
           ],
-          "success": "I-797C receipt notice received with correct case information"
+          "success": "I-797C receipt notice received with correct case information",
+          "relevantTools": [
+            { "label": "Case Status Tracker", "labelUr": "کیس اسٹیٹس ٹریکر", "href": "/case-status", "type": "tool" }
+          ]
         },
         {
           "id": "8",
@@ -145,7 +160,10 @@
             "Notify USCIS of any address changes using Form AR-11 at uscis.gov",
             "Do not contact USCIS outside of published inquiry guidelines"
           ],
-          "success": "USCIS processing complete; no additional requests outstanding"
+          "success": "USCIS processing complete; no additional requests outstanding",
+          "relevantTools": [
+            { "label": "Case Status Tracker", "labelUr": "کیس اسٹیٹس ٹریکر", "href": "/case-status", "type": "tool" }
+          ]
         },
         {
           "id": "10",
@@ -180,7 +198,10 @@
             "Review NVC instructions at travel.state.gov under 'Immigrant Visas'",
             "Ensure petitioner's and beneficiary's contact information is current with NVC"
           ],
-          "success": "NVC case number and invoice ID received; CEAC account accessible"
+          "success": "NVC case number and invoice ID received; CEAC account accessible",
+          "relevantTools": [
+            { "label": "DQ Status Tracker", "labelUr": "ڈی کیو اسٹیٹس ٹریکر", "href": "/iv-tool", "type": "tool" }
+          ]
         },
         {
           "id": "12",
@@ -218,7 +239,10 @@
             "Submit the DS-260 and record the confirmation number",
             "Review DS-260 instructions at travel.state.gov"
           ],
-          "success": "DS-260 submitted in CEAC; confirmation number recorded"
+          "success": "DS-260 submitted in CEAC; confirmation number recorded",
+          "relevantTools": [
+            { "label": "Smart Form Filler", "labelUr": "سمارٹ فارم فلر", "href": "/visa-forms", "type": "tool" }
+          ]
         },
         {
           "id": "15",
@@ -234,7 +258,10 @@
             "Scan documents clearly (300 dpi minimum) per CEAC upload requirements",
             "Upload all documents in CEAC under the correct categories"
           ],
-          "success": "All required civil documents uploaded to CEAC"
+          "success": "All required civil documents uploaded to CEAC",
+          "relevantTools": [
+            { "label": "PDF Toolkit", "labelUr": "پی ڈی ایف ٹول کٹ", "href": "/pdf-processing", "type": "tool" }
+          ]
         },
         {
           "id": "16",
@@ -250,7 +277,10 @@
             "Upload completed I-864 and all financial evidence to CEAC",
             "Review I-864 instructions at uscis.gov for current income requirements (125% of federal poverty guideline)"
           ],
-          "success": "Form I-864 and supporting financial documents uploaded to CEAC"
+          "success": "Form I-864 and supporting financial documents uploaded to CEAC",
+          "relevantTools": [
+            { "label": "Sponsorship Calculator", "labelUr": "سپانسرشپ کیلکولیٹر", "href": "/affidavit-support-calculator", "type": "tool" }
+          ]
         },
         {
           "id": "17",
@@ -355,7 +385,10 @@
             "If additional documents are requested (known as 'administrative processing' or '221(g)'), provide them as instructed",
             "If the visa is approved, the consulate will inform you of the next steps (visa issuance and return of passport)"
           ],
-          "success": "Visa interview completed; consular officer issues a decision"
+          "success": "Visa interview completed; consular officer issues a decision",
+          "relevantTools": [
+            { "label": "Interview Prep Tool", "labelUr": "انٹرویو کی تیاری", "href": "/interview-prep", "type": "tool" }
+          ]
         },
         {
           "id": "24",
@@ -368,7 +401,10 @@
             "Allow the stated processing time before following up with the consulate",
             "Contact the consulate only through official channels (not in person unless instructed)"
           ],
-          "success": "Administrative processing completed and resolved (or not required)"
+          "success": "Administrative processing completed and resolved (or not required)",
+          "relevantTools": [
+            { "label": "221(g) Action Planner", "labelUr": "221(g) ایکشن پلانر", "href": "/221g-action-planner", "type": "tool" }
+          ]
         }
       ]
     },
@@ -516,7 +552,7 @@
         {
           "id": "35",
           "name": "Consider Naturalization Eligibility (Future Planning)",
-          "description": "LPRs who are parents of U.S. citizens may become eligible to apply for U.S. citizenship through naturalization after meeting the required period of continuous residence, typically at least 5 years as an LPR (3 years if married to a U.S. citizen).",
+          "description": "LPRs who are parents of U.S. citizenship through naturalization after meeting the required period of continuous residence, typically at least 5 years as an LPR (3 years if married to a U.S. citizen).",
           "actions": [
             "Review naturalization eligibility requirements at uscis.gov/citizenship",
             "Note the residency period required (generally 5 years of continuous residence as an LPR)",
