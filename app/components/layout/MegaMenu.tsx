@@ -90,24 +90,14 @@ const MegaMenu: React.FC<MegaMenuProps> = ({
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: -8 }}
+      initial={{ opacity: 0, y: 5 }}
       animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -8 }}
-      transition={{ duration: 0.12, ease: "easeOut" }}
-      className="relative w-full max-w-[min(1100px,calc(100vw-2rem))] flex flex-col max-h-[80vh] mb-10 mt-0"
+      exit={{ opacity: 0, y: 5 }}
+      transition={{ duration: 0.15, ease: "easeOut" }}
+      className="relative w-full max-w-[min(1100px,calc(100vw-2rem))] flex flex-col max-h-[80vh] mb-10 mt-0 origin-top shadow-sm"
     >
-      {/* Caret / Arrow pointing up — dynamically positioned under the active nav link */}
-      <div
-        className="absolute -top-[9px] w-4 h-4 bg-white border-l border-t border-slate-200/60 rotate-45 z-10"
-        style={{
-          left: arrowOffset,
-          transition: "left 0.2s ease",
-          boxShadow: "-2px -2px 4px rgba(0,0,0,0.04)",
-        }}
-      />
-
       {/* Main panel */}
-      <div className="relative bg-white rounded-2xl shadow-2xl border border-slate-200/60 overflow-hidden flex flex-col max-h-[80vh]" style={{ borderTop: "3px solid var(--color-primary, #0d7377)" }}>
+      <div className="relative bg-background rounded-2xl shadow-[0_16px_40px_-12px_rgba(0,0,0,0.15)] border border-border/60 overflow-hidden flex flex-col max-h-[80vh]">
       {/* Horizontal Tabs Header */}
       {tabs && (
         <div className="w-full bg-slate-50/80 border-b border-slate-100 px-6 pt-4">

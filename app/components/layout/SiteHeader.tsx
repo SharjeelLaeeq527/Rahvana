@@ -433,7 +433,7 @@ export function SiteHeader({
         {/* --- GLOBAL MEGAMENU PLACEMENT --- */}
         <div
           ref={megaMenuContainerRef}
-          className="absolute top-full left-0 right-0 max-w-7xl mx-auto px-6 pointer-events-auto"
+          className="absolute top-[calc(100%-14px)] left-0 right-0 max-w-7xl mx-auto px-6 pointer-events-auto z-50"
           onMouseEnter={() => {
             if (activeMenu && activeMenu !== "profile") {
               if (menuTimeoutRef.current) clearTimeout(menuTimeoutRef.current);
@@ -493,7 +493,7 @@ export function SiteHeader({
                         animate={{ opacity: 1, scale: 1, y: 0 }}
                         exit={{ opacity: 0, scale: 0.95, y: 8 }}
                         transition={{ duration: 0.18, ease: "easeOut" }}
-                        className="absolute right-0 top-full mt-2 w-80 rounded-xl shadow-xl border border-border bg-card z-9999 overflow-hidden origin-top-right"
+                        className="absolute right-0 top-full mt-1 w-80 rounded-xl shadow-xl border border-border bg-card z-[9999] overflow-hidden origin-top-right"
                       >
                         {/* Header */}
                         <div className="flex items-center justify-between px-4 py-3 border-b border-border bg-muted/30">
@@ -577,7 +577,7 @@ export function SiteHeader({
                     initial={{ opacity: 0, scale: 0.95, y: 10 }}
                     animate={{ opacity: 1, scale: 1, y: 0 }}
                     exit={{ opacity: 0, scale: 0.95, y: 10 }}
-                    className="absolute right-0 top-full mt-2 w-72 max-h-[80vh] overflow-y-auto rounded-xl shadow-xl border border-border bg-card z-9999 transform origin-top-right"
+                    className="absolute right-0 top-full mt-1 w-72 max-h-[80vh] overflow-y-auto rounded-xl shadow-xl border border-border bg-card z-[9999] transform origin-top-right"
                   >
                     {/* Header */}
                     <div className="px-5 py-4 border-b border-border bg-muted/30">

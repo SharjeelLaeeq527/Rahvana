@@ -118,9 +118,12 @@ export function StepDetail({
             <h4 className="text-[13px] font-black mb-3 text-emerald-700 uppercase tracking-widest">
               {t("visaJourney.successTitle")}
             </h4>
-            <p className="text-emerald-900 text-[16px] font-bold leading-relaxed">
-              {isUrdu && step.outputUr ? step.outputUr : (step.output || step.success)}
-            </p>
+            <div 
+              className="text-emerald-900 text-[16px] font-bold leading-relaxed"
+              dangerouslySetInnerHTML={{ 
+                __html: isUrdu && step.outputUr ? step.outputUr : (step.output || step.success) 
+              }}
+            />
           </div>
         )}
       </div>
@@ -130,7 +133,7 @@ export function StepDetail({
         <div className="bg-primary/5 rounded-2xl p-6 md:p-8 mb-8 md:mb-10 border border-primary/10">
           <h4 className="flex items-center gap-2 text-[13px] font-black mb-6 text-primary uppercase tracking-widest">
             <Wand2 className="w-4 h-4" />
-            {isUrdu ? "متعلقہ ٹولز اور سروسز" : "Relevant Tools & Services"}
+            {t("visaJourney.relevantTools")}
           </h4>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {step.relevantTools.map((tool: any, idx: number) => (
@@ -141,7 +144,7 @@ export function StepDetail({
               >
                 <div className="flex flex-col">
                   <span className="text-[10px] font-bold text-primary/60 uppercase tracking-wider mb-0.5">
-                    {tool.type === "guide" ? (isUrdu ? "گائیڈ" : "Guide") : tool.type === "service" ? (isUrdu ? "سروس" : "Service") : (isUrdu ? "ٹول" : "Tool")}
+                    {t(`visaJourney.toolTypes.${tool.type || 'tool'}`)}
                   </span>
                   <span className="text-sm md:text-base font-bold text-slate-900 group-hover:text-primary transition-colors">
                     {isUrdu && tool.labelUr ? tool.labelUr : tool.label}

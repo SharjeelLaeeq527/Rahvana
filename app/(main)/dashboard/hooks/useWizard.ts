@@ -40,10 +40,15 @@ interface UseWizardOptions {
   userId?: string | null;
   /** Journey ID (e.g., 'ir1') */
   journeyId?: string;
+  /** Custom roadmap data (optional) */
+  roadmapData?: any;
 }
 
 export function useWizard(options: UseWizardOptions = {}) {
-  const { userId, journeyId = 'ir1' } = options;
+  const { userId, journeyId = 'ir1', roadmapData: externalRoadmapData } = options;
+
+  // Use external roadmap data if provided, else fallback to default
+  const activeRoadmap = externalRoadmapData || roadmapData;
 
   const [state, setState] = useState<WizardState>(DEFAULT_STATE);
   const [isLoaded, setIsLoaded] = useState(false);
@@ -108,18 +113,21 @@ export function useWizard(options: UseWizardOptions = {}) {
   // ─── Normalize State After Load ───────────────────────────────────────────
 
   const normalizeState = useCallback(() => {
+    if (!activeRoadmap || !activeRoadmap.stages) return;
+
     setState(prev => {
       let { currentStage, currentStep } = prev;
 
       if (currentStage < 0) currentStage = 0;
-      if (currentStage >= roadmapData.stages.length) {
-        currentStage = roadmapData.stages.length - 1;
+      if (currentStage >= activeRoadmap.stages.length) {
+        currentStage = Math.max(0, activeRoadmap.stages.length - 1);
       }
 
-      const stage = roadmapData.stages[currentStage];
+      const stage = activeRoadmap.stages[currentStage];
+      if (!stage) return { ...prev, currentStage, currentStep: null };
 
       if (currentStep === null || currentStep < 0 || currentStep >= stage.steps.length) {
-        const firstIncomplete = stage.steps.findIndex(s => !prev.completedSteps.has(s.id));
+        const firstIncomplete = stage.steps.findIndex((s: any) => !prev.completedSteps.has(s.id));
         currentStep = firstIncomplete === -1 ? 0 : firstIncomplete;
       }
 
@@ -131,7 +139,7 @@ export function useWizard(options: UseWizardOptions = {}) {
 
       return { ...prev, currentStage, currentStep, collapsedSteps: newCollapsed };
     });
-  }, []);
+  }, [activeRoadmap]);
 
   useEffect(() => {
     if (isLoaded) {
@@ -175,7 +183,9 @@ export function useWizard(options: UseWizardOptions = {}) {
 
     setCurrentStep: (idx: number) => {
       setState(prev => {
-        const stage = roadmapData.stages[prev.currentStage];
+        const stage = activeRoadmap.stages[prev.currentStage];
+        if (!stage) return prev;
+        
         const step = stage.steps[idx];
         const newCollapsed = { ...prev.collapsedSteps };
         if (step) {
@@ -198,12 +208,14 @@ export function useWizard(options: UseWizardOptions = {}) {
           newCompleted.add(stepId);
           newCollapsed[stepId] = true;
 
-          const stage = roadmapData.stages[prev.currentStage];
-          const currentStepId = stage.steps[prev.currentStep ?? 0]?.id;
-          if (currentStepId === stepId) {
-            const nextIdx = stage.steps.findIndex(s => !newCompleted.has(s.id));
-            if (nextIdx !== -1) {
-              newStepIdx = nextIdx;
+          const stage = activeRoadmap.stages[prev.currentStage];
+          if (stage) {
+            const currentStepId = stage.steps[prev.currentStep ?? 0]?.id;
+            if (currentStepId === stepId) {
+              const nextIdx = stage.steps.findIndex((s: any) => !newCompleted.has(s.id));
+              if (nextIdx !== -1) {
+                newStepIdx = nextIdx;
+              }
             }
           }
         }

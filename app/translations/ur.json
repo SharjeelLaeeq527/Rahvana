@@ -3058,6 +3058,8 @@
     "markAsComplete": "مکمل نشان زد کریں",
     "completed": "مکمل",
     "defaultNotes": "اس قدم کے لیے تفصیلی ہدایات اور رہنمائی۔",
+    "successTitle": "کامیابی کی شرط",
+    "documentRequired": "(دستاویز درکار ہے)",
     "documentVault": {
       "title": "دستاویزی والٹ",
       "subtitle": "ویزہ کے عمل کے لیے اپنی مطلوبہ دستاویزات کو ٹریک اور منظم کریں۔",
@@ -3083,6 +3085,12 @@
       "journeyMap": "سفر کا نقشہ",
       "track": "کونسلر پروسیسنگ ٹریک",
       "stage": "مرحلہ {id}"
+    },
+    "relevantTools": "متعلقہ ٹولز اور سروسز",
+    "toolTypes": {
+      "tool": "ٹول",
+      "guide": "گائیڈ",
+      "service": "سروس"
     }
   },
   "ir1Journey": {

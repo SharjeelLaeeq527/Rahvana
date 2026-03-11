@@ -3084,6 +3084,8 @@
     "markAsComplete": "Mark as Complete",
     "completed": "Completed",
     "defaultNotes": "Detailed instructions and guidance for this step.",
+    "successTitle": "Success Condition",
+    "documentRequired": "(Document Required)",
     "documentVault": {
       "title": "Document Vault",
       "subtitle": "Track and manage your required documents for the visa process.",
@@ -3109,6 +3111,12 @@
       "journeyMap": "Journey Map",
       "track": "Consular Processing Track",
       "stage": "Stage {id}"
+    },
+    "relevantTools": "Relevant Tools & Services",
+    "toolTypes": {
+      "tool": "Tool",
+      "guide": "Guide",
+      "service": "Service"
     }
   },
   "ir1Journey": {
