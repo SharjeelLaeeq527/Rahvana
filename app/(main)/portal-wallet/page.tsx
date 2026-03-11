@@ -75,8 +75,8 @@ const portals: {
         className="object-contain"
       />
     ),
-    iconBgColor: "bg-[#eef2ff]",
-    iconHoverBgColor: "group-hover:bg-[#4f46e5]"
+    iconBgColor: "bg-[#fef3c7]",
+    iconHoverBgColor: "group-hover:bg-[#f59e0b]"
   },
   {
     type: "COURIER",
@@ -93,8 +93,8 @@ const portals: {
         className="object-contain"
       />
     ),
-    iconBgColor: "bg-[#fef3c7]",
-    iconHoverBgColor: "group-hover:bg-[#f59e0b]"
+    iconBgColor: "bg-[#eef2ff]",
+    iconHoverBgColor: "group-hover:bg-[#4f46e5]"
   },
 ];
 

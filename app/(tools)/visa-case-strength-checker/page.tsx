@@ -127,11 +127,12 @@ const CaseTypeStep = ({
               (window.location.href = "/visa-case-strength-checker/my-cases")
             }
             suppressHydrationWarning
-          className="text-teal-600 hover:text-teal-700 hover:underline text-base font-medium"
-        >
-          See your cases →
-        </button>
-      </div>)}
+            className="text-teal-600 hover:text-teal-700 hover:underline text-base font-medium"
+          >
+            See your cases →
+          </button>
+        </div>
+      )}
     </div>
 
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -407,9 +408,7 @@ const QuestionStep = ({
       return (
         <CountryAutocomplete
           formData={formData as unknown as Record<string, unknown>}
-          setFormData={(data) =>
-            setFormData((prev) => ({ ...prev, ...data }))
-          }
+          setFormData={(data) => setFormData((prev) => ({ ...prev, ...data }))}
           hideLabel
           inputClassName="w-full p-3 border border-input rounded-lg focus:ring-2 focus:ring-ring focus:border-ring transition-colors bg-background"
           placeholder="Start typing country..."
@@ -432,6 +431,11 @@ const QuestionStep = ({
                   ? value
                   : ""
             }
+            onClick={(e) => {
+              if (question.type === "date") {
+                (e.currentTarget as HTMLInputElement).showPicker?.();
+              }
+            }}
             onChange={(e) =>
               onChange(
                 question.id,
@@ -593,7 +597,7 @@ const QuestionStep = ({
             variant="outline"
             disabled={loading}
             className="bg-white hover:bg-slate-50 text-secondary-foreground border-input py-6 text-lg disabled:opacity-60 disabled:cursor-not-allowed"
-            >
+          >
             ← Previous
           </Button>
           <div className="flex flex-row gap-3">
@@ -1469,7 +1473,7 @@ const ReviewStep = ({
             onClick={onBack}
             variant="outline"
             className="bg-white hover:bg-slate-50 text-secondary-foreground border-input py-6 text-lg"
-            >
+          >
             ← Previous
           </Button>
           <div className="flex flex-row gap-3">
@@ -1500,7 +1504,7 @@ export default function VisaCaseStrengthChecker() {
   const isNavigatingRef = useRef<boolean>(false);
   const [isNavigating, setIsNavigating] = useState(false);
 
-  const {isAuthenticated} = useAuth();
+  const { isAuthenticated } = useAuth();
 
   const supabase = createBrowserClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -1591,7 +1595,7 @@ export default function VisaCaseStrengthChecker() {
       if (profileLoaded && lastUserId === user.id) {
         return;
       }
-      
+
       try {
         const { data } = await supabase
           .from("user_profiles")
@@ -1600,28 +1604,7 @@ export default function VisaCaseStrengthChecker() {
           .single();
 
         if (data?.profile_details) {
-            const profile = data.profile_details as MasterProfile;
-            
-            // 1. Check for specific Saved Case Strength Session
-            if (profile.caseStrength?.lastSessionId && profile.caseStrength?.answers) {
-                 // Restore specific tool state
-                  setFormData({
-                    caseType: (profile.caseStrength.caseType as CaseType) || "",
-                    ...profile.caseStrength.answers
-                  } as FormData);
-                 setSessionId(profile.caseStrength.lastSessionId);
-                 setProfileLoaded(true);
-                 
-                 // If we have a sessionId, we assume the user might have completed or wants to see results
-                 // But strictly speaking, sessionId just means a session exists.
-                 // The user wants "Direct Result" like Visa Eligibility.
-                 // In Visa Eligibility, we check if enough data exists.
-                 // Here, if we have a saved sessionId, it implies we saved result state?
-                 // Let's perform a check: if we have answers and sessionId, try to jump to results.
-                 // Note: questionnaireData might not be loaded yet, so we can't set step to length+2 reliably here.
-                 // We will set a flag or rely on the other useEffect.
-                 return; 
-            }
+          const profile = data.profile_details as MasterProfile;
 
           // 1. Check for specific Saved Case Strength Session
           if (
@@ -1703,6 +1686,15 @@ export default function VisaCaseStrengthChecker() {
   };
 
   const [isEditing, setIsEditing] = useState(false);
+
+  useEffect(() => {
+    const storedSession = localStorage.getItem("visaCheckerSessionId");
+
+    if (storedSession) {
+      setSessionId(storedSession);
+      setStep(1); // first question
+    }
+  }, []);
 
   // Auto-jump to results if session restored
   useEffect(() => {
@@ -2348,7 +2340,10 @@ export default function VisaCaseStrengthChecker() {
     const sections = questionnaireData.sections;
     const currentSectionIndex = step - 1;
     const totalSteps = questionnaireData.sections.length + 2; // +2 for review and results steps
-    const progressPercentage = Math.max(0, Math.min(100, Math.round((step / totalSteps) * 100)));
+    const progressPercentage = Math.max(
+      0,
+      Math.min(100, Math.round((step / totalSteps) * 100)),
+    );
 
     return (
       <div className="mb-8">

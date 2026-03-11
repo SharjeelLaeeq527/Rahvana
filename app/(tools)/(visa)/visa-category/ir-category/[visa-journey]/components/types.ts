@@ -26,6 +26,7 @@ export interface RoadmapStep {
   officialSource?: string;
   nextTrigger?: string;
   possibleOutcomes?: string[];
+  scenarioSpecific?: 'bio' | 'step' | 'adopted';
 }
 
 export interface RoadmapSource {
@@ -48,6 +49,7 @@ export interface RoadmapStage {
 }
 
 export interface RoadmapData {
+  scenarioNotes: Record<string, string>;
   title?: string;
   titleUr?: string;
   description?: string;

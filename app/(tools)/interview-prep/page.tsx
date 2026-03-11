@@ -401,6 +401,11 @@ const QuestionStep = ({
                   ? value
                   : ""
             }
+            onClick={(e) => {
+              if (question.type === "date") {
+                (e.currentTarget as HTMLInputElement).showPicker?.();
+              }
+            }}
             onChange={(e) =>
               onChange(
                 question.key,

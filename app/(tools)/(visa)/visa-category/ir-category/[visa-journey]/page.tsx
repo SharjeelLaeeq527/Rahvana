@@ -32,12 +32,23 @@ export default function IR1JourneyPage() {
 
   const [roadmapData, setRoadmapData] = useState<RoadmapData | null>(null);
   const [dataLoaded, setDataLoaded] = useState(false);
+  // Scenario selector (optional - only used if JSON has scenarioSpecific steps)
+  const [selectedScenario, setSelectedScenario] = useState<
+    "bio" | "step" | "adopted"
+  >("bio");
+  const [hasScenarios, setHasScenarios] = useState(false);
 
   useEffect(() => {
     if (visaJourney) {
       import(`@/data/visa-category/${visaJourney}.json`)
         .then((mod) => {
-          setRoadmapData(mod.default || mod);
+          const data = mod.default || mod;
+          setRoadmapData(data);
+          // Check if this journey has scenario-specific steps
+          const hasScenarioSteps = data.stages.some((s: RoadmapStage) =>
+            s.steps.some((st) => st.scenarioSpecific),
+          );
+          setHasScenarios(hasScenarioSteps);
           setDataLoaded(true);
         })
         .catch((err) => {
@@ -46,6 +57,30 @@ export default function IR1JourneyPage() {
         });
     }
   }, [visaJourney]);
+
+  // When scenario changes, reset to first step of current stage if needed
+  useEffect(() => {
+    if (hasScenarios && roadmapData) {
+      const currentStage = roadmapData.stages[state.currentStage];
+      if (currentStage && state.currentStep !== null) {
+        const currentStep = currentStage.steps[state.currentStep];
+        // If current step is scenario-specific and doesn't match selected scenario,
+        // find the first matching step for the new scenario
+        if (
+          currentStep?.scenarioSpecific &&
+          currentStep.scenarioSpecific !== selectedScenario
+        ) {
+          const firstMatchingStepIdx = currentStage.steps.findIndex(
+            (s) =>
+              !s.scenarioSpecific || s.scenarioSpecific === selectedScenario,
+          );
+          if (firstMatchingStepIdx >= 0) {
+            actions.setCurrentStep(firstMatchingStepIdx);
+          }
+        }
+      }
+    }
+  }, [selectedScenario, hasScenarios]);
 
   const { state, actions, isLoaded, hasExistingProgress, isSyncing } =
     useWizard({
@@ -147,6 +182,72 @@ export default function IR1JourneyPage() {
             )}
           </div>
 
+          {/* Scenario Selector (Conditional - only for IR-2) */}
+          {hasScenarios && (
+            <div className="mb-8 p-6 bg-gradient-to-br from-slate-50 via-white to-slate-50 border border-slate-200 rounded-2xl shadow-sm">
+              <div className="flex items-center gap-2 mb-4">
+                <svg
+                  className="w-5 h-5 text-teal-600"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
+                  />
+                </svg>
+                <h3 className="text-lg font-bold text-slate-900">
+                  Relationship Type
+                </h3>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4">
+                <button
+                  onClick={() => setSelectedScenario("bio")}
+                  className={`px-4 py-3 rounded-xl font-semibold transition-all border-2 ${
+                    selectedScenario === "bio"
+                      ? "bg-rahvana-primary border-rahvana-primary text-white shadow-md"
+                      : "bg-white border-slate-200 text-slate-700 hover:border-rahvana-primary-light hover:bg-rahvana-primary-pale"
+                  }`}
+                >
+                  Biological Child
+                </button>
+
+                <button
+                  onClick={() => setSelectedScenario("step")}
+                  className={`px-4 py-3 rounded-xl font-semibold transition-all border-2 ${
+                    selectedScenario === "step"
+                      ? "bg-rahvana-primary border-rahvana-primary text-white shadow-md"
+                      : "bg-white border-slate-200 text-slate-700 hover:border-rahvana-primary-light hover:bg-rahvana-primary-pale"
+                  }`}
+                >
+                  Stepchild
+                </button>
+
+                <button
+                  onClick={() => setSelectedScenario("adopted")}
+                  className={`px-4 py-3 rounded-xl font-semibold transition-all border-2 ${
+                    selectedScenario === "adopted"
+                      ? "bg-rahvana-primary border-rahvana-primary text-white shadow-md"
+                      : "bg-white border-slate-200 text-slate-700 hover:border-rahvana-primary-light hover:bg-rahvana-primary-pale"
+                  }`}
+                >
+                  Adopted Child
+                </button>
+              </div>
+
+              {/* Scenario Note */}
+              <div className="mt-4 p-4 bg-rahvana-primary-pale border border-rahvana-primary-light rounded-xl">
+                <p className="text-sm text-rahvana-primary-dark leading-relaxed">
+                  {roadmapData?.scenarioNotes?.[selectedScenario]}
+                </p>
+              </div>
+            </div>
+          )}
+
           {/* Stage Overview */}
           <div className="mb-12">
             <div className="flex items-center gap-3 mb-6 md:mb-8">
@@ -156,7 +257,7 @@ export default function IR1JourneyPage() {
               </h2>
             </div>
 
-            <div className="flex overflow-x-auto gap-4 pb-6 pt-2 snap-x snap-mandatory hide-scrollbar -mx-4 px-4 sm:mx-0 sm:px-0 scroll-smooth">
+            <div className="flex overflow-x-auto gap-4 pb-6 pt-2 snap-x snap-mandatory hide-scrollbar px-4 sm:px-0 scroll-smooth mx-auto justify-center items-center">
               {roadmapData.stages.map(
                 (stageItem: RoadmapStage, idx: number) => {
                   const defaultIcons = [
@@ -187,7 +288,7 @@ export default function IR1JourneyPage() {
                   return (
                     <div
                       key={stageItem.id}
-                      className="relative group shrink-0 w-[260px] sm:w-[280px] lg:w-[300px] snap-center"
+                      className="relative group shrink-0 h-48 w-50 sm:w-52.5 lg:w-55 snap-center"
                     >
                       <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm h-full flex flex-col">
                         <div
@@ -310,6 +411,8 @@ export default function IR1JourneyPage() {
             actions={actions}
             isLoaded={isLoaded}
             isSignedIn={isSignedIn}
+            selectedScenario={selectedScenario}
+            hasScenarios={hasScenarios}
           />
         )}
       </div>
@@ -334,6 +437,8 @@ interface WizardProps {
   actions: WizardActions;
   isLoaded: boolean;
   isSignedIn: boolean;
+  selectedScenario?: "bio" | "step" | "adopted";
+  hasScenarios?: boolean;
 }
 
 function Wizard({
@@ -342,6 +447,8 @@ function Wizard({
   actions,
   isLoaded,
   isSignedIn,
+  selectedScenario = "bio",
+  hasScenarios = false,
 }: WizardProps) {
   const { t } = useLanguage();
   const [isVaultOpen, setIsVaultOpen] = useState(false);
@@ -418,7 +525,7 @@ function Wizard({
         </div>
       </div>
 
-      <div className="flex flex-col md:flex-row gap-0 md:gap-6 bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm min-h-[400px] md:min-h-[600px] mb-12">
+      <div className="flex flex-col md:flex-row gap-0 md:gap-6 bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm min-h-100 md:min-h-150 mb-12">
         <aside className="w-full md:w-[320px] bg-slate-50 border-b md:border-b-0 md:border-r border-slate-200 p-4 md:p-6 overflow-y-auto max-h-[300px] md:max-h-[800px] shrink-0">
           <ProgressTree
             roadmapData={roadmapData}
@@ -427,6 +534,8 @@ function Wizard({
               actions.setStage(stageIdx);
               actions.setCurrentStep(stepIdx);
             }}
+            selectedScenario={selectedScenario}
+            hasScenarios={hasScenarios}
           />
         </aside>
 
