@@ -441,7 +441,7 @@ export function SiteHeader({
           }}
           onMouseLeave={handleMenuLeave}
         >
-            <AnimatePresence mode="popLayout">
+            <AnimatePresence mode="sync">
               {activeMenu === "journeys" && (
                 <MegaMenu key="journeys" isOpen={true} arrowOffset={arrowOffset} {...NAV_DATA.journeys} />
               )}
