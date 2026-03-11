@@ -34,7 +34,7 @@ export const MenuItem = ({ item, index, simple = false }: MenuItemProps) => (
   <motion.div
     initial={{ opacity: 0, x: -10 }}
     animate={{ opacity: 1, x: 0 }}
-    transition={{ delay: index * 0.03 }}
+    transition={{ duration: 0.2 }}
   >
     <Link
       href={item.disabled ? "#" : item.href}

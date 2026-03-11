@@ -178,7 +178,7 @@ export function SiteHeader({
   };
 
   const handleMenuLeave = () => {
-    menuTimeoutRef.current = setTimeout(() => setActiveMenu(null), 300);
+    menuTimeoutRef.current = setTimeout(() => setActiveMenu(null), 100);
   };
 
   const handleNav = (id: string, e?: React.MouseEvent) => {
@@ -441,7 +441,7 @@ export function SiteHeader({
           }}
           onMouseLeave={handleMenuLeave}
         >
-            <AnimatePresence>
+            <AnimatePresence mode="popLayout">
               {activeMenu === "journeys" && (
                 <MegaMenu key="journeys" isOpen={true} arrowOffset={arrowOffset} {...NAV_DATA.journeys} />
               )}

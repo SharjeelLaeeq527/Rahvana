@@ -93,7 +93,7 @@ const MegaMenu: React.FC<MegaMenuProps> = ({
       initial={{ opacity: 0, y: -8 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -8 }}
-      transition={{ duration: 0.18, ease: "easeOut" }}
+      transition={{ duration: 0.12, ease: "easeOut" }}
       className="relative w-full max-w-[min(1100px,calc(100vw-2rem))] flex flex-col max-h-[80vh] mb-10 mt-0"
     >
       {/* Caret / Arrow pointing up — dynamically positioned under the active nav link */}
