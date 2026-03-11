@@ -3040,6 +3040,51 @@
       }
     }
   },
+  "visaJourney": {
+    "welcomeBack": "خوش آمدید!",
+    "existingJourney": "آپ کا ایک {title} سفر پہلے سے جاری ہے۔",
+    "loading": "آپ کا سفر لوڈ ہو رہا ہے...",
+    "resume": "اپنا سفر جاری رکھیں",
+    "startFresh": "نئے سرے سے شروع کریں",
+    "overallProgress": "سفر کی مجموعی پیشرفت",
+    "stepsCompleted": "{count} مراحل مکمل",
+    "currentlyAt": "اس وقت: مرحلہ {stage} — {name}",
+    "autoSaved": "پیشرفت خودکار طور پر محفوظ ہوگئی",
+    "stageShort": "مرحلہ {stage}",
+    "actionsRequired": "ضروری اقدامات",
+    "stageStep": "مرحلہ {stage}، قدم {step}",
+    "prevStep": "پچھلا قدم",
+    "nextStep": "اگلا قدم",
+    "markAsComplete": "مکمل نشان زد کریں",
+    "completed": "مکمل",
+    "defaultNotes": "اس قدم کے لیے تفصیلی ہدایات اور رہنمائی۔",
+    "documentVault": {
+      "title": "دستاویزی والٹ",
+      "subtitle": "ویزہ کے عمل کے لیے اپنی مطلوبہ دستاویزات کو ٹریک اور منظم کریں۔",
+      "status": {
+        "collected": "جمع شدہ",
+        "pending": "زیر التواء",
+        "uploaded": "اپ لوڈ کر دیا گیا"
+      },
+      "labels": {
+        "notes": "نوٹس",
+        "fileAttachment": "فائل اٹیچمنٹ"
+      },
+      "placeholders": {
+        "addNote": "نجی نوٹ شامل کریں...",
+        "chooseFile": "فائل منتخب کریں..."
+      },
+      "aria": {
+        "clearFile": "انتخاب صاف کریں"
+      },
+      "closeBtn": "والٹ بند کریں"
+    },
+    "progressTree": {
+      "journeyMap": "سفر کا نقشہ",
+      "track": "کونسلر پروسیسنگ ٹریک",
+      "stage": "مرحلہ {id}"
+    }
+  },
   "ir1Journey": {
     "title": "IR-1/CR-1 شریک حیات ویزا سفر",
     "description": "امریکی سفارت خانہ اسلام آباد، پاکستان کے ذریعے اپنے شریک حیات کو امریکہ لانے کا جامع روڈ میپ۔",

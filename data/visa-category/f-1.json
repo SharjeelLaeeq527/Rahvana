@@ -531,5 +531,20 @@
         }
       ]
     }
+  ],
+  "documents": [
+    "Form I-20 (Signed by DSO and Student)",
+    "University Admission Letter",
+    "Valid Passport",
+    "SEVIS I-901 Fee Receipt",
+    "DS-160 Confirmation Page",
+    "Visa Interview Appointment Confirmation",
+    "Bank Statements (Proof of Funds)",
+    "Financial Sponsor Letter (if applicable)",
+    "Academic Transcripts & Degree Certificates",
+    "Standardized Test Scores (SAT/GRE/GMAT)",
+    "English Proficiency Results (IELTS/TOEFL)",
+    "Biometric Passport Photos",
+    "Scholarship Award Letter (if applicable)"
   ]
 }

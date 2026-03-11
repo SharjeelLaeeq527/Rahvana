@@ -1,0 +1,160 @@
+{
+  "title": "Germany Student Visa Journey",
+  "description": "Comprehensive roadmap for international students applying for a German National Visa (D-Visa) for study purposes.",
+  "documents": [
+    "Admission Letter (Zulassungsbescheid)",
+    "Blocked Account Confirmation",
+    "Proof of University Degree/Transcripts",
+    "Valid Passport",
+    "Language Proficiency Certificate (IELTS/TOEFL)",
+    "Motivation Letter",
+    "Curriculum Vitae (CV)",
+    "Health Insurance Confirmation",
+    "Biometric Passport Photos",
+    "Visa Application Forms",
+    "APS Certificate (if applicable)"
+  ],
+  "stages": [
+    {
+      "id": 1,
+      "name": "Preparation & Admission",
+      "icon": "FileText",
+      "color": "bg-blue-50 text-blue-600",
+      "timeline": "3-6 Months",
+      "steps": [
+        {
+          "id": "1",
+          "name": "Research & Choose University",
+          "description": "Identify programs that match your background. Check if your degree is recognized in Germany (Anabin database).",
+          "actions": [
+            "Search for programs on DAAD website",
+            "Verify degree recognition on Anabin",
+            "Check language requirements (German or English)"
+          ],
+          "success": "Shortlist of 3-5 universities identified"
+        },
+        {
+          "id": "2",
+          "name": "Submit University Applications",
+          "description": "Apply directly or via Uni-Assist. Ensure all documents are certified and translated.",
+          "actions": [
+            "Prepare certified copies of degrees/transcripts",
+            "Write Motivation Letter and CV",
+            "Submit applications before deadlines"
+          ],
+          "success": "Applications submitted to target universities"
+        },
+        {
+          "id": "3",
+          "name": "Secure Admission Letter",
+          "description": "Receive the Zulassungsbescheid (Admission Letter) or a letter of applicant status.",
+          "actions": [
+            "Monitor email and application portals",
+            "Confirm acceptance of the offer"
+          ],
+          "success": "Official Admission Letter received"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "name": "Financial & Admin",
+      "icon": "Layout",
+      "color": "bg-indigo-50 text-indigo-600",
+      "timeline": "1-2 Months",
+      "steps": [
+        {
+          "id": "4",
+          "name": "Open Blocked Account (Sperrkonto)",
+          "description": "Proof of financial means is required (approx. €11,208/year). Common providers: Expatrio, Fintiba, Coracle.",
+          "actions": [
+            "Choose a blocked account provider",
+            "Transfer required funds plus fees",
+            "Download Blocked Account Confirmation"
+          ],
+          "success": "Blocked Account Confirmation document ready"
+        },
+        {
+          "id": "5",
+          "name": "Health Insurance & Documents",
+          "description": "Organize student health insurance (public or private) and gather all civil documents.",
+          "actions": [
+            "Apply for travel/student health insurance",
+            "Get biometric passport photos",
+            "Complete visa application forms"
+          ],
+          "success": "All supporting documents gathered"
+        },
+        {
+          "id": "6",
+          "name": "Book Visa Appointment",
+          "description": "Schedule your appointment at the German Embassy (Islamabad) or Consulate (Karachi).",
+          "actions": [
+            "Check appointment availability regularly",
+            "Book the correct category (National Visa - Study)"
+          ],
+          "success": "Appointment confirmed and receipt saved"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "name": "Visa Interview",
+      "icon": "Users",
+      "color": "bg-emerald-50 text-emerald-600",
+      "timeline": "4-8 Weeks",
+      "steps": [
+        {
+          "id": "7",
+          "name": "Prepare for Interview",
+          "description": "Review your motivation letter and be ready to explain your choice of Germany, the university, and the course.",
+          "actions": [
+            "Practice common interview questions",
+            "Organize document folders (Originals + 2 Copies)"
+          ],
+          "success": "Fully prepared for the consular interview"
+        },
+        {
+          "id": "8",
+          "name": "Attend Visa Interview",
+          "description": "Submit your documents, provide fingerprints, and pay the visa fee (€75).",
+          "actions": [
+            "Arrive 15 mins early at the embassy/consulate",
+            "Answer questions honestly"
+          ],
+          "success": "Interview completed and visa fee paid"
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "name": "Arrival in Germany",
+      "icon": "Plane",
+      "color": "bg-rose-50 text-rose-600",
+      "timeline": "1-2 Weeks",
+      "steps": [
+        {
+          "id": "9",
+          "name": "Visa Approval & Travel",
+          "description": "Receive your visa in the passport and book your flight to Germany.",
+          "actions": [
+            "Check visa details upon receipt",
+            "Book flight and temporary accommodation"
+          ],
+          "success": "Landed in Germany"
+        },
+        {
+          "id": "10",
+          "name": "City Registration & Enrollment",
+          "description": "Register your address (Anmeldung) and enroll at the university in person.",
+          "actions": [
+            "Find accommodation with 'Wohnungsgeberbestätigung'",
+            "Register at the Bürgeramt (City Office)",
+            "Complete university enrollment"
+          ],
+          "success": "Official student status in Germany confirmed"
+        }
+      ]
+    }
+  ]
+}

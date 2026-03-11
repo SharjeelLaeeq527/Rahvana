@@ -23,7 +23,10 @@
             "Confirm no bars to immigration"
           ],
           "output": "Eligibility confirmed",
-          "notes": "Petitioner must be U.S. citizen (not green card holder). Marriage must be legal and genuine."
+          "notes": "Petitioner must be U.S. citizen (not green card holder). Marriage must be legal and genuine.",
+          "relevantTools": [
+            { "label": "Visa Path Finder", "labelUr": "ویزہ پاتھ فائنڈر", "href": "/visa-eligibility", "type": "tool" }
+          ]
         },
         {
           "id": "I-02",
@@ -50,7 +53,15 @@
             "Police Certificate",
             "Passport Photos (2x2 inches)"
           ],
-          "pakistanSpecific": "Union Council registration increasingly required by Islamabad Embassy. Police certificate: 3-7 days processing for Punjab/Islamabad."
+          "pakistanSpecific": "Union Council registration increasingly required by Islamabad Embassy. Police certificate: 3-7 days processing for Punjab/Islamabad.",
+          "relevantTools": [
+            { "label": "Marriage Cert Guide", "labelUr": "نکاح نامہ گائیڈ", "href": "/guides/nikah-nama-guide", "type": "guide" },
+            { "label": "Birth Cert Guide", "labelUr": "برتھ سرٹیفکیٹ گائیڈ", "href": "/guides/birth-certificate-guide", "type": "guide" },
+            { "label": "Passport Guide", "labelUr": "پاسپورٹ گائیڈ", "href": "/guides/passport-guide", "type": "guide" },
+            { "label": "Police Cert Guide", "labelUr": "پولیس ویریفیکیشن گائیڈ", "href": "/guides/police-verification-guide", "type": "guide" },
+            { "label": "Urdu → English Translation", "labelUr": "اردو سے انگریزی ترجمہ", "href": "/document-translation", "type": "service" },
+            { "label": "Photo Booth", "labelUr": "فوٹو بوتھ", "href": "/passport", "type": "tool" }
+          ]
         },
         {
           "id": "I-03",
@@ -88,7 +99,10 @@
             "Communication records"
           ],
           "output": "Completed I-130 form",
-          "officialSource": "https://www.uscis.gov/i-130"
+          "officialSource": "https://www.uscis.gov/i-130",
+          "relevantTools": [
+            { "label": "Smart Form Filler", "labelUr": "سمارٹ فارم فلر", "href": "/visa-forms", "type": "tool" }
+          ]
         },
         {
           "id": "I-05",
@@ -158,7 +172,12 @@
             "Keep address updated",
             "Gather NVC documents meanwhile"
           ],
-          "notes": "RFE deadline usually 30-87 days. Respond promptly to avoid delays."
+          "notes": "RFE deadline usually 30-87 days. Respond promptly to avoid delays.",
+          "relevantTools": [
+            { "label": "Case Status Tracker", "labelUr": "کیس اسٹیٹس ٹریکر", "href": "/case-status", "type": "tool" },
+            { "label": "Case Strength Analyzer", "labelUr": "کیس سٹرینتھ اینالائزر", "href": "/visa-case-strength-checker", "type": "tool" },
+            { "label": "Visa Bulletin Monitor", "labelUr": "ویزہ بلٹن مانیٹر", "href": "/visa-checker", "type": "tool" }
+          ]
         },
         {
           "id": "I-10",
@@ -292,7 +311,11 @@
             "Bank statements (if showing assets)"
           ],
           "notes": "Minimum income: $25,550 for household of 2 (2025). Use joint sponsor if needed.",
-          "officialSource": "https://www.uscis.gov/i-864"
+          "officialSource": "https://www.uscis.gov/i-864",
+          "relevantTools": [
+            { "label": "Sponsorship Calculator", "labelUr": "سپانسرشپ کیلکولیٹر", "href": "/affidavit-support-calculator", "type": "tool" },
+            { "label": "Snap & Sign", "labelUr": "سنیپ اینڈ سائن", "href": "/signature-image-processing", "type": "tool" }
+          ]
         },
         {
           "id": "II-07",
@@ -307,7 +330,10 @@
             "Check for green checkmarks"
           ],
           "output": "All documents uploaded",
-          "notes": "Upload one at a time. Max 4 MB per file. PDF preferred."
+          "notes": "Upload one at a time. Max 4 MB per file. PDF preferred.",
+          "relevantTools": [
+            { "label": "PDF Toolkit", "labelUr": "پی ڈی ایف ٹول کٹ", "href": "/pdf-processing", "type": "tool" }
+          ]
         },
         {
           "id": "II-08",
@@ -368,7 +394,10 @@
             "DO NOT obtain new police certificate yet",
             "Research interview process"
           ],
-          "notes": "Cannot speed up this process. Interview scheduled by embassy."
+          "notes": "Cannot speed up this process. Interview scheduled by embassy.",
+          "relevantTools": [
+            { "label": "DQ Status Tracker", "labelUr": "ڈی کیو سٹیٹس ٹریکر", "href": "/iv-tool", "type": "tool" }
+          ]
         },
         {
           "id": "II-12",
@@ -407,7 +436,10 @@
           ],
           "pakistanSpecific": "IOM Islamabad: +92-51-111-466-789. IOM Karachi: +92-21-111-466-789. IOM Lahore: +92-42-111-466-789",
           "fee": "$200-300 USD equivalent",
-          "notes": "Medical results valid 6 months. Schedule 2-3 days before interview ideally."
+          "notes": "Medical results valid 6 months. Schedule 2-3 days before interview ideally.",
+          "relevantTools": [
+            { "label": "Polio Vaccination Guide", "labelUr": "پولیو ویکسینیشن گائیڈ", "href": "/guides/polio-vaccination-guide", "type": "guide" }
+          ]
         },
         {
           "id": "III-02",
@@ -471,7 +503,10 @@
             "Physician interview"
           ],
           "output": "Sealed medical envelope",
-          "notes": "DO NOT OPEN envelope. Results ready in 2-5 days. Collect 1-2 days before interview."
+          "notes": "DO NOT OPEN envelope. Results ready in 2-5 days. Collect 1-2 days before interview.",
+          "relevantTools": [
+            { "label": "Book Medical Appointment", "labelUr": "میڈیکل اپائنٹمنٹ بک کریں", "href": "/book-appointment", "type": "service" }
+          ]
         },
         {
           "id": "III-05",
@@ -486,7 +521,10 @@
             "Plan outfit (professional)",
             "Arrange travel to Islamabad if needed"
           ],
-          "notes": "Be truthful, consistent. Know spouse details well. Dress professionally - no jeans/t-shirts."
+          "notes": "Be truthful, consistent. Know spouse details well. Dress professionally - no jeans/t-shirts.",
+          "relevantTools": [
+            { "label": "Interview Prep Tool", "labelUr": "انٹرویو پریپ ٹول", "href": "/interview-prep", "type": "tool" }
+          ]
         },
         {
           "id": "III-06",
@@ -510,7 +548,10 @@
             "Administrative Processing 221(g) \u26a0\ufe0f",
             "Denied \u274c"
           ],
-          "notes": "Common questions: How did you meet? Tell me about your wedding. Where will you live?"
+          "notes": "Common questions: How did you meet? Tell me about your wedding. Where will you live?",
+          "relevantTools": [
+            { "label": "221(g) Action Planner", "labelUr": "221(g) ایکشن پلانر", "href": "/221g-action-planner", "type": "tool" }
+          ]
         },
         {
           "id": "III-07",
