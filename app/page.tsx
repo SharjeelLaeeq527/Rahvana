@@ -197,14 +197,14 @@ function HomePageContent() {
           <div className="flex flex-col">
             {/* HERO SECTION */}
             <section className="relative py-8 md:py-12 overflow-hidden bg-background">
-              <div className="container mx-auto px-6">
+              <div className="w-full mx-auto px-6 sm:px-8 md:px-12  2xl:px-30">
                 <div className="flex flex-col lg:flex-row items-center gap-16">
                   <motion.div
                     initial={{ opacity: 0, y: 30 }}
                     whileInView={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.8, ease: "easeOut" }}
                     viewport={{ once: true }}
-                    className="w-full lg:w-1/2 max-w-2xl"
+                    className="w-full lg:w-1/2 xl:w-[45%]"
                   >
                     <div className="inline-flex items-center gap-2 px-4 py-2 mb-6 text-sm font-medium rounded-full bg-rahvana-primary-pale text-rahvana-primary">
                       <Icons.ShieldCheck className="w-4 h-4" />
@@ -300,8 +300,8 @@ function HomePageContent() {
 
             {/* HOW RAHVANA WORKS SECTION */}
             <section className="py-12 md:py-24 bg-muted/30" id="about">
-              <div className="container mx-auto px-6">
-                <div className="text-center max-w-3xl mx-auto mb-16">
+              <div className="w-full mx-auto px-6 sm:px-8 md:px-12  2xl:px-30">
+                <div className="text-center w-full md:w-3/4 lg:w-2/3 xl:w-1/2 mx-auto mb-16">
                   <motion.span
                     initial={{ opacity: 0, y: 10 }}
                     whileInView={{ opacity: 1, y: 0 }}
@@ -333,7 +333,7 @@ function HomePageContent() {
                     initial={{ opacity: 0, scale: 0.9 }}
                     whileInView={{ opacity: 1, scale: 1 }}
                     viewport={{ once: true }}
-                    className="relative aspect-square max-w-[340px] md:max-w-[480px] mx-auto w-full"
+                    className="relative aspect-square w-full sm:w-[340px] md:w-[480px] mx-auto"
                   >
                     {/* SVG Layer for all lines */}
                     <svg
@@ -537,8 +537,8 @@ function HomePageContent() {
                   <rect width="100%" height="100%" fill="url(#grid)" />
                 </svg>
               </div>
-              <div className="container mx-auto px-6 relative z-10">
-                <div className="text-center max-w-3xl mx-auto mb-10">
+              <div className="w-full mx-auto px-6 sm:px-8 md:px-12 2xl:px-20  relative z-10">
+                <div className="text-center w-full md:w-3/4 lg:w-2/3 xl:w-1/2 mx-auto mb-10">
                   <motion.span
                     initial={{ opacity: 0, y: 10 }}
                     whileInView={{ opacity: 1, y: 0 }}
@@ -614,8 +614,8 @@ function HomePageContent() {
               className="relative py-8 md:py-12 bg-background"
               id="tools"
             >
-              <div className="container mx-auto px-6">
-                <div className="text-center max-w-3xl mx-auto mb-10">
+              <div className="w-full mx-auto px-6 sm:px-8 md:px-12  2xl:px-30 ">
+                <div className="text-center w-full md:w-3/4 lg:w-2/3 xl:w-1/2 mx-auto mb-10">
                   <motion.span
                     initial={{ opacity: 0, y: 10 }}
                     whileInView={{ opacity: 1, y: 0 }}
@@ -735,8 +735,8 @@ function HomePageContent() {
               className="relative py-8 md:py-12 bg-muted/10 overflow-hidden"
               id="services"
             >
-              <div className="container mx-auto px-6">
-                <div className="text-center max-w-3xl mx-auto mb-10">
+              <div className="w-full px-6 sm:px-8 md:px-12 2xl:px-30 ">
+                <div className="text-center w-full md:w-3/4 lg:w-2/3 xl:w-1/2 mx-auto mb-10">
                   <motion.span
                     initial={{ opacity: 0, y: 10 }}
                     whileInView={{ opacity: 1, y: 0 }}
@@ -766,7 +766,7 @@ function HomePageContent() {
                   </motion.p>
                 </div>
 
-                <div className="flex flex-col lg:flex-row gap-8 lg:gap-12 w-full max-w-6xl mx-auto">
+                <div className="flex flex-col lg:flex-row gap-8 lg:gap-12 w-full xl:w-[90%] 2xl:w-[85%] mx-auto">
                   {/* Left Column: Interactive List */}
                   <div className="w-full lg:w-5/12 flex flex-col gap-3">
                     {ALL_SERVICES.filter((s) => s.href !== "/book-consultation")
@@ -938,7 +938,7 @@ function HomePageContent() {
 
             {/* CONSULTATION BANNER */}
             <section className="py-8 md:py-12 bg-background">
-              <div className="container mx-auto px-6">
+              <div className="w-full mx-auto px-6 sm:px-8 md:px-12  2xl:px-30 ">
                 <motion.div
                   initial={{ opacity: 0, y: 20 }}
                   whileInView={{ opacity: 1, y: 0 }}
@@ -985,8 +985,8 @@ function HomePageContent() {
 
             {/* FAQ SECTION */}
             <section className="py-8 md:py-12 bg-background" id="faq">
-              <div className="container mx-auto px-6">
-                <div className="text-center max-w-3xl mx-auto mb-5">
+              <div className="w-full mx-auto px-6 sm:px-8 md:px-12  2xl:px-30 ">
+                <div className="text-center w-full md:w-3/4 mx-auto mb-5">
                   <motion.span
                     initial={{ opacity: 0, y: 10 }}
                     whileInView={{ opacity: 1, y: 0 }}
@@ -1001,7 +1001,7 @@ function HomePageContent() {
                   </h2>
                 </div>
 
-                <div className="max-w-3xl mx-auto space-y-4">
+                <div className="w-full md:w-3/4 mx-auto space-y-4">
                   {FAQS.map((faq, i) => (
                     <motion.div
                       key={i}
