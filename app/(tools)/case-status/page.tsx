@@ -1,6 +1,23 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import {
+  Search,
+  FileText,
+  Clock,
+  Building2,
+  AlertCircle,
+  CheckCircle2,
+  RefreshCw,
+  Hash,
+  Calendar,
+  Info,
+  ArrowUpCircle,
+  ExternalLink,
+  RefreshCcw,
+  Loader2,
+} from "lucide-react";
+import { useLanguage } from "@/app/context/LanguageContext";
 
 /* ─── USCIS API Response Structure ──────────────────────────── */
 interface USCISCaseStatus {
@@ -115,50 +132,9 @@ function parseUSCISData(raw: USCISCaseStatus, receiptNumber: string): CaseResult
   };
 }
 
-/* ─── SVG Icons ──────────────────────────────────────────────── */
-const SearchIcon = () => (
-  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-  </svg>
-);
-const DocIcon = () => (
-  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-  </svg>
-);
-const ClockIcon = () => (
-  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-  </svg>
-);
-const ExtIcon = () => (
-  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-  </svg>
-);
-const RefreshIcon = () => (
-  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-  </svg>
-);
-const InfoIcon = () => (
-  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-  </svg>
-);
-const ErrIcon = () => (
-  <svg className="w-5 h-5 shrink-0" fill="currentColor" viewBox="0 0 20 20">
-    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
-  </svg>
-);
-const CheckCircleIcon = () => (
-  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-  </svg>
-);
-
 /* ─── Page Component ─────────────────────────────────────────── */
 export default function CaseStatusPage() {
+  const { t } = useLanguage();
   const [receipt, setReceipt] = useState("");
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<CaseResult | null>(null);
@@ -206,7 +182,6 @@ export default function CaseStatusPage() {
         return;
       }
 
-      // Parse the actual USCIS fields
       const rawCaseStatus: USCISCaseStatus = json.data?.case_status ?? json.data ?? {};
       const parsed = parseUSCISData(rawCaseStatus, json.receiptNumber ?? normalized);
       setResult(parsed);
@@ -231,82 +206,72 @@ export default function CaseStatusPage() {
   const theme = result ? getStatusTheme(result.status) : null;
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white">
-      {/* ── Hero ── */}
-      <div
-        className="relative overflow-hidden"
-        style={{ background: "linear-gradient(135deg, #08494c 0%, #0d7377 55%, #15979d 100%)" }}
-      >
-        <div className="absolute inset-0 pointer-events-none opacity-30"
-          style={{ backgroundImage: "radial-gradient(ellipse 700px 400px at 80% 50%, rgba(255,255,255,0.06), transparent)" }} />
-        <div className="relative max-w-4xl mx-auto px-6 py-14 text-center">
-          <span className="inline-flex items-center gap-2 bg-white/10 text-white/80 text-[11px] font-bold tracking-widest uppercase px-4 py-1.5 rounded-full border border-white/15 mb-6">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+    <div className="min-h-screen bg-linear-to-b from-primary/10 to-white py-10 px-4">
+      <div className="max-w-4xl mx-auto">
+        {/* Header Section */}
+        <div className="mb-8">
+          <div className="inline-flex items-center gap-2 px-3 py-1 bg-primary/10 text-primary rounded-full text-[11px] font-bold uppercase tracking-widest mb-4">
+            <div className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
             Live Status Tracker
-          </span>
-          <h1 className="text-4xl md:text-5xl font-extrabold text-white mb-4 tracking-tight leading-tight">
+          </div>
+          <h1 className="text-3xl md:text-4xl font-extrabold text-primary mb-2 tracking-tight">
             USCIS Case Status
           </h1>
-          <p className="text-[15px] text-white/60 max-w-xl mx-auto leading-relaxed">
-            Enter your receipt number for an instant case update. Track your immigration progress in real-time.
+          <p className="text-gray-600 max-w-2xl leading-relaxed">
+            Enter your 13-character receipt number for an instant case update. Track your immigration progress with official data in real-time.
           </p>
         </div>
-      </div>
 
-      <div className="max-w-3xl mx-auto px-4 sm:px-6 -mt-5 pb-16 space-y-5">
-
-        {/* ── Search Card ── */}
-        <div className="bg-white rounded-2xl shadow-md border border-slate-200 mt-10">
-          <div className="p-6 sm:p-8">
-            {/* Header row */}
-            <div className="flex items-center justify-between mb-5">
-              <div>
-                <h2 className="text-base font-bold text-slate-900 ">Enter Receipt Number</h2>
-                <p className="text-xs text-slate-400 mt-1">3 letters + 10 digits · e.g. MSC2490000001</p>
-              </div>
-              {history.length > 0 && (
-                <button
-                  onClick={() => setShowHistory((v) => !v)}
-                  className="flex items-center gap-1.5 text-xs text-teal-600 hover:text-teal-700 font-semibold transition-colors"
-                >
-                  <ClockIcon />
-                  Recent ({history.length})
-                </button>
-              )}
-            </div>
-
-            {/* Recent panel */}
-            {showHistory && (
-              <div className="mb-5 rounded-xl border border-slate-200 overflow-hidden">
-                <div className="flex items-center justify-between px-4 py-2.5 bg-slate-50 border-b border-slate-200">
-                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Recent Searches</span>
-                  <button onClick={() => { setHistory([]); localStorage.removeItem("uscis_history"); }}
-                    className="text-xs text-red-500 hover:text-red-600 font-semibold">Clear</button>
-                </div>
-                {history.map((h) => {
-                  const t = getStatusTheme(h.status);
-                  return (
-                    <button key={h.receiptNumber} onClick={() => loadHistory(h)}
-                      className="w-full flex items-center justify-between px-4 py-3 hover:bg-slate-50 transition-colors border-b border-slate-100 last:border-0 text-left">
-                      <div className="flex items-center gap-3">
-                        <span className={`w-2 h-2 rounded-full shrink-0 ${t.dot}`} />
-                        <div>
-                          <p className="text-sm font-semibold text-slate-800 font-mono tracking-wider">{h.receiptNumber}</p>
-                          <p className="text-xs text-slate-400">{new Date(h.checkedAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}</p>
-                        </div>
-                      </div>
-                      <span className={`text-xs font-semibold px-2.5 py-1 rounded-full border ${t.bg} ${t.color} ${t.border}`}>{t.label}</span>
-                    </button>
-                  );
-                })}
-              </div>
+        {/* Search Card */}
+        <div className="bg-white p-6 md:p-8 rounded-2xl shadow-lg border border-primary/10 mb-8 mt-10">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-xl font-bold text-slate-900 tracking-tight">Find My Status</h2>
+            {history.length > 0 && (
+              <button
+                onClick={() => setShowHistory((v) => !v)}
+                className="flex items-center gap-1.5 text-xs text-primary hover:underline font-bold transition-all"
+              >
+                <Clock className="w-3.5 h-3.5" />
+                History ({history.length})
+              </button>
             )}
+          </div>
 
-            {/* Input + Button */}
-            <div className="flex gap-3">
-              <div className="flex-1 relative">
-                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"><DocIcon /></span>
+          {/* History Dropdown */}
+          {showHistory && (
+            <div className="mb-6 rounded-xl border border-slate-100 bg-slate-50/50 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
+              <div className="flex items-center justify-between px-4 py-2 border-b border-slate-100">
+                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Recent Searches</span>
+                <button onClick={() => { setHistory([]); localStorage.removeItem("uscis_history"); }}
+                  className="text-xs text-red-500 hover:text-red-600 font-bold">Clear All</button>
+              </div>
+              {history.map((h) => {
+                const t = getStatusTheme(h.status);
+                return (
+                  <button key={h.receiptNumber} onClick={() => loadHistory(h)}
+                    className="w-full flex items-center justify-between px-4 py-3 hover:bg-white transition-all border-b border-slate-100 last:border-0 text-left group">
+                    <div className="flex items-center gap-3">
+                      <span className={`w-2 h-2 rounded-full shrink-0 ${t.dot}`} />
+                      <div>
+                        <p className="text-sm font-bold text-slate-800 font-mono tracking-wider group-hover:text-primary transition-colors">{h.receiptNumber}</p>
+                        <p className="text-[11px] text-slate-400 font-medium">Checked {new Date(h.checkedAt).toLocaleDateString()}</p>
+                      </div>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          )}
+
+          <div className="space-y-4">
+            <div className="relative">
+              <label htmlFor="receipt" className="block text-sm font-bold text-slate-700 mb-2">
+                Receipt Number <span className="text-red-500">*</span>
+              </label>
+              <div className="relative group">
+                <FileText className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 group-focus-within:text-primary transition-colors" />
                 <input
+                  id="receipt"
                   ref={inputRef}
                   type="text"
                   value={receipt}
@@ -314,185 +279,175 @@ export default function CaseStatusPage() {
                   onKeyDown={(e) => e.key === "Enter" && handleCheck()}
                   placeholder="e.g. MSC2490000001"
                   maxLength={13}
-                  spellCheck={false}
-                  autoComplete="off"
-                  className={`w-full pl-12 pr-14 py-4 text-[15px] font-mono rounded-xl border-2 outline-none transition-all
-                    focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10
-                    ${error ? "border-red-300 bg-red-50/30" : "border-slate-200 hover:border-slate-300 bg-slate-50"}`}
+                  className={`w-full pl-12 pr-14 py-4 text-base font-mono font-bold rounded-xl border-2 outline-none transition-all
+                    focus:ring-4 focus:ring-primary/5
+                    ${error ? "border-red-300 bg-red-50/20 focus:border-red-400" : "border-slate-100 hover:border-slate-200 bg-slate-50 focus:border-primary focus:bg-white"}`}
                 />
-                <span className={`absolute right-4 top-1/2 -translate-y-1/2 text-[11px] font-mono font-bold tabular-nums
-                  ${receipt.length === 13 ? "text-emerald-500" : "text-slate-400"}`}>
+                <span className={`absolute right-4 top-1/2 -translate-y-1/2 text-[11px] font-black font-mono tabular-nums px-2 py-0.5 rounded bg-white shadow-sm border
+                  ${receipt.length === 13 ? "text-emerald-500 border-emerald-100" : "text-slate-400 border-slate-100"}`}>
                   {receipt.length}/13
                 </span>
               </div>
-              <button
-                onClick={handleCheck}
-                disabled={loading || receipt.length === 0}
-                className="px-6 py-4 rounded-xl font-bold text-white text-sm
-                  bg-teal-600 hover:bg-teal-700 active:scale-95 transition-all
-                  disabled:opacity-50 disabled:cursor-not-allowed disabled:scale-100
-                  shadow-sm hover:shadow-md flex items-center gap-2"
-              >
-                {loading ? (
-                  <>
-                    <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-                    </svg>
-                    Checking
-                  </>
-                ) : (
-                  <><SearchIcon /> Check</>
-                )}
-              </button>
+              
+              {/* Prefix Decoder */}
+              {decoded && receipt.length >= 3 && (
+                <div className="mt-3 flex items-center gap-2 px-3 py-1.5 bg-primary/5 rounded-lg border border-primary/5 w-fit">
+                  <Building2 className="w-3.5 h-3.5 text-primary/60" />
+                  <span className="text-[11px] font-bold text-primary tracking-tight">
+                    {decoded.center} {decoded.year && <span className="text-primary/40 ml-1">({decoded.year})</span>}
+                  </span>
+                </div>
+              )}
             </div>
 
-            {/* Prefix decoder */}
-            {decoded && receipt.length >= 3 && (
-              <p className="mt-2.5 text-xs text-slate-500">
-                <span className="font-bold font-mono text-teal-700">{decoded.prefix}</span>
-                <span className="mx-1.5 text-slate-300">·</span>
-                {decoded.center}
-                {decoded.year && <span className="text-slate-400 ml-1.5">({decoded.year})</span>}
-              </p>
-            )}
-
-            {/* Error */}
-            {error && (
-              <div className="mt-4 flex items-start gap-3 p-4 bg-red-50 border border-red-200 rounded-xl text-red-700">
-                <ErrIcon />
-                <p className="text-sm font-medium">{error}</p>
-              </div>
-            )}
+            <button
+              onClick={handleCheck}
+              disabled={loading || receipt.length < 13}
+              className="w-full sm:w-auto px-10 py-4 bg-primary text-white font-black rounded-xl hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-all transform active:scale-95 shadow-lg shadow-primary/20 flex items-center justify-center gap-2"
+            >
+              {loading ? (
+                <>
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                  Retrieving Case Info...
+                </>
+              ) : (
+                <>
+                  <Search className="w-5 h-5" />
+                  Check Case Status
+                </>
+              )}
+            </button>
           </div>
+
+          {error && (
+            <div className="mt-6 flex items-start gap-3 p-4 bg-red-50 border border-red-100 rounded-xl text-red-700 animate-in fade-in slide-in-from-bottom-2 duration-300">
+              <AlertCircle className="w-5 h-5 shrink-0 mt-0.5" />
+              <p className="text-sm font-bold">{error}</p>
+            </div>
+          )}
         </div>
 
-        {/* ── Skeleton ── */}
-        {loading && (
-          <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-8 animate-pulse">
-            <div className="flex gap-4 mb-6">
-              <div className="w-3 h-3 rounded-full bg-slate-200 mt-1" />
-              <div className="flex-1 space-y-2">
-                <div className="h-4 bg-slate-200 rounded w-2/5" />
-                <div className="h-3 bg-slate-200 rounded w-1/3" />
-              </div>
-            </div>
-            <div className="space-y-2.5 mb-6">
-              <div className="h-3 bg-slate-100 rounded" />
-              <div className="h-3 bg-slate-100 rounded w-5/6" />
-              <div className="h-3 bg-slate-100 rounded w-4/6" />
-            </div>
-            <div className="grid grid-cols-3 gap-4">
-              {[1, 2, 3].map((i) => <div key={i} className="h-12 bg-slate-100 rounded-lg" />)}
-            </div>
-          </div>
-        )}
-
-        {/* ── Result ── */}
-        {!loading && result && theme && (
-          <div
-            className={`bg-white rounded-2xl shadow-sm border overflow-hidden ${theme.border}`}
-            style={{ animation: "slideUp .35s ease both" }}
-          >
-            {/* Status bar */}
-            <div className={`px-6 sm:px-8 py-5 flex items-start justify-between gap-4 ${theme.bg} border-b ${theme.border}`}>
-              <div className="flex items-start gap-3">
-                <span className={`w-2.5 h-2.5 rounded-full mt-1.5 shrink-0 ${theme.dot}`} />
-                <div>
-                  <p className={`text-base font-bold leading-snug ${theme.color}`}>
-                    {result.status || "Status Unavailable"}
-                  </p>
-                  <p className="text-xs text-slate-400 mt-1">
-                    Retrieved{" "}
-                    {new Date(result.checkedAt).toLocaleString("en-US", {
-                      month: "short", day: "numeric", year: "numeric",
-                      hour: "2-digit", minute: "2-digit",
-                    })}
-                  </p>
-                </div>
-              </div>
-              <span className={`text-xs font-bold px-3 py-1.5 rounded-full border shrink-0 ${theme.bg} ${theme.color} ${theme.border}`}>
-                {theme.label}
-              </span>
+        {/* Results Screen */}
+        {result && theme && !loading && (
+          <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+            <div className="flex items-center gap-2.5 mb-2">
+              <CheckCircle2 className="w-6 h-6 text-primary" />
+              <h3 className="text-xl font-extrabold text-slate-900 tracking-tight">Current Status</h3>
             </div>
 
-            <div className="p-6 sm:p-8 space-y-6">
-              {/* Details grid */}
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-x-6 gap-y-5">
-                <InfoCell label="Receipt Number" value={<span className="font-mono tracking-wider">{result.receiptNumber}</span>} />
-                {result.formType && <InfoCell label="Form Type" value={result.formType} />}
-                {(() => {
-                  const d = decodePrefix(result.receiptNumber);
-                  return d ? <InfoCell label="Service Center" value={d.center} /> : null;
-                })()}
-                {result.modifiedDate && (
-                  <InfoCell label="Last Updated" value={result.modifiedDate} />
-                )}
-              </div>
-
-              {/* Case update description */}
-              {result.description && (
-                <div className="bg-slate-50 border border-slate-200 rounded-xl p-5">
-                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2.5">Case Update</p>
-                  <p className="text-sm text-slate-700 leading-relaxed">{result.description}</p>
-                </div>
-              )}
-
-              {/* Next steps */}
-              {result.nextSteps.length > 0 && (
-                <div>
-                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3">What Happens Next</p>
-                  <div className="space-y-2">
-                    {result.nextSteps.map((step, i) => (
-                      <div key={i} className="flex items-start gap-3 p-3.5 rounded-lg bg-teal-50 border border-teal-100">
-                        <span className="text-teal-600 mt-0.5 shrink-0"><CheckCircleIcon /></span>
-                        <p className="text-sm text-teal-800 leading-relaxed">{step.text}</p>
-                      </div>
-                    ))}
+            <div className={`bg-white rounded-2xl shadow-xl border overflow-hidden ${theme.border}`}>
+              <div className={`px-6 md:px-8 py-6 flex flex-col md:flex-row md:items-center justify-between gap-4 ${theme.bg} border-b ${theme.border}`}>
+                <div className="flex items-start gap-4">
+                  <div className={`w-3 h-3 rounded-full mt-2 shrink-0 animate-pulse ${theme.dot}`} />
+                  <div>
+                    <h4 className={`text-xl md:text-2xl font-black leading-tight ${theme.color}`}>
+                      {result.status || "Status Unavailable"}
+                    </h4>
+                    <p className="text-xs font-bold text-slate-400 mt-1 uppercase tracking-widest flex items-center gap-1.5">
+                      <RefreshCw className="w-3 h-3" />
+                      Updated {new Date(result.checkedAt).toLocaleString()}
+                    </p>
                   </div>
                 </div>
-              )}
+                <div className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl border text-[12px] font-black uppercase tracking-widest ${theme.bg} ${theme.color} ${theme.border}`}>
+                  {theme.label}
+                </div>
+              </div>
 
-              {/* Actions */}
-              <div className="flex flex-wrap gap-3 pt-2 border-t border-slate-100">
-                <a
-                  href="https://egov.uscis.gov/casestatus/landing.do"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold text-teal-700 bg-teal-50 hover:bg-teal-100 border border-teal-200 transition-colors"
-                >
-                  <ExtIcon /> View on USCIS.gov
-                </a>
-                <button
-                  onClick={reset}
-                  className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold text-slate-600 bg-slate-100 hover:bg-slate-200 transition-colors"
-                >
-                  <RefreshIcon /> Check Another
-                </button>
+              <div className="p-6 md:p-8 space-y-8">
+                {/* Details Grid */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+                  <ResultCell icon={<Hash className="w-4 h-4" />} label="Receipt Number" value={result.receiptNumber} mono />
+                  {result.formType && <ResultCell icon={<FileText className="w-4 h-4" />} label="Form Type" value={result.formType} />}
+                  {result.modifiedDate && <ResultCell icon={<Calendar className="w-4 h-4" />} label="Last Updated" value={result.modifiedDate} />}
+                </div>
+
+                {/* Case Description */}
+                {result.description && (
+                  <div className="bg-slate-50/80 rounded-2xl p-6 border border-slate-100">
+                    <h5 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2">
+                      <Info className="w-3.5 h-3.5" /> Official Case Update
+                    </h5>
+                    <p className="text-[15px] font-medium text-slate-700 leading-relaxed italic">
+                      "{result.description}"
+                    </p>
+                  </div>
+                )}
+
+                {/* Next Steps */}
+                {result.nextSteps.length > 0 && (
+                  <div>
+                    <h5 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2">
+                      <ArrowUpCircle className="w-3.5 h-3.5 text-primary" /> Roadmap Ahead
+                    </h5>
+                    <div className="space-y-3">
+                      {result.nextSteps.map((step, i) => (
+                        <div key={i} className="flex gap-4 p-4 rounded-xl bg-emerald-50/50 border border-emerald-100/50 group hover:border-emerald-200 transition-all">
+                          <CheckCircle2 className="w-5 h-5 text-emerald-500 mt-0.5 shrink-0" />
+                          <p className="text-[15px] font-bold text-emerald-900 leading-relaxed">{step.text}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Footer Controls */}
+                <div className="flex flex-wrap gap-4 pt-8 border-t border-slate-50">
+                  <a
+                    href="https://egov.uscis.gov/casestatus/landing.do"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-2 px-6 py-3 rounded-xl text-sm font-bold text-primary bg-primary/5 hover:bg-primary/10 border border-primary/10 transition-all active:scale-95"
+                  >
+                    <ExternalLink className="w-4 h-4" /> Official USCIS Website
+                  </a>
+                  <button
+                    onClick={reset}
+                    className="flex items-center gap-2 px-6 py-3 rounded-xl text-sm font-bold text-slate-600 bg-slate-50 hover:bg-slate-100 transition-all active:scale-95"
+                  >
+                    <RefreshCcw className="w-4 h-4" /> Check Another Number
+                  </button>
+                </div>
               </div>
             </div>
           </div>
         )}
 
-
-
+        {/* Loading Skeleton */}
+        {loading && (
+          <div className="bg-white rounded-2xl p-8 border border-slate-100 shadow-sm animate-pulse space-y-6">
+            <div className="flex gap-4">
+              <div className="w-12 h-12 bg-slate-100 rounded-xl" />
+              <div className="flex-1 space-y-3 pt-1">
+                <div className="h-4 bg-slate-100 rounded w-1/3" />
+                <div className="h-3 bg-slate-50 rounded w-1/4" />
+              </div>
+            </div>
+            <div className="space-y-3">
+              <div className="h-10 bg-slate-50 rounded-xl w-full" />
+              <div className="h-24 bg-slate-50 rounded-xl w-full" />
+            </div>
+            <div className="grid grid-cols-3 gap-4">
+              <div className="h-16 bg-slate-50 rounded-xl" />
+              <div className="h-16 bg-slate-50 rounded-xl" />
+              <div className="h-16 bg-slate-50 rounded-xl" />
+            </div>
+          </div>
+        )}
       </div>
-
-      <style>{`
-        @keyframes slideUp {
-          from { opacity: 0; transform: translateY(10px); }
-          to   { opacity: 1; transform: translateY(0); }
-        }
-      `}</style>
     </div>
   );
 }
 
-function InfoCell({ label, value }: { label: string; value: React.ReactNode }) {
+function ResultCell({ label, value, icon, mono }: { label: string; value: React.ReactNode; icon: React.ReactNode; mono?: boolean }) {
   return (
-    <div>
-      <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mb-1">{label}</p>
-      <p className="text-sm font-semibold text-slate-800">{value}</p>
+    <div className="space-y-1.5">
+      <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+        {icon} {label}
+      </p>
+      <p className={`text-[15px] font-extrabold text-slate-900 ${mono ? 'font-mono tracking-wider' : ''}`}>
+        {value}
+      </p>
     </div>
   );
 }
