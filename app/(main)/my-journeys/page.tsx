@@ -136,11 +136,13 @@ export default function MyJourneysPage() {
   };
 
   // Auth loading state is still blocking to prevent layout shift for unauthenticated users
-    return (
-      <div className="min-h-[80vh] flex flex-col items-center justify-center">
-        <Loader size="md" text={t("myJourneys.loading")} />
-      </div>
-    );
+    if (authLoading) {
+  return (
+    <div className="min-h-[80vh] flex flex-col items-center justify-center">
+      <Loader size="md" text={t("myJourneys.loading")} />
+    </div>
+  );
+}
 
   return (
     <div className="min-h-screen bg-slate-50/50 pb-20">
