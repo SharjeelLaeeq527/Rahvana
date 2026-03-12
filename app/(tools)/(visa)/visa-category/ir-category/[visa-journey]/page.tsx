@@ -289,7 +289,7 @@ export default function IR1JourneyPage() {
               </h2>
             </div>
 
-            <div className="flex overflow-x-auto gap-4 pb-6 pt-2 snap-x snap-mandatory hide-scrollbar px-4 sm:px-0 scroll-smooth mx-auto justify-center items-center">
+            <div className="flex overflow-x-auto gap-4 pb-6 pt-2 snap-x snap-mandatory hide-scrollbar px-4 scroll-smooth">
               {roadmapData.stages.map(
                 (stageItem: RoadmapStage, idx: number) => {
                   const defaultIcons = [
@@ -582,6 +582,7 @@ function Wizard({
               actions.setStage(stageIdx);
               actions.setCurrentStep(stepIdx);
             }}
+            onToggleComplete={actions.toggleComplete}
             selectedScenario={selectedScenario}
             hasScenarios={hasScenarios}
           />

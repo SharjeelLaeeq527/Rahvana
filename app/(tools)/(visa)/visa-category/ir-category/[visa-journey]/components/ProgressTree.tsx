@@ -1,13 +1,14 @@
 import React, { useState, useEffect } from "react";
 import { WizardState } from "@/app/(main)/dashboard/hooks/useWizard";
 import { useLanguage } from "@/app/context/LanguageContext";
-import { ChevronDown, CheckCircle2, Circle, PlayCircle, ArrowRightCircle } from "lucide-react";
+import { ChevronDown, CheckCircle2, Circle, ArrowRightCircle } from "lucide-react";
 import { RoadmapData, RoadmapStage, RoadmapStep } from "./types";
 
 interface ProgressTreeProps {
   roadmapData: RoadmapData;
   state: WizardState;
   onSelectStep: (stageIdx: number, stepIdx: number) => void;
+  onToggleComplete?: (stepId: string, e?: React.MouseEvent) => void;
   selectedScenario?: "bio" | "step" | "adopted"; // Optional - only for journeys with scenario-specific steps
   hasScenarios?: boolean;
 }
@@ -16,6 +17,7 @@ export function ProgressTree({
   roadmapData,
   state,
   onSelectStep,
+  onToggleComplete,
   selectedScenario = "bio",
   hasScenarios = false,
 }: ProgressTreeProps) {
@@ -113,7 +115,7 @@ export function ProgressTree({
                     // Otherwise, only show steps matching the selected scenario
                     return step.scenarioSpecific === selectedScenario;
                   })
-                  .map((step: RoadmapStep, filteredIdx: number) => {
+                  .map((step: RoadmapStep) => {
                     // Find the actual index in the original steps array
                     const actualStepIdx = stage.steps.findIndex(
                       (s) => s.id === step.id,
@@ -143,7 +145,14 @@ export function ProgressTree({
                           </span>
                         </div>
 
-                        <div className="shrink-0">
+                        <button
+                          type="button"
+                          className="shrink-0 p-1 hover:bg-slate-200/50 rounded-full transition-colors"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onToggleComplete?.(step.id, e);
+                          }}
+                        >
                           {isStepCompleted ? (
                             <CheckCircle2
                               className={`w-4 h-4 ${isCurrentStep ? "text-emerald-400" : "text-emerald-500"}`}
@@ -153,7 +162,7 @@ export function ProgressTree({
                               className={`w-3.5 h-3.5 ${isCurrentStep ? "text-slate-600" : "text-slate-300"}`}
                             />
                           )}
-                        </div>
+                        </button>
                       </button>
                     );
                   })}

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { WizardState } from "@/app/(main)/dashboard/hooks/useWizard";
 import { useLanguage } from "@/app/context/LanguageContext";
 import {
@@ -34,6 +34,17 @@ export function DocumentVault({
   onClearUpload,
 }: DocumentVaultProps) {
   const { t } = useLanguage();
+
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "unset";
+    }
+    return () => {
+      document.body.style.overflow = "unset";
+    };
+  }, [isOpen]);
 
   if (!isOpen) return null;
 
