@@ -17,9 +17,9 @@ This repository contains both the **Next.js Frontend** and the **FastAPI Backend
 - **Compliance Cropping:** Detects faces and crops them to meet official U.S. passport photo rules (2x2 inches, 600x600 px).
 - **Enhancement:** Automatically improves lighting and smoothness.
 
-### 3. USCIS I-130 Form Auto-Fill
+### 3. USCIS Forms Auto-Fill
 - **Seamless Integration:** Users enter basic info through a beautiful Next.js UI.
-- **Automated PDF Generation:** The backend opens the official USCIS I-130 PDF and correctly populates all fields.
+- **Automated PDF Generation:** The backend opens the official USCIS form PDF and correctly populates all fields.
 - **Ready to Submit:** Returns a completed PDF requiring zero manual typing.
 
 ### 4. Visa Bulletin & IV Schedule Checker
