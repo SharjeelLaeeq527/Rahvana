@@ -34,6 +34,7 @@ export interface RoadmapStep {
     type?: "tool" | "service" | "guide";
   }[];
   possibleOutcomes?: string[];
+  scenarioSpecific?: 'bio' | 'step' | 'adopted';
   success?: string;
   successUr?: string;
 }
@@ -60,6 +61,7 @@ export interface RoadmapStage {
 }
 
 export interface RoadmapData {
+  scenarioNotes: Record<string, string>;
   title?: string;
   titleUr?: string;
   description?: string;

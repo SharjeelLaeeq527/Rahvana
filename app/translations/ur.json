@@ -556,7 +556,7 @@
   "progressTree": {
     "journeyMap": "سفر کا نقشہ",
     "track": "قونصلر پروسیسنگ ٹریک",
-    "stage": "مرحلہ {{id}}"
+    "stage": "مرحلہ"
   },
   "stepDetail": {
     "info": "مرحلہ {{stageId}} • قدم {{stepId}}",

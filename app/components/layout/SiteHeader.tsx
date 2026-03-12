@@ -20,7 +20,8 @@ import {
   BookOpen,
   FolderLock,
   Wand2,
-  Sparkles
+  Sparkles,
+  HelpCircleIcon
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import MegaMenu from "./MegaMenu";
@@ -219,6 +220,7 @@ export function SiteHeader({
         dashboard: "/user-dashboard",
         mfa: "/mfa-setup",
         contact: "/#contact",
+        faq: "#faq",
         passport: "/passport",
         "passport-guide": "/guides/passport-guide",
         "visa-strength-guide": "/guides/visa-strength-guide",
@@ -431,7 +433,17 @@ export function SiteHeader({
             >
               Pricing
             </Link>
-
+            <Link
+              href="/#faq"
+              onClick={(e) => handleNav("faq", e)}
+              className={`px-4 py-2 text-sm font-semibold rounded-lg transition-all ${
+                isActive("faq")
+                  ? "bg-muted text-primary"
+                  : "text-muted-foreground hover:bg-muted hover:text-primary"
+              }`}
+            >
+              FAQ
+            </Link>
             <Link
               href="/#contact"
               onClick={(e) => handleNav("contact", e)}
@@ -933,6 +945,17 @@ export function SiteHeader({
               >
                 <CreditCard className="w-5 h-5 text-amber-500 dark:text-amber-400" />
                 <span className="font-bold">Pricing</span>
+              </HydrationSafeButton>
+              <HydrationSafeButton
+                onClick={() => handleNav("faq")}
+                className={`flex items-center gap-3 px-4 py-3 rounded-xl text-left transition-all ${
+                  isActive("faq")
+                    ? "bg-primary/10 text-primary"
+                    : "text-muted-foreground hover:bg-muted"
+                }`}
+              >
+                <HelpCircleIcon className="w-5 h-5 text-cyan-500 dark:text-cyan-400 text-" />
+                <span className="font-bold">FAQ</span>
               </HydrationSafeButton>
               {/* {isSignedIn && (
                   <>

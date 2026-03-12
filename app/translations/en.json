@@ -556,7 +556,7 @@
   "progressTree": {
     "journeyMap": "Journey Map",
     "track": "Consular Processing Track",
-    "stage": "Stage {{id}}"
+    "stage": "Stage"
   },
   "stepDetail": {
     "info": "Stage {{stageId}} • Step {{stepId}}",

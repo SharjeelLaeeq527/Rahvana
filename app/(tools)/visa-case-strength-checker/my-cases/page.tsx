@@ -22,6 +22,8 @@ import {
 import Pagination from "@/components/ui/pagination";
 import { Loader } from "@/components/ui/spinner";
 import { ElementType } from "react";
+import ActionMenu from "@/app/components/shared/ActionMenu";
+import { ConfirmationModal } from "@/app/components/shared/ConfirmationModal";
 
 type RiskLevel = "STRONG" | "MODERATE" | "WEAK" | "PENDING";
 type CaseType = "Spouse";
@@ -88,6 +90,11 @@ export default function MyCases() {
   const [cases, setCases] = useState<UserCase[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [selectedSessionId, setSelectedSessionId] = useState<string | null>(
+    null,
+  );
+  const [modalOpen, setModalOpen] = useState(false);
+  const [loadingDelete, setLoadingDelete] = useState(false);
 
   // pagination state
   const [currentPage, setCurrentPage] = useState<number>(1);
@@ -119,6 +126,42 @@ export default function MyCases() {
 
     fetchUserCases();
   }, []);
+
+  // open modal when session is selected
+  useEffect(() => {
+    if (selectedSessionId) setModalOpen(true);
+  }, [selectedSessionId]);
+
+  const handleDelete = async (sessionId: string) => {
+    if (!selectedSessionId) return;
+    setLoadingDelete(true);
+
+    try {
+      const res = await fetch(`/api/visa-checker/session/${sessionId}/delete`, {
+        method: "DELETE",
+      });
+
+      let data;
+      try {
+        data = await res.json();
+      } catch {
+        data = null;
+      }
+
+      if (!res.ok) {
+        throw new Error(data?.error || "Failed to delete session");
+      }
+
+      setCases((prev) => prev.filter((c) => c.sessionId !== selectedSessionId));
+      setModalOpen(false);
+      setSelectedSessionId(null);
+    } catch (err) {
+      console.error(err);
+      alert(err instanceof Error ? err.message : "Failed to delete session");
+    } finally {
+      setLoadingDelete(false);
+    }
+  };
 
   // pagination calculations
   const totalPages = Math.max(1, Math.ceil(cases.length / ITEMS_PER_PAGE));
@@ -266,18 +309,14 @@ export default function MyCases() {
                       </TableCell>
 
                       <TableCell className="py-5 text-right">
-                        <Button
-                          variant="outline"
-                          size="lg"
-                          onClick={() =>
+                        <ActionMenu
+                          onView={() =>
                             (window.location.href = `/visa-case-strength-checker/result?sessionId=${userCase.sessionId}`)
                           }
-                          className="text-teal-600 hover:text-teal-700 hover:bg-teal-50 border-slate-300 py-5 px-6 text-base"
-                          disabled={!userCase.completed}
-                        >
-                          <Eye className="w-5 h-5 mr-2" />
-                          {userCase.completed ? "View Details" : "Incomplete"}
-                        </Button>
+                          onDelete={() =>
+                            setSelectedSessionId(userCase.sessionId)
+                          }
+                        />
                       </TableCell>
                     </TableRow>
                   ))}
@@ -303,6 +342,22 @@ export default function MyCases() {
           </div>
         )}
       </div>
+
+      <ConfirmationModal
+        open={modalOpen}
+        onOpenChange={(open) => {
+          setModalOpen(open);
+          if (!open) setSelectedSessionId(null);
+        }}
+        title="Confirm Delete"
+        description="Are you sure you want to delete this case? This action cannot be undone."
+        confirmText="Delete"
+        confirmVariant="danger"
+        onConfirm={() => {
+          if (selectedSessionId) handleDelete(selectedSessionId);
+        }}
+        loading={loadingDelete}
+      />
     </div>
   );
 }

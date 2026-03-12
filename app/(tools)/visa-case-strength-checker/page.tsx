@@ -127,11 +127,12 @@ const CaseTypeStep = ({
               (window.location.href = "/visa-case-strength-checker/my-cases")
             }
             suppressHydrationWarning
-          className="text-teal-600 hover:text-teal-700 hover:underline text-base font-medium"
-        >
-          See your cases →
-        </button>
-      </div>)}
+            className="text-teal-600 hover:text-teal-700 hover:underline text-base font-medium"
+          >
+            See your cases →
+          </button>
+        </div>
+      )}
     </div>
 
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -144,7 +145,14 @@ const CaseTypeStep = ({
             ? "border-primary bg-primary/5 ring-2 ring-primary/20"
             : "border-border hover:border-primary/50 hover:bg-muted/50"
         }`}
-        onClick={() => onCaseTypeChange("Spouse")}
+        onClick={() => {
+          onCaseTypeChange("Spouse");
+          window.scrollBy({
+            top: window.innerHeight,
+            left: 0,
+            behavior: "smooth",
+          });
+        }}
       >
         <div className="mx-auto bg-primary/10 text-primary w-12 h-12 md:w-16 md:h-16 rounded-full flex items-center justify-center mb-4">
           <svg
@@ -388,8 +396,30 @@ const QuestionStep = ({
   setFormData,
   onNext,
   onBack,
-  // onSaveForLater,
 }: QuestionStepProps) => {
+  // Refs for each question to scroll
+  const questionRefs = useRef<Record<string, HTMLDivElement | null>>({});
+
+  const handleChange = (id: keyof FormData, value: unknown) => {
+    const oldValue = formData[id];
+    if (oldValue === value) return; 
+  
+    onChange(id, value);
+  
+    // Auto-scroll slightly (25px from top)
+    const el = questionRefs.current[id];
+    if (el) {
+      const rect = el.getBoundingClientRect();
+      const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+      const top = rect.top + scrollTop - 25; // 25px offset from top
+  
+      window.scrollTo({
+        top,
+        behavior: "smooth",
+      });
+    }
+  };
+
   const renderInput = (question: {
     id: keyof FormData;
     label: string;
@@ -407,9 +437,7 @@ const QuestionStep = ({
       return (
         <CountryAutocomplete
           formData={formData as unknown as Record<string, unknown>}
-          setFormData={(data) =>
-            setFormData((prev) => ({ ...prev, ...data }))
-          }
+          setFormData={(data) => setFormData((prev) => ({ ...prev, ...data }))}
           hideLabel
           inputClassName="w-full p-3 border border-input rounded-lg focus:ring-2 focus:ring-ring focus:border-ring transition-colors bg-background"
           placeholder="Start typing country..."
@@ -432,8 +460,13 @@ const QuestionStep = ({
                   ? value
                   : ""
             }
+            onClick={(e) => {
+              if (question.type === "date") {
+                (e.currentTarget as HTMLInputElement).showPicker?.();
+              }
+            }}
             onChange={(e) =>
-              onChange(
+              handleChange(
                 question.id,
                 question.type === "number"
                   ? Number(e.target.value)
@@ -448,7 +481,7 @@ const QuestionStep = ({
         return (
           <textarea
             value={typeof value === "string" ? value : ""}
-            onChange={(e) => onChange(question.id, e.target.value)}
+            onChange={(e) => handleChange(question.id, e.target.value)}
             className="w-full p-3 border border-input rounded-lg focus:ring-2 focus:ring-ring focus:border-ring transition-colors bg-background"
             placeholder={`Enter details for ${question.label.toLowerCase()}`}
             rows={4}
@@ -462,7 +495,7 @@ const QuestionStep = ({
             </span>
             <ToggleSwitch
               checked={!!value}
-              onChange={(checked) => onChange(question.id, checked)}
+              onChange={(checked) => handleChange(question.id, checked)}
             />
           </div>
         );
@@ -471,7 +504,7 @@ const QuestionStep = ({
           return (
             <Select
               value={typeof value === "string" ? value : ""}
-              onValueChange={(newValue) => onChange(question.id, newValue)}
+              onValueChange={(newValue) => handleChange(question.id, newValue)}
             >
               <SelectTrigger className="w-full h-14">
                 <SelectValue
@@ -505,19 +538,17 @@ const QuestionStep = ({
 
       <div className="space-y-8">
         {questions.map((question) => {
-          // Hide US state question based on relationship type
+          // Conditional hiding logic
           if (question.id === "intended_us_state_of_residence") {
             const relationshipType = formData.spousal_relationship_type;
             if (
               !relationshipType ||
               relationshipType === "Select" ||
               relationshipType === "No biological relation"
-            ) {
+            )
               return null;
-            }
           }
 
-          // Hide field of study question unless education level qualifies
           if (question.id === "highest_education_field") {
             const educationLevel = formData.highest_education_level;
             const qualifyingLevels = [
@@ -525,45 +556,36 @@ const QuestionStep = ({
               "Master's degree",
               "Doctorate (PhD)",
             ];
-
-            if (!educationLevel || !qualifyingLevels.includes(educationLevel)) {
+            if (!educationLevel || !qualifyingLevels.includes(educationLevel))
               return null;
-            }
           }
 
-          // Hide military / defense additional questions unless industry sector meets criteria
           if (
-            question.id === "prior_military_service" ||
-            question.id === "specialized_weapons_training" ||
-            question.id === "unofficial_armed_groups"
+            [
+              "prior_military_service",
+              "specialized_weapons_training",
+              "unofficial_armed_groups",
+            ].includes(question.id as string)
           ) {
             const industrySector = formData.industry_sector;
-            const qualifyingSectors = ["Military/Defense"];
-
-            if (
-              !industrySector ||
-              !qualifyingSectors.includes(industrySector)
-            ) {
+            if (!industrySector || industrySector !== "Military/Defense")
               return null;
-            }
-          }
-
-          let modifiedQuestion = question;
-          if (question.id === "intended_us_state_of_residence") {
-            modifiedQuestion = { ...question, type: "text" };
           }
 
           return (
             <div
               key={question.id}
+              ref={(el: HTMLDivElement | null) => {
+                questionRefs.current[question.id] = el;
+              }}
               className="space-y-3 p-4 bg-slate-50 rounded-xl border border-slate-200"
             >
               {question.type !== "boolean" && (
                 <label className="block text-lg font-semibold text-slate-800">
-                  {modifiedQuestion.label}
+                  {question.label}
                 </label>
               )}
-              {renderInput(modifiedQuestion)}
+              {renderInput(question)}
             </div>
           );
         })}
@@ -593,7 +615,7 @@ const QuestionStep = ({
             variant="outline"
             disabled={loading}
             className="bg-white hover:bg-slate-50 text-secondary-foreground border-input py-6 text-lg disabled:opacity-60 disabled:cursor-not-allowed"
-            >
+          >
             ← Previous
           </Button>
           <div className="flex flex-row gap-3">
@@ -1469,7 +1491,7 @@ const ReviewStep = ({
             onClick={onBack}
             variant="outline"
             className="bg-white hover:bg-slate-50 text-secondary-foreground border-input py-6 text-lg"
-            >
+          >
             ← Previous
           </Button>
           <div className="flex flex-row gap-3">
@@ -1500,7 +1522,7 @@ export default function VisaCaseStrengthChecker() {
   const isNavigatingRef = useRef<boolean>(false);
   const [isNavigating, setIsNavigating] = useState(false);
 
-  const {isAuthenticated} = useAuth();
+  const { isAuthenticated } = useAuth();
 
   const supabase = createBrowserClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -1591,7 +1613,7 @@ export default function VisaCaseStrengthChecker() {
       if (profileLoaded && lastUserId === user.id) {
         return;
       }
-      
+
       try {
         const { data } = await supabase
           .from("user_profiles")
@@ -1600,28 +1622,7 @@ export default function VisaCaseStrengthChecker() {
           .single();
 
         if (data?.profile_details) {
-            const profile = data.profile_details as MasterProfile;
-            
-            // 1. Check for specific Saved Case Strength Session
-            if (profile.caseStrength?.lastSessionId && profile.caseStrength?.answers) {
-                 // Restore specific tool state
-                  setFormData({
-                    caseType: (profile.caseStrength.caseType as CaseType) || "",
-                    ...profile.caseStrength.answers
-                  } as FormData);
-                 setSessionId(profile.caseStrength.lastSessionId);
-                 setProfileLoaded(true);
-                 
-                 // If we have a sessionId, we assume the user might have completed or wants to see results
-                 // But strictly speaking, sessionId just means a session exists.
-                 // The user wants "Direct Result" like Visa Eligibility.
-                 // In Visa Eligibility, we check if enough data exists.
-                 // Here, if we have a saved sessionId, it implies we saved result state?
-                 // Let's perform a check: if we have answers and sessionId, try to jump to results.
-                 // Note: questionnaireData might not be loaded yet, so we can't set step to length+2 reliably here.
-                 // We will set a flag or rely on the other useEffect.
-                 return; 
-            }
+          const profile = data.profile_details as MasterProfile;
 
           // 1. Check for specific Saved Case Strength Session
           if (
@@ -1703,6 +1704,15 @@ export default function VisaCaseStrengthChecker() {
   };
 
   const [isEditing, setIsEditing] = useState(false);
+
+  useEffect(() => {
+    const storedSession = localStorage.getItem("visaCheckerSessionId");
+
+    if (storedSession) {
+      setSessionId(storedSession);
+      setStep(1); // first question
+    }
+  }, []);
 
   // Auto-jump to results if session restored
   useEffect(() => {
@@ -2348,7 +2358,10 @@ export default function VisaCaseStrengthChecker() {
     const sections = questionnaireData.sections;
     const currentSectionIndex = step - 1;
     const totalSteps = questionnaireData.sections.length + 2; // +2 for review and results steps
-    const progressPercentage = Math.max(0, Math.min(100, Math.round((step / totalSteps) * 100)));
+    const progressPercentage = Math.max(
+      0,
+      Math.min(100, Math.round((step / totalSteps) * 100)),
+    );
 
     return (
       <div className="mb-8">
