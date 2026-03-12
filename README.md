@@ -1,4 +1,4 @@
-# Rahvana & Arachnie AI – Immigration Assistant
+# Rahvana Immigration Assistant
 
 Welcome to the **Rahvana** project repository. This project is a comprehensive immigration assistance platform that simplifies visa processes, form filling, and provides AI-driven query resolution. 
 
@@ -6,7 +6,7 @@ This repository contains both the **Next.js Frontend** and the **FastAPI Backend
 
 ## 🌟 Key Features
 
-### 1. Arachnie WhatsApp AI Assistant (Phase 1)
+### 1. Rahvana WhatsApp AI Assistant (Phase 1)
 - **AI-Powered Q&A:** Answers user questions based *only* on pre-approved WhatsApp group knowledge.
 - **Privacy-First:** Strict rules to never reveal personal details or message senders.
 - **RAG Implementation:** Uses Supabase `whatsapp_knowledge` table to retrieve relevant ground-truth data before querying Gemini.
