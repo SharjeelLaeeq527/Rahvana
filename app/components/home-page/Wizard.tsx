@@ -99,8 +99,7 @@ export function Wizard({ state, actions, isLoaded }: WizardProps) {
             onSelectStep={(stageIdx, stepIdx) => {
               actions.setStage(stageIdx);
               actions.setCurrentStep(stepIdx);
-            }}
-          />
+            } } roadmapData={undefined}          />
         </aside>
 
         {/* Main Content */}
@@ -128,8 +127,7 @@ export function Wizard({ state, actions, isLoaded }: WizardProps) {
         onToggleDocument={actions.toggleDocument}
         onUpdateNote={actions.updateNote}
         onUpload={actions.uploadDocument}
-        onClearUpload={actions.clearDocument}
-      />
+        onClearUpload={actions.clearDocument} roadmapData={undefined}      />
     </div>
   );
 }

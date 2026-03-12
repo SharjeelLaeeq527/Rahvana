@@ -2,6 +2,8 @@ export interface RoadmapStep {
   id: string;
   name: string;
   nameUr?: string;
+  title?: string;
+  titleUr?: string;
   description?: string;
   descriptionUr?: string;
   who?: string;
@@ -25,8 +27,16 @@ export interface RoadmapStep {
   inputs?: string[];
   officialSource?: string;
   nextTrigger?: string;
+  relevantTools?: {
+    label: string;
+    labelUr?: string;
+    href: string;
+    type?: "tool" | "service" | "guide";
+  }[];
   possibleOutcomes?: string[];
   scenarioSpecific?: 'bio' | 'step' | 'adopted';
+  success?: string;
+  successUr?: string;
 }
 
 export interface RoadmapSource {
@@ -39,6 +49,8 @@ export interface RoadmapStage {
   id: number | string;
   name: string;
   nameUr?: string;
+  title?: string;
+  titleUr?: string;
   description?: string;
   descriptionUr?: string;
   timeline?: string;

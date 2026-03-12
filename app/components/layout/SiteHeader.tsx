@@ -126,20 +126,54 @@ export function SiteHeader({
   const [confirmSignOutOpen, setConfirmSignOutOpen] = useState(false);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const notifRef = useRef<HTMLDivElement>(null);
+  const profileRef = useRef<HTMLDivElement>(null);
 
-  // Close notification dropdown on outside click
+  const [activeMenu, setActiveMenu] = useState<string | null>(null);
+  const menuTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const [arrowOffset, setArrowOffset] = useState(40);
+
+  // Refs for each nav button wrapper — used to calculate arrow position
+  const navRefs = useRef<Record<string, HTMLDivElement | null>>({
+    journeys: null,
+    tools: null,
+    guides: null,
+    services: null,
+  });
+  const megaMenuContainerRef = useRef<HTMLDivElement | null>(null);
+
+  // Close dropdowns on outside click
   useEffect(() => {
     const handleOutsideClick = (e: MouseEvent) => {
-      if (notifRef.current && !notifRef.current.contains(e.target as Node)) {
+      const target = e.target as Node;
+      // Notification
+      if (notifRef.current && !notifRef.current.contains(target)) {
         setNotificationsOpen(false);
+      }
+      // Mega Menus or Profile Menu
+      if (activeMenu) {
+        if (activeMenu === "profile") {
+          if (profileRef.current && !profileRef.current.contains(target)) {
+            setActiveMenu(null);
+          }
+        } else {
+          const isInsideMegaMenu = megaMenuContainerRef.current?.contains(target);
+          const isInsideNavTrigger = navRefs.current[activeMenu]?.contains(target);
+          if (!isInsideMegaMenu && !isInsideNavTrigger) {
+            setActiveMenu(null);
+          }
+        }
       }
     };
     document.addEventListener("mousedown", handleOutsideClick);
     return () => document.removeEventListener("mousedown", handleOutsideClick);
-  }, []);
+  }, [activeMenu]);
 
-  const [activeMenu, setActiveMenu] = useState<string | null>(null);
-  const menuTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  // Close menus on route change
+  useEffect(() => {
+    setActiveMenu(null);
+    setIsMenuOpen(false);
+    setNotificationsOpen(false);
+  }, [pathname]);
 
   const { profile, isLoading, user: authUser } = useAuth();
   const resolvedUser = user ?? authUser;
@@ -148,10 +182,20 @@ export function SiteHeader({
   const handleMenuEnter = (menu: string) => {
     if (menuTimeoutRef.current) clearTimeout(menuTimeoutRef.current);
     setActiveMenu(menu);
+
+    // Calculate arrow offset: center of the nav button relative to megamenu container left edge
+    const btnEl = navRefs.current[menu];
+    const containerEl = megaMenuContainerRef.current;
+    if (btnEl && containerEl) {
+      const btnRect = btnEl.getBoundingClientRect();
+      const containerRect = containerEl.getBoundingClientRect();
+      const centerX = btnRect.left + btnRect.width / 2 - containerRect.left;
+      setArrowOffset(Math.max(16, centerX - 8)); // -8 = half arrow width (16px/2)
+    }
   };
 
   const handleMenuLeave = () => {
-    menuTimeoutRef.current = setTimeout(() => setActiveMenu(null), 300);
+    menuTimeoutRef.current = setTimeout(() => setActiveMenu(null), 100);
   };
 
   const handleNav = (id: string, e?: React.MouseEvent) => {
@@ -280,7 +324,8 @@ export function SiteHeader({
 
           <nav className="hidden lg:flex items-center gap-1">
             <div
-              className="relative py-2"
+              ref={(el) => { navRefs.current["journeys"] = el; }}
+              className="relative pt-2 pb-0"
               onMouseEnter={() => handleMenuEnter("journeys")}
               onMouseLeave={handleMenuLeave}
             >
@@ -296,11 +341,16 @@ export function SiteHeader({
                   className={`h-4 w-4 transition-transform duration-300 ${activeMenu === "journeys" ? "rotate-180" : ""}`}
                 />
               </HydrationSafeButton>
+              {/* Active indicator bar */}
+              {activeMenu === "journeys" && (
+                <span className="absolute bottom-0 left-3 right-3 h-0.5 rounded-full bg-primary" />
+              )}
             </div>
 
             {/* Toolbox */}
             <div
-              className="relative py-2"
+              ref={(el) => { navRefs.current["tools"] = el; }}
+              className="relative pt-2 pb-0"
               onMouseEnter={() => handleMenuEnter("tools")}
               onMouseLeave={handleMenuLeave}
             >
@@ -316,11 +366,16 @@ export function SiteHeader({
                   className={`h-4 w-4 transition-transform duration-300 ${activeMenu === "tools" ? "rotate-180" : ""}`}
                 />
               </HydrationSafeButton>
+              {/* Active indicator bar */}
+              {activeMenu === "tools" && (
+                <span className="absolute bottom-0 left-3 right-3 h-0.5 rounded-full bg-primary" />
+              )}
             </div>
 
             {/* Guides */}
             <div
-              className="relative py-2"
+              ref={(el) => { navRefs.current["guides"] = el; }}
+              className="relative pt-2 pb-0"
               onMouseEnter={() => handleMenuEnter("guides")}
               onMouseLeave={handleMenuLeave}
             >
@@ -336,11 +391,16 @@ export function SiteHeader({
                   className={`h-4 w-4 transition-transform duration-300 ${activeMenu === "guides" ? "rotate-180" : ""}`}
                 />
               </HydrationSafeButton>
+              {/* Active indicator bar */}
+              {activeMenu === "guides" && (
+                <span className="absolute bottom-0 left-3 right-3 h-0.5 rounded-full bg-primary" />
+              )}
             </div>
 
             {/* Services */}
             <div
-              className="relative py-2"
+              ref={(el) => { navRefs.current["services"] = el; }}
+              className="relative pt-2 pb-0"
               onMouseEnter={() => handleMenuEnter("services")}
               onMouseLeave={handleMenuLeave}
             >
@@ -356,6 +416,10 @@ export function SiteHeader({
                   className={`h-4 w-4 transition-transform duration-300 ${activeMenu === "services" ? "rotate-180" : ""}`}
                 />
               </HydrationSafeButton>
+              {/* Active indicator bar */}
+              {activeMenu === "services" && (
+                <span className="absolute bottom-0 left-3 right-3 h-0.5 rounded-full bg-primary" />
+              )}
             </div>
 
             <Link
@@ -396,7 +460,8 @@ export function SiteHeader({
 
         {/* --- GLOBAL MEGAMENU PLACEMENT --- */}
         <div
-          className="absolute top-full left-0 right-0 max-w-7xl mx-auto px-6 pb-10 pointer-events-none"
+          ref={megaMenuContainerRef}
+          className="absolute top-[calc(100%-14px)] left-0 right-0 max-w-7xl mx-auto px-6 pointer-events-auto z-50"
           onMouseEnter={() => {
             if (activeMenu && activeMenu !== "profile") {
               if (menuTimeoutRef.current) clearTimeout(menuTimeoutRef.current);
@@ -404,22 +469,18 @@ export function SiteHeader({
           }}
           onMouseLeave={handleMenuLeave}
         >
-          <div className="pointer-events-auto">
-            <AnimatePresence>
-              {activeMenu === "journeys" && (
-                <MegaMenu key="journeys" isOpen={true} {...NAV_DATA.journeys} />
-              )}
-              {activeMenu === "tools" && (
-                <MegaMenu key="tools" isOpen={true} {...NAV_DATA.tools} />
-              )}
-              {activeMenu === "guides" && (
-                <MegaMenu key="guides" isOpen={true} {...NAV_DATA.guides} />
-              )}
-              {activeMenu === "services" && (
-                <MegaMenu key="services" isOpen={true} {...NAV_DATA.services} />
-              )}
-            </AnimatePresence>
-          </div>
+            {activeMenu === "journeys" && (
+              <MegaMenu key="journeys" isOpen={true} arrowOffset={arrowOffset} {...NAV_DATA.journeys} />
+            )}
+            {activeMenu === "tools" && (
+              <MegaMenu key="tools" isOpen={true} arrowOffset={arrowOffset} {...NAV_DATA.tools} />
+            )}
+            {activeMenu === "guides" && (
+              <MegaMenu key="guides" isOpen={true} arrowOffset={arrowOffset} {...NAV_DATA.guides} />
+            )}
+            {activeMenu === "services" && (
+              <MegaMenu key="services" isOpen={true} arrowOffset={arrowOffset} {...NAV_DATA.services} />
+            )}
         </div>
 
         {/* Right side – Search + Login */}
@@ -458,7 +519,7 @@ export function SiteHeader({
                         animate={{ opacity: 1, scale: 1, y: 0 }}
                         exit={{ opacity: 0, scale: 0.95, y: 8 }}
                         transition={{ duration: 0.18, ease: "easeOut" }}
-                        className="absolute right-0 top-full mt-2 w-80 rounded-xl shadow-xl border border-border bg-card z-[9999] overflow-hidden origin-top-right"
+                        className="absolute right-0 top-full mt-1 w-80 rounded-xl shadow-xl border border-border bg-card z-[9999] overflow-hidden origin-top-right"
                       >
                         {/* Header */}
                         <div className="flex items-center justify-between px-4 py-3 border-b border-border bg-muted/30">
@@ -483,7 +544,7 @@ export function SiteHeader({
                           </div>
                           <div className="text-center space-y-1">
                             <p className="text-sm font-semibold text-foreground">You&apos;re all caught up!</p>
-                            <p className="text-xs text-muted-foreground leading-relaxed max-w-[200px] mx-auto">
+                            <p className="text-xs text-muted-foreground leading-relaxed max-w-50 mx-auto">
                               No new notifications right now. We&apos;ll let you know when something needs your attention.
                             </p>
                           </div>
@@ -506,14 +567,26 @@ export function SiteHeader({
 
           {/* LOGIN / PROFILE toggle */}
           {isLoading && !resolvedUser ? (
-            <div className="w-[88px] h-10 rounded-lg bg-primary/10 animate-pulse" />
+            <div className="w-22 h-10 rounded-lg bg-primary/10 animate-pulse" />
           ) : user ? (
             <div
               className="relative"
-              onMouseEnter={() => handleMenuEnter("profile")}
+              ref={profileRef}
+              onPointerEnter={(e) => {
+                // Ignore touch pointer types to prevent double-triggering on mobile
+                if (e.pointerType === "touch") return;
+                handleMenuEnter("profile");
+              }}
               onMouseLeave={handleMenuLeave}
             >
-              <HydrationSafeButton className="flex items-center justify-center w-10 h-10 rounded-full bg-primary/10 border-2 border-primary/20 text-primary hover:bg-primary/20 transition-all shadow-sm font-semibold text-lg">
+              <HydrationSafeButton 
+                onClick={(e) => {
+                  e.stopPropagation();
+                  if (menuTimeoutRef.current) clearTimeout(menuTimeoutRef.current);
+                  setActiveMenu(activeMenu === "profile" ? null : "profile");
+                }}
+                className="flex items-center justify-center w-10 h-10 rounded-full bg-primary/10 border-2 border-primary/20 text-primary hover:bg-primary/20 transition-all shadow-sm font-semibold text-lg"
+              >
                 {(
                   profile?.full_name ||
                   user?.user_metadata?.full_name ||
@@ -530,7 +603,7 @@ export function SiteHeader({
                     initial={{ opacity: 0, scale: 0.95, y: 10 }}
                     animate={{ opacity: 1, scale: 1, y: 0 }}
                     exit={{ opacity: 0, scale: 0.95, y: 10 }}
-                    className="absolute right-0 top-full mt-2 w-72 max-h-[80vh] overflow-y-auto rounded-xl shadow-xl border border-border bg-card z-9999 transform origin-top-right"
+                    className="absolute right-0 top-full mt-1 w-72 max-h-[80vh] overflow-y-auto rounded-xl shadow-xl border border-border bg-card z-[9999] transform origin-top-right"
                   >
                     {/* Header */}
                     <div className="px-5 py-4 border-b border-border bg-muted/30">
@@ -959,7 +1032,7 @@ export function SiteHeader({
 
           <div className="p-6 border-t bg-slate-50">
             {isLoading && !resolvedUser ? (
-              <div className="w-full h-[56px] rounded-xl bg-primary/30 animate-pulse" />
+              <div className="w-full h-14 rounded-xl bg-primary/30 animate-pulse" />
             ) : (
               <HydrationSafeButton
                 onClick={() => {

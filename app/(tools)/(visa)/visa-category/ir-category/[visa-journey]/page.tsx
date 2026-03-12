@@ -33,7 +33,17 @@ export default function IR1JourneyPage() {
   const userId = user?.id ?? null;
   const { t, language } = useLanguage();
   const params = useParams();
-  const visaJourney = (params?.["visa-journey"] as string) || "ir-1";
+  const visaJourneyParam = (params?.["visa-journey"] as string) || "ir-1";
+  
+  // Map URL slugs to actual JSON filenames if they differ
+  const journeyMapping: Record<string, string> = {
+    "ir1-journey": "ir-1",
+    "ir5-journey": "ir-5",
+    "f1": "f-1",
+    "germany-student": "germany-student",
+  };
+  
+  const visaJourney = journeyMapping[visaJourneyParam] || visaJourneyParam;
 
   const [roadmapData, setRoadmapData] = useState<RoadmapData | null>(null);
   const [dataLoaded, setDataLoaded] = useState(false);
@@ -156,7 +166,7 @@ export default function IR1JourneyPage() {
 
   // Loading state
   if (!isLoaded || !dataLoaded) {
-    return <Loader fullScreen text={t("ir1Journey.loadingJourney")} />;
+    return <Loader fullScreen text={t("visaJourney.loading")} />;
   }
 
   if (!roadmapData) {
@@ -170,7 +180,7 @@ export default function IR1JourneyPage() {
   }
 
   return (
-    <section id="ir1-journey" className="block">
+    <section id={visaJourneyParam} className="block">
       <div className="w-full px-4 md:px-6 xl:px-8 py-8 md:py-[60px]">
         <div className="w-full mb-8 md:mb-12">
           {/* Header */}
@@ -199,7 +209,7 @@ export default function IR1JourneyPage() {
                   <>
                     <Save className="w-4 h-4 text-emerald-500" />
                     <span className="text-emerald-600 font-medium">
-                      {t("ir1Journey.autoSaved")}
+                      {t("visaJourney.autoSaved")}
                     </span>
                   </>
                 )}
@@ -319,7 +329,7 @@ export default function IR1JourneyPage() {
                           <Icon className="w-5 h-5" />
                         </div>
                         <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">
-                          {t("ir1Journey.stageShort", { stage: idx + 1 })}
+                          {t("visaJourney.stageShort", { stage: idx + 1 })}
                         </span>
                         <h4 className="font-bold text-slate-800 text-[15px] mb-2 leading-tight">
                           {language === "ur" && stageItem.nameUr
@@ -360,10 +370,17 @@ export default function IR1JourneyPage() {
                   </div>
                   <div>
                     <h3 className="text-lg md:text-xl font-bold text-slate-900">
-                      {t("ir1Journey.welcomeBack")}
+                      {t("visaJourney.welcomeBack")}
                     </h3>
                     <p className="text-slate-500 text-xs md:text-sm">
-                      {t("ir1Journey.existingJourney")}
+                      {visaJourneyParam === "ir1-journey"
+                        ? t("ir1Journey.existingJourney")
+                        : t("visaJourney.existingJourney", {
+                            title:
+                              language === "ur" && roadmapData.titleUr
+                                ? roadmapData.titleUr
+                                : roadmapData.title,
+                          })}
                     </p>
                   </div>
                 </div>
@@ -442,9 +459,9 @@ export default function IR1JourneyPage() {
       <ConfirmationModal
         open={startFreshModalOpen}
         onOpenChange={setStartFreshModalOpen}
-        title={t("ir1Journey.startFreshTitle")}
+        title={t("visaJourney.startFresh")}
         description={t("ir1Journey.startFreshDesc")}
-        confirmText={t("ir1Journey.startFresh")}
+        confirmText={t("visaJourney.startFresh")}
         onConfirm={confirmStartFresh}
       />
 

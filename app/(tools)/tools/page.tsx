@@ -16,6 +16,7 @@ import {
   PenTool,
   Wand2,
   FolderLock,
+  FileSearch,
   ArrowRight,
   ChevronDown,
 } from "lucide-react";
@@ -125,6 +126,15 @@ const TOOLS: Tool[] = [
     badge: "Live",
     disabled: false,
     comingSoon: false,
+  },
+  {
+    id: "uscis-case-status",
+    title: "USCIS Case Status",
+    description: "Real-time USCIS case status lookup via the official Torch API. Enter your receipt number for an instant update.",
+    category: "Tracking",
+    href: "/case-status",
+    icon: FileSearch,
+    badge: "Live",
   },
 
   // Docs & PDFs

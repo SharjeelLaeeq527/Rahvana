@@ -3066,6 +3066,59 @@
       }
     }
   },
+  "visaJourney": {
+    "welcomeBack": "Welcome Back!",
+    "existingJourney": "You have an existing {title} in progress.",
+    "loading": "Loading your journey...",
+    "resume": "Resume My Journey",
+    "startFresh": "Start Fresh",
+    "overallProgress": "Overall Journey Progress",
+    "stepsCompleted": "{count} steps completed",
+    "currentlyAt": "Currently at: Stage {stage} — {name}",
+    "autoSaved": "Progress auto-saved locally",
+    "stageShort": "Stage {stage}",
+    "actionsRequired": "Actions Required",
+    "stageStep": "Stage {stage}, Step {step}",
+    "prevStep": "Previous Step",
+    "nextStep": "Next Step",
+    "markAsComplete": "Mark as Complete",
+    "completed": "Completed",
+    "defaultNotes": "Detailed instructions and guidance for this step.",
+    "successTitle": "Success Condition",
+    "documentRequired": "(Document Required)",
+    "documentVault": {
+      "title": "Document Vault",
+      "subtitle": "Track and manage your required documents for the visa process.",
+      "status": {
+        "collected": "Collected",
+        "pending": "Pending",
+        "uploaded": "Uploaded"
+      },
+      "labels": {
+        "notes": "Notes",
+        "fileAttachment": "File Attachment"
+      },
+      "placeholders": {
+        "addNote": "Add private note...",
+        "chooseFile": "Choose File..."
+      },
+      "aria": {
+        "clearFile": "Clear selection"
+      },
+      "closeBtn": "Close Vault"
+    },
+    "progressTree": {
+      "journeyMap": "Journey Map",
+      "track": "Consular Processing Track",
+      "stage": "Stage {id}"
+    },
+    "relevantTools": "Relevant Tools & Services",
+    "toolTypes": {
+      "tool": "Tool",
+      "guide": "Guide",
+      "service": "Service"
+    }
+  },
   "ir1Journey": {
     "title": "IR-1/CR-1 Spouse Visa Journey",
     "description": "Comprehensive roadmap for bringing your spouse to the United States via consular processing at U.S. Embassy Islamabad, Pakistan.",

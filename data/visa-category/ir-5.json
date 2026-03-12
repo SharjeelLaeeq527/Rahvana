@@ -1,0 +1,567 @@
+{
+  "title": "IR-5 Parent Visa Journey",
+  "titleUr": "آئی آر-۵ والدین کا ویزہ سفر",
+  "description": "Comprehensive step-by-step roadmap for U.S. citizens petitioning for an immigrant visa for a parent via consular processing. Follow each stage from USCIS petition through U.S. arrival.",
+  "descriptionUr": "کونسلر پروسیسنگ کے ذریعے والدین کے لیے تارک وطن ویزا کی درخواست دینے والے امریکی شہریوں کے لیے مرحلہ وار جامع روڈ میپ۔ USCIS پٹیشن سے لے کر امریکہ پہنچنے تک ہر مرحلے پر عمل کریں۔",
+  "documents": [
+    "Petitioner's Proof of U.S. Citizenship",
+    "Petitioner's Government Photo ID",
+    "Beneficiary's Birth Certificate",
+    "Petitioner's Birth Certificate",
+    "Marriage Certificate (if applicable)",
+    "Divorce Decrees (if applicable)",
+    "Certified English Translations",
+    "Beneficiary's Valid Passport",
+    "Police Certificates",
+    "IRS Tax Transcripts (Most Recent)",
+    "Form I-864 (Affidavit of Support)",
+    "W-2s or 1099s",
+    "Recent Pay Stubs",
+    "Form DS-260 Confirmation Page",
+    "NVC Fee Receipts",
+    "Medical Exam Results (Sealed)",
+    "Passport Photos",
+    "Interview Appointment Letter"
+  ],
+  "stages": [
+    {
+      "id": 1,
+      "name": "USCIS Petition",
+      "nameUr": "USCIS پٹیشن",
+      "icon": "FileText",
+      "color": "bg-blue-50 text-blue-600",
+      "timeline": "Varies",
+      "steps": [
+        {
+          "id": "1",
+          "name": "Confirm Petitioner Eligibility",
+          "description": "Only U.S. citizens (not lawful permanent residents) may file Form I-130 to petition for a parent as an immediate relative. The petitioner must be at least 21 years of age.",
+          "actions": [
+            "Verify petitioner holds U.S. citizenship (by birth, naturalization, or acquisition)",
+            "Confirm petitioner is at least 21 years old",
+            "Locate U.S. passport, U.S. birth certificate, or naturalization/citizenship certificate",
+            "Review the USCIS immediate relative definition at uscis.gov"
+          ],
+          "success": "Petitioner confirmed as U.S. citizen age 21 or older",
+          "relevantTools": [
+            { "label": "Visa Path Finder", "labelUr": "ویزہ پاتھ فائنڈر", "href": "/visa-eligibility", "type": "tool" }
+          ]
+        },
+        {
+          "id": "2",
+          "name": "Confirm Beneficiary Eligibility",
+          "description": "The beneficiary must be the petitioner's biological or legally adoptive mother or father, or the stepparent (if a qualifying marriage occurred before the petitioner turned 18).",
+          "actions": [
+            "Identify the precise relationship: biological parent, adoptive parent, or stepparent",
+            "For stepparent: confirm marriage to biological parent occurred before petitioner turned 18",
+            "For adoptive parent: verify adoption finalized before petitioner turned 16",
+            "Check that the parent is not a U.S. citizen or LPR already",
+            "Confirm no bars to admissibility apply (review uscis.gov inadmissibility grounds)"
+          ],
+          "success": "Qualifying parent-child relationship confirmed and documented"
+        },
+        {
+          "id": "3",
+          "name": "Gather Required Supporting Documents",
+          "description": "USCIS requires civil documents proving the relationship and the petitioner's citizenship. Collect originals or certified copies with official translations where necessary.",
+          "actions": [
+            "Petitioner's proof of U.S. citizenship (U.S. passport, birth certificate, or naturalization certificate)",
+            "Petitioner's government-issued photo ID",
+            "Parent's birth certificate (showing parent's name and parents' names)",
+            "Petitioner's birth certificate naming both petitioner and the beneficiary parent",
+            "For stepparent: marriage certificate and any divorce decrees for prior marriages",
+            "If documents are not in English: obtain a certified translation for each",
+            "Review the I-130 form instructions on uscis.gov for the current document checklist"
+          ],
+          "success": "All required civil documents assembled and translated as needed",
+          "relevantTools": [
+            { "label": "Document Translation", "labelUr": "دستاویز کا ترجمہ", "href": "/document-translation", "type": "service" },
+            { "label": "PDF Toolkit", "labelUr": "پی ڈی ایف ٹول کٹ", "href": "/pdf-processing", "type": "tool" }
+          ]
+        },
+        {
+          "id": "4",
+          "name": "Complete Form I-130",
+          "description": "Form I-130 (Petition for Alien Relative) is the core USCIS petition establishing the qualifying relationship. Fill it out accurately using the current version from uscis.gov.",
+          "actions": [
+            "Download the current version of Form I-130 from uscis.gov",
+            "Complete all required fields for the petitioner (Part 1) and beneficiary parent (Part 3)",
+            "Answer questions about prior immigration petitions and prior marriages carefully",
+            "Sign and date the petition",
+            "Review USCIS I-130 instructions for any recently updated requirements"
+          ],
+          "success": "Form I-130 completed, reviewed, and ready for filing",
+          "relevantTools": [
+            { "label": "Smart Form Filler", "labelUr": "سمارٹ فارم فلر", "href": "/visa-forms", "type": "tool" }
+          ]
+        },
+        {
+          "id": "5",
+          "name": "Pay the I-130 Filing Fee",
+          "description": "USCIS charges a filing fee for Form I-130. The current fee amount is listed on the USCIS Fee Schedule at uscis.gov. Fees are subject to change; always verify before submitting.",
+          "actions": [
+            "Check the current I-130 filing fee on the USCIS fee schedule at uscis.gov/forms/filing-fees",
+            "Prepare acceptable payment (check, money order, or online payment per USCIS instructions)",
+            "If filing online via myUSCIS, follow the online payment process",
+            "Retain proof of payment"
+          ],
+          "success": "Filing fee prepared or paid"
+        },
+        {
+          "id": "6",
+          "name": "Submit Form I-130 to USCIS",
+          "description": "File Form I-130 either online through myUSCIS or by paper mail to the appropriate USCIS lockbox or service center as directed by current form instructions.",
+          "actions": [
+            "Determine the correct filing method (online at myUSCIS or paper mail) per current I-130 instructions",
+            "Assemble the complete petition package: I-130, supporting documents, fee payment",
+            "If mailing paper: use trackable/certified mail and keep the tracking number",
+            "If filing online: submit through your myUSCIS account at my.uscis.gov",
+            "Keep a full copy of everything submitted"
+          ],
+          "success": "I-130 petition package submitted to USCIS"
+        },
+        {
+          "id": "7",
+          "name": "Receive Form I-797C Receipt Notice",
+          "description": "After USCIS accepts the petition, it will mail a Form I-797C Notice of Action (receipt notice) confirming the petition was received. This notice includes your USCIS receipt number.",
+          "actions": [
+            "Watch for the I-797C receipt notice by mail (allow several weeks after filing)",
+            "Verify receipt number, petitioner name, and beneficiary name are correct",
+            "Save the receipt number — you will need it to check case status",
+            "Use the USCIS case status tool at egov.uscis.gov to monitor progress",
+            "Contact USCIS if the notice does not arrive within the expected timeframe per their website"
+          ],
+          "success": "I-797C receipt notice received with correct case information",
+          "relevantTools": [
+            { "label": "Case Status Tracker", "labelUr": "کیس اسٹیٹس ٹریکر", "href": "/case-status", "type": "tool" }
+          ]
+        },
+        {
+          "id": "8",
+          "name": "Respond to Any USCIS Requests (RFE / NOID)",
+          "description": "USCIS may issue a Request for Evidence (RFE) or Notice of Intent to Deny (NOID) if additional information is needed. Respond within the deadline specified in the notice.",
+          "actions": [
+            "Monitor case status regularly via egov.uscis.gov",
+            "If an RFE or NOID is received, read it carefully and note the response deadline",
+            "Gather all requested evidence",
+            "Draft a cover letter addressing each point in the RFE/NOID",
+            "Submit the response before the stated deadline via the method specified",
+            "Keep a complete copy of your response and proof of submission"
+          ],
+          "success": "All USCIS requests responded to timely and completely (or no RFE issued)"
+        },
+        {
+          "id": "9",
+          "name": "Wait for USCIS Processing",
+          "description": "USCIS processing times vary. Because parents of U.S. citizens are immediate relatives, there is no visa waiting line — the petition moves directly to approval once USCIS processing is complete.",
+          "actions": [
+            "Check current I-130 processing times at uscis.gov/tools/processing-times",
+            "Monitor case status via egov.uscis.gov or the USCIS mobile app",
+            "Notify USCIS of any address changes using Form AR-11 at uscis.gov",
+            "Do not contact USCIS outside of published inquiry guidelines"
+          ],
+          "success": "USCIS processing complete; no additional requests outstanding",
+          "relevantTools": [
+            { "label": "Case Status Tracker", "labelUr": "کیس اسٹیٹس ٹریکر", "href": "/case-status", "type": "tool" }
+          ]
+        },
+        {
+          "id": "10",
+          "name": "Receive I-130 Approval Notice (Form I-797)",
+          "description": "When USCIS approves the petition, it sends a Form I-797 Notice of Action (approval notice). For consular processing, USCIS forwards the approved petition to the National Visa Center (NVC).",
+          "actions": [
+            "Receive Form I-797 approval notice and verify all names and dates are correct",
+            "Note that USCIS automatically forwards the approved I-130 to the NVC for consular processing",
+            "Save the approval notice (I-797) — keep it with your immigration records",
+            "Wait for NVC to contact you with the next steps (NVC welcome letter)"
+          ],
+          "success": "I-130 approved and forwarded to NVC for consular processing"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "name": "NVC / CEAC Processing",
+      "nameUr": "NVC پروسیسنگ",
+      "icon": "Layout",
+      "color": "bg-indigo-50 text-indigo-600",
+      "timeline": "Varies",
+      "steps": [
+        {
+          "id": "11",
+          "name": "Receive NVC Welcome Letter / Notice",
+          "description": "The National Visa Center (NVC) notifies the petitioner by mail or email once the approved I-130 is received. The notice includes the NVC case number and invoice ID number needed to log in to CEAC.",
+          "actions": [
+            "Wait for NVC welcome correspondence (email or mail) with your case number and invoice ID",
+            "Verify the case number format (typically begins with the embassy code, e.g., country prefix + year + number)",
+            "Register or log in to the Consular Electronic Application Center (CEAC) at ceac.state.gov",
+            "Review NVC instructions at travel.state.gov under 'Immigrant Visas'",
+            "Ensure petitioner's and beneficiary's contact information is current with NVC"
+          ],
+          "success": "NVC case number and invoice ID received; CEAC account accessible",
+          "relevantTools": [
+            { "label": "DQ Status Tracker", "labelUr": "ڈی کیو اسٹیٹس ٹریکر", "href": "/iv-tool", "type": "tool" }
+          ]
+        },
+        {
+          "id": "12",
+          "name": "Pay NVC Immigrant Visa Fee",
+          "description": "NVC requires an immigrant visa application fee for the beneficiary before processing can continue. The current fee is listed at travel.state.gov; pay through CEAC.",
+          "actions": [
+            "Log in to CEAC at ceac.state.gov",
+            "Select 'Pay Fees' and confirm the current immigrant visa fee at travel.state.gov/fees",
+            "Pay the immigrant visa fee for the beneficiary parent online via CEAC",
+            "Print or save the fee receipt from CEAC",
+            "Do not confuse the immigrant visa fee with the USCIS I-130 filing fee (paid earlier)"
+          ],
+          "success": "Immigrant visa fee paid and confirmed in CEAC"
+        },
+        {
+          "id": "13",
+          "name": "Pay the Affidavit of Support Fee (if applicable)",
+          "description": "An Affidavit of Support processing fee may be required in CEAC. Check the current NVC fee schedule at travel.state.gov for whether this fee applies to your case.",
+          "actions": [
+            "Check CEAC and travel.state.gov for current Affidavit of Support fee requirements",
+            "If applicable, pay the Affidavit of Support fee through CEAC",
+            "Save the receipt"
+          ],
+          "success": "All required NVC fees paid and receipts saved"
+        },
+        {
+          "id": "14",
+          "name": "Complete Form DS-260 (Online Immigrant Visa Application)",
+          "description": "Form DS-260 is the Immigrant Visa Electronic Application submitted by the beneficiary through CEAC. It is required for consular processing of immigrant visas including IR-5.",
+          "actions": [
+            "Log in to CEAC at ceac.state.gov and select 'Apply for an Immigrant Visa'",
+            "Complete all sections of the DS-260 for the beneficiary parent accurately and truthfully",
+            "Answer all questions about the beneficiary's travel history, employment, family, and criminal/immigration history",
+            "Review all answers before submitting — the DS-260 cannot be edited after submission without contacting NVC",
+            "Submit the DS-260 and record the confirmation number",
+            "Review DS-260 instructions at travel.state.gov"
+          ],
+          "success": "DS-260 submitted in CEAC; confirmation number recorded",
+          "relevantTools": [
+            { "label": "Smart Form Filler", "labelUr": "سمارٹ فارم فلر", "href": "/visa-forms", "type": "tool" }
+          ]
+        },
+        {
+          "id": "15",
+          "name": "Prepare and Upload Civil Documents",
+          "description": "NVC requires the beneficiary's civil supporting documents, uploaded to CEAC. Documents must be certified copies or originals, accompanied by certified English translations if not in English.",
+          "actions": [
+            "Review the NVC required document list for IR-5 at travel.state.gov",
+            "Gather beneficiary's birth certificate (certified copy with official seal)",
+            "Gather beneficiary's valid passport (copy of bio page)",
+            "Gather police certificates from all countries where beneficiary has lived for 6+ months since age 16",
+            "Gather any court or prison records if applicable",
+            "Obtain certified English translations for all non-English documents",
+            "Scan documents clearly (300 dpi minimum) per CEAC upload requirements",
+            "Upload all documents in CEAC under the correct categories"
+          ],
+          "success": "All required civil documents uploaded to CEAC",
+          "relevantTools": [
+            { "label": "PDF Toolkit", "labelUr": "پی ڈی ایف ٹول کٹ", "href": "/pdf-processing", "type": "tool" }
+          ]
+        },
+        {
+          "id": "16",
+          "name": "Prepare and Submit Form I-864 (Affidavit of Support)",
+          "description": "The U.S. citizen petitioner (and any joint sponsors if needed) must complete Form I-864 Affidavit of Support, demonstrating household income meets the required threshold. Upload it to CEAC.",
+          "actions": [
+            "Download the current Form I-864 and instructions from uscis.gov",
+            "Petitioner completes Form I-864 with accurate household income and size data",
+            "Gather supporting financial evidence: most recent federal tax transcript or return (IRS form)",
+            "W-2s or 1099s, recent pay stubs, and employer letter if applicable",
+            "If petitioner's income is insufficient, identify a qualified joint sponsor to complete a separate Form I-864",
+            "Sign the I-864 in the presence of a notary if required by current instructions",
+            "Upload completed I-864 and all financial evidence to CEAC",
+            "Review I-864 instructions at uscis.gov for current income requirements (125% of federal poverty guideline)"
+          ],
+          "success": "Form I-864 and supporting financial documents uploaded to CEAC",
+          "relevantTools": [
+            { "label": "Sponsorship Calculator", "labelUr": "سپانسرشپ کیلکولیٹر", "href": "/affidavit-support-calculator", "type": "tool" }
+          ]
+        },
+        {
+          "id": "17",
+          "name": "NVC Document Review & Case Complete",
+          "description": "NVC reviews all submitted documents and fees. When everything is accepted, NVC declares the case 'documentarily complete' and schedules the case for an interview at the appropriate U.S. embassy or consulate.",
+          "actions": [
+            "Monitor CEAC for any NVC document requests or notices",
+            "Respond promptly to any NVC checklist items or additional document requests",
+            "Once NVC approves all documents, await notification that the case is documentarily complete",
+            "NVC will assign an interview date at the U.S. consulate in the beneficiary's country of residence",
+            "Confirm beneficiary's contact information with NVC is current"
+          ],
+          "success": "Case documentarily complete; interview appointment scheduled by NVC"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "name": "Med + Interview",
+      "nameUr": "میڈیکل + انٹرویو",
+      "icon": "Users",
+      "color": "bg-emerald-50 text-emerald-600",
+      "timeline": "Varies",
+      "steps": [
+        {
+          "id": "18",
+          "name": "Receive Interview Appointment Notice",
+          "description": "The U.S. embassy or consulate where the beneficiary will interview sends an appointment letter with the interview date, time, and specific instructions for that post.",
+          "actions": [
+            "Check CEAC and any email registered with NVC for the interview appointment notice",
+            "Read the appointment letter carefully — note the interview date, time, location, and any specific instructions",
+            "Review the specific U.S. embassy or consulate's immigrant visa page for local requirements (e.g., required documents, check-in procedures)",
+            "Confirm the beneficiary's travel documents and passport are valid for the interview date",
+            "Note that rescheduling may be possible through the consulate's appointment system, but delays may result"
+          ],
+          "success": "Interview appointment letter received and details confirmed"
+        },
+        {
+          "id": "19",
+          "name": "Locate an Authorized Panel Physician",
+          "description": "The medical examination for an immigrant visa must be performed by a USCIS/State Department-designated physician (panel physician) in the country where the interview will take place.",
+          "actions": [
+            "Find the list of authorized panel physicians for your consulate at travel.state.gov ('Find a Panel Physician')",
+            "Contact the panel physician's office to confirm availability and schedule the exam before the visa interview",
+            "Inquire about required documents and vaccinations needed for the exam",
+            "Confirm the physician's current fees and payment methods"
+          ],
+          "success": "Panel physician identified and medical exam appointment scheduled"
+        },
+        {
+          "id": "20",
+          "name": "Gather Medical Exam Documents",
+          "description": "Bring required items to the medical exam. Requirements vary slightly by physician; confirm directly with the panel physician in advance.",
+          "actions": [
+            "Valid passport of the beneficiary",
+            "Passport-sized photographs (quantity per physician's requirements)",
+            "Vaccination records / immunization history",
+            "Any prior medical records relevant to chronic conditions, mental health history, or prior medical issues",
+            "Payment for the exam fee (verify with physician)",
+            "Interview appointment letter (some physicians require it)"
+          ],
+          "success": "All medical exam documents prepared"
+        },
+        {
+          "id": "21",
+          "name": "Complete the Medical Examination",
+          "description": "The panel physician conducts a physical exam and reviews immunization records. Any required vaccinations are administered. The physician seals the results in an envelope or transmits them electronically to the consulate.",
+          "actions": [
+            "Attend the medical examination appointment on time",
+            "Complete the physical examination and any required lab tests",
+            "Receive required vaccinations per the CDC Vaccination Requirements for Immigrant Visas (published at cdc.gov/immigrantrefugeehealth)",
+            "If the physician provides a sealed envelope with results: do not open it — bring it to the visa interview",
+            "Obtain the vaccination record (Form DS-3025 or equivalent) from the physician"
+          ],
+          "success": "Medical examination completed; sealed results or electronic submission confirmed"
+        },
+        {
+          "id": "22",
+          "name": "Prepare Interview Documents",
+          "description": "Assemble all documents required for the visa interview at the consulate. Review the specific consulate's instructions for any locally required additions.",
+          "actions": [
+            "Valid passport of the beneficiary (must be valid for travel)",
+            "DS-260 confirmation page (print from CEAC)",
+            "NVC fee payment receipts",
+            "All original civil documents (birth certificate, police certificates, etc.) plus translations",
+            "Form I-864 Affidavit of Support (original signed copy)",
+            "Petitioner's proof of U.S. citizenship (copy)",
+            "Sealed medical examination envelope (if provided by physician; do not open)",
+            "Two passport-style photographs (per consulate instructions)",
+            "Interview appointment letter"
+          ],
+          "success": "Complete interview document package assembled"
+        },
+        {
+          "id": "23",
+          "name": "Attend the Visa Interview",
+          "description": "The beneficiary appears in person at the U.S. embassy or consulate for the immigrant visa interview with a consular officer, who determines admissibility and eligibility.",
+          "actions": [
+            "Arrive at the consulate at the time specified in the appointment letter",
+            "Bring all assembled documents",
+            "Answer the consular officer's questions honestly and consistently with information provided in the DS-260",
+            "If additional documents are requested (known as 'administrative processing' or '221(g)'), provide them as instructed",
+            "If the visa is approved, the consulate will inform you of the next steps (visa issuance and return of passport)"
+          ],
+          "success": "Visa interview completed; consular officer issues a decision",
+          "relevantTools": [
+            { "label": "Interview Prep Tool", "labelUr": "انٹرویو کی تیاری", "href": "/interview-prep", "type": "tool" }
+          ]
+        },
+        {
+          "id": "24",
+          "name": "Respond to Administrative Processing (if required)",
+          "description": "Some cases require additional administrative processing after the interview. This is normal and can add time. The consulate will issue a Form 221(g) and specify what is needed.",
+          "actions": [
+            "If given a 221(g) notice, read it carefully and note exactly what is requested",
+            "Submit any requested documents or evidence promptly by the method specified",
+            "Monitor case status at ceac.state.gov",
+            "Allow the stated processing time before following up with the consulate",
+            "Contact the consulate only through official channels (not in person unless instructed)"
+          ],
+          "success": "Administrative processing completed and resolved (or not required)",
+          "relevantTools": [
+            { "label": "221(g) Action Planner", "labelUr": "221(g) ایکشن پلانر", "href": "/221g-action-planner", "type": "tool" }
+          ]
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "name": "Visa & Travel",
+      "nameUr": "ویزا اور سفر",
+      "icon": "IdCard",
+      "color": "bg-amber-50 text-amber-600",
+      "timeline": "Varies",
+      "steps": [
+        {
+          "id": "25",
+          "name": "Receive Immigrant Visa in Passport",
+          "description": "If the consular officer approves the immigrant visa, the U.S. embassy affixes the immigrant visa stamp to the beneficiary's passport and returns the passport, typically within a few business days.",
+          "actions": [
+            "Wait for the passport to be returned by the consulate (mail or pickup as specified)",
+            "Upon receipt, verify the visa stamp — check the name, date of birth, visa category (IR-5) and visa expiration date",
+            "The visa expiration date is the last day the beneficiary may use it to seek admission to the U.S. — plan travel accordingly",
+            "Report any errors immediately to the consulate"
+          ],
+          "success": "Immigrant visa affixed to passport and verified as correct"
+        },
+        {
+          "id": "26",
+          "name": "Receive the Immigrant Visa Packet",
+          "description": "The consulate provides the beneficiary with a sealed immigrant visa packet. This envelope must not be opened — it is presented to U.S. Customs and Border Protection (CBP) upon arrival.",
+          "actions": [
+            "Receive the sealed immigrant visa packet from the consulate",
+            "Do NOT open the sealed packet under any circumstances",
+            "Store the packet safely with travel documents for the trip to the U.S.",
+            "Note that the USCIS Immigrant Fee (a fee paid to USCIS for Permanent Resident Card processing) is separate and may be paid before or after travel — check uscis.gov for current instructions"
+          ],
+          "success": "Sealed immigrant visa packet in hand and ready for travel"
+        },
+        {
+          "id": "27",
+          "name": "Pay the USCIS Immigrant Fee (if required)",
+          "description": "Most immigrant visa holders must pay the USCIS Immigrant Fee online before or shortly after arriving in the U.S. This fee covers the cost of producing the Permanent Resident Card (Green Card). Verify current requirements at uscis.gov.",
+          "actions": [
+            "Check whether the USCIS Immigrant Fee applies to your case at uscis.gov/forms/uscis-immigrant-fee",
+            "If required, pay the fee at uscis.gov using the receipt number from the immigrant visa packet",
+            "Save your payment receipt",
+            "Note the fee amount may have changed — verify on uscis.gov before paying"
+          ],
+          "success": "USCIS Immigrant Fee paid (if applicable)"
+        },
+        {
+          "id": "28",
+          "name": "Book Travel to the United States",
+          "description": "The beneficiary must enter the U.S. before the immigrant visa expiration date. Plan and book travel, ensuring arrival before the visa expires.",
+          "actions": [
+            "Confirm the visa expiration date (printed on the visa stamp in the passport)",
+            "Book an international flight to the U.S. arriving before the visa expiration date",
+            "Ensure the passport will be valid for the entire trip",
+            "The beneficiary may enter at any U.S. port of entry staffed by CBP",
+            "Consider any practical arrangements for the parent (medical needs, accommodations in the U.S.)"
+          ],
+          "success": "Travel booked; arrival date confirmed within visa validity window"
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "name": "U.S. Arrival",
+      "nameUr": "امریکہ آمد",
+      "icon": "Plane",
+      "color": "bg-rose-50 text-rose-600",
+      "timeline": "Ongoing",
+      "steps": [
+        {
+          "id": "29",
+          "name": "Clear U.S. Customs and Border Protection (CBP)",
+          "description": "Upon arriving at a U.S. port of entry, the beneficiary presents travel documents to a CBP officer. The CBP officer inspects the sealed visa packet, admits the beneficiary as a lawful permanent resident (LPR) and stamps the passport.",
+          "actions": [
+            "Present the valid passport with the immigrant visa stamp",
+            "Present the sealed immigrant visa packet (do not open it yourself — give it to CBP)",
+            "Complete any required CBP arrival forms (paper or electronic, per current CBP procedures)",
+            "Answer CBP officer's questions honestly",
+            "Receive an I-94 admission record (electronically via cbp.gov after entry for most air/sea ports)"
+          ],
+          "success": "Admitted to the U.S. as a lawful permanent resident; passport stamped"
+        },
+        {
+          "id": "30",
+          "name": "Obtain I-94 Arrival/Departure Record",
+          "description": "The I-94 arrival record is the official record of admission. For most air and sea ports, CBP automatically creates an electronic I-94 record accessible at cbp.gov/i94.",
+          "actions": [
+            "Visit cbp.gov/i94 to retrieve the electronic I-94 within a few days of arrival",
+            "Verify the I-94 shows 'IR' class of admission and appropriate date",
+            "Print or save the I-94 record for your records",
+            "If there is an error on the I-94, contact CBP to correct it promptly"
+          ],
+          "success": "I-94 record retrieved and confirmed as showing lawful permanent resident admission"
+        },
+        {
+          "id": "31",
+          "name": "Await the Permanent Resident Card (Green Card)",
+          "description": "USCIS will mail the Permanent Resident Card (Form I-551, commonly called a Green Card) to the address provided in the DS-260 or updated with USCIS. The passport stamp and I-94 serve as temporary evidence of LPR status while the card is in transit.",
+          "actions": [
+            "Verify USCIS has the correct U.S. mailing address",
+            "Check card status at egov.uscis.gov if the card does not arrive within the expected timeframe per uscis.gov",
+            "If the card is lost or never received, file Form I-90 (Application to Replace Permanent Resident Card) with USCIS",
+            "The passport stamp may be used as temporary evidence of LPR status for up to 1 year (verify current USCIS guidance)"
+          ],
+          "success": "Permanent Resident Card (Green Card) received and signature applied"
+        },
+        {
+          "id": "32",
+          "name": "Obtain a Social Security Number (SSN)",
+          "description": "Most new LPRs are eligible for a Social Security Number. The SSA SSN application is typically initiated as part of the DS-260 process, or the parent may apply directly at a Social Security Administration office.",
+          "actions": [
+            "If SSN was requested on the DS-260, wait for the SSN card to arrive by mail (allow several weeks after entry)",
+            "If not yet applied, locate the nearest Social Security Administration office at ssa.gov",
+            "Bring the Green Card (or passport stamp + I-94), passport, and a second form of ID",
+            "Complete SSA Form SS-5 (Application for a Social Security Card)",
+            "Allow several weeks for the SSN card to arrive after application"
+          ],
+          "success": "Social Security Number application submitted or SSN card received"
+        },
+        {
+          "id": "33",
+          "name": "Apply for State ID or Driver's License",
+          "description": "Once the parent has an SSN and the Permanent Resident Card, they may apply for a state-issued photo ID or driver's license per their state DMV's requirements.",
+          "actions": [
+            "Research the ID/driver's license application requirements for the specific U.S. state",
+            "Gather required documents: Green Card, SSN card, proof of state residence (utility bill, lease, etc.)",
+            "Visit the state DMV or appropriate agency",
+            "Complete any required tests (for driver's license)"
+          ],
+          "success": "State ID or driver's license application submitted"
+        },
+        {
+          "id": "34",
+          "name": "Understand LPR Rights and Responsibilities",
+          "description": "As a lawful permanent resident, the parent has specific rights and responsibilities under U.S. immigration law, including maintaining continuous U.S. residence, filing U.S. taxes, and protecting LPR status.",
+          "actions": [
+            "Review USCIS guidance on LPR rights and responsibilities at uscis.gov/green-card",
+            "Understand that extended absences from the U.S. (generally over 6 months or 1 year) can jeopardize LPR status — consult an immigration attorney if planning extended travel",
+            "Ensure annual U.S. federal income tax obligations are understood (consult a tax professional)",
+            "Renew the Green Card before it expires (Form I-90; most Green Cards are valid for 10 years)"
+          ],
+          "success": "LPR rights and responsibilities understood; reminder set for Green Card expiration"
+        },
+        {
+          "id": "35",
+          "name": "Consider Naturalization Eligibility (Future Planning)",
+          "description": "LPRs who are parents of U.S. citizenship through naturalization after meeting the required period of continuous residence, typically at least 5 years as an LPR (3 years if married to a U.S. citizen).",
+          "actions": [
+            "Review naturalization eligibility requirements at uscis.gov/citizenship",
+            "Note the residency period required (generally 5 years of continuous residence as an LPR)",
+            "Record the parent's LPR admission date for future reference",
+            "Consult an immigration attorney if there are any concerns about eligibility"
+          ],
+          "success": "Naturalization timeline noted and future planning initiated"
+        }
+      ]
+    }
+  ]
+}

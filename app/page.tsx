@@ -57,10 +57,7 @@ export default function HomePage() {
     <Suspense
       fallback={
         <div className="min-h-screen flex flex-col items-center justify-center bg-background">
-          <Loader 
-            size="lg" 
-            text="Loading" 
-          />
+          <Loader size="lg" text="Loading" />
         </div>
       }
     >
@@ -200,14 +197,14 @@ function HomePageContent() {
           <div className="flex flex-col">
             {/* HERO SECTION */}
             <section className="relative py-8 md:py-12 overflow-hidden bg-background">
-              <div className="container mx-auto px-6">
+              <div className="w-full mx-auto px-6 sm:px-8 md:px-12  2xl:px-30">
                 <div className="flex flex-col lg:flex-row items-center gap-16">
                   <motion.div
                     initial={{ opacity: 0, y: 30 }}
                     whileInView={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.8, ease: "easeOut" }}
                     viewport={{ once: true }}
-                    className="w-full lg:w-1/2 max-w-2xl"
+                    className="w-full lg:w-1/2 xl:w-[45%]"
                   >
                     <div className="inline-flex items-center gap-2 px-4 py-2 mb-6 text-sm font-medium rounded-full bg-rahvana-primary-pale text-rahvana-primary">
                       <Icons.ShieldCheck className="w-4 h-4" />
@@ -303,8 +300,8 @@ function HomePageContent() {
 
             {/* HOW RAHVANA WORKS SECTION */}
             <section className="py-12 md:py-24 bg-muted/30" id="about">
-              <div className="container mx-auto px-6">
-                <div className="text-center max-w-3xl mx-auto mb-16">
+              <div className="w-full mx-auto px-6 sm:px-8 md:px-12  2xl:px-30">
+                <div className="text-center w-full md:w-3/4 lg:w-2/3 xl:w-1/2 mx-auto mb-16">
                   <motion.span
                     initial={{ opacity: 0, y: 10 }}
                     whileInView={{ opacity: 1, y: 0 }}
@@ -336,7 +333,7 @@ function HomePageContent() {
                     initial={{ opacity: 0, scale: 0.9 }}
                     whileInView={{ opacity: 1, scale: 1 }}
                     viewport={{ once: true }}
-                    className="relative aspect-square max-w-[340px] md:max-w-[480px] mx-auto w-full"
+                    className="relative aspect-square w-full sm:w-[340px] md:w-[480px] mx-auto"
                   >
                     {/* SVG Layer for all lines */}
                     <svg
@@ -540,8 +537,8 @@ function HomePageContent() {
                   <rect width="100%" height="100%" fill="url(#grid)" />
                 </svg>
               </div>
-              <div className="container mx-auto px-6 relative z-10">
-                <div className="text-center max-w-3xl mx-auto mb-10">
+              <div className="w-full mx-auto px-6 sm:px-8 md:px-12 2xl:px-20  relative z-10">
+                <div className="text-center w-full md:w-3/4 lg:w-2/3 xl:w-1/2 mx-auto mb-10">
                   <motion.span
                     initial={{ opacity: 0, y: 10 }}
                     whileInView={{ opacity: 1, y: 0 }}
@@ -617,8 +614,8 @@ function HomePageContent() {
               className="relative py-8 md:py-12 bg-background"
               id="tools"
             >
-              <div className="container mx-auto px-6">
-                <div className="text-center max-w-3xl mx-auto mb-10">
+              <div className="w-full mx-auto px-6 sm:px-8 md:px-12  2xl:px-30 ">
+                <div className="text-center w-full md:w-3/4 lg:w-2/3 xl:w-1/2 mx-auto mb-10">
                   <motion.span
                     initial={{ opacity: 0, y: 10 }}
                     whileInView={{ opacity: 1, y: 0 }}
@@ -738,8 +735,8 @@ function HomePageContent() {
               className="relative py-8 md:py-12 bg-muted/10 overflow-hidden"
               id="services"
             >
-              <div className="container mx-auto px-6">
-                <div className="text-center max-w-3xl mx-auto mb-10">
+              <div className="w-full px-6 sm:px-8 md:px-12 2xl:px-30 ">
+                <div className="text-center w-full md:w-3/4 lg:w-2/3 xl:w-1/2 mx-auto mb-10">
                   <motion.span
                     initial={{ opacity: 0, y: 10 }}
                     whileInView={{ opacity: 1, y: 0 }}
@@ -769,7 +766,7 @@ function HomePageContent() {
                   </motion.p>
                 </div>
 
-                <div className="flex flex-col lg:flex-row gap-8 lg:gap-12 w-full max-w-6xl mx-auto">
+                <div className="flex flex-col lg:flex-row gap-8 lg:gap-12 w-full xl:w-[90%] 2xl:w-[85%] mx-auto">
                   {/* Left Column: Interactive List */}
                   <div className="w-full lg:w-5/12 flex flex-col gap-3">
                     {ALL_SERVICES.filter((s) => s.href !== "/book-consultation")
@@ -941,7 +938,7 @@ function HomePageContent() {
 
             {/* CONSULTATION BANNER */}
             <section className="py-8 md:py-12 bg-background">
-              <div className="container mx-auto px-6">
+              <div className="w-full mx-auto px-6 sm:px-8 md:px-12  2xl:px-30 ">
                 <motion.div
                   initial={{ opacity: 0, y: 20 }}
                   whileInView={{ opacity: 1, y: 0 }}
@@ -986,226 +983,10 @@ function HomePageContent() {
               </div>
             </section>
 
-            {/* HOW RAHVANA WORKS SECTION */}
-            <section className="py-8 md:py-12 bg-muted/30" id="about">
-              <div className="container mx-auto px-6">
-                <div className="text-center max-w-3xl mx-auto mb-10">
-                  <motion.span
-                    initial={{ opacity: 0, y: 10 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true }}
-                    className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-rahvana-primary-pale text-rahvana-primary text-sm font-semibold mb-4"
-                  >
-                    <Icons.TrendingUp className="w-4 h-4" />
-                    {t("homePage.howItWorksBadge1")}
-                  </motion.span>
-                  <h2 className="text-3xl md:text-5xl font-bold text-foreground mb-4">
-                    {t("homePage.howItWorksTitle")}
-                  </h2>
-                  <p className="text-lg text-muted-foreground">
-                    {t("homePage.howItWorksDescription")}
-                  </p>
-                  <motion.span
-                    initial={{ opacity: 0, y: 10 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true }}
-                    className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-rahvana-primary-pale text-rahvana-primary text-sm font-semibold my-2"
-                  >
-                    <Icons.Route className="w-4 h-4" />
-                    {t("homePage.howItWorksBadge2")}
-                  </motion.span>
-                </div>
-
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-start">
-                  <motion.div
-                    initial={{ opacity: 0, scale: 0.9 }}
-                    whileInView={{ opacity: 1, scale: 1 }}
-                    viewport={{ once: true }}
-                    className="relative aspect-square max-w-[340px] md:max-w-[480px] mx-auto w-full"
-                  >
-                    {/* SVG Layer for all lines */}
-                    <svg
-                      className="absolute inset-0 w-full h-full -rotate-90"
-                      viewBox="0 0 100 100"
-                    >
-                      {/* Background Dashed Circle */}
-                      <circle
-                        cx="50"
-                        cy="50"
-                        r="35"
-                        stroke="currentColor"
-                        strokeWidth="0.2"
-                        strokeDasharray="1 2"
-                        fill="none"
-                        className="text-border"
-                      />
-
-                      {/* Animated Drawing Circle */}
-                      <motion.circle
-                        cx="50"
-                        cy="50"
-                        r="35"
-                        stroke="currentColor"
-                        strokeWidth="0.8"
-                        strokeLinecap="round"
-                        fill="none"
-                        className="text-rahvana-primary"
-                        initial={{ pathLength: 0, opacity: 0 }}
-                        whileInView={{ pathLength: 1, opacity: 1 }}
-                        viewport={{ once: true }}
-                        transition={{ duration: 2, ease: "easeInOut" }}
-                      />
-                    </svg>
-
-                    {/* Pulsing beacon in middle */}
-                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-32 h-32 rounded-full bg-rahvana-primary/5 flex items-center justify-center">
-                      <div className="w-4 h-4 rounded-full bg-rahvana-primary animate-ping opacity-75"></div>
-                      <div className="absolute w-2 h-2 rounded-full bg-rahvana-primary"></div>
-                    </div>
-
-                    {/* Step Nodes with Staggered Entrance */}
-                    <motion.div
-                      variants={{
-                        visible: {
-                          transition: {
-                            staggerChildren: 0.15,
-                          },
-                        },
-                      }}
-                      initial="hidden"
-                      whileInView="visible"
-                      viewport={{ once: true }}
-                    >
-                      {LIFECYCLE_STEPS.map((stepData, i) => {
-                        const step = i + 1;
-                        const angle = (360 / LIFECYCLE_STEPS.length) * i;
-                        const isActive = activeStep === step;
-                        return (
-                          <motion.div
-                            key={step}
-                            onClick={() => setActiveStep(step)}
-                            variants={{
-                              hidden: { opacity: 0, scale: 0.8 },
-                              visible: { opacity: 1, scale: 1 },
-                            }}
-                            animate={{
-                              scale: isActive ? 1.25 : 1,
-                            }}
-                            className={`absolute w-12 h-12 md:w-16 md:h-16 rounded-full flex items-center justify-center transition-all duration-500 z-10 ${
-                              isActive
-                                ? "bg-rahvana-primary text-white shadow-xl ring-4 md:ring-8 ring-rahvana-primary/10"
-                                : "bg-card text-muted-foreground border border-border hover:border-rahvana-primary hover:text-rahvana-primary hover:scale-110 shadow-md"
-                            }`}
-                            style={{
-                              left: `${(50 + 35 * Math.sin((angle * Math.PI) / 180)).toFixed(3)}%`,
-                              top: `${(50 - 35 * Math.cos((angle * Math.PI) / 180)).toFixed(3)}%`,
-                              translate: "-50% -50%",
-                            }}
-                          >
-                            <HydrationSafeButton className="w-full h-full rounded-full flex items-center justify-center p-0 bg-transparent border-0">
-                              <span className="sr-only">Step {step}</span>
-                              {React.createElement(stepData.icon, {
-                                className:
-                                  "w-4 h-4 md:w-6 md:h-6 pointer-events-none",
-                              })}
-                            </HydrationSafeButton>
-                          </motion.div>
-                        );
-                      })}
-                    </motion.div>
-                  </motion.div>
-
-                  <div className="space-y-8">
-                    <AnimatePresence mode="wait">
-                      <motion.div
-                        key={activeStep}
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -20 }}
-                        className="bg-card rounded-3xl p-8 shadow-xl border border-border"
-                      >
-                        <div className="flex items-center gap-4 mb-6">
-                          <div className="w-12 h-12 rounded-full bg-rahvana-primary text-white flex items-center justify-center text-xl font-bold">
-                            0{activeStep}
-                          </div>
-                          <h3 className="text-2xl font-bold text-foreground">
-                            {t(`homePage.steps.step${activeStep}.title`) ||
-                              LIFECYCLE_STEPS[activeStep - 1].title}
-                          </h3>
-                        </div>
-                        <p className="text-muted-foreground leading-relaxed mb-8 text-lg">
-                          {t(`homePage.steps.step${activeStep}.desc`) ||
-                            LIFECYCLE_STEPS[activeStep - 1].desc}
-                        </p>
-                        <ul className="space-y-4 mb-10">
-                          {LIFECYCLE_STEPS[activeStep - 1].items.map(
-                            (item, i) => (
-                              <li
-                                key={i}
-                                className="flex items-center gap-3 text-foreground font-medium bg-muted/50 p-3 rounded-xl border border-border"
-                              >
-                                <Icons.Check className="w-5 h-5 text-rahvana-primary" />
-                                {t(
-                                  `homePage.steps.step${activeStep}.items.${i}`,
-                                ) || item}
-                              </li>
-                            ),
-                          )}
-                        </ul>
-
-                        <div className="flex flex-wrap items-center justify-between gap-3 md:gap-4 pt-6 border-t border-border sm:flex-nowrap">
-                          <button
-                            onClick={() =>
-                              setActiveStep((prev) => Math.max(1, prev - 1))
-                            }
-                            disabled={activeStep === 1}
-                            className={`flex items-center gap-2 px-4 py-2 rounded-lg font-semibold transition-all ${
-                              activeStep === 1
-                                ? "opacity-30 cursor-not-allowed text-muted-foreground"
-                                : "text-rahvana-primary hover:bg-rahvana-primary-pale"
-                            }`}
-                          >
-                            <Icons.ChevronLeft className="w-5 h-5" />
-                            {t("homePage.howItWorksPrevious")}
-                          </button>
-
-                          <div className="flex gap-1.5">
-                            {LIFECYCLE_STEPS.map((_, i) => (
-                              <div
-                                key={i}
-                                className={`w-2 h-2 rounded-full transition-all ${i + 1 === activeStep ? "bg-rahvana-primary w-4" : "bg-border"}`}
-                              />
-                            ))}
-                          </div>
-
-                          <button
-                            onClick={() =>
-                              setActiveStep((prev) =>
-                                Math.min(LIFECYCLE_STEPS.length, prev + 1),
-                              )
-                            }
-                            disabled={activeStep === LIFECYCLE_STEPS.length}
-                            className={`flex items-center gap-2 px-6 py-2 rounded-lg font-semibold transition-all ${
-                              activeStep === LIFECYCLE_STEPS.length
-                                ? "opacity-30 cursor-not-allowed text-muted-foreground"
-                                : "bg-rahvana-primary text-white shadow-lg hover:bg-rahvana-primary-dark hover:-translate-y-0.5"
-                            }`}
-                          >
-                            {t("homePage.howItWorksNext")}
-                            <Icons.ChevronRight className="w-5 h-5" />
-                          </button>
-                        </div>
-                      </motion.div>
-                    </AnimatePresence>
-                  </div>
-                </div>
-              </div>
-            </section>
-
             {/* FAQ SECTION */}
             <section className="py-8 md:py-12 bg-background" id="faq">
-              <div className="container mx-auto px-6">
-                <div className="text-center max-w-3xl mx-auto mb-5">
+              <div className="w-full mx-auto px-6 sm:px-8 md:px-12  2xl:px-30 ">
+                <div className="text-center w-full md:w-3/4 mx-auto mb-5">
                   <motion.span
                     initial={{ opacity: 0, y: 10 }}
                     whileInView={{ opacity: 1, y: 0 }}
@@ -1220,7 +1001,7 @@ function HomePageContent() {
                   </h2>
                 </div>
 
-                <div className="max-w-3xl mx-auto space-y-4">
+                <div className="w-full md:w-3/4 mx-auto space-y-4">
                   {FAQS.map((faq, i) => (
                     <motion.div
                       key={i}

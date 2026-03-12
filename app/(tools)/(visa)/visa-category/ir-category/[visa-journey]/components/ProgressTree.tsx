@@ -43,11 +43,12 @@ export function ProgressTree({
   return (
     <div id="sidebar-stages" className="space-y-3">
       <div className="px-2 mb-6">
-        <h3 className="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em] mb-1">
-          {t("progressTree.journeyMap")}
-        </h3>
+        <h3 className="text-[13px] font-black uppercase tracking-[0.1em] text-slate-800 mb-6 flex items-center gap-2">
+        <div className="w-1.5 h-4 bg-primary rounded-full" />
+        {t("visaJourney.progressTree.journeyMap")}
+      </h3>
         <p className="text-xs text-slate-500 font-medium font-['Plus_Jakarta_Sans',sans-serif]">
-          {t("progressTree.track")}
+          {t("visaJourney.progressTree.track")}
         </p>
       </div>
 

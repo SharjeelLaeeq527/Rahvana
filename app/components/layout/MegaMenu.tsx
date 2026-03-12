@@ -36,6 +36,7 @@ interface MegaMenuProps {
     label: string;
     href: string;
   };
+  arrowOffset?: number;
 }
 
 const MegaMenu: React.FC<MegaMenuProps> = ({
@@ -44,6 +45,7 @@ const MegaMenu: React.FC<MegaMenuProps> = ({
   items,
   showSearch = false,
   footerLink,
+  arrowOffset = 40,
 }) => {
   const [activeTab, setActiveTab] = useState(tabs?.[0]?.id || "");
   const [searchQuery, setSearchQuery] = useState("");
@@ -87,13 +89,11 @@ const MegaMenu: React.FC<MegaMenuProps> = ({
     : currentItems;
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: 10 }}
-      transition={{ duration: 0.2, ease: "easeOut" }}
-      className="absolute top-full left-0 w-full max-w-[min(1100px,calc(100vw-2rem))] bg-white rounded-2xl shadow-2xl border border-slate-200/60 overflow-hidden z-50 -mt-4 ml-4 lg:ml-0 flex flex-col max-h-[80vh] mb-10"
+    <div
+      className="relative w-full max-w-[min(1100px,calc(100vw-2rem))] flex flex-col max-h-[80vh] mb-10 mt-0 origin-top shadow-sm"
     >
+      {/* Main panel */}
+      <div className="relative bg-background rounded-2xl shadow-[0_16px_40px_-12px_rgba(0,0,0,0.15)] border border-border/60 overflow-hidden flex flex-col max-h-[80vh]">
       {/* Horizontal Tabs Header */}
       {tabs && (
         <div className="w-full bg-slate-50/80 border-b border-slate-100 px-6 pt-4">
@@ -144,10 +144,10 @@ const MegaMenu: React.FC<MegaMenuProps> = ({
               // ------------- SEARCH RESULTS (FLAT GRID) -------------
               <motion.div
                 key="search-results"
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                transition={{ duration: 0.2 }}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.15 }}
                 className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-6"
               >
                 {filteredItems.map((item, index) => (
@@ -226,7 +226,7 @@ const MegaMenu: React.FC<MegaMenuProps> = ({
       </div>
 
       {/* Sticky Footer */}
-      <div className="border-t border-slate-100 bg-slate-50/50 p-5 flex justify-between flex-shrink-0">
+      <div className="border-t border-slate-100 bg-slate-50/50 p-5 flex justify-between shrink-0">
         <Link
           href={footerLink?.href || "#"}
           className="flex items-center gap-2 text-sm font-bold text-primary hover:gap-3 transition-all"
@@ -250,7 +250,8 @@ const MegaMenu: React.FC<MegaMenuProps> = ({
           onOpenChange={setShowComingSoon}
         />
       )}
-    </motion.div>
+    </div>
+    </div>
   );
 };
 
