@@ -143,20 +143,36 @@ export function SiteHeader({
   // Close dropdowns on outside click
   useEffect(() => {
     const handleOutsideClick = (e: MouseEvent) => {
+      const target = e.target as Node;
       // Notification
-      if (notifRef.current && !notifRef.current.contains(e.target as Node)) {
+      if (notifRef.current && !notifRef.current.contains(target)) {
         setNotificationsOpen(false);
       }
       // Mega Menus or Profile Menu
-      if (activeMenu && profileRef.current && !profileRef.current.contains(e.target as Node)) {
-        // If it's a normal nav menu (not profile), we let hover handle it mostly, 
-        // but for profile or general robustness we close on outside click.
-        setActiveMenu(null);
+      if (activeMenu) {
+        if (activeMenu === "profile") {
+          if (profileRef.current && !profileRef.current.contains(target)) {
+            setActiveMenu(null);
+          }
+        } else {
+          const isInsideMegaMenu = megaMenuContainerRef.current?.contains(target);
+          const isInsideNavTrigger = navRefs.current[activeMenu]?.contains(target);
+          if (!isInsideMegaMenu && !isInsideNavTrigger) {
+            setActiveMenu(null);
+          }
+        }
       }
     };
     document.addEventListener("mousedown", handleOutsideClick);
     return () => document.removeEventListener("mousedown", handleOutsideClick);
   }, [activeMenu]);
+
+  // Close menus on route change
+  useEffect(() => {
+    setActiveMenu(null);
+    setIsMenuOpen(false);
+    setNotificationsOpen(false);
+  }, [pathname]);
 
   const { profile, isLoading, user: authUser } = useAuth();
   const resolvedUser = user ?? authUser;
