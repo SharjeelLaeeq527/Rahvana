@@ -145,7 +145,14 @@ const CaseTypeStep = ({
             ? "border-primary bg-primary/5 ring-2 ring-primary/20"
             : "border-border hover:border-primary/50 hover:bg-muted/50"
         }`}
-        onClick={() => onCaseTypeChange("Spouse")}
+        onClick={() => {
+          onCaseTypeChange("Spouse");
+          window.scrollBy({
+            top: window.innerHeight,
+            left: 0,
+            behavior: "smooth",
+          });
+        }}
       >
         <div className="mx-auto bg-primary/10 text-primary w-12 h-12 md:w-16 md:h-16 rounded-full flex items-center justify-center mb-4">
           <svg
@@ -389,8 +396,30 @@ const QuestionStep = ({
   setFormData,
   onNext,
   onBack,
-  // onSaveForLater,
 }: QuestionStepProps) => {
+  // Refs for each question to scroll
+  const questionRefs = useRef<Record<string, HTMLDivElement | null>>({});
+
+  const handleChange = (id: keyof FormData, value: unknown) => {
+    const oldValue = formData[id];
+    if (oldValue === value) return; 
+  
+    onChange(id, value);
+  
+    // Auto-scroll slightly (25px from top)
+    const el = questionRefs.current[id];
+    if (el) {
+      const rect = el.getBoundingClientRect();
+      const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+      const top = rect.top + scrollTop - 25; // 25px offset from top
+  
+      window.scrollTo({
+        top,
+        behavior: "smooth",
+      });
+    }
+  };
+
   const renderInput = (question: {
     id: keyof FormData;
     label: string;
@@ -437,7 +466,7 @@ const QuestionStep = ({
               }
             }}
             onChange={(e) =>
-              onChange(
+              handleChange(
                 question.id,
                 question.type === "number"
                   ? Number(e.target.value)
@@ -452,7 +481,7 @@ const QuestionStep = ({
         return (
           <textarea
             value={typeof value === "string" ? value : ""}
-            onChange={(e) => onChange(question.id, e.target.value)}
+            onChange={(e) => handleChange(question.id, e.target.value)}
             className="w-full p-3 border border-input rounded-lg focus:ring-2 focus:ring-ring focus:border-ring transition-colors bg-background"
             placeholder={`Enter details for ${question.label.toLowerCase()}`}
             rows={4}
@@ -466,7 +495,7 @@ const QuestionStep = ({
             </span>
             <ToggleSwitch
               checked={!!value}
-              onChange={(checked) => onChange(question.id, checked)}
+              onChange={(checked) => handleChange(question.id, checked)}
             />
           </div>
         );
@@ -475,7 +504,7 @@ const QuestionStep = ({
           return (
             <Select
               value={typeof value === "string" ? value : ""}
-              onValueChange={(newValue) => onChange(question.id, newValue)}
+              onValueChange={(newValue) => handleChange(question.id, newValue)}
             >
               <SelectTrigger className="w-full h-14">
                 <SelectValue
@@ -509,19 +538,17 @@ const QuestionStep = ({
 
       <div className="space-y-8">
         {questions.map((question) => {
-          // Hide US state question based on relationship type
+          // Conditional hiding logic
           if (question.id === "intended_us_state_of_residence") {
             const relationshipType = formData.spousal_relationship_type;
             if (
               !relationshipType ||
               relationshipType === "Select" ||
               relationshipType === "No biological relation"
-            ) {
+            )
               return null;
-            }
           }
 
-          // Hide field of study question unless education level qualifies
           if (question.id === "highest_education_field") {
             const educationLevel = formData.highest_education_level;
             const qualifyingLevels = [
@@ -529,45 +556,36 @@ const QuestionStep = ({
               "Master's degree",
               "Doctorate (PhD)",
             ];
-
-            if (!educationLevel || !qualifyingLevels.includes(educationLevel)) {
+            if (!educationLevel || !qualifyingLevels.includes(educationLevel))
               return null;
-            }
           }
 
-          // Hide military / defense additional questions unless industry sector meets criteria
           if (
-            question.id === "prior_military_service" ||
-            question.id === "specialized_weapons_training" ||
-            question.id === "unofficial_armed_groups"
+            [
+              "prior_military_service",
+              "specialized_weapons_training",
+              "unofficial_armed_groups",
+            ].includes(question.id as string)
           ) {
             const industrySector = formData.industry_sector;
-            const qualifyingSectors = ["Military/Defense"];
-
-            if (
-              !industrySector ||
-              !qualifyingSectors.includes(industrySector)
-            ) {
+            if (!industrySector || industrySector !== "Military/Defense")
               return null;
-            }
-          }
-
-          let modifiedQuestion = question;
-          if (question.id === "intended_us_state_of_residence") {
-            modifiedQuestion = { ...question, type: "text" };
           }
 
           return (
             <div
               key={question.id}
+              ref={(el: HTMLDivElement | null) => {
+                questionRefs.current[question.id] = el;
+              }}
               className="space-y-3 p-4 bg-slate-50 rounded-xl border border-slate-200"
             >
               {question.type !== "boolean" && (
                 <label className="block text-lg font-semibold text-slate-800">
-                  {modifiedQuestion.label}
+                  {question.label}
                 </label>
               )}
-              {renderInput(modifiedQuestion)}
+              {renderInput(question)}
             </div>
           );
         })}

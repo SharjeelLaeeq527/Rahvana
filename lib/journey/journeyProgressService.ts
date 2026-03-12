@@ -7,6 +7,7 @@ export interface JourneyProgressRecord {
   journey_id: string;
   current_stage: number;
   current_step: number;
+  scenario_type_ir2?: 'bio' | 'step' | 'adopted';
   completed_steps: string[];
   collapsed_steps: Record<string, boolean>;
   role: 'both' | 'petitioner' | 'beneficiary';
@@ -144,6 +145,7 @@ export async function saveJourneyProgress(
     const payload = {
       user_id: userId,
       journey_id: journeyId,
+      scenario_type_ir2: state.scenarioType, 
       current_stage: state.currentStage,
       current_step: state.currentStep ?? 0,
       completed_steps: Array.from(state.completedSteps),
@@ -213,6 +215,7 @@ export function recordToWizardState(record: JourneyProgressRecord): Partial<Wiza
   return {
     currentStage: record.current_stage,
     currentStep: record.current_step,
+    scenarioType: record.scenario_type_ir2,
     completedSteps: new Set(record.completed_steps),
     collapsedSteps: record.collapsed_steps,
     role: record.role,

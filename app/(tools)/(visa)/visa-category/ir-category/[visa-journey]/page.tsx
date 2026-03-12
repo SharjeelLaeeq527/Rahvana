@@ -3,11 +3,15 @@
 import React, { useState, useEffect } from "react";
 import { useAuth } from "@/app/context/AuthContext";
 import { useWizard, WizardState } from "@/app/(main)/dashboard/hooks/useWizard";
-// import { roadmapData } from "@/app/(main)/dashboard/data/roadmap";
-
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { useParams, useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { icons } from "lucide-react";
+import { ChevronDown, icons } from "lucide-react";
 import {
   RotateCcw,
   ArrowRight,
@@ -22,6 +26,7 @@ import { StepDetail } from "./components/StepDetail";
 import { DocumentVault } from "./components/DocumentVault";
 import { useLanguage } from "@/app/context/LanguageContext";
 import { RoadmapData, RoadmapStage } from "./components/types";
+import ScenarioSelectionModal from "./components/ScenarioSelectionModal";
 
 export default function IR1JourneyPage() {
   const { user } = useAuth();
@@ -32,11 +37,9 @@ export default function IR1JourneyPage() {
 
   const [roadmapData, setRoadmapData] = useState<RoadmapData | null>(null);
   const [dataLoaded, setDataLoaded] = useState(false);
-  // Scenario selector (optional - only used if JSON has scenarioSpecific steps)
-  const [selectedScenario, setSelectedScenario] = useState<
-    "bio" | "step" | "adopted"
-  >("bio");
+  const [showScenarioModal, setShowScenarioModal] = useState(false);
   const [hasScenarios, setHasScenarios] = useState(false);
+  const [relationshipNotesOpen, setRelationshipNotesOpen] = useState(false);
 
   useEffect(() => {
     if (visaJourney) {
@@ -58,6 +61,16 @@ export default function IR1JourneyPage() {
     }
   }, [visaJourney]);
 
+  const { state, actions, isLoaded, hasExistingProgress, isSyncing } =
+    useWizard({
+      userId,
+      journeyId: visaJourney,
+      roadmapData,
+    });
+
+  const router = useRouter();
+  const isSignedIn = !!user;
+
   // When scenario changes, reset to first step of current stage if needed
   useEffect(() => {
     if (hasScenarios && roadmapData) {
@@ -68,11 +81,11 @@ export default function IR1JourneyPage() {
         // find the first matching step for the new scenario
         if (
           currentStep?.scenarioSpecific &&
-          currentStep.scenarioSpecific !== selectedScenario
+          currentStep.scenarioSpecific !== state.scenarioType
         ) {
           const firstMatchingStepIdx = currentStage.steps.findIndex(
             (s) =>
-              !s.scenarioSpecific || s.scenarioSpecific === selectedScenario,
+              !s.scenarioSpecific || s.scenarioSpecific === state.scenarioType,
           );
           if (firstMatchingStepIdx >= 0) {
             actions.setCurrentStep(firstMatchingStepIdx);
@@ -80,17 +93,14 @@ export default function IR1JourneyPage() {
         }
       }
     }
-  }, [selectedScenario, hasScenarios]);
-
-  const { state, actions, isLoaded, hasExistingProgress, isSyncing } =
-    useWizard({
-      userId,
-      journeyId: visaJourney,
-      roadmapData,
-    });
-
-  const router = useRouter();
-  const isSignedIn = !!user;
+  }, [
+    state.scenarioType,
+    hasScenarios,
+    roadmapData,
+    state.currentStage,
+    state.currentStep,
+    actions,
+  ]);
 
   // Show the resume/start-fresh screen only when:
   // - user is logged in
@@ -115,6 +125,21 @@ export default function IR1JourneyPage() {
     setJourneyDecisionMade(true);
     setStartFreshModalOpen(false);
   };
+
+  const handleScenarioSelect = (type: "bio" | "step" | "adopted") => {
+    actions.setScenario(type);
+  };
+
+  useEffect(() => {
+    if (
+      hasScenarios &&
+      isLoaded &&
+      journeyDecisionMade &&
+      !state.scenarioType
+    ) {
+      setShowScenarioModal(true);
+    }
+  }, [hasScenarios, isLoaded, state.scenarioType, journeyDecisionMade]);
 
   // Loading state
   useEffect(() => {
@@ -182,70 +207,67 @@ export default function IR1JourneyPage() {
             )}
           </div>
 
-          {/* Scenario Selector (Conditional - only for IR-2) */}
-          {hasScenarios && (
-            <div className="mb-8 p-6 bg-gradient-to-br from-slate-50 via-white to-slate-50 border border-slate-200 rounded-2xl shadow-sm">
-              <div className="flex items-center gap-2 mb-4">
-                <svg
-                  className="w-5 h-5 text-teal-600"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
-                  />
-                </svg>
-                <h3 className="text-lg font-bold text-slate-900">
-                  Relationship Type
-                </h3>
-              </div>
+          {state.scenarioType && (
+            <TooltipProvider>
+              <Tooltip>
+                <div className="mb-6 rounded-xl border border-primary/20 bg-primary/5 overflow-hidden">
+                  {/* Header */}
+                  <TooltipTrigger asChild>
+                    <button
+                      type="button"
+                      onClick={() => setRelationshipNotesOpen((prev) => !prev)}
+                      className="w-full flex items-center justify-between p-4 hover:bg-primary/10 transition"
+                    >
+                      <div className="flex gap-1">
+                        <p className="font-semibold uppercase tracking-wide text-slate-500">
+                          Relationship Type:
+                        </p>
 
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4">
-                <button
-                  onClick={() => setSelectedScenario("bio")}
-                  className={`px-4 py-3 rounded-xl font-semibold transition-all border-2 ${
-                    selectedScenario === "bio"
-                      ? "bg-rahvana-primary border-rahvana-primary text-white shadow-md"
-                      : "bg-white border-slate-200 text-slate-700 hover:border-rahvana-primary-light hover:bg-rahvana-primary-pale"
-                  }`}
-                >
-                  Biological Child
-                </button>
+                        <p className="font-semibold text-primary">
+                          {state.scenarioType === "bio" && "Biological Child"}
+                          {state.scenarioType === "step" && "Stepchild"}
+                          {state.scenarioType === "adopted" && "Adopted Child"}
+                        </p>
+                      </div>
 
-                <button
-                  onClick={() => setSelectedScenario("step")}
-                  className={`px-4 py-3 rounded-xl font-semibold transition-all border-2 ${
-                    selectedScenario === "step"
-                      ? "bg-rahvana-primary border-rahvana-primary text-white shadow-md"
-                      : "bg-white border-slate-200 text-slate-700 hover:border-rahvana-primary-light hover:bg-rahvana-primary-pale"
-                  }`}
-                >
-                  Stepchild
-                </button>
+                      <div className="flex items-center gap-3">
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setShowScenarioModal(true);
+                          }}
+                          className="text-sm font-medium text-primary hover:underline"
+                        >
+                          Change
+                        </button>
 
-                <button
-                  onClick={() => setSelectedScenario("adopted")}
-                  className={`px-4 py-3 rounded-xl font-semibold transition-all border-2 ${
-                    selectedScenario === "adopted"
-                      ? "bg-rahvana-primary border-rahvana-primary text-white shadow-md"
-                      : "bg-white border-slate-200 text-slate-700 hover:border-rahvana-primary-light hover:bg-rahvana-primary-pale"
-                  }`}
-                >
-                  Adopted Child
-                </button>
-              </div>
+                        <motion.div
+                          animate={{ rotate: relationshipNotesOpen ? 180 : 0 }}
+                          transition={{ duration: 0.2 }}
+                        >
+                          <ChevronDown className="w-4 h-4 text-primary" />
+                        </motion.div>
+                      </div>
+                    </button>
+                  </TooltipTrigger>
 
-              {/* Scenario Note */}
-              <div className="mt-4 p-4 bg-rahvana-primary-pale border border-rahvana-primary-light rounded-xl">
-                <p className="text-sm text-rahvana-primary-dark leading-relaxed">
-                  {roadmapData?.scenarioNotes?.[selectedScenario]}
-                </p>
-              </div>
-            </div>
+                  <TooltipContent>
+                    {relationshipNotesOpen
+                      ? "Click to collapse"
+                      : "Click to expand"}
+                  </TooltipContent>
+
+                  {/* Collapsible Content */}
+                  {relationshipNotesOpen &&
+                    roadmapData.scenarioNotes &&
+                    roadmapData.scenarioNotes[state.scenarioType] && (
+                      <div className="px-4 pb-4 text-sm text-muted-foreground border-t border-primary/10">
+                        {roadmapData.scenarioNotes[state.scenarioType]}
+                      </div>
+                    )}
+                </div>
+              </Tooltip>
+            </TooltipProvider>
           )}
 
           {/* Stage Overview */}
@@ -411,7 +433,7 @@ export default function IR1JourneyPage() {
             actions={actions}
             isLoaded={isLoaded}
             isSignedIn={isSignedIn}
-            selectedScenario={selectedScenario}
+            selectedScenario={state.scenarioType}
             hasScenarios={hasScenarios}
           />
         )}
@@ -424,6 +446,15 @@ export default function IR1JourneyPage() {
         description={t("ir1Journey.startFreshDesc")}
         confirmText={t("ir1Journey.startFresh")}
         onConfirm={confirmStartFresh}
+      />
+
+      <ScenarioSelectionModal
+        isOpen={showScenarioModal}
+        currentType={state.scenarioType}
+        onClose={() => setShowScenarioModal(false)}
+        onConfirm={(type) => {
+          handleScenarioSelect(type);
+        }}
       />
     </section>
   );

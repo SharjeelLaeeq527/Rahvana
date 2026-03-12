@@ -10,6 +10,7 @@ import { RoadmapData, RoadmapStep } from '@/app/(tools)/(visa)/visa-category/ir-
 export interface WizardState {
   currentStage: number;
   currentStep: number | null;
+  scenarioType?: 'bio' | 'step' | 'adopted' | undefined; 
   completedSteps: Set<string>;
   collapsedSteps: Record<string, boolean>;
   role: 'both' | 'petitioner' | 'beneficiary';
@@ -25,6 +26,7 @@ const LOCAL_STORAGE_KEY = 'rahvanaWizardState';
 const DEFAULT_STATE: WizardState = {
   currentStage: 0,
   currentStep: null,
+  scenarioType: undefined,
   completedSteps: new Set(),
   collapsedSteps: {},
   role: 'both',
@@ -246,6 +248,13 @@ export function useWizard(options: UseWizardOptions = {}) {
 
     updateNote: (doc: string, note: string) => {
       setState(prev => ({ ...prev, notes: { ...prev.notes, [doc]: note } }));
+    },
+
+    setScenario: (scenario: 'bio' | 'step' | 'adopted') => {
+      setState(prev => ({
+        ...prev,
+        scenarioType: scenario
+      }));
     },
 
     toggleDocument: (doc: string) => {
