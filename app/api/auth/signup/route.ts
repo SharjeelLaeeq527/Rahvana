@@ -57,6 +57,7 @@ export async function POST(request: NextRequest) {
       "mailinator.com",
       "tempmail.com",
       "10minutemail.com",
+      "yopmail.com",
     ];
     const domain = email.split("@")[1];
     if (blockedDomains.includes(domain))

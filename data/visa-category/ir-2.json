@@ -1,0 +1,582 @@
+{
+  "title": "IR-2 Child Visa Journey",
+  "description": "Step-by-step roadmap for U.S. citizens petitioning for an unmarried child under 21 to immigrate via consular processing.",
+  "scenarioNotes": {
+    "bio": "You are petitioning your biological child. Steps will include birth certificate documentation.",
+    
+    "step": "You are petitioning a stepchild. A qualifying marriage between the U.S. citizen petitioner and the child's biological parent must have occurred before the child turned 18. See INA § 101(b)(1)(B).",
+    
+    "adopted": "You are petitioning an adopted child. The adoption must generally have been finalized before the child turned 16, and the child must have been in the petitioner’s legal custody for at least 2 years. See INA § 101(b)(1)(E). Consult an immigration attorney for complex adoption cases."
+  },
+  "stages": [
+    {
+      "id": 1,
+      "name": "Stage I: USCIS Petition (I-130)",
+      "description": "U.S. citizen petitioner files Form I-130 to establish qualifying relationship with child",
+      "timeline": "Varies",
+      "icon": "FileText",
+      "color": "bg-blue-50 text-blue-600",
+      "steps": [
+        {
+          "id": "I-01",
+          "name": "Confirm Petitioner Eligibility",
+          "description": "Only U.S. citizens may petition for an immediate relative child (IR-2). Lawful permanent residents cannot petition under the IR-2 immediate relative category — they must use a different family preference category (F-2A). The petitioner must be a U.S. citizen.",
+          "actions": [
+            "Confirm petitioner is a U.S. citizen (by birth, naturalization, or acquisition)",
+            "Locate proof of citizenship: U.S. passport, U.S. birth certificate, or USCIS naturalization/citizenship certificate",
+            "Review the immediate relative child definition at uscis.gov/green-card/green-card-eligibility/green-card-immediate-relative-us-citizen",
+            "Confirm the child is unmarried and under 21 years of age at the time of filing"
+          ],
+          "output": "Petitioner confirmed as U.S. citizen; child confirmed as unmarried and under 21"
+        },
+        {
+          "id": "I-02",
+          "name": "Understand the IR-2 Visa Category",
+          "description": "IR-2 is the immediate relative immigrant visa category for an unmarried child under 21 of a U.S. citizen. As an immediate relative, there is no visa number waiting line — the visa is available immediately upon I-130 approval and NVC completion.",
+          "info": "Note on CR-2: The CR-2 category refers to a child who immigrates as a derivative of a conditional resident (CR-1) parent. If you are petitioning your child directly as a U.S. citizen, the applicable category is IR-2, not CR-2.",
+          "actions": [
+            "Read the visa category definitions at travel.state.gov (Immigrant Visa Types)",
+            "Confirm the child qualifies as an immediate relative (unmarried, under 21, child of U.S. citizen)",
+            "Note that the child must remain unmarried and under 21 at the time of visa issuance and U.S. admission",
+            "If the child may turn 21 before the process completes, research the Child Status Protection Act (CSPA) at uscis.gov"
+          ],
+          "output": "IR-2 visa category confirmed as applicable; CSPA age-out risk assessed"
+        },
+        {
+          "id": "I-03(a)",
+          "name": "Confirm the Qualifying Relationship — Biological Child",
+          "description": "For a biological child, the petitioner must be the legal (natural) parent. A child born in wedlock requires proof of the parent-child blood relationship and that the parents were married at or before the child's birth.",
+          "actions": [
+            "Locate the child's birth certificate showing both parents' names",
+            "Confirm petitioner is named as a parent on the birth certificate",
+            "If the child was born out of wedlock to the father: review uscis.gov requirements for legitimation and legal relationship",
+            "Gather any additional documentation if parentage is not reflected on the birth certificate (e.g., DNA evidence, court-ordered parentage)",
+            "Review INA § 101(b)(1)(A) and (C) definitions at uscis.gov"
+          ],
+          "output": "Biological parent-child relationship documented with birth certificate",
+          "scenarioSpecific": "bio"
+        },
+        {
+          "id": "I-03(b)",
+          "name": "Confirm the Qualifying Relationship — Stepchild",
+          "description": "A stepchild qualifies as a 'child' for immigration purposes if the marriage creating the step-relationship occurred before the child's 18th birthday. The petitioner (the stepparent) must be the U.S. citizen who is married to the child's biological parent. See INA § 101(b)(1)(B).",
+          "info": "Important: The qualifying marriage must have taken place BEFORE the child turned 18. If the marriage occurred after the child's 18th birthday, the stepchild does not qualify as an IR-2 under this rule.",
+          "actions": [
+            "Locate the marriage certificate showing the marriage between the U.S. citizen and the child's biological parent",
+            "Confirm the marriage occurred before the child's 18th birthday",
+            "Gather any divorce decrees or death certificates if either parent had a prior marriage",
+            "Locate the child's birth certificate identifying the biological parent",
+            "Confirm the marriage is currently valid and legally recognized",
+            "Review INA § 101(b)(1)(B) at uscis.gov for the stepchild definition"
+          ],
+          "output": "Qualifying step-relationship confirmed: marriage before child's 18th birthday documented",
+          "scenarioSpecific": "step"
+        },
+        {
+          "id": "I-03(c)",
+          "name": "Confirm the Qualifying Relationship — Adopted Child",
+          "description": "An adopted child qualifies if the adoption was legally completed before the child turned 16 (or before age 18 if the child is an orphan or adopted with a sibling), and the child has been in the legal custody of and resided with the adopting parent(s) for at least 2 years. See INA § 101(b)(1)(E).",
+          "info": "Adoption cases can be complex. Requirements vary based on when the adoption was finalized, which country the child is from (Hague Convention vs. non-Hague), and whether the '2-year custody and residence' requirement is met. Consulting an immigration attorney is strongly recommended for adoption-based petitions.",
+          "actions": [
+            "Locate the final adoption decree (court order) finalized before the child turned 16",
+            "Confirm the child has been in legal custody and physical residence with the petitioner for at least 2 years",
+            "Gather evidence of 2 years of joint residence (school records, medical records, utility bills naming both parties, etc.)",
+            "Confirm the adoption is recognized in both the country where it occurred and the United States",
+            "Review INA § 101(b)(1)(E) and the relevant USCIS adoption guidance at uscis.gov/adoption",
+            "For international adoptions: determine if the Hague Convention process or the non-Hague orphan process applies",
+            "Consult an immigration attorney given the complexity of adoption-based petitions"
+          ],
+          "output": "Qualifying adoption relationship confirmed: adoption finalized before age 16 and 2-year custody/residence requirement documented",
+          "scenarioSpecific": "adopted"
+        },
+        {
+          "id": "I-04",
+          "name": "Gather Supporting Civil Documents",
+          "description": "Before filing Form I-130, collect all civil documents needed to prove the qualifying relationship and the petitioner's citizenship. Documents not in English must be accompanied by a certified English translation.",
+          "actions": [
+            "Petitioner's proof of U.S. citizenship (passport, birth certificate, or naturalization certificate)",
+            "Child's birth certificate (certified copy) — for biological or stepchild cases",
+            "For stepchild: marriage certificate of petitioner and child's biological parent; divorce decrees / death certificates for any prior marriages",
+            "For adopted child: final adoption decree; evidence of 2 years of legal custody and joint residence",
+            "Certified English translations for all documents not in English",
+            "Review the I-130 instructions at uscis.gov for the current required document list"
+          ],
+          "output": "All required civil documents assembled and translated as needed"
+        },
+        {
+          "id": "I-05",
+          "name": "Complete Form I-130",
+          "description": "Form I-130 (Petition for Alien Relative) is the USCIS petition establishing the qualifying relationship. Use only the current form version from uscis.gov.",
+          "actions": [
+            "Download the current Form I-130 and instructions from uscis.gov",
+            "Complete Part 1 (petitioner information) and Part 3 (beneficiary/child information)",
+            "Answer all questions about prior petitions and, if applicable, prior marriages accurately",
+            "Sign and date the petition",
+            "Do not use expired or outdated form versions — always download from uscis.gov"
+          ],
+          "output": "Form I-130 completed accurately and ready for filing",
+          "officialSource": "https://www.uscis.gov/i-130"
+        },
+        {
+          "id": "I-06",
+          "name": "Pay the I-130 Filing Fee",
+          "description": "USCIS charges a filing fee for Form I-130. The current fee is listed on the USCIS fee schedule. Fees are subject to change; always verify the current amount at uscis.gov before submitting.",
+          "actions": [
+            "Check the current I-130 filing fee at uscis.gov/forms/filing-fees",
+            "Prepare acceptable payment (check, money order, or online payment per current USCIS instructions)",
+            "If filing online via myUSCIS: follow the online payment process",
+            "Retain your proof of payment"
+          ],
+          "output": "Filing fee prepared or paid"
+        },
+        {
+          "id": "I-07",
+          "name": "Submit Form I-130 to USCIS",
+          "description": "File Form I-130 online through myUSCIS or by paper mail to the appropriate USCIS lockbox or service center as specified in current form instructions.",
+          "actions": [
+            "Determine the correct filing method (online at my.uscis.gov or paper mail) per current I-130 instructions on uscis.gov",
+            "Assemble the complete petition package: I-130, supporting documents, fee payment",
+            "If mailing paper: send via trackable/certified mail and keep the tracking number",
+            "If filing online: submit through your myUSCIS account",
+            "Keep a complete copy of everything submitted"
+          ],
+          "output": "I-130 petition package submitted to USCIS"
+        },
+        {
+          "id": "I-08",
+          "name": "Receive Form I-797C Receipt Notice",
+          "description": "After USCIS accepts the petition, it issues a Form I-797C Notice of Action confirming receipt. This notice includes the USCIS receipt number needed to track your case.",
+          "actions": [
+            "Watch for the I-797C receipt notice by mail (allow several weeks)",
+            "Verify the receipt number, petitioner name, and child's name are correct",
+            "Save the receipt number — use it to track case status at egov.uscis.gov",
+            "Contact USCIS if the notice does not arrive within the expected timeframe per their website"
+          ],
+          "output": "I-797C receipt notice received with correct case information"
+        },
+        {
+          "id": "I-09",
+          "name": "Respond to Any USCIS Requests (RFE / NOID)",
+          "description": "USCIS may issue a Request for Evidence (RFE) or Notice of Intent to Deny (NOID) if additional information or documents are needed. Respond fully before the stated deadline.",
+          "actions": [
+            "Monitor case status regularly at egov.uscis.gov or via the USCIS mobile app",
+            "If an RFE or NOID is received: read carefully, note the response deadline, gather all requested evidence",
+            "Draft a cover letter addressing each point raised",
+            "Submit the response before the stated deadline via the method specified in the notice",
+            "Keep a complete copy of the response and proof of submission"
+          ],
+          "output": "All USCIS requests responded to timely and completely (or no RFE issued)"
+        },
+        {
+          "id": "I-10",
+          "name": "Receive I-130 Approval (Form I-797)",
+          "description": "When USCIS approves the petition, it issues a Form I-797 approval notice and forwards the approved petition to the National Visa Center (NVC) for consular processing.",
+          "actions": [
+            "Receive the I-797 approval notice and verify all names and dates are correct",
+            "Note that USCIS automatically forwards the approved I-130 to NVC for consular processing",
+            "Save the approval notice with your immigration records",
+            "Wait for the NVC welcome notification with the case number and invoice ID"
+          ],
+          "output": "I-130 approved; petition forwarded to NVC for consular processing"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "name": "Stage II: NVC / CEAC Processing",
+      "description": "Pay fees → Submit DS-260 → Upload documents → Documentarily Qualified",
+      "timeline": "Varies",
+      "icon": "Layout",
+      "color": "bg-indigo-50 text-indigo-600",
+      "steps": [
+        {
+          "id": "II-01",
+          "name": "Receive NVC Welcome Notice",
+          "description": "The National Visa Center (NVC) notifies the petitioner by email or mail once the approved I-130 is received. The notice includes the NVC case number and invoice ID needed to access CEAC.",
+          "actions": [
+            "Watch for the NVC welcome notice by email (or mail) with the case number and invoice ID",
+            "Log in or register at the Consular Electronic Application Center (CEAC) at ceac.state.gov",
+            "Review the immigrant visa process at travel.state.gov under 'Apply for an Immigrant Visa'",
+            "Ensure petitioner's and child's contact information is current with NVC"
+          ],
+          "output": "NVC case number and invoice ID received; CEAC account accessible",
+          "officialSource": "https://ceac.state.gov"
+        },
+        {
+          "id": "II-02",
+          "name": "Pay NVC Immigrant Visa Fee",
+          "description": "NVC requires an immigrant visa application fee for the child beneficiary before processing continues. Pay through CEAC. The current fee amount is listed at travel.state.gov.",
+          "actions": [
+            "Log in to CEAC at ceac.state.gov and select 'Pay Fees'",
+            "Verify the current immigrant visa fee at travel.state.gov/fees",
+            "Pay the immigrant visa fee for the child online through CEAC",
+            "Save or print the fee receipt from CEAC"
+          ],
+          "output": "Immigrant visa fee paid and confirmed in CEAC"
+        },
+        {
+          "id": "II-03",
+          "name": "Pay the Affidavit of Support Fee (if applicable)",
+          "description": "An Affidavit of Support processing fee may be required in CEAC. Check the current NVC fee schedule at travel.state.gov for whether this fee applies.",
+          "actions": [
+            "Check CEAC and travel.state.gov for current Affidavit of Support fee requirements",
+            "If applicable, pay the fee through CEAC and save the receipt"
+          ],
+          "output": "All NVC fees paid and receipts saved"
+        },
+        {
+          "id": "II-04",
+          "name": "Complete Form DS-260 (Online Immigrant Visa Application)",
+          "description": "Form DS-260 is the immigrant visa electronic application submitted by or on behalf of the child beneficiary in CEAC. For minor children, a parent or legal guardian typically assists with completion.",
+          "actions": [
+            "Log in to CEAC at ceac.state.gov and select 'Apply for an Immigrant Visa'",
+            "Complete all sections of the DS-260 for the child beneficiary accurately and truthfully",
+            "For minor children: a parent or legal guardian completes the DS-260 on the child's behalf",
+            "Answer all questions about the child's travel history and any prior immigration history",
+            "Review and submit the DS-260; record the confirmation number",
+            "Note: the DS-260 cannot be edited after submission without contacting NVC"
+          ],
+          "output": "DS-260 submitted in CEAC; confirmation number recorded"
+        },
+        {
+          "id": "II-05",
+          "name": "Prepare and Upload Civil Documents",
+          "description": "NVC requires the child's civil supporting documents uploaded to CEAC. Documents must be certified copies with certified English translations if not in English.",
+          "actions": [
+            "Review the NVC required document list at travel.state.gov for the IR-2 category",
+            "Upload child's birth certificate (certified copy)",
+            "Upload child's valid passport (copy of bio page)",
+            "Upload police certificate(s) — required if the child is old enough to have lived in any country for 6+ months since age 16",
+            "For stepchild: upload marriage certificate and any divorce decrees or death certificates",
+            "For adopted child: upload final adoption decree and supporting custody/residence evidence",
+            "Obtain certified English translations for all non-English documents",
+            "Scan documents clearly and upload to CEAC under the correct categories"
+          ],
+          "output": "All required civil documents uploaded to CEAC"
+        },
+        {
+          "id": "II-06",
+          "name": "Prepare and Submit Form I-864 (Affidavit of Support)",
+          "description": "The U.S. citizen petitioner must complete Form I-864 Affidavit of Support showing that household income meets the required threshold (at least 125% of the federal poverty guideline). Upload it to CEAC.",
+          "actions": [
+            "Download the current Form I-864 and instructions from uscis.gov",
+            "Complete Form I-864 with accurate household income and size data",
+            "Gather financial evidence: most recent federal income tax transcript or return, W-2s or 1099s, recent pay stubs, employer letter if applicable",
+            "If petitioner's income is insufficient: identify a qualified joint sponsor to complete a separate Form I-864",
+            "Sign the I-864 as directed in the current instructions",
+            "Upload completed I-864 and all financial evidence to CEAC",
+            "Review current income requirements (125% of HHS poverty guidelines) on uscis.gov"
+          ],
+          "output": "Form I-864 and supporting financial documents uploaded to CEAC",
+          "officialSource": "https://www.uscis.gov/i-864"
+        },
+        {
+          "id": "II-07",
+          "name": "NVC Review and Case Complete",
+          "description": "NVC reviews all submitted documents and fees. When everything is accepted, NVC declares the case documentarily complete and schedules an interview appointment at the appropriate U.S. embassy or consulate.",
+          "actions": [
+            "Monitor CEAC for NVC document requests or checklist items",
+            "Respond promptly to any NVC requests for additional documents",
+            "Once NVC approves all documents, await confirmation that the case is documentarily complete",
+            "NVC will schedule the child's interview at the U.S. consulate in the child's country of residence",
+            "Ensure the child's and petitioner's contact information with NVC is current"
+          ],
+          "output": "Case documentarily complete; interview appointment scheduled by NVC"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "name": "Stage III: Medical + Interview",
+      "description": "Complete medical exam → Attend consular interview → Visa decision",
+      "timeline": "Varies",
+      "icon": "Users",
+      "color": "bg-emerald-50 text-emerald-600",
+      "steps": [
+        {
+          "id": "III-01",
+          "name": "Receive Interview Appointment Notice",
+          "description": "The U.S. embassy or consulate sends an appointment letter with the interview date, time, location, and specific instructions. For minor children, a parent or legal guardian must typically accompany the child to the interview.",
+          "actions": [
+            "Check CEAC and email registered with NVC for the interview appointment notice",
+            "Read the appointment letter carefully — note date, time, location, and instructions",
+            "Review the specific U.S. embassy or consulate's immigrant visa page for local requirements",
+            "Confirm the child's passport is valid for the interview date and travel",
+            "Confirm a parent or legal guardian is available to accompany a minor child to the interview"
+          ],
+          "output": "Interview appointment letter received and details confirmed"
+        },
+        {
+          "id": "III-02",
+          "name": "Locate an Authorized Panel Physician",
+          "description": "The immigration medical examination must be performed by a USCIS/State Department-designated panel physician in the country where the consular interview will take place.",
+          "actions": [
+            "Find authorized panel physicians at travel.state.gov ('Find a Panel Physician')",
+            "Contact the physician's office to schedule the medical exam before the visa interview",
+            "Confirm required documents, vaccinations, and fees with the physician",
+            "For minor children: confirm whether a parent or guardian must accompany the child to the exam"
+          ],
+          "output": "Panel physician identified and medical exam appointment scheduled"
+        },
+        {
+          "id": "III-03",
+          "name": "Gather Medical Exam Documents",
+          "description": "Bring required documents and records to the medical exam. Confirm the specific requirements with the panel physician's office in advance.",
+          "actions": [
+            "Child's valid passport",
+            "Passport-sized photographs (quantity per physician's requirements)",
+            "Child's vaccination records / immunization history",
+            "Any relevant prior medical records (chronic conditions, mental health history)",
+            "Interview appointment letter (some physicians require it)",
+            "Payment for the exam fee (verify with physician)",
+            "Parent or guardian accompanying a minor should bring their own ID"
+          ],
+          "output": "All medical exam documents prepared"
+        },
+        {
+          "id": "III-04",
+          "name": "Complete the Medical Examination",
+          "description": "The panel physician performs a physical examination, reviews immunization history, and administers any required vaccinations. Results are sealed and delivered to the consulate or transmitted electronically.",
+          "actions": [
+            "Attend the medical exam on time with all required documents",
+            "Complete physical examination and any required lab tests",
+            "Receive required vaccinations per CDC Vaccination Requirements for Immigrant Visas (published at cdc.gov/immigrantrefugeehealth)",
+            "Age-appropriate vaccination waivers may apply for very young children — the physician will advise",
+            "If physician provides a sealed envelope: do not open it — bring it to the visa interview",
+            "Obtain the vaccination record (DS-3025 or equivalent) from the physician"
+          ],
+          "output": "Medical examination completed; sealed results or electronic submission confirmed"
+        },
+        {
+          "id": "III-05",
+          "name": "Prepare Interview Documents",
+          "description": "Assemble all documents needed for the consular interview. Review the specific consulate's instructions for any locally required additions.",
+          "actions": [
+            "Child's valid passport",
+            "DS-260 confirmation page(print from CEAC)",
+            "NVC fee payment receipts",
+            "All original civil documents (birth certificate, police certificates if applicable) and translations",
+            "Stepchild: marriage certificate + divorce decrees/death certificates",
+            "Adopted child: final adoption decree + custody/residence evidence",
+            "Form I-864 Affidavit of Support (original signed copy)",
+            "Petitioner's proof of U.S. citizenship (copy)",
+            "Sealed medical examination envelope (if provided; do not open)",
+            "Two passport-style photographs per consulate instructions",
+            "Interview appointment letter"
+          ],
+          "output": "Complete interview document package assembled"
+        },
+        {
+          "id": "III-06",
+          "name": "Attend the Visa Interview",
+          "description": "The child (and accompanying parent or guardian) appears at the U.S. embassy or consulate for the immigrant visa interview. For minor children, the consular officer may ask about the qualifying relationship. Answer all questions honestly.",
+          "actions": [
+            "Arrive at the consulate at the time specified in the appointment letter",
+            "Bring all assembled documents",
+            "Parent or guardian accompanies minor child as required by the consulate",
+            "Answer the consular officer's questions honestly and consistently with the DS-260",
+            "If a 221(g) notice is issued requesting additional documents, follow the instructions provided",
+            "If approved, the consulate will advise on visa issuance and passport return"
+          ],
+          "output": "Visa interview completed; consular officer issues a decision",
+          "possibleOutcomes": [
+            "Approved ✓",
+            "Administrative Processing 221(g) ⚠",
+            "Denied ✗"
+          ]
+        },
+        {
+          "id": "III-07",
+          "name": "Respond to Administrative Processing (if required)",
+          "description": "Some cases require additional administrative processing after the interview. The consulate will issue a Form 221(g) specifying what is needed. This is normal and may add time.",
+          "actions": [
+            "If a 221(g) notice is received: read carefully and note the documents or actions required",
+            "Submit any requested documents or information promptly through the method specified",
+            "Monitor case status at ceac.state.gov",
+            "Allow the stated processing time before following up with the consulate",
+            "Contact the consulate only through official channels"
+          ],
+          "output": "Administrative processing completed and resolved (or not required)"
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "name": "Stage IV: Visa & Travel",
+      "description": "Receive visa → Prepare for travel to United States",
+      "timeline": "Varies",
+      "icon": "IdCard",
+      "color": "bg-amber-50 text-amber-600",
+      "steps": [
+        {
+          "id": "IV-01",
+          "name": "Receive Immigrant Visa in Passport",
+          "description": "If the consular officer approves the IR-2 visa, the embassy affixes the immigrant visa stamp to the child's passport and returns the passport, typically within a few business days.",
+          "actions": [
+            "Wait for the child's passport to be returned (mail or pickup as specified by the consulate)",
+            "Verify the visa stamp: check name, date of birth, visa category (IR-2), and visa expiration date",
+            "The visa expiration date is the last date the child may use the visa to seek U.S. admission — plan travel before this date",
+            "Report any errors to the consulate immediately"
+          ],
+          "output": "IR-2 immigrant visa affixed to passport and verified as correct"
+        },
+        {
+          "id": "IV-02",
+          "name": "Receive the Immigrant Visa Packet",
+          "description": "The consulate provides a sealed immigrant visa packet that must be presented to U.S. Customs and Border Protection (CBP) upon arrival. Do not open this envelope.",
+          "actions": [
+            "Receive the sealed immigrant visa packet from the consulate",
+            "Do NOT open the sealed packet under any circumstances",
+            "Store the packet safely with travel documents",
+            "Note: the USCIS Immigrant Fee (for Permanent Resident Card production) may need to be paid — check current instructions at uscis.gov"
+          ],
+          "output": "Sealed immigrant visa packet in hand and ready for travel"
+        },
+        {
+          "id": "IV-03",
+          "name": "Pay the USCIS Immigrant Fee (if applicable)",
+          "description": "Most immigrant visa holders must pay the USCIS Immigrant Fee online before or after arriving in the U.S. This covers Permanent Resident Card production. Verify current requirements at uscis.gov.",
+          "actions": [
+            "Check whether the USCIS Immigrant Fee applies at uscis.gov/forms/uscis-immigrant-fee",
+            "If required, pay the fee at uscis.gov using the receipt number from the immigrant visa packet",
+            "Save the payment receipt",
+            "Confirm the current fee amount at uscis.gov before paying — amounts may change"
+          ],
+          "output": "USCIS Immigrant Fee paid (if applicable)"
+        },
+        {
+          "id": "IV-04",
+          "name": "Book Travel to the United States",
+          "description": "The child must enter the U.S. before the immigrant visa expiration date. Book travel to arrive within the visa validity window.",
+          "actions": [
+            "Confirm the visa expiration date (printed on the visa stamp)",
+            "Book an international flight arriving before the visa expiration date",
+            "Confirm the child's passport is valid for the duration of the trip",
+            "Make arrangements for the parent or guardian to travel with a minor child as appropriate",
+            "The child may enter at any U.S. port of entry staffed by CBP"
+          ],
+          "output": "Travel booked; arrival date confirmed within visa validity window"
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "name": "Stage V: U.S. Arrival",
+      "description": "Enter U.S. → CBP inspection → Green card delivery → Maintain LPR status",
+      "timeline": "Ongoing",
+      "icon": "Plane",
+      "color": "bg-rose-50 text-rose-600",
+      "steps": [
+        {
+          "id": "V-01",
+          "name": "Clear U.S. Customs and Border Protection (CBP)",
+          "description": "Upon arriving at a U.S. port of entry, the child presents travel documents to CBP. The CBP officer reviews the sealed visa packet and admits the child as a lawful permanent resident (LPR).",
+          "actions": [
+            "Present the child's valid passport with the IR-2 visa stamp",
+            "Present the sealed immigrant visa packet to the CBP officer (do not open it yourself)",
+            "Complete any required CBP arrival forms per current CBP procedures",
+            "Answer CBP officer's questions honestly",
+            "Retrieve the electronic I-94 record at cbp.gov/i94 after entry (most air and sea ports)"
+          ],
+          "output": "Child admitted to the U.S. as a lawful permanent resident; passport stamped"
+        },
+        {
+          "id": "V-02",
+          "name": "Obtain I-94 Arrival Record",
+          "description": "CBP automatically creates an electronic I-94 arrival record for most air and sea entries. This is the official record of the child's admission as a lawful permanent resident.",
+          "actions": [
+            "Visit cbp.gov/i94 to retrieve the electronic I-94 within a few days of arrival",
+            "Verify the I-94 shows the 'IR' class of admission and the correct name and date of birth",
+            "Print or save the I-94 record",
+            "If there is an error on the I-94, contact CBP to correct it promptly"
+          ],
+          "output": "I-94 record retrieved and confirmed as showing IR lawful permanent resident admission"
+        },
+        {
+          "id": "V-03",
+          "name": "Await the Permanent Resident Card (Green Card)",
+          "description": "USCIS will mail the Permanent Resident Card (Form I-551) to the U.S. address on file. The passport stamp and I-94 serve as temporary evidence of LPR status while the card is produced.",
+          "actions": [
+            "Confirm USCIS has the correct U.S. mailing address",
+            "Check card production status at egov.uscis.gov if the card does not arrive within the expected timeframe",
+            "If the card is lost or never received: file Form I-90 (Application to Replace Permanent Resident Card)",
+            "The passport stamp may be used as temporary LPR evidence — verify current USCIS guidance on valid timeframe"
+          ],
+          "output": "Permanent Resident Card (Green Card) received"
+        },
+        {
+          "id": "V-04",
+          "name": "Apply for Social Security Number",
+          "description": "Most new LPRs are eligible for a Social Security Number. The application may have been initiated through the DS-260, or the child can apply at a Social Security Administration (SSA) office.",
+          "actions": [
+            "If SSN was requested on the DS-260, wait for the SSN card to arrive by mail (allow several weeks after entry)",
+            "If not yet applied, locate the nearest SSA office at ssa.gov",
+            "Bring the Green Card (or passport stamp + I-94), passport, and a second form of ID",
+            "For a minor child: a parent or guardian applies on behalf of the child",
+            "Allow several weeks for the SSN card to arrive after application"
+          ],
+          "output": "Social Security Number obtained or application submitted"
+        },
+        {
+          "id": "V-05",
+          "name": "Enroll the Child in School (if applicable)",
+          "description": "As a lawful permanent resident, the child has the right to enroll in U.S. public schools. Contact the local school district for enrollment procedures and required documents.",
+          "actions": [
+            "Identify the local public school district",
+            "Contact the school district enrollment office and inquire about required documents",
+            "Bring the child's LPR documentation, vaccination records, and prior school records",
+            "Complete any state-required enrollment forms"
+          ],
+          "output": "Child enrolled in school or enrollment process initiated"
+        },
+        {
+          "id": "V-06",
+          "name": "Understand LPR Rights and Responsibilities",
+          "description": "As a lawful permanent resident, the child (and the petitioner on their behalf) should be aware of ongoing obligations to protect LPR status, including maintaining U.S. residence and renewing the Green Card.",
+          "actions": [
+            "Review USCIS guidance on LPR rights and responsibilities at uscis.gov/green-card",
+            "Note that extended absences from the U.S. (generally over 6 months or 1 year) can jeopardize LPR status — consult an immigration attorney if extended travel is planned",
+            "Renew the Green Card before it expires (Form I-90; most Green Cards are valid for 10 years)",
+            "U.S. federal income tax obligations may apply — consult a tax professional"
+          ],
+          "output": "LPR rights and responsibilities understood; reminder set for Green Card renewal"
+        },
+        {
+          "id": "V-07",
+          "name": "Consider Citizenship / Automatic Acquisition",
+          "description": "A child who is an LPR and under 18, residing in the U.S. in the legal and physical custody of a U.S. citizen parent, may automatically acquire U.S. citizenship under the Child Citizenship Act of 2000 (INA § 320). Verify eligibility at uscis.gov.",
+          "info": "If the child automatically acquires citizenship, you may apply for a U.S. passport or a Certificate of Citizenship (Form N-600). Consult uscis.gov/n-600 for eligibility and application guidance.",
+          "actions": [
+            "Review automatic citizenship criteria at uscis.gov/citizenship/citizenship-through-parents",
+            "If the child is under 18, is an LPR, and resides in the U.S. in the legal and physical custody of a U.S. citizen parent: the child may have automatically acquired citizenship upon gaining LPR status",
+            "Apply for a Certificate of Citizenship (Form N-600) if desired, or apply for a U.S. passport",
+            "If the child does not automatically qualify, note the future naturalization eligibility period (generally 5 years as LPR, or 3 if residing with U.S. citizen parent)",
+            "Consult an immigration attorney if there is any question about automatic acquisition"
+          ],
+          "output": "Citizenship acquisition evaluated; Certificate of Citizenship or future naturalization path identified"
+        }
+      ]
+    }
+  ],
+  "documents": [
+    "Petitioner's Proof of U.S. Citizenship (Passport, Birth Certificate, or Naturalization Certificate)",
+    "Child's Birth Certificate (Certified Copy)",
+    "Child's Valid Passport",
+    "Marriage Certificate (for stepchild cases)",
+    "Divorce Decrees/ Death Certificates (if applicable)",
+    "Final Adoption Decree (for adopted child cases)",
+    "Evidence of 2-Year Legal Custody and Joint Residence (for adopted child)",
+    "Police Certificates (if child lived in any country for 6+ months since age 16)",
+    "Form I-864 Affidavit of Support (Signed Original)",
+    "Tax Returns (IRS Transcripts- 3 years)",
+    "Employment Verification Letter",
+    "Pay Stubs (6 months)",
+    "W-2 Forms",
+    "Bank Statements (if showing assets)",
+    "DS-260 Confirmation Page",
+    "Medical Examination Results (Sealed Envelope)",
+    "Passport-Style Photographs",
+    "NVC Fee Payment Receipts",
+    "Interview Appointment Letter"
+  ]
+}

@@ -1,4 +1,4 @@
-# Rahvana & Arachnie AI – Immigration Assistant
+# Rahvana Immigration Assistant
 
 Welcome to the **Rahvana** project repository. This project is a comprehensive immigration assistance platform that simplifies visa processes, form filling, and provides AI-driven query resolution. 
 
@@ -6,7 +6,7 @@ This repository contains both the **Next.js Frontend** and the **FastAPI Backend
 
 ## 🌟 Key Features
 
-### 1. Arachnie WhatsApp AI Assistant (Phase 1)
+### 1. Rahvana WhatsApp AI Assistant (Phase 1)
 - **AI-Powered Q&A:** Answers user questions based *only* on pre-approved WhatsApp group knowledge.
 - **Privacy-First:** Strict rules to never reveal personal details or message senders.
 - **RAG Implementation:** Uses Supabase `whatsapp_knowledge` table to retrieve relevant ground-truth data before querying Gemini.
@@ -17,9 +17,9 @@ This repository contains both the **Next.js Frontend** and the **FastAPI Backend
 - **Compliance Cropping:** Detects faces and crops them to meet official U.S. passport photo rules (2x2 inches, 600x600 px).
 - **Enhancement:** Automatically improves lighting and smoothness.
 
-### 3. USCIS I-130 Form Auto-Fill
+### 3. USCIS Forms Auto-Fill
 - **Seamless Integration:** Users enter basic info through a beautiful Next.js UI.
-- **Automated PDF Generation:** The backend opens the official USCIS I-130 PDF and correctly populates all fields.
+- **Automated PDF Generation:** The backend opens the official USCIS form PDF and correctly populates all fields.
 - **Ready to Submit:** Returns a completed PDF requiring zero manual typing.
 
 ### 4. Visa Bulletin & IV Schedule Checker

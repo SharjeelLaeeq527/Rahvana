@@ -128,7 +128,14 @@ const CaseTypeStep = ({
             ? "border-teal-600 bg-teal-50/20 ring-2 ring-teal-200"
             : "border-border hover:border-teal-400 hover:bg-muted"
         }`}
-        onClick={() => onCaseTypeChange("Spouse")}
+        onClick={() => {
+          onCaseTypeChange("Spouse");
+          window.scrollBy({
+            top: window.innerHeight,
+            left: 0,
+            behavior: "smooth",
+          });
+        }}
       >
         <div className="mx-auto bg-teal-100 text-teal-800 w-16 h-16 rounded-full flex items-center justify-center mb-4">
           <svg
@@ -354,6 +361,26 @@ const QuestionStep = ({
   onNext,
   onBack,
 }: QuestionStepProps) => {
+  // Refs for each question to scroll
+  const questionRefs = useRef<Record<string, HTMLDivElement | null>>({});
+
+  // Handle input change and scroll slightly
+  const handleChange = (key: keyof FormData, value: unknown) => {
+    const oldValue = formData[key];
+    if (oldValue === value) return; // avoid duplicate scroll
+
+    onChange(key, value);
+
+    const el = questionRefs.current[key];
+    if (el) {
+      const rect = el.getBoundingClientRect();
+      const scrollTop =
+        window.pageYOffset || document.documentElement.scrollTop;
+      const top = rect.top + scrollTop - 50; // 50px offset from top
+      window.scrollTo({ top, behavior: "smooth" });
+    }
+  };
+
   const renderInput = (question: {
     key: keyof FormData;
     label: string;
@@ -361,20 +388,13 @@ const QuestionStep = ({
     options?: string | string[];
     required?: boolean;
   }) => {
-    const value = formData[question.key] as
-      | string
-      | number
-      | boolean
-      | undefined;
+    const value = formData[question.key];
 
-    // Beneficiary country: use country autocomplete
     if (question.key === "beneficiary_country") {
       return (
         <CountryAutocomplete
           formData={formData as unknown as Record<string, unknown>}
-          setFormData={(data) =>
-            setFormData((prev) => ({ ...prev, ...data }))
-          }
+          setFormData={(data) => setFormData((prev) => ({ ...prev, ...data }))}
           valueKey="beneficiary_country"
           hideLabel
           inputClassName="w-full p-3 border border-border rounded-lg bg-background text-foreground focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-colors"
@@ -383,10 +403,6 @@ const QuestionStep = ({
       );
     }
 
-    // All select questions now use dropdowns
-    const useDropdown =
-      question.type === "select" && Array.isArray(question.options);
-
     switch (question.type) {
       case "text":
       case "number":
@@ -394,15 +410,13 @@ const QuestionStep = ({
         return (
           <input
             type={question.type}
-            value={
-              typeof value === "number"
-                ? value.toString()
-                : typeof value === "string"
-                  ? value
-                  : ""
-            }
+            value={value !== undefined ? String(value) : ""}
+            onClick={(e) => {
+              if (question.type === "date")
+                (e.currentTarget as HTMLInputElement).showPicker?.();
+            }}
             onChange={(e) =>
-              onChange(
+              handleChange(
                 question.key,
                 question.type === "number"
                   ? Number(e.target.value)
@@ -417,7 +431,7 @@ const QuestionStep = ({
         return (
           <textarea
             value={typeof value === "string" ? value : ""}
-            onChange={(e) => onChange(question.key, e.target.value)}
+            onChange={(e) => handleChange(question.key, e.target.value)}
             className="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-colors"
             placeholder={`Enter details for ${question.label.toLowerCase()}`}
             rows={4}
@@ -431,50 +445,31 @@ const QuestionStep = ({
             </span>
             <ToggleSwitch
               checked={!!value}
-              onChange={(checked) => onChange(question.key, checked)}
+              onChange={(checked) => handleChange(question.key, checked)}
             />
           </div>
         );
       case "select":
         if (Array.isArray(question.options)) {
-          if (useDropdown) {
-            // Render as dropdown with increased height to align with inputs
-            return (
-              <Select
-                value={typeof value === "string" ? value : ""}
-                onValueChange={(newValue) => onChange(question.key, newValue)}
-              >
-                <SelectTrigger className="w-full h-14">
-                  <SelectValue
-                    placeholder={`Select ${question.label.toLowerCase()}`}
-                  />
-                </SelectTrigger>
-                <SelectContent>
-                  {question.options.map((option: string) => (
-                    <SelectItem key={option} value={option}>
-                      {option}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            );
-          } else {
-            // Render as traditional select
-            return (
-              <select
-                value={typeof value === "string" ? value : ""}
-                onChange={(e) => onChange(question.key, e.target.value)}
-                className="w-full p-2 border border-gray-300 rounded-md"
-              >
-                <option value="">Select an option</option>
-                {question.options.map((option: string) => (
-                  <option key={option} value={option}>
+          return (
+            <Select
+              value={typeof value === "string" ? value : ""}
+              onValueChange={(v) => handleChange(question.key, v)}
+            >
+              <SelectTrigger className="w-full h-14">
+                <SelectValue
+                  placeholder={`Select ${question.label.toLowerCase()}`}
+                />
+              </SelectTrigger>
+              <SelectContent>
+                {question.options.map((option) => (
+                  <SelectItem key={option} value={option}>
                     {option}
-                  </option>
+                  </SelectItem>
                 ))}
-              </select>
-            );
-          }
+              </SelectContent>
+            </Select>
+          );
         }
         return null;
       default:
@@ -492,24 +487,25 @@ const QuestionStep = ({
       </div>
 
       <div className="space-y-6">
-        {questions.map((question) => {
-          return (
-            <div
-              key={question.key}
-              className="space-y-3 p-4 bg-muted/20 rounded-xl border border-border"
-            >
-              {question.type !== "boolean" && (
-                <label className="block text-lg font-semibold text-foreground">
-                  {question.label}
-                  {question.required && (
-                    <span className="text-red-500 ml-1">*</span>
-                  )}
-                </label>
-              )}
-              {renderInput(question)}
-            </div>
-          );
-        })}
+        {questions.map((question) => (
+          <div
+            key={question.key}
+            ref={(el: HTMLDivElement | null) => {
+              questionRefs.current[question.key] = el;
+            }}
+            className="space-y-3 p-4 bg-slate-50 rounded-xl border border-slate-200"
+          >
+            {question.type !== "boolean" && (
+              <label className="block text-lg font-semibold text-foreground">
+                {question.label}
+                {question.required && (
+                  <span className="text-red-500 ml-1">*</span>
+                )}
+              </label>
+            )}
+            {renderInput(question)}
+          </div>
+        ))}
 
         {error && (
           <div className="p-4 bg-red-50 border-l-4 border-red-500 rounded-lg text-red-700">

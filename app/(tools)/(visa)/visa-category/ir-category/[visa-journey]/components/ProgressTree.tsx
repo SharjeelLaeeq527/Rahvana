@@ -1,16 +1,26 @@
 import React, { useState, useEffect } from "react";
 import { WizardState } from "@/app/(main)/dashboard/hooks/useWizard";
 import { useLanguage } from "@/app/context/LanguageContext";
-import { ChevronDown, CheckCircle2, Circle, PlayCircle } from "lucide-react";
+import { ChevronDown, CheckCircle2, Circle, ArrowRightCircle } from "lucide-react";
 import { RoadmapData, RoadmapStage, RoadmapStep } from "./types";
 
 interface ProgressTreeProps {
   roadmapData: RoadmapData;
   state: WizardState;
   onSelectStep: (stageIdx: number, stepIdx: number) => void;
+  onToggleComplete?: (stepId: string, e?: React.MouseEvent) => void;
+  selectedScenario?: "bio" | "step" | "adopted"; // Optional - only for journeys with scenario-specific steps
+  hasScenarios?: boolean;
 }
 
-export function ProgressTree({ roadmapData, state, onSelectStep }: ProgressTreeProps) {
+export function ProgressTree({
+  roadmapData,
+  state,
+  onSelectStep,
+  onToggleComplete,
+  selectedScenario = "bio",
+  hasScenarios = false,
+}: ProgressTreeProps) {
   const { t, language } = useLanguage();
   const isUrdu = language === "ur";
   const [expandedStages, setExpandedStages] = useState<Record<number, boolean>>(
@@ -55,7 +65,8 @@ export function ProgressTree({ roadmapData, state, onSelectStep }: ProgressTreeP
         );
 
         // Get stage name from JSON data
-        const stageNameDisplay = language === "ur" && stage.nameUr ? stage.nameUr : stage.name;
+        const stageNameDisplay =
+          language === "ur" && stage.nameUr ? stage.nameUr : stage.name;
 
         return (
           <div key={stage.id} className="group/stage">
@@ -74,7 +85,7 @@ export function ProgressTree({ roadmapData, state, onSelectStep }: ProgressTreeP
                 <span
                   className={`text-[10px] font-black uppercase tracking-widest ${isActiveStage ? "text-primary" : "text-slate-400"}`}
                 >
-                  {t("visaJourney.progressTree.stage", { id: stage.id })}
+                  {t("progressTree.stage")} {sIdx + 1}{" "}
                 </span>
                 <ChevronDown
                   className={`w-3.5 h-3.5 transition-transform duration-300 ${isExpanded ? "rotate-180" : ""} ${isActiveStage ? "text-primary" : "text-slate-300"}`}
@@ -97,47 +108,64 @@ export function ProgressTree({ roadmapData, state, onSelectStep }: ProgressTreeP
 
             {isExpanded && (
               <div className="mt-1 mb-4 ml-3.5 border-l-2 border-slate-100 pl-3 space-y-1.5 animate-in fade-in slide-in-from-top-1 duration-200">
-                {stage.steps.map((step: RoadmapStep, stIdx: number) => {
-                  const isCurrentStep =
-                    state.currentStep === stIdx && isActiveStage;
-                  const isStepCompleted = state.completedSteps.has(step.id);
-                  const stepNameDisplay = isUrdu 
-                    ? (step.nameUr || step.titleUr || step.name || step.title) 
-                    : (step.name || step.title);
+                {stage.steps
+                  .filter((step: RoadmapStep) => {
+                    // If this journey doesn't have scenarios or step has no scenarioSpecific, show it
+                    if (!hasScenarios || !step.scenarioSpecific) return true;
+                    // Otherwise, only show steps matching the selected scenario
+                    return step.scenarioSpecific === selectedScenario;
+                  })
+                  .map((step: RoadmapStep) => {
+                    // Find the actual index in the original steps array
+                    const actualStepIdx = stage.steps.findIndex(
+                      (s) => s.id === step.id,
+                    );
+                    const isCurrentStep =
+                      state.currentStep === actualStepIdx && isActiveStage;
+                    const isStepCompleted = state.completedSteps.has(step.id);
+                    const stepNameDisplay =
+                      isUrdu && step.nameUr ? step.nameUr : step.name;
 
-                  return (
-                    <button
-                      key={step.id}
-                      onClick={() => onSelectStep(sIdx, stIdx)}
-                      className={`w-full text-left py-2.5 px-3 rounded-lg transition-all flex items-center justify-between gap-3 group/step ${
-                        isCurrentStep
-                          ? "bg-primary text-white shadow-md shadow-primary/20 font-bold"
-                          : "text-slate-600 hover:bg-slate-100/50 hover:text-slate-900"
-                      }`}
-                    >
-                      <div className="flex items-center gap-3 min-w-0">
-                        {isCurrentStep && (
-                          <PlayCircle className="w-3.5 h-3.5 shrink-0 text-primary-light animate-pulse" />
-                        )}
-                        <span className="text-[12px] truncate leading-tight">
-                          {stepNameDisplay}
-                        </span>
-                      </div>
+                    return (
+                      <button
+                        key={step.id}
+                        onClick={() => onSelectStep(sIdx, actualStepIdx)}
+                        className={`w-full text-left py-2.5 px-3 rounded-lg transition-all flex items-center justify-between gap-3 group/step ${
+                          isCurrentStep
+                            ? "bg-primary text-white shadow-md shadow-primary/20 font-bold"
+                            : "text-slate-600 hover:bg-slate-100/50 hover:text-slate-900"
+                        }`}
+                      >
+                        <div className="flex items-center gap-3 min-w-0">
+                          {isCurrentStep && (
+                            <ArrowRightCircle className="w-3.5 h-3.5 shrink-0 text-primary-light" />
+                          )}
+                          <span className="text-[12px] truncate leading-tight">
+                            {stepNameDisplay}
+                          </span>
+                        </div>
 
-                      <div className="shrink-0">
-                        {isStepCompleted ? (
-                          <CheckCircle2
-                            className={`w-4 h-4 ${isCurrentStep ? "text-emerald-400" : "text-emerald-500"}`}
-                          />
-                        ) : (
-                          <Circle
-                            className={`w-3.5 h-3.5 ${isCurrentStep ? "text-slate-600" : "text-slate-300"}`}
-                          />
-                        )}
-                      </div>
-                    </button>
-                  );
-                })}
+                        <button
+                          type="button"
+                          className="shrink-0 p-1 hover:bg-slate-200/50 rounded-full transition-colors"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onToggleComplete?.(step.id, e);
+                          }}
+                        >
+                          {isStepCompleted ? (
+                            <CheckCircle2
+                              className={`w-4 h-4 ${isCurrentStep ? "text-emerald-400" : "text-emerald-500"}`}
+                            />
+                          ) : (
+                            <Circle
+                              className={`w-3.5 h-3.5 ${isCurrentStep ? "text-slate-600" : "text-slate-300"}`}
+                            />
+                          )}
+                        </button>
+                      </button>
+                    );
+                  })}
               </div>
             )}
           </div>

@@ -89,7 +89,7 @@ const CredentialFormModal: React.FC<CredentialFormModalProps> = ({
         setUsername(initialData.username || "");
         setPassword("");
         setNvcCaseNumber(initialData.nvcCaseNumber || "");
-      setNvcInvoiceId(initialData.nvcInvoiceId || "");
+        setNvcInvoiceId(initialData.nvcInvoiceId || "");
         const sq = initialData.securityQuestions || [];
         setSecurityQuestions(
           Array(questionLimit)
@@ -137,6 +137,19 @@ const CredentialFormModal: React.FC<CredentialFormModalProps> = ({
     e.preventDefault();
 
     if (portalType === "NVC") {
+      const casePrefix = nvcCaseNumber.slice(0, 3);
+      const invoicePrefix = nvcInvoiceId.slice(0, 5);
+
+      if (!/^[A-Z]{3}/.test(casePrefix)) {
+        alert("NVC Case Number must start with 3 capital letters.");
+        return;
+      }
+
+      if (invoicePrefix !== "IVSCA") {
+        alert("Invoice ID must start with IVSCA.");
+        return;
+      }
+
       onSubmit({
         portalType,
         nvcCaseNumber,
@@ -196,7 +209,10 @@ const CredentialFormModal: React.FC<CredentialFormModalProps> = ({
           </button>
         </div>
         {/* Form */}
-        <form onSubmit={handleSubmit} className="px-6 py-5 space-y-5 overflow-y-auto">
+        <form
+          onSubmit={handleSubmit}
+          className="px-6 py-5 space-y-5 overflow-y-auto"
+        >
           {portalType !== "NVC" && (
             <>
               {/* Username */}
@@ -251,7 +267,12 @@ const CredentialFormModal: React.FC<CredentialFormModalProps> = ({
                   type="text"
                   required
                   value={nvcCaseNumber}
-                  onChange={(e) => setNvcCaseNumber(e.target.value)}
+                  pattern="[A-Z]{3}.*"
+                  title="Must start with 3 uppercase letters"
+                  onChange={(e) => {
+                    const value = e.target.value.toUpperCase();
+                    setNvcCaseNumber(value);
+                  }}
                   placeholder="Enter NVC case number"
                   className="w-full h-11 px-4 rounded-xl border border-[#e0f0f0] bg-[#f8fafa]"
                 />
@@ -266,7 +287,12 @@ const CredentialFormModal: React.FC<CredentialFormModalProps> = ({
                   type="text"
                   required
                   value={nvcInvoiceId}
-                  onChange={(e) => setNvcInvoiceId(e.target.value)}
+                  pattern="IVSCA.*"
+                  title="Must start with IVSCA"
+                  onChange={(e) => {
+                    const value = e.target.value.toUpperCase();
+                    setNvcInvoiceId(value);
+                  }}
                   placeholder="Enter invoice ID number"
                   className="w-full h-11 px-4 rounded-xl border border-[#e0f0f0] bg-[#f8fafa]"
                 />
