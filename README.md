@@ -33,26 +33,48 @@ This repository contains both the **Next.js Frontend** and the **FastAPI Backend
 
 ```text
 d:\arachnie_work\updated_work\
-├── app/                  # Next.js 15 Frontend Application 
-│   ├── (auth)/           # Authentication routes (Login, Register)
-│   ├── (main)/           # Main app layout and core pages
-│   ├── (tools)/          # UI for tools (Visa checker, Passport Maker, etc.)
-│   ├── api/              # Next.js API Routes
-│   ├── components/       # Reusable React components
-│   └── globals.css       # Tailwind 4 global styles
-├── backend/              # Python FastAPI Server
-│   ├── app/              # FastAPI application core
-│   │   ├── services/     # Business logic (whatsapp_assistant.py, photo processing, PDF filling)
-│   │   └── main.py       # FastAPI entry point
-│   ├── modnet/           # AI models for image processing
-│   ├── pdfs/             # Template USCIS PDFs
-│   ├── pyproject.toml    # Python dependencies (uv/hatchling)
-│   └── scripts/          # Backend utility scripts
-├── components/           # Main React shared components directory
-├── lib/                  # Utilities (Supabase client, Stripe, helpers)
+├── actions/              # Next.js Server Actions for secure data mutation
+├── app/                  # Next.js 15 App Router (Pages, Layouts, API Routes)
+│   ├── (auth)/           # Authentication routes (Login, Register, Phone Auth)
+│   ├── (main)/           # Main application layouts and static core pages
+│   ├── (tools)/          # Interactive immigration tools & utilities
+│   │   ├── (courier-registration)/   # Register for passport/document courier delivery
+│   │   ├── (visa)/                   # Comprehensive visa processing paths
+│   │   ├── affidavit-support-calculator/ # Calculate financial eligibility for I-864
+│   │   ├── book-appointment/         # Schedule embassy or medical appointments
+│   │   ├── case-status/              # Track real-time USCIS or NVC case status
+│   │   ├── custom-requirements/      # Generate personalized document checklists
+│   │   ├── document-translation/     # AI-powered document translation service
+│   │   ├── document-vault/           # Secure cloud storage for sensitive files
+│   │   ├── guides/                   # Detailed interactive step-by-step guides
+│   │   ├── interview-prep/           # Mock visa interview practice questions
+│   │   ├── passport/                 # Smart AI generator for 2x2 passport photos
+│   │   ├── pdf-processing/           # Auto-fill complex USCIS PDF forms automatically
+│   │   ├── police-verification/      # Guidance for obtaining police clearance certificates
+│   │   ├── progress-tree-demo/       # Visual timeline tracker for immigration journeys
+│   │   ├── signature-image-processing/ # Digitize and cleanly extract signatures
+│   │   ├── tools/                    # Main dashboard hub containing all utilities
+│   │   ├── visa-case-strength-checker/ # Evaluate approval likelihood based on profiles
+│   │   └── visa-eligibility/         # Quick quiz to determine U.S. visa qualification
+│   ├── api/              # Backend Next.js Route Handlers
+│   ├── components/       # Route-specific React components
+│   └── globals.css       # Global Tailwind 4 stylesheet
+├── backend/              # Python FastAPI server for heavy AI processing
+│   ├── app/              # FastAPI core logic (services, endpoints)
+│   ├── modnet/           # AI models for image processing & background removal
+│   ├── pdfs/             # Template USCIS PDFs for auto-filling
+│   ├── pyproject.toml    # Python dependencies managed by UV/Hatchling
+│   └── scripts/          # Backend utility python scripts
+├── components/           # Reusable generic React UI components (shadcn-ui)
+├── data/                 # Static JSON contents, constants, and raw data maps
+├── documentations/       # Project-specific documentation and references
+├── lib/                  # Helper utilities (Supabase, Stripe, formatting tools)
 ├── public/               # Static assets (images, icons, favicons)
-├── supabase/             # Supabase migrations and configurations
-├── package.json          # Frontend dependencies
+├── scripts/              # Useful Node.js automation and database utility scripts
+├── supabase/             # Local database configurations, migrations, and edge functions
+├── types/                # Global TypeScript definitions & interfaces
+├── uploads/              # Temporary storage for user-uploaded files pending processing
+├── package.json          # Node.js frontend dependencies and run scripts
 └── Gemini.md             # Specific project rules & phases for the AI Assistant
 ```
 
