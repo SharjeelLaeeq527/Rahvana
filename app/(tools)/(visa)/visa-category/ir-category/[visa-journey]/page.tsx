@@ -9,11 +9,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-<<<<<<< HEAD
-import { useParams, useRouter } from "next/navigation";
-=======
 import { useParams } from "next/navigation";
->>>>>>> 78a1439d94c6580b9153d977bb2961a8217d324b
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronDown, icons } from "lucide-react";
 import {
@@ -140,11 +136,7 @@ export default function IR1JourneyPage() {
     setStartFreshModalOpen(false);
   };
 
-<<<<<<< HEAD
-  const handleScenarioSelect = (type: "bio" | "step" | "adopted") => {
-=======
   const handleScenarioSelect = (type: string) => {
->>>>>>> 78a1439d94c6580b9153d977bb2961a8217d324b
     actions.setScenario(type);
   };
 
@@ -238,15 +230,6 @@ export default function IR1JourneyPage() {
                     >
                       <div className="flex gap-1">
                         <p className="font-semibold uppercase tracking-wide text-slate-500">
-<<<<<<< HEAD
-                          Relationship Type:
-                        </p>
-
-                        <p className="font-semibold text-primary">
-                          {state.scenarioType === "bio" && "Biological Child"}
-                          {state.scenarioType === "step" && "Stepchild"}
-                          {state.scenarioType === "adopted" && "Adopted Child"}
-=======
                           {roadmapData.scenarios ? "Visa Type:" : "Relationship Type:"}
                         </p>
 
@@ -261,28 +244,17 @@ export default function IR1JourneyPage() {
                               </>
                             )
                           }
->>>>>>> 78a1439d94c6580b9153d977bb2961a8217d324b
                         </p>
                       </div>
 
                       <div className="flex items-center gap-3">
-<<<<<<< HEAD
-                        <button
-=======
                         <span
                           role="button"
                           tabIndex={0}
->>>>>>> 78a1439d94c6580b9153d977bb2961a8217d324b
                           onClick={(e) => {
                             e.stopPropagation();
                             setShowScenarioModal(true);
                           }}
-<<<<<<< HEAD
-                          className="text-sm font-medium text-primary hover:underline"
-                        >
-                          Change
-                        </button>
-=======
                           onKeyDown={(e) => {
                             if (e.key === 'Enter' || e.key === ' ') {
                               e.stopPropagation();
@@ -293,7 +265,6 @@ export default function IR1JourneyPage() {
                         >
                           Change
                         </span>
->>>>>>> 78a1439d94c6580b9153d977bb2961a8217d324b
 
                         <motion.div
                           animate={{ rotate: relationshipNotesOpen ? 180 : 0 }}
@@ -323,8 +294,6 @@ export default function IR1JourneyPage() {
               </Tooltip>
             </TooltipProvider>
           )}
-<<<<<<< HEAD
-=======
           {/* Disclaimer & Overview */}
           <div className="flex flex-col">
             {(roadmapData.disclaimer || roadmapData.disclaimerUr) && (
@@ -427,7 +396,6 @@ export default function IR1JourneyPage() {
               </div>
             )}
           </div>
->>>>>>> 78a1439d94c6580b9153d977bb2961a8217d324b
 
           {/* Stage Overview */}
           <div className="mb-12">
@@ -444,14 +412,9 @@ export default function IR1JourneyPage() {
             </div>
 
             <div className="flex overflow-x-auto gap-4 pb-6 pt-2 snap-x snap-mandatory hide-scrollbar px-4 scroll-smooth">
-<<<<<<< HEAD
-              {roadmapData.stages.map(
-                (stageItem: RoadmapStage, idx: number) => {
-=======
               {roadmapData.stages
                 .filter((stage: RoadmapStage) => !hasScenarios || !stage.scenarioSpecific || stage.scenarioSpecific === state.scenarioType)
                 .map((stage: RoadmapStage, sIdx: number, filteredStages: RoadmapStage[]) => {
->>>>>>> 78a1439d94c6580b9153d977bb2961a8217d324b
                   const defaultIcons = [
                     "FileText",
                     "Layout",
@@ -479,11 +442,7 @@ export default function IR1JourneyPage() {
 
                   return (
                     <div
-<<<<<<< HEAD
-                      key={stageItem.id}
-=======
                       key={stage.id}
->>>>>>> 78a1439d94c6580b9153d977bb2961a8217d324b
                       className="relative group shrink-0 h-48 w-50 sm:w-52.5 lg:w-55 snap-center"
                     >
                       <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm h-full flex flex-col">
@@ -636,8 +595,6 @@ export default function IR1JourneyPage() {
         onConfirm={(type) => {
           handleScenarioSelect(type);
         }}
-<<<<<<< HEAD
-=======
         options={roadmapData.scenarios || [
           {
             id: "bio",
@@ -657,7 +614,6 @@ export default function IR1JourneyPage() {
         ]}
         title={roadmapData.scenarios ? "Select Visa Type" : "Select Relationship Type"}
         description={roadmapData.scenarios ? "Choose the student visa type." : "Choose the relationship type that applies to your case."}
->>>>>>> 78a1439d94c6580b9153d977bb2961a8217d324b
       />
     </section>
   );
@@ -671,11 +627,7 @@ interface WizardProps {
   actions: WizardActions;
   isLoaded: boolean;
   isSignedIn: boolean;
-<<<<<<< HEAD
-  selectedScenario?: "bio" | "step" | "adopted";
-=======
   selectedScenario?: string;
->>>>>>> 78a1439d94c6580b9153d977bb2961a8217d324b
   hasScenarios?: boolean;
 }
 
@@ -684,13 +636,8 @@ function Wizard({
   state,
   actions,
   isLoaded,
-<<<<<<< HEAD
-  isSignedIn,
-  selectedScenario = "bio",
-=======
   // isSignedIn,
   selectedScenario,
->>>>>>> 78a1439d94c6580b9153d977bb2961a8217d324b
   hasScenarios = false,
 }: WizardProps) {
   const { t } = useLanguage();
