@@ -1,0 +1,421 @@
+{
+    "title": "China Student Visa Journey",
+    "description": "Step-by-step roadmap for Pakistani students applying for a Chinese student visa (X1 or X2) — from university admission and required documents through arriving in China and completing residence permit registration.",
+    "disclaimer": "Informational guidance only. Chinese visa policies and requirements can change. Always confirm current requirements with the Chinese Embassy in Pakistan and the China Visa Application Service Center before taking any action.",
+    "disclaimerLinks": [
+        {
+            "text": "Chinese Embassy in Pakistan",
+            "url": "https://pk.china-embassy.gov.cn/eng/visa/"
+        }
+    ],
+    "visaOverview": {
+        "title": "X1 vs X2 Student Visa",
+        "text": "X1 visa is for students whose course in China is longer than 180 days. After entry, X1 holders must apply for a Residence Permit for Study at the local Public Security Bureau (PSB) within 30 days of arrival. X2 visa is for short-term study of 180 days or less and does not require conversion to a residence permit. Confirm the correct visa type for your program with the Chinese Embassy in Pakistan.",
+        "flag": "🇨🇳"
+    },
+    "stages": [
+        {
+            "id": 1,
+            "name": "Stage I: Admission & School Documents",
+            "icon": "FileText",
+            "color": "bg-blue-50 text-blue-600",
+            "time": "Before applying",
+            "sources": [
+                {
+                    "label": "Chinese Embassy Pakistan – Student Visa",
+                    "url": "https://pk.china-embassy.gov.cn/eng/visa/"
+                },
+                {
+                    "label": "CVASC Pakistan – Visa Types",
+                    "url": "https://www.cvasc.com.pk/"
+                }
+            ],
+            "steps": [
+                {
+                    "id": "I-01",
+                    "name": "Receive Admission Notice from a Chinese University",
+                    "description": "To apply for an X1 or X2 student visa, you must first be formally admitted to a Chinese university or educational institution and receive an official Admission Notice (录取通知书 / Lùqǔ Tōngzhīshū).",
+                    "actions": [
+                        "Apply to your target Chinese university through their official admissions portal or through the China Scholarship Council (CSC) portal if applying for a scholarship",
+                        "Submit all required application materials as specified by the university (transcripts, personal statement, language proficiency, passport copy)",
+                        "Receive and carefully review the official Admission Notice — verify your name (must match passport), program name, duration, and start date",
+                        "Confirm whether your program is taught in Chinese or English, as this may affect language requirements",
+                        "Keep the original Admission Notice safely — you will need it for the visa application"
+                    ],
+                    "output": "Official Admission Notice received from a Chinese university; all details verified"
+                },
+                {
+                    "id": "I-02",
+                    "name": "Obtain the JW201 or JW202 Form (if applicable)",
+                    "description": "Students admitted under Chinese government scholarships (e.g., CSC scholarships) receive a JW201 form. Students self-financing their studies may receive a JW202 form issued by the university.",
+                    "info": "Not all self-funded students receive a JW202 form — this depends on the institution. Scholarship students (CSC/provincial/municipal) typically receive a JW201.",
+                    "actions": [
+                        "Confirm with your university admissions office whether a JW201 or JW202 form is required for your program and visa application",
+                        "If applicable: request the JW201 or JW202 from your university or scholarship office",
+                        "Verify the form details: your name, passport number, program, institution, and duration match your other documents exactly",
+                        "Keep the original JW201/JW202 — it will be submitted as part of the visa application"
+                    ],
+                    "output": "JW201 or JW202 obtained from university or scholarship office (where applicable)"
+                }
+            ]
+        },
+        {
+            "id": 2,
+            "name": "Stage II: Document Preparation",
+            "icon": "FolderOpen",
+            "color": "bg-purple-50 text-purple-600",
+            "time": "Before application",
+            "sources": [
+                {
+                    "label": "Chinese Embassy Pakistan – Visa Requirements",
+                    "url": "https://pk.china-embassy.gov.cn/eng/visa/"
+                },
+                {
+                    "label": "CVASC Pakistan – Required Documents",
+                    "url": "https://www.cvasc.com.pk/"
+                }
+            ],
+            "steps": [
+                {
+                    "id": "II-01",
+                    "name": "Prepare Your Passport",
+                    "description": "Your passport must be valid throughout your intended stay in China plus a margin of validity as required by the Chinese Embassy. Review the current passport validity requirement on the Embassy website.",
+                    "actions": [
+                        "Confirm your Pakistani passport is valid — check the current minimum validity requirement at pk.china-embassy.gov.cn",
+                        "Ensure your passport has blank pages available for the visa stamp",
+                        "If your passport needs renewal: renew it well in advance before starting the visa application",
+                        "Prepare a clear photocopy of the passport biographical page (the page with your photo and personal details)"
+                    ],
+                    "output": "Valid passport confirmed; photocopy prepared"
+                },
+                {
+                    "id": "II-02",
+                    "name": "Complete the Chinese Visa Application Form",
+                    "description": "The Chinese visa application form (Form V.2013) must be completed accurately and signed. For applications submitted at the CVASC in Pakistan, the form is available online at the CVASC portal.",
+                    "actions": [
+                        "Obtain the current visa application form from the CVASC Pakistan website (cvasc.com.pk) or at the CVASC in person",
+                        "Complete all fields accurately in English or Chinese — answers must be consistent with your supporting documents",
+                        "Answer all questions about previous visa refusals, travel history, and criminal history honestly",
+                        "Sign the form in the designated section",
+                        "Review the completed form carefully before submission"
+                    ],
+                    "output": "Visa application form completed, reviewed, and signed"
+                },
+                {
+                    "id": "II-03",
+                    "name": "Prepare Photographs",
+                    "description": "You must submit passport-size photographs meeting the Chinese visa photo specifications. Check the current photo requirements on the Chinese Embassy or CVASC Pakistan website.",
+                    "actions": [
+                        "Review the current Chinese visa photo specifications at the CVASC Pakistan website or Chinese Embassy Pakistan website",
+                        "Have compliant photographs taken (typically: color, white background, no glasses, recent)",
+                        "Prepare the required number of photos as specified — confirm the current number at cvasc.com.pk or pk.china-embassy.gov.cn"
+                    ],
+                    "output": "Compliant passport photographs prepared to Chinese visa specifications"
+                },
+                {
+                    "id": "II-04",
+                    "name": "Prepare Financial Evidence",
+                    "description": "You must demonstrate that you have sufficient funds to support yourself during your studies in China. The Chinese Embassy requires financial evidence.",
+                    "actions": [
+                        "Review the current financial documentation requirement at pk.china-embassy.gov.cn or cvasc.com.pk",
+                        "Prepare bank statements in your name (or your sponsor's/parent's name with a supporting letter)",
+                        "If on a scholarship: provide the scholarship award letter as financial evidence",
+                        "Ensure bank statements are recent and clearly show the institution name, account holder name, account number, and balances",
+                        "Obtain certified translations if your financial documents are not in English or Chinese"
+                    ],
+                    "output": "Financial evidence prepared meeting current Embassy requirements"
+                },
+                {
+                    "id": "II-05",
+                    "name": "Arrange Physical Examination (if required)",
+                    "description": "Some Chinese universities require an official physical examination using the Foreigner Physical Examination Form (外国人体格检查记录).",
+                    "warn": "Requirements for physical examination at the pre-visa stage versus post-arrival stage vary by university and program. Confirm with your university and the Chinese Embassy Pakistan.",
+                    "actions": [
+                        "Confirm with your university and the Chinese Embassy Pakistan whether a physical examination is required at the visa application stage",
+                        "If required: use the official Foreigner Physical Examination Form — obtain it from the CVASC or Embassy",
+                        "Complete the physical examination at a recognized medical institution in Pakistan",
+                        "Ensure the examination results are within the validity period specified — confirm the current period with the Embassy or university"
+                    ],
+                    "output": "Physical examination completed and certificate obtained (where required at this stage)"
+                }
+            ]
+        },
+        {
+            "id": 3,
+            "name": "Stage III: CVASC Application (Pakistan)",
+            "icon": "Activity",
+            "color": "bg-green-50 text-green-600",
+            "time": "At CVASC service point",
+            "sources": [
+                {
+                    "label": "CVASC Pakistan – Book Appointment",
+                    "url": "https://www.cvasc.com.pk/"
+                },
+                {
+                    "label": "Chinese Embassy Pakistan – Visa",
+                    "url": "https://pk.china-embassy.gov.cn/eng/visa/"
+                }
+            ],
+            "steps": [
+                {
+                    "id": "III-01",
+                    "name": "Book an Appointment at CVASC Pakistan",
+                    "description": "Chinese visa applications for Pakistani applicants are submitted at the China Visa Application Service Center (CVASC). Appointments are required and can be booked online.",
+                    "info": "The CVASC has service centers in Islamabad, Lahore, and Karachi. Check the current jurisdictions and locations at cvasc.com.pk.",
+                    "actions": [
+                        "Go to cvasc.com.pk and check the current CVASC locations and jurisdictions for Pakistan",
+                        "Confirm which CVASC service center covers your province of residence",
+                        "Book a visa application appointment online at cvasc.com.pk or follow the current appointment procedure",
+                        "Save or print your appointment confirmation",
+                        "Review the CVASC Pakistan website for the current required document checklist for an X1 or X2 student visa"
+                    ],
+                    "output": "CVASC appointment booked; correct service center confirmed"
+                },
+                {
+                    "id": "III-02",
+                    "name": "Assemble the Complete Application Package",
+                    "description": "Before attending the CVASC appointment, prepare your complete application package. Confirm the current required documents as requirements can change.",
+                    "actions": [
+                        "Completed and signed Chinese Visa Application Form (V.2013)",
+                        "Valid Pakistani passport (original + photocopy of biographical page)",
+                        "Valid Pakistani ID card (CNIC) copy — confirm if required at cvasc.com.pk",
+                        "Passport-size photograph(s) meeting Chinese visa photo specifications",
+                        "Original Admission Notice from the Chinese university",
+                        "JW201 or JW202 form (where applicable and issued)",
+                        "Financial evidence (bank statements, scholarship letter, or sponsor letter)",
+                        "Physical examination certificate (if required at this stage — confirm with CVASC)",
+                        "Any other documents specified by the current CVASC or Embassy requirements for students"
+                    ],
+                    "output": "Complete application document package assembled per current CVASC requirements"
+                },
+                {
+                    "id": "III-03",
+                    "name": "Submit Application and Pay Fees at CVASC",
+                    "description": "Attend the CVASC appointment to submit your application and pay the required visa fee. Verify the current fee amount before attending.",
+                    "warn": "Do not rely on unofficial sources for current visa fee amounts — fees can change. Check the current visa fee at cvasc.com.pk or the Chinese Embassy Pakistan website.",
+                    "actions": [
+                        "Attend the CVASC appointment at the scheduled date and time",
+                        "Submit all documents to the CVASC officer for checking",
+                        "Pay the current visa application fee as specified at cvasc.com.pk",
+                        "Receive a receipt / application tracking number from CVASC",
+                        "Note the expected processing time provided by CVASC and the collection process for your passport"
+                    ],
+                    "output": "Application submitted at CVASC; fees paid; receipt/tracking number obtained"
+                },
+                {
+                    "id": "III-04",
+                    "name": "Track Application and Collect Passport",
+                    "description": "Track the status of your application through the CVASC Pakistan tracking system. Collect your passport when ready as specified by CVASC.",
+                    "actions": [
+                        "Track your application status at cvasc.com.pk using your application tracking number",
+                        "Do not make non-refundable travel arrangements until a decision is received",
+                        "Follow the passport collection or courier instructions provided by CVASC",
+                        "Upon receiving your passport: check the visa stamp for accuracy — name, passport number, visa type (X1 or X2), validity dates, number of entries",
+                        "Report any errors immediately to the CVASC or Chinese Embassy"
+                    ],
+                    "output": "Passport returned with visa decision; visa details verified as correct"
+                }
+            ]
+        },
+        {
+            "id": 4,
+            "name": "Stage IV: Decision & Travel Prep",
+            "icon": "Plane",
+            "color": "bg-indigo-50 text-indigo-600",
+            "time": "After visa approval",
+            "sources": [
+                {
+                    "label": "NIA China – Entry Registration",
+                    "url": "https://www.nia.gov.cn/n897453/n897496/index.html"
+                },
+                {
+                    "label": "Chinese Embassy Pakistan",
+                    "url": "https://pk.china-embassy.gov.cn/eng/visa/"
+                }
+            ],
+            "steps": [
+                {
+                    "id": "IV-01",
+                    "name": "Verify Your Visa and Plan Travel",
+                    "description": "Carefully review your visa stamp in your passport. X1 and X2 visas have specific entry validity windows — you must enter China before the visa's entry validity date expires.",
+                    "actions": [
+                        "Verify the visa stamp in your passport: type, entries, entry validity date",
+                        "Ensure you will enter China before the entry validity date on the visa",
+                        "Plan travel to arrive in China before or on your university's required registration date and within your visa entry window",
+                        "Book flights and arrange accommodation at or near your university",
+                        "Keep your Admission Notice, JW201/JW202 (if applicable), passport, and financial documents accessible in hand luggage for arrival in China"
+                    ],
+                    "output": "Visa details verified; travel booked within the visa entry validity window"
+                },
+                {
+                    "id": "IV-02",
+                    "name": "Prepare Documents for China Entry and Arrival",
+                    "description": "Carry all essential documents in your hand luggage — do not pack them in checked baggage. Immigration officers will inspect these on arrival.",
+                    "actions": [
+                        "Valid Pakistani passport with the X1 or X2 visa stamp",
+                        "Original Admission Notice from your Chinese university",
+                        "JW201 or JW202 form (where applicable)",
+                        "Financial evidence (scholarship letter or bank statements)",
+                        "Completed arrival/health declaration card (distributed on the flight or available at the port of entry)",
+                        "Contact information for your university's international student office and your accommodation address in China"
+                    ],
+                    "output": "All required arrival documents assembled and accessible in hand luggage"
+                }
+            ]
+        },
+        {
+            "id": 5,
+            "name": "Stage V: Arrival & Temporary Registration",
+            "icon": "Activity",
+            "color": "bg-amber-50 text-amber-600",
+            "time": "Within 24 hours of arrival",
+            "sources": [
+                {
+                    "label": "NIA China – Temporary Residence Registration",
+                    "url": "https://www.nia.gov.cn/n897453/n897496/index.html"
+                },
+                {
+                    "label": "Chinese Embassy Pakistan",
+                    "url": "https://pk.china-embassy.gov.cn/eng/visa/"
+                }
+            ],
+            "steps": [
+                {
+                    "id": "V-01",
+                    "name": "Clear Chinese Port of Entry",
+                    "description": "Upon arrival in China, pass through Chinese immigration control. The officer will review your passport and visa, and process your arrival record.",
+                    "actions": [
+                        "Present your valid passport with X1 or X2 visa to the immigration officer",
+                        "Submit the completed arrival declaration card",
+                        "Keep a copy of the immigration entry stamp — this serves as your record of legal entry",
+                        "Proceed through customs as directed",
+                        "Proceed to your university accommodation or contact the international student office upon arrival"
+                    ],
+                    "output": "Cleared Chinese immigration; entry stamp in passport confirmed"
+                },
+                {
+                    "id": "V-02",
+                    "name": "Complete Temporary Residence Registration",
+                    "description": "Foreign nationals in China must register their residence with the local public security authority within 24 hours of arrival.",
+                    "warn": "Temporary residence registration is a legal requirement. If staying in university accommodation, confirm if they handle it. If staying privately, go to the local police station (派出所).",
+                    "actions": [
+                        "Confirm with your university's international student office whether they complete the accommodation registration on your behalf",
+                        "If staying in private accommodation: go to the nearest local police station (派出所) within 24 hours of arrival",
+                        "Bring your passport, visa, Admission Notice, and accommodation address to the registration",
+                        "Obtain the temporary residence registration certificate (临时住宿登记表) or confirmation",
+                        "Keep a copy of the registration for your records — it may be required for the residence permit application (X1)"
+                    ],
+                    "output": "Temporary residence registration completed; registration certificate obtained"
+                },
+                {
+                    "id": "V-03",
+                    "name": "Register with Your University",
+                    "description": "Complete formal enrolment and registration at your Chinese university by the deadline stated in your Admission Notice.",
+                    "actions": [
+                        "Attend the university's international student registration and orientation as scheduled",
+                        "Present your original Admission Notice, passport, JW201/JW202 (if applicable), and other required documents",
+                        "Complete all enrolment paperwork required by the university",
+                        "Obtain your student ID and any university-issued documentation needed for the residence permit application (X1 only)",
+                        "Confirm your course schedule and academic requirements"
+                    ],
+                    "output": "Formally enrolled and registered at your Chinese university"
+                }
+            ]
+        },
+        {
+            "id": 6,
+            "name": "Stage VI: Residence Permit for Study (X1)",
+            "icon": "CheckCircle",
+            "color": "bg-rose-50 text-rose-600",
+            "time": "Within 30 days of entry",
+            "sources": [
+                {
+                    "label": "NIA China – Residence Permit",
+                    "url": "https://www.nia.gov.cn/n897453/n897496/index.html"
+                },
+                {
+                    "label": "NIA China – Entry/Exit Administration",
+                    "url": "https://www.nia.gov.cn/"
+                }
+            ],
+            "steps": [
+                {
+                    "id": "VI-01",
+                    "name": "Understand the X1 Residence Permit Requirement",
+                    "description": "X1 visa holders must apply for a Residence Permit for Study (学习居留许可) at the local Exit and Entry Administration Bureau (PSB) within 30 days of arrival.",
+                    "info": "The 30-day deadline is counted from your date of entry. The residence permit replaces the X1 visa as your legal basis to stay.",
+                    "actions": [
+                        "Confirm the current 30-day residence permit application requirement with your university's international student office immediately upon arrival",
+                        "Identify the correct local Exit and Entry Administration Bureau (PSB) for your university's city or district",
+                        "Review the current required documents list with your international student office or the local PSB"
+                    ],
+                    "output": "30-day deadline understood; local PSB/Exit-Entry Bureau identified; document checklist confirmed"
+                },
+                {
+                    "id": "VI-02",
+                    "name": "Prepare Residence Permit Application Documents",
+                    "description": "The documents required for the residence permit application are specified by the local Exit and Entry Administration Bureau.",
+                    "actions": [
+                        "Confirm the current required documents with your university's international student office (requirements can vary by city)",
+                        "Typical documents include: valid passport with X1 visa and entry stamp, Admission Notice, JW201/JW202 (if applicable), proof of university registration/enrolment, temporary residence registration certificate, passport photos, and completed application form",
+                        "Confirm whether a physical examination certificate is required at this stage locally",
+                        "Obtain the local PSB application form from the PSB office or your university's international office"
+                    ],
+                    "output": "All residence permit application documents assembled per local PSB requirements"
+                },
+                {
+                    "id": "VI-03",
+                    "name": "Submit Residence Permit Application at PSB",
+                    "description": "Submit the completed application package at the local Exit and Entry Administration Bureau (PSB) and pay the required fee.",
+                    "actions": [
+                        "Attend the local Exit and Entry Administration Bureau with your complete application package",
+                        "Submit all required documents to the PSB officer",
+                        "Pay the current residence permit application fee (confirm the current amount at the PSB)",
+                        "Receive a receipt and note the processing time provided by the PSB",
+                        "Collect your passport with the Residence Permit for Study sticker after the stated processing period"
+                    ],
+                    "output": "Residence permit application submitted at PSB; fee paid; receipt obtained"
+                },
+                {
+                    "id": "VI-04",
+                    "name": "Receive and Verify Residence Permit",
+                    "description": "After processing, the PSB affixes the Residence Permit for Study to your passport. Verify all details carefully.",
+                    "info": "The residence permit is your legal authorisation to remain in China for study. It is typically issued for the duration of your academic program.",
+                    "actions": [
+                        "Collect your passport from the PSB after the stated processing period",
+                        "Verify the residence permit: your full name, passport number, permit type, university name, validity period, and number of entries",
+                        "Understand the permit validity — check the exact expiry date",
+                        "If your program is extended: you must update your residence permit with the PSB before the current one expires",
+                        "Keep your passport and residence permit secure at all times"
+                    ],
+                    "output": "Residence Permit for Study received and all details verified; legal stay authorised for program duration"
+                },
+                {
+                    "id": "VI-05",
+                    "name": "Maintain and Renew Your Residence Permit",
+                    "description": "Staying beyond the permit validity without renewal is an immigration violation. Track your expiry date carefully.",
+                    "actions": [
+                        "Track your residence permit expiry date carefully",
+                        "If you need to renew or extend: apply at the local PSB before the current permit expires",
+                        "If your residential address changes: update your temporary residence registration and notify the PSB",
+                        "If your program ends or you withdraw: depart China or change your visa status before your permit expires",
+                        "For ongoing compliance guidance, consult your university's international student office"
+                    ],
+                    "output": "Residence permit renewal timeline tracked; compliance with conditions maintained"
+                }
+            ]
+        }
+    ],
+    "documents": [
+        "Valid Pakistani Passport",
+        "Original Admission Notice (Lùqǔ Tōngzhīshū)",
+        "JW201 or JW202 Form (where applicable)",
+        "Chinese Visa Application Form (V.2013)",
+        "Passport-size Photographs (to Chinese specifications)",
+        "Evidence of Financial Capacity (Bank Statements, Scholarship Letter)",
+        "Foreigner Physical Examination Certificate (if required)",
+        "Pakistani ID Card (CNIC) Copy",
+        "Temporary Residence Registration Certificate (after entry)",
+        "Residence Permit for Study (X1 after entry)"
+    ]
+}

@@ -34,15 +34,15 @@ export default function IR1JourneyPage() {
   const { t, language } = useLanguage();
   const params = useParams();
   const visaJourneyParam = (params?.["visa-journey"] as string) || "ir-1";
-  
+
   // Map URL slugs to actual JSON filenames if they differ
   const journeyMapping: Record<string, string> = {
     "ir1-journey": "ir-1",
     "ir5-journey": "ir-5",
-    "f1": "f-1",
+    f1: "f-1",
     "germany-student": "germany-student",
   };
-  
+
   const visaJourney = journeyMapping[visaJourneyParam] || visaJourneyParam;
 
   const [roadmapData, setRoadmapData] = useState<RoadmapData | null>(null);
@@ -184,7 +184,7 @@ export default function IR1JourneyPage() {
       <div className="w-full px-4 md:px-6 xl:px-8 py-8 md:py-[60px]">
         <div className="w-full mb-8 md:mb-12">
           {/* Header */}
-          <div className="flex flex-col md:flex-row md:items-start justify-between gap-4 mb-4">
+          <div className="flex flex-col md:flex-row md:items-start justify-between gap-4 mb-2">
             <div className="flex-1">
               <h1 className="text-3xl md:text-5xl font-bold mb-3 md:mb-4">
                 {language === "ur" && roadmapData.titleUr
@@ -279,6 +279,108 @@ export default function IR1JourneyPage() {
               </Tooltip>
             </TooltipProvider>
           )}
+          {/* Disclaimer & Overview */}
+          <div className="flex flex-col">
+            {(roadmapData.disclaimer || roadmapData.disclaimerUr) && (
+              <div className="bg-amber-50/50 border border-amber-200/50 rounded-2xl p-5 md:p-6 shadow-sm mb-4 md:mb-6">
+                <p className="text-[14px] md:text-[15px] text-amber-900 leading-relaxed font-medium">
+                  <span className="font-black text-amber-800 uppercase tracking-tighter mr-1.5">
+                    Disclaimer:
+                  </span>
+                  {(() => {
+                    const text =
+                      language === "ur" && roadmapData.disclaimerUr
+                        ? roadmapData.disclaimerUr
+                        : roadmapData.disclaimer || "";
+
+                    const links = [...(roadmapData.disclaimerLinks || [])];
+                    if (
+                      roadmapData.disclaimerLink &&
+                      roadmapData.disclaimerLinkText
+                    ) {
+                      links.push({
+                        text: roadmapData.disclaimerLinkText,
+                        url: roadmapData.disclaimerLink,
+                      });
+                    }
+
+                    if (links.length === 0) return text;
+
+                    // Sort links by text length descending to avoid partial matches on longer strings
+                    const sortedLinks = links.sort(
+                      (a, b) => b.text.length - a.text.length,
+                    );
+
+                    let parts: (string | JSX.Element)[] = [text];
+
+                    sortedLinks.forEach((link) => {
+                      const newParts: (string | JSX.Element)[] = [];
+                      parts.forEach((part) => {
+                        if (
+                          typeof part === "string" &&
+                          part.includes(link.text)
+                        ) {
+                          const subParts = part.split(link.text);
+                          subParts.forEach((subPart, i) => {
+                            newParts.push(subPart);
+                            if (i < subParts.length - 1) {
+                              newParts.push(
+                                <a
+                                  key={`${link.text}-${i}`}
+                                  href={link.url}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="font-bold underline underline-offset-2 hover:text-amber-700 transition-colors inline-flex items-center"
+                                >
+                                  {link.text}
+                                </a>,
+                              );
+                            }
+                          });
+                        } else {
+                          newParts.push(part);
+                        }
+                      });
+                      parts = newParts;
+                    });
+
+                    return parts;
+                  })()}
+                </p>
+              </div>
+            )}
+
+            {roadmapData.visaOverview && (
+              <div className="bg-sky-50/50 border border-sky-100 rounded-2xl p-6 flex gap-6 items-start shadow-sm mb-4 md:mb-6">
+                <div className="hidden sm:flex text-slate-500 font-bold text-lg h-10 w-10 items-center justify-center shrink-0 uppercase tracking-tighter">
+                  {roadmapData.visaOverview.flag || "GOV"}
+                </div>
+                <div className="flex-1">
+                  <h3 className="text-[#1a4b84] font-black uppercase tracking-wider mb-2 text-[13px] sm:text-[14px]">
+                    {language === "ur" && roadmapData.visaOverview.titleUr
+                      ? roadmapData.visaOverview.titleUr
+                      : roadmapData.visaOverview.title}
+                  </h3>
+                  <div className="text-slate-600 text-[14px] leading-relaxed font-medium">
+                    {language === "ur" && roadmapData.visaOverview.textUr
+                      ? roadmapData.visaOverview.textUr
+                      : roadmapData.visaOverview.text}
+                    {roadmapData.visaOverview.link && (
+                      <a
+                        href={roadmapData.visaOverview.link}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="ml-1 text-[#1a4b84] font-bold underline decoration-2 underline-offset-2"
+                      >
+                        {roadmapData.visaOverview.linkText || 
+                          roadmapData.visaOverview.link.replace(/^https?:\/\//, '').split('/')[0]}
+                      </a>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
 
           {/* Stage Overview */}
           <div className="mb-12">

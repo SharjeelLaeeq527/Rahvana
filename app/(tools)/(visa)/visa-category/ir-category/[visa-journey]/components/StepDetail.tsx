@@ -9,8 +9,15 @@ import {
   Circle,
   ClipboardList,
   Wand2,
+  HelpCircle,
 } from "lucide-react";
 import * as icons from "lucide-react";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { RoadmapStep, RoadmapStage } from "./types";
 import { WizardState } from "@/app/(main)/dashboard/hooks/useWizard";
 import { useLanguage } from "@/app/context/LanguageContext";
@@ -48,12 +55,47 @@ export function StepDetail({
       className="animate-in fade-in slide-in-from-bottom-2 duration-300"
     >
       <div className="mb-8">
-        <div className="inline-flex items-center gap-2 px-3 py-1 bg-slate-100/80 text-slate-500 rounded-full text-[12px] font-bold uppercase tracking-wider mb-4 border border-slate-200/50">
-          <Info className="w-3.5 h-3.5" />
-          {t("visaJourney.stageStep", {
-            stage: (state.currentStage + 1).toString(),
-            step: ((state.currentStep || 0) + 1).toString(),
-          })}
+        <div className="flex items-center gap-3 mb-4">
+          <div className="inline-flex items-center gap-2 px-3 py-1 bg-slate-100/80 text-slate-500 rounded-full text-[12px] font-bold uppercase tracking-wider border border-slate-200/50">
+            <icons.Info className="w-3.5 h-3.5" />
+            {t("visaJourney.stageStep", {
+              stage: (state.currentStage + 1).toString(),
+              step: ((state.currentStep || 0) + 1).toString(),
+            })}
+          </div>
+          
+          {(isUrdu && step.outputUr
+            ? step.outputUr
+            : step.output || step.success) && (
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <button className="p-1 rounded-full hover:bg-indigo-50 transition-colors group">
+                    <HelpCircle className="w-4 h-4 md:w-6 md:h-6 text-indigo-500 animate-blinking cursor-help" />
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent
+                  side="right"
+                  className="max-w-[300px] p-4 bg-white border-indigo-100 shadow-xl rounded-xl"
+                >
+                  <div className="flex flex-col gap-2">
+                    <span className="text-[11px] font-black text-indigo-700 uppercase tracking-widest">
+                      {t("visaJourney.successTitle")}
+                    </span>
+                    <div
+                      className="text-indigo-900 text-sm font-bold leading-relaxed"
+                      dangerouslySetInnerHTML={{
+                        __html:
+                          isUrdu && step.outputUr
+                            ? step.outputUr
+                            : step.output || step.success,
+                      }}
+                    />
+                  </div>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          )}
         </div>
 
         <div className="flex flex-col md:flex-row md:items-start justify-between gap-4 md:gap-6 mb-6">
@@ -83,6 +125,30 @@ export function StepDetail({
               <div className="flex items-center gap-2 px-3.5 py-1.5 bg-indigo-50 text-indigo-600 rounded-xl text-sm font-bold border border-indigo-100">
                 <MapPin className="w-4 h-4 text-indigo-400" />{" "}
                 {isUrdu && step.whereUr ? step.whereUr : step.where}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Info & Warnings */}
+        {(step.info || step.warn) && (
+          <div className="flex flex-col gap-4 mb-8">
+            {step.info && (
+              <div className="flex items-start gap-3 p-4 bg-sky-50 rounded-xl border border-sky-100">
+                <Info className="w-5 h-5 text-sky-500 mt-0.5 shrink-0" />
+                <p className="text-[15px] font-medium text-sky-900 leading-relaxed">
+                  {isUrdu && step.infoUr ? step.infoUr : step.info}
+                </p>
+              </div>
+            )}
+            {(step.warn || step.warnUr) && (
+              <div className="flex items-start gap-3 p-4 bg-amber-50 rounded-xl border border-amber-100">
+                <div className="w-5 h-5 rounded-full bg-amber-100 flex items-center justify-center shrink-0 mt-0.5 text-amber-600 font-bold text-sm">
+                  !
+                </div>
+                <p className="text-[15px] font-medium text-amber-900 leading-relaxed">
+                  {isUrdu && step.warnUr ? step.warnUr : step.warn}
+                </p>
               </div>
             )}
           </div>
@@ -140,12 +206,12 @@ export function StepDetail({
         {(isUrdu && step.outputUr
           ? step.outputUr
           : step.output || step.success) && (
-          <div className="p-6 bg-emerald-50/40 rounded-2xl border border-emerald-100 mb-10">
-            <h4 className="text-[13px] font-black mb-3 text-emerald-700 uppercase tracking-widest">
+          <div className="p-6 bg-indigo-50/40 rounded-2xl border border-indigo-100 mb-10">
+            <h4 className="text-[13px] font-black mb-3 text-indigo-700 uppercase tracking-widest">
               {t("visaJourney.successTitle")}
             </h4>
             <div
-              className="text-emerald-900 text-[16px] font-bold leading-relaxed"
+              className="text-indigo-900 text-[16px] font-bold leading-relaxed"
               dangerouslySetInnerHTML={{
                 __html:
                   isUrdu && step.outputUr

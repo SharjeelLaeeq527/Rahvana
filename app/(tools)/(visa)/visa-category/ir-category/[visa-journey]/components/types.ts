@@ -68,4 +68,21 @@ export interface RoadmapData {
   descriptionUr?: string;
   stages: RoadmapStage[];
   documents?: string[];
+  disclaimer?: string;
+  disclaimerUr?: string;
+  disclaimerLink?: string;
+  disclaimerLinkText?: string;
+  disclaimerLinks?: {
+    text: string;
+    url: string;
+  }[];
+  visaOverview?: {
+    title: string;
+    titleUr?: string;
+    text: string;
+    textUr?: string;
+    flag: string;
+    link: string;
+    linkText?: string;
+  };
 }

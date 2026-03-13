@@ -127,14 +127,22 @@ export function ProgressTree({
                       isUrdu && step.nameUr ? step.nameUr : step.name;
 
                     return (
-                      <button
+                      <div
                         key={step.id}
                         onClick={() => onSelectStep(sIdx, actualStepIdx)}
-                        className={`w-full text-left py-2.5 px-3 rounded-lg transition-all flex items-center justify-between gap-3 group/step ${
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter" || e.key === " ") {
+                            e.preventDefault();
+                            onSelectStep(sIdx, actualStepIdx);
+                          }
+                        }}
+                        className={`w-full text-left py-2.5 px-3 rounded-lg transition-all flex items-center justify-between gap-3 group/step cursor-pointer ${
                           isCurrentStep
                             ? "bg-primary text-white shadow-md shadow-primary/20 font-bold"
                             : "text-slate-600 hover:bg-slate-100/50 hover:text-slate-900"
                         }`}
+                        role="button"
+                        tabIndex={0}
                       >
                         <div className="flex items-center gap-3 min-w-0">
                           {isCurrentStep && (
@@ -163,7 +171,7 @@ export function ProgressTree({
                             />
                           )}
                         </button>
-                      </button>
+                      </div>
                     );
                   })}
               </div>
