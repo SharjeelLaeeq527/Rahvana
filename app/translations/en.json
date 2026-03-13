@@ -3084,7 +3084,7 @@
     "markAsComplete": "Mark as Complete",
     "completed": "Completed",
     "defaultNotes": "Detailed instructions and guidance for this step.",
-    "successTitle": "Success Condition",
+    "successTitle": "Completion Note",
     "documentRequired": "(Document Required)",
     "documentVault": {
       "title": "Document Vault",

@@ -98,6 +98,16 @@
   }
 }
 
+@keyframes blinking {
+  0% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.5; transform: scale(1.1); }
+  100% { opacity: 1; transform: scale(1); }
+}
+
+.animate-blinking {
+  animation: blinking 1.5s ease-in-out infinite;
+}
+
 @keyframes shine {
   0% {
     left: -100%;

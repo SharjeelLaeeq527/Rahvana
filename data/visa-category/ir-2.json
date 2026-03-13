@@ -1,6 +1,23 @@
 {
   "title": "IR-2 Child Visa Journey",
   "description": "Step-by-step roadmap for U.S. citizens petitioning for an unmarried child under 21 to immigrate via consular processing.",
+  "scenarios": [
+    {
+      "id": "bio",
+      "title": "Biological Child",
+      "desc": "You are petitioning your biological child. Birth certificate documentation will be required."
+    },
+    {
+      "id": "step",
+      "title": "Stepchild",
+      "desc": "Marriage between the petitioner and biological parent must occur before the child turns 18."
+    },
+    {
+      "id": "adopted",
+      "title": "Adopted Child",
+      "desc": "Adoption must be finalized before age 16 and child must be in legal custody for 2 years."
+    }
+  ],
   "scenarioNotes": {
     "bio": "You are petitioning your biological child. Steps will include birth certificate documentation.",
     

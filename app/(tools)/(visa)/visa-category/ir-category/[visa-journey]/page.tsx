@@ -9,7 +9,11 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+<<<<<<< HEAD
 import { useParams, useRouter } from "next/navigation";
+=======
+import { useParams } from "next/navigation";
+>>>>>>> 78a1439d94c6580b9153d977bb2961a8217d324b
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronDown, icons } from "lucide-react";
 import {
@@ -34,15 +38,15 @@ export default function IR1JourneyPage() {
   const { t, language } = useLanguage();
   const params = useParams();
   const visaJourneyParam = (params?.["visa-journey"] as string) || "ir-1";
-  
+
   // Map URL slugs to actual JSON filenames if they differ
   const journeyMapping: Record<string, string> = {
     "ir1-journey": "ir-1",
     "ir5-journey": "ir-5",
-    "f1": "f-1",
+    f1: "f-1",
     "germany-student": "germany-student",
   };
-  
+
   const visaJourney = journeyMapping[visaJourneyParam] || visaJourneyParam;
 
   const [roadmapData, setRoadmapData] = useState<RoadmapData | null>(null);
@@ -78,7 +82,7 @@ export default function IR1JourneyPage() {
       roadmapData,
     });
 
-  const router = useRouter();
+  // const router = useRouter();
   const isSignedIn = !!user;
 
   // When scenario changes, reset to first step of current stage if needed
@@ -136,7 +140,11 @@ export default function IR1JourneyPage() {
     setStartFreshModalOpen(false);
   };
 
+<<<<<<< HEAD
   const handleScenarioSelect = (type: "bio" | "step" | "adopted") => {
+=======
+  const handleScenarioSelect = (type: string) => {
+>>>>>>> 78a1439d94c6580b9153d977bb2961a8217d324b
     actions.setScenario(type);
   };
 
@@ -184,7 +192,7 @@ export default function IR1JourneyPage() {
       <div className="w-full px-4 md:px-6 xl:px-8 py-8 md:py-[60px]">
         <div className="w-full mb-8 md:mb-12">
           {/* Header */}
-          <div className="flex flex-col md:flex-row md:items-start justify-between gap-4 mb-4">
+          <div className="flex flex-col md:flex-row md:items-start justify-between gap-4 mb-2">
             <div className="flex-1">
               <h1 className="text-3xl md:text-5xl font-bold mb-3 md:mb-4">
                 {language === "ur" && roadmapData.titleUr
@@ -230,6 +238,7 @@ export default function IR1JourneyPage() {
                     >
                       <div className="flex gap-1">
                         <p className="font-semibold uppercase tracking-wide text-slate-500">
+<<<<<<< HEAD
                           Relationship Type:
                         </p>
 
@@ -237,19 +246,54 @@ export default function IR1JourneyPage() {
                           {state.scenarioType === "bio" && "Biological Child"}
                           {state.scenarioType === "step" && "Stepchild"}
                           {state.scenarioType === "adopted" && "Adopted Child"}
+=======
+                          {roadmapData.scenarios ? "Visa Type:" : "Relationship Type:"}
+                        </p>
+
+                        <p className="font-semibold text-primary">
+                          {roadmapData.scenarios 
+                            ? roadmapData.scenarios.find(s => s.id === state.scenarioType)?.title 
+                            : (
+                              <>
+                                {state.scenarioType === "bio" && "Biological Child"}
+                                {state.scenarioType === "step" && "Stepchild"}
+                                {state.scenarioType === "adopted" && "Adopted Child"}
+                              </>
+                            )
+                          }
+>>>>>>> 78a1439d94c6580b9153d977bb2961a8217d324b
                         </p>
                       </div>
 
                       <div className="flex items-center gap-3">
+<<<<<<< HEAD
                         <button
+=======
+                        <span
+                          role="button"
+                          tabIndex={0}
+>>>>>>> 78a1439d94c6580b9153d977bb2961a8217d324b
                           onClick={(e) => {
                             e.stopPropagation();
                             setShowScenarioModal(true);
                           }}
+<<<<<<< HEAD
                           className="text-sm font-medium text-primary hover:underline"
                         >
                           Change
                         </button>
+=======
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter' || e.key === ' ') {
+                              e.stopPropagation();
+                              setShowScenarioModal(true);
+                            }
+                          }}
+                          className="text-sm font-medium text-primary hover:underline cursor-pointer"
+                        >
+                          Change
+                        </span>
+>>>>>>> 78a1439d94c6580b9153d977bb2961a8217d324b
 
                         <motion.div
                           animate={{ rotate: relationshipNotesOpen ? 180 : 0 }}
@@ -279,19 +323,135 @@ export default function IR1JourneyPage() {
               </Tooltip>
             </TooltipProvider>
           )}
+<<<<<<< HEAD
+=======
+          {/* Disclaimer & Overview */}
+          <div className="flex flex-col">
+            {(roadmapData.disclaimer || roadmapData.disclaimerUr) && (
+              <div className="bg-amber-50/50 border border-amber-200/50 rounded-2xl p-5 md:p-6 shadow-sm mb-4 md:mb-6">
+                <p className="text-[14px] md:text-[15px] text-amber-900 leading-relaxed font-medium">
+                  <span className="font-black text-amber-800 uppercase tracking-tighter mr-1.5">
+                    Disclaimer:
+                  </span>
+                  {(() => {
+                    const text =
+                      language === "ur" && roadmapData.disclaimerUr
+                        ? roadmapData.disclaimerUr
+                        : roadmapData.disclaimer || "";
+
+                    const links = [...(roadmapData.disclaimerLinks || [])];
+                    if (
+                      roadmapData.disclaimerLink &&
+                      roadmapData.disclaimerLinkText
+                    ) {
+                      links.push({
+                        text: roadmapData.disclaimerLinkText,
+                        url: roadmapData.disclaimerLink,
+                      });
+                    }
+
+                    if (links.length === 0) return text;
+
+                    // Sort links by text length descending to avoid partial matches on longer strings
+                    const sortedLinks = links.sort(
+                      (a, b) => b.text.length - a.text.length,
+                    );
+
+                    let parts: (string | React.ReactNode)[] = [text];
+ 
+                     sortedLinks.forEach((link) => {
+                       const newParts: (string | React.ReactNode)[] = [];
+                       parts.forEach((part) => {
+                         if (
+                           typeof part === "string" &&
+                           part.includes(link.text)
+                         ) {
+                           const subParts = part.split(link.text);
+                           subParts.forEach((subPart, i) => {
+                             newParts.push(subPart);
+                             if (i < subParts.length - 1) {
+                               newParts.push(
+                                 <a
+                                   key={`${link.text}-${i}`}
+                                   href={link.url}
+                                   target="_blank"
+                                   rel="noopener noreferrer"
+                                   className="font-bold underline underline-offset-2 hover:text-amber-700 transition-colors inline-flex items-center"
+                                 >
+                                   {link.text}
+                                 </a>,
+                               );
+                             }
+                           });
+                         } else {
+                           newParts.push(part);
+                         }
+                       });
+                       parts = newParts;
+                     });
+ 
+                     return parts;
+                  })()}
+                </p>
+              </div>
+            )}
+
+            {roadmapData.visaOverview && (
+              <div className="bg-sky-50/50 border border-sky-100 rounded-2xl p-6 flex gap-6 items-start shadow-sm mb-4 md:mb-6">
+                <div className="hidden sm:flex text-slate-500 font-bold text-lg h-10 w-10 items-center justify-center shrink-0 uppercase tracking-tighter">
+                  {roadmapData.visaOverview.flag || "GOV"}
+                </div>
+                <div className="flex-1">
+                  <h3 className="text-[#1a4b84] font-black uppercase tracking-wider mb-2 text-[13px] sm:text-[14px]">
+                    {language === "ur" && roadmapData.visaOverview.titleUr
+                      ? roadmapData.visaOverview.titleUr
+                      : roadmapData.visaOverview.title}
+                  </h3>
+                  <div className="text-slate-600 text-[14px] leading-relaxed font-medium">
+                    {language === "ur" && roadmapData.visaOverview.textUr
+                      ? roadmapData.visaOverview.textUr
+                      : roadmapData.visaOverview.text}
+                    {roadmapData.visaOverview.link && (
+                      <a
+                        href={roadmapData.visaOverview.link}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="ml-1 text-[#1a4b84] font-bold underline decoration-2 underline-offset-2"
+                      >
+                        {roadmapData.visaOverview.linkText || 
+                          roadmapData.visaOverview.link.replace(/^https?:\/\//, '').split('/')[0]}
+                      </a>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+>>>>>>> 78a1439d94c6580b9153d977bb2961a8217d324b
 
           {/* Stage Overview */}
           <div className="mb-12">
             <div className="flex items-center gap-3 mb-6 md:mb-8">
               <div className="w-1 h-6 md:h-8 bg-primary rounded-full" />
               <h2 className="text-xl md:text-2xl font-bold text-slate-900 tracking-tight">
-                The {roadmapData.stages.length} Stages of Your Journey
+                {(() => {
+                  const visibleStagesCount = roadmapData.stages.filter(s => 
+                    !hasScenarios || !s.scenarioSpecific || s.scenarioSpecific === state.scenarioType
+                  ).length;
+                  return `The ${visibleStagesCount} Stages of Your Journey`;
+                })()}
               </h2>
             </div>
 
             <div className="flex overflow-x-auto gap-4 pb-6 pt-2 snap-x snap-mandatory hide-scrollbar px-4 scroll-smooth">
+<<<<<<< HEAD
               {roadmapData.stages.map(
                 (stageItem: RoadmapStage, idx: number) => {
+=======
+              {roadmapData.stages
+                .filter((stage: RoadmapStage) => !hasScenarios || !stage.scenarioSpecific || stage.scenarioSpecific === state.scenarioType)
+                .map((stage: RoadmapStage, sIdx: number, filteredStages: RoadmapStage[]) => {
+>>>>>>> 78a1439d94c6580b9153d977bb2961a8217d324b
                   const defaultIcons = [
                     "FileText",
                     "Layout",
@@ -308,18 +468,22 @@ export default function IR1JourneyPage() {
                   ];
 
                   const iconName =
-                    stageItem.icon || defaultIcons[idx % defaultIcons.length];
+                    stage.icon || defaultIcons[sIdx % defaultIcons.length];
                   // eslint-disable-next-line @typescript-eslint/no-explicit-any
                   const Icon = (icons as any)[iconName] || icons.FileText;
 
                   const color =
-                    stageItem.color ||
-                    defaultColors[idx % defaultColors.length];
-                  const isLast = idx === roadmapData.stages.length - 1;
+                    stage.color ||
+                    defaultColors[sIdx % defaultColors.length];
+                  const isLast = sIdx === filteredStages.length - 1;
 
                   return (
                     <div
+<<<<<<< HEAD
                       key={stageItem.id}
+=======
+                      key={stage.id}
+>>>>>>> 78a1439d94c6580b9153d977bb2961a8217d324b
                       className="relative group shrink-0 h-48 w-50 sm:w-52.5 lg:w-55 snap-center"
                     >
                       <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm h-full flex flex-col">
@@ -329,16 +493,16 @@ export default function IR1JourneyPage() {
                           <Icon className="w-5 h-5" />
                         </div>
                         <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">
-                          {t("visaJourney.stageShort", { stage: idx + 1 })}
+                          {t("visaJourney.stageShort", { stage: sIdx + 1 })}
                         </span>
                         <h4 className="font-bold text-slate-800 text-[15px] mb-2 leading-tight">
-                          {language === "ur" && stageItem.nameUr
-                            ? stageItem.nameUr
-                            : stageItem.name}
+                          {language === "ur" && stage.nameUr
+                            ? stage.nameUr
+                            : stage.name}
                         </h4>
                         <div className="mt-auto pt-2 flex items-center gap-1.5 text-slate-500">
                           <span className="text-[11px] font-medium">
-                            {stageItem.timeline || "Variable"}
+                            {stage.timeline || "Variable"}
                           </span>
                         </div>
                       </div>
@@ -472,6 +636,28 @@ export default function IR1JourneyPage() {
         onConfirm={(type) => {
           handleScenarioSelect(type);
         }}
+<<<<<<< HEAD
+=======
+        options={roadmapData.scenarios || [
+          {
+            id: "bio",
+            title: "Biological Child",
+            desc: "You are petitioning your biological child. Birth certificate documentation will be required.",
+          },
+          {
+            id: "step",
+            title: "Stepchild",
+            desc: "Marriage between the petitioner and biological parent must occur before the child turns 18.",
+          },
+          {
+            id: "adopted",
+            title: "Adopted Child",
+            desc: "Adoption must be finalized before age 16 and child must be in legal custody for 2 years.",
+          },
+        ]}
+        title={roadmapData.scenarios ? "Select Visa Type" : "Select Relationship Type"}
+        description={roadmapData.scenarios ? "Choose the student visa type." : "Choose the relationship type that applies to your case."}
+>>>>>>> 78a1439d94c6580b9153d977bb2961a8217d324b
       />
     </section>
   );
@@ -485,7 +671,11 @@ interface WizardProps {
   actions: WizardActions;
   isLoaded: boolean;
   isSignedIn: boolean;
+<<<<<<< HEAD
   selectedScenario?: "bio" | "step" | "adopted";
+=======
+  selectedScenario?: string;
+>>>>>>> 78a1439d94c6580b9153d977bb2961a8217d324b
   hasScenarios?: boolean;
 }
 
@@ -494,8 +684,13 @@ function Wizard({
   state,
   actions,
   isLoaded,
+<<<<<<< HEAD
   isSignedIn,
   selectedScenario = "bio",
+=======
+  // isSignedIn,
+  selectedScenario,
+>>>>>>> 78a1439d94c6580b9153d977bb2961a8217d324b
   hasScenarios = false,
 }: WizardProps) {
   const { t } = useLanguage();
@@ -511,31 +706,73 @@ function Wizard({
 
   const currentStage = roadmapData.stages[state.currentStage];
   const currentStep = currentStage?.steps[state.currentStep || 0];
-  const totalSteps = roadmapData.stages.reduce(
-    (acc: number, s: RoadmapStage) => acc + s.steps.length,
+  const relevantStages = roadmapData.stages.filter(s => !hasScenarios || !s.scenarioSpecific || s.scenarioSpecific === selectedScenario);
+  const totalSteps = relevantStages.reduce(
+    (acc: number, s: RoadmapStage) => {
+      const visibleSteps = s.steps.filter(st => !hasScenarios || !st.scenarioSpecific || st.scenarioSpecific === selectedScenario);
+      return acc + visibleSteps.length;
+    },
     0,
   );
   const completedTotal = state.completedSteps.size;
-  const progressPercent = Math.round((completedTotal / totalSteps) * 100);
+  const progressPercent = totalSteps > 0 ? Math.round((completedTotal / totalSteps) * 100) : 0;
 
   const handleNext = () => {
-    const nextStepIdx = (state.currentStep || 0) + 1;
-    if (nextStepIdx < currentStage.steps.length) {
-      actions.setCurrentStep(nextStepIdx);
-    } else if (state.currentStage + 1 < roadmapData.stages.length) {
-      actions.setStage(state.currentStage + 1);
-      actions.setCurrentStep(0);
+    const visibleStepsUnderCurrentStageIndices = currentStage.steps
+      .map((st, i) => (!hasScenarios || !st.scenarioSpecific || st.scenarioSpecific === selectedScenario ? i : -1))
+      .filter(i => i !== -1);
+    
+    const currentPosInVisible = visibleStepsUnderCurrentStageIndices.indexOf(state.currentStep || 0);
+    
+    if (currentPosInVisible < visibleStepsUnderCurrentStageIndices.length - 1) {
+      actions.setCurrentStep(visibleStepsUnderCurrentStageIndices[currentPosInVisible + 1]);
+    } else {
+      // Find next visible stage
+      let nextStageIdx = state.currentStage + 1;
+      while (nextStageIdx < roadmapData.stages.length) {
+        const stage = roadmapData.stages[nextStageIdx];
+        const isStageVisible = !hasScenarios || !stage.scenarioSpecific || stage.scenarioSpecific === selectedScenario;
+        const visibleSteps = stage.steps.filter(st => !hasScenarios || !st.scenarioSpecific || st.scenarioSpecific === selectedScenario);
+        
+        if (isStageVisible && visibleSteps.length > 0) {
+          const firstVisibleStepIdx = stage.steps.findIndex(st => !hasScenarios || !st.scenarioSpecific || st.scenarioSpecific === selectedScenario);
+          actions.setStage(nextStageIdx);
+          actions.setCurrentStep(firstVisibleStepIdx);
+          return;
+        }
+        nextStageIdx++;
+      }
     }
   };
 
   const handlePrev = () => {
-    const prevStepIdx = (state.currentStep || 0) - 1;
-    if (prevStepIdx >= 0) {
-      actions.setCurrentStep(prevStepIdx);
-    } else if (state.currentStage - 1 >= 0) {
-      const prevStage = roadmapData.stages[state.currentStage - 1];
-      actions.setStage(state.currentStage - 1);
-      actions.setCurrentStep(prevStage.steps.length - 1);
+    const visibleStepsUnderCurrentStageIndices = currentStage.steps
+      .map((st, i) => (!hasScenarios || !st.scenarioSpecific || st.scenarioSpecific === selectedScenario ? i : -1))
+      .filter(i => i !== -1);
+    
+    const currentPosInVisible = visibleStepsUnderCurrentStageIndices.indexOf(state.currentStep || 0);
+
+    if (currentPosInVisible > 0) {
+      actions.setCurrentStep(visibleStepsUnderCurrentStageIndices[currentPosInVisible - 1]);
+    } else {
+      // Find previous visible stage
+      let prevStageIdx = state.currentStage - 1;
+      while (prevStageIdx >= 0) {
+        const stage = roadmapData.stages[prevStageIdx];
+        const isStageVisible = !hasScenarios || !stage.scenarioSpecific || stage.scenarioSpecific === selectedScenario;
+        const visibleSteps = stage.steps.filter(st => !hasScenarios || !st.scenarioSpecific || st.scenarioSpecific === selectedScenario);
+        
+        if (isStageVisible && visibleSteps.length > 0) {
+          const lastVisibleStepIdx = stage.steps.map((st, i) => (!hasScenarios || !st.scenarioSpecific || st.scenarioSpecific === selectedScenario ? i : -1))
+            .filter(i => i !== -1).pop();
+          if (typeof lastVisibleStepIdx === "number") {
+            actions.setStage(prevStageIdx);
+            actions.setCurrentStep(lastVisibleStepIdx);
+            return;
+          }
+        }
+        prevStageIdx--;
+      }
     }
   };
 

@@ -58,7 +58,7 @@ export function DocumentVault({
   };
 
   return (
-    <div className="fixed inset-0 z-[1000] flex items-center justify-center p-4">
+    <div className="fixed inset-0 z-1000 flex items-center justify-center p-4">
       {/* Overlay */}
       <div
         className="absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity duration-300"
@@ -99,7 +99,7 @@ export function DocumentVault({
                   key={doc}
                   className={`group bg-white rounded-2xl p-5 md:p-6 border transition-all duration-300 ${
                     isChecked
-                      ? "border-[#0d9488]/30 shadow-md shadow-[#0d9488]/5 bg-[#0d9488]/[0.02]"
+                      ? "border-[#0d9488]/30 shadow-md shadow-[#0d9488]/5 bg-[#0d9488]/2"
                       : "border-slate-200 hover:border-slate-300 shadow-sm"
                   }`}
                 >
