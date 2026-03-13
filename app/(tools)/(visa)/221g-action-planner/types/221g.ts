@@ -40,6 +40,7 @@ export interface FormSelections {
   i864_tax_years?: string;
   dna_test?: boolean;
   dna_test_name?: string;
+  ds5535?: boolean;
   other?: boolean;
   other_details?: string;
   caseId?: string;

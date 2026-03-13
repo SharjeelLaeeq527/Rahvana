@@ -1,0 +1,336 @@
+{
+  "title": "Italy Student Visa Journey",
+  "description": "Step-by-step roadmap for Pakistani students applying for an Italian National Long-Stay Visa for Study (Type D) — from university admission and pre-enrolment through arriving in Italy and converting to a Permesso di Soggiorno.",
+  "stages": [
+    {
+      "id": 1,
+      "name": "Stage I: Admission & Pre-enrolment",
+      "icon": "FileText",
+      "color": "bg-blue-50 text-blue-600",
+      "time": "Before visa application",
+      "sources": [
+        {
+          "label": "Studiare in Italia (Official)",
+          "url": "https://studiareinitalia.esteri.it/en/"
+        },
+        {
+          "label": "Italian Embassy Islamabad",
+          "url": "https://ambasciata.esteri.it/islamabad/en/"
+        },
+        {
+          "label": "Visa for Italy – Official Portal",
+          "url": "https://vistoperitalia.esteri.it/home/en"
+        }
+      ],
+      "steps": [
+        {
+          "id": "I-01",
+          "name": "Research Italian Universities and Programmes",
+          "description": "Research accredited Italian universities and programmes. Italy has a formal pre-enrolment system that links university admission to the visa application process — understanding this flow before applying is essential.",
+          "actions": [
+            "Browse programmes at accredited Italian universities using the official Studiare in Italia portal at studiareinitalia.esteri.it/en/",
+            "Confirm the language of instruction: some programmes are available in English, but many are in Italian — check the Italian language requirements specified by the university",
+            "Review tuition fee structures, scholarship availability (including Italian Government scholarships — borse di studio — via the Studiare in Italia portal), and entry requirements",
+            "Check whether the university has specific pre-enrolment deadlines through the Italian Embassy — these are typically aligned with the Italian academic year and published annually",
+            "Note: the pre-enrolment process and associated deadlines are set each year by the Italian Ministry of Foreign Affairs — confirm the current academic year schedule at vistoperitalia.esteri.it and at the Italian Embassy in Islamabad"
+          ],
+          "output": "Target Italian university and programme confirmed; pre-enrolment deadline noted"
+        },
+        {
+          "id": "I-02",
+          "name": "Complete Pre-enrolment at the Italian Embassy",
+          "description": "Pakistan is among the countries required to follow the Italian pre-enrolment procedure before applying for a student visa. This process involves submitting your application to your chosen Italian university through the Italian Embassy in Islamabad within the dates set annually by the Ministry of Foreign Affairs.",
+          "info": "Pre-enrolment for Pakistani applicants is carried out at the Italian Embassy in Islamabad. The procedure, required documents, and opening dates are published each year on the Italian Embassy Islamabad website and on vistoperitalia.esteri.it. Do not rely on previous years' deadlines — confirm the current academic year's pre-enrolment schedule directly with the Italian Embassy in Islamabad at ambasciata.esteri.it/islamabad/en/ before beginning.",
+          "actions": [
+            "Check the current academic year's pre-enrolment schedule at the Italian Embassy Islamabad website (ambasciata.esteri.it/islamabad/en/) and at vistoperitalia.esteri.it",
+            "Gather the documents required for pre-enrolment as published by the Embassy — these typically include your educational certificates, transcripts, a valid passport, and any Italian language proficiency certificate or English language certificate required by the university",
+            "Ensure academic documents from Pakistani institutions (Matric, FSc, A-Level, Bachelor's degree) are authenticated as required — confirm current authentication/legalisation requirements with the Embassy",
+            "Submit your pre-enrolment to the Italian Embassy in Islamabad within the published pre-enrolment window",
+            "Receive your pre-enrolment confirmation or university acceptance documentation, which will be required for the visa application"
+          ],
+          "output": "Pre-enrolment submitted to Italian Embassy Islamabad within the official window; confirmation received"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "name": "Stage II: Document Preparation",
+      "icon": "FolderOpen",
+      "color": "bg-purple-50 text-purple-600",
+      "time": "Before visa appointment",
+      "sources": [
+        {
+          "label": "Visa for Italy – Study Visa Documents",
+          "url": "https://vistoperitalia.esteri.it/home/en"
+        },
+        {
+          "label": "Italian Embassy Islamabad – Visa",
+          "url": "https://ambasciata.esteri.it/islamabad/en/"
+        }
+      ],
+      "steps": [
+        {
+          "id": "II-01",
+          "name": "Confirm Your Passport is Valid",
+          "description": "Your Pakistani passport must be valid for the duration of your intended study in Italy. Confirm current passport validity requirements with the Italian Embassy or on the official visa portal before applying.",
+          "actions": [
+            "Confirm your passport is valid — check the minimum validity requirement at vistoperitalia.esteri.it or with the Embassy",
+            "Ensure sufficient blank pages for the Italian National Visa sticker",
+            "If renewal is needed: renew well in advance before submitting your visa application",
+            "Prepare clear copies of your passport biographical page as specified in the Embassy checklist"
+          ],
+          "output": "Valid passport confirmed; copies prepared per Embassy requirements"
+        },
+        {
+          "id": "II-02",
+          "name": "Prepare Proof of Financial Means",
+          "description": "The Italian Embassy requires evidence that you have sufficient financial means to support yourself during your studies. The required amount is set periodically by Italian authorities — confirm the current requirement at the official visa portal or with the Embassy.",
+          "warn": "Do not rely on unofficial sources for the financial means amount. Check the current minimum financial means requirement at vistoperitalia.esteri.it or with the Italian Embassy in Islamabad. The amount is updated periodically by Italian authorities.",
+          "actions": [
+            "Check the current financial means requirement at vistoperitalia.esteri.it or with the Italian Embassy Islamabad",
+            "Gather recent official bank statements covering a period specified by the Embassy",
+            "If a sponsor (parent or family member) is providing financial support: include their bank statements and a signed declaration of financial support",
+            "If you hold an Italian government scholarship or other scholarship: include the official award letter as financial evidence",
+            "Ensure all financial documents are in English or are accompanied by a certified translation into Italian"
+          ],
+          "output": "Financial means evidence assembled meeting current Italian Embassy requirements"
+        },
+        {
+          "id": "II-03",
+          "name": "Prepare Accommodation and Health Insurance",
+          "description": "The Italian Embassy requires proof of accommodation in Italy for the duration of your stay, as well as evidence of health insurance coverage valid in Italy. Confirm the current specific requirements with the Embassy.",
+          "actions": [
+            "Arrange and obtain written proof of accommodation in Italy — this may be a university dormitory confirmation, a rental agreement, or a declaration of hospitality (dichiarazione di ospitalità) from a host",
+            "Obtain health insurance coverage valid in Italy for the duration of your stay — confirm the type and minimum coverage requirements at vistoperitalia.esteri.it or with the Embassy",
+            "Keep the accommodation confirmation and health insurance certificate ready for the visa application"
+          ],
+          "output": "Proof of accommodation and valid health insurance certificate obtained"
+        },
+        {
+          "id": "II-04",
+          "name": "Prepare the Visa Application Form and Supporting Documents",
+          "description": "The Italian visa application form (Modulo di domanda) must be completed accurately. The Italian Embassy publishes its document checklist for student visas — confirm the current full list before attending your appointment.",
+          "actions": [
+            "Download the current visa application form from vistoperitalia.esteri.it or from the Italian Embassy Islamabad website",
+            "Complete the form fully and accurately — all information must match your passport and supporting documents",
+            "Prepare recent passport-size photographs meeting Italian visa photo specifications — confirm current specifications at vistoperitalia.esteri.it",
+            "Prepare your pre-enrolment confirmation or university acceptance letter",
+            "Prepare any academic documents (certificates, transcripts) with certified translations into Italian or English as required by the Embassy — confirm whether apostille or other legalisation is required for Pakistani documents"
+          ],
+          "output": "Visa application form completed; all supporting documents assembled with required translations"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "name": "Stage III: Visa Application (Embassy)",
+      "icon": "Calendar",
+      "color": "bg-green-50 text-green-600",
+      "time": "At Italian Embassy, Islamabad",
+      "sources": [
+        {
+          "label": "Italian Embassy Islamabad – Visa",
+          "url": "https://ambasciata.esteri.it/islamabad/en/"
+        },
+        {
+          "label": "Visa for Italy – Official Portal",
+          "url": "https://vistoperitalia.esteri.it/home/en"
+        }
+      ],
+      "steps": [
+        {
+          "id": "III-01",
+          "name": "Book Your Visa Appointment",
+          "description": "Italian National Visa applications for Pakistani applicants are submitted at the Italian Embassy in Islamabad. Appointments may be required — confirm the current booking procedure at the Embassy's website before attending.",
+          "info": "The Italian Embassy in Islamabad is the competent mission for Pakistani applicants applying for an Italian study visa. Check whether VFS Global or another service provider is currently used to support appointment booking or document submission in Pakistan — confirm the current process at ambasciata.esteri.it/islamabad/en/ before proceeding.",
+          "actions": [
+            "Check ambasciata.esteri.it/islamabad/en/ for the current visa appointment booking procedure",
+            "Book an appointment at the earliest available date that allows time to assemble all documents",
+            "Save your appointment confirmation"
+          ],
+          "output": "Visa appointment booked; confirmation saved"
+        },
+        {
+          "id": "III-02",
+          "name": "Submit Your Visa Application",
+          "description": "Attend your appointment with a complete document package as specified in the current Embassy checklist. Pay the visa application fee at the appointment.",
+          "actions": [
+            "Attend the Italian Embassy in Islamabad with your complete document package",
+            "Bring: completed visa application form, valid passport (original + copies), passport photographs, pre-enrolment confirmation or acceptance letter, proof of financial means, proof of accommodation, health insurance certificate, academic documents with required translations, and any other documents listed in the current Embassy checklist",
+            "Pay the current visa application fee — confirm the current amount at vistoperitalia.esteri.it or with the Embassy before attending",
+            "Obtain your application receipt",
+            "Note the estimated processing time provided by the Embassy"
+          ],
+          "output": "Complete application submitted at Italian Embassy Islamabad; fee paid; receipt obtained"
+        },
+        {
+          "id": "III-03",
+          "name": "Await the Decision",
+          "description": "The Embassy processes your application and will notify you when a decision has been made. Do not book non-refundable travel until your visa has been issued.",
+          "warn": "Do not book non-refundable flights or accommodation until your visa is approved. Processing times vary — do not make travel commitments based on estimated timelines alone.",
+          "actions": [
+            "Monitor your email and follow up with the Embassy or their service provider as directed",
+            "If the Embassy requests additional documents: respond promptly",
+            "Upon approval: collect your passport with the Italian National Type D Visa sticker as instructed",
+            "Verify the visa sticker: confirm visa type (D), purpose of stay (study), validity dates, and number of entries",
+            "If any details on the visa are incorrect: raise this with the Embassy before leaving"
+          ],
+          "output": "Italian National Type D Study Visa issued; passport collected; visa details verified"
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "name": "Stage IV: Travel Preparation",
+      "icon": "Plane",
+      "color": "bg-amber-50 text-amber-600",
+      "time": "After visa approval",
+      "sources": [
+        {
+          "label": "Italian Embassy Islamabad",
+          "url": "https://ambasciata.esteri.it/islamabad/en/"
+        },
+        {
+          "label": "Studiare in Italia",
+          "url": "https://studiareinitalia.esteri.it/en/"
+        }
+      ],
+      "steps": [
+        {
+          "id": "IV-01",
+          "name": "Verify Your Visa and Plan Travel",
+          "description": "Carefully verify your Italian National Type D Visa before travelling. Confirm the validity period and plan to arrive in Italy within the visa validity and before your university's enrolment deadline.",
+          "actions": [
+            "Verify the visa sticker: confirm visa type (D), intended purpose (study), validity period, and number of permitted entries",
+            "Plan travel to arrive in Italy before your university's enrolment deadline and within your visa validity",
+            "Book flights and arrange final accommodation in Italy",
+            "Carry in hand luggage: passport with visa, university acceptance/pre-enrolment confirmation, proof of financial means, accommodation confirmation, and health insurance certificate",
+            "Contact your university's international student office to confirm your arrival date and any orientation requirements"
+          ],
+          "output": "Visa verified; travel booked within validity; accommodation confirmed; arrival planned"
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "name": "Stage V: Arrival & Permesso di Soggiorno",
+      "icon": "MapPin",
+      "color": "bg-rose-50 text-rose-600",
+      "time": "Within 8 working days of arrival",
+      "sources": [
+        {
+          "label": "Ministry of Interior – Permesso di Soggiorno",
+          "url": "https://www.interno.gov.it/en/themes/immigration-and-asylum/types-permits"
+        },
+        {
+          "label": "Polizia di Stato – Immigration",
+          "url": "https://www.poliziadistato.it/articolo/10661"
+        }
+      ],
+      "steps": [
+        {
+          "id": "V-01",
+          "name": "Clear Italian Entry and Arrive at Your University City",
+          "description": "Upon arrival in Italy, pass through border control. There is no separate immigration document issued at the port of entry — your visa permits entry. Proceed to your accommodation and begin preparing for the Permesso di Soggiorno application, which is legally required within 8 working days.",
+          "actions": [
+            "Pass through Italian border control with your valid passport and National Type D Visa",
+            "No separate entry document is issued — your visa permits legal stay for the initial period",
+            "Travel to your accommodation in your university city",
+            "Locate the nearest Post Office (Ufficio Postale) or Sportello Unico per l'Immigrazione (Single Immigration Desk) — these are the official channels for submitting the Permesso di Soggiorno application kit",
+            "Note the 8 working days deadline for submitting your Permesso application — begin preparation immediately"
+          ],
+          "output": "Arrived in Italy; accommodation confirmed; 8 working day Permesso deadline noted"
+        },
+        {
+          "id": "V-02",
+          "name": "Apply for the Permesso di Soggiorno per Studio",
+          "description": "Within 8 working days of arrival in Italy, you must apply for the Permesso di Soggiorno per Studio (Residence Permit for Study). This is a legal requirement. Applications are submitted using an official kit available at designated Post Offices (Uffici Postali) that are part of the 'Sportello Amico' network.",
+          "warn": "The 8 working day deadline for submitting the Permesso di Soggiorno application is a legal requirement. Failure to apply within this timeframe can have legal consequences. Begin preparing immediately after arrival.",
+          "info": "The application kit for the Permesso di Soggiorno is available at designated Post Offices in Italy (those participating in the Sportello Amico network). Fill in the kit, attach required documents, pay the administrative fees at the Post Office, and receive a receipt with your appointment date at the local police immigration office (Questura). For current fees and required documents, refer to the Polizia di Stato website at poliziadistato.it.",
+          "actions": [
+            "Locate a participating Post Office (Ufficio Postale – Sportello Amico) in your university city",
+            "Obtain the Permesso di Soggiorno application kit (Kit per il permesso di soggiorno) from the Post Office",
+            "Complete the kit for the Permesso di Soggiorno per Studio purpose",
+            "Attach required documents as specified in the kit instructions (typically: passport original and copy, visa copy, passport photographs, proof of accommodation, proof of financial means, health insurance, enrolment documentation)",
+            "Pay the required administrative fees at the Post Office — confirm current fees at poliziadistato.it",
+            "Submit the completed kit at the Post Office and receive your receipt and appointment date at the Questura (police immigration office)",
+            "Attend your appointment at the Questura with original documents"
+          ],
+          "output": "Permesso di Soggiorno application submitted at Post Office within 8 working days; receipt and Questura appointment date obtained"
+        },
+        {
+          "id": "V-03",
+          "name": "Complete University Enrolment",
+          "description": "Formally enrol at your Italian university as required. Bring all required documents to the university's enrolment office (Segreteria Studenti), including your visa and Permesso application receipt.",
+          "actions": [
+            "Attend your university's international student welcome and orientation events",
+            "Submit all required enrolment documents to the university's Segreteria Studenti (student administration office)",
+            "Provide your passport, visa, Permesso di Soggiorno application receipt, pre-enrolment confirmation, and any other documents required by the university",
+            "Pay any university enrolment fees or administrative charges",
+            "Obtain your student card and university enrolment certificate (certificato di iscrizione)"
+          ],
+          "output": "Formally enrolled at Italian university; student card and enrolment certificate received"
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "name": "Stage VI: Conditions & Renewal",
+      "icon": "CheckCircle",
+      "color": "bg-indigo-50 text-indigo-600",
+      "time": "Ongoing",
+      "sources": [
+        {
+          "label": "Ministry of Interior – Permit Renewal",
+          "url": "https://www.interno.gov.it/en/themes/immigration-and-asylum/types-permits"
+        },
+        {
+          "label": "Polizia di Stato – Immigration",
+          "url": "https://www.poliziadistato.it/articolo/10661"
+        }
+      ],
+      "steps": [
+        {
+          "id": "VI-01",
+          "name": "Receive Your Permesso di Soggiorno and Understand Conditions",
+          "description": "After your Questura appointment, your Permesso di Soggiorno per Studio will be issued. This document confirms your legal right to reside in Italy for study purposes. Understand the conditions attached to it.",
+          "actions": [
+            "Attend your Questura appointment on the scheduled date with all original documents requested",
+            "Provide biometric data (fingerprints and photograph) at the Questura as required",
+            "Receive your Permesso di Soggiorno card when issued — verify the details: name, permit type (Studio), validity period",
+            "Understand that the Permesso is tied to your enrolment — you must maintain active enrolment at your university",
+            "Check permitted work limits for Permesso di Soggiorno per Studio holders — consult the Polizia di Stato website or your university's international office for current rules"
+          ],
+          "output": "Permesso di Soggiorno per Studio received and verified; conditions understood"
+        },
+        {
+          "id": "VI-02",
+          "name": "Renew Your Permesso di Soggiorno Before Expiry",
+          "description": "The Permesso di Soggiorno per Studio has a validity tied to your academic year or enrolment period. You must apply to renew it before it expires if you continue studying in Italy.",
+          "warn": "Apply to renew your Permesso di Soggiorno at least 60 days before it expires (or as early as advised by the Questura). Do not wait until the permit has expired — an expired permit can affect your legal status in Italy.",
+          "actions": [
+            "Track your Permesso di Soggiorno expiry date from the moment you receive it",
+            "Confirm with your university's international student office when and how to renew — some universities assist with this process",
+            "Obtain a current year enrolment certificate (certificato di iscrizione aggiornato) from the Segreteria Studenti",
+            "Gather all renewal documents as specified by the Questura — these typically include the current Permesso, updated enrolment certificate, passport, photographs, and proof of financial means",
+            "Submit the renewal application kit at a participating Post Office before the expiry date",
+            "Attend any further Questura appointments as required for renewal biometrics"
+          ],
+          "output": "Permesso di Soggiorno renewal submitted before expiry; renewed permit received"
+        }
+      ]
+    }
+  ],
+  "documents": [
+    "Valid Pakistani Passport",
+    "University Acceptance Letter / Pre-enrolment Confirmation",
+    "Proof of Financial Means (Bank Statements, Sponsorship, Scholarship)",
+    "Proof of Accommodation in Italy",
+    "Health Insurance Certificate Valid in Italy",
+    "Academic Certificates and Transcripts (with legalisation if required)",
+    "Completed Visa Application Form",
+    "Passport-size Photographs (meeting Schengen specs)",
+    "Permesso di Soggiorno Application Receipt (after arrival)",
+    "University Enrolment Certificate (Certificato di Iscrizione)"
+  ]
+}

@@ -128,18 +128,21 @@ export function useWizard(options: UseWizardOptions = {}) {
       const stage = activeRoadmap.stages[currentStage];
       if (!stage) return { ...prev, currentStage, currentStep: null };
 
+      let narrowedStep: number;
       if (currentStep === null || currentStep < 0 || currentStep >= stage.steps.length) {
         const firstIncomplete = stage.steps.findIndex((s: any) => !prev.completedSteps.has(s.id));
-        currentStep = firstIncomplete === -1 ? 0 : firstIncomplete;
+        narrowedStep = firstIncomplete === -1 ? 0 : firstIncomplete;
+      } else {
+        narrowedStep = currentStep;
       }
 
-      const stepId = stage.steps[currentStep]?.id;
+      const stepId = stage.steps[narrowedStep]?.id;
       const newCollapsed = { ...prev.collapsedSteps };
       if (stepId) {
         newCollapsed[stepId] = false;
       }
 
-      return { ...prev, currentStage, currentStep, collapsedSteps: newCollapsed };
+      return { ...prev, currentStage, currentStep: narrowedStep, collapsedSteps: newCollapsed };
     });
   }, [activeRoadmap]);
 
