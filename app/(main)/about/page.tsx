@@ -59,7 +59,7 @@ export default function AboutPage() {
               transition={{ duration: 0.7 }}
               className="relative"
             >
-              <div className="absolute -inset-4 bg-rahvana-primary-pale/40 rounded-[2rem] -z-10 transform scale-105"></div>
+              <div className="absolute -inset-4 bg-rahvana-primary-pale/40 rounded-4xl -z-10 transform scale-105"></div>
               <div className="bg-card border border-border rounded-3xl p-8 md:p-12 shadow-xl">
                 <div className="w-16 h-16 rounded-2xl bg-linear-to-br from-rahvana-primary to-rahvana-primary-light flex items-center justify-center mb-8 shadow-lg">
                   <Icons.Target className="w-8 h-8 text-white" />
@@ -104,7 +104,7 @@ export default function AboutPage() {
                   transition={{ duration: 0.5, delay: idx * 0.15 }}
                   className="flex gap-6 items-start group"
                 >
-                  <div className="flex-shrink-0 w-14 h-14 rounded-xl bg-card border border-border flex items-center justify-center group-hover:border-rahvana-primary group-hover:bg-rahvana-primary-pale transition-all">
+                  <div className="shrink-0 w-14 h-14 rounded-xl bg-card border border-border flex items-center justify-center group-hover:border-rahvana-primary group-hover:bg-rahvana-primary-pale transition-all">
                     <item.icon className="w-6 h-6 text-rahvana-primary" />
                   </div>
                   <div>

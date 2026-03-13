@@ -2,7 +2,19 @@
   "title": "Canada Study Permit Journey",
   "description": "Step-by-step roadmap for Pakistani students applying for a Canadian Study Permit — from DLI acceptance through arriving in Canada and maintaining your study permit conditions.",
   "disclaimer": "Informational guidance only. Canadian immigration rules change frequently. Always confirm current requirements at IRCC – Study Permit before taking any action.",
+  "disclaimerLinks": [
+    {
+      "text": "IRCC – Study Permit",
+      "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/study-canada/study-permit.html"
+    }
+  ],
   "info": "Canada issues a Study Permit rather than a traditional student visa. Pakistani nationals are not visa-exempt and also require a Temporary Resident Visa (TRV), which IRCC typically processes together with the study permit application. You must be accepted by a Designated Learning Institution (DLI). Review current requirements at canada.ca.",
+  "infoLinks": [
+    {
+      "text": "canada.ca.",
+      "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/study-canada/study-permit.html"
+    }
+  ],
   "stages": [
     {
       "id": 1,

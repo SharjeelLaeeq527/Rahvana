@@ -1,414 +1,428 @@
 {
-  "title": "Australia Student Visa Journey",
-  "description": "Step-by-step roadmap for Pakistani students applying for an Australian Student visa (Subclass 500) — from choosing your course and receiving your CoE through arriving in Australia and maintaining your visa conditions.",
-  "stages": [
-    {
-      "id": 1,
-      "name": "Stage I: Course & Confirmation of Enrolment",
-      "icon": "FileText",
-      "color": "bg-blue-50 text-blue-600",
-      "time": "Before applying",
-      "sources": [
+    "title": "Australia Student Visa Journey",
+    "description": "Step-by-step roadmap for Pakistani students applying for an Australian Student visa (Subclass 500) — from choosing your course and receiving your CoE through arriving in Australia and maintaining your visa conditions.",
+    "disclaimer": "Informational guidance only. Australian visa policies and requirements can change. Always confirm current requirements with the Department of Home Affairs before taking any action.",
+    "disclaimerLinks": [
         {
-          "label": "Home Affairs – Student visa Subclass 500",
-          "url": "https://immi.homeaffairs.gov.au/visas/getting-a-visa/visa-listing/student-500"
-        },
-        {
-          "label": "CRICOS – Registered providers",
-          "url": "https://www.cricos.education.gov.au/"
+            "text": "Department of Home Affairs",
+            "url": "https://immi.homeaffairs.gov.au/visas/getting-a-visa/visa-listing/student-500"
         }
-      ],
-      "steps": [
-        {
-          "id": "I-01",
-          "name": "Choose a CRICOS-Registered Course and Provider",
-          "description": "You must study at an Australian education provider and in a course both registered on the Commonwealth Register of Institutions and Courses for Overseas Students (CRICOS).",
-          "actions": [
-            "Search for CRICOS-registered providers and courses at cricos.education.gov.au",
-            "Confirm both the institution and your specific course are CRICOS-registered",
-            "Research admission requirements, course duration, and tuition costs",
-            "Apply for admission through the institution's official admissions process",
-            "Receive the official offer of enrolment from the institution"
-          ],
-          "output": "Offer of enrolment received from a CRICOS-registered provider for a CRICOS-registered course"
-        },
-        {
-          "id": "I-02",
-          "name": "Accept Offer and Receive Confirmation of Enrolment (CoE)",
-          "description": "After accepting the institution's offer and paying any required upfront fees, the provider issues a Confirmation of Enrolment (CoE). The CoE number is required for your visa application.",
-          "info": "You may receive more than one CoE if enrolled in multiple courses (e.g., packaged English + degree). Enter all CoE numbers in your visa application.",
-          "actions": [
-            "Accept the offer of enrolment by the institution's deadline",
-            "Pay any upfront tuition or deposit as required",
-            "Receive your CoE and record the CoE number(s)",
-            "Verify CoE details: your name, course name, provider, course start/end dates, and level",
-            "Contact the institution immediately if any details are incorrect"
-          ],
-          "output": "Confirmation of Enrolment (CoE) received; CoE number(s) verified and recorded"
-        }
-      ]
+    ],
+    "visaOverview": {
+        "title": "Student Visa – Subclass 500",
+        "text": "The Australian Student visa (Subclass 500) allows you to study a full-time registered course at an Australian education provider. You must have a Confirmation of Enrolment (CoE) from a registered provider and meet the Genuine Student requirement. Applications are lodged online through ImmiAccount on the Home Affairs website.",
+        "flag": "🇦🇺",
+        "link": "https://immi.homeaffairs.gov.au/visas/getting-a-visa/visa-listing/student-500",
+        "linkText": "immi.homeaffairs.gov.au"
     },
-    {
-      "id": 2,
-      "name": "Stage II: Genuine Student Requirement & Documents",
-      "icon": "FolderOpen",
-      "color": "bg-purple-50 text-purple-600",
-      "time": "Before lodging",
-      "sources": [
+    "stages": [
         {
-          "label": "Home Affairs – Genuine Student requirement",
-          "url": "https://immi.homeaffairs.gov.au/visas/getting-a-visa/visa-listing/student-500/genuine-student-requirement"
+            "id": 1,
+            "name": "Stage I: Course & Confirmation of Enrolment",
+            "icon": "FileText",
+            "color": "bg-blue-50 text-blue-600",
+            "time": "Before applying",
+            "sources": [
+                {
+                    "label": "Home Affairs – Student visa Subclass 500",
+                    "url": "https://immi.homeaffairs.gov.au/visas/getting-a-visa/visa-listing/student-500"
+                },
+                {
+                    "label": "CRICOS – Registered providers",
+                    "url": "https://www.cricos.education.gov.au/"
+                }
+            ],
+            "steps": [
+                {
+                    "id": "I-01",
+                    "name": "Choose a CRICOS-Registered Course and Provider",
+                    "description": "You must study at an Australian education provider and in a course both registered on the Commonwealth Register of Institutions and Courses for Overseas Students (CRICOS).",
+                    "actions": [
+                        "Search for CRICOS-registered providers and courses at cricos.education.gov.au",
+                        "Confirm both the institution and your specific course are CRICOS-registered",
+                        "Research admission requirements, course duration, and tuition costs",
+                        "Apply for admission through the institution's official admissions process",
+                        "Receive the official offer of enrolment from the institution"
+                    ],
+                    "output": "Offer of enrolment received from a CRICOS-registered provider for a CRICOS-registered course"
+                },
+                {
+                    "id": "I-02",
+                    "name": "Accept Offer and Receive Confirmation of Enrolment (CoE)",
+                    "description": "After accepting the institution's offer and paying any required upfront fees, the provider issues a Confirmation of Enrolment (CoE). The CoE number is required for your visa application.",
+                    "info": "You may receive more than one CoE if enrolled in multiple courses (e.g., packaged English + degree). Enter all CoE numbers in your visa application.",
+                    "actions": [
+                        "Accept the offer of enrolment by the institution's deadline",
+                        "Pay any upfront tuition or deposit as required",
+                        "Receive your CoE and record the CoE number(s)",
+                        "Verify CoE details: your name, course name, provider, course start/end dates, and level",
+                        "Contact the institution immediately if any details are incorrect"
+                    ],
+                    "output": "Confirmation of Enrolment (CoE) received; CoE number(s) verified and recorded"
+                }
+            ]
         },
         {
-          "label": "Home Affairs – Student visa documents",
-          "url": "https://immi.homeaffairs.gov.au/visas/getting-a-visa/visa-listing/student-500/documents"
+            "id": 2,
+            "name": "Stage II: Genuine Student Requirement & Documents",
+            "icon": "FolderOpen",
+            "color": "bg-purple-50 text-purple-600",
+            "time": "Before lodging",
+            "sources": [
+                {
+                    "label": "Home Affairs – Genuine Student requirement",
+                    "url": "https://immi.homeaffairs.gov.au/visas/getting-a-visa/visa-listing/student-500/genuine-student-requirement"
+                },
+                {
+                    "label": "Home Affairs – Student visa documents",
+                    "url": "https://immi.homeaffairs.gov.au/visas/getting-a-visa/visa-listing/student-500/documents"
+                },
+                {
+                    "label": "Home Affairs – Financial capacity",
+                    "url": "https://immi.homeaffairs.gov.au/visas/getting-a-visa/visa-listing/student-500/financial-capacity"
+                }
+            ],
+            "steps": [
+                {
+                    "id": "II-01",
+                    "name": "Understand the Genuine Student Requirement",
+                    "description": "The Genuine Student (GS) requirement asks you to demonstrate that you are a genuine student who intends to comply with the conditions of the Student visa. The assessment is holistic.",
+                    "info": "Read the current Genuine Student requirement guidance at immi.homeaffairs.gov.au/visas/getting-a-visa/visa-listing/student-500/genuine-student-requirement before preparing your statement. The GS questions are part of the ImmiAccount application form itself.",
+                    "actions": [
+                        "Read the current Genuine Student requirement guidance on Home Affairs website",
+                        "Prepare a truthful, specific written statement explaining your study intentions, how the course relates to your goals, and your ties to Pakistan",
+                        "Gather supporting evidence reinforcing your Genuine Student statement (transcripts, prior qualifications, employment records, ties to Pakistan)"
+                    ],
+                    "output": "Genuine Student statement prepared; supporting evidence assembled"
+                },
+                {
+                    "id": "II-02",
+                    "name": "Prepare Passport and Identity Documents",
+                    "description": "Your current Pakistani passport is required for the Student visa application. Confirm the current passport and identity document requirements on the Home Affairs website.",
+                    "actions": [
+                        "Confirm your Pakistani passport is valid — check current requirements at immi.homeaffairs.gov.au",
+                        "Scan your passport biographical page at high resolution for upload",
+                        "Review whether previous passports need to be provided — check current guidance on Home Affairs",
+                        "Prepare a recent passport-size photograph meeting Home Affairs specifications",
+                        "Review the current identity document requirements at immi.homeaffairs.gov.au/visas/getting-a-visa/visa-listing/student-500/documents"
+                    ],
+                    "output": "Valid passport confirmed; identity documents prepared and scanned for upload"
+                },
+                {
+                    "id": "II-03",
+                    "name": "Prepare Evidence of Financial Capacity",
+                    "description": "You must demonstrate that you have the financial capacity to pay course fees and living costs during your stay in Australia. Check the current requirements and thresholds on the Home Affairs website.",
+                    "warn": "Do not rely on unofficial sources for required financial amounts. Check the current financial capacity requirements at immi.homeaffairs.gov.au/visas/getting-a-visa/visa-listing/student-500/financial-capacity.",
+                    "actions": [
+                        "Review the current financial capacity requirements at immi.homeaffairs.gov.au/visas/getting-a-visa/visa-listing/student-500/financial-capacity",
+                        "Obtain official bank statements covering the period specified by Home Affairs",
+                        "If a sponsor is funding your studies: obtain the sponsor's financial evidence and a signed statutory declaration",
+                        "If you have a scholarship: obtain the official scholarship letter",
+                        "Ensure all financial documents are in English or accompanied by certified translations"
+                    ],
+                    "output": "Financial capacity evidence assembled meeting current Home Affairs requirements"
+                },
+                {
+                    "id": "II-04",
+                    "name": "Prepare Academic and English Language Evidence",
+                    "description": "You will generally need to provide evidence of your previous academic qualifications and English language proficiency alongside your CoE. Review the current document requirements on Home Affairs.",
+                    "actions": [
+                        "Gather academic transcripts, certificates, and diplomas for your most recent qualification",
+                        "Obtain certified English translations for any documents not in English",
+                        "Prepare your English language test results (IELTS, TOEFL, PTE, Cambridge, etc.) if applicable",
+                        "Review the current Student visa documents checklist at immi.homeaffairs.gov.au/visas/getting-a-visa/visa-listing/student-500/documents"
+                    ],
+                    "output": "Academic transcripts, qualifications, and English evidence prepared for upload"
+                }
+            ]
         },
         {
-          "label": "Home Affairs – Financial capacity",
-          "url": "https://immi.homeaffairs.gov.au/visas/getting-a-visa/visa-listing/student-500/financial-capacity"
+            "id": 3,
+            "name": "Stage III: Health, Biometrics & OSHC",
+            "icon": "Activity",
+            "color": "bg-green-50 text-green-600",
+            "time": "Before or after lodging",
+            "sources": [
+                {
+                    "label": "Home Affairs – Health requirement",
+                    "url": "https://immi.homeaffairs.gov.au/help-support/meeting-our-requirements/health"
+                },
+                {
+                    "label": "Home Affairs – Health examinations",
+                    "url": "https://immi.homeaffairs.gov.au/help-support/meeting-our-requirements/health/health-examinations"
+                },
+                {
+                    "label": "Home Affairs – Biometrics",
+                    "url": "https://immi.homeaffairs.gov.au/help-support/meeting-our-requirements/biometrics"
+                },
+                {
+                    "label": "Home Affairs – OSHC",
+                    "url": "https://immi.homeaffairs.gov.au/visas/getting-a-visa/visa-listing/student-500/overseas-student-health-cover"
+                }
+            ],
+            "steps": [
+                {
+                    "id": "III-01",
+                    "name": "Undergo the Required Health Examination",
+                    "description": "Most Student visa applicants are required to undergo a health examination with an approved panel physician, booked using the Health Assessment Processing (HAP) ID generated at or after lodgement of the visa application.",
+                    "info": "Home Affairs typically issues a HAP ID when you lodge your application — you use it to book the health examination with an approved panel physician in Pakistan. Review the current health examination guidance at immi.homeaffairs.gov.au/help-support/meeting-our-requirements/health/health-examinations.",
+                    "actions": [
+                        "Review the current health examination requirements at immi.homeaffairs.gov.au/help-support/meeting-our-requirements/health/health-examinations",
+                        "Find approved panel physicians in Pakistan using the Home Affairs panel doctor search tool",
+                        "Once you have your HAP ID (from ImmiAccount after lodgement): book the health examination at an approved panel physician",
+                        "Attend all required components of the examination as directed by the panel physician",
+                        "Results are submitted electronically by the panel physician to Home Affairs — no separate submission required"
+                    ],
+                    "output": "Health examination completed at an approved panel physician; results transmitted to Home Affairs"
+                },
+                {
+                    "id": "III-02",
+                    "name": "Provide Biometrics (if requested)",
+                    "description": "Home Affairs may request biometrics (fingerprints and photograph) as part of your application. If requested, you will be directed through ImmiAccount to provide them at a designated location.",
+                    "info": "Not all applicants are asked to provide biometrics — Home Affairs will notify you through ImmiAccount. For Pakistan-based applicants, if biometrics are requested, check the instructions in your ImmiAccount notification for the current designated facility.",
+                    "actions": [
+                        "Monitor your ImmiAccount for any biometrics request",
+                        "If biometrics are requested: follow the instructions in your ImmiAccount notification carefully",
+                        "Book a biometrics appointment at the facility specified in the notification",
+                        "Attend with your passport and appointment confirmation",
+                        "Biometrics data is transmitted directly to Home Affairs"
+                    ],
+                    "output": "Biometrics provided at the designated facility (if requested by Home Affairs)"
+                },
+                {
+                    "id": "III-03",
+                    "name": "Arrange Overseas Student Health Cover (OSHC)",
+                    "description": "Student visa applicants must obtain Overseas Student Health Cover (OSHC) from a Home Affairs-approved provider covering the full duration of the Student visa.",
+                    "warn": "Maintaining OSHC for your entire visa period is a visa condition. Check the current list of approved providers and requirements at immi.homeaffairs.gov.au/visas/getting-a-visa/visa-listing/student-500/overseas-student-health-cover. Do not rely on unofficial sources for OSHC costs.",
+                    "actions": [
+                        "Review the current OSHC requirement at immi.homeaffairs.gov.au/visas/getting-a-visa/visa-listing/student-500/overseas-student-health-cover",
+                        "Check the current list of Home Affairs-approved OSHC providers",
+                        "Purchase OSHC covering the full period of your intended Australian stay",
+                        "Record OSHC policy details: provider name, policy number, coverage dates",
+                        "Confirm with your institution whether they arrange OSHC on your behalf"
+                    ],
+                    "output": "OSHC purchased from an approved provider; policy details recorded"
+                }
+            ]
+        },
+        {
+            "id": 4,
+            "name": "Stage IV: ImmiAccount Application & Lodgement",
+            "icon": "Monitor",
+            "color": "bg-amber-50 text-amber-600",
+            "time": "Online via ImmiAccount",
+            "sources": [
+                {
+                    "label": "Home Affairs – ImmiAccount",
+                    "url": "https://immi.homeaffairs.gov.au/help-support/tools-and-tips/online-tools/immiaccount"
+                },
+                {
+                    "label": "Home Affairs – Visa fees",
+                    "url": "https://immi.homeaffairs.gov.au/visas/getting-a-visa/fees-and-charges/current-visa-pricing/student"
+                },
+                {
+                    "label": "Home Affairs – How to apply",
+                    "url": "https://immi.homeaffairs.gov.au/visas/getting-a-visa/visa-listing/student-500/how-to-apply"
+                }
+            ],
+            "steps": [
+                {
+                    "id": "IV-01",
+                    "name": "Create or Log In to ImmiAccount",
+                    "description": "All Australian Student visa applications are lodged online through ImmiAccount — the Department of Home Affairs online portal. Create an account if you do not already have one.",
+                    "actions": [
+                        "Go to immi.homeaffairs.gov.au and navigate to ImmiAccount",
+                        "Create an ImmiAccount using your email address if you do not have one",
+                        "Log in to your ImmiAccount",
+                        "Read the current how-to-apply guidance for Student visa Subclass 500 at immi.homeaffairs.gov.au/visas/getting-a-visa/visa-listing/student-500/how-to-apply"
+                    ],
+                    "output": "ImmiAccount created and accessible; application guidance reviewed"
+                },
+                {
+                    "id": "IV-02",
+                    "name": "Complete the Online Application Form",
+                    "description": "Start a new Student visa (Subclass 500) application in ImmiAccount. Complete all sections accurately, including your CoE number(s) and Genuine Student requirement responses.",
+                    "actions": [
+                        "In ImmiAccount, select New Application and choose Student visa (Subclass 500)",
+                        "Enter your CoE number(s) as requested",
+                        "Complete all personal details — name, date of birth, and passport number must exactly match your documents",
+                        "Respond fully and honestly to the Genuine Student requirement questions",
+                        "Answer all travel history, immigration history, and character questions accurately",
+                        "Review all sections carefully before proceeding"
+                    ],
+                    "output": "Student visa application form fully completed in ImmiAccount"
+                },
+                {
+                    "id": "IV-03",
+                    "name": "Upload Supporting Documents",
+                    "description": "Upload all required supporting documents to your ImmiAccount application. Documents must be clearly legible and in an accepted file format.",
+                    "actions": [
+                        "Review the current required documents list at immi.homeaffairs.gov.au/visas/getting-a-visa/visa-listing/student-500/documents",
+                        "Upload your passport biographical page scan",
+                        "Upload financial capacity evidence",
+                        "Upload academic transcripts and qualifications",
+                        "Upload English language test results (if applicable)",
+                        "Upload OSHC policy details",
+                        "Ensure all files are clearly legible in an accepted format (PDF, JPEG, or as specified)"
+                    ],
+                    "output": "All required documents uploaded to the ImmiAccount application"
+                },
+                {
+                    "id": "IV-04",
+                    "name": "Pay the Visa Application Charge and Lodge",
+                    "description": "After completing the form and uploading documents, pay the visa application charge and submit the application. The charge is non-refundable even if the application is refused.",
+                    "warn": "Check the current Student visa Subclass 500 application charge at immi.homeaffairs.gov.au/visas/getting-a-visa/fees-and-charges/current-visa-pricing/student before paying — do not rely on unofficial sources.",
+                    "actions": [
+                        "Verify the current visa application charge at the official Home Affairs fee page",
+                        "Pay the visa application charge online within ImmiAccount",
+                        "Save the payment receipt",
+                        "Lodge (submit) the application — record your Transaction Reference Number (TRN)",
+                        "Note your HAP ID from the confirmation — you will use it to book your health examination if not already done"
+                    ],
+                    "output": "Application lodged; TRN and HAP ID obtained"
+                }
+            ]
+        },
+        {
+            "id": 5,
+            "name": "Stage V: Decision & Visa Grant",
+            "icon": "CheckCircle",
+            "color": "bg-rose-50 text-rose-600",
+            "time": "After lodgement",
+            "sources": [
+                {
+                    "label": "Home Affairs – Processing times",
+                    "url": "https://immi.homeaffairs.gov.au/visas/getting-a-visa/visa-listing/student-500/processing-times"
+                },
+                {
+                    "label": "VEVO – Check visa details",
+                    "url": "https://immi.homeaffairs.gov.au/visas/already-have-a-visa/check-visa-details-and-conditions/check-conditions-online"
+                }
+            ],
+            "steps": [
+                {
+                    "id": "V-01",
+                    "name": "Await the Decision and Respond to Any Requests",
+                    "description": "After lodgement, Home Affairs will assess your application. Monitor your ImmiAccount and registered email for any requests for additional information.",
+                    "actions": [
+                        "Check current Student visa processing times at immi.homeaffairs.gov.au/visas/getting-a-visa/visa-listing/student-500/processing-times",
+                        "Do not make non-refundable travel arrangements until the visa is granted",
+                        "Monitor your ImmiAccount and registered email for any Home Affairs requests",
+                        "If additional information or documents are requested: respond completely within the stated timeframe",
+                        "Confirm your health examination results have been submitted by the panel physician if applicable"
+                    ],
+                    "output": "Application processing underway; all Home Affairs requests responded to"
+                },
+                {
+                    "id": "V-02",
+                    "name": "Receive the Visa Grant Notice",
+                    "description": "If approved, Home Affairs issues a visa grant letter to your ImmiAccount and registered email. The visa is electronic — there is no physical stamp in your passport.",
+                    "info": "Your Student visa is an electronic visa. Verify and share your visa status using VEVO (Visa Entitlement Verification Online) at immi.homeaffairs.gov.au/visas/already-have-a-visa/check-visa-details-and-conditions/check-conditions-online. The grant letter shows your visa validity and conditions.",
+                    "actions": [
+                        "Check ImmiAccount and your registered email for the visa grant notification",
+                        "Read the visa grant letter carefully — note visa start date, end date, and conditions",
+                        "Verify your visa details using VEVO",
+                        "Save a copy of the grant letter",
+                        "If refused: read the refusal notice for the stated reasons and review your options with reference to Home Affairs guidance"
+                    ],
+                    "output": "Student visa (Subclass 500) granted; visa verified on VEVO"
+                }
+            ]
+        },
+        {
+            "id": 6,
+            "name": "Stage VI: Travel, Arrival & Visa Conditions",
+            "icon": "Plane",
+            "color": "bg-indigo-50 text-indigo-600",
+            "time": "Ongoing",
+            "sources": [
+                {
+                    "label": "Home Affairs – Student visa conditions",
+                    "url": "https://immi.homeaffairs.gov.au/visas/getting-a-visa/visa-listing/student-500/conditions"
+                },
+                {
+                    "label": "VEVO – Check visa details",
+                    "url": "https://immi.homeaffairs.gov.au/visas/already-have-a-visa/check-visa-details-and-conditions/check-conditions-online"
+                }
+            ],
+            "steps": [
+                {
+                    "id": "VI-01",
+                    "name": "Prepare for Travel and Australian Border Entry",
+                    "description": "Once your visa is granted, plan your travel to Australia. You must arrive before your visa start date and within its validity. Carry key documents when travelling.",
+                    "actions": [
+                        "Confirm your visa start and end dates on your grant letter and verify on VEVO",
+                        "Book flights to arrive in Australia in time for your course and within your visa validity",
+                        "Carry: valid Pakistani passport (linked to your visa), visa grant letter, CoE(s), OSHC policy, financial evidence, and institution accommodation details",
+                        "Review any current Australian Border Force entry requirements at abf.gov.au",
+                        "Keep your ImmiAccount login accessible during your stay"
+                    ],
+                    "output": "Travel booked within visa validity; all required documents prepared for Australian entry"
+                },
+                {
+                    "id": "VI-02",
+                    "name": "Arrive in Australia and Clear Australian Border Force",
+                    "description": "On arrival in Australia, present your valid passport to Australian Border Force. Your visa is electronic — no physical label is needed for entry.",
+                    "actions": [
+                        "Present your valid Pakistani passport to Australian Border Force on arrival",
+                        "Your visa is electronic — carry your grant letter in case questions arise",
+                        "Obtain and complete any incoming passenger card as required by current ABF process",
+                        "Proceed through customs following ABF instructions",
+                        "Confirm your entry on VEVO after arrival"
+                    ],
+                    "output": "Arrived in Australia; border cleared; electronic visa entry confirmed on VEVO"
+                },
+                {
+                    "id": "VI-03",
+                    "name": "Enrol and Commence Your Course",
+                    "description": "You must enrol and actively attend your CRICOS-registered course. Your provider reports enrolment and attendance to the Australian Government via PRISMS.",
+                    "actions": [
+                        "Attend your institution's orientation and complete enrolment by the required date",
+                        "Confirm your enrolment matches your CoE course",
+                        "Maintain active attendance and satisfactory academic progress per your institution's requirements",
+                        "Contact your institution before making any changes to your course, provider, or deferral — understand the visa implications first"
+                    ],
+                    "output": "Enrolled in CRICOS course; attendance and enrolment requirements understood"
+                },
+                {
+                    "id": "VI-04",
+                    "name": "Understand and Comply with Your Student Visa Conditions",
+                    "description": "Your Student visa is subject to conditions that you must comply with for the full duration of your visa. Breaching conditions can result in visa cancellation.",
+                    "info": "Review the conditions on your visa grant letter and at immi.homeaffairs.gov.au/visas/getting-a-visa/visa-listing/student-500/conditions. If unsure whether a specific activity is permitted, check with your institution's international student office or the Home Affairs website before proceeding.",
+                    "actions": [
+                        "Read all conditions on your Student visa grant letter",
+                        "Verify conditions using VEVO",
+                        "Review current Student visa conditions guidance at immi.homeaffairs.gov.au/visas/getting-a-visa/visa-listing/student-500/conditions",
+                        "Maintain your OSHC coverage for the full duration of your visa",
+                        "If your circumstances change (course, provider, address): check Home Affairs guidance on required notifications or visa actions"
+                    ],
+                    "output": "All Student visa conditions reviewed and being complied with"
+                },
+                {
+                    "id": "VI-05",
+                    "name": "Plan for Visa Extension or Post-Study Next Steps",
+                    "description": "If your course extends beyond your current visa or you wish to continue studying, apply for a further Student visa before your current visa expires. Plan post-study pathways in advance.",
+                    "actions": [
+                        "Track your Student visa expiry date on VEVO",
+                        "If extending for further study: review the further Student visa application process at immi.homeaffairs.gov.au well before expiry",
+                        "If considering post-graduation pathways (e.g., Temporary Graduate visa): check Home Affairs for eligibility requirements",
+                        "If departing Australia: ensure you depart before your visa expires and in compliance with conditions"
+                    ],
+                    "output": "Post-study plan confirmed; extension applied or departure planned before visa expiry"
+                }
+            ]
         }
-      ],
-      "steps": [
-        {
-          "id": "II-01",
-          "name": "Understand the Genuine Student Requirement",
-          "description": "The Genuine Student (GS) requirement asks you to demonstrate that you are a genuine student who intends to comply with the conditions of the Student visa. The assessment is holistic.",
-          "info": "Read the current Genuine Student requirement guidance at immi.homeaffairs.gov.au/visas/getting-a-visa/visa-listing/student-500/genuine-student-requirement before preparing your statement. The GS questions are part of the ImmiAccount application form itself.",
-          "actions": [
-            "Read the current Genuine Student requirement guidance on Home Affairs website",
-            "Prepare a truthful, specific written statement explaining your study intentions, how the course relates to your goals, and your ties to Pakistan",
-            "Gather supporting evidence reinforcing your Genuine Student statement (transcripts, prior qualifications, employment records, ties to Pakistan)"
-          ],
-          "output": "Genuine Student statement prepared; supporting evidence assembled"
-        },
-        {
-          "id": "II-02",
-          "name": "Prepare Passport and Identity Documents",
-          "description": "Your current Pakistani passport is required for the Student visa application. Confirm the current passport and identity document requirements on the Home Affairs website.",
-          "actions": [
-            "Confirm your Pakistani passport is valid — check current requirements at immi.homeaffairs.gov.au",
-            "Scan your passport biographical page at high resolution for upload",
-            "Review whether previous passports need to be provided — check current guidance on Home Affairs",
-            "Prepare a recent passport-size photograph meeting Home Affairs specifications",
-            "Review the current identity document requirements at immi.homeaffairs.gov.au/visas/getting-a-visa/visa-listing/student-500/documents"
-          ],
-          "output": "Valid passport confirmed; identity documents prepared and scanned for upload"
-        },
-        {
-          "id": "II-03",
-          "name": "Prepare Evidence of Financial Capacity",
-          "description": "You must demonstrate that you have the financial capacity to pay course fees and living costs during your stay in Australia. Check the current requirements and thresholds on the Home Affairs website.",
-          "warn": "Do not rely on unofficial sources for required financial amounts. Check the current financial capacity requirements at immi.homeaffairs.gov.au/visas/getting-a-visa/visa-listing/student-500/financial-capacity.",
-          "actions": [
-            "Review the current financial capacity requirements at immi.homeaffairs.gov.au/visas/getting-a-visa/visa-listing/student-500/financial-capacity",
-            "Obtain official bank statements covering the period specified by Home Affairs",
-            "If a sponsor is funding your studies: obtain the sponsor's financial evidence and a signed statutory declaration",
-            "If you have a scholarship: obtain the official scholarship letter",
-            "Ensure all financial documents are in English or accompanied by certified translations"
-          ],
-          "output": "Financial capacity evidence assembled meeting current Home Affairs requirements"
-        },
-        {
-          "id": "II-04",
-          "name": "Prepare Academic and English Language Evidence",
-          "description": "You will generally need to provide evidence of your previous academic qualifications and English language proficiency alongside your CoE. Review the current document requirements on Home Affairs.",
-          "actions": [
-            "Gather academic transcripts, certificates, and diplomas for your most recent qualification",
-            "Obtain certified English translations for any documents not in English",
-            "Prepare your English language test results (IELTS, TOEFL, PTE, Cambridge, etc.) if applicable",
-            "Review the current Student visa documents checklist at immi.homeaffairs.gov.au/visas/getting-a-visa/visa-listing/student-500/documents"
-          ],
-          "output": "Academic transcripts, qualifications, and English evidence prepared for upload"
-        }
-      ]
-    },
-    {
-      "id": 3,
-      "name": "Stage III: Health, Biometrics & OSHC",
-      "icon": "Activity",
-      "color": "bg-green-50 text-green-600",
-      "time": "Before or after lodging",
-      "sources": [
-        {
-          "label": "Home Affairs – Health requirement",
-          "url": "https://immi.homeaffairs.gov.au/help-support/meeting-our-requirements/health"
-        },
-        {
-          "label": "Home Affairs – Health examinations",
-          "url": "https://immi.homeaffairs.gov.au/help-support/meeting-our-requirements/health/health-examinations"
-        },
-        {
-          "label": "Home Affairs – Biometrics",
-          "url": "https://immi.homeaffairs.gov.au/help-support/meeting-our-requirements/biometrics"
-        },
-        {
-          "label": "Home Affairs – OSHC",
-          "url": "https://immi.homeaffairs.gov.au/visas/getting-a-visa/visa-listing/student-500/overseas-student-health-cover"
-        }
-      ],
-      "steps": [
-        {
-          "id": "III-01",
-          "name": "Undergo the Required Health Examination",
-          "description": "Most Student visa applicants are required to undergo a health examination with an approved panel physician, booked using the Health Assessment Processing (HAP) ID generated at or after lodgement of the visa application.",
-          "info": "Home Affairs typically issues a HAP ID when you lodge your application — you use it to book the health examination with an approved panel physician in Pakistan. Review the current health examination guidance at immi.homeaffairs.gov.au/help-support/meeting-our-requirements/health/health-examinations.",
-          "actions": [
-            "Review the current health examination requirements at immi.homeaffairs.gov.au/help-support/meeting-our-requirements/health/health-examinations",
-            "Find approved panel physicians in Pakistan using the Home Affairs panel doctor search tool",
-            "Once you have your HAP ID (from ImmiAccount after lodgement): book the health examination at an approved panel physician",
-            "Attend all required components of the examination as directed by the panel physician",
-            "Results are submitted electronically by the panel physician to Home Affairs — no separate submission required"
-          ],
-          "output": "Health examination completed at an approved panel physician; results transmitted to Home Affairs"
-        },
-        {
-          "id": "III-02",
-          "name": "Provide Biometrics (if requested)",
-          "description": "Home Affairs may request biometrics (fingerprints and photograph) as part of your application. If requested, you will be directed through ImmiAccount to provide them at a designated location.",
-          "info": "Not all applicants are asked to provide biometrics — Home Affairs will notify you through ImmiAccount. For Pakistan-based applicants, if biometrics are requested, check the instructions in your ImmiAccount notification for the current designated facility.",
-          "actions": [
-            "Monitor your ImmiAccount for any biometrics request",
-            "If biometrics are requested: follow the instructions in your ImmiAccount notification carefully",
-            "Book a biometrics appointment at the facility specified in the notification",
-            "Attend with your passport and appointment confirmation",
-            "Biometrics data is transmitted directly to Home Affairs"
-          ],
-          "output": "Biometrics provided at the designated facility (if requested by Home Affairs)"
-        },
-        {
-          "id": "III-03",
-          "name": "Arrange Overseas Student Health Cover (OSHC)",
-          "description": "Student visa applicants must obtain Overseas Student Health Cover (OSHC) from a Home Affairs-approved provider covering the full duration of the Student visa.",
-          "warn": "Maintaining OSHC for your entire visa period is a visa condition. Check the current list of approved providers and requirements at immi.homeaffairs.gov.au/visas/getting-a-visa/visa-listing/student-500/overseas-student-health-cover. Do not rely on unofficial sources for OSHC costs.",
-          "actions": [
-            "Review the current OSHC requirement at immi.homeaffairs.gov.au/visas/getting-a-visa/visa-listing/student-500/overseas-student-health-cover",
-            "Check the current list of Home Affairs-approved OSHC providers",
-            "Purchase OSHC covering the full period of your intended Australian stay",
-            "Record OSHC policy details: provider name, policy number, coverage dates",
-            "Confirm with your institution whether they arrange OSHC on your behalf"
-          ],
-          "output": "OSHC purchased from an approved provider; policy details recorded"
-        }
-      ]
-    },
-    {
-      "id": 4,
-      "name": "Stage IV: ImmiAccount Application & Lodgement",
-      "icon": "Monitor",
-      "color": "bg-amber-50 text-amber-600",
-      "time": "Online via ImmiAccount",
-      "sources": [
-        {
-          "label": "Home Affairs – ImmiAccount",
-          "url": "https://immi.homeaffairs.gov.au/help-support/tools-and-tips/online-tools/immiaccount"
-        },
-        {
-          "label": "Home Affairs – Visa fees",
-          "url": "https://immi.homeaffairs.gov.au/visas/getting-a-visa/fees-and-charges/current-visa-pricing/student"
-        },
-        {
-          "label": "Home Affairs – How to apply",
-          "url": "https://immi.homeaffairs.gov.au/visas/getting-a-visa/visa-listing/student-500/how-to-apply"
-        }
-      ],
-      "steps": [
-        {
-          "id": "IV-01",
-          "name": "Create or Log In to ImmiAccount",
-          "description": "All Australian Student visa applications are lodged online through ImmiAccount — the Department of Home Affairs online portal. Create an account if you do not already have one.",
-          "actions": [
-            "Go to immi.homeaffairs.gov.au and navigate to ImmiAccount",
-            "Create an ImmiAccount using your email address if you do not have one",
-            "Log in to your ImmiAccount",
-            "Read the current how-to-apply guidance for Student visa Subclass 500 at immi.homeaffairs.gov.au/visas/getting-a-visa/visa-listing/student-500/how-to-apply"
-          ],
-          "output": "ImmiAccount created and accessible; application guidance reviewed"
-        },
-        {
-          "id": "IV-02",
-          "name": "Complete the Online Application Form",
-          "description": "Start a new Student visa (Subclass 500) application in ImmiAccount. Complete all sections accurately, including your CoE number(s) and Genuine Student requirement responses.",
-          "actions": [
-            "In ImmiAccount, select New Application and choose Student visa (Subclass 500)",
-            "Enter your CoE number(s) as requested",
-            "Complete all personal details — name, date of birth, and passport number must exactly match your documents",
-            "Respond fully and honestly to the Genuine Student requirement questions",
-            "Answer all travel history, immigration history, and character questions accurately",
-            "Review all sections carefully before proceeding"
-          ],
-          "output": "Student visa application form fully completed in ImmiAccount"
-        },
-        {
-          "id": "IV-03",
-          "name": "Upload Supporting Documents",
-          "description": "Upload all required supporting documents to your ImmiAccount application. Documents must be clearly legible and in an accepted file format.",
-          "actions": [
-            "Review the current required documents list at immi.homeaffairs.gov.au/visas/getting-a-visa/visa-listing/student-500/documents",
-            "Upload your passport biographical page scan",
-            "Upload financial capacity evidence",
-            "Upload academic transcripts and qualifications",
-            "Upload English language test results (if applicable)",
-            "Upload OSHC policy details",
-            "Ensure all files are clearly legible in an accepted format (PDF, JPEG, or as specified)"
-          ],
-          "output": "All required documents uploaded to the ImmiAccount application"
-        },
-        {
-          "id": "IV-04",
-          "name": "Pay the Visa Application Charge and Lodge",
-          "description": "After completing the form and uploading documents, pay the visa application charge and submit the application. The charge is non-refundable even if the application is refused.",
-          "warn": "Check the current Student visa Subclass 500 application charge at immi.homeaffairs.gov.au/visas/getting-a-visa/fees-and-charges/current-visa-pricing/student before paying — do not rely on unofficial sources.",
-          "actions": [
-            "Verify the current visa application charge at the official Home Affairs fee page",
-            "Pay the visa application charge online within ImmiAccount",
-            "Save the payment receipt",
-            "Lodge (submit) the application — record your Transaction Reference Number (TRN)",
-            "Note your HAP ID from the confirmation — you will use it to book your health examination if not already done"
-          ],
-          "output": "Application lodged; TRN and HAP ID obtained"
-        }
-      ]
-    },
-    {
-      "id": 5,
-      "name": "Stage V: Decision & Visa Grant",
-      "icon": "CheckCircle",
-      "color": "bg-rose-50 text-rose-600",
-      "time": "After lodgement",
-      "sources": [
-        {
-          "label": "Home Affairs – Processing times",
-          "url": "https://immi.homeaffairs.gov.au/visas/getting-a-visa/visa-listing/student-500/processing-times"
-        },
-        {
-          "label": "VEVO – Check visa details",
-          "url": "https://immi.homeaffairs.gov.au/visas/already-have-a-visa/check-visa-details-and-conditions/check-conditions-online"
-        }
-      ],
-      "steps": [
-        {
-          "id": "V-01",
-          "name": "Await the Decision and Respond to Any Requests",
-          "description": "After lodgement, Home Affairs will assess your application. Monitor your ImmiAccount and registered email for any requests for additional information.",
-          "actions": [
-            "Check current Student visa processing times at immi.homeaffairs.gov.au/visas/getting-a-visa/visa-listing/student-500/processing-times",
-            "Do not make non-refundable travel arrangements until the visa is granted",
-            "Monitor your ImmiAccount and registered email for any Home Affairs requests",
-            "If additional information or documents are requested: respond completely within the stated timeframe",
-            "Confirm your health examination results have been submitted by the panel physician if applicable"
-          ],
-          "output": "Application processing underway; all Home Affairs requests responded to"
-        },
-        {
-          "id": "V-02",
-          "name": "Receive the Visa Grant Notice",
-          "description": "If approved, Home Affairs issues a visa grant letter to your ImmiAccount and registered email. The visa is electronic — there is no physical stamp in your passport.",
-          "info": "Your Student visa is an electronic visa. Verify and share your visa status using VEVO (Visa Entitlement Verification Online) at immi.homeaffairs.gov.au/visas/already-have-a-visa/check-visa-details-and-conditions/check-conditions-online. The grant letter shows your visa validity and conditions.",
-          "actions": [
-            "Check ImmiAccount and your registered email for the visa grant notification",
-            "Read the visa grant letter carefully — note visa start date, end date, and conditions",
-            "Verify your visa details using VEVO",
-            "Save a copy of the grant letter",
-            "If refused: read the refusal notice for the stated reasons and review your options with reference to Home Affairs guidance"
-          ],
-          "output": "Student visa (Subclass 500) granted; visa verified on VEVO"
-        }
-      ]
-    },
-    {
-      "id": 6,
-      "name": "Stage VI: Travel, Arrival & Visa Conditions",
-      "icon": "Plane",
-      "color": "bg-indigo-50 text-indigo-600",
-      "time": "Ongoing",
-      "sources": [
-        {
-          "label": "Home Affairs – Student visa conditions",
-          "url": "https://immi.homeaffairs.gov.au/visas/getting-a-visa/visa-listing/student-500/conditions"
-        },
-        {
-          "label": "VEVO – Check visa details",
-          "url": "https://immi.homeaffairs.gov.au/visas/already-have-a-visa/check-visa-details-and-conditions/check-conditions-online"
-        }
-      ],
-      "steps": [
-        {
-          "id": "VI-01",
-          "name": "Prepare for Travel and Australian Border Entry",
-          "description": "Once your visa is granted, plan your travel to Australia. You must arrive before your visa start date and within its validity. Carry key documents when travelling.",
-          "actions": [
-            "Confirm your visa start and end dates on your grant letter and verify on VEVO",
-            "Book flights to arrive in Australia in time for your course and within your visa validity",
-            "Carry: valid Pakistani passport (linked to your visa), visa grant letter, CoE(s), OSHC policy, financial evidence, and institution accommodation details",
-            "Review any current Australian Border Force entry requirements at abf.gov.au",
-            "Keep your ImmiAccount login accessible during your stay"
-          ],
-          "output": "Travel booked within visa validity; all required documents prepared for Australian entry"
-        },
-        {
-          "id": "VI-02",
-          "name": "Arrive in Australia and Clear Australian Border Force",
-          "description": "On arrival in Australia, present your valid passport to Australian Border Force. Your visa is electronic — no physical label is needed for entry.",
-          "actions": [
-            "Present your valid Pakistani passport to Australian Border Force on arrival",
-            "Your visa is electronic — carry your grant letter in case questions arise",
-            "Obtain and complete any incoming passenger card as required by current ABF process",
-            "Proceed through customs following ABF instructions",
-            "Confirm your entry on VEVO after arrival"
-          ],
-          "output": "Arrived in Australia; border cleared; electronic visa entry confirmed on VEVO"
-        },
-        {
-          "id": "VI-03",
-          "name": "Enrol and Commence Your Course",
-          "description": "You must enrol and actively attend your CRICOS-registered course. Your provider reports enrolment and attendance to the Australian Government via PRISMS.",
-          "actions": [
-            "Attend your institution's orientation and complete enrolment by the required date",
-            "Confirm your enrolment matches your CoE course",
-            "Maintain active attendance and satisfactory academic progress per your institution's requirements",
-            "Contact your institution before making any changes to your course, provider, or deferral — understand the visa implications first"
-          ],
-          "output": "Enrolled in CRICOS course; attendance and enrolment requirements understood"
-        },
-        {
-          "id": "VI-04",
-          "name": "Understand and Comply with Your Student Visa Conditions",
-          "description": "Your Student visa is subject to conditions that you must comply with for the full duration of your visa. Breaching conditions can result in visa cancellation.",
-          "info": "Review the conditions on your visa grant letter and at immi.homeaffairs.gov.au/visas/getting-a-visa/visa-listing/student-500/conditions. If unsure whether a specific activity is permitted, check with your institution's international student office or the Home Affairs website before proceeding.",
-          "actions": [
-            "Read all conditions on your Student visa grant letter",
-            "Verify conditions using VEVO",
-            "Review current Student visa conditions guidance at immi.homeaffairs.gov.au/visas/getting-a-visa/visa-listing/student-500/conditions",
-            "Maintain your OSHC coverage for the full duration of your visa",
-            "If your circumstances change (course, provider, address): check Home Affairs guidance on required notifications or visa actions"
-          ],
-          "output": "All Student visa conditions reviewed and being complied with"
-        },
-        {
-          "id": "VI-05",
-          "name": "Plan for Visa Extension or Post-Study Next Steps",
-          "description": "If your course extends beyond your current visa or you wish to continue studying, apply for a further Student visa before your current visa expires. Plan post-study pathways in advance.",
-          "actions": [
-            "Track your Student visa expiry date on VEVO",
-            "If extending for further study: review the further Student visa application process at immi.homeaffairs.gov.au well before expiry",
-            "If considering post-graduation pathways (e.g., Temporary Graduate visa): check Home Affairs for eligibility requirements",
-            "If departing Australia: ensure you depart before your visa expires and in compliance with conditions"
-          ],
-          "output": "Post-study plan confirmed; extension applied or departure planned before visa expiry"
-        }
-      ]
-    }
-  ],
-  "documents": [
-    "Valid Pakistani Passport",
-    "Confirmation of Enrolment (CoE)",
-    "Genuine Student Statement and Evidence",
-    "Evidence of Financial Capacity (Bank Statements, Sponsorship, etc.)",
-    "Academic Transcripts and Qualifications",
-    "English Language Test Results (IELTS, PTE, TOEFL, etc.)",
-    "Overseas Student Health Cover (OSHC) Policy",
-    "Medical Examination Results (via eMedical)",
-    "Passport-size Photographs",
-    "Identity Documents (National ID, etc.)"
-  ]
+    ],
+    "documents": [
+        "Valid Pakistani Passport",
+        "Confirmation of Enrolment (CoE)",
+        "Genuine Student Statement and Evidence",
+        "Evidence of Financial Capacity (Bank Statements, Sponsorship, etc.)",
+        "Academic Transcripts and Qualifications",
+        "English Language Test Results (IELTS, PTE, TOEFL, etc.)",
+        "Overseas Student Health Cover (OSHC) Policy",
+        "Medical Examination Results (via eMedical)",
+        "Passport-size Photographs",
+        "Identity Documents (National ID, etc.)"
+    ]
 }

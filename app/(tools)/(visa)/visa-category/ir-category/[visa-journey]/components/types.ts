@@ -35,7 +35,7 @@ export interface RoadmapStep {
     type?: "tool" | "service" | "guide";
   }[];
   possibleOutcomes?: string[];
-  scenarioSpecific?: 'bio' | 'step' | 'adopted';
+  scenarioSpecific?: string;
   success?: string;
   successUr?: string;
 }
@@ -57,19 +57,60 @@ export interface RoadmapStage {
   timeline?: string;
   icon?: string;
   color?: string;
+  scenarioSpecific?: string;
   sources?: RoadmapSource[];
   steps: RoadmapStep[];
 }
 
+export interface ScenarioOption {
+  id: string;
+  title: string;
+  desc: string;
+}
+
 export interface RoadmapData {
-  infoLinks?: { label: string; url: string; }[] | undefined;
+  scenarios: any;
+
   info?: string;
+
+  infoLink?: string;
+  infoLinkText?: string;
+
+  infoLinks?: {
+    text: string;
+    url: string;
+  }[];
+
   disclaimer?: string;
+  disclaimerUr?: string;
+
+  disclaimerLink?: string;
+  disclaimerLinkText?: string;
+
+  disclaimerLinks?: {
+    text: string;
+    url: string;
+  }[];
+
   scenarioNotes: Record<string, string>;
+
   title?: string;
   titleUr?: string;
+
   description?: string;
   descriptionUr?: string;
+
   stages: RoadmapStage[];
+
   documents?: string[];
+
+  visaOverview?: {
+    title: string;
+    titleUr?: string;
+    text: string;
+    textUr?: string;
+    flag: string;
+    link: string;
+    linkText?: string;
+  };
 }

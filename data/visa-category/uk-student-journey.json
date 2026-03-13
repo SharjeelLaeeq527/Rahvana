@@ -2,7 +2,19 @@
   "title": "UK Student Visa Journey",
   "description": "Step-by-step roadmap for Pakistani students applying for a UK Student visa (Student route) — from receiving a university offer and CAS through arriving in the UK and maintaining your visa conditions.",
   "disclaimer": "This page is for informational guidance only. UK immigration rules and requirements can change. Always confirm current requirements at GOV.UK – Student visa and with your university's international student support team before taking any action.",
+  "disclaimerLinks": [
+    {
+      "text": "GOV.UK – Student visa",
+      "url": "https://www.gov.uk/student-visa"
+    }
+  ],
   "info": "The UK Student visa allows you to study at a licensed student sponsor (your university or college). You must have a Confirmation of Acceptance for Studies (CAS) from your sponsor before applying. Pakistan is a country where applicants must provide a tuberculosis (TB) test certificate from an approved clinic. Check all current requirements at gov.uk/student-visa.",
+  "infoLinks": [
+    {
+      "text": "gov.uk/student-visa",
+      "url": "https://www.gov.uk/student-visa"
+    }
+  ],
   "stages": [
     {
       "id": 1,

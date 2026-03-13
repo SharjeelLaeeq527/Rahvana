@@ -3,6 +3,17 @@
   "titleUr": "ایف-۱ سٹوڈنٹ ویزا کا سفر",
   "description": "Step-by-step roadmap for Pakistani students pursuing an F-1 nonimmigrant student visa — from school admission through maintaining status in the United States.",
   "descriptionUr": "ایف-۱ سٹوڈنٹ ویزا پر ریاستہائے متحدہ میں تعلیم حاصل کرنے کے لیے آپ کی مکمل رہنمائی۔",
+  "disclaimer": "This page is for informational guidance only. Immigration requirements and procedures can change. Always confirm current requirements with your school's Designated School Official (DSO), the U.S. Embassy & Consulates in Pakistan, and travel.state.gov before taking any action.",
+  "disclaimerLinks": [
+    {
+      "text": "U.S. Embassy & Consulates in Pakistan",
+      "url": "https://pk.usembassy.gov/visas/"
+    },
+    {
+      "text": "travel.state.gov",
+      "url": "https://travel.state.gov/content/travel/en/us-visas/study.html"
+    }
+  ],
   "stages": [
     {
       "id": 1,

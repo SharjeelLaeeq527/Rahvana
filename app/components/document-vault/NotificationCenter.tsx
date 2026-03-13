@@ -119,30 +119,6 @@ export function NotificationCenter() {
             <CheckCheck className="h-4 w-4 mr-1.5 sm:mr-2 shrink-0" />
             {t("documentVaultPage.components.notificationCenter.markAllRead")}
           </Button>
-
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="flex-1 sm:flex-none justify-center h-9 text-xs sm:text-sm font-semibold"
-              >
-                <Clock className="h-4 w-4 mr-1.5 sm:mr-2 shrink-0" />
-                {t("documentVaultPage.components.notificationCenter.snoozeAll")}
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={() => snoozeAll(1)}>
-                {t("documentVaultPage.components.notificationCenter.1hour")}
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => snoozeAll(4)}>
-                {t("documentVaultPage.components.notificationCenter.4hours")}
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => snoozeAll(24)}>
-                {t("documentVaultPage.components.notificationCenter.24hours")}
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
         </div>
       )}
 
@@ -273,36 +249,6 @@ function NotificationItem({
                   )}
                 </Button>
               )}
-
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    className="h-8 text-xs font-semibold flex-1 sm:flex-none"
-                  >
-                    <Clock className="h-3 w-3 mr-1.5 shrink-0" />
-                    {t(
-                      "documentVaultPage.components.notificationCenter.snooze",
-                    )}
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  <DropdownMenuItem onClick={() => snooze(notification.id, 1)}>
-                    {t("documentVaultPage.components.notificationCenter.1hour")}
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => snooze(notification.id, 4)}>
-                    {t(
-                      "documentVaultPage.components.notificationCenter.4hours",
-                    )}
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => snooze(notification.id, 24)}>
-                    {t(
-                      "documentVaultPage.components.notificationCenter.24hours",
-                    )}
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
             </div>
           </div>
         </div>
