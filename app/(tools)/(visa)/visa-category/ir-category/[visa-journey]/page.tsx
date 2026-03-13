@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/tooltip";
 import { useParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { AlertTriangle, ChevronDown, icons, InfoIcon } from "lucide-react";
+import { ChevronDown, icons } from "lucide-react";
 import {
   RotateCcw,
   ArrowRight,
@@ -27,6 +27,7 @@ import { DocumentVault } from "./components/DocumentVault";
 import { useLanguage } from "@/app/context/LanguageContext";
 import { RoadmapData, RoadmapStage } from "./components/types";
 import ScenarioSelectionModal from "./components/ScenarioSelectionModal";
+import VisaCategoryTooltip from "./components/VisaCategoryToolTip";
 
 export default function IR1JourneyPage() {
   const { user } = useAuth();
@@ -186,11 +187,18 @@ export default function IR1JourneyPage() {
           {/* Header */}
           <div className="flex flex-col md:flex-row md:items-start justify-between gap-4 mb-2">
             <div className="flex-1">
-              <h1 className="text-3xl md:text-5xl font-bold mb-3 md:mb-4">
-                {language === "ur" && roadmapData.titleUr
-                  ? roadmapData.titleUr
-                  : roadmapData.title || t("ir1Journey.title")}
-              </h1>
+              <div className="flex items-center gap-2 mb-3 md:mb-4">
+                <h1 className="text-3xl md:text-5xl font-bold">
+                  {language === "ur" && roadmapData.titleUr
+                    ? roadmapData.titleUr
+                    : roadmapData.title || t("ir1Journey.title")}
+                </h1>
+
+                <VisaCategoryTooltip
+                  roadmapData={roadmapData}
+                  language={language}
+                />
+              </div>
               <p className="text-slate-500 mb-6 md:mb-8 text-base md:text-lg max-w-2xl">
                 {language === "ur" && roadmapData.descriptionUr
                   ? roadmapData.descriptionUr
@@ -298,180 +306,6 @@ export default function IR1JourneyPage() {
                 </div>
               </Tooltip>
             </TooltipProvider>
-          )}
-          {/* Disclaimer & Overview */}
-          <div className="flex flex-col">
-            {(roadmapData.disclaimer || roadmapData.disclaimerUr) && (
-              <div className="bg-amber-50/50 border border-amber-200/50 rounded-2xl p-5 md:p-6 shadow-sm mb-4 md:mb-6">
-                <p className="text-[14px] md:text-[15px] text-amber-900 leading-relaxed font-medium">
-                  <span className="font-black text-amber-800 uppercase tracking-tighter mr-1.5">
-                    Disclaimer:
-                  </span>
-                  {(() => {
-                    const text =
-                      language === "ur" && roadmapData.disclaimerUr
-                        ? roadmapData.disclaimerUr
-                        : roadmapData.disclaimer || "";
-
-                    const links = [...(roadmapData.disclaimerLinks || [])];
-                    if (
-                      roadmapData.disclaimerLink &&
-                      roadmapData.disclaimerLinkText
-                    ) {
-                      links.push({
-                        text: roadmapData.disclaimerLinkText,
-                        url: roadmapData.disclaimerLink,
-                      });
-                    }
-
-                    if (links.length === 0) return text;
-
-                    // Sort links by text length descending to avoid partial matches on longer strings
-                    const sortedLinks = links.sort(
-                      (a, b) => b.text.length - a.text.length,
-                    );
-
-                    let parts: (string | React.ReactNode)[] = [text];
-
-                    sortedLinks.forEach((link) => {
-                      const newParts: (string | React.ReactNode)[] = [];
-                      parts.forEach((part) => {
-                        if (
-                          typeof part === "string" &&
-                          part.includes(link.text)
-                        ) {
-                          const subParts = part.split(link.text);
-                          subParts.forEach((subPart, i) => {
-                            newParts.push(subPart);
-                            if (i < subParts.length - 1) {
-                              newParts.push(
-                                <a
-                                  key={`${link.text}-${i}`}
-                                  href={link.url}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="font-bold underline underline-offset-2 hover:text-amber-700 transition-colors inline-flex items-center"
-                                >
-                                  {link.text}
-                                </a>,
-                              );
-                            }
-                          });
-                        } else {
-                          newParts.push(part);
-                        }
-                      });
-                      parts = newParts;
-                    });
-
-                    return parts;
-                  })()}
-                </p>
-              </div>
-            )}
-
-            {roadmapData.visaOverview && (
-              <div className="bg-sky-50/50 border border-sky-100 rounded-2xl p-6 flex gap-6 items-start shadow-sm mb-4 md:mb-6">
-                <div className="hidden sm:flex text-slate-500 font-bold text-lg h-10 w-10 items-center justify-center shrink-0 uppercase tracking-tighter">
-                  {roadmapData.visaOverview.flag || "GOV"}
-                </div>
-                <div className="flex-1">
-                  <h3 className="text-[#1a4b84] font-black uppercase tracking-wider mb-2 text-[13px] sm:text-[14px]">
-                    {language === "ur" && roadmapData.visaOverview.titleUr
-                      ? roadmapData.visaOverview.titleUr
-                      : roadmapData.visaOverview.title}
-                  </h3>
-                  <div className="text-slate-600 text-[14px] leading-relaxed font-medium">
-                    {language === "ur" && roadmapData.visaOverview.textUr
-                      ? roadmapData.visaOverview.textUr
-                      : roadmapData.visaOverview.text}
-                    {roadmapData.visaOverview.link && (
-                      <a
-                        href={roadmapData.visaOverview.link}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="ml-1 text-[#1a4b84] font-bold underline decoration-2 underline-offset-2"
-                      >
-                        {roadmapData.visaOverview.linkText ||
-                          roadmapData.visaOverview.link
-                            .replace(/^https?:\/\//, "")
-                            .split("/")[0]}
-                      </a>
-                    )}
-                  </div>
-                </div>
-              </div>
-            )}
-          </div>
-
-          {/* Info */}
-          {roadmapData.info && (
-            <div className="bg-[#e8f6f6] border border-[#14a0a6] rounded-2xl p-5 md:p-6 shadow-sm mb-4 md:mb-6">
-              <p className="text-[14px] md:text-[15px] text-[#0a5a5d] leading-relaxed font-medium">
-                <span className="font-black text-[#0a5a5d] uppercase tracking-tighter mr-1.5 inline-flex items-center gap-1">
-                  Info:
-                </span>
-
-                {(() => {
-                  const text = roadmapData.info || "";
-
-                  const links = [...(roadmapData.infoLinks || [])];
-
-                  if (roadmapData.infoLink && roadmapData.infoLinkText) {
-                    links.push({
-                      text: roadmapData.infoLinkText,
-                      url: roadmapData.infoLink,
-                    });
-                  }
-
-                  if (links.length === 0) return text;
-
-                  // Prevent partial replacement
-                  const sortedLinks = links.sort(
-                    (a, b) => b.text.length - a.text.length,
-                  );
-
-                  let parts: (string | React.ReactNode)[] = [text];
-
-                  sortedLinks.forEach((link) => {
-                    const newParts: (string | React.ReactNode)[] = [];
-
-                    parts.forEach((part) => {
-                      if (
-                        typeof part === "string" &&
-                        part.includes(link.text)
-                      ) {
-                        const subParts = part.split(link.text);
-
-                        subParts.forEach((subPart, i) => {
-                          newParts.push(subPart);
-
-                          if (i < subParts.length - 1) {
-                            newParts.push(
-                              <a
-                                key={`${link.text}-${i}`}
-                                href={link.url}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="font-bold underline underline-offset-2 hover:text-[#0a5a5d] transition-colors inline-flex items-center"
-                              >
-                                {link.text}
-                              </a>,
-                            );
-                          }
-                        });
-                      } else {
-                        newParts.push(part);
-                      }
-                    });
-
-                    parts = newParts;
-                  });
-
-                  return parts;
-                })()}
-              </p>
-            </div>
           )}
 
           {/* Stage Overview */}
