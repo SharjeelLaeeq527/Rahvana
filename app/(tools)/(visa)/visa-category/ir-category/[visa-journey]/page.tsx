@@ -9,7 +9,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { useParams, useRouter } from "next/navigation";
+import { useParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronDown, icons } from "lucide-react";
 import {
@@ -78,7 +78,7 @@ export default function IR1JourneyPage() {
       roadmapData,
     });
 
-  const router = useRouter();
+  // const router = useRouter();
   const isSignedIn = !!user;
 
   // When scenario changes, reset to first step of current stage if needed
@@ -136,7 +136,7 @@ export default function IR1JourneyPage() {
     setStartFreshModalOpen(false);
   };
 
-  const handleScenarioSelect = (type: "bio" | "step" | "adopted") => {
+  const handleScenarioSelect = (type: string) => {
     actions.setScenario(type);
   };
 
@@ -230,26 +230,41 @@ export default function IR1JourneyPage() {
                     >
                       <div className="flex gap-1">
                         <p className="font-semibold uppercase tracking-wide text-slate-500">
-                          Relationship Type:
+                          {roadmapData.scenarios ? "Visa Type:" : "Relationship Type:"}
                         </p>
 
                         <p className="font-semibold text-primary">
-                          {state.scenarioType === "bio" && "Biological Child"}
-                          {state.scenarioType === "step" && "Stepchild"}
-                          {state.scenarioType === "adopted" && "Adopted Child"}
+                          {roadmapData.scenarios 
+                            ? roadmapData.scenarios.find(s => s.id === state.scenarioType)?.title 
+                            : (
+                              <>
+                                {state.scenarioType === "bio" && "Biological Child"}
+                                {state.scenarioType === "step" && "Stepchild"}
+                                {state.scenarioType === "adopted" && "Adopted Child"}
+                              </>
+                            )
+                          }
                         </p>
                       </div>
 
                       <div className="flex items-center gap-3">
-                        <button
+                        <span
+                          role="button"
+                          tabIndex={0}
                           onClick={(e) => {
                             e.stopPropagation();
                             setShowScenarioModal(true);
                           }}
-                          className="text-sm font-medium text-primary hover:underline"
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter' || e.key === ' ') {
+                              e.stopPropagation();
+                              setShowScenarioModal(true);
+                            }
+                          }}
+                          className="text-sm font-medium text-primary hover:underline cursor-pointer"
                         >
                           Change
-                        </button>
+                        </span>
 
                         <motion.div
                           animate={{ rotate: relationshipNotesOpen ? 180 : 0 }}
@@ -311,40 +326,40 @@ export default function IR1JourneyPage() {
                       (a, b) => b.text.length - a.text.length,
                     );
 
-                    let parts: (string | JSX.Element)[] = [text];
-
-                    sortedLinks.forEach((link) => {
-                      const newParts: (string | JSX.Element)[] = [];
-                      parts.forEach((part) => {
-                        if (
-                          typeof part === "string" &&
-                          part.includes(link.text)
-                        ) {
-                          const subParts = part.split(link.text);
-                          subParts.forEach((subPart, i) => {
-                            newParts.push(subPart);
-                            if (i < subParts.length - 1) {
-                              newParts.push(
-                                <a
-                                  key={`${link.text}-${i}`}
-                                  href={link.url}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="font-bold underline underline-offset-2 hover:text-amber-700 transition-colors inline-flex items-center"
-                                >
-                                  {link.text}
-                                </a>,
-                              );
-                            }
-                          });
-                        } else {
-                          newParts.push(part);
-                        }
-                      });
-                      parts = newParts;
-                    });
-
-                    return parts;
+                    let parts: (string | React.ReactNode)[] = [text];
+ 
+                     sortedLinks.forEach((link) => {
+                       const newParts: (string | React.ReactNode)[] = [];
+                       parts.forEach((part) => {
+                         if (
+                           typeof part === "string" &&
+                           part.includes(link.text)
+                         ) {
+                           const subParts = part.split(link.text);
+                           subParts.forEach((subPart, i) => {
+                             newParts.push(subPart);
+                             if (i < subParts.length - 1) {
+                               newParts.push(
+                                 <a
+                                   key={`${link.text}-${i}`}
+                                   href={link.url}
+                                   target="_blank"
+                                   rel="noopener noreferrer"
+                                   className="font-bold underline underline-offset-2 hover:text-amber-700 transition-colors inline-flex items-center"
+                                 >
+                                   {link.text}
+                                 </a>,
+                               );
+                             }
+                           });
+                         } else {
+                           newParts.push(part);
+                         }
+                       });
+                       parts = newParts;
+                     });
+ 
+                     return parts;
                   })()}
                 </p>
               </div>
@@ -387,13 +402,19 @@ export default function IR1JourneyPage() {
             <div className="flex items-center gap-3 mb-6 md:mb-8">
               <div className="w-1 h-6 md:h-8 bg-primary rounded-full" />
               <h2 className="text-xl md:text-2xl font-bold text-slate-900 tracking-tight">
-                The {roadmapData.stages.length} Stages of Your Journey
+                {(() => {
+                  const visibleStagesCount = roadmapData.stages.filter(s => 
+                    !hasScenarios || !s.scenarioSpecific || s.scenarioSpecific === state.scenarioType
+                  ).length;
+                  return `The ${visibleStagesCount} Stages of Your Journey`;
+                })()}
               </h2>
             </div>
 
             <div className="flex overflow-x-auto gap-4 pb-6 pt-2 snap-x snap-mandatory hide-scrollbar px-4 scroll-smooth">
-              {roadmapData.stages.map(
-                (stageItem: RoadmapStage, idx: number) => {
+              {roadmapData.stages
+                .filter((stage: RoadmapStage) => !hasScenarios || !stage.scenarioSpecific || stage.scenarioSpecific === state.scenarioType)
+                .map((stage: RoadmapStage, sIdx: number, filteredStages: RoadmapStage[]) => {
                   const defaultIcons = [
                     "FileText",
                     "Layout",
@@ -410,18 +431,18 @@ export default function IR1JourneyPage() {
                   ];
 
                   const iconName =
-                    stageItem.icon || defaultIcons[idx % defaultIcons.length];
+                    stage.icon || defaultIcons[sIdx % defaultIcons.length];
                   // eslint-disable-next-line @typescript-eslint/no-explicit-any
                   const Icon = (icons as any)[iconName] || icons.FileText;
 
                   const color =
-                    stageItem.color ||
-                    defaultColors[idx % defaultColors.length];
-                  const isLast = idx === roadmapData.stages.length - 1;
+                    stage.color ||
+                    defaultColors[sIdx % defaultColors.length];
+                  const isLast = sIdx === filteredStages.length - 1;
 
                   return (
                     <div
-                      key={stageItem.id}
+                      key={stage.id}
                       className="relative group shrink-0 h-48 w-50 sm:w-52.5 lg:w-55 snap-center"
                     >
                       <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm h-full flex flex-col">
@@ -431,16 +452,16 @@ export default function IR1JourneyPage() {
                           <Icon className="w-5 h-5" />
                         </div>
                         <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">
-                          {t("visaJourney.stageShort", { stage: idx + 1 })}
+                          {t("visaJourney.stageShort", { stage: sIdx + 1 })}
                         </span>
                         <h4 className="font-bold text-slate-800 text-[15px] mb-2 leading-tight">
-                          {language === "ur" && stageItem.nameUr
-                            ? stageItem.nameUr
-                            : stageItem.name}
+                          {language === "ur" && stage.nameUr
+                            ? stage.nameUr
+                            : stage.name}
                         </h4>
                         <div className="mt-auto pt-2 flex items-center gap-1.5 text-slate-500">
                           <span className="text-[11px] font-medium">
-                            {stageItem.timeline || "Variable"}
+                            {stage.timeline || "Variable"}
                           </span>
                         </div>
                       </div>
@@ -574,6 +595,25 @@ export default function IR1JourneyPage() {
         onConfirm={(type) => {
           handleScenarioSelect(type);
         }}
+        options={roadmapData.scenarios || [
+          {
+            id: "bio",
+            title: "Biological Child",
+            desc: "You are petitioning your biological child. Birth certificate documentation will be required.",
+          },
+          {
+            id: "step",
+            title: "Stepchild",
+            desc: "Marriage between the petitioner and biological parent must occur before the child turns 18.",
+          },
+          {
+            id: "adopted",
+            title: "Adopted Child",
+            desc: "Adoption must be finalized before age 16 and child must be in legal custody for 2 years.",
+          },
+        ]}
+        title={roadmapData.scenarios ? "Select Visa Type" : "Select Relationship Type"}
+        description={roadmapData.scenarios ? "Choose the student visa type." : "Choose the relationship type that applies to your case."}
       />
     </section>
   );
@@ -587,7 +627,7 @@ interface WizardProps {
   actions: WizardActions;
   isLoaded: boolean;
   isSignedIn: boolean;
-  selectedScenario?: "bio" | "step" | "adopted";
+  selectedScenario?: string;
   hasScenarios?: boolean;
 }
 
@@ -596,8 +636,8 @@ function Wizard({
   state,
   actions,
   isLoaded,
-  isSignedIn,
-  selectedScenario = "bio",
+  // isSignedIn,
+  selectedScenario,
   hasScenarios = false,
 }: WizardProps) {
   const { t } = useLanguage();
@@ -613,31 +653,73 @@ function Wizard({
 
   const currentStage = roadmapData.stages[state.currentStage];
   const currentStep = currentStage?.steps[state.currentStep || 0];
-  const totalSteps = roadmapData.stages.reduce(
-    (acc: number, s: RoadmapStage) => acc + s.steps.length,
+  const relevantStages = roadmapData.stages.filter(s => !hasScenarios || !s.scenarioSpecific || s.scenarioSpecific === selectedScenario);
+  const totalSteps = relevantStages.reduce(
+    (acc: number, s: RoadmapStage) => {
+      const visibleSteps = s.steps.filter(st => !hasScenarios || !st.scenarioSpecific || st.scenarioSpecific === selectedScenario);
+      return acc + visibleSteps.length;
+    },
     0,
   );
   const completedTotal = state.completedSteps.size;
-  const progressPercent = Math.round((completedTotal / totalSteps) * 100);
+  const progressPercent = totalSteps > 0 ? Math.round((completedTotal / totalSteps) * 100) : 0;
 
   const handleNext = () => {
-    const nextStepIdx = (state.currentStep || 0) + 1;
-    if (nextStepIdx < currentStage.steps.length) {
-      actions.setCurrentStep(nextStepIdx);
-    } else if (state.currentStage + 1 < roadmapData.stages.length) {
-      actions.setStage(state.currentStage + 1);
-      actions.setCurrentStep(0);
+    const visibleStepsUnderCurrentStageIndices = currentStage.steps
+      .map((st, i) => (!hasScenarios || !st.scenarioSpecific || st.scenarioSpecific === selectedScenario ? i : -1))
+      .filter(i => i !== -1);
+    
+    const currentPosInVisible = visibleStepsUnderCurrentStageIndices.indexOf(state.currentStep || 0);
+    
+    if (currentPosInVisible < visibleStepsUnderCurrentStageIndices.length - 1) {
+      actions.setCurrentStep(visibleStepsUnderCurrentStageIndices[currentPosInVisible + 1]);
+    } else {
+      // Find next visible stage
+      let nextStageIdx = state.currentStage + 1;
+      while (nextStageIdx < roadmapData.stages.length) {
+        const stage = roadmapData.stages[nextStageIdx];
+        const isStageVisible = !hasScenarios || !stage.scenarioSpecific || stage.scenarioSpecific === selectedScenario;
+        const visibleSteps = stage.steps.filter(st => !hasScenarios || !st.scenarioSpecific || st.scenarioSpecific === selectedScenario);
+        
+        if (isStageVisible && visibleSteps.length > 0) {
+          const firstVisibleStepIdx = stage.steps.findIndex(st => !hasScenarios || !st.scenarioSpecific || st.scenarioSpecific === selectedScenario);
+          actions.setStage(nextStageIdx);
+          actions.setCurrentStep(firstVisibleStepIdx);
+          return;
+        }
+        nextStageIdx++;
+      }
     }
   };
 
   const handlePrev = () => {
-    const prevStepIdx = (state.currentStep || 0) - 1;
-    if (prevStepIdx >= 0) {
-      actions.setCurrentStep(prevStepIdx);
-    } else if (state.currentStage - 1 >= 0) {
-      const prevStage = roadmapData.stages[state.currentStage - 1];
-      actions.setStage(state.currentStage - 1);
-      actions.setCurrentStep(prevStage.steps.length - 1);
+    const visibleStepsUnderCurrentStageIndices = currentStage.steps
+      .map((st, i) => (!hasScenarios || !st.scenarioSpecific || st.scenarioSpecific === selectedScenario ? i : -1))
+      .filter(i => i !== -1);
+    
+    const currentPosInVisible = visibleStepsUnderCurrentStageIndices.indexOf(state.currentStep || 0);
+
+    if (currentPosInVisible > 0) {
+      actions.setCurrentStep(visibleStepsUnderCurrentStageIndices[currentPosInVisible - 1]);
+    } else {
+      // Find previous visible stage
+      let prevStageIdx = state.currentStage - 1;
+      while (prevStageIdx >= 0) {
+        const stage = roadmapData.stages[prevStageIdx];
+        const isStageVisible = !hasScenarios || !stage.scenarioSpecific || stage.scenarioSpecific === selectedScenario;
+        const visibleSteps = stage.steps.filter(st => !hasScenarios || !st.scenarioSpecific || st.scenarioSpecific === selectedScenario);
+        
+        if (isStageVisible && visibleSteps.length > 0) {
+          const lastVisibleStepIdx = stage.steps.map((st, i) => (!hasScenarios || !st.scenarioSpecific || st.scenarioSpecific === selectedScenario ? i : -1))
+            .filter(i => i !== -1).pop();
+          if (typeof lastVisibleStepIdx === "number") {
+            actions.setStage(prevStageIdx);
+            actions.setCurrentStep(lastVisibleStepIdx);
+            return;
+          }
+        }
+        prevStageIdx--;
+      }
     }
   };
 

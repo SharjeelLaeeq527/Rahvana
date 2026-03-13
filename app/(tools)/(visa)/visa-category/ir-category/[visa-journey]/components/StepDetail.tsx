@@ -86,9 +86,9 @@ export function StepDetail({
                       className="text-indigo-900 text-sm font-bold leading-relaxed"
                       dangerouslySetInnerHTML={{
                         __html:
-                          isUrdu && step.outputUr
+                          (isUrdu && step.outputUr
                             ? step.outputUr
-                            : step.output || step.success,
+                            : step.output || step.success) || "",
                       }}
                     />
                   </div>
@@ -137,17 +137,17 @@ export function StepDetail({
               <div className="flex items-start gap-3 p-4 bg-sky-50 rounded-xl border border-sky-100">
                 <Info className="w-5 h-5 text-sky-500 mt-0.5 shrink-0" />
                 <p className="text-[15px] font-medium text-sky-900 leading-relaxed">
-                  {isUrdu && step.infoUr ? step.infoUr : step.info}
+                  {step.info}
                 </p>
               </div>
             )}
-            {(step.warn || step.warnUr) && (
+            {(step.warn) && (
               <div className="flex items-start gap-3 p-4 bg-amber-50 rounded-xl border border-amber-100">
                 <div className="w-5 h-5 rounded-full bg-amber-100 flex items-center justify-center shrink-0 mt-0.5 text-amber-600 font-bold text-sm">
                   !
                 </div>
                 <p className="text-[15px] font-medium text-amber-900 leading-relaxed">
-                  {isUrdu && step.warnUr ? step.warnUr : step.warn}
+                  {step.warn}
                 </p>
               </div>
             )}
@@ -214,9 +214,9 @@ export function StepDetail({
               className="text-indigo-900 text-[16px] font-bold leading-relaxed"
               dangerouslySetInnerHTML={{
                 __html:
-                  isUrdu && step.outputUr
+                  (isUrdu && step.outputUr
                     ? step.outputUr
-                    : step.output || step.success,
+                    : step.output || step.success) || "",
               }}
             />
           </div>

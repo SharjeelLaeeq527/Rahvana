@@ -2,6 +2,22 @@
     "title": "China Student Visa Journey",
     "description": "Step-by-step roadmap for Pakistani students applying for a Chinese student visa (X1 or X2) — from university admission and required documents through arriving in China and completing residence permit registration.",
     "disclaimer": "Informational guidance only. Chinese visa policies and requirements can change. Always confirm current requirements with the Chinese Embassy in Pakistan and the China Visa Application Service Center before taking any action.",
+    "scenarios": [
+        {
+            "id": "x1",
+            "title": "X1 (Long-term)",
+            "desc": "Study duration > 180 days. Requires conversion to Residence Permit after entry."
+        },
+        {
+            "id": "x2",
+            "title": "X2 (Short-term)",
+            "desc": "Study duration ≤ 180 days. No residence permit conversion required."
+        }
+    ],
+    "scenarioNotes": {
+        "x1": "X1 visa is for students whose course in China is longer than 180 days. After entry, X1 holders must apply for a Residence Permit for Study at the local Public Security Bureau (PSB) within 30 days of arrival.",
+        "x2": "X2 visa is for short-term study of 180 days or less and does not require conversion to a residence permit."
+    },
     "disclaimerLinks": [
         {
             "text": "Chinese Embassy in Pakistan",
@@ -238,6 +254,7 @@
                     "id": "IV-01",
                     "name": "Verify Your Visa and Plan Travel",
                     "description": "Carefully review your visa stamp in your passport. X1 and X2 visas have specific entry validity windows — you must enter China before the visa's entry validity date expires.",
+                    "info": "Your X1 or X2 visa stamp shows: Type (X1 or X2), Number of entries, Entry validity (the date by which you must first enter China), and Duration of stay (for X2, the number of days you may stay per entry). You must enter China before the entry validity date on your visa. Confirm all details match your Admission Notice.",
                     "actions": [
                         "Verify the visa stamp in your passport: type, entries, entry validity date",
                         "Ensure you will enter China before the entry validity date on the visa",
@@ -325,6 +342,7 @@
         {
             "id": 6,
             "name": "Stage VI: Residence Permit for Study (X1)",
+            "scenarioSpecific": "x1",
             "icon": "CheckCircle",
             "color": "bg-rose-50 text-rose-600",
             "time": "Within 30 days of entry",
@@ -342,6 +360,7 @@
                 {
                     "id": "VI-01",
                     "name": "Understand the X1 Residence Permit Requirement",
+                    "scenarioSpecific": "x1",
                     "description": "X1 visa holders must apply for a Residence Permit for Study (学习居留许可) at the local Exit and Entry Administration Bureau (PSB) within 30 days of arrival.",
                     "info": "The 30-day deadline is counted from your date of entry. The residence permit replaces the X1 visa as your legal basis to stay.",
                     "actions": [
@@ -354,6 +373,7 @@
                 {
                     "id": "VI-02",
                     "name": "Prepare Residence Permit Application Documents",
+                    "scenarioSpecific": "x1",
                     "description": "The documents required for the residence permit application are specified by the local Exit and Entry Administration Bureau.",
                     "actions": [
                         "Confirm the current required documents with your university's international student office (requirements can vary by city)",
@@ -366,6 +386,7 @@
                 {
                     "id": "VI-03",
                     "name": "Submit Residence Permit Application at PSB",
+                    "scenarioSpecific": "x1",
                     "description": "Submit the completed application package at the local Exit and Entry Administration Bureau (PSB) and pay the required fee.",
                     "actions": [
                         "Attend the local Exit and Entry Administration Bureau with your complete application package",
@@ -379,6 +400,7 @@
                 {
                     "id": "VI-04",
                     "name": "Receive and Verify Residence Permit",
+                    "scenarioSpecific": "x1",
                     "description": "After processing, the PSB affixes the Residence Permit for Study to your passport. Verify all details carefully.",
                     "info": "The residence permit is your legal authorisation to remain in China for study. It is typically issued for the duration of your academic program.",
                     "actions": [
@@ -393,6 +415,7 @@
                 {
                     "id": "VI-05",
                     "name": "Maintain and Renew Your Residence Permit",
+                    "scenarioSpecific": "x1",
                     "description": "Staying beyond the permit validity without renewal is an immigration violation. Track your expiry date carefully.",
                     "actions": [
                         "Track your residence permit expiry date carefully",

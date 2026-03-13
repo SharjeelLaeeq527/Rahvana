@@ -10,7 +10,7 @@ import {
 export interface WizardState {
   currentStage: number;
   currentStep: number | null;
-  scenarioType?: 'bio' | 'step' | 'adopted' | undefined; 
+  scenarioType?: string | undefined;
   completedSteps: Set<string>;
   collapsedSteps: Record<string, boolean>;
   role: 'both' | 'petitioner' | 'beneficiary';
@@ -251,7 +251,7 @@ export function useWizard(options: UseWizardOptions = {}) {
       setState(prev => ({ ...prev, notes: { ...prev.notes, [doc]: note } }));
     },
 
-    setScenario: (scenario: 'bio' | 'step' | 'adopted') => {
+    setScenario: (scenario: string) => {
       setState(prev => ({
         ...prev,
         scenarioType: scenario
