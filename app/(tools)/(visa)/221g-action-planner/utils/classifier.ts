@@ -32,12 +32,13 @@ import type { FormData } from "../types/221g"
  * @param parsedItems - Keys from FormSelections that are truthy; used to
  *                      determine which document category was requested.
  */
-export function classifySituation(formData: FormData, parsedItems: string[] = []): ClassificationResult {
+export function classifySituation(formData: FormData, parsedItems: string[] = []): ClassificationResult[] {
   const ceac = formData.ceacStatus?.toLowerCase() ?? "";
+  const results: ClassificationResult[] = [];
 
   // Documents submitted / awaiting update
   if (ceac.includes("submitted") || ceac.includes("received")) {
-    return {
+    results.push({
       scenarioCode: "DOCS_SUBMITTED_WAITING_UPDATE",
       confidence: "high",
       description: "Documents Submitted – Waiting for Update",
@@ -47,7 +48,7 @@ export function classifySituation(formData: FormData, parsedItems: string[] = []
         "Prepare for next steps based on outcome",
         "Keep submission proof for reference",
       ],
-    };
+    });
   }
 
   // Administrative processing only (no docs)
@@ -56,7 +57,7 @@ export function classifySituation(formData: FormData, parsedItems: string[] = []
     (parsedItems.length === 1 && parsedItems[0] === "admin_processing")
   ) {
     if (ceac.includes("administrative") || parsedItems.includes("admin_processing")) {
-      return {
+      results.push({
         scenarioCode: "AP_ONLY_NO_DOCS",
         confidence: "high",
         description: "Administrative Processing Only – No Additional Documents Requested",
@@ -66,7 +67,7 @@ export function classifySituation(formData: FormData, parsedItems: string[] = []
           "Avoid unnecessary inquiries during processing",
           "Prepare for potential extended wait times",
         ],
-      };
+      });
     }
   }
 
@@ -77,7 +78,7 @@ export function classifySituation(formData: FormData, parsedItems: string[] = []
       r.includes("irs") || r.includes("proof_citizenship") || r.includes("domicile")
     )
   ) {
-    return {
+    results.push({
       scenarioCode: "221G_DOCS_REQUESTED_FINANCIAL",
       confidence: "high",
       description: "221(g) – Financial Documents Requested",
@@ -87,33 +88,66 @@ export function classifySituation(formData: FormData, parsedItems: string[] = []
         "Submit complete packet via courier or online as instructed",
         "Keep copies of all submitted documents",
       ],
-    };
+    });
   }
 
-  // Civil documents (NADRA, birth, marriage, nikah, divorce, police)
+  // Civil documents (NADRA, birth, marriage, nikah)
   if (
     parsedItems.some(r =>
       r.includes("nadra") || r.includes("birth") || r.includes("marriage") ||
-      r.includes("nikah") || r.includes("divorce") || r.includes("police") ||
-      r.includes("death")
+      r.includes("nikah")
     )
   ) {
-    return {
+    results.push({
       scenarioCode: "221G_DOCS_REQUESTED_CIVIL",
       confidence: "high",
       description: "221(g) – Civil Documents Requested",
       nextSteps: [
-        "Gather requested civil documents (birth certificates, marriage certificates, police certificates)",
+        "Gather requested civil documents (birth certificates, marriage certificates)",
         "Ensure all documents are properly translated if needed",
         "Submit complete packet via courier as instructed",
         "Keep copies of all submitted documents",
       ],
-    };
+    });
+  }
+
+  // Legal & Court documents (divorce, police, death)
+  if (
+    parsedItems.some(r =>
+      r.includes("divorce") || r.includes("police") || r.includes("death")
+    )
+  ) {
+    results.push({
+      scenarioCode: "221G_DOCS_REQUESTED_LEGAL",
+      confidence: "high",
+      description: "221(g) – Legal/Court Documents Requested",
+      nextSteps: [
+        "Secure requested legal documents (police certificates, divorce decrees)",
+        "Review reciprocity schedules to ensure correct issuing authority",
+        "Submit certified translations if necessary",
+        "Maintain copies of all original submissions",
+      ],
+    });
+  }
+
+  // DS-5535
+  if (parsedItems.includes("ds5535")) {
+    results.push({
+      scenarioCode: "DS5535_REQUESTED",
+      confidence: "high",
+      description: "221(g) – Form DS-5535 Requested",
+      nextSteps: [
+        "Verify your exact travel, employment, and address history for the past 15 years",
+        "List all email addresses, social media handles, and phone numbers from the past 5 years",
+        "Submit the supplemental form as instructed by the embassy",
+        "Expect cases undergoing DS-5535 review to take several weeks or months",
+      ],
+    });
   }
 
   // Medical
   if (parsedItems.includes("medical_examination")) {
-    return {
+    results.push({
       scenarioCode: "221G_DOCS_REQUESTED_MEDICAL",
       confidence: "high",
       description: "221(g) – Medical Examination Required",
@@ -123,12 +157,12 @@ export function classifySituation(formData: FormData, parsedItems: string[] = []
         "Resubmit corrected medical documents as instructed",
         "Keep copies of all submitted documents",
       ],
-    };
+    });
   }
 
   // Translation
   if (parsedItems.includes("english_translation")) {
-    return {
+    results.push({
       scenarioCode: "221G_DOCS_REQUESTED_TRANSLATION",
       confidence: "high",
       description: "221(g) – Document Translations Required",
@@ -138,12 +172,12 @@ export function classifySituation(formData: FormData, parsedItems: string[] = []
         "Submit translated documents along with originals",
         "Keep copies of all submitted documents",
       ],
-    };
+    });
   }
 
   // DNA test
   if (parsedItems.includes("dna_test")) {
-    return {
+    results.push({
       scenarioCode: "221G_DOCS_REQUESTED_OTHER",
       confidence: "high",
       description: "221(g) – DNA Test Recommended",
@@ -153,12 +187,12 @@ export function classifySituation(formData: FormData, parsedItems: string[] = []
         "Submit results directly to the embassy per their instructions",
         "Keep copies of all submitted documents",
       ],
-    };
+    });
   }
 
   // Passport
   if (parsedItems.includes("passport")) {
-    return {
+    results.push({
       scenarioCode: "221G_DOCS_REQUESTED_OTHER",
       confidence: "high",
       description: "221(g) – Passport Required",
@@ -168,12 +202,12 @@ export function classifySituation(formData: FormData, parsedItems: string[] = []
         "Monitor CEAC status for updates",
         "Keep copies of all submitted documents",
       ],
-    };
+    });
   }
 
   // Other / generic
-  if (parsedItems.includes("other") || parsedItems.length > 0) {
-    return {
+  if (parsedItems.includes("other") || (parsedItems.length > 0 && results.length === 0)) {
+    results.push({
       scenarioCode: "221G_DOCS_REQUESTED_OTHER",
       confidence: "medium",
       description: "221(g) – Documents Requested",
@@ -183,19 +217,25 @@ export function classifySituation(formData: FormData, parsedItems: string[] = []
         "Submit complete packet as soon as possible",
         "Keep copies of all submitted documents",
       ],
-    };
+    });
   }
 
-  // Unknown
-  return {
-    scenarioCode: "UNKNOWN",
-    confidence: "low",
-    description: "Unable to Determine Specific Situation",
-    nextSteps: [
-      "Double-check your 221(g) letter for specific requirements",
-      "Contact the embassy if requirements are unclear",
-      "Consult with an immigration attorney if needed",
-      "Continue monitoring CEAC status",
-    ],
-  };
+  // Unknown - fallback if everything else fails and no items were parsed but CEAC isn't empty
+  if (results.length === 0) {
+    results.push({
+      scenarioCode: "UNKNOWN",
+      confidence: "low",
+      description: "Unable to Determine Specific Situation",
+      nextSteps: [
+        "Double-check your 221(g) letter for specific requirements",
+        "Contact the embassy if requirements are unclear",
+        "Consult with an immigration attorney if needed",
+        "Continue monitoring CEAC status",
+      ],
+    });
+  }
+
+  // Filter out duplicates (specifically DOCS_REQUESTED_OTHER can overlap with itself if user ticked multiple custom things)
+  const uniqueResults = Array.from(new Map(results.map(item => [item.scenarioCode, item])).values());
+  return uniqueResults;
 }

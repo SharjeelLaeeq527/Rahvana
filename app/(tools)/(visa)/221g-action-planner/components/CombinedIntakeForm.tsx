@@ -579,15 +579,17 @@ export default function CombinedIntakeForm({
     
     plan += `This action plan is based on your inputs and general guidance. It is not legal advice.\n`;
 
-    if (smartModeEnabled && smartClassification) {
+    if (smartModeEnabled && smartClassification && smartClassification.length > 0) {
       plan += `\n## SMART INSIGHT SUMMARY\n\n`;
-      plan += `Scenario: ${smartClassification.description}\n`;
-      plan += `Confidence: ${smartClassification.confidence.toUpperCase()}\n\n`;
-      plan += `Recommended next steps:\n`;
-      smartClassification.nextSteps.forEach((step, i) => {
-        plan += `${i + 1}. ${step}\n`;
+      smartClassification.forEach((classification) => {
+        plan += `### Scenario: ${classification.description}\n`;
+        plan += `**Confidence:** ${classification.confidence.toUpperCase()}\n\n`;
+        plan += `**Recommended next steps:**\n`;
+        classification.nextSteps.forEach((step: string, i: number) => {
+          plan += `${i + 1}. ${step}\n`;
+        });
+        plan += `\n`;
       });
-      plan += `\n`;
     }
     
     return plan;
@@ -645,16 +647,20 @@ export default function CombinedIntakeForm({
     }
     
     // Civil documents
-    const civilDocs = [];
+    const civilDocs: string[] = [];
     if (cl.nadra_family_reg) civilDocs.push('NADRA Family Registration Certificate');
     if (cl.nadra_marriage_cert) civilDocs.push('NADRA Marriage Certificate');
-    if (cl.nikah_nama) civilDocs.push('Nikah Nama');
+    if (cl.nikah_nama) {
+        civilDocs.push('Original Nikah Nama');
+        civilDocs.push('Computerized Marriage Registration Certificate (MRC)');
+        civilDocs.push("Beneficiary's CNIC (showing husband's name)");
+    }
     if (cl.nadra_divorce_cert) civilDocs.push('NADRA Divorce Certificate');
     if (cl.death_certificate) civilDocs.push(`Death Certificate (${cl.death_certificate_name || 'as indicated'})`);
     
     if (civilDocs.length > 0) {
         checklist += `\n**CIVIL DOCUMENTS**\n\n`;
-        civilDocs.forEach(doc => {
+        civilDocs.forEach((doc: string) => {
             checklist += `* ${doc} (original)\n`;
         });
     }
@@ -775,7 +781,11 @@ export default function CombinedIntakeForm({
     if (cl.nadra_family_reg) docList.push('NADRA Family Registration Certificate (original)');
     if (cl.nadra_birth_cert) docList.push(`NADRA Birth Certificate (original)`);
     if (cl.nadra_marriage_cert) docList.push('NADRA Marriage Certificate (original)');
-    if (cl.nikah_nama) docList.push('Nikah Nama (original)');
+    if (cl.nikah_nama) {
+        docList.push('Original Nikah Nama');
+        docList.push('Computerized Marriage Registration Certificate (MRC) (original)');
+        docList.push("Beneficiary's CNIC showing husband's name (copy)");
+    }
     if (cl.nadra_divorce_cert) docList.push(`NADRA Divorce Certificate (original)`);
     if (cl.us_divorce_decree) docList.push('U.S. Divorce Decree (original or certified copy)');
     if (cl.death_certificate) docList.push(`Death Certificate (original)`);
@@ -957,29 +967,31 @@ export default function CombinedIntakeForm({
                 )}
             </section>
 
-            {smartModeEnabled && smartClassification && (
-              <section>
-                <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
+            {smartModeEnabled && smartClassification && smartClassification.length > 0 && (
+              <section className="space-y-4">
+                <h3 className="text-lg font-semibold mb-1 flex items-center gap-2">
                   <span className="w-6 h-6 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center text-xs">
                     S
                   </span>
                   Smart Insights
                 </h3>
-                <div className="rounded-lg border border-emerald-200 bg-emerald-50/60 p-4">
-                  <p className="text-sm text-emerald-900">
-                    <span className="font-semibold">Scenario:</span>{" "}
-                    {smartClassification.description}
-                  </p>
-                  <p className="mt-1 text-sm text-emerald-900">
-                    <span className="font-semibold">Confidence:</span>{" "}
-                    {smartClassification.confidence.toUpperCase()}
-                  </p>
-                  <ul className="mt-3 list-disc space-y-1 pl-5 text-sm text-emerald-900">
-                    {smartClassification.nextSteps.map((step, idx) => (
-                      <li key={`${idx}-${step}`}>{step}</li>
-                    ))}
-                  </ul>
-                </div>
+                {smartClassification.map((classification, cIdx) => (
+                  <div key={cIdx} className="rounded-lg border border-emerald-200 bg-emerald-50/60 p-4">
+                    <p className="text-sm text-emerald-900">
+                      <span className="font-semibold">Scenario:</span>{" "}
+                      {classification.description}
+                    </p>
+                    <p className="mt-1 text-sm text-emerald-900">
+                      <span className="font-semibold">Confidence:</span>{" "}
+                      {classification.confidence.toUpperCase()}
+                    </p>
+                    <ul className="mt-3 list-disc space-y-1 pl-5 text-sm text-emerald-900">
+                      {classification.nextSteps.map((step: string, idx: number) => (
+                        <li key={`${idx}-${step}`}>{step}</li>
+                      ))}
+                    </ul>
+                  </div>
+                ))}
               </section>
             )}
         </div>
