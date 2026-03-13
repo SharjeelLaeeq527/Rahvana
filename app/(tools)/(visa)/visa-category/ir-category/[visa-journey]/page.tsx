@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/tooltip";
 import { useParams, useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { ChevronDown, icons } from "lucide-react";
+import { AlertTriangle, ChevronDown, icons, InfoIcon } from "lucide-react";
 import {
   RotateCcw,
   ArrowRight,
@@ -34,15 +34,15 @@ export default function IR1JourneyPage() {
   const { t, language } = useLanguage();
   const params = useParams();
   const visaJourneyParam = (params?.["visa-journey"] as string) || "ir-1";
-  
+
   // Map URL slugs to actual JSON filenames if they differ
   const journeyMapping: Record<string, string> = {
     "ir1-journey": "ir-1",
     "ir5-journey": "ir-5",
-    "f1": "f-1",
-    "germany-student": "germany-student",
+    f1: "f-1",
+    "germany-student": "germany-student-journey",
   };
-  
+
   const visaJourney = journeyMapping[visaJourneyParam] || visaJourneyParam;
 
   const [roadmapData, setRoadmapData] = useState<RoadmapData | null>(null);
@@ -226,7 +226,7 @@ export default function IR1JourneyPage() {
                     <button
                       type="button"
                       onClick={() => setRelationshipNotesOpen((prev) => !prev)}
-                      className="w-full flex items-center justify-between p-4 hover:bg-primary/10 transition"
+                      className="w-full flex items-center cursor-pointer justify-between p-4 hover:bg-primary/10 transition"
                     >
                       <div className="flex gap-1">
                         <p className="font-semibold uppercase tracking-wide text-slate-500">
@@ -246,7 +246,7 @@ export default function IR1JourneyPage() {
                             e.stopPropagation();
                             setShowScenarioModal(true);
                           }}
-                          className="text-sm font-medium text-primary hover:underline"
+                          className="text-sm font-medium cursor-pointer text-primary hover:underline"
                         >
                           Change
                         </button>
@@ -280,6 +280,35 @@ export default function IR1JourneyPage() {
             </TooltipProvider>
           )}
 
+          {/* Info & Disclaimer */}
+          {(roadmapData.disclaimer || roadmapData.info) && (
+            <div className="flex flex-col md:flex-row gap-4 mb-8">
+              {roadmapData.disclaimer && (
+                <div className="flex-1 rounded-xl border border-[#fde68a] bg-[#fffbeb] p-4 text-sm text-[#92400e]">
+                  <div className="flex gap-1">
+                    <span className="font-bold">
+                      <AlertTriangle />
+                    </span>{" "}
+                    <span className="font-bold mt-0.5">Disclaimer:</span>{" "}
+                  </div>
+                  {roadmapData.disclaimer}
+                </div>
+              )}
+
+              {roadmapData.info && (
+                <div className="flex-1 rounded-xl border border-[#14a0a6] bg-[#e8f6f6] p-4 text-sm text-[#0a5a5d]">
+                  <div className="flex gap-1">
+                    <span className="font-bold">
+                      <InfoIcon />
+                    </span>{" "}
+                    <span className="font-bold mt-0.5">Info:</span>{" "}
+                  </div>
+                  {roadmapData.info}
+                </div>
+              )}
+            </div>
+          )}
+
           {/* Stage Overview */}
           <div className="mb-12">
             <div className="flex items-center gap-3 mb-6 md:mb-8">
@@ -289,7 +318,7 @@ export default function IR1JourneyPage() {
               </h2>
             </div>
 
-            <div className="flex overflow-x-auto gap-4 pb-6 pt-2 snap-x snap-mandatory hide-scrollbar px-4 scroll-smooth">
+            <div className="flex overflow-x-auto mx-auto justify-center gap-4 pb-6 pt-2 snap-x snap-mandatory hide-scrollbar px-4 scroll-smooth">
               {roadmapData.stages.map(
                 (stageItem: RoadmapStage, idx: number) => {
                   const defaultIcons = [

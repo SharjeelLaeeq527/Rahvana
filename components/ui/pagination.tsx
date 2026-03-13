@@ -72,7 +72,7 @@ const Pagination: React.FC<PaginationProps> = ({
             key={i}
             onClick={() => typeof page === "number" && onPageChange(page)}
             disabled={page === "..."}
-            className={`min-w-[40px] h-10 flex items-center justify-center text-sm font-medium rounded-lg ${
+            className={`min-w-8 h-8 flex items-center justify-center text-sm font-medium rounded-lg ${
               page === currentPage
                 ? "bg-gray-50 text-gray-900 border border-gray-300"
                 : page === "..."

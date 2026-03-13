@@ -1,9 +1,8 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { CheckCircle } from "lucide-react";
+import { Baby, Users, HeartHandshake, CheckCircle } from "lucide-react";
 
-type ScenarioType = "bio" 
-| "step" | "adopted";
+type ScenarioType = "bio" | "step" | "adopted";
 
 interface ScenarioModalProps {
   isOpen: boolean;
@@ -31,16 +30,25 @@ export default function ScenarioSelectionModal({
       id: "bio",
       title: "Biological Child",
       desc: "You are petitioning your biological child. Birth certificate documentation will be required.",
+      bg: "bg-[#e8f6f6]",
+      hover: "hover:bg-[#d5f0f1]",
+      icon: Baby,
     },
     {
       id: "step",
       title: "Stepchild",
       desc: "Marriage between the petitioner and biological parent must occur before the child turns 18.",
+      bg: "bg-[#fef3c7]",
+      hover: "hover:bg-[#fde68a]",
+      icon: Users,
     },
     {
       id: "adopted",
       title: "Adopted Child",
       desc: "Adoption must be finalized before age 16 and child must be in legal custody for 2 years.",
+      bg: "bg-[#eef2ff]",
+      hover: "hover:bg-[#e0e7ff]",
+      icon: HeartHandshake,
     },
   ];
 
@@ -62,36 +70,37 @@ export default function ScenarioSelectionModal({
         <div className="px-6 py-6 space-y-4">
           {options.map((opt) => {
             const isSelected = selected === opt.id;
+            const Icon = opt.icon;
 
             return (
               <button
                 key={opt.id}
                 onClick={() => setSelected(opt.id as ScenarioType)}
                 className={`
-                w-full text-left p-4 rounded-xl border transition
-                flex gap-3 items-start
+        group w-full text-left p-4 rounded-xl border transition-all duration-200
+        flex gap-3 items-start
 
-                ${
-                  isSelected
-                    ? "border-primary bg-primary/5"
-                    : "border-border hover:border-primary/40 hover:bg-muted/40"
-                }
-                `}
+        ${opt.bg}
+
+        ${
+          isSelected ? "border-primary ring-2 ring-primary/30" : "border-border"
+        }
+
+        ${opt.hover}
+      `}
               >
-                <div className="mt-1">
+                <div className="mt-1 flex items-center justify-center">
                   {isSelected ? (
                     <CheckCircle className="w-5 h-5 text-primary" />
                   ) : (
-                    <div className="w-5 h-5 rounded-full border border-muted-foreground" />
+                    <Icon className="w-5 h-5 text-slate-600" />
                   )}
                 </div>
 
                 <div>
-                  <p className="font-medium text-foreground">{opt.title}</p>
+                  <p className="font-medium">{opt.title}</p>
 
-                  <p className="text-sm text-muted-foreground mt-1">
-                    {opt.desc}
-                  </p>
+                  <p className="text-sm opacity-80 mt-1">{opt.desc}</p>
                 </div>
               </button>
             );

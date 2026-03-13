@@ -1,4 +1,5 @@
 export interface RoadmapStep {
+  stepNumber?: number;
   id: string;
   name: string;
   nameUr?: string;
@@ -61,6 +62,9 @@ export interface RoadmapStage {
 }
 
 export interface RoadmapData {
+  infoLinks?: { label: string; url: string; }[] | undefined;
+  info?: string;
+  disclaimer?: string;
   scenarioNotes: Record<string, string>;
   title?: string;
   titleUr?: string;

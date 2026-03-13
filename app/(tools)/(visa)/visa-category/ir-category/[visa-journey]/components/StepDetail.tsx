@@ -50,10 +50,8 @@ export function StepDetail({
       <div className="mb-8">
         <div className="inline-flex items-center gap-2 px-3 py-1 bg-slate-100/80 text-slate-500 rounded-full text-[12px] font-bold uppercase tracking-wider mb-4 border border-slate-200/50">
           <Info className="w-3.5 h-3.5" />
-          {t("visaJourney.stageStep", {
-            stage: (state.currentStage + 1).toString(),
-            step: ((state.currentStep || 0) + 1).toString(),
-          })}
+          Stage {state.currentStage + 1} — Step{" "}
+          {step.stepNumber ?? (state.currentStep || 0) + 1}
         </div>
 
         <div className="flex flex-col md:flex-row md:items-start justify-between gap-4 md:gap-6 mb-6">
@@ -170,7 +168,7 @@ export function StepDetail({
                 href={source.url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 px-4 py-1 bg-white border border-blue-100/50 hover:border-blue-200 text-blue-600 text-xs 2xl:text-sm font-semibold rounded-full hover:bg-blue-50/50 transition-all shadow-sm"
+                className="inline-flex items-center gap-2 px-4 py-1 bg-white border border-[#e8f6f6] hover:border-[#14a0a6] text-[#0a5a5d] text-xs 2xl:text-sm font-semibold rounded-full transition-all shadow-sm"
               >
                 <icons.ExternalLink className="w-4 h-4" />
                 {isUrdu && source.labelUr ? source.labelUr : source.label}

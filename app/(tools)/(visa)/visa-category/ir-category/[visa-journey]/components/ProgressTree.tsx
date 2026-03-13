@@ -1,7 +1,12 @@
 import React, { useState, useEffect } from "react";
 import { WizardState } from "@/app/(main)/dashboard/hooks/useWizard";
 import { useLanguage } from "@/app/context/LanguageContext";
-import { ChevronDown, CheckCircle2, Circle, ArrowRightCircle } from "lucide-react";
+import {
+  ChevronDown,
+  CheckCircle2,
+  Circle,
+  ArrowRightCircle,
+} from "lucide-react";
 import { RoadmapData, RoadmapStage, RoadmapStep } from "./types";
 
 interface ProgressTreeProps {
@@ -46,9 +51,9 @@ export function ProgressTree({
     <div id="sidebar-stages" className="space-y-3">
       <div className="px-2 mb-6">
         <h3 className="text-[13px] font-black uppercase tracking-[0.1em] text-slate-800 mb-6 flex items-center gap-2">
-        <div className="w-1.5 h-4 bg-primary rounded-full" />
-        {t("visaJourney.progressTree.journeyMap")}
-      </h3>
+          <div className="w-1.5 h-4 bg-primary rounded-full" />
+          {t("visaJourney.progressTree.journeyMap")}
+        </h3>
         <p className="text-xs text-slate-500 font-medium font-['Plus_Jakarta_Sans',sans-serif]">
           {t("visaJourney.progressTree.track")}
         </p>
@@ -127,10 +132,10 @@ export function ProgressTree({
                       isUrdu && step.nameUr ? step.nameUr : step.name;
 
                     return (
-                      <button
+                      <div
                         key={step.id}
                         onClick={() => onSelectStep(sIdx, actualStepIdx)}
-                        className={`w-full text-left py-2.5 px-3 rounded-lg transition-all flex items-center justify-between gap-3 group/step ${
+                        className={`w-full text-left py-2.5 px-3 rounded-lg transition-all flex items-center justify-between gap-3 group/step cursor-pointer ${
                           isCurrentStep
                             ? "bg-primary text-white shadow-md shadow-primary/20 font-bold"
                             : "text-slate-600 hover:bg-slate-100/50 hover:text-slate-900"
@@ -140,6 +145,7 @@ export function ProgressTree({
                           {isCurrentStep && (
                             <ArrowRightCircle className="w-3.5 h-3.5 shrink-0 text-primary-light" />
                           )}
+
                           <span className="text-[12px] truncate leading-tight">
                             {stepNameDisplay}
                           </span>
@@ -155,15 +161,23 @@ export function ProgressTree({
                         >
                           {isStepCompleted ? (
                             <CheckCircle2
-                              className={`w-4 h-4 ${isCurrentStep ? "text-emerald-400" : "text-emerald-500"}`}
+                              className={`w-4 h-4 ${
+                                isCurrentStep
+                                  ? "text-emerald-400"
+                                  : "text-emerald-500"
+                              }`}
                             />
                           ) : (
                             <Circle
-                              className={`w-3.5 h-3.5 ${isCurrentStep ? "text-slate-600" : "text-slate-300"}`}
+                              className={`w-3.5 h-3.5 ${
+                                isCurrentStep
+                                  ? "text-slate-600"
+                                  : "text-slate-300"
+                              }`}
                             />
                           )}
                         </button>
-                      </button>
+                      </div>
                     );
                   })}
               </div>
