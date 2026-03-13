@@ -36,6 +36,7 @@
       "steps": [
         {
           "id": "I-01",
+          "stepNumber": 1,
           "name": "Confirm Petitioner Eligibility",
           "description": "Only U.S. citizens may petition for an immediate relative child (IR-2). Lawful permanent residents cannot petition under the IR-2 immediate relative category — they must use a different family preference category (F-2A). The petitioner must be a U.S. citizen.",
           "actions": [
@@ -48,6 +49,7 @@
         },
         {
           "id": "I-02",
+          "stepNumber": 2,
           "name": "Understand the IR-2 Visa Category",
           "description": "IR-2 is the immediate relative immigrant visa category for an unmarried child under 21 of a U.S. citizen. As an immediate relative, there is no visa number waiting line — the visa is available immediately upon I-130 approval and NVC completion.",
           "info": "Note on CR-2: The CR-2 category refers to a child who immigrates as a derivative of a conditional resident (CR-1) parent. If you are petitioning your child directly as a U.S. citizen, the applicable category is IR-2, not CR-2.",
@@ -61,6 +63,7 @@
         },
         {
           "id": "I-03(a)",
+          "stepNumber": 3,
           "name": "Confirm the Qualifying Relationship — Biological Child",
           "description": "For a biological child, the petitioner must be the legal (natural) parent. A child born in wedlock requires proof of the parent-child blood relationship and that the parents were married at or before the child's birth.",
           "actions": [
@@ -75,6 +78,7 @@
         },
         {
           "id": "I-03(b)",
+          "stepNumber": 3,
           "name": "Confirm the Qualifying Relationship — Stepchild",
           "description": "A stepchild qualifies as a 'child' for immigration purposes if the marriage creating the step-relationship occurred before the child's 18th birthday. The petitioner (the stepparent) must be the U.S. citizen who is married to the child's biological parent. See INA § 101(b)(1)(B).",
           "info": "Important: The qualifying marriage must have taken place BEFORE the child turned 18. If the marriage occurred after the child's 18th birthday, the stepchild does not qualify as an IR-2 under this rule.",
@@ -91,6 +95,7 @@
         },
         {
           "id": "I-03(c)",
+          "stepNumber": 3,
           "name": "Confirm the Qualifying Relationship — Adopted Child",
           "description": "An adopted child qualifies if the adoption was legally completed before the child turned 16 (or before age 18 if the child is an orphan or adopted with a sibling), and the child has been in the legal custody of and resided with the adopting parent(s) for at least 2 years. See INA § 101(b)(1)(E).",
           "info": "Adoption cases can be complex. Requirements vary based on when the adoption was finalized, which country the child is from (Hague Convention vs. non-Hague), and whether the '2-year custody and residence' requirement is met. Consulting an immigration attorney is strongly recommended for adoption-based petitions.",
@@ -108,6 +113,7 @@
         },
         {
           "id": "I-04",
+          "stepNumber": 4,
           "name": "Gather Supporting Civil Documents",
           "description": "Before filing Form I-130, collect all civil documents needed to prove the qualifying relationship and the petitioner's citizenship. Documents not in English must be accompanied by a certified English translation.",
           "actions": [
@@ -122,6 +128,7 @@
         },
         {
           "id": "I-05",
+          "stepNumber": 5,
           "name": "Complete Form I-130",
           "description": "Form I-130 (Petition for Alien Relative) is the USCIS petition establishing the qualifying relationship. Use only the current form version from uscis.gov.",
           "actions": [
@@ -136,6 +143,7 @@
         },
         {
           "id": "I-06",
+          "stepNumber": 6,
           "name": "Pay the I-130 Filing Fee",
           "description": "USCIS charges a filing fee for Form I-130. The current fee is listed on the USCIS fee schedule. Fees are subject to change; always verify the current amount at uscis.gov before submitting.",
           "actions": [
@@ -148,6 +156,7 @@
         },
         {
           "id": "I-07",
+          "stepNumber": 7,
           "name": "Submit Form I-130 to USCIS",
           "description": "File Form I-130 online through myUSCIS or by paper mail to the appropriate USCIS lockbox or service center as specified in current form instructions.",
           "actions": [
@@ -161,6 +170,7 @@
         },
         {
           "id": "I-08",
+          "stepNumber": 8,
           "name": "Receive Form I-797C Receipt Notice",
           "description": "After USCIS accepts the petition, it issues a Form I-797C Notice of Action confirming receipt. This notice includes the USCIS receipt number needed to track your case.",
           "actions": [
@@ -173,6 +183,7 @@
         },
         {
           "id": "I-09",
+          "stepNumber": 9,
           "name": "Respond to Any USCIS Requests (RFE / NOID)",
           "description": "USCIS may issue a Request for Evidence (RFE) or Notice of Intent to Deny (NOID) if additional information or documents are needed. Respond fully before the stated deadline.",
           "actions": [
@@ -186,6 +197,7 @@
         },
         {
           "id": "I-10",
+          "stepNumber": 10,
           "name": "Receive I-130 Approval (Form I-797)",
           "description": "When USCIS approves the petition, it issues a Form I-797 approval notice and forwards the approved petition to the National Visa Center (NVC) for consular processing.",
           "actions": [

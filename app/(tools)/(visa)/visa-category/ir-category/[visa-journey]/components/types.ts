@@ -1,4 +1,5 @@
 export interface RoadmapStep {
+  stepNumber?: number;
   id: string;
   name: string;
   nameUr?: string;
@@ -68,22 +69,41 @@ export interface ScenarioOption {
 }
 
 export interface RoadmapData {
-  scenarios?: ScenarioOption[];
-  scenarioNotes?: Record<string, string>;
-  title?: string;
-  titleUr?: string;
-  description?: string;
-  descriptionUr?: string;
-  stages: RoadmapStage[];
-  documents?: string[];
+  scenarios: any;
+
+  info?: string;
+
+  infoLink?: string;
+  infoLinkText?: string;
+
+  infoLinks?: {
+    text: string;
+    url: string;
+  }[];
+
   disclaimer?: string;
   disclaimerUr?: string;
+
   disclaimerLink?: string;
   disclaimerLinkText?: string;
+
   disclaimerLinks?: {
     text: string;
     url: string;
   }[];
+
+  scenarioNotes: Record<string, string>;
+
+  title?: string;
+  titleUr?: string;
+
+  description?: string;
+  descriptionUr?: string;
+
+  stages: RoadmapStage[];
+
+  documents?: string[];
+
   visaOverview?: {
     title: string;
     titleUr?: string;

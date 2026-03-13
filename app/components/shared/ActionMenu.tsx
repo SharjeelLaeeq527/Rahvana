@@ -28,7 +28,7 @@ export default function ActionMenu({ onView, onDelete }: ActionMenuProps) {
       <Button
         variant="outline"
         size="sm"
-        className="p-2"
+        className="p-2 rounded-9999"
         onClick={() => setOpen((prev) => !prev)}
       >
         <MoreHorizontal className="w-5 h-5" />
