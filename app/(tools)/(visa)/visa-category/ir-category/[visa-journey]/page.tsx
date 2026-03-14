@@ -51,6 +51,7 @@ export default function IR1JourneyPage() {
   const [showScenarioModal, setShowScenarioModal] = useState(false);
   const [hasScenarios, setHasScenarios] = useState(false);
   const [relationshipNotesOpen, setRelationshipNotesOpen] = useState(false);
+  const [visaOverviewOpen, setVisaOverviewOpen] = useState(false);
 
   useEffect(() => {
     if (visaJourney) {
@@ -307,6 +308,95 @@ export default function IR1JourneyPage() {
               </Tooltip>
             </TooltipProvider>
           )}
+          
+          {/* Overview */}
+          {/* <div className="flex flex-col">
+            {roadmapData.visaOverview && (
+              <TooltipProvider>
+                <Tooltip>
+                  <div className="mb-4 md:mb-6 rounded-2xl border border-sky-100 bg-sky-50/50 overflow-hidden shadow-sm">
+                    <TooltipTrigger asChild>
+                      <button
+                        type="button"
+                        onClick={() => setVisaOverviewOpen((prev) => !prev)}
+                        className="w-full flex items-center justify-between p-6 hover:bg-sky-100/50 transition text-left"
+                      >
+                        <div className="flex gap-6 items-start">
+                          <div className="hidden sm:flex text-slate-500 font-bold text-lg h-10 w-10 items-center justify-center shrink-0 uppercase tracking-tighter">
+                            {roadmapData.visaOverview.flag || "GOV"}
+                          </div>
+                          <div className="flex-1">
+                            <h3 className="text-[#1a4b84] font-black uppercase tracking-wider mb-2 text-[13px] sm:text-[14px]">
+                              {language === "ur" &&
+                              roadmapData.visaOverview.titleUr
+                                ? roadmapData.visaOverview.titleUr
+                                : roadmapData.visaOverview.title}
+                            </h3>
+                            {!visaOverviewOpen && (
+                              <p className="text-slate-500 text-xs font-medium">
+                                Click to view overview
+                              </p>
+                            )}
+                          </div>
+                        </div>
+
+                        <motion.div
+                          animate={{ rotate: visaOverviewOpen ? 180 : 0 }}
+                          transition={{ duration: 0.2 }}
+                        >
+                          <ChevronDown className="w-5 h-5 text-[#1a4b84]" />
+                        </motion.div>
+                      </button>
+                    </TooltipTrigger>
+
+                    <TooltipContent>
+                      {visaOverviewOpen
+                        ? "Click to collapse"
+                        : "Click to expand"}
+                    </TooltipContent>
+
+                    <AnimatePresence>
+                      {visaOverviewOpen && (
+                        <motion.div
+                          initial={{ height: 0, opacity: 0 }}
+                          animate={{ height: "auto", opacity: 1 }}
+                          exit={{ height: 0, opacity: 0 }}
+                          transition={{ duration: 0.3, ease: "easeInOut" }}
+                        >
+                          <div className="px-6 pb-6 pt-2 border-t border-sky-100/50">
+                            <div className="flex gap-6 items-start">
+                              <div className="hidden sm:block w-10 shrink-0" />
+                              <div className="flex-1">
+                                <div className="text-slate-600 text-[14px] leading-relaxed font-medium">
+                                  {language === "ur" &&
+                                  roadmapData.visaOverview.textUr
+                                    ? roadmapData.visaOverview.textUr
+                                    : roadmapData.visaOverview.text}
+                                  {roadmapData.visaOverview.link && (
+                                    <a
+                                      href={roadmapData.visaOverview.link}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="ml-1 text-[#1a4b84] font-bold underline decoration-2 underline-offset-2"
+                                    >
+                                      {roadmapData.visaOverview.linkText ||
+                                        roadmapData.visaOverview.link
+                                          .replace(/^https?:\/\//, "")
+                                          .split("/")[0]}
+                                    </a>
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </div>
+                </Tooltip>
+              </TooltipProvider>
+            )}
+          </div> */}
 
           {/* Stage Overview */}
           <div className="mb-12">
@@ -325,7 +415,7 @@ export default function IR1JourneyPage() {
               </h2>
             </div>
 
-            <div className="flex overflow-x-auto mx-auto justify-center gap-4 pb-6 pt-2 snap-x snap-mandatory hide-scrollbar px-4 scroll-smooth">
+            <div className="flex overflow-x-auto w-full justify-start gap-4 pb-6 pt-2 snap-x snap-mandatory hide-scrollbar px-4 scroll-smooth">
               {roadmapData.stages
                 .filter(
                   (stage: RoadmapStage) =>
@@ -500,6 +590,73 @@ export default function IR1JourneyPage() {
             hasScenarios={hasScenarios}
           />
         )}
+
+        {/* Disclaimer */}
+        {/* {(roadmapData.disclaimer || roadmapData.disclaimerUr) && (
+          <div className="bg-amber-50/50 border border-amber-200/50 rounded-2xl p-5 md:p-6 shadow-sm mb-4 md:mb-6">
+            <p className="text-[14px] md:text-[15px] text-amber-900 leading-relaxed font-medium">
+              <span className="font-black text-amber-800 uppercase tracking-tighter mr-1.5">
+                Disclaimer:
+              </span>
+              {(() => {
+                const text =
+                  language === "ur" && roadmapData.disclaimerUr
+                    ? roadmapData.disclaimerUr
+                    : roadmapData.disclaimer || "";
+
+                const links = [...(roadmapData.disclaimerLinks || [])];
+                if (
+                  roadmapData.disclaimerLink &&
+                  roadmapData.disclaimerLinkText
+                ) {
+                  links.push({
+                    text: roadmapData.disclaimerLinkText,
+                    url: roadmapData.disclaimerLink,
+                  });
+                }
+
+                if (links.length === 0) return text;
+
+                // Sort links by text length descending to avoid partial matches on longer strings
+                const sortedLinks = links.sort(
+                  (a, b) => b.text.length - a.text.length,
+                );
+
+                let parts: (string | React.ReactNode)[] = [text];
+
+                sortedLinks.forEach((link) => {
+                  const newParts: (string | React.ReactNode)[] = [];
+                  parts.forEach((part) => {
+                    if (typeof part === "string" && part.includes(link.text)) {
+                      const subParts = part.split(link.text);
+                      subParts.forEach((subPart, i) => {
+                        newParts.push(subPart);
+                        if (i < subParts.length - 1) {
+                          newParts.push(
+                            <a
+                              key={`${link.text}-${i}`}
+                              href={link.url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="font-bold underline underline-offset-2 hover:text-amber-700 transition-colors inline-flex items-center"
+                            >
+                              {link.text}
+                            </a>,
+                          );
+                        }
+                      });
+                    } else {
+                      newParts.push(part);
+                    }
+                  });
+                  parts = newParts;
+                });
+
+                return parts;
+              })()}
+            </p>
+          </div>
+        )} */}
       </div>
 
       <ConfirmationModal
@@ -518,6 +675,35 @@ export default function IR1JourneyPage() {
         onConfirm={(type) => {
           handleScenarioSelect(type);
         }}
+        options={
+          roadmapData.scenarios || [
+            {
+              id: "bio",
+              title: "Biological Child",
+              desc: "You are petitioning your biological child. Birth certificate documentation will be required.",
+            },
+            {
+              id: "step",
+              title: "Stepchild",
+              desc: "Marriage between the petitioner and biological parent must occur before the child turns 18.",
+            },
+            {
+              id: "adopted",
+              title: "Adopted Child",
+              desc: "Adoption must be finalized before age 16 and child must be in legal custody for 2 years.",
+            },
+          ]
+        }
+        title={
+          roadmapData.scenarios
+            ? "Select Visa Type"
+            : "Select Relationship Type"
+        }
+        description={
+          roadmapData.scenarios
+            ? "Choose the student visa type."
+            : "Choose the relationship type that applies to your case."
+        }
       />
     </section>
   );
@@ -719,7 +905,7 @@ function Wizard({
       </div>
 
       <div className="flex flex-col md:flex-row gap-0 md:gap-6 bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm min-h-100 md:min-h-150 mb-12">
-        <aside className="w-full md:w-[320px] bg-slate-50 border-b md:border-b-0 md:border-r border-slate-200 p-4 md:p-6 overflow-y-auto max-h-[300px] md:max-h-[800px] shrink-0">
+        <aside className="w-full md:w-[320px] bg-slate-50 border-b md:border-b-0 md:border-r border-slate-200 overflow-hidden flex flex-col max-h-[400px] md:max-h-[800px] shrink-0">
           <ProgressTree
             roadmapData={roadmapData}
             state={state}

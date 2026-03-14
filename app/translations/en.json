@@ -3082,6 +3082,7 @@
     "prevStep": "Previous Step",
     "nextStep": "Next Step",
     "markAsComplete": "Mark as Complete",
+    "clickToMarkAsRead": "Click to mark as read",
     "completed": "Completed",
     "defaultNotes": "Detailed instructions and guidance for this step.",
     "successTitle": "Completion Note",
