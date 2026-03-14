@@ -331,6 +331,14 @@ export default function CombinedIntakeForm({
       plan += `Your case is currently under Administrative Processing following the visa interview on ${formatDate(cb.interviewDate)} at ${cb.consularPost}. Under INA Section 221(g), additional review is being conducted before a final decision can be made. No additional documents have been specifically requested at this time — you are advised to monitor your CEAC status and wait for further instructions from the embassy.\n\n`;
     } else {
       plan += `Your visa interview on ${formatDate(cb.interviewDate)} at ${cb.consularPost} resulted in a temporary hold under INA Section 221(g). The consular officer requires the documents listed below before a final decision can be made. This is NOT a permanent denial.\n\n`;
+      
+      if (smartModeEnabled && smartClassification && smartClassification.length > 0) {
+        plan += `**Specific Situations Identified:**\n`;
+        smartClassification.forEach(cls => {
+            plan += `- ${cls.description}\n`;
+        });
+        plan += `\n`;
+      }
     }
 
     const docItemCount = Object.entries(cl)

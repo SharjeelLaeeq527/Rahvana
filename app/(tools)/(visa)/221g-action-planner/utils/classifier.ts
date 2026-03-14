@@ -8,7 +8,6 @@ export type ScenarioCode =
   | "221G_DOCS_REQUESTED_TRANSLATION"
   | "221G_DOCS_REQUESTED_OTHER"
   | "AP_ONLY_NO_DOCS"
-  | "DS5535_REQUESTED"
   | "DOCS_SUBMITTED_WAITING_UPDATE"
   | "UNKNOWN"
 
@@ -130,20 +129,6 @@ export function classifySituation(formData: FormData, parsedItems: string[] = []
     });
   }
 
-  // DS-5535
-  if (parsedItems.includes("ds5535")) {
-    results.push({
-      scenarioCode: "DS5535_REQUESTED",
-      confidence: "high",
-      description: "221(g) – Form DS-5535 Requested",
-      nextSteps: [
-        "Verify your exact travel, employment, and address history for the past 15 years",
-        "List all email addresses, social media handles, and phone numbers from the past 5 years",
-        "Submit the supplemental form as instructed by the embassy",
-        "Expect cases undergoing DS-5535 review to take several weeks or months",
-      ],
-    });
-  }
 
   // Medical
   if (parsedItems.includes("medical_examination")) {
@@ -236,6 +221,6 @@ export function classifySituation(formData: FormData, parsedItems: string[] = []
   }
 
   // Filter out duplicates (specifically DOCS_REQUESTED_OTHER can overlap with itself if user ticked multiple custom things)
-  const uniqueResults = Array.from(new Map(results.map(item => [item.scenarioCode, item])).values());
+  const uniqueResults = Array.from(new Map(results.map(item => [item.scenarioCode + "|" + item.description, item])).values());
   return uniqueResults;
 }

@@ -57,7 +57,6 @@ interface FormSelections {
   i864_tax_years?: string;
   dna_test?: boolean;
   dna_test_name?: string;
-  ds5535?: boolean;
   other?: boolean;
   other_details?: string;
 }
@@ -1054,28 +1053,6 @@ export default function Actual221GFormChecker({
               </div>
             </div>
 
-            {/* Form DS-5535 */}
-            <div className="flex items-start space-x-2 mb-3">
-              <Checkbox
-                id="ds5535"
-                checked={!!selectedItems.ds5535}
-                onCheckedChange={(checked) =>
-                  handleCheckboxChange("ds5535", checked as boolean)
-                }
-                className="mt-1"
-              />
-              <div className="flex-1">
-                <Label
-                  htmlFor="ds5535"
-                  className="text-sm font-normal cursor-pointer"
-                >
-                  <span className="font-semibold">Form DS-5535</span>{" "}
-                  <span className="italic text-muted-foreground">
-                    (Supplemental Questions for Visa Applicants)
-                  </span>
-                </Label>
-              </div>
-            </div>
 
             {/* Other */}
             <div className="flex items-start space-x-2 mb-3">
