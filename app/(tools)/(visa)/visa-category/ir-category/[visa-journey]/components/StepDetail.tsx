@@ -9,6 +9,7 @@ import {
   ClipboardList,
   Wand2,
   HelpCircle,
+  Circle
 } from "lucide-react";
 import * as icons from "lucide-react";
 import {
