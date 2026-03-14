@@ -275,8 +275,68 @@ export function StepDetail({
         </div>
       )}
 
+      {/* Completion Toggle */}
+      <div className="mt-8 md:mt-10 mb-6">
+        <div 
+          onClick={(e) => onToggleComplete(step.id, e)}
+          className={`group relative overflow-hidden rounded-2xl cursor-pointer transition-all duration-500 ${
+            isCompleted 
+              ? "bg-[#e8f6f6] shadow-[0_8px_30px_-8px_rgba(13,115,119,0.25)]" 
+              : "bg-slate-50 hover:bg-slate-100/80 shadow-sm hover:shadow-md"
+          }`}
+        >
+          <div className="flex items-center gap-4 px-5 py-4 md:py-5">
+            {/* Custom Checkbox - brand teal */}
+            <div className={`relative w-8 h-8 rounded-xl flex items-center justify-center transition-all duration-500 ${
+              isCompleted 
+                ? "bg-[#0d7377] shadow-[0_4px_14px_rgba(13,115,119,0.35)] scale-105" 
+                : "bg-white shadow-sm ring-1 ring-slate-200 group-hover:ring-slate-300"
+            }`}>
+              {isCompleted ? (
+                <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                </svg>
+              ) : (
+                <div className="w-2 h-2 rounded-full bg-slate-200 group-hover:bg-slate-300 transition-colors" />
+              )}
+            </div>
+            
+            {/* Text Content */}
+            <div className="flex-1 min-w-0">
+              <p className={`text-[15px] md:text-base font-bold leading-snug transition-colors ${
+                isCompleted ? "text-[#0a5a5d]" : "text-slate-600 group-hover:text-slate-800"
+              }`}>
+                {isCompleted ? t("visaJourney.completed") : t("visaJourney.markAsComplete")}
+              </p>
+              <p className={`text-[12px] md:text-[13px] mt-0.5 font-medium transition-colors ${
+                isCompleted ? "text-[#14a0a6]/80" : "text-slate-400"
+              }`}>
+                {isCompleted 
+                  ? "This step is logged in your journey" 
+                  : "Tap to mark this step as done"}
+              </p>
+            </div>
+
+            {/* Right indicator — no border, no heavy icon */}
+            <div className={`w-9 h-9 rounded-full flex items-center justify-center transition-all duration-500 shrink-0 ${
+              isCompleted 
+                ? "bg-[#0d7377]/10" 
+                : "bg-white group-hover:bg-slate-200/60"
+            }`}>
+              {isCompleted ? (
+                <CheckCircle2 className="w-5 h-5 text-[#0d7377]" strokeWidth={2.5} />
+              ) : (
+                <Circle className="w-5 h-5 text-slate-300 group-hover:text-slate-400 transition-colors" strokeWidth={2} />
+              )}
+            </div>
+          </div>
+
+
+        </div>
+      </div>
+
       {/* Modern Navigation */}
-      <div className="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-3 sm:gap-4 mt-8 md:mt-12 pt-6 md:pt-8 border-t border-slate-100">
+      <div className="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-3 sm:gap-4 pt-6 md:pt-8 border-t border-slate-100">
         <button
           onClick={onPrev}
           disabled={isFirst}
@@ -288,29 +348,6 @@ export function StepDetail({
         >
           <ArrowLeft className="w-4 h-4" /> {t("visaJourney.prevStep")}
         </button>
-
-        <div className="flex justify-center">
-          <button
-            onClick={(e) => onToggleComplete(step.id, e)}
-            className={`w-full sm:w-auto flex items-center justify-center space-x-2 md:justify-start gap-2 px-6 py-3 rounded-xl font-bold transition-all whitespace-nowrap active:scale-95 shadow-lg ${
-              isCompleted
-                ? "bg-emerald-50 text-emerald-600 border border-emerald-200"
-                : "bg-primary text-white hover:bg-primary/90 shadow-primary/30"
-            }`}
-          >
-            {isCompleted ? (
-              <>
-                <CheckCircle2 className="w-5 h-5" />
-                <span>{t("visaJourney.completed")}</span>
-              </>
-            ) : (
-              <>
-                <Circle className="w-5 h-5" />
-                <span>{t("visaJourney.markAsComplete")}</span>
-              </>
-            )}
-          </button>
-        </div>
 
         {!isLast && (
           <button

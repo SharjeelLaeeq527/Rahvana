@@ -380,53 +380,6 @@ export function generateActionPlan(classification: ClassificationResult, selecte
         ],
       }
 
-    case "DS5535_REQUESTED":
-      return {
-        title: "Form DS-5535 (Supplemental Questions) - Action Plan",
-        description:
-          "You have been asked to complete Form DS-5535 for enhanced security vetting. This extensive form requires 15 years of travel, address, and employment history, and 5 years of social media history.",
-        selected221gItems,
-        stages: [
-          {
-            title: "Gathering Information",
-            timeframe: "1-3 Days",
-            actions: [
-              "Check your email or online portal for the DS-5535 form and instructions from the embassy.",
-              "Collect all old passports, travel itineraries, and employment contracts.",
-              "Compile a complete list of your social media handles (Facebook, Twitter/X, Instagram, LinkedIn, YouTube, TikTok), phone numbers, and email addresses used over the last 5 years.",
-            ],
-            tips: [
-              "DO NOT omit any information. Omitting details will significantly delay the process or lead to denial.",
-              "If an exact date is forgotten, provide your closest estimate and note it appropriately.",
-            ],
-          },
-          {
-            title: "Completing the Form",
-            timeframe: "3-7 Days",
-            actions: [
-              "Fill out the DS-5535 digitally or exactly as instructed by the embassy (often via a Word/PDF form sent by email).",
-              "Ensure there are zero gaps in your 15-year travel, address, and employment timelines. If unemployed, list 'Unemployed'.",
-              "Provide details of sources of funding for all past travel.",
-              "List all current and former spouses/partners, children, and siblings.",
-            ],
-            tips: [
-              "Review the form multiple times for accuracy before submission.",
-            ],
-          },
-          {
-            title: "Submission and Waiting Period",
-            timeframe: "Post-Submission",
-            actions: [
-              "Submit the completed form according to the embassy's exact instructions.",
-              "Monitor your case status strictly via the CEAC website.",
-            ],
-            tips: [
-              "DS-5535 administrative processing can take anywhere from 60 days to several months or longer.",
-              "Do not finalize travel plans, sell property, or resign from employment while waiting.",
-            ],
-          },
-        ],
-      }
 
     case "221G_DOCS_REQUESTED_OTHER":
       return {
