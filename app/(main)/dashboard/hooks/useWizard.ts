@@ -1,11 +1,11 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
-import { roadmapData } from '../../../../data/roadmap';
+import { useState, useEffect, useCallback, useRef } from "react";
+import { roadmapData } from "../../../../data/roadmap";
 import {
   loadJourneyProgress,
   saveJourneyProgress,
   deleteJourneyProgress,
   recordToWizardState,
-} from '@/lib/journey/journeyProgressService';
+} from "@/lib/journey/journeyProgressService";
 
 export interface WizardState {
   currentStage: number;
@@ -13,15 +13,18 @@ export interface WizardState {
   scenarioType?: string | undefined;
   completedSteps: Set<string>;
   collapsedSteps: Record<string, boolean>;
-  role: 'both' | 'petitioner' | 'beneficiary';
-  filingType: 'online' | 'paper' | 'both';
+  role: "both" | "petitioner" | "beneficiary";
+  filingType: "online" | "paper" | "both";
   documentChecklist: Record<string, boolean>;
-  docUploads: Record<string, { name: string; size: number; lastModified: number }>;
+  docUploads: Record<
+    string,
+    { name: string; size: number; lastModified: number }
+  >;
   notes: Record<string, string>;
   started: boolean;
 }
 
-const LOCAL_STORAGE_KEY = 'rahvanaWizardState';
+const LOCAL_STORAGE_KEY = "rahvanaWizardState";
 
 const DEFAULT_STATE: WizardState = {
   currentStage: 0,
@@ -29,8 +32,8 @@ const DEFAULT_STATE: WizardState = {
   scenarioType: undefined,
   completedSteps: new Set(),
   collapsedSteps: {},
-  role: 'both',
-  filingType: 'online',
+  role: "both",
+  filingType: "online",
   documentChecklist: {},
   docUploads: {},
   notes: {},
@@ -47,7 +50,11 @@ interface UseWizardOptions {
 }
 
 export function useWizard(options: UseWizardOptions = {}) {
-  const { userId, journeyId = 'ir1', roadmapData: externalRoadmapData } = options;
+  const {
+    userId,
+    journeyId = "ir1",
+    roadmapData: externalRoadmapData,
+  } = options;
 
   // Use external roadmap data if provided, else fallback to default
   const activeRoadmap = externalRoadmapData || roadmapData;
@@ -74,16 +81,19 @@ export function useWizard(options: UseWizardOptions = {}) {
         if (!cancelled) {
           if (record) {
             const wizardState = recordToWizardState(record);
-            setState(prev => ({ ...prev, ...wizardState }));
+            setState((prev) => ({ ...prev, ...wizardState }));
             setHasExistingProgress(record.started);
           } else {
             // No DB record — check localStorage as fallback (e.g., started before login)
             const localData = loadFromLocalStorage();
             if (localData && localData.started) {
-              setState(prev => ({ ...prev, ...localData }));
+              setState((prev) => ({ ...prev, ...localData }));
               setHasExistingProgress(true);
               // Immediately sync local data to DB
-              await saveJourneyProgress(userId, journeyId, { ...DEFAULT_STATE, ...localData });
+              await saveJourneyProgress(userId, journeyId, {
+                ...DEFAULT_STATE,
+                ...localData,
+              });
               clearLocalStorage();
             } else {
               setState(DEFAULT_STATE);
@@ -97,7 +107,7 @@ export function useWizard(options: UseWizardOptions = {}) {
         const localData = loadFromLocalStorage();
         if (!cancelled) {
           if (localData) {
-            setState(prev => ({ ...prev, ...localData }));
+            setState((prev) => ({ ...prev, ...localData }));
             setHasExistingProgress(localData.started ?? false);
           } else {
             setState(DEFAULT_STATE);
@@ -109,7 +119,9 @@ export function useWizard(options: UseWizardOptions = {}) {
     }
 
     loadProgress();
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [userId, journeyId]);
 
   // ─── Normalize State After Load ───────────────────────────────────────────
@@ -117,7 +129,7 @@ export function useWizard(options: UseWizardOptions = {}) {
   const normalizeState = useCallback(() => {
     if (!activeRoadmap || !activeRoadmap.stages) return;
 
-    setState(prev => {
+    setState((prev) => {
       let { currentStage, currentStep } = prev;
 
       if (currentStage < 0) currentStage = 0;
@@ -129,8 +141,14 @@ export function useWizard(options: UseWizardOptions = {}) {
       if (!stage) return { ...prev, currentStage, currentStep: null };
 
       let narrowedStep: number;
-      if (currentStep === null || currentStep < 0 || currentStep >= stage.steps.length) {
-        const firstIncomplete = stage.steps.findIndex((s: any) => !prev.completedSteps.has(s.id));
+      if (
+        currentStep === null ||
+        currentStep < 0 ||
+        currentStep >= stage.steps.length
+      ) {
+        const firstIncomplete = stage.steps.findIndex(
+          (s: any) => !prev.completedSteps.has(s.id),
+        );
         narrowedStep = firstIncomplete === -1 ? 0 : firstIncomplete;
       } else {
         narrowedStep = currentStep;
@@ -142,7 +160,12 @@ export function useWizard(options: UseWizardOptions = {}) {
         newCollapsed[stepId] = false;
       }
 
-      return { ...prev, currentStage, currentStep: narrowedStep, collapsedSteps: newCollapsed };
+      return {
+        ...prev,
+        currentStage,
+        currentStep: narrowedStep,
+        collapsedSteps: newCollapsed,
+      };
     });
   }, [activeRoadmap]);
 
@@ -182,15 +205,15 @@ export function useWizard(options: UseWizardOptions = {}) {
 
   const actions = {
     setStage: (idx: number) => {
-      setState(prev => ({ ...prev, currentStage: idx, currentStep: null }));
+      setState((prev) => ({ ...prev, currentStage: idx, currentStep: null }));
       setTimeout(normalizeState, 0);
     },
 
     setCurrentStep: (idx: number) => {
-      setState(prev => {
+      setState((prev) => {
         const stage = activeRoadmap.stages[prev.currentStage];
         if (!stage) return prev;
-        
+
         const step = stage.steps[idx];
         const newCollapsed = { ...prev.collapsedSteps };
         if (step) {
@@ -201,10 +224,10 @@ export function useWizard(options: UseWizardOptions = {}) {
     },
 
     toggleComplete: (stepId: string) => {
-      setState(prev => {
+      setState((prev) => {
         const newCompleted = new Set(prev.completedSteps);
         const newCollapsed = { ...prev.collapsedSteps };
-        let newStepIdx = prev.currentStep;
+        // let newStepIdx = prev.currentStep;
 
         if (newCompleted.has(stepId)) {
           newCompleted.delete(stepId);
@@ -213,29 +236,29 @@ export function useWizard(options: UseWizardOptions = {}) {
           newCompleted.add(stepId);
           newCollapsed[stepId] = true;
 
-          const stage = activeRoadmap.stages[prev.currentStage];
-          if (stage) {
-            const currentStepId = stage.steps[prev.currentStep ?? 0]?.id;
-            if (currentStepId === stepId) {
-              const nextIdx = stage.steps.findIndex((s: any) => !newCompleted.has(s.id));
-              if (nextIdx !== -1) {
-                newStepIdx = nextIdx;
-              }
-            }
-          }
+          // const stage = activeRoadmap.stages[prev.currentStage];
+          // if (stage) {
+          //   const currentStepId = stage.steps[prev.currentStep ?? 0]?.id;
+          //   if (currentStepId === stepId) {
+          //     const nextIdx = stage.steps.findIndex((s: any) => !newCompleted.has(s.id));
+          //     if (nextIdx !== -1) {
+          //       newStepIdx = nextIdx;
+          //     }
+          //   }
+          // }
         }
 
         return {
           ...prev,
           completedSteps: newCompleted,
           collapsedSteps: newCollapsed,
-          currentStep: newStepIdx,
+          // currentStep: newStepIdx,
         };
       });
     },
 
     toggleCollapse: (stepId: string) => {
-      setState(prev => ({
+      setState((prev) => ({
         ...prev,
         collapsedSteps: {
           ...prev.collapsedSteps,
@@ -244,25 +267,25 @@ export function useWizard(options: UseWizardOptions = {}) {
       }));
     },
 
-    setRole: (role: WizardState['role']) =>
-      setState(prev => ({ ...prev, role })),
+    setRole: (role: WizardState["role"]) =>
+      setState((prev) => ({ ...prev, role })),
 
-    setFilingType: (type: WizardState['filingType']) =>
-      setState(prev => ({ ...prev, filingType: type })),
+    setFilingType: (type: WizardState["filingType"]) =>
+      setState((prev) => ({ ...prev, filingType: type })),
 
     updateNote: (doc: string, note: string) => {
-      setState(prev => ({ ...prev, notes: { ...prev.notes, [doc]: note } }));
+      setState((prev) => ({ ...prev, notes: { ...prev.notes, [doc]: note } }));
     },
 
     setScenario: (scenario: string) => {
-      setState(prev => ({
+      setState((prev) => ({
         ...prev,
-        scenarioType: scenario
+        scenarioType: scenario,
       }));
     },
 
     toggleDocument: (doc: string) => {
-      setState(prev => ({
+      setState((prev) => ({
         ...prev,
         documentChecklist: {
           ...prev.documentChecklist,
@@ -272,17 +295,21 @@ export function useWizard(options: UseWizardOptions = {}) {
     },
 
     uploadDocument: (doc: string, file: File) => {
-      setState(prev => ({
+      setState((prev) => ({
         ...prev,
         docUploads: {
           ...prev.docUploads,
-          [doc]: { name: file.name, size: file.size, lastModified: file.lastModified },
+          [doc]: {
+            name: file.name,
+            size: file.size,
+            lastModified: file.lastModified,
+          },
         },
       }));
     },
 
     clearDocument: (doc: string) => {
-      setState(prev => {
+      setState((prev) => {
         const newUploads = { ...prev.docUploads };
         delete newUploads[doc];
         return { ...prev, docUploads: newUploads };
@@ -291,7 +318,7 @@ export function useWizard(options: UseWizardOptions = {}) {
 
     /** Mark journey as officially started */
     startJourney: () => {
-      setState(prev => ({ ...prev, started: true }));
+      setState((prev) => ({ ...prev, started: true }));
       setHasExistingProgress(true);
     },
 

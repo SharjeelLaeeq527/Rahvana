@@ -6,10 +6,10 @@ import {
   ArrowLeft,
   ArrowRight,
   CheckCircle2,
-  Circle,
   ClipboardList,
   Wand2,
   HelpCircle,
+  Circle
 } from "lucide-react";
 import * as icons from "lucide-react";
 import {
@@ -22,6 +22,8 @@ import { RoadmapStep, RoadmapStage } from "./types";
 import { WizardState } from "@/app/(main)/dashboard/hooks/useWizard";
 import { useLanguage } from "@/app/context/LanguageContext";
 import { useRouter } from "next/navigation";
+
+import { motion } from "framer-motion";
 
 interface StepDetailProps {
   step: RoadmapStep;
@@ -36,7 +38,7 @@ interface StepDetailProps {
 
 export function StepDetail({
   step,
-  stage,
+  stage: _stage,
   state,
   onToggleComplete,
   onNext,
@@ -63,7 +65,7 @@ export function StepDetail({
               step: ((state.currentStep || 0) + 1).toString(),
             })}
           </div>
-          
+
           {(isUrdu && step.outputUr
             ? step.outputUr
             : step.output || step.success) && (
@@ -141,7 +143,7 @@ export function StepDetail({
                 </p>
               </div>
             )}
-            {(step.warn) && (
+            {step.warn && (
               <div className="flex items-start gap-3 p-4 bg-amber-50 rounded-xl border border-amber-100">
                 <div className="w-5 h-5 rounded-full bg-amber-100 flex items-center justify-center shrink-0 mt-0.5 text-amber-600 font-bold text-sm">
                   !
@@ -203,7 +205,7 @@ export function StepDetail({
         )}
 
         {/* Success Condition */}
-        {(isUrdu && step.outputUr
+        {/* {(isUrdu && step.outputUr
           ? step.outputUr
           : step.output || step.success) && (
           <div className="p-6 bg-indigo-50/40 rounded-2xl border border-indigo-100 mb-10">
@@ -220,11 +222,11 @@ export function StepDetail({
               }}
             />
           </div>
-        )}
+        )} */}
       </div>
 
       {/* Official Sources */}
-      {stage.sources && stage.sources.length > 0 && (
+      {/* {stage.sources && stage.sources.length > 0 && (
         <div className="bg-slate-50/50 rounded-2xl p-4 md:p-6 mb-8 md:mb-10 border border-slate-100">
           <h4 className="text-[13px] font-black mb-4 text-slate-500 uppercase tracking-widest">
             OFFICIAL SOURCES
@@ -244,7 +246,7 @@ export function StepDetail({
             ))}
           </div>
         </div>
-      )}
+      )} */}
 
       {/* Relevant Tools & Services */}
       {step.relevantTools && step.relevantTools.length > 0 && (
@@ -275,66 +277,6 @@ export function StepDetail({
         </div>
       )}
 
-      {/* Completion Toggle */}
-      <div className="mt-8 md:mt-10 mb-6">
-        <div 
-          onClick={(e) => onToggleComplete(step.id, e)}
-          className={`group relative overflow-hidden rounded-2xl cursor-pointer transition-all duration-500 ${
-            isCompleted 
-              ? "bg-[#e8f6f6] shadow-[0_8px_30px_-8px_rgba(13,115,119,0.25)]" 
-              : "bg-slate-50 hover:bg-slate-100/80 shadow-sm hover:shadow-md"
-          }`}
-        >
-          <div className="flex items-center gap-4 px-5 py-4 md:py-5">
-            {/* Custom Checkbox - brand teal */}
-            <div className={`relative w-8 h-8 rounded-xl flex items-center justify-center transition-all duration-500 ${
-              isCompleted 
-                ? "bg-[#0d7377] shadow-[0_4px_14px_rgba(13,115,119,0.35)] scale-105" 
-                : "bg-white shadow-sm ring-1 ring-slate-200 group-hover:ring-slate-300"
-            }`}>
-              {isCompleted ? (
-                <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                </svg>
-              ) : (
-                <div className="w-2 h-2 rounded-full bg-slate-200 group-hover:bg-slate-300 transition-colors" />
-              )}
-            </div>
-            
-            {/* Text Content */}
-            <div className="flex-1 min-w-0">
-              <p className={`text-[15px] md:text-base font-bold leading-snug transition-colors ${
-                isCompleted ? "text-[#0a5a5d]" : "text-slate-600 group-hover:text-slate-800"
-              }`}>
-                {isCompleted ? t("visaJourney.completed") : t("visaJourney.markAsComplete")}
-              </p>
-              <p className={`text-[12px] md:text-[13px] mt-0.5 font-medium transition-colors ${
-                isCompleted ? "text-[#14a0a6]/80" : "text-slate-400"
-              }`}>
-                {isCompleted 
-                  ? "This step is logged in your journey" 
-                  : "Tap to mark this step as done"}
-              </p>
-            </div>
-
-            {/* Right indicator — no border, no heavy icon */}
-            <div className={`w-9 h-9 rounded-full flex items-center justify-center transition-all duration-500 shrink-0 ${
-              isCompleted 
-                ? "bg-[#0d7377]/10" 
-                : "bg-white group-hover:bg-slate-200/60"
-            }`}>
-              {isCompleted ? (
-                <CheckCircle2 className="w-5 h-5 text-[#0d7377]" strokeWidth={2.5} />
-              ) : (
-                <Circle className="w-5 h-5 text-slate-300 group-hover:text-slate-400 transition-colors" strokeWidth={2} />
-              )}
-            </div>
-          </div>
-
-
-        </div>
-      </div>
-
       {/* Modern Navigation */}
       <div className="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-3 sm:gap-4 pt-6 md:pt-8 border-t border-slate-100">
         <button
@@ -348,6 +290,80 @@ export function StepDetail({
         >
           <ArrowLeft className="w-4 h-4" /> {t("visaJourney.prevStep")}
         </button>
+
+        <div className="flex justify-center mt-4">
+          {(() => {
+            const hasOutput = isUrdu && step.outputUr ? step.outputUr : step.output || step.success;
+            const toggleButton = (
+              <div 
+                className="flex items-center gap-4 cursor-pointer select-none group"
+                onClick={(e) => onToggleComplete(step.id, e)}
+              >
+                <div className="flex flex-col text-left rtl:text-right">
+                  <span className={`text-lg md:text-xl font-bold transition-colors ${isCompleted ? 'text-emerald-600' : 'text-slate-700'}`}>
+                    {isCompleted ? t("visaJourney.completed") : t("visaJourney.markAsComplete")}
+                  </span>
+                  {!isCompleted && (
+                    <span className="text-[11px] md:text-xs font-medium text-slate-400 uppercase tracking-widest mt-0.5">
+                      {t("visaJourney.clickToMarkAsRead")}
+                    </span>
+                  )}
+                </div>
+
+                <div 
+                  className={`relative w-[60px] h-[32px] rounded-full transition-all duration-300 shadow-inner ${
+                    isCompleted ? 'bg-emerald-500 shadow-emerald-600/20' : 'bg-slate-200 shadow-slate-300/20'
+                  }`}
+                >
+                  <motion.div
+                    className="absolute top-1 left-1 w-6 h-6 rounded-full bg-white shadow-md flex items-center justify-center"
+                    animate={{ 
+                      x: isCompleted ? 28 : 0,
+                    }}
+                    transition={{ type: "spring", stiffness: 500, damping: 30 }}
+                  >
+                    {isCompleted && (
+                      <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+                    )}
+                  </motion.div>
+                </div>
+              </div>
+            );
+
+            if (hasOutput) {
+              return (
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      {toggleButton}
+                    </TooltipTrigger>
+                    <TooltipContent
+                      side="top"
+                      className="max-w-[300px] p-5 bg-white border-indigo-100 shadow-2xl rounded-2xl z-50 feedback-tooltip"
+                    >
+                      <div className="flex flex-col gap-3">
+                        <div className="flex items-center gap-2">
+                          <div className="w-2 h-2 rounded-full bg-indigo-500 animate-pulse" />
+                          <span className="text-[11px] font-black text-indigo-700 uppercase tracking-widest">
+                            {t("visaJourney.successTitle")}
+                          </span>
+                        </div>
+                        <div
+                          className="text-indigo-950 text-sm font-bold leading-relaxed"
+                          dangerouslySetInnerHTML={{
+                            __html: hasOutput.toString(),
+                          }}
+                        />
+                      </div>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              );
+            }
+
+            return toggleButton;
+          })()}
+        </div>
 
         {!isLast && (
           <button
