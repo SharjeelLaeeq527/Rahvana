@@ -76,7 +76,7 @@ interface FormData {
   // Core Identity Documents
   urdu_marriage_certificate?: boolean;
   english_translation_certificate?: boolean;
-  union_council_certificate?: boolean;
+  nadra_marriage_registration_cert?: boolean;
   family_registration_certificate?: boolean;
   birth_certificates?: boolean;
   // Passport & Police Documents
@@ -89,7 +89,7 @@ interface FormData {
   courier_registration?: boolean;
   medical_report_available?: boolean;
   polio_vaccination_certificate?: boolean;
-  covid_vaccination_certificate?: boolean;
+
   passport_photos_2x2?: boolean;
 }
 
@@ -1230,7 +1230,7 @@ const ReviewStep = ({
         {/* Core Identity Documents Section */}
         {(formData.urdu_marriage_certificate !== undefined ||
           formData.english_translation_certificate !== undefined ||
-          formData.union_council_certificate !== undefined ||
+          formData.nadra_marriage_registration_cert !== undefined ||
           formData.family_registration_certificate !== undefined ||
           formData.birth_certificates !== undefined) && (
           <div className="bg-muted/30 rounded-xl p-6 border border-border">
@@ -1273,13 +1273,13 @@ const ReviewStep = ({
                   </p>
                 </div>
               )}
-              {formData.union_council_certificate !== undefined && (
+              {formData.nadra_marriage_registration_cert !== undefined && (
                 <div>
                   <p className="text-base text-muted-foreground mb-1">
-                    Union Council Certificate
+                    NADRA Marriage Certificate
                   </p>
                   <p className="text-lg font-semibold">
-                    {formatBoolean(formData.union_council_certificate)}
+                    {formatBoolean(formData.nadra_marriage_registration_cert)}
                   </p>
                 </div>
               )}
@@ -1371,7 +1371,6 @@ const ReviewStep = ({
           formData.courier_registration !== undefined ||
           formData.medical_report_available !== undefined ||
           formData.polio_vaccination_certificate !== undefined ||
-          formData.covid_vaccination_certificate !== undefined ||
           formData.passport_photos_2x2 !== undefined) && (
           <div className="bg-muted/30 rounded-xl p-6 border border-border">
             <h3 className="text-xl font-bold text-foreground mb-4 flex items-center gap-3">
@@ -1443,16 +1442,7 @@ const ReviewStep = ({
                   </p>
                 </div>
               )}
-              {formData.covid_vaccination_certificate !== undefined && (
-                <div>
-                  <p className="text-base text-muted-foreground mb-1">
-                    COVID Vaccination Certificate
-                  </p>
-                  <p className="text-lg font-semibold">
-                    {formatBoolean(formData.covid_vaccination_certificate)}
-                  </p>
-                </div>
-              )}
+
               {formData.passport_photos_2x2 !== undefined && (
                 <div>
                   <p className="text-base text-muted-foreground mb-1">
@@ -1584,7 +1574,7 @@ export default function VisaCaseStrengthChecker() {
           i864_supporting_financial_documents: false,
           urdu_marriage_certificate: false,
           english_translation_certificate: false,
-          union_council_certificate: false,
+          nadra_marriage_registration_cert: false,
           family_registration_certificate: false,
           birth_certificates: false,
           passports_available: false,
@@ -1595,7 +1585,6 @@ export default function VisaCaseStrengthChecker() {
           courier_registration: false,
           medical_report_available: false,
           polio_vaccination_certificate: false,
-          covid_vaccination_certificate: false,
           passport_photos_2x2: false,
         });
         setProfileLoaded(false);
@@ -1774,7 +1763,7 @@ export default function VisaCaseStrengthChecker() {
     // Core Identity Documents
     "urdu_marriage_certificate",
     "english_translation_certificate",
-    "union_council_certificate",
+    "nadra_marriage_registration_cert",
     "family_registration_certificate",
     "birth_certificates",
     // Passport & Police Documents
@@ -1787,7 +1776,7 @@ export default function VisaCaseStrengthChecker() {
     "courier_registration",
     "medical_report_available",
     "polio_vaccination_certificate",
-    "covid_vaccination_certificate",
+
     "passport_photos_2x2",
   ];
 

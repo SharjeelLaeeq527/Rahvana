@@ -269,10 +269,10 @@
           "risk_tag": "NO_MARRIAGE_TRANSLATION"
         },
         {
-          "id": "union_council_certificate",
-          "label": "Do you have the Union Council marriage certificate?",
+          "id": "nadra_marriage_registration_cert",
+          "label": "Do you have the NADRA computerized marriage certificate?",
           "type": "boolean",
-          "risk_tag": "NO_UNION_COUNCIL_CERTIFICATE"
+          "risk_tag": "NO_NADRA_MARRIAGE_CERT"
         },
         {
           "id": "family_registration_certificate",
@@ -348,12 +348,7 @@
           "type": "boolean",
           "risk_tag": "NO_POLIO_VACCINATION_PROOF"
         },
-        {
-          "id": "covid_vaccination_certificate",
-          "label": "Do you have proof of COVID-19 vaccination?",
-          "type": "boolean",
-          "risk_tag": "NO_COVID_VACCINATION_PROOF"
-        },
+
         {
           "id": "passport_photos_2x2",
           "label": "Do you have two U.S. size passport photographs (2×2 inches)?",

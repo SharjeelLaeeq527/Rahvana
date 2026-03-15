@@ -21,8 +21,8 @@ export const SCORING_CONFIG = {
   
   // Income scoring thresholds
   INCOME_THRESHOLDS: {
-    POVERTY_GUIDELINE_BASE: 15650, // 2025 US federal poverty guideline
-    ADDITIONAL_PER_PERSON: 5500,   // Additional amount per household member
+    POVERTY_GUIDELINE_BASE: 15960, // 2026 US federal poverty guideline (48 states)
+    ADDITIONAL_PER_PERSON: 5680,   // Additional amount per household member
     CRITICAL_RATIO: 1.25,          // Below 125% triggers HIGH risk
     WARNING_RATIO: 1.50            // Below 150% triggers MEDIUM risk
   },

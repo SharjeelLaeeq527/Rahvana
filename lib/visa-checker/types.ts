@@ -38,7 +38,7 @@ export type QuestionKey =
   // Core Identity Documents
   | 'urdu_marriage_certificate'
   | 'english_translation_certificate'
-  | 'union_council_certificate'
+  | 'nadra_marriage_registration_cert'
   | 'family_registration_certificate'
   | 'birth_certificates'
   // Passport & Police Documents
@@ -51,7 +51,7 @@ export type QuestionKey =
   | 'courier_registration'
   | 'medical_report_available'
   | 'polio_vaccination_certificate'
-  | 'covid_vaccination_certificate'
+
   | 'passport_photos_2x2';
 
 export type FlagCode =
@@ -76,7 +76,7 @@ export type FlagCode =
   // Document risks
   | 'NO_MARRIAGE_CERTIFICATE'
   | 'NO_MARRIAGE_TRANSLATION'
-  | 'NO_UNION_COUNCIL_CERTIFICATE'
+  | 'NO_NADRA_MARRIAGE_CERT'
   | 'NO_BIRTH_CERTIFICATES'
   | 'NO_VALID_PASSPORTS'
   | 'DS260_NOT_SUBMITTED'
@@ -84,7 +84,7 @@ export type FlagCode =
   | 'NO_COURIER_REGISTRATION'
   | 'NO_MEDICAL_REPORT'
   | 'NO_POLIO_VACCINATION_PROOF'
-  | 'NO_COVID_VACCINATION_PROOF'
+  | 'CR1_I751_REMINDER'
   | 'NO_PASSPORT_PHOTOS_2X2'
   | 'NO_FRC_AVAILABLE'
   | 'NO_PASSPORT_COPY'
