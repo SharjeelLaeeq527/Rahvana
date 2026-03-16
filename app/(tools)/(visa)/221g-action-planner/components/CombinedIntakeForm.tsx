@@ -1513,20 +1513,22 @@ export default function CombinedIntakeForm({
                     <title>${title}</title>
                     <base href="${typeof window !== "undefined" ? window.location.origin : ""}/">
                     <style>
-                        @page { 
-                            margin: 0.1in 0; 
+                        @page {
+                          margin: 0;
                         }
                         body { 
                             font-family: "Segoe UI", Tahoma, sans-serif; 
                             line-height: 1.5; 
                             color: #333; 
                             margin: 0;
-                            padding: 0;
+                          padding: 0.14in 0 0 0;
                             -webkit-print-color-adjust: exact !important;
                             print-color-adjust: exact !important;
                         }
                         .page-content {
-                            padding: 0.2in 1in 0.6in 1in;
+                          padding: 0.528in 0.9in 0.62in 0.9in;
+                          -webkit-box-decoration-break: clone;
+                          box-decoration-break: clone;
                         }
                         .page-break-sentinel {
                             display: block;
@@ -1572,44 +1574,143 @@ export default function CombinedIntakeForm({
                             user-select: none;
                         }
                         header {
-                            background-color: #0d7377 !important;
-                            background: #0d7377 !important;
-                            color: white !important;
-                            padding: 2.5rem 1in;
-                            margin: 0 0 0 0;
-                            display: flex;
-                            justify-content: space-between;
-                            align-items: center;
-                            width: 100%;
-                            box-sizing: border-box;
+                          background: #ffffff;
+                          padding: 0.38in 0 0 0;
+                          margin: 0 0.9in 0.07in 0.9in;
+                          width: auto;
+                          box-sizing: border-box;
                         }
-                        .header-title {
-                            font-size: 28pt;
-                            font-weight: bold;
-                            margin: 0;
-                            color: white !important;
+                        .header-logo {
+                            height: 46pt;
+                            width: auto;
+                            display: block;
+                          opacity: 0.88;
+                          filter:
+                            saturate(0.9)
+                            brightness(1.05)
+                            drop-shadow(0.9pt 0.9pt 0 rgba(13, 115, 119, 0.18))
+                            drop-shadow(0 0 1.2pt rgba(13, 115, 119, 0.12));
                         }
-                        .header-subtitle {
-                            font-size: 11pt;
-                            opacity: 0.9;
-                            margin-top: 5pt;
-                            color: white !important;
+                        .header-rule {
+                          height: 5pt;
+                          background: #0d7377;
+                          margin-top: 14pt;
+                          width: 100%;
+                          display: block;
+                          border-radius: 999px;
+                          position: relative;
+                        }
+                        .header-rule::before {
+                          content: "";
+                          position: absolute;
+                          left: 0;
+                          top: -4pt;
+                          width: 50%;
+                          height: 8pt;
+                          background: #0d7377;
+                          border-radius: 5pt 5pt 0 0;
+                        }
+                        .header-rule::after {
+                          content: "";
+                          position: absolute;
+                          right: 8pt;
+                          top: 50%;
+                          width: 7pt;
+                          height: 7pt;
+                          border-radius: 50%;
+                          background: #99f6e4;
+                          border: 1.5pt solid #0d7377;
+                          transform: translateY(-50%);
+                          box-sizing: border-box;
+                        }
+                        .header-accent {
+                          display: block;
+                          margin-top: 4pt;
+                          width: 100%;
+                          height: 1.2pt;
+                          background: linear-gradient(
+                            90deg,
+                            rgba(13, 115, 119, 0.34) 0%,
+                            rgba(13, 115, 119, 0.16) 35%,
+                            rgba(13, 115, 119, 0.06) 100%
+                          );
+                        }
+                        footer {
+                          position: fixed;
+                          bottom: 0;
+                          left: 0;
+                          right: 0;
+                          height: 0.95in;
+                          display: flex;
+                          align-items: center;
+                          justify-content: space-between;
+                          padding: 0 0.9in;
+                          box-sizing: border-box;
+                        }
+                        /* left: teal dot accent + logo */
+                        .footer-logo-wrap {
+                          display: flex;
+                          align-items: center;
+                          gap: 7pt;
+                          opacity: 0.44;
+                          filter: saturate(0.2) contrast(1.3) brightness(0.5);
+                        }
+                        .footer-logo-wrap::before {
+                          content: "";
+                          display: inline-block;
+                          width: 5pt;
+                          height: 5pt;
+                          border-radius: 50%;
+                          background: #0d7377;
+                          flex-shrink: 0;
+                        }
+                        .footer-logo {
+                          height: 26pt;
+                          width: auto;
+                        }
+                        /* right: page number with flanking em-dashes */
+                        .footer-page {
+                          font-family: Georgia, 'Times New Roman', serif;
+                          font-size: 10pt;
+                          font-weight: bold;
+                          letter-spacing: 0.14em;
+                          color: #374151;
+                          opacity: 0.55;
+                          display: flex;
+                          align-items: center;
+                          gap: 6pt;
+                        }
+                        .footer-page .dash {
+                          display: inline-block;
+                          width: 18pt;
+                          height: 1.2pt;
+                          background: #9ca3af;
+                          border-radius: 1pt;
                         }
                         @media print {
                             body { padding: 0; }
                             .watermark { display: block; }
+                            footer { display: flex; }
                         }
                     </style>
                 </head>
                 <body>
                     <div class="watermark">RAHVANA</div>
                     <header>
-                       <!-- <div>
-                            <div class="header-title">Rahvana</div>
-                           <div class="header-subtitle">221(g) Action Planner</div> 
-                        </div> -->
-                        <img src="/assets/images/RahvanaLogo.png" alt="Rahvana" style="height: 45pt; filter: brightness(0) invert(1);">
+                        <img class="header-logo" src="/assets/images/RahvanaLogo.png" alt="Rahvana logo">
+                        <div class="header-rule"></div>
+                      <span class="header-accent"></span>
                     </header>
+                    <footer>
+                        <div class="footer-logo-wrap">
+                            <img class="footer-logo" src="/assets/images/RahvanaLogo.png" alt="Rahvana">
+                        </div>
+                        <span class="footer-page">
+                            <span class="dash"></span>
+                            Page 1
+                            <span class="dash"></span>
+                        </span>
+                    </footer>
                     <div class="page-content">
                         ${htmlBody}
                     </div>

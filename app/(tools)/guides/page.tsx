@@ -653,7 +653,7 @@ function GuideCard({ guide, index }: { guide: Guide; index: number }) {
           {guide.title}
         </h3>
         {guide.subtitle && (
-          <p className="text-[11px] leading-snug text-zinc-500 dark:text-zinc-400 mb-3">
+          <p className="text-[11px] leading-snug text-zinc-500 dark:text-zinc-400 mb-3.5">
             {guide.subtitle}
           </p>
         )}
@@ -662,7 +662,7 @@ function GuideCard({ guide, index }: { guide: Guide; index: number }) {
             {guide.category}
           </span>
         </div>
-        <p className="text-sm leading-6 font-medium text-slate-700 dark:text-slate-200 mb-5 grow [text-wrap:pretty]">
+        <p className="text-sm leading-6 font-medium text-slate-600 dark:text-slate-300 mb-5 grow [text-wrap:pretty]">
           {guide.description}
         </p>
       </div>
