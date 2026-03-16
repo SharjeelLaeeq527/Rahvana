@@ -717,8 +717,8 @@ export const NAV_DATA: Record<string, NavSection> = {
             icon: (
               <Globe className="h-5 w-5 text-green-600 dark:text-green-400" />
             ),
-            title: "Passport Guide",
-            description: "Obtaining or renewing your Pakistani passport.",
+            title: "Passport Services Guide",
+            description: "Apply for or renew your Pakistani passport.",
             href: "/guides/passport-guide",
             // badge: "Live",
           },
@@ -726,8 +726,8 @@ export const NAV_DATA: Record<string, NavSection> = {
             icon: (
               <FileText className="h-5 w-5 text-green-600 dark:text-green-400" />
             ),
-            title: "CNIC Guide",
-            description: "Obtaining and renewing your NADRA CNIC.",
+            title: "CNIC Application Guide",
+            description: "Apply for or renew your NADRA CNIC.",
             href: "/guides/cnic-guide",
             // badge: "Live",
           },
@@ -735,16 +735,16 @@ export const NAV_DATA: Record<string, NavSection> = {
             icon: (
               <FileText className="h-5 w-5 text-green-600 dark:text-green-400" />
             ),
-            title: "Birth Certificate Guide",
-            description: "NADRA CRC, B-Form, and birth documentation.",
+            title: "Birth Certificate Process Guide",
+            description: "CRC, B-Form, and alternate birth records.",
             href: "/guides/birth-certificate-guide",
           },
           {
             icon: (
               <Globe className="h-5 w-5 text-green-600 dark:text-green-400" />
             ),
-            title: "FRC Guide",
-            description: "Family Registration Certificate (FRC) guide.",
+            title: "FRC Application Guide",
+            description: "Get your Family Registration Certificate (FRC).",
             href: "/guides/frc-guide",
             // badge: "Live",
           },
@@ -752,8 +752,8 @@ export const NAV_DATA: Record<string, NavSection> = {
             icon: (
               <Heart className="h-5 w-5 text-green-600 dark:text-green-400" />
             ),
-            title: "Marriage Certificate Guide",
-            description: "Nikahnama and MRC guide.",
+            title: "Marriage Certificate Process Guide",
+            description: "Nikah Nama, MRC, and certified translations.",
             href: "/guides/nikah-nama-guide",
             // badge: "Live",
           },
@@ -762,8 +762,8 @@ export const NAV_DATA: Record<string, NavSection> = {
             icon: (
               <Shield className="h-5 w-5 text-green-600 dark:text-green-400" />
             ),
-            title: "Police Verification Guide",
-            description: "How to obtain Police Verification Certificate.",
+            title: "Police Verification Process Guide",
+            description: "Get your Police Verification Certificate.",
             href: "/guides/police-verification-guide",
             // badge: "Live",
           },
@@ -846,8 +846,8 @@ export const NAV_DATA: Record<string, NavSection> = {
             icon: (
               <Syringe className="h-5 w-5 text-teal-600 dark:text-teal-400" />
             ),
-            title: "Polio Vaccination Guide",
-            description: "CDC-required vaccinations and polio certificate.",
+            title: "Vaccination Guide",
+            description: "CDC-required vaccines and polio certificate.",
             href: "/guides/polio-vaccination-guide",
           },
         ],

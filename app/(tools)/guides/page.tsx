@@ -36,7 +36,7 @@ import {
 // --- Data & Types ---
 
 type GuideCategory =
-  | "Pakistan Docs"
+  | "Pakistan Document"
   // | "Embassy Logistics"
   // | "Arrival & Travel"
   // | "Financial & Sponsorship"
@@ -48,6 +48,7 @@ type GuideCategory =
 interface Guide {
   id: string;
   title: string;
+  subtitle?: string;
   description: string;
   category: GuideCategory;
   href: string;
@@ -93,20 +94,22 @@ const GUIDES: Guide[] = [
   // },
   {
     id: "passport",
-    title: "Passport Guide",
+    title: "Passport Services Guide",
+    subtitle: "Machine Readable Passport (MRP)",
     description:
       "Complete guide to obtaining or renewing your Pakistani passport.",
-    category: "Pakistan Docs",
+    category: "Pakistan Document",
     href: "/guides/passport-guide",
     icon: Globe,
   },
   {
     id: "police-verification",
     icon: Shield,
-    title: "Police Verification Guide",
-    description: "How to obtain Police Verification Certificate.",
+    title: "Police Verification Process Guide",
+    subtitle: "Police Character Certificate (PCC)",
+    description: "Step-by-step process to obtain your Police Verification Certificate.",
     href: "/guides/police-verification-guide",
-    category: "Pakistan Docs",
+    category: "Pakistan Document",
   },
   // {
   //   id: "pcc-reference",
@@ -119,34 +122,38 @@ const GUIDES: Guide[] = [
   // },
   {
     id: "cnic",
-    title: "CNIC (National ID)",
+    title: "CNIC Application Guide",
+    subtitle: "Computerized National Identity Card",
     description: "Complete guide to obtaining and renewing your NADRA CNIC.",
-    category: "Pakistan Docs",
+    category: "Pakistan Document",
     href: "/guides/cnic-guide",
     icon: FileText,
   },
   {
     id: "birth-certificate",
-    title: "Birth Certificate",
+    title: "Birth Certificate Process Guide",
+    subtitle: "Child Registration Certificate (CRC) / B-Form",
     description: "NADRA CRC, B-Form, and alternative birth documentation.",
-    category: "Pakistan Docs",
+    category: "Pakistan Document",
     href: "/guides/birth-certificate-guide",
     icon: FileText,
   },
   {
     id: "frc",
-    title: "FRC Guide",
+    title: "FRC Application Guide",
+    subtitle: "Family Registration Certificate",
     description:
-      "Complete guide to obtaining your Family Registration Certificate (FRC).",
-    category: "Pakistan Docs",
+      "Complete guide to obtaining your Family Registration Certificate.",
+    category: "Pakistan Document",
     href: "/guides/frc-guide",
     icon: Globe,
   },
   {
     id: "marriage-certificate",
-    title: "Marriage Certificate",
-    description: "Nikahnama, MRC, and certified English translations.",
-    category: "Pakistan Docs",
+    title: "Marriage Certificate Process Guide",
+    subtitle: "Nikah Nama / Marriage Registration Certificate (MRC)",
+    description: "Nikah Nama, MRC, and certified English translations.",
+    category: "Pakistan Document",
     href: "/guides/nikah-nama-guide",
     icon: Heart,
   },
@@ -299,7 +306,7 @@ const GUIDES: Guide[] = [
 
 const CATEGORIES: ("All" | GuideCategory)[] = [
   "All",
-  "Pakistan Docs",
+  "Pakistan Document",
   // "Embassy Logistics",
   // "Arrival & Travel",
   // "Financial & Sponsorship",
@@ -516,7 +523,7 @@ export default function GuidesPage() {
         </div>
 
         {/* Guides Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-y-10 gap-x-6 pt-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-7 pt-6">
           {filteredGuides.length > 0 ? (
             filteredGuides.map((guide, index) => (
               <GuideCard key={guide.id} guide={guide} index={index} />
@@ -543,7 +550,7 @@ const CATEGORY_STYLES: Record<
     borderGradient: string;
   }
 > = {
-  "Pakistan Docs": {
+  "Pakistan Document": {
     iconBox: "bg-green-600 text-white border-transparent dark:bg-green-500",
     innerBox: "bg-white/20",
     link: "text-green-600 dark:text-green-400",
@@ -642,21 +649,26 @@ function GuideCard({ guide, index }: { guide: Guide; index: number }) {
 
       {/* Content */}
       <div className="relative z-10 flex flex-col grow pt-2">
-        <h3 className="text-xl font-bold text-foreground mb-1 transition-colors">
+        <h3 className="text-lg md:text-xl leading-tight font-bold text-foreground mb-0.5 transition-colors">
           {guide.title}
         </h3>
+        {guide.subtitle && (
+          <p className="text-[11px] leading-snug text-zinc-500 dark:text-zinc-400 mb-3">
+            {guide.subtitle}
+          </p>
+        )}
         <div className="mb-3">
-          <span className="text-[11px] font-bold uppercase tracking-wide text-muted-foreground/80 bg-muted px-2 py-0.5 rounded">
+          <span className="text-[10px] font-semibold uppercase tracking-[0.08em] text-primary/85 bg-primary/10 border border-primary/20 px-2 py-1 rounded">
             {guide.category}
           </span>
         </div>
-        <p className="text-slate-900 dark:text-white text-sm leading-relaxed mb-6 grow">
+        <p className="text-sm leading-6 font-medium text-slate-700 dark:text-slate-200 mb-5 grow [text-wrap:pretty]">
           {guide.description}
         </p>
       </div>
 
       {/* Footer / Action */}
-      <div className="relative z-10 flex items-center justify-between pt-4 border-t border-border mt-auto">
+      <div className="relative z-10 flex items-center justify-between pt-3.5 border-t border-border mt-auto">
         <span className="text-xs font-medium text-muted-foreground flex items-center gap-1">
           {/* Placeholder for stats or extra info if needed */}
         </span>

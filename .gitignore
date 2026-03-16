@@ -28,6 +28,7 @@ yarn-error.log*
 
 # local env files
 .env*.local
+env.local
 
 # vercel
 .vercel
@@ -177,9 +178,10 @@ dist
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
 
-echo ".venv/" >> .gitignore
+.venv/
 venv/
 backend/.venv/
+backend/env/
 
 
 # Python
