@@ -20,7 +20,6 @@ import {
   Mail,
   ShieldCheck,
   Sparkles,
-  PrinterIcon,
   CheckCircle2,
   FolderCheck,
   ClipboardCheck,
@@ -30,17 +29,10 @@ import {
   MapPin,
   ChevronDown,
   Search,
-  Download,
   FileDown,
 } from "lucide-react";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from "@/components/ui/dialog";
-import { Checkbox } from "@/components/ui/checkbox";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
+// import { Checkbox } from "@/components/ui/checkbox";
 import Actual221GFormChecker from "./Actual221GFormChecker";
 import { FormData, FormSelections } from "../types/221g";
 import { classifySituation } from "../utils/classifier";
@@ -357,7 +349,7 @@ const EMPTY_FORM: FormData = {
 
 export default function CombinedIntakeForm({
   onSubmit,
-  onSaveToProfile,
+  // onSaveToProfile,
   initialData,
   initialSelections,
   smartModeEnabled = false,
@@ -582,7 +574,12 @@ export default function CombinedIntakeForm({
       ([, v]) => typeof v === "boolean" && v,
     ).length;
     if (docItemCount > 0) {
-      plan += `Based on your checklist, the following items have been identified:\n`;
+      if (
+        !smartModeEnabled ||
+        (smartClassification && smartClassification.length === 0)
+      ) {
+        plan += `Based on your checklist, the following items have been identified:\n`;
+      }
       if (cl.i864_affidavit)
         plan += `- Financial sponsorship documents (I-864 package)\n`;
       if (cl.passport) plan += `- Your passport for visa placement\n`;
@@ -629,15 +626,17 @@ export default function CombinedIntakeForm({
         `Police certificate – ${cl.police_certificate_country || "specified country"}`,
       );
     if (cl.nadra_birth_cert_beneficiary)
-      benDocs.push("NADRA Birth Certificate");
+      benDocs.push("NADRA Birth Certificate (beneficiary)");
     if (
       cl.nadra_birth_cert &&
       !cl.nadra_birth_cert_beneficiary &&
       !cl.nadra_birth_cert_petitioner
-    )
-      benDocs.push("NADRA Birth Certificate");
-    if (cl.nadra_family_reg)
+    ) {
+      benDocs.push("NADRA Birth Certificate (beneficiary)");
+    }
+    if (cl.nadra_family_reg) {
       benDocs.push("NADRA Family Registration Certificate");
+    }
     if (cl.nadra_marriage_cert) benDocs.push("NADRA Marriage Certificate");
     if (cl.nikah_nama) benDocs.push("Nikah Nama");
     if (cl.nadra_divorce_cert_beneficiary)
@@ -889,11 +888,11 @@ export default function CombinedIntakeForm({
     plan += `- Embassies cannot expedite administrative processing\n`;
     plan += `- Per U.S. Department of State guidance, processing times vary by individual case circumstances\n\n`;
 
-    plan += `**If No Update After Several Weeks:**\n`;
+    plan += `**If No Update After 4-6 Weeks:**\n`;
     plan += `- Verify documents were received via courier tracking\n`;
     plan += `- Check CEAC status remains current\n`;
     plan += `- Consider polite inquiry per embassy's contact procedures\n`;
-    plan += `- Do NOT repeatedly contact the embassy as this does not expedite processing\n\n`;
+    // plan += `- Do NOT repeatedly contact the embassy as this does not expedite processing\n\n`;
 
     plan += `## FINAL REMINDERS\n\n`;
     plan += `✓ Follow your embassy's 221(g) letter instructions above all else\n`;
@@ -928,13 +927,11 @@ export default function CombinedIntakeForm({
     if (cl.medical_examination) {
       checklist += `* Medical Examination Results (sealed envelope)\n`;
     }
-    if (
-      cl.nadra_birth_cert_beneficiary ||
-      (!cl.nadra_birth_cert_beneficiary &&
-        !cl.nadra_birth_cert_petitioner &&
-        cl.nadra_birth_cert)
-    ) {
-      checklist += `* NADRA Birth Certificate (original)\n`;
+    if (cl.nadra_birth_cert && cl.nadra_birth_cert_petitioner) {
+      checklist += `* NADRA Birth Certificate (petitioner) (original)\n`;
+    }
+    if (cl.nadra_birth_cert && !cl.nadra_birth_cert_petitioner) {
+      checklist += `* NADRA Birth Certificate (beneficiary) (original)\n`;
     }
     if (cl.police_certificate) {
       checklist += `* Police Certificate - ${cl.police_certificate_country || "Specified Country"} (original)\n`;
@@ -959,7 +956,7 @@ export default function CombinedIntakeForm({
       }
 
       if (cl.nadra_birth_cert_petitioner) {
-        checklist += `* NADRA Birth Certificate (original)\n`;
+        checklist += `* NADRA Birth Certificate (petitioner) (original)\n`;
       }
     }
 
@@ -981,7 +978,12 @@ export default function CombinedIntakeForm({
       civilDocs.push("Computerized Marriage Registration Certificate (MRC)");
       civilDocs.push("Beneficiary's CNIC (showing husband's name)");
     }
-    if (cl.nadra_divorce_cert) civilDocs.push("NADRA Divorce Certificate");
+    if (cl.nadra_divorce_cert && cl.nadra_divorce_cert_petitioner) {
+      civilDocs.push("NADRA Divorce Certificate (petitioner)");
+    }
+    if (cl.nadra_divorce_cert && !cl.nadra_divorce_cert_petitioner) {
+      civilDocs.push("NADRA Divorce Certificate (beneficiary)");
+    }
     if (cl.death_certificate)
       civilDocs.push(
         `Death Certificate (${cl.death_certificate_name || "as indicated"})`,
@@ -1118,7 +1120,12 @@ export default function CombinedIntakeForm({
 
     if (cl.nadra_family_reg)
       docList.push("NADRA Family Registration Certificate (original)");
-    if (cl.nadra_birth_cert) docList.push(`NADRA Birth Certificate (original)`);
+    if (cl.nadra_birth_cert && cl.nadra_birth_cert_petitioner) {
+      docList.push(`NADRA Birth Certificate (petitioner) (original)`);
+    }
+    if (cl.nadra_birth_cert && !cl.nadra_birth_cert_petitioner) {
+      docList.push(`NADRA Birth Certificate (beneficiary) (original)`);
+    }
     if (cl.nadra_marriage_cert)
       docList.push("NADRA Marriage Certificate (original)");
     if (cl.nikah_nama) {
@@ -1128,8 +1135,10 @@ export default function CombinedIntakeForm({
       );
       docList.push("Beneficiary's CNIC showing husband's name (copy)");
     }
-    if (cl.nadra_divorce_cert)
-      docList.push(`NADRA Divorce Certificate (original)`);
+    if (cl.nadra_divorce_cert && cl.nadra_divorce_cert_petitioner)
+      docList.push(`NADRA Divorce Certificate (petitioner) (original)`);
+    if (cl.nadra_divorce_cert && !cl.nadra_divorce_cert_petitioner)
+      docList.push(`NADRA Divorce Certificate (beneficiary) (original) `);
     if (cl.us_divorce_decree)
       docList.push("U.S. Divorce Decree (original or certified copy)");
     if (cl.death_certificate) docList.push(`Death Certificate (original)`);
