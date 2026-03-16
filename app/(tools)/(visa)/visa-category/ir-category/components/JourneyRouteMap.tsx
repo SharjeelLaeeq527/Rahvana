@@ -588,7 +588,7 @@ export default function JourneyRouteMap({
                   e.stopPropagation();
                   handleZoom("in");
                 }}
-                className="w-10 h-10 bg-white rounded-lg shadow-md flex items-center justify-center hover:bg-gray-50 border border-gray-200 text-gray-700 active:scale-95 transition-transform"
+                className="w-10 h-10 bg-white rounded-lg shadow-md flex items-center justify-center hover:bg-gray-50 text-gray-700 active:scale-95 transition-transform"
                 aria-label="Zoom In"
               >
                 <Icons.Plus className="w-5 h-5" />

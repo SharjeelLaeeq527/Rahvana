@@ -6,6 +6,8 @@ import {
   deleteJourneyProgress,
   recordToWizardState,
 } from "@/lib/journey/journeyProgressService";
+import { toast } from "sonner";
+import { mapDocumentNameToId } from "@/lib/document-vault/journey-mapping";
 
 export interface WizardState {
   currentStage: number;
@@ -294,7 +296,8 @@ export function useWizard(options: UseWizardOptions = {}) {
       }));
     },
 
-    uploadDocument: (doc: string, file: File) => {
+    uploadDocument: async (doc: string, file: File) => {
+      // 1. Update local state metadata immediately for responsiveness
       setState((prev) => ({
         ...prev,
         docUploads: {
@@ -306,6 +309,36 @@ export function useWizard(options: UseWizardOptions = {}) {
           },
         },
       }));
+
+      // 2. If logged in, perform actual upload to Document Vault
+      if (userId) {
+        toast.loading(`Uploading ${file.name} to vault...`, { id: "vault-upload" });
+        try {
+          const documentDefId = mapDocumentNameToId(doc);
+          const formData = new FormData();
+          formData.append("file", file);
+          formData.append("documentDefId", documentDefId);
+          formData.append("role", state.role === "both" ? "BENEFICIARY" : state.role.toUpperCase());
+          formData.append("personName", state.role === "petitioner" ? "Petitioner" : "Beneficiary");
+          formData.append("caseId", journeyId.toUpperCase());
+          formData.append("notes", `Uploaded via ${journeyId} journey checklist.`);
+
+          const response = await fetch("/api/documents/upload", {
+            method: "POST",
+            body: formData,
+          });
+
+          if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.error || "Upload failed");
+          }
+
+          toast.success(`${file.name} saved to vault`, { id: "vault-upload" });
+        } catch (error) {
+          console.error("[useWizard] Upload failed:", error);
+          toast.error(`Failed to save to vault: ${error instanceof Error ? error.message : "Unknown error"}`, { id: "vault-upload" });
+        }
+      }
     },
 
     clearDocument: (doc: string) => {

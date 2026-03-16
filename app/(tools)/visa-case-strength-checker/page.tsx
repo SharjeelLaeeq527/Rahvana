@@ -37,10 +37,11 @@ interface FormData {
   sponsor_dob?: string;
   beneficiary_dob?: string;
   country_of_residence?: string;
-  relationship_start_date?: string;
   marriage_date?: string;
+  relationship_start_date?: string;
   spousal_relationship_type?: string;
   intended_us_state_of_residence?: string;
+  i130_status?: string;
   // Education & Employment Background
   highest_education_level?: string;
   highest_education_field?: string;
@@ -59,6 +60,7 @@ interface FormData {
   communication_logs?: boolean;
   money_transfer_receipts_available?: boolean;
   driving_license_copy_available?: boolean;
+  children_together?: boolean;
   // Immigration History
   previous_visa_applications?: boolean;
   previous_visa_denial?: boolean;
@@ -79,6 +81,8 @@ interface FormData {
   nadra_marriage_registration_cert?: boolean;
   family_registration_certificate?: boolean;
   birth_certificates?: boolean;
+  prior_marriages_exist?: boolean;
+  prior_marriage_termination_docs?: boolean;
   // Passport & Police Documents
   passports_available?: boolean;
   passport_copy_available?: boolean;
@@ -767,6 +771,26 @@ const ReviewStep = ({
               Basic Profile
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {formData.sponsor_full_name && (
+                <div>
+                  <p className="text-base text-muted-foreground mb-1">
+                    Sponsor Name
+                  </p>
+                  <p className="text-lg font-semibold">
+                    {formData.sponsor_full_name}
+                  </p>
+                </div>
+              )}
+              {formData.beneficiary_full_name && (
+                <div>
+                  <p className="text-base text-muted-foreground mb-1">
+                    Beneficiary Name
+                  </p>
+                  <p className="text-lg font-semibold">
+                    {formData.beneficiary_full_name}
+                  </p>
+                </div>
+              )}
               {formData.sponsor_dob && (
                 <div>
                   <p className="text-base text-muted-foreground mb-1">
@@ -797,6 +821,26 @@ const ReviewStep = ({
                   </p>
                 </div>
               )}
+              {formData.relationship_start_date && (
+                <div>
+                  <p className="text-base text-muted-foreground mb-1">
+                    Relationship Start Date
+                  </p>
+                  <p className="text-lg font-semibold">
+                    {formatDate(formData.relationship_start_date)}
+                  </p>
+                </div>
+              )}
+              {formData.marriage_date && (
+                <div>
+                  <p className="text-base text-muted-foreground mb-1">
+                    Marriage Date
+                  </p>
+                  <p className="text-lg font-semibold">
+                    {formatDate(formData.marriage_date)}
+                  </p>
+                </div>
+              )}
               {formData.spousal_relationship_type && (
                 <div>
                   <p className="text-base text-muted-foreground mb-1">
@@ -804,6 +848,16 @@ const ReviewStep = ({
                   </p>
                   <p className="text-lg font-semibold">
                     {formData.spousal_relationship_type}
+                  </p>
+                </div>
+              )}
+              {formData.i130_status && (
+                <div>
+                  <p className="text-base text-muted-foreground mb-1">
+                    I-130 Petition Status
+                  </p>
+                  <p className="text-lg font-semibold">
+                    {formData.i130_status}
                   </p>
                 </div>
               )}
@@ -938,7 +992,8 @@ const ReviewStep = ({
           formData.wedding_photos_available !== undefined ||
           formData.communication_logs !== undefined ||
           formData.money_transfer_receipts_available !== undefined ||
-          formData.driving_license_copy_available !== undefined) && (
+          formData.driving_license_copy_available !== undefined ||
+          formData.children_together !== undefined) && (
           <div className="bg-muted/30 rounded-xl p-6 border border-border">
             <h3 className="text-xl font-bold text-foreground mb-4 flex items-center gap-3">
               <div className="bg-primary/20 text-primary w-10 h-10 rounded-full flex items-center justify-center">
@@ -1039,6 +1094,16 @@ const ReviewStep = ({
                   </p>
                 </div>
               )}
+              {formData.children_together !== undefined && (
+                <div>
+                  <p className="text-base text-muted-foreground mb-1">
+                    Children Together
+                  </p>
+                  <p className="text-lg font-semibold">
+                    {formatBoolean(formData.children_together)}
+                  </p>
+                </div>
+              )}
             </div>
           </div>
         )}
@@ -1047,7 +1112,8 @@ const ReviewStep = ({
         {(formData.previous_visa_applications !== undefined ||
           formData.previous_visa_denial !== undefined ||
           formData.overstay_or_violation !== undefined ||
-          formData.criminal_record !== undefined) && (
+          formData.criminal_record !== undefined ||
+          formData.prior_marriages_exist !== undefined) && (
           <div className="bg-muted/30 rounded-xl p-6 border border-border">
             <h3 className="text-xl font-bold text-foreground mb-4 flex items-center gap-3">
               <div className="bg-primary/20 text-primary w-10 h-10 rounded-full flex items-center justify-center">
@@ -1105,6 +1171,16 @@ const ReviewStep = ({
                   </p>
                   <p className="text-lg font-semibold">
                     {formatBoolean(formData.criminal_record)}
+                  </p>
+                </div>
+              )}
+              {formData.prior_marriages_exist !== undefined && (
+                <div>
+                  <p className="text-base text-muted-foreground mb-1">
+                    Prior Marriages Exist
+                  </p>
+                  <p className="text-lg font-semibold">
+                    {formatBoolean(formData.prior_marriages_exist)}
                   </p>
                 </div>
               )}
@@ -1232,7 +1308,9 @@ const ReviewStep = ({
           formData.english_translation_certificate !== undefined ||
           formData.nadra_marriage_registration_cert !== undefined ||
           formData.family_registration_certificate !== undefined ||
-          formData.birth_certificates !== undefined) && (
+          formData.birth_certificates !== undefined ||
+          formData.prior_marriages_exist !== undefined ||
+          formData.prior_marriage_termination_docs !== undefined) && (
           <div className="bg-muted/30 rounded-xl p-6 border border-border">
             <h3 className="text-xl font-bold text-foreground mb-4 flex items-center gap-3">
               <div className="bg-primary/20 text-primary w-10 h-10 rounded-full flex items-center justify-center">
@@ -1300,6 +1378,16 @@ const ReviewStep = ({
                   </p>
                   <p className="text-lg font-semibold">
                     {formatBoolean(formData.birth_certificates)}
+                  </p>
+                </div>
+              )}
+              {formData.prior_marriage_termination_docs !== undefined && (
+                <div>
+                  <p className="text-base text-muted-foreground mb-1">
+                    Prior Marriage Termination Docs
+                  </p>
+                  <p className="text-lg font-semibold">
+                    {formatBoolean(formData.prior_marriage_termination_docs)}
                   </p>
                 </div>
               )}
@@ -1544,6 +1632,7 @@ export default function VisaCaseStrengthChecker() {
           marriage_date: "",
           spousal_relationship_type: "",
           intended_us_state_of_residence: "",
+          i130_status: "",
           highest_education_level: "",
           highest_education_field: "",
           current_occupation_role: "",
@@ -1560,6 +1649,7 @@ export default function VisaCaseStrengthChecker() {
           communication_logs: false,
           money_transfer_receipts_available: false,
           driving_license_copy_available: false,
+          children_together: false,
           previous_visa_applications: false,
           previous_visa_denial: false,
           overstay_or_violation: false,
@@ -1577,6 +1667,8 @@ export default function VisaCaseStrengthChecker() {
           nadra_marriage_registration_cert: false,
           family_registration_certificate: false,
           birth_certificates: false,
+          prior_marriages_exist: false,
+          prior_marriage_termination_docs: false,
           passports_available: false,
           passport_copy_available: false,
           valid_police_clearance_certificate: false,
@@ -1722,12 +1814,16 @@ export default function VisaCaseStrengthChecker() {
   // Define valid question keys to validate against the enum
   const validQuestionKeys: (keyof FormData)[] = [
     // Basic Profile
+    "sponsor_full_name",
+    "beneficiary_full_name",
     "sponsor_dob",
     "beneficiary_dob",
     "country_of_residence",
     "marriage_date",
+    "relationship_start_date",
     "spousal_relationship_type",
     "intended_us_state_of_residence",
+    "i130_status",
     // Education & Employment Background
     "highest_education_level",
     "highest_education_field",
@@ -1746,11 +1842,14 @@ export default function VisaCaseStrengthChecker() {
     "communication_logs",
     "money_transfer_receipts_available",
     "driving_license_copy_available",
+    "children_together",
     // Immigration History
     "previous_visa_applications",
     "previous_visa_denial",
     "overstay_or_violation",
     "criminal_record",
+    "prior_marriages_exist",
+    "prior_marriage_termination_docs",
     // Financial Profile
     "sponsor_annual_income",
     "household_size",
@@ -2262,18 +2361,25 @@ export default function VisaCaseStrengthChecker() {
         <QuestionStep
           title={section.title}
           description={`Please answer the following questions for ${section.title}`}
-          questions={section.questions.map((q: QuestionDefinition) => ({
-            id: q.id as keyof FormData,
-            label: q.label,
-            type: q.type as
-              | "text"
-              | "textarea"
-              | "number"
-              | "date"
-              | "boolean"
-              | "select",
-            options: q.options || undefined,
-          }))}
+          questions={section.questions
+            .filter((q: QuestionDefinition) => {
+              if (q.id === "prior_marriage_termination_docs") {
+                return formData.prior_marriages_exist === true;
+              }
+              return true;
+            })
+            .map((q: QuestionDefinition) => ({
+              id: q.id as keyof FormData,
+              label: q.label,
+              type: q.type as
+                | "text"
+                | "textarea"
+                | "number"
+                | "date"
+                | "boolean"
+                | "select",
+              options: q.options || undefined,
+            }))}
           formData={formData}
           error={error}
           loading={loading || isNavigating}

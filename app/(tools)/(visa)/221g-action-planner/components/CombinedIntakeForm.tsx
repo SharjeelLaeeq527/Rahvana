@@ -590,8 +590,7 @@ export default function CombinedIntakeForm({
     if (smartModeEnabled && smartClassification && smartClassification.length > 0) {
       plan += `\n## SMART INSIGHT SUMMARY\n\n`;
       smartClassification.forEach((classification) => {
-        plan += `### Scenario: ${classification.description}\n`;
-        plan += `**Confidence:** ${classification.confidence.toUpperCase()}\n\n`;
+        plan += `### Scenario: ${classification.description}\n\n`;
         plan += `**Recommended next steps:**\n`;
         classification.nextSteps.forEach((step: string, i: number) => {
           plan += `${i + 1}. ${step}\n`;
@@ -989,10 +988,7 @@ export default function CombinedIntakeForm({
                       <span className="font-semibold">Scenario:</span>{" "}
                       {classification.description}
                     </p>
-                    <p className="mt-1 text-sm text-emerald-900">
-                      <span className="font-semibold">Confidence:</span>{" "}
-                      {classification.confidence.toUpperCase()}
-                    </p>
+
                     <ul className="mt-3 list-disc space-y-1 pl-5 text-sm text-emerald-900">
                       {classification.nextSteps.map((step: string, idx: number) => (
                         <li key={`${idx}-${step}`}>{step}</li>

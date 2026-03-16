@@ -17,6 +17,7 @@ export interface JourneyProgressRecord {
   started: boolean;
   started_at: string;
   last_updated_at: string;
+  doc_uploads: Record<string, { name: string; size: number; lastModified: number }>;
 }
 
 /**
@@ -154,6 +155,7 @@ export async function saveJourneyProgress(
       filing_type: state.filingType,
       document_checklist: state.documentChecklist,
       notes: state.notes,
+      doc_uploads: state.docUploads,
       started: state.started,
     };
 
@@ -223,6 +225,6 @@ export function recordToWizardState(record: JourneyProgressRecord): Partial<Wiza
     documentChecklist: record.document_checklist,
     notes: record.notes,
     started: record.started,
-    docUploads: {}, // File uploads are not stored in DB (only metadata)
+    docUploads: record.doc_uploads || {},
   };
 }

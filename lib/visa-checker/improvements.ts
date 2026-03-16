@@ -22,6 +22,8 @@ export const IMPROVEMENT_MESSAGES = {
     "Compile chat logs, call records, emails, or screenshots showing consistent communication throughout the relationship timeline.",
   AGE_GAP_HIGH:
     "Submit detailed statements explaining how the relationship formed, supported by photos, communication history, and family acknowledgment to demonstrate its authenticity.",
+  LONG_RELATIONSHIP_HISTORY:
+    "Highlight your long-term commitment through a chronological timeline of your relationship, supported by multi-year evidence such as old photos, travel records, and testimonials.",
 
   // Document related improvements
   NO_MARRIAGE_CERTIFICATE:
@@ -86,6 +88,12 @@ export const IMPROVEMENT_MESSAGES = {
     "Provide detailed documentation explaining the purpose, scope, and legal context of the training, emphasizing non-combat or academic intent where applicable.",
   UNOFFICIAL_ARMED_GROUPS:
     "Consult an experienced immigration attorney before proceeding, and ensure full transparency during the application process.",
+  I130_PROCESS_NOT_STARTED:
+    "Ensure Form I-130 (Petition for Alien Relative) is filed and approved by USCIS before proceeding with the National Visa Center (NVC) processing or embassy interview.",
+  MISSING_PRIOR_MARRIAGE_DOCS:
+    "Secure official termination of all prior marriages for both parties, such as certified divorce decrees, annulment papers, or death certificates.",
+  PUBLIC_CHARGE_RISK:
+    "Strengthen your case by providing evidence of the applicant's education, specialized skills, and English language proficiency to mitigate 'Public Charge' inadmissibility concerns.",
 
   // Default improvement messages
   DEFAULT_HIGH_RISK:

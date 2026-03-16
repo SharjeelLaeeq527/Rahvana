@@ -262,14 +262,17 @@ export function ProgressTree({
       </div>
 
       {/* Official Sources - Fixed at bottom */}
-      {roadmapData.stages[state.currentStage]?.sources &&
-        roadmapData.stages[state.currentStage].sources.length > 0 && (
+      {(() => {
+        const currentStageSources = roadmapData.stages[state.currentStage]?.sources;
+        if (!currentStageSources || currentStageSources.length === 0) return null;
+
+        return (
           <div className="mt-auto p-4 md:p-6 pt-4 border-t border-slate-200 bg-slate-50/80 backdrop-blur-sm">
             <h4 className="text-[11px] font-black mb-4 text-slate-500 uppercase tracking-widest">
               Official Sources
             </h4>
             <div className="flex flex-col gap-2">
-              {roadmapData.stages[state.currentStage].sources.map(
+              {currentStageSources.map(
                 (source: RoadmapSource, idx: number) => (
                   <a
                     key={`source-${idx}`}
@@ -287,7 +290,8 @@ export function ProgressTree({
               )}
             </div>
           </div>
-        )}
+        );
+      })()}
     </div>
   );
 }

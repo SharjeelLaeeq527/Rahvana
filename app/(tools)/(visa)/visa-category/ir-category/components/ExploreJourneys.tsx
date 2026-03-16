@@ -1608,7 +1608,7 @@ export default function ExploreJourneys({
           {bestMatches.length > 0 && (
             <div className="space-y-4">
               <div className="flex items-center gap-2">
-                <div className="h-6 w-1 bg-linear-to-b from-primary to-emerald-400 rounded-full"></div>
+
                 <h2 className="text-xl font-bold text-slate-800">
                   {t("visaCategory.bestMatches")}
                 </h2>
@@ -1636,7 +1636,7 @@ export default function ExploreJourneys({
 
           <div className="space-y-4">
             <div className="flex items-center gap-2">
-              <div className="h-6 w-1 bg-slate-300 rounded-full"></div>
+
               <h2 className="text-xl font-bold text-slate-800">{t("visaCategory.all")}</h2>
             </div>
             {otherJourneys.length > 0 ? (
@@ -2018,7 +2018,7 @@ function JourneyCard({
       className={cn(
         "group relative p-6 rounded-xl border transition-all cursor-pointer",
         isActive
-          ? "bg-[#F0FDF9] border-teal-600 border-l-[6px] shadow-md"
+          ? "bg-[#F0FDF9] border-teal-600 shadow-md"
           : "bg-white border-slate-200 hover:border-teal-200 hover:shadow-md",
       )}
     >
