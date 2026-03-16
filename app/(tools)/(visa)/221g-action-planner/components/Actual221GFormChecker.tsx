@@ -50,7 +50,11 @@ interface FormSelections {
   irs_transcript?: boolean;
   proof_citizenship?: boolean;
   domicile?: boolean;
-  i864_sponsor_structure?: "petitioner-only" | "petitioner-hm" | "joint-sponsor" | "joint-sponsor-hm";
+  i864_sponsor_structure?:
+    | "petitioner-only"
+    | "petitioner-hm"
+    | "joint-sponsor"
+    | "joint-sponsor-hm";
   i864_petitioner_name?: string;
   i864_joint_sponsor_name?: string;
   i864_household_member_name?: string;
@@ -123,8 +127,6 @@ export default function Actual221GFormChecker({
         </CardDescription>
       </CardHeader>
       <CardContent>
-
-
         <div className="mb-6 p-4 bg-primary/10 rounded-lg border border-primary/20">
           <h3 className="font-semibold text-primary text-center text-lg">
             {consularPost || "Your Embassy / Consulate"}
@@ -341,7 +343,9 @@ export default function Actual221GFormChecker({
                 </Label>
                 {!!selectedItems.nikah_nama && (
                   <div className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-md p-2 mt-2 font-medium">
-                    ⚠️ Note: You must also submit a Computerized Marriage Registration Certificate (MRC) and the beneficiary&apos;s CNIC showing husband&apos;s name.
+                    ⚠️ Note: You must also submit a Computerized Marriage
+                    Registration Certificate (MRC) and the beneficiary&apos;s
+                    CNIC showing husband&apos;s name.
                   </div>
                 )}
               </div>
@@ -456,7 +460,7 @@ export default function Actual221GFormChecker({
                   <Input
                     type="text"
                     placeholder=""
-                    className="inline-block w-56 h-6 px-2 border-b border-input border-t-0 border-l-0 border-r-0 rounded-none focus:border-ring focus:ring-0"
+                    className="inline-block w-56 h-6 px-2 border-grey-500 border-input rounded-none focus:border-ring focus:ring-0"
                     value={selectedItems.death_certificate_name || ""}
                     onChange={(e) =>
                       handleInputChange(
@@ -493,7 +497,7 @@ export default function Actual221GFormChecker({
                   <Input
                     type="text"
                     placeholder=""
-                    className="inline-block w-56 h-6 px-2 border-b border-input border-t-0 border-l-0 border-r-0 rounded-none focus:border-ring focus:ring-0"
+                    className="inline-block w-56 h-6 px-2 border-grey-500 border-input rounded-none focus:border-ring focus:ring-0"
                     value={selectedItems.police_certificate_country || ""}
                     onChange={(e) =>
                       handleInputChange(
@@ -532,7 +536,7 @@ export default function Actual221GFormChecker({
                   <Input
                     type="text"
                     placeholder=""
-                    className="inline-block w-56 h-6 px-2 border-b border-input border-t-0 border-l-0 border-r-0 rounded-none focus:border-ring focus:ring-0"
+                    className="inline-block w-56 h-6 px-2 border-grey-500 border-input rounded-none focus:border-ring focus:ring-0"
                     value={selectedItems.english_translation_document || ""}
                     onChange={(e) =>
                       handleInputChange(
@@ -581,7 +585,10 @@ export default function Actual221GFormChecker({
                                 id="i864_courier"
                                 checked={!!selectedItems.i864_courier}
                                 onCheckedChange={(checked) =>
-                                  handleCheckboxChange("i864_courier", checked as boolean)
+                                  handleCheckboxChange(
+                                    "i864_courier",
+                                    checked as boolean,
+                                  )
                                 }
                                 className="data-[state=checked]:bg-emerald-600 data-[state=checked]:border-emerald-600"
                               />
@@ -597,7 +604,10 @@ export default function Actual221GFormChecker({
                                 id="i864_online"
                                 checked={!!selectedItems.i864_online}
                                 onCheckedChange={(checked) =>
-                                  handleCheckboxChange("i864_online", checked as boolean)
+                                  handleCheckboxChange(
+                                    "i864_online",
+                                    checked as boolean,
+                                  )
                                 }
                                 className="data-[state=checked]:bg-emerald-600 data-[state=checked]:border-emerald-600"
                               />
@@ -626,16 +636,28 @@ export default function Actual221GFormChecker({
                               <SelectValue placeholder="How are you sponsoring?" />
                             </SelectTrigger>
                             <SelectContent>
-                              <SelectItem value="petitioner-only" className="font-medium">
+                              <SelectItem
+                                value="petitioner-only"
+                                className="font-medium"
+                              >
                                 Petitioner only
                               </SelectItem>
-                              <SelectItem value="petitioner-hm" className="font-medium">
+                              <SelectItem
+                                value="petitioner-hm"
+                                className="font-medium"
+                              >
                                 Petitioner + Household Member (I-864A)
                               </SelectItem>
-                              <SelectItem value="joint-sponsor" className="font-medium">
+                              <SelectItem
+                                value="joint-sponsor"
+                                className="font-medium"
+                              >
                                 Joint Sponsor (separate I-864)
                               </SelectItem>
-                              <SelectItem value="joint-sponsor-hm" className="font-medium">
+                              <SelectItem
+                                value="joint-sponsor-hm"
+                                className="font-medium"
+                              >
                                 Joint Sponsor + Household Member (I-864A)
                               </SelectItem>
                             </SelectContent>
@@ -655,9 +677,14 @@ export default function Actual221GFormChecker({
                                 </Label>
                                 <Input
                                   type="text"
-                                  value={selectedItems.i864_petitioner_name || ""}
+                                  value={
+                                    selectedItems.i864_petitioner_name || ""
+                                  }
                                   onChange={(e) =>
-                                    handleInputChange("i864_petitioner_name", e.target.value)
+                                    handleInputChange(
+                                      "i864_petitioner_name",
+                                      e.target.value,
+                                    )
                                   }
                                   placeholder="Full name as on I-864"
                                   className="h-10 bg-white border-emerald-100 focus:border-emerald-500 shadow-none focus:ring-1 focus:ring-emerald-500 hover:border-emerald-200 transition-all font-medium"
@@ -671,9 +698,15 @@ export default function Actual221GFormChecker({
                                   </Label>
                                   <Input
                                     type="text"
-                                    value={selectedItems.i864_joint_sponsor_name || ""}
+                                    value={
+                                      selectedItems.i864_joint_sponsor_name ||
+                                      ""
+                                    }
                                     onChange={(e) =>
-                                      handleInputChange("i864_joint_sponsor_name", e.target.value)
+                                      handleInputChange(
+                                        "i864_joint_sponsor_name",
+                                        e.target.value,
+                                      )
                                     }
                                     placeholder="Full name of joint sponsor"
                                     className="h-10 bg-white border-emerald-100 focus:border-emerald-500 shadow-none focus:ring-1 focus:ring-emerald-500 font-medium"
@@ -688,9 +721,15 @@ export default function Actual221GFormChecker({
                                   </Label>
                                   <Input
                                     type="text"
-                                    value={selectedItems.i864_household_member_name || ""}
+                                    value={
+                                      selectedItems.i864_household_member_name ||
+                                      ""
+                                    }
                                     onChange={(e) =>
-                                      handleInputChange("i864_household_member_name", e.target.value)
+                                      handleInputChange(
+                                        "i864_household_member_name",
+                                        e.target.value,
+                                      )
                                     }
                                     placeholder="Name from I-864A contract"
                                     className="h-10 bg-white border-emerald-100 focus:border-emerald-500 shadow-none focus:ring-1 focus:ring-emerald-500 font-medium"
@@ -719,9 +758,16 @@ export default function Actual221GFormChecker({
                               >
                                 <Checkbox
                                   id={`premium_${form.id}`}
-                                  checked={!!selectedItems[form.id as keyof FormSelections]}
+                                  checked={
+                                    !!selectedItems[
+                                      form.id as keyof FormSelections
+                                    ]
+                                  }
                                   onCheckedChange={(checked) =>
-                                    handleCheckboxChange(form.id as keyof FormSelections, checked as boolean)
+                                    handleCheckboxChange(
+                                      form.id as keyof FormSelections,
+                                      checked as boolean,
+                                    )
                                   }
                                   className="data-[state=checked]:bg-emerald-600 data-[state=checked]:border-emerald-600"
                                 />
@@ -745,7 +791,10 @@ export default function Actual221GFormChecker({
                             {[
                               { id: "tax_1040", label: "Signed Form 1040" },
                               { id: "w2", label: "W-2 Tax Statements" },
-                              { id: "irs_transcript", label: "IRS Tax Transcript" },
+                              {
+                                id: "irs_transcript",
+                                label: "IRS Tax Transcript",
+                              },
                             ].map((ev) => (
                               <div
                                 key={ev.id}
@@ -753,9 +802,16 @@ export default function Actual221GFormChecker({
                               >
                                 <Checkbox
                                   id={`premium_${ev.id}`}
-                                  checked={!!selectedItems[ev.id as keyof FormSelections]}
+                                  checked={
+                                    !!selectedItems[
+                                      ev.id as keyof FormSelections
+                                    ]
+                                  }
                                   onCheckedChange={(checked) =>
-                                    handleCheckboxChange(ev.id as keyof FormSelections, checked as boolean)
+                                    handleCheckboxChange(
+                                      ev.id as keyof FormSelections,
+                                      checked as boolean,
+                                    )
                                   }
                                   className="data-[state=checked]:bg-emerald-600 data-[state=checked]:border-emerald-600"
                                 />
@@ -777,7 +833,10 @@ export default function Actual221GFormChecker({
                           </Label>
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-2 ml-7">
                             {[
-                              { id: "proof_citizenship", label: "U.S. Citizen/LPR Proof" },
+                              {
+                                id: "proof_citizenship",
+                                label: "U.S. Citizen/LPR Proof",
+                              },
                               { id: "domicile", label: "Proof of Domicile" },
                             ].map((status) => (
                               <div
@@ -786,9 +845,16 @@ export default function Actual221GFormChecker({
                               >
                                 <Checkbox
                                   id={`premium_${status.id}`}
-                                  checked={!!selectedItems[status.id as keyof FormSelections]}
+                                  checked={
+                                    !!selectedItems[
+                                      status.id as keyof FormSelections
+                                    ]
+                                  }
                                   onCheckedChange={(checked) =>
-                                    handleCheckboxChange(status.id as keyof FormSelections, checked as boolean)
+                                    handleCheckboxChange(
+                                      status.id as keyof FormSelections,
+                                      checked as boolean,
+                                    )
                                   }
                                   className="data-[state=checked]:bg-emerald-600 data-[state=checked]:border-emerald-600"
                                 />
@@ -813,14 +879,20 @@ export default function Actual221GFormChecker({
                               type="text"
                               value={selectedItems.i864_tax_years || ""}
                               onChange={(e) =>
-                                handleInputChange("i864_tax_years", e.target.value)
+                                handleInputChange(
+                                  "i864_tax_years",
+                                  e.target.value,
+                                )
                               }
                               placeholder="e.g., 2024, 2023, 2022"
                               className="h-10 bg-white border-emerald-100 focus:border-emerald-500 shadow-none focus:ring-1 focus:ring-emerald-500"
                             />
                             <div className="flex items-start mt-2 ml-1 text-[10px] text-emerald-700/80 font-medium">
-                               <span className="mr-1.5 flex-shrink-0">⚙️</span>
-                               <span>Only provide years expressly mentioned on your 221(g) letter.</span>
+                              <span className="mr-1.5 flex-shrink-0">⚙️</span>
+                              <span>
+                                Only provide years expressly mentioned on your
+                                221(g) letter.
+                              </span>
                             </div>
                           </div>
                         </div>
@@ -837,7 +909,10 @@ export default function Actual221GFormChecker({
                           id="i864_courier"
                           checked={!!selectedItems.i864_courier}
                           onCheckedChange={(checked) =>
-                            handleCheckboxChange("i864_courier", checked as boolean)
+                            handleCheckboxChange(
+                              "i864_courier",
+                              checked as boolean,
+                            )
                           }
                         />
                         <Label
@@ -852,7 +927,10 @@ export default function Actual221GFormChecker({
                           id="i864_online"
                           checked={!!selectedItems.i864_online}
                           onCheckedChange={(checked) =>
-                            handleCheckboxChange("i864_online", checked as boolean)
+                            handleCheckboxChange(
+                              "i864_online",
+                              checked as boolean,
+                            )
                           }
                         />
                         <Label
@@ -910,7 +988,10 @@ export default function Actual221GFormChecker({
                             handleCheckboxChange("i864a", checked as boolean)
                           }
                         />
-                        <Label htmlFor="i864a" className="text-xs cursor-pointer">
+                        <Label
+                          htmlFor="i864a"
+                          className="text-xs cursor-pointer"
+                        >
                           I-864A
                         </Label>
                       </div>
@@ -922,7 +1003,10 @@ export default function Actual221GFormChecker({
                             handleCheckboxChange("i134", checked as boolean)
                           }
                         />
-                        <Label htmlFor="i134" className="text-xs cursor-pointer">
+                        <Label
+                          htmlFor="i134"
+                          className="text-xs cursor-pointer"
+                        >
                           I-134
                         </Label>
                       </div>
@@ -934,7 +1018,10 @@ export default function Actual221GFormChecker({
                             handleCheckboxChange("i864w", checked as boolean)
                           }
                         />
-                        <Label htmlFor="i864w" className="text-xs cursor-pointer">
+                        <Label
+                          htmlFor="i864w"
+                          className="text-xs cursor-pointer"
+                        >
                           I-864W
                         </Label>
                       </div>
@@ -1043,7 +1130,7 @@ export default function Actual221GFormChecker({
                   <Input
                     type="text"
                     placeholder=""
-                    className="inline-block w-56 h-6 px-2 border-b border-input border-t-0 border-l-0 border-r-0 rounded-none focus:border-ring focus:ring-0"
+                    className="inline-block w-56 h-6 px-2 border-grey-500 border-input rounded-none focus:border-ring focus:ring-0"
                     value={selectedItems.dna_test_name || ""}
                     onChange={(e) =>
                       handleInputChange("dna_test_name", e.target.value)
@@ -1052,7 +1139,6 @@ export default function Actual221GFormChecker({
                 </Label>
               </div>
             </div>
-
 
             {/* Other */}
             <div className="flex items-start space-x-2 mb-3">
@@ -1073,7 +1159,7 @@ export default function Actual221GFormChecker({
                   <Input
                     type="text"
                     placeholder=""
-                    className="inline-block w-96 h-6 px-2 border-b border-input border-t-0 border-l-0 border-r-0 rounded-none focus:border-ring focus:ring-0"
+                    className="inline-block w-96 h-6 px-2 border-grey-500 border-input rounded-none focus:border-ring focus:ring-0"
                     value={selectedItems.other_details || ""}
                     onChange={(e) =>
                       handleInputChange("other_details", e.target.value)
