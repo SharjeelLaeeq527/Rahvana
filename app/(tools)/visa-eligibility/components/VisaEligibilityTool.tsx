@@ -17,7 +17,7 @@ import {
   Flag,
   Globe,
   MapPin,
-  // AlertCircle,
+  AlertCircle,
   RefreshCw,
   AlertTriangle,
   LucideIcon,
@@ -770,6 +770,23 @@ export function VisaEligibilityTool() {
                         21 or older
                       </button>
                     </div>
+
+                    {/* Under 21 Warning Note */}
+                    {answers.petitionerAgeGroup === "UNDER_21" && (
+                      <motion.div
+                        initial={{ opacity: 0, y: -10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="p-4 bg-blue-50 border border-blue-200 rounded-lg flex gap-3"
+                      >
+                        <AlertCircle className="w-5 h-5 text-blue-600 shrink-0 mt-0.5" />
+                        <p className="text-sm text-blue-900">
+                          <span className="font-semibold">Note:</span> U.S.
+                          citizens under 21 cannot sponsor parents or siblings.
+                          They may petition for a spouse, provided they meet the
+                          minimum age and financial sponsorship requirements.
+                        </p>
+                      </motion.div>
+                    )}
                   </motion.div>
                 )}
 
@@ -1225,11 +1242,7 @@ export function VisaEligibilityTool() {
                     disabled={saving}
                     className="w-full flex items-center justify-center gap-2 py-4 px-6 bg-primary text-white font-bold rounded-2xl hover:bg-primary/90 transition-all shadow-lg shadow-primary/20 disabled:opacity-50"
                   >
-                    {saving ? (
-                      <Loader size="sm" />
-                    ) : (
-                      <Save size={20} />
-                    )}
+                    {saving ? <Loader size="sm" /> : <Save size={20} />}
                     Save Results to My Profile
                   </button>
                   {saveMessage && (
