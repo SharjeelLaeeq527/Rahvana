@@ -1,9 +1,7 @@
 "use client";
 
-import { useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import Link from "next/link";
-import { ComingSoonModal } from "../shared/ComingSoonModal";
 import {
   Instagram,
   Facebook,
@@ -17,8 +15,6 @@ export default function Footer() {
   const pathname = usePathname();
   const router = useRouter();
   const { t } = useLanguage();
-
-  const [comingSoonOpen, setComingSoonOpen] = useState(false);
 
   const handleNav = (id: string, e?: React.MouseEvent) => {
     if (e) e.preventDefault();
@@ -40,7 +36,6 @@ export default function Footer() {
     pathname === "/forgot-password" ||
     pathname === "/reset-password"
   ) {
-    // Return minimal footer for admin or null for auth
     if (pathname?.startsWith("/admin")) {
       return <footer className="bg-background mt-20"></footer>;
     }
@@ -69,7 +64,8 @@ export default function Footer() {
               </svg>
             </div>
             <p className="text-sm text-slate-400 leading-relaxed">
-              {t("footer.description") || "Simplifying immigration journeys with guidance, tools, and expert support. Your path to reuniting with loved ones starts here."}
+              {t("footer.description") ||
+                "Simplifying immigration journeys with guidance, tools, and expert support. Your path to reuniting with loved ones starts here."}
             </p>
           </div>
 
@@ -83,25 +79,29 @@ export default function Footer() {
                 href="/visa-category/ir-category?category=Family"
                 className="text-slate-400 hover:text-white transition-colors"
               >
-                {t("homePage.categoryLabels.Family & Protection") || "Family & Protection"}
+                {t("homePage.categoryLabels.Family & Protection") ||
+                  "Family & Protection"}
               </Link>
               <Link
                 href="/visa-category/ir-category?category=Work"
                 className="text-slate-400 hover:text-white transition-colors"
               >
-                {t("homePage.categoryLabels.Work & Business") || "Work & Business"}
+                {t("homePage.categoryLabels.Work & Business") ||
+                  "Work & Business"}
               </Link>
               <Link
                 href="/visa-category/ir-category?category=Work"
                 className="text-slate-400 hover:text-white transition-colors"
               >
-                {t("homePage.categoryLabels.Work Green Cards") || "Work Green Cards"}
+                {t("homePage.categoryLabels.Work Green Cards") ||
+                  "Work Green Cards"}
               </Link>
               <Link
                 href="/visa-category/ir-category?category=Study"
                 className="text-slate-400 hover:text-white transition-colors"
               >
-                {t("homePage.categoryLabels.Students & Visitors") || "Students & Visitors"}
+                {t("homePage.categoryLabels.Students & Visitors") ||
+                  "Students & Visitors"}
               </Link>
               <Link
                 href="/visa-category/ir-category"
@@ -235,6 +235,8 @@ export default function Footer() {
               </Link>
               <Link
                 href="https://www.linkedin.com/company/rahvana/posts/?feedView=all"
+                target="_blank"
+                rel="noopener noreferrer"
                 className="flex items-center gap-2 text-slate-400 hover:text-white transition-colors group"
               >
                 <Linkedin
@@ -248,44 +250,42 @@ export default function Footer() {
         </div>
 
         {/* Bottom Bar */}
-        <div className="pt-8 border-t border-white/10 flex flex-col md:flex-row justify-between items-center gap-6 text-sm text-slate-500">
-          <p>{t("footer.rightsReserved") || "© 2026 Rahvana. All rights reserved."}</p>
-          <div className="flex gap-8">
+        <div className="pt-8 border-t border-white/10 flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-slate-500">
+          <div className="flex flex-col sm:flex-row gap-1 sm:gap-2 items-center text-center sm:text-left">
+            <p>{t("footer.rightsReserved") || "© 2026 Rahvana. All rights reserved."}</p>
+            <span className="hidden sm:inline text-slate-700">·</span>
+            <p className="text-slate-600 text-xs">
+              Rahvana is not a law firm and does not provide legal advice.
+            </p>
+          </div>
+          <div className="flex flex-wrap justify-center gap-6">
             <Link
-              href="#"
-              onClick={(e) => {
-                e.preventDefault(); // Stop browser jump
-                setComingSoonOpen(true);
-              }}
+              href="/privacy-policy"
               className="hover:text-white transition-colors"
             >
               {t("footer.privacyPolicy") || "Privacy Policy"}
             </Link>
             <Link
-              href="#"
-              onClick={(e) => {
-                e.preventDefault(); // Stop browser jump
-                setComingSoonOpen(true);
-              }}
+              href="/terms"
               className="hover:text-white transition-colors"
             >
               {t("footer.termsOfService") || "Terms of Service"}
             </Link>
             <Link
-              href="#"
-              onClick={(e) => {
-                e.preventDefault(); // Stop browser jump
-                setComingSoonOpen(true);
-              }}
+              href="/cookie-policy"
               className="hover:text-white transition-colors"
             >
               {t("footer.cookiePolicy") || "Cookie Policy"}
             </Link>
+            {/* <Link
+              href="/acceptable-use"
+              className="hover:text-white transition-colors"
+            >
+              Acceptable Use
+            </Link> */}
           </div>
         </div>
       </div>
-
-      <ComingSoonModal open={comingSoonOpen} onOpenChange={setComingSoonOpen} />
     </footer>
   );
 }

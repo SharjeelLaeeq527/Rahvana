@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { Loader } from "@/components/ui/spinner";
 
 interface CheckoutButtonProps {
-  productTier?: 'plus' | 'pro';
+  productTier?: 'plus' | 'plus_monthly' | 'plus_yearly' | 'pro';
   consultationId?: string;
   userId: string;
   children: React.ReactNode;

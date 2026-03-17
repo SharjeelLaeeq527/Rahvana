@@ -59,22 +59,27 @@ export async function POST(request: NextRequest) {
       },
     };
 
-    // Determine the mode based on product type
-    if (productTier && (productTier === 'plus' || productTier === 'pro')) {
-      const product = productTier === 'plus' ? PRODUCTS.PLUS : PRODUCTS.PRO;
+    // Determine the product based on productTier
+    if (productTier) {
+      let product: any;
+      
+      if (productTier === 'plus_monthly' || productTier === 'plus') {
+        product = PRODUCTS.PLUS_MONTHLY;
+      } else if (productTier === 'plus_yearly') {
+        product = PRODUCTS.PLUS_YEARLY;
+      } else if (productTier === 'pro') {
+        product = PRODUCTS.PRO;
+      }
 
-      if (!product.priceId) {
-        return NextResponse.json(
-          { error: `Price ID not configured for ${productTier}` },
-          { status: 500 }
-        );
+      if (!product || !product.priceId) {
+        const err = !product ? 'Product not found' : `Price ID not configured for ${productTier}`;
+        return NextResponse.json({ error: err }, { status: 500 });
       }
 
       // Validate that the price ID is not a placeholder
       if (product.priceId.startsWith('price_...') || product.priceId.length < 10) {
-        console.error(`Invalid price ID for ${productTier}: ${product.priceId}`);
         return NextResponse.json(
-          { error: `Invalid price ID for ${productTier}. Please contact support.` },
+          { error: `Invalid price ID for ${productTier}. Please check server config.` },
           { status: 500 }
         );
       }
