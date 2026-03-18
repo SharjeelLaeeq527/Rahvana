@@ -2418,13 +2418,32 @@ export default function VisaCaseStrengthChecker() {
       return (
         <ResultPage
           sessionId={sessionId}
-          onRestart={() => {
-            setSessionId("");
-            setStep(0);
-            setFormData({} as FormData);
+          onRestart={async () => {
+            // Clear all local state
             setSessionId(null);
+            setStep(0);
+            setFormData({ caseType: "" });
             setIsEditing(false);
+            setIsRestoredSession(false);
             localStorage.removeItem("visaCheckerSessionId");
+
+            // Also clear the dead session from user's saved profile so it doesn't get auto-restored
+            if (user?.id) {
+              try {
+                await supabase.from("user_profiles").upsert(
+                  {
+                    id: user.id,
+                    profile_details: {
+                      caseStrength: null,
+                    },
+                    updated_at: new Date().toISOString(),
+                  },
+                  { onConflict: "id" }
+                );
+              } catch {
+                // Non-critical - just ignore if profile update fails
+              }
+            }
           }}
           onEdit={() => {
             setIsEditing(true);
