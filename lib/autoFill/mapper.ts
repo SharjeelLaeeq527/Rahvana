@@ -159,6 +159,7 @@ export const FIELD_MAPPINGS: Record<string, string[]> = {
   'visaEligibility.marriageDuration': ['marriageDuration'],
   'visaEligibility.violationHistory': ['violationHistory'],
   'visaEligibility.intent': ['intent'],
+  'visaEligibility.tempPurpose': ['tempPurpose'],
   'visaEligibility.sponsorBase': ['sponsorBase'],
   
   // --- Sponsor Information (when user is beneficiary) ---
