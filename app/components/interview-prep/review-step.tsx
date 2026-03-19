@@ -646,7 +646,7 @@ export function ReviewStep({
             disabled={loading}
             className="bg-teal-600 hover:bg-teal-700 px-6 py-3 text-base disabled:opacity-50"
           >
-            {loading ? "Submitting..." : "Generate Interview Prep"}
+            {loading ? "Generating Interview Prep..." : "Generate Interview Prep"}
           </Button>
         </div>
       </div>
