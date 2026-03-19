@@ -8,8 +8,10 @@ const sections = [
   { id: "how-we-use", title: "2. How We Use It" },
   { id: "sharing", title: "3. Sharing" },
   { id: "your-rights", title: "4. Your Rights" },
-  { id: "security", title: "5. Security" },
-  { id: "contact", title: "6. Contact" },
+  { id: "retention", title: "5. Retention & Breach" },
+  { id: "ownership", title: "6. Ownership & Updates" },
+  { id: "security", title: "7. Security" },
+  { id: "contact", title: "8. Contact" },
 ];
 
 export default function PrivacyPolicy() {
@@ -89,8 +91,8 @@ export default function PrivacyPolicy() {
           <main className="flex-1 min-w-0 max-w-3xl">
             <div className="prose prose-gray max-w-none
               prose-headings:text-gray-900 prose-headings:font-semibold
-              prose-p:text-gray-500 prose-p:leading-relaxed
-              prose-li:text-gray-500 prose-strong:text-gray-700
+              prose-p:text-gray-700 prose-p:leading-relaxed
+              prose-li:text-gray-700 prose-strong:text-gray-800
               prose-a:text-teal-600 prose-a:no-underline hover:prose-a:underline">
 
               <Section id="information" title="1. Information We Collect">
@@ -98,22 +100,32 @@ export default function PrivacyPolicy() {
               </Section>
 
               <Section id="how-we-use" title="2. How We Use It">
-                <p>To create and manage your account, process payments, send important service updates, and improve Rahvana. We do not sell your data to anyone.</p>
+                <p>To create and manage your account, process payments, send important service updates, and improve Rahvana. We do not sell your data to anyone, ever, for profit or monetary transactions.</p>
               </Section>
 
               <Section id="sharing" title="3. Sharing">
-                <p>We do not sell or rent your data. We share it only with service providers who help us operate Rahvana (such as Stripe for payments), and when required by law.</p>
+                <p>We do not sell or rent your data. We share it only with service providers who help us operate Rahvana (such as Stripe for payments), and when required by law. These third parties are strictly bound by the terms and conditions of this policy and are prohibited from using or disclosing your information for any reason without your active consent.</p>
               </Section>
 
               <Section id="your-rights" title="4. Your Rights">
-                <p>You can request access to, correction of, or deletion of your personal data at any time by emailing <a href="mailto:support@rahvana.com">support@rahvana.com</a>.</p>
-              </Section>
-                
-              <Section id="security" title="5. Security">
-                <p>We use SSL encryption and industry-standard security practices. No internet transmission is 100% secure, but we take every reasonable precaution.</p>
+                <p>You can request access to, correction of, or permanent deletion of your personal data at any time by emailing <a href="mailto:support@rahvana.com">support@rahvana.com</a>. We process all such requests within 30 days. We also comply with the California Consumer Privacy Act (CCPA) where applicable.</p>
               </Section>
 
-              <Section id="contact" title="6. Contact">
+              <Section id="retention" title="5. Data Retention & Breach">
+                <p><strong>Retention:</strong> We retain your data for as long as your account is active, or for up to 2 years after your account becomes dormant. After this, data is securely disposed of to protect your privacy.</p>
+                <p><strong>Breach:</strong> In the event of a data breach, we will notify you via your registered email within 72 hours and provide instructions for any further actions you may take.</p>
+              </Section>
+
+              <Section id="ownership" title="6. Ownership & Updates">
+                <p><strong>Transfer:</strong> If Rahvana is sold or merged, the new owner must align with these policies. We will notify you of any change in ownership and give you the choice to securely download or delete your data beforehand.</p>
+                <p><strong>Updates:</strong> We will obtain active consent from users for significant changes to this policy, providing clear summaries of what has changed in plain language.</p>
+              </Section>
+                
+              <Section id="security" title="7. Security">
+                <p>We use SSL encryption and industry-standard security practices. Sensitive information like your <strong>passports and portal login credentials are encrypted</strong> before being stored in our database, ensuring your most critical data remains private. No internet transmission is 100% secure, but we take every reasonable precaution to safeguard your data.</p>
+              </Section>
+
+              <Section id="contact" title="8. Contact">
                 <ContactCard />
               </Section>
 

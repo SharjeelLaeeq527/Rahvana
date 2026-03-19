@@ -47,9 +47,29 @@ export default function CountryAutocomplete({
     if (v !== query) setQuery(v);
   }, [formData, key]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  const COMMON_COUNTRIES = [
+    "Pakistan",
+    "United States",
+    "United Kingdom",
+    "Canada",
+    "Afghanistan",
+    "India",
+    "United Arab Emirates",
+    "Saudi Arabia",
+    "Turkey",
+    "Germany",
+    "France",
+    "Italy",
+    "Spain",
+    "Australia",
+    "China",
+  ];
+
   const fetchCountries = useCallback(
     async (value: string) => {
       setQuery(value);
+      // Notify parent on every keystroke to support manual input
+      setFormData({ [valueKey]: value });
 
       if (!value) {
         setSuggestions([]);
@@ -61,29 +81,53 @@ export default function CountryAutocomplete({
       setHighlightedIndex(-1);
 
       try {
+        if (!GEOAPIFY_KEY) {
+          throw new Error("Geoapify key missing");
+        }
+
         const res = await fetch(
           `https://api.geoapify.com/v1/geocode/autocomplete?text=${encodeURIComponent(value)}&type=country&limit=5&apiKey=${GEOAPIFY_KEY}`,
         );
 
+        if (!res.ok) {
+          throw new Error(`API error: ${res.status}`);
+        }
+
         const data = await res.json();
         setSuggestions(data.features || []);
       } catch (error) {
-        console.error("Geoapify error:", error);
+        console.warn(
+          "Geoapify error (using fallback countries):",
+          error instanceof Error ? error.message : error,
+        );
+
+        // Fallback: simple local filter
+        const lowerValue = value.toLowerCase();
+        const fallbackFeatures = COMMON_COUNTRIES.filter((c) =>
+          c.toLowerCase().includes(lowerValue),
+        ).map((c) => ({
+          properties: {
+            place_id: c,
+            country: c,
+          },
+        }));
+
+        setSuggestions(fallbackFeatures as any);
       }
 
       setLoading(false);
     },
-    [GEOAPIFY_KEY],
+    [GEOAPIFY_KEY, setFormData, valueKey],
   );
 
   const handleSelect = useCallback(
     (country: string) => {
-      setFormData({ ...formData, [key]: country });
+      setFormData({ [valueKey]: country });
       setQuery(country);
       setSuggestions([]);
       setHighlightedIndex(-1);
     },
-    [formData, key, setFormData],
+    [setFormData, valueKey],
   );
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {

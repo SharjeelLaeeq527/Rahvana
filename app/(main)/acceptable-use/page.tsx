@@ -103,7 +103,7 @@ export default function AcceptableUse() {
                 <div className="not-prose grid grid-cols-1 sm:grid-cols-2 gap-4 my-6">
                   {[
                     "Personal immigration journey tracking and planning",
-                    "Organizing documents for IR-1/CR-1 and similar visa processes",
+                    "Organizing documents for various US visa categories and related processes",
                     "Accessing educational immigration resources and guides",
                     "Tracking checklist progress for personal immigration cases",
                   ].map((use) => (

@@ -6,10 +6,11 @@ import Link from "next/link";
 const sections = [
   { id: "acceptance", title: "1. Acceptance" },
   { id: "service", title: "2. Our Service" },
-  { id: "payments", title: "3. Payments" },
+  { id: "payments", title: "3. Payments & Account" },
   { id: "rules", title: "4. Your Responsibilities" },
   { id: "liability", title: "5. Liability" },
-  { id: "contact", title: "6. Contact" },
+  { id: "updates", title: "6. Updates" },
+  { id: "contact", title: "7. Contact" },
 ];
 
 export default function TermsOfService() {
@@ -89,8 +90,8 @@ export default function TermsOfService() {
           <main className="flex-1 min-w-0 max-w-3xl">
             <div className="prose prose-gray max-w-none
               prose-headings:text-gray-900 prose-headings:font-semibold
-              prose-p:text-gray-500 prose-p:leading-relaxed
-              prose-li:text-gray-500 prose-strong:text-gray-700
+              prose-p:text-gray-700 prose-p:leading-relaxed
+              prose-li:text-gray-700 prose-strong:text-gray-800
               prose-a:text-teal-600 prose-a:no-underline hover:prose-a:underline">
 
               <div className="not-prose bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 flex items-start gap-2 mb-10">
@@ -103,11 +104,11 @@ export default function TermsOfService() {
               </Section>
 
               <Section id="service" title="2. Our Service">
-                <p>Rahvana provides immigration roadmaps, checklists, and tools for IR-1/CR-1 and related visa processes. It is an informational platform only — not legal advice.</p>
+                <p>Rahvana provides immigration roadmaps, checklists, and tools for various US visa categories and related processes. It is an informational platform only — not legal advice.</p>
               </Section>
 
-              <Section id="payments" title="3. Payments">
-                <p>Rahvana Core is free forever. Rahvana Plus is <strong>$24.99/month</strong> or <strong>$299.99/year</strong>. All payments are processed securely by Stripe. You may cancel anytime from your account settings and retain access until the end of your billing period. For billing issues, contact <a href="mailto:support@rahvana.com">support@rahvana.com</a>.</p>
+              <Section id="payments" title="3. Payments & Account">
+                <p>Access to basic Rahvana tools is currently free. <strong>Rahvana Plus</strong> is a premium yearly subscription. All payments are processed securely by Stripe. You may cancel your subscription at any time from your account settings. To permanently close your account and delete your data, please contact <a href="mailto:support@rahvana.com">support@rahvana.com</a>. For billing questions, reach out to our support team.</p>
               </Section>
 
               <Section id="rules" title="4. Your Responsibilities">
@@ -118,7 +119,11 @@ export default function TermsOfService() {
                 <p>Rahvana is provided "as is." We are not liable for immigration application outcomes or visa denials. Our total liability is limited to amounts you paid in the 12 months prior to any claim. These Terms are governed by the laws of Delaware, United States.</p>
               </Section>
 
-              <Section id="contact" title="6. Contact">
+              <Section id="updates" title="6. Updates to Terms">
+                <p>We may update these terms from time to time. We will notify you of any significant changes and obtain active consent before they apply to you. We will also provide a plain-language summary of what has changed.</p>
+              </Section>
+
+              <Section id="contact" title="7. Contact">
                 <ContactCard />
               </Section>
 

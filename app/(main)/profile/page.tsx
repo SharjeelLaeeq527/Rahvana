@@ -58,19 +58,14 @@ export default function ProfilePage() {
     try {
       setLoading(true);
 
-      const { data, error: dbError } = await supabase
-        .from("user_profiles")
-        .select("profile_details")
-        .eq("id", userId)
-        .single();
+      // ── SECURE FETCH: Using our server API to decrypt sensitive fields ──────
+      const apiResponse = await fetch("/api/profile");
+      if (!apiResponse.ok) throw new Error("Failed to fetch profile");
+      
+      const { profile } = await apiResponse.json();
 
-      if (dbError) {
-        console.error("Database error fetching profile:", dbError);
-        throw dbError;
-      }
-
-      if (data?.profile_details) {
-        setFormData(data.profile_details as MasterProfile);
+      if (profile?.profile_details) {
+        setFormData(profile.profile_details as MasterProfile);
         // Mark as fetched for this user
         hasFetchedRef.current = userId;
       }
@@ -99,16 +94,17 @@ export default function ProfilePage() {
       setSaving(true);
       setMessage("");
 
-      const { error } = await supabase.from("user_profiles").upsert(
-        {
-          id: user?.id,
-          profile_details: formData,
-          updated_at: new Date().toISOString(),
-        },
-        { onConflict: "id" },
-      );
+      // ── SECURE SAVE: Using our server API to encrypt sensitive fields ──────
+      const response = await fetch("/api/profile/complete", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ profile_details: formData }),
+      });
 
-      if (error) throw error;
+      if (!response.ok) {
+        const data = await response.json().catch(() => ({}));
+        throw new Error(data.error || "Failed to save profile");
+      }
 
       // Reset fetch tracking to allow refetch
       hasFetchedRef.current = null;

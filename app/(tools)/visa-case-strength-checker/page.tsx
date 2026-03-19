@@ -2053,6 +2053,7 @@ export default function VisaCaseStrengthChecker() {
             ) {
               setError(`Please select an option for: ${question.label}`);
               isNavigatingRef.current = false;
+              setIsNavigating(false);
               return;
             }
           } else {
@@ -2063,6 +2064,7 @@ export default function VisaCaseStrengthChecker() {
             ) {
               setError(`Please fill in all required fields: ${question.label}`);
               isNavigatingRef.current = false;
+              setIsNavigating(false);
               return;
             }
           }
@@ -2074,6 +2076,7 @@ export default function VisaCaseStrengthChecker() {
           ) {
             setError(`Please enter a valid number for ${question.label}`);
             isNavigatingRef.current = false;
+            setIsNavigating(false);
             return;
           }
 
@@ -2084,6 +2087,7 @@ export default function VisaCaseStrengthChecker() {
           ) {
             setError(`Please enter a valid date for ${question.label}`);
             isNavigatingRef.current = false;
+            setIsNavigating(false);
             return;
           }
 
@@ -2096,6 +2100,7 @@ export default function VisaCaseStrengthChecker() {
               `Please enter a valid positive number for ${question.label}`,
             );
             isNavigatingRef.current = false;
+            setIsNavigating(false);
             return;
           }
 
@@ -2116,6 +2121,7 @@ export default function VisaCaseStrengthChecker() {
                 `Date of birth must be in the past for ${question.label}`,
               );
               isNavigatingRef.current = false;
+              setIsNavigating(false);
               return;
             }
           }
@@ -2420,6 +2426,8 @@ export default function VisaCaseStrengthChecker() {
           sessionId={sessionId}
           onRestart={async () => {
             // Clear all local state
+            setLoading(false);
+            setIsNavigating(false);
             setSessionId(null);
             setStep(0);
             setFormData({ caseType: "" });

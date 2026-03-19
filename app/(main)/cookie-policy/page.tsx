@@ -88,8 +88,8 @@ export default function CookiePolicy() {
           <main className="flex-1 min-w-0 max-w-3xl">
             <div className="prose prose-gray max-w-none
               prose-headings:text-gray-900 prose-headings:font-semibold
-              prose-p:text-gray-500 prose-p:leading-relaxed
-              prose-li:text-gray-500 prose-strong:text-gray-700
+              prose-p:text-gray-700 prose-p:leading-relaxed
+              prose-li:text-gray-700 prose-strong:text-gray-800
               prose-a:text-teal-600 prose-a:no-underline hover:prose-a:underline">
 
               <Section id="what" title="1. What Are Cookies?">

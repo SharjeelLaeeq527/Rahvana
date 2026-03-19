@@ -9,7 +9,24 @@ import {
   ClipboardList,
   Wand2,
   HelpCircle,
-  Circle
+  Circle,
+  Brain,
+  LifeBuoy,
+  Compass,
+  MessageSquare,
+  Calculator,
+  Clock,
+  Calendar,
+  Camera,
+  Files,
+  PenTool,
+  FolderLock,
+  Globe,
+  FileText,
+  Heart,
+  Shield,
+  Zap,
+  BookOpen
 } from "lucide-react";
 import * as icons from "lucide-react";
 import {
@@ -35,6 +52,33 @@ interface StepDetailProps {
   isFirst: boolean;
   isLast: boolean;
 }
+
+const getToolIcon = (href: string) => {
+  const h = href.toLowerCase();
+
+  if (h.includes("visa-case-strength-checker")) return <icons.Brain className="w-3.5 h-3.5" />;
+  if (h.includes("221g-action-planner")) return <icons.LifeBuoy className="w-3.5 h-3.5" />;
+  if (h.includes("visa-eligibility")) return <icons.Compass className="w-3.5 h-3.5" />;
+  if (h.includes("interview-prep")) return <icons.MessageSquare className="w-3.5 h-3.5" />;
+  if (h.includes("affidavit-support-calculator")) return <icons.Calculator className="w-3.5 h-3.5" />;
+  if (h.includes("iv-tool")) return <icons.Clock className="w-3.5 h-3.5" />;
+  if (h.includes("visa-checker")) return <icons.Calendar className="w-3.5 h-3.5" />;
+  if (h.includes("passport") && h.includes("guide")) return <icons.Globe className="w-3.5 h-3.5" />;
+  if (h.includes("passport")) return <icons.Camera className="w-3.5 h-3.5" />;
+  if (h.includes("pdf-processing")) return <icons.Files className="w-3.5 h-3.5" />;
+  if (h.includes("signature-image-processing")) return <icons.PenTool className="w-3.5 h-3.5" />;
+  if (h.includes("visa-forms")) return <icons.Wand2 className="w-3.5 h-3.5" />;
+  if (h.includes("document-vault")) return <icons.FolderLock className="w-3.5 h-3.5" />;
+  
+  if (h.includes("cnic-guide") || h.includes("birth-certificate-guide")) return <icons.FileText className="w-3.5 h-3.5" />;
+  if (h.includes("frc-guide")) return <icons.Globe className="w-3.5 h-3.5" />;
+  if (h.includes("marriage") || h.includes("nikah")) return <icons.Heart className="w-3.5 h-3.5" />;
+  if (h.includes("police")) return <icons.Shield className="w-3.5 h-3.5" />;
+  if (h.includes("services")) return <icons.Zap className="w-3.5 h-3.5" />;
+  if (h.includes("guide")) return <icons.BookOpen className="w-3.5 h-3.5" />;
+
+  return <icons.Wand2 className="w-3.5 h-3.5" />;
+};
 
 export function StepDetail({
   step,
@@ -271,7 +315,7 @@ export function StepDetail({
                             onClick={() => router.push(tool.href)}
                             className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-primary/5 text-primary border border-primary/10 rounded-lg text-xs font-bold hover:bg-primary hover:text-white transition-all shadow-sm active:scale-95"
                           >
-                            <icons.Wand2 className="w-3.5 h-3.5" />
+                            {getToolIcon(tool.href)}
                             {isUrdu && tool.labelUr ? tool.labelUr : tool.label}
                           </button>
                         ))}
@@ -310,7 +354,7 @@ export function StepDetail({
                             onClick={() => router.push(tool.href)}
                             className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-primary/5 text-primary border border-primary/10 rounded-lg text-xs font-bold hover:bg-primary hover:text-white transition-all shadow-sm active:scale-95"
                           >
-                            <icons.Wand2 className="w-3.5 h-3.5" />
+                            {getToolIcon(tool.href)}
                             {isUrdu && tool.labelUr ? tool.labelUr : tool.label}
                           </button>
                         ))}
