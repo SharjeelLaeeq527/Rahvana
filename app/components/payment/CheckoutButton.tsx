@@ -1,10 +1,10 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
+import { useState } from "react";
 import { Loader } from "@/components/ui/spinner";
 
 interface CheckoutButtonProps {
-  productTier?: 'plus' | 'pro';
+  productTier?: "plus" | "pro" | string;
   consultationId?: string;
   userId: string;
   children: React.ReactNode;
@@ -17,7 +17,7 @@ export default function CheckoutButton({
   consultationId,
   userId,
   children,
-  className = '',
+  className = "",
   disabled = false,
 }: CheckoutButtonProps) {
   const [isLoading, setIsLoading] = useState(false);
@@ -28,10 +28,10 @@ export default function CheckoutButton({
     setError(null);
 
     try {
-      const response = await fetch('/api/stripe/checkout', {
-        method: 'POST',
+      const response = await fetch("/api/stripe/checkout", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
           productTier,
@@ -43,18 +43,19 @@ export default function CheckoutButton({
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || 'Failed to create checkout session');
+        throw new Error(data.error || "Failed to create checkout session");
       }
 
       // Redirect to Stripe checkout
       if (data.url) {
         window.location.href = data.url;
       } else {
-        throw new Error('No checkout URL returned');
+        throw new Error("No checkout URL returned");
       }
     } catch (err: unknown) {
-      console.error('Checkout error:', err);
-      const errorMessage = err instanceof Error ? err.message : 'Something went wrong';
+      console.error("Checkout error:", err);
+      const errorMessage =
+        err instanceof Error ? err.message : "Something went wrong";
       setError(errorMessage);
       setIsLoading(false);
     }
@@ -66,18 +67,12 @@ export default function CheckoutButton({
         onClick={handleCheckout}
         disabled={disabled || isLoading}
         className={`${className} ${
-          isLoading || disabled ? 'opacity-50 cursor-not-allowed' : ''
+          isLoading || disabled ? "opacity-50 cursor-not-allowed" : ""
         }`}
       >
-        {isLoading ? (
-          <Loader size="sm" text="Processing..." />
-        ) : (
-          children
-        )}
+        {isLoading ? <Loader size="sm" text="Processing..." /> : children}
       </button>
-      {error && (
-        <p className="text-red-500 text-sm mt-2">{error}</p>
-      )}
+      {error && <p className="text-red-500 text-sm mt-2">{error}</p>}
     </div>
   );
 }
