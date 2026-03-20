@@ -1,5 +1,4 @@
 // Category Selection Step - Displays available visa categories for user selection.
-
 "use client";
 
 import { Button } from "@/components/ui/button";

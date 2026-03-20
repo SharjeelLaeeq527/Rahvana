@@ -6,9 +6,12 @@
 import { NextResponse } from "next/server";
 import { categoryLoader } from "@/lib/interview-prep/category-loader";
 
-export async function GET() {
+export async function GET(req: Request) {
   try {
-    const categories = await categoryLoader.getActiveCategories();
+    const { searchParams } = new URL(req.url);
+    const country = searchParams.get("country") || undefined;
+
+    const categories = await categoryLoader.getActiveCategories(country);
 
     return NextResponse.json({
       success: true,

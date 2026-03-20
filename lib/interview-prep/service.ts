@@ -46,6 +46,11 @@ class DynamicQuestionSelectionEngine {
       let priority: "high" | "medium" | "low" = "low";
       let reason = "Does not match selection criteria";
 
+      // Check if question should be skipped based on skipIf conditions
+      if (this.shouldSkipQuestion(questionEntry, answers)) {
+        continue;
+      }
+
       // Check if any rules apply to this question's category
       const appliedRules = getAppliedRules(
         questionCategory,
@@ -90,6 +95,30 @@ class DynamicQuestionSelectionEngine {
     return applicableQuestions.sort((a, b) => {
       const priorityOrder = { high: 3, medium: 2, low: 1 };
       return priorityOrder[b.priority] - priorityOrder[a.priority];
+    });
+  }
+
+  // Check if a question should be skipped based on skipIf conditions
+  private shouldSkipQuestion(
+    question: any,
+    answers: Record<string, unknown>,
+  ): boolean {
+    if (!question.skipIf || !Array.isArray(question.skipIf)) {
+      return false;
+    }
+
+    // All skipIf conditions are OR'd together
+    // If any skipIf condition is true, skip the question
+    return question.skipIf.some((condition: any) => {
+      const fieldValue = answers[condition.field];
+
+      if (condition.equals !== undefined) {
+        return fieldValue === condition.equals;
+      }
+      if (condition.notEquals !== undefined) {
+        return fieldValue !== condition.notEquals;
+      }
+      return false;
     });
   }
 

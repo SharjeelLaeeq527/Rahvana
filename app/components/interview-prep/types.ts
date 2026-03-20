@@ -87,4 +87,5 @@ export interface ReviewStepProps {
   loading: boolean;
   onSubmit: () => void;
   onBack: () => void;
+  categorySlug?: string;
 }

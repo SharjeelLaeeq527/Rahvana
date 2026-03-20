@@ -24,6 +24,7 @@ import { MasterProfile } from "@/types/profile";
 import { ReviewStep } from "@/app/components/interview-prep/review-step";
 import { CategorySelectionStep } from "@/app/components/interview-prep/category-selection-step";
 import { DynamicQuestionStep } from "@/app/components/interview-prep/dynamic-question-step";
+import CountrySelectionModal from "../../components/interview-prep/CountrySelectionModal";
 import type { InterviewFormData } from "@/app/components/interview-prep/types";
 
 import type { 
@@ -35,6 +36,8 @@ export default function InterviewPreparation() {
   const [selectedCategory, setSelectedCategory] = useState<InterviewCategoryConfig | null>(null);
   const [questionnaire, setQuestionnaire] = useState<DynamicQuestionnaire | null>(null);
   const [availableCategories, setAvailableCategories] = useState<InterviewCategoryConfig[]>([]);
+  const [showCountryModal, setShowCountryModal] = useState<boolean>(true);
+  const [noDataMessage, setNoDataMessage] = useState<string | null>(null);
   
   const [step, setStep] = useState<number>(0);
   const [formData, setFormData] = useState<Partial<InterviewFormData>>({
@@ -130,29 +133,41 @@ export default function InterviewPreparation() {
     fetchProfile();
   }, [user, profileLoaded, supabase, formData]);
 
-  // Load available categories on mount
-  useEffect(() => {
-    async function loadCategories() {
-      try {
-        setLoadingMessage("Loading visa categories...");
-        setLoading(true);
-        const response = await fetch("/api/interview-prep/categories");
-        const data = await response.json();
-        
-        if (data.success) {
+  // Load available categories based on selected country
+  const loadCategories = async (country: string) => {
+    try {
+      setLoadingMessage("Loading visa categories...");
+      setLoading(true);
+      const response = await fetch(`/api/interview-prep/categories?country=${encodeURIComponent(country)}`);
+      const data = await response.json();
+      
+      if (data.success) {
+        if (data.categories && data.categories.length > 0) {
           setAvailableCategories(data.categories);
+          setNoDataMessage(null);
+          setShowCountryModal(false);
+        } else {
+          setAvailableCategories([]);
+          setNoDataMessage("No Visa Categories available for your selected country right now.");
         }
-      } catch (err) {
-        console.error("Error loading categories:", err);
-        setError("Failed to load visa categories");
-      } finally {
-        setLoading(false);
-        setLoadingMessage("");
+      } else {
+        setAvailableCategories([]);
+        setNoDataMessage("No Visa Categories available for your selected country right now.");
       }
+    } catch (err) {
+      console.error("Error loading categories:", err);
+      setError("Failed to load visa categories");
+      setNoDataMessage(null);
+    } finally {
+      setLoading(false);
+      setLoadingMessage("");
     }
-    
-    loadCategories();
-  }, []);
+  };
+
+  // Handle country selection from modal
+  const handleCountrySelected = (country: string) => {
+    loadCategories(country);
+  };
 
   // Check for existing session on component mount
   useEffect(() => {
@@ -629,6 +644,7 @@ export default function InterviewPreparation() {
           loading={loading}
           onSubmit={handleSubmit}
           onBack={prevStep}
+          categorySlug={questionnaire.categorySlug}
         />
       );
     }
@@ -822,14 +838,22 @@ export default function InterviewPreparation() {
   };
 
   return (
-    <div className="container mx-auto py-8 px-4 md:px-8 max-w-4xl">
-      <div className="text-center mb-8">
-        <h1 className="text-3xl font-bold text-slate-900 mb-2">
-          Interview Preparation Tool
-        </h1>
-        <p className="text-slate-600">
-          {selectedCategory 
-            ? selectedCategory.description
+    <>
+      <CountrySelectionModal
+        isOpen={showCountryModal}
+        onCountrySelected={handleCountrySelected}
+        isLoading={loading && showCountryModal}
+        noDataMessage={noDataMessage || undefined}
+      />
+      
+      <div className="container mx-auto py-8 px-4 md:px-8 max-w-4xl">
+        <div className="text-center mb-8">
+          <h1 className="text-3xl font-bold text-slate-900 mb-2">
+            Interview Preparation Tool
+          </h1>
+          <p className="text-slate-600">
+            {selectedCategory 
+              ? selectedCategory.description
             : "Prepare for your visa interview with personalized questions"}
         </p>
       </div>
@@ -846,6 +870,7 @@ export default function InterviewPreparation() {
           renderStep()
         )}
       </Card>
-    </div>
+      </div>
+    </>
   );
 }

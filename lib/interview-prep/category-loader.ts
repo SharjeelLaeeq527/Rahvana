@@ -82,17 +82,20 @@ class CategoryLoaderService {
   }
 
   // Get all active categories
-  async getActiveCategories(): Promise<InterviewCategoryConfig[]> {
+  async getActiveCategories(country?: string): Promise<InterviewCategoryConfig[]> {
     const categories = [
       await this.loadCategory("ir-1-spouse"),
-      // Add more categories here as we'll added to the system
-      // await this.loadCategory("ir-2-fiance"),
-      // await this.loadCategory("f-1-student"),
+      await this.loadCategory("ir-2-child"),
     ];
-
-    return categories.map((c) => c.config).filter((c) => c.isActive);
+  
+    let result = categories.map((c) => c.config).filter((c) => c.isActive);
+  
+    if (country) {
+      result = result.filter((c) => c.visaCountry === country);
+    }
+  
+    return result;
   }
-
   // Clear cache for a specific category or all categories
   clearCache(categorySlug?: string) {
     if (categorySlug) {

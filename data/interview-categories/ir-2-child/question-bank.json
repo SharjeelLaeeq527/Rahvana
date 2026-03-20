@@ -1,0 +1,324 @@
+{
+  "categorySlug": "ir-2-child",
+  "version": "2.0.0",
+  "lastUpdated": "2026-03-18",
+  "questions": [
+    {
+      "id": "basic-full-name",
+      "category": "Basic Identity",
+      "question": "What is your full name?",
+      "suggestedAnswer": "My full name is {{full_name}}.",
+      "guidance": "State your full name exactly as it appears on your passport and official documents.",
+      "tooltip": "The officer verifies your identity against official records.",
+      "priority": "high"
+    },
+    {
+      "id": "basic-date-of-birth",
+      "category": "Basic Identity",
+      "question": "What is your date of birth?",
+      "suggestedAnswer": "My date of birth is {{date_of_birth}}.",
+      "guidance": "Ensure your answer matches your passport and application forms exactly.",
+      "tooltip": "Used to confirm identity and eligibility under IR-2 age requirements.",
+      "priority": "high"
+    },
+    {
+      "id": "basic-age",
+      "category": "Basic Identity",
+      "question": "How old are you?",
+      "suggestedAnswer": "I am {{current_age}} years old.",
+      "guidance": "Answer confidently and accurately.",
+      "tooltip": "Confirms eligibility as a qualifying child under immigration rules.",
+      "priority": "high"
+    },
+    {
+      "id": "basic-birth-place",
+      "category": "Basic Identity",
+      "question": "Where were you born?",
+      "suggestedAnswer": "I was born in {{current_country}}.",
+      "guidance": "Provide both city and country clearly.",
+      "tooltip": "Ensures consistency with official birth records.",
+      "priority": "high"
+    },
+    {
+      "id": "petitioner-identity",
+      "category": "Petitioner",
+      "question": "Who is petitioning for you?",
+      "suggestedAnswer": "My {{sponsor_relationship}}, {{parent_full_name}}, is petitioning for me.",
+      "guidance": "Clearly mention both relationship and name.",
+      "tooltip": "Confirms the legal petitioner and relationship basis.",
+      "priority": "high"
+    },
+    {
+      "id": "petitioner-parent-name",
+      "category": "Petitioner",
+      "question": "What is your father's or mother's full name?",
+      "suggestedAnswer": "My {{sponsor_relationship}}'s full name is {{parent_full_name}}.",
+      "guidance": "State the full name exactly as it appears on official documents.",
+      "tooltip": "Used to verify the identity of the petitioner and match records.",
+      "priority": "high"
+    },
+    {
+      "id": "petitioner-status",
+      "category": "Petitioner",
+      "question": "Is your parent a U.S. citizen or permanent resident?",
+      "suggestedAnswer": "My parent is a {{parent_citizenship_status}}.",
+      "guidance": "Answer accurately and confidently.",
+      "tooltip": "Determines visa eligibility classification.",
+      "priority": "high"
+    },
+    {
+      "id": "petitioner-location",
+      "category": "Petitioner",
+      "question": "Where does your parent live in the United States?",
+      "suggestedAnswer": "My parent lives in {{us_living_location}}.",
+      "guidance": "Mention city and state clearly.",
+      "tooltip": "Verifies petitioner's residence.",
+      "priority": "high"
+    },
+    {
+      "id": "petitioner-employment",
+      "category": "Petitioner",
+      "question": "What does your parent do for a living?",
+      "suggestedAnswer": "My parent has stable employment and is able to provide financial support.",
+      "guidance": "Keep your answer simple and factual.",
+      "tooltip": "Helps assess financial stability of the sponsor.",
+      "priority": "high"
+    },
+    {
+      "id": "relationship-confirmation",
+      "category": "Relationship",
+      "question": "How are you related to the petitioner?",
+      "suggestedAnswer": "The petitioner is my {{sponsor_relationship}}, and we share a genuine parent-child relationship.",
+      "guidance": "Answer clearly and naturally.",
+      "tooltip": "Validates the legitimacy of the relationship.",
+      "priority": "high"
+    },
+    {
+      "id": "relationship-last-meeting",
+      "category": "Relationship",
+      "question": "When was the last time you saw your parent?",
+      "suggestedAnswer": "I last saw my parent {{last_meeting_with_parent}}, and we have stayed in regular contact since then.",
+      "guidance": "Approximate timing is acceptable if exact date is unclear.",
+      "tooltip": "Evaluates ongoing relationship continuity.",
+      "priority": "high"
+    },
+    {
+      "id": "relationship-communication",
+      "category": "Relationship",
+      "question": "Do you talk to your parent regularly?",
+      "suggestedAnswer": "Yes, we communicate regularly through {{communication_method}}, which helps us stay close despite the distance.",
+      "guidance": "Mention frequency and communication methods.",
+      "tooltip": "Assesses emotional connection and relationship strength.",
+      "priority": "high"
+    },
+    {
+      "id": "relationship-upbringing",
+      "category": "Relationship",
+      "question": "Who raised you while growing up?",
+      "suggestedAnswer": "I was raised by my {{sponsor_relationship}} and other family members who have been responsible for my upbringing.",
+      "guidance": "Explain clearly, especially if different from petitioner.",
+      "tooltip": "Important for custody and parental responsibility verification.",
+      "priority": "high"
+    },
+    {
+      "id": "relationship-evidence",
+      "category": "Relationship",
+      "question": "Do you have pictures with your parent?",
+      "suggestedAnswer": "{{has_photos_with_parent ? 'Yes, we have photos together from different occasions that reflect our relationship.' : 'I have some photos with my parent that show our relationship.'}}",
+      "guidance": "Answer honestly.",
+      "tooltip": "Supporting evidence of genuine relationship.",
+      "priority": "medium"
+    },
+    {
+      "id": "us-living-location",
+      "category": "Living in USA",
+      "question": "Where will you live in the United States?",
+      "suggestedAnswer": "I will live with my parent in {{us_living_location}}, where they currently reside.",
+      "guidance": "Mention location clearly.",
+      "tooltip": "Confirms post-arrival residence plan.",
+      "priority": "high"
+    },
+    {
+      "id": "us-living-with",
+      "category": "Living in USA",
+      "question": "Who will you live with in the United States?",
+      "suggestedAnswer": "I will live with my {{sponsor_relationship}} and my family members there.",
+      "guidance": "Answer clearly and confidently.",
+      "tooltip": "Ensures proper family support structure.",
+      "priority": "high"
+    },
+    {
+      "id": "us-household-size",
+      "category": "Living in USA",
+      "question": "How many people live in that household?",
+      "suggestedAnswer": "There are approximately {{household_size_us}} people living in the household.",
+      "guidance": "Approximate answer is acceptable.",
+      "tooltip": "Helps assess living arrangements and support.",
+      "priority": "medium"
+    },
+    {
+      "id": "us-address-knowledge",
+      "category": "Living in USA",
+      "question": "Do you know your home address in the United States?",
+      "suggestedAnswer": "Yes, I am aware of the address where I will be living with my parent in {{us_living_location}}.",
+      "guidance": "Knowing at least city and state is recommended. Exact address is a plus.",
+      "tooltip": "Shows preparedness and awareness of living arrangements.",
+      "priority": "medium"
+    },
+    {
+      "id": "family-siblings",
+      "category": "Family",
+      "question": "Do you have any siblings?",
+      "suggestedAnswer": "{{has_siblings ? 'Yes, I have siblings, and we share a close family bond.' : 'No, I am an only child.'}}",
+      "guidance": "Be accurate.",
+      "tooltip": "Verifies family structure.",
+      "priority": "high"
+    },
+    {
+      "id": "family-siblings-location",
+      "category": "Family",
+      "question": "Where do your siblings live?",
+      "suggestedAnswer": "My siblings live in {{siblings_location}}.",
+      "guidance": "Mention the location clearly. City or country is sufficient.",
+      "tooltip": "Tests familiarity with immediate family members' whereabouts.",
+      "priority": "medium"
+    },
+    {
+      "id": "family-communication",
+      "category": "Family",
+      "question": "How often do you communicate with your siblings?",
+      "suggestedAnswer": "We maintain regular contact and stay connected as a family despite the distance.",
+      "guidance": "Describe your communication pattern naturally.",
+      "tooltip": "Verifies consistency and strength of family relationships.",
+      "priority": "medium"
+    },
+    {
+      "id": "family-us-connection",
+      "category": "Family",
+      "question": "Do you have any family members in the United States?",
+      "suggestedAnswer": "{{living_with_in_us ? 'Yes, my family member is living in the United States.' : 'My primary family is outside the United States.'}}",
+      "guidance": "Answer accurately about family ties in the U.S.",
+      "tooltip": "Identifies existing family ties in the U.S.",
+      "priority": "high"
+    },
+    {
+      "id": "intent-move",
+      "category": "Intent",
+      "question": "Why are you going to the United States?",
+      "suggestedAnswer": "I am going to the United States to live with my parent and be together as a family, which is very important to me.",
+      "guidance": "Focus on family reunification.",
+      "tooltip": "Core purpose of IR-2 visa category.",
+      "priority": "high"
+    },
+    {
+      "id": "intent-plans",
+      "category": "Intent",
+      "question": "What will you do after arriving in the United States?",
+      "suggestedAnswer": "After arriving, I plan to {{plans_after_arrival}} and live with my family.",
+      "guidance": "Keep your answer realistic and natural.",
+      "tooltip": "Evaluates future plans and stability.",
+      "priority": "high"
+    },
+    {
+      "id": "intent-study",
+      "category": "Intent",
+      "question": "Do you plan to study in the United States?",
+      "suggestedAnswer": "{{plans_to_study ? 'Yes, I plan to continue my education and focus on my studies after moving.' : 'I will focus on adjusting to my new environment and family life.'}}",
+      "guidance": "Simple and expected answer.",
+      "tooltip": "Education plans are expected for children.",
+      "priority": "medium"
+    },
+    {
+      "id": "intent-emotional-response",
+      "category": "Intent",
+      "question": "Are you excited to move to the United States?",
+      "suggestedAnswer": "Yes, I am excited to move to the United States because I will be living with my parent and starting a new chapter of my life.",
+      "guidance": "Keep your answer natural and positive.",
+      "tooltip": "Assesses emotional readiness and genuine intent.",
+      "priority": "low"
+    },
+    {
+      "id": "travel-history-us",
+      "category": "Travel",
+      "question": "Have you ever been to the United States before?",
+      "suggestedAnswer": "{{previous_us_visits ? 'Yes, I have visited before and followed all visa conditions.' : 'No, I have never been to the United States before.'}}",
+      "guidance": "Answer honestly.",
+      "tooltip": "Checks past immigration compliance.",
+      "priority": "high"
+    },
+    {
+      "id": "visa-refusal",
+      "category": "Security",
+      "question": "Have you ever been denied a visa?",
+      "suggestedAnswer": "{{previous_visa_refusal ? 'Yes, and the details have been disclosed honestly in my application.' : 'No, I have never been denied a visa.'}}",
+      "guidance": "Honesty is critical.",
+      "tooltip": "Past refusals are carefully reviewed.",
+      "priority": "high"
+    },
+    {
+      "id": "criminal-record",
+      "category": "Security",
+      "question": "Do you have any criminal record?",
+      "suggestedAnswer": "{{criminal_history ? 'Yes, and it has been disclosed truthfully.' : 'No, I do not have any criminal record.'}}",
+      "guidance": "Always answer truthfully.",
+      "tooltip": "Security clearance requirement.",
+      "priority": "high"
+    },
+    {
+      "id": "step-parent-marriage",
+      "category": "Special Cases",
+      "question": "When did your parent marry your step-parent?",
+      "suggestedAnswer": "My parent married my step-parent, and we have established a respectful family relationship.",
+      "guidance": "Only answer if applicable.",
+      "tooltip": "Important for stepchild eligibility verification.",
+      "priority": "medium",
+      "skipIf": [
+        {
+          "field": "relationship_type",
+          "equals": "Biological"
+        },
+        {
+          "field": "sponsor_relationship",
+          "notEquals": "Step-parent"
+        }
+      ]
+    },
+    {
+      "id": "step-parent-relationship",
+      "category": "Special Cases",
+      "question": "Do you know your step-parent?",
+      "suggestedAnswer": "Yes, I know my step-parent and we have a respectful and positive relationship.",
+      "guidance": "Answer honestly. It's okay if the relationship is limited but be truthful.",
+      "tooltip": "Evaluates family integration in step-parent scenarios.",
+      "priority": "medium",
+      "skipIf": [
+        {
+          "field": "relationship_type",
+          "equals": "Biological"
+        },
+        {
+          "field": "sponsor_relationship",
+          "notEquals": "Step-parent"
+        }
+      ]
+    },
+    {
+      "id": "living-with-parent",
+      "category": "Special Cases",
+      "question": "Do you currently live with your biological parent?",
+      "suggestedAnswer": "{{lived_with_parent ? 'Yes, I currently live with my parent.' : 'No, but I maintain a relationship with my parent and we stay in regular contact.'}}",
+      "guidance": "Explain clearly if not living together.",
+      "tooltip": "Evaluates custody and relationship consistency.",
+      "priority": "high"
+    },
+    {
+      "id": "other-parent-awareness",
+      "category": "Special Cases",
+      "question": "Does your other parent know that you are moving to the United States?",
+      "suggestedAnswer": "Yes, my other parent is aware of my move and there are no objections.",
+      "guidance": "Ensure consistency with legal/custody documents.",
+      "tooltip": "Prevents potential custody or legal issues.",
+      "priority": "high"
+    }
+  ]
+}
