@@ -197,6 +197,40 @@ const JOURNEY_DETAILS: Record<string, Station[]> = {
       pitfalls: ["Lost packet", "Travel expiry"],
     },
   ],
+  "germany-student": [
+    {
+      key: "admission",
+      label: "Admission",
+      summary: "Get Admission Letter",
+      whatYouDo: "Apply to German universities and receive Zulassungsbescheid.",
+      uploadsNeeded: ["Admission letter", "Language certificates", "Transcripts"],
+      pitfalls: ["Late application", "Missing certified translations"],
+    },
+    {
+      key: "finance",
+      label: "Finance",
+      summary: "Blocked Account",
+      whatYouDo: "Open a blocked account and deposit required funds.",
+      uploadsNeeded: ["Blocked account confirmation", "Health insurance cert"],
+      pitfalls: ["Insufficient funds", "Unaccepted providers"],
+    },
+    {
+      key: "appointment",
+      label: "Appointment",
+      summary: "Embassy Visit",
+      whatYouDo: "Book and attend visa interview at German Embassy.",
+      uploadsNeeded: ["Application form", "Passport", "Photos", "Proof of funds"],
+      pitfalls: ["Incomplete documents", "Interview performance"],
+    },
+    {
+      key: "arrival",
+      label: "Arrival",
+      summary: "Register in DE",
+      whatYouDo: "Travel to Germany, register address, and get residence permit.",
+      uploadsNeeded: ["Registration certificate", "Enrollment certificate"],
+      pitfalls: ["Missing deadlines", "Expired visa"],
+    },
+  ],
   f1: [
     {
       key: "accept",
@@ -355,6 +389,29 @@ const JOURNEYS: Journey[] = [
       description:
         "From university acceptance to the embassy interview. Tips for demonstrating strong ties to your home country and funding your education.",
     },
+  },
+  {
+    id: "germany-student",
+    title: "Germany Student Visa",
+    category: "Study",
+    process: "Consular",
+    description: "National study visa for Germany. Requires university admission.",
+    matchScore: 82,
+    time: "4-8 mo",
+    cost: "€11,208 (Blocked)",
+    color: "bg-emerald-100 text-emerald-700 border-emerald-200",
+    visaCode: "16b AufenthG",
+    bestFor: "Students accepted into German academic programs",
+    stations: 4,
+    difficulty: "Medium",
+    pakistanFocused: true,
+    quickRoadmap: [
+      "University Admission",
+      "Document Prep",
+      "Blocked Account",
+      "Visa Appointment",
+      "Arrive in Germany",
+    ],
   },
   {
     id: "h1b",
@@ -1551,7 +1608,7 @@ export default function ExploreJourneys({
           {bestMatches.length > 0 && (
             <div className="space-y-4">
               <div className="flex items-center gap-2">
-                <div className="h-6 w-1 bg-linear-to-b from-primary to-emerald-400 rounded-full"></div>
+
                 <h2 className="text-xl font-bold text-slate-800">
                   {t("visaCategory.bestMatches")}
                 </h2>
@@ -1579,7 +1636,7 @@ export default function ExploreJourneys({
 
           <div className="space-y-4">
             <div className="flex items-center gap-2">
-              <div className="h-6 w-1 bg-slate-300 rounded-full"></div>
+
               <h2 className="text-xl font-bold text-slate-800">{t("visaCategory.all")}</h2>
             </div>
             {otherJourneys.length > 0 ? (
@@ -1816,8 +1873,13 @@ export default function ExploreJourneys({
 
                 {/* Footer Actions */}
                 <div className="p-6 border-t border-slate-100 flex items-center gap-3 bg-slate-50/50">
-                  {highlightedJourney === "ir1" ? (
-                    <Link href="/visa-category/ir-category/ir1-journey">
+                  {highlightedJourney && ["ir1", "ir5", "f1", "germany-student"].includes(highlightedJourney) ? (
+                    <Link href={`/visa-category/ir-category/${
+                      highlightedJourney === "ir1" ? "ir1-journey" : 
+                      highlightedJourney === "ir5" ? "ir5-journey" : 
+                      highlightedJourney === "f1" ? "f-1" : 
+                      highlightedJourney
+                    }`}>
                       <Button className="bg-teal-700 hover:bg-teal-800 text-white shadow-sm shadow-teal-900/10 transition-all active:scale-95">
                         Start Journey
                       </Button>
@@ -1956,7 +2018,7 @@ function JourneyCard({
       className={cn(
         "group relative p-6 rounded-xl border transition-all cursor-pointer",
         isActive
-          ? "bg-[#F0FDF9] border-teal-600 border-l-[6px] shadow-md"
+          ? "bg-[#F0FDF9] border-teal-600 shadow-md"
           : "bg-white border-slate-200 hover:border-teal-200 hover:shadow-md",
       )}
     >
@@ -2052,12 +2114,17 @@ function JourneyCard({
 
       {/* Action Buttons */}
       <div className="flex items-center flex-wrap gap-3">
-        {journey.id === "ir1" ? (
+        {["ir1", "ir5", "f1", "germany-student"].includes(journey.id) ? (
           <Link
             href={
               hasProgress
                 ? "/my-journeys"
-                : "/visa-category/ir-category/ir1-journey"
+                : `/visa-category/ir-category/${
+                    journey.id === "ir1" ? "ir1-journey" : 
+                    journey.id === "ir5" ? "ir5-journey" : 
+                    journey.id === "f1" ? "f-1" : 
+                    journey.id
+                  }`
             }
           >
             <Button

@@ -1,0 +1,315 @@
+{
+  "title": "Germany Student Visa Journey",
+  "titleUr": "جرمنی اسٹوڈنٹ ویزا سفر",
+  "description": "Step-by-step roadmap for Pakistani students applying for a German National Visa for study purposes — from university admission through arriving in Germany and registering your residence permit.",
+  "descriptionUr": "پاکستانی طلباء کے لیے جرمن نیشنل ویزا کے لیے درخواست دینے کا مرحلہ وار روڈ میپ — یونیورسٹی میں داخلے سے لے کر جرمنی آمد اور رہائشی اجازت نامہ رجسٹر کروانے تک۔",
+  "documents": [
+    "Admission Letter (Zulassungsbescheid)",
+    "Proof of Academic Qualifications (Degrees/Transcripts)",
+    "Language Proficiency Certificate (IELTS/TOEFL/TestDaF/DSH)",
+    "Valid Pakistani Passport",
+    "Biometric Passport Photos",
+    "Visa Application Forms",
+    "Blocked Account Confirmation (Sperrkonto)",
+    "Health Insurance Confirmation",
+    "APS Certificate (if applicable)"
+  ],
+  "stages": [
+    {
+      "id": 1,
+      "name": "University Admission",
+      "nameUr": "یونیورسٹی میں داخلہ",
+      "title": "STAGE I",
+      "icon": "GraduationCap",
+      "color": "bg-blue-50 text-blue-600",
+      "timeline": "Before applying",
+      "sources": [
+        { "label": "DAAD – Study in Germany", "url": "https://www.daad.de/en/study-and-research-in-germany/" },
+        { "label": "uni-assist – Application Portal", "url": "https://www.uni-assist.de/en/" },
+        { "label": "German Embassy Islamabad – Study Visa", "url": "https://islamabad.diplo.de/pk-en/service/-/2565764" }
+      ],
+      "steps": [
+        {
+          "id": "1",
+          "name": "Research German Universities and Programs",
+          "description": "Research universities and study programs that accept international students from Pakistan. Many German public universities require applications to be submitted through uni-assist, the official centralised application portal for international applicants.",
+          "actions": [
+            "Browse programs using the DAAD database at daad.de/en/study-and-research-in-germany/",
+            "Confirm language of instruction: many programs are available in English, but some require German language proficiency (typically TestDaF or DSH — check with each university)",
+            "Check each university's application process: some accept direct applications; many require submission through uni-assist (uni-assist.de)",
+            "Review tuition fee structures: most German public universities charge only administrative/semester fees, not tuition — confirm with the specific institution",
+            "Note the university's application deadlines (winter and summer semester deadlines vary)"
+          ],
+          "success": "Target university and program confirmed; application pathway identified"
+        },
+        {
+          "id": "2",
+          "name": "Meet Admission and Language Requirements",
+          "description": "German universities require academic qualifications that are assessed for equivalency. Pakistani applicants typically need to demonstrate their qualifications meet German entry requirements, often verified through a process that may involve university-specific or Anabin database assessment.",
+          "pakistanSpecific": "Pakistani qualifications must generally be assessed for equivalency to German higher education entry requirements. The Anabin database (anabin.kmk.org) is used by German universities and embassies to check qualification recognition. Consult your target university's international office regarding your specific qualifications.",
+          "actions": [
+            "Review the Anabin database at anabin.kmk.org to understand how your Pakistani qualifications are categorised",
+            "Check language requirements: for German-taught programs, you may need TestDaF, DSH, or Goethe-Institut certificate; for English-taught programs, IELTS or TOEFL is typically required",
+            "Obtain required language certificates before applying",
+            "Apply to your target university or through uni-assist as instructed by the university",
+            "Await and receive your official letter of admission (Zulassungsbescheid)"
+          ],
+          "success": "Official university admission letter (Zulassungsbescheid) received"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "name": "Document Preparation",
+      "nameUr": "دستاویزات کی تیاری",
+      "title": "STAGE II",
+      "icon": "FileText",
+      "color": "bg-purple-50 text-purple-600",
+      "timeline": "Before visa application",
+      "sources": [
+        { "label": "German Embassy Islamabad – Study Visa Documents", "url": "https://islamabad.diplo.de/pk-en/service/-/2565764" },
+        { "label": "Federal Foreign Office – Visa Information", "url": "https://www.auswaertiges-amt.de/en/visa-service" }
+      ],
+      "steps": [
+        {
+          "id": "3",
+          "name": "Prepare Your Passport and Photographs",
+          "description": "You must have a valid Pakistani passport that will remain valid well beyond your intended stay in Germany. Confirm the current passport validity requirement with the German Embassy in Islamabad before applying.",
+          "actions": [
+            "Confirm your passport is valid — check the current minimum validity requirement at islamabad.diplo.de",
+            "Ensure sufficient blank pages for the German National Visa sticker",
+            "If renewal is needed: renew well in advance",
+            "Prepare biometric passport-size photographs meeting German visa photo specifications — check the current specification at the Embassy website",
+            "Have additional copies of the passport biographical page ready for submission"
+          ],
+          "success": "Valid passport confirmed; compliant photographs prepared",
+          "relevantTools": [
+            { "label": "Passport Guide", "labelUr": "پاسپورٹ گائیڈ", "href": "/guides/passport-guide", "type": "guide" },
+            { "label": "Photo Booth", "labelUr": "فوٹو بوتھ", "href": "/passport", "type": "tool" }
+          ]
+        },
+        {
+          "id": "4",
+          "name": "Gather Admission and Academic Documents",
+          "description": "The German Embassy requires your university admission letter and certified copies of your academic qualifications. All documents not in German or English must be accompanied by a certified translation into German.",
+          "actions": [
+            "Obtain your original university admission letter (Zulassungsbescheid)",
+            "Gather certified copies of all academic certificates and transcripts (A-levels / FSc / Bachelor's degree as applicable)",
+            "Obtain certified translations into German for any documents not already in German or English — use a sworn translator",
+            "If applying to a preparatory college (Studienkolleg): obtain the relevant letter of admission or acceptance"
+          ],
+          "success": "Admission letter and all academic documents prepared with certified translations where required",
+          "relevantTools": [
+            { "label": "Urdu → English Translation", "labelUr": "اردو سے انگریزی ترجمہ", "href": "/document-translation", "type": "service" }
+          ]
+        },
+        {
+          "id": "5",
+          "name": "Prepare the Completed Visa Application Form",
+          "description": "The German National Visa application form must be completed accurately. It is available on the German Embassy Islamabad website or the Federal Foreign Office portal.",
+          "actions": [
+            "Download the current German National Visa application form from islamabad.diplo.de or the German Federal Foreign Office website",
+            "Complete the form in full — use capital letters and black ink if completing by hand, or use the online version",
+            "Sign the form",
+            "Prepare additional copies as specified in the Embassy's current instructions",
+            "Review all information for accuracy against your passport and supporting documents"
+          ],
+          "success": "Visa application form completed, signed, and reviewed",
+          "relevantTools": [
+            { "label": "Smart Form Filler", "labelUr": "سمارٹ فارم فلر", "href": "/visa-forms", "type": "tool" }
+          ]
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "name": "Blocked Account & Insurance",
+      "nameUr": "بلاکی اکاؤنٹ اور انشورنس",
+      "title": "STAGE III",
+      "icon": "Wallet",
+      "color": "bg-green-50 text-green-600",
+      "timeline": "Before visa appointment",
+      "sources": [
+        { "label": "German Embassy Islamabad – Proof of Funds", "url": "https://islamabad.diplo.de/pk-en/service/-/2565764" },
+        { "label": "Federal Foreign Office – Financial Proof", "url": "https://www.auswaertiges-amt.de/en/visa-service" }
+      ],
+      "steps": [
+        {
+          "id": "6",
+          "name": "Open a German Blocked Account (Sperrkonto)",
+          "description": "The German Embassy requires proof of sufficient financial resources for your stay in Germany. The standard method accepted by German embassies is a German blocked account (Sperrkonto) showing a minimum annual deposit as set by the relevant authority.",
+          "warn": "Do not rely on unofficial sources for the current blocked account amount — this figure is updated periodically by the German authorities. Check the current required amount with the German Embassy in Islamabad or at the Federal Foreign Office website before opening an account.",
+          "actions": [
+            "Check the current required minimum blocked account amount at islamabad.diplo.de or the Federal Foreign Office website",
+            "Open a German blocked account (Sperrkonto) with a recognised provider (several banks and fintech providers offer this service specifically for international students)",
+            "Deposit the required amount into the blocked account",
+            "Obtain official confirmation/certificate of the blocked account from the provider",
+            "Keep records of your transaction"
+          ],
+          "success": "German blocked account opened; required funds deposited; official account confirmation obtained"
+        },
+        {
+          "id": "7",
+          "name": "Obtain Health Insurance Coverage",
+          "description": "You must have valid health insurance covering your stay in Germany. German authorities require proof of health insurance for the visa application and for enrollment at your university.",
+          "actions": [
+            "Confirm the current health insurance requirement with the German Embassy in Islamabad at islamabad.diplo.de",
+            "Determine whether you require travel/health insurance for the visa application stage and/or statutory health insurance after arrival in Germany",
+            "Obtain a health insurance policy that meets the Embassy's current requirements",
+            "Keep the insurance certificate ready for submission with your visa application"
+          ],
+          "success": "Valid health insurance certificate obtained meeting German Embassy requirements"
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "name": "Visa Appointment (Embassy)",
+      "nameUr": "ویزہ اپوائنٹمنٹ",
+      "title": "STAGE IV",
+      "icon": "Calendar",
+      "color": "bg-amber-50 text-amber-600",
+      "timeline": "At German Embassy",
+      "sources": [
+        { "label": "German Embassy Islamabad – Appointments", "url": "https://islamabad.diplo.de/pk-en/service/-/2565764" },
+        { "label": "VFS Global Germany – Pakistan", "url": "https://visa.vfsglobal.com/pak/en/deu/" }
+      ],
+      "steps": [
+        {
+          "id": "8",
+          "name": "Book Your Visa Appointment",
+          "description": "German National Visa applications for Pakistan are submitted at the German Embassy in Islamabad or through the VFS Global Germany service center as directed by the Embassy. Book an appointment through the official channel.",
+          "pakistanSpecific": "The German Embassy in Islamabad processes German National Visa applications for Pakistani applicants. VFS Global Germany operates service centers in Pakistan that may assist with appointment booking and document submission.",
+          "actions": [
+            "Go to islamabad.diplo.de and follow the current instructions for booking a National Visa appointment for study purposes",
+            "Alternatively, check visa.vfsglobal.com/pak/en/deu/ for the current VFS Global Germany process in Pakistan",
+            "Book the earliest available appointment that gives you enough time to prepare all documents",
+            "Save or print your appointment confirmation"
+          ],
+          "success": "Visa appointment booked; confirmation saved"
+        },
+        {
+          "id": "9",
+          "name": "Assemble and Submit Your Application",
+          "description": "Attend your appointment with a complete document package. The German Embassy Islamabad publishes a checklist for study visa applications.",
+          "actions": [
+            "Download and review the current study visa document checklist from islamabad.diplo.de",
+            "Completed and signed German National Visa application form",
+            "Valid Pakistani passport (original + copies)",
+            "Biometric passport photographs",
+            "University admission letter (Zulassungsbescheid — original and copy)",
+            "Proof of academic qualifications (certified copies with certified German translations)",
+            "Blocked account confirmation showing required funds",
+            "Health insurance certificate",
+            "Pay the current visa application fee at the appointment"
+          ],
+          "success": "Complete application submitted at German Embassy; fee paid; receipt obtained",
+          "relevantTools": [
+            { "label": "PDF Toolkit", "labelUr": "پی ڈی ایف ٹول کٹ", "href": "/pdf-processing", "type": "tool" }
+          ]
+        },
+        {
+          "id": "10",
+          "name": "Await the Decision",
+          "description": "The Embassy will process your application. Processing times for German National Visas vary. Do not book non-refundable travel until your visa has been approved.",
+          "warn": "German National Visa processing times can be several weeks or longer. Do not make non-refundable travel or accommodation arrangements until you have received your approved visa.",
+          "actions": [
+            "Note the expected processing time provided at the appointment",
+            "Monitor your email and track your application as instructed by the Embassy or VFS",
+            "Do not book non-refundable flights until the visa is issued",
+            "If the Embassy requests additional documents: respond promptly with the required information",
+            "Upon approval: collect your passport with the German National Visa sticker"
+          ],
+          "success": "German National Visa issued; passport collected with visa sticker"
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "name": "Travel Preparation",
+      "nameUr": "سفر کی تیاری",
+      "title": "STAGE V",
+      "icon": "Plane",
+      "color": "bg-rose-50 text-rose-600",
+      "timeline": "After visa approval",
+      "sources": [
+        { "label": "German Embassy Islamabad", "url": "https://islamabad.diplo.de/pk-en/service/-/2565764" },
+        { "label": "DAAD – Before You Go", "url": "https://www.daad.de/en/study-and-research-in-germany/first-steps/before-you-go/" }
+      ],
+      "steps": [
+        {
+          "id": "11",
+          "name": "Verify Your Visa and Plan Travel",
+          "description": "Carefully verify your German National Visa sticker in your passport before travelling. Confirm the validity dates and ensure you enter Germany within the visa validity window.",
+          "actions": [
+            "Verify the visa sticker: confirm visa type, validity dates, and number of permitted entries",
+            "Plan travel to arrive before your university's registration deadline and within your visa validity",
+            "Book flights with your confirmed arrival date in Germany",
+            "Arrange accommodation in Germany before departure",
+            "Carry your admission letter, financial documents, health insurance certificate, and passport in your hand luggage"
+          ],
+          "success": "Visa verified; travel booked within visa validity; accommodation arranged"
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "name": "Arrival & Residence Permit",
+      "nameUr": "آمد اور رہائشی اجازت نامہ",
+      "title": "STAGE VI",
+      "icon": "MapPin",
+      "color": "bg-indigo-50 text-indigo-600",
+      "timeline": "Within 90 days of arrival",
+      "sources": [
+        { "label": "Federal Foreign Office – Residence Permit", "url": "https://www.auswaertiges-amt.de/en/visa-service/buergerservice/faq/-/606852" },
+        { "label": "DAAD – After Arrival", "url": "https://www.daad.de/en/study-and-research-in-germany/first-steps/after-arrival/" }
+      ],
+      "steps": [
+        {
+          "id": "12",
+          "name": "Register Your Address (Anmeldung)",
+          "description": "Within a short period of arriving in Germany, you must register your address at the local registration office (Einwohnermeldeamt or Bürgeramt). This is a legal requirement.",
+          "actions": [
+            "Locate the Einwohnermeldeamt or Bürgeramt for your city or municipality",
+            "Book an appointment or attend as a walk-in, depending on local procedures",
+            "Bring your passport, German National Visa, and proof of your accommodation address",
+            "Complete the address registration (Anmeldung) and receive your registration certificate (Anmeldebestätigung)",
+            "Keep the Anmeldebestätigung safely — it is required for many subsequent steps"
+          ],
+          "success": "Address registered at local registration office; Anmeldebestätigung received"
+        },
+        {
+          "id": "13",
+          "name": "Enrol at Your University",
+          "description": "Complete formal enrolment (Immatrikulation) at your German university. You must typically enrol before the semester begins and before you can apply for your residence permit.",
+          "actions": [
+            "Attend your university's international student welcome and enrolment events",
+            "Submit all required enrolment documents as specified by the university",
+            "Pay any semester fees or administrative charges required by your institution",
+            "Receive your student ID card and enrolment certificate (Immatrikulationsbescheinigung)",
+            "Keep your enrolment certificate — it is required for the residence permit application"
+          ],
+          "success": "Formally enrolled at university; enrolment certificate received"
+        },
+        {
+          "id": "14",
+          "name": "Apply for Your Residence Permit for Study",
+          "description": "Before your German National Visa expires, you must apply for a Residence Permit for Study (Aufenthaltserlaubnis zum Studium) at the local Foreigners' Authority (Ausländerbehörde).",
+          "pakistanSpecific": "The deadline for applying for the residence permit is before your German National Visa expires. Processing times vary by city — book an appointment as early as possible after arrival.",
+          "actions": [
+            "Locate the Ausländerbehörde (Foreigners' Authority) for your city",
+            "Book an appointment as soon as possible after arrival",
+            "Confirm the current required documents with your local Ausländerbehörde",
+            "Attend the appointment with all required documents",
+            "Pay the current residence permit application fee at the office",
+            "Receive your Residence Permit for Study card after processing"
+          ],
+          "success": "Residence Permit for Study applied for before National Visa expiry; permit received",
+          "relevantTools": [
+            { "label": "Visa Path Finder", "labelUr": "ویزہ پاتھ فائنڈر", "href": "/visa-eligibility", "type": "tool" }
+          ]
+        }
+      ]
+    }
+  ]
+}

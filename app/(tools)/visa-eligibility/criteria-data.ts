@@ -263,14 +263,5 @@ export const visaCriteria: Record<string, VisaCriteria> = {
       "E-2 (Investor): Substantial 'at risk' investment in a U.S. enterprise; applicant must develop and direct the enterprise.",
     ],
   },
-  // "DV": {
-  //   title: "Diversity Visa Lottery",
-  //   description: "A lottery-based immigrant visa for eligible countries.",
-  //   criteria: [
-  //     "Native of a country with low rates of immigration to the U.S.",
-  //     "High school education or equivalent; OR",
-  //     "Two years of work experience within the past five years in an occupation requiring at least two years of training/experience.",
-  //     "Must be admissible to the U.S.",
-  //   ],
-  // },
+
 };

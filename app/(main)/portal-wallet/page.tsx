@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useCallback } from "react";
 import Image from "next/image";
-import { Shield, Globe, Truck } from "lucide-react";
+import { Shield } from "lucide-react";
 import { Loader } from "@/components/ui/spinner";
 import PortalCard from "./components/PortalCard";
 import CredentialFormModal from "./components/CredentialFormModal";
@@ -39,6 +39,8 @@ const portals: {
   description: string;
   url: string;
   icon: React.ReactNode;
+  iconBgColor?: string;
+  iconHoverBgColor?: string;
 }[] = [
   {
     type: "USCIS",
@@ -55,6 +57,8 @@ const portals: {
         className="object-contain"
       />
     ),
+    iconBgColor: "bg-[#e8f6f6]",
+    iconHoverBgColor: "group-hover:bg-[#0d7377]"
   },
   {
     type: "NVC",
@@ -71,6 +75,8 @@ const portals: {
         className="object-contain"
       />
     ),
+    iconBgColor: "bg-[#fef3c7]",
+    iconHoverBgColor: "group-hover:bg-[#f59e0b]"
   },
   {
     type: "COURIER",
@@ -87,6 +93,8 @@ const portals: {
         className="object-contain"
       />
     ),
+    iconBgColor: "bg-[#eef2ff]",
+    iconHoverBgColor: "group-hover:bg-[#4f46e5]"
   },
 ];
 
@@ -335,6 +343,7 @@ const PortalWallet: React.FC = () => {
                 icon={portal.icon}
                 portalUrl={portal.url}
                 hasCredentials={!!cred}
+                iconBgColor={portal.iconBgColor}
                 onAction={() => {
                   if (cred) {
                     setViewModal({ open: true, portalType: portal.type });
@@ -375,8 +384,6 @@ const PortalWallet: React.FC = () => {
             ? {
                 username: formCredential.username,
                 password: "",
-                nvcCaseNumber: formCredential.nvc_case_number || "",
-                nvcInvoiceId: formCredential.nvc_invoice_id || "",
                 securityQuestions: formCredential.security_questions.map(
                   (sq) => ({
                     id: sq.id,

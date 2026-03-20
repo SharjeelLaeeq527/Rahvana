@@ -41,17 +41,31 @@ export function ResultPage({ sessionId, onRestart, onEdit, onSaveToProfile }: Re
   const [resultData, setResultData] = useState<ResultData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [sessionGone, setSessionGone] = useState(false);
   const [saving, setSaving] = useState(false);
   const [saveMessage, setSaveMessage] = useState("");
 
   const fetchResults = useCallback(async () => {
     try {
       setLoading(true);
+      setError(null);
+      setSessionGone(false);
+
       const response = await fetch(`/api/visa-checker/results/${sessionId}`);
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || "Failed to fetch results");
+        const errorMsg: string = data.error || "Failed to fetch results";
+        // Detect dead/gone session — clear localStorage so it doesn't retry forever
+        const isGoneSession =
+          errorMsg.includes("no longer exists") ||
+          errorMsg.includes("not found") ||
+          errorMsg.includes("not submitted");
+        if (isGoneSession) {
+          localStorage.removeItem("visaCheckerSessionId");
+          setSessionGone(true);
+        }
+        throw new Error(errorMsg);
       }
 
       setResultData(data);
@@ -85,24 +99,35 @@ export function ResultPage({ sessionId, onRestart, onEdit, onSaveToProfile }: Re
           <p className="text-slate-600 mb-6">
             Your assessment session could not be loaded. Please restart.
           </p>
-          <Button onClick={onRestart}>Restart Assessment</Button>
+          <Button onClick={onRestart}>Start New Assessment</Button>
         </CardContent>
       </Card>
     );
   }
 
-  if (error) {
+  if (sessionGone || error) {
     return (
       <Card className="max-w-4xl mx-auto">
         <CardContent className="p-8 text-center">
           <AlertCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
           <h3 className="text-xl font-semibold text-slate-900 mb-2">
-            Error Loading Results
+            {sessionGone ? "Previous Session Expired" : "Error Loading Results"}
           </h3>
-          <p className="text-slate-600 mb-6">{error}</p>
-          <Button onClick={fetchResults} variant="outline">
-            Try Again
-          </Button>
+          <p className="text-slate-600 mb-6">
+            {sessionGone
+              ? "Your previous assessment session is no longer available. This can happen if the session expired or was not saved correctly. Please start a new analysis — it only takes a few minutes!"
+              : error}
+          </p>
+          <div className="flex flex-col sm:flex-row gap-3 justify-center">
+            <Button onClick={onRestart} className="bg-primary text-primary-foreground">
+              Start New Assessment
+            </Button>
+            {!sessionGone && (
+              <Button onClick={fetchResults} variant="outline">
+                Try Again
+              </Button>
+            )}
+          </div>
         </CardContent>
       </Card>
     );

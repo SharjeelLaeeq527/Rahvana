@@ -24,7 +24,6 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { ConfirmationModal } from "@/app/components/shared/ConfirmationModal";
 import { useLanguage } from "@/app/context/LanguageContext";
-
 const JOURNEY_ROUTES: Record<string, string> = {
   ir1: "/visa-category/ir-category/ir1-journey",
   ir5: "/visa-category/ir-category/ir5-journey",

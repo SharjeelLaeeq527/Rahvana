@@ -23,6 +23,7 @@ interface ScoringResult {
 
 export class ScoringRules {
   static calculateIncomeScore(
+    answers: Record<string, unknown>,
     income: number,
     householdSize: number,
   ): ScoringResult {
@@ -33,34 +34,62 @@ export class ScoringRules {
     const povertyThreshold =
       INCOME_THRESHOLDS.POVERTY_GUIDELINE_BASE +
       INCOME_THRESHOLDS.ADDITIONAL_PER_PERSON * Math.max(0, householdSize - 1);
+    
+    // Active duty military sponsors only need 100% of the poverty guideline
+    const isMilitary = answers.industry_sector === "Military/Defense" || answers.prior_military_service === true;
+    const criticalRatio = isMilitary ? 1.0 : INCOME_THRESHOLDS.CRITICAL_RATIO;
+    const warningRatio = isMilitary ? 1.25 : INCOME_THRESHOLDS.WARNING_RATIO;
+    
     const incomeRatio = income / povertyThreshold;
 
-    if (incomeRatio < INCOME_THRESHOLDS.CRITICAL_RATIO) {
+    if (incomeRatio < criticalRatio) {
       risks.push({
         flagCode: "SPONSOR_INCOME_BELOW_GUIDELINE",
         severity: "HIGH",
         explanation: `Income ($${income.toLocaleString()}) is below ${
-          INCOME_THRESHOLDS.CRITICAL_RATIO * 100
+          criticalRatio * 100
         }% of poverty guideline ($${povertyThreshold.toLocaleString()})`,
         improvement: IMPROVEMENT_MESSAGES.SPONSOR_INCOME_BELOW_GUIDELINE_HIGH,
       });
       score -= RISK_POINTS_DEDUCTION.HIGH;
-    } else if (incomeRatio < INCOME_THRESHOLDS.WARNING_RATIO) {
+    } else if (incomeRatio < warningRatio) {
       risks.push({
         flagCode: "SPONSOR_INCOME_BELOW_GUIDELINE",
         severity: "MEDIUM",
         explanation: `Income ($${income.toLocaleString()}) is below ${
-          INCOME_THRESHOLDS.WARNING_RATIO * 100
+          warningRatio * 100
         }% of poverty guideline ($${povertyThreshold.toLocaleString()})`,
         improvement: IMPROVEMENT_MESSAGES.SPONSOR_INCOME_BELOW_GUIDELINE_MEDIUM,
       });
       score -= RISK_POINTS_DEDUCTION.MEDIUM;
     }
 
-    const MIN_RELATIONSHIP_SCORE =
-      COMPONENT_WEIGHTS.RELATIONSHIP_STRENGTH * 0.2;
+    // Public Charge Risk Assessment (Education & Occupation)
+    const educationLevel = answers.highest_education_level as string;
+    const isHighRiskIndustry = answers.industry_sector === "Unemployed/Student";
+    
+    if (isHighRiskIndustry) {
+      risks.push({
+        flagCode: "PUBLIC_CHARGE_RISK",
+        severity: "LOW",
+        explanation: "Unemployed or student status may increase 'Public Charge' scrutiny during the visa interview.",
+        improvement: IMPROVEMENT_MESSAGES.PUBLIC_CHARGE_RISK,
+      });
+      score -= 2;
+    } else if (educationLevel === "No formal education" || educationLevel === "Primary education") {
+      risks.push({
+        flagCode: "PUBLIC_CHARGE_RISK",
+        severity: "LOW",
+        explanation: "Lower formal education levels can be a factor in Public Charge assessments.",
+        improvement: IMPROVEMENT_MESSAGES.PUBLIC_CHARGE_RISK,
+      });
+      score -= 2;
+    }
 
-    score = Math.max(score, MIN_RELATIONSHIP_SCORE);
+    const MIN_FINANCIAL_SCORE =
+      COMPONENT_WEIGHTS.INCOME_AND_FINANCIAL * 0.2;
+
+    score = Math.min(COMPONENT_WEIGHTS.INCOME_AND_FINANCIAL, Math.max(score, MIN_FINANCIAL_SCORE));
 
     return { score, risks };
   }
@@ -71,29 +100,66 @@ export class ScoringRules {
     const risks: RiskFlag[] = [];
     let score = COMPONENT_WEIGHTS.RELATIONSHIP_STRENGTH;
 
-    // Check for short marriage duration
-    const marriageDate = answers.marriage_date
-      ? new Date(String(answers.marriage_date))
-      : null;
+    // Relationship duration calculations
+    const currentDate = new Date();
+    const marriageDate = answers.marriage_date ? new Date(String(answers.marriage_date)) : null;
+    const relationshipStartDate = answers.relationship_start_date ? new Date(String(answers.relationship_start_date)) : null;
+
+    let durationMonths = 0;
+    let effectiveRelMonths = 0;
 
     if (marriageDate) {
-      const marriageDt = new Date(marriageDate);
-      const currentDate = new Date();
-      const durationMonths =
-        (currentDate.getTime() - marriageDt.getTime()) /
-        (1000 * 60 * 60 * 24 * 30);
+      durationMonths = (currentDate.getTime() - marriageDate.getTime()) / (1000 * 60 * 60 * 24 * 30);
+    }
 
-      if (durationMonths < RELATIONSHIP_THRESHOLDS.SHORT_DURATION_MONTHS) {
-        risks.push({
-          flagCode: "SHORT_RELATIONSHIP_DURATION",
-          severity: "HIGH",
-          explanation: `Marriage duration is very short (${Math.round(
-            durationMonths,
-          )} months < ${RELATIONSHIP_THRESHOLDS.SHORT_DURATION_MONTHS} months)`,
-          improvement: IMPROVEMENT_MESSAGES.SHORT_RELATIONSHIP_DURATION,
-        });
-        score -= RISK_POINTS_DEDUCTION.HIGH;
-      }
+    if (relationshipStartDate) {
+      effectiveRelMonths = (currentDate.getTime() - relationshipStartDate.getTime()) / (1000 * 60 * 60 * 24 * 30);
+    } else {
+      effectiveRelMonths = durationMonths;
+    }
+
+    // High Relationship History Bonus
+    if (effectiveRelMonths >= 24) {
+      score += 5;
+      risks.push({
+        flagCode: "LONG_RELATIONSHIP_HISTORY",
+        severity: "LOW",
+        explanation: `Strong relationship history (${Math.round(effectiveRelMonths / 12)} years of commitment documented).`,
+        improvement: IMPROVEMENT_MESSAGES.LONG_RELATIONSHIP_HISTORY,
+      });
+    }
+
+    // Marriage Duration Risk
+    if (marriageDate && durationMonths < RELATIONSHIP_THRESHOLDS.SHORT_DURATION_MONTHS) {
+      const isMitigated = effectiveRelMonths >= 24;
+      const severity = isMitigated ? "MEDIUM" : "HIGH";
+      const deduction = isMitigated ? RISK_POINTS_DEDUCTION.MEDIUM : RISK_POINTS_DEDUCTION.HIGH;
+      
+      risks.push({
+        flagCode: "SHORT_RELATIONSHIP_DURATION",
+        severity,
+        explanation: `Marriage duration is short (${Math.round(durationMonths)} months < ${RELATIONSHIP_THRESHOLDS.SHORT_DURATION_MONTHS} months).${
+          isMitigated ? " This is mitigated by your long-term relationship history." : ""
+        }`,
+        improvement: IMPROVEMENT_MESSAGES.SHORT_RELATIONSHIP_DURATION,
+      });
+      score -= deduction;
+    }
+
+    // I-751 Reminder for CR-1 holders (marriage < 2 years)
+    if (marriageDate && durationMonths < 24) {
+      risks.push({
+        flagCode: "CR1_I751_REMINDER",
+        severity: "LOW",
+        explanation: "Conditional status applies (CR-1) because the marriage is less than 2 years old.",
+        improvement: IMPROVEMENT_MESSAGES.CR1_I751_REMINDER,
+      });
+    }
+
+
+    // Bonus for children together (Strong evidence of bona fide relationship)
+    if (answers.children_together === true) {
+      score += 10;
     }
 
     // Check for in-person meetings
@@ -119,13 +185,17 @@ export class ScoringRules {
     // Check for cohabitation evidence
     const cohabitationProof = Boolean(answers.cohabitation_proof);
     if (!cohabitationProof) {
+      const hasChildren = answers.children_together === true;
+      const severity = hasChildren ? "LOW" : "MEDIUM";
+      const deduction = hasChildren ? RISK_POINTS_DEDUCTION.LOW : RISK_POINTS_DEDUCTION.MEDIUM;
+      
       risks.push({
         flagCode: "NO_COHABITATION_EVIDENCE",
-        severity: "MEDIUM",
-        explanation: "No cohabitation evidence provided",
+        severity,
+        explanation: `No cohabitation evidence provided.${hasChildren ? " (Strongly mitigated by having children together)" : ""}`,
         improvement: IMPROVEMENT_MESSAGES.NO_COHABITATION_EVIDENCE,
       });
-      score -= RISK_POINTS_DEDUCTION.MEDIUM;
+      score -= deduction;
     }
 
     // Check for shared financials
@@ -192,9 +262,9 @@ export class ScoringRules {
       }
     }
 
-    const MIN_INCOME_SCORE = COMPONENT_WEIGHTS.INCOME_AND_FINANCIAL * 0.2;
+    const MIN_RELATIONSHIP_SCORE = COMPONENT_WEIGHTS.RELATIONSHIP_STRENGTH * 0.2;
 
-    score = Math.max(score, MIN_INCOME_SCORE);
+    score = Math.min(COMPONENT_WEIGHTS.RELATIONSHIP_STRENGTH, Math.max(score, MIN_RELATIONSHIP_SCORE));
 
     return { score, risks };
   }
@@ -220,9 +290,9 @@ export class ScoringRules {
       ["birth_certificates", "NO_BIRTH_CERTIFICATES", "Birth certificates"],
       ["passports_available", "NO_VALID_PASSPORTS", "Valid passports"],
       [
-        "union_council_certificate",
-        "NO_UNION_COUNCIL_CERTIFICATE",
-        "Union Council certificate",
+        "nadra_marriage_registration_cert",
+        "NO_NADRA_MARRIAGE_CERT",
+        "NADRA marriage certificate",
       ],
       [
         "family_registration_certificate",
@@ -235,7 +305,17 @@ export class ScoringRules {
         "Police certificate",
       ],
       ["medical_report_available", "NO_MEDICAL_REPORT", "Medical report"],
+      ["ds260_confirmation", "DS260_NOT_SUBMITTED", "DS-260 confirmation"],
     ];
+
+    // Conditional: Prior marriage docs
+    if (answers.prior_marriages_exist === true) {
+      criticalDocs.push([
+        "prior_marriage_termination_docs",
+        "MISSING_PRIOR_MARRIAGE_DOCS",
+        "Prior marriage termination documents",
+      ]);
+    }
 
     for (const [docKey, flagCode, docName] of criticalDocs) {
       if (!answers[docKey]) {
@@ -253,8 +333,8 @@ export class ScoringRules {
           case "NO_VALID_PASSPORTS":
             improvementMsg = IMPROVEMENT_MESSAGES.NO_VALID_PASSPORTS;
             break;
-          case "NO_UNION_COUNCIL_CERTIFICATE":
-            improvementMsg = IMPROVEMENT_MESSAGES.NO_UNION_COUNCIL_CERTIFICATE;
+          case "NO_NADRA_MARRIAGE_CERT":
+            improvementMsg = IMPROVEMENT_MESSAGES.NO_NADRA_MARRIAGE_CERT;
             break;
           case "NO_FRC_AVAILABLE":
             improvementMsg = IMPROVEMENT_MESSAGES.NO_FRC_AVAILABLE;
@@ -265,6 +345,12 @@ export class ScoringRules {
             break;
           case "NO_MEDICAL_REPORT":
             improvementMsg = IMPROVEMENT_MESSAGES.NO_MEDICAL_REPORT;
+            break;
+          case "DS260_NOT_SUBMITTED":
+            improvementMsg = IMPROVEMENT_MESSAGES.DS260_NOT_SUBMITTED;
+            break;
+          case "MISSING_PRIOR_MARRIAGE_DOCS":
+            improvementMsg = IMPROVEMENT_MESSAGES.MISSING_PRIOR_MARRIAGE_DOCS;
             break;
           default:
             improvementMsg = `Critical document missing: ${docName}`;
@@ -310,7 +396,6 @@ export class ScoringRules {
 
     // Application documents check
     const appDocs: [string, FlagCode, string][] = [
-      ["ds260_confirmation", "DS260_NOT_SUBMITTED", "DS-260 confirmation"],
       ["interview_letter", "NO_INTERVIEW_LETTER", "Interview letter"],
       ["passport_photos_2x2", "NO_PASSPORT_PHOTOS_2X2", "Passport photos"],
     ];
@@ -319,9 +404,6 @@ export class ScoringRules {
       if (!answers[docKey]) {
         let improvementMsg: string;
         switch (flagCode) {
-          case "DS260_NOT_SUBMITTED":
-            improvementMsg = IMPROVEMENT_MESSAGES.DS260_NOT_SUBMITTED;
-            break;
           case "NO_INTERVIEW_LETTER":
             improvementMsg = IMPROVEMENT_MESSAGES.NO_INTERVIEW_LETTER;
             break;
@@ -341,26 +423,14 @@ export class ScoringRules {
         score -= 3;
       }
     }
-
     // Vaccination documents
-    const covidVaccine = answers.covid_vaccination_certificate || false;
     const polioVaccine = answers.polio_vaccination_certificate || false;
-
-    if (!covidVaccine) {
-      risks.push({
-        flagCode: "NO_COVID_VACCINATION_PROOF",
-        severity: "MEDIUM",
-        explanation: "No COVID vaccination proof",
-        improvement: IMPROVEMENT_MESSAGES.NO_COVID_VACCINATION_PROOF,
-      });
-      score -= 2;
-    }
 
     if (!polioVaccine) {
       risks.push({
         flagCode: "NO_POLIO_VACCINATION_PROOF",
         severity: "MEDIUM",
-        explanation: "No polio vaccination proof",
+        explanation: "No polio vaccination proof. Per CDC guidance, Pakistan is a high-risk country for polio, making this requirement critical for immigrant visa applicants.",
         improvement: IMPROVEMENT_MESSAGES.NO_POLIO_VACCINATION_PROOF,
       });
       score -= 2;
@@ -402,7 +472,7 @@ export class ScoringRules {
 
     const MIN_DOCUMENT_SCORE = COMPONENT_WEIGHTS.DOCUMENT_COMPLETENESS * 0.2;
 
-    score = Math.max(score, MIN_DOCUMENT_SCORE);
+    score = Math.min(COMPONENT_WEIGHTS.DOCUMENT_COMPLETENESS, Math.max(score, MIN_DOCUMENT_SCORE));
 
     return { score, risks };
   }
@@ -448,50 +518,36 @@ export class ScoringRules {
     const spousalRelationshipType = answers.spousal_relationship_type;
     const intendedState = answers.intended_us_state_of_residence as string;
 
-    if (spousalRelationshipType === "biological_cousins" && intendedState) {
+    if (spousalRelationshipType === "First cousins" && intendedState) {
       // States that prohibit or restrict cousin marriages
       const restrictedStates = [
         "Arizona",
-        "California",
-        "Colorado",
+        "Arkansas",
         "Connecticut",
         "Delaware",
-        "District of Columbia",
-        "Florida",
-        "Georgia",
-        "Hawaii",
+        "Idaho",
         "Illinois",
         "Indiana",
+        "Iowa",
         "Kansas",
         "Kentucky",
         "Louisiana",
-        "Maine",
-        "Maryland",
-        "Massachusetts",
         "Michigan",
         "Minnesota",
         "Mississippi",
         "Missouri",
         "Montana",
+        "Nebraska",
         "Nevada",
-        "New Hampshire",
-        "New Jersey",
-        "New Mexico",
-        "New York",
-        "North Carolina",
         "North Dakota",
         "Ohio",
         "Oklahoma",
         "Oregon",
         "Pennsylvania",
-        "Rhode Island",
-        "South Carolina",
         "South Dakota",
         "Tennessee",
         "Texas",
         "Utah",
-        "Vermont",
-        "Virginia",
         "Washington",
         "West Virginia",
         "Wisconsin",
@@ -510,9 +566,19 @@ export class ScoringRules {
     }
 
     // Check for joint sponsor
+    const householdSize = Math.max(
+      1,
+      Number(answers.household_size) || 2,
+    );
+    const povertyThreshold =
+      INCOME_THRESHOLDS.POVERTY_GUIDELINE_BASE +
+      INCOME_THRESHOLDS.ADDITIONAL_PER_PERSON * Math.max(0, householdSize - 1);
+    
+    const isMilitary = answers.industry_sector === "Military/Defense" || answers.prior_military_service === true;
+    const requiredRatio = isMilitary ? 1.0 : INCOME_THRESHOLDS.CRITICAL_RATIO;
+
     if (
-      Number(answers.sponsor_annual_income) <
-        INCOME_THRESHOLDS.CRITICAL_RATIO &&
+      Number(answers.sponsor_annual_income) < povertyThreshold * requiredRatio &&
       !answers.joint_sponsor_available
     ) {
       risks.push({
@@ -545,9 +611,65 @@ export class ScoringRules {
       score -= 5;
     }
 
+    // Background & Security Risks (Integrated into Immigration/Background score)
+    if (
+      answers.industry_sector === "Military/Defense" ||
+      answers.prior_military_service === true
+    ) {
+      risks.push({
+        flagCode: "WORKING_IN_DEFENSE_SECTOR",
+        severity: "MEDIUM",
+        explanation:
+          "Defense or military background can trigger additional security screening (Administrative Processing).",
+        improvement: IMPROVEMENT_MESSAGES.WORKING_IN_DEFENSE_SECTOR,
+      });
+      score -= RISK_POINTS_DEDUCTION.MEDIUM;
+    }
+
+    if (answers.specialized_weapons_training === true) {
+      risks.push({
+        flagCode: "DUAL_USE_TECHNOLOGY_RISK",
+        severity: "HIGH",
+        explanation:
+          "Specialized training involving weapons or hazardous materials may raise security-related concerns.",
+        improvement: IMPROVEMENT_MESSAGES.DUAL_USE_TECHNOLOGY_RISK,
+      });
+      score -= RISK_POINTS_DEDUCTION.HIGH;
+    }
+
+    if (answers.unofficial_armed_groups === true) {
+      risks.push({
+        flagCode: "WORKING_IN_DEFENSE_SECTOR",
+        severity: "HIGH",
+        explanation:
+          "Association with unofficial armed groups is considered a serious risk factor in visa adjudication.",
+        improvement: IMPROVEMENT_MESSAGES.UNOFFICIAL_ARMED_GROUPS,
+      });
+      score -= RISK_POINTS_DEDUCTION.HIGH;
+    }
+
+    // I-130 Status Check
+    if (answers.i130_status === "Not filed yet") {
+      risks.push({
+        flagCode: "I130_PROCESS_NOT_STARTED",
+        severity: "HIGH",
+        explanation: "Form I-130 has not been filed. This is the first essential step for any spouse visa.",
+        improvement: IMPROVEMENT_MESSAGES.I130_PROCESS_NOT_STARTED,
+      });
+      score -= 20;
+    } else if (answers.i130_status === "Filed but pending" || answers.i130_status === "Pending") {
+      risks.push({
+        flagCode: "I130_PROCESS_NOT_STARTED",
+        severity: "LOW",
+        explanation: "Form I-130 is pending. While the process has started, you must wait for approval before NVC processing.",
+        improvement: IMPROVEMENT_MESSAGES.I130_PROCESS_NOT_STARTED,
+      });
+      score -= 5;
+    }
+
     const MIN_IMMIGRATION_SCORE = COMPONENT_WEIGHTS.IMMIGRATION_HISTORY * 0.2;
 
-    score = Math.max(score, MIN_IMMIGRATION_SCORE);
+    score = Math.min(COMPONENT_WEIGHTS.IMMIGRATION_HISTORY, Math.max(score, MIN_IMMIGRATION_SCORE));
 
     return { score, risks };
   }
@@ -562,7 +684,7 @@ export class ScoringRules {
     const income = this.safeNumber(answers.sponsor_annual_income, 0);
 
     const { score: incomeScore, risks: incomeRisks } =
-      this.calculateIncomeScore(income, householdSize);
+      this.calculateIncomeScore(answers, income, householdSize);
 
     const { score: relationshipScore, risks: relationshipRisks } =
       this.calculateRelationshipScore(answers);
@@ -602,40 +724,6 @@ export class ScoringRules {
       ...documentRisks,
       ...immigrationRisks,
     ];
-
-    // Additional custom risk flags based on military background
-    if (
-      answers.industry_sector === "Military/Defense" ||
-      answers.prior_military_service === true
-    ) {
-      allRisks.push({
-        flagCode: "WORKING_IN_DEFENSE_SECTOR",
-        severity: "MEDIUM",
-        explanation:
-          "Defense or military background can trigger additional security screening (Administrative Processing).",
-        improvement: IMPROVEMENT_MESSAGES.WORKING_IN_DEFENSE_SECTOR,
-      });
-    }
-
-    if (answers.specialized_weapons_training === true) {
-      allRisks.push({
-        flagCode: "DUAL_USE_TECHNOLOGY_RISK",
-        severity: "HIGH",
-        explanation:
-          "Specialized training involving weapons or hazardous materials may raise security-related concerns.",
-        improvement: IMPROVEMENT_MESSAGES.DUAL_USE_TECHNOLOGY_RISK,
-      });
-    }
-
-    if (answers.unofficial_armed_groups === true) {
-      allRisks.push({
-        flagCode: "WORKING_IN_DEFENSE_SECTOR",
-        severity: "HIGH",
-        explanation:
-          "Association with unofficial armed groups is considered a serious risk factor in visa adjudication.",
-        improvement: IMPROVEMENT_MESSAGES.UNOFFICIAL_ARMED_GROUPS,
-      });
-    }
 
     // Generate summary reasons and suggestions
     const summaryReasons: string[] = [];

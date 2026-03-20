@@ -1,0 +1,561 @@
+{
+  "title": "F-1 Student Visa Journey",
+  "titleUr": "ایف-۱ سٹوڈنٹ ویزا کا سفر",
+  "description": "Step-by-step roadmap for Pakistani students pursuing an F-1 nonimmigrant student visa — from school admission through maintaining status in the United States.",
+  "descriptionUr": "ایف-۱ سٹوڈنٹ ویزا پر ریاستہائے متحدہ میں تعلیم حاصل کرنے کے لیے آپ کی مکمل رہنمائی۔",
+  "disclaimer": "This page is for informational guidance only. Immigration requirements and procedures can change. Always confirm current requirements with your school's Designated School Official (DSO), the U.S. Embassy & Consulates in Pakistan, and travel.state.gov before taking any action.",
+  "disclaimerLinks": [
+    {
+      "text": "U.S. Embassy & Consulates in Pakistan",
+      "url": "https://pk.usembassy.gov/visas/"
+    },
+    {
+      "text": "travel.state.gov",
+      "url": "https://travel.state.gov/content/travel/en/us-visas/study.html"
+    }
+  ],
+  "stages": [
+    {
+      "id": 1,
+      "name": "Stage I: Admission & I-20",
+      "icon": "FileText",
+      "color": "bg-blue-50 text-blue-600",
+      "time": "Variable",
+      "sources": [
+        {
+          "label": "Study in the States – I-20",
+          "url": "https://studyinthestates.dhs.gov/students/understanding-your-form-i-20"
+        },
+        {
+          "label": "SEVP – School Certification",
+          "url": "https://studyinthestates.dhs.gov/school-officials/working-with-students"
+        }
+      ],
+      "steps": [
+        {
+          "id": "I-01",
+          "name": "Research SEVP-Certified Schools",
+          "description": "You may only pursue F-1 status at a school certified by the Student and Exchange Visitor Program (SEVP). Confirm that your target schools are SEVP-certified before applying.",
+          "actions": [
+            "Search the SEVP School Search at studyinthestates.dhs.gov to verify a school is SEVP-certified",
+            "Research programs, admission requirements, deadlines, and tuition at each school",
+            "Check English-language proficiency requirements (e.g., IELTS, TOEFL) for your target programs",
+            "Review scholarship and funding opportunities (school-specific, HEC, Fulbright, etc.)",
+            "Identify the International Student Office (DSO) contact at each school you plan to apply to"
+          ],
+          "output": "Target schools confirmed as SEVP-certified; application list finalized"
+        },
+        {
+          "id": "I-02",
+          "name": "Apply to SEVP-Certified School(s)",
+          "description": "Submit applications to your chosen schools and provide all required documents. Each school sets its own admission requirements and deadlines.",
+          "actions": [
+            "Complete each school's online application form by the stated deadline",
+            "Submit required academic transcripts (SSC, HSSC, bachelor's degree, etc.) with official translations if required",
+            "Submit standardized test scores (SAT, GRE, GMAT, as applicable)",
+            "Submit English proficiency test scores (TOEFL, IELTS, Duolingo, as accepted)",
+            "Provide letters of recommendation, personal statement, and other required materials",
+            "Pay application fees as required by each institution",
+            "Monitor application portals for admission decisions"
+          ],
+          "output": "All school applications submitted; confirmation receipts saved"
+        },
+        {
+          "id": "I-03",
+          "name": "Receive Admission Offer & Accept",
+          "description": "Once accepted, review the offer carefully, confirm financial requirements, and formally accept the offer. The school cannot issue an I-20 until you are admitted and have accepted.",
+          "actions": [
+            "Review admission letter: program, start date, tuition, and any conditions",
+            "Confirm you can demonstrate sufficient financial support for the full program (school will require proof for I-20)",
+            "Formally accept the offer by the deadline stated in the admission letter",
+            "Pay any required enrollment or deposit fee",
+            "Contact the International Student Office to begin the I-20 request process"
+          ],
+          "output": "Admission accepted; enrollment deposit paid; I-20 request process initiated"
+        },
+        {
+          "id": "I-04",
+          "name": "Submit Financial Documentation to DSO",
+          "description": "Your Designated School Official (DSO) requires proof of financial support to issue your Form I-20. Acceptable documentation varies by school but typically includes bank statements, sponsor letters, or scholarship award letters.",
+          "actions": [
+            "Request a financial documentation checklist from the school's International Student Office",
+            "Gather bank statements (personal, family, or sponsor) covering at least one academic year's costs",
+            "Obtain a financial guarantee or sponsorship letter if applicable (signed by sponsor)",
+            "If you have a scholarship or funding award, provide the official award letter",
+            "Submit all financial documents to the DSO by their stated deadline",
+            "Ensure documents are in English or accompanied by certified translations"
+          ],
+          "output": "Financial documentation submitted to and accepted by the DSO"
+        },
+        {
+          "id": "I-05",
+          "name": "Receive Form I-20",
+          "description": "Form I-20 (Certificate of Eligibility for Nonimmigrant Student Status) is issued by your school's DSO and is required for the F-1 visa application. Review every detail carefully.",
+          "info": "The I-20 is issued and maintained in SEVIS (Student and Exchange Visitor Information System). Your I-20 includes a SEVIS ID number (beginning with \"N\") that you will need throughout the process.",
+          "actions": [
+            "Review the I-20 for accuracy: your full legal name (must match passport), date of birth, school, program, program start date, and program end date",
+            "Confirm the SEVIS ID number (starts with \"N\") \u2014 record this number securely",
+            "Confirm the issued I-20 lists the correct school and level of study",
+            "If any information is incorrect, contact your DSO immediately for a correction before proceeding",
+            "Review the I-20 student copy signature page \u2014 the DSO must have signed it",
+            "Store the original I-20 safely \u2014 you will need it throughout your F-1 status"
+          ],
+          "output": "Form I-20 received, all details verified as correct, SEVIS ID recorded"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "name": "Stage II: SEVIS Fee & DS-160",
+      "icon": "Layout",
+      "color": "bg-indigo-50 text-indigo-600",
+      "time": "Variable",
+      "sources": [
+        {
+          "label": "Pay SEVIS Fee – FMJfee.com",
+          "url": "https://www.fmjfee.com/i901fee/index.html"
+        },
+        {
+          "label": "DS-160 Online Application",
+          "url": "https://ceac.state.gov/genniv/"
+        },
+        {
+          "label": "travel.state.gov – Student Visas",
+          "url": "https://travel.state.gov/content/travel/en/us-visas/study.html"
+        }
+      ],
+      "steps": [
+        {
+          "id": "II-01",
+          "name": "Pay the SEVIS I-901 Fee",
+          "description": "Before applying for an F-1 visa, you must pay the SEVIS I-901 fee at fmjfee.com. This fee supports the SEVIS database. Payment confirmation is required for the visa application.",
+          "warn": "Pay the SEVIS fee using the SEVIS ID (beginning with \"N\") from your I-20. The current fee amount is listed at fmjfee.com \u2014 verify before paying. Fees are subject to change.",
+          "actions": [
+            "Visit fmjfee.com to pay the SEVIS I-901 fee",
+            "Enter your SEVIS ID (from your I-20) and personal information exactly as they appear on your I-20",
+            "Verify the current SEVIS fee amount at fmjfee.com before paying",
+            "Complete payment using an accepted method (credit/debit card or Western Union Quick Pay)",
+            "Save and print the SEVIS fee payment receipt (Form I-797 receipt confirmation)",
+            "Bring the payment receipt to your visa interview"
+          ],
+          "output": "SEVIS I-901 fee paid; payment receipt saved",
+          "documents": [
+            "Form I-20",
+            "SEVIS I-901 fee payment receipt"
+          ]
+        },
+        {
+          "id": "II-02",
+          "name": "Gather Visa Application Documents",
+          "description": "Before completing the DS-160 online application, gather all documents you will need. Having accurate information ready reduces errors and prevents having to restart the DS-160.",
+          "actions": [
+            "Valid Pakistani passport (must be valid for at least 6 months beyond your intended period of stay)",
+            "Form I-20 (issued by your DSO)",
+            "SEVIS I-901 fee payment receipt",
+            "School acceptance letter",
+            "Financial evidence (bank statements, scholarship letters, sponsor letters)",
+            "Academic transcripts and diplomas",
+            "Standardized test score reports",
+            "Passport-style photograph meeting U.S. visa photo requirements",
+            "Any prior U.S. visa documentation (if applicable)"
+          ],
+          "output": "All required documents gathered and organized",
+          "documents": [
+            "Valid Pakistani passport",
+            "Form I-20",
+            "SEVIS I-901 fee payment receipt",
+            "School acceptance letter",
+            "Financial evidence",
+            "Academic transcripts and diplomas",
+            "Standardized test score reports",
+            "Passport-style photograph"
+          ]
+        },
+        {
+          "id": "II-03",
+          "name": "Complete Form DS-160 (Online Nonimmigrant Visa Application)",
+          "description": "Form DS-160 is the online nonimmigrant visa application submitted at the Consular Electronic Application Center (CEAC). Complete it carefully and accurately \u2014 it is reviewed by the consular officer.",
+          "actions": [
+            "Go to ceac.state.gov and start a new DS-160 application",
+            "Select the correct U.S. embassy or consulate in Pakistan where you will apply (Islamabad, Karachi, or Lahore)",
+            "Complete all required fields accurately and consistently with your other documents",
+            "Upload a compliant passport-style photograph meeting the specifications at travel.state.gov/photos",
+            "Review all answers carefully before submitting \u2014 mistakes can cause delays",
+            "Submit the DS-160 and print the confirmation page (barcode page) \u2014 you will need this at your interview",
+            "Save your DS-160 application ID in case you need to retrieve or update your application"
+          ],
+          "output": "DS-160 submitted; confirmation barcode page printed and saved",
+          "documents": [
+            "DS-160 confirmation page"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "name": "Stage III: Visa Interview (Pakistan)",
+      "icon": "Users",
+      "color": "bg-emerald-50 text-emerald-600",
+      "time": "Variable",
+      "sources": [
+        {
+          "label": "U.S. Embassy Pakistan – Student Visas",
+          "url": "https://pk.usembassy.gov/visas/nonimmigrant-visas/student-visas/"
+        },
+        {
+          "label": "Schedule Appointment – CGI Federal",
+          "url": "https://www.ustraveldocs.com/pk/"
+        },
+        {
+          "label": "travel.state.gov – Interview Tips",
+          "url": "https://travel.state.gov/content/travel/en/us-visas/visa-information-resources/interview-tips.html"
+        }
+      ],
+      "steps": [
+        {
+          "id": "III-01",
+          "name": "Pay the MRV Visa Application Fee",
+          "description": "The Machine Readable Visa (MRV) fee is required to schedule a visa interview appointment. This fee is non-refundable. Pay through the official U.S. visa appointment portal for Pakistan (CGI Federal at ustraveldocs.com/pk).",
+          "warn": "Verify the current MRV fee at ustraveldocs.com/pk before paying \u2014 fee amounts can change. Do not pay through third-party sites.",
+          "actions": [
+            "Go to ustraveldocs.com/pk and create an account or log in",
+            "Select Pakistan and the visa category (Student \u2013 F)",
+            "Verify the current MRV fee amount and pay using an accepted payment method",
+            "Save the MRV fee payment receipt and transaction number \u2014 you will need it to schedule your appointment",
+            "Note: MRV fees are generally non-refundable and non-transferable; confirm the policy on the payment portal"
+          ],
+          "output": "MRV visa application fee paid; payment receipt and transaction number saved",
+          "documents": [
+            "MRV fee payment receipt"
+          ]
+        },
+        {
+          "id": "III-02",
+          "name": "Schedule Visa Interview Appointment",
+          "description": "After paying the MRV fee, schedule your visa interview appointment through ustraveldocs.com/pk. U.S. visa interviews for Pakistan are conducted at the U.S. Embassy Islamabad, U.S. Consulate General Karachi, and U.S. Consulate General Lahore.",
+          "info": "Appointment wait times vary. Check current wait times at travel.state.gov/waitingtimes or ustraveldocs.com/pk. Apply well in advance of your I-20 program start date \u2014 SEVP recommends applying for the F-1 visa no more than 120 days before your I-20 start date.",
+          "actions": [
+            "Log in to ustraveldocs.com/pk using your profile and MRV fee receipt number",
+            "Select your preferred consular post (Islamabad, Karachi, or Lahore)",
+            "Select an available appointment date and time",
+            "Confirm the appointment and save or print the appointment confirmation",
+            "Check the current appointment wait time at travel.state.gov/waitingtimes",
+            "Note: you may apply for your F-1 visa up to 120 days before your I-20 program start date \u2014 do not schedule earlier than this window per SEVP guidance"
+          ],
+          "output": "Visa interview appointment scheduled; appointment confirmation saved",
+          "documents": [
+            "Visa appointment confirmation letter"
+          ]
+        },
+        {
+          "id": "III-03",
+          "name": "Prepare Interview Documents",
+          "description": "Assemble all documents required for the visa interview. Review the U.S. Embassy Pakistan student visa page for any locally required additions or specific instructions.",
+          "actions": [
+            "Valid Pakistani passport",
+            "DS-160 confirmation/barcode page (printed)",
+            "MRV fee payment receipt",
+            "Visa appointment confirmation letter",
+            "Form I-20 (original, signed by DSO)",
+            "SEVIS I-901 fee payment receipt",
+            "School acceptance letter",
+            "Financial documentation",
+            "Academic transcripts and diplomas/certificates",
+            "Standardized and English proficiency test score reports",
+            "One photograph meeting U.S. visa photo requirements"
+          ],
+          "output": "Complete interview document package assembled and organized"
+        },
+        {
+          "id": "III-04",
+          "name": "Attend the Visa Interview",
+          "description": "Appear at the designated U.S. Embassy or Consulate in Pakistan for your interview. Answer all questions from the consular officer honestly and clearly. The officer will primarily assess your nonimmigrant intent and eligibility.",
+          "info": "F-1 applicants must demonstrate nonimmigrant intent \u2014 that you intend to study and return home after completing your program. The consular officer may ask about your program of study, funding, ties to Pakistan, and plans after graduation. Answer confidently and truthfully.",
+          "actions": [
+            "Arrive at the consulate location at the time specified",
+            "Bring all assembled documents in an organized manner",
+            "Do not bring prohibited items (check the consulate's prohibited items list)",
+            "Answer the consular officer's questions about your study plans, school, funding, and ties to Pakistan honestly and clearly",
+            "If approved: note whether the passport will be returned by mail/courier or for in-person pickup",
+            "If placed in administrative processing (221(g)): follow the instructions and provide any additional requested documents promptly"
+          ],
+          "output": "Visa interview completed; outcome noted (approved / pending / additional processing)"
+        },
+        {
+          "id": "III-05",
+          "name": "Receive Visa-Stamped Passport",
+          "description": "If approved, the consulate affixes the F-1 visa stamp to your passport. In Pakistan, approved passports are returned by courier/mail or designated pickup. Follow the specific instructions given at interview.",
+          "actions": [
+            "Track your passport return through the tracking system",
+            "Upon receipt, verify the visa stamp: name, date of birth, visa type (F-1), number of entries, and visa expiration date",
+            "Confirm the visa start date \u2014 you may NOT enter the U.S. more than 30 days before your I-20 program start date on an F-1 visa",
+            "Report any errors on the visa to the consulate immediately",
+            "Store your passport and I-20 together safely for travel"
+          ],
+          "output": "F-1 visa stamp received and verified in passport"
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "name": "Stage IV: Pre-Departure",
+      "icon": "IdCard",
+      "color": "bg-amber-50 text-amber-600",
+      "time": "Variable",
+      "sources": [
+        {
+          "label": "Study in the States – Before You Arrive",
+          "url": "https://studyinthestates.dhs.gov/students/before-you-arrive"
+        },
+        {
+          "label": "CBP Traveler Entry",
+          "url": "https://www.cbp.gov/travel/international-visitors"
+        }
+      ],
+      "steps": [
+        {
+          "id": "IV-01",
+          "name": "Confirm I-20 Program Start Date & Entry Window",
+          "description": "F-1 students may enter the United States no more than 30 days before the program start date listed on their I-20. Entering earlier than this window is not permitted on an F-1 visa.",
+          "warn": "Do not book travel to arrive more than 30 days before your I-20 program start date. This is a legal requirement under F-1 rules.",
+          "actions": [
+            "Confirm the program start date on your I-20",
+            "Calculate the earliest permitted U.S. arrival date (30 days before the I-20 start date)",
+            "Book travel to arrive within the permitted 30-day window",
+            "Contact your DSO if you have any questions about your entry window or if you need a deferred start date"
+          ],
+          "output": "Entry window confirmed; travel booked within the permitted 30-day window"
+        },
+        {
+          "id": "IV-02",
+          "name": "Book Travel and Accommodations",
+          "description": "Book your flight to the U.S. and confirm housing arrangements. Notify your school's International Student Office of your expected arrival date.",
+          "actions": [
+            "Book an international flight arriving within your permitted F-1 entry window",
+            "Confirm housing: on-campus dormitory or off-campus arrangement",
+            "Notify the International Student Office / DSO of your expected arrival date",
+            "Research orientation program dates",
+            "Ensure your carry-on luggage will include all essential travel and immigration documents"
+          ],
+          "output": "Flight booked; housing confirmed; DSO notified of arrival date"
+        },
+        {
+          "id": "IV-03",
+          "name": "Organize Travel Documents",
+          "description": "Carry all required immigration documents in your carry-on baggage. These documents are essential for CBP inspection upon arrival in the United States.",
+          "actions": [
+            "Valid Pakistani passport with F-1 visa stamp",
+            "Original Form I-20 (signed by DSO) \u2014 carry in carry-on",
+            "SEVIS I-901 fee payment receipt",
+            "School acceptance letter",
+            "Financial documentation",
+            "DS-160 confirmation page (optional but recommended)",
+            "Contact information for your school's DSO and U.S. address",
+            "Keep all documents together in an organized folder in your carry-on"
+          ],
+          "output": "All required travel documents organized in carry-on baggage"
+        },
+        {
+          "id": "IV-04",
+          "name": "Attend Pre-Departure Orientation (if available)",
+          "description": "Many Pakistani universities and organizations (e.g., U.S. Embassy Pakistan, Fulbright program, EducationUSA) offer pre-departure orientations for students traveling to the U.S.",
+          "actions": [
+            "Check if your school or the U.S. Embassy Pakistan offers a pre-departure orientation",
+            "Check EducationUSA Pakistan at educationusa.state.gov for orientation resources",
+            "Review Study in the States pre-departure guidance",
+            "Research the city and state where your school is located"
+          ],
+          "output": "Pre-departure orientation attended or study materials reviewed"
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "name": "Stage V: U.S. Entry (CBP)",
+      "icon": "Plane",
+      "color": "bg-rose-50 text-rose-600",
+      "time": "Day of Travel",
+      "sources": [
+        {
+          "label": "CBP – Entering the U.S.",
+          "url": "https://www.cbp.gov/travel/international-visitors"
+        },
+        {
+          "label": "I-94 Arrival/Departure Record",
+          "url": "https://i94.cbp.dhs.gov"
+        },
+        {
+          "label": "Study in the States – After Arrival",
+          "url": "https://studyinthestates.dhs.gov/students/complete-your-arrival-steps"
+        }
+      ],
+      "steps": [
+        {
+          "id": "V-01",
+          "name": "Clear U.S. Customs and Border Protection",
+          "description": "Upon arriving at a U.S. port of entry, you will go through CBP inspection. Present your documents to the CBP officer.",
+          "info": "CBP officers may ask about your plans, school, and length of stay. Answer honestly and consistently. Keep your I-20 and passport accessible.",
+          "actions": [
+            "Present your valid passport with F-1 visa stamp to the CBP officer",
+            "Present your original Form I-20",
+            "Complete any required CBP arrival forms",
+            "Answer the CBP officer's questions about your program, school, and stay honestly",
+            "CBP will stamp your passport and note your admission as \"F-1 D/S\" (Duration of Status)",
+            "Confirm your admission stamp shows \"F-1\" and \"D/S\""
+          ],
+          "output": "Admitted to the U.S. as F-1 student; passport stamped with F-1 D/S"
+        },
+        {
+          "id": "V-02",
+          "name": "Retrieve Your I-94 Arrival Record",
+          "description": "CBP automatically creates an electronic I-94 arrival/departure record for most air and sea arrivals.",
+          "actions": [
+            "Visit i94.cbp.dhs.gov within a few days of arrival to retrieve your electronic I-94",
+            "Verify the I-94 shows: your full name, date of birth, class of admission \"F-1\", and admit-until date \"D/S\"",
+            "Save and print a copy of your I-94 for your records",
+            "If there is any error on the I-94, contact CBP promptly to correct it"
+          ],
+          "output": "I-94 retrieved; confirms F-1 admission and D/S",
+          "documents": [
+            "electronic I-94 Form"
+          ]
+        },
+        {
+          "id": "V-03",
+          "name": "Report to Your School & Check In with DSO",
+          "description": "F-1 regulations require you to report to your school by the report date on your I-20. Your DSO must update your SEVIS record to show you have arrived and are enrolled.",
+          "warn": "Failure to report to your school and have your DSO update SEVIS can cause your SEVIS record to be terminated.",
+          "actions": [
+            "Arrive at your school campus by or before the I-20 report date",
+            "Check in with the International Student Office and present your passport, visa, I-20, and I-94",
+            "Your DSO will update your SEVIS record to confirm your arrival and enrollment",
+            "Confirm your class registration and review any enrollment requirements",
+            "Attend any mandatory orientation sessions"
+          ],
+          "output": "Reported to school; DSO has updated SEVIS record; enrollment confirmed"
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "name": "Stage VI: Maintaining F-1 Status",
+      "icon": "Save",
+      "color": "bg-indigo-50 text-indigo-600",
+      "time": "Throughout Program",
+      "sources": [
+        {
+          "label": "Study in the States – Maintaining Status",
+          "url": "https://studyinthestates.dhs.gov/students/maintaining-your-status"
+        },
+        {
+          "label": "USCIS – OPT Overview",
+          "url": "https://www.uscis.gov/working-in-the-united-states/students-and-exchange-visitors/optional-practical-training-opt-for-f-1-students"
+        },
+        {
+          "label": "USCIS – CPT Overview",
+          "url": "https://www.uscis.gov/working-in-the-united-states/students-and-exchange-visitors/curricular-practical-training-cpt"
+        }
+      ],
+      "steps": [
+        {
+          "id": "VI-01",
+          "name": "Understand Full-Time Enrollment Requirements",
+          "description": "F-1 students must maintain a full course load each semester. Dropping below full-time without prior DSO authorization can jeopardize your F-1 status.",
+          "actions": [
+            "Confirm your school's definition of full-time enrollment for F-1 purposes",
+            "Review Study in the States guidance on enrollment requirements",
+            "If you need to drop below full-time for medical or academic reasons: consult your DSO before making changes",
+            "Do not withdraw from courses without first consulting your DSO",
+            "Register for each semester on time to maintain continuous enrollment"
+          ],
+          "output": "Full-time enrollment maintained; any reduced course load properly authorized by DSO"
+        },
+        {
+          "id": "VI-02",
+          "name": "Keep Your I-20 and Documents Current",
+          "description": "Your I-20 must accurately reflect your current program, school, and expected graduation date. Any changes require a new or updated I-20 from your DSO.",
+          "actions": [
+            "Review your I-20 program end date regularly",
+            "If you transfer to a new school: follow the official SEVIS transfer process through your DSO",
+            "If you change your major or level of study: obtain an updated I-20 from your DSO",
+            "Ensure your U.S. residential address is always current with your DSO",
+            "Your passport must remain valid \u2014 renew it at the Pakistani Embassy/Consulate in the U.S. well before it expires"
+          ],
+          "output": "I-20 current and accurate; address updated with DSO; passport valid"
+        },
+        {
+          "id": "VI-03",
+          "name": "Understand On-Campus and Off-Campus Employment Rules",
+          "description": "F-1 students have limited employment authorization. On-campus employment of up to 20 hours per week during school sessions is generally permitted without additional authorization.",
+          "warn": "Working without authorization is a serious F-1 violation that can result in status termination. Always consult your DSO before accepting any employment.",
+          "actions": [
+            "Review the on-campus employment rules with your DSO",
+            "Do not engage in any off-campus employment without prior DSO authorization and, where required, USCIS approval",
+            "If you need work authorization: ask your DSO about Curricular Practical Training (CPT) or Optional Practical Training (OPT)",
+            "Review USCIS CPT guidance and OPT guidance",
+            "Keep copies of any employment authorization documents"
+          ],
+          "output": "Employment rules understood; any employment is properly authorized"
+        },
+        {
+          "id": "VI-04",
+          "name": "Travel Outside the U.S. (Re-entry Preparation)",
+          "description": "F-1 students may travel outside the U.S. and return, provided their visa is still valid, their I-20 is current, and they have a valid DSO travel signature on their I-20.",
+          "actions": [
+            "Ensure your F-1 visa stamp is still valid for re-entry before traveling",
+            "Obtain a travel signature from your DSO on your I-20 before departure",
+            "Carry your valid passport, valid I-20 with travel signature, and any OPT EAD card when re-entering",
+            "If your visa has expired while in the U.S. and you travel outside: you must apply for a new F-1 visa at a U.S. consulate before returning",
+            "Review Study in the States guidance on travel"
+          ],
+          "output": "Travel signature obtained from DSO; valid visa confirmed; re-entry prepared"
+        },
+        {
+          "id": "VI-05",
+          "name": "Explore OPT (Optional Practical Training)",
+          "description": "F-1 students may apply for OPT \u2014 temporary employment authorization directly related to their major area of study.",
+          "info": "OPT applications are filed with USCIS and must be submitted through your DSO. Apply well in advance \u2014 USCIS processing can take several months.",
+          "actions": [
+            "Consult your DSO about OPT eligibility and timing",
+            "Determine if you want pre-completion or post-completion OPT",
+            "Request an OPT I-20 recommendation from your DSO",
+            "File Form I-765 (Application for Employment Authorization) with USCIS",
+            "Verify the current USCIS filing fee for Form I-765",
+            "Do not begin OPT employment until you have received your Employment Authorization Document (EAD)",
+            "If you have a qualifying STEM degree: ask your DSO about the STEM OPT extension"
+          ],
+          "output": "OPT application strategy understood; application filed or deferred based on timeline"
+        },
+        {
+          "id": "VI-06",
+          "name": "Program Completion and Grace Period",
+          "description": "After completing your F-1 program (or OPT), you have a 60-day grace period during which you may prepare to depart, change visa status, or transfer to another school. You may not work during this grace period unless otherwise authorized.",
+          "actions": [
+            "Confirm your program completion date (listed on I-20)",
+            "After program completion: you have a 60-day grace period \u2014 use it to prepare for departure, apply for a change of status, or transfer to another school program",
+            "During the 60-day grace period you may not work",
+            "If you intend to remain in the U.S. after the grace period: consult an immigration attorney or your DSO about a change of status",
+            "If departing the U.S.: ensure you depart within the 60-day grace period",
+            "Review Study in the States guidance for current program completion rules"
+          ],
+          "output": "Program completion timeline known; post-completion plans confirmed"
+        }
+      ]
+    }
+  ],
+  "documents": [
+    "Form I-20 (Signed by DSO and Student)",
+    "University Admission Letter",
+    "Valid Passport",
+    "SEVIS I-901 Fee Receipt",
+    "DS-160 Confirmation Page",
+    "Visa Interview Appointment Confirmation",
+    "Bank Statements (Proof of Funds)",
+    "Financial Sponsor Letter (if applicable)",
+    "Academic Transcripts & Degree Certificates",
+    "Standardized Test Scores (SAT/GRE/GMAT)",
+    "English Proficiency Results (IELTS/TOEFL)",
+    "Biometric Passport Photos",
+    "Scholarship Award Letter (if applicable)"
+  ]
+}

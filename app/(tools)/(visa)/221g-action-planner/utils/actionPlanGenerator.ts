@@ -23,19 +23,22 @@ export function generateActionPlan(classification: ClassificationResult, selecte
 
   const hasCivilDocs = selected221gItems.some(
     (item) =>
-      item.includes("CIVIL_DOCUMENTS") ||
-      item.includes("BIRTH_CERT") ||
-      item.includes("MARRIAGE_CERT") ||
-      item.includes("NIKAH_NAMA") ||
-      item.includes("POLICE_CERTIFICATE") ||
-      item.includes("NADRA"),
+      item === "nadra_birth_cert" ||
+      item === "nadra_birth_cert_petitioner" ||
+      item === "nadra_birth_cert_beneficiary" ||
+      item === "nadra_marriage_cert" ||
+      item === "nikah_nama"
   )
 
   const hasLegalDocs = selected221gItems.some(
-    (item) => item.includes("LEGAL_DOCUMENTS") || item.includes("DIVORCE_CERT") || item.includes("DEATH_CERTIFICATE"),
+    (item) => 
+      item === "nadra_divorce_cert" || 
+      item === "us_divorce_decree" || 
+      item === "death_certificate" || 
+      item === "police_certificate"
   )
 
-  const hasTranslation = selected221gItems.includes("TRANSLATION_REQUIREMENTS")
+  const hasTranslation = selected221gItems.includes("english_translation")
 
   switch (scenario) {
     case "221G_DOCS_REQUESTED_FINANCIAL":
@@ -130,16 +133,14 @@ export function generateActionPlan(classification: ClassificationResult, selecte
               "Start the process for any documents that take longer to obtain (police certificates, etc.)",
             ],
             tips: [
-              "Police certificates typically take 3-7 days to process in Pakistan",
               "Birth certificates from NADRA can be obtained online or in person",
-              "Marriage certificates may require translation if in Urdu",
+              "If submitting a Nikah Nama, a NADRA Marriage Registration Certificate (MRC) and the bride's CNIC showing her husband's name are ALSO required.",
+              "Manual or 'Rupee Paper' records are generally NOT acceptable for US visas.",
             ],
             documents: [
-              hasCivilDocs ? "Birth Certificate (NADRA)" : "",
-              hasCivilDocs ? "Marriage Certificate (Nikah Nama)" : "",
-              hasCivilDocs ? "Police Certificate" : "",
-              hasLegalDocs ? "Divorce Decree (if applicable)" : "",
-              hasLegalDocs ? "Death Certificate (if applicable)" : "",
+              hasCivilDocs ? "Birth Certificate (NADRA) if requested" : "",
+              hasCivilDocs ? "Marriage Certificate (MRC) + Nikah Nama" : "",
+              hasCivilDocs ? "CNIC of bride showing husband's name" : "",
             ].filter(Boolean),
           },
           {
@@ -157,8 +158,8 @@ export function generateActionPlan(classification: ClassificationResult, selecte
             ],
             documents: [
               hasCivilDocs ? "Certified Birth Certificate" : "",
-              hasCivilDocs ? "Certified Marriage Certificate" : "",
-              hasCivilDocs ? "Police Certificate" : "",
+              hasCivilDocs ? "Computerized Marriage Registration Certificate (MRC)" : "",
+              hasCivilDocs ? "Original Nikah Nama (with translation if required)" : "",
               hasTranslation ? "Certified Translations" : "",
               "Official Seals and Signatures",
             ].filter(Boolean),
@@ -237,9 +238,189 @@ export function generateActionPlan(classification: ClassificationResult, selecte
               "Verify that your case is still actively being processed",
             ],
             tips: [
+              "Wait at least 180 days from your interview date before contacting the consulate (per USTravelDocs official guidance).",
               "Congressional inquiries can sometimes help with transparency",
               "An attorney can provide guidance on your options",
-              "Keep detailed records of all communications",
+            ],
+          },
+        ],
+      }
+
+    case "221G_DOCS_REQUESTED_LEGAL":
+      return {
+        title: "Legal & Court Records Required - Action Plan",
+        description:
+          "Your case requires additional legal documentation, such as court records or police certificates. Follow this plan to obtain and submit the required authoritative records.",
+        selected221gItems,
+        stages: [
+          {
+            title: "Immediate Actions: Review Requirements",
+            timeframe: "Today",
+            actions: [
+              "Carefully review the precise legal or court documents checked on your 221(g) form.",
+              "Identify the correct issuing authority (e.g., local police, specific court, national government agency).",
+              "Note that you must provide police and court records for any arrest or conviction, even if the charges were dropped or you were pardoned.",
+            ],
+            tips: [
+              "Only certified copies from the original issuing authority are accepted.",
+              "Consult the U.S. Department of State's Reciprocity Schedule for your country to verify the necessary format and issuing authority for the document.",
+            ],
+          },
+          {
+            title: "Document Request & Translation",
+            timeframe: "Within 3-10 Days",
+            actions: [
+              "Submit requests for the official records from the relevant authorities.",
+              "If the obtained documents are not in English or the official language of the country where your interview took place, have them translated.",
+            ],
+            tips: [
+              "Legal and court records often take significant time to process; apply for them immediately.",
+              "Any translations must include a signed certification statement from the translator detailing their competence.",
+            ],
+          },
+          {
+            title: "Submission to Embassy",
+            timeframe: "Within 30 Days",
+            actions: [
+              "Submit the complete package of records and translations as instructed (via CEAC upload, courier, or drop-box).",
+              "Maintain complete copies of all submitted documents for your personal files.",
+            ],
+            tips: [
+              "Do not submit any original documents unless explicitly requested by the consular officer.",
+            ],
+          },
+        ],
+      }
+
+    case "221G_DOCS_REQUESTED_MEDICAL":
+      return {
+        title: "Medical Examination or Additional Tests - Action Plan",
+        description:
+          "A medical examination, re-examination, or further specialized testing is required. This often happens if the original medical expired or specific health issues need clarification.",
+        selected221gItems,
+        stages: [
+          {
+            title: "Schedule Appointment",
+            timeframe: "Today",
+            actions: [
+              "Locate the U.S. Embassy-approved Panel Physician.",
+              "Contact the Panel Physician immediately to schedule a new appointment or follow-up tests (e.g., Sputum tests for TB).",
+            ],
+            tips: [
+              "You cannot use your personal doctor; it MUST be a designated Panel Physician.",
+              "Mention to the clinic that you received a 221(g) and bring the letter to your appointment.",
+            ],
+          },
+          {
+            title: "Complete the Examination",
+            timeframe: "Within 1-2 Weeks",
+            actions: [
+              "Attend your medical exam with your passport, 221(g) letter, and past medical records.",
+              "If specialized TB testing is required, understand that results can take approximately 8 weeks.",
+            ],
+            tips: [
+              "Medical holds can severely delay a visa. Start the process without delay.",
+            ],
+          },
+          {
+            title: "Submitting the Results",
+            timeframe: "Upon Completion",
+            actions: [
+              "In many cases, the clinic sends the results directly to the Embassy via the eMedical system.",
+              "If you are handed a sealed medical envelope, submit it to the Embassy using the approved courier.",
+            ],
+            tips: [
+              "NEVER open a sealed medical envelope. An open envelope will invalidate the exam.",
+            ],
+          },
+        ],
+      }
+
+    case "221G_DOCS_REQUESTED_TRANSLATION":
+      return {
+        title: "Certified Translations Required - Action Plan",
+        description:
+          "The consular officer requested certified English translations for documents previously submitted in a foreign language.",
+        selected221gItems,
+        stages: [
+          {
+            title: "Identify Documents & Find Translator",
+            timeframe: "1-3 Days",
+            actions: [
+              "Gather all foreign-language documents that lack an English translation.",
+              "Locate a competent translation service or individual translator.",
+            ],
+            tips: [
+              "You cannot translate your own documents, nor can members of your family.",
+              "A notary is not required unless specified, but the translator must provide a certification statement.",
+            ],
+          },
+          {
+            title: "Obtaining Translation",
+            timeframe: "3-7 Days",
+            actions: [
+              "Provide clear copies of your documents to the translator.",
+              "Ensure the translated document includes a certification stating: 'I certify that I am competent to translate from [Language] to English and that the above is a correct and true translation to the best of my knowledge', followed by the translator's signature, printed name, and date.",
+            ],
+            tips: [
+              "Double-check that all names, dates, and places match the original document exactly.",
+            ],
+          },
+          {
+            title: "Submission",
+            timeframe: "Within 14 Days",
+            actions: [
+              "Submit the translation along with a copy of the original document.",
+              "Follow the embassy's submission instructions (upload to CEAC or courier service).",
+            ],
+            tips: [
+              "If uploading to CEAC, include the translation in the same document category as the original file.",
+            ],
+          },
+        ],
+      }
+
+
+    case "221G_DOCS_REQUESTED_OTHER":
+      return {
+        title: "Other / Additional Documents Required",
+        description:
+          "Your application requires specific documents not categorized under standard financial or civil lists, such as passports, DNA testing, or specific petitioner evidence.",
+        selected221gItems,
+        stages: [
+          {
+            title: "Identify Requirements",
+            timeframe: "Immediate Actions",
+            actions: [
+              "Carefully review the 'Other' remarks or checked boxes on your 221(g) refusal letter.",
+              "If DNA testing was suggested, refer back to the embassy website for an approved AABB-accredited laboratory procedure.",
+              "If your passport was requested, this generally means your visa is ready for issuance.",
+            ],
+            tips: [
+              "The 221(g) letter is the ultimate authority for what you need. Adhere to it strictly.",
+              "For DNA tests, NEVER self-administer a test; the embassy must schedule the collection.",
+            ],
+          },
+          {
+            title: "Preparation",
+            timeframe: "As soon as possible",
+            actions: [
+              "Gather the specifically requested items.",
+              "If submitting foreign documents, obtain certified English translations.",
+            ],
+            tips: [
+              "Under Section 221(g), you generally have one year from the date of refusal to provide the requested information without paying a new fee.",
+            ],
+          },
+          {
+            title: "Submission",
+            timeframe: "Once gathered",
+            actions: [
+              "Submit the documents via the specified method (courier drop-off or CEAC upload).",
+              "Retain a personal copy of every document submitted.",
+            ],
+            tips: [
+              "If returning your passport, use the embassy-approved designated courier service.",
             ],
           },
         ],
@@ -289,6 +470,7 @@ export function generateActionPlan(classification: ClassificationResult, selecte
               "Verify that your case is still actively being processed",
             ],
             tips: [
+              "Wait at least 180 days from your interview date before contacting the consulate (per USTravelDocs official guidance).",
               "Congressional inquiries can sometimes help with transparency",
               "An attorney can provide guidance on your options",
               "Keep detailed records of all communications",
@@ -332,15 +514,15 @@ export function generateActionPlan(classification: ClassificationResult, selecte
             ],
           },
           {
-            title: "If No Update After 4-6 Weeks",
+            title: "If Processing Is Unusually Delayed",
             timeframe: "Follow-up Actions",
             actions: [
-              "Send a polite inquiry to the embassy",
+              "Send a polite inquiry to the embassy only after a significant timeframe",
               "Consider reaching out to your Congressman if appropriate",
               "Consult with an immigration attorney if needed",
             ],
             tips: [
-              "A status update after document submission is expected within 4-6 weeks",
+              "There is no official, guaranteed timeline for document review",
               "Inquiries should be polite and include your case details",
               "Keep all correspondence organized",
             ],

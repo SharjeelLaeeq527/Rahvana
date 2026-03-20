@@ -5,6 +5,16 @@
       "title": "Basic Personal & Relationship Information",
       "questions": [
         {
+          "id": "sponsor_full_name",
+          "label": "Sponsor full name",
+          "type": "text"
+        },
+        {
+          "id": "beneficiary_full_name",
+          "label": "Beneficiary full name",
+          "type": "text"
+        },
+        {
           "id": "sponsor_dob",
           "label": "Sponsor date of birth",
           "type": "date"
@@ -25,6 +35,11 @@
           "type": "date"
         },
         {
+          "id": "relationship_start_date",
+          "label": "When did your relationship begin?",
+          "type": "date"
+        },
+        {
           "id": "spousal_relationship_type",
           "label": "What is your relationship to your spouse?",
           "type": "select",
@@ -38,8 +53,26 @@
           "id": "intended_us_state_of_residence",
           "label": "Which U.S. state do you intend to live in after immigration?",
           "type": "select",
-          "options": "US_STATES_LIST",
+          "options": [
+            "Alabama", "Alaska", "Arizona", "Arkansas", "California", "Colorado", "Connecticut", "Delaware", "Florida", "Georgia", 
+            "Hawaii", "Idaho", "Illinois", "Indiana", "Iowa", "Kansas", "Kentucky", "Louisiana", "Maine", "Maryland", 
+            "Massachusetts", "Michigan", "Minnesota", "Mississippi", "Missouri", "Montana", "Nebraska", "Nevada", "New Hampshire", "New Jersey", 
+            "New Mexico", "New York", "North Carolina", "North Dakota", "Ohio", "Oklahoma", "Oregon", "Pennsylvania", "Rhode Island", "South Carolina", 
+            "South Dakota", "Tennessee", "Texas", "Utah", "Vermont", "Virginia", "Washington", "West Virginia", "Wisconsin", "Wyoming"
+          ],
           "risk_tag": "MARRIAGE_INVALID_IN_INTENDED_STATE"
+        },
+        {
+          "id": "i130_status",
+          "label": "Current status of Form I-130 Petition",
+          "type": "select",
+          "options": [
+            "Not filed yet",
+            "Filed but pending",
+            "Approved",
+            "At NVC / NVC Processing"
+          ],
+          "risk_tag": "I130_PROCESS_NOT_STARTED"
         }
       ]
     },
@@ -86,8 +119,10 @@
             "Aerospace",
             "Chemical/Pharmaceutical",
             "Biotechnology/Microbiology",
-            "Energy/Nuclear"
-          ]
+            "Energy/Nuclear",
+            "Unemployed/Student"
+          ],
+          "risk_tag": "PUBLIC_CHARGE_RISK"
         },
         {
           "id": "prior_military_service",
@@ -171,6 +206,11 @@
           "id": "driving_license_copy_available",
           "label": "Do you have copies of either spouse’s driving license?",
           "type": "boolean"
+        },
+        {
+          "id": "children_together",
+          "label": "Do you have children together (biological or adopted)?",
+          "type": "boolean"
         }
       ]
     },
@@ -201,6 +241,11 @@
           "label": "Do you have any criminal record?",
           "type": "boolean",
           "risk_tag": "CRIMINAL_HISTORY_PRESENT"
+        },
+        {
+          "id": "prior_marriages_exist",
+          "label": "Have either you or your spouse been married before?",
+          "type": "boolean"
         }
       ]
     },
@@ -269,10 +314,10 @@
           "risk_tag": "NO_MARRIAGE_TRANSLATION"
         },
         {
-          "id": "union_council_certificate",
-          "label": "Do you have the Union Council marriage certificate?",
+          "id": "nadra_marriage_registration_cert",
+          "label": "Do you have the NADRA computerized marriage certificate?",
           "type": "boolean",
-          "risk_tag": "NO_UNION_COUNCIL_CERTIFICATE"
+          "risk_tag": "NO_NADRA_MARRIAGE_CERT"
         },
         {
           "id": "family_registration_certificate",
@@ -285,6 +330,12 @@
           "label": "Do both spouses have valid birth certificates?",
           "type": "boolean",
           "risk_tag": "NO_BIRTH_CERTIFICATES"
+        },
+        {
+          "id": "prior_marriage_termination_docs",
+          "label": "Do you have proof of termination for all prior marriages (divorce/death certificates)?",
+          "type": "boolean",
+          "risk_tag": "MISSING_PRIOR_MARRIAGE_DOCS"
         }
       ]
     },
@@ -348,12 +399,7 @@
           "type": "boolean",
           "risk_tag": "NO_POLIO_VACCINATION_PROOF"
         },
-        {
-          "id": "covid_vaccination_certificate",
-          "label": "Do you have proof of COVID-19 vaccination?",
-          "type": "boolean",
-          "risk_tag": "NO_COVID_VACCINATION_PROOF"
-        },
+
         {
           "id": "passport_photos_2x2",
           "label": "Do you have two U.S. size passport photographs (2×2 inches)?",

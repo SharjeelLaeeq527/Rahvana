@@ -1,6 +1,7 @@
 // API Route: Upload Document
 // POST /api/documents/upload
 // Uses Supabase Storage (works on BOTH local AND Vercel)
+// Files are encrypted with AES-256-GCM BEFORE upload — owner cannot read stored files
 
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
@@ -19,6 +20,7 @@ import { calculateExpirationDate } from '@/lib/document-vault/expiration-tracker
 import { ALL_DOCUMENTS } from '@/lib/document-vault/document-definitions';
 import { UploadedDocument, DocumentRole } from '@/lib/document-vault/types';
 import { createClient as createClientJs } from '@supabase/supabase-js';
+import { encryptFile } from '@/lib/document-vault/file-encryption';
 
 // NVC/USCIS file size limit (4MB)
 const NVC_FILE_SIZE_LIMIT = 4 * 1024 * 1024;
@@ -181,22 +183,30 @@ export async function POST(request: NextRequest) {
 
     // Generate document ID
     const documentId = generateDocumentId();
-    const buffer = Buffer.from(await file.arrayBuffer());
+    const rawBuffer = Buffer.from(await file.arrayBuffer());
+
+    // ─── ENCRYPT FILE BEFORE UPLOAD ───────────────────────────────────────────
+    // File is encrypted with AES-256-GCM using a per-user key derived from
+    // PORTAL_WALLET_SECRET + userId. Owner (or anyone accessing Supabase
+    // Storage directly) will only see an unreadable encrypted blob.
+    const buffer = encryptFile(rawBuffer, user.id);
+    // ──────────────────────────────────────────────────────────────────────────
 
     // Check if file needs compression
+    // NOTE: We use rawBuffer size for NVC limit check (real file size)
     const isPdf = file.type === 'application/pdf';
-    const needsCompression = file.size > NVC_FILE_SIZE_LIMIT && isPdf;
+    const needsCompression = rawBuffer.length > NVC_FILE_SIZE_LIMIT && isPdf;
 
     // Determine filename for original file
     const originalFilename = needsCompression
       ? standardizedFilename.replace(/\.pdf$/i, '_master.pdf')
       : standardizedFilename;
 
-    // Upload to Supabase Storage (works on both local AND Vercel!)
+    // Upload encrypted buffer to Supabase Storage
     const uploadResult = await uploadToStorage(
-      buffer,
+      buffer,           // <-- encrypted bytes go to storage
       originalFilename,
-      file.type,
+      'application/octet-stream', // always store as binary blob
       user.id,
       documentId
     );
@@ -209,37 +219,41 @@ export async function POST(request: NextRequest) {
     }
 
     // Auto-compress PDF files larger than 4MB (NVC/USCIS requirement)
+    // Compress FIRST on raw bytes, then encrypt the compressed version
     let hasCompressedVersion = false;
     let compressedFilename: string | undefined;
     let compressedFileSize: number | undefined;
     let compressedStoragePath: string | undefined;
 
     if (needsCompression) {
-      console.log(`File ${file.name} is ${(file.size / 1024 / 1024).toFixed(2)}MB - auto-compressing...`);
+      console.log(`File ${file.name} is ${(rawBuffer.length / 1024 / 1024).toFixed(2)}MB - auto-compressing...`);
 
-      const compressionResult = await compressPdf(buffer, file.name);
+      const compressionResult = await compressPdf(rawBuffer, file.name);
 
       if (compressionResult.success && compressionResult.buffer) {
-        const compressedSize = compressionResult.buffer.length;
+        const rawCompressedSize = compressionResult.buffer.length;
 
-        if (compressedSize < file.size) {
+        if (rawCompressedSize < rawBuffer.length) {
           compressedFilename = standardizedFilename;
 
-          // Upload compressed file to Supabase Storage
+          // Encrypt the compressed buffer before uploading
+          const encryptedCompressedBuffer = encryptFile(compressionResult.buffer, user.id);
+
+          // Upload encrypted-compressed file to Supabase Storage
           const compressedUploadResult = await uploadToStorage(
-            compressionResult.buffer,
+            encryptedCompressedBuffer,
             compressedFilename,
-            file.type,
+            'application/octet-stream', // store as binary blob
             user.id,
             documentId
           );
 
           if (compressedUploadResult.success) {
             hasCompressedVersion = true;
-            compressedFileSize = compressedSize;
+            compressedFileSize = rawCompressedSize; // store real size for UI display
             compressedStoragePath = compressedUploadResult.storagePath;
 
-            console.log(`Compression successful: ${(file.size / 1024 / 1024).toFixed(2)}MB -> ${(compressedSize / 1024 / 1024).toFixed(2)}MB`);
+            console.log(`Compression + Encryption successful: ${(rawBuffer.length / 1024 / 1024).toFixed(2)}MB -> ${(rawCompressedSize / 1024 / 1024).toFixed(2)}MB (then encrypted)`);
           }
         }
       }
@@ -252,18 +266,20 @@ export async function POST(request: NextRequest) {
       : calculateExpirationDate(documentDef, uploadDate);
 
     // Create document metadata
+    // NOTE: fileSize stores the ORIGINAL (pre-encryption) file size for UI display
+    // The actual stored file is larger due to encryption overhead (~37 bytes)
     const uploadedDocument: UploadedDocument = {
       id: documentId,
       userId: user.id,
       documentDefId,
       originalFilename: file.name,
       standardizedFilename: originalFilename,
-      fileSize: file.size,
-      mimeType: file.type,
+      fileSize: file.size,           // real size shown to user
+      mimeType: file.type,           // original MIME type preserved
       storagePath: uploadResult.storagePath!,
       hasCompressedVersion,
       compressedFilename,
-      compressedFileSize,
+      compressedFileSize,            // real compressed size shown to user
       compressedStoragePath,
       uploadedAt: uploadDate,
       uploadedBy: role,

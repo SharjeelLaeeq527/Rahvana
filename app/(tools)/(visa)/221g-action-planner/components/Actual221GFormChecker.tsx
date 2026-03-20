@@ -329,15 +329,22 @@ export default function Actual221GFormChecker({
                 }
                 className="mt-1"
               />
-              <Label
-                htmlFor="nikah_nama"
-                className="text-sm font-normal cursor-pointer"
-              >
-                Original <span className="font-semibold">Nikah Nama</span>{" "}
-                <span className="italic text-muted-foreground">
-                  (submit via courier)
-                </span>
-              </Label>
+              <div className="flex-1">
+                <Label
+                  htmlFor="nikah_nama"
+                  className="text-sm font-normal cursor-pointer"
+                >
+                  Original <span className="font-semibold">Nikah Nama</span>{" "}
+                  <span className="italic text-muted-foreground">
+                    (submit via courier)
+                  </span>
+                </Label>
+                {!!selectedItems.nikah_nama && (
+                  <div className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-md p-2 mt-2 font-medium">
+                    ⚠️ Note: You must also submit a Computerized Marriage Registration Certificate (MRC) and the beneficiary&apos;s CNIC showing husband&apos;s name.
+                  </div>
+                )}
+              </div>
             </div>
 
             {/* Original NADRA Divorce Cert. */}
@@ -1045,6 +1052,7 @@ export default function Actual221GFormChecker({
                 </Label>
               </div>
             </div>
+
 
             {/* Other */}
             <div className="flex items-start space-x-2 mb-3">

@@ -3,10 +3,10 @@ import { VisaCheckerSupabaseService } from "@/lib/visa-checker/supabase";
 
 export async function DELETE(
   request: NextRequest,
-  context: { params: Promise<{ id: string }> }
+  { params }: { params: { id: string } }
 ) {
   try {
-    const { id: sessionId } = await context.params;
+    const sessionId = params.id;
 
     const response =
       await VisaCheckerSupabaseService.deleteSession(sessionId);

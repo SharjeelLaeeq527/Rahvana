@@ -11,7 +11,10 @@ import {
   SaveIcon,
   CheckCircle2
 } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
 import { FormData, FormSelections } from "../types/221g";
+import { classifySituation } from "../utils/classifier";
+import { generateActionPlan as generateDynamicActionPlan } from "../utils/actionPlanGenerator";
 
 interface ActionPlanResultsProps {
   formData: FormData | null;
@@ -93,38 +96,66 @@ export default function ActionPlanResults({
   // GENERATORS (Matching reference logic)
   // ──────────────────────────────────────────────
 
-  const generateActionPlan = () => {
+  const generateActionPlanText = () => {
     const cb = formData;
     const cl = selectedItems;
     const today = new Date().toLocaleDateString();
+
+    const parsedItems = Object.keys(cl).filter(key => cl[key as keyof FormSelections] === true);
+    const classifications = classifySituation(cb, parsedItems);
     
-    let plan = `# 221(g) ACTION PLAN\n\n`;
+    // Generate an action plan for every classification identified
+    const dynamicPlans = classifications.map(classification => 
+      generateDynamicActionPlan(classification, parsedItems)
+    );
+    
+    // Create a unified title
+    const unifiedTitle = dynamicPlans.map(plan => plan.title).join(" AND ");
+    
+    let plan = `# 221(g) ACTION PLAN: ${unifiedTitle}\n\n`;
     plan += `Generated: ${today}\n`;
     plan += `For: ${cb.beneficiaryName || 'Beneficiary'}\n`;
     plan += `Case: ${cb.caseNumber || 'Not provided'}\n\n`;
     
     plan += `## IMPORTANT DISCLAIMER\n\n`;
-    plan += `This action plan is based on the information you provided and is for general guidance only. It is NOT legal advice. Always follow your embassy's 221(g) letter instructions if anything differs from this plan.\n\n`;
+    plan += `This action plan is based on the information you provided and is for general guidance only. It is NOT legal advice. Always follow your embassy's 221(g) letter instructions if anything differs from this plan. Documents must be submitted via an approved Collection Center within one year of refusal, not mailed directly to the embassy unless specifically requested.\n\n`;
     
     plan += `## SUMMARY\n\n`;
-    plan += `Your visa interview on ${formatDate(cb.interviewDate)} at ${cb.consularPost} resulted in a temporary refusal under INA Section 221(g). This means the consular officer needs additional documents or administrative processing.\n\n`;
+    dynamicPlans.forEach(dynamicPlan => {
+       plan += `${dynamicPlan.description}\n\n`;
+    });
     
-    plan += `## IMMEDIATE NEXT STEPS\n\n`;
-    plan += `1. **Gather Documents by Provider**\n\n`;
+    plan += `## ACTION STAGES\n\n`;
     
-    if (cl.passport) plan += `   **Beneficiary to provide:**\n   - Passport\n\n`;
-    if (cl.medical_examination) plan += `   **Beneficiary to provide:**\n   - Medical examination results\n\n`;
-    if (cl.i864_affidavit) {
-        plan += `   **Petitioner to provide:**\n`;
-        plan += `   - I-864 Affidavit of Support\n`;
-        plan += `   - Tax returns and financial evidence\n\n`;
-    }
+    let globalStageIndex = 1;
     
-    plan += `2. **Assemble Your Packet**\n`;
-    plan += `   Organize documents in the order shown in the Packet Assembly Checklist. Place the cover letter first, followed by a copy of your 221(g) letter.\n\n`;
-    
-    plan += `3. **Submit Per Embassy Instructions**\n`;
-    plan += `   Follow the submission method specified on your 221(g) letter. Most embassies use designated courier services.\n\n`;
+    dynamicPlans.forEach(dynamicPlan => {
+      plan += `### Requirement: ${dynamicPlan.title}\n\n`;
+      dynamicPlan.stages.forEach((stage) => {
+        plan += `#### Stage ${globalStageIndex++}: ${stage.title} (${stage.timeframe})\n\n`;
+        
+        plan += `**Actions:**\n`;
+        stage.actions.forEach(action => {
+          plan += `- ${action}\n`;
+        });
+        plan += `\n`;
+        
+        if (stage.documents && stage.documents.length > 0) {
+          plan += `**Documents to Prepare:**\n`;
+          stage.documents.forEach(doc => {
+            plan += `- ${doc}\n`;
+          });
+          plan += `\n`;
+        }
+        
+        plan += `**Tips:**\n`;
+        stage.tips.forEach(tip => {
+          plan += `💡 ${tip}\n`;
+        });
+        plan += `\n`;
+      });
+      plan += `---\n\n`;
+    });
     
     plan += `## FINAL REMINDERS\n\n`;
     plan += `✓ Follow your embassy's 221(g) letter instructions above all else\n`;
@@ -155,7 +186,11 @@ export default function ActionPlanResults({
     const civilDocs = [];
     if (cl.nadra_birth_cert) civilDocs.push('NADRA Birth Certificate');
     if (cl.nadra_marriage_cert) civilDocs.push('NADRA Marriage Certificate');
-    if (cl.nikah_nama) civilDocs.push('Nikah Nama');
+    if (cl.nikah_nama) {
+        civilDocs.push('Original Nikah Nama');
+        civilDocs.push('Computerized Marriage Registration Certificate (MRC)');
+        civilDocs.push("Beneficiary's CNIC (showing husband's name)");
+    }
     if (cl.nadra_divorce_cert) civilDocs.push('NADRA Divorce Certificate');
     
     if (civilDocs.length > 0) {
@@ -205,7 +240,11 @@ export default function ActionPlanResults({
     }
     if (cl.nadra_birth_cert) docs.push('NADRA Birth Certificate (original)');
     if (cl.nadra_marriage_cert) docs.push('NADRA Marriage Certificate (original)');
-    if (cl.nikah_nama) docs.push('Nikah Nama (original)');
+    if (cl.nikah_nama) {
+        docs.push('Original Nikah Nama');
+        docs.push('Computerized Marriage Registration Certificate (MRC) (original)');
+        docs.push("Beneficiary's CNIC showing husband's name (copy)");
+    }
 
     docs.forEach((doc, i) => {
         letter += `${i + 1}. ${doc}\n`;
@@ -219,7 +258,7 @@ export default function ActionPlanResults({
   };
 
   const outputs = {
-    actionPlan: generateActionPlan(),
+    actionPlan: generateActionPlanText(),
     checklist: generatePacketChecklist(),
     coverLetter: generateCoverLetterText()
   };

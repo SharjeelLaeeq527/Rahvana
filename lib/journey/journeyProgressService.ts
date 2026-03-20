@@ -7,6 +7,7 @@ export interface JourneyProgressRecord {
   journey_id: string;
   current_stage: number;
   current_step: number;
+  scenario_type_ir2?: 'bio' | 'step' | 'adopted';
   completed_steps: string[];
   collapsed_steps: Record<string, boolean>;
   role: 'both' | 'petitioner' | 'beneficiary';
@@ -16,6 +17,7 @@ export interface JourneyProgressRecord {
   started: boolean;
   started_at: string;
   last_updated_at: string;
+  doc_uploads: Record<string, { name: string; size: number; lastModified: number }>;
 }
 
 /**
@@ -144,6 +146,7 @@ export async function saveJourneyProgress(
     const payload = {
       user_id: userId,
       journey_id: journeyId,
+      scenario_type_ir2: state.scenarioType, 
       current_stage: state.currentStage,
       current_step: state.currentStep ?? 0,
       completed_steps: Array.from(state.completedSteps),
@@ -152,6 +155,7 @@ export async function saveJourneyProgress(
       filing_type: state.filingType,
       document_checklist: state.documentChecklist,
       notes: state.notes,
+      doc_uploads: state.docUploads,
       started: state.started,
     };
 
@@ -213,6 +217,7 @@ export function recordToWizardState(record: JourneyProgressRecord): Partial<Wiza
   return {
     currentStage: record.current_stage,
     currentStep: record.current_step,
+    scenarioType: record.scenario_type_ir2,
     completedSteps: new Set(record.completed_steps),
     collapsedSteps: record.collapsed_steps,
     role: record.role,
@@ -220,6 +225,6 @@ export function recordToWizardState(record: JourneyProgressRecord): Partial<Wiza
     documentChecklist: record.document_checklist,
     notes: record.notes,
     started: record.started,
-    docUploads: {}, // File uploads are not stored in DB (only metadata)
+    docUploads: record.doc_uploads || {},
   };
 }

@@ -556,7 +556,7 @@
   "progressTree": {
     "journeyMap": "سفر کا نقشہ",
     "track": "قونصلر پروسیسنگ ٹریک",
-    "stage": "مرحلہ {{id}}"
+    "stage": "مرحلہ"
   },
   "stepDetail": {
     "info": "مرحلہ {{stageId}} • قدم {{stepId}}",
@@ -3038,6 +3038,60 @@
         "title": "دستاویز والٹ",
         "desc": "اپنی دستاویزات کو منظم کریں اور سفارت خانے کے لیے پیکٹ تیار کریں۔"
       }
+    }
+  },
+  "visaJourney": {
+    "welcomeBack": "خوش آمدید!",
+    "existingJourney": "آپ کا ایک {title} سفر پہلے سے جاری ہے۔",
+    "loading": "آپ کا سفر لوڈ ہو رہا ہے...",
+    "resume": "اپنا سفر جاری رکھیں",
+    "startFresh": "نئے سرے سے شروع کریں",
+    "overallProgress": "سفر کی مجموعی پیشرفت",
+    "stepsCompleted": "{count} مراحل مکمل",
+    "currentlyAt": "اس وقت: مرحلہ {stage} — {name}",
+    "autoSaved": "پیشرفت خودکار طور پر محفوظ ہوگئی",
+    "stageShort": "مرحلہ {stage}",
+    "actionsRequired": "ضروری اقدامات",
+    "stageStep": "مرحلہ {stage}، قدم {step}",
+    "prevStep": "پچھلا قدم",
+    "nextStep": "اگلا قدم",
+    "markAsComplete": "مکمل نشان زد کریں",
+    "clickToMarkAsRead": "پڑھنے کے لیے کلک کریں",
+    "completed": "مکمل",
+    "defaultNotes": "اس قدم کے لیے تفصیلی ہدایات اور رہنمائی۔",
+    "successTitle": "تکمیلی نوٹ",
+    "documentRequired": "(دستاویز درکار ہے)",
+    "documentVault": {
+      "title": "دستاویزی والٹ",
+      "subtitle": "ویزہ کے عمل کے لیے اپنی مطلوبہ دستاویزات کو ٹریک اور منظم کریں۔",
+      "status": {
+        "collected": "جمع شدہ",
+        "pending": "زیر التواء",
+        "uploaded": "اپ لوڈ کر دیا گیا"
+      },
+      "labels": {
+        "notes": "نوٹس",
+        "fileAttachment": "فائل اٹیچمنٹ"
+      },
+      "placeholders": {
+        "addNote": "نجی نوٹ شامل کریں...",
+        "chooseFile": "فائل منتخب کریں..."
+      },
+      "aria": {
+        "clearFile": "انتخاب صاف کریں"
+      },
+      "closeBtn": "والٹ بند کریں"
+    },
+    "progressTree": {
+      "journeyMap": "سفر کا نقشہ",
+      "track": "کونسلر پروسیسنگ ٹریک",
+      "stage": "مرحلہ {id}"
+    },
+    "relevantTools": "متعلقہ ٹولز اور سروسز",
+    "toolTypes": {
+      "tool": "ٹول",
+      "guide": "گائیڈ",
+      "service": "سروس"
     }
   },
   "ir1Journey": {

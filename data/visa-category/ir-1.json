@@ -1,0 +1,782 @@
+{
+  "title": "IR-1/CR-1 Spouse Visa Journey",
+  "titleUr": "آئی آر-۱/سی آر-۱ شریک حیات ویزا کا سفر",
+  "description": "Your complete guide to bringing your spouse to the United States on an IR-1 or CR-1 immigrant visa.",
+  "descriptionUr": "آئی آر-۱ یا سی آر-۱ تارک وطن ویزا پر اپنے شریک حیات کو ریاستہائے متحدہ لانے کے لیے آپ کی مکمل رہنمائی۔",
+  "stages": [
+    {
+      "id": 1,
+      "name": "Stage I: USCIS Petition",
+      "description": "U.S. Petitioner files I-130 → USCIS processes → Approval",
+      "timeline": "17-65 months average",
+      "steps": [
+        {
+          "id": "I-01",
+          "name": "Determine Eligibility",
+          "who": "Both",
+          "where": "Self-assessment",
+          "actions": [
+            "Verify petitioner is U.S. citizen",
+            "Confirm legal marriage exists",
+            "Verify marriage is bona fide",
+            "Check domicile requirements",
+            "Confirm no bars to immigration"
+          ],
+          "output": "Eligibility confirmed",
+          "notes": "Petitioner must be U.S. citizen (not green card holder). Marriage must be legal and genuine.",
+          "relevantTools": [
+            { "label": "Visa Path Finder", "labelUr": "ویزہ پاتھ فائنڈر", "href": "/visa-eligibility", "type": "tool" }
+          ]
+        },
+        {
+          "id": "I-02",
+          "name": "Gather Required Documents",
+          "who": "Both",
+          "where": "Various sources",
+          "timeline": "4-8 weeks",
+          "actions": [
+            "Collect proof of U.S. citizenship",
+            "Obtain Pakistani passport",
+            "Get NADRA birth certificate",
+            "Obtain Nikah Nama + translation",
+            "Get Union Council marriage registration",
+            "Apply for police certificate",
+            "Take passport photos"
+          ],
+          "documents": [
+            "U.S. Passport/Birth Certificate",
+            "Pakistani Passport",
+            "NADRA Birth Certificate",
+            "Nikah Nama (original)",
+            "English translation of Nikah Nama",
+            "Union Council Marriage Registration",
+            "Police Certificate",
+            "Passport Photos (2x2 inches)"
+          ],
+          "pakistanSpecific": "Union Council registration increasingly required by Islamabad Embassy. Police certificate: 3-7 days processing for Punjab/Islamabad.",
+          "relevantTools": [
+            { "label": "Marriage Cert Guide", "labelUr": "نکاح نامہ گائیڈ", "href": "/guides/nikah-nama-guide", "type": "guide" },
+            { "label": "Birth Cert Guide", "labelUr": "برتھ سرٹیفکیٹ گائیڈ", "href": "/guides/birth-certificate-guide", "type": "guide" },
+            { "label": "Passport Guide", "labelUr": "پاسپورٹ گائیڈ", "href": "/guides/passport-guide", "type": "guide" },
+            { "label": "Police Cert Guide", "labelUr": "پولیس ویریفیکیشن گائیڈ", "href": "/guides/police-verification-guide", "type": "guide" },
+            { "label": "Urdu → English Translation", "labelUr": "اردو سے انگریزی ترجمہ", "href": "/document-translation", "type": "service" },
+            { "label": "Photo Booth", "labelUr": "فوٹو بوتھ", "href": "/passport", "type": "tool" }
+          ]
+        },
+        {
+          "id": "I-03",
+          "name": "Decide Filing Method",
+          "who": "Petitioner",
+          "where": "Decision point",
+          "actions": [
+            "Compare online ($625) vs paper ($675)",
+            "Consider processing speed",
+            "Choose filing method"
+          ],
+          "fee": "Online: $625, Paper: $675",
+          "notes": "Online filing recommended - faster receipt, lower fee, electronic tracking"
+        },
+        {
+          "id": "I-04",
+          "name": "Complete Form I-130",
+          "who": "Petitioner",
+          "where": "my.uscis.gov or paper",
+          "timeline": "2-4 hours",
+          "filingType": "both",
+          "actions": [
+            "Create USCIS account (if online)",
+            "Complete Part 1: Relationship",
+            "Complete Part 2: Petitioner information",
+            "Complete Part 3: Beneficiary information",
+            "Complete Parts 4-10",
+            "Review all information",
+            "Upload supporting documents"
+          ],
+          "inputs": [
+            "Petitioner citizenship proof",
+            "Marriage evidence",
+            "Relationship photos",
+            "Communication records"
+          ],
+          "output": "Completed I-130 form",
+          "officialSource": "https://www.uscis.gov/i-130",
+          "relevantTools": [
+            { "label": "Smart Form Filler", "labelUr": "سمارٹ فارم فلر", "href": "/visa-forms", "type": "tool" }
+          ]
+        },
+        {
+          "id": "I-05",
+          "name": "Complete Form I-130A",
+          "who": "Beneficiary",
+          "where": "Online or paper with I-130",
+          "actions": [
+            "Provide beneficiary biographic information",
+            "Include parent information",
+            "Provide physical characteristics",
+            "Sign form"
+          ],
+          "notes": "Always required for spouse petitions, no separate fee"
+        },
+        {
+          "id": "I-06",
+          "name": "Pay Filing Fee",
+          "who": "Petitioner",
+          "where": "Pay.gov or Form G-1450/G-1650",
+          "fee": "Online: $625, Paper: $675",
+          "actions": [
+            "Select payment method",
+            "Enter payment information",
+            "Submit payment",
+            "Save confirmation"
+          ],
+          "notes": "As of Oct 28, 2025: Checks/money orders NO LONGER accepted. Electronic payment only.",
+          "officialSource": "https://www.uscis.gov/g-1055"
+        },
+        {
+          "id": "I-07",
+          "name": "Submit Application",
+          "who": "Petitioner",
+          "where": "Online or mail",
+          "actions": [
+            "Review entire application",
+            "Verify documents uploaded",
+            "Click Submit (online) or mail package",
+            "Save confirmation/receipt"
+          ],
+          "output": "Application submitted, confirmation received",
+          "nextTrigger": "Receipt notice within 2-4 weeks"
+        },
+        {
+          "id": "I-08",
+          "name": "Receive Receipt Notice (I-797C)",
+          "who": "Petitioner",
+          "where": "Mail or online account",
+          "timeline": "1-2 weeks (online) or 2-4 weeks (paper)",
+          "actions": [
+            "Check mail/account for receipt notice",
+            "Verify all information correct",
+            "Save receipt number",
+            "Note priority date"
+          ],
+          "output": "Receipt number obtained"
+        },
+        {
+          "id": "I-09",
+          "name": "Wait for Processing",
+          "who": "Both",
+          "where": "Current locations",
+          "timeline": "14.8 months average (17-65 months range)",
+          "actions": [
+            "Check case status weekly",
+            "Respond to any RFE immediately",
+            "Keep address updated",
+            "Gather NVC documents meanwhile"
+          ],
+          "notes": "RFE deadline usually 30-87 days. Respond promptly to avoid delays.",
+          "relevantTools": [
+            { "label": "Case Status Tracker", "labelUr": "کیس اسٹیٹس ٹریکر", "href": "/case-status", "type": "tool" },
+            { "label": "Case Strength Analyzer", "labelUr": "کیس سٹرینتھ اینالائزر", "href": "/visa-case-strength-checker", "type": "tool" },
+            { "label": "Visa Bulletin Monitor", "labelUr": "ویزہ بلٹن مانیٹر", "href": "/visa-checker", "type": "tool" }
+          ]
+        },
+        {
+          "id": "I-10",
+          "name": "Receive Approval Notice (I-797)",
+          "who": "Petitioner",
+          "where": "Mail",
+          "actions": [
+            "Receive approval notice",
+            "Make multiple copies",
+            "Wait for NVC contact (4-6 weeks)",
+            "Begin Stage II preparation"
+          ],
+          "output": "I-130 approved",
+          "nextTrigger": "Case transferred to NVC"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "name": "Stage II: NVC/CEAC Processing",
+      "description": "Pay fees → Submit DS-260 → Upload documents → Documentarily Qualified",
+      "timeline": "4-9 months",
+      "steps": [
+        {
+          "id": "II-01",
+          "name": "Receive NVC Welcome Letter",
+          "who": "Petitioner",
+          "where": "Email + physical mail",
+          "timeline": "4-6 weeks after I-130 approval",
+          "actions": [
+            "Check email (including spam)",
+            "Note Case Number (ISL...)",
+            "Note Invoice ID Number",
+            "Save both numbers securely"
+          ],
+          "output": "Case Number and Invoice ID obtained",
+          "notes": "Case Number starts with ISL for Islamabad"
+        },
+        {
+          "id": "II-02",
+          "name": "Create CEAC Account",
+          "who": "Either",
+          "where": "ceac.state.gov",
+          "actions": [
+            "Navigate to CEAC portal",
+            "Create account",
+            "Enter Invoice ID",
+            "Enter SSN and DOB",
+            "Add case to account"
+          ],
+          "output": "CEAC account active with case",
+          "officialSource": "https://ceac.state.gov"
+        },
+        {
+          "id": "II-03",
+          "name": "Pay NVC Fees",
+          "who": "Petitioner",
+          "where": "CEAC portal or Pay.gov",
+          "fee": "AOS Fee: $120, IV Fee: $345, Total: $465",
+          "actions": [
+            "Log into CEAC",
+            "Pay Affidavit of Support fee ($120)",
+            "Pay Immigrant Visa fee ($345)",
+            "Save payment confirmations"
+          ],
+          "output": "Both fees paid, forms unlocked",
+          "notes": "Fees are non-refundable. Payment reflects in 1-2 business days."
+        },
+        {
+          "id": "II-04",
+          "name": "Complete DS-260 Form",
+          "who": "Beneficiary",
+          "where": "CEAC portal",
+          "timeline": "2-4 hours",
+          "actions": [
+            "Access DS-260 in CEAC",
+            "Complete all 24 parts",
+            "Answer security questions truthfully",
+            "Review entire application",
+            "Sign and submit electronically"
+          ],
+          "inputs": [
+            "Passport",
+            "Travel history",
+            "Employment history (10 years)",
+            "Address history (5 years)",
+            "Education history"
+          ],
+          "output": "DS-260 submitted",
+          "notes": "Cannot change after submission except via NVC email. Save frequently!",
+          "pakistanSpecific": "Select post: Islamabad, Pakistan"
+        },
+        {
+          "id": "II-05",
+          "name": "Prepare Civil Documents",
+          "who": "Both",
+          "where": "Document gathering",
+          "actions": [
+            "Scan all documents (300 DPI, PDF)",
+            "Ensure translations certified",
+            "Verify all stamps/seals visible",
+            "Name files clearly"
+          ],
+          "documents": [
+            "Birth certificate (NADRA)",
+            "Marriage certificate (Nikah Nama + translation + Union Council)",
+            "Police certificate (original)",
+            "Passport biographical page",
+            "Previous marriage termination (if applicable)"
+          ],
+          "pakistanSpecific": "Police certificate valid 1 year. Union Council registration increasingly required."
+        },
+        {
+          "id": "II-06",
+          "name": "Complete I-864 Affidavit",
+          "who": "Petitioner",
+          "where": "Download, complete, scan",
+          "actions": [
+            "Download I-864 form",
+            "Complete all parts",
+            "Gather IRS tax transcripts (3 years)",
+            "Get employment letter",
+            "Collect pay stubs (6 months)",
+            "Sign form"
+          ],
+          "inputs": [
+            "Tax transcripts",
+            "Employment letter",
+            "Pay stubs",
+            "W-2 forms",
+            "Bank statements (if showing assets)"
+          ],
+          "notes": "Minimum income: $25,550 for household of 2 (2025). Use joint sponsor if needed.",
+          "officialSource": "https://www.uscis.gov/i-864",
+          "relevantTools": [
+            { "label": "Sponsorship Calculator", "labelUr": "سپانسرشپ کیلکولیٹر", "href": "/affidavit-support-calculator", "type": "tool" },
+            { "label": "Snap & Sign", "labelUr": "سنیپ اینڈ سائن", "href": "/signature-image-processing", "type": "tool" }
+          ]
+        },
+        {
+          "id": "II-07",
+          "name": "Upload Documents to CEAC",
+          "who": "Either",
+          "where": "CEAC portal",
+          "actions": [
+            "Log into CEAC",
+            "Navigate to Documents section",
+            "Upload each document category",
+            "Verify upload success",
+            "Check for green checkmarks"
+          ],
+          "output": "All documents uploaded",
+          "notes": "Upload one at a time. Max 4 MB per file. PDF preferred.",
+          "relevantTools": [
+            { "label": "PDF Toolkit", "labelUr": "پی ڈی ایف ٹول کٹ", "href": "/pdf-processing", "type": "tool" }
+          ]
+        },
+        {
+          "id": "II-08",
+          "name": "Review and Submit Documents",
+          "who": "Either",
+          "where": "CEAC portal",
+          "actions": [
+            "Review all uploaded documents",
+            "Verify translations included",
+            "Check financial documents sufficient",
+            "Click Submit Documents",
+            "Save confirmation"
+          ],
+          "output": "Documents submitted to NVC",
+          "nextTrigger": "NVC reviews documents"
+        },
+        {
+          "id": "II-09",
+          "name": "NVC Document Review",
+          "who": "NVC",
+          "where": "Background process",
+          "timeline": "2-8 weeks",
+          "actions": [
+            "Monitor CEAC status weekly",
+            "Check email for updates",
+            "Respond to any document requests immediately"
+          ],
+          "possibleOutcomes": [
+            "Documentarily Qualified (DQ)",
+            "Request for additional documents",
+            "Document rejection"
+          ],
+          "notes": "Common rejections: poor scan quality, missing translations, expired police certificate"
+        },
+        {
+          "id": "II-10",
+          "name": "Receive DQ Status",
+          "who": "Both",
+          "where": "Email + CEAC",
+          "actions": [
+            "Receive DQ confirmation email",
+            "Verify CEAC shows DQ status",
+            "Note DQ date",
+            "Begin interview preparation"
+          ],
+          "output": "Documentarily Qualified",
+          "nextTrigger": "Case sent to Embassy Islamabad"
+        },
+        {
+          "id": "II-11",
+          "name": "Wait for Interview Scheduling",
+          "who": "Embassy",
+          "where": "Background",
+          "timeline": "2-6 months from DQ",
+          "actions": [
+            "Check CEAC weekly",
+            "Ensure passport valid",
+            "DO NOT obtain new police certificate yet",
+            "Research interview process"
+          ],
+          "notes": "Cannot speed up this process. Interview scheduled by embassy.",
+          "relevantTools": [
+            { "label": "DQ Status Tracker", "labelUr": "ڈی کیو سٹیٹس ٹریکر", "href": "/iv-tool", "type": "tool" }
+          ]
+        },
+        {
+          "id": "II-12",
+          "name": "Receive Interview Letter",
+          "who": "Beneficiary",
+          "where": "Email + registered mail",
+          "timeline": "2-4 weeks before interview",
+          "actions": [
+            "Receive interview appointment",
+            "Note date and time",
+            "Schedule medical exam IMMEDIATELY",
+            "Gather original documents",
+            "Make travel arrangements if needed"
+          ],
+          "output": "Interview date confirmed",
+          "nextTrigger": "Proceed to Stage III"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "name": "Stage III: Medical + Interview",
+      "description": "Complete medical exam → Attend consular interview → Visa decision",
+      "timeline": "Interview within 2-4 weeks of letter",
+      "steps": [
+        {
+          "id": "III-01",
+          "name": "Schedule Medical Examination",
+          "who": "Beneficiary",
+          "where": "IOM Pakistan",
+          "actions": [
+            "Contact IOM clinic",
+            "Book appointment 1-5 days before interview",
+            "Note documents needed",
+            "Save confirmation"
+          ],
+          "pakistanSpecific": "IOM Islamabad: +92-51-111-466-789. IOM Karachi: +92-21-111-466-789. IOM Lahore: +92-42-111-466-789",
+          "fee": "$200-300 USD equivalent",
+          "notes": "Medical results valid 6 months. Schedule 2-3 days before interview ideally.",
+          "relevantTools": [
+            { "label": "Polio Vaccination Guide", "labelUr": "پولیو ویکسینیشن گائیڈ", "href": "/guides/polio-vaccination-guide", "type": "guide" }
+          ]
+        },
+        {
+          "id": "III-02",
+          "name": "Obtain Fresh Police Certificate",
+          "who": "Beneficiary",
+          "where": "Pakistan police authorities",
+          "timeline": "3-7 days (Punjab/Islamabad)",
+          "actions": [
+            "Apply at Police Khidmat Markaz or online",
+            "Provide CNIC, passport, affidavit if needed",
+            "Collect certificate",
+            "Keep original for interview"
+          ],
+          "notes": "Get new if previous one is 6+ months old. Need ORIGINAL for interview.",
+          "pakistanSpecific": "Punjab Police Portal: pkm.punjab.gov.pk or islamabadpolice.gov.pk"
+        },
+        {
+          "id": "III-03",
+          "name": "Gather Original Documents",
+          "who": "Beneficiary",
+          "where": "Document compilation",
+          "documents": [
+            "Valid passport",
+            "CNIC",
+            "Interview letter",
+            "DS-260 confirmation",
+            "Birth certificate (original)",
+            "Nikah Nama (original)",
+            "Translation (original)",
+            "Union Council certificate",
+            "Police certificate (original)",
+            "Sealed medical envelope",
+            "Photos (2)",
+            "I-864 package",
+            "Tax transcripts",
+            "Employment letter",
+            "Pay stubs"
+          ],
+          "actions": [
+            "Collect all original documents",
+            "Make 2 sets of copies",
+            "Organize in folders",
+            "Label clearly"
+          ],
+          "notes": "Bring originals + copies. Organize petitioner and beneficiary documents separately."
+        },
+        {
+          "id": "III-04",
+          "name": "Attend Medical Exam",
+          "who": "Beneficiary",
+          "where": "IOM clinic",
+          "timeline": "2-4 hours at clinic",
+          "actions": [
+            "Arrive on time with documents",
+            "Complete intake forms",
+            "Pay fees",
+            "Physical examination",
+            "Chest X-ray",
+            "Blood tests",
+            "Vaccination review",
+            "Physician interview"
+          ],
+          "output": "Sealed medical envelope",
+          "notes": "DO NOT OPEN envelope. Results ready in 2-5 days. Collect 1-2 days before interview.",
+          "relevantTools": [
+            { "label": "Book Medical Appointment", "labelUr": "میڈیکل اپائنٹمنٹ بک کریں", "href": "/book-appointment", "type": "service" }
+          ]
+        },
+        {
+          "id": "III-05",
+          "name": "Prepare for Interview",
+          "who": "Beneficiary",
+          "where": "Home preparation",
+          "actions": [
+            "Review DS-260 answers",
+            "Practice common questions",
+            "Study relationship details",
+            "Check document checklist",
+            "Plan outfit (professional)",
+            "Arrange travel to Islamabad if needed"
+          ],
+          "notes": "Be truthful, consistent. Know spouse details well. Dress professionally - no jeans/t-shirts.",
+          "relevantTools": [
+            { "label": "Interview Prep Tool", "labelUr": "انٹرویو پریپ ٹول", "href": "/interview-prep", "type": "tool" }
+          ]
+        },
+        {
+          "id": "III-06",
+          "name": "Attend Visa Interview",
+          "who": "Beneficiary",
+          "where": "U.S. Embassy Islamabad",
+          "timeline": "5-20 minutes interview",
+          "actions": [
+            "Arrive 30+ minutes early",
+            "Pass security (NO electronics)",
+            "Submit documents at window",
+            "Fingerprints taken",
+            "Wait for consular officer call",
+            "Take oath",
+            "Answer questions honestly",
+            "Receive decision"
+          ],
+          "pakistanSpecific": "Address: Diplomatic Enclave, Ramna 5, Islamabad. NO mobile phones allowed.",
+          "possibleOutcomes": [
+            "Approved \u2705",
+            "Administrative Processing 221(g) \u26a0\ufe0f",
+            "Denied \u274c"
+          ],
+          "notes": "Common questions: How did you meet? Tell me about your wedding. Where will you live?",
+          "relevantTools": [
+            { "label": "221(g) Action Planner", "labelUr": "221(g) ایکشن پلانر", "href": "/221g-action-planner", "type": "tool" }
+          ]
+        },
+        {
+          "id": "III-07",
+          "name": "Track Status (If AP)",
+          "who": "Beneficiary",
+          "where": "ceac.state.gov",
+          "actions": [
+            "If placed in AP, check CEAC weekly",
+            "Check email regularly",
+            "Respond immediately if contacted",
+            "Be patient - no way to expedite"
+          ],
+          "notes": "AP duration: 2 weeks to 12+ months (unpredictable). Common for security clearances."
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "name": "Stage IV: Post-Interview & Travel",
+      "description": "Receive passport with visa \u2192 Pay USCIS fee \u2192 Travel to U.S.",
+      "timeline": "1-2 weeks for passport",
+      "steps": [
+        {
+          "id": "IV-01",
+          "name": "Receive Passport with Visa",
+          "who": "Beneficiary",
+          "where": "Courier delivery (Pakistan)",
+          "timeline": "1-2 weeks after approval",
+          "actions": [
+            "Track courier (TCS)",
+            "Receive passport",
+            "Verify visa foil information",
+            "Check expiration date",
+            "Make copies",
+            "Verify: name, DOB, passport number, visa category (IR-1/CR-1)"
+          ],
+          "output": "Passport with immigrant visa",
+          "notes": "MUST enter U.S. before visa expiration (typically 6 months from medical exam)"
+        },
+        {
+          "id": "IV-02",
+          "name": "Pay USCIS Immigrant Fee",
+          "who": "Either",
+          "where": "uscis.gov/uscis-immigrant-fee",
+          "fee": "$220",
+          "actions": [
+            "Create account at USCIS immigrant fee site",
+            "Enter A-Number from visa",
+            "Enter U.S. mailing address (CRITICAL)",
+            "Pay $220 fee",
+            "Save confirmation"
+          ],
+          "output": "Green card production authorized",
+          "notes": "Pay BEFORE travel recommended. Green card mailed to this address within 90 days."
+        },
+        {
+          "id": "IV-03",
+          "name": "Prepare for Travel",
+          "who": "Beneficiary",
+          "where": "Pakistan",
+          "actions": [
+            "Book flight with buffer before visa expiration",
+            "Pack carry-on: passport, sealed envelopes, confirmations",
+            "DO NOT open sealed envelopes",
+            "Prepare prohibited items list",
+            "Notify petitioner of flight details"
+          ],
+          "notes": "Sealed immigration packet MUST stay sealed. Pack in carry-on, never checked luggage."
+        },
+        {
+          "id": "IV-04",
+          "name": "Understand Immigration Status",
+          "who": "Beneficiary",
+          "where": "Knowledge",
+          "actions": [
+            "Understand: become LPR upon entry",
+            "Know IR-1 vs CR-1 difference",
+            "Understand rights and responsibilities",
+            "Know cannot vote until citizen"
+          ],
+          "notes": "IR-1: 10-year green card. CR-1: 2-year conditional, must file I-751 to remove conditions."
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "name": "Stage V: U.S. Arrival",
+      "description": "Enter U.S. \u2192 CBP inspection \u2192 I-551 stamp \u2192 Green card delivery",
+      "timeline": "Green card within 90 days",
+      "steps": [
+        {
+          "id": "V-01",
+          "name": "Arrival at Port of Entry",
+          "who": "Beneficiary",
+          "where": "U.S. airport",
+          "actions": [
+            "Follow signs to Passport Control",
+            "Go to Foreign Nationals line",
+            "Approach CBP officer",
+            "Inform: first entry as immigrant",
+            "Present passport and sealed packet",
+            "Answer questions",
+            "Fingerprints taken"
+          ],
+          "notes": "Common questions: Purpose? Where living? How long married?"
+        },
+        {
+          "id": "V-02",
+          "name": "Secondary Inspection (If Needed)",
+          "who": "Beneficiary",
+          "where": "Secondary area",
+          "timeline": "30 minutes - 2 hours",
+          "actions": [
+            "If directed, proceed to secondary",
+            "Wait for officer",
+            "Provide additional information",
+            "Be patient and cooperative"
+          ],
+          "notes": "Common for immigrant visa holders. Don't worry - routine."
+        },
+        {
+          "id": "V-03",
+          "name": "Receive I-551 Stamp",
+          "who": "CBP Officer",
+          "where": "Port of entry",
+          "actions": [
+            "Officer stamps passport with I-551",
+            "Passport returned",
+            "Sealed packet retained by CBP"
+          ],
+          "output": "I-551 stamp = temporary green card (valid 1 year)",
+          "notes": "This stamp proves permanent residence and work authorization until physical card arrives"
+        },
+        {
+          "id": "V-04",
+          "name": "Clear Customs",
+          "who": "Beneficiary",
+          "where": "Airport customs",
+          "actions": [
+            "Collect baggage",
+            "Fill customs form",
+            "Declare items over $800 or restricted items",
+            "Present to customs officer",
+            "Exit airport"
+          ],
+          "notes": "Declare any food, plants, amounts over $10,000 cash"
+        },
+        {
+          "id": "V-05",
+          "name": "Post-Arrival Actions",
+          "who": "Beneficiary",
+          "where": "U.S. residence",
+          "timeline": "First week",
+          "actions": [
+            "Arrive at U.S. residence",
+            "Wait for Social Security card (2-4 weeks)",
+            "If doesn't arrive, apply at SSA office",
+            "Verify green card mailing address",
+            "Register for Selective Service if male 18-25"
+          ],
+          "notes": "SSN auto-issued if checked Yes on DS-260. Green card arrives within 90 days of entry or payment."
+        },
+        {
+          "id": "V-06",
+          "name": "Receive Green Card",
+          "who": "Beneficiary",
+          "where": "U.S. mailing address",
+          "timeline": "30-90 days",
+          "actions": [
+            "Track via USCIS immigrant fee account",
+            "Receive green card via USPS",
+            "Verify all information correct",
+            "Sign back of card immediately"
+          ],
+          "output": "Physical green card (I-551)",
+          "notes": "If error on card, file I-90 immediately. IR-1: valid 10 years. CR-1: valid 2 years."
+        },
+        {
+          "id": "V-07",
+          "name": "Maintain Green Card",
+          "who": "Beneficiary (LPR)",
+          "where": "United States",
+          "actions": [
+            "Carry green card at all times",
+            "File U.S. taxes annually",
+            "Update address with USCIS within 10 days (AR-11)",
+            "Don't leave U.S. for 6+ months without planning",
+            "For CR-1: File I-751 within 90 days of 2-year anniversary"
+          ],
+          "notes": "CR-1 CRITICAL: Must file I-751 jointly with spouse to remove conditions. Failure = loss of status."
+        },
+        {
+          "id": "V-08",
+          "name": "Path to Citizenship (Future)",
+          "who": "LPR",
+          "where": "Future planning",
+          "timeline": "3 years (if still married to USC)",
+          "actions": [
+            "After 3 years as LPR, can apply for citizenship via N-400",
+            "Requirements: physical presence, good moral character, English, civics test"
+          ],
+          "notes": "Optional - can remain LPR indefinitely. Citizenship allows voting, more job options, cannot be deported."
+        }
+      ]
+    }
+  ],
+  "documents": [
+    "U.S. Passport or Birth Certificate (Petitioner)",
+    "Pakistani Passport (Beneficiary)",
+    "NADRA Birth Certificate (Beneficiary)",
+    "Nikah Nama (Original)",
+    "English Translation of Nikah Nama (Certified)",
+    "Union Council Marriage Registration",
+    "Police Certificate - Pakistan (Original)",
+    "Passport Photos (2x2 inches, white background)",
+    "Tax Returns (IRS Transcripts - 3 years)",
+    "Employment Verification Letter",
+    "Pay Stubs (6 months)",
+    "W-2 Forms",
+    "Bank Statements",
+    "I-864 Affidavit of Support (Signed)",
+    "Marriage Photos (throughout relationship)",
+    "Communication Records (WhatsApp, email samples)",
+    "Visit Evidence (flight tickets, stamps)",
+    "Divorce Decrees (if applicable)",
+    "Death Certificates (if widowed)"
+  ]
+}

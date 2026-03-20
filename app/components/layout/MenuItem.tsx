@@ -1,8 +1,6 @@
 import React from "react";
 import Link from "next/link";
 
-import { motion } from "framer-motion";
-
 import { MegaMenuItem } from "./MegaMenu";
 
 interface MenuItemProps {
@@ -31,11 +29,7 @@ const renderWithAbbr = (text: string) => {
 };
 
 export const MenuItem = ({ item, index, simple = false }: MenuItemProps) => (
-  <motion.div
-    initial={{ opacity: 0, x: -10 }}
-    animate={{ opacity: 1, x: 0 }}
-    transition={{ delay: index * 0.03 }}
-  >
+  <div>
     <Link
       href={item.disabled ? "#" : item.href}
       className={`group flex items-center gap-4 p-2 rounded-lg transition-all ${
@@ -77,5 +71,5 @@ export const MenuItem = ({ item, index, simple = false }: MenuItemProps) => (
         )}
       </div>
     </Link>
-  </motion.div>
+  </div>
 );

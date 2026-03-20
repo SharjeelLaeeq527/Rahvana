@@ -2,7 +2,7 @@
 
 import React from "react";
 import {
-  Bell,
+  ClipboardList,
   X,
   AlertCircle,
   AlertTriangle,
@@ -17,10 +17,10 @@ import { Button } from "@/components/ui/button";
 import {
   Sheet,
   SheetContent,
-  SheetDescription,
   SheetHeader,
   SheetTitle,
   SheetTrigger,
+  SheetDescription,
 } from "@/components/ui/sheet";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -30,6 +30,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import Pagination from "@/components/ui/pagination";
 
 export function NotificationBell() {
   const unreadCount = useDocumentVaultStore((state) =>
@@ -45,13 +46,13 @@ export function NotificationBell() {
     >
       <SheetTrigger asChild>
         <Button variant="outline" size="icon" className="relative">
-          <Bell className="h-5 w-5" />
+          <ClipboardList className="h-5 w-5" />
           {unreadCount > 0 && (
             <Badge
               variant="destructive"
               className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 text-xs"
             >
-              {unreadCount > 9 ? "9+" : unreadCount}
+              {unreadCount}
             </Badge>
           )}
         </Button>
@@ -77,25 +78,35 @@ export function NotificationCenter() {
 
   const unreadCount = notifications.filter((n) => !n.read).length;
 
+  // Pagination
+  const [currentPage, setCurrentPage] = React.useState(1);
+  const itemsPerPage = 10;
+
+  const paginatedNotifications = notifications.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage,
+  );
+
   return (
     <div className="flex flex-col h-full">
+      {/* Header */}
       <SheetHeader className="px-1 text-left">
-        <div className="flex items-center justify-between gap-2 pr-8">
+        <div className="flex items-center justify-between gap-3 pr-8">
           <SheetTitle className="text-xl sm:text-2xl">
-            {t("documentVaultPage.components.notificationCenter.title")}
+            Pending Documents{" "}
           </SheetTitle>
-          {unreadCount > 0 && (
-            <Badge variant="secondary" className="shrink-0">
-              {unreadCount}{" "}
-              {t("documentVaultPage.components.notificationCenter.new")}
-            </Badge>
-          )}
+
+          <div className="flex items-center gap-2">
+            <Badge variant="destructive">{`Unread: ${unreadCount}`}</Badge>
+            <Badge variant="default">{`Total: ${notifications.length}`}</Badge>
+          </div>
         </div>
         <SheetDescription className="text-sm sm:text-base">
           {t("documentVaultPage.components.notificationCenter.subtitle")}
         </SheetDescription>
       </SheetHeader>
 
+      {/* Actions */}
       {notifications.length > 0 && (
         <div className="flex flex-wrap items-center gap-2 mt-4 sm:mt-6 px-1">
           <Button
@@ -108,49 +119,26 @@ export function NotificationCenter() {
             <CheckCheck className="h-4 w-4 mr-1.5 sm:mr-2 shrink-0" />
             {t("documentVaultPage.components.notificationCenter.markAllRead")}
           </Button>
-
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="flex-1 sm:flex-none justify-center h-9 text-xs sm:text-sm font-semibold"
-              >
-                <Clock className="h-4 w-4 mr-1.5 sm:mr-2 shrink-0" />
-                {t("documentVaultPage.components.notificationCenter.snoozeAll")}
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={() => snoozeAll(1)}>
-                {t("documentVaultPage.components.notificationCenter.1hour")}
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => snoozeAll(4)}>
-                {t("documentVaultPage.components.notificationCenter.4hours")}
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => snoozeAll(24)}>
-                {t("documentVaultPage.components.notificationCenter.24hours")}
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
         </div>
       )}
 
+      {/* Notifications List */}
       <ScrollArea className="flex-1 -mx-4 sm:-mx-6 px-4 sm:px-6 mt-4 sm:mt-6">
         {notifications.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-16 sm:py-24 text-center px-4">
             <div className="bg-slate-100 dark:bg-slate-800 p-4 rounded-full mb-4">
-              <Bell className="h-8 w-8 text-slate-400 dark:text-slate-500" />
+              <ClipboardList className="h-8 w-8 text-slate-400 dark:text-slate-500" />
             </div>
             <p className="text-lg font-bold text-slate-900 dark:text-slate-100">
               {t("documentVaultPage.components.notificationCenter.emptyTitle")}
             </p>
-            <p className="text-sm text-slate-500 max-w-[200px] mt-2 leading-relaxed">
+            <p className="text-sm text-slate-500 max-w-50 mt-2 leading-relaxed">
               {t("documentVaultPage.components.notificationCenter.emptyDesc")}
             </p>
           </div>
         ) : (
-          <div className="space-y-3 pb-8">
-            {notifications.map((notification) => (
+          <div className="space-y-3 pb-4">
+            {paginatedNotifications.map((notification) => (
               <NotificationItem
                 key={notification.id}
                 notification={notification}
@@ -159,6 +147,16 @@ export function NotificationCenter() {
           </div>
         )}
       </ScrollArea>
+
+      {/* Pagination */}
+      {notifications.length > itemsPerPage && (
+        <Pagination
+          currentPage={currentPage}
+          totalItems={notifications.length}
+          itemsPerPage={itemsPerPage}
+          onPageChange={setCurrentPage}
+        />
+      )}
     </div>
   );
 }
@@ -192,24 +190,17 @@ function NotificationItem({
 
   const handleClick = () => {
     markAsRead(notification.id);
-
-    // If notification has a document, open upload modal
-    if (notification.documentDefId) {
-      openUploadModal(notification.documentDefId);
-    }
+    if (notification.documentDefId) openUploadModal(notification.documentDefId);
   };
 
   return (
     <div
-      className={`p-4 rounded-lg border transition-colors ${
-        notification.read
-          ? "bg-background border-border"
-          : "bg-muted/50 border-primary/20"
-      } ${notification.actionRequired ? "border-l-4 border-l-destructive" : ""}`}
+      className={`p-4 rounded-lg border transition-colors shadow-sm hover:shadow-md bg-white dark:bg-slate-800 ${
+        notification.read ? "border-border" : "border-primary/20"
+      }`}
     >
       <div className="flex items-start gap-3">
         <div className="mt-0.5">{getIcon()}</div>
-
         <div className="flex-1 min-w-0">
           <div className="flex items-start justify-between gap-2">
             <div className="flex-1">
@@ -258,36 +249,6 @@ function NotificationItem({
                   )}
                 </Button>
               )}
-
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    className="h-8 text-xs font-semibold flex-1 sm:flex-none"
-                  >
-                    <Clock className="h-3 w-3 mr-1.5 shrink-0" />
-                    {t(
-                      "documentVaultPage.components.notificationCenter.snooze",
-                    )}
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  <DropdownMenuItem onClick={() => snooze(notification.id, 1)}>
-                    {t("documentVaultPage.components.notificationCenter.1hour")}
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => snooze(notification.id, 4)}>
-                    {t(
-                      "documentVaultPage.components.notificationCenter.4hours",
-                    )}
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => snooze(notification.id, 24)}>
-                    {t(
-                      "documentVaultPage.components.notificationCenter.24hours",
-                    )}
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
             </div>
           </div>
         </div>

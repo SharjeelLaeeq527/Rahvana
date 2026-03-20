@@ -37,10 +37,11 @@ interface FormData {
   sponsor_dob?: string;
   beneficiary_dob?: string;
   country_of_residence?: string;
-  relationship_start_date?: string;
   marriage_date?: string;
+  relationship_start_date?: string;
   spousal_relationship_type?: string;
   intended_us_state_of_residence?: string;
+  i130_status?: string;
   // Education & Employment Background
   highest_education_level?: string;
   highest_education_field?: string;
@@ -59,6 +60,7 @@ interface FormData {
   communication_logs?: boolean;
   money_transfer_receipts_available?: boolean;
   driving_license_copy_available?: boolean;
+  children_together?: boolean;
   // Immigration History
   previous_visa_applications?: boolean;
   previous_visa_denial?: boolean;
@@ -76,9 +78,11 @@ interface FormData {
   // Core Identity Documents
   urdu_marriage_certificate?: boolean;
   english_translation_certificate?: boolean;
-  union_council_certificate?: boolean;
+  nadra_marriage_registration_cert?: boolean;
   family_registration_certificate?: boolean;
   birth_certificates?: boolean;
+  prior_marriages_exist?: boolean;
+  prior_marriage_termination_docs?: boolean;
   // Passport & Police Documents
   passports_available?: boolean;
   passport_copy_available?: boolean;
@@ -89,7 +93,7 @@ interface FormData {
   courier_registration?: boolean;
   medical_report_available?: boolean;
   polio_vaccination_certificate?: boolean;
-  covid_vaccination_certificate?: boolean;
+
   passport_photos_2x2?: boolean;
 }
 
@@ -127,11 +131,12 @@ const CaseTypeStep = ({
               (window.location.href = "/visa-case-strength-checker/my-cases")
             }
             suppressHydrationWarning
-          className="text-teal-600 hover:text-teal-700 hover:underline text-base font-medium"
-        >
-          See your cases →
-        </button>
-      </div>)}
+            className="text-teal-600 hover:text-teal-700 hover:underline text-base font-medium"
+          >
+            See your cases →
+          </button>
+        </div>
+      )}
     </div>
 
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -144,7 +149,14 @@ const CaseTypeStep = ({
             ? "border-primary bg-primary/5 ring-2 ring-primary/20"
             : "border-border hover:border-primary/50 hover:bg-muted/50"
         }`}
-        onClick={() => onCaseTypeChange("Spouse")}
+        onClick={() => {
+          onCaseTypeChange("Spouse");
+          window.scrollBy({
+            top: window.innerHeight,
+            left: 0,
+            behavior: "smooth",
+          });
+        }}
       >
         <div className="mx-auto bg-primary/10 text-primary w-12 h-12 md:w-16 md:h-16 rounded-full flex items-center justify-center mb-4">
           <svg
@@ -388,8 +400,30 @@ const QuestionStep = ({
   setFormData,
   onNext,
   onBack,
-  // onSaveForLater,
 }: QuestionStepProps) => {
+  // Refs for each question to scroll
+  const questionRefs = useRef<Record<string, HTMLDivElement | null>>({});
+
+  const handleChange = (id: keyof FormData, value: unknown) => {
+    const oldValue = formData[id];
+    if (oldValue === value) return; 
+  
+    onChange(id, value);
+  
+    // Auto-scroll slightly (25px from top)
+    const el = questionRefs.current[id];
+    if (el) {
+      const rect = el.getBoundingClientRect();
+      const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+      const top = rect.top + scrollTop - 25; // 25px offset from top
+  
+      window.scrollTo({
+        top,
+        behavior: "smooth",
+      });
+    }
+  };
+
   const renderInput = (question: {
     id: keyof FormData;
     label: string;
@@ -407,9 +441,7 @@ const QuestionStep = ({
       return (
         <CountryAutocomplete
           formData={formData as unknown as Record<string, unknown>}
-          setFormData={(data) =>
-            setFormData((prev) => ({ ...prev, ...data }))
-          }
+          setFormData={(data) => setFormData((prev) => ({ ...prev, ...data }))}
           hideLabel
           inputClassName="w-full p-3 border border-input rounded-lg focus:ring-2 focus:ring-ring focus:border-ring transition-colors bg-background"
           placeholder="Start typing country..."
@@ -432,8 +464,13 @@ const QuestionStep = ({
                   ? value
                   : ""
             }
+            onClick={(e) => {
+              if (question.type === "date") {
+                (e.currentTarget as HTMLInputElement).showPicker?.();
+              }
+            }}
             onChange={(e) =>
-              onChange(
+              handleChange(
                 question.id,
                 question.type === "number"
                   ? Number(e.target.value)
@@ -448,7 +485,7 @@ const QuestionStep = ({
         return (
           <textarea
             value={typeof value === "string" ? value : ""}
-            onChange={(e) => onChange(question.id, e.target.value)}
+            onChange={(e) => handleChange(question.id, e.target.value)}
             className="w-full p-3 border border-input rounded-lg focus:ring-2 focus:ring-ring focus:border-ring transition-colors bg-background"
             placeholder={`Enter details for ${question.label.toLowerCase()}`}
             rows={4}
@@ -462,7 +499,7 @@ const QuestionStep = ({
             </span>
             <ToggleSwitch
               checked={!!value}
-              onChange={(checked) => onChange(question.id, checked)}
+              onChange={(checked) => handleChange(question.id, checked)}
             />
           </div>
         );
@@ -471,7 +508,7 @@ const QuestionStep = ({
           return (
             <Select
               value={typeof value === "string" ? value : ""}
-              onValueChange={(newValue) => onChange(question.id, newValue)}
+              onValueChange={(newValue) => handleChange(question.id, newValue)}
             >
               <SelectTrigger className="w-full h-14">
                 <SelectValue
@@ -505,19 +542,17 @@ const QuestionStep = ({
 
       <div className="space-y-8">
         {questions.map((question) => {
-          // Hide US state question based on relationship type
+          // Conditional hiding logic
           if (question.id === "intended_us_state_of_residence") {
             const relationshipType = formData.spousal_relationship_type;
             if (
               !relationshipType ||
               relationshipType === "Select" ||
               relationshipType === "No biological relation"
-            ) {
+            )
               return null;
-            }
           }
 
-          // Hide field of study question unless education level qualifies
           if (question.id === "highest_education_field") {
             const educationLevel = formData.highest_education_level;
             const qualifyingLevels = [
@@ -525,45 +560,36 @@ const QuestionStep = ({
               "Master's degree",
               "Doctorate (PhD)",
             ];
-
-            if (!educationLevel || !qualifyingLevels.includes(educationLevel)) {
+            if (!educationLevel || !qualifyingLevels.includes(educationLevel))
               return null;
-            }
           }
 
-          // Hide military / defense additional questions unless industry sector meets criteria
           if (
-            question.id === "prior_military_service" ||
-            question.id === "specialized_weapons_training" ||
-            question.id === "unofficial_armed_groups"
+            [
+              "prior_military_service",
+              "specialized_weapons_training",
+              "unofficial_armed_groups",
+            ].includes(question.id as string)
           ) {
             const industrySector = formData.industry_sector;
-            const qualifyingSectors = ["Military/Defense"];
-
-            if (
-              !industrySector ||
-              !qualifyingSectors.includes(industrySector)
-            ) {
+            if (!industrySector || industrySector !== "Military/Defense")
               return null;
-            }
-          }
-
-          let modifiedQuestion = question;
-          if (question.id === "intended_us_state_of_residence") {
-            modifiedQuestion = { ...question, type: "text" };
           }
 
           return (
             <div
               key={question.id}
+              ref={(el: HTMLDivElement | null) => {
+                questionRefs.current[question.id] = el;
+              }}
               className="space-y-3 p-4 bg-slate-50 rounded-xl border border-slate-200"
             >
               {question.type !== "boolean" && (
                 <label className="block text-lg font-semibold text-slate-800">
-                  {modifiedQuestion.label}
+                  {question.label}
                 </label>
               )}
-              {renderInput(modifiedQuestion)}
+              {renderInput(question)}
             </div>
           );
         })}
@@ -593,7 +619,7 @@ const QuestionStep = ({
             variant="outline"
             disabled={loading}
             className="bg-white hover:bg-slate-50 text-secondary-foreground border-input py-6 text-lg disabled:opacity-60 disabled:cursor-not-allowed"
-            >
+          >
             ← Previous
           </Button>
           <div className="flex flex-row gap-3">
@@ -745,6 +771,26 @@ const ReviewStep = ({
               Basic Profile
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {formData.sponsor_full_name && (
+                <div>
+                  <p className="text-base text-muted-foreground mb-1">
+                    Sponsor Name
+                  </p>
+                  <p className="text-lg font-semibold">
+                    {formData.sponsor_full_name}
+                  </p>
+                </div>
+              )}
+              {formData.beneficiary_full_name && (
+                <div>
+                  <p className="text-base text-muted-foreground mb-1">
+                    Beneficiary Name
+                  </p>
+                  <p className="text-lg font-semibold">
+                    {formData.beneficiary_full_name}
+                  </p>
+                </div>
+              )}
               {formData.sponsor_dob && (
                 <div>
                   <p className="text-base text-muted-foreground mb-1">
@@ -775,6 +821,26 @@ const ReviewStep = ({
                   </p>
                 </div>
               )}
+              {formData.relationship_start_date && (
+                <div>
+                  <p className="text-base text-muted-foreground mb-1">
+                    Relationship Start Date
+                  </p>
+                  <p className="text-lg font-semibold">
+                    {formatDate(formData.relationship_start_date)}
+                  </p>
+                </div>
+              )}
+              {formData.marriage_date && (
+                <div>
+                  <p className="text-base text-muted-foreground mb-1">
+                    Marriage Date
+                  </p>
+                  <p className="text-lg font-semibold">
+                    {formatDate(formData.marriage_date)}
+                  </p>
+                </div>
+              )}
               {formData.spousal_relationship_type && (
                 <div>
                   <p className="text-base text-muted-foreground mb-1">
@@ -782,6 +848,16 @@ const ReviewStep = ({
                   </p>
                   <p className="text-lg font-semibold">
                     {formData.spousal_relationship_type}
+                  </p>
+                </div>
+              )}
+              {formData.i130_status && (
+                <div>
+                  <p className="text-base text-muted-foreground mb-1">
+                    I-130 Petition Status
+                  </p>
+                  <p className="text-lg font-semibold">
+                    {formData.i130_status}
                   </p>
                 </div>
               )}
@@ -916,7 +992,8 @@ const ReviewStep = ({
           formData.wedding_photos_available !== undefined ||
           formData.communication_logs !== undefined ||
           formData.money_transfer_receipts_available !== undefined ||
-          formData.driving_license_copy_available !== undefined) && (
+          formData.driving_license_copy_available !== undefined ||
+          formData.children_together !== undefined) && (
           <div className="bg-muted/30 rounded-xl p-6 border border-border">
             <h3 className="text-xl font-bold text-foreground mb-4 flex items-center gap-3">
               <div className="bg-primary/20 text-primary w-10 h-10 rounded-full flex items-center justify-center">
@@ -1017,6 +1094,16 @@ const ReviewStep = ({
                   </p>
                 </div>
               )}
+              {formData.children_together !== undefined && (
+                <div>
+                  <p className="text-base text-muted-foreground mb-1">
+                    Children Together
+                  </p>
+                  <p className="text-lg font-semibold">
+                    {formatBoolean(formData.children_together)}
+                  </p>
+                </div>
+              )}
             </div>
           </div>
         )}
@@ -1025,7 +1112,8 @@ const ReviewStep = ({
         {(formData.previous_visa_applications !== undefined ||
           formData.previous_visa_denial !== undefined ||
           formData.overstay_or_violation !== undefined ||
-          formData.criminal_record !== undefined) && (
+          formData.criminal_record !== undefined ||
+          formData.prior_marriages_exist !== undefined) && (
           <div className="bg-muted/30 rounded-xl p-6 border border-border">
             <h3 className="text-xl font-bold text-foreground mb-4 flex items-center gap-3">
               <div className="bg-primary/20 text-primary w-10 h-10 rounded-full flex items-center justify-center">
@@ -1083,6 +1171,16 @@ const ReviewStep = ({
                   </p>
                   <p className="text-lg font-semibold">
                     {formatBoolean(formData.criminal_record)}
+                  </p>
+                </div>
+              )}
+              {formData.prior_marriages_exist !== undefined && (
+                <div>
+                  <p className="text-base text-muted-foreground mb-1">
+                    Prior Marriages Exist
+                  </p>
+                  <p className="text-lg font-semibold">
+                    {formatBoolean(formData.prior_marriages_exist)}
                   </p>
                 </div>
               )}
@@ -1208,9 +1306,11 @@ const ReviewStep = ({
         {/* Core Identity Documents Section */}
         {(formData.urdu_marriage_certificate !== undefined ||
           formData.english_translation_certificate !== undefined ||
-          formData.union_council_certificate !== undefined ||
+          formData.nadra_marriage_registration_cert !== undefined ||
           formData.family_registration_certificate !== undefined ||
-          formData.birth_certificates !== undefined) && (
+          formData.birth_certificates !== undefined ||
+          formData.prior_marriages_exist !== undefined ||
+          formData.prior_marriage_termination_docs !== undefined) && (
           <div className="bg-muted/30 rounded-xl p-6 border border-border">
             <h3 className="text-xl font-bold text-foreground mb-4 flex items-center gap-3">
               <div className="bg-primary/20 text-primary w-10 h-10 rounded-full flex items-center justify-center">
@@ -1251,13 +1351,13 @@ const ReviewStep = ({
                   </p>
                 </div>
               )}
-              {formData.union_council_certificate !== undefined && (
+              {formData.nadra_marriage_registration_cert !== undefined && (
                 <div>
                   <p className="text-base text-muted-foreground mb-1">
-                    Union Council Certificate
+                    NADRA Marriage Certificate
                   </p>
                   <p className="text-lg font-semibold">
-                    {formatBoolean(formData.union_council_certificate)}
+                    {formatBoolean(formData.nadra_marriage_registration_cert)}
                   </p>
                 </div>
               )}
@@ -1278,6 +1378,16 @@ const ReviewStep = ({
                   </p>
                   <p className="text-lg font-semibold">
                     {formatBoolean(formData.birth_certificates)}
+                  </p>
+                </div>
+              )}
+              {formData.prior_marriage_termination_docs !== undefined && (
+                <div>
+                  <p className="text-base text-muted-foreground mb-1">
+                    Prior Marriage Termination Docs
+                  </p>
+                  <p className="text-lg font-semibold">
+                    {formatBoolean(formData.prior_marriage_termination_docs)}
                   </p>
                 </div>
               )}
@@ -1349,7 +1459,6 @@ const ReviewStep = ({
           formData.courier_registration !== undefined ||
           formData.medical_report_available !== undefined ||
           formData.polio_vaccination_certificate !== undefined ||
-          formData.covid_vaccination_certificate !== undefined ||
           formData.passport_photos_2x2 !== undefined) && (
           <div className="bg-muted/30 rounded-xl p-6 border border-border">
             <h3 className="text-xl font-bold text-foreground mb-4 flex items-center gap-3">
@@ -1421,16 +1530,7 @@ const ReviewStep = ({
                   </p>
                 </div>
               )}
-              {formData.covid_vaccination_certificate !== undefined && (
-                <div>
-                  <p className="text-base text-muted-foreground mb-1">
-                    COVID Vaccination Certificate
-                  </p>
-                  <p className="text-lg font-semibold">
-                    {formatBoolean(formData.covid_vaccination_certificate)}
-                  </p>
-                </div>
-              )}
+
               {formData.passport_photos_2x2 !== undefined && (
                 <div>
                   <p className="text-base text-muted-foreground mb-1">
@@ -1469,7 +1569,7 @@ const ReviewStep = ({
             onClick={onBack}
             variant="outline"
             className="bg-white hover:bg-slate-50 text-secondary-foreground border-input py-6 text-lg"
-            >
+          >
             ← Previous
           </Button>
           <div className="flex flex-row gap-3">
@@ -1500,7 +1600,7 @@ export default function VisaCaseStrengthChecker() {
   const isNavigatingRef = useRef<boolean>(false);
   const [isNavigating, setIsNavigating] = useState(false);
 
-  const {isAuthenticated} = useAuth();
+  const { isAuthenticated } = useAuth();
 
   const supabase = createBrowserClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -1532,6 +1632,7 @@ export default function VisaCaseStrengthChecker() {
           marriage_date: "",
           spousal_relationship_type: "",
           intended_us_state_of_residence: "",
+          i130_status: "",
           highest_education_level: "",
           highest_education_field: "",
           current_occupation_role: "",
@@ -1548,6 +1649,7 @@ export default function VisaCaseStrengthChecker() {
           communication_logs: false,
           money_transfer_receipts_available: false,
           driving_license_copy_available: false,
+          children_together: false,
           previous_visa_applications: false,
           previous_visa_denial: false,
           overstay_or_violation: false,
@@ -1562,9 +1664,11 @@ export default function VisaCaseStrengthChecker() {
           i864_supporting_financial_documents: false,
           urdu_marriage_certificate: false,
           english_translation_certificate: false,
-          union_council_certificate: false,
+          nadra_marriage_registration_cert: false,
           family_registration_certificate: false,
           birth_certificates: false,
+          prior_marriages_exist: false,
+          prior_marriage_termination_docs: false,
           passports_available: false,
           passport_copy_available: false,
           valid_police_clearance_certificate: false,
@@ -1573,7 +1677,6 @@ export default function VisaCaseStrengthChecker() {
           courier_registration: false,
           medical_report_available: false,
           polio_vaccination_certificate: false,
-          covid_vaccination_certificate: false,
           passport_photos_2x2: false,
         });
         setProfileLoaded(false);
@@ -1591,7 +1694,7 @@ export default function VisaCaseStrengthChecker() {
       if (profileLoaded && lastUserId === user.id) {
         return;
       }
-      
+
       try {
         const { data } = await supabase
           .from("user_profiles")
@@ -1600,28 +1703,7 @@ export default function VisaCaseStrengthChecker() {
           .single();
 
         if (data?.profile_details) {
-            const profile = data.profile_details as MasterProfile;
-            
-            // 1. Check for specific Saved Case Strength Session
-            if (profile.caseStrength?.lastSessionId && profile.caseStrength?.answers) {
-                 // Restore specific tool state
-                  setFormData({
-                    caseType: (profile.caseStrength.caseType as CaseType) || "",
-                    ...profile.caseStrength.answers
-                  } as FormData);
-                 setSessionId(profile.caseStrength.lastSessionId);
-                 setProfileLoaded(true);
-                 
-                 // If we have a sessionId, we assume the user might have completed or wants to see results
-                 // But strictly speaking, sessionId just means a session exists.
-                 // The user wants "Direct Result" like Visa Eligibility.
-                 // In Visa Eligibility, we check if enough data exists.
-                 // Here, if we have a saved sessionId, it implies we saved result state?
-                 // Let's perform a check: if we have answers and sessionId, try to jump to results.
-                 // Note: questionnaireData might not be loaded yet, so we can't set step to length+2 reliably here.
-                 // We will set a flag or rely on the other useEffect.
-                 return; 
-            }
+          const profile = data.profile_details as MasterProfile;
 
           // 1. Check for specific Saved Case Strength Session
           if (
@@ -1704,6 +1786,15 @@ export default function VisaCaseStrengthChecker() {
 
   const [isEditing, setIsEditing] = useState(false);
 
+  useEffect(() => {
+    const storedSession = localStorage.getItem("visaCheckerSessionId");
+
+    if (storedSession) {
+      setSessionId(storedSession);
+      setStep(1); // first question
+    }
+  }, []);
+
   // Auto-jump to results if session restored
   useEffect(() => {
     if (
@@ -1723,12 +1814,16 @@ export default function VisaCaseStrengthChecker() {
   // Define valid question keys to validate against the enum
   const validQuestionKeys: (keyof FormData)[] = [
     // Basic Profile
+    "sponsor_full_name",
+    "beneficiary_full_name",
     "sponsor_dob",
     "beneficiary_dob",
     "country_of_residence",
     "marriage_date",
+    "relationship_start_date",
     "spousal_relationship_type",
     "intended_us_state_of_residence",
+    "i130_status",
     // Education & Employment Background
     "highest_education_level",
     "highest_education_field",
@@ -1747,11 +1842,14 @@ export default function VisaCaseStrengthChecker() {
     "communication_logs",
     "money_transfer_receipts_available",
     "driving_license_copy_available",
+    "children_together",
     // Immigration History
     "previous_visa_applications",
     "previous_visa_denial",
     "overstay_or_violation",
     "criminal_record",
+    "prior_marriages_exist",
+    "prior_marriage_termination_docs",
     // Financial Profile
     "sponsor_annual_income",
     "household_size",
@@ -1764,7 +1862,7 @@ export default function VisaCaseStrengthChecker() {
     // Core Identity Documents
     "urdu_marriage_certificate",
     "english_translation_certificate",
-    "union_council_certificate",
+    "nadra_marriage_registration_cert",
     "family_registration_certificate",
     "birth_certificates",
     // Passport & Police Documents
@@ -1777,7 +1875,7 @@ export default function VisaCaseStrengthChecker() {
     "courier_registration",
     "medical_report_available",
     "polio_vaccination_certificate",
-    "covid_vaccination_certificate",
+
     "passport_photos_2x2",
   ];
 
@@ -1955,6 +2053,7 @@ export default function VisaCaseStrengthChecker() {
             ) {
               setError(`Please select an option for: ${question.label}`);
               isNavigatingRef.current = false;
+              setIsNavigating(false);
               return;
             }
           } else {
@@ -1965,6 +2064,7 @@ export default function VisaCaseStrengthChecker() {
             ) {
               setError(`Please fill in all required fields: ${question.label}`);
               isNavigatingRef.current = false;
+              setIsNavigating(false);
               return;
             }
           }
@@ -1976,6 +2076,7 @@ export default function VisaCaseStrengthChecker() {
           ) {
             setError(`Please enter a valid number for ${question.label}`);
             isNavigatingRef.current = false;
+            setIsNavigating(false);
             return;
           }
 
@@ -1986,6 +2087,7 @@ export default function VisaCaseStrengthChecker() {
           ) {
             setError(`Please enter a valid date for ${question.label}`);
             isNavigatingRef.current = false;
+            setIsNavigating(false);
             return;
           }
 
@@ -1998,6 +2100,7 @@ export default function VisaCaseStrengthChecker() {
               `Please enter a valid positive number for ${question.label}`,
             );
             isNavigatingRef.current = false;
+            setIsNavigating(false);
             return;
           }
 
@@ -2018,6 +2121,7 @@ export default function VisaCaseStrengthChecker() {
                 `Date of birth must be in the past for ${question.label}`,
               );
               isNavigatingRef.current = false;
+              setIsNavigating(false);
               return;
             }
           }
@@ -2263,18 +2367,25 @@ export default function VisaCaseStrengthChecker() {
         <QuestionStep
           title={section.title}
           description={`Please answer the following questions for ${section.title}`}
-          questions={section.questions.map((q: QuestionDefinition) => ({
-            id: q.id as keyof FormData,
-            label: q.label,
-            type: q.type as
-              | "text"
-              | "textarea"
-              | "number"
-              | "date"
-              | "boolean"
-              | "select",
-            options: q.options || undefined,
-          }))}
+          questions={section.questions
+            .filter((q: QuestionDefinition) => {
+              if (q.id === "prior_marriage_termination_docs") {
+                return formData.prior_marriages_exist === true;
+              }
+              return true;
+            })
+            .map((q: QuestionDefinition) => ({
+              id: q.id as keyof FormData,
+              label: q.label,
+              type: q.type as
+                | "text"
+                | "textarea"
+                | "number"
+                | "date"
+                | "boolean"
+                | "select",
+              options: q.options || undefined,
+            }))}
           formData={formData}
           error={error}
           loading={loading || isNavigating}
@@ -2313,13 +2424,34 @@ export default function VisaCaseStrengthChecker() {
       return (
         <ResultPage
           sessionId={sessionId}
-          onRestart={() => {
-            setSessionId("");
-            setStep(0);
-            setFormData({} as FormData);
+          onRestart={async () => {
+            // Clear all local state
+            setLoading(false);
+            setIsNavigating(false);
             setSessionId(null);
+            setStep(0);
+            setFormData({ caseType: "" });
             setIsEditing(false);
+            setIsRestoredSession(false);
             localStorage.removeItem("visaCheckerSessionId");
+
+            // Also clear the dead session from user's saved profile so it doesn't get auto-restored
+            if (user?.id) {
+              try {
+                await supabase.from("user_profiles").upsert(
+                  {
+                    id: user.id,
+                    profile_details: {
+                      caseStrength: null,
+                    },
+                    updated_at: new Date().toISOString(),
+                  },
+                  { onConflict: "id" }
+                );
+              } catch {
+                // Non-critical - just ignore if profile update fails
+              }
+            }
           }}
           onEdit={() => {
             setIsEditing(true);
@@ -2348,7 +2480,10 @@ export default function VisaCaseStrengthChecker() {
     const sections = questionnaireData.sections;
     const currentSectionIndex = step - 1;
     const totalSteps = questionnaireData.sections.length + 2; // +2 for review and results steps
-    const progressPercentage = Math.max(0, Math.min(100, Math.round((step / totalSteps) * 100)));
+    const progressPercentage = Math.max(
+      0,
+      Math.min(100, Math.round((step / totalSteps) * 100)),
+    );
 
     return (
       <div className="mb-8">

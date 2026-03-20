@@ -249,15 +249,16 @@ export interface MasterProfile {
     petitionerStatus?: "US_CITIZEN" | "LPR" | "NONE";
     statusOrigin?: "NATURALIZED" | "BIRTH" | "GREEN_CARD";
     petitionerAgeGroup?: "UNDER_21" | "OVER_21";
-    relationship?: "SPOUSE" | "PARENT" | "CHILD" | "SIBLING" | "FIANCE" | "OTHER";
+    relationship?: "SPOUSE" | "PARENT" | "CHILD" | "SIBLING" | "FIANCE" | "OTHER" | "EMPLOYMENT" | "CHILD_UNDER_21" | "SON_DAUGHTER_ADULT" | "SON_DAUGHTER_MARRIED";
     legalStatus?: "MARRIAGE_REGISTERED" | "BIOLOGICAL" | "ADOPTIVE" | "STEP";
     applicantAgeGroup?: "UNDER_21" | "OVER_21";
     applicantMaritalStatus?: "SINGLE" | "MARRIED" | "DIVORCED_WIDOWED";
-    applicantLocation?: "OUTSIDE_US" | "INSIDE_US";
+    applicantLocation?: "OUTSIDE_US" | "INSIDE_US" | "PAKISTAN" | "OTHER_COUNTRY";
     isLegallyMarried?: "YES" | "NO";
     marriageDuration?: "LESS_THAN_2" | "MORE_THAN_2";
     violationHistory?: "YES" | "NO" | "NOT_SURE";
     intent?: "PERMANENT" | "TEMPORARY";
+    tempPurpose?: "TOURISM" | "STUDY" | "WORK" | "HUMANITARIAN";
     sponsorBase?: "FAMILY" | "EMPLOYMENT" | "INVESTMENT" | "HUMANITARIAN";
   };
   

@@ -1,0 +1,340 @@
+{
+  "title": "Canada Study Permit Journey",
+  "description": "Step-by-step roadmap for Pakistani students applying for a Canadian Study Permit — from DLI acceptance through arriving in Canada and maintaining your study permit conditions.",
+  "disclaimer": "Informational guidance only. Canadian immigration rules change frequently. Always confirm current requirements at IRCC – Study Permit before taking any action.",
+  "disclaimerLinks": [
+    {
+      "text": "IRCC – Study Permit",
+      "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/study-canada/study-permit.html"
+    }
+  ],
+  "info": "Canada issues a Study Permit rather than a traditional student visa. Pakistani nationals are not visa-exempt and also require a Temporary Resident Visa (TRV), which IRCC typically processes together with the study permit application. You must be accepted by a Designated Learning Institution (DLI). Review current requirements at canada.ca.",
+  "infoLinks": [
+    {
+      "text": "canada.ca.",
+      "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/study-canada/study-permit.html"
+    }
+  ],
+  "stages": [
+    {
+      "id": 1,
+      "name": "Stage I: DLI Acceptance",
+      "icon": "FileText",
+      "color": "bg-blue-50 text-blue-600",
+      "time": "Before applying",
+      "sources": [
+        {
+          "label": "IRCC – Study Permit",
+          "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/study-canada/study-permit.html"
+        },
+        {
+          "label": "IRCC – DLI List",
+          "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/study-canada/study-permit/prepare/designated-learning-institutions-list.html"
+        }
+      ],
+      "steps": [
+        {
+          "id": "I-01",
+          "name": "Choose a Designated Learning Institution (DLI)",
+          "description": "You must be accepted by a school on the official IRCC list of Designated Learning Institutions. Not every Canadian school qualifies — verify your target institution before applying.",
+          "actions": [
+            "Search the official DLI list at canada.ca and confirm your institution is listed",
+            "Note the DLI number associated with your institution — required for your study permit application",
+            "Research programs matching your academic background and career goals",
+            "Confirm whether a study permit is needed: programs of six months or less may not require one — check current rules at canada.ca",
+            "Review the institution's language requirements and application deadlines"
+          ],
+          "output": "Target DLI confirmed on the official IRCC DLI list; DLI number recorded"
+        },
+        {
+          "id": "I-02",
+          "name": "Apply and Receive Your DLI Acceptance Letter",
+          "description": "Submit your application to the DLI and obtain an official letter of acceptance. This document is a mandatory requirement for the study permit application.",
+          "actions": [
+            "Submit a complete application to your chosen DLI well before their stated deadline",
+            "Provide all required academic transcripts, language test results, and supporting documents",
+            "Upon admission: receive your official letter of acceptance (offer of admission)",
+            "Verify the letter contains your name, program name, program start date, and DLI name and number",
+            "Keep the original — it will be uploaded to your IRCC online application"
+          ],
+          "output": "Official DLI acceptance letter received with correct student and program details"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "name": "Stage II: Document Preparation",
+      "icon": "FolderOpen",
+      "color": "bg-purple-50 text-purple-600",
+      "time": "Before application",
+      "sources": [
+        {
+          "label": "IRCC – Required Documents",
+          "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/study-canada/study-permit/get-documents.html"
+        },
+        {
+          "label": "IRCC – Financial Proof",
+          "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/study-canada/study-permit/get-documents.html#financial"
+        }
+      ],
+      "steps": [
+        {
+          "id": "II-01",
+          "name": "Confirm Your Passport is Valid",
+          "description": "You must have a valid passport to apply. Pakistani nationals also require a Temporary Resident Visa (TRV), which IRCC typically processes alongside the study permit application.",
+          "actions": [
+            "Confirm your Pakistani passport is valid and will remain valid for the duration of your studies in Canada",
+            "Ensure sufficient blank pages remain",
+            "If renewal is needed: renew well in advance before starting the study permit application",
+            "Prepare a clear scan of your passport biographical page for upload"
+          ],
+          "output": "Valid passport confirmed; clear scan prepared for upload"
+        },
+        {
+          "id": "II-02",
+          "name": "Gather Proof of Financial Support",
+          "description": "You must demonstrate to IRCC that you have sufficient funds to cover tuition, living expenses, and your return journey. Required amounts are set by IRCC and updated periodically.",
+          "canadaNote": "Do not rely on unofficial sources for financial amounts — they can change. Check the current financial proof requirements at canada.ca/en/immigration-refugees-citizenship/services/study-canada/study-permit/get-documents.html#financial before gathering documents.",
+          "actions": [
+            "Check the current required funds at the IRCC financial requirements page",
+            "Gather recent official bank statements covering a period confirmed on the IRCC website",
+            "If a parent or sponsor is supporting you: include their bank statements and a signed support letter",
+            "If you hold a scholarship: include the award letter as financial evidence",
+            "Ensure all financial documents are in English or French, or include a certified translation"
+          ],
+          "output": "Financial evidence assembled meeting current IRCC requirements"
+        },
+        {
+          "id": "II-03",
+          "name": "Gather Supporting Documents",
+          "description": "IRCC generates a personalised document checklist based on your application profile. Review the full list on the IRCC website for your specific situation before gathering documents.",
+          "actions": [
+            "Review the full IRCC document checklist at canada.ca/en/immigration-refugees-citizenship/services/study-canada/study-permit/get-documents.html",
+            "Prepare two recent passport-size photographs meeting IRCC photo specifications",
+            "Gather academic transcripts and diplomas demonstrating your educational background",
+            "Prepare a study plan or statement of purpose if recommended by IRCC guidance",
+            "Check whether a police certificate is currently required for Pakistani applicants on the IRCC website"
+          ],
+          "output": "All required supporting documents gathered and ready for upload"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "name": "Stage III: Online Application",
+      "icon": "Monitor",
+      "color": "bg-green-50 text-green-600",
+      "time": "Within DLI's window",
+      "sources": [
+        {
+          "label": "IRCC – Apply Online",
+          "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/study-canada/study-permit/apply.html"
+        },
+        {
+          "label": "IRCC – Fees",
+          "url": "https://www.ircc.canada.ca/english/information/fees/index.asp"
+        }
+      ],
+      "steps": [
+        {
+          "id": "III-01",
+          "name": "Create a GCKey Account and Start the Application",
+          "description": "Canadian study permit applications are submitted online through the IRCC secure portal using a GCKey or Sign-In Partner government account.",
+          "actions": [
+            "Go to canada.ca/en/immigration-refugees-citizenship/services/study-canada/study-permit/apply.html and follow the online application link",
+            "Create a GCKey account at canada.ca/en/government/sign-in-online-account/gckey.html if you do not have one",
+            "Complete the IRCC eligibility questionnaire to confirm the correct permit type",
+            "Begin a new study permit application — Pakistani nationals will also be prompted for a Temporary Resident Visa (TRV)"
+          ],
+          "output": "IRCC online account created; study permit and TRV application started"
+        },
+        {
+          "id": "III-02",
+          "name": "Complete the Online Application Form",
+          "description": "Fill in the IRCC form accurately using your DLI acceptance details, personal information, and travel history. Every field must match your supporting documents exactly.",
+          "actions": [
+            "Enter your DLI name, DLI number, and program details as on your acceptance letter",
+            "Provide complete personal information matching your passport exactly",
+            "Answer all background and eligibility questions honestly and completely",
+            "Upload all documents as specified in your personalised IRCC document checklist",
+            "Review every section for errors before proceeding to payment"
+          ],
+          "output": "Online application form completed; all documents uploaded"
+        },
+        {
+          "id": "III-03",
+          "name": "Pay the Application Fee",
+          "description": "Pay the study permit application fee (and TRV fee if applicable) as part of the online application. Fees are non-refundable. Verify current amounts on the official IRCC fee page.",
+          "warn": "Do not rely on unofficial sources for current fee amounts. Check current fees at ircc.canada.ca before paying. Fees are generally non-refundable even if the application is refused.",
+          "actions": [
+            "Check current study permit and TRV fees at ircc.canada.ca/english/information/fees/index.asp",
+            "Pay all applicable fees online using a valid credit or debit card",
+            "Save your payment confirmation receipt before submitting"
+          ],
+          "output": "Application fee and TRV fee paid; payment confirmation saved"
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "name": "Stage IV: Biometrics (Pakistan)",
+      "icon": "Fingerprint",
+      "color": "bg-amber-50 text-amber-600",
+      "time": "After submission",
+      "sources": [
+        {
+          "label": "IRCC – Biometrics",
+          "url": "https://www.canada.ca/en/immigration-refugees-citizenship/campaigns/biometrics/facts.html"
+        },
+        {
+          "label": "VFS Global Canada – Pakistan",
+          "url": "https://canada.vfsglobal.com/pak/en/"
+        }
+      ],
+      "steps": [
+        {
+          "id": "IV-01",
+          "name": "Receive Biometric Instruction Letter (BIL)",
+          "description": "After submitting your application, IRCC will issue a Biometric Instruction Letter if biometrics are required. Pakistani nationals are typically required to provide biometrics.",
+          "actions": [
+            "Monitor your IRCC online account and registered email for the Biometric Instruction Letter (BIL)",
+            "Note the biometrics deadline stated in the BIL — you must enrol within this timeframe",
+            "Confirm whether existing biometrics on file with IRCC are still valid (biometrics have a validity period — check with IRCC)",
+            "If biometrics are required: proceed to book at a VFS Global VAC in Pakistan"
+          ],
+          "output": "BIL received; biometrics deadline noted"
+        },
+        {
+          "id": "IV-02",
+          "name": "Book and Attend VFS Global Biometrics Appointment",
+          "description": "IRCC directs Pakistani applicants to book biometrics at Visa Application Centres (VACs) operated by VFS Global in Pakistan. Book through the VFS Global Canada Pakistan portal.",
+          "canadaNote": "VFS Global is the official service provider for Canadian biometrics in Pakistan. Book your appointment at canada.vfsglobal.com/pak/en/. VACs are located in Islamabad, Karachi, and Lahore — confirm current locations and availability on the VFS website.",
+          "actions": [
+            "Visit canada.vfsglobal.com/pak/en/ to book a biometrics appointment at the nearest VAC",
+            "Select the VAC location appropriate to your city of residence",
+            "Book an available appointment date and time",
+            "Bring your Biometric Instruction Letter (printed or on your phone), valid passport, and any additional documents specified by VFS",
+            "Attend the appointment and provide fingerprints and photograph as directed",
+            "Collect your receipt confirming biometrics enrollment"
+          ],
+          "output": "Biometrics enrolled at VFS Global VAC in Pakistan within the BIL deadline"
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "name": "Stage V: Decision & Travel",
+      "icon": "CheckCircle",
+      "color": "bg-rose-50 text-rose-600",
+      "time": "On decision",
+      "sources": [
+        {
+          "label": "IRCC – After You Apply",
+          "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/study-canada/study-permit/after-apply-next-steps.html"
+        },
+        {
+          "label": "IRCC – Processing Times",
+          "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/application/check-processing-times.html"
+        }
+      ],
+      "steps": [
+        {
+          "id": "V-01",
+          "name": "Await and Receive the Decision",
+          "description": "IRCC will process your study permit and TRV and issue a decision. Processing times vary — check current estimates on the IRCC website. Avoid non-refundable travel commitments until you receive a positive outcome.",
+          "warn": "Do not book non-refundable flights until your study permit is approved. Check current processing times at canada.ca/en/immigration-refugees-citizenship/services/application/check-processing-times.html.",
+          "actions": [
+            "Check current study permit processing times on the IRCC website",
+            "Monitor your IRCC online account and email for updates or requests for additional documents",
+            "Respond promptly to any IRCC request for further information",
+            "If approved: you will receive a Port of Entry (POE) Letter of Introduction; Pakistani nationals will also receive a TRV stamp in their passport",
+            "If refused: review the refusal reasons carefully and assess your options"
+          ],
+          "output": "Study permit approval and POE Letter of Introduction received"
+        },
+        {
+          "id": "V-02",
+          "name": "Prepare to Travel to Canada",
+          "description": "Your study permit is not affixed to your passport — it is issued as a separate document by a CBSA officer at the Canadian port of entry. Carry your POE Letter of Introduction when you travel.",
+          "actions": [
+            "Confirm you have your Port of Entry (POE) Letter of Introduction from IRCC",
+            "Confirm your TRV stamp is in your valid passport",
+            "Book flights arriving before your program start date and within your TRV validity",
+            "Carry your DLI acceptance letter, financial evidence, and POE Letter in your hand luggage",
+            "Review entry expectations at canada.ca/en/immigration-refugees-citizenship/services/study-canada/study-permit/prepare-arrival.html"
+          ],
+          "output": "Travel booked; all required documents prepared for the Canadian port of entry"
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "name": "Stage VI: Arrival & Conditions",
+      "icon": "Plane",
+      "color": "bg-indigo-50 text-indigo-600",
+      "time": "Ongoing",
+      "sources": [
+        {
+          "label": "IRCC – Prepare for Arrival",
+          "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/study-canada/study-permit/prepare-arrival.html"
+        },
+        {
+          "label": "IRCC – Study Permit Conditions",
+          "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/study-canada/study-permit/while-you-study.html"
+        }
+      ],
+      "steps": [
+        {
+          "id": "VI-01",
+          "name": "Clear Canadian Border and Receive Your Study Permit",
+          "description": "Present your POE Letter of Introduction to the CBSA officer at the Canadian port of entry. The officer will issue your physical study permit document on arrival.",
+          "actions": [
+            "Present your valid passport, valid TRV, and POE Letter of Introduction to the CBSA officer",
+            "Carry your DLI acceptance letter and financial evidence in case they are requested",
+            "Answer all CBSA officer questions honestly",
+            "Receive your study permit document — review it immediately for accuracy (name, DLI, program, validity dates)",
+            "If any details are incorrect: raise this with the CBSA officer before leaving the port of entry"
+          ],
+          "output": "Study permit issued at Canadian port of entry; all details verified as correct"
+        },
+        {
+          "id": "VI-02",
+          "name": "Enrol at Your DLI",
+          "description": "Complete enrolment and registration at your DLI as required. Your study permit conditions require you to actively study at the DLI named on your permit.",
+          "actions": [
+            "Attend your DLI's orientation, enrolment, and registration sessions",
+            "Complete all registration requirements by the DLI's stated deadline",
+            "Confirm your program and enrolment details match what is on your study permit",
+            "If you need to change DLI or program: check IRCC requirements for updating your study permit before making any change"
+          ],
+          "output": "Enrolled and registered at the DLI named on your study permit"
+        },
+        {
+          "id": "VI-03",
+          "name": "Understand and Comply with Study Permit Conditions",
+          "description": "Your study permit conditions are printed on the permit document and set by IRCC. Violating conditions can result in permit cancellation and future immigration consequences.",
+          "canadaNote": "Study permit conditions include a requirement to actively pursue studies and remain enrolled at a DLI. Work eligibility rules (on- and off-campus) depend on your specific permit conditions — check current work rules at canada.ca/en/immigration-refugees-citizenship/services/study-canada/work.html. Do not work beyond permitted limits.",
+          "actions": [
+            "Read all conditions printed on your study permit document",
+            "Understand the active study requirement: you must be genuinely pursuing studies at your DLI",
+            "Check current work eligibility rules for study permit holders at canada.ca/en/immigration-refugees-citizenship/services/study-canada/work.html",
+            "Do not work without authorisation or beyond permitted limits",
+            "If your circumstances change (change of school, program, or address): check IRCC requirements for permit updates",
+            "Track your study permit expiry date and apply to extend before it expires"
+          ],
+          "output": "Study permit conditions understood; studying and working within all permitted limits"
+        }
+      ]
+    }
+  ],
+  "documents": [
+    "Valid Pakistani Passport",
+    "DLI Acceptance Letter",
+    "Proof of Financial Support (Bank Statements, Scholarship Letters, etc.)",
+    "Academic Transcripts and Diplomas",
+    "Passport-Size Photographs",
+    "Study Plan or Statement of Purpose (if required)",
+    "Police Certificate (if required)",
+    "Identity Documents (National ID, etc.)"
+  ]
+}

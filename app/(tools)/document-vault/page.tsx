@@ -46,10 +46,15 @@ import {
   Zap,
   CheckCircle,
   AlertCircle,
-  Bell,
   List,
   LayoutGrid,
 } from "lucide-react";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { Loader } from "@/components/ui/spinner";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
@@ -78,6 +83,7 @@ export default function DocumentVaultPage() {
   } = useDocumentVaultStore();
 
   const [showConfigWizard, setShowConfigWizard] = useState(false);
+  const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [initialized, setInitialized] = useState(false);
   const [isInitializing, setIsInitializing] = useState(true);
   const [previewOpen, setPreviewOpen] = useState(false);
@@ -450,7 +456,7 @@ export default function DocumentVaultPage() {
             </div>
 
             <div className="flex items-center gap-2">
-              <Link href="/document-vault/guide" className="hidden sm:flex">
+              {/* <Link href="/document-vault/guide" className="hidden sm:flex">
                 <Button
                   variant="ghost"
                   size="sm"
@@ -459,54 +465,15 @@ export default function DocumentVaultPage() {
                   <BookOpen className="w-4 h-4" />
                   {t("documentVaultPage.page.guide")}
                 </Button>
-              </Link>
+              </Link> */}
 
               <NotificationBell />
-
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="font-bold border-2"
-                  >
-                    {t("documentVaultPage.page.actions")}
-                    <ChevronDown className="w-4 h-4 ml-1" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-56">
-                  <DropdownMenuLabel>
-                    {t("documentVaultPage.page.vaultManagement")}
-                  </DropdownMenuLabel>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem
-                    onClick={handleExport}
-                    disabled={uploadedDocuments.length === 0}
-                  >
-                    <Download className="w-4 h-4 mr-2" />{" "}
-                    {t("documentVaultPage.page.exportEntireVault")}
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={refreshDocumentStatuses}>
-                    <Clock className="w-4 h-4 mr-2" />{" "}
-                    {t("documentVaultPage.page.forceStatusSync")}
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem
-                    className="text-destructive focus:text-destructive focus:bg-destructive/10"
-                    onClick={handleDeleteAll}
-                    disabled={uploadedDocuments.length === 0}
-                  >
-                    <Trash2 className="w-4 h-4 mr-2" />{" "}
-                    {t("documentVaultPage.page.purgeAllDocuments")}
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
             </div>
           </div>
         </div>
       </div>
 
-      <div className="container mx-auto p-6 max-w-[1800px]">
+      <div className="container mx-auto p-6 max-w-450">
         {/* Main Grid Layout */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
           {/* Left Side: Stats & Configuration */}
@@ -606,65 +573,6 @@ export default function DocumentVaultPage() {
 
           {/* Right Side: Document Management Tabs */}
           <div className="lg:col-span-9">
-            <AnimatePresence mode="wait">
-              {notifications.length > 0 && (
-                <motion.div
-                  initial={{ opacity: 0, y: -20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, scale: 0.95 }}
-                  className="mb-8"
-                >
-                  <Card className="p-4 sm:p-5 border-l-4 border-l-amber-500 bg-white shadow-lg overflow-hidden relative">
-                    <div className="absolute top-0 right-0 p-4 opacity-5 pointer-events-none">
-                      <Bell className="w-16 h-16 sm:w-24 sm:h-24" />
-                    </div>
-                    <div className="flex flex-col sm:flex-row items-start gap-3 sm:gap-4 relative z-10">
-                      <div className="bg-amber-100 p-2 sm:p-2.5 rounded-xl sm:rounded-2xl shrink-0">
-                        <Bell className="w-5 h-5 sm:w-6 sm:h-6 text-amber-600" />
-                      </div>
-                      <div className="flex-1 w-full">
-                        <div className="flex items-center justify-between mb-2 sm:mb-1">
-                          <h3 className="font-extrabold text-slate-900 dark:text-white text-base sm:text-lg">
-                            {t("documentVaultPage.page.actionRequired")}
-                          </h3>
-                          <Badge
-                            variant="outline"
-                            className="text-amber-700 bg-amber-50 border-amber-200 font-bold"
-                          >
-                            {notifications.length}{" "}
-                            {t("documentVaultPage.page.alerts")}
-                          </Badge>
-                        </div>
-                        <div className="space-y-2 mt-2 sm:mt-3">
-                          {notifications.slice(0, 2).map((notif) => (
-                            <div
-                              key={notif.id}
-                              className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-sm py-2 px-3 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-100 dark:border-slate-700"
-                            >
-                              <span className="font-medium text-slate-700 dark:text-slate-300 leading-snug pr-2">
-                                {notif.message}
-                              </span>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                className="h-8 sm:h-7 text-xs font-bold text-primary hover:bg-primary/5 self-end sm:self-auto shrink-0"
-                                onClick={() =>
-                                  notif.documentDefId &&
-                                  openUploadModal(notif.documentDefId)
-                                }
-                              >
-                                {t("documentVaultPage.page.fixNow")}
-                              </Button>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    </div>
-                  </Card>
-                </motion.div>
-              )}
-            </AnimatePresence>
-
             <Tabs
               defaultValue="all"
               className="w-full"

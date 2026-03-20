@@ -1,9 +1,9 @@
 export const IMPROVEMENT_MESSAGES = {
   // Income related improvements
   SPONSOR_INCOME_BELOW_GUIDELINE_HIGH:
-    "Prepare Form I-864 with a qualified joint sponsor.",
+    "Prepare Form I-864 with a qualified joint sponsor. Alternatively, you may use significant assets (savings, stocks, real estate) to cover the income gap; for spouses of U.S. citizens, asset value must be at least 3x the income shortfall.",
   SPONSOR_INCOME_BELOW_GUIDELINE_MEDIUM:
-    "Prepare Form I-864 with additional income evidence such as recent tax returns, employment letters, and pay stubs showing sustained income above the poverty guideline",
+    "Prepare Form I-864 with additional income evidence such as recent tax returns and pay stubs. You can also meet the requirement using assets (savings, property) valued at 3x the shortfall for immediate relatives, or 5x for other categories.",
 
   // Relationship related improvements
   SHORT_RELATIONSHIP_DURATION:
@@ -22,6 +22,8 @@ export const IMPROVEMENT_MESSAGES = {
     "Compile chat logs, call records, emails, or screenshots showing consistent communication throughout the relationship timeline.",
   AGE_GAP_HIGH:
     "Submit detailed statements explaining how the relationship formed, supported by photos, communication history, and family acknowledgment to demonstrate its authenticity.",
+  LONG_RELATIONSHIP_HISTORY:
+    "Highlight your long-term commitment through a chronological timeline of your relationship, supported by multi-year evidence such as old photos, travel records, and testimonials.",
 
   // Document related improvements
   NO_MARRIAGE_CERTIFICATE:
@@ -32,8 +34,8 @@ export const IMPROVEMENT_MESSAGES = {
     "Secure official birth certificates or acceptable secondary evidence such as hospital records or affidavits, as permitted by the U.S. embassy.",
   NO_VALID_PASSPORTS:
     "Renew or obtain valid passports for all applicants, ensuring sufficient validity beyond the intended travel date.",
-  NO_UNION_COUNCIL_CERTIFICATE:
-    "Apply for a Union Council marriage registration certificate to support civil recognition of the marriage.",
+  NO_NADRA_MARRIAGE_CERT:
+    "Obtain a NADRA computerized marriage registration certificate. travel.state.gov rules for Pakistan specify that manual Union Council records or 'rupee paper' certificates are not acceptable for immigration purposes.",
   NO_FRC_AVAILABLE:
     "Obtain a Family Registration Certificate (FRC) from NADRA to clearly establish family relationships for the immigration record.",
   NO_PASSPORT_COPY:
@@ -56,10 +58,10 @@ export const IMPROVEMENT_MESSAGES = {
     "Collect recent pay stubs covering the last 3-6 months to verify consistent income and employment status.",
 
   // Vaccination related improvements
-  NO_COVID_VACCINATION_PROOF:
-    "Obtain COVID-19 vaccination documentation from an authorized provider or prepare a valid medical exemption if applicable.",
+  CR1_I751_REMINDER:
+    "As your marriage is less than 2 years old at the time of entry, you will receive a Conditional Green Card. You MUST file Form I-751 (Removal of Conditions) within the 90-day window before your card expires to maintain your status.",
   NO_POLIO_VACCINATION_PROOF:
-    "Complete polio vaccination requirements and secure official vaccination records where required.",
+    "Complete polio vaccination requirements and secure official vaccination records. Following recent CDC updates, Pakistan is designated as a high-risk country for polio, and this documentation is mandatory for all immigrant visa applicants.",
 
   // Immigration history improvements
   PREVIOUS_US_VISA_DENIAL:
@@ -86,6 +88,12 @@ export const IMPROVEMENT_MESSAGES = {
     "Provide detailed documentation explaining the purpose, scope, and legal context of the training, emphasizing non-combat or academic intent where applicable.",
   UNOFFICIAL_ARMED_GROUPS:
     "Consult an experienced immigration attorney before proceeding, and ensure full transparency during the application process.",
+  I130_PROCESS_NOT_STARTED:
+    "Ensure Form I-130 (Petition for Alien Relative) is filed and approved by USCIS before proceeding with the National Visa Center (NVC) processing or embassy interview.",
+  MISSING_PRIOR_MARRIAGE_DOCS:
+    "Secure official termination of all prior marriages for both parties, such as certified divorce decrees, annulment papers, or death certificates.",
+  PUBLIC_CHARGE_RISK:
+    "Strengthen your case by providing evidence of the applicant's education, specialized skills, and English language proficiency to mitigate 'Public Charge' inadmissibility concerns.",
 
   // Default improvement messages
   DEFAULT_HIGH_RISK:

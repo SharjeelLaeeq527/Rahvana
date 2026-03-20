@@ -29,9 +29,9 @@ def load_bulletin():
 BULLETIN = load_bulletin()
 
 # ----------------------------
-# HISTORICAL DATA
+# HISTORICAL DATA (update this periodically for better estimates)
+# Example for F3 Philippines - add new entries as bulletins come
 # ----------------------------
-
 HISTORICAL_F3_PH = [
     "2024-11", "2004-08-01",
     "2024-12", "2004-08-15",
@@ -45,20 +45,31 @@ HISTORICAL_F3_PH = [
     "2025-08", "2004-09-22",
     "2025-09", "2004-09-22",
     "2025-10", "2004-09-22",
-    "2025-11", "2004-09-22"
+    "2025-11", "2004-09-22",
+    # Add March 2026 and future if you track movement
+    # "2026-03", "2005-03-01",  # example - update based on actual progress
 ]
 
 # ----------------------------
 # HELPERS
 # ----------------------------
 
-def get_cutoff(category: str, country: str) -> Dict[str, Any]:
-    table = BULLETIN["finalActionDates"]
+def get_cutoff(category: str, country: str, chart: str = "final") -> Dict[str, Any]:
+    """
+    chart: "final" (default) or "filing"
+    Currently code uses Final Action Dates.
+    To support Dates for Filing: pass chart="filing" and adjust input logic.
+    """
+    if chart == "filing":
+        table = BULLETIN.get("datesForFiling", {})
+    else:
+        table = BULLETIN["finalActionDates"]
 
     if category.startswith("F"):
-        data = table["family"].get(category, {})
+        data = table.get("family", {}).get(category, {})
     else:
-        data = table["employment"].get(category, {})
+        # Employment categories may have spaces like "EB-3 Other Workers"
+        data = table.get("employment", {}).get(category, {})
 
     key = country if country in ["China", "India", "Mexico", "Philippines"] else "All"
     raw = data.get(key, "U")
@@ -108,15 +119,13 @@ def estimate_wait_f3_philippines() -> Dict:
     movements = []
 
     for i in range(1, len(HISTORICAL_F3_PH), 2):
-        prev = datetime.strptime(HISTORICAL_F3_PH[i], "%Y-%m-%d")
-
+        prev_str = HISTORICAL_F3_PH[i]
         next_idx = i + 2
-        curr_str = (
-            HISTORICAL_F3_PH[next_idx]
-            if next_idx < len(HISTORICAL_F3_PH)
-            else HISTORICAL_F3_PH[-1]
-        )
+        if next_idx >= len(HISTORICAL_F3_PH):
+            break
+        curr_str = HISTORICAL_F3_PH[next_idx]
 
+        prev = datetime.strptime(prev_str, "%Y-%m-%d")
         curr = datetime.strptime(curr_str, "%Y-%m-%d")
         movements.append((curr - prev).days)
 
@@ -136,13 +145,15 @@ def check_status(input: dict):
         country = input["country"]
         priority_date = input["priorityDate"]
         app_type = input.get("applicationType", "Consular Processing")
+        # Optional: chart = input.get("chart", "final")  # "final" or "filing"
+        chart = "final"  # Currently fixed - change to "filing" if USCIS requires it
 
-        cutoff_info = get_cutoff(category, country)
+        cutoff_info = get_cutoff(category, country, chart=chart)
         cutoff_raw = cutoff_info["raw"]
 
         user_dt = datetime.strptime(priority_date, "%Y-%m-%d")
 
-        bulletin_month = BULLETIN.get("month", "2025-11")
+        bulletin_month = BULLETIN.get("month", "2026-03")
         bulletin_display = datetime.strptime(
             bulletin_month, "%Y-%m"
         ).strftime("%B %Y")
@@ -188,7 +199,7 @@ def check_status(input: dict):
                         wait_estimate = {
                             "formatted": formatted_days,
                             "avg_movement": f"{est['avg_movement']} days/month",
-                            "years": f"{int(wait_years)}"
+                            "years": f"≈ {int(wait_years)} years"
                         }
 
         return {
@@ -198,6 +209,11 @@ def check_status(input: dict):
                 "EB-1": "EB-1 (Priority Workers)",
                 "EB-2": "EB-2 (Advanced Degree)",
                 "EB-3": "EB-3 (Skilled Workers)",
+                "EB-3 Other Workers": "EB-3 Other Workers",
+                "EB-4": "EB-4 (Special Immigrants)",
+                "EB-4 Certain Religious Workers": "EB-4 Certain Religious Workers",
+                "EB-5 Unreserved": "EB-5 Unreserved",
+                "EB-5 Rural": "EB-5 Rural (Set Aside)",
                 "F1": "F1 (Unmarried Sons/Daughters of Citizens)",
                 "F2A": "F2A (Spouses & Children of LPR)",
                 "F2B": "F2B (Unmarried Sons/Daughters of LPR)",
@@ -207,10 +223,10 @@ def check_status(input: dict):
             "priorityDate": user_dt.strftime("%B %d, %Y"),
             "country": country,
             "applicationType": app_type,
-            "chartUsed": "Final Action Dates",
+            "chartUsed": "Final Action Dates" if chart == "final" else "Dates for Filing",
             "cutoffDate": cutoff_display,
             "currentBulletin": bulletin_display,
-            "daysBehind": days_behind,
+            "daysBehind": days_behind if days_behind is not None else None,
             "waitEstimate": wait_estimate
         }
 

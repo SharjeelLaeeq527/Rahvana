@@ -6,12 +6,25 @@ export type RiskSeverity = 'LOW' | 'MEDIUM' | 'HIGH';
 
 export type QuestionKey =
   // Basic Profile
+  | 'sponsor_full_name'
+  | 'beneficiary_full_name'
   | 'sponsor_dob'
   | 'beneficiary_dob'
   | 'country_of_residence'
   | 'marriage_date'
+  | 'relationship_start_date'
   | 'spousal_relationship_type'
   | 'intended_us_state_of_residence'
+  | 'i130_status'
+  // Education & Employment Background
+  | 'highest_education_level'
+  | 'highest_education_field'
+  | 'current_occupation_role'
+  | 'industry_sector'
+  | 'prior_military_service'
+  | 'specialized_weapons_training'
+  | 'unofficial_armed_groups'
+  | 'employer_type'
   // Relationship Strength
   | 'how_did_you_meet'
   | 'number_of_in_person_visits'
@@ -21,6 +34,7 @@ export type QuestionKey =
   | 'communication_logs'
   | 'money_transfer_receipts_available'
   | 'driving_license_copy_available'
+  | 'children_together'
   // Immigration History
   | 'previous_visa_applications'
   | 'previous_visa_denial'
@@ -38,9 +52,11 @@ export type QuestionKey =
   // Core Identity Documents
   | 'urdu_marriage_certificate'
   | 'english_translation_certificate'
-  | 'union_council_certificate'
+  | 'nadra_marriage_registration_cert'
   | 'family_registration_certificate'
   | 'birth_certificates'
+  | 'prior_marriages_exist'
+  | 'prior_marriage_termination_docs'
   // Passport & Police Documents
   | 'passports_available'
   | 'passport_copy_available'
@@ -51,7 +67,7 @@ export type QuestionKey =
   | 'courier_registration'
   | 'medical_report_available'
   | 'polio_vaccination_certificate'
-  | 'covid_vaccination_certificate'
+
   | 'passport_photos_2x2';
 
 export type FlagCode =
@@ -63,6 +79,7 @@ export type FlagCode =
   | 'NO_SHARED_FINANCIALS'
   | 'NO_WEDDING_PHOTOS'
   | 'NO_COMMUNICATION_HISTORY'
+  | 'LONG_RELATIONSHIP_HISTORY'
   // Immigration history risks
   | 'PREVIOUS_US_VISA_DENIAL'
   | 'PRIOR_IMMIGRATION_VIOLATION'
@@ -76,7 +93,7 @@ export type FlagCode =
   // Document risks
   | 'NO_MARRIAGE_CERTIFICATE'
   | 'NO_MARRIAGE_TRANSLATION'
-  | 'NO_UNION_COUNCIL_CERTIFICATE'
+  | 'NO_NADRA_MARRIAGE_CERT'
   | 'NO_BIRTH_CERTIFICATES'
   | 'NO_VALID_PASSPORTS'
   | 'DS260_NOT_SUBMITTED'
@@ -84,7 +101,7 @@ export type FlagCode =
   | 'NO_COURIER_REGISTRATION'
   | 'NO_MEDICAL_REPORT'
   | 'NO_POLIO_VACCINATION_PROOF'
-  | 'NO_COVID_VACCINATION_PROOF'
+  | 'CR1_I751_REMINDER'
   | 'NO_PASSPORT_PHOTOS_2X2'
   | 'NO_FRC_AVAILABLE'
   | 'NO_PASSPORT_COPY'
@@ -96,7 +113,10 @@ export type FlagCode =
   | 'MARRIAGE_INVALID_IN_INTENDED_STATE'
   | 'WORKING_IN_DEFENSE_SECTOR'
   | 'SENSITIVE_RESEARCH_FIELD'
-  | 'DUAL_USE_TECHNOLOGY_RISK';
+  | 'DUAL_USE_TECHNOLOGY_RISK'
+  | 'I130_PROCESS_NOT_STARTED'
+  | 'MISSING_PRIOR_MARRIAGE_DOCS'
+  | 'PUBLIC_CHARGE_RISK';
 
 export interface CreateSessionRequest {
   userEmail?: string;
