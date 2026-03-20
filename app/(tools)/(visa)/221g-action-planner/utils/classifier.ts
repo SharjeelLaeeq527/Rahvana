@@ -22,14 +22,55 @@ export interface ClassificationResult {
 
 import type { FormData } from "../types/221g";
 
+const DOC_LABELS: Record<string, string> = {
+  passport: "Passport",
+  medical_examination: "Medical Examination",
+  nadra_family_reg: "NADRA Family Registration Certificate (FRC)",
+  nadra_birth_cert: "NADRA Birth Certificate",
+  nadra_birth_cert_petitioner: "Petitioner Birth Certificate",
+  nadra_birth_cert_beneficiary: "Beneficiary Birth Certificate",
+  nadra_marriage_cert: "NADRA Marriage Registration Certificate (MRC)",
+  nikah_nama: "Original Nikah Nama",
+  nadra_divorce_cert: "NADRA Divorce Certificate",
+  nadra_divorce_cert_petitioner: "Petitioner Divorce Certificate",
+  nadra_divorce_cert_beneficiary: "Beneficiary Divorce Certificate",
+  us_divorce_decree: "U.S. Divorce Decree",
+  death_certificate: "Death Certificate",
+  police_certificate: "Police Certificate",
+  english_translation: "Certified English Translation",
+  i864_affidavit: "Affidavit of Support (I-864)",
+  i864_courier: "I-864 (Courier Submission)",
+  i864_online: "I-864 (Online Submission)",
+  i864_petitioner: "I-864 (Petitioner)",
+  i864_joint_sponsor: "I-864 (Joint Sponsor)",
+  i864a: "I-864A Contract",
+  i134: "I-134 Affidavit",
+  i864w: "I-864W Waiver",
+  tax_1040: "IRS Form 1040",
+  w2: "W-2 Forms",
+  irs_transcript: "IRS Tax Transcripts",
+  proof_citizenship: "Proof of Petitioner's Citizenship",
+  domicile: "Proof of U.S. Domicile",
+  dna_test: "DNA Test Results",
+  other: "Other Requested Documents",
+};
+
+/**
+ * Helper to get a clean list of document names from keys
+ */
+function formatDocList(items: string[], filterFn: (key: string) => boolean): string {
+  const labels = items
+    .filter(filterFn)
+    .map((key) => DOC_LABELS[key] || key.replace(/_/g, " ").toUpperCase())
+    .filter(Boolean);
+
+  if (labels.length === 0) return "";
+  if (labels.length === 1) return labels[0];
+  return labels.slice(0, -1).join(", ") + " and " + labels[labels.length - 1];
+}
+
 /**
  * Classifies the user's 221(g) situation based on the intake form data.
- * The primary signal comes from the CEAC status and the checklist items
- * the user selected in the Actual221GFormChecker.
- *
- * @param formData  - Case basics (visa type, ceac status, etc.)
- * @param parsedItems - Keys from FormSelections that are truthy; used to
- *                      determine which document category was requested.
  */
 export function classifySituation(
   formData: FormData,
@@ -78,17 +119,16 @@ export function classifySituation(
   }
 
   // Financial documents
-  if (
-    parsedItems.some(
-      (r) =>
-        r.includes("i864") ||
-        r.includes("tax") ||
-        r.includes("w2") ||
-        r.includes("irs") ||
-        r.includes("proof_citizenship") ||
-        r.includes("domicile"),
-    )
-  ) {
+  const financialDocs = parsedItems.filter(
+    (r) =>
+      r.includes("i864") ||
+      r.includes("tax") ||
+      r.includes("w2") ||
+      r.includes("irs") ||
+      r.includes("proof_citizenship") ||
+      r.includes("domicile"),
+  );
+  if (financialDocs.length > 0) {
     const isCourier = parsedItems.includes("i864_courier");
     const isOnline = parsedItems.includes("i864_online");
     let methodText = "via courier or online as instructed";
@@ -99,17 +139,18 @@ export function classifySituation(
       methodText = "via courier";
     } else if (isOnline) {
       methodText = "online";
-    } else {
-      methodText = "via courier or online as instructed";
     }
+
+    const docString = formatDocList(parsedItems, (r) =>
+      ["i864_affidavit", "tax_1040", "w2", "irs_transcript", "proof_citizenship", "domicile", "i864a", "i134", "i864w"].includes(r)
+    );
 
     results.push({
       scenarioCode: "221G_DOCS_REQUESTED_FINANCIAL",
       confidence: "high",
       description: "221(g) – Financial Documents Requested",
       nextSteps: [
-        "Gather requested financial documents (I-864, tax transcripts, employment letters)",
-        // "Ensure all documents are properly translated if needed",
+        `Gather requested financial documents: ${docString || "I-864"}`,
         `Submit complete packet ${methodText}`,
         "Keep copies of all submitted documents",
       ],
@@ -117,22 +158,24 @@ export function classifySituation(
   }
 
   // Civil documents (NADRA, birth, marriage, nikah)
-  if (
-    parsedItems.some(
-      (r) =>
-        r.includes("nadra") ||
-        r.includes("birth") ||
-        r.includes("marriage") ||
-        r.includes("nikah"),
-    )
-  ) {
+  const civilDocs = parsedItems.filter(
+    (r) =>
+      r.includes("nadra") ||
+      r.includes("birth") ||
+      r.includes("marriage") ||
+      r.includes("nikah"),
+  );
+  if (civilDocs.length > 0) {
+    const docString = formatDocList(parsedItems, (r) =>
+      r.includes("nadra") || r.includes("birth") || r.includes("marriage") || r.includes("nikah")
+    );
+
     results.push({
       scenarioCode: "221G_DOCS_REQUESTED_CIVIL",
       confidence: "high",
       description: "221(g) – Civil Documents Requested",
       nextSteps: [
-        "Gather requested civil documents (birth certificates, marriage certificates)",
-        // "Ensure all documents are properly translated if needed",
+        `Gather requested civil documents: ${docString}`,
         "Submit complete packet via courier as instructed",
         "Keep copies of all submitted documents",
       ],
@@ -140,20 +183,22 @@ export function classifySituation(
   }
 
   // Legal & Court documents (divorce, police, death)
-  if (
-    parsedItems.some(
-      (r) =>
-        r.includes("divorce") || r.includes("police") || r.includes("death"),
-    )
-  ) {
+  const legalDocs = parsedItems.filter(
+    (r) =>
+      r.includes("divorce") || r.includes("police") || r.includes("death"),
+  );
+  if (legalDocs.length > 0) {
+    const docString = formatDocList(parsedItems, (r) =>
+      r.includes("divorce") || r.includes("police") || r.includes("death")
+    );
+
     results.push({
       scenarioCode: "221G_DOCS_REQUESTED_LEGAL",
       confidence: "high",
       description: "221(g) – Legal/Court Documents Requested",
       nextSteps: [
-        "Secure requested legal documents (police certificates, divorce decrees)",
+        `Secure requested legal documents: ${docString}`,
         "Review reciprocity schedules to ensure correct issuing authority",
-        // "Submit certified translations if necessary",
         "Maintain copies of all original submissions",
       ],
     });

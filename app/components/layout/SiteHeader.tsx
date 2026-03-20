@@ -168,6 +168,15 @@ export function SiteHeader({
     return () => document.removeEventListener("mousedown", handleOutsideClick);
   }, [activeMenu]);
 
+  // Open profile menu on global event
+  useEffect(() => {
+    const handleOpenMenu = () => {
+      setActiveMenu("profile");
+    };
+    window.addEventListener("open-profile-menu", handleOpenMenu);
+    return () => window.removeEventListener("open-profile-menu", handleOpenMenu);
+  }, []);
+
   // Close menus on route change
   useEffect(() => {
     setActiveMenu(null);
@@ -621,6 +630,7 @@ export function SiteHeader({
                     {/* Section 1 */}
                     <div className="py-2 border-b border-border">
                       <button
+                        id="my-dashboard-menu-item"
                         onClick={() => handleNav("dashboard")}
                         className="flex items-center gap-3 w-full py-2.5 px-5 text-muted-foreground hover:bg-muted hover:text-primary transition-colors text-sm font-medium"
                       >

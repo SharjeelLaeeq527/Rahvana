@@ -37,6 +37,8 @@ import Actual221GFormChecker from "./Actual221GFormChecker";
 import { FormData, FormSelections } from "../types/221g";
 import { classifySituation } from "../utils/classifier";
 import { ConfirmationModal } from "@/app/components/shared/ConfirmationModal";
+import { useAuth } from "@/app/context/AuthContext";
+import { save221gCase } from "@/lib/supabase/twentyTwoOneG";
 
 interface CombinedIntakeFormProps {
   onSubmit: (data: FormData, selectedItems: FormSelections) => void;
@@ -384,12 +386,55 @@ export default function CombinedIntakeForm({
   const [showEmbassySuggestions, setShowEmbassySuggestions] = useState(false);
   const embassyRef = useRef<HTMLDivElement>(null);
 
+  const { user } = useAuth();
+
   useEffect(() => {
     if (typeof window !== "undefined") {
       const saved = localStorage.getItem("hide221gWelcome");
       if (!saved) setShowWelcome(true);
     }
   }, []);
+
+  // Auto-save logic
+  useEffect(() => {
+    const autoSave = async () => {
+      console.log("autoSave checking conditions:", {
+        hasUser: !!user,
+        caseNumber: formData.caseNumber,
+        beneficiaryName: formData.beneficiaryName,
+      });
+
+      if (!user) {
+        console.log("autoSave skipped: no user");
+        return;
+      }
+      if (
+        !formData.visaType &&
+        !formData.visaCategory &&
+        !formData.interviewDate &&
+        !formData.consularPost
+      ) {
+        console.log("autoSave skipped: basic case details missing");
+        return;
+      }
+
+      try {
+        setSaveStatus("saving");
+        console.log("Calling save221gCase...");
+        await save221gCase(user.id, formData, selected221gItems);
+        console.log("save221gCase succeeded!");
+        setSaveStatus("saved");
+        // Reset save status after 3 seconds
+        setTimeout(() => setSaveStatus("idle"), 3000);
+      } catch (err) {
+        console.error("Auto-save failed", err);
+        setSaveStatus("error");
+      }
+    };
+
+    const timeoutId = setTimeout(autoSave, 2000); // Debounce save
+    return () => clearTimeout(timeoutId);
+  }, [user, formData, selected221gItems]);
 
   // Close embassy dropdown when clicking outside
   useEffect(() => {
@@ -589,10 +634,12 @@ export default function CombinedIntakeForm({
         cl.nadra_birth_cert ||
         cl.nadra_marriage_cert ||
         cl.nikah_nama
-      )
-        plan += `- Civil/NADRA registration documents\n`;
-      if (cl.police_certificate) plan += `- Police certificate\n`;
-      if (cl.english_translation) plan += `- Certified English translations\n`;
+      ) {
+        plan += `- Civil/NADRA registration documents ${cl.nadra_family_reg_name && cl.nadra_family_reg ? ` – ${cl.nadra_family_reg_name}` : "– Family Registration Certificate"} ${cl.nadra_birth_cert ? `, Birth Certificate` : ""} ${cl.nadra_marriage_cert ? `, Marriage Certificate` : ""} ${cl.nikah_nama ? `, Nikkah Nama` : ""}\n`;
+      }
+      if (cl.police_certificate)
+        plan += `- Police certificate – ${cl.police_certificate_country || "[INFORMATION MISSING - please go back and specify country]"}\n`;
+      // if (cl.english_translation) plan += `- Certified English translations\n`;
       if (cl.dna_test) plan += `- DNA test\n`;
       if (cl.admin_processing)
         plan += `- Administrative processing (no action needed from you)\n`;
@@ -615,98 +662,101 @@ export default function CombinedIntakeForm({
       (cl.other && cl.other_details)
     ) {
       plan += `**⇨ Gather Documents by Provider**\n\n`;
+      plan += `| Document | Who Provides | Additional Info |\n`;
+      plan += `|---|---|---|\n`;
     }
+
     // Beneficiary docs
-    const benDocs: string[] = [];
-    if (cl.passport) benDocs.push("Passport (original)");
+    if (cl.passport)
+      plan += `| Passport (original) | Beneficiary | At least 6 mos validity |\n`;
     if (cl.medical_examination)
-      benDocs.push("Medical examination results (DS-2054, sealed)");
+      plan += `| Medical examination results | Beneficiary | DS-2054, sealed by panel physician |\n`;
     if (cl.police_certificate)
-      benDocs.push(
-        `Police certificate – ${cl.police_certificate_country || "specified country"}`,
-      );
-    if (cl.nadra_birth_cert_beneficiary)
-      benDocs.push("NADRA Birth Certificate (beneficiary)");
+      plan += `| Police certificate | Beneficiary | ${cl.police_certificate_country || "[INFORMATION MISSING - specify country]"} |\n`;
     if (
-      cl.nadra_birth_cert &&
-      !cl.nadra_birth_cert_beneficiary &&
-      !cl.nadra_birth_cert_petitioner
+      cl.nadra_birth_cert_beneficiary ||
+      (cl.nadra_birth_cert &&
+        !cl.nadra_birth_cert_beneficiary &&
+        !cl.nadra_birth_cert_petitioner)
     ) {
-      benDocs.push("NADRA Birth Certificate (beneficiary)");
+      plan += `| NADRA Birth Certificate | Beneficiary | Original |\n`;
     }
     if (cl.nadra_family_reg) {
-      benDocs.push("NADRA Family Registration Certificate");
+      plan += `| NADRA Family Registration Certificate | Beneficiary | ${cl.nadra_family_reg_name ? `For: ${cl.nadra_family_reg_name}` : "[INFORMATION MISSING - specify person]"} |\n`;
     }
-    if (cl.nadra_marriage_cert) benDocs.push("NADRA Marriage Certificate");
-    if (cl.nikah_nama) benDocs.push("Nikah Nama");
+    if (cl.nadra_marriage_cert)
+      plan += `| NADRA Marriage Certificate | Beneficiary | Original |\n`;
+    if (cl.nikah_nama)
+      plan += `| Nikah Nama | Beneficiary | Original (with MRC & CNIC) |\n`;
     if (cl.nadra_divorce_cert_beneficiary)
-      benDocs.push("NADRA Divorce Certificate (beneficiary)");
-    if (cl.death_certificate)
-      benDocs.push(
-        `Death Certificate – ${cl.death_certificate_name || "specified person"}`,
-      );
-
-    if (benDocs.length > 0) {
-      plan += `   **Beneficiary to provide:**\n`;
-      benDocs.forEach((doc) => (plan += `   - ${doc}\n`));
-      plan += `\n`;
+      plan += `| NADRA Divorce Certificate | Beneficiary | Original |\n`;
+    if (cl.death_certificate) {
+      plan += `| Death Certificate | Beneficiary | ${cl.death_certificate_name || "[INFORMATION MISSING - specify person]"} |\n`;
     }
 
     // Petitioner docs
-    const petDocs: string[] = [];
     if (cl.i864_affidavit || cl.i864_petitioner) {
       const sponsorName = cl.i864_petitioner_name
         ? ` (${cl.i864_petitioner_name})`
         : "";
-      petDocs.push(`I-864 Affidavit of Support${sponsorName}`);
+      plan += `| I-864 Affidavit of Support${sponsorName} | Petitioner | Signed and dated |\n`;
       if (cl.irs_transcript)
-        petDocs.push(
-          `IRS Tax Transcript${cl.i864_tax_years ? ` – year(s): ${cl.i864_tax_years}` : ""}`,
-        );
+        plan += `| IRS Tax Transcript | Petitioner | Year(s): ${cl.i864_tax_years ? cl.i864_tax_years : "Most recent"} |\n`;
       else if (cl.tax_1040)
-        petDocs.push(
-          `Signed IRS Form 1040${cl.i864_tax_years ? ` – year(s): ${cl.i864_tax_years}` : ""}`,
-        );
+        plan += `| Signed IRS Form 1040 | Petitioner | Year(s): ${cl.i864_tax_years ? cl.i864_tax_years : "Most recent"} |\n`;
       else
-        petDocs.push(
-          `Tax and financial evidence${cl.i864_tax_years ? ` – year(s): ${cl.i864_tax_years}` : ""}`,
-        );
-      if (cl.w2) petDocs.push("W-2 Tax Statements");
-      if (cl.proof_citizenship)
-        petDocs.push("Proof of U.S. citizenship / LPR status");
-      if (cl.domicile) petDocs.push("Proof of U.S. domicile");
-    }
-    if (cl.i864a)
-      petDocs.push(
-        `I-864A (Household Member contract${cl.i864_household_member_name ? ` – ${cl.i864_household_member_name}` : ""})`,
-      );
-    if (cl.us_divorce_decree)
-      petDocs.push("U.S. Divorce Decree (original or certified copy)");
-    if (cl.nadra_birth_cert_petitioner)
-      petDocs.push("NADRA Birth Certificate (petitioner)");
-    if (cl.nadra_divorce_cert_petitioner)
-      petDocs.push("NADRA Divorce Certificate (petitioner)");
+        plan += `| Tax and financial evidence | Petitioner | Year(s): ${cl.i864_tax_years ? cl.i864_tax_years : "Most recent"} |\n`;
 
-    if (petDocs.length > 0) {
-      plan += `   **Petitioner to provide:**\n`;
-      petDocs.forEach((doc) => (plan += `   - ${doc}\n`));
-      plan += `\n`;
+      if (cl.w2)
+        plan += `| W-2 Tax Statements | Petitioner | For specified tax year(s) |\n`;
+      if (cl.proof_citizenship)
+        plan += `| Proof of U.S. Status | Petitioner | Citizenship or LPR status |\n`;
+      if (cl.domicile)
+        plan += `| Proof of U.S. domicile | Petitioner | Lease, bills, etc. |\n`;
     }
+    if (cl.i864a) {
+      plan += `| I-864A Contract | Household Member | ${cl.i864_household_member_name ? `With: ${cl.i864_household_member_name}` : "Signed by both"} |\n`;
+    }
+    if (cl.us_divorce_decree)
+      plan += `| U.S. Divorce Decree | Petitioner | Original or certified copy |\n`;
+    if (cl.nadra_birth_cert_petitioner)
+      plan += `| NADRA Birth Certificate | Petitioner | Original |\n`;
+    if (cl.nadra_divorce_cert_petitioner)
+      plan += `| NADRA Divorce Certificate | Petitioner | Original |\n`;
 
     // Joint sponsor
     if (cl.i864_joint_sponsor) {
       const jsName = cl.i864_joint_sponsor_name
         ? ` (${cl.i864_joint_sponsor_name})`
         : "";
-      plan += `   **Joint Sponsor${jsName} to provide:**\n`;
-      plan += `   - I-864 Affidavit of Support\n`;
-      plan += `   - Tax and financial evidence${cl.i864_tax_years ? ` – year(s): ${cl.i864_tax_years}` : ""}\n`;
-      plan += `   - Proof of U.S. citizenship / LPR status and domicile\n\n`;
+      plan += `| I-864 Affidavit of Support${jsName} | Joint Sponsor | Signed and dated |\n`;
+      plan += `| Tax and financial evidence | Joint Sponsor | Year(s): ${cl.i864_tax_years ? cl.i864_tax_years : "Most recent"} |\n`;
+      plan += `| Proof of U.S. Status/Domicile | Joint Sponsor | Citizenship/LPR and address proof |\n`;
+    }
+
+    if (
+      cl.passport ||
+      cl.medical_examination ||
+      cl.i864_affidavit ||
+      cl.nadra_family_reg ||
+      cl.nadra_birth_cert ||
+      cl.nadra_marriage_cert ||
+      cl.nikah_nama ||
+      cl.nadra_divorce_cert ||
+      cl.english_translation ||
+      cl.dna_test ||
+      (cl.other && cl.other_details)
+    ) {
+      plan += `\n`;
     }
 
     if (cl.english_translation) {
       plan += `**⇨ Prepare Translations**\n`;
-      plan += `   You indicated that English translations are required for: ${cl.english_translation_document || "specified documents"}. All translations must be certified and include a statement of translator competency.\n\n`;
+      if (cl.english_translation_document) {
+        plan += `   You indicated that English translations are required for: ${cl.english_translation_document}. All translations must be certified and include a statement of translator competency.\n\n`;
+      } else {
+        plan += `You indicated that English translations are required, but you did not specify any documents. Please review and update the form to include the documents that require English translation.\n\n`;
+      }
     }
     // else {
     //   plan += `   If any documents are not in English, they must be accompanied by certified English translations.\n\n`;
@@ -832,7 +882,7 @@ export default function CombinedIntakeForm({
     ) {
       plan += `### NADRA Civil Documents\n`;
       plan += `**What to submit:** Original certificates issued by Pakistan's National Database and Registration Authority (NADRA).\n`;
-      plan += `**Who provides:** As indicated on your letter (beneficiary or petitioner)\n`;
+      // plan += `**Who provides:** As indicated on your letter (beneficiary or petitioner)\n`;
       plan += `**How to prepare:** Obtain originals from NADRA. Ensure names and dates match other documents.\n`;
       plan += `**Common mistakes to avoid:**\n`;
       plan += `- Submitting photocopies instead of originals when originals are required\n`;
@@ -841,7 +891,7 @@ export default function CombinedIntakeForm({
 
     if (cl.english_translation) {
       plan += `### English Translations\n`;
-      plan += `**What to submit:** Certified English translation of: ${cl.english_translation_document || "specified documents"}\n`;
+      plan += `**What to submit:** Certified English translation of: ${cl.english_translation_document || "[INFORMATION MISSING - please go back and specify documents that needs to be translated]"}\n`;
       plan += `**Who provides:** Professional translator\n`;
       plan += `**How to prepare:** Translation must include:\n`;
       plan += `- Full translation of all text\n`;
@@ -855,7 +905,7 @@ export default function CombinedIntakeForm({
     if (cl.dna_test) {
       plan += `### DNA Test\n`;
       plan += `**What to submit:** DNA test results from an AABB-accredited laboratory.\n`;
-      plan += `**Parties being tested:** ${cl.dna_test_name || "As specified on your 221(g) letter"}\n`;
+      plan += `**Parties being tested:** ${cl.dna_test_name || "[INFORMATION MISSING - please go back and specify parties]"}\n`;
       plan += `**Who to contact:** Contact ${cb.consularPost || "the embassy"} for the approved laboratory list.\n`;
       plan += `**How to prepare:** Both parties must test at an approved AABB-accredited lab. Results should be sent directly to the embassy.\n`;
       plan += `**Common mistakes to avoid:**\n`;
@@ -870,17 +920,21 @@ export default function CombinedIntakeForm({
     }
 
     plan += `## EXPECTED TIMING & FOLLOW-UP\n\n`;
+    // plan += `%%DIAGRAM_PROCESS%%\n\n`;
+
     plan += `**After Submission:**\n`;
     plan += `- Confirm courier delivery (keep tracking number)\n`;
     plan += `- Keep copies of all submitted documents\n`;
     plan += `- Monitor CEAC status weekly\n\n`;
 
     plan += `**Status Monitoring:**\n`;
-    plan += `Check https://ceac.state.gov/CEACStatTracker/Status.aspx regularly. Status meanings:\n`;
-    plan += `**- Refused:** Documents under review or administrative processing ongoing\n`;
-    plan += `**- Administrative Processing:** Security checks or additional review in progress\n`;
-    plan += `**- Issued:** Visa approved\n`;
-    plan += `**- Ready:** Passport ready for pickup\n\n`;
+    plan += `Check https://ceac.state.gov/CEACStatTracker/Status.aspx regularly. Status meanings:\n\n`;
+    plan += `| CEAC Status | What It Means |\n`;
+    plan += `|---|---|\n`;
+    plan += `| **Refused** | Documents under review or administrative processing ongoing |\n`;
+    plan += `| **Administrative Processing** | Security checks or additional review in progress |\n`;
+    plan += `| **Issued** | Visa approved and printing process started |\n`;
+    plan += `| **Ready** | Passport ready for pickup or delivery |\n\n`;
 
     plan += `**Important Notes on Timing:**\n`;
     plan += `- Document review typically takes several weeks, but timing varies widely\n`;
@@ -934,7 +988,7 @@ export default function CombinedIntakeForm({
       checklist += `* NADRA Birth Certificate (beneficiary) (original)\n`;
     }
     if (cl.police_certificate) {
-      checklist += `* Police Certificate - ${cl.police_certificate_country || "Specified Country"} (original)\n`;
+      checklist += `* Police Certificate - ${cl.police_certificate_country || "[INFORMATION MISSING - please go back and specify country]"} (original)\n`;
     }
 
     // Petitioner/Sponsor documents
@@ -971,7 +1025,9 @@ export default function CombinedIntakeForm({
     // Civil documents
     const civilDocs: string[] = [];
     if (cl.nadra_family_reg)
-      civilDocs.push("NADRA Family Registration Certificate");
+      civilDocs.push(
+        `NADRA Family Registration Certificate${cl.nadra_family_reg_name ? ` – ${cl.nadra_family_reg_name}` : " [INFORMATION MISSING - please go back and specify person]"}`,
+      );
     if (cl.nadra_marriage_cert) civilDocs.push("NADRA Marriage Certificate");
     if (cl.nikah_nama) {
       civilDocs.push("Original Nikah Nama");
@@ -986,7 +1042,7 @@ export default function CombinedIntakeForm({
     }
     if (cl.death_certificate)
       civilDocs.push(
-        `Death Certificate (${cl.death_certificate_name || "as indicated"})`,
+        `Death Certificate (${cl.death_certificate_name || "[INFORMATION MISSING - please go back and specify person]"})`,
       );
 
     if (civilDocs.length > 0) {
@@ -999,13 +1055,13 @@ export default function CombinedIntakeForm({
     // Translations
     if (cl.english_translation) {
       checklist += `\n**TRANSLATIONS**\n\n`;
-      checklist += `* Certified English Translation of: ${cl.english_translation_document || "Specified Documents"}\n`;
+      checklist += `* Certified English Translation of: ${cl.english_translation_document || "[INFORMATION MISSING - please go back and specify documents that needs to be translated]"}\n`;
     }
 
     // DNA
     if (cl.dna_test) {
       checklist += `\n**DNA TEST**\n\n`;
-      checklist += `* DNA Test Results (${cl.dna_test_name || "specified parties"})\n`;
+      checklist += `* DNA Test Results (${cl.dna_test_name || "[INFORMATION MISSING - please go back and specify parties]"})\n`;
     }
 
     // Custom items
@@ -1099,7 +1155,7 @@ export default function CombinedIntakeForm({
       docList.push("Medical examination results (sealed)");
 
     if (cl.i864_affidavit) {
-      if (cl.i864_petitioner) {
+      if (cl.i864_affidavit) {
         docList.push("I-864 Affidavit of Support from petitioner");
         docList.push("Tax and financial evidence for petitioner");
         if (cl.i864a) {
@@ -1119,7 +1175,9 @@ export default function CombinedIntakeForm({
     }
 
     if (cl.nadra_family_reg)
-      docList.push("NADRA Family Registration Certificate (original)");
+      docList.push(
+        `NADRA Family Registration Certificate (original)${cl.nadra_family_reg_name ? ` – ${cl.nadra_family_reg_name}` : " [INFORMATION MISSING - please go back and specify person]"}`,
+      );
     if (cl.nadra_birth_cert && cl.nadra_birth_cert_petitioner) {
       docList.push(`NADRA Birth Certificate (petitioner) (original)`);
     }
@@ -1141,18 +1199,21 @@ export default function CombinedIntakeForm({
       docList.push(`NADRA Divorce Certificate (beneficiary) (original) `);
     if (cl.us_divorce_decree)
       docList.push("U.S. Divorce Decree (original or certified copy)");
-    if (cl.death_certificate) docList.push(`Death Certificate (original)`);
+    if (cl.death_certificate)
+      docList.push(
+        `Death Certificate (original)${cl.death_certificate_name ? ` – ${cl.death_certificate_name}` : " [INFORMATION MISSING - please go back and specify person]"}`,
+      );
     if (cl.police_certificate)
       docList.push(
-        `Police Certificate from ${cl.police_certificate_country || "specified country"} (original)`,
+        `Police Certificate from ${cl.police_certificate_country || "[INFORMATION MISSING - please go back and specify country]"} (original)`,
       );
     if (cl.english_translation)
       docList.push(
-        `Certified English translation of ${cl.english_translation_document || "specified documents"}`,
+        `Certified English translation of ${cl.english_translation_document || "[INFORMATION MISSING - please go back and specify documents that needs to be translated]"}`,
       );
     if (cl.dna_test)
       docList.push(
-        `DNA test results for ${cl.dna_test_name || "specified parties"}`,
+        `DNA test results for ${cl.dna_test_name || "[INFORMATION MISSING - please go back and specify parties]"}`,
       );
 
     if (cl.other && cl.other_details) {
@@ -1258,9 +1319,60 @@ export default function CombinedIntakeForm({
   // Step 3 – Review & Generate
   // ──────────────────────────────────────────────
   const StepReviewGenerate = () => {
-    const selectedCount = Object.values(selected221gItems).filter(
-      (value) => typeof value === "boolean" && value,
+    const selectedCount = Object.entries(selected221gItems).filter(
+      ([key, value]) =>
+        typeof value === "boolean" &&
+        value &&
+        ![
+          "admin_processing",
+          "i864_courier",
+          "i864_online",
+          "nadra_birth_cert_petitioner",
+          "nadra_birth_cert_beneficiary",
+          "nadra_divorce_cert_petitioner",
+          "nadra_divorce_cert_beneficiary",
+        ].includes(key),
     ).length;
+
+    const getProvider = (key: string) => {
+      const cl = selected221gItems;
+      if (key === "i864a") return "Household Member";
+      if (key === "i864_joint_sponsor") return "Joint Sponsor";
+      if (
+        [
+          "i864_affidavit",
+          "i864_petitioner",
+          "tax_1040",
+          "w2",
+          "irs_transcript",
+          "proof_citizenship",
+          "domicile",
+          "i864w",
+          "i134",
+        ].includes(key)
+      ) {
+        return "Petitioner";
+      }
+
+      if (key === "nadra_birth_cert") {
+        if (cl.nadra_birth_cert_petitioner && cl.nadra_birth_cert_beneficiary)
+          return "Petitioner & Beneficiary";
+        if (cl.nadra_birth_cert_petitioner) return "Petitioner";
+        return "Beneficiary";
+      }
+
+      if (key === "nadra_divorce_cert") {
+        if (
+          cl.nadra_divorce_cert_petitioner &&
+          cl.nadra_divorce_cert_beneficiary
+        )
+          return "Petitioner & Beneficiary";
+        if (cl.nadra_divorce_cert_petitioner) return "Petitioner";
+        return "Beneficiary";
+      }
+
+      return "Beneficiary";
+    };
 
     return (
       <div className="space-y-6">
@@ -1349,13 +1461,26 @@ export default function CombinedIntakeForm({
                   </thead>
                   <tbody className="divide-y">
                     {Object.entries(selected221gItems)
-                      .filter(([, v]) => typeof v === "boolean" && v)
+                      .filter(
+                        ([key, v]) =>
+                          typeof v === "boolean" &&
+                          v &&
+                          ![
+                            "admin_processing",
+                            "i864_courier",
+                            "i864_online",
+                            "nadra_birth_cert_petitioner",
+                            "nadra_birth_cert_beneficiary",
+                            "nadra_divorce_cert_petitioner",
+                            "nadra_divorce_cert_beneficiary",
+                          ].includes(key),
+                      )
                       .map(([key]) => (
                         <tr key={key}>
                           <td className="p-3 capitalize">
                             {key.replace(/_/g, " ")}
                           </td>
-                          <td className="p-3 opacity-70">As indicated</td>
+                          <td className="p-3 opacity-70">{getProvider(key)}</td>
                           <td className="p-3 opacity-70">Courier/Letter</td>
                         </tr>
                       ))}
@@ -1405,7 +1530,9 @@ export default function CombinedIntakeForm({
           <Button
             onClick={handleGenerate}
             className="ml-auto bg-teal-600 hover:bg-teal-700 shadow-teal-900/10 shadow-lg"
-            disabled={selectedCount === 0}
+            disabled={
+              selectedCount === 0 && !selected221gItems.admin_processing
+            }
           >
             Generate Action Plan & Documents
           </Button>
@@ -1448,6 +1575,42 @@ export default function CombinedIntakeForm({
           htmlBody += `<p style="font-weight:bold; margin-top:8pt; margin-bottom:8pt; color:#111;">${line.replace(/\*\*/g, "")}</p>`;
           return;
         }
+
+        // if (line === "%%DIAGRAM_PROCESS%%") {
+        //   htmlBody += `
+        //     <div style="margin: 20pt 0; padding: 15pt; background:#f8fafc; border: 1px solid #e2e8f0; border-radius: 8pt; text-align: center;">
+        //       <h4 style="margin-top: 0; margin-bottom: 15pt; color: #1e293b; font-size: 12pt;">Visa Processing Timeline</h4>
+        //       <table style="width:100%; text-align:center; border:none; table-layout: fixed;">
+        //         <tr>
+        //           <td style="border:none; vertical-align:top;">
+        //             <div style="background:#ccfbf1; color:#0f766e; border: 2px solid #14b8a6; width:36px; height:36px; border-radius:18px; line-height:36px; font-weight:bold; margin:0 auto 8px auto;">1</div>
+        //             <strong style="font-size:10pt; color: #1e293b;">Submit<br>Documents</strong>
+        //             <div style="font-size:8pt; color:#64748b; margin-top:4px;">Via Courier</div>
+        //           </td>
+        //           <td style="border:none; width:4%; vertical-align:top; padding-top:15px; color:#cbd5e1;">&#10142;</td>
+        //           <td style="border:none; vertical-align:top;">
+        //             <div style="background:#fef3c7; color:#b45309; border: 2px solid #f59e0b; width:36px; height:36px; border-radius:18px; line-height:36px; font-weight:bold; margin:0 auto 8px auto;">2</div>
+        //             <strong style="font-size:10pt; color: #1e293b;">Under<br>Review</strong>
+        //             <div style="font-size:8pt; color:#64748b; margin-top:4px;">Refused / AP</div>
+        //           </td>
+        //           <td style="border:none; width:4%; vertical-align:top; padding-top:15px; color:#cbd5e1;">&#10142;</td>
+        //           <td style="border:none; vertical-align:top;">
+        //             <div style="background:#d1fae5; color:#047857; border: 2px solid #10b981; width:36px; height:36px; border-radius:18px; line-height:36px; font-weight:bold; margin:0 auto 8px auto;">3</div>
+        //             <strong style="font-size:10pt; color: #1e293b;">Visa<br>Approved</strong>
+        //             <div style="font-size:8pt; color:#64748b; margin-top:4px;">CEAC: Issued</div>
+        //           </td>
+        //           <td style="border:none; width:4%; vertical-align:top; padding-top:15px; color:#cbd5e1;">&#10142;</td>
+        //           <td style="border:none; vertical-align:top;">
+        //             <div style="background:#dbeafe; color:#1d4ed8; border: 2px solid #3b82f6; width:36px; height:36px; border-radius:18px; line-height:36px; font-weight:bold; margin:0 auto 8px auto;">4</div>
+        //             <strong style="font-size:10pt; color: #1e293b;">Passport<br>Returned</strong>
+        //             <div style="font-size:8pt; color:#64748b; margin-top:4px;">Pickup/Delivery</div>
+        //           </td>
+        //         </tr>
+        //       </table>
+        //     </div>
+        //   `;
+        //   return;
+        // }
 
         if (line.match(/^\|.+\|$/) && !line.match(/^\|[-\s|]+\|$/)) {
           const cells = line.split("|").filter((c) => c.trim() !== "");
@@ -1678,6 +1841,50 @@ export default function CombinedIntakeForm({
       let i = 0;
       while (i < lines.length) {
         const line = lines[i];
+
+        // ── Custom Diagrams
+        // if (line === "%%DIAGRAM_PROCESS%%") {
+        //   nodes.push(
+        //     <div key={i} className="my-8 py-6 px-4 bg-slate-50 border border-slate-200 rounded-xl">
+        //       <h4 className="text-center font-bold text-slate-800 mb-6">Visa Processing Timeline</h4>
+        //       <div className="flex flex-col md:flex-row items-center justify-between text-sm relative z-0">
+        //         <div className="hidden md:block absolute top-1/2 left-8 right-8 h-0.5 bg-teal-200 -z-10 -translate-y-1/2"></div>
+
+        //         <div className="flex flex-col items-center bg-slate-50 z-10 px-2 w-full md:w-1/4 mb-6 md:mb-0">
+        //           <div className="w-10 h-10 rounded-full bg-teal-100 border-2 border-teal-500 text-teal-700 flex items-center justify-center font-bold mb-3 shadow-sm">1</div>
+        //           <span className="text-slate-800 font-semibold text-center leading-tight">Submit<br/>Documents</span>
+        //           <span className="text-xs text-slate-500 mt-1">Via Courier</span>
+        //         </div>
+
+        //         <div className="md:hidden w-0.5 h-6 bg-teal-200 mb-6"></div>
+
+        //         <div className="flex flex-col items-center bg-slate-50 z-10 px-2 w-full md:w-1/4 mb-6 md:mb-0">
+        //           <div className="w-10 h-10 rounded-full bg-amber-100 border-2 border-amber-500 text-amber-700 flex items-center justify-center font-bold mb-3 shadow-sm">2</div>
+        //           <span className="text-slate-800 font-semibold text-center leading-tight">Under<br/>Review</span>
+        //           <span className="text-xs text-slate-500 mt-1">CEAC: Refused / AP</span>
+        //         </div>
+
+        //         <div className="md:hidden w-0.5 h-6 bg-teal-200 mb-6"></div>
+
+        //         <div className="flex flex-col items-center bg-slate-50 z-10 px-2 w-full md:w-1/4 mb-6 md:mb-0">
+        //           <div className="w-10 h-10 rounded-full bg-emerald-100 border-2 border-emerald-500 text-emerald-700 flex items-center justify-center font-bold mb-3 shadow-sm">3</div>
+        //           <span className="text-slate-800 font-semibold text-center leading-tight">Visa<br/>Approved</span>
+        //           <span className="text-xs text-slate-500 mt-1">CEAC: Issued</span>
+        //         </div>
+
+        //         <div className="md:hidden w-0.5 h-6 bg-teal-200 mb-6"></div>
+
+        //         <div className="flex flex-col items-center bg-slate-50 z-10 px-2 w-full md:w-1/4">
+        //           <div className="w-10 h-10 rounded-full bg-blue-100 border-2 border-blue-500 text-blue-700 flex items-center justify-center font-bold mb-3 shadow-sm">4</div>
+        //           <span className="text-slate-800 font-semibold text-center leading-tight">Passport<br/>Returned</span>
+        //           <span className="text-xs text-slate-500 mt-1">Pickup/Delivery</span>
+        //         </div>
+        //       </div>
+        //     </div>
+        //   );
+        //   i++;
+        //   continue;
+        // }
 
         // ── Headings
         if (line.startsWith("# ")) {
