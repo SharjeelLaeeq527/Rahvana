@@ -146,7 +146,7 @@ export const VISA_CATEGORIES: VisaCategoryData[] = [
   {
     id: "IR-2 / CR-2",
     label: "IR-2 / CR-2 · Child of U.S. Citizen",
-    plans: CR2Plans,
+    plans: defaultPlans,
   },
   {
     id: "IR-5",
@@ -192,16 +192,15 @@ export const COMPARISON_GROUPS = [
   {
     label: "Core Journey Platform",
     rows: [
-      ["Full visa roadmap", "Limited", "Included", "Included", "Included"],
-      ["Checklist engine", "Limited", "Included", "Included", "Included"],
+      ["Full visa roadmap", "Included", "Included", "Included"],
+      ["Checklist engine", "Included", "Included", "Included"],
       [
         "Journey timeline and milestone tracker",
-        "Not included",
         "Included",
         "Included",
         "Included",
       ],
-      ["Document vault", "Limited", "Included", "Included", "Included"],
+      ["Document vault", "Included", "Included", "Included"],
     ],
   },
   {
@@ -209,66 +208,28 @@ export const COMPARISON_GROUPS = [
     rows: [
       [
         "Guided form and document workflows",
-        "Not included",
         "Included",
         "Included",
         "Included",
       ],
-      ["PDF toolkit", "Limited", "Included", "Included", "Included"],
-      [
-        "Application strength assessment",
-        "Limited",
-        "Included",
-        "Included",
-        "Included",
-      ],
-      [
-        "Sponsorship and income calculator",
-        "Limited",
-        "Included",
-        "Included",
-        "Included",
-      ],
-      [
-        "221(g) action workflow",
-        "Not included",
-        "1 included",
-        "Priority",
-        "Priority",
-      ],
+      ["PDF Tool Kit", "Included", "Included", "Included"],
+      ["Case Strength Analyzer", "Included", "Included", "Included"],
+      ["Sponsorship Calculator", "Included", "Included", "Included"],
+      ["221(g) Action Planner", "1 included", "Priority", "Priority"],
     ],
   },
   {
     label: "Reviews and Support",
     rows: [
-      [
-        "Support channel",
-        "Standard",
-        "Async queue",
-        "Priority queue",
-        "Dedicated contact",
-      ],
+      ["Support channel", "Async queue", "Priority queue", "Dedicated contact"],
       [
         "Application completeness review",
-        "Not included",
         "1 included",
         "2 included",
         "3 included",
       ],
-      [
-        "Expert review session",
-        "Not included",
-        "Add-on",
-        "1 included",
-        "3 included",
-      ],
-      [
-        "Mock interview prep",
-        "Not included",
-        "Add-on",
-        "Advanced library",
-        "Included",
-      ],
+      ["Expert review session", "Add-on", "1 included", "3 included"],
+      ["Mock interview prep", "Add-on", "Advanced library", "Included"],
     ],
   },
   {
@@ -276,38 +237,19 @@ export const COMPARISON_GROUPS = [
     rows: [
       [
         "Medical appointment assistance",
-        "Not included",
         "Add-on",
         "Included",
         "Priority coordination",
       ],
-      [
-        "Translation benefit",
-        "Not included",
-        "Add-on",
-        "Discounted",
-        "Included credit",
-      ],
-      ["PCC filing support", "Not included", "Add-on", "Add-on", "Included"],
+      ["Translation benefit", "Add-on", "Discounted", "Included credit"],
+      ["PCC filing support", "Add-on", "Add-on", "Included"],
     ],
   },
   {
     label: "Guides and Country Documents",
     rows: [
-      [
-        "Pakistan civil document guides",
-        "Overview",
-        "Full set",
-        "Full set",
-        "Full set",
-      ],
-      [
-        "Embassy-specific prep notes",
-        "Not included",
-        "Included",
-        "Included",
-        "Included",
-      ],
+      ["Pakistan civil document guides", "Full set", "Full set", "Full set"],
+      ["Embassy-specific prep notes", "Included", "Included", "Included"],
     ],
   },
 ];
