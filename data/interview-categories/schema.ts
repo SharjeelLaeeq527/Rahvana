@@ -42,6 +42,19 @@ export interface QuestionValidation {
   max?: number;
 }
 
+export interface SkipCondition {
+  field: string;
+  equals?: unknown;
+  notEquals?: unknown;
+}
+
+export interface DependsOnCondition {
+  key: string;
+  value?: unknown;
+  valueIn?: unknown[];
+  notValue?: unknown;
+}
+
 export interface DynamicQuestion {
   key: string;
   label: string;
@@ -51,6 +64,8 @@ export interface DynamicQuestion {
   options?: string[];
   helpText?: string;
   placeholder?: string;
+  skipIf?: SkipCondition[];
+  dependsOn?: DependsOnCondition;
 }
 
 export interface QuestionnaireSection {
@@ -77,6 +92,7 @@ export interface InterviewQuestion {
   guidance: string;
   tooltip: string;
   priority: 'high' | 'medium' | 'low';
+  skipIf?: SkipCondition[];
 }
 
 export interface QuestionBank {

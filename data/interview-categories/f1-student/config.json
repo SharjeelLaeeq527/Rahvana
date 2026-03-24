@@ -1,0 +1,23 @@
+{
+    "categorySlug": "f1-student",
+    "displayName": "F-1 Student Visa",
+    "description": "Temporary visa for students wishing to study in the United States",
+    "visaCountry": "United States",
+    "metadata": {
+      "version": "1.0.0",
+      "questionnaireVersion": "1.0.0",
+      "questionBankVersion": "1.0.0",
+      "estimatedDurationMinutes": 25,
+      "totalQuestions": 55,
+      "totalIntakeQuestions": 66
+    },
+    "features": {
+      "hasRapidFire": true,
+      "hasProfileAutoFill": true
+    },
+    "ui": {
+      "themeColor": "teal",
+      "icon": "GraduationCap"
+    },
+    "isActive": true
+  }

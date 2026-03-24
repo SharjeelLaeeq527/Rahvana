@@ -171,12 +171,16 @@ class AnswerGenerationEngine {
     let processed = template;
 
     // First, handle ternary operators: {{field ? 'true_text' : 'false_text'}}
+    // This regex captures the ternary and any nested placeholders within the text
     const ternaryRegex = /\{\{(\w+)\s*\?\s*'([^']*)'\s*:\s*'([^']*)'\}\}/g;
     processed = processed.replace(ternaryRegex, (match, field, trueText, falseText) => {
       const value = answersMap[field];
       // Treat as truthy if value exists and is not false/0
       const isTruthy = value && value !== false && value !== 0 && value !== "false";
-      return isTruthy ? trueText : falseText;
+      const resultText = isTruthy ? trueText : falseText;
+      
+      // Process any nested placeholders in the result text (e.g., {{country}})
+      return this.processTemplate(resultText, answersMap);
     });
 
     // Also handle ternary operators with double quotes: {{field ? "true_text" : "false_text"}}
@@ -184,7 +188,10 @@ class AnswerGenerationEngine {
     processed = processed.replace(ternaryRegexDouble, (match, field, trueText, falseText) => {
       const value = answersMap[field];
       const isTruthy = value && value !== false && value !== 0 && value !== "false";
-      return isTruthy ? trueText : falseText;
+      const resultText = isTruthy ? trueText : falseText;
+      
+      // Process any nested placeholders in the result text
+      return this.processTemplate(resultText, answersMap);
     });
 
     // Handle ternary operators with escaped quotes in text: {{field ? 'it\'s true' : 'it\'s false'}}
@@ -195,9 +202,9 @@ class AnswerGenerationEngine {
       
       const value = answersMap[field];
       const isTruthy = value && value !== false && value !== 0 && value !== "false";
-      // Unescape the text
-      const result = (isTruthy ? trueText : falseText).replace(/\\'/g, "'");
-      return result;
+      // Unescape the text and process any nested placeholders
+      const resultText = (isTruthy ? trueText : falseText).replace(/\\'/g, "'");
+      return this.processTemplate(resultText, answersMap);
     });
 
     // Then, handle simple placeholders: {{field}}

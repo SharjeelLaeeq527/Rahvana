@@ -87,6 +87,7 @@ class CategoryLoaderService {
       await this.loadCategory("ir-1-spouse"),
       await this.loadCategory("ir-2-child"),
       await this.loadCategory("ir-5-parent"),
+      await this.loadCategory("f1-student"),
     ];
   
     let result = categories.map((c) => c.config).filter((c) => c.isActive);

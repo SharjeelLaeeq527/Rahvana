@@ -2,7 +2,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { Heart, User, Baby } from "lucide-react";
+import { Heart, User, Baby, GraduationCap } from "lucide-react";
 import type { InterviewCategoryConfig } from "@/data/interview-categories/schema";
 
 interface CategorySelectionStepProps {
@@ -64,6 +64,8 @@ const getIcon = (iconName: string) => {
       return <User className="h-8 w-8" />;
     case "Baby":
       return <Baby className="h-8 w-8" />;
+    case "GraduationCap":
+      return <GraduationCap className="h-8 w-8" />;
     default:
       return <Heart className="h-8 w-8" />;
   }

@@ -16,6 +16,7 @@ import {
 import ir1SpouseQuestionnaire from "@/data/interview-categories/ir-1-spouse/questionnaire.json";
 import ir2ChildQuestionnaire from "@/data/interview-categories/ir-2-child/questionnaire.json";
 import ir5ParentQuestionnaire from "@/data/interview-categories/ir-5-parent/questionnaire.json";
+import f1StudentQuestionnaire from "@/data/interview-categories/f1-student/questionnaire.json";
 
 interface QuestionnaireSection {
   id: string;
@@ -153,6 +154,8 @@ export function ReviewStep({
       return ir2ChildQuestionnaire;
     } else if (categorySlug === "ir-5-parent") {
       return ir5ParentQuestionnaire;
+    } else if (categorySlug === "f1-student") {
+      return f1StudentQuestionnaire;
     }
     return null;
   })();
@@ -262,7 +265,9 @@ export function ReviewStep({
                     ? "IR-2 Child"
                     : categorySlug === "ir-5-parent"
                       ? "IR-5 Parent"
-                      : categorySlug || formData.caseType}
+                      : categorySlug === "f1-student"
+                        ? "F1 Student"
+                        : categorySlug || formData.caseType}
               </p>
             </div>
           </div>

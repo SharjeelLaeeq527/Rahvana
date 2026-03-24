@@ -1,10 +1,3 @@
-/**
- * Dynamic Question Step
- *
- * Renders questions dynamically based on JSON schema.
- * Supports multiple question types with comprehensive validation.
- */
-
 "use client";
 
 import { useRef } from "react";
@@ -43,10 +36,8 @@ export function DynamicQuestionStep({
   error,
   setError,
 }: DynamicQuestionStepProps) {
-  // Refs for each question to scroll to error
   const questionRefs = useRef<Record<string, HTMLDivElement | null>>({});
 
-  // Helper function to convert snake_case to Title Case
   const formatFieldName = (fieldKey: string): string => {
     return fieldKey
       .split('_')
@@ -54,7 +45,6 @@ export function DynamicQuestionStep({
       .join(' ');
   };
 
-  // Guard clause - section should always be provided
   if (!section) {
     return null;
   }
@@ -64,11 +54,8 @@ export function DynamicQuestionStep({
     value: unknown,
   ): string | null => {
     const fieldName = formatFieldName(question.key);
-    
-    // Only validate required for text, select, date, textarea - NOT boolean
     const shouldValidateRequired = question.type !== "boolean";
 
-    // Required field validation
     if (question.required && shouldValidateRequired) {
       if (value === undefined || value === null) {
         return `Error: ${fieldName} is required`;
@@ -79,10 +66,8 @@ export function DynamicQuestionStep({
       }
     }
 
-    // Only validate length/range if value exists
     if (value !== undefined && value !== null && value !== "") {
       if (question.validation) {
-        // String length validation - removed minLength check as per requirements
         if (
           typeof value === "string" &&
           question.validation.maxLength &&
@@ -91,7 +76,6 @@ export function DynamicQuestionStep({
           return `Error: ${fieldName} must be no more than ${question.validation.maxLength} characters`;
         }
 
-        // Number range validation
         if (
           typeof value === "number" &&
           question.validation.min !== undefined &&
@@ -116,12 +100,35 @@ export function DynamicQuestionStep({
   const handleInputChange = (key: string, value: unknown) => {
     onChange(key, value);
 
+    // Reset dependent fields when parent changes
+    if (key === "current_employment_status" && value === false) {
+      onChange("current_employer_role", "");
+      onChange("work_experience_years", "");
+      onChange("work_experience_details", "");
+    }
+
+    // Reset home country fields when plan_to_return_home changes to false
+    if (key === "plan_to_return_home" && value === false) {
+      onChange("why_will_return", "");
+      onChange("job_prospects_home_country", "");
+      onChange("family_in_home_country", false);
+      onChange("family_details", "");
+      onChange("property_or_assets_home", false);
+      onChange("property_details", "");
+    }
+
+    // Reset USA stay fields when plan_to_return_home changes to true
+    if (key === "plan_to_return_home" && value === true) {
+      onChange("consider_staying_usa", false);
+      onChange("usa_stay_plans", "");
+    }
+
     // Auto-scroll slightly (25px from top) when answer changes
     const el = questionRefs.current[key];
     if (el) {
       const rect = el.getBoundingClientRect();
       const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-      const top = rect.top + scrollTop - 25; // 25px offset from top
+      const top = rect.top + scrollTop - 25;
 
       window.scrollTo({
         top,
@@ -130,12 +137,37 @@ export function DynamicQuestionStep({
     }
   };
 
+  const shouldSkipQuestion = (question: DynamicQuestion): boolean => {
+    if (!question.dependsOn) {
+      return false;
+    }
+
+    const fieldValue = formData[question.dependsOn.key];
+
+    if (question.dependsOn.value !== undefined) {
+      return fieldValue !== question.dependsOn.value;
+    }
+
+    if (question.dependsOn.valueIn) {
+      return !question.dependsOn.valueIn.includes(fieldValue);
+    }
+
+    if (question.dependsOn.notValue !== undefined) {
+      return fieldValue === question.dependsOn.notValue;
+    }
+
+    return false;
+  };
+
   const handleNext = () => {
-    // Validate all required questions in this section
     let hasErrors = false;
     let firstErrorMessage = "";
 
     for (const question of section.questions) {
+      if (shouldSkipQuestion(question)) {
+        continue;
+      }
+
       if (question.required && question.type !== "boolean") {
         const value = formData[question.key];
         const errorMsg = validateQuestion(question, value);
@@ -143,13 +175,12 @@ export function DynamicQuestionStep({
         if (errorMsg) {
           if (!firstErrorMessage) {
             firstErrorMessage = errorMsg;
-            // Scroll to first error
             const el = questionRefs.current[question.key];
             if (el) {
               const rect = el.getBoundingClientRect();
               const scrollTop =
                 window.pageYOffset || document.documentElement.scrollTop;
-              const top = rect.top + scrollTop - 100; // Offset for header
+              const top = rect.top + scrollTop - 100;
               window.scrollTo({ top, behavior: "smooth" });
             }
           }
@@ -182,7 +213,6 @@ export function DynamicQuestionStep({
             className="w-full p-3 border border-border rounded-lg bg-background text-foreground focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-colors"
           />
         );
-
       case "textarea":
         return (
           <Textarea
@@ -193,7 +223,6 @@ export function DynamicQuestionStep({
             className="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-colors"
           />
         );
-
       case "number":
         return (
           <Input
@@ -211,7 +240,6 @@ export function DynamicQuestionStep({
             className="w-full p-3 border border-border rounded-lg bg-background text-foreground focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-colors"
           />
         );
-
       case "date":
         return (
           <Input
@@ -224,7 +252,6 @@ export function DynamicQuestionStep({
             }}
           />
         );
-
       case "boolean":
         return (
           <div className="flex items-center justify-between p-3 bg-slate-50 rounded-lg border border-slate-200">
@@ -239,7 +266,6 @@ export function DynamicQuestionStep({
             />
           </div>
         );
-
       case "select":
         return (
           <Select
@@ -258,7 +284,6 @@ export function DynamicQuestionStep({
             </SelectContent>
           </Select>
         );
-
       default:
         return (
           <Input
@@ -301,28 +326,34 @@ export function DynamicQuestionStep({
       )}
 
       <div className="space-y-6">
-        {section.questions.map((question) => (
-          <div
-            key={question.key}
-            ref={(el: HTMLDivElement | null) => {
-              questionRefs.current[question.key] = el;
-            }}
-            className="space-y-3 p-4 bg-slate-50 rounded-xl border border-slate-200"
-          >
-            {question.type !== "boolean" && (
-              <label className="block text-lg font-semibold text-foreground">
-                {question.label}
-                {question.required && (
-                  <span className="text-red-500 ml-1">*</span>
-                )}
-              </label>
-            )}
-            {renderQuestion(question)}
-            {question.helpText && question.type !== "boolean" && (
-              <p className="text-xs text-slate-500 mt-2">{question.helpText}</p>
-            )}
-          </div>
-        ))}
+        {section.questions.map((question) => {
+          if (shouldSkipQuestion(question)) {
+            return null;
+          }
+
+          return (
+            <div
+              key={question.key}
+              ref={(el: HTMLDivElement | null) => {
+                questionRefs.current[question.key] = el;
+              }}
+              className="space-y-3 p-4 bg-slate-50 rounded-xl border border-slate-200"
+            >
+              {question.type !== "boolean" && (
+                <label className="block text-lg font-semibold text-foreground">
+                  {question.label}
+                  {question.required && (
+                    <span className="text-red-500 ml-1">*</span>
+                  )}
+                </label>
+              )}
+              {renderQuestion(question)}
+              {question.helpText && question.type !== "boolean" && (
+                <p className="text-xs text-slate-500 mt-2">{question.helpText}</p>
+              )}
+            </div>
+          );
+        })}
       </div>
 
       <div className="flex justify-between pt-6">
