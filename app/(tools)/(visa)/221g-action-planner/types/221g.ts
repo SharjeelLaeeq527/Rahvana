@@ -5,6 +5,7 @@ export interface FormSelections {
   passport?: boolean;
   medical_examination?: boolean;
   nadra_family_reg?: boolean;
+  nadra_family_reg_name?: string;
   nadra_birth_cert?: boolean;
   nadra_birth_cert_petitioner?: boolean;
   nadra_birth_cert_beneficiary?: boolean;

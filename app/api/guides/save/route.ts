@@ -43,30 +43,51 @@ export async function POST(request: Request) {
       .select("id, saved")
       .eq("guide_id", guide.id)
       .eq("user_id", user.id)
-      .single();
+      .maybeSingle();
 
-    if (sessionError || !session) {
+    if (sessionError) {
+      console.error("Error checking session:", sessionError);
       return NextResponse.json(
-        { error: "Guide session not found. Start the guide first." },
-        { status: 404 },
+        { error: "Failed to check session" },
+        { status: 500 },
       );
     }
 
-    // 4. Update saved = true
-    const { error: updateError } = await supabase
-      .from("user_guides")
-      .update({
-        saved: true,
-        last_updated_at: new Date().toISOString(),
-      })
-      .eq("id", session.id);
+    if (!session) {
+      // Create the guide session dynamically if it does not exist
+      const { error: insertError } = await supabase
+        .from("user_guides")
+        .insert({
+          user_id: user.id,
+          guide_id: guide.id,
+          saved: true,
+          status: "not_started"
+        });
 
-    if (updateError) {
-      console.error("Error saving guide:", updateError);
-      return NextResponse.json(
-        { error: "Failed to save guide" },
-        { status: 500 },
-      );
+      if (insertError) {
+        console.error("Error creating guide session:", insertError);
+        return NextResponse.json(
+          { error: "Failed to save guide" },
+          { status: 500 },
+        );
+      }
+    } else {
+      // 4. Update existing session to saved = true
+      const { error: updateError } = await supabase
+        .from("user_guides")
+        .update({
+          saved: true,
+          last_updated_at: new Date().toISOString(),
+        })
+        .eq("id", session.id);
+
+      if (updateError) {
+        console.error("Error saving guide:", updateError);
+        return NextResponse.json(
+          { error: "Failed to save guide" },
+          { status: 500 },
+        );
+      }
     }
 
     return NextResponse.json({
