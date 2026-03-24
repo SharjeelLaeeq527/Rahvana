@@ -1,6 +1,8 @@
 "use client";
 import { usePathname } from "next/navigation";
 import FeedbackButton from "../FeedbackButton";
+import { FollowUpManager } from "../followup/FollowUpManager";
+import { SaveGuideAnimation } from "../shared/SaveGuideAnimation";
 
 
 export function ClientWidgets() {
@@ -17,6 +19,8 @@ export function ClientWidgets() {
   return (
     <>
       <FeedbackButton />
+      <FollowUpManager />
+      <SaveGuideAnimation />
     </>
   );
 }
