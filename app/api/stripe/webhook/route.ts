@@ -110,20 +110,50 @@ async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session) 
     status: 'succeeded',
   });
 
-  // Handle subscription upgrade
-  if (productType === 'subscription' && userId && productId) {
-    await paymentService.updateUserSubscription(
-      userId,
-      productId as 'plus' | 'pro',
-      session.customer as string
-    );
+  // Handle journey plan purchase (Basic, Premium, Executive)
+  if (productType === 'journey_plan' && userId && productId) {
+    console.log(`User ${userId} purchased journey plan: ${productId} for visa: ${session.metadata.visa_category}`);
+    
+    // Parse addons from metadata
+    let selectedAddons = [];
+    if (session.metadata.addons) {
+      try {
+        selectedAddons = JSON.parse(session.metadata.addons);
+      } catch (e) {
+        selectedAddons = session.metadata.addons.split(',');
+      }
+    }
 
-    console.log(`User ${userId} upgraded to ${productId}`);
+    // Update the user's subscription tier in the database
+    try {
+      await paymentService.updateUserSubscription(
+        userId,
+        productId as 'basic' | 'premium' | 'executive',
+        session.customer as string || session.metadata.stripe_customer_id
+      );
 
-    // Send confirmation email
-    await sendSubscriptionConfirmationEmail(
+      // Also update metadata if needed (e.g. for visa category)
+      await supabase
+        .from('user_profiles')
+        .update({ 
+          metadata: {
+            active_plan: productId,
+            plan_visa_category: session.metadata.visa_category,
+            plan_purchase_date: new Date().toISOString(),
+            purchased_addons: selectedAddons
+          }
+        })
+        .eq('id', userId);
+        
+    } catch (error) {
+      console.error('Error updating user subscription/profile:', error);
+    }
+
+    // Send journey confirmation email
+    await sendJourneyConfirmationEmail(
       session.customer_details?.email || '',
-      productId
+      productId,
+      session.metadata.visa_category || 'IR-1 / CR-1'
     );
   }
 
@@ -184,32 +214,30 @@ async function handlePaymentIntentFailed(paymentIntent: Stripe.PaymentIntent) {
   }
 }
 
-async function sendSubscriptionConfirmationEmail(email: string, tier: string) {
+async function sendJourneyConfirmationEmail(email: string, tier: string, visaCategory: string) {
   try {
     await resend.emails.send({
       from: process.env.EMAIL_FROM!,
       to: email,
-      subject: `Welcome to Rahvana ${tier.charAt(0).toUpperCase() + tier.slice(1)}!`,
+      subject: `Your Rahvana ${tier.charAt(0).toUpperCase() + tier.slice(1)} Plan is Active!`,
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-          <h1 style="color: #0d9488;">Payment Successful! 🎉</h1>
-          <p>Thank you for upgrading to Rahvana ${tier.charAt(0).toUpperCase() + tier.slice(1)}!</p>
-          <p>Your subscription is now active and you have access to all premium features.</p>
-          <div style="background-color: #f0fdfa; padding: 20px; border-radius: 8px; margin: 20px 0;">
-            <h3 style="color: #0d9488; margin-top: 0;">What's Next?</h3>
-            <ul>
-              <li>Access your dashboard to explore new features</li>
-              <li>Cloud backup is now enabled for all your data</li>
-              <li>Check out the Form Filling Masterclass</li>
-            </ul>
+          <h1 style="color: #0d7377;">Journey Confirmed! ✈️</h1>
+          <p>Thank you for choosing the <strong>${tier.charAt(0).toUpperCase() + tier.slice(1)}</strong> plan for your <strong>${visaCategory}</strong> journey.</p>
+          <p>Your plan is now active and you have access to all included features.</p>
+          <div style="background-color: #f7f5f0; padding: 20px; border-radius: 12px; border: 1px solid #e6dfd2; margin: 20px 0;">
+            <h3 style="color: #0d7377; margin-top: 0;">Journey Details:</h3>
+            <p><strong>Plan:</strong> ${tier.charAt(0).toUpperCase() + tier.slice(1)}</p>
+            <p><strong>Visa Category:</strong> ${visaCategory}</p>
           </div>
-          <p>If you have any questions, feel free to reach out to our support team.</p>
-          <p style="color: #64748b; font-size: 14px;">Best regards,<br>The Rahvana Team</p>
+          <p>Access your roadmap and guided workflows in the dashboard to get started.</p>
+          <p>If you have any questions, please reply to this email or contact support.</p>
+          <p style="color: #6e736f; font-size: 14px;">Best regards,<br>The Rahvana Team</p>
         </div>
       `,
     });
   } catch (error) {
-    console.error('Error sending subscription confirmation email:', error);
+    console.error('Error sending journey confirmation email:', error);
   }
 }
 

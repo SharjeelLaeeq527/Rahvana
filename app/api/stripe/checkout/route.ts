@@ -66,13 +66,7 @@ export async function POST(request: NextRequest) {
       let product: any;
       const tierLower = productTier.toLowerCase();
       
-      if (tierLower === 'plus_monthly' || tierLower === 'plus') {
-        product = PRODUCTS.PLUS_MONTHLY;
-        sessionParams.mode = 'subscription';
-      } else if (tierLower === 'plus_yearly') {
-        product = PRODUCTS.PLUS_YEARLY;
-        sessionParams.mode = 'subscription';
-      } else if (tierLower === 'basic') {
+      if (tierLower === 'basic') {
         product = PRODUCTS.BASIC;
         sessionParams.mode = 'payment';
       } else if (tierLower === 'premium') {
@@ -81,9 +75,6 @@ export async function POST(request: NextRequest) {
       } else if (tierLower === 'executive') {
         product = PRODUCTS.EXECUTIVE;
         sessionParams.mode = 'payment';
-      } else if (tierLower === 'pro') {
-        product = PRODUCTS.PRO;
-        sessionParams.mode = 'subscription';
       }
 
       if (!product) {
@@ -145,7 +136,8 @@ export async function POST(request: NextRequest) {
 
       sessionParams.metadata = {
         ...sessionParams.metadata,
-        product_type: sessionParams.mode === 'subscription' ? 'subscription' : 'journey_plan',
+        stripe_customer_id: stripeCustomerId,
+        product_type: 'journey_plan',
         product_id: productTier,
         product_name: product.name,
         visa_category: visaCategory || 'IR-1 / CR-1',
@@ -153,14 +145,16 @@ export async function POST(request: NextRequest) {
 
       // Handle Add-ons if present (only for one-time payments)
       if (addons && Array.isArray(addons) && addons.length > 0) {
-        if (sessionParams.mode === 'subscription') {
-          // Stripe doesn't easily support mixing subscription and one-time items in checkout
-          // For now, we'll just ignore add-ons if it's a subscription, or you could return an error
-        } else {
-          for (const addonId of addons) {
-            const addonIdLower = addonId.toLowerCase();
-            const addon = (PRODUCTS.ADDONS as any)?.[addonIdLower];
-            if (addon) {
+        for (const addonId of addons) {
+          const addonIdLower = addonId.toLowerCase();
+          const addon = (PRODUCTS.ADDONS as any)?.[addonIdLower];
+          if (addon) {
+            if (addon.priceId && !addon.priceId.startsWith('price_...') && addon.priceId.length >= 10) {
+              sessionParams.line_items!.push({
+                price: addon.priceId,
+                quantity: 1,
+              });
+            } else {
               sessionParams.line_items!.push({
                 price_data: {
                   currency: 'usd',
@@ -173,8 +167,8 @@ export async function POST(request: NextRequest) {
               });
             }
           }
-          sessionParams.metadata!.addons = addons.join(',');
         }
+        sessionParams.metadata!.addons = JSON.stringify(addons);
       }
     }
     // Handle consultation payment (standalone)
@@ -241,10 +235,8 @@ export async function POST(request: NextRequest) {
       amount: session.amount_total! / 100, // Convert from cents
       currency: session.currency || 'usd',
       status: 'pending',
-      product_type: (sessionParams.metadata?.product_type === 'subscription' || sessionParams.metadata?.product_type === 'consultation')
-        ? sessionParams.metadata!.product_type  // Use non-null assertion since we checked above
-        : 'subscription', // Ensure it matches expected type
-      product_id: String(sessionParams.metadata?.product_id || ''), // Ensure it's a string
+      product_type: (sessionParams.metadata?.product_type as any) || 'journey_plan',
+      product_id: String(sessionParams.metadata?.product_id || ''), 
       metadata: {
         product_name: sessionParams.metadata?.product_name || 'Consultation',
         customer_email: userEmail,

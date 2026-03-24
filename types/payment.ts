@@ -6,8 +6,8 @@ export interface Payment {
   amount: number;
   currency: string;
   status: 'pending' | 'succeeded' | 'failed' | 'refunded';
-  product_type: 'subscription' | 'consultation';
-  product_id: string; // 'plus', 'pro', or consultation booking id
+  product_type: 'journey_plan' | 'consultation';
+  product_id: string; // 'basic', 'premium', 'executive', or consultation booking id
   metadata?: Record<string, string | number | boolean | object>;
   created_at: Date;
   updated_at: Date;
@@ -19,7 +19,7 @@ export interface CreatePaymentData {
   amount: number;
   currency: string;
   status: 'pending' | 'succeeded' | 'failed' | 'refunded';
-  product_type: 'subscription' | 'consultation';
+  product_type: 'journey_plan' | 'consultation';
   product_id: string;
   stripe_payment_id?: string; // Optional when creating initial record
   metadata?: Record<string, string | number | boolean | object>;
