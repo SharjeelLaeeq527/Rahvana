@@ -48,32 +48,27 @@ export type GateQuestionsMap = Record<string, GateQuestion[]>;
 export interface VisaExplorationAnswers {
   origin?: string;
   destination?: string;
-  purpose?: string;           // WHY: "LIVE_PERMANENTLY" | "VISIT_SHORT" | "STUDY" | "WORK" | "PROTECTION"
-  // family sub-tree
-  sponsor?: string;           // "US_CITIZEN" | "LPR"
+  purpose?: string;
+  sponsor?: string;
   relationship?: string;
   beneficiaryAge?: string;
   petitionerAge?: string;
-  // work sub-tree
   workBase?: string;
-  // temporary sub-tree
-  tempType?: string;          // "TOURISM" | "BUSINESS" | "STUDY" | "EXCHANGE" | "WORK_SPECIALTY" | ...
-  // gate answers
+  tempType?: string;
   gateAnswers?: Record<string, Record<string, string>>;
   [key: string]: any;
 }
 
 export interface Step {
   id: string;
-  type: "country" | "options" | "grid" | "unsupported" | "gate_question";
+  type: "country" | "options" | "grid" | "unsupported" | "gate_question" | "info";
   field?: string;
   title?: string;
   subtitle?: string;
   canProceed: boolean;
   isUnsupported?: boolean;
   isDestination?: boolean;
-  options?: { label: string; value: string; sub?: string; disabled?: boolean }[];
-  // gate_question only
+  options?: { label: string; value: string; sub?: string; disabled?: boolean; emoji?: string }[];
   visaCode?: string;
   visaLabel?: string;
   visaColor?: string;
@@ -81,6 +76,7 @@ export interface Step {
   passWith?: string[];
   failMsg?: string;
   sourceUrl?: string;
+  hint?: string;
 }
 
 // ─────────────────────────────────────────────────────────────
@@ -107,7 +103,7 @@ export const ALL_COUNTRIES = [
   "Kyrgyzstan","Laos","Latvia","Lebanon","Lesotho","Liberia","Libya","Liechtenstein",
   "Lithuania","Luxembourg","Madagascar","Malawi","Malaysia","Maldives","Mali","Malta",
   "Marshall Islands","Mauritania","Mauritius","Mexico","Micronesia","Moldova","Monaco",
-  "Mongolia","Montenegro","Morocco","Mozambique","Myanmar","Namibia","Nauru","Nepal",
+  "Mongolia","Montenegro","Morocco","Mozambique","Mozambique","Myanmar","Namibia","Nauru","Nepal",
   "Netherlands","New Zealand","Nicaragua","Niger","Nigeria","North Korea",
   "North Macedonia","Norway","Oman","Pakistan","Palau","Palestine","Panama",
   "Papua New Guinea","Paraguay","Peru","Philippines","Poland","Portugal","Qatar",

@@ -799,6 +799,8 @@ export default function PricingSection() {
                       ) : userId ? (
                         <CheckoutButton
                           productTier={selectedPlan}
+                          addons={Array.from(selectedAddons)}
+                          visaCategory={visa}
                           userId={userId}
                           className={`${solidBtn} w-full text-center block rounded-full! py-3 px-4 font-medium`}
                         >

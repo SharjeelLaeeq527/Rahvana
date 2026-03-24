@@ -14,6 +14,9 @@ export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
 export const STRIPE_PRICES = {
   PLUS_MONTHLY: process.env.STRIPE_PRICE_ID_PLUS_MONTHLY || '',
   PLUS_YEARLY: process.env.STRIPE_PRICE_ID_PLUS_YEARLY || '',
+  BASIC: process.env.STRIPE_PRICE_ID_BASIC || '',
+  PREMIUM: process.env.STRIPE_PRICE_ID_PREMIUM || '',
+  EXECUTIVE: process.env.STRIPE_PRICE_ID_EXECUTIVE || '',
 } as const;
 
 // Validate that price IDs are properly set (not placeholder values)
@@ -52,6 +55,50 @@ export const PRODUCTS = {
       'Form Filling Masterclass',
       'NVC Document Verification',
     ],
+  },
+  BASIC: {
+    name: 'Rahvana Basic',
+    price: 349.00,
+    priceId: STRIPE_PRICES.BASIC,
+    tier: 'basic',
+    features: [
+      'Full roadmap and checklist engine',
+      'Guided workflows for core form and document preparation',
+      'One application completeness review pass',
+      'Full analytical tools and standard interview prep',
+    ],
+  },
+  PREMIUM: {
+    name: 'Rahvana Premium',
+    price: 699.00,
+    priceId: STRIPE_PRICES.PREMIUM,
+    tier: 'premium',
+    features: [
+      'Everything in Basic',
+      'Two structured review passes',
+      'One expert review session',
+      'Priority support and advanced interview prep',
+    ],
+  },
+  EXECUTIVE: {
+    name: 'Rahvana Executive',
+    price: 1099.00,
+    priceId: STRIPE_PRICES.EXECUTIVE,
+    tier: 'executive',
+    features: [
+      'Everything in Premium',
+      'Dedicated case manager',
+      'Three expert review sessions and mock prep',
+      'Expanded coordination and highest support priority',
+    ],
+  },
+  ADDONS: {
+    consult: { name: 'Expert Consultation', price: 79 },
+    review: { name: 'Deep Document Review', price: 59 },
+    mock: { name: 'Mock Interview Session', price: 49 },
+    translation: { name: 'Certified Translation', price: 49 },
+    medical: { name: 'Medical Appointment Help', price: 89 },
+    pcc: { name: 'PCC Filing Assistance', price: 69 },
   },
   PRO: {
     name: 'Rahvana Pro',

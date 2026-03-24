@@ -3,6 +3,7 @@ import { stripe, PRODUCTS } from '@/lib/stripe/config';
 import { paymentService } from '@/lib/services/paymentService';
 import { createClient } from '@supabase/supabase-js';
 import Stripe from 'stripe';
+import { VISA_CATEGORIES } from '@/app/(main)/pricing/data/pricing';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
@@ -11,7 +12,7 @@ const supabase = createClient(supabaseUrl, supabaseServiceKey);
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { productTier, userId, consultationId } = body;
+    const { productTier, userId, consultationId, addons, visaCategory } = body;
 
     // Validate required fields
     if (!userId) {
@@ -35,10 +36,10 @@ export async function POST(request: NextRequest) {
 
     // Check if user already has a Stripe customer ID
     let stripeCustomerId: string | undefined;
-    const subscription = await paymentService.getUserSubscription(userId);
+    const subscriptionRecord = await paymentService.getUserSubscription(userId);
     
-    if (subscription?.stripe_customer_id) {
-      stripeCustomerId = subscription.stripe_customer_id;
+    if (subscriptionRecord?.stripe_customer_id) {
+      stripeCustomerId = subscriptionRecord.stripe_customer_id;
     } else {
       // Create new Stripe customer
       const customer = await stripe.customers.create({
@@ -57,51 +58,126 @@ export async function POST(request: NextRequest) {
       metadata: {
         user_id: userId,
       },
+      line_items: [],
     };
 
     // Determine the product based on productTier
     if (productTier) {
       let product: any;
+      const tierLower = productTier.toLowerCase();
       
-      if (productTier === 'plus_monthly' || productTier === 'plus') {
+      if (tierLower === 'plus_monthly' || tierLower === 'plus') {
         product = PRODUCTS.PLUS_MONTHLY;
-      } else if (productTier === 'plus_yearly') {
+        sessionParams.mode = 'subscription';
+      } else if (tierLower === 'plus_yearly') {
         product = PRODUCTS.PLUS_YEARLY;
-      } else if (productTier === 'pro') {
+        sessionParams.mode = 'subscription';
+      } else if (tierLower === 'basic') {
+        product = PRODUCTS.BASIC;
+        sessionParams.mode = 'payment';
+      } else if (tierLower === 'premium') {
+        product = PRODUCTS.PREMIUM;
+        sessionParams.mode = 'payment';
+      } else if (tierLower === 'executive') {
+        product = PRODUCTS.EXECUTIVE;
+        sessionParams.mode = 'payment';
+      } else if (tierLower === 'pro') {
         product = PRODUCTS.PRO;
+        sessionParams.mode = 'subscription';
       }
 
-      if (!product || !product.priceId) {
-        const err = !product ? 'Product not found' : `Price ID not configured for ${productTier}`;
-        return NextResponse.json({ error: err }, { status: 500 });
+      if (!product) {
+        return NextResponse.json({ error: `Product tier '${productTier}' not found` }, { status: 404 });
       }
 
-      // Validate that the price ID is not a placeholder
-      if (product.priceId.startsWith('price_...') || product.priceId.length < 10) {
-        return NextResponse.json(
-          { error: `Invalid price ID for ${productTier}. Please check server config.` },
-          { status: 500 }
-        );
-      }
-
-      // Set mode to subscription for recurring prices
-      sessionParams.mode = 'subscription';
-
-      sessionParams.line_items = [
-        {
+      // For subscriptions, priceId is required
+      if (sessionParams.mode === 'subscription') {
+        if (!product.priceId || product.priceId.startsWith('price_...') || product.priceId.length < 10) {
+          return NextResponse.json(
+            { error: `Invalid price ID for ${productTier}. Subscription tiers require a valid Stripe Price ID.` },
+            { status: 500 }
+          );
+        }
+        sessionParams.line_items!.push({
           price: product.priceId,
           quantity: 1,
-        },
-      ];
+        });
+      } else {
+        // Handle custom pricing from VISA_CATEGORIES (e.g. CR-2)
+        let price = product.price;
+        if (visaCategory) {
+          const category = VISA_CATEGORIES.find(v => v.id === visaCategory);
+          if (category) {
+            const plan = category.plans.find(p => p.id === tierLower);
+            if (plan) {
+              price = plan.price;
+            }
+          }
+        }
+
+        // For one-time payments, we can use priceId ONLY if the price matches
+        // For dynamic prices from VISA_CATEGORIES (e.g. CR-2 has different prices), 
+        // we use price_data since we can't easily rely on fixed price IDs.
+        const usePriceId = product.priceId && 
+                         !product.priceId.startsWith('price_...') && 
+                         product.priceId.length >= 10 && 
+                         price === product.price;
+
+        if (usePriceId) {
+          sessionParams.line_items!.push({
+            price: product.priceId,
+            quantity: 1,
+          });
+        } else {
+          sessionParams.line_items!.push({
+            price_data: {
+              currency: 'usd',
+              product_data: {
+                name: product.name,
+                description: product.features?.join(', ') || '',
+              },
+              unit_amount: Math.round(price * 100),
+            },
+            quantity: 1,
+          });
+        }
+      }
 
       sessionParams.metadata = {
         ...sessionParams.metadata,
-        product_type: 'subscription',
+        product_type: sessionParams.mode === 'subscription' ? 'subscription' : 'journey_plan',
         product_id: productTier,
         product_name: product.name,
+        visa_category: visaCategory || 'IR-1 / CR-1',
       };
+
+      // Handle Add-ons if present (only for one-time payments)
+      if (addons && Array.isArray(addons) && addons.length > 0) {
+        if (sessionParams.mode === 'subscription') {
+          // Stripe doesn't easily support mixing subscription and one-time items in checkout
+          // For now, we'll just ignore add-ons if it's a subscription, or you could return an error
+        } else {
+          for (const addonId of addons) {
+            const addonIdLower = addonId.toLowerCase();
+            const addon = (PRODUCTS.ADDONS as any)?.[addonIdLower];
+            if (addon) {
+              sessionParams.line_items!.push({
+                price_data: {
+                  currency: 'usd',
+                  product_data: {
+                    name: addon.name,
+                  },
+                  unit_amount: Math.round(addon.price * 100),
+                },
+                quantity: 1,
+              });
+            }
+          }
+          sessionParams.metadata!.addons = addons.join(',');
+        }
+      }
     }
-    // Handle consultation payment
+    // Handle consultation payment (standalone)
     else if (consultationId) {
       // Get consultation details
       const { data: consultation, error: consultationError } = await supabase

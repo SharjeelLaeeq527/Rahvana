@@ -4,7 +4,9 @@ import { useState } from "react";
 import { Loader } from "@/components/ui/spinner";
 
 interface CheckoutButtonProps {
-  productTier?: 'plus' | 'plus_monthly' | 'plus_yearly' | 'pro';
+  productTier?: string;
+  addons?: string[];
+  visaCategory?: string;
   consultationId?: string;
   userId: string;
   children: React.ReactNode;
@@ -14,31 +16,35 @@ interface CheckoutButtonProps {
 
 export default function CheckoutButton({
   productTier,
+  addons,
+  visaCategory,
   consultationId,
   userId,
   children,
   className = "",
   disabled = false,
 }: CheckoutButtonProps) {
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  const handleCheckout = async () => {
-    setIsLoading(true);
-    setError(null);
-
-    try {
-      const response = await fetch("/api/stripe/checkout", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          productTier,
-          consultationId,
-          userId,
-        }),
-      });
+    const [isLoading, setIsLoading] = useState(false);
+    const [error, setError] = useState<string | null>(null);
+  
+    const handleCheckout = async () => {
+      setIsLoading(true);
+      setError(null);
+  
+      try {
+        const response = await fetch("/api/stripe/checkout", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            productTier,
+            addons,
+            visaCategory,
+            consultationId,
+            userId,
+          }),
+        });
 
       const data = await response.json();
 
