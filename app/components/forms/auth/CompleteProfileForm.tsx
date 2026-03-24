@@ -1429,16 +1429,20 @@ export default function CompleteProfileForm() {
     try {
       setLoading(true);
 
-      const { error: dbError } = await supabase.from("user_profiles").upsert(
-        {
-          id: user?.id,
-          profile_details: formData,
-          updated_at: new Date().toISOString(),
-        },
-        { onConflict: "id" },
-      );
+      // ── SECURE SAVE: route data through server so sensitive fields
+      // (SSN, CNIC, Passport, Phone, Income etc.) are encrypted BEFORE
+      // being written to the database. Direct Supabase client calls from
+      // the browser would store everything in plain text. ──────────────
+      const response = await fetch("/api/profile/complete", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ profile_details: formData }),
+      });
 
-      if (dbError) throw dbError;
+      if (!response.ok) {
+        const data = await response.json().catch(() => ({}));
+        throw new Error(data.error || "Failed to save profile");
+      }
 
       router.push("/dashboard");
     } catch (err) {

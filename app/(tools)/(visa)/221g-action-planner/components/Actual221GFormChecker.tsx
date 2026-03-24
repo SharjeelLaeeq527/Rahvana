@@ -16,54 +16,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { FormSelections } from "../types/221g";
+import StaticCountryAutocomplete from "@/app/components/shared/StaticCountryAutocomplete";
 
-interface FormSelections {
-  admin_processing?: boolean;
-  passport?: boolean;
-  medical_examination?: boolean;
-  nadra_family_reg?: boolean;
-  nadra_birth_cert?: boolean;
-  nadra_birth_cert_petitioner?: boolean;
-  nadra_birth_cert_beneficiary?: boolean;
-  nadra_marriage_cert?: boolean;
-  nikah_nama?: boolean;
-  nadra_divorce_cert?: boolean;
-  nadra_divorce_cert_petitioner?: boolean;
-  nadra_divorce_cert_beneficiary?: boolean;
-  us_divorce_decree?: boolean;
-  death_certificate?: boolean;
-  death_certificate_name?: string;
-  police_certificate?: boolean;
-  police_certificate_country?: string;
-  english_translation?: boolean;
-  english_translation_document?: string;
-  i864_affidavit?: boolean;
-  i864_courier?: boolean;
-  i864_online?: boolean;
-  i864_petitioner?: boolean;
-  i864_joint_sponsor?: boolean;
-  i864a?: boolean;
-  i134?: boolean;
-  i864w?: boolean;
-  tax_1040?: boolean;
-  w2?: boolean;
-  irs_transcript?: boolean;
-  proof_citizenship?: boolean;
-  domicile?: boolean;
-  i864_sponsor_structure?:
-    | "petitioner-only"
-    | "petitioner-hm"
-    | "joint-sponsor"
-    | "joint-sponsor-hm";
-  i864_petitioner_name?: string;
-  i864_joint_sponsor_name?: string;
-  i864_household_member_name?: string;
-  i864_tax_years?: string;
-  dna_test?: boolean;
-  dna_test_name?: string;
-  other?: boolean;
-  other_details?: string;
-}
+
 
 interface Actual221GFormCheckerProps {
   selectedItems: FormSelections;
@@ -218,18 +174,30 @@ export default function Actual221GFormChecker({
                 }
                 className="mt-1"
               />
-              <Label
-                htmlFor="nadra_family_reg"
-                className="text-sm font-normal cursor-pointer"
-              >
-                Original{" "}
-                <span className="font-semibold">
-                  NADRA Family Registration Certificate
-                </span>{" "}
-                <span className="italic text-muted-foreground">
-                  (submit via courier)
-                </span>
-              </Label>
+              <div className="flex-1">
+                <Label
+                  htmlFor="nadra_family_reg"
+                  className="text-sm font-normal cursor-pointer"
+                >
+                  Original{" "}
+                  <span className="font-semibold">
+                    NADRA Family Registration Certificate
+                  </span>{" "}
+                  <span className="italic text-muted-foreground">
+                    (submit via courier)
+                  </span>{" "}
+                  for:{" "}
+                  <Input
+                    type="text"
+                    placeholder="(optional)"
+                    className="inline-block w-56 h-6 px-2 border-grey-500 border-input rounded-none focus:border-ring focus:ring-0"
+                    value={selectedItems.nadra_family_reg_name || ""}
+                    onChange={(e) =>
+                      handleInputChange("nadra_family_reg_name", e.target.value)
+                    }
+                  />
+                </Label>
+              </div>
             </div>
 
             {/* Original NADRA Birth Cert. */}
@@ -494,16 +462,13 @@ export default function Actual221GFormChecker({
                     (submit via courier)
                   </span>{" "}
                   for country:{" "}
-                  <Input
-                    type="text"
+                  <StaticCountryAutocomplete
+                    className="w-full"
+                    inputClassName="h-6 px-2 border-grey-500 border-input rounded-none focus:border-ring focus:ring-0"
                     placeholder=""
-                    className="inline-block w-56 h-6 px-2 border-grey-500 border-input rounded-none focus:border-ring focus:ring-0"
                     value={selectedItems.police_certificate_country || ""}
-                    onChange={(e) =>
-                      handleInputChange(
-                        "police_certificate_country",
-                        e.target.value,
-                      )
+                    onChange={(value) =>
+                      handleInputChange("police_certificate_country", value)
                     }
                   />
                 </Label>
@@ -747,7 +712,7 @@ export default function Actual221GFormChecker({
                           </Label>
                           <div className="grid grid-cols-2 md:grid-cols-4 gap-2 ml-7">
                             {[
-                              { id: "i864_petitioner", label: "I-864" },
+                              // { id: "i864_petitioner", label: "I-864" },
                               { id: "i864a", label: "I-864A" },
                               { id: "i134", label: "I-134" },
                               { id: "i864w", label: "I-864W" },
@@ -942,7 +907,7 @@ export default function Actual221GFormChecker({
                       </div>
                     </div>
                     <div className="ml-6 mt-1 flex flex-wrap items-center gap-3">
-                      <div className="flex items-center space-x-1">
+                      {/* <div className="flex items-center space-x-1">
                         <Checkbox
                           id="i864_petitioner"
                           checked={!!selectedItems.i864_petitioner}
@@ -959,7 +924,7 @@ export default function Actual221GFormChecker({
                         >
                           Petitioner
                         </Label>
-                      </div>
+                      </div> */}
                       <div className="flex items-center space-x-1">
                         <Checkbox
                           id="i864_joint_sponsor"

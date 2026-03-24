@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { createBrowserClient } from "@supabase/ssr";
 import { useAuth } from "@/app/context/AuthContext";
-import { MasterProfile } from "@/types/profile";
+import { MasterProfile } from "@/types/profile"
 import { motion, AnimatePresence } from "framer-motion";
 import { autoFillForm } from "@/lib/autoFill/mapper";
 import {
