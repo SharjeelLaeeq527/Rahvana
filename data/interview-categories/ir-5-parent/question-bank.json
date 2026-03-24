@@ -1,0 +1,247 @@
+{
+  "categorySlug": "ir-5-parent",
+  "version": "1.0.0",
+  "lastUpdated": "2026-03-20",
+  "questions": [
+    {
+      "id": "basic-full-name",
+      "category": "Identity",
+      "question": "What is your full name?",
+      "suggestedAnswer": "My full name is {{full_name}}.",
+      "guidance": "State your full name exactly as it appears on official documents.",
+      "tooltip": "Used to verify identity against official records.",
+      "priority": "high"
+    },
+    {
+      "id": "basic-age",
+      "category": "Identity",
+      "question": "How old are you?",
+      "suggestedAnswer": "I am {{current_age}} years old.",
+      "guidance": "Answer clearly and confidently.",
+      "tooltip": "Confirms applicant profile consistency.",
+      "priority": "high"
+    },
+    {
+      "id": "basic-date-of-birth",
+      "category": "Identity",
+      "question": "When is your date of birth?",
+      "suggestedAnswer": "My date of birth is {{date_of_birth}}.",
+      "guidance": "Ensure consistency with your passport.",
+      "tooltip": "Cross-checks official identity records.",
+      "priority": "high"
+    },
+    {
+      "id": "basic-country",
+      "category": "Identity",
+      "question": "Where do you currently live?",
+      "suggestedAnswer": "I currently live in {{current_country}}.",
+      "guidance": "Mention country clearly.",
+      "tooltip": "Establishes current residence.",
+      "priority": "high"
+    },
+
+    {
+      "id": "petitioner-identity",
+      "category": "Petitioner",
+      "question": "Who is petitioning for you?",
+      "suggestedAnswer": "My {{petitioner_relationship}}, {{petitioner_name}}, is petitioning for me.",
+      "guidance": "Mention both relationship and name.",
+      "tooltip": "Confirms petitioner identity.",
+      "priority": "high"
+    },
+    {
+      "id": "petitioner-employment",
+      "category": "Petitioner",
+      "question": "What does your son or daughter do?",
+      "suggestedAnswer": "My child works as {{petitioner_employment}}.",
+      "guidance": "Keep it simple and factual.",
+      "tooltip": "Shows financial stability of sponsor.",
+      "priority": "high"
+    },
+    {
+      "id": "petitioner-location",
+      "category": "Petitioner",
+      "question": "Where does your child live in the USA?",
+      "suggestedAnswer": "My child lives in {{petitioner_location}}.",
+      "guidance": "Mention city and state.",
+      "tooltip": "Verifies petitioner's residence.",
+      "priority": "high"
+    },
+    {
+      "id": "petitioner-status",
+      "category": "Petitioner",
+      "question": "Is your child a U.S. citizen?",
+      "suggestedAnswer": "Yes, my child is a U.S. citizen.",
+      "guidance": "Answer truthfully.",
+      "tooltip": "Determines eligibility category.",
+      "priority": "high"
+    },
+    {
+      "id": "petitioner-duration",
+      "category": "Petitioner",
+      "question": "How long has your child been in the USA?",
+      "suggestedAnswer": "My child has been living in the United States for {{petitioner_us_duration}}.",
+      "guidance": "Approximate duration is acceptable.",
+      "tooltip": "Confirms stability of petitioner's residence.",
+      "priority": "medium"
+    },
+
+    {
+      "id": "relationship-last-meeting",
+      "category": "Relationship",
+      "question": "When was the last time you saw your child?",
+      "suggestedAnswer": "I last saw my child {{last_seen_child}}.",
+      "guidance": "Approximate answer is acceptable.",
+      "tooltip": "Evaluates relationship continuity.",
+      "priority": "high"
+    },
+    {
+      "id": "relationship-frequency",
+      "category": "Relationship",
+      "question": "How often do you talk to your child?",
+      "suggestedAnswer": "We communicate {{communication_frequency}}.",
+      "guidance": "Answer naturally.",
+      "tooltip": "Measures relationship strength.",
+      "priority": "high"
+    },
+    {
+      "id": "relationship-method",
+      "category": "Relationship",
+      "question": "How do you communicate with them?",
+      "suggestedAnswer": "We usually communicate through {{communication_method}}.",
+      "guidance": "Mention communication method clearly.",
+      "tooltip": "Verifies ongoing relationship.",
+      "priority": "high"
+    },
+    {
+      "id": "relationship-visit",
+      "category": "Relationship",
+      "question": "Has your child visited you recently?",
+      "suggestedAnswer": "{{recent_visit_by_child ? 'Yes, my child has visited me recently.' : 'No, but we stay in regular contact.'}}",
+      "guidance": "Answer honestly.",
+      "tooltip": "Supports relationship authenticity.",
+      "priority": "medium"
+    },
+
+    {
+      "id": "financial-support",
+      "category": "Financial",
+      "question": "Who will support you in the United States?",
+      "suggestedAnswer": "My child, {{petitioner_name}}, will support me financially.",
+      "guidance": "Clearly mention sponsor.",
+      "tooltip": "Confirms financial sponsorship.",
+      "priority": "high"
+    },
+    {
+      "id": "financial-support-confirmation",
+      "category": "Financial",
+      "question": "Does your child support you financially?",
+      "suggestedAnswer": "{{financial_support_from_child ? 'Yes, my child supports me financially.' : 'No, I am financially independent.'}}",
+      "guidance": "Answer truthfully.",
+      "tooltip": "Checks dependency status.",
+      "priority": "high"
+    },
+    {
+      "id": "financial-employment",
+      "category": "Financial",
+      "question": "What does your child do for a living?",
+      "suggestedAnswer": "My child works as {{petitioner_employment}}.",
+      "guidance": "Keep answer consistent.",
+      "tooltip": "Assesses financial capability.",
+      "priority": "high"
+    },
+
+    {
+      "id": "living-location",
+      "category": "Living Plan",
+      "question": "Where will you live in the United States?",
+      "suggestedAnswer": "I will live in {{us_living_location}}.",
+      "guidance": "Mention location clearly.",
+      "tooltip": "Confirms residence plan.",
+      "priority": "high"
+    },
+    {
+      "id": "living-with",
+      "category": "Living Plan",
+      "question": "Who will you live with?",
+      "suggestedAnswer": "I will live with my child, {{petitioner_name}}.",
+      "guidance": "Answer clearly.",
+      "tooltip": "Ensures support system.",
+      "priority": "high"
+    },
+    {
+      "id": "living-household",
+      "category": "Living Plan",
+      "question": "How many people live in that house?",
+      "suggestedAnswer": "There are approximately {{household_size}} people in the household.",
+      "guidance": "Approximate answer is fine.",
+      "tooltip": "Assesses living conditions.",
+      "priority": "medium"
+    },
+
+    {
+      "id": "intent-reason",
+      "category": "Intent",
+      "question": "Why do you want to go to the United States?",
+      "suggestedAnswer": "I want to go to the United States to live with my child and be reunited as a family.",
+      "guidance": "Focus on family reunification.",
+      "tooltip": "Core purpose of IR-5 visa.",
+      "priority": "high"
+    },
+    {
+      "id": "intent-travel-time",
+      "category": "Intent",
+      "question": "When do you plan to travel?",
+      "suggestedAnswer": "I plan to travel {{travel_plan}}.",
+      "guidance": "Approximate timeframe is acceptable.",
+      "tooltip": "Shows preparedness.",
+      "priority": "medium"
+    },
+    {
+      "id": "intent-plans",
+      "category": "Intent",
+      "question": "What will you do when you arrive in the USA?",
+      "suggestedAnswer": "After arriving, I will {{post_arrival_plan}} and live with my child.",
+      "guidance": "Keep answer realistic.",
+      "tooltip": "Evaluates future plans.",
+      "priority": "high"
+    },
+
+    {
+      "id": "travel-history",
+      "category": "Background",
+      "question": "Have you been to the United States before?",
+      "suggestedAnswer": "{{previous_us_visit ? 'Yes, I have visited before.' : 'No, I have never been to the United States.'}}",
+      "guidance": "Answer honestly.",
+      "tooltip": "Checks immigration history.",
+      "priority": "high"
+    },
+    {
+      "id": "visa-refusal",
+      "category": "Background",
+      "question": "Have you ever been denied a visa?",
+      "suggestedAnswer": "{{visa_refusal ? 'Yes, and I have disclosed it honestly.' : 'No, I have never been denied a visa.'}}",
+      "guidance": "Honesty is critical.",
+      "tooltip": "Previous refusals are reviewed carefully.",
+      "priority": "high"
+    },
+    {
+      "id": "long-stay",
+      "category": "Background",
+      "question": "Have you stayed in another country for more than 6 months?",
+      "suggestedAnswer": "{{long_stay_history ? 'Yes, and the details are provided in my application.' : 'No, I have not stayed in another country for more than 6 months.'}}",
+      "guidance": "Answer truthfully.",
+      "tooltip": "Travel history verification.",
+      "priority": "medium"
+    },
+    {
+      "id": "criminal-record",
+      "category": "Background",
+      "question": "Do you have any criminal record?",
+      "suggestedAnswer": "{{criminal_record ? 'Yes, and it has been disclosed.' : 'No, I do not have any criminal record.'}}",
+      "guidance": "Always answer truthfully.",
+      "tooltip": "Security clearance requirement.",
+      "priority": "high"
+    }
+  ]
+}

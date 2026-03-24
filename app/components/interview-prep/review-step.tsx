@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import ir1SpouseQuestionnaire from "@/data/interview-categories/ir-1-spouse/questionnaire.json";
 import ir2ChildQuestionnaire from "@/data/interview-categories/ir-2-child/questionnaire.json";
+import ir5ParentQuestionnaire from "@/data/interview-categories/ir-5-parent/questionnaire.json";
 
 interface QuestionnaireSection {
   id: string;
@@ -150,6 +151,8 @@ export function ReviewStep({
       return ir1SpouseQuestionnaire;
     } else if (categorySlug === "ir-2-child") {
       return ir2ChildQuestionnaire;
+    } else if (categorySlug === "ir-5-parent") {
+      return ir5ParentQuestionnaire;
     }
     return null;
   })();
@@ -257,7 +260,9 @@ export function ReviewStep({
                   ? "IR-1 Spouse"
                   : categorySlug === "ir-2-child"
                     ? "IR-2 Child"
-                    : categorySlug || formData.caseType}
+                    : categorySlug === "ir-5-parent"
+                      ? "IR-5 Parent"
+                      : categorySlug || formData.caseType}
               </p>
             </div>
           </div>
