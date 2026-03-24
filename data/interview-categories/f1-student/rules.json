@@ -1,0 +1,803 @@
+{
+  "categorySlug": "f1-student",
+  "version": "1.0.0",
+  "lastUpdated": "2026-03-24",
+  "questionSelectionRules": [
+    {
+      "id": "rule_core_basic_identity",
+      "name": "Core - Basic Profile & Identity",
+      "description": "Always include basic identity and profile questions as foundation for F1 visa interview",
+      "condition": {
+        "type": "AND",
+        "conditions": [
+          {
+            "field": "country_of_residence",
+            "operator": "notEquals",
+            "value": ""
+          }
+        ]
+      },
+      "actions": {
+        "includeCategories": ["Study Plans"],
+        "priorityBoost": ["high"],
+        "reason": "Basic identity verification establishes applicant eligibility and forms foundation for F1 visa assessment including age requirement (18+)"
+      }
+    },
+    {
+      "id": "rule_core_study_plans",
+      "name": "Core - Study Plans & Motivation",
+      "description": "Always include study motivation and career alignment questions",
+      "condition": {
+        "type": "AND",
+        "conditions": [
+          {
+            "field": "country_of_residence",
+            "operator": "notEquals",
+            "value": ""
+          }
+        ]
+      },
+      "actions": {
+        "includeCategories": ["Study Plans"],
+        "priorityBoost": ["high"],
+        "reason": "Study motivation assessment is critical to determine genuine educational intent vs. immigration intent, core evaluation criteria for F1 visa"
+      }
+    },
+    {
+      "id": "rule_core_university",
+      "name": "Core - University Choice & I-20",
+      "description": "Always include university selection and I-20 documentation questions",
+      "condition": {
+        "type": "AND",
+        "conditions": [
+          {
+            "field": "country_of_residence",
+            "operator": "notEquals",
+            "value": ""
+          }
+        ]
+      },
+      "actions": {
+        "includeCategories": ["University Choice"],
+        "priorityBoost": ["high"],
+        "reason": "University verification confirms I-20 receipt, legitimate admission, and SEVIS compliance, mandatory requirements for F1 visa processing"
+      }
+    },
+    {
+      "id": "rule_core_academics",
+      "name": "Core - Academic Capability",
+      "description": "Always include test scores and academic preparation questions",
+      "condition": {
+        "type": "AND",
+        "conditions": [
+          {
+            "field": "country_of_residence",
+            "operator": "notEquals",
+            "value": ""
+          }
+        ]
+      },
+      "actions": {
+        "includeCategories": ["Academic Capability"],
+        "priorityBoost": ["high"],
+        "reason": "Academic capability verification through test scores (TOEFL/IELTS, GRE/GMAT/SAT), GPA, and English proficiency is mandatory for F1 visa approval"
+      }
+    },
+    {
+      "id": "rule_core_finance",
+      "name": "Core - Financial Capability",
+      "description": "Always include financial sponsor and funding questions - critical for F1",
+      "condition": {
+        "type": "AND",
+        "conditions": [
+          {
+            "field": "country_of_residence",
+            "operator": "notEquals",
+            "value": ""
+          }
+        ]
+      },
+      "actions": {
+        "includeCategories": ["Financial Status"],
+        "priorityBoost": ["high"],
+        "reason": "Financial capability verification is critical for F1 visa - officers must confirm applicant/sponsor can fund entire education without US public benefits"
+      }
+    },
+    {
+      "id": "rule_core_home_ties",
+      "name": "Core - Home Country Ties & Return Intent",
+      "description": "Always include post-graduation plans and home country ties questions - critical for F1",
+      "condition": {
+        "type": "AND",
+        "conditions": [
+          {
+            "field": "country_of_residence",
+            "operator": "notEquals",
+            "value": ""
+          }
+        ]
+      },
+      "actions": {
+        "includeCategories": ["Post-Graduation Plans"],
+        "priorityBoost": ["high"],
+        "reason": "Return home intent and home country ties are CRITICAL for F1 visa - officers must establish non-immigrant intent and evidence of commitment to return"
+      }
+    },
+
+    {
+      "id": "rule_strong_english",
+      "name": "Strong English Proficiency",
+      "description": "Applied when student has high English test scores (TOEFL 100+ or IELTS 8+)",
+      "condition": {
+        "type": "OR",
+        "conditions": [
+          {
+            "field": "toefl_score",
+            "operator": "greaterThan",
+            "value": 100
+          },
+          {
+            "field": "ielts_score",
+            "operator": "greaterThan",
+            "value": 8
+          }
+        ]
+      },
+      "actions": {
+        "includeCategories": ["Academic Capability"],
+        "priorityBoost": ["low"],
+        "reason": "Strong English proficiency significantly strengthens F1 application by confirming student can succeed in English-medium academic environment"
+      }
+    },
+    {
+      "id": "rule_weak_english",
+      "name": "Weak English Proficiency",
+      "description": "Applied when student has low English test scores (TOEFL below 80 or IELTS below 6.5) or low confidence rating",
+      "condition": {
+        "type": "OR",
+        "conditions": [
+          {
+            "field": "toefl_score",
+            "operator": "lessThan",
+            "value": 80
+          },
+          {
+            "field": "ielts_score",
+            "operator": "lessThan",
+            "value": 6.5
+          },
+          {
+            "field": "english_confidence_rating",
+            "operator": "lessThan",
+            "value": 5
+          }
+        ]
+      },
+      "actions": {
+        "includeCategories": ["Academic Capability"],
+        "priorityBoost": ["high"],
+        "reason": "Weak English proficiency raises concerns about academic success and requires detailed explanation of support systems and strategies for managing English-medium coursework"
+      }
+    },
+    {
+      "id": "rule_strong_academics",
+      "name": "Strong Academic Record",
+      "description": "Applied when student has high GPA (3.5+) and strong test scores",
+      "condition": {
+        "type": "AND",
+        "conditions": [
+          {
+            "field": "previous_gpa",
+            "operator": "greaterThan",
+            "value": 3.5
+          }
+        ]
+      },
+      "actions": {
+        "includeCategories": ["Academic Capability"],
+        "priorityBoost": ["low"],
+        "reason": "Strong academic history demonstrates capability for US university coursework and reduces officer concerns about academic success"
+      }
+    },
+    {
+      "id": "rule_weak_academics",
+      "name": "Weak Academic Record",
+      "description": "Applied when student has low GPA (below 3.0) or low test scores",
+      "condition": {
+        "type": "OR",
+        "conditions": [
+          {
+            "field": "previous_gpa",
+            "operator": "lessThan",
+            "value": 3.0
+          },
+          {
+            "field": "toefl_score",
+            "operator": "lessThan",
+            "value": 75
+          }
+        ]
+      },
+      "actions": {
+        "includeCategories": ["Academic Capability", "Financial Status"],
+        "priorityBoost": ["high"],
+        "reason": "Weaker academic record requires detailed explanation of academic preparation strategies and confirmation of financial support for full program duration despite potential academic challenges"
+      }
+    },
+    {
+      "id": "rule_strong_finances",
+      "name": "Strong Financial Capability",
+      "description": "Applied when sponsor income is high (100,000+ USD) or student has full scholarship",
+      "condition": {
+        "type": "OR",
+        "conditions": [
+          {
+            "field": "sponsor_annual_income",
+            "operator": "greaterThan",
+            "value": 100000
+          },
+          {
+            "field": "scholarship_type",
+            "operator": "equals",
+            "value": "Full Tuition + Stipend"
+          }
+        ]
+      },
+      "actions": {
+        "includeCategories": ["Financial Status"],
+        "priorityBoost": ["low"],
+        "reason": "Strong financial capability and funding sources significantly strengthen F1 visa application by eliminating officer concern about student becoming public charge"
+      }
+    },
+    {
+      "id": "rule_weak_finances",
+      "name": "Weak or Uncertain Financial Capability",
+      "description": "Applied when sponsor income is modest (below 40,000 USD) or available funds barely cover program costs",
+      "condition": {
+        "type": "OR",
+        "conditions": [
+          {
+            "field": "sponsor_annual_income",
+            "operator": "lessThan",
+            "value": 40000
+          },
+          {
+            "field": "available_funds",
+            "operator": "lessThan",
+            "value": 50000
+          }
+        ]
+      },
+      "actions": {
+        "includeCategories": ["Financial Status"],
+        "priorityBoost": ["high"],
+        "reason": "Limited financial resources require detailed documentation of sponsor income proof, detailed funding plan for all program years, and clear explanation of how expenses will be covered"
+      }
+    },
+    {
+      "id": "rule_no_scholarship",
+      "name": "No Scholarship Funding",
+      "description": "Applied when student did not receive any scholarship",
+      "condition": {
+        "type": "AND",
+        "conditions": [
+          {
+            "field": "scholarship_status",
+            "operator": "equals",
+            "value": false
+          }
+        ]
+      },
+      "actions": {
+        "includeCategories": ["Financial Status"],
+        "priorityBoost": ["medium"],
+        "reason": "Absence of scholarship means full reliance on sponsor/personal funds - requires strong evidence of complete financial capability for entire program duration"
+      }
+    },
+    {
+      "id": "rule_has_scholarship",
+      "name": "Has Scholarship Funding",
+      "description": "Applied when student received any type of scholarship (merit-based, need-based, or partial)",
+      "condition": {
+        "type": "AND",
+        "conditions": [
+          {
+            "field": "scholarship_status",
+            "operator": "equals",
+            "value": true
+          }
+        ]
+      },
+      "actions": {
+        "includeCategories": ["Financial Status"],
+        "priorityBoost": ["low"],
+        "reason": "University scholarship significantly strengthens financial capability profile by confirming university investment in student and reducing sponsor burden"
+      }
+    },
+
+    {
+      "id": "rule_strong_home_ties",
+      "name": "Strong Home Country Ties",
+      "description": "Applied when student has multiple home country ties: family, property, job prospects, and strong intent to return",
+      "condition": {
+        "type": "AND",
+        "conditions": [
+          {
+            "field": "plan_to_return_home",
+            "operator": "equals",
+            "value": true
+          },
+          {
+            "field": "family_in_home_country",
+            "operator": "equals",
+            "value": true
+          }
+        ]
+      },
+      "actions": {
+        "includeCategories": ["Post-Graduation Plans"],
+        "priorityBoost": ["low"],
+        "reason": "Multiple strong home country ties (family, property, job prospects) provide clear evidence of non-immigrant intent and commitment to return, significantly strengthening F1 visa case"
+      }
+    },
+    {
+      "id": "rule_weak_home_ties",
+      "name": "Weak Home Country Ties",
+      "description": "Applied when student has few home country ties or uncertain return plans",
+      "condition": {
+        "type": "OR",
+        "conditions": [
+          {
+            "field": "plan_to_return_home",
+            "operator": "equals",
+            "value": false
+          },
+          {
+            "field": "family_in_home_country",
+            "operator": "equals",
+            "value": false
+          }
+        ]
+      },
+      "actions": {
+        "includeCategories": ["Post-Graduation Plans"],
+        "priorityBoost": ["high"],
+        "reason": "Limited home country ties or weak return intent raises officer concerns about non-immigrant intent and requires detailed, credible explanation of why student will return despite weak ties"
+      }
+    },
+    {
+      "id": "rule_considering_usa_stay",
+      "name": "Considering USA Stay (OPT/H1B)",
+      "description": "Applied when student is considering staying in USA after graduation",
+      "condition": {
+        "type": "AND",
+        "conditions": [
+          {
+            "field": "consider_staying_usa",
+            "operator": "equals",
+            "value": true
+          }
+        ]
+      },
+      "actions": {
+        "includeCategories": ["Post-Graduation Plans"],
+        "priorityBoost": ["high"],
+        "reason": "OPT/H1B consideration must be carefully framed as temporary work experience followed by return home to maintain F1 non-immigrant intent. Requires clear explanation of why temporary US work aligns with long-term home country plans"
+      }
+    },
+    {
+      "id": "rule_us_relatives",
+      "name": "Has US Relatives",
+      "description": "Applied when student has relatives living in the USA",
+      "condition": {
+        "type": "AND",
+        "conditions": [
+          {
+            "field": "relatives_in_usa",
+            "operator": "equals",
+            "value": true
+          }
+        ]
+      },
+      "actions": {
+        "includeCategories": ["Post-Graduation Plans"],
+        "priorityBoost": ["medium"],
+        "reason": "US relatives can create immigration concern - officer may suspect student intends to stay with relatives despite return intent. Requires clear emphasis on stronger home country family ties and genuine commitment to return"
+      }
+    },
+    {
+      "id": "rule_visa_refusal_history",
+      "name": "Visa Refusal History",
+      "description": "Applied when student has been denied a US visa before",
+      "condition": {
+        "type": "AND",
+        "conditions": [
+          {
+            "field": "visa_refusal_history",
+            "operator": "equals",
+            "value": true
+          }
+        ]
+      },
+      "actions": {
+        "includeCategories": ["Post-Graduation Plans", "Financial Status"],
+        "priorityBoost": ["high"],
+        "reason": "Visa refusal history is serious red flag - requires transparent explanation of refusal reason, evidence that circumstances have changed, and demonstration that applicant is now clearly eligible for F1 visa"
+      }
+    },
+    {
+      "id": "rule_criminal_history",
+      "name": "Criminal Record or Legal Issues",
+      "description": "Applied when student has any criminal convictions or legal issues",
+      "condition": {
+        "type": "OR",
+        "conditions": [
+          {
+            "field": "criminal_record",
+            "operator": "equals",
+            "value": true
+          },
+          {
+            "field": "any_us_immigration_issues",
+            "operator": "equals",
+            "value": true
+          },
+          {
+            "field": "previous_overstay",
+            "operator": "equals",
+            "value": true
+          }
+        ]
+      },
+      "actions": {
+        "includeCategories": ["Post-Graduation Plans"],
+        "priorityBoost": ["high"],
+        "reason": "Criminal history or visa violations are serious impediments to F1 approval - requires full disclosure, detailed explanation of circumstances, evidence of rehabilitation, and assurance of future lawful conduct"
+      }
+    },
+
+    {
+      "id": "rule_graduate_student",
+      "name": "Graduate Student (Master's/PhD)",
+      "description": "Applied when student is pursuing Master's degree or PhD",
+      "condition": {
+        "type": "OR",
+        "conditions": [
+          {
+            "field": "intended_degree",
+            "operator": "equals",
+            "value": "Master's (2 years)"
+          },
+          {
+            "field": "intended_degree",
+            "operator": "equals",
+            "value": "PhD / Doctoral (4+ years)"
+          }
+        ]
+      },
+      "actions": {
+        "includeCategories": ["Study Plans", "Academic Capability"],
+        "priorityBoost": ["medium"],
+        "reason": "Graduate students often have better home country job prospects and credentials, can articulate specific career goals, and present stronger non-immigrant intent"
+      }
+    },
+    {
+      "id": "rule_undergraduate_student",
+      "name": "Undergraduate Student (Bachelor's)",
+      "description": "Applied when student is pursuing Bachelor's degree",
+      "condition": {
+        "type": "AND",
+        "conditions": [
+          {
+            "field": "intended_degree",
+            "operator": "equals",
+            "value": "Bachelor's (4 years)"
+          }
+        ]
+      },
+      "actions": {
+        "includeCategories": ["Study Plans", "Post-Graduation Plans"],
+        "priorityBoost": ["medium"],
+        "reason": "Undergraduate students pursuing 4-year programs require careful assessment of return intent since long program duration and young age may raise immigration intent concerns"
+      }
+    },
+    {
+      "id": "rule_employed_with_experience",
+      "name": "Employed with Work Experience",
+      "description": "Applied when student is currently employed with 2+ years work experience",
+      "condition": {
+        "type": "AND",
+        "conditions": [
+          {
+            "field": "current_employment_status",
+            "operator": "equals",
+            "value": true
+          },
+          {
+            "field": "work_experience_years",
+            "operator": "greaterThan",
+            "value": 2
+          }
+        ]
+      },
+      "actions": {
+        "includeCategories": ["Study Plans", "Post-Graduation Plans"],
+        "priorityBoost": ["low"],
+        "reason": "Work experience demonstrates maturity, financial stability, clear professional motivation for studies, and ability to return to meaningful employment post-graduation"
+      }
+    },
+    {
+      "id": "rule_not_employed",
+      "name": "Not Employed / Recent Graduate",
+      "description": "Applied when student is not currently employed",
+      "condition": {
+        "type": "AND",
+        "conditions": [
+          {
+            "field": "current_employment_status",
+            "operator": "equals",
+            "value": false
+          }
+        ]
+      },
+      "actions": {
+        "includeCategories": ["Study Plans", "Financial Status"],
+        "priorityBoost": ["medium"],
+        "reason": "Unemployed status requires clear focus on academic preparation and strong financial backup from sponsor to address concerns about student's financial independence and preparedness"
+      }
+    },
+
+    {
+      "id": "rule_previous_us_visit",
+      "name": "Previous US Visit Experience",
+      "description": "Applied when student has visited USA before",
+      "condition": {
+        "type": "AND",
+        "conditions": [
+          {
+            "field": "previous_us_visits",
+            "operator": "equals",
+            "value": true
+          }
+        ]
+      },
+      "actions": {
+        "includeCategories": ["Academic Capability"],
+        "priorityBoost": ["low"],
+        "reason": "Previous US visits demonstrate clean immigration history, compliance with visa terms, real familiarity with US environment, and opportunity for campus visits which strengthen university commitment"
+      }
+    },
+    {
+      "id": "rule_no_us_visit",
+      "name": "No Previous US Visit",
+      "description": "Applied when student has never visited USA before",
+      "condition": {
+        "type": "AND",
+        "conditions": [
+          {
+            "field": "previous_us_visits",
+            "operator": "equals",
+            "value": false
+          }
+        ]
+      },
+      "actions": {
+        "includeCategories": ["University Choice"],
+        "priorityBoost": ["medium"],
+        "reason": "No US experience requires extra effort to demonstrate detailed university knowledge through virtual research, shows genuine interest despite not visiting campus, and reinforces commitment to specific university"
+      }
+    },
+
+    {
+      "id": "rule_i20_ready",
+      "name": "Has I-20 Document",
+      "description": "Applied when student has received I-20 from university (ready for visa interview)",
+      "condition": {
+        "type": "AND",
+        "conditions": [
+          {
+            "field": "i20_number",
+            "operator": "equals",
+            "value": true
+          }
+        ]
+      },
+      "actions": {
+        "includeCategories": ["University Choice"],
+        "priorityBoost": ["low"],
+        "reason": "Possession of I-20 document confirms admission, SEVIS status, and financial certification, significantly advancing interview readiness and demonstrating concrete progress"
+      }
+    },
+    {
+      "id": "rule_i20_pending",
+      "name": "I-20 Not Yet Received",
+      "description": "Applied when student has not yet received I-20 from university",
+      "condition": {
+        "type": "AND",
+        "conditions": [
+          {
+            "field": "i20_number",
+            "operator": "equals",
+            "value": false
+          }
+        ]
+      },
+      "actions": {
+        "includeCategories": ["University Choice", "Financial Status"],
+        "priorityBoost": ["high"],
+        "reason": "Missing I-20 document indicates incomplete application process - requires explanation of timeline for I-20 receipt and confirmation that financial documentation is ready for SEVIS certification"
+      }
+    },
+
+    {
+      "id": "rule_high_risk_combination",
+      "name": "High-Risk Profile: Weak Academics + Weak Finances + Weak Ties",
+      "description": "Applied when student has combination of concerning factors: low GPA, low test scores, limited funds, weak home country ties",
+      "condition": {
+        "type": "AND",
+        "conditions": [
+          {
+            "field": "previous_gpa",
+            "operator": "lessThan",
+            "value": 3.0
+          },
+          {
+            "field": "available_funds",
+            "operator": "lessThan",
+            "value": 60000
+          },
+          {
+            "field": "family_in_home_country",
+            "operator": "equals",
+            "value": false
+          }
+        ]
+      },
+      "actions": {
+        "includeCategories": ["Academic Capability", "Financial Status", "Post-Graduation Plans"],
+        "priorityBoost": ["high"],
+        "reason": "High-risk combination of weak academics + limited finances + weak home country ties requires comprehensive evidence addressing ALL concerns: strong support plan for academics, complete financial documentation, and very clear credible explanation of return intent despite weak ties"
+      }
+    },
+    {
+      "id": "rule_low_income_country",
+      "name": "Student from Low-Income Country with Resources",
+      "description": "Applied when student is from developing country (Pakistan, India, China, etc) with strong financial support",
+      "condition": {
+        "type": "AND",
+        "conditions": [
+          {
+            "field": "sponsor_annual_income",
+            "operator": "greaterThan",
+            "value": 50000
+          }
+        ]
+      },
+      "actions": {
+        "includeCategories": ["Financial Status", "Post-Graduation Plans"],
+        "priorityBoost": ["low"],
+        "reason": "Strong financial resources in developing country context often indicate family business or high-status employment, strengthening both financial capability and home country ties arguments"
+      }
+    },
+    {
+      "id": "rule_english_non_native_medium",
+      "name": "Non-English Medium Education + English Study Needed",
+      "description": "Applied when student did not study in English medium previously",
+      "condition": {
+        "type": "AND",
+        "conditions": [
+          {
+            "field": "medium_of_instruction",
+            "operator": "equals",
+            "value": false
+          }
+        ]
+      },
+      "actions": {
+        "includeCategories": ["Academic Capability"],
+        "priorityBoost": ["high"],
+        "reason": "Non-English prior education requires detailed explanation of English proficiency development, specific strategies for managing English-medium coursework, and discussion of university support systems"
+      }
+    },
+    {
+      "id": "rule_strong_university_match",
+      "name": "Strong University-Field Match",
+      "description": "Applied when student's field of study aligns with university's strengths (e.g., CS student at MIT, Business at Wharton)",
+      "condition": {
+        "type": "AND",
+        "conditions": [
+          {
+            "field": "why_primary_university",
+            "operator": "notEquals",
+            "value": ""
+          }
+        ]
+      },
+      "actions": {
+        "includeCategories": ["University Choice"],
+        "priorityBoost": ["low"],
+        "reason": "Strong academic fit between student's field and university's programs demonstrates thoughtful application strategy and genuine educational motivation"
+      }
+    },
+    {
+      "id": "rule_multiple_admissions",
+      "name": "Multiple University Admissions",
+      "description": "Applied when student received multiple admission offers (3+), showing competitive application",
+      "condition": {
+        "type": "AND",
+        "conditions": [
+          {
+            "field": "total_admits_received",
+            "operator": "greaterThan",
+            "value": 2
+          }
+        ]
+      },
+      "actions": {
+        "includeCategories": ["University Choice"],
+        "priorityBoost": ["low"],
+        "reason": "Multiple admissions demonstrate strong academic competitiveness, quality of application, and choices available, supporting argument of genuine educational opportunity in USA"
+      }
+    },
+    {
+      "id": "rule_single_admission",
+      "name": "Single University Admission",
+      "description": "Applied when student received only one admission offer",
+      "condition": {
+        "type": "AND",
+        "conditions": [
+          {
+            "field": "total_admits_received",
+            "operator": "equals",
+            "value": 1
+          }
+        ]
+      },
+      "actions": {
+        "includeCategories": ["University Choice"],
+        "priorityBoost": ["medium"],
+        "reason": "Single admission may require explanation of application strategy and reaffirmation of commitment to this particular university as genuine first-choice institution"
+      }
+    },
+    {
+      "id": "rule_standardized_test_strong",
+      "name": "Strong Standardized Test Scores (GRE/GMAT/SAT/ACT)",
+      "description": "Applied when student has high standardized test scores (GRE 310+, GMAT 650+, SAT 1400+)",
+      "condition": {
+        "type": "AND",
+        "conditions": [
+          {
+            "field": "standardized_test",
+            "operator": "notEquals",
+            "value": "None"
+          }
+        ]
+      },
+      "actions": {
+        "includeCategories": ["Academic Capability"],
+        "priorityBoost": ["low"],
+        "reason": "Strong standardized test performance demonstrates academic aptitude in quantitative reasoning and critical thinking, supporting capability for US university-level coursework"
+      }
+    },
+    {
+      "id": "rule_no_standardized_test",
+      "name": "No Standardized Test (GRE/GMAT/SAT/ACT)",
+      "description": "Applied when student did not take standardized test",
+      "condition": {
+        "type": "AND",
+        "conditions": [
+          {
+            "field": "standardized_test",
+            "operator": "equals",
+            "value": "None"
+          }
+        ]
+      },
+      "actions": {
+        "includeCategories": ["Academic Capability"],
+        "priorityBoost": ["medium"],
+        "reason": "Absence of standardized test requires reliance on GPA and TOEFL/IELTS to demonstrate academic capability; may indicate test not required by program but relies more heavily on other credentials"
+      }
+    }
+  ]
+}

@@ -696,7 +696,7 @@ export default function AffidavitSupportCalculator() {
       caseNumber: 1,
       caseName: "Primary Sponsor Alone",
       caseDescription:
-        "Using only the primary sponsor&apos;s income to meet the poverty guideline requirement.",
+      "Using only the primary sponsor's income to meet the poverty guideline requirement.",
     };
   };
 

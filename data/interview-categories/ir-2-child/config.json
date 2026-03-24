@@ -1,0 +1,23 @@
+{
+    "categorySlug": "ir-2-child",
+    "displayName": "IR-2/CR-2 Child Visa",
+    "description": "Child-based immigrant visa for children of US citizens and permanent residents",
+    "visaCountry": "United States",
+    "metadata": {
+      "version": "1.0.0",
+      "questionnaireVersion": "1.0.0",
+      "questionBankVersion": "1.0.0",
+      "estimatedDurationMinutes": 15,
+      "totalQuestions": 33,
+      "totalIntakeQuestions": 25
+    },
+    "features": {
+      "hasRapidFire": true,
+      "hasProfileAutoFill": true
+    },
+    "ui": {
+      "themeColor": "teal",
+      "icon": "Baby"
+    },
+    "isActive": true
+  }

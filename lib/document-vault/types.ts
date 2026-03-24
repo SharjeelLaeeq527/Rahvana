@@ -120,6 +120,7 @@ export interface DocumentWizardStep {
 }
 
 export interface UploadedDocument {
+  isRead: unknown;
   id: string;
   userId: string;
   documentDefId: string; // References DocumentDefinition
@@ -167,7 +168,8 @@ export type NotificationType =
   | 'DOC_MISSING'
   | 'DOC_EXPIRING_SOON'
   | 'DOC_EXPIRED'
-  | 'DOC_RENAMED';
+  | 'DOC_RENAMED'
+  | 'DOC_UPLOADED';
 
 export type NotificationSeverity = 'info' | 'warning' | 'error';
 

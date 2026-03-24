@@ -4,7 +4,7 @@ export interface InterviewSession {
   user_id: string | null;
   user_email: string;
   user_name: string;
-  case_type: string;
+  category_slug: string;
   completed: boolean;
   created_at: string;
   updated_at: string;
@@ -13,10 +13,10 @@ export interface InterviewSession {
 }
 
 export interface InterviewSessionInput {
+  category_slug: string;
   user_id?: string;
   user_email: string;
   user_name: string;
-  case_type: string;
 }
 
 export interface InterviewAnswer {

@@ -1,0 +1,23 @@
+{
+    "categorySlug": "ir-1-spouse",
+    "displayName": "IR-1/CR-1 Spouse Visa",
+    "description": "Marriage-based immigrant visa for spouses of US citizens and permanent residents",
+    "visaCountry": "United States",
+    "metadata": {
+      "version": "1.0.0",
+      "questionnaireVersion": "1.0.0",
+      "questionBankVersion": "1.0.0",
+      "estimatedDurationMinutes": 15,
+      "totalQuestions": 44,
+      "totalIntakeQuestions": 30
+    },
+    "features": {
+      "hasRapidFire": true,
+      "hasProfileAutoFill": true
+    },
+    "ui": {
+      "themeColor": "teal",
+      "icon": "Heart"
+    },
+    "isActive": true
+  }

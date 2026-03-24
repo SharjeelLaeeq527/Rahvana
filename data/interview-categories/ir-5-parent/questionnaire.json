@@ -1,0 +1,277 @@
+{
+  "categorySlug": "ir-5-parent",
+  "version": "1.0.0",
+  "lastUpdated": "2026-03-21",
+  "sections": [
+    {
+      "id": "basic_profile",
+      "title": "Basic Profile & Identity",
+      "description": "General personal details and identity information about you.",
+      "order": 1,
+      "questions": [
+        {
+          "key": "full_name",
+          "label": "What is your full name?",
+          "type": "text",
+          "required": true,
+          "validation": { "minLength": 3, "maxLength": 200 },
+          "placeholder": "Enter your full legal name"
+        },
+        {
+          "key": "date_of_birth",
+          "label": "What is your date of birth?",
+          "type": "date",
+          "required": true
+        },
+        {
+          "key": "current_age",
+          "label": "What is your current age?",
+          "type": "number",
+          "required": true,
+          "validation": { "min": 21, "max": 120 },
+          "description": "IR-5 visa requires parent to be at least 21 years old"
+        },
+        {
+          "key": "current_country",
+          "label": "What country are you currently living in?",
+          "type": "text",
+          "required": true,
+          "validation": { "minLength": 2, "maxLength": 100 },
+          "placeholder": "e.g., Pakistan"
+        },
+        {
+          "key": "marital_status",
+          "label": "What is your marital status?",
+          "type": "select",
+          "required": true,
+          "options": ["Married", "Widowed", "Divorced", "Single"]
+        }
+      ]
+    },
+    {
+      "id": "petitioner_details",
+      "title": "Sponsoring Child (Petitioner) Information",
+      "description": "Details about your child who is sponsoring you for the IR-5 visa.",
+      "order": 2,
+      "questions": [
+        {
+          "key": "petitioner_relationship",
+          "label": "Who is sponsoring you?",
+          "type": "select",
+          "required": true,
+          "options": ["Son", "Daughter"]
+        },
+        {
+          "key": "petitioner_name",
+          "label": "What is your child’s full name?",
+          "type": "text",
+          "required": true,
+          "validation": { "minLength": 3, "maxLength": 200 }
+        },
+        {
+          "key": "petitioner_citizenship",
+          "label": "Is your child a U.S. citizen?",
+          "type": "boolean",
+          "required": true
+        },
+        {
+          "key": "petitioner_location",
+          "label": "Where does your child live in the United States?",
+          "type": "text",
+          "required": true,
+          "validation": { "minLength": 3, "maxLength": 200 },
+          "placeholder": "City and state"
+        },
+        {
+          "key": "petitioner_employment",
+          "label": "What does your child do for a living?",
+          "type": "text",
+          "required": true,
+          "validation": { "minLength": 3, "maxLength": 200 }
+        },
+        {
+          "key": "petitioner_us_duration",
+          "label": "How long has your child been living in the USA?",
+          "type": "text",
+          "required": true,
+          "validation": { "minLength": 2, "maxLength": 100 }
+        }
+      ]
+    },
+    {
+      "id": "relationship_details",
+      "title": "Parent-Child Relationship Strength",
+      "description": "Information about your relationship with your sponsoring child.",
+      "order": 3,
+      "questions": [
+        {
+          "key": "last_seen_child",
+          "label": "When was the last time you saw your child?",
+          "type": "text",
+          "required": true,
+          "validation": { "minLength": 3, "maxLength": 200 }
+        },
+        {
+          "key": "communication_frequency",
+          "label": "How often do you communicate with your child?",
+          "type": "select",
+          "required": true,
+          "options": ["Daily", "Weekly", "Monthly", "Rarely"]
+        },
+        {
+          "key": "communication_method",
+          "label": "How do you usually communicate?",
+          "type": "select",
+          "required": true,
+          "options": ["Phone", "Video Call", "Text", "All of the above"]
+        },
+        {
+          "key": "relationship_proof",
+          "label": "Do you have photos or proof of your relationship?",
+          "type": "boolean",
+          "required": true
+        },
+        {
+          "key": "recent_visit_by_child",
+          "label": "Has your child visited you recently?",
+          "type": "boolean",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "financial_dependency",
+      "title": "Financial Support & Dependency Status",
+      "description": "Your financial situation and the level of support your child provides.",
+      "order": 4,
+      "questions": [
+        {
+          "key": "financial_support_from_child",
+          "label": "Does your child financially support you?",
+          "type": "boolean",
+          "required": true
+        },
+        {
+          "key": "own_income",
+          "label": "Do you have your own source of income?",
+          "type": "boolean",
+          "required": true
+        },
+        {
+          "key": "current_occupation",
+          "label": "What is your current occupation (if any)?",
+          "type": "text",
+          "required": false,
+          "validation": { "minLength": 2, "maxLength": 200 }
+        },
+        {
+          "key": "financial_dependency_plan",
+          "label": "Do you plan to depend on your child financially in the USA?",
+          "type": "boolean",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "living_and_family_info",
+      "title": "Living Arrangements & Household Plans",
+      "description": "Details about where and how you will live in the United States.",
+      "order": 5,
+      "questions": [
+        {
+          "key": "us_living_location",
+          "label": "Where will you live in the United States?",
+          "type": "text",
+          "required": true,
+          "validation": { "minLength": 3, "maxLength": 200 }
+        },
+        {
+          "key": "living_with",
+          "label": "Who will you live with?",
+          "type": "text",
+          "required": true,
+          "validation": { "minLength": 2, "maxLength": 200 }
+        },
+        {
+          "key": "household_size",
+          "label": "How many people live in that house?",
+          "type": "select",
+          "required": true,
+          "options": ["1-2", "3-4", "5-6", "7+"]
+        },
+        {
+          "key": "knows_us_address",
+          "label": "Do you know your address in the USA?",
+          "type": "boolean",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "background_future_plans",
+      "title": "Immigration Intent & Post-Arrival Plans",
+      "description": "Your reasons for immigrating and what you plan to do after arrival.",
+      "order": 6,
+      "questions": [
+        {
+          "key": "move_reason",
+          "label": "Why do you want to go to the United States?",
+          "type": "textarea",
+          "required": true,
+          "validation": { "minLength": 20, "maxLength": 500 }
+        },
+        {
+          "key": "travel_plan",
+          "label": "When do you plan to travel?",
+          "type": "text",
+          "required": true
+        },
+        {
+          "key": "permanent_intent",
+          "label": "Do you plan to stay permanently in the USA?",
+          "type": "boolean",
+          "required": true
+        },
+        {
+          "key": "post_arrival_plan",
+          "label": "What will you do after moving to the USA?",
+          "type": "textarea",
+          "required": true,
+          "validation": { "minLength": 20, "maxLength": 500 }
+        }
+      ]
+    },
+    {
+      "id": "travel_background_history",
+      "title": "Travel & Immigration Background",
+      "description": "Your history of international travel and US immigration interactions.",
+      "order": 7,
+      "questions": [
+        {
+          "key": "previous_us_visit",
+          "label": "Have you ever been to the United States before?",
+          "type": "boolean",
+          "required": true
+        },
+        {
+          "key": "visa_refusal",
+          "label": "Have you ever been denied a U.S. visa?",
+          "type": "boolean",
+          "required": true
+        },
+        {
+          "key": "long_stay_history",
+          "label": "Have you stayed in any country for more than 6 months?",
+          "type": "boolean",
+          "required": true
+        },
+        {
+          "key": "criminal_record",
+          "label": "Do you have any criminal record?",
+          "type": "boolean",
+          "required": true
+        }
+      ]
+    }
+  ]
+}

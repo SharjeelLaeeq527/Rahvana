@@ -4,13 +4,6 @@ import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
   Sheet,
   SheetContent,
   SheetHeader,
@@ -24,1196 +17,35 @@ import { Loader } from "@/components/ui/spinner";
 
 import { InterviewPrepOutput } from "../../../lib/interview-prep/types";
 
-import CountryAutocomplete from "@/app/components/shared/CountryAutoComplete";
-import { ToggleSwitch } from "@/app/components/interview-prep/ToggleSwitch";
 import { useAuth } from "@/app/context/AuthContext";
 import { createBrowserClient } from "@supabase/ssr";
 import { mapProfileToGenericForm } from "@/lib/autoFill/mapper";
 import { MasterProfile } from "@/types/profile";
+import { ReviewStep } from "@/app/components/interview-prep/review-step";
+import { CategorySelectionStep } from "@/app/components/interview-prep/category-selection-step";
+import { DynamicQuestionStep } from "@/app/components/interview-prep/dynamic-question-step";
+import CountrySelectionModal from "../../components/interview-prep/CountrySelectionModal";
+import type { InterviewFormData } from "@/app/components/interview-prep/types";
 
-type CaseType = "Spouse";
-
-interface FormData {
-  caseType: CaseType | "";
-  visaCategory?: string;
-  // Basic Case Information
-  beneficiary_country?: string;
-  age_range?: string;
-  highest_education?: string;
-  marriage_date?: string;
-  months_since_marriage?: number;
-  marriage_location?: string;
-  previous_marriages?: string;
-  // Relationship Origin
-  relationship_origin_type?: string;
-  total_time_spent_together?: string;
-  number_of_in_person_visits?: number;
-  proposal_details?: string;
-  courtship_duration?: string;
-  // Married Life & Daily Interaction
-  current_living_arrangement?: string;
-  spouse_address?: string;
-  communication_frequency?: string;
-  daily_communication?: string;
-  shared_activities?: string;
-  important_dates_knowledge?: boolean;
-  // Family & Social Knowledge
-  met_spouse_family?: boolean;
-  family_reaction_to_marriage?: string;
-  wedding_attendees?: string;
-  marriage_type?: string;
-  mutual_friends?: boolean;
-  // Petitioner Information
-  petitioner_status?: string;
-  petitioner_income_level?: string;
-  household_size?: string;
-  // Background & Future Plans
-  beneficiary_employment?: string;
-  sponsor_employment?: string;
-  military_or_defense_background?: boolean;
-  previous_us_visits?: boolean;
-  previous_visa_refusal?: boolean;
-  visa_overstay_history?: boolean;
-  criminal_history?: boolean;
-  english_proficiency?: string;
-  intended_us_state?: string;
-  living_arrangements_in_us?: string;
-  future_plans?: string;
-  // Finances & Household Management
-  joint_finances?: boolean;
-  financial_arrangement_description?: string;
-}
-
-interface CaseTypeStepProps {
-  formData: FormData;
-  error: string | null;
-  onCaseTypeChange: (caseType: CaseType) => void;
-  onNext: () => void;
-  onBack: () => void;
-}
-
-const mapAnswersToFormData = (
-  answers: Array<{ question_key: string; answer_value: unknown }>,
-): Partial<FormData> => {
-  const mapped: Partial<FormData> = {};
-  answers.forEach((a) => {
-    mapped[a.question_key as keyof FormData] = a.answer_value as never;
-  });
-  return mapped;
-};
-
-const CaseTypeStep = ({
-  formData,
-  error,
-  onCaseTypeChange,
-  onNext,
-  onBack,
-}: CaseTypeStepProps) => (
-  <div className="space-y-8 mx-2">
-    <div className="text-center mb-8">
-      <h2 className="text-3xl font-bold text-foreground mb-3">
-        Select Case Type
-      </h2>
-      <p className="text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-        Please select the type of visa case you want to prepare for interview.
-      </p>
-    </div>
-
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-      {/* ACTIVE: SPOUSE */}
-      <button
-        type="button"
-        className={`p-8 border-2 rounded-xl text-center transition-all cursor-pointer ${
-          formData.caseType === "Spouse"
-            ? "border-teal-600 bg-teal-50/20 ring-2 ring-teal-200"
-            : "border-border hover:border-teal-400 hover:bg-muted"
-        }`}
-        onClick={() => {
-          onCaseTypeChange("Spouse");
-          window.scrollBy({
-            top: window.innerHeight,
-            left: 0,
-            behavior: "smooth",
-          });
-        }}
-      >
-        <div className="mx-auto bg-teal-100 text-teal-800 w-16 h-16 rounded-full flex items-center justify-center mb-4">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            className="h-8 w-8"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
-            />
-          </svg>
-        </div>
-        <h3 className="font-bold text-xl mb-2 text-foreground">Spouse Visa</h3>
-        <p className="text-base text-muted-foreground">
-          IR-1 / CR-1 – Spouse of U.S. Citizen
-        </p>
-      </button>
-
-      {/* COMING SOON: PARENT */}
-      <div className="p-8 border-2 rounded-xl text-center bg-muted/20 border-border opacity-70">
-        <div className="mx-auto bg-muted text-muted-foreground w-16 h-16 rounded-full flex items-center justify-center mb-4">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            className="h-8 w-8"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
-            />
-          </svg>
-        </div>
-        <h3 className="font-bold text-xl mb-2 text-muted-foreground">
-          Parent Visa
-        </h3>
-        <p className="text-base text-muted-foreground">
-          IR-5 – Parent of U.S. Citizen
-        </p>
-        <span className="inline-block mt-3 px-3 py-1 text-xs font-semibold rounded-full bg-muted text-muted-foreground">
-          Coming Soon
-        </span>
-      </div>
-
-      {/* COMING SOON: CHILD */}
-      <div className="p-8 border-2 rounded-xl text-center bg-slate-50 border-slate-200 opacity-70">
-        <div className="mx-auto bg-slate-200 text-slate-500 w-16 h-16 rounded-full flex items-center justify-center mb-4">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            className="h-8 w-8"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"
-            />
-          </svg>
-        </div>
-        <h3 className="font-bold text-xl mb-2 text-slate-500">Child Visa</h3>
-        <p className="text-base text-slate-500">
-          IR-2 – Unmarried Child of U.S. Citizen
-        </p>
-        <span className="inline-block mt-3 px-3 py-1 text-xs font-semibold rounded-full bg-slate-200 text-slate-600">
-          Coming Soon
-        </span>
-      </div>
-
-      {/* COMING SOON: FAMILY */}
-      <div className="p-8 border-2 rounded-xl text-center bg-slate-50 border-slate-200 opacity-70">
-        <div className="mx-auto bg-slate-200 text-slate-500 w-16 h-16 rounded-full flex items-center justify-center mb-4">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            className="h-8 w-8"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
-            />
-          </svg>
-        </div>
-        <h3 className="font-bold text-xl mb-2 text-slate-500">Family Visa</h3>
-        <p className="text-base text-slate-500">
-          F1 / F2A / F2B / F3 / F4 – Family Preference Visas
-        </p>
-        <span className="inline-block mt-3 px-3 py-1 text-xs font-semibold rounded-full bg-slate-200 text-slate-600">
-          Coming Soon
-        </span>
-      </div>
-
-      {/* COMING SOON: K1 */}
-      <div className="p-8 border-2 rounded-xl text-center bg-slate-50 border-slate-200 opacity-70">
-        <div className="mx-auto bg-slate-200 text-slate-500 w-16 h-16 rounded-full flex items-center justify-center mb-4">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            className="h-8 w-8"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
-            />
-          </svg>
-        </div>
-        <h3 className="font-bold text-xl mb-2 text-slate-500">K1 Visa</h3>
-        <p className="text-base text-slate-500">K1 – Fiance(e) of US Citizen</p>
-        <span className="inline-block mt-3 px-3 py-1 text-xs font-semibold rounded-full bg-slate-200 text-slate-600">
-          Coming Soon
-        </span>
-      </div>
-
-      {/* COMING SOON: B1/B2 */}
-      <div className="p-8 border-2 rounded-xl text-center bg-slate-50 border-slate-200 opacity-70">
-        <div className="mx-auto bg-slate-200 text-slate-500 w-16 h-16 rounded-full flex items-center justify-center mb-4">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            className="h-8 w-8"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-            />
-          </svg>
-        </div>
-        <h3 className="font-bold text-xl mb-2 text-slate-500">B1/B2 Visa</h3>
-        <p className="text-base text-slate-500">B1 / B2 – Visitor Visa</p>
-        <span className="inline-block mt-3 px-3 py-1 text-xs font-semibold rounded-full bg-slate-200 text-slate-600">
-          Coming Soon
-        </span>
-      </div>
-    </div>
-
-    {error && (
-      <div className="p-4 bg-red-50 border-l-4 border-red-500 rounded-lg text-red-700">
-        <div className="flex items-start">
-          <svg
-            className="h-5 w-5 text-red-500 mt-0.5 mr-3"
-            fill="currentColor"
-            viewBox="0 0 20 20"
-          >
-            <path
-              fillRule="evenodd"
-              d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
-              clipRule="evenodd"
-            />
-          </svg>
-          <span>{error}</span>
-        </div>
-      </div>
-    )}
-
-    <div className="flex flex-row justify-between gap-4 pt-6">
-      <Button
-        onClick={onBack}
-        variant="outline"
-        className="bg-muted hover:bg-muted/80 text-muted-foreground border-border px-6 py-3 text-base"
-      >
-        ← Back
-      </Button>
-
-      <Button
-        onClick={onNext}
-        className="bg-teal-600 hover:bg-teal-700 text-white px-6 py-3 text-base"
-        disabled={!formData.caseType}
-      >
-        Next
-      </Button>
-    </div>
-  </div>
-);
-
-interface QuestionStepProps {
-  title: string;
-  description: string;
-  questions: Array<{
-    key: keyof FormData;
-    label: string;
-    type: "text" | "textarea" | "number" | "date" | "boolean" | "select";
-    options?: string | string[];
-    required?: boolean;
-  }>;
-  formData: FormData;
-  error: string | null;
-  onChange: (id: keyof FormData, value: unknown) => void;
-  setFormData: React.Dispatch<React.SetStateAction<FormData>>;
-  onNext: () => void;
-  onBack: () => void;
-}
-
-const QuestionStep = ({
-  title,
-  description,
-  questions,
-  formData,
-  error,
-  onChange,
-  setFormData,
-  onNext,
-  onBack,
-}: QuestionStepProps) => {
-  // Refs for each question to scroll
-  const questionRefs = useRef<Record<string, HTMLDivElement | null>>({});
-
-  // Handle input change and scroll slightly
-  const handleChange = (key: keyof FormData, value: unknown) => {
-    const oldValue = formData[key];
-    if (oldValue === value) return; // avoid duplicate scroll
-
-    onChange(key, value);
-
-    const el = questionRefs.current[key];
-    if (el) {
-      const rect = el.getBoundingClientRect();
-      const scrollTop =
-        window.pageYOffset || document.documentElement.scrollTop;
-      const top = rect.top + scrollTop - 50; // 50px offset from top
-      window.scrollTo({ top, behavior: "smooth" });
-    }
-  };
-
-  const renderInput = (question: {
-    key: keyof FormData;
-    label: string;
-    type: "text" | "textarea" | "number" | "date" | "boolean" | "select";
-    options?: string | string[];
-    required?: boolean;
-  }) => {
-    const value = formData[question.key];
-
-    if (question.key === "beneficiary_country") {
-      return (
-        <CountryAutocomplete
-          formData={formData as unknown as Record<string, unknown>}
-          setFormData={(data) => setFormData((prev) => ({ ...prev, ...data }))}
-          valueKey="beneficiary_country"
-          hideLabel
-          inputClassName="w-full p-3 border border-border rounded-lg bg-background text-foreground focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-colors"
-          placeholder="Start typing country..."
-        />
-      );
-    }
-
-    switch (question.type) {
-      case "text":
-      case "number":
-      case "date":
-        return (
-          <input
-            type={question.type}
-            value={value !== undefined ? String(value) : ""}
-            onClick={(e) => {
-              if (question.type === "date")
-                (e.currentTarget as HTMLInputElement).showPicker?.();
-            }}
-            onChange={(e) =>
-              handleChange(
-                question.key,
-                question.type === "number"
-                  ? Number(e.target.value)
-                  : e.target.value,
-              )
-            }
-            className="w-full p-3 border border-border rounded-lg bg-background text-foreground focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-colors"
-            placeholder={`Enter ${question.label.toLowerCase()}`}
-          />
-        );
-      case "textarea":
-        return (
-          <textarea
-            value={typeof value === "string" ? value : ""}
-            onChange={(e) => handleChange(question.key, e.target.value)}
-            className="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-colors"
-            placeholder={`Enter details for ${question.label.toLowerCase()}`}
-            rows={4}
-          />
-        );
-      case "boolean":
-        return (
-          <div className="flex items-center justify-between">
-            <span className="text-lg font-semibold text-slate-800">
-              {question.label}
-            </span>
-            <ToggleSwitch
-              checked={!!value}
-              onChange={(checked) => handleChange(question.key, checked)}
-            />
-          </div>
-        );
-      case "select":
-        if (Array.isArray(question.options)) {
-          return (
-            <Select
-              value={typeof value === "string" ? value : ""}
-              onValueChange={(v) => handleChange(question.key, v)}
-            >
-              <SelectTrigger className="w-full h-14">
-                <SelectValue
-                  placeholder={`Select ${question.label.toLowerCase()}`}
-                />
-              </SelectTrigger>
-              <SelectContent>
-                {question.options.map((option) => (
-                  <SelectItem key={option} value={option}>
-                    {option}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          );
-        }
-        return null;
-      default:
-        return null;
-    }
-  };
-
-  return (
-    <div className="space-y-6">
-      <div className="text-center mb-8">
-        <h2 className="text-3xl font-bold text-foreground mb-3">{title}</h2>
-        <p className="text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-          {description}
-        </p>
-      </div>
-
-      <div className="space-y-6">
-        {questions.map((question) => (
-          <div
-            key={question.key}
-            ref={(el: HTMLDivElement | null) => {
-              questionRefs.current[question.key] = el;
-            }}
-            className="space-y-3 p-4 bg-slate-50 rounded-xl border border-slate-200"
-          >
-            {question.type !== "boolean" && (
-              <label className="block text-lg font-semibold text-foreground">
-                {question.label}
-                {question.required && (
-                  <span className="text-red-500 ml-1">*</span>
-                )}
-              </label>
-            )}
-            {renderInput(question)}
-          </div>
-        ))}
-
-        {error && (
-          <div className="p-4 bg-red-50 border-l-4 border-red-500 rounded-lg text-red-700">
-            <div className="flex items-start">
-              <svg
-                className="h-5 w-5 text-red-500 mt-0.5 mr-3"
-                fill="currentColor"
-                viewBox="0 0 20 20"
-              >
-                <path
-                  fillRule="evenodd"
-                  d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
-                  clipRule="evenodd"
-                />
-              </svg>
-              <span>{error}</span>
-            </div>
-          </div>
-        )}
-
-        <div className="flex justify-between pt-4">
-          <Button
-            onClick={onBack}
-            variant="outline"
-            className="bg-teal-600 hover:bg-teal-700 text-white"
-          >
-            Previous
-          </Button>
-          <div className="flex space-x-2">
-            <Button
-              onClick={onNext}
-              className="bg-teal-600 hover:bg-teal-700 text-white"
-            >
-              Next
-            </Button>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-};
-
-interface ReviewStepProps {
-  formData: FormData;
-  error: string | null;
-  loading: boolean;
-  onSubmit: () => void;
-  onBack: () => void;
-}
-
-const ReviewStep = ({
-  formData,
-  error,
-  loading,
-  onSubmit,
-  onBack,
-}: ReviewStepProps) => {
-  // Helper function to format boolean values
-  const formatBoolean = (value: boolean | undefined) => {
-    if (value === undefined) return "Not answered";
-    return value ? "Yes" : "No";
-  };
-
-  // Helper function to format dates
-  const formatDate = (dateStr: string | undefined) => {
-    if (!dateStr) return "Not provided";
-    try {
-      return new Date(dateStr).toLocaleDateString();
-    } catch {
-      return dateStr;
-    }
-  };
-
-  return (
-    <div className="space-y-8">
-      <div className="text-center mb-8">
-        <h2 className="text-3xl font-bold text-foreground mb-3">
-          Review Your Information
-        </h2>
-        <p className="text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-          Please review all the information you&apos;ve entered before
-          submitting for interview preparation.
-        </p>
-      </div>
-
-      <div className="space-y-6">
-        {/* Case Type Section */}
-        <div className="bg-muted/20 rounded-xl p-6 border border-border">
-          <h3 className="text-xl font-bold text-foreground mb-4 flex items-center gap-3">
-            <div className="bg-teal-100 text-teal-800 w-10 h-10 rounded-full flex items-center justify-center">
-              <svg
-                className="w-5 h-5"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-                />
-              </svg>
-            </div>
-            Case Type
-          </h3>
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <p className="text-sm text-muted-foreground">Selected Type</p>
-              <p className="font-medium capitalize">{formData.caseType}</p>
-            </div>
-          </div>
-        </div>
-
-        {/* Basic Case Information Section */}
-        {(formData["beneficiary_country"] ||
-          formData["age_range"] ||
-          formData["highest_education"] ||
-          formData["marriage_date"] ||
-          formData["months_since_marriage"] ||
-          formData["marriage_location"] ||
-          formData["previous_marriages"]) && (
-          <div className="bg-muted/20 rounded-lg p-6">
-            <h3 className="text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
-              <svg
-                className="w-5 h-5 text-teal-600"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-                ></path>
-              </svg>
-              Basic Case Information
-            </h3>
-            <div className="grid grid-cols-2 gap-4">
-              {formData["beneficiary_country"] && (
-                <div>
-                  <p className="text-sm text-muted-foreground">
-                    Beneficiary Country
-                  </p>
-                  <p className="font-medium">
-                    {formData["beneficiary_country"]}
-                  </p>
-                </div>
-              )}
-              {formData["age_range"] && (
-                <div>
-                  <p className="text-sm text-slate-600">Age Range</p>
-                  <p className="font-medium">{formData["age_range"]}</p>
-                </div>
-              )}
-              {formData["highest_education"] && (
-                <div>
-                  <p className="text-sm text-slate-600">Highest Education</p>
-                  <p className="font-medium">{formData["highest_education"]}</p>
-                </div>
-              )}
-              {formData["marriage_date"] && (
-                <div>
-                  <p className="text-sm text-slate-600">Marriage Date</p>
-                  <p className="font-medium">
-                    {formatDate(formData["marriage_date"])}
-                  </p>
-                </div>
-              )}
-              {formData["months_since_marriage"] && (
-                <div>
-                  <p className="text-sm text-slate-600">
-                    Months Since Marriage
-                  </p>
-                  <p className="font-medium">
-                    {formData["months_since_marriage"]}
-                  </p>
-                </div>
-              )}
-              {formData["marriage_location"] && (
-                <div>
-                  <p className="text-sm text-slate-600">Marriage Location</p>
-                  <p className="font-medium">{formData["marriage_location"]}</p>
-                </div>
-              )}
-              {formData["previous_marriages"] && (
-                <div>
-                  <p className="text-sm text-slate-600">Previous Marriages</p>
-                  <p className="font-medium">
-                    {formData["previous_marriages"]}
-                  </p>
-                </div>
-              )}
-            </div>
-          </div>
-        )}
-
-        {/* Relationship Origin Section */}
-        {(formData["relationship_origin_type"] ||
-          formData["total_time_spent_together"] ||
-          formData["number_of_in_person_visits"] !== undefined ||
-          formData["proposal_details"] ||
-          formData["courtship_duration"]) && (
-          <div className="bg-slate-50 rounded-lg p-6">
-            <h3 className="text-lg font-semibold text-slate-900 mb-4 flex items-center gap-2">
-              <svg
-                className="w-5 h-5 text-teal-600"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
-                ></path>
-              </svg>
-              Relationship Origin
-            </h3>
-            <div className="grid grid-cols-2 gap-4">
-              {formData["relationship_origin_type"] && (
-                <div>
-                  <p className="text-sm text-slate-600">How Did You Meet</p>
-                  <p className="font-medium">
-                    {formData["relationship_origin_type"]}
-                  </p>
-                </div>
-              )}
-              {formData["total_time_spent_together"] && (
-                <div>
-                  <p className="text-sm text-slate-600">
-                    Total Time Spent Together
-                  </p>
-                  <p className="font-medium">
-                    {formData["total_time_spent_together"]}
-                  </p>
-                </div>
-              )}
-              {formData["number_of_in_person_visits"] !== undefined && (
-                <div>
-                  <p className="text-sm text-slate-600">
-                    Number of In-Person Visits
-                  </p>
-                  <p className="font-medium">
-                    {formData["number_of_in_person_visits"]}
-                  </p>
-                </div>
-              )}
-              {formData["proposal_details"] && (
-                <div>
-                  <p className="text-sm text-slate-600">Proposal Details</p>
-                  <p className="font-medium">{formData["proposal_details"]}</p>
-                </div>
-              )}
-              {formData["courtship_duration"] && (
-                <div>
-                  <p className="text-sm text-slate-600">Courtship Duration</p>
-                  <p className="font-medium">
-                    {formData["courtship_duration"]}
-                  </p>
-                </div>
-              )}
-            </div>
-          </div>
-        )}
-
-        {/* Married Life & Daily Interaction Section */}
-        {(formData["current_living_arrangement"] ||
-          formData["spouse_address"] ||
-          formData["communication_frequency"] ||
-          formData["daily_communication"] ||
-          formData["shared_activities"] ||
-          formData["important_dates_knowledge"] !== undefined) && (
-          <div className="bg-slate-50 rounded-lg p-6">
-            <h3 className="text-lg font-semibold text-slate-900 mb-4 flex items-center gap-2">
-              <svg
-                className="w-5 h-5 text-teal-600"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="M12 14l9-5-9-5-9 5 9 5z"
-                ></path>
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="M12 14l9-5-9-5-9 5 9 5z"
-                ></path>
-              </svg>
-              Married Life & Daily Interaction
-            </h3>
-            <div className="grid grid-cols-2 gap-4">
-              {formData["current_living_arrangement"] && (
-                <div>
-                  <p className="text-sm text-slate-600">
-                    Current Living Arrangement
-                  </p>
-                  <p className="font-medium">
-                    {formData["current_living_arrangement"]}
-                  </p>
-                </div>
-              )}
-              {formData["spouse_address"] && (
-                <div>
-                  <p className="text-sm text-slate-600">Spouse Address</p>
-                  <p className="font-medium">{formData["spouse_address"]}</p>
-                </div>
-              )}
-              {formData["communication_frequency"] && (
-                <div>
-                  <p className="text-sm text-slate-600">
-                    Communication Frequency
-                  </p>
-                  <p className="font-medium">
-                    {formData["communication_frequency"]}
-                  </p>
-                </div>
-              )}
-              {formData["daily_communication"] && (
-                <div>
-                  <p className="text-sm text-slate-600">Daily Communication</p>
-                  <p className="font-medium">
-                    {formData["daily_communication"]}
-                  </p>
-                </div>
-              )}
-              {formData["shared_activities"] && (
-                <div>
-                  <p className="text-sm text-slate-600">Shared Activities</p>
-                  <p className="font-medium">{formData["shared_activities"]}</p>
-                </div>
-              )}
-              {formData["important_dates_knowledge"] !== undefined && (
-                <div>
-                  <p className="text-sm text-slate-600">
-                    Important Dates Knowledge
-                  </p>
-                  <p className="font-medium">
-                    {formatBoolean(formData["important_dates_knowledge"])}
-                  </p>
-                </div>
-              )}
-            </div>
-          </div>
-        )}
-
-        {/* Family & Social Knowledge Section */}
-        {(formData["met_spouse_family"] !== undefined ||
-          formData["family_reaction_to_marriage"] ||
-          formData["wedding_attendees"] ||
-          formData["marriage_type"] ||
-          formData["mutual_friends"] !== undefined) && (
-          <div className="bg-slate-50 rounded-lg p-6">
-            <h3 className="text-lg font-semibold text-slate-900 mb-4 flex items-center gap-2">
-              <svg
-                className="w-5 h-5 text-teal-600"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
-                ></path>
-              </svg>
-              Family & Social Knowledge
-            </h3>
-            <div className="grid grid-cols-2 gap-4">
-              {formData["met_spouse_family"] !== undefined && (
-                <div>
-                  <p className="text-sm text-slate-600">Met Spouse Family</p>
-                  <p className="font-medium">
-                    {formatBoolean(formData["met_spouse_family"])}
-                  </p>
-                </div>
-              )}
-              {formData["family_reaction_to_marriage"] && (
-                <div>
-                  <p className="text-sm text-slate-600">
-                    Family Reaction to Marriage
-                  </p>
-                  <p className="font-medium">
-                    {formData["family_reaction_to_marriage"]}
-                  </p>
-                </div>
-              )}
-              {formData["wedding_attendees"] && (
-                <div>
-                  <p className="text-sm text-slate-600">Wedding Attendees</p>
-                  <p className="font-medium">{formData["wedding_attendees"]}</p>
-                </div>
-              )}
-              {formData["marriage_type"] && (
-                <div>
-                  <p className="text-sm text-slate-600">Marriage Type</p>
-                  <p className="font-medium">{formData["marriage_type"]}</p>
-                </div>
-              )}
-              {formData["mutual_friends"] !== undefined && (
-                <div>
-                  <p className="text-sm text-slate-600">Mutual Friends</p>
-                  <p className="font-medium">
-                    {formatBoolean(formData["mutual_friends"])}
-                  </p>
-                </div>
-              )}
-            </div>
-          </div>
-        )}
-
-        {/* Travel & Background History Section */}
-        {(formData["military_or_defense_background"] !== undefined ||
-          formData["previous_us_visits"] !== undefined ||
-          formData["previous_visa_refusal"] !== undefined ||
-          formData["visa_overstay_history"] !== undefined ||
-          formData["criminal_history"] !== undefined) && (
-          <div className="bg-slate-50 rounded-lg p-6">
-            <h3 className="text-lg font-semibold text-slate-900 mb-4 flex items-center gap-2">
-              <svg
-                className="w-5 h-5 text-teal-600"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"
-                ></path>
-              </svg>
-              Travel & Background History
-            </h3>
-            <div className="grid grid-cols-2 gap-4">
-              {formData["military_or_defense_background"] !== undefined && (
-                <div>
-                  <p className="text-sm text-slate-600">
-                    Military/Defense Background
-                  </p>
-                  <p className="font-medium">
-                    {formatBoolean(formData["military_or_defense_background"])}
-                  </p>
-                </div>
-              )}
-              {formData["previous_us_visits"] !== undefined && (
-                <div>
-                  <p className="text-sm text-slate-600">Previous US Visits</p>
-                  <p className="font-medium">
-                    {formatBoolean(formData["previous_us_visits"])}
-                  </p>
-                </div>
-              )}
-              {formData["previous_visa_refusal"] !== undefined && (
-                <div>
-                  <p className="text-sm text-slate-600">
-                    Previous Visa Refusal
-                  </p>
-                  <p className="font-medium">
-                    {formatBoolean(formData["previous_visa_refusal"])}
-                  </p>
-                </div>
-              )}
-              {formData["visa_overstay_history"] !== undefined && (
-                <div>
-                  <p className="text-sm text-slate-600">
-                    Visa Overstay History
-                  </p>
-                  <p className="font-medium">
-                    {formatBoolean(formData["visa_overstay_history"])}
-                  </p>
-                </div>
-              )}
-              {formData["criminal_history"] !== undefined && (
-                <div>
-                  <p className="text-sm text-slate-600">Criminal History</p>
-                  <p className="font-medium">
-                    {formatBoolean(formData["criminal_history"])}
-                  </p>
-                </div>
-              )}
-            </div>
-          </div>
-        )}
-
-        {/* Background & Future Plans Section */}
-        {(formData["beneficiary_employment"] ||
-          formData["sponsor_employment"] ||
-          formData["english_proficiency"] ||
-          formData["intended_us_state"] ||
-          formData["living_arrangements_in_us"] ||
-          formData["future_plans"]) && (
-          <div className="bg-slate-50 rounded-lg p-6">
-            <h3 className="text-lg font-semibold text-slate-900 mb-4 flex items-center gap-2">
-              <svg
-                className="w-5 h-5 text-teal-600"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9"
-                ></path>
-              </svg>
-              Background & Future Plans
-            </h3>
-            <div className="grid grid-cols-2 gap-4">
-              {formData["beneficiary_employment"] && (
-                <div>
-                  <p className="text-sm text-slate-600">
-                    Beneficiary Employment
-                  </p>
-                  <p className="font-medium">
-                    {formData["beneficiary_employment"]}
-                  </p>
-                </div>
-              )}
-              {formData["sponsor_employment"] && (
-                <div>
-                  <p className="text-sm text-slate-600">Sponsor Employment</p>
-                  <p className="font-medium">
-                    {formData["sponsor_employment"]}
-                  </p>
-                </div>
-              )}
-              {formData["english_proficiency"] && (
-                <div>
-                  <p className="text-sm text-slate-600">English Proficiency</p>
-                  <p className="font-medium">
-                    {formData["english_proficiency"]}
-                  </p>
-                </div>
-              )}
-              {formData["intended_us_state"] && (
-                <div>
-                  <p className="text-sm text-slate-600">Intended US State</p>
-                  <p className="font-medium">{formData["intended_us_state"]}</p>
-                </div>
-              )}
-              {formData["living_arrangements_in_us"] && (
-                <div>
-                  <p className="text-sm text-slate-600">
-                    Living Arrangements in US
-                  </p>
-                  <p className="font-medium">
-                    {formData["living_arrangements_in_us"]}
-                  </p>
-                </div>
-              )}
-              {formData["future_plans"] && (
-                <div>
-                  <p className="text-sm text-slate-600">Future Plans</p>
-                  <p className="font-medium">{formData["future_plans"]}</p>
-                </div>
-              )}
-            </div>
-          </div>
-        )}
-
-        {/* Petitioner Information Section */}
-        {(formData["petitioner_status"] ||
-          formData["petitioner_income_level"] ||
-          formData["household_size"]) && (
-          <div className="bg-slate-50 rounded-lg p-6">
-            <h3 className="text-lg font-semibold text-slate-900 mb-4 flex items-center gap-2">
-              <svg
-                className="w-5 h-5 text-teal-600"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-                ></path>
-              </svg>
-              Petitioner Information
-            </h3>
-            <div className="grid grid-cols-2 gap-4">
-              {formData["petitioner_status"] && (
-                <div>
-                  <p className="text-sm text-slate-600">Petitioner Status</p>
-                  <p className="font-medium">{formData["petitioner_status"]}</p>
-                </div>
-              )}
-              {formData["petitioner_income_level"] && (
-                <div>
-                  <p className="text-sm text-slate-600">
-                    Petitioner Income Level
-                  </p>
-                  <p className="font-medium">
-                    {formData["petitioner_income_level"]}
-                  </p>
-                </div>
-              )}
-              {formData["household_size"] && (
-                <div>
-                  <p className="text-sm text-slate-600">Household Size</p>
-                  <p className="font-medium">{formData["household_size"]}</p>
-                </div>
-              )}
-            </div>
-          </div>
-        )}
-
-        {/* Finances & Household Management Section */}
-        {(formData["joint_finances"] !== undefined ||
-          formData["financial_arrangement_description"]) && (
-          <div className="bg-slate-50 rounded-lg p-6">
-            <h3 className="text-lg font-semibold text-slate-900 mb-4 flex items-center gap-2">
-              <svg
-                className="w-5 h-5 text-teal-600"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                ></path>
-              </svg>
-              Finances & Household Management
-            </h3>
-            <div className="grid grid-cols-2 gap-4">
-              {formData["joint_finances"] !== undefined && (
-                <div>
-                  <p className="text-sm text-slate-600">Joint Finances</p>
-                  <p className="font-medium">
-                    {formatBoolean(formData["joint_finances"])}
-                  </p>
-                </div>
-              )}
-              {formData["financial_arrangement_description"] && (
-                <div>
-                  <p className="text-sm text-slate-600">
-                    Financial Arrangement Description
-                  </p>
-                  <p className="font-medium">
-                    {formData["financial_arrangement_description"]}
-                  </p>
-                </div>
-              )}
-            </div>
-          </div>
-        )}
-
-        {error && (
-          <div className="p-4 bg-red-50 border-l-4 border-red-500 rounded-lg text-red-700">
-            <div className="flex items-start">
-              <svg
-                className="h-5 w-5 text-red-500 mt-0.5 mr-3"
-                fill="currentColor"
-                viewBox="0 0 20 20"
-              >
-                <path
-                  fillRule="evenodd"
-                  d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
-                  clipRule="evenodd"
-                />
-              </svg>
-              <span>{error}</span>
-            </div>
-          </div>
-        )}
-
-        <div className="flex flex-col sm:flex-row justify-between gap-4 pt-6">
-          <Button
-            onClick={onBack}
-            variant="outline"
-            className="bg-slate-100 hover:bg-slate-200 text-slate-700 border-slate-300 px-6 py-3 text-base"
-          >
-            ← Back
-          </Button>
-          <Button
-            onClick={onSubmit}
-            disabled={loading}
-            className="bg-teal-600 hover:bg-teal-700 px-6 py-3 text-base disabled:opacity-50"
-          >
-            {loading ? "Submitting..." : "Generate Interview Prep"}
-          </Button>
-        </div>
-      </div>
-    </div>
-  );
-};
+import type { 
+  InterviewCategoryConfig,
+  DynamicQuestionnaire,
+} from "@/data/interview-categories/schema";
 
 export default function InterviewPreparation() {
+  const [selectedCategory, setSelectedCategory] = useState<InterviewCategoryConfig | null>(null);
+  const [questionnaire, setQuestionnaire] = useState<DynamicQuestionnaire | null>(null);
+  const [availableCategories, setAvailableCategories] = useState<InterviewCategoryConfig[]>([]);
+  const [showCountryModal, setShowCountryModal] = useState<boolean>(true);
+  const [noDataMessage, setNoDataMessage] = useState<string | null>(null);
+  
   const [step, setStep] = useState<number>(0);
-  const [formData, setFormData] = useState<FormData>({
+  const [formData, setFormData] = useState<Partial<InterviewFormData>>({
     caseType: "",
   });
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
+  const [loadingMessage, setLoadingMessage] = useState<string>("");
 
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [generatedResults, setGeneratedResults] =
@@ -1301,38 +133,41 @@ export default function InterviewPreparation() {
     fetchProfile();
   }, [user, profileLoaded, supabase, formData]);
 
-  // Load questions from the JSON file
-  interface QuestionDefinition {
-    key: string;
-    label: string;
-    type: string;
-    options?: string | string[];
-    required?: boolean;
-  }
-
-  interface QuestionnaireData {
-    sections: Array<{
-      id: string;
-      title: string;
-      description: string;
-      questions: QuestionDefinition[];
-    }>;
-  }
-
-  const [questionnaireData, setQuestionnaireData] =
-    useState<QuestionnaireData | null>(null);
-
-  useEffect(() => {
-    if (!questionnaireData) {
-      import("../../../data/interview-intake-questionnaire.json")
-        .then((data) =>
-          setQuestionnaireData(data.default || (data as QuestionnaireData)),
-        )
-        .catch((err) =>
-          console.error("Error loading questionnaire data:", err),
-        );
+  // Load available categories based on selected country
+  const loadCategories = async (country: string) => {
+    try {
+      setLoadingMessage("Loading visa categories...");
+      setLoading(true);
+      const response = await fetch(`/api/interview-prep/categories?country=${encodeURIComponent(country)}`);
+      const data = await response.json();
+      
+      if (data.success) {
+        if (data.categories && data.categories.length > 0) {
+          setAvailableCategories(data.categories);
+          setNoDataMessage(null);
+          setShowCountryModal(false);
+        } else {
+          setAvailableCategories([]);
+          setNoDataMessage("No Visa Categories available for your selected country right now.");
+        }
+      } else {
+        setAvailableCategories([]);
+        setNoDataMessage("No Visa Categories available for your selected country right now.");
+      }
+    } catch (err) {
+      console.error("Error loading categories:", err);
+      setError("Failed to load visa categories");
+      setNoDataMessage(null);
+    } finally {
+      setLoading(false);
+      setLoadingMessage("");
     }
-  }, [questionnaireData]);
+  };
+
+  // Handle country selection from modal
+  const handleCountrySelected = (country: string) => {
+    loadCategories(country);
+  };
 
   // Check for existing session on component mount
   useEffect(() => {
@@ -1344,7 +179,7 @@ export default function InterviewPreparation() {
       if (sessionIdParam) {
         try {
           setLoading(true);
-          // Get email from localStorage or use a default for now
+          setLoadingMessage("Loading your completed interview...");
           const userEmail =
             typeof window !== "undefined"
               ? localStorage.getItem("userEmail") || "test@example.com"
@@ -1364,9 +199,9 @@ export default function InterviewPreparation() {
             setGeneratedResults(
               sessionData.session.interview_prep_results.generated_questions,
             );
-            setStep(
-              questionnaireData ? questionnaireData.sections.length + 2 : 3,
-            ); // Go directly to results page
+            setStep(questionnaire ? questionnaire.sections.length + 3 : 4);
+            setLoading(false);
+            setLoadingMessage("");
             return;
           }
         } catch (err) {
@@ -1377,7 +212,8 @@ export default function InterviewPreparation() {
       // Check for saved session in localStorage (for resume functionality)
       const savedSessionId = localStorage.getItem("interviewPrepSessionId");
 
-      if (savedSessionId) {
+      // Only restore if user hasn't started navigating yet (step 0) or questionnaire not loaded
+      if (savedSessionId && (step === 0 || !questionnaire)) {
         try {
           setLoading(true);
           const response = await fetch(
@@ -1392,15 +228,37 @@ export default function InterviewPreparation() {
           ) {
             // Found an incomplete session, restore it
             setSessionId(savedSessionId);
-            setFormData((prev) => ({
-              ...prev,
-              caseType: sessionData.session.case_type,
-              ...sessionData.session.answers,
-            }));
+            
+            // Restore category selection and load questionnaire
+            const categorySlug = sessionData.session.category_slug;
+            const category = availableCategories.find(c => c.categorySlug === categorySlug);
+            
+            if (category) {
+              setSelectedCategory(category);
+              
+              // Load questionnaire for the restored category
+              const catDataResponse = await fetch(`/api/interview-prep?category_slug=${categorySlug}`);
+              const catData = await catDataResponse.json();
+              
+              if (catData.success) {
+                setQuestionnaire({
+                  categorySlug: category.categorySlug,
+                  version: catData.questionnaire?.version || "1.0.0",
+                  lastUpdated: new Date().toISOString(),
+                  sections: catData.questionnaire?.sections || [],
+                });
+                
+                setFormData((prev) => ({
+                  ...prev,
+                  ...sessionData.session.answers,
+                }));
 
-            setStep(0);
+                setStep(1); // Start at first question section
+              }
+            } else {
+              localStorage.removeItem("interviewPrepSessionId");
+            }
           } else {
-            // Session doesn't exist or is already completed, remove from localStorage
             localStorage.removeItem("interviewPrepSessionId");
           }
         } catch (err) {
@@ -1415,15 +273,10 @@ export default function InterviewPreparation() {
     if (typeof window !== "undefined") {
       checkExistingSession();
     }
-  }, [questionnaireData]);
+  }, [availableCategories, questionnaire, step]);
 
-  const handleCaseTypeChange = (caseType: CaseType) => {
-    setFormData((prev) => ({ ...prev, caseType }));
-    setError(null);
-  };
-
-  const handleInputChange = (id: keyof FormData, value: unknown) => {
-    setFormData((prev) => ({ ...prev, [id]: value }));
+  const handleInputChange = (key: string, value: unknown) => {
+    setFormData((prev) => ({ ...prev, [key]: value }));
     if (error) {
       setError(null);
     }
@@ -1438,15 +291,15 @@ export default function InterviewPreparation() {
       // Set a new timeout to save the answers after 500ms
       saveTimeoutRef.current = setTimeout(async () => {
         try {
-          // Create updated form data with the new value
-          const updatedFormData = { ...formData };
-          (updatedFormData as Record<string, unknown>)[id as string] = value;
-          // Filter out non-question fields before saving
-          const {
-            caseType: _caseType,
-            visaCategory: _visaCategory,
-            ...answers
-          } = updatedFormData;
+          // Filter out non-question fields before saving and cast to any for API
+          const answers: Record<string, unknown> = {};
+          Object.keys(formData).forEach(k => {
+            if (k !== 'caseType' && k !== 'visaCategory') {
+              answers[k] = formData[k as keyof typeof formData];
+            }
+          });
+          answers[key] = value;
+          
           const answersResponse = await fetch(
             `/api/interview-prep/sessions/${sessionId}`,
             {
@@ -1474,221 +327,141 @@ export default function InterviewPreparation() {
     }
   };
 
-  const nextStep = async () => {
-    // Validate current step if needed
-    if (step === 0 && !formData.caseType) {
-      setError("Please select a case type");
+  // Handle category selection 
+  const handleCategorySelect = (category: InterviewCategoryConfig) => {
+    setSelectedCategory(category);
+    setError(null);
+  };
+
+  // Handle progressing from category selection to questions
+  const handleCategorySelectionNext = async () => {
+    if (!selectedCategory) {
+      setError("Please select a visa category");
       return;
     }
 
-    // If we're on the first step (case type selection), check for existing session first
-    if (step === 0 && formData.caseType) {
-      try {
-        setLoading(true);
-        const storedSessionId = localStorage.getItem("interviewPrepSessionId");
+    try {
+      setLoading(true);
+      setLoadingMessage("Creating your interview session...");
+      
+      const categorySlug = selectedCategory.categorySlug;
+      
+      // Check if there's an incomplete session for this category in localStorage
+      const savedSessionId = localStorage.getItem("interviewPrepSessionId");
+      let sessionId = savedSessionId;
+      let isRestoring = false;
 
-        // 🔹 CHECK FOR EXISTING SESSION FIRST
-        if (storedSessionId) {
-          const existingRes = await fetch(
-            `/api/interview-prep/sessions/${storedSessionId}`,
+      if (savedSessionId) {
+        try {
+          const response = await fetch(
+            `/api/interview-prep/sessions/${savedSessionId}`,
           );
-          const existingData = await existingRes.json();
+          const sessionData = await response.json();
 
           if (
-            existingRes.ok &&
-            existingData.session &&
-            existingData.session.completed === false &&
-            existingData.session.case_type === formData.caseType
+            response.ok &&
+            sessionData.session &&
+            sessionData.session.completed === false &&
+            sessionData.session.category_slug === categorySlug
           ) {
-            // ✅ Resume existing session
-            setSessionId(existingData.session.id);
-
-            // Restore answers to form data
-            const restoredAnswers = mapAnswersToFormData(
-              existingData.session.answers || [],
-            );
-
-            setFormData((prev) => ({
-              ...prev,
-              caseType: existingData.session.case_type,
-              ...restoredAnswers,
-            }));
-
-            // Force re-render to populate form fields
-            setTimeout(() => {
-              setFormData((prev) => ({ ...prev }));
-            }, 0);
-
-            setStep(1);
-            setLoading(false);
-            return;
+            // Found an incomplete session for the same category - restore it!
+            isRestoring = true;
+            setLoadingMessage("Restoring your interview session...");
+            setSessionId(savedSessionId);
+          } else {
+            // Session doesn't match or is completed, clear it and create new
+            localStorage.removeItem("interviewPrepSessionId");
+            sessionId = null;
           }
-
-          // Completed or case type mismatch → clear localStorage
+        } catch (err) {
+          console.error("Error checking existing session:", err);
           localStorage.removeItem("interviewPrepSessionId");
+          sessionId = null;
         }
+      }
+
+      // If not restoring, create a new session
+      if (!isRestoring) {
         const sessionResponse = await fetch("/api/interview-prep", {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            case_type: formData.caseType,
-            // user_email:
-            //   typeof window !== "undefined"
-            //     ? localStorage.getItem("userEmail") || "test@example.com"
-            //     : "test@example.com",
-            // user_name:
-            //   typeof window !== "undefined"
-            //     ? localStorage.getItem("userName") || "John Doe"
-            //     : "John Doe",
+            category_slug: categorySlug,
+            user_email: localStorage.getItem("userEmail") || "test@example.com",
+            user_name: localStorage.getItem("userName") || "User",
           }),
         });
 
         const sessionResult = await sessionResponse.json();
-
-        if (sessionResponse.ok) {
-          setSessionId(sessionResult.session.id);
-          // Save session ID to localStorage for resume later functionality
-          localStorage.setItem(
-            "interviewPrepSessionId",
-            sessionResult.session.id,
-          );
-
-          // Save initial answers, excluding non-question fields
-          const {
-            caseType: _caseType,
-            visaCategory: _visaCategory,
-            ...answers
-          } = formData;
-          const answersResponse = await fetch(
-            `/api/interview-prep/sessions/${sessionResult.session.id}`,
-            {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-              },
-              body: JSON.stringify({
-                action: "update-answers",
-                answers,
-              }),
-            },
-          );
-
-          if (!answersResponse.ok) {
-            console.error(
-              "Failed to save initial answers:",
-              await answersResponse.text(),
-            );
-          }
-        } else {
-          throw new Error(sessionResult.error || "Failed to create session");
+        if (!sessionResult.success) {
+          setError("Failed to create interview session");
+          setLoading(false);
+          return;
         }
-      } catch (err) {
-        console.error("Error creating/resuming session:", err);
-        setError(
-          err instanceof Error
-            ? err.message
-            : "Failed to create/resume session. Please try again.",
-        );
-        setLoading(false);
-        return;
-      } finally {
-        setLoading(false);
+        sessionId = sessionResult.session.id;
+        setSessionId(sessionResult.session.id);
+        localStorage.setItem("interviewPrepSessionId", sessionResult.session.id);
       }
-    }
 
-    if (step > 0 && questionnaireData) {
-      const currentSectionIndex = step - 1;
-      const currentSection = questionnaireData.sections[currentSectionIndex];
-
-      if (currentSection) {
-        for (const question of currentSection.questions as Array<{
-          key: keyof FormData;
-          label: string;
-          type: "text" | "textarea" | "number" | "date" | "boolean" | "select";
-          options?: string[];
-          required?: boolean;
-        }>) {
-          const fieldValue = formData[question.key];
-
-          // Skip validation for optional questions
-          if (!question.required) {
-            continue;
-          }
-
-          if (question.type === "boolean") {
-            // Skip validation for boolean questions since false/unselected is a valid state
-          } else if (question.type === "select") {
-            if (
-              fieldValue === undefined ||
-              fieldValue === null ||
-              fieldValue === ""
-            ) {
-              setError(`Please select an option for: ${question.label}`);
-              return;
-            }
-          } else {
-            if (
-              fieldValue === undefined ||
-              fieldValue === null ||
-              fieldValue === ""
-            ) {
-              setError(`Please fill in all required fields: ${question.label}`);
-              return;
-            }
-          }
-
-          if (
-            question.type === "number" &&
-            typeof fieldValue === "number" &&
-            isNaN(Number(fieldValue))
-          ) {
-            setError(`Please enter a valid number for ${question.label}`);
-            return;
-          }
-
-          if (
-            question.type === "date" &&
-            typeof fieldValue === "string" &&
-            fieldValue === ""
-          ) {
-            setError(`Please enter a valid date for ${question.label}`);
-            return;
-          }
-
-          if (
-            question.type === "number" &&
-            typeof fieldValue === "number" &&
-            fieldValue < 0
-          ) {
-            setError(
-              `Please enter a valid positive number for ${question.label}`,
+      // Load questionnaire for this category via API
+      const catDataResponse = await fetch(`/api/interview-prep?category_slug=${categorySlug}`);
+      const catData = await catDataResponse.json();
+      
+      if (catData.success) {
+        setQuestionnaire({
+          categorySlug: selectedCategory.categorySlug,
+          version: catData.questionnaire?.version || "1.0.0",
+          lastUpdated: new Date().toISOString(),
+          sections: catData.questionnaire?.sections || [],
+        });
+        
+        // If restoring, also restore the form data
+        if (isRestoring && sessionId) {
+          try {
+            const answersResponse = await fetch(
+              `/api/interview-prep/sessions/${sessionId}`,
             );
-            return;
-          }
-
-          // Additional validation for date type
-          if (
-            question.type === "date" &&
-            typeof fieldValue === "string" &&
-            fieldValue !== "" &&
-            !isNaN(Date.parse(fieldValue))
-          ) {
-            const dateValue = new Date(fieldValue);
-            const today = new Date();
-            today.setHours(0, 0, 0, 0);
-
-            // For DOB fields, ensure date is in the past
-            if (question.key.includes("date") && dateValue >= today) {
-              setError(`Date must be in the past for ${question.label}`);
-              return;
+            const sessionDetails = await answersResponse.json();
+            
+            if (sessionDetails.session && sessionDetails.session.answers) {
+              const restoredAnswers: Record<string, unknown> = {};
+              sessionDetails.session.answers.forEach((answer: {question_key: string, answer_value: unknown}) => {
+                restoredAnswers[answer.question_key] = answer.answer_value;
+              });
+              
+              setFormData((prev) => ({
+                ...prev,
+                ...restoredAnswers,
+              }));
             }
+          } catch (err) {
+            console.error("Error restoring answers:", err);
           }
         }
+        
+        setError(null);
+        setStep(1); // Move to first question section
+      } else {
+        setError("Failed to load questionnaire");
       }
+    } catch (err) {
+      console.error("Error in category selection next:", err);
+      setError(err instanceof Error ? err.message : "Failed to proceed");
+    } finally {
+      setLoading(false);
+      setLoadingMessage("");
+    }
+  };
+
+  const nextStep = async () => {
+    // At step 0, validate category selection
+    if (step === 0 && !selectedCategory) {
+      setError("Please select a visa category");
+      return;
     }
 
+    // For other steps, we are handling validation through the child component (DynamicQuestionStep)
+    // This function just advances to the next step after validation passes
     setStep((prev) => prev + 1);
     if (error) {
       setError(null);
@@ -1700,11 +473,13 @@ export default function InterviewPreparation() {
     if (sessionId) {
       try {
         // Filter out non-question fields before saving
-        const {
-          caseType: _caseType,
-          visaCategory: _visaCategory,
-          ...answers
-        } = formData;
+        const answers: Record<string, unknown> = {};
+        Object.keys(formData).forEach(k => {
+          if (k !== 'caseType' && k !== 'visaCategory') {
+            answers[k] = formData[k as keyof typeof formData];
+          }
+        });
+        
         const answersResponse = await fetch(
           `/api/interview-prep/sessions/${sessionId}`,
           {
@@ -1792,6 +567,10 @@ export default function InterviewPreparation() {
 
         // Increment step to show results on the same page
         setStep((prev) => prev + 1);
+        
+        // Auto-scroll to top to show results
+        await new Promise((resolve) => setTimeout(resolve, 100));
+        window.scrollTo({ top: 0, behavior: "smooth" });
       } else {
         const errorData = await submitResponse.text();
         console.error("Submit response error:", errorData);
@@ -1811,76 +590,67 @@ export default function InterviewPreparation() {
 
   // Render the appropriate step
   const renderStep = () => {
-    if (!questionnaireData) {
+    // Loading state with context-aware messages
+    if (loading) {
       return (
-        <div className="flex flex-col items-center justify-center py-12 space-y-4  mx-2">
+        <div className="flex flex-col items-center justify-center py-12 space-y-4">
           <Loader size="md" />
+          <p className="text-slate-600">{loadingMessage || "Loading..."}</p>
         </div>
       );
     }
 
-    const renderWithNotification = (content: React.ReactNode) => (
-      <div>{content}</div>
-    );
-
+    // Step 0: Category Selection
     if (step === 0) {
       return (
-        <CaseTypeStep
-          formData={formData}
+        <CategorySelectionStep
+          categories={availableCategories}
+          selectedCategory={selectedCategory}
+          onSelectCategory={handleCategorySelect}
+          onNext={handleCategorySelectionNext}
+          onBack={() => {
+            // Back button on category selection (first step)
+            router.push("/");
+          }}
           error={error}
-          onCaseTypeChange={handleCaseTypeChange}
-          onNext={nextStep}
-          onBack={() => router.back()}
         />
       );
     }
 
-    if (step > 0 && step <= questionnaireData.sections.length) {
+    // Steps 1-N: Dynamic Question Sections
+    if (step > 0 && questionnaire && step <= questionnaire.sections.length) {
       const sectionIndex = step - 1;
-      const section = questionnaireData.sections[sectionIndex];
+      const section = questionnaire.sections[sectionIndex];
 
-      return renderWithNotification(
-        <QuestionStep
-          title={section.title}
-          description={section.description}
-          questions={section.questions.map((q: QuestionDefinition) => ({
-            key: q.key as keyof FormData,
-            label: q.label,
-            type: q.type as
-              | "text"
-              | "textarea"
-              | "number"
-              | "date"
-              | "boolean"
-              | "select",
-            options: q.options || undefined,
-            required: q.required,
-          }))}
-          formData={formData}
-          error={error}
+      return (
+        <DynamicQuestionStep
+          section={section}
+          formData={formData as unknown as Record<string, unknown>}
           onChange={handleInputChange}
-          setFormData={setFormData}
           onNext={nextStep}
           onBack={prevStep}
-        />,
+          error={error}
+          setError={setError}
+        />
       );
     }
 
-    // Check if we're on the review page (after completing all questions)
-    if (step === questionnaireData.sections.length + 1) {
-      return renderWithNotification(
+    // Step N+1: Review
+    if (questionnaire && step === questionnaire.sections.length + 1) {
+      return (
         <ReviewStep
-          formData={formData}
+          formData={formData as InterviewFormData}
           error={error}
           loading={loading}
           onSubmit={handleSubmit}
           onBack={prevStep}
-        />,
+          categorySlug={questionnaire.categorySlug}
+        />
       );
     }
 
-    // Check if we're on the results page (after submitting)
-    if (step === questionnaireData.sections.length + 2) {
+    // Step N+2: Results
+    if (questionnaire && step === questionnaire.sections.length + 2) {
       if (!sessionId) {
         return (
           <div className="text-center py-8">
@@ -1895,29 +665,23 @@ export default function InterviewPreparation() {
           onRestart={() => {
             setStep(0);
             setSessionId(null);
+            setSelectedCategory(null);
+            setFormData({ caseType: "" });
             router.push("/interview-prep");
           }}
         />
       );
     }
 
-    return renderWithNotification(
-      <ReviewStep
-        formData={formData}
-        error={error}
-        loading={loading}
-        onSubmit={handleSubmit}
-        onBack={prevStep}
-      />,
-    );
+    return <div>Unknown step</div>;
   };
 
   const renderProgressSections = () => {
-    if (!questionnaireData || step === 0) return null;
+    if (!questionnaire || step === 0) return null;
 
-    const sections = questionnaireData.sections;
+    const sections = questionnaire.sections;
     const currentSectionIndex = step - 1;
-    const totalSteps = questionnaireData.sections.length + 2; // +2 for review and results steps
+    const totalSteps = sections.length + 2; // +2 for review and results
     const progressPercentage = Math.round(((step - 1) / totalSteps) * 100);
 
     return (
@@ -1942,34 +706,29 @@ export default function InterviewPreparation() {
 
         {/* Desktop View */}
         <div className="mt-4 hidden md:grid md:grid-cols-4 lg:grid-cols-5 gap-3">
-          {sections.map(
-            (
-              section: { title: string; questions: QuestionDefinition[] },
-              index: number,
-            ) => {
-              const isActive = index === currentSectionIndex;
-              const isCompleted = index < currentSectionIndex;
+          {sections.map((section, index) => {
+            const isActive = index === currentSectionIndex;
+            const isCompleted = index < currentSectionIndex;
 
-              return (
-                <div
-                  key={index}
-                  className={`p-3 rounded-lg text-center text-xs font-medium transition-all ${
-                    isActive
-                      ? "bg-teal-600 text-white border-2 border-teal-600"
-                      : isCompleted
-                        ? "bg-teal-100 text-teal-800 border-2 border-teal-200"
-                        : "bg-slate-100 text-slate-500 border-2 border-slate-200"
-                  }`}
-                >
-                  <div className="font-semibold truncate">
-                    {section.title.substring(0, 20)}
-                    {section.title.length > 20 ? "..." : ""}
-                  </div>
-                  <div className="text-[10px] mt-1">Step {index + 1}</div>
+            return (
+              <div
+                key={index}
+                className={`p-3 rounded-lg text-center text-xs font-medium transition-all ${
+                  isActive
+                    ? "bg-teal-600 text-white border-2 border-teal-600"
+                    : isCompleted
+                      ? "bg-teal-100 text-teal-800 border-2 border-teal-200"
+                      : "bg-slate-100 text-slate-500 border-2 border-slate-200"
+                }`}
+              >
+                <div className="font-semibold truncate">
+                  {section.title.substring(0, 20)}
+                  {section.title.length > 20 ? "..." : ""}
                 </div>
-              );
-            },
-          )}
+                <div className="text-[10px] mt-1">Step {index + 1}</div>
+              </div>
+            );
+          })}
 
           {/* Review Step Indicator */}
           <div
@@ -2017,34 +776,29 @@ export default function InterviewPreparation() {
                 <SheetTitle>Interview Preparations Steps</SheetTitle>
               </SheetHeader>
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 overflow-y-auto max-h-[60vh] pb-4">
-                {sections.map(
-                  (
-                    section: { title: string; questions: QuestionDefinition[] },
-                    index: number,
-                  ) => {
-                    const isActive = index === currentSectionIndex;
-                    const isCompleted = index < currentSectionIndex;
+                {sections.map((section, index) => {
+                  const isActive = index === currentSectionIndex;
+                  const isCompleted = index < currentSectionIndex;
 
-                    return (
-                      <div
-                        key={index}
-                        className={`p-3 rounded-lg text-center text-xs font-medium transition-all ${
-                          isActive
-                            ? "bg-teal-600 text-white border-2 border-teal-600 shadow-md"
-                            : isCompleted
-                              ? "bg-teal-100 text-teal-800 border-2 border-teal-200"
-                              : "bg-slate-100 text-slate-500 border-2 border-slate-200"
-                        }`}
-                      >
-                        <div className="font-semibold truncate">
-                          {section.title.substring(0, 20)}
-                          {section.title.length > 20 ? "..." : ""}
-                        </div>
-                        <div className="text-[10px] mt-1">Step {index + 1}</div>
+                  return (
+                    <div
+                      key={index}
+                      className={`p-3 rounded-lg text-center text-xs font-medium transition-all ${
+                        isActive
+                          ? "bg-teal-600 text-white border-2 border-teal-600 shadow-md"
+                          : isCompleted
+                            ? "bg-teal-100 text-teal-800 border-2 border-teal-200"
+                            : "bg-slate-100 text-slate-500 border-2 border-slate-200"
+                      }`}
+                    >
+                      <div className="font-semibold truncate">
+                        {section.title.substring(0, 20)}
+                        {section.title.length > 20 ? "..." : ""}
                       </div>
-                    );
-                  },
-                )}
+                      <div className="text-[10px] mt-1">Step {index + 1}</div>
+                    </div>
+                  );
+                })}
 
                 {/* Review Step Indicator */}
                 <div
@@ -2084,28 +838,39 @@ export default function InterviewPreparation() {
   };
 
   return (
-    <div className="container mx-auto py-8 px-4 md:px-8 max-w-4xl">
-      <div className="text-center mb-8">
-        <h1 className="text-3xl font-bold text-slate-900 mb-2">
-          Interview Preparation Tool
-        </h1>
-        <p className="text-slate-600">
-          Prepare for your IR-1/CR-1 visa interview with personalized questions
-          and answers
+    <>
+      <CountrySelectionModal
+        isOpen={showCountryModal}
+        onCountrySelected={handleCountrySelected}
+        isLoading={loading && showCountryModal}
+        noDataMessage={noDataMessage || undefined}
+      />
+      
+      <div className="container mx-auto py-8 px-4 md:px-8 max-w-4xl">
+        <div className="text-center mb-8">
+          <h1 className="text-3xl font-bold text-slate-900 mb-2">
+            Interview Preparation Tool
+          </h1>
+          <p className="text-slate-600">
+            {selectedCategory 
+              ? selectedCategory.description
+            : "Prepare for your visa interview with personalized questions"}
         </p>
       </div>
 
       {renderProgressSections()}
 
       <Card className="p-6 shadow-lg">
-        {loading ? (
+        {loading && !sessionId ? (
           <div className="flex flex-col items-center justify-center py-12 space-y-4">
             <Loader size="md" />
+            <p className="text-slate-600">{step === 0 ? "Loading categories..." : "Loading..."}</p>
           </div>
         ) : (
           renderStep()
         )}
       </Card>
-    </div>
+      </div>
+    </>
   );
 }

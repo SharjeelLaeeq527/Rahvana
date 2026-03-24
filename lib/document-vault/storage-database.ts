@@ -291,6 +291,41 @@ export class DocumentDatabaseStorage {
     return true;
   }
 
+  // Mark as Read
+  async markDocumentAsRead(documentId: string, userId: string): Promise<UploadedDocument> {
+    const { data, error } = await this.supabase
+      .from('documents')
+      .update({ is_read: true, updated_at: new Date().toISOString() })
+      .eq('id', documentId)
+      .eq('user_id', userId)
+      .select()
+      .single();
+
+    if (error) {
+      console.error('Error marking document as read:', error);
+      throw error;
+    }
+
+    return this.mapDatabaseToDocument(data);
+  }
+
+  // Mark all documents as Read
+  async markAllDocumentsAsRead(userId: string): Promise<UploadedDocument[]> {
+    const { data, error } = await this.supabase
+      .from('documents')
+      .update({ is_read: true, updated_at: new Date().toISOString() })
+      .eq('user_id', userId)
+      .eq('is_read', false) // Only update unread documents
+      .select();
+
+    if (error) {
+      console.error('Error marking documents as read:', error);
+      throw error;
+    }
+
+    return data.map((row) => this.mapDatabaseToDocument(row));
+  }
+
   /**
    * Maps database row to UploadedDocument
    */
@@ -317,6 +352,7 @@ export class DocumentDatabaseStorage {
         ? new Date(data.expiration_date as string)
         : undefined,
       isExpired: data.is_expired as boolean,
+      isRead: data.is_read as boolean,
       status: data.status as UploadedDocument['status'],
       notes: data.notes as string | undefined,
     };
@@ -344,6 +380,7 @@ export class DocumentDatabaseStorage {
       version: document.version,
       expiration_date: document.expirationDate?.toISOString(),
       is_expired: document.isExpired,
+      is_read: document.isRead,
       status: document.status,
       notes: document.notes,
     };

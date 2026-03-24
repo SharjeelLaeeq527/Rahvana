@@ -454,6 +454,38 @@ export function generateNotifications(
     }
   });
 
+  // Create notifications for successfully uploaded documents that don't have other notifications
+  const notificationDocIds = new Set(notifications.map((n) => n.documentDefId || n.documentId));
+  documents.forEach((doc) => {
+    const def = documentDefs.get(doc.documentDefId);
+    if (!def) return;
+
+    // Skip if this document already has a notification (missing, expiring, expired)
+    if (notificationDocIds.has(doc.documentDefId) || notificationDocIds.has(doc.id)) {
+      return;
+    }
+
+    // Create a notification for uploaded documents without other issues
+    if (doc.status === "UPLOADED") {
+      const docName = t
+        ? t(`documentVaultPage.documents.${doc.documentDefId}.name`)
+        : def.name;
+
+      notifications.push({
+        id: `uploaded_${doc.id}`,
+        type: "DOC_UPLOADED",
+        severity: "info",
+        title: "Document Uploaded",
+        message: `${docName} has been successfully uploaded.`,
+        documentId: doc.id,
+        documentDefId: doc.documentDefId,
+        actionRequired: false,
+        createdAt: now,
+        read: false,
+      });
+    }
+  });
+
   // Sort by severity (error > warning > info) and then by creation date
   return notifications.sort((a, b) => {
     const severityOrder = { error: 0, warning: 1, info: 2 };

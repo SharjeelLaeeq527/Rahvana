@@ -33,7 +33,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import Link from "next/link";
 import {
   Search,
   X as CloseIcon,
@@ -49,16 +48,10 @@ import {
   List,
   LayoutGrid,
 } from "lucide-react";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
 import { Loader } from "@/components/ui/spinner";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
-import { motion, AnimatePresence } from "framer-motion";
+import { ConfirmationModal } from "@/app/components/shared/ConfirmationModal";
 
 export default function DocumentVaultPage() {
   const { user, isLoading: authLoading } = useAuth();
@@ -83,14 +76,16 @@ export default function DocumentVaultPage() {
   } = useDocumentVaultStore();
 
   const [showConfigWizard, setShowConfigWizard] = useState(false);
-  const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [initialized, setInitialized] = useState(false);
   const [isInitializing, setIsInitializing] = useState(true);
   const [previewOpen, setPreviewOpen] = useState(false);
   const [previewDoc, setPreviewDoc] = useState<UploadedDocument | null>(null);
   const [viewMode, setViewMode] = useState<"grid" | "table">("table");
-  const [activeTab, setActiveTab] = useState<string>("all");
+  const [activeTab, setActiveTab] = useState<string>("required");
   const [searchQuery, setSearchQuery] = useState("");
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [selectedDeleteId, setSelectedDeleteId] = useState<string | null>(null);
+  const [deleteLoading, setDeleteLoading] = useState(false);
 
   // Filter documents based on search query
   const filteredDocumentsByCategory = useMemo(() => {
@@ -157,6 +152,15 @@ export default function DocumentVaultPage() {
     [config],
   );
 
+  // Get documents for special filters (required/optional)
+  const getFilteredDocumentsForSpecialFilter = useMemo(() => {
+    const allDocs = Object.values(documentsByCategory).flat();
+    return {
+      required: allDocs.filter((doc) => doc.required),
+      optional: allDocs.filter((doc) => !doc.required),
+    };
+  }, [documentsByCategory]);
+
   const flatFilteredDocuments = useMemo(() => {
     return Object.values(filteredDocumentsByCategory).flat();
   }, [filteredDocumentsByCategory]);
@@ -210,7 +214,7 @@ export default function DocumentVaultPage() {
   // Categories for tabs
   const categories = useMemo(() => {
     const cats = Object.keys(filteredDocumentsByCategory).sort();
-    return ["all", ...cats];
+    return ["all", "required", "optional", ...cats];
   }, [filteredDocumentsByCategory]);
 
   if (authLoading || isInitializing) {
@@ -307,14 +311,22 @@ export default function DocumentVaultPage() {
     }
   };
 
-  const handleDelete = async (documentId: string) => {
-    if (!confirm(t("documentVaultPage.page.messages.deleteConfirm"))) return;
+  const handleDelete = (documentId: string) => {
+    setSelectedDeleteId(documentId);
+    setDeleteModalOpen(true);
+  };
+
+  const confirmDelete = async () => {
+    if (!selectedDeleteId) return;
 
     try {
+      setDeleteLoading(true);
+
       toast.loading(t("documentVaultPage.page.messages.deleting"), {
         id: "delete-doc",
       });
-      const response = await fetch(`/api/documents/${documentId}`, {
+
+      const response = await fetch(`/api/documents/${selectedDeleteId}`, {
         method: "DELETE",
       });
 
@@ -322,7 +334,6 @@ export default function DocumentVaultPage() {
         throw new Error("Delete failed");
       }
 
-      // Reload all data from database to ensure store is in sync
       if (user) {
         await initialize(user.id, t);
       }
@@ -330,11 +341,16 @@ export default function DocumentVaultPage() {
       toast.success(t("documentVaultPage.page.messages.deleted"), {
         id: "delete-doc",
       });
+
+      setDeleteModalOpen(false);
+      setSelectedDeleteId(null);
     } catch (error) {
       console.error("Delete error:", error);
       toast.error(t("documentVaultPage.page.messages.deleteFailed"), {
         id: "delete-doc",
       });
+    } finally {
+      setDeleteLoading(false);
     }
   };
 
@@ -574,7 +590,7 @@ export default function DocumentVaultPage() {
           {/* Right Side: Document Management Tabs */}
           <div className="lg:col-span-9">
             <Tabs
-              defaultValue="all"
+              defaultValue="required"
               className="w-full"
               onValueChange={setActiveTab}
             >
@@ -590,9 +606,13 @@ export default function DocumentVaultPage() {
                         >
                           {cat === "all"
                             ? t("documentVaultPage.page.allMasterChecklist")
-                            : t(`documentVaultPage.categories.${cat}`).split(
-                                " ",
-                              )[0]}
+                            : cat === "required"
+                              ? "Required"
+                              : cat === "optional"
+                                ? "Optional"
+                                : t(`documentVaultPage.categories.${cat}`).split(
+                                    " ",
+                                  )[0]}
                         </TabsTrigger>
                       ))}
                       {categories.length > 5 && (
@@ -613,7 +633,9 @@ export default function DocumentVaultPage() {
                                 key={cat}
                                 onClick={() => setActiveTab(cat)}
                               >
-                                {t(`documentVaultPage.categories.${cat}`)}
+                                {cat === "optional"
+                                  ? "Optional"
+                                  : t(`documentVaultPage.categories.${cat}`)}
                               </DropdownMenuItem>
                             ))}
                           </DropdownMenuContent>
@@ -670,7 +692,11 @@ export default function DocumentVaultPage() {
                 <h2 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white tracking-tight flex flex-wrap items-center gap-2 sm:gap-3">
                   {activeTab === "all"
                     ? t("documentVaultPage.page.comprehensiveMasterChecklist")
-                    : t(`documentVaultPage.categories.${activeTab}`)}
+                    : activeTab === "required"
+                      ? "Required Documents"
+                      : activeTab === "optional"
+                        ? "Optional Documents"
+                        : t(`documentVaultPage.categories.${activeTab}`)}
                   {searchQuery && (
                     <Badge
                       variant="outline"
@@ -845,6 +871,70 @@ export default function DocumentVaultPage() {
                         </div>
                       ),
                     )
+                  ) : activeTab === "required" || activeTab === "optional" ? (
+                    // Show required or optional documents when NOT searching
+                    <div className="space-y-4">
+                      {viewMode === "grid" ? (
+                        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-5">
+                          {getFilteredDocumentsForSpecialFilter[activeTab as "required" | "optional"]?.map(
+                            (doc) => {
+                              const uploadedDoc = uploadedDocuments.find(
+                                (ud) => ud.documentDefId === doc.id,
+                              );
+                              return (
+                                <DocumentCard
+                                  key={doc.id}
+                                  documentDef={doc}
+                                  uploadedDoc={uploadedDoc}
+                                  onUpload={() => openUploadModal(doc.id)}
+                                  onPreview={
+                                    uploadedDoc
+                                      ? () => handlePreview(uploadedDoc)
+                                      : undefined
+                                  }
+                                  onDownload={
+                                    uploadedDoc
+                                      ? () => handleDownload(uploadedDoc.id)
+                                      : undefined
+                                  }
+                                  onDelete={
+                                    uploadedDoc
+                                      ? () => handleDelete(uploadedDoc.id)
+                                      : undefined
+                                  }
+                                  onExport={
+                                    uploadedDoc
+                                      ? () =>
+                                          handleExportSingle(
+                                            uploadedDoc.id,
+                                            uploadedDoc.hasCompressedVersion ||
+                                              false,
+                                          )
+                                      : undefined
+                                  }
+                                  onOpenWizard={() => openWizard(doc.id)}
+                                />
+                              );
+                            },
+                          )}
+                        </div>
+                      ) : (
+                        <DocumentTableView
+                          documents={
+                            getFilteredDocumentsForSpecialFilter[
+                              activeTab as "required" | "optional"
+                            ] || []
+                          }
+                          uploadedDocuments={uploadedDocuments}
+                          onUpload={openUploadModal}
+                          onPreview={handlePreview}
+                          onDownload={handleDownload}
+                          onDelete={handleDelete}
+                          onExport={handleExportSingle}
+                          onOpenWizard={openWizard}
+                        />
+                      )}
+                    </div>
                   ) : (
                     // Show specific category when NOT searching
                     <div className="space-y-4">
@@ -919,7 +1009,6 @@ export default function DocumentVaultPage() {
             onClose={closeUploadModal}
             documentDef={selectedDoc}
             onUploadComplete={async () => {
-              // Reload all data from database
               if (user) {
                 await initialize(user.id, t);
               }
@@ -952,6 +1041,19 @@ export default function DocumentVaultPage() {
           uploadedDoc={previewDoc}
         />
       )}
+
+      {/* Confirmation Modal */}
+      <ConfirmationModal
+        open={deleteModalOpen}
+        onOpenChange={setDeleteModalOpen}
+        title="Delete Document?"
+        description={"Are you sure you want to delete this document? This cannot be undone."}
+        confirmText="Delete"
+        cancelText="Cancel"
+        confirmVariant="danger"
+        loading={deleteLoading}
+        onConfirm={confirmDelete}
+      />
     </div>
   );
 }
