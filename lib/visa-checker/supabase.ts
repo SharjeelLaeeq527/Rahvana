@@ -99,9 +99,11 @@ export class VisaCheckerSupabaseService {
       .from("user_case_sessions")
       .select("*")
       .eq("id", sessionId)
-      .single();
+      .maybeSingle();
+    
     if (sessionError) throw new Error(`Failed to get session: ${sessionError.message}`);
-    if (!sessionData || sessionData.user_id !== user.id) throw new Error("Unauthorized");
+    if (!sessionData) throw new Error("Assessment session not found. It might have been deleted or not created correctly.");
+    if (sessionData.user_id !== user.id) throw new Error("Unauthorized: You do not have permission to view this session.");
 
     const { data: answersData, error: answersError } = await supabase
       .from("user_case_answers")
@@ -201,15 +203,35 @@ export class VisaCheckerSupabaseService {
   static async getScoringResults(sessionId: string) {
     const supabase = await createClient();
 
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
+    if (authError || !user) throw new Error("User not authenticated");
+
     const { data: sessionData, error: sessionError } = await supabase
       .from("user_case_sessions")
       .select(
-        "id, overall_score, risk_level, summary_reasons, improvement_suggestions, updated_at",
+        "id, user_id, overall_score, risk_level, summary_reasons, improvement_suggestions, updated_at, completed",
       )
       .eq("id", sessionId)
-      .single();
-    if (sessionError) throw new Error(`Failed to get session: ${sessionError.message}`);
-    if (!sessionData) throw new Error("Session not found or not scored yet");
+      .maybeSingle();
+
+    if (sessionError) {
+      throw new Error(`Database error while fetching results: ${sessionError.message}`);
+    }
+
+    if (!sessionData) {
+      throw new Error("This assessment session no longer exists. Please start a new analysis.");
+    }
+
+    if (sessionData.user_id !== user.id) {
+      throw new Error("Unauthorized: These results belong to another user.");
+    }
+
+    if (!sessionData.completed) {
+      throw new Error("This session has not been submitted for analysis yet. Please complete the review step.");
+    }
 
     const { data: riskFlagsData, error: flagsError } = await supabase
       .from("risk_flags")
