@@ -280,6 +280,7 @@ export const ADDONS = [
     price: 39,
     unit: "one-time",
     copy: "Live practice session focused on common interview questions and presentation.",
+      // copy: "Prepare smarter and deliver confident answers when it matters most.",
   },
   {
     id: "rapid",
@@ -603,4 +604,4 @@ export const COUNTRIES = [
   "Yemen",
   "Zambia",
   "Zimbabwe",
-].sort();
+];
