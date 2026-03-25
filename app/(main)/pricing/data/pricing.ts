@@ -378,7 +378,7 @@ export const ADDONS = [
 export const FAQS = [
   [
     "Is this a monthly subscription?",
-    "No. The paid tiers here are structured as one-time journey purchases.",
+    "Yes. To make the journey more affordable, the cost is structured as monthly installments over a 12-month journey period. This allows you to pay as you go while receiving full support.",
   ],
   [
     "Are government fees included?",

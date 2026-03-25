@@ -353,7 +353,7 @@ export default function PricingSection() {
                       </div>
                       {plan.monthlyPrice && (
                         <div className="inline-flex items-center gap-1.5 px-2.5 py-1 mb-[14px] bg-green-50 text-green-700/90 rounded-md border border-green-200/60 text-[13px] font-semibold max-w-fit">
-                          <span>${plan.monthlyPrice}/mo</span>
+                          <span>${plan.monthlyPrice}/month</span>
                         </div>
                       )}
                       <div className="text-muted-foreground text-[14px] leading-[1.55] mb-[18px] min-h-[64px]">
@@ -797,7 +797,8 @@ export default function PricingSection() {
                         <strong>{currentPlanData.name}</strong>
                         {currentPlanData.monthlyPrice ? (
                           <div className="text-[12px] text-muted-foreground mt-0.5">
-                            ${currentPlanData.monthlyPrice.toFixed(2)}/mo × 12 months
+                            <span className="block font-medium text-foreground/80">${currentPlanData.price} for full journey</span>
+                            ${currentPlanData.monthlyPrice.toFixed(2)}/month
                           </div>
                         ) : (
                           <div className="text-[12px] text-muted-foreground mt-0.5">
@@ -825,7 +826,7 @@ export default function PricingSection() {
                     </div>
                     <div className="text-[12px] text-muted-foreground leading-normal mt-3 mb-[18px]">
                       {currentPlanData.monthlyPrice
-                        ? `$${currentPlanData.monthlyPrice.toFixed(2)}/mo plan charge + one-time add-ons. Government fees remain separate.`
+                        ? `$${currentPlanData.monthlyPrice.toFixed(2)}/month plan charge + one-time add-ons. Government fees remain separate.`
                         : "One-time purchase for this journey. Government fees remain separate."}
                     </div>
 
