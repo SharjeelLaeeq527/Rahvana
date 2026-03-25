@@ -122,7 +122,8 @@ export default function PricingSection() {
     activePlans.find((p) => p.id === selectedPlan) || activePlans[1];
   const activeAddons = ADDONS.filter((a) => selectedAddons.has(a.id));
   const summaryTotal =
-    currentPlanData.price + activeAddons.reduce((sum, a) => sum + a.price, 0);
+    (currentPlanData.monthlyPrice ?? currentPlanData.price) +
+    activeAddons.reduce((sum, a) => sum + a.price, 0);
 
   const groupedCountries = useMemo(() => {
     const lowerSearch = searchQuery.toLowerCase();
@@ -350,6 +351,11 @@ export default function PricingSection() {
                           </small>
                         )}
                       </div>
+                      {plan.monthlyPrice && (
+                        <div className="inline-flex items-center gap-1.5 px-2.5 py-1 mb-[14px] bg-green-50 text-green-700/90 rounded-md border border-green-200/60 text-[13px] font-semibold max-w-fit">
+                          <span>${plan.monthlyPrice}/mo</span>
+                        </div>
+                      )}
                       <div className="text-muted-foreground text-[14px] leading-[1.55] mb-[18px] min-h-[64px]">
                         {plan.tagline}
                       </div>
@@ -787,9 +793,18 @@ export default function PricingSection() {
                     </div>
                     <div className="flex justify-between gap-3 py-2.5 border-b border-dashed border-border text-[14px]">
                       <span>Plan</span>
-                      <strong>
-                        {currentPlanData.name} (${currentPlanData.price})
-                      </strong>
+                      <div className="text-right">
+                        <strong>{currentPlanData.name}</strong>
+                        {currentPlanData.monthlyPrice ? (
+                          <div className="text-[12px] text-muted-foreground mt-0.5">
+                            ${currentPlanData.monthlyPrice.toFixed(2)}/mo × 12 months
+                          </div>
+                        ) : (
+                          <div className="text-[12px] text-muted-foreground mt-0.5">
+                            Free
+                          </div>
+                        )}
+                      </div>
                     </div>
 
                     {activeAddons.map((a) => (
@@ -805,12 +820,13 @@ export default function PricingSection() {
                     <div className="flex justify-between items-end mt-4 pt-4 border-t border-border">
                       <strong className="text-[14px] mb-[2px]">Total</strong>
                       <span className="font-bold text-[34px] tracking-tight text-primary leading-none">
-                        ${summaryTotal}
+                        ${summaryTotal.toFixed(2)}
                       </span>
                     </div>
                     <div className="text-[12px] text-muted-foreground leading-normal mt-3 mb-[18px]">
-                      One-time purchase for this journey. Government fees remain
-                      separate.
+                      {currentPlanData.monthlyPrice
+                        ? `$${currentPlanData.monthlyPrice.toFixed(2)}/mo plan charge + one-time add-ons. Government fees remain separate.`
+                        : "One-time purchase for this journey. Government fees remain separate."}
                     </div>
 
                     <div className="flex flex-col gap-2.5">
