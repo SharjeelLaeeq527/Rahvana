@@ -175,30 +175,6 @@ export default function PricingSection() {
               and any other applicable charges are paid separately and are not
               included in the total cost.
             </div>
-            <div className="flex gap-3 flex-wrap mt-[24px]">
-              <button
-                className={solidBtn}
-                onClick={() => {
-                  setActiveStep("plans");
-                  document
-                    .getElementById("plans")
-                    ?.scrollIntoView({ behavior: "smooth" });
-                }}
-              >
-                Compare Plans
-              </button>
-              <button
-                className={outlineBtn}
-                onClick={() => {
-                  setActiveStep("plans");
-                  document
-                    .getElementById("comparison")
-                    ?.scrollIntoView({ behavior: "smooth" });
-                }}
-              >
-                See Full Comparison
-              </button>
-            </div>
 
             <div className="mt-[30px] bg-card border border-border rounded-[24px] shadow-lg overflow-hidden">
               <div className="p-[18px_22px] border-b border-border flex md:items-center justify-between gap-3 bg-gradient-to-b from-card to-muted flex-col md:flex-row items-start">
@@ -301,6 +277,31 @@ export default function PricingSection() {
                 </div>
               </div>
             </div>
+
+            <div className="flex gap-3 flex-wrap mt-[24px]">
+              <button
+                className={solidBtn}
+                onClick={() => {
+                  setActiveStep("plans");
+                  document
+                    .getElementById("plans")
+                    ?.scrollIntoView({ behavior: "smooth" });
+                }}
+              >
+                Compare Plans
+              </button>
+              <button
+                className={outlineBtn}
+                onClick={() => {
+                  setActiveStep("plans");
+                  document
+                    .getElementById("comparison")
+                    ?.scrollIntoView({ behavior: "smooth" });
+                }}
+              >
+                See Full Comparison
+              </button>
+            </div>
           </div>
         </section>
       )}
@@ -308,7 +309,7 @@ export default function PricingSection() {
       <main>
         {activeStep === "plans" && (
           <div className="animate-in fade-in duration-300">
-            <section id="plans" className="py-[34px]">
+            <section id="plans" className="py-8">
               <div className={containerClass}>
                 <div className="flex flex-col md:flex-row justify-between md:items-end mb-[18px] gap-5">
                   <div>
@@ -365,8 +366,10 @@ export default function PricingSection() {
                       </ul>
                       <div className="flex gap-2.5 mt-auto w-full">
                         {plan.id === "free" ? (
-                          <Link href={userId ? "/" : "/signup"}>
-                            {" "}
+                          <Link
+                            href={userId ? "/" : "/signup"}
+                            className="w-full"
+                          >
                             <button
                               className={`${outlineBtn} w-full`}
                               type="button"
@@ -728,9 +731,12 @@ export default function PricingSection() {
                           className={`bg-card border rounded-[22px] p-[18px] flex flex-col gap-2.5 transition-all ${isSelected ? "border-primary shadow-lg" : "border-border"}`}
                         >
                           <div className="flex justify-between items-start gap-3">
-                            <div className="w-[38px] h-[38px] rounded-[12px] bg-primary-pale flex items-center justify-center text-primary">
-                              {/* <IconCheck className="w-5 h-5" /> */}
+                            {/* <div className="rounded-[12px] bg-primary-pale flex items-center justify-center text-primary"> */}
+                            {/* <IconCheck className="w-5 h-5" /> */}
+                            <div className="text-[18px] font-[750] text-foreground mt-1">
+                              {addon.title}
                             </div>
+                            {/* </div> */}
                             <div className="text-right">
                               <div className="font-bold text-[28px] tracking-tight leading-none mb-1">
                                 ${addon.price}
@@ -740,9 +746,7 @@ export default function PricingSection() {
                               </div>
                             </div>
                           </div>
-                          <div className="text-[16px] font-[750] text-foreground mt-1">
-                            {addon.title}
-                          </div>
+
                           <div className="text-muted-foreground text-[14px] leading-[1.55] flex-1">
                             {addon.copy}
                           </div>

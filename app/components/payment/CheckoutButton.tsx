@@ -72,11 +72,18 @@ export default function CheckoutButton({
       <button
         onClick={handleCheckout}
         disabled={disabled || isLoading}
-        className={`${className} ${
+        className={`${className} flex items-center justify-center ${
           isLoading || disabled ? "opacity-50 cursor-not-allowed" : ""
         }`}
       >
-        {isLoading ? <Loader size="sm" text="Processing..." /> : children}
+        {isLoading ? (
+          <span className="flex items-center gap-2">
+            <Loader size="sm" />
+            <span>Processing...</span>
+          </span>
+        ) : (
+          children
+        )}
       </button>
       {error && <p className="text-red-500 text-sm mt-2">{error}</p>}
     </div>

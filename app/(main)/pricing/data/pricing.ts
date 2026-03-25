@@ -385,7 +385,7 @@ export const FAQS = [
   ],
   [
     "Can I upgrade later?",
-    "Yes. The page is structured so users can move into a higher tier later if needed.",
+    "Yes. You can upgrade to a higher support tier at any time during your journey if you decide you need more assistance.",
   ],
   [
     "Is my personal information and documentation secure?",
