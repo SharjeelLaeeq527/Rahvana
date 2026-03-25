@@ -154,7 +154,7 @@ export const VISA_CATEGORIES: VisaCategoryData[] = [
   {
     id: "IR-2 / CR-2",
     label: "IR-2 / CR-2 · Child of U.S. Citizen",
-    plans: defaultPlans,
+    plans: CR2Plans,
   },
   {
     id: "IR-5",

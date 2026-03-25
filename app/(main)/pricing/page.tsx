@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useEffect, useState, useMemo } from "react";
+import React, { useEffect, useState, useMemo, useCallback } from "react";
+import { useSearchParams, useRouter } from "next/navigation";
 import CheckoutButton from "@/app/components/payment/CheckoutButton";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
@@ -71,9 +72,13 @@ function statusClass(text: string) {
 }
 
 export default function PricingSection() {
+  const searchParams = useSearchParams();
+  const router = useRouter();
+
   // const { t } = useLanguage();
   const [userId, setUserId] = useState<string | null>(null);
   const [isLoadingUser, setIsLoadingUser] = useState(true);
+  const [isProcessingAutoCheckout, setIsProcessingAutoCheckout] = useState(false);
 
   const [origin, setOrigin] = useState("Pakistan");
   const [destination, setDestination] = useState("United States");
@@ -88,6 +93,51 @@ export default function PricingSection() {
   const [searchQuery, setSearchQuery] = useState("");
   const [activeStep, setActiveStep] = useState<"plans" | "addons">("plans");
   const [openFaqIndex, setOpenFaqIndex] = useState<number>(0);
+
+  // Handle Checkout Logic shared for button and auto-checkout
+  const handleCheckout = useCallback(async (uid: string, planOverride?: string, addonsOverride?: string[]) => {
+    if (isProcessingAutoCheckout) return;
+    setIsProcessingAutoCheckout(true);
+    try {
+      const response = await fetch("/api/stripe/checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          productTier: planOverride || selectedPlan,
+          addons: addonsOverride || Array.from(selectedAddons),
+          visaCategory: visa,
+          userId: uid,
+        }),
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || "Checkout failed");
+      if (data.url) window.location.href = data.url;
+    } catch (err) {
+      console.error("Checkout error:", err);
+      setIsProcessingAutoCheckout(false);
+    }
+  }, [selectedPlan, selectedAddons, visa, isProcessingAutoCheckout]);
+
+  // Restore State from URL and Auto-checkout Trigger
+  useEffect(() => {
+    // Only parse params once on mount
+    const plan = searchParams.get("plan");
+    const addons = searchParams.get("addons");
+    const visaCat = searchParams.get("visa");
+    const autoCheckout = searchParams.get("auto_checkout") === "true";
+
+    if (plan) setSelectedPlan(plan);
+    if (addons) setSelectedAddons(new Set(addons.split(",").filter(Boolean)));
+    if (visaCat) setVisa(visaCat);
+
+    if (autoCheckout && userId && !isLoadingUser && !isProcessingAutoCheckout) {
+      // Clear the params after triggering checkout
+      const newUrl = window.location.pathname;
+      window.history.replaceState({}, "", newUrl);
+      
+      handleCheckout(userId, plan || undefined, addons ? addons.split(",") : undefined);
+    }
+  }, [searchParams, userId, isLoadingUser, handleCheckout, isProcessingAutoCheckout]);
 
   useEffect(() => {
     const supabase = createClient();
@@ -850,7 +900,7 @@ export default function PricingSection() {
                         </CheckoutButton>
                       ) : (
                         <Link
-                          href="/login?redirect=/pricing"
+                          href={`/login?redirect=${encodeURIComponent(`/pricing?auto_checkout=true&plan=${selectedPlan}&addons=${Array.from(selectedAddons).join(",")}&visa=${encodeURIComponent(visa)}`)}`}
                           className={`${solidBtn} w-full text-center block rounded-full! py-3 px-4 font-medium`}
                         >
                           Sign in to Checkout

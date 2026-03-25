@@ -723,10 +723,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const signInWithGoogle = async () => {
+    // Always use the current browser origin so localhost never jumps to production
+    const currentOrigin = typeof window !== 'undefined' ? window.location.origin : '';
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
-        redirectTo: `${process.env.NEXT_PUBLIC_APP_URL || window.location.origin}/api/auth/callback`,
+        redirectTo: `${currentOrigin}/api/auth/callback`,
       },
     });
     return { error };
