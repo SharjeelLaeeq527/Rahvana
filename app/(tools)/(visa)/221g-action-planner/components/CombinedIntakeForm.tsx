@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -319,15 +319,15 @@ const VISA_TYPES = [
 ];
 
 const VISA_CATEGORIES = [
-  { value: "IR-1", label: "IR-1 (Immediate Relative – Spouse)" },
-  { value: "IR-2", label: "IR-2 (Immediate Relative – Child)" },
-  { value: "IR-5", label: "IR-5 (Immediate Relative – Parent)" },
-  { value: "CR-1", label: "CR-1 (Conditional Resident – Spouse)" },
+  { value: "IR-1", label: "IR-1 (Immediate Relative â€“ Spouse)" },
+  { value: "IR-2", label: "IR-2 (Immediate Relative â€“ Child)" },
+  { value: "IR-5", label: "IR-5 (Immediate Relative â€“ Parent)" },
+  { value: "CR-1", label: "CR-1 (Conditional Resident â€“ Spouse)" },
   { value: "F-1", label: "F-1 (Family 1st Preference)" },
   { value: "F-2A", label: "F-2A (Family 2nd Preference)" },
   { value: "F-3", label: "F-3 (Family 3rd Preference)" },
   { value: "F-4", label: "F-4 (Family 4th Preference)" },
-  { value: "K-1", label: "K-1 (Fiancé(e))" },
+  { value: "K-1", label: "K-1 (FiancÃ©(e))" },
   { value: "K-3", label: "K-3 (Spouse of U.S. Citizen)" },
   { value: "B-1/B-2", label: "B-1/B-2 (Tourist/Business)" },
   { value: "F-1-student", label: "F-1 (Student)" },
@@ -501,7 +501,7 @@ export default function CombinedIntakeForm({
   };
 
   const formatDate = (d: string) => {
-    if (!d) return "—";
+    if (!d) return "â€”";
     return new Date(d).toLocaleDateString("en-US", {
       year: "numeric",
       month: "long",
@@ -509,9 +509,9 @@ export default function CombinedIntakeForm({
     });
   };
 
-  // ──────────────────────────────────────────────
+  // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   // GENERATORS (Translated from app.js)
-  // ──────────────────────────────────────────────
+  // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   const generateActionPlan = () => {
     const cb = formData;
@@ -561,7 +561,7 @@ export default function CombinedIntakeForm({
       .includes("administrative");
 
     if (isAdminOnly || isAdminProcessingStatus) {
-      plan += `Your case is currently under Administrative Processing following the visa interview on ${formatDate(cb.interviewDate)} at ${cb.consularPost}. Under INA Section 221(g), additional review is being conducted before a final decision can be made. No additional documents have been specifically requested at this time — you are advised to monitor your CEAC status and wait for further instructions from the embassy.\n\n`;
+      plan += `Your case is currently under Administrative Processing following the visa interview on ${formatDate(cb.interviewDate)} at ${cb.consularPost}. Under INA Section 221(g), additional review is being conducted before a final decision can be made. No additional documents have been specifically requested at this time â€” you are advised to monitor your CEAC status and wait for further instructions from the embassy.\n\n`;
     } else {
       plan += `Your visa interview on ${formatDate(cb.interviewDate)} at ${cb.consularPost} resulted in a temporary hold under INA Section 221(g). The consular officer requires the documents listed below before a final decision can be made. This is NOT a permanent denial.\n\n`;
 
@@ -617,7 +617,7 @@ export default function CombinedIntakeForm({
       cl.dna_test ||
       (cl.other && cl.other_details)
     ) {
-      plan += `**⇨ Gather Documents by Provider**\n\n`;
+      plan += `**â‡¨ Gather Documents by Provider**\n\n`;
     }
     // Beneficiary docs
     const benDocs: string[] = [];
@@ -626,7 +626,7 @@ export default function CombinedIntakeForm({
       benDocs.push("Medical examination results (DS-2054, sealed)");
     if (cl.police_certificate)
       benDocs.push(
-        `Police certificate – ${cl.police_certificate_country || "specified country"}`,
+        `Police certificate â€“ ${cl.police_certificate_country || "specified country"}`,
       );
     if (cl.nadra_birth_cert_beneficiary)
       benDocs.push("NADRA Birth Certificate");
@@ -644,7 +644,7 @@ export default function CombinedIntakeForm({
       benDocs.push("NADRA Divorce Certificate (beneficiary)");
     if (cl.death_certificate)
       benDocs.push(
-        `Death Certificate – ${cl.death_certificate_name || "specified person"}`,
+        `Death Certificate â€“ ${cl.death_certificate_name || "specified person"}`,
       );
 
     if (benDocs.length > 0) {
@@ -662,15 +662,15 @@ export default function CombinedIntakeForm({
       petDocs.push(`I-864 Affidavit of Support${sponsorName}`);
       if (cl.irs_transcript)
         petDocs.push(
-          `IRS Tax Transcript${cl.i864_tax_years ? ` – year(s): ${cl.i864_tax_years}` : ""}`,
+          `IRS Tax Transcript${cl.i864_tax_years ? ` â€“ year(s): ${cl.i864_tax_years}` : ""}`,
         );
       else if (cl.tax_1040)
         petDocs.push(
-          `Signed IRS Form 1040${cl.i864_tax_years ? ` – year(s): ${cl.i864_tax_years}` : ""}`,
+          `Signed IRS Form 1040${cl.i864_tax_years ? ` â€“ year(s): ${cl.i864_tax_years}` : ""}`,
         );
       else
         petDocs.push(
-          `Tax and financial evidence${cl.i864_tax_years ? ` – year(s): ${cl.i864_tax_years}` : ""}`,
+          `Tax and financial evidence${cl.i864_tax_years ? ` â€“ year(s): ${cl.i864_tax_years}` : ""}`,
         );
       if (cl.w2) petDocs.push("W-2 Tax Statements");
       if (cl.proof_citizenship)
@@ -679,7 +679,7 @@ export default function CombinedIntakeForm({
     }
     if (cl.i864a)
       petDocs.push(
-        `I-864A (Household Member contract${cl.i864_household_member_name ? ` – ${cl.i864_household_member_name}` : ""})`,
+        `I-864A (Household Member contract${cl.i864_household_member_name ? ` â€“ ${cl.i864_household_member_name}` : ""})`,
       );
     if (cl.us_divorce_decree)
       petDocs.push("U.S. Divorce Decree (original or certified copy)");
@@ -701,25 +701,25 @@ export default function CombinedIntakeForm({
         : "";
       plan += `   **Joint Sponsor${jsName} to provide:**\n`;
       plan += `   - I-864 Affidavit of Support\n`;
-      plan += `   - Tax and financial evidence${cl.i864_tax_years ? ` – year(s): ${cl.i864_tax_years}` : ""}\n`;
+      plan += `   - Tax and financial evidence${cl.i864_tax_years ? ` â€“ year(s): ${cl.i864_tax_years}` : ""}\n`;
       plan += `   - Proof of U.S. citizenship / LPR status and domicile\n\n`;
     }
 
     if (cl.english_translation) {
-      plan += `**⇨ Prepare Translations**\n`;
+      plan += `**â‡¨ Prepare Translations**\n`;
       plan += `   You indicated that English translations are required for: ${cl.english_translation_document || "specified documents"}. All translations must be certified and include a statement of translator competency.\n\n`;
     }
     // else {
     //   plan += `   If any documents are not in English, they must be accompanied by certified English translations.\n\n`;
     // }
 
-    plan += `**⇨ Assemble Your Packet**\n`;
+    plan += `**â‡¨ Assemble Your Packet**\n`;
     plan += `   Organize documents in the order shown in the Packet Assembly Checklist. Place the cover letter first, followed by a copy of your 221(g) letter.\n\n`;
 
-    plan += `**⇨ Submit Per Embassy Instructions**\n`;
+    plan += `**â‡¨ Submit Per Embassy Instructions**\n`;
     plan += `   Follow the submission method specified on your 221(g) letter. Most embassies use designated courier services. Do NOT mail documents directly to the embassy unless instructed.\n\n`;
 
-    plan += `**⇨ Track and Wait**\n`;
+    plan += `**â‡¨ Track and Wait**\n`;
     plan += `   After submission, check your CEAC status regularly at https://ceac.state.gov/CEACStatTracker/Status.aspx. Administrative processing duration varies by case and cannot be predicted. If your case enters administrative processing, additional security checks may be required, and timing is outside embassy control.\n\n`;
     plan += `   Source: U.S. Department of State - https://travel.state.gov/content/travel/en/us-visas/visa-information-resources/administrative-processing-information.html\n\n`;
 
@@ -896,12 +896,12 @@ export default function CombinedIntakeForm({
     plan += `- Do NOT repeatedly contact the embassy as this does not expedite processing\n\n`;
 
     plan += `## FINAL REMINDERS\n\n`;
-    plan += `✓ Follow your embassy's 221(g) letter instructions above all else\n`;
-    plan += `✓ Submit ONLY what was requested - do not add unrequested documents\n`;
-    plan += `✓ Keep copies of everything you submit\n`;
-    plan += `✓ Use the designated courier service specified by your embassy\n`;
-    plan += `✓ Be patient - processing times vary and cannot be guaranteed\n`;
-    plan += `✓ For complex cases, consult an immigration attorney\n\n`;
+    plan += `âœ“ Follow your embassy's 221(g) letter instructions above all else\n`;
+    plan += `âœ“ Submit ONLY what was requested - do not add unrequested documents\n`;
+    plan += `âœ“ Keep copies of everything you submit\n`;
+    plan += `âœ“ Use the designated courier service specified by your embassy\n`;
+    plan += `âœ“ Be patient - processing times vary and cannot be guaranteed\n`;
+    plan += `âœ“ For complex cases, consult an immigration attorney\n\n`;
 
     plan += `This action plan is based on your inputs and general guidance. It is not legal advice.\n`;
 
@@ -1013,16 +1013,16 @@ export default function CombinedIntakeForm({
     }
 
     checklist += `\n\n## BEFORE YOU SUBMIT - FINAL CHECKS\n\n`;
-    checklist += `☐ Cover letter is signed and dated\n`;
-    checklist += `☐ All documents are in the correct order\n`;
-    checklist += `☐ Originals are included where required (not photocopies)\n`;
-    checklist += `☐ All signatures are in blue ink where required\n`;
-    checklist += `☐ All forms are dated within 6 months\n`;
-    checklist += `☐ Translations are certified and complete\n`;
-    checklist += `☐ Names and dates are consistent across all documents\n`;
-    checklist += `☐ You have kept photocopies of everything\n`;
-    checklist += `☐ Courier tracking number is recorded\n`;
-    checklist += `☐ You know how to check CEAC status\n\n`;
+    checklist += `â˜ Cover letter is signed and dated\n`;
+    checklist += `â˜ All documents are in the correct order\n`;
+    checklist += `â˜ Originals are included where required (not photocopies)\n`;
+    checklist += `â˜ All signatures are in blue ink where required\n`;
+    checklist += `â˜ All forms are dated within 6 months\n`;
+    checklist += `â˜ Translations are certified and complete\n`;
+    checklist += `â˜ Names and dates are consistent across all documents\n`;
+    checklist += `â˜ You have kept photocopies of everything\n`;
+    checklist += `â˜ Courier tracking number is recorded\n`;
+    checklist += `â˜ You know how to check CEAC status\n\n`;
 
     checklist += `**REMEMBER:** Follow your embassy's 221(g) letter instructions if anything differs from this checklist.\n`;
 
@@ -1051,8 +1051,8 @@ export default function CombinedIntakeForm({
     letter += `${cb.consularPost}\n`;
     letter += `${visaUnitType} Visa Unit\n\n`;
     letter += `**Subject: Response to INA 221(g) Refusal`;
-    if (cb.caseNumber) letter += ` – Case Number: ${cb.caseNumber}`;
-    if (cb.beneficiaryName) letter += ` – ${cb.beneficiaryName}`;
+    if (cb.caseNumber) letter += ` â€“ Case Number: ${cb.caseNumber}`;
+    if (cb.beneficiaryName) letter += ` â€“ ${cb.beneficiaryName}`;
     letter += `**\n\n`;
 
     letter += `Dear Consular Officer,\n\n`;
@@ -1174,9 +1174,9 @@ export default function CombinedIntakeForm({
     return letter;
   };
 
-  // ──────────────────────────────────────────────
+  // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   // Progress Indicator
-  // ──────────────────────────────────────────────
+  // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const ProgressIndicator = () => (
     <div className="flex items-center justify-between mb-8 px-2 max-w-2xl mx-auto">
       {STEPS.map((step, idx) => (
@@ -1245,9 +1245,9 @@ export default function CombinedIntakeForm({
     setShowEmbassySuggestions(false);
   };
 
-  // ──────────────────────────────────────────────
-  // Step 3 – Review & Generate
-  // ──────────────────────────────────────────────
+  // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // Step 3 â€“ Review & Generate
+  // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const StepReviewGenerate = () => {
     const selectedCount = Object.values(selected221gItems).filter(
       (value) => typeof value === "boolean" && value,
@@ -1391,7 +1391,7 @@ export default function CombinedIntakeForm({
 
         <div className="flex gap-3 pt-6 border-t font-semibold">
           <Button variant="outline" onClick={goBack}>
-            ← Back to Checklist
+            â† Back to Checklist
           </Button>
           <Button
             onClick={handleGenerate}
@@ -1405,9 +1405,9 @@ export default function CombinedIntakeForm({
     );
   };
 
-  // ──────────────────────────────────────────────
-  // Step 4 – Export Packet
-  // ──────────────────────────────────────────────
+  // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // Step 4 â€“ Export Packet
+  // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const StepExportPacket = () => {
     if (!outputs) return null;
 
@@ -1497,9 +1497,11 @@ export default function CombinedIntakeForm({
         const parts = line.split(/(\*\*.*?\*\*)/g);
         let pContent = "";
         parts.forEach((p) => {
-          if (p.startsWith("**") && p.endsWith("**"))
+          if (p.startsWith("**") && p.endsWith("**")) {
             pContent += `<strong>${p.replace(/\*\*/g, "")}</strong>`;
-          else pContent += p;
+          } else {
+            pContent += p;
+          }
         });
         htmlBody += `<p style="margin-bottom:8pt;">${pContent}</p>`;
       });
@@ -1514,46 +1516,47 @@ export default function CombinedIntakeForm({
                     <base href="${typeof window !== "undefined" ? window.location.origin : ""}/">
                     <style>
                         @page {
+                          size: Letter;
                           margin: 0;
                         }
-                        body { 
-                            font-family: "Segoe UI", Tahoma, sans-serif; 
-                            line-height: 1.5; 
-                            color: #333; 
+                        body {
+                            font-family: "Segoe UI", Tahoma, sans-serif;
+                            line-height: 1.5;
+                            color: #333;
                             margin: 0;
-                          padding: 0.14in 0 0 0;
+                          padding: 0;
                             -webkit-print-color-adjust: exact !important;
                             print-color-adjust: exact !important;
                         }
                         .page-content {
-                          padding: 0.528in 0.9in 0.62in 0.9in;
+                          padding: 0.528in 0.9in 0.82in 0.9in;
                           -webkit-box-decoration-break: clone;
                           box-decoration-break: clone;
                         }
                         .page-break-sentinel {
                             display: block;
-                            height: 380pt; /* ~50% of page height */
+                            height: 380pt;
                             margin-bottom: -380pt;
                             break-inside: avoid;
                             visibility: hidden;
                             pointer-events: none;
                         }
-                        h1, h2, h3 { 
-                            color: #000; 
+                        h1, h2, h3 {
+                            color: #000;
                             page-break-after: avoid;
                             break-after: avoid;
                             page-break-inside: avoid;
                             break-inside: avoid;
                         }
-                        li { 
-                            margin-bottom: 0.1in; 
+                        li {
+                            margin-bottom: 0.1in;
                             page-break-inside: avoid;
                             break-inside: avoid;
                         }
-                        table { 
-                            border-collapse: collapse; 
-                            width: 100%; 
-                            border: 1pt solid #ccc; 
+                        table {
+                            border-collapse: collapse;
+                            width: 100%;
+                            border: 1pt solid #ccc;
                             page-break-inside: auto;
                         }
                         tr {
@@ -1574,66 +1577,54 @@ export default function CombinedIntakeForm({
                             user-select: none;
                         }
                         header {
-                          background: #ffffff;
-                          padding: 0.38in 0 0 0;
-                          margin: 0 0.9in 0.07in 0.9in;
-                          width: auto;
+                          background: linear-gradient(100deg, #021f23 0%, #043338 34%, #06494d 68%, #0a5e5d 100%);
+                          padding: 0.14in 0.9in;
+                          margin: 0;
+                          width: 100%;
                           box-sizing: border-box;
+                          display: flex;
+                          align-items: center;
+                          justify-content: space-between;
+                          border-bottom: 1pt solid rgba(255,255,255,0.22);
+                          box-shadow: inset 0 1pt 0 rgba(255,255,255,0.28), inset 0 -10pt 16pt rgba(0,0,0,0.08);
+                          page-break-after: avoid;
+                          break-after: avoid;
+                          -webkit-print-color-adjust: exact !important;
+                          print-color-adjust: exact !important;
                         }
                         .header-logo {
-                            height: 46pt;
-                            width: auto;
-                            display: block;
-                          opacity: 0.88;
-                          filter:
-                            saturate(0.9)
-                            brightness(1.05)
-                            drop-shadow(0.9pt 0.9pt 0 rgba(13, 115, 119, 0.18))
-                            drop-shadow(0 0 1.2pt rgba(13, 115, 119, 0.12));
-                        }
-                        .header-rule {
-                          height: 5pt;
-                          background: #0d7377;
-                          margin-top: 14pt;
-                          width: 100%;
+                          height: 43pt !important;
+                          width: auto !important;
+                          max-height: none !important;
                           display: block;
-                          border-radius: 999px;
-                          position: relative;
+                          filter: brightness(0) invert(1);
                         }
-                        .header-rule::before {
-                          content: "";
-                          position: absolute;
-                          left: 0;
-                          top: -4pt;
-                          width: 50%;
-                          height: 8pt;
-                          background: #0d7377;
-                          border-radius: 5pt 5pt 0 0;
+                        .header-meta {
+                          display: flex;
+                          flex-direction: column;
+                          align-items: flex-end;
+                          gap: 2pt;
+                          line-height: 1;
                         }
-                        .header-rule::after {
-                          content: "";
-                          position: absolute;
-                          right: 8pt;
-                          top: 50%;
-                          width: 7pt;
-                          height: 7pt;
-                          border-radius: 50%;
-                          background: #99f6e4;
-                          border: 1.5pt solid #0d7377;
-                          transform: translateY(-50%);
-                          box-sizing: border-box;
+                        .header-credit {
+                          font-size: 7.5pt;
+                          color: rgba(255,255,255,0.62);
+                          letter-spacing: 0.16em;
+                          text-transform: uppercase;
+                          font-weight: 600;
                         }
-                        .header-accent {
-                          display: block;
-                          margin-top: 4pt;
-                          width: 100%;
-                          height: 1.2pt;
-                          background: linear-gradient(
-                            90deg,
-                            rgba(13, 115, 119, 0.34) 0%,
-                            rgba(13, 115, 119, 0.16) 35%,
-                            rgba(13, 115, 119, 0.06) 100%
-                          );
+                        .header-credit .accent {
+                          color: rgba(255,255,255,0.9);
+                          font-weight: 800;
+                          letter-spacing: 0.11em;
+                          text-shadow: none;
+                        }
+                        .header-site {
+                          font-size: 7.5pt;
+                          color: rgba(255,255,255,0.62);
+                          letter-spacing: 0.1em;
+                          text-transform: lowercase;
+                          text-shadow: none;
                         }
                         footer {
                           position: fixed;
@@ -1647,38 +1638,27 @@ export default function CombinedIntakeForm({
                           padding: 0 0.9in;
                           box-sizing: border-box;
                         }
-                        /* left: teal dot accent + logo */
                         .footer-logo-wrap {
                           display: flex;
                           align-items: center;
                           gap: 7pt;
-                          opacity: 0.44;
-                          filter: saturate(0.2) contrast(1.3) brightness(0.5);
-                        }
-                        .footer-logo-wrap::before {
-                          content: "";
-                          display: inline-block;
-                          width: 5pt;
-                          height: 5pt;
-                          border-radius: 50%;
-                          background: #0d7377;
-                          flex-shrink: 0;
+                          opacity: 0.58;
+                          filter: saturate(0.35) contrast(1.2) brightness(0.56);
                         }
                         .footer-logo {
-                          height: 26pt;
+                          height: 28pt;
                           width: auto;
                         }
-                        /* right: page number with flanking em-dashes */
                         .footer-page {
-                          font-family: Georgia, 'Times New Roman', serif;
-                          font-size: 10pt;
-                          font-weight: bold;
-                          letter-spacing: 0.14em;
-                          color: #374151;
-                          opacity: 0.55;
+                          font-family: "Segoe UI", Tahoma, sans-serif;
+                          font-size: 12pt;
+                          font-weight: 600;
+                          letter-spacing: 0.01em;
+                          color: #475569;
+                          opacity: 0.68;
                           display: flex;
                           align-items: center;
-                          gap: 6pt;
+                          gap: 0;
                         }
                         .footer-page .dash {
                           display: inline-block;
@@ -1687,30 +1667,55 @@ export default function CombinedIntakeForm({
                           background: #9ca3af;
                           border-radius: 1pt;
                         }
+                        #print-page-overlays {
+                          display: none;
+                        }
+                        .print-page-block {
+                          position: relative;
+                          height: 11in;
+                        }
+                        .print-page-footer {
+                          position: absolute;
+                          left: 0;
+                          right: 0;
+                          bottom: 0;
+                          height: 0.95in;
+                          display: flex;
+                          align-items: center;
+                          justify-content: space-between;
+                          padding: 0 0.9in;
+                          box-sizing: border-box;
+                        }
                         @media print {
                             body { padding: 0; }
                             .watermark { display: block; }
                             footer { display: flex; }
+                            body.overlay-ready footer { display: none !important; }
+                            body.overlay-ready #print-page-overlays {
+                              display: block;
+                              position: absolute;
+                              top: 0;
+                              left: 0;
+                              width: 100%;
+                              pointer-events: none;
+                            }
                         }
                     </style>
                 </head>
                 <body>
                     <div class="watermark">RAHVANA</div>
                     <header>
-                        <img class="header-logo" src="/assets/images/RahvanaLogo.png" alt="Rahvana logo">
-                        <div class="header-rule"></div>
-                      <span class="header-accent"></span>
+                      <img class="header-logo" src="/assets/images/RahvanaLogo.png" alt="Rahvana">
+                      <div class="header-meta">
+                        <span class="header-credit">221G <span class="accent">Action Plan</span></span>
+                        <span class="header-site">rahvana.com</span>
+                      </div>
                     </header>
                     <footer>
-                        <div class="footer-logo-wrap">
-                            <img class="footer-logo" src="/assets/images/RahvanaLogo.png" alt="Rahvana">
-                        </div>
-                        <span class="footer-page">
-                            <span class="dash"></span>
-                            Page 1
-                            <span class="dash"></span>
-                        </span>
+                        <div class="footer-logo-wrap"><img class="footer-logo" src="/assets/images/RahvanaLogo.png" alt="Rahvana"></div>
+                      <span class="footer-page">0</span>
                     </footer>
+                    <div id="print-page-overlays"></div>
                     <div class="page-content">
                         ${htmlBody}
                     </div>
@@ -1729,6 +1734,43 @@ export default function CombinedIntakeForm({
         win.document.write(
           `<script>
             window.onload = function() {
+              try {
+                var overlayRoot = document.getElementById("print-page-overlays");
+                if (overlayRoot) {
+                  var pageHeightPx = 11 * 96;
+                  var contentEl = document.querySelector(".page-content");
+                  var headerEl = document.querySelector("header");
+                  var footerEl = document.querySelector("footer");
+                  var bodyPadTop = parseFloat(getComputedStyle(document.body).paddingTop || "0") || 0;
+                  var contentHeight = contentEl ? contentEl.scrollHeight : 0;
+                  var headerHeight = headerEl ? headerEl.getBoundingClientRect().height : 0;
+                  var footerHeight = footerEl ? footerEl.getBoundingClientRect().height : 0;
+                  var measuredDocHeight = headerHeight + contentHeight + footerHeight + bodyPadTop + 24;
+                  var fallbackDocHeight = Math.max(
+                    document.body.scrollHeight,
+                    document.documentElement.scrollHeight
+                  );
+                  var totalPages = Math.max(
+                    1,
+                    Math.ceil(Math.max(measuredDocHeight, fallbackDocHeight) / pageHeightPx) + 1
+                  );
+
+                  overlayRoot.innerHTML = "";
+                  for (var p = 1; p <= totalPages; p++) {
+                    var block = document.createElement("div");
+                    block.className = "print-page-block";
+                    var footer = document.createElement("div");
+                    footer.className = "print-page-footer";
+                    footer.innerHTML = '<div class="footer-logo-wrap"><img class="footer-logo" src="/assets/images/RahvanaLogo.png" alt="Rahvana"></div><span class="footer-page">' + p + '</span>';
+                    block.appendChild(footer);
+                    overlayRoot.appendChild(block);
+                  }
+
+                  document.body.classList.add("overlay-ready");
+                }
+              } catch (e) {
+                // continue with native print if overlay generation fails
+              }
               window.print();
               setTimeout(() => window.close(), 500);
             };
@@ -1753,7 +1795,7 @@ export default function CombinedIntakeForm({
       URL.revokeObjectURL(url);
     };
 
-    // ── Checkbox state for the Packet Checklist tab
+    // Checkbox state for the Packet Checklist tab
     // eslint-disable-next-line react-hooks/rules-of-hooks
     const [checkedItems, setCheckedItems] = useState<Record<number, boolean>>(
       {},
@@ -1771,7 +1813,7 @@ export default function CombinedIntakeForm({
       while (i < lines.length) {
         const line = lines[i];
 
-        // ── Headings
+        // â”€â”€ Headings
         if (line.startsWith("# ")) {
           nodes.push(
             <h1
@@ -1806,7 +1848,7 @@ export default function CombinedIntakeForm({
           continue;
         }
 
-        // ── Markdown table: collect all consecutive table lines
+        // Markdown table: collect all consecutive table lines
         if (line.match(/^\|.+\|$/) && !line.match(/^\|[-\s|]+\|$/)) {
           const headerCells = line
             .split("|")
@@ -1871,8 +1913,8 @@ export default function CombinedIntakeForm({
           continue;
         } // skip stray separators
 
-        // ── Interactive Checkboxes (only in checklist tab)
-        if (line.startsWith("\u2610 ")) {
+        // Interactive Checkboxes (only in checklist tab)
+        if (line.startsWith("☐ ")) {
           const idx = i;
           const label = line.substring(2);
           if (isChecklist) {
@@ -1908,7 +1950,7 @@ export default function CombinedIntakeForm({
           continue;
         }
 
-        // ── Bullet list (starts with * or -)
+        // â”€â”€ Bullet list (starts with * or -)
         if (line.startsWith("* ") || line.startsWith("- ")) {
           const txt = line.substring(2).trim();
           nodes.push(
@@ -1923,7 +1965,7 @@ export default function CombinedIntakeForm({
           continue;
         }
 
-        // ── Numbered list
+        // â”€â”€ Numbered list
         if (line.match(/^\d+\.\s/)) {
           const txt = line.replace(/^\d+\.\s/, "");
           nodes.push(
@@ -1939,7 +1981,7 @@ export default function CombinedIntakeForm({
           continue;
         }
 
-        // ── Full-line bold (**text**)
+        // â”€â”€ Full-line bold (**text**)
         if (line.match(/^\*\*(.*?)\*\*$/)) {
           nodes.push(
             <p key={i} className="font-bold text-slate-900 text-sm mt-3 mb-1">
@@ -1950,14 +1992,14 @@ export default function CombinedIntakeForm({
           continue;
         }
 
-        // ── Empty line → spacer
+        // â”€â”€ Empty line â†’ spacer
         if (line.trim() === "") {
           nodes.push(<div key={i} className="h-3" />);
           i++;
           continue;
         }
 
-        // ── Default paragraph (with inline bold handling)
+        // â”€â”€ Default paragraph (with inline bold handling)
         nodes.push(
           <p key={i} className="text-sm text-slate-700 mb-1.5 leading-relaxed">
             {renderInlineBold(line)}
@@ -2006,7 +2048,7 @@ export default function CombinedIntakeForm({
 
     return (
       <div className="space-y-6">
-        <div className="rounded-2xl border border-slate-200 bg-gradient-to-r from-slate-50 via-white to-teal-50/70 p-5 md:p-6">
+        <div className="rounded-2xl border border-slate-200 bg-gradient-to-r from-slate-100 via-slate-50 to-teal-100/80 p-5 md:p-6">
           <h2 className="text-2xl font-bold text-slate-900">
             Your 221(g) Response Package
           </h2>
@@ -2107,7 +2149,7 @@ export default function CombinedIntakeForm({
 
         <div className="flex flex-wrap items-center justify-between gap-4 border-t pt-2">
           <Button variant="outline" onClick={goBack}>
-            ← Back to Review
+            â† Back to Review
           </Button>
           <Button
             variant="outline"
@@ -2121,9 +2163,9 @@ export default function CombinedIntakeForm({
     );
   };
 
-  // ──────────────────────────────────────────────
+  // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   // Main render
-  // ──────────────────────────────────────────────
+  // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   return (
     <div className="w-full space-y-6 max-w-5xl mx-auto py-8">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
@@ -2142,7 +2184,7 @@ export default function CombinedIntakeForm({
       </div>
       <div className="bg-card rounded-2xl border border-border shadow-2xl overflow-hidden">
         <div className="p-6 md:p-10">
-          {/* ── Step 1: Case Basics (inlined to prevent re-mount focus loss) ── */}
+          {/* â”€â”€ Step 1: Case Basics (inlined to prevent re-mount focus loss) â”€â”€ */}
           {currentStep === 1 && (
             <div className="space-y-6">
               <div className="border-b pb-4">
@@ -2255,7 +2297,7 @@ export default function CombinedIntakeForm({
                       value={embassySearchText}
                       onChange={(e) => handleEmbassyInputChange(e.target.value)}
                       onFocus={() => setShowEmbassySuggestions(true)}
-                      placeholder="Search embassy or country…"
+                      placeholder="Search embassy or countryâ€¦"
                       className="pl-9 pr-9"
                     />
                     <ChevronDown
@@ -2316,7 +2358,7 @@ export default function CombinedIntakeForm({
                                       {formData.consularPost ===
                                         embassy.value && (
                                         <span className="ml-auto text-primary text-xs">
-                                          ✓
+                                          âœ“
                                         </span>
                                       )}
                                     </button>
@@ -2441,12 +2483,12 @@ export default function CombinedIntakeForm({
                     !!dobError
                   }
                 >
-                  Continue to Checklist →
+                  Continue to Checklist â†’
                 </Button>
               </div>
             </div>
           )}
-          {/* ── Step 2: Replicate Checklist ── */}
+          {/* â”€â”€ Step 2: Replicate Checklist â”€â”€ */}
           {currentStep === 2 && (
             <div className="space-y-6">
               <Actual221GFormChecker
@@ -2459,7 +2501,7 @@ export default function CombinedIntakeForm({
               />
               <div className="flex gap-3 pt-4 border-t">
                 <Button variant="outline" onClick={goBack}>
-                  ← Back
+                  â† Back
                 </Button>
               </div>
             </div>
@@ -2471,6 +2513,7 @@ export default function CombinedIntakeForm({
 
       <Dialog open={showWelcome} onOpenChange={handleWelcomeOpenChange}>
         <DialogContent className="max-w-5xl max-h-[92vh] flex flex-col overflow-hidden border-white/5 p-0 shadow-2xl bg-[#042f2e] bg-linear-to-br from-[#042f2e] via-[#0d6b6b] to-[#115e5e] text-white rounded-3xl">
+          <DialogTitle className="sr-only">Welcome to the 221(g) Action Planner</DialogTitle>
           <div className="absolute top-5 right-5 z-20">
             <button
               onClick={() => handleWelcomeOpenChange(false)}
@@ -2824,7 +2867,7 @@ export default function CombinedIntakeForm({
         open={showResetModal}
         onOpenChange={setShowResetModal}
         title="Start Over?"
-        description="This will permanently erase all your current progress — your case details, selected checklist items, and any generated documents. This action cannot be undone."
+        description="This will permanently erase all your current progress â€” your case details, selected checklist items, and any generated documents. This action cannot be undone."
         confirmText="Yes, Start Over"
         cancelText="Cancel"
         confirmVariant="danger"
@@ -2833,3 +2876,5 @@ export default function CombinedIntakeForm({
     </div>
   );
 }
+
+

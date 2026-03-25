@@ -94,10 +94,10 @@ const GUIDES: Guide[] = [
   // },
   {
     id: "passport",
-    title: "Passport Services Guide",
-    subtitle: "Machine Readable Passport (MRP)",
+    title: "Passport",
+    subtitle: "",
     description:
-      "Complete guide to obtaining or renewing your Pakistani passport.",
+      "DGIP roadmap for MRP and ePassport applications, renewals, and lost or damaged cases.",
     category: "Pakistan Document",
     href: "/guides/passport-guide",
     icon: Globe,
@@ -105,9 +105,10 @@ const GUIDES: Guide[] = [
   {
     id: "police-verification",
     icon: Shield,
-    title: "Police Verification Process Guide",
-    subtitle: "Police Character Certificate (PCC)",
-    description: "Step-by-step process to obtain your Police Verification Certificate.",
+    title: "Police Character Certificate",
+    subtitle: "",
+    description:
+      "Province-wise PCC workflow with required documents, fee tiers, and verification steps.",
     href: "/guides/police-verification-guide",
     category: "Pakistan Document",
   },
@@ -122,37 +123,40 @@ const GUIDES: Guide[] = [
   // },
   {
     id: "cnic",
-    title: "CNIC Application Guide",
+    title: "CNIC",
     subtitle: "Computerized National Identity Card",
-    description: "Complete guide to obtaining and renewing your NADRA CNIC.",
+    description:
+      "NADRA CNIC workflow for new issuance, corrections, and replacement or renewal applications.",
     category: "Pakistan Document",
     href: "/guides/cnic-guide",
     icon: FileText,
   },
   {
     id: "birth-certificate",
-    title: "Birth Certificate Process Guide",
-    subtitle: "Child Registration Certificate (CRC) / B-Form",
-    description: "NADRA CRC, B-Form, and alternative birth documentation.",
+    title: "Birth Certificate",
+    subtitle: "",
+    description:
+      "Union Council CBRC process for birth registration, correction, and replacement",
     category: "Pakistan Document",
     href: "/guides/birth-certificate-guide",
     icon: FileText,
   },
   {
     id: "frc",
-    title: "FRC Application Guide",
-    subtitle: "Family Registration Certificate",
+    title: "FRC",
+    subtitle: "NADRA Family Registration Certificate",
     description:
-      "Complete guide to obtaining your Family Registration Certificate.",
+      "NADRA process to apply for an FRC and review registered family details.",
     category: "Pakistan Document",
     href: "/guides/frc-guide",
     icon: Globe,
   },
   {
     id: "marriage-certificate",
-    title: "Marriage Certificate Process Guide",
-    subtitle: "Nikah Nama / Marriage Registration Certificate (MRC)",
-    description: "Nikah Nama, MRC, and certified English translations.",
+    title: "Marriage Registration",
+    subtitle: "",
+    description:
+      "Nikah Nama registration through Union Council and NADRA MRC issuance with attestation pathway.",
     category: "Pakistan Document",
     href: "/guides/nikah-nama-guide",
     icon: Heart,
@@ -267,8 +271,10 @@ const GUIDES: Guide[] = [
   // },
   {
     id: "vaccinations",
-    title: "Vaccination Guide",
-    description: "CDC-required vaccinations and polio certificate.",
+    title: "Polio Vaccination",
+    subtitle: "",
+    description:
+      "Polio vaccination workflow with NIMS entry and travel certificate issuance.",
     category: "Medical & Exam",
     href: "/guides/polio-vaccination-guide",
     icon: Syringe,
@@ -652,17 +658,19 @@ function GuideCard({ guide, index }: { guide: Guide; index: number }) {
         <h3 className="text-lg md:text-xl leading-tight font-bold text-foreground mb-0.5 transition-colors">
           {guide.title}
         </h3>
-        {guide.subtitle && (
-          <p className="text-[11px] leading-snug text-zinc-500 dark:text-zinc-400 mb-3.5">
-            {guide.subtitle}
-          </p>
-        )}
+        <p
+          className={`text-[11px] leading-snug text-zinc-500 dark:text-zinc-400 mb-4 ${
+            guide.subtitle ? "" : "invisible"
+          }`}
+        >
+          {guide.subtitle || " "}
+        </p>
         <div className="mb-3">
           <span className="text-[10px] font-semibold uppercase tracking-[0.08em] text-primary/85 bg-primary/10 border border-primary/20 px-2 py-1 rounded">
             {guide.category}
           </span>
         </div>
-        <p className="text-sm leading-6 font-medium text-slate-600 dark:text-slate-300 mb-5 grow [text-wrap:pretty]">
+        <p className="text-sm leading-6 font-medium text-slate-500 dark:text-slate-400 mb-5 grow [text-wrap:pretty]">
           {guide.description}
         </p>
       </div>
