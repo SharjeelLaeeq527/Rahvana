@@ -22,9 +22,10 @@ export async function save221gCase(
     .limit(1);
   const existingCase = existingCases?.[0];
 
-  // FOR TESTING: Reset next follow-up to 5 seconds on every save
+  // Set initial follow-up to 7 days from now (weekly)
   const nextFollowUp = new Date();
-  nextFollowUp.setSeconds(nextFollowUp.getSeconds() + 15);
+  nextFollowUp.setDate(nextFollowUp.getDate() + 7);
+  // nextFollowUp.setSeconds(nextFollowUp.getSeconds() + 15);
 
   const caseData = {
     user_id: userId,
@@ -49,10 +50,10 @@ export async function save221gCase(
     console.log("Supabase update successful");
     return existingCase.id;
   } else {
-    // FOR TESTING: Set the first follow-up to 5 seconds from now
+    // Set the first follow-up to 7 days from now (weekly)
     const nextFollowUp = new Date();
-    // nextFollowUp.setDate(nextFollowUp.getDate() + 7);
-    nextFollowUp.setSeconds(nextFollowUp.getSeconds() + 15);
+    nextFollowUp.setDate(nextFollowUp.getDate() + 7);
+    // nextFollowUp.setSeconds(nextFollowUp.getSeconds() + 15);
 
     console.log("Inserting NEW case data...");
     const { data, error } = await supabase
