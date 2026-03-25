@@ -1,0 +1,816 @@
+{
+  "categorySlug": "ir-5-parent",
+  "version": "1.0.0",
+  "lastUpdated": "2026-03-21",
+  "questionSelectionRules": [
+    {
+      "id": "rule_core_basic_identity",
+      "name": "Core - Basic Identity & Age Verification",
+      "description": "Always include basic identity and age questions as foundation for IR-5 parent visa eligibility",
+      "condition": {
+        "type": "AND",
+        "conditions": [
+          {
+            "field": "full_name",
+            "operator": "notEquals",
+            "value": ""
+          }
+        ]
+      },
+      "actions": {
+        "includeCategories": ["Identity"],
+        "priorityBoost": ["high"],
+        "reason": "Basic identity and age verification confirms parent eligibility for IR-5 visa category, which strictly requires parent to be 21+ years old and child to be USC parent"
+      }
+    },
+    {
+      "id": "rule_core_petitioner_info",
+      "name": "Core - Sponsoring Child Information",
+      "description": "Always include questions about the sponsoring child's citizenship, employment, and status",
+      "condition": {
+        "type": "AND",
+        "conditions": [
+          {
+            "field": "petitioner_name",
+            "operator": "notEquals",
+            "value": ""
+          }
+        ]
+      },
+      "actions": {
+        "includeCategories": ["Petitioner"],
+        "priorityBoost": ["high"],
+        "reason": "Sponsoring child verification is critical for confirming U.S. citizenship status, legal capacity to file I-130 petition, and demonstrated financial stability to support aging parent"
+      }
+    },
+    {
+      "id": "rule_core_relationship_strength",
+      "name": "Core - Parent-Child Relationship Strength",
+      "description": "Always include relationship verification and communication questions for family bond assessment",
+      "condition": {
+        "type": "AND",
+        "conditions": [
+          {
+            "field": "current_country",
+            "operator": "notEquals",
+            "value": ""
+          }
+        ]
+      },
+      "actions": {
+        "includeCategories": ["Relationship"],
+        "priorityBoost": ["high"],
+        "reason": "Genuine parent-child relationship is cornerstone of IR-5 visa category; ongoing communication and contact history demonstrates family bond authenticity beyond legal obligation"
+      }
+    },
+    {
+      "id": "rule_core_financial_dependency",
+      "name": "Core - Financial Support & Dependency Structure",
+      "description": "Always include questions about financial support arrangements and dependency",
+      "condition": {
+        "type": "AND",
+        "conditions": [
+          {
+            "field": "current_country",
+            "operator": "notEquals",
+            "value": ""
+          }
+        ]
+      },
+      "actions": {
+        "includeCategories": ["Financial"],
+        "priorityBoost": ["high"],
+        "reason": "Financial dependency assessment is essential under IR-5; child must demonstrate ability to support parent via I-864 Affidavit of Support; existing support patterns strengthen visa application"
+      }
+    },
+    {
+      "id": "rule_core_living_plan",
+      "name": "Core - Post-Arrival Living Plan",
+      "description": "Always include questions about planned residence and household arrangements in USA",
+      "condition": {
+        "type": "AND",
+        "conditions": [
+          {
+            "field": "us_living_location",
+            "operator": "notEquals",
+            "value": ""
+          }
+        ]
+      },
+      "actions": {
+        "includeCategories": ["Living Plan"],
+        "priorityBoost": ["high"],
+        "reason": "Living arrangements confirm practical integration plan, household stability, proximity to sponsoring child for caregiving, and realistic post-arrival support structure"
+      }
+    },
+    {
+      "id": "rule_core_immigration_intent",
+      "name": "Core - Immigration Intent & Future Plans",
+      "description": "Always include questions about reasons for immigration and post-arrival plans",
+      "condition": {
+        "type": "AND",
+        "conditions": [
+          {
+            "field": "move_reason",
+            "operator": "notEquals",
+            "value": ""
+          }
+        ]
+      },
+      "actions": {
+        "includeCategories": ["Intent"],
+        "priorityBoost": ["high"],
+        "reason": "Immigration intent assessment confirms genuine desire for family reunification and refutes suspicion of fraudulent petition; critical for age-reduced immigrant requiring extensive vetting"
+      }
+    },
+    {
+      "id": "rule_security_travel_background",
+      "name": "Background Security - Travel & Immigration History",
+      "description": "Always include travel history, visa refusal, and immigration compliance questions",
+      "condition": {
+        "type": "AND",
+        "conditions": [
+          {
+            "field": "current_country",
+            "operator": "notEquals",
+            "value": ""
+          }
+        ]
+      },
+      "actions": {
+        "includeCategories": ["Immigration & Background"],
+        "priorityBoost": ["high"],
+        "reason": "Security and background verification is mandatory for all IR-5 applicants; history of visa refusals, overstays, or criminal activity can result in ineligibility despite family sponsorship"
+      }
+    },
+    {
+      "id": "rule_widow_widower_special",
+      "name": "Special Case - Widowed Parent",
+      "description": "Applied when parent is widowed or has lost spouse",
+      "condition": {
+        "type": "AND",
+        "conditions": [
+          {
+            "field": "marital_status",
+            "operator": "equals",
+            "value": "Widowed"
+          }
+        ]
+      },
+      "actions": {
+        "includeCategories": ["Relationship", "Financial", "Living Plan"],
+        "priorityBoost": ["high"],
+        "reason": "Widowed parents often lack spousal income support; requires detailed financial assessment, potential isolation risks, and confirmation of child's capacity to provide emotional and financial support during vulnerable life stage"
+      }
+    },
+    {
+      "id": "rule_divorced_parent_special",
+      "name": "Special Case - Divorced Parent",
+      "description": "Applied when parent is divorced",
+      "condition": {
+        "type": "AND",
+        "conditions": [
+          {
+            "field": "marital_status",
+            "operator": "equals",
+            "value": "Divorced"
+          }
+        ]
+      },
+      "actions": {
+        "includeCategories": ["Relationship", "Financial", "Living Plan"],
+        "priorityBoost": ["medium"],
+        "reason": "Divorced parent status may indicate financial independence or dependency; clarifies whether alimony/support obligations exist and confirms child's actual financial capacity after any spousal obligations"
+      }
+    },
+    {
+      "id": "rule_financially_dependent_parent",
+      "name": "Core Financial - Parent Currently Dependent on Child",
+      "description": "Applied when parent already receives financial support from sponsoring child",
+      "condition": {
+        "type": "AND",
+        "conditions": [
+          {
+            "field": "financial_support_from_child",
+            "operator": "equals",
+            "value": true
+          }
+        ]
+      },
+      "actions": {
+        "includeCategories": ["Financial", "Intent"],
+        "priorityBoost": ["high"],
+        "reason": "Existing financial dependency demonstrates child's proven capacity to support parent and established pattern of filial responsibility; strengthens I-864 Affidavit of Support credibility"
+      }
+    },
+    {
+      "id": "rule_independent_parent",
+      "name": "Financial - Financially Independent Parent",
+      "description": "Applied when parent has independent income and is not receiving child support",
+      "condition": {
+        "type": "AND",
+        "conditions": [
+          {
+            "field": "own_income",
+            "operator": "equals",
+            "value": true
+          },
+          {
+            "field": "financial_support_from_child",
+            "operator": "equals",
+            "value": false
+          }
+        ]
+      },
+      "actions": {
+        "includeCategories": ["Financial", "Intent"],
+        "priorityBoost": ["medium"],
+        "reason": "Independent parent with own income reduces public charge concerns; however, must verify income will continue post-immigration and confirm child's I-864 responsibility if parent's resources prove insufficient"
+      }
+    },
+    {
+      "id": "rule_parent_employment",
+      "name": "Financial - Parent Has Current Employment",
+      "description": "Applied when parent is currently employed",
+      "condition": {
+        "type": "AND",
+        "conditions": [
+          {
+            "field": "current_occupation",
+            "operator": "notEquals",
+            "value": ""
+          }
+        ]
+      },
+      "actions": {
+        "includeCategories": ["Financial", "Intent"],
+        "priorityBoost": ["low"],
+        "reason": "Current employment indicates financial stability; assess transferability of skills to US market and expectation of continued employment post-immigration to reduce public benefits dependency"
+      }
+    },
+    {
+      "id": "rule_retired_parent",
+      "name": "Financial - Retired Parent with Pension or Benefits",
+      "description": "Applied when parent is retired or relies on pension/social security",
+      "condition": {
+        "type": "AND",
+        "conditions": [
+          {
+            "field": "own_income",
+            "operator": "equals",
+            "value": true
+          },
+          {
+            "field": "current_occupation",
+            "operator": "equals",
+            "value": ""
+          }
+        ]
+      },
+      "actions": {
+        "includeCategories": ["Financial"],
+        "priorityBoost": ["high"],
+        "reason": "Retired parent income assessment critical for determining sufficiency under poverty guidelines; verify pension/social security is stable, portable to USA, and child's supplemental support obligation is secondary"
+      }
+    },
+    {
+      "id": "rule_living_with_child",
+      "name": "Living Arrangements - Will Live with Sponsoring Child",
+      "description": "Applied when parent plans to live with sponsoring child",
+      "condition": {
+        "type": "AND",
+        "conditions": [
+          {
+            "field": "lives_with_petitioner",
+            "operator": "equals",
+            "value": true
+          }
+        ]
+      },
+      "actions": {
+        "includeCategories": ["Living Plan", "Relationship"],
+        "priorityBoost": ["high"],
+        "reason": "Co-residence strengthens family bond verification, confirms caregiving arrangement, and demonstrates immediate post-arrival support structure; addresses common concerns about parent abandonment or insufficient care"
+      }
+    },
+    {
+      "id": "rule_independent_living_arrangement",
+      "name": "Living Arrangements - Independent Residence",
+      "description": "Applied when parent plans to live separately from sponsoring child",
+      "condition": {
+        "type": "AND",
+        "conditions": [
+          {
+            "field": "lives_with_petitioner",
+            "operator": "equals",
+            "value": false
+          }
+        ]
+      },
+      "actions": {
+        "includeCategories": ["Living Plan", "Intent", "Financial"],
+        "priorityBoost": ["high"],
+        "reason": "Independent living requires detailed explanation of support arrangement, visiting schedule, emergency contact procedures, and how child will provide necessary support and oversight for aging parent"
+      }
+    },
+    {
+      "id": "rule_strong_communication",
+      "name": "Relationship - Strong Parent-Child Communication",
+      "description": "Applied when parent and child communicate frequently (daily or weekly)",
+      "condition": {
+        "type": "AND",
+        "conditions": [
+          {
+            "field": "communication_frequency",
+            "operator": "equals",
+            "value": "Daily"
+          }
+        ],
+        "OR": [
+          {
+            "field": "communication_frequency",
+            "operator": "equals",
+            "value": "Weekly"
+          }
+        ]
+      },
+      "actions": {
+        "includeCategories": ["Relationship"],
+        "priorityBoost": ["low"],
+        "reason": "Frequent communication demonstrates active ongoing relationship engagement, emotional closeness, and genuine family bond despite physical separation"
+      }
+    },
+    {
+      "id": "rule_weak_communication",
+      "name": "Relationship - Weak Parent-Child Communication",
+      "description": "Applied when parent and child communicate rarely (monthly or less)",
+      "condition": {
+        "type": "AND",
+        "conditions": [
+          {
+            "field": "communication_frequency",
+            "operator": "equals",
+            "value": "Rarely"
+          }
+        ]
+      },
+      "actions": {
+        "includeCategories": ["Relationship", "Intent", "Living Plan"],
+        "priorityBoost": ["high"],
+        "reason": "Infrequent communication raises significant concerns about relationship authenticity and caregiving motivation; requires detailed explanation of communication barriers and demonstrated commitment to family reunification"
+      }
+    },
+    {
+      "id": "rule_recent_parent_visit",
+      "name": "Relationship - Recent Child Visit to Parent",
+      "description": "Applied when sponsoring child has visited parent recently",
+      "condition": {
+        "type": "AND",
+        "conditions": [
+          {
+            "field": "recent_visit_by_child",
+            "operator": "equals",
+            "value": true
+          }
+        ]
+      },
+      "actions": {
+        "includeCategories": ["Relationship"],
+        "priorityBoost": ["low"],
+        "reason": "Recent visit demonstrates active parent-child engagement, financial commitment to travel, and opportunity for in-person relationship strengthening; supports family bond authenticity"
+      }
+    },
+    {
+      "id": "rule_no_recent_visit",
+      "name": "Relationship - No Recent Child Visit",
+      "description": "Applied when sponsoring child has not visited parent recently",
+      "condition": {
+        "type": "AND",
+        "conditions": [
+          {
+            "field": "recent_visit_by_child",
+            "operator": "equals",
+            "value": false
+          }
+        ]
+      },
+      "actions": {
+        "includeCategories": ["Relationship", "Intent"],
+        "priorityBoost": ["medium"],
+        "reason": "Absence of recent visits requires explanation of barriers (financial, work constraints) and confirmation of alternative relationship maintenance methods; distance does not negate genuine family connection"
+      }
+    },
+    {
+      "id": "rule_previous_us_visit",
+      "name": "Travel History - Previous US Visit",
+      "description": "Applied when parent has visited United States before",
+      "condition": {
+        "type": "AND",
+        "conditions": [
+          {
+            "field": "previous_us_visit",
+            "operator": "equals",
+            "value": true
+          }
+        ]
+      },
+      "actions": {
+        "includeCategories": ["Immigration & Background", "Intent"],
+        "priorityBoost": ["low"],
+        "reason": "Previous US visit confirms immigration compliance history, familiarity with US standards of living, opportunity for parent-child bonding, and demonstrates ability to navigate US border procedures"
+      }
+    },
+    {
+      "id": "rule_visa_refusal_history",
+      "name": "Security Alert - Previous Visa Denial",
+      "description": "Applied when parent has been denied a US visa previously",
+      "condition": {
+        "type": "AND",
+        "conditions": [
+          {
+            "field": "visa_refusal",
+            "operator": "equals",
+            "value": true
+          }
+        ]
+      },
+      "actions": {
+        "includeCategories": ["Immigration & Background", "Intent"],
+        "priorityBoost": ["high"],
+        "reason": "Previous visa refusal requires detailed explanation of refusal grounds, what circumstances have changed, documentary evidence supporting revised eligibility, and demonstrated commitment to compliance with US immigration law"
+      }
+    },
+    {
+      "id": "rule_criminal_record",
+      "name": "Security Alert - Criminal History",
+      "description": "Applied when parent has criminal record or legal issues",
+      "condition": {
+        "type": "AND",
+        "conditions": [
+          {
+            "field": "criminal_record",
+            "operator": "equals",
+            "value": true
+          }
+        ]
+      },
+      "actions": {
+        "includeCategories": ["Immigration & Background", "Intent"],
+        "priorityBoost": ["high"],
+        "reason": "Criminal history is potential IR-5 visa bar; requires full disclosure, detailed explanation of circumstances, evidence of rehabilitation, and legal disposition; certain crimes result in ineligibility for family-based immigration"
+      }
+    },
+    {
+      "id": "rule_aged_parent_elderly",
+      "name": "Age Eligibility - Elderly Parent (65+)",
+      "description": "Applied when parent is 65 years or older",
+      "condition": {
+        "type": "AND",
+        "conditions": [
+          {
+            "field": "current_age",
+            "operator": "greaterThanOrEqual",
+            "value": 65
+          }
+        ]
+      },
+      "actions": {
+        "includeCategories": ["Financial", "Living Plan", "Intent"],
+        "priorityBoost": ["high"],
+        "reason": "Elderly parents typically have reduced earning capacity and increased healthcare costs; requires comprehensive financial analysis, verification of sponsoring child's income sufficiency, health status assessment, and determined caregiving plan"
+      }
+    },
+    {
+      "id": "rule_younger_parent_modest_age",
+      "name": "Age Profile - Parent Under 65",
+      "description": "Applied when parent is younger (under 65 years old)",
+      "condition": {
+        "type": "AND",
+        "conditions": [
+          {
+            "field": "current_age",
+            "operator": "lessThan",
+            "value": 65
+          }
+        ]
+      },
+      "actions": {
+        "includeCategories": ["Financial", "Intent"],
+        "priorityBoost": ["medium"],
+        "reason": "Younger parents may have continued employment potential or independent income; focus on financial independence assessment and verification that immigration intent is family reunification rather than economic exploitation"
+      }
+    },
+    {
+      "id": "rule_petitioner_married",
+      "name": "Petitioner Family - Child is Married",
+      "description": "Applied when sponsoring child is married",
+      "condition": {
+        "type": "AND",
+        "conditions": [
+          {
+            "field": "petitioner_household_status",
+            "operator": "equals",
+            "value": "Married"
+          }
+        ]
+      },
+      "actions": {
+        "includeCategories": ["Living Plan", "Petitioner"],
+        "priorityBoost": ["medium"],
+        "reason": "Married sponsoring child's household includes spouse income on I-864 Affidavit; clarifies whether spouse will co-sign support obligation and confirms household stability and size for parent integration"
+      }
+    },
+    {
+      "id": "rule_petitioner_household_size",
+      "name": "Living Arrangements - Household Size Assessment",
+      "description": "Applied when petitioner's household exceeds 3+ members",
+      "condition": {
+        "type": "AND",
+        "conditions": [
+          {
+            "field": "household_size",
+            "operator": "greaterThan",
+            "value": 3
+          }
+        ]
+      },
+      "actions": {
+        "includeCategories": ["Living Plan"],
+        "priorityBoost": ["medium"],
+        "reason": "Large household may indicate resource constraints or elder care experience; assess physical space availability, caregiving capacity, and whether other household members support parent immigration or create conflict"
+      }
+    },
+    {
+      "id": "rule_long_stay_abroad",
+      "name": "Travel History - Extended Stays Outside Home Country",
+      "description": "Applied when parent has spent 6+ months in countries other than home country",
+      "condition": {
+        "type": "AND",
+        "conditions": [
+          {
+            "field": "long_stay_history",
+            "operator": "equals",
+            "value": true
+          }
+        ]
+      },
+      "actions": {
+        "includeCategories": ["Immigration & Background"],
+        "priorityBoost": ["medium"],
+        "reason": "Extended international stays require documentation and explanation; assess whether stays were legal, purpose, and whether pattern indicates intent to remain in US permanently"
+      }
+    },
+    {
+      "id": "rule_clear_permanent_intent",
+      "name": "Intent - Clear Permanent Residence Intent",
+      "description": "Applied when parent expresses clear intent to stay permanently in USA",
+      "condition": {
+        "type": "AND",
+        "conditions": [
+          {
+            "field": "permanent_intent",
+            "operator": "equals",
+            "value": true
+          }
+        ]
+      },
+      "actions": {
+        "includeCategories": ["Intent"],
+        "priorityBoost": ["low"],
+        "reason": "Clear permanent intent demonstrates genuine immigration purpose aligned with IR-5 visa category intent; eliminates concerns about temporary visa overstay risk or abandonment"
+      }
+    },
+    {
+      "id": "rule_ambiguous_immigration_intent",
+      "name": "Intent Alert - Unclear or Conditional Intent",
+      "description": "Applied when parent expresses uncertain or conditional immigration intent",
+      "condition": {
+        "type": "AND",
+        "conditions": [
+          {
+            "field": "permanent_intent",
+            "operator": "equals",
+            "value": false
+          }
+        ]
+      },
+      "actions": {
+        "includeCategories": ["Intent", "Living Plan"],
+        "priorityBoost": ["high"],
+        "reason": "Uncertain permanent intent raises red flags about IV visa misuse; requires detailed explanation of intent to maintain home country residence, return plans, and how this aligns with family reunification visa category purpose"
+      }
+    },
+    {
+      "id": "rule_high_risk_scenario",
+      "name": "High-Risk Scenario - Visa Denial + Criminal History",
+      "description": "Applied when parent has BOTH previous visa denial AND criminal record",
+      "condition": {
+        "type": "AND",
+        "conditions": [
+          {
+            "field": "visa_refusal",
+            "operator": "equals",
+            "value": true
+          },
+          {
+            "field": "criminal_record",
+            "operator": "equals",
+            "value": true
+          }
+        ]
+      },
+      "actions": {
+        "includeCategories": ["Immigration & Background", "Intent", "Petitioner"],
+        "priorityBoost": ["high"],
+        "reason": "Combination of visa refusal and criminal history creates significant eligibility concerns; comprehensive security review required with documentary evidence of rehabilitation, changed circumstances, and sponsoring child's understanding of parent's immigration barriers"
+      }
+    },
+    {
+      "id": "rule_weak_relationship_financial_dependent",
+      "name": "High-Risk Scenario - Weak Communication + Financial Dependency",
+      "description": "Applied when parent has WEAK communication AND is financially dependent on child",
+      "condition": {
+        "type": "AND",
+        "conditions": [
+          {
+            "field": "communication_frequency",
+            "operator": "equals",
+            "value": "Rarely"
+          },
+          {
+            "field": "financial_support_from_child",
+            "operator": "equals",
+            "value": true
+          }
+        ]
+      },
+      "actions": {
+        "includeCategories": ["Relationship", "Financial", "Intent"],
+        "priorityBoost": ["high"],
+        "reason": "Combination of minimal communication and existing dependency raises concerns about whether petitioner views parent as obligation rather than family; requires detailed demonstration of genuine family care motivation beyond financial support mechanism"
+      }
+    },
+    {
+      "id": "rule_strong_family_bond",
+      "name": "Strong Family Bond - Frequent Communication + Recent Visit",
+      "description": "Applied when parent has STRONG communication AND child has visited recently",
+      "condition": {
+        "type": "AND",
+        "conditions": [
+          {
+            "field": "communication_frequency",
+            "operator": "equals",
+            "value": "Daily"
+          },
+          {
+            "field": "recent_visit_by_child",
+            "operator": "equals",
+            "value": true
+          }
+        ],
+        "OR": [
+          {
+            "field": "communication_frequency",
+            "operator": "equals",
+            "value": "Weekly"
+          },
+          {
+            "field": "recent_visit_by_child",
+            "operator": "equals",
+            "value": true
+          }
+        ]
+      },
+      "actions": {
+        "includeCategories": ["Relationship"],
+        "priorityBoost": ["low"],
+        "reason": "Strong communication combined with recent visits demonstrates active, engaged family relationship; significantly strengthens visa application credibility and family reunification intent verification"
+      }
+    },
+    {
+      "id": "rule_independent_secure_parent",
+      "name": "Favorable Profile - Independent Parent with Stable Income",
+      "description": "Applied when parent has own income/employment AND is not financially dependent",
+      "condition": {
+        "type": "AND",
+        "conditions": [
+          {
+            "field": "own_income",
+            "operator": "equals",
+            "value": true
+          },
+          {
+            "field": "financial_support_from_child",
+            "operator": "equals",
+            "value": false
+          }
+        ]
+      },
+      "actions": {
+        "includeCategories": ["Financial"],
+        "priorityBoost": ["low"],
+        "reason": "Financially independent parent reduces public charge concerns and I-864 burden on sponsoring child; demonstrates self-sufficiency and reduces likelihood of government benefit dependency post-immigration"
+      }
+    },
+    {
+      "id": "rule_immediate_need_elderly_dependent",
+      "name": "Special Circumstance - Elderly Dependent Parent 75+",
+      "description": "Applied when parent is 75 years or older, indicating advanced age and likely dependency",
+      "condition": {
+        "type": "AND",
+        "conditions": [
+          {
+            "field": "current_age",
+            "operator": "greaterThanOrEqual",
+            "value": 75
+          }
+        ]
+      },
+      "actions": {
+        "includeCategories": ["Financial", "Living Plan", "Intent"],
+        "priorityBoost": ["high"],
+        "reason": "Advanced age (75+) indicates high likelihood of significant caregiving needs, healthcare expenses, and potential long-term care requirements; requires comprehensive financial and caregiving plan verification, health insurance assessment, and family support commitment"
+      }
+    },
+    {
+      "id": "rule_marital_status_considerations",
+      "name": "Special Case - Parent's Marital Status Impact",
+      "description": "Applied based on parent's current marital status for dependency and support assessment",
+      "condition": {
+        "type": "AND",
+        "conditions": [
+          {
+            "field": "marital_status",
+            "operator": "notEquals",
+            "value": "Married"
+          }
+        ]
+      },
+      "actions": {
+        "includeCategories": ["Financial", "Intent"],
+        "priorityBoost": ["medium"],
+        "reason": "Unmarried parent (widow, divorced, single) typically has sole dependency on sponsoring child; marital status affects financial assessment, available resources, and support structure verification"
+      }
+    },
+    {
+      "id": "rule_multiple_communication_methods",
+      "name": "Relationship Strength - Multiple Communication Channels",
+      "description": "Applied when parent and child use diverse communication methods (phone, video, chat, etc.)",
+      "condition": {
+        "type": "AND",
+        "conditions": [
+          {
+            "field": "communication_method",
+            "operator": "equals",
+            "value": "Multiple Methods"
+          }
+        ]
+      },
+      "actions": {
+        "includeCategories": ["Relationship"],
+        "priorityBoost": ["low"],
+        "reason": "Multiple communication methods demonstrate accessibility, technological capability, diverse relationship engagement, and adaptability to maintain connection"
+      }
+    },
+    {
+      "id": "rule_plan_articulation_quality",
+      "name": "Intent Quality - Clear and Detailed Post-Arrival Plans",
+      "description": "Applied when parent provides thoughtful, specific plans for life in USA",
+      "condition": {
+        "type": "AND",
+        "conditions": [
+          {
+            "field": "post_arrival_plan",
+            "operator": "notEquals",
+            "value": ""
+          }
+        ]
+      },
+      "actions": {
+        "includeCategories": ["Intent"],
+        "priorityBoost": ["low"],
+        "reason": "Clear articulation of realistic post-arrival plans demonstrates thoughtfulness, genuine intent assessment, and reduces concerns about lack of planning or parental abandonment expectations"
+      }
+    },
+    {
+      "id": "rule_combined_assessment_final",
+      "name": "Final Eligibility - Comprehensive Assessment Required",
+      "description": "Meta-rule for final consolidated assessment of all major factors",
+      "condition": {
+        "type": "AND",
+        "conditions": [
+          {
+            "field": "current_country",
+            "operator": "notEquals",
+            "value": ""
+          }
+        ]
+      },
+      "actions": {
+        "includeCategories": ["Identity", "Petitioner", "Relationship", "Financial", "Living Plan", "Intent", "Immigration & Background"],
+        "priorityBoost": ["high"],
+        "reason": "IR-5 parent visa requires comprehensive evaluation of identity, family relationship genuineness, financial capacity, and security background; no single factor is dispositive, but combination creates overall eligibility assessment"
+      }
+    }
+  ]
+}

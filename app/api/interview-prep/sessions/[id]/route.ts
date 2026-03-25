@@ -1,97 +1,106 @@
+/**
+ * PUT/POST /api/interview-prep/sessions/[sessionId]
+ * Handle session actions: update answers, generate results, complete session
+ */
+
 import { NextResponse, NextRequest } from "next/server";
-import { 
-  getInterviewSession, 
-  updateInterviewSessionAnswers, 
+import {
+  getInterviewSession,
+  updateInterviewSessionAnswers,
   generateInterviewPrepOutput,
-  completeInterviewSession
+  completeInterviewSession,
 } from "@/lib/interview-prep/service";
 
-export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+export async function POST(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> },
+) {
   try {
     const { id: sessionId } = await params;
-    
-    if (!sessionId) {
+    const body = await request.json();
+    const { action, answers } = body;
+
+    // Verify session exists
+    if (!sessionId || sessionId === "undefined") {
       return NextResponse.json(
-        { error: "Session ID is required" },
-        { status: 400 }
+        { error: "Invalid session ID" },
+        { status: 400 },
       );
     }
 
     const session = await getInterviewSession(sessionId);
-    
     if (!session) {
-      return NextResponse.json(
-        { error: "Session not found" },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: "Session not found" }, { status: 404 });
     }
 
-    return NextResponse.json({ 
-      success: true, 
-      session 
-    });
+    // Handle different actions
+    switch (action) {
+      case "update-answers": {
+        if (!answers || typeof answers !== "object") {
+          return NextResponse.json(
+            { error: "Invalid answers data" },
+            { status: 400 },
+          );
+        }
+
+        const updatedSession = await updateInterviewSessionAnswers(
+          sessionId,
+          answers,
+        );
+        return NextResponse.json({ success: true, session: updatedSession });
+      }
+
+      case "generate": {
+        const output = await generateInterviewPrepOutput(sessionId);
+        return NextResponse.json({ success: true, output });
+      }
+
+      case "complete": {
+        const completedSession = await completeInterviewSession(sessionId);
+        return NextResponse.json({ success: true, session: completedSession });
+      }
+
+      default:
+        return NextResponse.json(
+          { error: `Unknown action: ${action}` },
+          { status: 400 },
+        );
+    }
   } catch (error) {
-    console.error("Error fetching interview session:", error);
+    console.error("Error handling session action:", error);
     return NextResponse.json(
-      { error: "Failed to fetch interview session" },
-      { status: 500 }
+      { error: "Failed to process session action" },
+      { status: 500 },
     );
   }
 }
 
-export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+export async function GET(
+  _request: NextRequest,
+  { params }: { params: Promise<{ id: string }> },
+) {
   try {
     const { id: sessionId } = await params;
-    const body = await request.json();
-    const { action } = body;
 
-    if (!sessionId) {
+    if (!sessionId || sessionId === "undefined") {
       return NextResponse.json(
-        { error: "Session ID is required" },
-        { status: 400 }
+        { error: "Invalid session ID" },
+        { status: 400 },
       );
     }
 
-    switch (action) {
-      case 'update-answers':
-        // Update answers for the session
-        const { answers } = body;
-        const updatedSession = await updateInterviewSessionAnswers(sessionId, answers);
-        
-        return NextResponse.json({ 
-          success: true, 
-          session: updatedSession 
-        });
+    const session = await getInterviewSession(sessionId);
 
-      case 'generate':
-        // Generate interview prep output
-        const generatedOutput = await generateInterviewPrepOutput(sessionId);
-        
-        return NextResponse.json({ 
-          success: true, 
-          output: generatedOutput 
-        });
-
-      case 'complete':
-        // Mark session as completed
-        const completedSession = await completeInterviewSession(sessionId);
-        
-        return NextResponse.json({ 
-          success: true, 
-          session: completedSession 
-        });
-
-      default:
-        return NextResponse.json(
-          { error: "Invalid action specified" },
-          { status: 400 }
-        );
+    if (!session) {
+      return NextResponse.json({ error: "Session not found" }, { status: 404 });
     }
+
+    return NextResponse.json({ success: true, session });
   } catch (error) {
-    console.error("Error processing interview session:", error);
+    console.error("Error fetching session:", error);
     return NextResponse.json(
-      { error: "Failed to process interview session" },
-      { status: 500 }
+      { error: "Failed to fetch session" },
+      { status: 500 },
     );
   }
 }

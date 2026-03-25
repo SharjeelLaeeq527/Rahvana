@@ -1,0 +1,129 @@
+"use client";
+
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import CountryAutocomplete from "@/app/components/shared/CountryAutoComplete";
+import { Globe, AlertCircle } from "lucide-react";
+import {
+  Accordion,
+  AccordionItem,
+  AccordionTrigger,
+  AccordionContent,
+} from "@/components/ui/accordion";
+
+interface CountrySelectionModalProps {
+  isOpen: boolean;
+  onCountrySelected: (country: string) => void;
+  isLoading?: boolean;
+  noDataMessage?: string;
+}
+
+export default function CountrySelectionModal({
+  isOpen,
+  onCountrySelected,
+  isLoading = false,
+  noDataMessage,
+}: CountrySelectionModalProps) {
+  const [selectedCountry, setSelectedCountry] = useState<
+    Record<string, unknown>
+  >({});
+
+  if (!isOpen) return null;
+
+  const country = (selectedCountry?.country_of_residence as string) || "";
+  const isCountrySelected = country.trim().length > 0;
+
+  const handleConfirm = () => {
+    if (isCountrySelected) {
+      onCountrySelected(country);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+      <div className="bg-card rounded-2xl shadow-xl border border-border w-full max-w-2xl">
+        {/* Header */}
+        <div className="px-6 pt-6 pb-4 border-b border-border">
+          <div className="flex items-center gap-3 mb-2">
+            <div className="bg-primary/10 text-primary rounded-lg p-2">
+              <Globe className="w-5 h-5" />
+            </div>
+            <h3 className="text-xl font-semibold text-foreground">
+              Select Your Country
+            </h3>
+          </div>
+          <p className="text-sm text-muted-foreground">
+            Choose the country for which you want to prepare your visa
+            interview.
+          </p>
+        </div>
+
+        {/* Body */}
+        <div className="px-6 py-6 space-y-6">
+          <Accordion type="single" collapsible className="w-full">
+            <AccordionItem
+              value="why-we-ask"
+              className="border border-blue-200 dark:border-blue-900/50 rounded-lg"
+            >
+              <AccordionTrigger className="px-4 py-3 bg-blue-50 dark:bg-blue-950/30 hover:no-underline cursor-pointer">
+                <div className="flex items-center gap-3">
+                  <AlertCircle className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                  <span className="text-sm font-medium text-blue-900 dark:text-blue-200">
+                    Why This Matters
+                  </span>
+                </div>
+              </AccordionTrigger>
+
+              <AccordionContent className="px-4 pb-4 bg-blue-50 dark:bg-blue-950/30">
+                <p className="text-sm text-blue-800 dark:text-blue-300">
+                  Visa interviews vary from country to country. Based on your
+                  selection, we&apos;ll show you the relevant interview categories
+                  and preparation content we&apos;ve built for that country to help
+                  you get ready with confidence.
+                </p>
+              </AccordionContent>
+            </AccordionItem>
+          </Accordion>
+
+          {/* Country Selection */}
+          <div className="space-y-2">
+            <label className="text-base font-medium text-foreground">
+              Country
+            </label>
+            <CountryAutocomplete
+              formData={selectedCountry}
+              setFormData={setSelectedCountry}
+              valueKey="country_of_residence"
+              hideLabel
+              placeholder="Enter your country..."
+              inputClassName="w-full border border-border rounded-lg px-4 py-3 bg-background text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition"
+            />
+          </div>
+
+          {/* No Data Message */}
+          {noDataMessage && (
+            <div className="bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900/50 rounded-lg p-4 flex gap-3">
+              <AlertCircle className="w-5 h-5 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
+              <div>
+                <p className="text-sm text-amber-900 dark:text-amber-200">
+                  {noDataMessage}
+                </p>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Footer */}
+        <div className="px-6 py-4 border-t border-border bg-muted/20 flex justify-end gap-3">
+          <Button
+            disabled={!isCountrySelected || isLoading}
+            onClick={handleConfirm}
+            className="rounded-xl"
+          >
+            {isLoading ? "Loading..." : "Continue"}
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+}

@@ -3,6 +3,7 @@
 import React, { useEffect, useState, useMemo } from "react";
 import CheckoutButton from "@/app/components/payment/CheckoutButton";
 import Link from "next/link";
+import { ArrowRight } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import {
   VISA_CATEGORIES,
@@ -53,7 +54,7 @@ function statusClass(text: string) {
     t.includes("dedicated") ||
     t.includes("standard")
   )
-    return "bg-rahvana-primary-pale text-rahvana-primary border-rahvana-primary/20";
+    return "bg-primary-pale text-primary border-primary/20";
   if (t.includes("priority")) return "bg-blue-50 text-blue-700 border-blue-200";
   if (t.includes("not included"))
     return "bg-muted/50 text-muted-foreground border-border";
@@ -121,7 +122,8 @@ export default function PricingSection() {
     activePlans.find((p) => p.id === selectedPlan) || activePlans[1];
   const activeAddons = ADDONS.filter((a) => selectedAddons.has(a.id));
   const summaryTotal =
-    currentPlanData.price + activeAddons.reduce((sum, a) => sum + a.price, 0);
+    (currentPlanData.monthlyPrice ?? currentPlanData.price) +
+    activeAddons.reduce((sum, a) => sum + a.price, 0);
 
   const groupedCountries = useMemo(() => {
     const lowerSearch = searchQuery.toLowerCase();
@@ -139,7 +141,7 @@ export default function PricingSection() {
 
   const containerClass = "max-w-[1180px] mx-auto px-4 md:px-6";
   const eyebrowClass =
-    "text-[12px] tracking-[0.14em] uppercase font-bold text-rahvana-primary mb-3";
+    "text-[12px] tracking-[0.14em] uppercase font-bold text-primary mb-3";
   const h1Class =
     "text-[clamp(38px,6vw,68px)] leading-[1.02] tracking-tight mb-[18px] font-bold";
   const h2Class =
@@ -148,163 +150,167 @@ export default function PricingSection() {
   // const ghostBtn =
   //   "px-[14px] py-[10px] bg-transparent text-muted-foreground rounded-full hover:bg-card hover:border-border border border-transparent transition-colors cursor-pointer text-sm font-medium";
   const solidBtn =
-    "px-[18px] py-[12px] bg-rahvana-primary text-white rounded-full hover:bg-rahvana-primary-dark transition-colors border border-transparent cursor-pointer font-medium text-center inline-block";
+    "px-[18px] py-[12px] bg-primary text-white rounded-full hover:bg-primary-dark transition-colors border border-transparent cursor-pointer font-medium text-center inline-block";
   const outlineBtn =
     "px-[18px] py-[12px] bg-card border border-border text-foreground rounded-full hover:border-border hover:bg-card transition-colors cursor-pointer font-medium text-center inline-block";
   const miniBtn =
-    "px-[14px] py-[10px] bg-card border border-border text-foreground rounded-full hover:border-border hover:bg-card transition-colors cursor-pointer text-sm font-medium";
+    "px-[14px] py-[10px] bg-card border border-border text-foreground rounded-full hover:border-border hover:bg-card transition-colors cursor-pointer text-sm font-medium shrink-0";
 
   return (
-    <div className="min-h-screen text-foreground font-sans selection:bg-rahvana-primary/20 pb-[48px]">
-      <section className="pt-10 md:pt-16 pb-7">
-        <div className={containerClass}>
-          <div className={eyebrowClass}>Plain Pricing</div>
-          <h1 className={h1Class}>
-            Choose the support level that fits your journey
-          </h1>
-          <p className="max-w-[760px] text-[17px] leading-[1.65] text-muted-foreground m-0">
+    <div className="min-h-screen text-foreground font-sans selection:bg-primary/20 pb-[48px]">
+      {activeStep === "plans" && (
+        <section className="pt-10 md:pt-16 pb-7">
+          <div className={containerClass}>
+            <div className={eyebrowClass}>Plain Pricing</div>
+            <h1 className={h1Class}>
+              Choose the support level that fits your journey
+            </h1>
+            {/* <p className="max-w-[760px] text-[17px] leading-[1.65] text-muted-foreground m-0">
             Use the roadmap for free. Upgrade for automation, review coverage,
             and higher-touch support. This version is built around Pakistan to
             United States IR-1 / CR-1, while the structure is ready for more
             origins, destinations, and visa categories.
-          </p>
-          <div className="mt-[14px] text-[13px] text-muted-foreground">
-            Government filing fees, medical exam fees, and embassy fees are paid
-            separately.
-          </div>
-          <div className="flex gap-3 flex-wrap mt-[24px]">
-            <button
-              className={solidBtn}
-              onClick={() => {
-                setActiveStep("plans");
-                document
-                  .getElementById("plans")
-                  ?.scrollIntoView({ behavior: "smooth" });
-              }}
-            >
-              Compare Plans
-            </button>
-            <button
-              className={outlineBtn}
-              onClick={() => {
-                setActiveStep("plans");
-                document
-                  .getElementById("comparison")
-                  ?.scrollIntoView({ behavior: "smooth" });
-              }}
-            >
-              See Full Comparison
-            </button>
-          </div>
+          </p> */}
+            <div className="mt-[14px] text-[13px] text-muted-foreground">
+              Government filing fees, medical examination fees, embassy fees,
+              and any other applicable charges are paid separately and are not
+              included in the total cost.
+            </div>
 
-          <div className="mt-[30px] bg-card border border-border rounded-[24px] shadow-lg overflow-hidden">
-            <div className="p-[18px_22px] border-b border-border flex md:items-center justify-between gap-3 bg-gradient-to-b from-card to-muted flex-col md:flex-row items-start">
-              <div className="text-[13px] font-bold tracking-[0.08em] uppercase text-muted-foreground">
-                Journey Context
-              </div>
-              {/* <div className="inline-flex items-center gap-2.5 px-3 py-2 rounded-full bg-muted border border-border text-muted-foreground text-[12px] font-bold tracking-[0.08em] uppercase">
+            <div className="mt-[30px] bg-card border border-border rounded-[24px] shadow-lg overflow-hidden">
+              <div className="p-[18px_22px] border-b border-border flex md:items-center justify-between gap-3 bg-gradient-to-b from-card to-muted flex-col md:flex-row items-start">
+                <div className="text-[13px] font-bold tracking-[0.08em] uppercase text-muted-foreground">
+                  Journey Context
+                </div>
+                {/* <div className="inline-flex items-center gap-2.5 px-3 py-2 rounded-full bg-muted border border-border text-muted-foreground text-[12px] font-bold tracking-[0.08em] uppercase">
                 Structured for future countries and visa pathways
               </div> */}
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-3">
-              <div className="p-[22px] border-b md:border-b-0 md:border-r border-border">
-                <div className="text-[12px] text-muted-foreground mb-2.5">
-                  Origin Country
-                </div>
-                <button
-                  className="w-full p-[16px_18px] border border-border rounded-[16px] bg-card flex justify-between items-center text-left gap-2.5 cursor-pointer hover:border-border transition-colors group"
-                  onClick={() => {
-                    setPickerTarget("origin");
-                    setSearchQuery(origin);
-                    setIsModalOpen(true);
-                  }}
-                >
-                  <div>
-                    <div className="font-[650] text-[16px] group-hover:text-rahvana-primary transition-colors">
-                      {origin}
-                    </div>
-                    {/* <div className="text-[12px] text-muted-foreground mt-0.5">
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-3">
+                <div className="p-[22px] border-b md:border-b-0 md:border-r border-border">
+                  <div className="text-[12px] text-muted-foreground mb-2.5">
+                    Origin Country
+                  </div>
+                  <button
+                    className="w-full p-[16px_18px] border border-border rounded-[16px] bg-card flex justify-between items-center text-left gap-2.5 cursor-pointer hover:border-border transition-colors group"
+                    onClick={() => {
+                      setPickerTarget("origin");
+                      setSearchQuery(origin);
+                      setIsModalOpen(true);
+                    }}
+                  >
+                    <div>
+                      <div className="font-[650] text-[16px] group-hover:text-primary transition-colors">
+                        {origin}
+                      </div>
+                      {/* <div className="text-[12px] text-muted-foreground mt-0.5">
                       Country where the applicant is applying from
                     </div> */}
-                  </div>
-                  <svg
-                    className="w-[18px] h-[18px] opacity-60 shrink-0"
-                    viewBox="0 0 20 20"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="1.8"
-                  >
-                    <path d="m5 7 5 6 5-6"></path>
-                  </svg>
-                </button>
-              </div>
-              <div className="p-[22px] border-b md:border-b-0 md:border-r border-border">
-                <div className="text-[12px] text-muted-foreground mb-2.5">
-                  Destination Country
-                </div>
-                <button
-                  className="w-full p-[16px_18px] border border-border rounded-[16px] bg-card flex justify-between items-center text-left gap-2.5 cursor-pointer hover:border-border transition-colors group"
-                  onClick={() => {
-                    setPickerTarget("destination");
-                    setSearchQuery(destination);
-                    setIsModalOpen(true);
-                  }}
-                >
-                  <div>
-                    <div className="font-[650] text-[16px] group-hover:text-rahvana-primary transition-colors">
-                      {destination}
                     </div>
-                    {/* <div className="text-[12px] text-muted-foreground mt-0.5">
+                    <svg
+                      className="w-[18px] h-[18px] opacity-60 shrink-0"
+                      viewBox="0 0 20 20"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="1.8"
+                    >
+                      <path d="m5 7 5 6 5-6"></path>
+                    </svg>
+                  </button>
+                </div>
+                <div className="p-[22px] border-b md:border-b-0 md:border-r border-border">
+                  <div className="text-[12px] text-muted-foreground mb-2.5">
+                    Destination Country
+                  </div>
+                  <button
+                    className="w-full p-[16px_18px] border border-border rounded-[16px] bg-card flex justify-between items-center text-left gap-2.5 cursor-pointer hover:border-border transition-colors group"
+                    onClick={() => {
+                      setPickerTarget("destination");
+                      setSearchQuery(destination);
+                      setIsModalOpen(true);
+                    }}
+                  >
+                    <div>
+                      <div className="font-[650] text-[16px] group-hover:text-primary transition-colors">
+                        {destination}
+                      </div>
+                      {/* <div className="text-[12px] text-muted-foreground mt-0.5">
                       Country where the immigration outcome is sought
                     </div> */}
-                  </div>
-                  <svg
-                    className="w-[18px] h-[18px] opacity-60 shrink-0"
-                    viewBox="0 0 20 20"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="1.8"
-                  >
-                    <path d="m5 7 5 6 5-6"></path>
-                  </svg>
-                </button>
-              </div>
-              <div className="p-[22px]">
-                <div className="text-[12px] text-muted-foreground mb-2.5">
-                  Visa Category
+                    </div>
+                    <svg
+                      className="w-[18px] h-[18px] opacity-60 shrink-0"
+                      viewBox="0 0 20 20"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="1.8"
+                    >
+                      <path d="m5 7 5 6 5-6"></path>
+                    </svg>
+                  </button>
                 </div>
-                <div className="relative">
-                  <select
-                    className="w-full p-[16px_18px] border border-border rounded-[16px] bg-card flex justify-between items-center text-left gap-2.5 cursor-pointer hover:border-border transition-colors appearance-none font-[650] text-[16px] outline-none"
-                    value={visa}
-                    onChange={(e) => setVisa(e.target.value)}
-                  >
-                    {VISA_CATEGORIES.map((category) => (
-                      <option key={category.id} value={category.id}>
-                        {category.label}
-                      </option>
-                    ))}
-                  </select>
-                  <svg
-                    className="w-[18px] h-[18px] opacity-60 shrink-0 absolute right-[18px] top-1/2 -translate-y-1/2 pointer-events-none"
-                    viewBox="0 0 20 20"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="1.8"
-                  >
-                    <path d="m5 7 5 6 5-6"></path>
-                  </svg>
+                <div className="p-[22px]">
+                  <div className="text-[12px] text-muted-foreground mb-2.5">
+                    Visa Category
+                  </div>
+                  <div className="relative">
+                    <select
+                      className="w-full p-[16px_18px] border border-border rounded-[16px] bg-card flex justify-between items-center text-left gap-2.5 cursor-pointer hover:border-border transition-colors appearance-none font-[650] text-[16px] outline-none"
+                      value={visa}
+                      onChange={(e) => setVisa(e.target.value)}
+                    >
+                      {VISA_CATEGORIES.map((category) => (
+                        <option key={category.id} value={category.id}>
+                          {category.label}
+                        </option>
+                      ))}
+                    </select>
+                    <svg
+                      className="w-[18px] h-[18px] opacity-60 shrink-0 absolute right-[18px] top-1/2 -translate-y-1/2 pointer-events-none"
+                      viewBox="0 0 20 20"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="1.8"
+                    >
+                      <path d="m5 7 5 6 5-6"></path>
+                    </svg>
+                  </div>
                 </div>
               </div>
             </div>
+
+            <div className="flex gap-3 flex-wrap mt-[24px]">
+              <button
+                className={solidBtn}
+                onClick={() => {
+                  setActiveStep("plans");
+                  document
+                    .getElementById("plans")
+                    ?.scrollIntoView({ behavior: "smooth" });
+                }}
+              >
+                Compare Plans
+              </button>
+              <button
+                className={outlineBtn}
+                onClick={() => {
+                  setActiveStep("plans");
+                  document
+                    .getElementById("comparison")
+                    ?.scrollIntoView({ behavior: "smooth" });
+                }}
+              >
+                See Full Comparison
+              </button>
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
+      )}
 
       <main>
         {activeStep === "plans" && (
           <div className="animate-in fade-in duration-300">
-            <section id="plans" className="py-[34px]">
+            <section id="plans" className="py-8">
               <div className={containerClass}>
                 <div className="flex flex-col md:flex-row justify-between md:items-end mb-[18px] gap-5">
                   <div>
@@ -325,12 +331,12 @@ export default function PricingSection() {
                       key={plan.id}
                       className={`bg-card border rounded-[24px] p-[22px] flex flex-col relative transition-all ${
                         selectedPlan === plan.id
-                          ? "border-rahvana-primary shadow-xl z-10"
+                          ? "border-primary shadow-xl z-10"
                           : "border-border shadow-sm hover:border-border"
-                      } ${plan.recommended && selectedPlan !== plan.id ? "ring-2 ring-rahvana-primary" : ""}`}
+                      } ${plan.recommended && selectedPlan !== plan.id ? "ring-2 ring-primary" : ""}`}
                     >
                       {plan.recommended && (
-                        <div className="absolute top-3.5 right-3.5 bg-rahvana-primary-pale text-rahvana-primary border border-rahvana-primary/20 rounded-full px-2.5 py-1.5 text-[11px] font-bold tracking-[0.08em] uppercase">
+                        <div className="absolute top-3.5 right-3.5 bg-primary-pale text-primary border border-primary/20 rounded-full px-2.5 py-1.5 text-[11px] font-bold tracking-[0.08em] uppercase">
                           Popular
                         </div>
                       )}
@@ -345,6 +351,12 @@ export default function PricingSection() {
                           </small>
                         )}
                       </div>
+                      {plan.monthlyPrice && (
+                        <div className="inline-flex items-center gap-1.5 px-2.5 py-1 mb-[14px] bg-green-50 text-green-700/90 rounded-md border border-green-200/60 text-[13px] font-semibold max-w-fit">
+                          
+                          <span>${plan.monthlyPrice}/mo</span>
+                        </div>
+                      )}
                       <div className="text-muted-foreground text-[14px] leading-[1.55] mb-[18px] min-h-[64px]">
                         {plan.tagline}
                       </div>
@@ -354,15 +366,17 @@ export default function PricingSection() {
                             key={idx}
                             className="flex gap-2.5 items-start text-[14px] leading-[1.45]"
                           >
-                            <IconCheck className="w-4 h-4 flex-[0_0_16px] text-rahvana-primary mt-[2px]" />
+                            <IconCheck className="w-4 h-4 flex-[0_0_16px] text-primary mt-[2px]" />
                             <span>{item}</span>
                           </li>
                         ))}
                       </ul>
                       <div className="flex gap-2.5 mt-auto w-full">
                         {plan.id === "free" ? (
-                          <Link href={userId ? "/" : "/signup"}>
-                            {" "}
+                          <Link
+                            href={userId ? "/" : "/signup"}
+                            className="w-full"
+                          >
                             <button
                               className={`${outlineBtn} w-full`}
                               type="button"
@@ -372,7 +386,7 @@ export default function PricingSection() {
                           </Link>
                         ) : (
                           <button
-                            className={`${plan.id === selectedPlan ? "bg-rahvana-primary text-white hover:bg-rahvana-primary-dark" : "bg-card border-border text-foreground hover:border-border hover:bg-muted/30"} w-full px-[18px] py-[12px] rounded-full transition-colors border font-medium border-solid ${plan.id !== selectedPlan ? "border" : "border-transparent"}`}
+                            className={`${plan.id === selectedPlan ? "bg-primary text-white hover:bg-primary-dark" : "bg-card border-border text-foreground hover:border-border hover:bg-muted/30"} w-full px-[18px] py-[12px] rounded-full transition-colors border font-medium border-solid ${plan.id !== selectedPlan ? "border" : "border-transparent"}`}
                             type="button"
                             onClick={() => setSelectedPlan(plan.id)}
                           >
@@ -384,15 +398,16 @@ export default function PricingSection() {
                   ))}
                 </div>
 
-                <div className="mt-[18px]">
+                <div className="mt-10 flex justify-center w-full">
                   <button
-                    className={solidBtn}
+                    className="group inline-flex items-center justify-center gap-2 px-8 py-4 bg-primary text-white text-[16px] font-bold rounded-full shadow-lg hover:shadow-xl hover:bg-primary-dark hover:-translate-y-0.5 transition-all duration-200 cursor-pointer"
                     onClick={() => {
                       setActiveStep("addons");
                       window.scrollTo({ top: 0, behavior: "smooth" });
                     }}
                   >
-                    Continue to Add-ons
+                    Proceed to Step 2: Add-ons
+                    <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
                   </button>
                 </div>
 
@@ -410,7 +425,7 @@ export default function PricingSection() {
                   {HELPER_DATA.map((card, idx) => (
                     <button
                       key={idx}
-                      className={`bg-card border rounded-[20px] p-[18px] cursor-pointer text-left transition-colors ${selectedPlan === card.plan ? "border-rahvana-primary bg-muted/30" : "border-border hover:border-border"}`}
+                      className={`bg-card border rounded-[20px] p-[18px] cursor-pointer text-left transition-colors ${selectedPlan === card.plan ? "border-primary bg-muted/30" : "border-border hover:border-border"}`}
                       onClick={() => setSelectedPlan(card.plan)}
                     >
                       <strong className="block text-[15px] mb-2 text-foreground">
@@ -419,7 +434,7 @@ export default function PricingSection() {
                       <p className="m-[0_0_10px] text-muted-foreground text-[14px] leading-[1.55]">
                         {card.copy}
                       </p>
-                      <span className="text-[13px] font-bold text-rahvana-primary">
+                      <span className="text-[13px] font-bold text-primary">
                         Use {activePlans.find((p) => p.id === card.plan)?.name}
                       </span>
                     </button>
@@ -441,15 +456,15 @@ export default function PricingSection() {
                       role="switch"
                       aria-checked={differencesOnly}
                       onClick={() => setDifferencesOnly(!differencesOnly)}
-                      className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer items-center rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-rahvana-primary focus:ring-offset-2 ${
-                        differencesOnly ? 'bg-rahvana-primary' : 'bg-border'
+                      className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer items-center rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 ${
+                        differencesOnly ? "bg-primary" : "bg-border"
                       }`}
                     >
                       <span className="sr-only">Show Differences Only</span>
                       <span
                         aria-hidden="true"
                         className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
-                          differencesOnly ? 'translate-x-5' : 'translate-x-0'
+                          differencesOnly ? "translate-x-5" : "translate-x-0"
                         }`}
                       />
                     </button>
@@ -489,7 +504,7 @@ export default function PricingSection() {
                               <tr className="group-row">
                                 <td
                                   colSpan={5}
-                                  className="p-[14px_16px] bg-muted text-rahvana-primary text-[12px] font-extrabold tracking-widest uppercase"
+                                  className="p-[14px_16px] bg-muted text-primary text-[12px] font-extrabold tracking-widest uppercase"
                                 >
                                   {group.label}
                                 </td>
@@ -504,7 +519,7 @@ export default function PricingSection() {
                                       {vi === 0 ? (
                                         val
                                       ) : val.toLowerCase() === "included" ? (
-                                        <IconCheck className="w-5 h-5 mx-auto text-rahvana-primary" />
+                                        <IconCheck className="w-5 h-5 mx-auto text-primary" />
                                       ) : val.toLowerCase() ===
                                         "not included" ? (
                                         <IconX className="w-5 h-5 mx-auto text-red-600" />
@@ -529,7 +544,7 @@ export default function PricingSection() {
               </div>
             </section>
 
-            <section className="py-[34px]">
+            {/* <section className="py-[34px]">
               <div className={containerClass}>
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-[18px]">
                   <div className="bg-card border border-border rounded-[22px] p-[22px]">
@@ -538,21 +553,21 @@ export default function PricingSection() {
                     </h3>
                     <ul className="list-none p-0 m-0 grid gap-2.5">
                       <li className="flex gap-2.5 text-muted-foreground text-[14px] leading-normal">
-                        <IconCheck className="w-4 h-4 flex-[0_0_16px] mt-0.5 text-rahvana-primary" />{" "}
+                        <IconCheck className="w-4 h-4 flex-[0_0_16px] mt-0.5 text-primary" />{" "}
                         Structured roadmap, checklisting, and visa-stage
                         guidance
                       </li>
                       <li className="flex gap-2.5 text-muted-foreground text-[14px] leading-normal">
-                        <IconCheck className="w-4 h-4 flex-[0_0_16px] mt-0.5 text-rahvana-primary" />{" "}
+                        <IconCheck className="w-4 h-4 flex-[0_0_16px] mt-0.5 text-primary" />{" "}
                         Guided workflows for core forms and document readiness
                       </li>
                       <li className="flex gap-2.5 text-muted-foreground text-[14px] leading-normal">
-                        <IconCheck className="w-4 h-4 flex-[0_0_16px] mt-0.5 text-rahvana-primary" />{" "}
+                        <IconCheck className="w-4 h-4 flex-[0_0_16px] mt-0.5 text-primary" />{" "}
                         Review coverage and support levels based on the tier you
                         choose
                       </li>
                       <li className="flex gap-2.5 text-muted-foreground text-[14px] leading-normal">
-                        <IconCheck className="w-4 h-4 flex-[0_0_16px] mt-0.5 text-rahvana-primary" />{" "}
+                        <IconCheck className="w-4 h-4 flex-[0_0_16px] mt-0.5 text-primary" />{" "}
                         Pakistan civil document guidance for the applicable
                         journey
                       </li>
@@ -616,7 +631,7 @@ export default function PricingSection() {
                   </div>
                 </div>
               </div>
-            </section>
+            </section> */}
 
             <section className="py-[34px]">
               <div className={containerClass}>
@@ -659,7 +674,7 @@ export default function PricingSection() {
 
             <section className="py-[34px]">
               <div className={containerClass}>
-                <div className="bg-rahvana-primary rounded-[28px] p-[34px] text-white flex flex-col lg:flex-row justify-between gap-5 lg:items-center">
+                <div className="bg-primary rounded-[28px] p-[34px] text-white flex flex-col lg:flex-row justify-between gap-5 lg:items-center">
                   <div>
                     <h2 className="m-[0_0_8px] text-[28px] lg:text-[36px] leading-[1.08] font-bold tracking-tight">
                       Start with the level of support that fits you.
@@ -669,9 +684,9 @@ export default function PricingSection() {
                       apply to your case on the next step.
                     </p>
                   </div>
-                  <div className="flex gap-2.5 flex-wrap">
+                  <div className="flex items-center gap-3 flex-wrap">
                     <button
-                      className="px-[18px] py-[12px] bg-card border border-transparent text-rahvana-primary rounded-full hover:bg-rahvana-primary-pale transition-colors cursor-pointer font-medium text-center"
+                      className="px-[18px] py-[12px] bg-card border border-transparent text-primary rounded-full hover:bg-primary-pale transition-colors cursor-pointer font-medium text-center"
                       onClick={() => {
                         document
                           .getElementById("plans")
@@ -680,9 +695,11 @@ export default function PricingSection() {
                     >
                       Review Plans
                     </button>
-                    <button className="px-[14px] py-[10px] bg-transparent border border-white/35 text-white rounded-full hover:bg-card/10 transition-colors cursor-pointer text-sm font-medium text-center">
-                      Talk to Support
-                    </button>
+                    <Link href="/#contact" className="inline-flex">
+                      <button className="px-[18px] py-[12px] bg-transparent border border-white/35 text-white rounded-full hover:bg-card/10 transition-colors cursor-pointer font-medium text-center">
+                        Talk to Support
+                      </button>
+                    </Link>
                   </div>
                 </div>
               </div>
@@ -698,10 +715,10 @@ export default function PricingSection() {
                   <div>
                     <div className={eyebrowClass}>Step 2</div>
                     <h2 className={h2Class}>Add-ons for this journey</h2>
-                    <p className="mt-1.5 text-muted-foreground text-[14px]">
+                    {/* <p className="mt-1.5 text-muted-foreground text-[14px]">
                       The core plan stays clean. Extra services are chosen only
                       after the plan is selected.
-                    </p>
+                    </p> */}
                   </div>
                   <button
                     className={outlineBtn}
@@ -718,12 +735,15 @@ export default function PricingSection() {
                       return (
                         <article
                           key={addon.id}
-                          className={`bg-card border rounded-[22px] p-[18px] flex flex-col gap-2.5 transition-all ${isSelected ? "border-rahvana-primary shadow-lg" : "border-border"}`}
+                          className={`bg-card border rounded-[22px] p-[18px] flex flex-col gap-2.5 transition-all ${isSelected ? "border-primary shadow-lg" : "border-border"}`}
                         >
                           <div className="flex justify-between items-start gap-3">
-                            <div className="w-[38px] h-[38px] rounded-[12px] bg-rahvana-primary-pale flex items-center justify-center text-rahvana-primary">
-                              <IconCheck className="w-5 h-5" />
+                            {/* <div className="rounded-[12px] bg-primary-pale flex items-center justify-center text-primary"> */}
+                            {/* <IconCheck className="w-5 h-5" /> */}
+                            <div className="text-[18px] font-[750] text-foreground mt-1">
+                              {addon.title}
                             </div>
+                            {/* </div> */}
                             <div className="text-right">
                               <div className="font-bold text-[28px] tracking-tight leading-none mb-1">
                                 ${addon.price}
@@ -733,14 +753,21 @@ export default function PricingSection() {
                               </div>
                             </div>
                           </div>
-                          <div className="text-[16px] font-[750] text-foreground mt-1">
-                            {addon.title}
-                          </div>
+
                           <div className="text-muted-foreground text-[14px] leading-[1.55] flex-1">
                             {addon.copy}
                           </div>
+                          <div className="text-[12px] text-muted-foreground mt-2 mb-3 px-3 py-2 bg-muted/30 rounded-lg border border-border flex items-start">
+                            <span className="font-bold uppercase tracking-wider text-[10px] mr-2 mt-0.5 opacity-80 shrink-0">
+                              Note:
+                            </span>
+                            <span>
+                              {(addon as { note?: string }).note ||
+                                "Expires at the End of Journey"}
+                            </span>
+                          </div>
                           <button
-                            className={`w-full px-[18px] py-[12px] rounded-full transition-colors border font-medium ${isSelected ? "bg-rahvana-primary text-white border-transparent hover:bg-rahvana-primary-dark" : "bg-card border-border text-foreground hover:border-border"}`}
+                            className={`w-full px-[18px] py-[12px] rounded-full transition-colors border font-medium ${isSelected ? "bg-primary text-white border-transparent hover:bg-primary-dark" : "bg-card border-border text-foreground hover:border-border"}`}
                             onClick={() => toggleAddon(addon.id)}
                           >
                             {isSelected ? "Added" : "Add to Order"}
@@ -767,9 +794,18 @@ export default function PricingSection() {
                     </div>
                     <div className="flex justify-between gap-3 py-2.5 border-b border-dashed border-border text-[14px]">
                       <span>Plan</span>
-                      <strong>
-                        {currentPlanData.name} (${currentPlanData.price})
-                      </strong>
+                      <div className="text-right">
+                        <strong>{currentPlanData.name}</strong>
+                        {currentPlanData.monthlyPrice ? (
+                          <div className="text-[12px] text-muted-foreground mt-0.5">
+                            ${currentPlanData.monthlyPrice.toFixed(2)}/mo × 12 months
+                          </div>
+                        ) : (
+                          <div className="text-[12px] text-muted-foreground mt-0.5">
+                            Free
+                          </div>
+                        )}
+                      </div>
                     </div>
 
                     {activeAddons.map((a) => (
@@ -784,13 +820,14 @@ export default function PricingSection() {
 
                     <div className="flex justify-between items-end mt-4 pt-4 border-t border-border">
                       <strong className="text-[14px] mb-[2px]">Total</strong>
-                      <span className="font-bold text-[34px] tracking-tight text-rahvana-primary leading-none">
-                        ${summaryTotal}
+                      <span className="font-bold text-[34px] tracking-tight text-primary leading-none">
+                        ${summaryTotal.toFixed(2)}
                       </span>
                     </div>
                     <div className="text-[12px] text-muted-foreground leading-normal mt-3 mb-[18px]">
-                      One-time purchase for this journey. Government fees remain
-                      separate.
+                      {currentPlanData.monthlyPrice
+                        ? `$${currentPlanData.monthlyPrice.toFixed(2)}/mo plan charge + one-time add-ons. Government fees remain separate.`
+                        : "One-time purchase for this journey. Government fees remain separate."}
                     </div>
 
                     <div className="flex flex-col gap-2.5">
@@ -831,39 +868,33 @@ export default function PricingSection() {
       {isModalOpen && (
         <div className="fixed inset-0 bg-[#142225]/30 flex items-center justify-center p-3 md:p-6 z-50">
           <div
-            className="w-full max-w-[920px] h-[min(86vh,760px)] md:h-[min(78vh,720px)] bg-card rounded-[28px] border border-border shadow-2xl flex overflow-hidden flex-row animate-in zoom-in-95 duration-200"
+            className="w-full max-w-[920px] h-[min(86vh,760px)] md:h-[min(78vh,720px)] bg-card rounded-[28px] border border-border shadow-2xl flex overflow-hidden flex-col animate-in zoom-in-95 duration-200"
             role="dialog"
             aria-modal="true"
           >
-            <div className="flex-1 flex flex-col bg-card overflow-hidden w-full relative">
-              <div className="p-[20px_22px] border-b border-border flex justify-between items-center gap-3 bg-muted/30">
-                <div>
-                  <div className="text-[12px] tracking-[0.14em] uppercase font-bold text-rahvana-primary mb-1.5">
-                    Country Picker
-                  </div>
-                  <div className="text-[20px] font-bold m-0">
-                    {pickerTarget === "origin"
-                      ? "Select Origin Country"
-                      : "Select Destination Country"}
-                  </div>
+            <div className="p-[20px_22px] border-b border-border flex justify-between items-center gap-3 bg-muted/30">
+              <div>
+                <div className="text-[20px] font-bold m-0">
+                  {pickerTarget === "origin"
+                    ? "Select Origin Country"
+                    : "Select Destination Country"}
                 </div>
-                <button
-                  className={miniBtn}
-                  onClick={() => setIsModalOpen(false)}
-                >
-                  Close
-                </button>
               </div>
-              <div className="p-[16px_22px] border-b border-border bg-card sticky top-0 z-10">
-                <input
-                  type="text"
-                  placeholder="Search country"
-                  className="w-full p-[14px_16px] rounded-[16px] border border-border bg-muted/50 outline-none focus:border-rahvana-primary"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  autoFocus
-                />
-              </div>
+              <button className={miniBtn} onClick={() => setIsModalOpen(false)}>
+                <IconX className="w-4 h-4" />
+              </button>
+            </div>
+            <div className="p-[16px_22px] border-b border-border bg-card sticky top-0 z-10">
+              <input
+                type="text"
+                placeholder="Search country"
+                className="w-full p-[14px_16px] rounded-[16px] border border-border bg-muted/50 outline-none focus:border-primary"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                autoFocus
+              />
+            </div>
+            <div className="flex flex-1 overflow-hidden relative">
               <div
                 className="overflow-y-auto p-[12px_22px] flex-1 bg-card"
                 id="modal-list-scroll"
@@ -888,7 +919,7 @@ export default function PricingSection() {
                           return (
                             <button
                               key={country}
-                              className={`w-full border border-transparent bg-transparent rounded-[16px] p-[14px_14px] text-left flex justify-between items-center cursor-pointer transition-colors ${isActive ? "bg-rahvana-primary-pale border-rahvana-primary/30" : "hover:bg-muted/50"}`}
+                              className={`w-full border border-transparent bg-transparent rounded-[16px] p-[14px_14px] text-left flex justify-between items-center cursor-pointer transition-colors ${isActive ? "bg-primary-pale border-primary/30" : "hover:bg-muted/50"}`}
                               onClick={() => {
                                 if (pickerTarget === "origin")
                                   setOrigin(country);
@@ -897,12 +928,12 @@ export default function PricingSection() {
                               }}
                             >
                               <span
-                                className={`text-[15px] ${isActive ? "font-bold text-rahvana-primary" : "text-foreground"}`}
+                                className={`text-[15px] ${isActive ? "font-bold text-primary" : "text-foreground"}`}
                               >
                                 {country}
                               </span>
                               {/* <span
-                                className={`text-[13px] ${isActive ? "font-bold text-rahvana-primary" : "text-muted-foreground"}`}
+                                className={`text-[13px] ${isActive ? "font-bold text-primary" : "text-muted-foreground"}`}
                               >
                                 {isActive ? "Selected" : "Choose"}
                               </span> */}
@@ -917,27 +948,27 @@ export default function PricingSection() {
                   </div>
                 )}
               </div>
-            </div>
 
-            <div className="flex border-l border-border bg-muted/30 flex-col items-center justify-start gap-1 p-[24px_4px] w-[40px] md:w-[54px] shrink-0 overflow-y-auto custom-scrollbar">
-              {Object.keys(groupedCountries)
-                .sort()
-                .map((letter) => (
-                  <button
-                    key={letter}
-                    className="bg-transparent border-0 p-[2px_4px] text-[11px] text-muted-foreground cursor-pointer rounded-[6px] hover:bg-muted hover:text-foreground transition-colors"
-                    onClick={() => {
-                      document
-                        .getElementById(`group-${letter}`)
-                        ?.scrollIntoView({
-                          behavior: "smooth",
-                          block: "start",
-                        });
-                    }}
-                  >
-                    {letter}
-                  </button>
-                ))}
+              <div className="flex border-l border-border bg-muted/30 flex-col items-center justify-start gap-1 p-[24px_4px] w-[40px] md:w-[54px] shrink-0 overflow-y-auto custom-scrollbar">
+                {Object.keys(groupedCountries)
+                  .sort()
+                  .map((letter) => (
+                    <button
+                      key={letter}
+                      className="bg-transparent border-0 p-[2px_4px] text-[11px] text-muted-foreground cursor-pointer rounded-[6px] hover:bg-muted hover:text-foreground transition-colors"
+                      onClick={() => {
+                        document
+                          .getElementById(`group-${letter}`)
+                          ?.scrollIntoView({
+                            behavior: "smooth",
+                            block: "start",
+                          });
+                      }}
+                    >
+                      {letter}
+                    </button>
+                  ))}
+              </div>
             </div>
           </div>
         </div>

@@ -1,0 +1,234 @@
+{
+  "categorySlug": "ir-2-child",
+  "version": "1.0.0",
+  "lastUpdated": "2026-03-20",
+  "sections": [
+    {
+      "id": "basic_profile",
+      "title": "Basic Profile",
+      "description": "General personal details about the beneficiary.",
+      "order": 1,
+      "questions": [
+        {
+          "key": "full_name",
+          "label": "What is your full name?",
+          "type": "text",
+          "required": true,
+          "validation": { "minLength": 3, "maxLength": 200 },
+          "placeholder": "Enter your full legal name"
+        },
+        {
+          "key": "date_of_birth",
+          "label": "What is your date of birth?",
+          "type": "date",
+          "required": true
+        },
+        {
+          "key": "current_age",
+          "label": "What is your current age?",
+          "type": "number",
+          "required": true,
+          "validation": { "min": 0, "max": 21 }
+        },
+        {
+          "key": "current_country",
+          "label": "What country are you currently living in?",
+          "type": "text",
+          "required": true,
+          "validation": { "minLength": 2, "maxLength": 100 },
+          "placeholder": "e.g., Pakistan"
+        }
+      ]
+    },
+    {
+      "id": "relationship_details",
+      "title": "Relationship Details",
+      "description": "Details about your relationship with your sponsoring parent.",
+      "order": 2,
+      "questions": [
+        {
+          "key": "sponsor_relationship",
+          "label": "Who is sponsoring you?",
+          "type": "select",
+          "required": true,
+          "options": ["Father", "Mother", "Step-parent", "Adoptive parent"]
+        },
+        {
+          "key": "parent_full_name",
+          "label": "What is your parent’s full name?",
+          "type": "text",
+          "required": true,
+          "validation": { "minLength": 3, "maxLength": 200 },
+          "placeholder": "Enter parent's full name"
+        },
+        {
+          "key": "parent_citizenship_status",
+          "label": "Is your parent a U.S. citizen?",
+          "type": "boolean",
+          "required": true
+        },
+        {
+          "key": "relationship_type",
+          "label": "What is your relationship type?",
+          "type": "select",
+          "required": true,
+          "options": ["Biological", "Stepchild", "Adopted"]
+        },
+        {
+          "key": "lived_with_parent",
+          "label": "Have you lived with your parent before?",
+          "type": "boolean",
+          "required": true
+        },
+        {
+          "key": "last_meeting_with_parent",
+          "label": "When was the last time you met your parent?",
+          "type": "text",
+          "required": true,
+          "validation": { "minLength": 5, "maxLength": 200 },
+          "placeholder": "e.g., 6 months ago, January 2025"
+        }
+      ]
+    },
+    {
+      "id": "living_and_family_info",
+      "title": "Living & Family Information",
+      "description": "Details about your family and planned living arrangements.",
+      "order": 3,
+      "questions": [
+        {
+          "key": "has_siblings",
+          "label": "Do you have siblings?",
+          "type": "boolean",
+          "required": true
+        },
+        {
+          "key": "siblings_location",
+          "label": "Where do your siblings live?",
+          "type": "text",
+          "required": true,
+          "validation": { "minLength": 2, "maxLength": 200 },
+          "placeholder": "e.g., Karachi, Pakistan"
+        },
+        {
+          "key": "us_living_location",
+          "label": "Where will you live in the USA?",
+          "type": "text",
+          "required": true,
+          "validation": { "minLength": 5, "maxLength": 200 },
+          "placeholder": "City and state"
+        },
+        {
+          "key": "living_with_in_us",
+          "label": "Who will you live with in the USA?",
+          "type": "text",
+          "required": true,
+          "validation": { "minLength": 3, "maxLength": 200 },
+          "placeholder": "e.g., Father, Mother"
+        },
+        {
+          "key": "household_size_us",
+          "label": "How many people live in that house?",
+          "type": "select",
+          "required": true,
+          "options": ["1-2", "3-4", "5-6", "7+"]
+        }
+      ]
+    },
+    {
+      "id": "communication_and_relationship",
+      "title": "Communication & Relationship Strength",
+      "description": "How you communicate and maintain your relationship with your parent.",
+      "order": 4,
+      "questions": [
+        {
+          "key": "communication_frequency",
+          "label": "How often do you talk to your parent?",
+          "type": "select",
+          "required": true,
+          "options": ["Daily", "Several times/week", "Occasionally", "Rarely"]
+        },
+        {
+          "key": "communication_method",
+          "label": "How do you communicate with them?",
+          "type": "select",
+          "required": true,
+          "options": [
+            "Phone calls",
+            "Video calls",
+            "Text messages",
+            "All of the above"
+          ]
+        },
+        {
+          "key": "has_photos_with_parent",
+          "label": "Do you have photos with your parent?",
+          "type": "boolean",
+          "required": true
+        },
+        {
+          "key": "financial_support_from_parent",
+          "label": "Has your parent supported you financially?",
+          "type": "boolean",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "travel_and_intent",
+      "title": "Travel & Intent",
+      "description": "Your travel history and future plans in the United States.",
+      "order": 5,
+      "questions": [
+        {
+          "key": "previous_us_visits",
+          "label": "Have you ever visited the United States before?",
+          "type": "boolean",
+          "required": true
+        },
+        {
+          "key": "reason_for_travel",
+          "label": "Why do you want to go to the USA?",
+          "type": "textarea",
+          "required": true,
+          "validation": { "minLength": 20, "maxLength": 500 },
+          "placeholder": "Explain your reason for moving..."
+        },
+        {
+          "key": "plans_after_arrival",
+          "label": "What will you do after going to the USA?",
+          "type": "textarea",
+          "required": true,
+          "validation": { "minLength": 20, "maxLength": 500 },
+          "placeholder": "Describe your plans..."
+        },
+        {
+          "key": "plans_to_study",
+          "label": "Do you plan to study in the USA?",
+          "type": "boolean",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "background_check",
+      "title": "Background Check",
+      "description": "Answer honestly. This helps us prepare relevant interview scenarios.",
+      "order": 6,
+      "questions": [
+        {
+          "key": "previous_visa_refusal",
+          "label": "Have you ever been denied a U.S. visa?",
+          "type": "boolean",
+          "required": true
+        },
+        {
+          "key": "criminal_history",
+          "label": "Do you have any criminal history?",
+          "type": "boolean",
+          "required": true
+        }
+      ]
+    }
+  ]
+}

@@ -31,7 +31,7 @@ export async function createInterviewSessionDB(
         user_id: user.id,
         user_email: user.email,
         user_name: user.user_metadata?.full_name || null,
-        case_type: sessionData.case_type,
+        category_slug: sessionData.category_slug,
         completed: false,
       },
     ])

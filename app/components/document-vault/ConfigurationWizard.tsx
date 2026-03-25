@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useDocumentVaultStore } from "@/lib/document-vault/store";
 import { useLanguage } from "@/app/context/LanguageContext";
 import { VisaCategory, ScenarioFlags } from "@/lib/document-vault/types";
@@ -64,6 +64,11 @@ export function ConfigurationWizard({
     setConfig(config);
     onComplete();
   };
+
+  // Auto-scroll smoothly when step changes
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }, [step]);
 
   return (
     <div className="max-w-3xl mx-auto p-4 sm:p-6">

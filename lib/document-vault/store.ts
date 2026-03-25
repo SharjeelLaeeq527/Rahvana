@@ -101,6 +101,10 @@ interface DocumentVaultStore {
   // Notifications
   getNotifications: () => NotificationMessage[];
   getUnreadNotificationCount: () => number;
+  getPendingNotificationCount: () => number;
+  getUploadedNotificationCount: () => number;
+  isNotificationDocumentUploaded: (notification: NotificationMessage) => boolean;
+  getNotificationStatus: (notification: NotificationMessage) => 'pending' | 'uploaded';
 
   // Reset
   reset: () => void;
@@ -270,6 +274,8 @@ export const useDocumentVaultStore = create<DocumentVaultStore>()(
 
       // Refresh statuses
       get().refreshDocumentStatuses();
+      // Refresh notifications to include the newly uploaded document
+      get().refreshNotifications();
     },
 
     updateDocument: (
@@ -286,6 +292,8 @@ export const useDocumentVaultStore = create<DocumentVaultStore>()(
 
       // Refresh statuses
       get().refreshDocumentStatuses();
+      // Refresh notifications
+      get().refreshNotifications();
     },
 
     deleteDocument: (documentId: string) => {
@@ -553,6 +561,64 @@ export const useDocumentVaultStore = create<DocumentVaultStore>()(
     getUnreadNotificationCount: () => {
       const { notifications } = get();
       return notifications.filter((notif) => !notif.read).length;
+    },
+
+    getPendingNotificationCount: () => {
+      const { notifications, uploadedDocuments } = get();
+      return notifications.filter((notif) => {
+        // Pending if document is not uploaded (DOC_MISSING type)
+        if (notif.type === "DOC_MISSING") {
+          return true;
+        }
+        // Or if document exists but has no uploaded version
+        if (notif.documentDefId) {
+          const isUploaded = uploadedDocuments.some(
+            (doc) =>
+              doc.documentDefId === notif.documentDefId &&
+              (doc.status === "UPLOADED" ||
+                doc.status === "NEEDS_ATTENTION" ||
+                doc.status === "EXPIRED"),
+          );
+          return !isUploaded;
+        }
+        return false;
+      }).length;
+    },
+
+    getUploadedNotificationCount: () => {
+      const { notifications, uploadedDocuments } = get();
+      return notifications.filter((notif) => {
+        // Uploaded if document exists and has been uploaded
+        if (notif.documentDefId) {
+          const isUploaded = uploadedDocuments.some(
+            (doc) =>
+              doc.documentDefId === notif.documentDefId &&
+              (doc.status === "UPLOADED" ||
+                doc.status === "NEEDS_ATTENTION" ||
+                doc.status === "EXPIRED"),
+          );
+          return isUploaded;
+        }
+        return false;
+      }).length;
+    },
+
+    isNotificationDocumentUploaded: (notification: NotificationMessage) => {
+      const { uploadedDocuments } = get();
+      if (!notification.documentDefId) return false;
+
+      return uploadedDocuments.some(
+        (doc) =>
+          doc.documentDefId === notification.documentDefId &&
+          (doc.status === "UPLOADED" ||
+            doc.status === "NEEDS_ATTENTION" ||
+            doc.status === "EXPIRED"),
+      );
+    },
+
+    getNotificationStatus: (notification: NotificationMessage) => {
+      const isUploaded = get().isNotificationDocumentUploaded(notification);
+      return isUploaded ? "uploaded" : "pending";
     },
 
     toggleStepCompletion: (documentDefId: string, stepId: string) => {
