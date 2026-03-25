@@ -98,7 +98,7 @@ export const PRODUCTS = {
     "pcc": { name: 'PCC Filing (Sindh Only)', price: 25, priceId: STRIPE_PRICES.ADDONS["pcc"] },
     "translate": { name: 'Document Translation', price: 25, priceId: STRIPE_PRICES.ADDONS["translate"] },
     "case-manager": { name: 'Dedicated Case Manager', price: 300, priceId: STRIPE_PRICES.ADDONS["case-manager"] },
-    "civil-guid": { name: 'Civil Document Guides', price: 59, priceId: STRIPE_PRICES.ADDONS["civil-guid"] },
+    "civil-guid": { name: 'Civil Document Guides', price: 5, priceId: STRIPE_PRICES.ADDONS["civil-guid"] },
   },
 } as const;
 
