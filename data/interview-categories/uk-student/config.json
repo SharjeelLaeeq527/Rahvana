@@ -1,0 +1,23 @@
+{
+    "categorySlug": "uk-student",
+    "displayName": "UK Student Visa",
+    "description": "Temporary visa for students wishing to study in the United Kingdom",
+    "visaCountry": "United Kingdom",
+    "metadata": {
+      "version": "1.0.0",
+      "questionnaireVersion": "1.0.0",
+      "questionBankVersion": "1.0.0",
+      "estimatedDurationMinutes": 25,
+      "totalQuestions": 52,
+      "totalIntakeQuestions": 59
+    },
+    "features": {
+      "hasRapidFire": true,
+      "hasProfileAutoFill": true
+    },
+    "ui": {
+      "themeColor": "teal",
+      "icon": "GraduationCap"
+    },
+    "isActive": true
+  }
