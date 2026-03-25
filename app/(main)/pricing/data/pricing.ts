@@ -214,12 +214,6 @@ export const COMPARISON_GROUPS = [
   {
     label: "Tools",
     rows: [
-      // [
-      //   "Guided form and document workflows",
-      //   "Included",
-      //   "Included",
-      //   "Included",
-      // ],
       [
         "221(g) Action Planner",
         "Basic Support",

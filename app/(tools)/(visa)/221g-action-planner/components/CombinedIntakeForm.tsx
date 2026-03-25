@@ -550,6 +550,33 @@ export default function CombinedIntakeForm({
   // GENERATORS (Translated from app.js)
   // ──────────────────────────────────────────────
 
+  const getMethod = (key: string) => {
+    const cl = selected221gItems;
+    if (
+      [
+        "i864_affidavit",
+        "i864_petitioner",
+        "i864_joint_sponsor",
+        "i864a",
+        "i134",
+        "i864w",
+        "tax_1040",
+        "w2",
+        "irs_transcript",
+        "proof_citizenship",
+        "domicile",
+      ].includes(key)
+    ) {
+      if (cl.i864_online && cl.i864_courier) return "Courier / Online (CEAC)";
+      if (cl.i864_online) return "Online (CEAC)";
+      if (cl.i864_courier) return "Courier";
+    }
+    if (key === "medical_examination") return "Panel Physician";
+    if (key === "dna_test") return "DNA Lab/Clinic";
+    if (key === "other") return "As Instructed";
+    return "Courier";
+  };
+
   const generateActionPlan = () => {
     const cb = formData;
     const cl = selected221gItems;
@@ -635,7 +662,7 @@ export default function CombinedIntakeForm({
         cl.nadra_marriage_cert ||
         cl.nikah_nama
       ) {
-        plan += `- Civil/NADRA registration documents ${cl.nadra_family_reg_name && cl.nadra_family_reg ? ` – ${cl.nadra_family_reg_name}` : "– Family Registration Certificate"} ${cl.nadra_birth_cert ? `, Birth Certificate` : ""} ${cl.nadra_marriage_cert ? `, Marriage Certificate` : ""} ${cl.nikah_nama ? `, Nikkah Nama` : ""}\n`;
+        plan += `- Civil/NADRA registration documents – ${cl.nadra_family_reg_name || cl.nadra_family_reg ? `Family Registration Certificate` : ""} ${cl.nadra_birth_cert ? `, Birth Certificate` : ""} ${cl.nadra_marriage_cert ? `, Marriage Certificate` : ""} ${cl.nikah_nama ? `, Nikkah Nama` : ""}\n`;
       }
       if (cl.police_certificate)
         plan += `- Police certificate – ${cl.police_certificate_country || "[INFORMATION MISSING - please go back and specify country]"}\n`;
@@ -662,36 +689,36 @@ export default function CombinedIntakeForm({
       (cl.other && cl.other_details)
     ) {
       plan += `**⇨ Gather Documents by Provider**\n\n`;
-      plan += `| Document | Who Provides | Additional Info |\n`;
-      plan += `|---|---|---|\n`;
+      plan += `| Document | Who Provides | Method | Additional Info |\n`;
+      plan += `|---|---|---|---|\n`;
     }
 
     // Beneficiary docs
     if (cl.passport)
-      plan += `| Passport (original) | Beneficiary | At least 6 mos validity |\n`;
+      plan += `| Passport (original) | Beneficiary | ${getMethod("passport")} | At least 6 mos validity |\n`;
     if (cl.medical_examination)
-      plan += `| Medical examination results | Beneficiary | DS-2054, sealed by panel physician |\n`;
+      plan += `| Medical examination results | Beneficiary | ${getMethod("medical_examination")} | DS-2054, sealed by panel physician |\n`;
     if (cl.police_certificate)
-      plan += `| Police certificate | Beneficiary | ${cl.police_certificate_country || "[INFORMATION MISSING - specify country]"} |\n`;
+      plan += `| Police certificate | Beneficiary | ${getMethod("police_certificate")} | ${cl.police_certificate_country || "[INFORMATION MISSING - specify country]"} |\n`;
     if (
       cl.nadra_birth_cert_beneficiary ||
       (cl.nadra_birth_cert &&
         !cl.nadra_birth_cert_beneficiary &&
         !cl.nadra_birth_cert_petitioner)
     ) {
-      plan += `| NADRA Birth Certificate | Beneficiary | Original |\n`;
+      plan += `| NADRA Birth Certificate | Beneficiary | ${getMethod("nadra_birth_cert")} | Original |\n`;
     }
     if (cl.nadra_family_reg) {
-      plan += `| NADRA Family Registration Certificate | Beneficiary | ${cl.nadra_family_reg_name ? `For: ${cl.nadra_family_reg_name}` : "[INFORMATION MISSING - specify person]"} |\n`;
+      plan += `| NADRA Family Registration Certificate | Beneficiary | ${getMethod("nadra_family_reg")} | ${cl.nadra_family_reg_name ? `For: ${cl.nadra_family_reg_name}` : "[INFORMATION MISSING - specify person]"} |\n`;
     }
     if (cl.nadra_marriage_cert)
-      plan += `| NADRA Marriage Certificate | Beneficiary | Original |\n`;
+      plan += `| NADRA Marriage Certificate | Beneficiary | ${getMethod("nadra_marriage_cert")} | Original |\n`;
     if (cl.nikah_nama)
-      plan += `| Nikah Nama | Beneficiary | Original (with MRC & CNIC) |\n`;
+      plan += `| Nikah Nama | Beneficiary | ${getMethod("nikah_nama")} | Original (with MRC & CNIC) |\n`;
     if (cl.nadra_divorce_cert_beneficiary)
-      plan += `| NADRA Divorce Certificate | Beneficiary | Original |\n`;
+      plan += `| NADRA Divorce Certificate | Beneficiary | ${getMethod("nadra_divorce_cert")} | Original |\n`;
     if (cl.death_certificate) {
-      plan += `| Death Certificate | Beneficiary | ${cl.death_certificate_name || "[INFORMATION MISSING - specify person]"} |\n`;
+      plan += `| Death Certificate | Beneficiary | ${getMethod("death_certificate")} | ${cl.death_certificate_name || "[INFORMATION MISSING - specify person]"} |\n`;
     }
 
     // Petitioner docs
@@ -699,39 +726,39 @@ export default function CombinedIntakeForm({
       const sponsorName = cl.i864_petitioner_name
         ? ` (${cl.i864_petitioner_name})`
         : "";
-      plan += `| I-864 Affidavit of Support${sponsorName} | Petitioner | Signed and dated |\n`;
+      plan += `| I-864 Affidavit of Support${sponsorName} | Petitioner | ${getMethod("i864_petitioner")} | Signed and dated |\n`;
       if (cl.irs_transcript)
-        plan += `| IRS Tax Transcript | Petitioner | Year(s): ${cl.i864_tax_years ? cl.i864_tax_years : "Most recent"} |\n`;
+        plan += `| IRS Tax Transcript | Petitioner | ${getMethod("irs_transcript")} | Year(s): ${cl.i864_tax_years ? cl.i864_tax_years : "Most recent"} |\n`;
       else if (cl.tax_1040)
-        plan += `| Signed IRS Form 1040 | Petitioner | Year(s): ${cl.i864_tax_years ? cl.i864_tax_years : "Most recent"} |\n`;
+        plan += `| Signed IRS Form 1040 | Petitioner | ${getMethod("tax_1040")} | Year(s): ${cl.i864_tax_years ? cl.i864_tax_years : "Most recent"} |\n`;
       else
-        plan += `| Tax and financial evidence | Petitioner | Year(s): ${cl.i864_tax_years ? cl.i864_tax_years : "Most recent"} |\n`;
+        plan += `| Tax and financial evidence | Petitioner | ${getMethod("tax_1040")} | Year(s): ${cl.i864_tax_years ? cl.i864_tax_years : "Most recent"} |\n`;
 
       if (cl.w2)
-        plan += `| W-2 Tax Statements | Petitioner | For specified tax year(s) |\n`;
+        plan += `| W-2 Tax Statements | Petitioner | ${getMethod("w2")} | For specified tax year(s) |\n`;
       if (cl.proof_citizenship)
-        plan += `| Proof of U.S. Status | Petitioner | Citizenship or LPR status |\n`;
+        plan += `| Proof of U.S. Status | Petitioner | ${getMethod("proof_citizenship")} | Citizenship or LPR status |\n`;
       if (cl.domicile)
-        plan += `| Proof of U.S. domicile | Petitioner | Lease, bills, etc. |\n`;
+        plan += `| Proof of U.S. domicile | Petitioner | ${getMethod("domicile")} | Lease, bills, etc. |\n`;
     }
     if (cl.i864a) {
-      plan += `| I-864A Contract | Household Member | ${cl.i864_household_member_name ? `With: ${cl.i864_household_member_name}` : "Signed by both"} |\n`;
+      plan += `| I-864A Contract | Household Member | ${getMethod("i864a")} | ${cl.i864_household_member_name ? `With: ${cl.i864_household_member_name}` : "Signed by both"} |\n`;
     }
     if (cl.us_divorce_decree)
-      plan += `| U.S. Divorce Decree | Petitioner | Original or certified copy |\n`;
+      plan += `| U.S. Divorce Decree | Petitioner | ${getMethod("us_divorce_decree")} | Original or certified copy |\n`;
     if (cl.nadra_birth_cert_petitioner)
-      plan += `| NADRA Birth Certificate | Petitioner | Original |\n`;
+      plan += `| NADRA Birth Certificate | Petitioner | ${getMethod("nadra_birth_cert_petitioner")} | Original |\n`;
     if (cl.nadra_divorce_cert_petitioner)
-      plan += `| NADRA Divorce Certificate | Petitioner | Original |\n`;
+      plan += `| NADRA Divorce Certificate | Petitioner | ${getMethod("nadra_divorce_cert_petitioner")} | Original |\n`;
 
     // Joint sponsor
     if (cl.i864_joint_sponsor) {
       const jsName = cl.i864_joint_sponsor_name
         ? ` (${cl.i864_joint_sponsor_name})`
         : "";
-      plan += `| I-864 Affidavit of Support${jsName} | Joint Sponsor | Signed and dated |\n`;
-      plan += `| Tax and financial evidence | Joint Sponsor | Year(s): ${cl.i864_tax_years ? cl.i864_tax_years : "Most recent"} |\n`;
-      plan += `| Proof of U.S. Status/Domicile | Joint Sponsor | Citizenship/LPR and address proof |\n`;
+      plan += `| I-864 Affidavit of Support${jsName} | Joint Sponsor | ${getMethod("i864_joint_sponsor")} | Signed and dated |\n`;
+      plan += `| Tax and financial evidence | Joint Sponsor | ${getMethod("tax_1040")} | Year(s): ${cl.i864_tax_years ? cl.i864_tax_years : "Most recent"} |\n`;
+      plan += `| Proof of U.S. Status/Domicile | Joint Sponsor | ${getMethod("domicile")} | Citizenship/LPR and address proof |\n`;
     }
 
     if (
@@ -834,7 +861,7 @@ export default function CombinedIntakeForm({
       plan += `   - Source: https://www.uscis.gov/i-864\n\n`;
 
       if (cl.i864a) {
-        plan += `2. Form I-864A Contract Between Sponsor and Household Member\n`;
+        plan += `2. Form I-864A Contract Between Sponsor and Household member\n`;
         plan += `   - Signed by both sponsor and household member\n`;
         plan += `   - Source: https://www.uscis.gov/i-864a\n\n`;
       }
@@ -956,10 +983,8 @@ export default function CombinedIntakeForm({
     plan += `✓ Be patient - processing times vary and cannot be guaranteed\n`;
     plan += `✓ For complex cases, consult an immigration attorney\n\n`;
 
-    plan += `This action plan is based on your inputs and general guidance. It is not legal advice.\n`;
-
-    plan += `## IMPORTANT DISCLAIMER\n\n`;
-    plan += `This action plan is based on the information you provided and is for general guidance only. It is NOT legal advice. Always follow your embassy's 221(g) letter instructions if anything differs from this plan. For complex cases, consult an immigration attorney. Processing times vary and we cannot guarantee visa issuance or specific timelines.\n\n`;
+    // plan += `## IMPORTANT DISCLAIMER\n\n`;
+    // plan += `This action plan is based on the information you provided and is for general guidance only. It is NOT legal advice. Always follow your embassy's 221(g) letter instructions if anything differs from this plan. For complex cases, consult an immigration attorney. Processing times vary and we cannot guarantee visa issuance or specific timelines.\n\n`;
 
     return plan;
   };
@@ -1374,6 +1399,48 @@ export default function CombinedIntakeForm({
       return "Beneficiary";
     };
 
+    const getProviderBadge = (provider: string) => {
+      switch (provider) {
+        case "Beneficiary":
+          return (
+            <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-indigo-100 text-indigo-800 border border-indigo-200">
+              Beneficiary
+            </span>
+          );
+        case "Petitioner":
+          return (
+            <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-emerald-100 text-emerald-800 border border-emerald-200">
+              Petitioner
+            </span>
+          );
+        case "Petitioner & Beneficiary":
+          return (
+            <div className="flex flex-col gap-1 items-start">
+              <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-emerald-100 text-emerald-800 border border-emerald-200">
+                Petitioner
+              </span>
+              <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-indigo-100 text-indigo-800 border border-indigo-200">
+                Beneficiary
+              </span>
+            </div>
+          );
+        case "Household Member":
+          return (
+            <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-purple-100 text-purple-800 border border-purple-200">
+              Household Member
+            </span>
+          );
+        case "Joint Sponsor":
+          return (
+            <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-amber-100 text-amber-800 border border-amber-200">
+              Joint Sponsor
+            </span>
+          );
+        default:
+          return <span>{provider}</span>;
+      }
+    };
+
     return (
       <div className="space-y-6">
         <div className="border-b pb-4 text-center">
@@ -1448,44 +1515,67 @@ export default function CombinedIntakeForm({
                 No documents selected. Go back to choose items from your letter.
               </div>
             ) : (
-              <div className="border rounded-lg overflow-hidden bg-muted/30">
-                <table className="w-full text-sm">
-                  <thead className="bg-muted/50 border-b">
-                    <tr>
-                      <th className="text-left p-3 font-semibold">Document</th>
-                      <th className="text-left p-3 font-semibold">
-                        Who Provides
-                      </th>
-                      <th className="text-left p-3 font-semibold">Method</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y">
-                    {Object.entries(selected221gItems)
-                      .filter(
-                        ([key, v]) =>
-                          typeof v === "boolean" &&
-                          v &&
-                          ![
-                            "admin_processing",
-                            "i864_courier",
-                            "i864_online",
-                            "nadra_birth_cert_petitioner",
-                            "nadra_birth_cert_beneficiary",
-                            "nadra_divorce_cert_petitioner",
-                            "nadra_divorce_cert_beneficiary",
-                          ].includes(key),
-                      )
-                      .map(([key]) => (
-                        <tr key={key}>
-                          <td className="p-3 capitalize">
-                            {key.replace(/_/g, " ")}
-                          </td>
-                          <td className="p-3 opacity-70">{getProvider(key)}</td>
-                          <td className="p-3 opacity-70">Courier/Letter</td>
-                        </tr>
-                      ))}
-                  </tbody>
-                </table>
+              <div className="space-y-4">
+                <div className="flex flex-wrap items-center gap-2 text-sm bg-muted/20 p-3 rounded-lg border border-border">
+                  <span className="font-semibold text-slate-700 flex items-center gap-1">
+                    <Info className="w-4 h-4 text-slate-500" /> Legend:
+                  </span>
+                  <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-indigo-100 text-indigo-800 border border-indigo-200">
+                    Beneficiary
+                  </span>
+                  <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-emerald-100 text-emerald-800 border border-emerald-200">
+                    Petitioner
+                  </span>
+                  <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-amber-100 text-amber-800 border border-amber-200">
+                    Joint Sponsor
+                  </span>
+                  <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-purple-100 text-purple-800 border border-purple-200">
+                    Household Member
+                  </span>
+                </div>
+                <div className="border rounded-lg overflow-hidden bg-muted/30">
+                  <table className="w-full text-sm">
+                    <thead className="bg-muted/50 border-b">
+                      <tr>
+                        <th className="text-left p-3 font-semibold">
+                          Document
+                        </th>
+                        <th className="text-left p-3 font-semibold">
+                          Who Provides
+                        </th>
+                        <th className="text-left p-3 font-semibold">Method</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y">
+                      {Object.entries(selected221gItems)
+                        .filter(
+                          ([key, v]) =>
+                            typeof v === "boolean" &&
+                            v &&
+                            ![
+                              "admin_processing",
+                              "i864_courier",
+                              "i864_online",
+                              "nadra_birth_cert_petitioner",
+                              "nadra_birth_cert_beneficiary",
+                              "nadra_divorce_cert_petitioner",
+                              "nadra_divorce_cert_beneficiary",
+                            ].includes(key),
+                        )
+                        .map(([key]) => (
+                          <tr key={key}>
+                            <td className="p-3 capitalize">
+                              {key.replace(/_/g, " ")}
+                            </td>
+                            <td className="p-3">
+                              {getProviderBadge(getProvider(key))}
+                            </td>
+                            <td className="p-3 opacity-70">{getMethod(key)}</td>
+                          </tr>
+                        ))}
+                    </tbody>
+                  </table>
+                </div>
               </div>
             )}
           </section>
@@ -1622,7 +1712,7 @@ export default function CombinedIntakeForm({
             htmlBody += `<thead style="background:#f9fafb; color:#374151;"><tr>`;
             cells.forEach(
               (c) =>
-                (htmlBody += `<th style="padding:8pt; border:1px solid #ddd; font-weight:bold;">${c.trim()}</th>`),
+                (htmlBody += `<th style="padding:8pt; border:1px solid #ddd; font-weight:bold;">${c.trim().replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")}</th>`),
             );
             htmlBody += `</tr></thead><tbody>`;
             return;
@@ -1630,7 +1720,7 @@ export default function CombinedIntakeForm({
             htmlBody += `<tr>`;
             cells.forEach(
               (c) =>
-                (htmlBody += `<td style="padding:8pt; border:1px solid #ddd; color:#4b5563;">${c.trim()}</td>`),
+                (htmlBody += `<td style="padding:8pt; border:1px solid #ddd; color:#4b5563;">${c.trim().replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")}</td>`),
             );
             htmlBody += `</tr>`;
             return;
@@ -1791,7 +1881,11 @@ export default function CombinedIntakeForm({
     };
 
     const handleDownloadPDF = (text: string, title: string) => {
-      const content = generateHtmlContent(text, title);
+      let processText = text;
+      if (title === "Action Plan") {
+        processText += `\n\n**DISCLAIMER:** This action plan is based on your inputs and general guidance. It is not legal advice.\n`;
+      }
+      const content = generateHtmlContent(processText, title);
       const win = window.open("", "_blank");
       if (win) {
         win.document.open();
@@ -1810,7 +1904,11 @@ export default function CombinedIntakeForm({
     };
 
     const handleDownloadWord = (text: string, title: string) => {
-      const content = generateHtmlContent(text, title);
+      let processText = text;
+      if (title === "Action Plan") {
+        processText += `\n\n**DISCLAIMER:** This action plan is based on your inputs and general guidance. It is not legal advice.\n`;
+      }
+      const content = generateHtmlContent(processText, title);
       const blob = new Blob(["\ufeff", content], {
         type: "application/msword",
       });
@@ -1956,7 +2054,7 @@ export default function CombinedIntakeForm({
                         key={k}
                         className="px-4 py-3 font-semibold text-slate-700 border-r last:border-r-0 border-slate-200"
                       >
-                        {c}
+                        {renderInlineBold(c)}
                       </th>
                     ))}
                   </tr>
@@ -1969,7 +2067,7 @@ export default function CombinedIntakeForm({
                           key={k}
                           className="px-4 py-2.5 text-slate-600 border-r last:border-r-0 border-slate-100"
                         >
-                          {c}
+                          {renderInlineBold(c)}
                         </td>
                       ))}
                     </tr>
@@ -2083,20 +2181,77 @@ export default function CombinedIntakeForm({
       return nodes;
     };
 
-    // Render inline **bold** text
+    // Render inline **bold** text and badges
     const renderInlineBold = (text: string): React.ReactNode => {
-      const parts = text.split(/(\*\*.*?\*\*)/g);
+      if (!text) return null;
+      const regex =
+        /(\*\*.*?\*\*|\bPetitioner & Beneficiary\b|\bBeneficiary\b(?!'s)|\bPetitioner\b(?!'s)|\bHousehold Member\b(?!'s)|\bJoint Sponsor\b(?!'s))/g;
+      const parts = text.split(regex);
       return (
         <>
-          {parts.map((p, j) =>
-            p.startsWith("**") && p.endsWith("**") ? (
-              <strong key={j} className="font-semibold text-slate-900">
-                {p.slice(2, -2)}
-              </strong>
-            ) : (
-              <span key={j}>{p}</span>
-            ),
-          )}
+          {parts.map((p, j) => {
+            if (!p) return null;
+            if (p.startsWith("**") && p.endsWith("**")) {
+              return (
+                <strong key={j} className="font-semibold text-slate-900">
+                  {p.slice(2, -2)}
+                </strong>
+              );
+            }
+            if (p === "Beneficiary") {
+              return (
+                <span
+                  key={j}
+                  className="inline-flex items-center px-1.5 py-0.5 rounded text-[11px] font-medium bg-indigo-100 text-indigo-800 border border-indigo-200 mx-0.5"
+                >
+                  Beneficiary
+                </span>
+              );
+            }
+            if (p === "Petitioner") {
+              return (
+                <span
+                  key={j}
+                  className="inline-flex items-center px-1.5 py-0.5 rounded text-[11px] font-medium bg-emerald-100 text-emerald-800 border border-emerald-200 mx-0.5"
+                >
+                  Petitioner
+                </span>
+              );
+            }
+            if (p === "Petitioner & Beneficiary") {
+              return (
+                <span key={j} className="inline-flex items-center gap-1 mx-0.5">
+                  <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[11px] font-medium bg-emerald-100 text-emerald-800 border border-emerald-200">
+                    Petitioner
+                  </span>
+                  <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[11px] font-medium bg-indigo-100 text-indigo-800 border border-indigo-200">
+                    Beneficiary
+                  </span>
+                </span>
+              );
+            }
+            if (p === "Household Member") {
+              return (
+                <span
+                  key={j}
+                  className="inline-flex items-center px-1.5 py-0.5 rounded text-[11px] font-medium bg-purple-100 text-purple-800 border border-purple-200 mx-0.5"
+                >
+                  Household Member
+                </span>
+              );
+            }
+            if (p === "Joint Sponsor") {
+              return (
+                <span
+                  key={j}
+                  className="inline-flex items-center px-1.5 py-0.5 rounded text-[11px] font-medium bg-amber-100 text-amber-800 border border-amber-200 mx-0.5"
+                >
+                  Joint Sponsor
+                </span>
+              );
+            }
+            return <span key={j}>{p}</span>;
+          })}
         </>
       );
     };
