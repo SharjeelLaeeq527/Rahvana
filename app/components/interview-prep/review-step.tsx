@@ -18,6 +18,7 @@ import ir2ChildQuestionnaire from "@/data/interview-categories/ir-2-child/questi
 import ir5ParentQuestionnaire from "@/data/interview-categories/ir-5-parent/questionnaire.json";
 import f1StudentQuestionnaire from "@/data/interview-categories/f1-student/questionnaire.json";
 import ukStudentQuestionnaire from "@/data/interview-categories/uk-student/questionnaire.json";
+import caStudentQuestionnaire from "@/data/interview-categories/ca-student/questionnaire.json";
 
 interface QuestionnaireSection {
   id: string;
@@ -159,6 +160,8 @@ export function ReviewStep({
       return f1StudentQuestionnaire;
     } else if (categorySlug === "uk-student") {
       return ukStudentQuestionnaire;
+    } else if (categorySlug === "ca-student") {
+      return caStudentQuestionnaire;
     }
     return null;
   })();
@@ -200,14 +203,12 @@ export function ReviewStep({
     .filter((section) => section.fields.length > 0)
     .sort((a, b) => a.order - b.order);
 
-  const renderSection = (
-    section: {
-      id: string;
-      title: string;
-      order: number;
-      fields: Array<{ key: string; label: string; value: string }>;
-    },
-  ) => {
+  const renderSection = (section: {
+    id: string;
+    title: string;
+    order: number;
+    fields: Array<{ key: string; label: string; value: string }>;
+  }) => {
     const { Icon, bgColor, iconColor } = getSectionIcon(section.id);
 
     return (
@@ -224,14 +225,16 @@ export function ReviewStep({
           {section.title}
         </h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {section.fields.map((field: { key: string; label: string; value: string }) => (
-            <div key={field.key}>
-              <p className="text-sm text-muted-foreground">{field.label}</p>
-              <p className="font-medium text-foreground break-normal">
-                {field.value}
-              </p>
-            </div>
-          ))}
+          {section.fields.map(
+            (field: { key: string; label: string; value: string }) => (
+              <div key={field.key}>
+                <p className="text-sm text-muted-foreground">{field.label}</p>
+                <p className="font-medium text-foreground break-normal">
+                  {field.value}
+                </p>
+              </div>
+            ),
+          )}
         </div>
       </div>
     );
@@ -272,7 +275,9 @@ export function ReviewStep({
                         ? "F1 Student"
                         : categorySlug === "uk-student"
                           ? "UK Student"
-                        : categorySlug || formData.caseType}
+                          : categorySlug === "ca-student"
+                            ? "CA Student"
+                            : categorySlug || formData.caseType}
               </p>
             </div>
           </div>
@@ -319,7 +324,9 @@ export function ReviewStep({
             disabled={loading}
             className="bg-teal-600 hover:bg-teal-700 px-6 py-3 text-base disabled:opacity-50"
           >
-            {loading ? "Generating Interview Prep..." : "Generate Interview Prep"}
+            {loading
+              ? "Generating Interview Prep..."
+              : "Generate Interview Prep"}
           </Button>
         </div>
       </div>

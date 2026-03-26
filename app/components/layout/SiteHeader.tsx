@@ -431,39 +431,45 @@ export function SiteHeader({
               )}
             </div>
 
-            <Link
-              href="/pricing"
-              onClick={(e) => handleNav("pricing", e)}
-              className={`px-4 py-2 text-sm font-semibold rounded-lg transition-all ${
-                isActive("pricing", "/pricing")
-                  ? "bg-muted text-primary"
-                  : "text-muted-foreground hover:bg-muted hover:text-primary"
-              }`}
-            >
-              Pricing
-            </Link>
-            <Link
-              href="/#faq"
-              onClick={(e) => handleNav("faq", e)}
-              className={`px-4 py-2 text-sm font-semibold rounded-lg transition-all ${
-                isActive("faq")
-                  ? "bg-muted text-primary"
-                  : "text-muted-foreground hover:bg-muted hover:text-primary"
-              }`}
-            >
-              FAQ
-            </Link>
-            <Link
-              href="/#contact"
-              onClick={(e) => handleNav("contact", e)}
-              className={`px-4 py-2 text-sm font-semibold rounded-lg transition-all ${
-                isActive("contact")
-                  ? "bg-muted text-primary"
-                  : "text-muted-foreground hover:bg-muted hover:text-primary"
-              }`}
-            >
-              Contact
-            </Link>
+            <div className="relative pt-2 pb-0">
+              <Link
+                href="/pricing"
+                onClick={(e) => handleNav("pricing", e)}
+                className={`block px-4 py-2 text-sm font-semibold rounded-lg transition-all ${
+                  isActive("pricing", "/pricing")
+                    ? "bg-muted text-primary"
+                    : "text-muted-foreground hover:bg-muted hover:text-primary"
+                }`}
+              >
+                Pricing
+              </Link>
+            </div>
+            <div className="relative pt-2 pb-0">
+              <Link
+                href="/#faq"
+                onClick={(e) => handleNav("faq", e)}
+                className={`block px-4 py-2 text-sm font-semibold rounded-lg transition-all ${
+                  isActive("faq")
+                    ? "bg-muted text-primary"
+                    : "text-muted-foreground hover:bg-muted hover:text-primary"
+                }`}
+              >
+                FAQ
+              </Link>
+            </div>
+            <div className="relative pt-2 pb-0">
+              <Link
+                href="/#contact"
+                onClick={(e) => handleNav("contact", e)}
+                className={`block px-4 py-2 text-sm font-semibold rounded-lg transition-all ${
+                  isActive("contact")
+                    ? "bg-muted text-primary"
+                    : "text-muted-foreground hover:bg-muted hover:text-primary"
+                }`}
+              >
+                Contact
+              </Link>
+            </div>
           </nav>
         </div>
 

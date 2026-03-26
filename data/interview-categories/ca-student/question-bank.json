@@ -1,14 +1,14 @@
 {
-    "categorySlug": "uk-student",
+    "categorySlug": "ca-student",
     "version": "1.1.0",
     "lastUpdated": "2026-03-25",
     "questions": [
       {
-        "id": "study-why-uk",
+        "id": "study-why-ca",
         "category": "Study Plans",
-        "question": "Why do you want to study in the United Kingdom?",
-        "suggestedAnswer": "I want to study in the United Kingdom because {{why_this_field}}. The UK education system offers superior {{field_of_study}} programs and opportunities that will help me achieve my career goals in a way that is not available in {{country_of_residence}}.",
-        "guidance": "Explain what the UK offers that your home country cannot. Focus on educational advantages, not immigration intent.",
+        "question": "Why do you want to study in Canada?",
+        "suggestedAnswer": "I want to study in Canada because {{why_this_field}}. The Canadian education system offers superior {{field_of_study}} programs and opportunities that will help me achieve my career goals in a way that is not available in {{country_of_residence}}.",
+        "guidance": "Explain what Canada offers that your home country cannot. Focus on educational advantages, not immigration intent.",
         "tooltip": "Officers assess genuine educational motivation vs. immigration intent.",
         "priority": "high"
       },
@@ -40,12 +40,12 @@
         "priority": "high"
       },
       {
-        "id": "study-continuation-uk",
+        "id": "study-continuation-ca",
         "category": "Study Plans",
-        "question": "Why are you planning to continue your education in the United Kingdom? Can you not continue in your home country?",
-        "suggestedAnswer": "While I could continue my education in {{country_of_residence}}, the United Kingdom offers superior {{field_of_study}} programs, world-renowned professors, and research opportunities that are unmatched. This will significantly enhance my qualifications.",
-        "guidance": "Be honest about limitations in your home country while explaining UK-specific advantages.",
-        "tooltip": "Officers want to understand why UK education is specifically necessary.",
+        "question": "Why are you planning to continue your education in Canada? Can you not continue in your home country?",
+        "suggestedAnswer": "While I could continue my education in {{country_of_residence}}, Canada offers superior {{field_of_study}} programs, world-renowned professors, and research opportunities that are unmatched. This will significantly enhance my qualifications.",
+        "guidance": "Be honest about limitations in your home country while explaining Canada-specific advantages.",
+        "tooltip": "Officers want to understand why Canadian education is specifically necessary.",
         "priority": "high"
       },
       {
@@ -98,8 +98,8 @@
         "category": "University Choice",
         "question": "In which city is your university located?",
         "suggestedAnswer": "{{primary_university}} is located in {{university_city_state}}.",
-        "guidance": "Mention city clearly. In the UK, this is typically in England, Scotland, Wales, or Northern Ireland.",
-        "tooltip": "Verifies university location knowledge and familiarity with UK geography.",
+        "guidance": "Mention city clearly. In the Canada, this is typically in Ontario, Quebec, British Columbia, or other provinces.",
+        "tooltip": "Verifies university location knowledge and familiarity with Canadian geography.",
         "priority": "high"
       },
       {
@@ -112,29 +112,19 @@
         "priority": "high"
       },
       {
-        "id": "academic-standardized-test",
-        "category": "Academic Capability",
-        "question": "Did you take a standardized test (GRE, GMAT, SAT, or ACT)?",
-        "suggestedAnswer": "I took the {{standardized_test}} and scored {{standardized_test_score}}, which demonstrates my academic capability for graduate-level work.",
-        "guidance": "Many programs require GRE/GMAT for graduate and SAT/ACT for undergraduate programs.",
-        "tooltip": "Validates academic capability for your program level.",
-        "priority": "high",
-        "skipIf": [{"field": "standardized_test", "equals": "None"}]
-      },
-      {
         "id": "academic-previous-gpa",
         "category": "Academic Capability",
         "question": "What was your GPA in your previous education?",
         "suggestedAnswer": "My previous GPA was {{previous_gpa}}, which demonstrates my consistent academic performance and preparation for graduate-level work.",
         "guidance": "State your GPA on the same scale as your previous institution.",
-        "tooltip": "Shows academic preparation for UK university standards.",
+        "tooltip": "Shows academic preparation for Canadian university standards.",
         "priority": "high"
       },
       {
         "id": "academic-english-medium",
         "category": "Academic Capability",
         "question": "Was your previous education conducted in English?",
-        "suggestedAnswer": "{{medium_of_instruction ? 'Yes, my previous education was conducted in English, which provides me a strong foundation for UK university studies.' : 'No, my education was not in English medium, however I have studied English extensively and achieved strong proficiency scores ({{english_proficiency_test}}: {{ielts_score ? ielts_score : toefl_score}}). I am well-prepared to succeed in English-medium academic coursework.'}}\n",
+        "suggestedAnswer": "{{medium_of_instruction ? 'Yes, my previous education was conducted in English, which provides me a strong foundation for Canadian university studies.' : 'No, my education was not in English medium, however I have studied English extensively and achieved strong proficiency scores ({{english_proficiency_test}}: {{ielts_score ? ielts_score : toefl_score}}). I am well-prepared to succeed in English-medium academic coursework.'}}\n",
         "guidance": "Answer honestly about your educational medium.",
         "tooltip": "Determines English proficiency level and need for support.",
         "priority": "high"
@@ -145,23 +135,23 @@
         "question": "How confident are you in your English ability?",
         "suggestedAnswer": "I would rate my English proficiency at {{english_confidence_rating}} out of 10. I have the foundation needed to succeed in English-medium coursework.",
         "guidance": "Be honest about your comfort level with academic English.",
-        "tooltip": "Self-assessment of English readiness for UK university.",
+        "tooltip": "Self-assessment of English readiness for Canadian university.",
         "priority": "high"
       },
       {
         "id": "academic-english-management",
         "category": "Academic Capability",
-        "question": "How will you manage studying in English at a UK university?",
+        "question": "How will you manage studying in English at a Canadian university?",
         "suggestedAnswer": "{{how_you_will_manage_english}} I am committed to utilizing all available resources to ensure my academic success.",
         "guidance": "Explain your strategies such as tutoring, study groups, or academic support services.",
         "tooltip": "Demonstrates readiness to handle academic English challenges.",
         "priority": "high"
       },
       {
-        "id": "academic-uk-comparison",
+        "id": "academic-ca-comparison",
         "category": "Academic Capability",
-        "question": "Why pursue your degree in the UK instead of Canada, Australia, or the US?",
-        "suggestedAnswer": "The UK offers a unique educational experience in {{field_of_study}} and {{primary_university}} specifically provides {{why_primary_university}}. While other countries have excellent programs, the UK aligns best with my career goals.",
+        "question": "Why pursue your degree in Canada instead of other countries?",
+        "suggestedAnswer": "Canada offers a unique educational experience in {{field_of_study}} and {{primary_university}} specifically provides {{why_primary_university}}. While other countries have excellent programs, Canada aligns best with my career goals.",
         "tooltip": "Shows thoughtful analysis of educational options.",
         "priority": "medium"
       },
@@ -205,7 +195,7 @@
         "id": "finance-income-proof",
         "category": "Financial Status",
         "question": "Do you have proof of your sponsor's income?",
-        "suggestedAnswer": "Yes, I have prepared comprehensive income documentation including {{sponsor_income_proof}} to verify my sponsor's financial capability for funding my education in the UK.",
+        "suggestedAnswer": "Yes, I have prepared comprehensive income documentation including {{sponsor_income_proof}} to verify my sponsor's financial capability for funding my education in Canada.",
         "guidance": "Prepare tax returns (last 2 years), salary certificates, or business documents.",
         "tooltip": "Essential documents for visa officer verification.",
         "priority": "high"
@@ -241,7 +231,7 @@
         "id": "finance-funds-proof",
         "category": "Financial Status",
         "question": "Do you have proof of available funds?",
-        "suggestedAnswer": "Yes, I have prepared comprehensive proof of available funds including {{funds_availability_proof}} that demonstrate my sponsor's and my financial capability to fund the complete cost of my studies in the UK.",
+        "suggestedAnswer": "Yes, I have prepared comprehensive proof of available funds including {{funds_availability_proof}} that demonstrate my sponsor's and my financial capability to fund the complete cost of my studies in Canada.",
         "guidance": "Prepare bank statements, affidavits of support, and investment documents.",
         "tooltip": "Mandatory for CAS (Confirmation of Acceptance for Studies) and visa officer verification.",
         "priority": "high"
@@ -326,7 +316,7 @@
         "id": "finance-part-time-work",
         "category": "Financial Status",
         "question": "Do you plan to work part-time while studying? How will you balance it with your studies?",
-        "suggestedAnswer": "{{part_time_work_plans}} I understand that UK student visa regulations allow international students to work up to 20 hours per week during term time, and I plan to strictly adhere to these limitations to prioritize my academic success.",
+        "suggestedAnswer": "{{part_time_work_plans}} I understand that Canadian student visa regulations allow international students to work up to 20 hours per week during school terms, and I plan to strictly adhere to these limitations to prioritize my academic success.",
         "guidance": "Explain your work plans realistically and demonstrate awareness of visa work restrictions.",
         "tooltip": "Shows realistic planning and understanding of visa regulations and academic priorities.",
         "priority": "high"
@@ -335,7 +325,7 @@
         "id": "postgrad-post-study-work-visa",
         "category": "Post-Graduation Plans",
         "question": "Do you plan to use the post-study work visa (PSW)? If yes, how does it fit into your career plan?",
-        "suggestedAnswer": "{{post_study_work_visa_plans ? post_study_work_visa_plans + ' However, after this temporary work period, I plan to return to {{country_of_residence}} and pursue my long-term career goals.' : 'I plan to return to {{country_of_residence}} immediately after completing my studies and begin my {{post_graduation_job_plans}}.'}} My ultimate goal is to {{post_graduation_job_plans}} in my home country.",
+        "suggestedAnswer": "{{post_study_work_visa_plans ? 'I plan to {{post_study_work_visa_plans}}. However, after this temporary work period, I plan to return to {{country_of_residence}} and pursue my long-term career goals.' : 'I plan to return to {{country_of_residence}} immediately after completing my studies and begin my {{post_graduation_job_plans}}.'}} My ultimate goal is to {{post_graduation_job_plans}} in my home country.",
         "guidance": "If planning to use PSW, explain how it's a stepping stone toward your ultimate career goals in your home country.",
         "tooltip": "Post-study work is a temporary visa requiring clear connection to home country plans.",
         "priority": "high"
@@ -344,8 +334,8 @@
         "id": "postgrad-healthcare-management",
         "category": "Post-Graduation Plans",
         "question": "How will you manage healthcare while studying abroad?",
-        "suggestedAnswer": "{{healthcare_management_abroad}} I understand that as an international student, I will have access to the UK's NHS (National Health Service) and will register with a local GP upon arrival. I am also aware of any health insurance requirements and will maintain appropriate coverage throughout my studies.",
-        "guidance": "Demonstrate knowledge of UK healthcare system and planning for health emergencies.",
+        "suggestedAnswer": "{{healthcare_management_abroad}} I understand that as an international student, I will have access to provincial health services in Canada and will register with a local healthcare provider upon arrival. I am aware of health insurance requirements for international students and will maintain appropriate coverage throughout my studies.",
+        "guidance": "Demonstrate knowledge of Canadian provincial health systems and planning for health emergencies.",
         "tooltip": "Shows practical preparation and understanding of health support systems available.",
         "priority": "medium"
       },
@@ -353,12 +343,13 @@
         "id": "background-student-visa-conditions",
         "category": "Background",
         "question": "Do you understand the conditions of your student visa, including work limitations?",
-        "suggestedAnswer": "{{student_visa_conditions_understanding}} I am aware that as a student visa holder, I am permitted to work a maximum of 20 hours per week during term-time and full-time during official university breaks. I understand these are strict conditions and I am committed to complying with all visa regulations.",
+        "suggestedAnswer": "{{student_visa_conditions_understanding}} I am aware that as a student visa holder in Canada, I am permitted to work up to 20 hours per week during school terms and full-time during official university breaks. I also understand the Post-Graduation Work Permit (PGWP) eligibility and conditions. I understand these are strict conditions and I am committed to complying with all visa regulations.",
         "guidance": "Demonstrate clear understanding of specific UK student visa work restrictions and conditions.",
         "tooltip": "Critical for credibility - shows you've researched visa obligations and plan to comply.",
         "priority": "high"
       },
       {
+        "id": "postgrad-career-goals",
         "category": "Post-Graduation Plans",
         "question": "What are your career goals after graduation?",
         "suggestedAnswer": "{{post_graduation_job_plans}} I plan to pursue this career after completing my {{intended_degree}}.",
@@ -407,35 +398,35 @@
         "skipIf": [{"field": "plan_to_return_home", "equals": false}]
       },
       {
-        "id": "postgrad-uk-stay-consideration",
+        "id": "postgrad-ca-stay-consideration",
         "category": "Post-Graduation Plans",
-        "question": "Are you considering staying in the UK after graduation?",
-        "suggestedAnswer": "{{consider_staying_uk ? 'I may pursue a post-study work visa to gain professional experience in the UK initially, as outlined in {{post_study_work_visa_plans}}, but my ultimate intention is to return to {{country_of_residence}}.' : 'My primary goal is to complete my studies and return to my home country to pursue my career goals.'}}",
+        "question": "Are you considering staying in Canada after graduation?",
+        "suggestedAnswer": "{{consider_staying_ca ? 'I may pursue a post-study work visa to gain professional experience in Canada initially, as outlined in {{post_study_work_visa_plans}}, but my ultimate intention is to return to {{country_of_residence}}.' : 'My primary goal is to complete my studies and return to my home country to pursue my career goals.'}}",
         "guidance": "If considering PSW or other work visas, frame as temporary work experience before returning home.",
-        "tooltip": "Short-term UK work followed by home country return demonstrates genuine student intent.",
+        "tooltip": "Short-term Canada work followed by home country return demonstrates genuine student intent.",
         "priority": "high",
         "skipIf": [{"field": "plan_to_return_home", "equals": true}]
       },
       {
-        "id": "background-previous-uk-stays",
+        "id": "background-previous-ca-stays",
         "category": "Background",
-        "question": "Have you visited the UK before?",
-        "suggestedAnswer": "{{previous_uk_visits ? 'Yes, I have previously visited the UK, which gave me direct experience with the country and strengthened my commitment to studying here.' : 'No, I have not visited the UK before, but I have conducted thorough research about UK universities, the education system, and student life to prepare myself well for this transition.'}}",
+        "question": "Have you visited Canada before?",
+        "suggestedAnswer": "{{previous_ca_visits ? 'Yes, I have previously visited Canada, which gave me direct experience with the country and strengthened my commitment to studying here.' : 'No, I have not visited Canada before, but I have conducted thorough research about Canadian universities, the education system, and student life to prepare myself well for this transition.'}}",
         "guidance": "Answer honestly about travel history.",
         "tooltip": "Checks travel experience and visa history.",
         "priority": "medium"
       },
       {
-        "id": "background-uk-visit-details",
+        "id": "background-ca-visit-details",
         "category": "Background",
-        "question": "When did you visit the UK and what was the purpose?",
-        "suggestedAnswer": "I visited {{primary_university}} and other UK cities to tour campuses, research academic programs, and experience university life firsthand. This visit greatly strengthened my commitment to studying at {{primary_university}} and helped me understand what to expect as an international student in the UK.",
+        "question": "When did you visit Canada and what was the purpose?",
+        "suggestedAnswer": "I visited {{primary_university}} and other Canadian cities to tour campuses, research academic programs, and experience university life firsthand. This visit greatly strengthened my commitment to studying at {{primary_university}} and helped me understand what to expect as an international student in Canada.",
         "guidance": "Provide approximate dates and mention campus tours or tourism.",
-        "tooltip": "Verifies legitimate travel and interest in UK.",
+        "tooltip": "Verifies legitimate travel and interest in Canada.",
         "priority": "medium",
         "skipIf": [
           {
-            "field": "previous_uk_visits",
+            "field": "previous_ca_visits",
             "equals": false
           }
         ]
@@ -453,7 +444,7 @@
         "id": "background-visa-refusal-explanation",
         "category": "Background",
         "question": "Explain the visa refusal and what has changed.",
-        "suggestedAnswer": "I was previously denied a {{other_countries_visa_refusal ? 'visa to another country' : 'student visa'}} because {{visa_refusal_history ? 'of concerns regarding my documentation/financial capability/application details.' : ''}} Since then, my circumstances have significantly improved. I have: (1) Secured admission to {{primary_university}} with a strong academic profile, (2) Demonstrated comprehensive financial capability with bank statements and sponsor documentation, and (3) Established clear intent to study through detailed research and university engagement. I am now clearly eligible for a UK student visa.",
+        "suggestedAnswer": "I was previously denied a {{other_countries_visa_refusal ? 'visa to another country' : 'student visa'}} because {{visa_refusal_history ? 'of concerns regarding my documentation/financial capability/application details.' : ''}} Since then, my circumstances have significantly improved. I have: (1) Secured admission to {{primary_university}} with a strong academic profile, (2) Demonstrated comprehensive financial capability with bank statements and sponsor documentation, and (3) Established clear intent to study through detailed research and university engagement. I am now clearly eligible for a Canada student visa.",
         "guidance": "Honestly explain the reason and how circumstances have improved.",
         "tooltip": "Demonstrates addressing previous concerns.",
         "priority": "high",
@@ -468,7 +459,7 @@
         "id": "background-criminal-record",
         "category": "Background",
         "question": "Do you have any criminal convictions?",
-        "suggestedAnswer": "{{criminal_record ? 'I am required to disclose criminal history to UK Visas and Immigration (UKVI), and I have documentation regarding my circumstances.' : 'No, I do not have any criminal record, and I have maintained clean legal standing throughout my life.'}}",
+        "suggestedAnswer": "{{criminal_record ? 'I am required to disclose criminal history to Canadian Visas and Immigration (IRCC), and I have documentation regarding my circumstances.' : 'No, I do not have any criminal record, and I have maintained clean legal standing throughout my life.'}}",
         "guidance": "Always answer truthfully - criminal history triggers security reviews.",
         "tooltip": "Criminal history is grounds for visa denial.",
         "priority": "high",
@@ -480,16 +471,16 @@
         ]
       },
       {
-        "id": "background-uk-immigration-issues",
+        "id": "background-ca-immigration-issues",
         "category": "Background",
-        "question": "Do you have any legal issues in the UK?",
-        "suggestedAnswer": "{{any_uk_immigration_issues ? 'I have legal issues to disclose to the UK immigration authorities, and I have documentation prepared.' : 'No, I have no legal issues in the UK and intend to maintain full compliance with all UK laws as a student.'}}",
-        "guidance": "Disclose any arrests, legal violations, or previous UK visa issues if applicable.",
+        "question": "Do you have any legal issues in Canada?",
+        "suggestedAnswer": "{{any_ca_immigration_issues ? 'I have legal issues to disclose to the Canadian immigration authorities, and I have documentation prepared.' : 'No, I have no legal issues in Canada and intend to maintain full compliance with all Canadian laws as a student.'}}",
+        "guidance": "Disclose any arrests, legal violations, or previous Canadian visa issues if applicable.",
         "tooltip": "Security clearance and admissibility requirement.",
         "priority": "high",
         "skipIf": [
           {
-            "field": "any_uk_immigration_issues",
+            "field": "any_ca_immigration_issues",
             "equals": false
           }
         ]
@@ -498,7 +489,7 @@
         "id": "background-visa-overstay",
         "category": "Background",
         "question": "Have you ever overstayed a visa in any country?",
-        "suggestedAnswer": "{{previous_overstay ? 'Yes, I must disclose a previous visa overstay and understand this is a serious immigration matter that will be reviewed carefully by the UK authorities.' : 'No, I have never overstayed a visa and have maintained strict compliance with all visa terms and departure requirements.'}}",
+        "suggestedAnswer": "{{previous_overstay ? 'Yes, I must disclose a previous visa overstay and understand this is a serious immigration matter that will be reviewed carefully by the Canadian authorities.' : 'No, I have never overstayed a visa and have maintained strict compliance with all visa terms and departure requirements.'}}",
         "guidance": "Answer truthfully - overstays are serious immigration violations.",
         "tooltip": "Overstays can result in visa denials and bans.",
         "priority": "high",
@@ -513,7 +504,7 @@
         "id": "background-other-visa-denials",
         "category": "Background",
         "question": "Have you been denied a visa to any other country?",
-        "suggestedAnswer": "{{other_countries_visa_refusal ? 'Yes, I have been denied visas to other countries, and I understand the British authorities will review these decisions carefully.' : 'No, I have not been denied visas to other countries and maintain a strong visa and travel record.'}}",
+        "suggestedAnswer": "{{other_countries_visa_refusal ? 'Yes, I have been denied visas to other countries, and I understand the Canadian authorities will review these decisions carefully.' : 'No, I have not been denied visas to other countries and maintain a strong visa and travel record.'}}",
         "guidance": "Visa refusals to other countries may indicate patterns that require explanation.",
         "tooltip": "Visa refusals to other countries are reviewed carefully.",
         "priority": "high",

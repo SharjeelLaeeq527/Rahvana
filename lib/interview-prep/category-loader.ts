@@ -1,4 +1,7 @@
-// Category Loader Service - Dynamically loads category-specific configuration files.
+// Category Loader Service
+import fs from "fs/promises";
+import path from "path";
+
 import type {
   InterviewCategoryConfig,
   DynamicQuestionnaire,
@@ -16,9 +19,25 @@ class CategoryLoaderService {
   private readonly CACHE_TTL_MS = 3600000; // 1 hour
   private cacheTimestamps: Map<string, number> = new Map();
 
+  // Base path resolver
+  private getCategoryPath(slug: string) {
+    return path.join(
+      process.cwd(),
+      "data",
+      "interview-categories",
+      slug
+    );
+  }
+
+  // Generic JSON reader
+  private async readJsonFile<T>(filePath: string): Promise<T> {
+    const file = await fs.readFile(filePath, "utf-8");
+    return JSON.parse(file) as T;
+  }
+
   // Load all data files for a specific category
   async loadCategory(categorySlug: string): Promise<CategoryData> {
-    // Check cache first
+    // Cache check
     if (this.cache.has(categorySlug)) {
       const timestamp = this.cacheTimestamps.get(categorySlug) || 0;
       const isExpired = Date.now() - timestamp > this.CACHE_TTL_MS;
@@ -27,22 +46,29 @@ class CategoryLoaderService {
         return this.cache.get(categorySlug)!;
       }
 
-      // Cache expired, remove it
       this.cache.delete(categorySlug);
       this.cacheTimestamps.delete(categorySlug);
     }
 
     try {
-      // Load all files in parallel
+      const basePath = this.getCategoryPath(categorySlug);
+
+      // Parallel load via FS
       const [config, questionnaire, questionBank] = await Promise.all([
-        this.importConfig(categorySlug),
-        this.importQuestionnaire(categorySlug),
-        this.importQuestionBank(categorySlug),
+        this.readJsonFile<InterviewCategoryConfig>(
+          path.join(basePath, "config.json")
+        ),
+        this.readJsonFile<DynamicQuestionnaire>(
+          path.join(basePath, "questionnaire.json")
+        ),
+        this.readJsonFile<QuestionBank>(
+          path.join(basePath, "question-bank.json")
+        ),
       ]);
 
       const categoryData = { config, questionnaire, questionBank };
 
-      // Update cache
+      // Cache update
       this.cache.set(categorySlug, categoryData);
       this.cacheTimestamps.set(categorySlug, Date.now());
 
@@ -50,56 +76,39 @@ class CategoryLoaderService {
     } catch (error) {
       console.error(`Failed to load category ${categorySlug}:`, error);
       throw new Error(
-        `Failed to load category data for ${categorySlug}. Ensure all JSON files exist.`,
+        `Failed to load category data for ${categorySlug}. Check file paths & JSON validity.`
       );
     }
   }
 
-  // Import category configuration
-  private async importConfig(slug: string): Promise<InterviewCategoryConfig> {
-    const configModule = await import(
-      `@/data/interview-categories/${slug}/config.json`
-    );
-    return configModule.default as InterviewCategoryConfig;
-  }
-
-  // Import questionnaire schema
-  private async importQuestionnaire(
-    slug: string,
-  ): Promise<DynamicQuestionnaire> {
-    const questionnaireModule = await import(
-      `@/data/interview-categories/${slug}/questionnaire.json`
-    );
-    return questionnaireModule.default as DynamicQuestionnaire;
-  }
-
-  // Import question bank
-  private async importQuestionBank(slug: string): Promise<QuestionBank> {
-    const questionBankModule = await import(
-      `@/data/interview-categories/${slug}/question-bank.json`
-    );
-    return questionBankModule.default as QuestionBank;
-  }
-
   // Get all active categories
   async getActiveCategories(country?: string): Promise<InterviewCategoryConfig[]> {
-    const categories = [
-      await this.loadCategory("ir-1-spouse"),
-      await this.loadCategory("ir-2-child"),
-      await this.loadCategory("ir-5-parent"),
-      await this.loadCategory("f1-student"),
-      await this.loadCategory("uk-student"),
+    const slugs = [
+      "ir-1-spouse",
+      "ir-2-child",
+      "ir-5-parent",
+      "f1-student",
+      "uk-student",
+      "ca-student",
     ];
-  
-    let result = categories.map((c) => c.config).filter((c) => c.isActive);
-  
+
+    const results = await Promise.allSettled(
+      slugs.map((slug) => this.loadCategory(slug))
+    );
+
+    let categories = results
+      .filter((r): r is PromiseFulfilledResult<CategoryData> => r.status === "fulfilled")
+      .map((r) => r.value.config)
+      .filter((c) => c.isActive);
+
     if (country) {
-      result = result.filter((c) => c.visaCountry === country);
+      categories = categories.filter((c) => c.visaCountry === country);
     }
-  
-    return result;
+
+    return categories;
   }
-  // Clear cache for a specific category or all categories
+
+  // Clear cache
   clearCache(categorySlug?: string) {
     if (categorySlug) {
       this.cache.delete(categorySlug);
@@ -110,16 +119,16 @@ class CategoryLoaderService {
     }
   }
 
-  // Validate that a category exists and is active
+  // Validate category
   async validateCategory(categorySlug: string): Promise<boolean> {
     try {
-      const config = await this.loadCategory(categorySlug);
-      return config.config.isActive;
+      const data = await this.loadCategory(categorySlug);
+      return data.config.isActive;
     } catch {
       return false;
     }
   }
 }
 
-// Export singleton instance
+// Singleton
 export const categoryLoader = new CategoryLoaderService();

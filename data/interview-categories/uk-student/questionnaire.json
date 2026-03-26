@@ -448,11 +448,11 @@
           },
           {
             "key": "post_study_work_visa_plans",
-            "label": "Do you plan to use the post-study work visa (PSW in UK, PGWP in Canada)? If yes, how does it fit into your career plan?",
+            "label": "Do you plan to use the post-study work visa (PSW in UK)? If yes, how does it fit into your career plan?",
             "type": "textarea",
             "required": false,
             "validation": { "minLength": 30, "maxLength": 1000 },
-            "placeholder": "Explain if you plan to use PSW/PGWP for work experience and how it aligns with your career goals before returning home"
+            "placeholder": "Explain if you plan to use PSW for work experience and how it aligns with your career goals before returning home"
           },
           {
             "key": "healthcare_management_abroad",

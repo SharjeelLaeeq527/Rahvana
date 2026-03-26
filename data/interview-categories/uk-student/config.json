@@ -5,8 +5,8 @@
     "visaCountry": "United Kingdom",
     "metadata": {
       "version": "1.0.0",
-      "questionnaireVersion": "1.0.0",
-      "questionBankVersion": "1.0.0",
+      "questionnaireVersion": "1.1.0",
+      "questionBankVersion": "1.1.0",
       "estimatedDurationMinutes": 25,
       "totalQuestions": 52,
       "totalIntakeQuestions": 59
