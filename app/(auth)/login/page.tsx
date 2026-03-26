@@ -147,10 +147,13 @@ function LoginContent() {
       }
 
       // no MFA, safe to redirect
-      // router.push("/");
+      if (redirect) {
+        window.location.assign(redirect);
+      } else {
+        window.location.assign("/user-dashboard");
+      }
     } catch {
       setError("An unexpected error occurred. Please try again.");
-    } finally {
       setIsSubmitting(false);
     }
   };
@@ -168,13 +171,17 @@ function LoginContent() {
       );
 
       if (success) {
-        router.replace(redirect || "/");
+        if (redirect) {
+          window.location.assign(redirect);
+        } else {
+          window.location.assign("/user-dashboard");
+        }
       } else {
         setError(mfaError || "Invalid authentication code");
+        setIsSubmitting(false);
       }
     } catch {
       setError("Failed to verify authentication code");
-    } finally {
       setIsSubmitting(false);
     }
   };
