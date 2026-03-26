@@ -78,7 +78,7 @@ export default function MyJourneysPage() {
     if (authLoading) return;
 
     if (!user) {
-      router.push("/login");
+      router.push(`/login?redirectTo=${encodeURIComponent(window.location.pathname + window.location.search)}`);
       return;
     }
 

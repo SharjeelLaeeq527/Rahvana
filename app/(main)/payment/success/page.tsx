@@ -186,24 +186,20 @@ function PaymentSuccessContent() {
             </ul>
           </div>
 
-          {/* Actions */}
-          <div className="space-y-3">
-            <Link
-              href="/dashboard"
-              className="group flex items-center justify-center gap-2 w-full px-6 py-3.5 rounded-xl bg-gradient-to-r from-teal-500 to-teal-600 text-white font-bold hover:from-teal-600 hover:to-teal-700 transition-all duration-200 shadow-lg shadow-teal-500/25 hover:shadow-xl hover:-translate-y-0.5"
-            >
-              Go to Dashboard
-              <svg viewBox="0 0 16 16" fill="none" className="w-4 h-4 group-hover:translate-x-0.5 transition-transform">
-                <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-            </Link>
-            <Link
-              href="/"
-              className="block w-full px-6 py-3 rounded-xl border border-slate-200 text-slate-600 font-semibold hover:border-teal-400 hover:text-teal-600 transition-colors text-[14px]"
-            >
-              Back to Home
-            </Link>
-          </div>
+        <div className="space-y-3">
+          <Link
+            href="/user-dashboard"
+            className="block w-full px-6 py-3 rounded-lg bg-teal-600 text-white font-semibold hover:bg-teal-700 transition-colors"
+          >
+            Go to Dashboard
+          </Link>
+          <Link
+            href="/"
+            className="block w-full px-6 py-3 rounded-lg border border-slate-200 text-slate-700 font-semibold hover:border-teal-600 hover:text-teal-600 transition-colors"
+          >
+            Back to Home
+          </Link>
+        </div>
 
           {/* Session ID */}
           {sessionId && (

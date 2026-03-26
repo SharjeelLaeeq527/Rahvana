@@ -16,7 +16,7 @@
       "id": "study-major",
       "category": "Study Plans",
       "question": "What will be your major or field of study?",
-      "suggestedAnswer": "I will major in {{field_of_study}}, specifically focusing on {{why_this_field}}.",
+      "suggestedAnswer": "I will major in {{field_of_study}}.",
       "guidance": "Be clear and specific about your major and intended specialization.",
       "tooltip": "Demonstrates a well-thought-out educational plan.",
       "priority": "high"
@@ -196,7 +196,7 @@
       "id": "academic-english-test",
       "category": "Academic Capability",
       "question": "What are your English proficiency test scores (TOEFL or IELTS)?",
-      "suggestedAnswer": "I achieved a score on the {{english_proficiency_test}} exam, which demonstrates my readiness for university-level coursework in English.",
+      "suggestedAnswer": "I achieved a score of {{ielts_score ? ielts_score : toefl_score}} on the {{english_proficiency_test}} exam, which demonstrates my readiness for university-level coursework in English.",
       "guidance": "State your test scores confidently and explain what they mean for your academic readiness.",
       "tooltip": "Test scores are mandatory verification of English proficiency.",
       "priority": "high"
@@ -354,21 +354,21 @@
       "tooltip": "Scholarships strengthen financial capability profile.",
       "priority": "high"
     },
-    {
-      "id": "finance-scholarship-amount",
-      "category": "Financial Status",
-      "question": "What is your scholarship amount?",
-      "suggestedAnswer": "I received a ${{scholarship_amount}} {{scholarship_type}} scholarship from {{primary_university}}.",
-      "guidance": "State the annual or total amount as specified in your scholarship letter.",
-      "tooltip": "Shows partial or full financial support from university.",
-      "priority": "high",
-      "skipIf": [
-        {
-          "field": "scholarship_status",
-          "equals": false
-        }
-      ]
-    },
+      {
+        "id": "finance-scholarship-amount",
+        "category": "Financial Status",
+        "question": "What is your scholarship amount?",
+        "suggestedAnswer": "I received a ${{scholarship_amount}} {{scholarship_type}} scholarship from {{primary_university}}.",
+        "guidance": "State the annual or total amount as specified in your scholarship letter.",
+        "tooltip": "Shows partial or full financial support from university.",
+        "priority": "high",
+        "skipIf": [
+          {
+            "field": "scholarship_status",
+            "notEquals": true
+          }
+        ]
+      },
     {
       "id": "finance-scholarship-type",
       "category": "Financial Status",
@@ -380,7 +380,7 @@
       "skipIf": [
         {
           "field": "scholarship_status",
-          "equals": false
+          "notEquals": true
         }
       ]
     },
@@ -517,7 +517,13 @@
       "suggestedAnswer": "{{criminal_record ? 'I need to disclose criminal history to USCIS.' : 'No, I do not have any criminal record.'}}",
       "guidance": "Always answer truthfully - criminal history triggers security reviews.",
       "tooltip": "Criminal history is grounds for visa denial.",
-      "priority": "high"
+      "priority": "high",
+      "skipIf": [
+        {
+          "field": "criminal_record",
+          "equals": false
+        }
+      ]
     },
     {
       "id": "background-us-immigration-issues",
@@ -526,7 +532,13 @@
       "suggestedAnswer": "{{any_us_immigration_issues ? 'I have relevant issues to disclose.' : 'No, I have no immigration or legal issues in the USA.'}}",
       "guidance": "Disclose any DUI, arrests, or overstays if applicable.",
       "tooltip": "Security clearance and admissibility requirement.",
-      "priority": "high"
+      "priority": "high",
+      "skipIf": [
+        {
+          "field": "any_us_immigration_issues",
+          "equals": false
+        }
+      ]
     },
     {
       "id": "background-visa-overstay",
@@ -535,7 +547,13 @@
       "suggestedAnswer": "{{previous_overstay ? 'I have had a previous visa overstay that I need to disclose.' : 'No, I have never overstayed a visa.'}}",
       "guidance": "Answer truthfully - overstays are serious immigration violations.",
       "tooltip": "Overstays can result in visa denials and bans.",
-      "priority": "high"
+      "priority": "high",
+      "skipIf": [
+        {
+          "field": "previous_overstay",
+          "equals": false
+        }
+      ]
     },
     {
       "id": "background-other-visa-denials",
@@ -544,7 +562,13 @@
       "suggestedAnswer": "{{other_countries_visa_refusal ? 'Yes, I have been denied visas to other countries.' : 'No, I have not been denied visas to other countries.'}}",
       "guidance": "Multiple refusals indicate patterns affecting F1 eligibility.",
       "tooltip": "Visa refusals to other countries may impact F1 approval.",
-      "priority": "high"
+      "priority": "high",
+      "skipIf": [
+        {
+          "field": "other_countries_visa_refusal",
+          "equals": false
+        }
+      ]
     }
   ]
 }
