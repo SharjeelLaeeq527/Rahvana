@@ -7,7 +7,12 @@ import { NextResponse } from 'next/server'
 export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url)
   const code = searchParams.get('code')
-  const next = searchParams.get('next') ?? '/'
+  
+  const cookieHeader = request.headers.get('cookie') || '';
+  const match = cookieHeader.match(/(?:^|;)\s*oauth_redirect\s*=\s*([^;]+)/);
+  const nextCookie = match ? decodeURIComponent(match[1]) : null;
+
+  const next = searchParams.get('next') ?? nextCookie ?? '/'
 
   if (code) {
     const supabase = await createClient()
@@ -36,13 +41,17 @@ export async function GET(request: Request) {
       const forwardedHost = request.headers.get('x-forwarded-host')
       const isLocalEnv = process.env.NODE_ENV === 'development'
 
+      let response;
       if (isLocalEnv) {
-        return NextResponse.redirect(`${origin}${next}`)
+        response = NextResponse.redirect(`${origin}${next}`)
       } else if (forwardedHost) {
-        return NextResponse.redirect(`https://${forwardedHost}${next}`)
+        response = NextResponse.redirect(`https://${forwardedHost}${next}`)
       } else {
-        return NextResponse.redirect(`${origin}${next}`)
+        response = NextResponse.redirect(`${origin}${next}`)
       }
+
+      response.cookies.delete('oauth_redirect')
+      return response
     }
   }
 

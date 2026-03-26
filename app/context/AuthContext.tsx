@@ -10,7 +10,12 @@ import {
   useMemo,
 } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { AuthError, User, Session, AuthChangeEvent } from "@supabase/supabase-js";
+import {
+  AuthError,
+  User,
+  Session,
+  AuthChangeEvent,
+} from "@supabase/supabase-js";
 
 // Define types for MFA error metadata
 interface MFAMetadata {
@@ -61,7 +66,9 @@ interface AuthContextType {
     password: string,
   ) => Promise<{ error: AuthError | null }>;
   signOut: () => Promise<void>;
-  signInWithGoogle: () => Promise<{ error: AuthError | null }>;
+  signInWithGoogle: (
+    redirectUrl?: string | null,
+  ) => Promise<{ error: AuthError | null }>;
   enableMFA: () => Promise<{
     success: boolean;
     qrCode?: string;
@@ -330,35 +337,37 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (event: AuthChangeEvent, session: Session | null) => {
-      setUser(session?.user ?? null);
-      setSession(session ?? null);
-      // Unlock UI immediately on auth event; profile/admin checks can continue in background.
-      setIsLoading(false);
+    } = supabase.auth.onAuthStateChange(
+      async (event: AuthChangeEvent, session: Session | null) => {
+        setUser(session?.user ?? null);
+        setSession(session ?? null);
+        // Unlock UI immediately on auth event; profile/admin checks can continue in background.
+        setIsLoading(false);
 
-      if (session?.user) {
-        setProfile({
-          full_name:
-            session.user.user_metadata?.full_name ||
-            session.user.email?.split("@")[0] ||
-            "User",
-          email: session.user.email || "",
-          role: "user",
-        });
+        if (session?.user) {
+          setProfile({
+            full_name:
+              session.user.user_metadata?.full_name ||
+              session.user.email?.split("@")[0] ||
+              "User",
+            email: session.user.email || "",
+            role: "user",
+          });
 
-        fetchProfile(session.user.id, {
-          full_name: session.user.user_metadata?.full_name,
-          name: session.user.user_metadata?.name,
-          email: session.user.email,
-        });
-        fetchUserProfile(session.user.id).then((adminStatus) => {
-          setIsAdmin(adminStatus);
-        });
-      } else {
-        setProfile(null);
-        setIsAdmin(false);
-      }
-    });
+          fetchProfile(session.user.id, {
+            full_name: session.user.user_metadata?.full_name,
+            name: session.user.user_metadata?.name,
+            email: session.user.email,
+          });
+          fetchUserProfile(session.user.id).then((adminStatus) => {
+            setIsAdmin(adminStatus);
+          });
+        } else {
+          setProfile(null);
+          setIsAdmin(false);
+        }
+      },
+    );
 
     return () => subscription.unsubscribe();
   }, [supabase, fetchProfile, fetchUserProfile]);
@@ -624,10 +633,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       // Check if user has MFA factors but is only at AAL1
       if (data?.session) {
         // Use factors from the session if available, otherwise fetch them
-        const userWithFactors = data.session.user as User & { factors?: Array<{ id: string; factor_type: string; status: string }> };
+        const userWithFactors = data.session.user as User & {
+          factors?: Array<{ id: string; factor_type: string; status: string }>;
+        };
         const factors = userWithFactors?.factors || [];
-        const totpFactors = factors.filter((f) => f.factor_type === 'totp' && f.status === 'verified');
-        
+        const totpFactors = factors.filter(
+          (f) => f.factor_type === "totp" && f.status === "verified",
+        );
+
         if (totpFactors.length > 0) {
           const factorId = totpFactors[0].id;
 
@@ -722,9 +735,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setIsAdmin(false);
   };
 
-  const signInWithGoogle = async () => {
+  const signInWithGoogle = async (redirectUrl?: string | null) => {
     // Always use the current browser origin so localhost never jumps to production
-    const currentOrigin = typeof window !== 'undefined' ? window.location.origin : '';
+    const currentOrigin =
+      typeof window !== "undefined" ? window.location.origin : "";
+      
+    if (typeof document !== "undefined" && redirectUrl) {
+      document.cookie = `oauth_redirect=${encodeURIComponent(redirectUrl)}; path=/; max-age=3600; SameSite=Lax`;
+    }
+
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {

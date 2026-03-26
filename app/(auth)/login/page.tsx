@@ -16,9 +16,6 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { Loader } from "@/components/ui/spinner";
 
-
-
-
 function LoginContent() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -76,7 +73,7 @@ function LoginContent() {
   useEffect(() => {
     // If MFA screen is active, do NOT redirect
     if (!user || mfaPending || mfaRequired) return;
-  
+
     if (redirect) {
       router.replace(redirect);
     } else {
@@ -134,7 +131,7 @@ function LoginContent() {
           setError("Invalid email or password. Please check and try again.");
         } else if (signInError.message.includes("Email not confirmed")) {
           setError("Please verify your email before signing in.");
-        } 
+        }
         setIsSubmitting(false);
         return;
       }
@@ -150,10 +147,13 @@ function LoginContent() {
       }
 
       // no MFA, safe to redirect
-      // router.push("/");
+      if (redirect) {
+        window.location.assign(redirect);
+      } else {
+        window.location.assign("/user-dashboard");
+      }
     } catch {
       setError("An unexpected error occurred. Please try again.");
-    } finally {
       setIsSubmitting(false);
     }
   };
@@ -171,13 +171,17 @@ function LoginContent() {
       );
 
       if (success) {
-        router.replace(redirect || "/");
+        if (redirect) {
+          window.location.assign(redirect);
+        } else {
+          window.location.assign("/user-dashboard");
+        }
       } else {
         setError(mfaError || "Invalid authentication code");
+        setIsSubmitting(false);
       }
     } catch {
       setError("Failed to verify authentication code");
-    } finally {
       setIsSubmitting(false);
     }
   };
@@ -186,7 +190,7 @@ function LoginContent() {
     setError("");
     setIsSubmitting(true);
     try {
-      const { error: googleError } = await signInWithGoogle();
+      const { error: googleError } = await signInWithGoogle(redirect);
       if (googleError) {
         setError("Failed to sign in with Google. Please try again.");
         setIsSubmitting(false);
@@ -474,16 +478,15 @@ function LoginContent() {
             Create account
           </Link>
         </p>
-
       </div>
 
       {/* Full-screen Loading Overlay */}
       {isSubmitting && (
-        <Loader 
-          fullScreen 
-          size="xl" 
-          text="Authenticating..." 
-          subText="Securing your session, please wait" 
+        <Loader
+          fullScreen
+          size="xl"
+          text="Authenticating..."
+          subText="Securing your session, please wait"
         />
       )}
     </div>
