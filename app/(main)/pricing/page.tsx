@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState, useMemo, useCallback } from "react";
+import React, { useEffect, useState, useMemo, useCallback, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import CheckoutButton from "@/app/components/payment/CheckoutButton";
 import Link from "next/link";
@@ -71,7 +71,7 @@ function statusClass(text: string) {
   return "bg-muted text-muted-foreground border-border";
 }
 
-export default function PricingSection() {
+function PricingContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
 
@@ -1038,5 +1038,19 @@ export default function PricingSection() {
         </div>
       )}
     </div>
+  );
+}
+
+export default function PricingSection() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-background flex flex-col items-center justify-center p-6 text-center">
+        <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin mb-4 mx-auto"></div>
+        <h2 className="text-xl font-bold mb-2">Loading Pricing Journey...</h2>
+        <p className="text-muted-foreground">Preparing your personalized roadmap details.</p>
+      </div>
+    }>
+      <PricingContent />
+    </Suspense>
   );
 }
