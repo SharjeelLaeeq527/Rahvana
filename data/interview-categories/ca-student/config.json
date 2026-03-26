@@ -1,15 +1,15 @@
 {
-    "categorySlug": "f1-student",
-    "displayName": "F-1 Student Visa",
-    "description": "Temporary visa for students wishing to study in the United States",
-    "visaCountry": "United States",
+    "categorySlug": "ca-student",
+    "displayName": "Canada Student Visa",
+    "description": "Temporary visa for students wishing to study in the Canada.",
+    "visaCountry": "Canada",
     "metadata": {
       "version": "1.0.0",
       "questionnaireVersion": "1.0.0",
-      "questionBankVersion": "2.0.0",
+      "questionBankVersion": "1.0.0",
       "estimatedDurationMinutes": 25,
-      "totalQuestions": 55,
-      "totalIntakeQuestions": 66
+      "totalQuestions": 51,
+      "totalIntakeQuestions": 57
     },
     "features": {
       "hasRapidFire": true,
