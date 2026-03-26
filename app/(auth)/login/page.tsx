@@ -16,9 +16,6 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { Loader } from "@/components/ui/spinner";
 
-
-
-
 function LoginContent() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -76,7 +73,7 @@ function LoginContent() {
   useEffect(() => {
     // If MFA screen is active, do NOT redirect
     if (!user || mfaPending || mfaRequired) return;
-  
+
     if (redirect) {
       router.replace(redirect);
     } else {
@@ -134,7 +131,7 @@ function LoginContent() {
           setError("Invalid email or password. Please check and try again.");
         } else if (signInError.message.includes("Email not confirmed")) {
           setError("Please verify your email before signing in.");
-        } 
+        }
         setIsSubmitting(false);
         return;
       }
@@ -186,7 +183,7 @@ function LoginContent() {
     setError("");
     setIsSubmitting(true);
     try {
-      const { error: googleError } = await signInWithGoogle();
+      const { error: googleError } = await signInWithGoogle(redirect);
       if (googleError) {
         setError("Failed to sign in with Google. Please try again.");
         setIsSubmitting(false);
@@ -474,16 +471,15 @@ function LoginContent() {
             Create account
           </Link>
         </p>
-
       </div>
 
       {/* Full-screen Loading Overlay */}
       {isSubmitting && (
-        <Loader 
-          fullScreen 
-          size="xl" 
-          text="Authenticating..." 
-          subText="Securing your session, please wait" 
+        <Loader
+          fullScreen
+          size="xl"
+          text="Authenticating..."
+          subText="Securing your session, please wait"
         />
       )}
     </div>
