@@ -113,6 +113,7 @@ export async function POST(request: NextRequest) {
             product_data: {
               name: `${product.name} (Monthly)`,
               description: product.features?.join(', ') || '',
+              tax_code: (product as any).taxCode || 'txcd_10103000',
             },
             unit_amount: Math.round(monthlyPrice * 100),
             recurring: { interval: 'month' },

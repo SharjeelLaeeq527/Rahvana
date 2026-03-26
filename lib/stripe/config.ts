@@ -46,6 +46,7 @@ export const PRODUCTS = {
     monthlyPrice: 29.08,
     priceId: STRIPE_PRICES.BASIC,
     recurringPriceId: STRIPE_PRICES.BASIC_MONTHLY,
+    taxCode: 'txcd_10103000', // SaaS - Personal Use
     tier: 'basic',
     features: [
       'Full roadmap and checklist engine',
@@ -60,6 +61,7 @@ export const PRODUCTS = {
     monthlyPrice: 58.25,
     priceId: STRIPE_PRICES.PREMIUM,
     recurringPriceId: STRIPE_PRICES.PREMIUM_MONTHLY,
+    taxCode: 'txcd_10103000', // SaaS - Personal Use
     tier: 'premium',
     features: [
       'Everything in Basic',
@@ -74,6 +76,7 @@ export const PRODUCTS = {
     monthlyPrice: 91.58,
     priceId: STRIPE_PRICES.EXECUTIVE,
     recurringPriceId: STRIPE_PRICES.EXECUTIVE_MONTHLY,
+    taxCode: 'txcd_10103000', // SaaS - Personal Use
     tier: 'executive',
     features: [
       'Everything in Premium',

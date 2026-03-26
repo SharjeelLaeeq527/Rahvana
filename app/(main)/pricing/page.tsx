@@ -401,11 +401,14 @@ export default function PricingSection() {
                           </small>
                         )}
                       </div>
-                      {plan.monthlyPrice && (
-                        <div className="inline-flex items-center gap-1.5 px-2.5 py-1 mb-[14px] bg-green-50 text-green-700/90 rounded-md border border-green-200/60 text-[13px] font-semibold max-w-fit">
-                          <span>${plan.monthlyPrice}/month</span>
-                        </div>
-                      )}
+
+{plan.monthlyPrice && (
+  <div className="mb-[18px]">
+    <div className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-primary/10 text-primary rounded-lg border border-primary/20 text-[14px] font-bold max-w-fit">
+      ${plan.monthlyPrice.toFixed(2)}/mo over 12 months
+    </div>
+  </div>
+)}
                       <div className="text-muted-foreground text-[14px] leading-[1.55] mb-[18px] min-h-[64px]">
                         {plan.tagline}
                       </div>
@@ -524,18 +527,25 @@ export default function PricingSection() {
                     <table className="w-full text-left border-collapse min-w-[800px]">
                       <thead>
                         <tr>
-                          {[
-                            "Feature",
-                            // "Signed-in Free",
-                            "Basic",
-                            "Premium",
-                            "Executive",
-                          ].map((h, i) => (
+                          <th className="p-[14px_16px] border-b border-border text-[12px] tracking-widest uppercase text-muted-foreground bg-muted/30">
+                            Feature
+                          </th>
+                          {activePlans.filter(p => p.id !== "free").map((p) => (
                             <th
-                              key={i}
-                              className={`p-[14px_16px] border-b border-border text-[12px] tracking-widest uppercase text-muted-foreground bg-muted/30 ${i !== 0 ? "text-center" : ""}`}
+                              key={p.id}
+                              className="p-[14px_16px] border-b border-border text-center bg-muted/30"
                             >
-                              {h}
+                              <div className="text-[12px] tracking-widest uppercase text-muted-foreground mb-1">
+                                {p.name}
+                              </div>
+                              {p.monthlyPrice && (
+                                <div className="text-[11px] text-primary lowercase mt-0.5 normal-case font-bold">
+                                  ${p.monthlyPrice.toFixed(2)}/mo x 12
+                                  <div className="text-[10px] text-muted-foreground font-medium opacity-80">
+                                    Total: ${p.price}
+                                  </div>
+                                </div>
+                              )}
                             </th>
                           ))}
                         </tr>
@@ -846,9 +856,13 @@ export default function PricingSection() {
                       <div className="text-right">
                         <strong>{currentPlanData.name}</strong>
                         {currentPlanData.monthlyPrice ? (
-                          <div className="text-[12px] text-muted-foreground mt-0.5">
-                            <span className="block font-medium text-foreground/80">${currentPlanData.price} for full journey</span>
-                            ${currentPlanData.monthlyPrice.toFixed(2)}/month
+                          <div className="text-[12px] mt-1.5">
+                            <span className="inline-block px-2 py-1 bg-primary/10 text-primary rounded-md border border-primary/20 font-bold mb-1">
+                              ${currentPlanData.monthlyPrice.toFixed(2)}/mo over 12 months
+                            </span>
+                            <div className="text-muted-foreground font-medium italic opacity-80">
+                              Total: ${currentPlanData.price} per journey
+                            </div>
                           </div>
                         ) : (
                           <div className="text-[12px] text-muted-foreground mt-0.5">
@@ -874,9 +888,9 @@ export default function PricingSection() {
                         ${summaryTotal.toFixed(2)}
                       </span>
                     </div>
-                    <div className="text-[12px] text-muted-foreground leading-normal mt-3 mb-[18px]">
+                    <div className="text-[12px] text-muted-foreground leading-normal mt-3 mb-[18px] p-3 bg-muted/50 rounded-xl border border-dashed border-border">
                       {currentPlanData.monthlyPrice
-                        ? `$${currentPlanData.monthlyPrice.toFixed(2)}/month plan charge + one-time add-ons. Government fees remain separate.`
+                        ? `The ${currentPlanData.name} plan is billed as $${currentPlanData.monthlyPrice.toFixed(2)} in 12 monthly installments. Add-ons are charged one-time. Government fees separate.`
                         : "One-time purchase for this journey. Government fees remain separate."}
                     </div>
 
