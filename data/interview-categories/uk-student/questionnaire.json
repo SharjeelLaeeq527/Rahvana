@@ -1,0 +1,524 @@
+{
+    "categorySlug": "uk-student",
+    "version": "1.1.0",
+    "lastUpdated": "2026-03-25",
+    "sections": [
+      {
+        "id": "basic_profile",
+        "title": "Basic Profile & Identity",
+        "description": "Your personal details and current educational background.",
+        "order": 1,
+        "questions": [
+          {
+            "key": "full_name",
+            "label": "What is your full legal name?",
+            "type": "text",
+            "required": true,
+            "validation": { "minLength": 3, "maxLength": 200 },
+            "placeholder": "Enter your full legal name exactly as on your passport"
+          },
+          {
+            "key": "date_of_birth",
+            "label": "What is your date of birth?",
+            "type": "date",
+            "required": true,
+            "description": "Format: MM/DD/YYYY (must be 16+ years old)"
+          },
+          {
+            "key": "current_age",
+            "label": "What is your current age?",
+            "type": "number",
+            "required": true,
+            "validation": { "min": 16, "max": 65 },
+            "description": "UK students must be at least 16 years old"
+          },
+          {
+            "key": "country_of_residence",
+            "label": "What is your country of residence?",
+            "type": "text",
+            "required": true,
+            "validation": { "minLength": 2, "maxLength": 100 },
+            "placeholder": "e.g., Pakistan, India, China"
+          },
+          {
+            "key": "current_education_level",
+            "label": "What is your current education level?",
+            "type": "select",
+            "required": true,
+            "options": ["High School / 12th Grade", "Undergraduate (Bachelor's)", "Master's Degree", "PhD / Doctoral", "Professional Diploma", "Other"],
+            "description": "This helps us understand your educational background"
+          },
+          {
+            "key": "languages_spoken",
+            "label": "What languages do you speak fluently?",
+            "type": "text",
+            "required": true,
+            "validation": { "minLength": 2, "maxLength": 200 },
+            "placeholder": "e.g., English, Urdu, Mandarin"
+          }
+        ]
+      },
+      {
+        "id": "study_plans",
+        "title": "Study Plans & Academic Goals",
+        "description": "Your intended degree, field of study, and academic goals in the UK.",
+        "order": 2,
+        "questions": [
+          {
+            "key": "intended_degree",
+            "label": "What degree are you planning to pursue?",
+            "type": "select",
+            "required": true,
+            "options": ["Bachelor's (4 years)", "Master's (2 years)", "PhD / Doctoral (4+ years)", "Certificate / Diploma", "Other"]
+          },
+          {
+            "key": "field_of_study",
+            "label": "What is your major or field of study?",
+            "type": "text",
+            "required": true,
+            "validation": { "minLength": 3, "maxLength": 200 },
+            "placeholder": "e.g., Computer Science, Business Administration, Engineering"
+          },
+          {
+            "key": "why_this_field",
+            "label": "Why did you choose this field of study?",
+            "type": "textarea",
+            "required": true,
+            "validation": { "minLength": 50, "maxLength": 1000 },
+            "placeholder": "Explain your passion, interests, and reasons for choosing this field"
+          },
+          {
+            "key": "previous_education_details",
+            "label": "Tell us about your previous education",
+            "type": "textarea",
+            "required": true,
+            "validation": { "minLength": 30, "maxLength": 800 },
+            "placeholder": "Your schooling history, and how it prepared you for your intended studies"
+          },
+          {
+            "key": "program_career_goals_alignment",
+            "label": "How does this course fit your long-term career goals?",
+            "type": "textarea",
+            "required": true,
+            "validation": { "minLength": 40, "maxLength": 1000 },
+            "placeholder": "Explain how this specific program will help you achieve your career objectives"
+          },
+          {
+            "key": "program_professional_preparation",
+            "label": "How does your program prepare you for professional practice or registration in your home country or internationally?",
+            "type": "textarea",
+            "required": true,
+            "validation": { "minLength": 40, "maxLength": 1000 },
+            "placeholder": "Describe professional qualifications, accreditations, or certifications this program provides"
+          }
+        ]
+      },
+      {
+        "id": "university_details",
+        "title": "University & Program Details",
+        "description": "Information about the universities you've applied to and admitted into.",
+        "order": 3,
+        "questions": [
+          {
+            "key": "primary_university",
+            "label": "What is the name of your primary university?",
+            "type": "text",
+            "required": true,
+            "validation": { "minLength": 3, "maxLength": 200 },
+            "placeholder": "e.g., University of Oxford, University of Cambridge, LSE, Imperial College London"
+          },
+          {
+            "key": "university_city_state",
+            "label": "In which city is your university located?",
+            "type": "text",
+            "required": true,
+            "validation": { "minLength": 3, "maxLength": 200 },
+            "placeholder": "e.g., London, Oxford, Cambridge, Manchester"
+          },
+          {
+            "key": "total_universities_applied",
+            "label": "How many universities did you apply to in total?",
+            "type": "number",
+            "required": true,
+            "validation": { "min": 1, "max": 50 },
+            "description": "Total number of applications submitted"
+          },
+          {
+            "key": "why_primary_university",
+            "label": "Why did you choose this primary university over others?",
+            "type": "textarea",
+            "required": true,
+            "validation": { "minLength": 50, "maxLength": 1000 },
+            "placeholder": "Explain what makes this university unique for you (program strength, professors, location, rankings, etc.)"
+          },
+          {
+            "key": "university_knowledge",
+            "label": "What do you know about your university's program?",
+            "type": "textarea",
+            "required": true,
+            "validation": { "minLength": 50, "maxLength": 1000 },
+            "placeholder": "Demonstrate research about the program curriculum"
+          }
+        ]
+      },
+      {
+        "id": "academic_capability",
+        "title": "Academic Capability & English Proficiency",
+        "description": "Your test scores, GPA, and English language capabilities.",
+        "order": 4,
+        "questions": [
+          {
+            "key": "english_proficiency_test",
+            "label": "Which English proficiency test did you take?",
+            "type": "select",
+            "required": true,
+            "options": ["TOEFL iBT", "IELTS", "Both", "Not taken yet", "Other"],
+            "description": "UK universities typically require IELTS or TOEFL"
+          },
+          {
+            "key": "toefl_score",
+            "label": "What is your TOEFL score?",
+            "type": "number",
+            "required": false,
+            "validation": { "min": 0, "max": 120 },
+            "placeholder": "TOEFL iBT is out of 120",
+            "dependsOn": { "key": "english_proficiency_test", "valueIn": ["TOEFL iBT", "Both"] }
+          },
+          {
+            "key": "ielts_score",
+            "label": "What is your IELTS score?",
+            "type": "number",
+            "required": false,
+            "validation": { "min": 0, "max": 9 },
+            "placeholder": "IELTS is out of 9.0",
+            "dependsOn": { "key": "english_proficiency_test", "valueIn": ["IELTS", "Both"] }
+          },
+          {
+            "key": "standardized_test",
+            "label": "Did you take GRE / GMAT / SAT / ACT?",
+            "type": "select",
+            "required": false,
+            "options": ["GRE", "GMAT", "SAT", "ACT", "None", "Other"]
+          },
+          {
+            "key": "standardized_test_score",
+            "label": "What is your standardized test score?",
+            "type": "text",
+            "required": false,
+            "validation": { "minLength": 1, "maxLength": 50 },
+            "placeholder": "e.g., GRE: 320 / 340",
+            "dependsOn": { "key": "standardized_test", "notValue": "None" }
+          },
+          {
+            "key": "previous_gpa",
+            "label": "What was your previous GPA or academic percentage?",
+            "type": "text",
+            "required": true,
+            "validation": { "minLength": 1, "maxLength": 20 },
+            "placeholder": "e.g., 3.8/4.0 or 85%"
+          },
+          {
+            "key": "medium_of_instruction",
+            "label": "Was your previous education in English?",
+            "type": "boolean",
+            "required": true,
+            "description": "Whether your schooling was conducted in English medium"
+          },
+          {
+            "key": "english_confidence_rating",
+            "label": "How confident are you in your English ability? (1-10)",
+            "type": "number",
+            "required": true,
+            "validation": { "min": 1, "max": 10 },
+            "description": "Rate your overall English proficiency"
+          },
+          {
+            "key": "how_you_will_manage_english",
+            "label": "How will you manage studying in English at a UK university?",
+            "type": "textarea",
+            "required": true,
+            "validation": { "minLength": 40, "maxLength": 800 },
+            "placeholder": "Explain your strategies, support systems, or relevant experience"
+          },
+          {
+            "key": "academic_success_strategy",
+            "label": "What is your plan if you struggle academically in the first semester?",
+            "type": "textarea",
+            "required": true,
+            "validation": { "minLength": 40, "maxLength": 800 },
+            "placeholder": "Describe your support systems, tutoring plans, or strategies"
+          }
+        ]
+      },
+      {
+        "id": "financial_capability",
+        "title": "Financial Support & Proof of Funds",
+        "description": "Critical: Your financial sponsor, income, and proof of funds.",
+        "order": 5,
+        "questions": [
+          {
+            "key": "primary_sponsor",
+            "label": "Who is your primary financial sponsor?",
+            "type": "select",
+            "required": true,
+            "options": ["Father", "Mother", "Both Parents", "Self", "Aunt/Uncle", "Grandparents", "Other Family Member", "Other"],
+            "description": "Who will support your education financially?"
+          },
+          {
+            "key": "sponsor_full_name",
+            "label": "What is your sponsor's full name?",
+            "type": "text",
+            "required": true,
+            "validation": { "minLength": 3, "maxLength": 200 }
+          },
+          {
+            "key": "sponsor_relationship",
+            "label": "What is your relationship to the sponsor?",
+            "type": "text",
+            "required": true,
+            "validation": { "minLength": 3, "maxLength": 100 },
+            "placeholder": "e.g., Father, Mother, Elder Brother"
+          },
+          {
+            "key": "sponsor_occupation",
+            "label": "What is your sponsor's occupation?",
+            "type": "text",
+            "required": true,
+            "validation": { "minLength": 3, "maxLength": 200 },
+            "placeholder": "e.g., Software Engineer, Business Owner, Government Official"
+          },
+          {
+            "key": "sponsor_annual_income",
+            "label": "What is your sponsor's annual income (in USD)?",
+            "type": "number",
+            "required": true,
+            "validation": { "min": 0, "max": 10000000 },
+            "description": "Annual income in USD (use current exchange rate if needed)"
+          },
+          {
+            "key": "sponsor_income_proof",
+            "label": "Do you have proof of your sponsor's income? (documents available)",
+            "type": "boolean",
+            "required": true,
+            "description": "Tax returns, salary certificates, business documents, etc."
+          },
+          {
+            "key": "total_program_cost",
+            "label": "What is the total estimated cost of your program?",
+            "type": "number",
+            "required": true,
+            "validation": { "min": 5000, "max": 500000 },
+            "description": "Annual tuition + living expenses (in USD)"
+          },
+          {
+            "key": "available_funds",
+            "label": "How much funding can you access for your education?",
+            "type": "number",
+            "required": true,
+            "validation": { "min": 0, "max": 500000 },
+            "description": "Total available funds (savings + sponsor support) in USD"
+          },
+          {
+            "key": "funds_availability_proof",
+            "label": "Do you have proof of available funds? (documents)",
+            "type": "boolean",
+            "required": true,
+            "description": "Bank statements, affidavits of support, investment documents"
+          },
+          {
+            "key": "scholarship_status",
+            "label": "Did you receive a scholarship?",
+            "type": "boolean",
+            "required": true
+          },
+          {
+            "key": "scholarship_amount",
+            "label": "What is your scholarship amount (in USD)?",
+            "type": "number",
+            "required": false,
+            "validation": { "min": 0, "max": 500000 },
+            "placeholder": "Annual or total amount",
+            "dependsOn": { "key": "scholarship_status", "value": true }
+          },
+          {
+            "key": "scholarship_type",
+            "label": "What type of scholarship did you receive?",
+            "type": "select",
+            "required": false,
+            "options": ["Merit-based", "Need-based", "Partial Tuition", "Full Tuition + Stipend", "Full Tuition Only", "Other"],
+            "dependsOn": { "key": "scholarship_status", "value": true }
+          },
+          {
+            "key": "funding_shortfall_plan",
+            "label": "What if your sponsor cannot support you fully?",
+            "type": "textarea",
+            "required": true,
+            "validation": { "minLength": 30, "maxLength": 800 },
+            "placeholder": "Describe alternative funding sources or plans (loans, gifts, part-time work, etc.)"
+          },
+          {
+            "key": "personal_savings_contribution",
+            "label": "Are you contributing any personal savings? If yes, what is the source?",
+            "type": "textarea",
+            "required": false,
+            "validation": { "minLength": 20, "maxLength": 800 },
+            "placeholder": "e.g., Part-time job savings, family gifts, personal work income"
+          },
+          {
+            "key": "part_time_work_plans",
+            "label": "Do you plan to work part-time while studying? How will you balance it with your studies?",
+            "type": "textarea",
+            "required": true,
+            "validation": { "minLength": 40, "maxLength": 1000 },
+            "placeholder": "Explain your work plans (if any) and how you'll manage time between work and studies. Note: UK student visa allows up to 20 hours/week during term time."
+          }
+        ]
+      },
+      {
+        "id": "home_country_ties",
+        "title": "Ties to Home Country & Intent to Return",
+        "description": "CRITICAL: Your plans after graduation and commitment to return home.",
+        "order": 6,
+        "questions": [
+          {
+            "key": "plan_to_return_home",
+            "label": "Do you plan to return to your home country after graduation?",
+            "type": "boolean",
+            "required": true,
+            "description": "UK student visa requires demonstrated intent to return home after studies"
+          },
+          {
+            "key": "why_will_return",
+            "label": "Why will you return to your home country?",
+            "type": "textarea",
+            "required": false,
+            "validation": { "minLength": 50, "maxLength": 1000 },
+            "placeholder": "Family ties, job prospects, career plans, home country opportunities",
+            "dependsOn": { "key": "plan_to_return_home", "value": true }
+          },
+          {
+            "key": "post_graduation_job_plans",
+            "label": "What are your career goals after graduation?",
+            "type": "textarea",
+            "required": true,
+            "validation": { "minLength": 40, "maxLength": 1000 },
+            "placeholder": "Your job targets, industry, company type, location"
+          },
+          {
+            "key": "job_prospects_home_country",
+            "label": "Do you have job prospects or opportunities in your home country?",
+            "type": "textarea",
+            "required": false,
+            "validation": { "minLength": 20, "maxLength": 800 },
+            "placeholder": "e.g., Family business, job offers, sector growth",
+            "dependsOn": { "key": "plan_to_return_home", "value": true }
+          },
+          {
+            "key": "family_in_home_country",
+            "label": "Do you have close family members in your home country?",
+            "type": "boolean",
+            "required": false,
+            "description": "Family ties are important indicators of home country status",
+            "dependsOn": { "key": "plan_to_return_home", "value": true }
+          },
+          {
+            "key": "family_details",
+            "label": "Describe your family situation in your home country",
+            "type": "textarea",
+            "required": false,
+            "validation": { "minLength": 20, "maxLength": 800 },
+            "placeholder": "Parents, siblings, dependents, family business, property",
+            "dependsOn": { "key": "family_in_home_country", "value": true }
+          },
+          {
+            "key": "property_or_assets_home",
+            "label": "Do you have property or assets in your home country?",
+            "type": "boolean",
+            "required": false,
+            "description": "Land, house, business ownership - shows financial ties",
+            "dependsOn": { "key": "plan_to_return_home", "value": true }
+          },
+          {
+            "key": "consider_staying_uk",
+            "label": "Are you considering staying in the UK after graduation?",
+            "type": "boolean",
+            "required": false,
+            "description": "Be honest - visa officers appreciate honesty",
+            "dependsOn": { "key": "plan_to_return_home", "notValue": true }
+          },
+          {
+            "key": "post_study_work_visa_plans",
+            "label": "Do you plan to use the post-study work visa (PSW in UK)? If yes, how does it fit into your career plan?",
+            "type": "textarea",
+            "required": false,
+            "validation": { "minLength": 30, "maxLength": 1000 },
+            "placeholder": "Explain if you plan to use PSW for work experience and how it aligns with your career goals before returning home"
+          },
+          {
+            "key": "healthcare_management_abroad",
+            "label": "How will you manage healthcare while studying abroad?",
+            "type": "textarea",
+            "required": true,
+            "validation": { "minLength": 30, "maxLength": 800 },
+            "placeholder": "Discuss NHS access, health insurance, emergency procedures, and any pre-existing health needs"
+          }
+        ]
+      },
+      {
+        "id": "travel_background_history",
+        "title": "Travel History & Visa Background",
+        "description": "Your previous travel and visa application history.",
+        "order": 7,
+        "questions": [
+          {
+            "key": "previous_uk_visits",
+            "label": "Have you visited the UK before?",
+            "type": "boolean",
+            "required": true,
+            "description": "Check if you have any prior UK travel experience"
+          },
+          {
+            "key": "any_uk_immigration_issues",
+            "label": "Do you have any legal issues in the UK?",
+            "type": "boolean",
+            "required": true,
+            "description": "DUI, arrests, overstay, etc."
+          },
+          {
+            "key": "visa_refusal_history",
+            "label": "Have you ever been denied a UK visa?",
+            "type": "boolean",
+            "required": true,
+            "description": "Check if you have any previous UK visa refusals"
+          },
+          {
+            "key": "previous_overstay",
+            "label": "Have you ever overstayed a visa in any country?",
+            "type": "boolean",
+            "required": true
+          },
+          {
+            "key": "criminal_record",
+            "label": "Do you have any criminal convictions?",
+            "type": "boolean",
+            "required": true
+          },
+          {
+            "key": "other_countries_visa_refusal",
+            "label": "Have you been denied a visa to any other country (Canada, USA, Australia, etc.)?",
+            "type": "boolean",
+            "required": true
+          },
+          {
+            "key": "student_visa_conditions_understanding",
+            "label": "Do you understand the conditions of your student visa, including work limitations?",
+            "type": "textarea",
+            "required": true,
+            "validation": { "minLength": 40, "maxLength": 1000 },
+            "placeholder": "Explain your understanding of UK student visa restrictions on working (e.g., maximum 20 hours/week during term, restrictions on certain sectors)"
+          }
+        ]
+      }
+    ]
+  }
+  
