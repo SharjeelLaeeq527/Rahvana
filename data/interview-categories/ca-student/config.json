@@ -8,8 +8,8 @@
       "questionnaireVersion": "1.0.0",
       "questionBankVersion": "1.0.0",
       "estimatedDurationMinutes": 25,
-      "totalQuestions": 52,
-      "totalIntakeQuestions": 59
+      "totalQuestions": 51,
+      "totalIntakeQuestions": 57
     },
     "features": {
       "hasRapidFire": true,
