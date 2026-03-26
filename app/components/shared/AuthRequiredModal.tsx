@@ -17,7 +17,7 @@ export const AuthRequiredModal = ({ open, onClose, redirectTo }: Props) => {
     if (redirectTo) {
       router.push(`/login?redirect=${redirectTo}`);
     } else {
-      router.push("/login");
+      router.push(`/login?redirectTo=${encodeURIComponent(window.location.pathname + window.location.search)}`);
     }
   };
 
