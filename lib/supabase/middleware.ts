@@ -59,7 +59,7 @@ export async function updateSession(request: NextRequest) {
   // =============================
   const protectedRoutes = [
     "/user-dashboard",
-    "/dashboard",
+    // "/dashboard",
     "/complete-profile",
     "/profile",
     "/settings",
@@ -99,7 +99,7 @@ export async function updateSession(request: NextRequest) {
     if (!user) {
       const url = request.nextUrl.clone();
       url.pathname = "/admin-login";
-      url.searchParams.set("redirectTo", pathname);
+      url.searchParams.set("redirectTo", request.nextUrl.pathname + request.nextUrl.search);
       return NextResponse.redirect(url);
     }
 
@@ -122,7 +122,7 @@ export async function updateSession(request: NextRequest) {
   if (!user && isProtectedRoute) {
     const url = request.nextUrl.clone();
     url.pathname = "/login";
-    url.searchParams.set("redirectTo", pathname);
+    url.searchParams.set("redirectTo", request.nextUrl.pathname + request.nextUrl.search);
     return NextResponse.redirect(url);
   }
 
@@ -130,6 +130,11 @@ export async function updateSession(request: NextRequest) {
   // Logged-in user accessing login/signup
   // =============================
   if (user && isAuthRoute) {
+    const redirectTo = request.nextUrl.searchParams.get("redirectTo") || request.nextUrl.searchParams.get("redirect");
+    if (redirectTo && redirectTo.startsWith("/") && !redirectTo.startsWith("//")) {
+      return NextResponse.redirect(new URL(redirectTo, request.url));
+    }
+
     const url = request.nextUrl.clone();
     url.pathname = "/complete-profile";
     return NextResponse.redirect(url);
@@ -150,7 +155,7 @@ export async function updateSession(request: NextRequest) {
     if (profile && ADMIN_EMAILS.includes(profile.email)) {
       url.pathname = "/admin";
     } else {
-      url.pathname = "/dashboard";
+      url.pathname = "/user-dashboard";
     }
 
     return NextResponse.redirect(url);
