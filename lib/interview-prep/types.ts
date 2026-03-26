@@ -73,6 +73,8 @@ export interface GeneratedQuestion {
   id: string;
   category: string;
   question: string;
+  variations?: string[];
+  selectedQuestion?: string; 
   suggestedAnswer: string;
   guidance: string;
   tooltip: string;
