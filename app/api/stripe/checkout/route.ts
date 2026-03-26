@@ -23,30 +23,25 @@ export async function POST(request: NextRequest) {
     }
 
     // Get user email from Supabase
-    const { data: userData, error: userError } = await supabase.auth.admin.getUserById(userId);
-    
+    const { data: userData, error: userError } =
+      await supabase.auth.admin.getUserById(userId);
+
     if (userError || !userData.user) {
-      return NextResponse.json(
-        { error: 'User not found' },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
 
     const userEmail = userData.user.email!;
 
-    // Check if user already has a Stripe customer ID
+    // Get or create Stripe customer
     let stripeCustomerId: string | undefined;
     const subscriptionRecord = await paymentService.getUserSubscription(userId);
-    
+
     if (subscriptionRecord?.stripe_customer_id) {
       stripeCustomerId = subscriptionRecord.stripe_customer_id;
     } else {
-      // Create new Stripe customer
       const customer = await stripe.customers.create({
         email: userEmail,
-        metadata: {
-          supabase_user_id: userId,
-        },
+        metadata: { supabase_user_id: userId },
       });
       stripeCustomerId = customer.id;
     }
@@ -55,125 +50,117 @@ export async function POST(request: NextRequest) {
       customer: stripeCustomerId,
       success_url: `${process.env.NEXT_PUBLIC_APP_URL}/payment/success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/payment/cancel`,
-      metadata: {
-        user_id: userId,
-      },
+      automatic_tax: { enabled: true },
+      billing_address_collection: 'required',
+      customer_update: { address: 'auto' },
+      metadata: { user_id: userId },
       line_items: [],
     };
 
-    // Determine the product based on productTier
+    // ================================================
+    // JOURNEY PLAN — Monthly Subscription + Add-ons
+    // ================================================
     if (productTier) {
-      let product: any;
       const tierLower = productTier.toLowerCase();
-      
-      if (tierLower === 'basic') {
-        product = PRODUCTS.BASIC;
-        sessionParams.mode = 'payment';
-      } else if (tierLower === 'premium') {
-        product = PRODUCTS.PREMIUM;
-        sessionParams.mode = 'payment';
-      } else if (tierLower === 'executive') {
-        product = PRODUCTS.EXECUTIVE;
-        sessionParams.mode = 'payment';
-      }
+
+      let product: typeof PRODUCTS.BASIC | typeof PRODUCTS.PREMIUM | typeof PRODUCTS.EXECUTIVE | null = null;
+      if (tierLower === 'basic')     product = PRODUCTS.BASIC;
+      if (tierLower === 'premium')   product = PRODUCTS.PREMIUM;
+      if (tierLower === 'executive') product = PRODUCTS.EXECUTIVE;
 
       if (!product) {
-        return NextResponse.json({ error: `Product tier '${productTier}' not found` }, { status: 404 });
+        return NextResponse.json(
+          { error: `Product tier '${productTier}' not found` },
+          { status: 404 }
+        );
       }
 
-      // For subscriptions, priceId is required
-      if (sessionParams.mode === 'subscription') {
-        if (!product.priceId || product.priceId.startsWith('price_...') || product.priceId.length < 10) {
-          return NextResponse.json(
-            { error: `Invalid price ID for ${productTier}. Subscription tiers require a valid Stripe Price ID.` },
-            { status: 500 }
-          );
+      // Subscription mode for all journey plans
+      sessionParams.mode = 'subscription';
+
+      // Check visa category for custom annual price (e.g. CR-2 has lower price)
+      let annualPrice = product.price;
+      if (visaCategory) {
+        const category = VISA_CATEGORIES.find(v => v.id === visaCategory);
+        if (category) {
+          const plan = category.plans.find(p => p.id === tierLower);
+          if (plan) annualPrice = plan.price;
         }
+      }
+
+      // FIX 1: Use exact monthlyPrice from PRODUCTS, or divide custom annual price by 12
+      const monthlyPrice =
+        annualPrice === product.price
+          ? product.monthlyPrice  // $29.08, $58.25, $91.58
+          : Math.round((annualPrice / 12) * 100) / 100;
+
+      // Add main plan — use saved recurringPriceId if price matches default
+      const useRecurringId =
+        product.recurringPriceId &&
+        product.recurringPriceId.length >= 10 &&
+        annualPrice === product.price; // only use saved ID if price is default
+
+      if (useRecurringId) {
         sessionParams.line_items!.push({
-          price: product.priceId,
+          price: product.recurringPriceId,
           quantity: 1,
         });
       } else {
-        // Handle custom pricing from VISA_CATEGORIES (e.g. CR-2)
-        let price = product.price;
-        if (visaCategory) {
-          const category = VISA_CATEGORIES.find(v => v.id === visaCategory);
-          if (category) {
-            const plan = category.plans.find(p => p.id === tierLower);
-            if (plan) {
-              price = plan.price;
-            }
-          }
-        }
-
-        // For one-time payments, we can use priceId ONLY if the price matches
-        // For dynamic prices from VISA_CATEGORIES (e.g. CR-2 has different prices), 
-        // we use price_data since we can't easily rely on fixed price IDs.
-        const usePriceId = product.priceId && 
-                         !product.priceId.startsWith('price_...') && 
-                         product.priceId.length >= 10 && 
-                         price === product.price;
-
-        if (usePriceId) {
-          sessionParams.line_items!.push({
-            price: product.priceId,
-            quantity: 1,
-          });
-        } else {
-          sessionParams.line_items!.push({
-            price_data: {
-              currency: 'usd',
-              product_data: {
-                name: product.name,
-                description: product.features?.join(', ') || '',
-              },
-              unit_amount: Math.round(price * 100),
+        // Custom price (e.g. CR-2) — create dynamic recurring price
+        sessionParams.line_items!.push({
+          price_data: {
+            currency: 'usd',
+            product_data: {
+              name: `${product.name} (Monthly)`,
+              description: product.features?.join(', ') || '',
+              tax_code: (product as any).taxCode || 'txcd_10103000',
             },
-            quantity: 1,
-          });
-        }
+            unit_amount: Math.round(monthlyPrice * 100),
+            recurring: { interval: 'month' },
+          },
+          quantity: 1,
+        });
       }
 
+      // FIX 2: Metadata — stripe_customer_id + addons as JSON
       sessionParams.metadata = {
         ...sessionParams.metadata,
-        stripe_customer_id: stripeCustomerId,
+        stripe_customer_id: stripeCustomerId!,
         product_type: 'journey_plan',
         product_id: productTier,
         product_name: product.name,
         visa_category: visaCategory || 'IR-1 / CR-1',
       };
 
-      // Handle Add-ons if present (only for one-time payments)
+      // Add-ons — one-time items alongside subscription
       if (addons && Array.isArray(addons) && addons.length > 0) {
         for (const addonId of addons) {
           const addonIdLower = addonId.toLowerCase();
           const addon = (PRODUCTS.ADDONS as any)?.[addonIdLower];
+          
           if (addon) {
-            if (addon.priceId && !addon.priceId.startsWith('price_...') && addon.priceId.length >= 10) {
-              sessionParams.line_items!.push({
-                price: addon.priceId,
-                quantity: 1,
-              });
-            } else {
-              sessionParams.line_items!.push({
-                price_data: {
-                  currency: 'usd',
-                  product_data: {
-                    name: addon.name,
-                  },
-                  unit_amount: Math.round(addon.price * 100),
+            // FORCE dynamic price_data to ensure same name/price as UI
+            sessionParams.line_items!.push({
+              price_data: {
+                currency: 'usd',
+                product_data: {
+                  name: `Add-on: ${addon.name}`,
                 },
-                quantity: 1,
-              });
-            }
+                unit_amount: Math.round(addon.price * 100),
+              },
+              quantity: 1,
+            });
           }
         }
+        // Save addons as JSON string
         sessionParams.metadata!.addons = JSON.stringify(addons);
       }
     }
-    // Handle consultation payment (standalone)
+
+    // ================================================
+    // CONSULTATION — One-time Payment
+    // ================================================
     else if (consultationId) {
-      // Get consultation details
       const { data: consultation, error: consultationError } = await supabase
         .from('consultation_bookings')
         .select('*')
@@ -187,12 +174,9 @@ export async function POST(request: NextRequest) {
         );
       }
 
-      // Define consultation price (you can make this dynamic)
-      const consultationPrice = 50; // $50 for consultation
+      const consultationPrice = 50; // $50 per consultation
 
-      // Set mode to payment for one-time payments
       sessionParams.mode = 'payment';
-
       sessionParams.line_items = [
         {
           price_data: {
@@ -201,7 +185,7 @@ export async function POST(request: NextRequest) {
               name: 'Consultation Booking',
               description: `${consultation.issue_category} - ${consultation.visa_category}`,
             },
-            unit_amount: consultationPrice * 100, // Convert to cents
+            unit_amount: consultationPrice * 100,
           },
           quantity: 1,
         },
@@ -220,7 +204,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Ensure mode is set (fallback to payment if somehow not set)
+    // Fallback mode
     if (!sessionParams.mode) {
       sessionParams.mode = 'payment';
     }
@@ -228,32 +212,32 @@ export async function POST(request: NextRequest) {
     // Create Stripe checkout session
     const session = await stripe.checkout.sessions.create(sessionParams);
 
-    // Create payment record in database
+    // Save payment record in Supabase
     await paymentService.createPayment({
       user_id: userId,
       stripe_checkout_session_id: session.id,
-      amount: session.amount_total! / 100, // Convert from cents
+      // FIX: subscription sessions may not have amount_total immediately
+      amount: (session.amount_total ?? 0) / 100,
       currency: session.currency || 'usd',
       status: 'pending',
       product_type: (sessionParams.metadata?.product_type as any) || 'journey_plan',
-      product_id: String(sessionParams.metadata?.product_id || ''), 
+      product_id: String(sessionParams.metadata?.product_id || ''),
       metadata: {
         product_name: sessionParams.metadata?.product_name || 'Consultation',
         customer_email: userEmail,
+        stripe_customer_id: stripeCustomerId!,
       },
-      // Don't set stripe_payment_id initially - it will be set by the webhook
     });
 
     return NextResponse.json({
       sessionId: session.id,
       url: session.url,
     });
+
   } catch (error: unknown) {
     console.error('Error creating checkout session:', error);
-    const errorMessage = error instanceof Error ? error.message : 'Failed to create checkout session';
-    return NextResponse.json(
-      { error: errorMessage },
-      { status: 500 }
-    );
+    const errorMessage =
+      error instanceof Error ? error.message : 'Failed to create checkout session';
+    return NextResponse.json({ error: errorMessage }, { status: 500 });
   }
 }

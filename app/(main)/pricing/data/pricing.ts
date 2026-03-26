@@ -2,6 +2,7 @@ export type PlanData = {
   id: string;
   name: string;
   price: number;
+  monthlyPrice?: number; // monthly deduction amount (price / 12)
   cta: string;
   recommended: boolean;
   tagline: string;
@@ -33,6 +34,7 @@ export const defaultPlans: PlanData[] = [
     id: "basic",
     name: "Basic",
     price: 349,
+    monthlyPrice: 29.08, // $349 / 12 = $29.08/month
     cta: "Choose Basic",
     recommended: false,
     tagline:
@@ -48,6 +50,7 @@ export const defaultPlans: PlanData[] = [
     id: "premium",
     name: "Premium",
     price: 699,
+    monthlyPrice: 58.25, // $699 / 12 = $58.25/month
     cta: "Choose Premium",
     recommended: true,
     tagline:
@@ -63,6 +66,7 @@ export const defaultPlans: PlanData[] = [
     id: "executive",
     name: "Executive",
     price: 1099,
+    monthlyPrice: 91.58, // $1099 / 12 = $91.58/month
     cta: "Choose Executive",
     recommended: false,
     tagline:
@@ -75,6 +79,7 @@ export const defaultPlans: PlanData[] = [
     ],
   },
 ];
+
 export const CR2Plans: PlanData[] = [
   {
     id: "free",
@@ -94,6 +99,7 @@ export const CR2Plans: PlanData[] = [
     id: "basic",
     name: "Basic",
     price: 200,
+    monthlyPrice: 16.67, // $200 / 12 = $16.67/month
     cta: "Choose Basic",
     recommended: false,
     tagline:
@@ -109,6 +115,7 @@ export const CR2Plans: PlanData[] = [
     id: "premium",
     name: "Premium",
     price: 500,
+    monthlyPrice: 41.67, // $500 / 12 = $41.67/month
     cta: "Choose Premium",
     recommended: true,
     tagline:
@@ -124,6 +131,7 @@ export const CR2Plans: PlanData[] = [
     id: "executive",
     name: "Executive",
     price: 900,
+    monthlyPrice: 75.00, // $900 / 12 = $75.00/month
     cta: "Choose Executive",
     recommended: false,
     tagline:
@@ -146,7 +154,7 @@ export const VISA_CATEGORIES: VisaCategoryData[] = [
   {
     id: "IR-2 / CR-2",
     label: "IR-2 / CR-2 · Child of U.S. Citizen",
-    plans: defaultPlans,
+    plans: CR2Plans,
   },
   {
     id: "IR-5",
@@ -206,12 +214,6 @@ export const COMPARISON_GROUPS = [
   {
     label: "Tools",
     rows: [
-      // [
-      //   "Guided form and document workflows",
-      //   "Included",
-      //   "Included",
-      //   "Included",
-      // ],
       [
         "221(g) Action Planner",
         "Basic Support",
@@ -237,7 +239,7 @@ export const COMPARISON_GROUPS = [
     label: "Reviews and Support",
     rows: [
       ["Support channel", "Async queue", "Priority queue", "Priority queue"],
-      ["Expert Docment Review (Offline)", "Add On", "Add On", "Included"],
+      ["Expert Document Review (Offline)", "Add On", "Add On", "Included"],
       ["Expert Consultation", "Add On", "Add On", "2 included"],
     ],
   },
@@ -324,7 +326,7 @@ export const ADDONS = [
   },
   {
     id: "doc-review",
-    title: "Expert Docment Review (Offline)",
+    title: "Expert Document Review (Offline)",
     price: 59,
     unit: "per request",
     copy: "Extra completeness and quality review with feedback and flagged issues.",
@@ -356,7 +358,6 @@ export const ADDONS = [
     price: 25,
     unit: "per document",
     copy: "Request certified translation + formatting for submission.",
-    // copy: "Translation support for civil documents and supporting materials where needed.",
   },
   {
     id: "case-manager",
@@ -377,7 +378,7 @@ export const ADDONS = [
 export const FAQS = [
   [
     "Is this a monthly subscription?",
-    "No. The paid tiers here are structured as one-time journey purchases.",
+    "Yes. To make the journey more affordable, the cost is structured as monthly installments over a 12-month journey period. This allows you to pay as you go while receiving full support.",
   ],
   [
     "Are government fees included?",
@@ -603,4 +604,4 @@ export const COUNTRIES = [
   "Yemen",
   "Zambia",
   "Zimbabwe",
-].sort();
+];

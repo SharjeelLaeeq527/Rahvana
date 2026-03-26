@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useEffect, useState, useMemo } from "react";
+import React, { useEffect, useState, useMemo, useCallback, Suspense } from "react";
+import { useSearchParams, useRouter } from "next/navigation";
 import CheckoutButton from "@/app/components/payment/CheckoutButton";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
@@ -70,10 +71,14 @@ function statusClass(text: string) {
   return "bg-muted text-muted-foreground border-border";
 }
 
-export default function PricingSection() {
+function PricingContent() {
+  const searchParams = useSearchParams();
+  const router = useRouter();
+
   // const { t } = useLanguage();
   const [userId, setUserId] = useState<string | null>(null);
   const [isLoadingUser, setIsLoadingUser] = useState(true);
+  const [isProcessingAutoCheckout, setIsProcessingAutoCheckout] = useState(false);
 
   const [origin, setOrigin] = useState("Pakistan");
   const [destination, setDestination] = useState("United States");
@@ -88,6 +93,51 @@ export default function PricingSection() {
   const [searchQuery, setSearchQuery] = useState("");
   const [activeStep, setActiveStep] = useState<"plans" | "addons">("plans");
   const [openFaqIndex, setOpenFaqIndex] = useState<number>(0);
+
+  // Handle Checkout Logic shared for button and auto-checkout
+  const handleCheckout = useCallback(async (uid: string, planOverride?: string, addonsOverride?: string[]) => {
+    if (isProcessingAutoCheckout) return;
+    setIsProcessingAutoCheckout(true);
+    try {
+      const response = await fetch("/api/stripe/checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          productTier: planOverride || selectedPlan,
+          addons: addonsOverride || Array.from(selectedAddons),
+          visaCategory: visa,
+          userId: uid,
+        }),
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || "Checkout failed");
+      if (data.url) window.location.href = data.url;
+    } catch (err) {
+      console.error("Checkout error:", err);
+      setIsProcessingAutoCheckout(false);
+    }
+  }, [selectedPlan, selectedAddons, visa, isProcessingAutoCheckout]);
+
+  // Restore State from URL and Auto-checkout Trigger
+  useEffect(() => {
+    // Only parse params once on mount
+    const plan = searchParams.get("plan");
+    const addons = searchParams.get("addons");
+    const visaCat = searchParams.get("visa");
+    const autoCheckout = searchParams.get("auto_checkout") === "true";
+
+    if (plan) setSelectedPlan(plan);
+    if (addons) setSelectedAddons(new Set(addons.split(",").filter(Boolean)));
+    if (visaCat) setVisa(visaCat);
+
+    if (autoCheckout && userId && !isLoadingUser && !isProcessingAutoCheckout) {
+      // Clear the params after triggering checkout
+      const newUrl = window.location.pathname;
+      window.history.replaceState({}, "", newUrl);
+      
+      handleCheckout(userId, plan || undefined, addons ? addons.split(",") : undefined);
+    }
+  }, [searchParams, userId, isLoadingUser, handleCheckout, isProcessingAutoCheckout]);
 
   useEffect(() => {
     const supabase = createClient();
@@ -122,7 +172,8 @@ export default function PricingSection() {
     activePlans.find((p) => p.id === selectedPlan) || activePlans[1];
   const activeAddons = ADDONS.filter((a) => selectedAddons.has(a.id));
   const summaryTotal =
-    currentPlanData.price + activeAddons.reduce((sum, a) => sum + a.price, 0);
+    (currentPlanData.monthlyPrice ?? currentPlanData.price) +
+    activeAddons.reduce((sum, a) => sum + a.price, 0);
 
   const groupedCountries = useMemo(() => {
     const lowerSearch = searchQuery.toLowerCase();
@@ -350,6 +401,14 @@ export default function PricingSection() {
                           </small>
                         )}
                       </div>
+
+{plan.monthlyPrice && (
+  <div className="mb-[18px]">
+    <div className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-primary/10 text-primary rounded-lg border border-primary/20 text-[14px] font-bold max-w-fit">
+      ${plan.monthlyPrice.toFixed(2)}/mo over 12 months
+    </div>
+  </div>
+)}
                       <div className="text-muted-foreground text-[14px] leading-[1.55] mb-[18px] min-h-[64px]">
                         {plan.tagline}
                       </div>
@@ -468,18 +527,25 @@ export default function PricingSection() {
                     <table className="w-full text-left border-collapse min-w-[800px]">
                       <thead>
                         <tr>
-                          {[
-                            "Feature",
-                            // "Signed-in Free",
-                            "Basic",
-                            "Premium",
-                            "Executive",
-                          ].map((h, i) => (
+                          <th className="p-[14px_16px] border-b border-border text-[12px] tracking-widest uppercase text-muted-foreground bg-muted/30">
+                            Feature
+                          </th>
+                          {activePlans.filter(p => p.id !== "free").map((p) => (
                             <th
-                              key={i}
-                              className={`p-[14px_16px] border-b border-border text-[12px] tracking-widest uppercase text-muted-foreground bg-muted/30 ${i !== 0 ? "text-center" : ""}`}
+                              key={p.id}
+                              className="p-[14px_16px] border-b border-border text-center bg-muted/30"
                             >
-                              {h}
+                              <div className="text-[12px] tracking-widest uppercase text-muted-foreground mb-1">
+                                {p.name}
+                              </div>
+                              {p.monthlyPrice && (
+                                <div className="text-[11px] text-primary lowercase mt-0.5 normal-case font-bold">
+                                  ${p.monthlyPrice.toFixed(2)}/mo x 12
+                                  <div className="text-[10px] text-muted-foreground font-medium opacity-80">
+                                    Total: ${p.price}
+                                  </div>
+                                </div>
+                              )}
                             </th>
                           ))}
                         </tr>
@@ -787,9 +853,23 @@ export default function PricingSection() {
                     </div>
                     <div className="flex justify-between gap-3 py-2.5 border-b border-dashed border-border text-[14px]">
                       <span>Plan</span>
-                      <strong>
-                        {currentPlanData.name} (${currentPlanData.price})
-                      </strong>
+                      <div className="text-right">
+                        <strong>{currentPlanData.name}</strong>
+                        {currentPlanData.monthlyPrice ? (
+                          <div className="text-[12px] mt-1.5">
+                            <span className="inline-block px-2 py-1 bg-primary/10 text-primary rounded-md border border-primary/20 font-bold mb-1">
+                              ${currentPlanData.monthlyPrice.toFixed(2)}/mo over 12 months
+                            </span>
+                            <div className="text-muted-foreground font-medium italic opacity-80">
+                              Total: ${currentPlanData.price} per journey
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="text-[12px] text-muted-foreground mt-0.5">
+                            Free
+                          </div>
+                        )}
+                      </div>
                     </div>
 
                     {activeAddons.map((a) => (
@@ -805,12 +885,13 @@ export default function PricingSection() {
                     <div className="flex justify-between items-end mt-4 pt-4 border-t border-border">
                       <strong className="text-[14px] mb-[2px]">Total</strong>
                       <span className="font-bold text-[34px] tracking-tight text-primary leading-none">
-                        ${summaryTotal}
+                        ${summaryTotal.toFixed(2)}
                       </span>
                     </div>
-                    <div className="text-[12px] text-muted-foreground leading-normal mt-3 mb-[18px]">
-                      One-time purchase for this journey. Government fees remain
-                      separate.
+                    <div className="text-[12px] text-muted-foreground leading-normal mt-3 mb-[18px] p-3 bg-muted/50 rounded-xl border border-dashed border-border">
+                      {currentPlanData.monthlyPrice
+                        ? `The ${currentPlanData.name} plan is billed as $${currentPlanData.monthlyPrice.toFixed(2)} in 12 monthly installments. Add-ons are charged one-time. Government fees separate.`
+                        : "One-time purchase for this journey. Government fees remain separate."}
                     </div>
 
                     <div className="flex flex-col gap-2.5">
@@ -833,7 +914,7 @@ export default function PricingSection() {
                         </CheckoutButton>
                       ) : (
                         <Link
-                          href="/login?redirect=/pricing"
+                          href={`/login?redirect=${encodeURIComponent(`/pricing?auto_checkout=true&plan=${selectedPlan}&addons=${Array.from(selectedAddons).join(",")}&visa=${encodeURIComponent(visa)}`)}`}
                           className={`${solidBtn} w-full text-center block rounded-full! py-3 px-4 font-medium`}
                         >
                           Sign in to Checkout
@@ -957,5 +1038,19 @@ export default function PricingSection() {
         </div>
       )}
     </div>
+  );
+}
+
+export default function PricingSection() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-background flex flex-col items-center justify-center p-6 text-center">
+        <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin mb-4 mx-auto"></div>
+        <h2 className="text-xl font-bold mb-2">Loading Pricing Journey...</h2>
+        <p className="text-muted-foreground">Preparing your personalized roadmap details.</p>
+      </div>
+    }>
+      <PricingContent />
+    </Suspense>
   );
 }

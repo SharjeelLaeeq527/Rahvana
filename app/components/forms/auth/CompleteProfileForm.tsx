@@ -1444,7 +1444,7 @@ export default function CompleteProfileForm() {
         throw new Error(data.error || "Failed to save profile");
       }
 
-      router.push("/dashboard");
+      router.push("/user-dashboard");
     } catch (err) {
       console.error("Error saving profile:", err);
       if (err instanceof Error) {
