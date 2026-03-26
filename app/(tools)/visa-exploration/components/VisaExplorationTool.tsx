@@ -8,12 +8,16 @@ import {
   Compass, Sparkles, ArrowRight,
 } from "lucide-react";
 
-import { T, ALL_COUNTRIES, SUPPORTED_DESTINATIONS } from "../visa-exploration-data";
-import {
-  buildSteps, getEligibleVisas, getCandidateCodes,
-  evaluateGate, allGateAnswered, DOWNSTREAM_CLEAR_MAP,
-} from "../visa-exploration-logic";
-import type { VisaExplorationAnswers, Step } from "../visa-exploration-data";
+// NEW MODULAR IMPORTS
+import { T, VisaExplorationAnswers, Step } from "../visa-engine/types";
+import { ALL_COUNTRIES } from "../visa-engine/data/countries";
+import { SUPPORTED_DESTINATIONS, getCountryData } from "../visa-engine/data/registry";
+import { buildSteps, DOWNSTREAM_CLEAR_MAP } from "../visa-engine/logic/step-builder";
+import { 
+  getEligibleVisas, 
+  allGateAnswered, 
+  evaluateGate 
+} from "../visa-engine/logic/gate-engine";
 
 // ─────────────────────────────────────────────────────────────
 // HELPERS
@@ -216,8 +220,8 @@ function GateQuestion({ step, answers, onAnswer }: {
 }) {
   const visaGate = (answers.gateAnswers || {})[step.visaCode!] || {};
   const current = visaGate[step.questionId!];
-  const isPassing = current && step.passWith!.includes(current);
-  const isFailing = current && !step.passWith!.includes(current);
+  const isPassing = current && step.passWith!.includes(current as string);
+  const isFailing = current && !step.passWith!.includes(current as string);
 
   return (
     <div className="space-y-4">
@@ -290,7 +294,7 @@ function StepContent({ step, answers, onAnswer }: {
 }) {
   if (!step) return null;
   if (step.type === "country") return (
-    <CountryInput value={answers[step.field!] || ""} onChange={(v) => onAnswer(step.field!, v)}
+    <CountryInput value={(answers[step.field!] as string) || ""} onChange={(v) => onAnswer(step.field!, v)}
       placeholder={step.isDestination ? "Search destination country..." : "Search your country..."}
       isDestination={step.isDestination} hint={step.hint} />
   );
@@ -303,7 +307,7 @@ function StepContent({ step, answers, onAnswer }: {
     </div>
   );
   if (step.type === "grid") return (
-    <OptionGrid options={step.options!} value={answers[step.field!] || ""} onChange={(v) => onAnswer(step.field!, v)} />
+    <OptionGrid options={step.options!} value={(answers[step.field!] as string) || ""} onChange={(v) => onAnswer(step.field!, v)} />
   );
   if (step.type === "gate_question") return (
     <GateQuestion step={step} answers={answers} onAnswer={onAnswer} />
@@ -458,9 +462,9 @@ function ResultsScreen({ answers, results, ineligibleCodes, onReset, onBack }: {
                   : "We couldn't find a match this time"}
               </h2>
               <div className="flex items-center gap-2 mt-1.5 flex-wrap">
-                <span className="text-[13px] font-bold text-slate-400">{answers.origin}</span>
+                <span className="text-[13px] font-bold text-slate-400">{answers.origin as string}</span>
                 <ArrowRight size={14} className="text-slate-300" />
-                <span className="text-[13px] font-bold text-[#0D6E6E] px-2 py-0.5 rounded-md border border-[#0D6E6E]/20 bg-[#0D6E6E]/5">{answers.destination}</span>
+                <span className="text-[13px] font-bold text-[#0D6E6E] px-2 py-0.5 rounded-md border border-[#0D6E6E]/20 bg-[#0D6E6E]/5">{answers.destination as string}</span>
               </div>
             </div>
           </div>
@@ -556,11 +560,20 @@ export default function VisaExplorationTool() {
 
   const steps = buildSteps(answers);
   const currentStep = steps[stepIndex];
-  const candidates = getCandidateCodes(answers);
-  const gatesDone = allGateAnswered(answers);
-  const eligibleVisas = gatesDone ? getEligibleVisas(answers) : [];
-  const ineligibleCodes = gatesDone
-    ? candidates.filter((code) => !evaluateGate(code, (answers.gateAnswers || {})[code] || {}).eligible)
+  
+  // Get active country data
+  const destination = answers.destination as string;
+  const countryData = destination ? getCountryData(destination) : null;
+
+  const gatesDone = countryData ? allGateAnswered(answers, countryData.getCandidateCodes, countryData.gateQuestions) : false;
+  
+  const eligibleVisas = (gatesDone && countryData) 
+    ? getEligibleVisas(answers, countryData.getCandidateCodes, countryData.gateQuestions, countryData.visas) 
+    : [];
+
+  const candidates = countryData ? countryData.getCandidateCodes(answers) : [];
+  const ineligibleCodes = (gatesDone && countryData)
+    ? candidates.filter((code) => !evaluateGate(code, countryData.gateQuestions, (answers.gateAnswers || {})[code] || {}).eligible)
     : [];
 
   const isLastStep = stepIndex >= steps.length - 1;
@@ -579,7 +592,7 @@ export default function VisaExplorationTool() {
   if (currentStep?.isUnsupported && !showResults) {
     return (
       <div className="w-full min-h-[80vh] flex items-center justify-center bg-transparent">
-        <UnsupportedScreen destination={answers.destination!} onChangeDestination={() => setStepIndex(1)} onReset={handleReset} />
+        <UnsupportedScreen destination={destination} onChangeDestination={() => setStepIndex(1)} onReset={handleReset} />
       </div>
     );
   }

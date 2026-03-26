@@ -142,7 +142,7 @@ export const paymentService = {
    */
   async updateUserSubscription(
     userId: string,
-    tier: 'basic' | 'premium' | 'executive',
+    tier: 'free' | 'basic' | 'premium' | 'executive',
     stripeCustomerId?: string
   ): Promise<void> {
     const updateData = {
@@ -177,8 +177,8 @@ export const paymentService = {
    * Get user subscription info
    */
   async getUserSubscription(userId: string): Promise<{
-    subscription_tier: 'basic' | 'premium' | 'executive';
-    subscription_status: 'active' | 'inactive' | 'canceled';
+    subscription_tier: 'free' | 'basic' | 'premium' | 'executive';
+    subscription_status: 'active' | 'inactive' | 'canceled' | 'past_due';
     stripe_customer_id?: string;
   } | null> {
     // Try user_profiles first
