@@ -121,7 +121,7 @@ export default function SettingsPage() {
 
   useEffect(() => {
     if (!isLoading && !user) {
-      router.push("/login");
+      router.push(`/login?redirectTo=${encodeURIComponent(window.location.pathname + window.location.search)}`);
       return;
     }
 
@@ -183,7 +183,7 @@ export default function SettingsPage() {
 
   const handleSignOut = async () => {
     await signOut();
-    router.push("/login");
+    router.push(`/login?redirectTo=${encodeURIComponent(window.location.pathname + window.location.search)}`);
   };
 
   const handleDeleteAccount = () => {
