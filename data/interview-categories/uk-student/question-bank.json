@@ -1,529 +1,869 @@
 {
-    "categorySlug": "uk-student",
-    "version": "1.1.0",
-    "lastUpdated": "2026-03-25",
-    "questions": [
-      {
-        "id": "study-why-uk",
-        "category": "Study Plans",
-        "question": "Why do you want to study in the United Kingdom?",
-        "suggestedAnswer": "I want to study in the United Kingdom because {{why_this_field}}. The UK education system offers superior {{field_of_study}} programs and opportunities that will help me achieve my career goals in a way that is not available in {{country_of_residence}}.",
-        "guidance": "Explain what the UK offers that your home country cannot. Focus on educational advantages, not immigration intent.",
-        "tooltip": "Officers assess genuine educational motivation vs. immigration intent.",
-        "priority": "high"
-      },
-      {
-        "id": "study-major",
-        "category": "Study Plans",
-        "question": "What will be your major or field of study?",
-        "suggestedAnswer": "I will major in {{field_of_study}}.",
-        "guidance": "Be clear and specific about your major and intended specialization.",
-        "tooltip": "Demonstrates a well-thought-out educational plan.",
-        "priority": "high"
-      },
-      {
-        "id": "study-why-field",
-        "category": "Study Plans",
-        "question": "Why did you choose this field of study?",
-        "suggestedAnswer": "I chose {{field_of_study}} because {{why_this_field}}. This field aligns with my interests and long-term career aspirations.",
-        "guidance": "Show genuine passion and connection to your field. Explain what drew you to it.",
-        "tooltip": "Demonstrates thoughtful motivation for field selection.",
-        "priority": "high"
-      },
-      {
-        "id": "study-previous-education",
-        "category": "Study Plans",
-        "question": "Tell us about your previous education.",
-        "suggestedAnswer": "I completed my {{current_education_level}} with a GPA of {{previous_gpa}}. {{previous_education_details}} This educational foundation has prepared me well for advanced studies.",
-        "guidance": "Describe your educational timeline, GPA, and notable achievements.",
-        "tooltip": "Officers verify academic preparation for higher education.",
-        "priority": "high"
-      },
-      {
-        "id": "study-continuation-uk",
-        "category": "Study Plans",
-        "question": "Why are you planning to continue your education in the United Kingdom? Can you not continue in your home country?",
-        "suggestedAnswer": "While I could continue my education in {{country_of_residence}}, the United Kingdom offers superior {{field_of_study}} programs, world-renowned professors, and research opportunities that are unmatched. This will significantly enhance my qualifications.",
-        "guidance": "Be honest about limitations in your home country while explaining UK-specific advantages.",
-        "tooltip": "Officers want to understand why UK education is specifically necessary.",
-        "priority": "high"
-      },
-      {
-        "id": "study-goals-alignment",
-        "category": "Study Plans",
-        "question": "How will this study program relate to your past work or studies?",
-        "suggestedAnswer": "My {{intended_degree}} at {{primary_university}} will advance my knowledge in {{field_of_study}} and enable me to {{post_graduation_job_plans}}. This represents a clear progression from my previous experience.",
-        "guidance": "Draw a clear connection between your past and future, showing coherent progression.",
-        "tooltip": "Demonstrates a coherent educational and career plan.",
-        "priority": "high"
-      },
-      {
-        "id": "uni-applications-count",
-        "category": "University Choice",
-        "question": "How many universities did you apply to?",
-        "suggestedAnswer": "I applied to {{total_universities_applied}} universities in total.",
-        "guidance": "State the exact number of universities you applied to.",
-        "tooltip": "Shows application selectivity and planning.",
-        "priority": "high"
-      },
-      {
-        "id": "uni-why-primary",
-        "category": "University Choice",
-        "question": "Why did you choose this university as your primary choice?",
-        "suggestedAnswer": "{{why_primary_university}} This university stands out because of its program strength, faculty expertise, and alignment with my academic and career goals.",
-        "guidance": "Explain what makes this university unique for you and your field.",
-        "tooltip": "Demonstrates genuine interest and informed decision-making.",
-        "priority": "high"
-      },
-      {
-        "id": "uni-research-details",
-        "category": "University Choice",
-        "question": "What do you know about your university's program?",
-        "suggestedAnswer": "{{university_knowledge}} I have researched the program curriculum, campus facilities, and community resources, and I am confident that this university is the right fit for me.",
-        "guidance": "Demonstrate detailed research about curriculum, facilities, professors, and campus life.",
-        "tooltip": "Shows genuine interest and preparation for arrival.",
-        "priority": "high"
-      },
-      {
-        "id": "uni-faculty-knowledge",
-        "category": "University Choice",
-        "question": "What do you know about professors or faculty in your field?",
-        "suggestedAnswer": "I have researched faculty in the {{field_of_study}} department at {{primary_university}}. I am particularly interested in learning from professors who specialize in that field.",
-        "guidance": "Mention specific professors or show knowledge of faculty research areas.",
-        "tooltip": "Demonstrates genuine academic interest in the institution.",
-        "priority": "medium"
-      },
-      {
-        "id": "uni-location",
-        "category": "University Choice",
-        "question": "In which city is your university located?",
-        "suggestedAnswer": "{{primary_university}} is located in {{university_city_state}}.",
-        "guidance": "Mention city clearly. In the UK, this is typically in England, Scotland, Wales, or Northern Ireland.",
-        "tooltip": "Verifies university location knowledge and familiarity with UK geography.",
-        "priority": "high"
-      },
-      {
-        "id": "academic-english-test",
-        "category": "Academic Capability",
-        "question": "What are your English proficiency test scores (TOEFL or IELTS)?",
-        "suggestedAnswer": "I achieved a score of {{ielts_score ? '{{ielts_score}}' : '{{toefl_score}}'}} on the {{english_proficiency_test}} exam, which demonstrates my readiness for university-level coursework in English.",
-        "guidance": "State your test scores confidently and explain what they mean for your academic readiness.",
-        "tooltip": "Test scores are mandatory verification of English proficiency.",
-        "priority": "high"
-      },
-      {
-        "id": "academic-standardized-test",
-        "category": "Academic Capability",
-        "question": "Did you take a standardized test (GRE, GMAT, SAT, or ACT)?",
-        "suggestedAnswer": "I took the {{standardized_test}} and scored {{standardized_test_score}}, which demonstrates my academic capability for graduate-level work.",
-        "guidance": "Many programs require GRE/GMAT for graduate and SAT/ACT for undergraduate programs.",
-        "tooltip": "Validates academic capability for your program level.",
-        "priority": "high",
-        "skipIf": [{"field": "standardized_test", "equals": "None"}]
-      },
-      {
-        "id": "academic-previous-gpa",
-        "category": "Academic Capability",
-        "question": "What was your GPA in your previous education?",
-        "suggestedAnswer": "My previous GPA was {{previous_gpa}}, which demonstrates my consistent academic performance and preparation for graduate-level work.",
-        "guidance": "State your GPA on the same scale as your previous institution.",
-        "tooltip": "Shows academic preparation for UK university standards.",
-        "priority": "high"
-      },
-      {
-        "id": "academic-english-medium",
-        "category": "Academic Capability",
-        "question": "Was your previous education conducted in English?",
-        "suggestedAnswer": "{{medium_of_instruction ? 'Yes, my previous education was conducted in English, which provides me a strong foundation for UK university studies.' : 'No, my education was not in English medium, however I have studied English extensively and achieved strong proficiency scores ({{english_proficiency_test}}: {{ielts_score ? ielts_score : toefl_score}}). I am well-prepared to succeed in English-medium academic coursework.'}}\n",
-        "guidance": "Answer honestly about your educational medium.",
-        "tooltip": "Determines English proficiency level and need for support.",
-        "priority": "high"
-      },
-      {
-        "id": "academic-english-confidence",
-        "category": "Academic Capability",
-        "question": "How confident are you in your English ability?",
-        "suggestedAnswer": "I would rate my English proficiency at {{english_confidence_rating}} out of 10. I have the foundation needed to succeed in English-medium coursework.",
-        "guidance": "Be honest about your comfort level with academic English.",
-        "tooltip": "Self-assessment of English readiness for UK university.",
-        "priority": "high"
-      },
-      {
-        "id": "academic-english-management",
-        "category": "Academic Capability",
-        "question": "How will you manage studying in English at a UK university?",
-        "suggestedAnswer": "{{how_you_will_manage_english}} I am committed to utilizing all available resources to ensure my academic success.",
-        "guidance": "Explain your strategies such as tutoring, study groups, or academic support services.",
-        "tooltip": "Demonstrates readiness to handle academic English challenges.",
-        "priority": "high"
-      },
-      {
-        "id": "academic-uk-comparison",
-        "category": "Academic Capability",
-        "question": "Why pursue your degree in the UK instead of Canada, Australia, or the US?",
-        "suggestedAnswer": "The UK offers a unique educational experience in {{field_of_study}} and {{primary_university}} specifically provides {{why_primary_university}}. While other countries have excellent programs, the UK aligns best with my career goals.",
-        "tooltip": "Shows thoughtful analysis of educational options.",
-        "priority": "medium"
-      },
-      {
-        "id": "academic-struggle-support",
-        "category": "Academic Capability",
-        "question": "What will you do if you struggle academically in the first semester?",
-        "suggestedAnswer": "{{academic_success_strategy}} I will also seek support from {{primary_university}} academic resources, meet with professors during office hours, form study groups, and utilize tutoring services if needed.",
-        "guidance": "Show proactive planning and knowledge of university support systems.",
-        "tooltip": "Demonstrates realistic expectations and commitment to success.",
-        "priority": "medium"
-      },
-      {
-        "id": "finance-sponsor-identity",
-        "category": "Financial Status",
-        "question": "Who is your financial sponsor?",
-        "suggestedAnswer": "My {{sponsor_relationship}} will sponsor my education.",
-        "guidance": "Identify your main source of financial support clearly.",
-        "tooltip": "Critical to establish who is funding your education.",
-        "priority": "high"
-      },
-      {
-        "id": "finance-sponsor-occupation",
-        "category": "Financial Status",
-        "question": "What is your sponsor's occupation?",
-        "suggestedAnswer": "My sponsor works as a {{sponsor_occupation}}.",
-        "guidance": "Describe the primary source of their income clearly.",
-        "tooltip": "Assesses financial stability and income source.",
-        "priority": "high"
-      },
-      {
-        "id": "finance-sponsor-income",
-        "category": "Financial Status",
-        "question": "What is your sponsor's annual income in USD?",
-        "suggestedAnswer": "My sponsor's annual income is approximately ${{sponsor_annual_income}}, which is sufficient to cover my education costs.",
-        "guidance": "Provide in USD, converting from local currency using current exchange rates.",
-        "tooltip": "Income is critical to prove financial capability for the full program duration.",
-        "priority": "high"
-      },
-      {
-        "id": "finance-income-proof",
-        "category": "Financial Status",
-        "question": "Do you have proof of your sponsor's income?",
-        "suggestedAnswer": "Yes, I have prepared comprehensive income documentation including {{sponsor_income_proof}} to verify my sponsor's financial capability for funding my education in the UK.",
-        "guidance": "Prepare tax returns (last 2 years), salary certificates, or business documents.",
-        "tooltip": "Essential documents for visa officer verification.",
-        "priority": "high"
-      },
-      {
-        "id": "finance-program-cost",
-        "category": "Financial Status",
-        "question": "What is the total estimated cost of your program?",
-        "suggestedAnswer": "The total estimated cost of my {{intended_degree}} program is approximately ${{total_program_cost}} per year, including tuition, fees, accommodation, and living expenses.",
-        "guidance": "Break down costs into components to show you've researched thoroughly.",
-        "tooltip": "Cost breakdown shows realistic planning.",
-        "priority": "high"
-      },
-      {
-        "id": "finance-available-funds",
-        "category": "Financial Status",
-        "question": "How much funding can you access for your education?",
-        "suggestedAnswer": "I have approximately ${{available_funds}} available for my education from my sponsor and personal resources.",
-        "guidance": "Include sponsor savings, family gifts, and any personal funds.",
-        "tooltip": "Must cover program cost to demonstrate financial capability.",
-        "priority": "high"
-      },
-      {
-        "id": "finance-funding-plan",
-        "category": "Financial Status",
-        "question": "How do you plan to fund your entire education?",
-        "suggestedAnswer": "My {{sponsor_relationship}} will provide approximately ${{available_funds}}, which covers the full cost of my education. {{scholarship_status ? 'I have also received a {{scholarship_type}} scholarship of ${{scholarship_amount}} from {{primary_university}}, which further strengthens my financial capability.' : 'I am financially supported by my sponsor and do not require additional scholarship funding.'}}",
-        "guidance": "Show complete picture: sponsor funds, scholarship (if any), and any personal contribution.",
-        "tooltip": "Officers need to see complete financing for all program years.",
-        "priority": "high"
-      },
-      {
-        "id": "finance-funds-proof",
-        "category": "Financial Status",
-        "question": "Do you have proof of available funds?",
-        "suggestedAnswer": "Yes, I have prepared comprehensive proof of available funds including {{funds_availability_proof}} that demonstrate my sponsor's and my financial capability to fund the complete cost of my studies in the UK.",
-        "guidance": "Prepare bank statements, affidavits of support, and investment documents.",
-        "tooltip": "Mandatory for CAS (Confirmation of Acceptance for Studies) and visa officer verification.",
-        "priority": "high"
-      },
-      {
-        "id": "finance-scholarship-status",
-        "category": "Financial Status",
-        "question": "Did you receive a scholarship?",
-        "suggestedAnswer": "{{scholarship_status ? 'Yes, I received a {{scholarship_type}} scholarship from {{primary_university}}, which significantly supports my education financially.' : 'No, I did not receive a scholarship, but my education is fully funded through my sponsor and personal resources.'}}",
-        "guidance": "Answer honestly about scholarship status.",
-        "tooltip": "Scholarships strengthen financial capability profile.",
-        "priority": "high"
-      },
-      {
-        "id": "finance-scholarship-amount",
-        "category": "Financial Status",
-        "question": "What is your scholarship amount?",
-        "suggestedAnswer": "I received a ${{scholarship_amount}} {{scholarship_type}} scholarship from {{primary_university}}.",
-        "guidance": "State the annual or total amount as specified in your scholarship letter.",
-        "tooltip": "Shows partial or full financial support from university.",
-        "priority": "high",
-        "skipIf": [
-          {
-            "field": "scholarship_status",
-            "notEquals": true
-          }
-        ]
-      },
-      {
-        "id": "finance-scholarship-type",
-        "category": "Financial Status",
-        "question": "What type of scholarship did you receive?",
-        "suggestedAnswer": "My scholarship is {{scholarship_type}}, which significantly reduces my financial burden for my education.",
-        "guidance": "Specify if it's merit-based, need-based, full tuition, etc.",
-        "tooltip": "Shows academic excellence or financial strength.",
-        "priority": "medium",
-        "skipIf": [
-          {
-            "field": "scholarship_status",
-            "notEquals": true
-          }
-        ]
-      },
-      {
-        "id": "finance-shortfall-backup",
-        "category": "Financial Status",
-        "question": "What if your sponsor cannot support you fully?",
-        "suggestedAnswer": "{{funding_shortfall_plan}} I have researched alternative funding and identified multiple backup plans to ensure I can complete my education.",
-        "guidance": "Describe alternative sources: loans, additional family funds, part-time work, etc.",
-        "tooltip": "Backup plans show maturity and serious commitment.",
-        "priority": "medium"
-      },
-      {
-        "id": "study-program-career-fit",
-        "category": "Study Plans",
-        "question": "How does this course fit your long-term career goals?",
-        "suggestedAnswer": "My long-term career goal is to {{post_graduation_job_plans}}. This {{intended_degree}} in {{field_of_study}} is the ideal stepping stone to achieve this. The program will equip me with the {{why_this_field}} skills that are directly needed for this role.",
-        "guidance": "Draw a clear connection between the specific program and your career objectives.",
-        "tooltip": "Demonstrates that your study plans are purposeful and aligned with realistic career goals.",
-        "priority": "high"
-      },
-      {
-        "id": "study-professional-preparation",
-        "category": "Study Plans",
-        "question": "How does your program prepare you for professional practice or registration in your home country or internationally?",
-        "suggestedAnswer": "This program is structured to meet international professional standards in {{field_of_study}}. Upon graduation, I will be eligible to pursue professional credentials and registrations such as {{field_of_study}} certifications, which are recognized in {{country_of_residence}} and internationally.",
-        "guidance": "Research the professional standards and certifications in your field for your home country.",
-        "tooltip": "Shows that your education has practical professional value beyond the degree itself.",
-        "priority": "high"
-      },
-      {
-        "id": "finance-personal-savings",
-        "category": "Financial Status",
-        "question": "Are you contributing any personal savings? If yes, what is the source?",
-        "suggestedAnswer": "{{personal_savings_contribution}}",
-        "guidance": "Be honest about personal financial contributions. If you have savings, explain the legitimate source.",
-        "tooltip": "Personal contributions strengthen your financial profile and show commitment.",
-        "priority": "medium",
-        "skipIf": [{"field": "personal_savings_contribution", "equals": ""}]
-      },
-      {
-        "id": "finance-part-time-work",
-        "category": "Financial Status",
-        "question": "Do you plan to work part-time while studying? How will you balance it with your studies?",
-        "suggestedAnswer": "{{part_time_work_plans}} I understand that UK student visa regulations allow international students to work up to 20 hours per week during term time, and I plan to strictly adhere to these limitations to prioritize my academic success.",
-        "guidance": "Explain your work plans realistically and demonstrate awareness of visa work restrictions.",
-        "tooltip": "Shows realistic planning and understanding of visa regulations and academic priorities.",
-        "priority": "high"
-      },
-      {
-        "id": "postgrad-post-study-work-visa",
-        "category": "Post-Graduation Plans",
-        "question": "Do you plan to use the post-study work visa (PSW)? If yes, how does it fit into your career plan?",
-        "suggestedAnswer": "{{post_study_work_visa_plans ? post_study_work_visa_plans + ' However, after this temporary work period, I plan to return to {{country_of_residence}} and pursue my long-term career goals.' : 'I plan to return to {{country_of_residence}} immediately after completing my studies and begin my {{post_graduation_job_plans}}.'}} My ultimate goal is to {{post_graduation_job_plans}} in my home country.",
-        "guidance": "If planning to use PSW, explain how it's a stepping stone toward your ultimate career goals in your home country.",
-        "tooltip": "Post-study work is a temporary visa requiring clear connection to home country plans.",
-        "priority": "high"
-      },
-      {
-        "id": "postgrad-healthcare-management",
-        "category": "Post-Graduation Plans",
-        "question": "How will you manage healthcare while studying abroad?",
-        "suggestedAnswer": "{{healthcare_management_abroad}} I understand that as an international student, I will have access to the UK's NHS (National Health Service) and will register with a local GP upon arrival. I am also aware of any health insurance requirements and will maintain appropriate coverage throughout my studies.",
-        "guidance": "Demonstrate knowledge of UK healthcare system and planning for health emergencies.",
-        "tooltip": "Shows practical preparation and understanding of health support systems available.",
-        "priority": "medium"
-      },
-      {
-        "id": "background-student-visa-conditions",
-        "category": "Background",
-        "question": "Do you understand the conditions of your student visa, including work limitations?",
-        "suggestedAnswer": "{{student_visa_conditions_understanding}} I am aware that as a student visa holder, I am permitted to work a maximum of 20 hours per week during term-time and full-time during official university breaks. I understand these are strict conditions and I am committed to complying with all visa regulations.",
-        "guidance": "Demonstrate clear understanding of specific UK student visa work restrictions and conditions.",
-        "tooltip": "Critical for credibility - shows you've researched visa obligations and plan to comply.",
-        "priority": "high"
-      },
-      {
-        "category": "Post-Graduation Plans",
-        "question": "What are your career goals after graduation?",
-        "suggestedAnswer": "{{post_graduation_job_plans}} I plan to pursue this career after completing my {{intended_degree}}.",
-        "guidance": "Describe specific, realistic career goals aligned with your degree.",
-        "tooltip": "Clear post-graduation plans strengthen student visa application.",
-        "priority": "high"
-      },
-      {
-        "id": "postgrad-return-intent",
-        "category": "Post-Graduation Plans",
-        "question": "Do you plan to return to your home country after graduation?",
-        "suggestedAnswer": "{{plan_to_return_home ? 'Yes, I plan to return to {{country_of_residence}} immediately after completing my studies to pursue my academic and career goals.' : 'I may initially pursue temporary work experience through a post-study work visa, but my long-term intention is to return to {{country_of_residence}}.'}} I have strong ties to my home country through my {{family_in_home_country ? 'close family members in {{country_of_residence}}' : 'professional and personal networks in {{country_of_residence}}'}} that make returning home a priority.",
-        "guidance": "Be honest about your intent. Strong home country ties provide credibility.",
-        "tooltip": "Intent to return is critical for student visa officer assessment.",
-        "priority": "high",
-        "skipIf": []
-      },
-      {
-        "id": "postgrad-home-ties",
-        "category": "Post-Graduation Plans",
-        "question": "What are your ties to your home country?",
-        "suggestedAnswer": "I have multiple strong ties to {{country_of_residence}} that make returning home important to me. {{family_in_home_country ? 'My family is based in {{country_of_residence}} - {{family_details}}.' : 'I have professional networks and personal commitments in {{country_of_residence}}.'}} {{property_or_assets_home ? 'Additionally, my family has property and assets in {{country_of_residence}}.' : ''}} After completing my {{intended_degree}}, I plan to {{post_graduation_job_plans}}.",
-        "guidance": "Mention family, property, business, and career opportunities.",
-        "tooltip": "Establishes personal and financial ties to home country.",
-        "priority": "high",
-        "skipIf": [{"field": "plan_to_return_home", "equals": false}]
-      },
-      {
-        "id": "postgrad-family-connections",
-        "category": "Post-Graduation Plans",
-        "question": "Do you have close family in your home country?",
-        "suggestedAnswer": "{{family_in_home_country ? 'Yes, I have close family in {{country_of_residence}}: {{family_details}}. These family ties are very important to me and provide strong motivation to return home after my studies.' : 'Most of my family is dispersed, but I have strong professional and personal connections to {{country_of_residence}} that are important to me.'}}",
-        "guidance": "Describe parents, siblings, or other family ties.",
-        "tooltip": "Critical indicator of home country attachment.",
-        "priority": "high",
-        "skipIf": [{"field": "plan_to_return_home", "equals": false}]
-      },
-      {
-        "id": "postgrad-property",
-        "category": "Post-Graduation Plans",
-        "question": "Do you have property or assets in your home country?",
-        "suggestedAnswer": "{{property_or_assets_home ? 'Yes, my family owns property in {{country_of_residence}} that represents significant financial and personal wealth. This reinforces my commitment to eventually returning home.' : 'My family has investments and financial assets in {{country_of_residence}} that represent our financial ties to our home country.'}}",
-        "guidance": "Land, house, or business ownership shows financial ties.",
-        "tooltip": "Financial ties strengthen return home commitment.",
-        "priority": "medium",
-        "skipIf": [{"field": "plan_to_return_home", "equals": false}]
-      },
-      {
-        "id": "postgrad-uk-stay-consideration",
-        "category": "Post-Graduation Plans",
-        "question": "Are you considering staying in the UK after graduation?",
-        "suggestedAnswer": "{{consider_staying_uk ? 'I may pursue a post-study work visa to gain professional experience in the UK initially, as outlined in {{post_study_work_visa_plans}}, but my ultimate intention is to return to {{country_of_residence}}.' : 'My primary goal is to complete my studies and return to my home country to pursue my career goals.'}}",
-        "guidance": "If considering PSW or other work visas, frame as temporary work experience before returning home.",
-        "tooltip": "Short-term UK work followed by home country return demonstrates genuine student intent.",
-        "priority": "high",
-        "skipIf": [{"field": "plan_to_return_home", "equals": true}]
-      },
-      {
-        "id": "background-previous-uk-stays",
-        "category": "Background",
-        "question": "Have you visited the UK before?",
-        "suggestedAnswer": "{{previous_uk_visits ? 'Yes, I have previously visited the UK, which gave me direct experience with the country and strengthened my commitment to studying here.' : 'No, I have not visited the UK before, but I have conducted thorough research about UK universities, the education system, and student life to prepare myself well for this transition.'}}",
-        "guidance": "Answer honestly about travel history.",
-        "tooltip": "Checks travel experience and visa history.",
-        "priority": "medium"
-      },
-      {
-        "id": "background-uk-visit-details",
-        "category": "Background",
-        "question": "When did you visit the UK and what was the purpose?",
-        "suggestedAnswer": "I visited {{primary_university}} and other UK cities to tour campuses, research academic programs, and experience university life firsthand. This visit greatly strengthened my commitment to studying at {{primary_university}} and helped me understand what to expect as an international student in the UK.",
-        "guidance": "Provide approximate dates and mention campus tours or tourism.",
-        "tooltip": "Verifies legitimate travel and interest in UK.",
-        "priority": "medium",
-        "skipIf": [
-          {
-            "field": "previous_uk_visits",
-            "equals": false
-          }
-        ]
-      },
-      {
-        "id": "background-visa-refusal",
-        "category": "Background",
-        "question": "Have you ever been denied any visa?",
-        "suggestedAnswer": "{{visa_refusal_history ? 'Yes, I was previously denied a visa, and I understand this will be carefully reviewed by the visa officer.' : 'No, I have never been denied a visa to any country, and I have a clean immigration record.'}}",
-        "guidance": "Honesty is critical - this will be verified in your records.",
-        "tooltip": "Previous refusals are reviewed carefully.",
-        "priority": "high"
-      },
-      {
-        "id": "background-visa-refusal-explanation",
-        "category": "Background",
-        "question": "Explain the visa refusal and what has changed.",
-        "suggestedAnswer": "I was previously denied a {{other_countries_visa_refusal ? 'visa to another country' : 'student visa'}} because {{visa_refusal_history ? 'of concerns regarding my documentation/financial capability/application details.' : ''}} Since then, my circumstances have significantly improved. I have: (1) Secured admission to {{primary_university}} with a strong academic profile, (2) Demonstrated comprehensive financial capability with bank statements and sponsor documentation, and (3) Established clear intent to study through detailed research and university engagement. I am now clearly eligible for a UK student visa.",
-        "guidance": "Honestly explain the reason and how circumstances have improved.",
-        "tooltip": "Demonstrates addressing previous concerns.",
-        "priority": "high",
-        "skipIf": [
-          {
-            "field": "visa_refusal_history",
-            "equals": false
-          }
-        ]
-      },
-      {
-        "id": "background-criminal-record",
-        "category": "Background",
-        "question": "Do you have any criminal convictions?",
-        "suggestedAnswer": "{{criminal_record ? 'I am required to disclose criminal history to UK Visas and Immigration (UKVI), and I have documentation regarding my circumstances.' : 'No, I do not have any criminal record, and I have maintained clean legal standing throughout my life.'}}",
-        "guidance": "Always answer truthfully - criminal history triggers security reviews.",
-        "tooltip": "Criminal history is grounds for visa denial.",
-        "priority": "high",
-        "skipIf": [
-          {
-            "field": "criminal_record",
-            "equals": false
-          }
-        ]
-      },
-      {
-        "id": "background-uk-immigration-issues",
-        "category": "Background",
-        "question": "Do you have any legal issues in the UK?",
-        "suggestedAnswer": "{{any_uk_immigration_issues ? 'I have legal issues to disclose to the UK immigration authorities, and I have documentation prepared.' : 'No, I have no legal issues in the UK and intend to maintain full compliance with all UK laws as a student.'}}",
-        "guidance": "Disclose any arrests, legal violations, or previous UK visa issues if applicable.",
-        "tooltip": "Security clearance and admissibility requirement.",
-        "priority": "high",
-        "skipIf": [
-          {
-            "field": "any_uk_immigration_issues",
-            "equals": false
-          }
-        ]
-      },
-      {
-        "id": "background-visa-overstay",
-        "category": "Background",
-        "question": "Have you ever overstayed a visa in any country?",
-        "suggestedAnswer": "{{previous_overstay ? 'Yes, I must disclose a previous visa overstay and understand this is a serious immigration matter that will be reviewed carefully by the UK authorities.' : 'No, I have never overstayed a visa and have maintained strict compliance with all visa terms and departure requirements.'}}",
-        "guidance": "Answer truthfully - overstays are serious immigration violations.",
-        "tooltip": "Overstays can result in visa denials and bans.",
-        "priority": "high",
-        "skipIf": [
-          {
-            "field": "previous_overstay",
-            "equals": false
-          }
-        ]
-      },
-      {
-        "id": "background-other-visa-denials",
-        "category": "Background",
-        "question": "Have you been denied a visa to any other country?",
-        "suggestedAnswer": "{{other_countries_visa_refusal ? 'Yes, I have been denied visas to other countries, and I understand the British authorities will review these decisions carefully.' : 'No, I have not been denied visas to other countries and maintain a strong visa and travel record.'}}",
-        "guidance": "Visa refusals to other countries may indicate patterns that require explanation.",
-        "tooltip": "Visa refusals to other countries are reviewed carefully.",
-        "priority": "high",
-        "skipIf": [
-          {
-            "field": "other_countries_visa_refusal",
-            "equals": false
-          }
-        ]
-      }
-    ]
-  }
-  
+  "categorySlug": "uk-student",
+  "version": "1.1.0",
+  "lastUpdated": "2026-03-27",
+  "questions": [
+    {
+      "id": "study-why-uk",
+      "category": "Study Plans",
+      "question": "Why do you want to study in the United Kingdom?",
+      "suggestedAnswer": "I want to study in the United Kingdom because {{why_this_field}}. The UK education system offers superior {{field_of_study}} programs and opportunities that will help me achieve my career goals in a way that is not available in {{country_of_residence}}.",
+      "guidance": "Explain what the UK offers that your home country cannot. Focus on educational advantages, not immigration intent.",
+      "tooltip": "Officers assess genuine educational motivation vs. immigration intent.",
+      "priority": "high",
+      "variations": [
+        "What attracts you to pursuing your studies in the United Kingdom?",
+        "Could you elaborate on your reasons for selecting the United Kingdom for your academic pursuits?",
+        "What are your motivations for choosing the UK as your study destination?",
+        "Why have you decided to undertake your higher education in the United Kingdom?"
+      ]
+    },
+    {
+      "id": "study-major",
+      "category": "Study Plans",
+      "question": "What will be your major or field of study?",
+      "suggestedAnswer": "I will major in {{field_of_study}}.",
+      "guidance": "Be clear and specific about your major and intended specialization.",
+      "tooltip": "Demonstrates a well-thought-out educational plan.",
+      "priority": "high",
+      "variations": [
+        "Which academic program have you chosen to pursue?",
+        "Could you please state your intended field of study?",
+        "What specific discipline do you plan to major in?",
+        "Kindly inform us of the subject area you will be studying?"
+      ]
+    },
+    {
+      "id": "study-why-field",
+      "category": "Study Plans",
+      "question": "Why did you choose this field of study?",
+      "suggestedAnswer": "I chose {{field_of_study}} because {{why_this_field}}. This field aligns with my interests and long-term career aspirations.",
+      "guidance": "Show genuine passion and connection to your field. Explain what drew you to it.",
+      "tooltip": "Demonstrates thoughtful motivation for field selection.",
+      "priority": "high",
+      "variations": [
+        "What led you to select this particular area of study?",
+        "Could you explain your motivations behind pursuing this specific field?",
+        "What are your reasons for opting for this academic discipline?",
+        "Why have you decided to dedicate your studies to this field?"
+      ]
+    },
+    {
+      "id": "study-previous-education",
+      "category": "Study Plans",
+      "question": "Tell us about your previous education.",
+      "suggestedAnswer": "I completed my {{current_education_level}} with a GPA of {{previous_gpa}}. {{previous_education_details}} This educational foundation has prepared me well for advanced studies.",
+      "guidance": "Describe your educational timeline, GPA, and notable achievements.",
+      "tooltip": "Officers verify academic preparation for higher education.",
+      "priority": "high",
+      "variations": [
+        "Please provide details regarding your academic background.",
+        "Could you summarize your prior educational qualifications?",
+        "What has been your educational journey leading up to this point?",
+        "Kindly describe your academic history or previous schooling?"
+      ]
+    },
+    {
+      "id": "study-continuation-uk",
+      "category": "Study Plans",
+      "question": "Why are you planning to continue your education in the United Kingdom? Can you not continue in your home country?",
+      "suggestedAnswer": "While I could continue my education in {{country_of_residence}}, the United Kingdom offers superior {{field_of_study}} programs, world-renowned professors, and research opportunities that are unmatched. This will significantly enhance my qualifications.",
+      "guidance": "Be honest about limitations in your home country while explaining UK-specific advantages.",
+      "tooltip": "Officers want to understand why UK education is specifically necessary.",
+      "priority": "high",
+      "variations": [
+        "What are your reasons for furthering your studies in the UK, rather than continuing within your home country?",
+        "Could you explain why you've chosen to pursue advanced education in the United Kingdom, and why a similar path isn't feasible domestically?",
+        "Why have you opted to continue your academic journey in the UK, and what factors prevent you from doing so in your own country?",
+        "Please clarify your decision to pursue further education in the United Kingdom, and why local options for continuing your studies were not suitable?"
+      ]
+    },
+    {
+      "id": "study-goals-alignment",
+      "category": "Study Plans",
+      "question": "How will this study program relate to your past work or studies?",
+      "suggestedAnswer": "My {{intended_degree}} at {{primary_university}} will advance my knowledge in {{field_of_study}} and enable me to {{post_graduation_job_plans}}. This represents a clear progression from my previous experience.",
+      "guidance": "Draw a clear connection between your past and future, showing coherent progression.",
+      "tooltip": "Demonstrates a coherent educational and career plan.",
+      "priority": "high",
+      "variations": [
+        "In what ways does this academic program build upon your prior work experience or educational background?",
+        "How do you see this course of study aligning with your previous professional or academic endeavors?",
+        "What is the connection between your intended program and your past studies or professional history?",
+        "Could you explain how this particular study program integrates with your previous academic achievements or work experience?"
+      ]
+    },
+    {
+      "id": "uni-applications-count",
+      "category": "University Choice",
+      "question": "How many universities did you apply to?",
+      "suggestedAnswer": "I applied to {{total_universities_applied}} universities in total.",
+      "guidance": "State the exact number of universities you applied to.",
+      "tooltip": "Shows application selectivity and planning.",
+      "priority": "high",
+      "variations": [
+        "To how many educational institutions did you submit applications?",
+        "Could you tell us the total number of universities you applied to?",
+        "How many applications did you make to various universities?",
+        "What was the total count of university applications you submitted?"
+      ]
+    },
+    {
+      "id": "uni-why-primary",
+      "category": "University Choice",
+      "question": "Why did you choose this university as your primary choice?",
+      "suggestedAnswer": "{{why_primary_university}} This university stands out because of its program strength, faculty expertise, and alignment with my academic and career goals.",
+      "guidance": "Explain what makes this university unique for you and your field.",
+      "tooltip": "Demonstrates genuine interest and informed decision-making.",
+      "priority": "high",
+      "variations": [
+        "What factors led you to select this particular university as your first preference?",
+        "Could you explain your primary reasons for choosing this institution above others?",
+        "Why is this university your preferred option for your studies?",
+        "What makes this university your top choice for your academic pursuits?"
+      ]
+    },
+    {
+      "id": "uni-research-details",
+      "category": "University Choice",
+      "question": "What do you know about your university's program?",
+      "suggestedAnswer": "{{university_knowledge}} I have researched the program curriculum, campus facilities, and community resources, and I am confident that this university is the right fit for me.",
+      "guidance": "Demonstrate detailed research about curriculum, facilities, professors, and campus life.",
+      "tooltip": "Shows genuine interest and preparation for arrival.",
+      "priority": "high",
+      "variations": [
+        "Could you describe your understanding of the curriculum for your chosen program at this university?",
+        "What details can you share about the academic program you intend to pursue at this institution?",
+        "What information have you gathered regarding the specific program you've been admitted to at your university?",
+        "Tell us about your familiarity with the program of study offered by your chosen university?"
+      ]
+    },
+    {
+      "id": "uni-faculty-knowledge",
+      "category": "University Choice",
+      "question": "What do you know about professors or faculty in your field?",
+      "suggestedAnswer": "I have researched faculty in the {{field_of_study}} department at {{primary_university}}. I am particularly interested in learning from professors who specialize in that field.",
+      "guidance": "Mention specific professors or show knowledge of faculty research areas.",
+      "tooltip": "Demonstrates genuine academic interest in the institution.",
+      "priority": "medium",
+      "variations": [
+        "Are you familiar with any specific faculty members or professors within your field at this university?",
+        "What do you know about the academic staff or researchers specializing in your chosen discipline at this institution?",
+        "Could you share any information you have about the professors or lecturers who teach in your field at the university?",
+        "Have you researched the faculty members or leading academics associated with your area of study at your chosen university?"
+      ]
+    },
+    {
+      "id": "uni-location",
+      "category": "University Choice",
+      "question": "In which city is your university located?",
+      "suggestedAnswer": "{{primary_university}} is located in {{university_city_state}}.",
+      "guidance": "Mention city clearly. In the UK, this is typically in England, Scotland, Wales, or Northern Ireland.",
+      "tooltip": "Verifies university location knowledge and familiarity with UK geography.",
+      "priority": "high",
+      "variations": [
+        "Could you please specify the city where your chosen university is situated?",
+        "What is the location of your university campus?",
+        "Where exactly in the UK is your academic institution located?",
+        "Which city will you be residing in for your university studies?"
+      ]
+    },
+    {
+      "id": "academic-english-test",
+      "category": "Academic Capability",
+      "question": "What are your English proficiency test scores (TOEFL or IELTS)?",
+      "suggestedAnswer": "I achieved a score of {{ielts_score ? '{{ielts_score}}' : '{{toefl_score}}'}} on the {{english_proficiency_test}} exam, which demonstrates my readiness for university-level coursework in English.",
+      "guidance": "State your test scores confidently and explain what they mean for your academic readiness.",
+      "tooltip": "Test scores are mandatory verification of English proficiency.",
+      "priority": "high",
+      "variations": [
+        "Please state your scores from your TOEFL or IELTS examination.",
+        "Could you provide your results for the English language proficiency test you took, such as TOEFL or IELTS?",
+        "What were your grades on your official English language assessment, like TOEFL or IELTS?",
+        "Can you confirm your scores for either the TOEFL or IELTS test?"
+      ]
+    },
+    {
+      "id": "academic-standardized-test",
+      "category": "Academic Capability",
+      "question": "Did you take a standardized test (GRE, GMAT, SAT, or ACT)?",
+      "suggestedAnswer": "I took the {{standardized_test}} and scored {{standardized_test_score}}, which demonstrates my academic capability for graduate-level work.",
+      "guidance": "Many programs require GRE/GMAT for graduate and SAT/ACT for undergraduate programs.",
+      "tooltip": "Validates academic capability for your program level.",
+      "priority": "high",
+      "skipIf": [
+        {
+          "field": "standardized_test",
+          "equals": "None"
+        }
+      ],
+      "variations": [
+        "Have you completed any standardized examinations such as the GRE, GMAT, SAT, or ACT?",
+        "Did you sit for any of the common aptitude tests like GRE, GMAT, SAT, or ACT?",
+        "Could you tell us if you have taken a standardized entrance exam such as GRE, GMAT, SAT, or ACT?",
+        "Are there any scores you can provide from tests like GRE, GMAT, SAT, or ACT?"
+      ]
+    },
+    {
+      "id": "academic-previous-gpa",
+      "category": "Academic Capability",
+      "question": "What was your GPA in your previous education?",
+      "suggestedAnswer": "My previous GPA was {{previous_gpa}}, which demonstrates my consistent academic performance and preparation for graduate-level work.",
+      "guidance": "State your GPA on the same scale as your previous institution.",
+      "tooltip": "Shows academic preparation for UK university standards.",
+      "priority": "high",
+      "variations": [
+        "What was your Grade Point Average from your prior academic program?",
+        "Could you tell us your academic standing, specifically your GPA, from your last completed qualification?",
+        "Please indicate your cumulative GPA from your most recent educational background.",
+        "What was the average grade (GPA) you achieved in your previous studies?"
+      ]
+    },
+    {
+      "id": "academic-english-medium",
+      "category": "Academic Capability",
+      "question": "Was your previous education conducted in English?",
+      "suggestedAnswer": "{{medium_of_instruction ? 'Yes, my previous education was conducted in English, which provides me a strong foundation for UK university studies.' : 'No, my education was not in English medium, however I have studied English extensively and achieved strong proficiency scores ({{english_proficiency_test}}: {{ielts_score ? ielts_score : toefl_score}}). I am well-prepared to succeed in English-medium academic coursework.'}}\n",
+      "guidance": "Answer honestly about your educational medium.",
+      "tooltip": "Determines English proficiency level and need for support.",
+      "priority": "high",
+      "variations": [
+        "Was English the primary language of instruction for your preceding academic course?",
+        "Were your previous studies taught entirely in the English language?",
+        "Did you complete your prior education in an English-speaking academic environment?",
+        "Can you confirm if English was the medium of instruction for your last qualification?"
+      ]
+    },
+    {
+      "id": "academic-english-confidence",
+      "category": "Academic Capability",
+      "question": "How confident are you in your English ability?",
+      "suggestedAnswer": "I would rate my English proficiency at {{english_confidence_rating}} out of 10. I have the foundation needed to succeed in English-medium coursework.",
+      "guidance": "Be honest about your comfort level with academic English.",
+      "tooltip": "Self-assessment of English readiness for UK university.",
+      "priority": "high",
+      "variations": [
+        "How would you assess your own confidence level in your English language skills?",
+        "What is your comfort level with using English for academic purposes?",
+        "To what extent do you feel proficient and confident in your command of English?",
+        "How would you rate your self-assurance regarding your English language capabilities?"
+      ]
+    },
+    {
+      "id": "academic-english-management",
+      "category": "Academic Capability",
+      "question": "How will you manage studying in English at a UK university?",
+      "suggestedAnswer": "{{how_you_will_manage_english}} I am committed to utilizing all available resources to ensure my academic success.",
+      "guidance": "Explain your strategies such as tutoring, study groups, or academic support services.",
+      "tooltip": "Demonstrates readiness to handle academic English challenges.",
+      "priority": "high",
+      "variations": [
+        "What strategies do you plan to employ to successfully study in English at a UK university?",
+        "How do you intend to adapt to and manage the academic demands of studying in English in the UK?",
+        "What is your approach for handling coursework and lectures delivered in English at a British institution?",
+        "Can you outline your plan for ensuring academic success while studying in English here in the UK?"
+      ]
+    },
+    {
+      "id": "academic-uk-comparison",
+      "category": "Academic Capability",
+      "question": "Why pursue your degree in the UK instead of Canada, Australia, or the US?",
+      "suggestedAnswer": "The UK offers a unique educational experience in {{field_of_study}} and {{primary_university}} specifically provides {{why_primary_university}}. While other countries have excellent programs, the UK aligns best with my career goals.",
+      "tooltip": "Shows thoughtful analysis of educational options.",
+      "priority": "medium",
+      "variations": [
+        "What are your specific reasons for choosing to study in the UK over other countries like Canada, Australia, or the US?",
+        "Could you explain your preference for pursuing your degree in the UK as opposed to similar English-speaking nations such as Canada, Australia, or the US?",
+        "Why have you selected the UK for your higher education when other options like Canada, Australia, or the US were available?",
+        "What makes the UK your preferred destination for your degree compared to countries like Canada, Australia, or the US?"
+      ]
+    },
+    {
+      "id": "academic-struggle-support",
+      "category": "Academic Capability",
+      "question": "What will you do if you struggle academically in the first semester?",
+      "suggestedAnswer": "{{academic_success_strategy}} I will also seek support from {{primary_university}} academic resources, meet with professors during office hours, form study groups, and utilize tutoring services if needed.",
+      "guidance": "Show proactive planning and knowledge of university support systems.",
+      "tooltip": "Demonstrates realistic expectations and commitment to success.",
+      "priority": "medium",
+      "variations": [
+        "What steps will you take if you encounter academic difficulties during your initial semester?",
+        "If you find yourself struggling with your studies early on, what would be your course of action?",
+        "How do you plan to address any academic challenges or setbacks that might arise in your first semester?",
+        "What support mechanisms or strategies will you utilize should you face academic struggles in your first term?"
+      ]
+    },
+    {
+      "id": "finance-sponsor-identity",
+      "category": "Financial Status",
+      "question": "Who is your financial sponsor?",
+      "suggestedAnswer": "My {{sponsor_relationship}} will sponsor my education.",
+      "guidance": "Identify your main source of financial support clearly.",
+      "tooltip": "Critical to establish who is funding your education.",
+      "priority": "high",
+      "variations": [
+        "Who will be providing the financial support for your studies?",
+        "Could you please identify the individual or entity responsible for funding your education?",
+        "Who is your primary source of financial backing for this academic program?",
+        "Can you tell us who is sponsoring your tuition and living expenses?"
+      ]
+    },
+    {
+      "id": "finance-sponsor-occupation",
+      "category": "Financial Status",
+      "question": "What is your sponsor's occupation?",
+      "suggestedAnswer": "My sponsor works as a {{sponsor_occupation}}.",
+      "guidance": "Describe the primary source of their income clearly.",
+      "tooltip": "Assesses financial stability and income source.",
+      "priority": "high",
+      "variations": [
+        "What is the profession of your financial sponsor?",
+        "Could you please state your sponsor's line of work?",
+        "What does the individual sponsoring your education do for a living?",
+        "Can you specify your sponsor's current employment or occupation?"
+      ]
+    },
+    {
+      "id": "finance-sponsor-income",
+      "category": "Financial Status",
+      "question": "What is your sponsor's annual income in USD?",
+      "suggestedAnswer": "My sponsor's annual income is approximately ${{sponsor_annual_income}}, which is sufficient to cover my education costs.",
+      "guidance": "Provide in USD, converting from local currency using current exchange rates.",
+      "tooltip": "Income is critical to prove financial capability for the full program duration.",
+      "priority": "high",
+      "variations": [
+        "What is your sponsor's annual earnings in US dollars?",
+        "Please provide your sponsor's yearly income figure in USD.",
+        "How much does your financial sponsor earn per year, expressed in USD?",
+        "Can you state your sponsor's annual salary in United States Dollars?"
+      ]
+    },
+    {
+      "id": "finance-income-proof",
+      "category": "Financial Status",
+      "question": "Do you have proof of your sponsor's income?",
+      "suggestedAnswer": "Yes, I have prepared comprehensive income documentation including {{sponsor_income_proof}} to verify my sponsor's financial capability for funding my education in the UK.",
+      "guidance": "Prepare tax returns (last 2 years), salary certificates, or business documents.",
+      "tooltip": "Essential documents for visa officer verification.",
+      "priority": "high",
+      "variations": [
+        "Can you provide documentation verifying your sponsor's income?",
+        "Do you have evidence to substantiate your sponsor's earnings?",
+        "Are you able to present proof of your sponsor's financial income?",
+        "Do you possess supporting documents for your sponsor's annual income?"
+      ]
+    },
+    {
+      "id": "finance-program-cost",
+      "category": "Financial Status",
+      "question": "What is the total estimated cost of your program?",
+      "suggestedAnswer": "The total estimated cost of my {{intended_degree}} program is approximately ${{total_program_cost}} per year, including tuition, fees, accommodation, and living expenses.",
+      "guidance": "Break down costs into components to show you've researched thoroughly.",
+      "tooltip": "Cost breakdown shows realistic planning.",
+      "priority": "high",
+      "variations": [
+        "What is the overall estimated expense for your academic program?",
+        "Could you state the total projected cost of your chosen course of study?",
+        "What is the comprehensive financial estimate for your entire program?",
+        "How much do you anticipate your complete educational program will cost?"
+      ]
+    },
+    {
+      "id": "finance-available-funds",
+      "category": "Financial Status",
+      "question": "How much funding can you access for your education?",
+      "suggestedAnswer": "I have approximately ${{available_funds}} available for my education from my sponsor and personal resources.",
+      "guidance": "Include sponsor savings, family gifts, and any personal funds.",
+      "tooltip": "Must cover program cost to demonstrate financial capability.",
+      "priority": "high",
+      "variations": [
+        "How much financial support is readily accessible for your studies?",
+        "What is the total amount of funding you currently have available for your education?",
+        "Could you specify the sum of resources you can access for your academic pursuits?",
+        "What is the total funding at your disposal for educational expenses?"
+      ]
+    },
+    {
+      "id": "finance-funding-plan",
+      "category": "Financial Status",
+      "question": "How do you plan to fund your entire education?",
+      "suggestedAnswer": "My {{sponsor_relationship}} will provide approximately ${{available_funds}}, which covers the full cost of my education. {{scholarship_status ? 'I have also received a {{scholarship_type}} scholarship of ${{scholarship_amount}} from {{primary_university}}, which further strengthens my financial capability.' : 'I am financially supported by my sponsor and do not require additional scholarship funding.'}}",
+      "guidance": "Show complete picture: sponsor funds, scholarship (if any), and any personal contribution.",
+      "tooltip": "Officers need to see complete financing for all program years.",
+      "priority": "high",
+      "variations": [
+        "What is your strategy for financing your complete education?",
+        "How do you intend to cover the full expenses of your academic program?",
+        "Can you explain your financial plan for your entire course of study?",
+        "What are your sources of funding for your whole education?"
+      ]
+    },
+    {
+      "id": "finance-funds-proof",
+      "category": "Financial Status",
+      "question": "Do you have proof of available funds?",
+      "suggestedAnswer": "Yes, I have prepared comprehensive proof of available funds including {{funds_availability_proof}} that demonstrate my sponsor's and my financial capability to fund the complete cost of my studies in the UK.",
+      "guidance": "Prepare bank statements, affidavits of support, and investment documents.",
+      "tooltip": "Mandatory for CAS (Confirmation of Acceptance for Studies) and visa officer verification.",
+      "priority": "high",
+      "variations": [
+        "Do you have documentation to verify your available funds?",
+        "Can you provide evidence of the financial resources you possess?",
+        "Do you have proof demonstrating the accessibility of your funds?",
+        "Are you able to present supporting documents for your financial availability?"
+      ]
+    },
+    {
+      "id": "finance-scholarship-status",
+      "category": "Financial Status",
+      "question": "Did you receive a scholarship?",
+      "suggestedAnswer": "{{scholarship_status ? 'Yes, I received a {{scholarship_type}} scholarship from {{primary_university}}, which significantly supports my education financially.' : 'No, I did not receive a scholarship, but my education is fully funded through my sponsor and personal resources.'}}",
+      "guidance": "Answer honestly about scholarship status.",
+      "tooltip": "Scholarships strengthen financial capability profile.",
+      "priority": "high",
+      "variations": [
+        "Were you awarded any scholarship?",
+        "Have you been granted a scholarship for your studies?",
+        "Did you receive any form of scholarship assistance?",
+        "Is there a scholarship included in your financial aid package?"
+      ]
+    },
+    {
+      "id": "finance-scholarship-amount",
+      "category": "Financial Status",
+      "question": "What is your scholarship amount?",
+      "suggestedAnswer": "I received a ${{scholarship_amount}} {{scholarship_type}} scholarship from {{primary_university}}.",
+      "guidance": "State the annual or total amount as specified in your scholarship letter.",
+      "tooltip": "Shows partial or full financial support from university.",
+      "priority": "high",
+      "skipIf": [
+        {
+          "field": "scholarship_status",
+          "notEquals": true
+        }
+      ],
+      "variations": [
+        "What is the monetary value of your scholarship?",
+        "Could you specify the sum of your scholarship award?",
+        "What is the total amount of your scholarship?",
+        "How much is the scholarship you received worth?"
+      ]
+    },
+    {
+      "id": "finance-scholarship-type",
+      "category": "Financial Status",
+      "question": "What type of scholarship did you receive?",
+      "suggestedAnswer": "My scholarship is {{scholarship_type}}, which significantly reduces my financial burden for my education.",
+      "guidance": "Specify if it's merit-based, need-based, full tuition, etc.",
+      "tooltip": "Shows academic excellence or financial strength.",
+      "priority": "medium",
+      "skipIf": [
+        {
+          "field": "scholarship_status",
+          "notEquals": true
+        }
+      ],
+      "variations": [
+        "What specific kind of scholarship did you receive?",
+        "Can you describe the nature of your scholarship?",
+        "What category does your scholarship fall under?",
+        "Could you state the type of scholarship awarded to you?"
+      ]
+    },
+    {
+      "id": "finance-shortfall-backup",
+      "category": "Financial Status",
+      "question": "What if your sponsor cannot support you fully?",
+      "suggestedAnswer": "{{funding_shortfall_plan}} I have researched alternative funding and identified multiple backup plans to ensure I can complete my education.",
+      "guidance": "Describe alternative sources: loans, additional family funds, part-time work, etc.",
+      "tooltip": "Backup plans show maturity and serious commitment.",
+      "priority": "medium",
+      "variations": [
+        "What alternative financial arrangements do you have in place if your sponsor's support becomes insufficient?",
+        "Should your sponsor be unable to provide complete financial backing, what is your contingency plan?",
+        "How would you address a potential financial shortfall if your sponsor's contribution is not entirely sufficient?",
+        "In the event of an unforeseen issue with your sponsor's full financial provision, what steps would you take?"
+      ]
+    },
+    {
+      "id": "study-program-career-fit",
+      "category": "Study Plans",
+      "question": "How does this course fit your long-term career goals?",
+      "suggestedAnswer": "My long-term career goal is to {{post_graduation_job_plans}}. This {{intended_degree}} in {{field_of_study}} is the ideal stepping stone to achieve this. The program will equip me with the {{why_this_field}} skills that are directly needed for this role.",
+      "guidance": "Draw a clear connection between the specific program and your career objectives.",
+      "tooltip": "Demonstrates that your study plans are purposeful and aligned with realistic career goals.",
+      "priority": "high",
+      "variations": [
+        "In what ways does this academic program align with your professional ambitions for the future?",
+        "Could you explain how this particular course of study contributes to your long-range career objectives?",
+        "How will the knowledge and skills gained from this program advance you towards your desired career path?",
+        "What specific elements of this program do you believe are crucial for achieving your future career milestones?"
+      ]
+    },
+    {
+      "id": "study-professional-preparation",
+      "category": "Study Plans",
+      "question": "How does your program prepare you for professional practice or registration in your home country or internationally?",
+      "suggestedAnswer": "This program is structured to meet international professional standards in {{field_of_study}}. Upon graduation, I will be eligible to pursue professional credentials and registrations such as {{field_of_study}} certifications, which are recognized in {{country_of_residence}} and internationally.",
+      "guidance": "Research the professional standards and certifications in your field for your home country.",
+      "tooltip": "Shows that your education has practical professional value beyond the degree itself.",
+      "priority": "high",
+      "variations": [
+        "Please describe how this program will equip you for professional accreditation or practice, either domestically or abroad.",
+        "How does the curriculum of your chosen program facilitate your ability to work or register in your field upon completion, in your home country or globally?",
+        "What specific preparation does this program offer for professional licensing or entry into your profession, whether in your native country or internationally?",
+        "Could you elaborate on how this course of study contributes to your eligibility for professional practice or registration in your home country or on an international scale?"
+      ]
+    },
+    {
+      "id": "finance-personal-savings",
+      "category": "Financial Status",
+      "question": "Are you contributing any personal savings? If yes, what is the source?",
+      "suggestedAnswer": "{{personal_savings_contribution}}",
+      "guidance": "Be honest about personal financial contributions. If you have savings, explain the legitimate source.",
+      "tooltip": "Personal contributions strengthen your financial profile and show commitment.",
+      "priority": "medium",
+      "skipIf": [
+        {
+          "field": "personal_savings_contribution",
+          "equals": ""
+        }
+      ],
+      "variations": [
+        "Will you be utilizing any personal funds towards your educational expenses? If so, what is the origin of these funds?",
+        "Do you intend to supplement your funding with your own savings? If affirmative, please specify the source of these savings.",
+        "Are there personal financial contributions included in your funding plan? If yes, where did these funds originate?",
+        "Could you confirm if you are using any individual savings for your studies? If so, from what source were these savings accumulated?"
+      ]
+    },
+    {
+      "id": "finance-part-time-work",
+      "category": "Financial Status",
+      "question": "Do you plan to work part-time while studying? How will you balance it with your studies?",
+      "suggestedAnswer": "{{part_time_work_plans}} I understand that UK student visa regulations allow international students to work up to 20 hours per week during term time, and I plan to strictly adhere to these limitations to prioritize my academic success.",
+      "guidance": "Explain your work plans realistically and demonstrate awareness of visa work restrictions.",
+      "tooltip": "Shows realistic planning and understanding of visa regulations and academic priorities.",
+      "priority": "high",
+      "variations": [
+        "Are you considering part-time employment during your academic program? If so, how do you intend to manage it alongside your coursework?",
+        "Do you anticipate engaging in any part-time work while pursuing your studies? Please explain your strategy for maintaining academic focus.",
+        "What are your intentions regarding part-time employment while enrolled in your program? How do you plan to ensure your studies remain your priority?",
+        "Should you choose to work part-time during your studies, how will you effectively integrate this with your academic commitments?"
+      ]
+    },
+    {
+      "id": "postgrad-post-study-work-visa",
+      "category": "Post-Graduation Plans",
+      "question": "Do you plan to use the post-study work visa (PSW)? If yes, how does it fit into your career plan?",
+      "suggestedAnswer": "{{post_study_work_visa_plans ? post_study_work_visa_plans + ' However, after this temporary work period, I plan to return to {{country_of_residence}} and pursue my long-term career goals.' : 'I plan to return to {{country_of_residence}} immediately after completing my studies and begin my {{post_graduation_job_plans}}.'}} My ultimate goal is to {{post_graduation_job_plans}} in my home country.",
+      "guidance": "If planning to use PSW, explain how it's a stepping stone toward your ultimate career goals in your home country.",
+      "tooltip": "Post-study work is a temporary visa requiring clear connection to home country plans.",
+      "priority": "high",
+      "variations": [
+        "Do you intend to apply for a post-study work visa upon completing your program? If so, how does this align with your professional development strategy?",
+        "Are your post-graduation plans likely to include utilizing the post-study work authorization? If yes, please elaborate on its role in your career trajectory.",
+        "What are your intentions regarding the post-study work permit after finishing your degree? How does this potential opportunity support your long-term career aspirations?",
+        "Should you pursue a post-study work visa, how does that experience integrate with your broader career objectives?"
+      ]
+    },
+    {
+      "id": "postgrad-healthcare-management",
+      "category": "Post-Graduation Plans",
+      "question": "How will you manage healthcare while studying abroad?",
+      "suggestedAnswer": "{{healthcare_management_abroad}} I understand that as an international student, I will have access to the UK's NHS (National Health Service) and will register with a local GP upon arrival. I am also aware of any health insurance requirements and will maintain appropriate coverage throughout my studies.",
+      "guidance": "Demonstrate knowledge of UK healthcare system and planning for health emergencies.",
+      "tooltip": "Shows practical preparation and understanding of health support systems available.",
+      "priority": "medium",
+      "variations": [
+        "What arrangements have you made for your healthcare coverage and medical needs during your studies abroad?",
+        "Could you outline your plan for addressing any health-related concerns or medical requirements while studying internationally?",
+        "How do you intend to manage your healthcare provisions and access medical services while living in a foreign country for your studies?",
+        "What steps have you taken to ensure you have appropriate healthcare access and coverage throughout your time as an international student?"
+      ]
+    },
+    {
+      "id": "background-student-visa-conditions",
+      "category": "Background",
+      "question": "Do you understand the conditions of your student visa, including work limitations?",
+      "suggestedAnswer": "{{student_visa_conditions_understanding}} I am aware that as a student visa holder, I am permitted to work a maximum of 20 hours per week during term-time and full-time during official university breaks. I understand these are strict conditions and I am committed to complying with all visa regulations.",
+      "guidance": "Demonstrate clear understanding of specific UK student visa work restrictions and conditions.",
+      "tooltip": "Critical for credibility - shows you've researched visa obligations and plan to comply.",
+      "priority": "high",
+      "variations": [
+        "Are you fully aware of the terms and conditions associated with your student visa, particularly regarding any restrictions on employment?",
+        "Do you comprehend the full scope of your student visa's requirements, including any specific limitations on working?",
+        "Have you familiarized yourself with the stipulations of your student visa, especially concerning permissible work activities?",
+        "Can you confirm your understanding of the rules governing your student visa, specifically concerning part-time work or employment restrictions?"
+      ]
+    },
+    {
+      "category": "Post-Graduation Plans",
+      "question": "What are your career goals after graduation?",
+      "suggestedAnswer": "{{post_graduation_job_plans}} I plan to pursue this career after completing my {{intended_degree}}.",
+      "guidance": "Describe specific, realistic career goals aligned with your degree.",
+      "tooltip": "Clear post-graduation plans strengthen student visa application.",
+      "priority": "high",
+      "variations": [
+        "Tell me more about: what are your career goals after graduation?",
+        "Can you explain what are your career goals after graduation?",
+        "How would you address: what are your career goals after graduation?"
+      ]
+    },
+    {
+      "id": "postgrad-return-intent",
+      "category": "Post-Graduation Plans",
+      "question": "Do you plan to return to your home country after graduation?",
+      "suggestedAnswer": "{{plan_to_return_home ? 'Yes, I plan to return to {{country_of_residence}} immediately after completing my studies to pursue my academic and career goals.' : 'I may initially pursue temporary work experience through a post-study work visa, but my long-term intention is to return to {{country_of_residence}}.'}} I have strong ties to my home country through my {{family_in_home_country ? 'close family members in {{country_of_residence}}' : 'professional and personal networks in {{country_of_residence}}'}} that make returning home a priority.",
+      "guidance": "Be honest about your intent. Strong home country ties provide credibility.",
+      "tooltip": "Intent to return is critical for student visa officer assessment.",
+      "priority": "high",
+      "skipIf": [],
+      "variations": [
+        "Is it your intention to return to your native country upon the completion of your studies?",
+        "What are your plans for returning to your home country once you have graduated?",
+        "Will you be re-establishing residency in your home country after you finish your program?",
+        "Do you envision returning to your country of origin following your graduation?"
+      ]
+    },
+    {
+      "id": "postgrad-home-ties",
+      "category": "Post-Graduation Plans",
+      "question": "What are your ties to your home country?",
+      "suggestedAnswer": "I have multiple strong ties to {{country_of_residence}} that make returning home important to me. {{family_in_home_country ? 'My family is based in {{country_of_residence}} - {{family_details}}.' : 'I have professional networks and personal commitments in {{country_of_residence}}.'}} {{property_or_assets_home ? 'Additionally, my family has property and assets in {{country_of_residence}}.' : ''}} After completing my {{intended_degree}}, I plan to {{post_graduation_job_plans}}.",
+      "guidance": "Mention family, property, business, and career opportunities.",
+      "tooltip": "Establishes personal and financial ties to home country.",
+      "priority": "high",
+      "skipIf": [
+        {
+          "field": "plan_to_return_home",
+          "equals": false
+        }
+      ],
+      "variations": [
+        "What connections do you maintain with your home country?",
+        "Could you describe your significant attachments to your country of origin?",
+        "What factors would ensure your return to your home country after your program?",
+        "What responsibilities or relationships do you have in your home country?"
+      ]
+    },
+    {
+      "id": "postgrad-family-connections",
+      "category": "Post-Graduation Plans",
+      "question": "Do you have close family in your home country?",
+      "suggestedAnswer": "{{family_in_home_country ? 'Yes, I have close family in {{country_of_residence}}: {{family_details}}. These family ties are very important to me and provide strong motivation to return home after my studies.' : 'Most of my family is dispersed, but I have strong professional and personal connections to {{country_of_residence}} that are important to me.'}}",
+      "guidance": "Describe parents, siblings, or other family ties.",
+      "tooltip": "Critical indicator of home country attachment.",
+      "priority": "high",
+      "skipIf": [
+        {
+          "field": "plan_to_return_home",
+          "equals": false
+        }
+      ],
+      "variations": [
+        "Are your immediate family members currently residing in your country of origin?",
+        "Do you have a spouse, children, or parents living in your home country?",
+        "Could you describe your close family relationships within your native country?",
+        "Which members of your immediate family currently live in your country of residence?"
+      ]
+    },
+    {
+      "id": "postgrad-property",
+      "category": "Post-Graduation Plans",
+      "question": "Do you have property or assets in your home country?",
+      "suggestedAnswer": "{{property_or_assets_home ? 'Yes, my family owns property in {{country_of_residence}} that represents significant financial and personal wealth. This reinforces my commitment to eventually returning home.' : 'My family has investments and financial assets in {{country_of_residence}} that represent our financial ties to our home country.'}}",
+      "guidance": "Land, house, or business ownership shows financial ties.",
+      "tooltip": "Financial ties strengthen return home commitment.",
+      "priority": "medium",
+      "skipIf": [
+        {
+          "field": "plan_to_return_home",
+          "equals": false
+        }
+      ],
+      "variations": [
+        "Do you possess any real estate or substantial financial assets in your country of origin?",
+        "What kind of property or financial holdings do you own in your native country?",
+        "Are there any significant assets or investments you hold in your home country?",
+        "Can you confirm if you have any real estate or valuable possessions in your country of origin?"
+      ]
+    },
+    {
+      "id": "postgrad-uk-stay-consideration",
+      "category": "Post-Graduation Plans",
+      "question": "Are you considering staying in the UK after graduation?",
+      "suggestedAnswer": "{{consider_staying_uk ? 'I may pursue a post-study work visa to gain professional experience in the UK initially, as outlined in {{post_study_work_visa_plans}}, but my ultimate intention is to return to {{country_of_residence}}.' : 'My primary goal is to complete my studies and return to my home country to pursue my career goals.'}}",
+      "guidance": "If considering PSW or other work visas, frame as temporary work experience before returning home.",
+      "tooltip": "Short-term UK work followed by home country return demonstrates genuine student intent.",
+      "priority": "high",
+      "skipIf": [
+        {
+          "field": "plan_to_return_home",
+          "equals": true
+        }
+      ],
+      "variations": [
+        "What are your intentions regarding remaining in the UK following the completion of your studies?",
+        "Do you have plans to seek employment or residency in the UK once your academic program concludes?",
+        "Following your graduation, do you envision yourself staying on in the UK?",
+        "Are you contemplating any long-term stay in the UK once your course is finished?"
+      ]
+    },
+    {
+      "id": "background-previous-uk-stays",
+      "category": "Background",
+      "question": "Have you visited the UK before?",
+      "suggestedAnswer": "{{previous_uk_visits ? 'Yes, I have previously visited the UK, which gave me direct experience with the country and strengthened my commitment to studying here.' : 'No, I have not visited the UK before, but I have conducted thorough research about UK universities, the education system, and student life to prepare myself well for this transition.'}}",
+      "guidance": "Answer honestly about travel history.",
+      "tooltip": "Checks travel experience and visa history.",
+      "priority": "medium",
+      "variations": [
+        "Have you made any prior visits to the United Kingdom?",
+        "Is this your first time applying to enter the UK, or have you visited previously?",
+        "Have you ever traveled to the UK on a previous occasion?",
+        "Can you confirm if you have entered the United Kingdom before?"
+      ]
+    },
+    {
+      "id": "background-uk-visit-details",
+      "category": "Background",
+      "question": "When did you visit the UK and what was the purpose?",
+      "suggestedAnswer": "I visited {{primary_university}} and other UK cities to tour campuses, research academic programs, and experience university life firsthand. This visit greatly strengthened my commitment to studying at {{primary_university}} and helped me understand what to expect as an international student in the UK.",
+      "guidance": "Provide approximate dates and mention campus tours or tourism.",
+      "tooltip": "Verifies legitimate travel and interest in UK.",
+      "priority": "medium",
+      "skipIf": [
+        {
+          "field": "previous_uk_visits",
+          "equals": false
+        }
+      ],
+      "variations": [
+        "Could you specify the dates of your previous visit(s) to the UK and the reason for those trips?",
+        "When did you last travel to the United Kingdom, and for what purpose?",
+        "Please provide details of your past entries into the UK, including dates and the objective of your stay.",
+        "What were the dates and motivations behind any earlier visits you made to the UK?"
+      ]
+    },
+    {
+      "id": "background-visa-refusal",
+      "category": "Background",
+      "question": "Have you ever been denied any visa?",
+      "suggestedAnswer": "{{visa_refusal_history ? 'Yes, I was previously denied a visa, and I understand this will be carefully reviewed by the visa officer.' : 'No, I have never been denied a visa to any country, and I have a clean immigration record.'}}",
+      "guidance": "Honesty is critical - this will be verified in your records.",
+      "tooltip": "Previous refusals are reviewed carefully.",
+      "priority": "high",
+      "variations": [
+        "Have you ever received a visa refusal from any country?",
+        "Has any nation ever rejected a visa application you submitted?",
+        "Have you ever faced a denial for a visa to any destination?",
+        "Has there been any instance where a visa application of yours was not approved?"
+      ]
+    },
+    {
+      "id": "background-visa-refusal-explanation",
+      "category": "Background",
+      "question": "Explain the visa refusal and what has changed.",
+      "suggestedAnswer": "I was previously denied a {{other_countries_visa_refusal ? 'visa to another country' : 'student visa'}} because {{visa_refusal_history ? 'of concerns regarding my documentation/financial capability/application details.' : ''}} Since then, my circumstances have significantly improved. I have: (1) Secured admission to {{primary_university}} with a strong academic profile, (2) Demonstrated comprehensive financial capability with bank statements and sponsor documentation, and (3) Established clear intent to study through detailed research and university engagement. I am now clearly eligible for a UK student visa.",
+      "guidance": "Honestly explain the reason and how circumstances have improved.",
+      "tooltip": "Demonstrates addressing previous concerns.",
+      "priority": "high",
+      "skipIf": [
+        {
+          "field": "visa_refusal_history",
+          "equals": false
+        }
+      ],
+      "variations": [
+        "Please elaborate on the circumstances of the visa denial and describe any changes since that time.",
+        "Can you provide details regarding the visa refusal and explain what factors have been rectified or altered?",
+        "What was the reason for the previous visa rejection, and what developments have occurred to address it?",
+        "Kindly clarify why your visa was previously denied and what is different about your situation now?"
+      ]
+    },
+    {
+      "id": "background-criminal-record",
+      "category": "Background",
+      "question": "Do you have any criminal convictions?",
+      "suggestedAnswer": "{{criminal_record ? 'I am required to disclose criminal history to UK Visas and Immigration (UKVI), and I have documentation regarding my circumstances.' : 'No, I do not have any criminal record, and I have maintained clean legal standing throughout my life.'}}",
+      "guidance": "Always answer truthfully - criminal history triggers security reviews.",
+      "tooltip": "Criminal history is grounds for visa denial.",
+      "priority": "high",
+      "skipIf": [
+        {
+          "field": "criminal_record",
+          "equals": false
+        }
+      ],
+      "variations": [
+        "Have you ever been found guilty of a criminal offense?",
+        "Do you have any prior criminal convictions recorded against you?",
+        "Can you confirm if you have a criminal record?",
+        "Have you ever been convicted of any crime?"
+      ]
+    },
+    {
+      "id": "background-uk-immigration-issues",
+      "category": "Background",
+      "question": "Do you have any legal issues in the UK?",
+      "suggestedAnswer": "{{any_uk_immigration_issues ? 'I have legal issues to disclose to the UK immigration authorities, and I have documentation prepared.' : 'No, I have no legal issues in the UK and intend to maintain full compliance with all UK laws as a student.'}}",
+      "guidance": "Disclose any arrests, legal violations, or previous UK visa issues if applicable.",
+      "tooltip": "Security clearance and admissibility requirement.",
+      "priority": "high",
+      "skipIf": [
+        {
+          "field": "any_uk_immigration_issues",
+          "equals": false
+        }
+      ],
+      "variations": [
+        "Have you encountered any legal difficulties or complications within the United Kingdom?",
+        "Are you currently involved in, or have you ever had, any legal proceedings in the UK?",
+        "Do you have any outstanding legal matters or have you previously been involved in legal disputes in the UK?",
+        "Have you ever faced legal action or experienced any legal problems while in the United Kingdom?"
+      ]
+    },
+    {
+      "id": "background-visa-overstay",
+      "category": "Background",
+      "question": "Have you ever overstayed a visa in any country?",
+      "suggestedAnswer": "{{previous_overstay ? 'Yes, I must disclose a previous visa overstay and understand this is a serious immigration matter that will be reviewed carefully by the UK authorities.' : 'No, I have never overstayed a visa and have maintained strict compliance with all visa terms and departure requirements.'}}",
+      "guidance": "Answer truthfully - overstays are serious immigration violations.",
+      "tooltip": "Overstays can result in visa denials and bans.",
+      "priority": "high",
+      "skipIf": [
+        {
+          "field": "previous_overstay",
+          "equals": false
+        }
+      ],
+      "variations": [
+        "Have you ever remained in a country beyond the authorized period of your visa?",
+        "Have you ever exceeded the validity of a visa in any nation?",
+        "Has there been any instance where you remained in a foreign country unlawfully after your visa expired?",
+        "Have you ever violated the terms of a visa by staying longer than permitted in any jurisdiction?"
+      ]
+    },
+    {
+      "id": "background-other-visa-denials",
+      "category": "Background",
+      "question": "Have you been denied a visa to any other country?",
+      "suggestedAnswer": "{{other_countries_visa_refusal ? 'Yes, I have been denied visas to other countries, and I understand the British authorities will review these decisions carefully.' : 'No, I have not been denied visas to other countries and maintain a strong visa and travel record.'}}",
+      "guidance": "Visa refusals to other countries may indicate patterns that require explanation.",
+      "tooltip": "Visa refusals to other countries are reviewed carefully.",
+      "priority": "high",
+      "skipIf": [
+        {
+          "field": "other_countries_visa_refusal",
+          "equals": false
+        }
+      ],
+      "variations": [
+        "Has your visa application ever been refused by another nation?",
+        "Have you ever had a visa application rejected by a foreign state?",
+        "Aside from the country you are applying to now, have you ever been turned down for a visa elsewhere?",
+        "Have you previously had an unsuccessful visa application to any country?"
+      ]
+    }
+  ]
+}

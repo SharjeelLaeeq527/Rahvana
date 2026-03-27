@@ -130,6 +130,11 @@ export async function updateSession(request: NextRequest) {
   // Logged-in user accessing login/signup
   // =============================
   if (user && isAuthRoute) {
+    // Allow MFA flow - don't redirect if user has MFA credentials in session
+    if (request.nextUrl.searchParams.get("mfa") === "true") {
+      return response;
+    }
+
     const redirectTo = request.nextUrl.searchParams.get("redirectTo") || request.nextUrl.searchParams.get("redirect");
     if (redirectTo && redirectTo.startsWith("/") && !redirectTo.startsWith("//")) {
       return NextResponse.redirect(new URL(redirectTo, request.url));

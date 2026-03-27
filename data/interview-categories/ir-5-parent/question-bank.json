@@ -1,7 +1,7 @@
 {
   "categorySlug": "ir-5-parent",
   "version": "1.0.0",
-  "lastUpdated": "2026-03-20",
+  "lastUpdated": "2026-03-26",
   "questions": [
     {
       "id": "basic-full-name",
@@ -10,7 +10,13 @@
       "suggestedAnswer": "My full name is {{full_name}}.",
       "guidance": "State your full name exactly as it appears on official documents.",
       "tooltip": "Used to verify identity against official records.",
-      "priority": "high"
+      "priority": "high",
+      "variations": [
+        "Could you please state your full legal name?",
+        "What is your complete name as it appears on official documents?",
+        "Please provide your full given name and surname.",
+        "Could you confirm your full name for the record?"
+      ]
     },
     {
       "id": "basic-age",
@@ -19,7 +25,13 @@
       "suggestedAnswer": "I am {{current_age}} years old.",
       "guidance": "Answer clearly and confidently.",
       "tooltip": "Confirms applicant profile consistency.",
-      "priority": "high"
+      "priority": "high",
+      "variations": [
+        "What is your current age?",
+        "How many years old are you?",
+        "Could you tell me your age?",
+        "Please state your age in years."
+      ]
     },
     {
       "id": "basic-date-of-birth",
@@ -28,7 +40,13 @@
       "suggestedAnswer": "My date of birth is {{date_of_birth}}.",
       "guidance": "Ensure consistency with your passport.",
       "tooltip": "Cross-checks official identity records.",
-      "priority": "high"
+      "priority": "high",
+      "variations": [
+        "Could you please tell me your date of birth?",
+        "What is your birth date?",
+        "When were you born?",
+        "Please state your full date of birth."
+      ]
     },
     {
       "id": "basic-country",
@@ -37,9 +55,14 @@
       "suggestedAnswer": "I currently live in {{current_country}}.",
       "guidance": "Mention country clearly.",
       "tooltip": "Establishes current residence.",
-      "priority": "high"
+      "priority": "high",
+      "variations": [
+        "In which country do you currently reside?",
+        "What is your country of current residence?",
+        "Which country are you living in right now?",
+        "Could you please tell me where you currently reside?"
+      ]
     },
-
     {
       "id": "petitioner-identity",
       "category": "Petitioner",
@@ -47,7 +70,13 @@
       "suggestedAnswer": "My {{petitioner_relationship}}, {{petitioner_name}}, is petitioning for me.",
       "guidance": "Mention both relationship and name.",
       "tooltip": "Confirms petitioner identity.",
-      "priority": "high"
+      "priority": "high",
+      "variations": [
+        "Who is sponsoring your visa application?",
+        "Could you tell me the name of the person who filed the petition on your behalf?",
+        "Who is your petitioner?",
+        "Who is the individual sponsoring your immigration to the U.S.?"
+      ]
     },
     {
       "id": "petitioner-employment",
@@ -56,7 +85,13 @@
       "suggestedAnswer": "My child works as {{petitioner_employment}}.",
       "guidance": "Keep it simple and factual.",
       "tooltip": "Shows financial stability of sponsor.",
-      "priority": "high"
+      "priority": "high",
+      "variations": [
+        "What is your child's occupation?",
+        "What kind of work does your son or daughter do?",
+        "Could you describe your child's employment?",
+        "What is your child's profession?"
+      ]
     },
     {
       "id": "petitioner-location",
@@ -65,7 +100,13 @@
       "suggestedAnswer": "My child lives in {{petitioner_location}}.",
       "guidance": "Mention city and state.",
       "tooltip": "Verifies petitioner's residence.",
-      "priority": "high"
+      "priority": "high",
+      "variations": [
+        "Where in the United States does your child reside?",
+        "Could you tell me your child's address in the U.S.?",
+        "What is your child's residential location in America?",
+        "In which U.S. state or city does your child live?"
+      ]
     },
     {
       "id": "petitioner-status",
@@ -74,7 +115,13 @@
       "suggestedAnswer": "Yes, my child is a U.S. citizen.",
       "guidance": "Answer truthfully.",
       "tooltip": "Determines eligibility category.",
-      "priority": "high"
+      "priority": "high",
+      "variations": [
+        "Does your child hold U.S. citizenship?",
+        "What is your child's citizenship status?",
+        "Is your son or daughter a citizen of the United States?",
+        "Can you confirm if your child is a U.S. citizen?"
+      ]
     },
     {
       "id": "petitioner-duration",
@@ -83,9 +130,14 @@
       "suggestedAnswer": "My child has been living in the United States for {{petitioner_us_duration}}.",
       "guidance": "Approximate duration is acceptable.",
       "tooltip": "Confirms stability of petitioner's residence.",
-      "priority": "medium"
+      "priority": "medium",
+      "variations": [
+        "For how long has your child resided in the United States?",
+        "What is the duration of your child's stay in America?",
+        "When did your child first come to the U.S. to live?",
+        "How many years has your child been living in the USA?"
+      ]
     },
-
     {
       "id": "relationship-last-meeting",
       "category": "Relationship",
@@ -93,7 +145,13 @@
       "suggestedAnswer": "I last saw my child {{last_seen_child}}.",
       "guidance": "Approximate answer is acceptable.",
       "tooltip": "Evaluates relationship continuity.",
-      "priority": "high"
+      "priority": "high",
+      "variations": [
+        "Could you tell me the date of your most recent in-person meeting with your child?",
+        "When did you last have a face-to-face encounter with your child?",
+        "What was the last occasion you physically saw your son/daughter?",
+        "Could you specify when you last met your child in person?"
+      ]
     },
     {
       "id": "relationship-frequency",
@@ -102,7 +160,13 @@
       "suggestedAnswer": "We communicate {{communication_frequency}}.",
       "guidance": "Answer naturally.",
       "tooltip": "Measures relationship strength.",
-      "priority": "high"
+      "priority": "high",
+      "variations": [
+        "With what frequency do you communicate with your child?",
+        "How regularly do you speak with your son/daughter?",
+        "Could you describe how often you've been in contact with your child?",
+        "What is the typical frequency of your conversations with your child?"
+      ]
     },
     {
       "id": "relationship-method",
@@ -111,7 +175,13 @@
       "suggestedAnswer": "We usually communicate through {{communication_method}}.",
       "guidance": "Mention communication method clearly.",
       "tooltip": "Verifies ongoing relationship.",
-      "priority": "high"
+      "priority": "high",
+      "variations": [
+        "What methods do you use to communicate with your child?",
+        "Through what channels do you typically stay in touch with them?",
+        "Could you explain the ways in which you communicate?",
+        "What are your usual means of contacting your son/daughter?"
+      ]
     },
     {
       "id": "relationship-visit",
@@ -120,9 +190,14 @@
       "suggestedAnswer": "{{recent_visit_by_child ? 'Yes, my child has visited me recently.' : 'No, but we stay in regular contact.'}}",
       "guidance": "Answer honestly.",
       "tooltip": "Supports relationship authenticity.",
-      "priority": "medium"
+      "priority": "medium",
+      "variations": [
+        "Has your child traveled to visit you in your home country recently?",
+        "Have there been any recent visits from your child to your location?",
+        "Did your son/daughter come to see you at any point in the near past?",
+        "In recent times, has your child made a trip to visit you?"
+      ]
     },
-
     {
       "id": "financial-support",
       "category": "Financial",
@@ -130,7 +205,13 @@
       "suggestedAnswer": "My child, {{petitioner_name}}, will support me financially.",
       "guidance": "Clearly mention sponsor.",
       "tooltip": "Confirms financial sponsorship.",
-      "priority": "high"
+      "priority": "high",
+      "variations": [
+        "Who will be responsible for your financial support while you are in the United States?",
+        "Who will provide for your financial needs during your stay in America?",
+        "Which individual or entity will be covering your expenses in the U.S.?",
+        "Could you name the person who will be financially assisting you in the United States?"
+      ]
     },
     {
       "id": "financial-support-confirmation",
@@ -139,7 +220,13 @@
       "suggestedAnswer": "{{financial_support_from_child ? 'Yes, my child supports me financially.' : 'No, I am financially independent.'}}",
       "guidance": "Answer truthfully.",
       "tooltip": "Checks dependency status.",
-      "priority": "high"
+      "priority": "high",
+      "variations": [
+        "Does your son/daughter provide you with financial assistance?",
+        "Is your child a source of financial support for you?",
+        "Does your child contribute financially to your upkeep?",
+        "Are you financially supported by your child?"
+      ]
     },
     {
       "id": "financial-employment",
@@ -148,9 +235,14 @@
       "suggestedAnswer": "My child works as {{petitioner_employment}}.",
       "guidance": "Keep answer consistent.",
       "tooltip": "Assesses financial capability.",
-      "priority": "high"
+      "priority": "high",
+      "variations": [
+        "What is your child's profession?",
+        "Could you describe your child's employment or line of work?",
+        "What sort of work does your son/daughter do?",
+        "What is your child's current occupation?"
+      ]
     },
-
     {
       "id": "living-location",
       "category": "Living Plan",
@@ -158,7 +250,13 @@
       "suggestedAnswer": "I will live in {{us_living_location}}.",
       "guidance": "Mention location clearly.",
       "tooltip": "Confirms residence plan.",
-      "priority": "high"
+      "priority": "high",
+      "variations": [
+        "Could you please specify your intended address in the U.S.?",
+        "What is your planned place of residence in America?",
+        "Where do you intend to reside during your stay in the United States?",
+        "Can you tell us your prospective living arrangements in the U.S.?"
+      ]
     },
     {
       "id": "living-with",
@@ -167,7 +265,13 @@
       "suggestedAnswer": "I will live with my child, {{petitioner_name}}.",
       "guidance": "Answer clearly.",
       "tooltip": "Ensures support system.",
-      "priority": "high"
+      "priority": "high",
+      "variations": [
+        "With whom do you plan to share your accommodation?",
+        "Who will be your housemates or co-residents?",
+        "Can you tell us about the individuals who will be living with you?",
+        "Who will be residing at that address alongside you?"
+      ]
     },
     {
       "id": "living-household",
@@ -176,9 +280,14 @@
       "suggestedAnswer": "There are approximately {{household_size}} people in the household.",
       "guidance": "Approximate answer is fine.",
       "tooltip": "Assesses living conditions.",
-      "priority": "medium"
+      "priority": "medium",
+      "variations": [
+        "What is the total number of occupants at that residence?",
+        "Could you confirm the total household size for that address?",
+        "How many individuals currently reside at the intended living location?",
+        "Including yourself, how many people will be living in that dwelling?"
+      ]
     },
-
     {
       "id": "intent-reason",
       "category": "Intent",
@@ -186,7 +295,13 @@
       "suggestedAnswer": "I want to go to the United States to live with my child and be reunited as a family.",
       "guidance": "Focus on family reunification.",
       "tooltip": "Core purpose of IR-5 visa.",
-      "priority": "high"
+      "priority": "high",
+      "variations": [
+        "What is the purpose of your intended trip to the U.S.?",
+        "Could you elaborate on your reasons for wishing to visit America?",
+        "What is your primary motivation for traveling to the United States?",
+        "Please explain your objectives for seeking entry into the U.S."
+      ]
     },
     {
       "id": "intent-travel-time",
@@ -195,7 +310,13 @@
       "suggestedAnswer": "I plan to travel {{travel_plan}}.",
       "guidance": "Approximate timeframe is acceptable.",
       "tooltip": "Shows preparedness.",
-      "priority": "medium"
+      "priority": "medium",
+      "variations": [
+        "What is your anticipated travel date?",
+        "When do you intend to commence your journey?",
+        "Could you specify your planned departure date for the U.S.?",
+        "What is your expected timeframe for traveling to the United States?"
+      ]
     },
     {
       "id": "intent-plans",
@@ -204,9 +325,14 @@
       "suggestedAnswer": "After arriving, I will {{post_arrival_plan}} and live with my child.",
       "guidance": "Keep answer realistic.",
       "tooltip": "Evaluates future plans.",
-      "priority": "high"
+      "priority": "high",
+      "variations": [
+        "Can you describe your planned activities upon reaching the U.S.?",
+        "What are your immediate intentions once you arrive in America?",
+        "Could you outline your agenda after your arrival in the United States?",
+        "What do you intend to do once you have entered the U.S.?"
+      ]
     },
-
     {
       "id": "travel-history",
       "category": "Background",
@@ -214,7 +340,13 @@
       "suggestedAnswer": "{{previous_us_visit ? 'Yes, I have visited before.' : 'No, I have never been to the United States.'}}",
       "guidance": "Answer honestly.",
       "tooltip": "Checks immigration history.",
-      "priority": "high"
+      "priority": "high",
+      "variations": [
+        "Have you previously visited the United States?",
+        "Do you have any prior travel history to America?",
+        "Is this your first time applying to travel to the U.S., or have you been before?",
+        "Have you made any previous trips to the United States?"
+      ]
     },
     {
       "id": "visa-refusal",
@@ -223,7 +355,13 @@
       "suggestedAnswer": "{{visa_refusal ? 'Yes, and I have disclosed it honestly.' : 'No, I have never been denied a visa.'}}",
       "guidance": "Honesty is critical.",
       "tooltip": "Previous refusals are reviewed carefully.",
-      "priority": "high"
+      "priority": "high",
+      "variations": [
+        "Have you ever experienced a visa refusal?",
+        "Has a visa application ever been denied to you?",
+        "Have you previously been refused a visa for any country?",
+        "Have you ever received an unfavorable decision on a visa application?"
+      ]
     },
     {
       "id": "long-stay",
@@ -232,7 +370,13 @@
       "suggestedAnswer": "{{long_stay_history ? 'Yes, and the details are provided in my application.' : 'No, I have not stayed in another country for more than 6 months.'}}",
       "guidance": "Answer truthfully.",
       "tooltip": "Travel history verification.",
-      "priority": "medium"
+      "priority": "medium",
+      "variations": [
+        "Have you ever resided in a foreign country for a continuous period exceeding six months?",
+        "At any time, have you remained in a country other than your country of origin for a duration longer than half a year?",
+        "Have you spent more than six months living in any single country outside of your nationality?",
+        "Is there any instance where your presence in a foreign nation extended beyond a six-month period?"
+      ]
     },
     {
       "id": "criminal-record",
@@ -241,7 +385,13 @@
       "suggestedAnswer": "{{criminal_record ? 'Yes, and it has been disclosed.' : 'No, I do not have any criminal record.'}}",
       "guidance": "Always answer truthfully.",
       "tooltip": "Security clearance requirement.",
-      "priority": "high"
+      "priority": "high",
+      "variations": [
+        "Do you have any prior criminal convictions?",
+        "Have you ever been found guilty of a criminal offense?",
+        "Is there any official record of criminal activity pertaining to you?",
+        "Do you have any documented criminal history?"
+      ]
     }
   ]
 }

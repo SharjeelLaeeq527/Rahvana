@@ -402,7 +402,7 @@ export const FAQS = [
   ],
   [
     "Can I purchase Add Ons later if I realize I need them?",
-    "Yes! You can start with a core plan today and purchase Add Ons like the 221(g) Action Planner or attorney reviews at any point during your journey.",
+    "Yes! You can start with a core plan today and purchase Add Ons like the 221(g) Action Planner at any point during your journey.",
   ],
   [
     "Do you offer refunds if my visa is delayed or denied?",

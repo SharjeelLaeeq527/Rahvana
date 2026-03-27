@@ -16,9 +16,6 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { Loader } from "@/components/ui/spinner";
 
-
-
-
 function LoginContent() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -41,6 +38,21 @@ function LoginContent() {
   const [challengeId, setChallengeId] = useState("");
   const [mfaCode, setMfaCode] = useState("");
   const [profile, setProfile] = useState<Profile | null>(null);
+
+  // Check if MFA is required from query param
+  const isMfaActive = searchParams.get("mfa") === "true";
+
+  // Restore MFA credentials from storage when page has ?mfa=true
+  useEffect(() => {
+    if (isMfaActive) {
+      const factorIdStored = sessionStorage.getItem("factorId") || "";
+      const challengeIdStored = sessionStorage.getItem("challengeId") || "";
+      
+      setMfaRequired(true);
+      setFactorId(factorIdStored);
+      setChallengeId(challengeIdStored);
+    }
+  }, [isMfaActive]);
 
   // Check for messages from URL params
   useEffect(() => {
@@ -74,15 +86,15 @@ function LoginContent() {
       : null;
 
   useEffect(() => {
-    // If MFA screen is active, do NOT redirect
-    if (!user || mfaPending || mfaRequired) return;
-  
+    // If MFA screen is active (from URL query param), do NOT redirect
+    if (!user || mfaPending || mfaRequired || isMfaActive) return;
+
     if (redirect) {
       router.replace(redirect);
     } else {
       router.replace("/");
     }
-  }, [user, redirect, router, mfaPending, mfaRequired]);
+  }, [user, redirect, router, mfaPending, mfaRequired, isMfaActive]);
 
   // Listen for auth state changes
   useEffect(() => {
@@ -134,26 +146,34 @@ function LoginContent() {
           setError("Invalid email or password. Please check and try again.");
         } else if (signInError.message.includes("Email not confirmed")) {
           setError("Please verify your email before signing in.");
-        } 
+        }
         setIsSubmitting(false);
         return;
       }
 
       // MFA required
       if (isMfaRequired && fId && cId) {
+        sessionStorage.setItem("mfaRequired", "true");
+        sessionStorage.setItem("factorId", fId);
+        sessionStorage.setItem("challengeId", cId);
         setMfaRequired(true);
         setFactorId(fId);
         setChallengeId(cId);
         setSuccess("Please enter your authentication code");
         setIsSubmitting(false);
+        // Add ?mfa=true to URL so refresh doesn't cause redirect
+        window.history.replaceState(null, "", `${window.location.pathname}?mfa=true`);
         return;
       }
 
       // no MFA, safe to redirect
-      // router.push("/");
+      if (redirect) {
+        window.location.assign(redirect);
+      } else {
+        window.location.assign("/");
+      }
     } catch {
       setError("An unexpected error occurred. Please try again.");
-    } finally {
       setIsSubmitting(false);
     }
   };
@@ -171,13 +191,24 @@ function LoginContent() {
       );
 
       if (success) {
-        router.replace(redirect || "/");
+        // Clear MFA data
+        sessionStorage.removeItem("mfaRequired");
+        sessionStorage.removeItem("factorId");
+        sessionStorage.removeItem("challengeId");
+        // Remove ?mfa=true from URL
+        window.history.replaceState(null, "", window.location.pathname);
+        
+        if (redirect) {
+          window.location.assign(redirect);
+        } else {
+          window.location.assign("/");
+        }
       } else {
         setError(mfaError || "Invalid authentication code");
+        setIsSubmitting(false);
       }
     } catch {
       setError("Failed to verify authentication code");
-    } finally {
       setIsSubmitting(false);
     }
   };
@@ -186,7 +217,7 @@ function LoginContent() {
     setError("");
     setIsSubmitting(true);
     try {
-      const { error: googleError } = await signInWithGoogle();
+      const { error: googleError } = await signInWithGoogle(redirect);
       if (googleError) {
         setError("Failed to sign in with Google. Please try again.");
         setIsSubmitting(false);
@@ -474,16 +505,15 @@ function LoginContent() {
             Create account
           </Link>
         </p>
-
       </div>
 
       {/* Full-screen Loading Overlay */}
       {isSubmitting && (
-        <Loader 
-          fullScreen 
-          size="xl" 
-          text="Authenticating..." 
-          subText="Securing your session, please wait" 
+        <Loader
+          fullScreen
+          size="xl"
+          text="Authenticating..."
+          subText="Securing your session, please wait"
         />
       )}
     </div>

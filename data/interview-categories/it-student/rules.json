@@ -1,0 +1,895 @@
+{
+  "categorySlug": "it-student",
+  "version": "1.0.0",
+  "lastUpdated": "2026-03-27",
+  "documentationRules": {
+    "category": "Question Selection Rules for Italy Student Visa Interview Preparation",
+    "description": "Intelligent question selection system that adapts question sets based on applicant profile and answers to optimally prepare students for Italy student visa interviews.",
+    "structure": {
+      "ruleTypes": [
+        "CORE_REQUIREMENTS - Always included questions for any Italy student",
+        "PROFILE_BASED - Triggered based on applicant's education level and career stage",
+        "CONDITIONAL_CONCERNS - Triggered when specific risk factors or strengths are identified",
+        "SCENARIO_SPECIFIC - Triggered for special circumstances (visa history, employment status, language proficiency, etc.)",
+        "FIELD_SPECIFIC - Adapted question focus based on program and field of study"
+      ],
+      "operatorTypes": ["equals", "notEquals", "greaterThan", "lessThan", "greaterThanOrEqual", "lessThanOrEqual"],
+      "conditionTypes": ["AND (all conditions must be true)", "OR (at least one condition must be true)", "NOT (condition must be false)"],
+      "priorityLevels": ["high", "medium", "low"]
+    }
+  },
+  "questionSelectionRules": [
+    {
+      "id": "rule_core_basic_identity",
+      "name": "Core - Basic Profile & Identity",
+      "description": "Always include basic identity and profile questions as foundation for Italy student visa interview",
+      "ruleType": "CORE_REQUIREMENTS",
+      "condition": {
+        "type": "AND",
+        "conditions": [
+          {
+            "field": "country_of_residence",
+            "operator": "notEquals",
+            "value": ""
+          }
+        ]
+      },
+      "actions": {
+        "includeCategories": ["Academic Background"],
+        "priorityBoost": ["high"],
+        "reason": "Basic identity verification establishes applicant eligibility and forms foundation for Italy student visa assessment"
+      }
+    },
+    {
+      "id": "rule_core_study_plans",
+      "name": "Core - Study Plans & Motivation",
+      "description": "Always include study motivation and career alignment questions",
+      "ruleType": "CORE_REQUIREMENTS",
+      "condition": {
+        "type": "AND",
+        "conditions": [
+          {
+            "field": "country_of_residence",
+            "operator": "notEquals",
+            "value": ""
+          }
+        ]
+      },
+      "actions": {
+        "includeCategories": ["Study Plans"],
+        "priorityBoost": ["high"],
+        "reason": "Study motivation assessment is critical to determine genuine educational intent vs. immigration intent, core evaluation criteria for Italy student visa"
+      }
+    },
+    {
+      "id": "rule_core_university",
+      "name": "Core - University Choice & Acceptance",
+      "description": "Always include university selection and admission letter questions",
+      "ruleType": "CORE_REQUIREMENTS",
+      "condition": {
+        "type": "AND",
+        "conditions": [
+          {
+            "field": "country_of_residence",
+            "operator": "notEquals",
+            "value": ""
+          }
+        ]
+      },
+      "actions": {
+        "includeCategories": ["University Choice"],
+        "priorityBoost": ["high"],
+        "reason": "University verification and admission letter receipt confirmation are mandatory requirements for Italy student visa processing"
+      }
+    },
+    {
+      "id": "rule_core_academics",
+      "name": "Core - Academic Capability",
+      "description": "Always include language proficiency and academic preparation questions",
+      "ruleType": "CORE_REQUIREMENTS",
+      "condition": {
+        "type": "AND",
+        "conditions": [
+          {
+            "field": "country_of_residence",
+            "operator": "notEquals",
+            "value": ""
+          }
+        ]
+      },
+      "actions": {
+        "includeCategories": ["Academic Capability"],
+        "priorityBoost": ["high"],
+        "reason": "Language proficiency (English and/or Italian) and academic capability verification through test scores and GPA is mandatory for Italy student visa approval"
+      }
+    },
+    {
+      "id": "rule_core_finance",
+      "name": "Core - Financial Capability & Proof of Funds",
+      "description": "Always include financial sponsor and funding questions - critical for Italy student visa",
+      "ruleType": "CORE_REQUIREMENTS",
+      "condition": {
+        "type": "AND",
+        "conditions": [
+          {
+            "field": "country_of_residence",
+            "operator": "notEquals",
+            "value": ""
+          }
+        ]
+      },
+      "actions": {
+        "includeCategories": ["Financial Status"],
+        "priorityBoost": ["high"],
+        "reason": "Financial capability verification is critical for Italy student visa - Italian authorities must confirm applicant/sponsor can fund entire education and living expenses"
+      }
+    },
+    {
+      "id": "rule_core_home_ties",
+      "name": "Core - Home Country Ties & Return Intent",
+      "description": "Always include post-graduation plans and home country ties questions - critical for Italy student visa",
+      "ruleType": "CORE_REQUIREMENTS",
+      "condition": {
+        "type": "AND",
+        "conditions": [
+          {
+            "field": "country_of_residence",
+            "operator": "notEquals",
+            "value": ""
+          }
+        ]
+      },
+      "actions": {
+        "includeCategories": ["Post-Graduation Plans"],
+        "priorityBoost": ["high"],
+        "reason": "Return home commitment and home country ties are CRITICAL for Italy student visa - Italian authorities must establish genuine student intent and evidence of commitment to return home after studies"
+      }
+    },
+    {
+      "id": "rule_core_visa_compliance",
+      "name": "Core - Visa Compliance & Legal Background",
+      "description": "Always include visa history and legal background questions",
+      "ruleType": "CORE_REQUIREMENTS",
+      "condition": {
+        "type": "AND",
+        "conditions": [
+          {
+            "field": "country_of_residence",
+            "operator": "notEquals",
+            "value": ""
+          }
+        ]
+      },
+      "actions": {
+        "includeCategories": ["Background"],
+        "priorityBoost": ["high"],
+        "reason": "Visa compliance and legal clearance are mandatory verification requirements for Italy student visa - any visa violations or criminal history must be disclosed and explained"
+      }
+    },
+
+    {
+      "id": "rule_strong_english",
+      "name": "Strong English Proficiency",
+      "description": "Applied when student has high English test scores (IELTS 8+)",
+      "ruleType": "CONDITIONAL_CONCERNS",
+      "condition": {
+        "type": "AND",
+        "conditions": [
+          {
+            "field": "ielts_score",
+            "operator": "greaterThan",
+            "value": 8
+          }
+        ]
+      },
+      "actions": {
+        "includeCategories": ["Academic Capability"],
+        "priorityBoost": ["low"],
+        "reason": "Strong English proficiency significantly strengthens Italy student visa application by confirming student can succeed in English-medium academic environment"
+      }
+    },
+    {
+      "id": "rule_weak_english",
+      "name": "Weak English Proficiency",
+      "description": "Applied when student has low English test scores (IELTS below 6.5) or low confidence rating",
+      "ruleType": "CONDITIONAL_CONCERNS",
+      "condition": {
+        "type": "OR",
+        "conditions": [
+          {
+            "field": "ielts_score",
+            "operator": "lessThan",
+            "value": 6.5
+          }
+        ]
+      },
+      "actions": {
+        "includeCategories": ["Academic Capability"],
+        "priorityBoost": ["high"],
+        "reason": "Weak English proficiency raises concerns about academic success in English-medium courses and requires detailed explanation of support systems and strategies for managing English coursework"
+      }
+    },
+    {
+      "id": "rule_italian_language_requirement",
+      "name": "Italian Language Proficiency Assessment",
+      "description": "Applied when course is taught in Italian or both English and Italian",
+      "ruleType": "CONDITIONAL_CONCERNS",
+      "condition": {
+        "type": "OR",
+        "conditions": [
+          {
+            "field": "course_language",
+            "operator": "equals",
+            "value": "Italian"
+          },
+          {
+            "field": "course_language",
+            "operator": "equals",
+            "value": "Both English and Italian"
+          }
+        ]
+      },
+      "actions": {
+        "includeCategories": ["Academic Capability"],
+        "priorityBoost": ["high"],
+        "reason": "Italian language proficiency is critical for courses taught partially or fully in Italian - requires demonstration of CEFR level appropriate for academic coursework"
+      }
+    },
+    {
+      "id": "rule_strong_academics",
+      "name": "Strong Academic Record",
+      "description": "Applied when student has high GPA (3.5+) or strong test scores",
+      "ruleType": "CONDITIONAL_CONCERNS",
+      "condition": {
+        "type": "AND",
+        "conditions": [
+          {
+            "field": "previous_gpa",
+            "operator": "greaterThan",
+            "value": 3.5
+          }
+        ]
+      },
+      "actions": {
+        "includeCategories": ["Academic Capability"],
+        "priorityBoost": ["low"],
+        "reason": "Strong academic history demonstrates capability for Italian university coursework and reduces officer concerns about academic success"
+      }
+    },
+    {
+      "id": "rule_weak_academics",
+      "name": "Weak Academic Record",
+      "description": "Applied when student has low GPA (below 3.0) or low English test scores",
+      "ruleType": "CONDITIONAL_CONCERNS",
+      "condition": {
+        "type": "OR",
+        "conditions": [
+          {
+            "field": "previous_gpa",
+            "operator": "lessThan",
+            "value": 3.0
+          },
+          {
+            "field": "ielts_score",
+            "operator": "lessThan",
+            "value": 6.5
+          }
+        ]
+      },
+      "actions": {
+        "includeCategories": ["Academic Capability", "Financial Status"],
+        "priorityBoost": ["high"],
+        "reason": "Weaker academic record requires detailed explanation of academic preparation strategies and confirmation of financial support for full program duration"
+      }
+    },
+
+    {
+      "id": "rule_strong_finances",
+      "name": "Strong Financial Capability",
+      "description": "Applied when sponsor income is high (€100,000+ equivalent) or student has full scholarship",
+      "ruleType": "CONDITIONAL_CONCERNS",
+      "condition": {
+        "type": "OR",
+        "conditions": [
+          {
+            "field": "sponsor_annual_income",
+            "operator": "greaterThan",
+            "value": 100000
+          },
+          {
+            "field": "scholarship_type",
+            "operator": "equals",
+            "value": "Full Tuition + Stipend"
+          }
+        ]
+      },
+      "actions": {
+        "includeCategories": ["Financial Status"],
+        "priorityBoost": ["low"],
+        "reason": "Strong financial capability significantly strengthens Italy student visa application by eliminating officer concern about applicant becoming financial burden"
+      }
+    },
+    {
+      "id": "rule_weak_finances",
+      "name": "Weak or Uncertain Financial Capability",
+      "description": "Applied when sponsor income is modest (below €40,000) or available funds barely cover program costs",
+      "ruleType": "CONDITIONAL_CONCERNS",
+      "condition": {
+        "type": "OR",
+        "conditions": [
+          {
+            "field": "sponsor_annual_income",
+            "operator": "lessThan",
+            "value": 40000
+          },
+          {
+            "field": "available_funds",
+            "operator": "lessThan",
+            "value": 50000
+          }
+        ]
+      },
+      "actions": {
+        "includeCategories": ["Financial Status"],
+        "priorityBoost": ["high"],
+        "reason": "Limited financial resources require detailed documentation of sponsor income proof, detailed funding plan for all program years, and clear explanation of how expenses will be covered"
+      }
+    },
+    {
+      "id": "rule_no_scholarship",
+      "name": "No Scholarship Funding",
+      "description": "Applied when student did not receive any scholarship",
+      "ruleType": "CONDITIONAL_CONCERNS",
+      "condition": {
+        "type": "AND",
+        "conditions": [
+          {
+            "field": "scholarship_status",
+            "operator": "equals",
+            "value": false
+          }
+        ]
+      },
+      "actions": {
+        "includeCategories": ["Financial Status"],
+        "priorityBoost": ["medium"],
+        "reason": "Absence of scholarship means full reliance on sponsor/personal funds - requires strong evidence of complete financial capability for entire program duration"
+      }
+    },
+    {
+      "id": "rule_has_scholarship",
+      "name": "Has Scholarship Funding",
+      "description": "Applied when student received any type of scholarship (merit-based, need-based, or partial)",
+      "ruleType": "CONDITIONAL_CONCERNS",
+      "condition": {
+        "type": "AND",
+        "conditions": [
+          {
+            "field": "scholarship_status",
+            "operator": "equals",
+            "value": true
+          }
+        ]
+      },
+      "actions": {
+        "includeCategories": ["Financial Status"],
+        "priorityBoost": ["low"],
+        "reason": "University scholarship significantly strengthens financial capability profile by confirming university investment in student and reducing sponsor burden"
+      }
+    },
+
+    {
+      "id": "rule_strong_home_ties",
+      "name": "Strong Home Country Ties",
+      "description": "Applied when student has multiple home country ties: family, property, job prospects, and strong intent to return",
+      "ruleType": "CONDITIONAL_CONCERNS",
+      "condition": {
+        "type": "AND",
+        "conditions": [
+          {
+            "field": "plan_to_return_home",
+            "operator": "equals",
+            "value": true
+          },
+          {
+            "field": "family_in_home_country",
+            "operator": "equals",
+            "value": true
+          }
+        ]
+      },
+      "actions": {
+        "includeCategories": ["Post-Graduation Plans"],
+        "priorityBoost": ["low"],
+        "reason": "Multiple strong home country ties (family, property, job prospects) provide clear evidence of genuine student intent and commitment to return home, significantly strengthening Italy student visa case"
+      }
+    },
+    {
+      "id": "rule_weak_home_ties",
+      "name": "Weak Home Country Ties",
+      "description": "Applied when student has few home country ties or uncertain return plans",
+      "ruleType": "CONDITIONAL_CONCERNS",
+      "condition": {
+        "type": "OR",
+        "conditions": [
+          {
+            "field": "plan_to_return_home",
+            "operator": "equals",
+            "value": false
+          },
+          {
+            "field": "family_in_home_country",
+            "operator": "equals",
+            "value": false
+          }
+        ]
+      },
+      "actions": {
+        "includeCategories": ["Post-Graduation Plans"],
+        "priorityBoost": ["high"],
+        "reason": "Limited home country ties or weak return intent raises officer concerns about genuine student intent and requires detailed, credible explanation of why student will return to home country"
+      }
+    },
+
+    {
+      "id": "rule_part_time_work_planned",
+      "name": "Plans Part-Time Work During Studies",
+      "description": "Applied when student plans to work part-time while studying",
+      "ruleType": "CONDITIONAL_CONCERNS",
+      "condition": {
+        "type": "AND",
+        "conditions": [
+          {
+            "field": "part_time_work_plans",
+            "operator": "notEquals",
+            "value": ""
+          }
+        ]
+      },
+      "actions": {
+        "includeCategories": ["Financial Status"],
+        "priorityBoost": ["medium"],
+        "reason": "Part-time work plans require demonstration of understanding Italy student visa work restrictions (20 hours/week during school terms) and realistic balance with academic commitments"
+      }
+    },
+
+    {
+      "id": "rule_health_insurance_planning",
+      "name": "Health Insurance & Healthcare Planning",
+      "description": "Applied when student has documented health insurance and healthcare planning",
+      "ruleType": "CONDITIONAL_CONCERNS",
+      "condition": {
+        "type": "AND",
+        "conditions": [
+          {
+            "field": "health_insurance_italy",
+            "operator": "equals",
+            "value": true
+          }
+        ]
+      },
+      "actions": {
+        "includeCategories": ["Study Plans"],
+        "priorityBoost": ["low"],
+        "reason": "Valid health insurance for Italy is mandatory requirement - demonstration of proper insurance coverage shows practical preparation and legal compliance"
+      }
+    },
+    {
+      "id": "rule_no_health_insurance",
+      "name": "Missing Health Insurance Verification",
+      "description": "Applied when student has not yet secured health insurance for Italy",
+      "ruleType": "CONDITIONAL_CONCERNS",
+      "condition": {
+        "type": "AND",
+        "conditions": [
+          {
+            "field": "health_insurance_italy",
+            "operator": "equals",
+            "value": false
+          }
+        ]
+      },
+      "actions": {
+        "includeCategories": ["Study Plans"],
+        "priorityBoost": ["high"],
+        "reason": "Health insurance is mandatory for Italy student visa - missing coverage requires immediate explanation and documented plan to secure appropriate insurance before arrival"
+      }
+    },
+
+    {
+      "id": "rule_visa_compliance_understanding",
+      "name": "Student Visa Conditions Understanding",
+      "description": "Applied when student demonstrates understanding of visa conditions and limitations",
+      "ruleType": "CONDITIONAL_CONCERNS",
+      "condition": {
+        "type": "AND",
+        "conditions": [
+          {
+            "field": "student_visa_conditions_understanding",
+            "operator": "notEquals",
+            "value": ""
+          }
+        ]
+      },
+      "actions": {
+        "includeCategories": ["Background"],
+        "priorityBoost": ["low"],
+        "reason": "Clear understanding of Italy student visa conditions demonstrates serious preparation and commitment to legal compliance during studies"
+      }
+    },
+
+    {
+      "id": "rule_visa_refusal_history",
+      "name": "Visa Refusal History",
+      "description": "Applied when student has been denied a visa to any country previously",
+      "ruleType": "SCENARIO_SPECIFIC",
+      "condition": {
+        "type": "OR",
+        "conditions": [
+          {
+            "field": "visa_refusal_history",
+            "operator": "equals",
+            "value": true
+          },
+          {
+            "field": "other_countries_visa_refusal",
+            "operator": "equals",
+            "value": true
+          }
+        ]
+      },
+      "actions": {
+        "includeCategories": ["Background", "Post-Graduation Plans"],
+        "priorityBoost": ["high"],
+        "reason": "Visa refusal history is serious concern - requires transparent explanation of refusal reason, evidence that circumstances have changed, and demonstration that applicant is now clearly eligible for Italy student visa"
+      }
+    },
+    {
+      "id": "rule_criminal_history",
+      "name": "Criminal Record or Legal Issues",
+      "description": "Applied when student has any criminal convictions or legal issues",
+      "ruleType": "SCENARIO_SPECIFIC",
+      "condition": {
+        "type": "OR",
+        "conditions": [
+          {
+            "field": "criminal_record",
+            "operator": "equals",
+            "value": true
+          },
+          {
+            "field": "any_it_immigration_issues",
+            "operator": "equals",
+            "value": true
+          },
+          {
+            "field": "previous_overstay",
+            "operator": "equals",
+            "value": true
+          }
+        ]
+      },
+      "actions": {
+        "includeCategories": ["Background"],
+        "priorityBoost": ["high"],
+        "reason": "Criminal history or visa violations are serious impediments to Italy student visa approval - requires full disclosure, detailed explanation of circumstances, evidence of rehabilitation, and assurance of future lawful conduct"
+      }
+    },
+
+    {
+      "id": "rule_admission_letter_received",
+      "name": "Has Official Admission Letter",
+      "description": "Applied when student has received official admission letter from Italian university",
+      "ruleType": "SCENARIO_SPECIFIC",
+      "condition": {
+        "type": "AND",
+        "conditions": [
+          {
+            "field": "admission_letter_received",
+            "operator": "equals",
+            "value": true
+          }
+        ]
+      },
+      "actions": {
+        "includeCategories": ["University Choice"],
+        "priorityBoost": ["low"],
+        "reason": "Possession of official admission letter confirms legitimate admission to Italian university and student visa eligibility, significantly advancing application readiness"
+      }
+    },
+    {
+      "id": "rule_no_admission_letter",
+      "name": "Missing Official Admission Letter",
+      "description": "Applied when student has not yet received admission letter",
+      "ruleType": "SCENARIO_SPECIFIC",
+      "condition": {
+        "type": "AND",
+        "conditions": [
+          {
+            "field": "admission_letter_received",
+            "operator": "equals",
+            "value": false
+          }
+        ]
+      },
+      "actions": {
+        "includeCategories": ["University Choice"],
+        "priorityBoost": ["high"],
+        "reason": "Official admission letter from Italian university is mandatory for visa application - missing documentation requires explanation of expected timeline and interim acceptance status"
+      }
+    },
+
+    {
+      "id": "rule_accommodation_arranged",
+      "name": "Accommodation Arrangements Confirmed",
+      "description": "Applied when student has arranged accommodation in Italy",
+      "ruleType": "SCENARIO_SPECIFIC",
+      "condition": {
+        "type": "AND",
+        "conditions": [
+          {
+            "field": "accommodation_in_italy",
+            "operator": "notEquals",
+            "value": ""
+          }
+        ]
+      },
+      "actions": {
+        "includeCategories": ["Study Plans"],
+        "priorityBoost": ["low"],
+        "reason": "Confirmed accommodation arrangements demonstrate practical preparation, responsible planning, and readiness for Italian student life"
+      }
+    },
+
+    {
+      "id": "rule_schengen_travel_plans",
+      "name": "Schengen Area Travel Plans",
+      "description": "Applied when student plans to travel within Schengen Area during studies",
+      "ruleType": "SCENARIO_SPECIFIC",
+      "condition": {
+        "type": "AND",
+        "conditions": [
+          {
+            "field": "schengen_travel_plans",
+            "operator": "equals",
+            "value": true
+          }
+        ]
+      },
+      "actions": {
+        "includeCategories": ["Study Plans"],
+        "priorityBoost": ["medium"],
+        "reason": "Schengen visa-free travel is benefit of Italy student visa - planned travel within EU requires demonstration that it will not interfere with academic commitments"
+      }
+    },
+
+    {
+      "id": "rule_graduate_student",
+      "name": "Graduate Student (Master's/PhD)",
+      "description": "Applied when student is pursuing Master's degree or PhD",
+      "ruleType": "PROFILE_BASED",
+      "condition": {
+        "type": "OR",
+        "conditions": [
+          {
+            "field": "intended_degree",
+            "operator": "equals",
+            "value": "Master's (2 years)"
+          },
+          {
+            "field": "intended_degree",
+            "operator": "equals",
+            "value": "PhD / Doctoral (4+ years)"
+          }
+        ]
+      },
+      "actions": {
+        "includeCategories": ["Study Plans", "Academic Capability"],
+        "priorityBoost": ["medium"],
+        "reason": "Graduate students often present stronger credentials for Italy visa - can articulate specific research goals, have clearer career direction, and typically demonstrate stronger non-immigrant intent with existing professional experience"
+      }
+    },
+    {
+      "id": "rule_undergraduate_student",
+      "name": "Undergraduate Student (Bachelor's)",
+      "description": "Applied when student is pursuing Bachelor's degree",
+      "ruleType": "PROFILE_BASED",
+      "condition": {
+        "type": "AND",
+        "conditions": [
+          {
+            "field": "intended_degree",
+            "operator": "equals",
+            "value": "Bachelor's (4 years)"
+          }
+        ]
+      },
+      "actions": {
+        "includeCategories": ["Study Plans", "Post-Graduation Plans"],
+        "priorityBoost": ["medium"],
+        "reason": "Undergraduate students pursuing 4-year programs require careful assessment of return intent and home country ties since long program duration may raise immigration intent concerns"
+      }
+    },
+
+    {
+      "id": "rule_employed_with_experience",
+      "name": "Employed with Work Experience",
+      "description": "Applied when student is currently employed or self-sponsored",
+      "ruleType": "PROFILE_BASED",
+      "condition": {
+        "type": "AND",
+        "conditions": [
+          {
+            "field": "primary_sponsor",
+            "operator": "equals",
+            "value": "Self"
+          }
+        ]
+      },
+      "actions": {
+        "includeCategories": ["Study Plans", "Post-Graduation Plans"],
+        "priorityBoost": ["low"],
+        "reason": "Self-sponsored or employed applicant demonstrates maturity, financial independence, clear professional motivation for studies, and strong ability to return to meaningful employment post-graduation"
+      }
+    },
+
+    {
+      "id": "rule_previous_italy_visit",
+      "name": "Previous Italy Visit Experience",
+      "description": "Applied when student has visited Italy before",
+      "ruleType": "SCENARIO_SPECIFIC",
+      "condition": {
+        "type": "AND",
+        "conditions": [
+          {
+            "field": "previous_it_visits",
+            "operator": "equals",
+            "value": true
+          }
+        ]
+      },
+      "actions": {
+        "includeCategories": ["University Choice"],
+        "priorityBoost": ["low"],
+        "reason": "Previous Italy visits demonstrate clean travel history, compliance with visa terms, real familiarity with Italy environment, and opportunity for campus visits which strengthen university commitment"
+      }
+    },
+    {
+      "id": "rule_no_italy_visit",
+      "name": "No Previous Italy Visit",
+      "description": "Applied when student has never visited Italy before",
+      "ruleType": "SCENARIO_SPECIFIC",
+      "condition": {
+        "type": "AND",
+        "conditions": [
+          {
+            "field": "previous_it_visits",
+            "operator": "equals",
+            "value": false
+          }
+        ]
+      },
+      "actions": {
+        "includeCategories": ["University Choice"],
+        "priorityBoost": ["medium"],
+        "reason": "No Italy experience requires extra effort to demonstrate detailed university knowledge through virtual research, shows genuine interest despite not visiting campus, and reinforces commitment to specific Italian university"
+      }
+    },
+
+    {
+      "id": "rule_high_risk_combination",
+      "name": "High-Risk Profile Combination",
+      "description": "Applied when student has combination of concerning factors: weak academics + weak finances + weak home country ties",
+      "ruleType": "CONDITIONAL_CONCERNS",
+      "condition": {
+        "type": "AND",
+        "conditions": [
+          {
+            "field": "previous_gpa",
+            "operator": "lessThan",
+            "value": 3.0
+          },
+          {
+            "field": "available_funds",
+            "operator": "lessThan",
+            "value": 60000
+          },
+          {
+            "field": "family_in_home_country",
+            "operator": "equals",
+            "value": false
+          }
+        ]
+      },
+      "actions": {
+        "includeCategories": ["Academic Capability", "Financial Status", "Post-Graduation Plans"],
+        "priorityBoost": ["high"],
+        "reason": "High-risk combination of weak academics + limited finances + weak home country ties requires comprehensive evidence addressing ALL concerns: strong support plan for academics, complete financial documentation, and very clear credible explanation of genuine student intent and return commitment"
+      }
+    },
+    {
+      "id": "rule_developing_country_resources",
+      "name": "Student from Developing Country with Resources",
+      "description": "Applied when student is from developing country with strong financial support",
+      "ruleType": "CONDITIONAL_CONCERNS",
+      "condition": {
+        "type": "AND",
+        "conditions": [
+          {
+            "field": "sponsor_annual_income",
+            "operator": "greaterThan",
+            "value": 50000
+          }
+        ]
+      },
+      "actions": {
+        "includeCategories": ["Financial Status", "Post-Graduation Plans"],
+        "priorityBoost": ["low"],
+        "reason": "Strong financial resources in developing country context often indicate family business or high-status employment, strengthening both financial capability and home country ties arguments for Italy student visa"
+      }
+    },
+    {
+      "id": "rule_non_english_medium_education",
+      "name": "Non-English Medium Education",
+      "description": "Applied when student did not study in English medium previously",
+      "ruleType": "CONDITIONAL_CONCERNS",
+      "condition": {
+        "type": "AND",
+        "conditions": [
+          {
+            "field": "medium_of_instruction",
+            "operator": "equals",
+            "value": false
+          }
+        ]
+      },
+      "actions": {
+        "includeCategories": ["Academic Capability"],
+        "priorityBoost": ["high"],
+        "reason": "Non-English prior education requires detailed explanation of English proficiency development, specific strategies for managing English-medium coursework, and discussion of university support systems available"
+      }
+    },
+    {
+      "id": "rule_program_career_alignment",
+      "name": "Program Career Goals Alignment",
+      "description": "Applied when student demonstrates clear alignment between program and career goals",
+      "ruleType": "CONDITIONAL_CONCERNS",
+      "condition": {
+        "type": "AND",
+        "conditions": [
+          {
+            "field": "program_career_goals_alignment",
+            "operator": "notEquals",
+            "value": ""
+          }
+        ]
+      },
+      "actions": {
+        "includeCategories": ["Study Plans"],
+        "priorityBoost": ["low"],
+        "reason": "Strong program-career alignment demonstrates thoughtful application and genuine educational motivation, reducing officer concerns about immigration intent"
+      }
+    },
+    {
+      "id": "rule_professional_preparation",
+      "name": "Professional Practice Preparation Focus",
+      "description": "Applied when student focuses on program's professional preparation and qualifications",
+      "ruleType": "CONDITIONAL_CONCERNS",
+      "condition": {
+        "type": "AND",
+        "conditions": [
+          {
+            "field": "program_professional_preparation",
+            "operator": "notEquals",
+            "value": ""
+          }
+        ]
+      },
+      "actions": {
+        "includeCategories": ["Study Plans"],
+        "priorityBoost": ["low"],
+        "reason": "Focus on professional qualifications and certifications shows forward-thinking career planning and demonstrates Italy education's practical value in home country context"
+      }
+    }
+  ]
+}

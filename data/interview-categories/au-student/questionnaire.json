@@ -1,7 +1,7 @@
 {
-    "categorySlug": "uk-student",
-    "version": "1.1.0",
-    "lastUpdated": "2026-03-25",
+    "categorySlug": "au-student",
+    "version": "1.0.0",
+    "lastUpdated": "2026-03-26",
     "sections": [
       {
         "id": "basic_profile",
@@ -29,8 +29,8 @@
             "label": "What is your current age?",
             "type": "number",
             "required": true,
-            "validation": { "min": 16, "max": 65 },
-            "description": "Pakistani students must be at least 16 years old for UK student visa"
+            "validation": { "min": 6, "max": 65 },
+            "description": "Pakistani students must be at least 6 years old for Australia student visa"
           },
           {
             "key": "country_of_residence",
@@ -54,14 +54,14 @@
             "type": "text",
             "required": true,
             "validation": { "minLength": 2, "maxLength": 200 },
-            "placeholder": "e.g., English, Urdu, Mandarin"
+            "placeholder": "e.g., English, French, Mandarin"
           }
         ]
       },
       {
         "id": "study_plans",
         "title": "Study Plans & Academic Goals",
-        "description": "Your intended degree, field of study, and academic goals in the UK.",
+        "description": "Your intended degree, field of study, and academic goals in the Australia.",
         "order": 2,
         "questions": [
           {
@@ -110,6 +110,14 @@
             "required": true,
             "validation": { "minLength": 40, "maxLength": 1000 },
             "placeholder": "Describe professional qualifications, accreditations, or certifications this program provides"
+          },
+          {
+            "key": "course_not_chosen_home_country",
+            "label": "Why didn't you choose a similar course in your home country?",
+            "type": "textarea",
+            "required": true,
+            "validation": { "minLength": 50, "maxLength": 1000 },
+            "placeholder": "Compare the Australian program with available options in your home country. Explain what Australia uniquely offers (curriculum, facilities, faculty, research opportunities, etc.)"
           }
         ]
       },
@@ -125,7 +133,7 @@
             "type": "text",
             "required": true,
             "validation": { "minLength": 3, "maxLength": 200 },
-            "placeholder": "e.g., University of Oxford, University of Cambridge, LSE, Imperial College London"
+            "placeholder": "e.g., University of Australia, Australian National University, University of Melbourne"
           },
           {
             "key": "university_city_state",
@@ -133,15 +141,7 @@
             "type": "text",
             "required": true,
             "validation": { "minLength": 3, "maxLength": 200 },
-            "placeholder": "e.g., London, Oxford, Cambridge, Manchester"
-          },
-          {
-            "key": "total_universities_applied",
-            "label": "How many universities did you apply to in total?",
-            "type": "number",
-            "required": true,
-            "validation": { "min": 1, "max": 50 },
-            "description": "Total number of applications submitted"
+            "placeholder": "e.g., Sydney, Melbourne, Brisbane, Adelaide"
           },
           {
             "key": "why_primary_university",
@@ -158,6 +158,14 @@
             "required": true,
             "validation": { "minLength": 50, "maxLength": 1000 },
             "placeholder": "Demonstrate research about the program curriculum"
+          },
+          {
+            "key": "course_subjects_modules",
+            "label": "What subjects/modules are included in your course?",
+            "type": "textarea",
+            "required": true,
+            "validation": { "minLength": 40, "maxLength": 1000 },
+            "placeholder": "Describe the core modules, electives, and practical components of your program. Research your actual course structure."
           }
         ]
       },
@@ -172,17 +180,17 @@
             "label": "Which English proficiency test did you take?",
             "type": "select",
             "required": true,
-            "options": ["TOEFL iBT", "IELTS", "Both", "Not taken yet", "Other"],
-            "description": "UK universities typically require IELTS or TOEFL"
+            "options": ["PTE", "IELTS", "Both", "Not taken yet", "Other"],
+            "description": "Australia universities typically require PTE or IELTS"
           },
           {
-            "key": "toefl_score",
-            "label": "What is your TOEFL score?",
+            "key": "pte_score",
+            "label": "What is your PTE score?",
             "type": "number",
             "required": false,
-            "validation": { "min": 0, "max": 120 },
-            "placeholder": "TOEFL iBT is out of 120",
-            "dependsOn": { "key": "english_proficiency_test", "valueIn": ["TOEFL iBT", "Both"] }
+            "validation": { "min": 0, "max": 90 },
+            "placeholder": "PTE is out of 90",
+            "dependsOn": { "key": "english_proficiency_test", "valueIn": ["PTE", "Both"] }
           },
           {
             "key": "ielts_score",
@@ -192,22 +200,6 @@
             "validation": { "min": 0, "max": 9 },
             "placeholder": "IELTS is out of 9.0",
             "dependsOn": { "key": "english_proficiency_test", "valueIn": ["IELTS", "Both"] }
-          },
-          {
-            "key": "standardized_test",
-            "label": "Did you take GRE / GMAT / SAT / ACT?",
-            "type": "select",
-            "required": false,
-            "options": ["GRE", "GMAT", "SAT", "ACT", "None", "Other"]
-          },
-          {
-            "key": "standardized_test_score",
-            "label": "What is your standardized test score?",
-            "type": "text",
-            "required": false,
-            "validation": { "minLength": 1, "maxLength": 50 },
-            "placeholder": "e.g., GRE: 320 / 340",
-            "dependsOn": { "key": "standardized_test", "notValue": "None" }
           },
           {
             "key": "previous_gpa",
@@ -225,28 +217,12 @@
             "description": "Whether your schooling was conducted in English medium"
           },
           {
-            "key": "english_confidence_rating",
-            "label": "How confident are you in your English ability? (1-10)",
-            "type": "number",
-            "required": true,
-            "validation": { "min": 1, "max": 10 },
-            "description": "Rate your overall English proficiency"
-          },
-          {
-            "key": "how_you_will_manage_english",
-            "label": "How will you manage studying in English at a UK university?",
+            "key": "skills_gained_program",
+            "label": "What skills will you gain from this program?",
             "type": "textarea",
             "required": true,
-            "validation": { "minLength": 40, "maxLength": 800 },
-            "placeholder": "Explain your strategies, support systems, or relevant experience"
-          },
-          {
-            "key": "academic_success_strategy",
-            "label": "What is your plan if you struggle academically in the first semester?",
-            "type": "textarea",
-            "required": true,
-            "validation": { "minLength": 40, "maxLength": 800 },
-            "placeholder": "Describe your support systems, tutoring plans, or strategies"
+            "validation": { "minLength": 50, "maxLength": 1000 },
+            "placeholder": "Describe technical skills specific to your field and transferable soft skills (communication, problem-solving, teamwork, etc.)"
           }
         ]
       },
@@ -370,7 +346,7 @@
             "type": "textarea",
             "required": true,
             "validation": { "minLength": 40, "maxLength": 1000 },
-            "placeholder": "Explain your work plans (if any) and how you'll manage time between work and studies. Note: UK student visa allows up to 20 hours/week during term time."
+            "placeholder": "Explain your work plans (if any) and how you'll manage time between work and studies. Note: Australia student visa allows up to 20 hours/week during term time."
           }
         ]
       },
@@ -385,7 +361,7 @@
             "label": "Do you plan to return to your home country after graduation?",
             "type": "boolean",
             "required": true,
-            "description": "UK student visa requires demonstrated intent to return home after studies"
+            "description": "Australia student visa requires demonstrated intent to return home after studies"
           },
           {
             "key": "why_will_return",
@@ -439,20 +415,12 @@
             "dependsOn": { "key": "plan_to_return_home", "value": true }
           },
           {
-            "key": "consider_staying_uk",
-            "label": "Are you considering staying in the UK after graduation?",
+            "key": "consider_staying_au",
+            "label": "Are you considering staying in Australia after graduation?",
             "type": "boolean",
             "required": false,
             "description": "Be honest - visa officers appreciate honesty",
             "dependsOn": { "key": "plan_to_return_home", "notValue": true }
-          },
-          {
-            "key": "post_study_work_visa_plans",
-            "label": "Do you plan to use the post-study work visa (PSW in UK)? If yes, how does it fit into your career plan?",
-            "type": "textarea",
-            "required": false,
-            "validation": { "minLength": 30, "maxLength": 1000 },
-            "placeholder": "Explain if you plan to use PSW for work experience and how it aligns with your career goals before returning home"
           },
           {
             "key": "healthcare_management_abroad",
@@ -460,7 +428,15 @@
             "type": "textarea",
             "required": true,
             "validation": { "minLength": 30, "maxLength": 800 },
-            "placeholder": "Discuss NHS access, health insurance, emergency procedures, and any pre-existing health needs"
+            "placeholder": "Discuss healthcare access, insurance, emergency procedures, and any pre-existing health needs"
+          },
+          {
+            "key": "post_visa_expiry_plans",
+            "label": "What will you do after your visa expires?",
+            "type": "textarea",
+            "required": true,
+            "validation": { "minLength": 40, "maxLength": 1000 },
+            "placeholder": "Describe your plans after your student visa expires - whether returning home, applying for work visas, or other plans. Emphasize your intent and family ties."
           }
         ]
       },
@@ -471,25 +447,25 @@
         "order": 7,
         "questions": [
           {
-            "key": "previous_uk_visits",
-            "label": "Have you visited the UK before?",
+            "key": "previous_au_visits",
+            "label": "Have you visited Australia before?",
             "type": "boolean",
             "required": true,
-            "description": "Check if you have any prior UK travel experience"
+            "description": "Check if you have any prior travel experience in Australia"
           },
           {
-            "key": "any_uk_immigration_issues",
-            "label": "Do you have any legal issues in the UK?",
+            "key": "any_au_immigration_issues",
+            "label": "Do you have any legal issues in Australia?",
             "type": "boolean",
             "required": true,
             "description": "DUI, arrests, overstay, etc."
           },
           {
             "key": "visa_refusal_history",
-            "label": "Have you ever been denied a UK visa?",
+            "label": "Have you ever been denied a Australia visa?",
             "type": "boolean",
             "required": true,
-            "description": "Check if you have any previous UK visa refusals"
+            "description": "Check if you have any previous Australia visa refusals"
           },
           {
             "key": "previous_overstay",
@@ -505,7 +481,7 @@
           },
           {
             "key": "other_countries_visa_refusal",
-            "label": "Have you been denied a visa to any other country (Canada, USA, Australia, etc.)?",
+            "label": "Have you been denied a visa to any other country (UK, USA, Canada, etc.)?",
             "type": "boolean",
             "required": true
           },
@@ -515,7 +491,7 @@
             "type": "textarea",
             "required": true,
             "validation": { "minLength": 40, "maxLength": 1000 },
-            "placeholder": "Explain your understanding of UK student visa restrictions on working (e.g., maximum 20 hours/week during term, restrictions on certain sectors)"
+            "placeholder": "Explain your understanding of Australian student visa restrictions on working (e.g., maximum 20 hours/week during term, work eligibility for different sectors)"
           }
         ]
       }

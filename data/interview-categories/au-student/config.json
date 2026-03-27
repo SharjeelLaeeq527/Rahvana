@@ -1,0 +1,23 @@
+{
+    "categorySlug": "au-student",
+    "displayName": "Australia Student Visa",
+    "description": "Temporary visa for students wishing to study in Australia.",
+    "visaCountry": "Australia",
+    "metadata": {
+      "version": "1.0.0",
+      "questionnaireVersion": "1.0.0",
+      "questionBankVersion": "1.1.0",
+      "estimatedDurationMinutes": 25,
+      "totalQuestions": 52,
+      "totalIntakeQuestions": 56
+    },
+    "features": {
+      "hasRapidFire": true,
+      "hasProfileAutoFill": true
+    },
+    "ui": {
+      "themeColor": "teal",
+      "icon": "GraduationCap"
+    },
+    "isActive": true
+  }

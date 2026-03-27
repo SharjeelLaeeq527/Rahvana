@@ -1,0 +1,23 @@
+{
+    "categorySlug": "it-student",
+    "displayName": "Italy Student Visa",
+    "description": "Temporary visa for students wishing to study in Italy.",
+    "visaCountry": "Italy",
+    "metadata": {
+      "version": "1.0.0",
+      "questionnaireVersion": "1.0.0",
+      "questionBankVersion": "1.0.0",
+      "estimatedDurationMinutes": 25,
+      "totalQuestions": 55,
+      "totalIntakeQuestions": 61
+    },
+    "features": {
+      "hasRapidFire": true,
+      "hasProfileAutoFill": true
+    },
+    "ui": {
+      "themeColor": "teal",
+      "icon": "GraduationCap"
+    },
+    "isActive": true
+  }
