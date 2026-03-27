@@ -30,7 +30,7 @@
             "type": "number",
             "required": true,
             "validation": { "min": 6, "max": 65 },
-            "description": "Australia students must be at least 6 years old"
+            "description": "Pakistani students must be at least 6 years old for Australia student visa"
           },
           {
             "key": "country_of_residence",
