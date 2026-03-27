@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { MessageCircle, X, Upload, CheckCircle2 } from "lucide-react";
+import { MessageCircle, X, Upload } from "lucide-react";
 import { useToast } from "./shared/ToastProvider";
 import { usePathname } from "next/navigation";
 import {
@@ -150,7 +150,7 @@ export default function FeedbackButton({
       {/* Sticky Feedback Button */}
       <button
         onClick={() => setIsOpen(true)}
-        className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-40 inline-flex items-center justify-center gap-2 bg-teal-600 text-white p-3 sm:px-5 sm:py-3 rounded-full shadow-lg hover:bg-teal-700 transition-all duration-200 hover:scale-[1.03] focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-600/70 focus-visible:ring-offset-2"
+        className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-40 inline-flex items-center justify-center gap-2 bg-primary text-white p-3 sm:px-5 sm:py-3 rounded-full shadow-lg hover:bg-primary/80 transition-all duration-200 hover:scale-[1.03] focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/70 focus-visible:ring-offset-2"
         aria-label="Provide feedback"
       >
         <MessageCircle className="w-5 h-5" />
@@ -253,7 +253,7 @@ export default function FeedbackButton({
                         description: e.target.value,
                       }))
                     }
-                    className="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 min-h-[120px] shadow-sm resize-y"
+                    className="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary min-h-[120px] shadow-sm resize-y"
                     placeholder="Please describe your feedback in detail..."
                     required
                   />
@@ -303,14 +303,14 @@ export default function FeedbackButton({
                   <button
                     type="button"
                     onClick={() => setIsOpen(false)}
-                    className="px-4 py-2 text-sm font-medium text-slate-700 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500"
+                    className="px-4 py-2 text-sm font-medium text-slate-700 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
                     disabled={isSubmitting}
-                    className="px-4 py-2 text-sm font-medium text-white bg-teal-600 border border-transparent rounded-lg hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500 disabled:opacity-50"
+                    className="px-4 py-2 text-sm font-medium text-white bg-primary border border-transparent rounded-lg hover:bg-primary/80 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary disabled:opacity-50"
                   >
                     {isSubmitting ? "Submitting..." : "Submit Feedback"}
                   </button>
