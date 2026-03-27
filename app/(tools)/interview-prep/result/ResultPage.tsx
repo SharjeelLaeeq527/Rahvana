@@ -229,7 +229,7 @@ export const ResultPage = ({
                               </span>
                               <div className="flex-1 min-w-0">
                                 <p className="font-medium text-slate-800 text-sm">
-                                  {item.question}
+                                  {item.selectedQuestion || item.question}
                                 </p>
                                 <div className="mt-2">
                                   <span className="text-xs text-slate-500 bg-slate-100 px-2 py-1 rounded">
@@ -277,31 +277,10 @@ export const ResultPage = ({
                 className={`${sidebarCollapsed ? "lg:w-11/12" : "lg:w-3/5"}`}
               >
                 <div className="bg-white rounded-xl shadow-lg p-8 min-h-[calc(90vh-2rem)] flex items-center justify-center">
-                  {/* CASE 1: No questions */}
-                  {questionsList.length === 0 ? (
-                    <div className="text-center text-slate-500">
-                      <BookOpen className="w-16 h-16 mx-auto mb-4 opacity-50" />
-                      <h3 className="text-xl font-medium mb-2">
-                        No Questions Available
-                      </h3>
-                      <p className="max-w-md mx-auto">
-                        We couldn&apos;t find any relevant questions based on your
-                        responses. Try restarting and adjusting your answers for
-                        better results.
-                      </p>
-
-                      <Button
-                        onClick={onRestart}
-                        className="mt-6 bg-teal-600 hover:bg-teal-700 text-white"
-                      >
-                        Try Again
-                      </Button>
-                    </div>
-                  ) : /* CASE 2: Question selected */
-                  selectedQuestion ? (
+                  {selectedQuestion ? (
                     <div className="w-full max-w-2xl">
                       <div
-                        className={`relative w-full h-full min-h-143.75 cursor-pointer transition-transform duration-700 ease-out-cubic ${
+                        className={`relative w-full h-full min-h-[575px] cursor-pointer transition-transform duration-700 ease-out-cubic ${
                           isFlipped ? "transform rotate-y-180" : ""
                         }`}
                         style={{
@@ -310,14 +289,13 @@ export const ResultPage = ({
                         }}
                         onClick={handleCardClick}
                       >
-                        {/* Front */}
+                        {/* Front of Card - Question */}
                         <div className="absolute inset-0 backface-hidden bg-linear-to-br from-teal-500 to-teal-700 rounded-2xl p-8 flex flex-col justify-between text-white shadow-xl">
                           <div>
                             <div className="flex justify-between items-start mb-6">
                               <span className="bg-white/20 backdrop-blur-sm px-3 py-1 rounded-full text-sm font-medium">
                                 {selectedQuestion.category}
                               </span>
-
                               {selectedQuestion.tooltip && (
                                 <div className="group relative">
                                   <Info
@@ -326,7 +304,10 @@ export const ResultPage = ({
                                   />
                                   <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 hidden group-hover:block w-64 bg-slate-800 text-white text-xs rounded-lg p-3 z-50 shadow-xl border border-slate-700">
                                     <div className="text-teal-300 font-medium mb-1 flex items-center gap-1">
-                                      <Info size={14} />
+                                      <Info
+                                        size={14}
+                                        className="text-teal-300"
+                                      />
                                       Tip
                                     </div>
                                     <p>{selectedQuestion.tooltip}</p>
@@ -335,12 +316,10 @@ export const ResultPage = ({
                                 </div>
                               )}
                             </div>
-
                             <h3 className="text-2xl font-bold leading-tight">
-                              {selectedQuestion.question}
+                              {selectedQuestion.selectedQuestion || selectedQuestion.question}
                             </h3>
                           </div>
-
                           <div className="text-center">
                             <p className="text-teal-100 text-sm mb-2">
                               Click card to reveal answer
@@ -353,31 +332,40 @@ export const ResultPage = ({
                           </div>
                         </div>
 
-                        {/* Back */}
+                        {/* Back of Card - Answer & Guidance */}
                         <div className="absolute inset-0 backface-hidden rotate-y-180 bg-linear-to-br from-teal-600 to-teal-800 rounded-2xl p-8 flex flex-col text-white shadow-xl">
+                          <div className="flex justify-between items-start mb-6">
+                            <span className="bg-white/20 px-3 py-1 rounded-full text-sm font-medium">
+                              Answer & Guidance
+                            </span>
+                          </div>
+
                           <ScrollArea className="flex-1 pr-4">
                             <div className="space-y-6">
                               <div>
-                                <h4 className="text-teal-200 font-semibold mb-2">
+                                <h4 className="text-teal-200 font-semibold mb-2 flex items-center gap-2">
+                                  <span className="w-2 h-2 bg-teal-200 rounded-full"></span>
                                   Suggested Answer
                                 </h4>
-                                <p className="text-slate-100">
+                                <p className="text-slate-100 leading-relaxed">
                                   {selectedQuestion.suggestedAnswer}
                                 </p>
                               </div>
 
                               <div>
-                                <h4 className="text-blue-200 font-semibold mb-2">
+                                <h4 className="text-blue-200 font-semibold mb-2 flex items-center gap-2">
+                                  <span className="w-2 h-2 bg-blue-200 rounded-full"></span>
                                   Guidance
                                 </h4>
-                                <p className="text-slate-200">
+                                <p className="text-slate-200 leading-relaxed">
                                   {selectedQuestion.guidance}
                                 </p>
                               </div>
 
                               {selectedQuestion.tooltip && (
                                 <div>
-                                  <h4 className="text-amber-200 font-semibold mb-2">
+                                  <h4 className="text-amber-200 font-semibold mb-2 flex items-center gap-2">
+                                    <span className="w-2 h-2 bg-amber-200 rounded-full"></span>
                                     Tip
                                   </h4>
                                   <p className="text-slate-300 text-sm italic">
@@ -392,12 +380,16 @@ export const ResultPage = ({
                             <p className="text-slate-300 text-sm">
                               Click card to flip back
                             </p>
+                            <div className="flex justify-center mt-2">
+                              <div className="w-8 h-8 border-2 border-slate-300 rounded-full animate-bounce flex items-center justify-center">
+                                <div className="w-2 h-2 bg-slate-300 rounded-full"></div>
+                              </div>
+                            </div>
                           </div>
                         </div>
                       </div>
                     </div>
                   ) : (
-                    /* CASE 3: Questions exist but none selected */
                     <div className="text-center text-slate-500">
                       <BookOpen className="w-16 h-16 mx-auto mb-4 opacity-50" />
                       <h3 className="text-xl font-medium mb-2">

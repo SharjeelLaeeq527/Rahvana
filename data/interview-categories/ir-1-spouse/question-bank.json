@@ -1,7 +1,7 @@
 {
   "categorySlug": "ir-1-spouse",
   "version": "1.0.0",
-  "lastUpdated": "2026-03-18",
+  "lastUpdated": "2026-03-26",
   "questions": [
     {
       "id": "basic-case-country",
@@ -10,7 +10,13 @@
       "suggestedAnswer": "The beneficiary is currently applying from {{beneficiary_country}}.",
       "guidance": "Provide the country where the beneficiary resides currently.",
       "tooltip": "Officers need to know the applicant's current location to determine consulate jurisdiction and visa processing rules.",
-      "priority": "high"
+      "priority": "high",
+      "variations": [
+        "From which country is the beneficiary applying?",
+        "What is the beneficiary's country of residence?",
+        "In what country does the applicant currently reside?",
+        "Could you state the country from which the individual you are sponsoring is petitioning?"
+      ]
     },
     {
       "id": "basic-case-marriage-date",
@@ -19,7 +25,13 @@
       "suggestedAnswer": "Our marriage took place on {{marriage_date}}.",
       "guidance": "Provide the official date as per your marriage certificate.",
       "tooltip": "Officers verify the marriage date to ensure consistency with other submitted documents.",
-      "priority": "high"
+      "priority": "high",
+      "variations": [
+        "On what date were you married?",
+        "Could you please confirm your wedding date?",
+        "What is the specific day, month, and year of your marriage?",
+        "When did your marriage ceremony take place?"
+      ]
     },
     {
       "id": "basic-case-marriage-location",
@@ -28,7 +40,13 @@
       "suggestedAnswer": "The marriage took place in {{marriage_location}}, and it was conducted according to our cultural and legal practices.",
       "guidance": "Provide the full city and country.",
       "tooltip": "Officers check the marriage location for authenticity and eligibility purposes.",
-      "priority": "high"
+      "priority": "high",
+      "variations": [
+        "In what city and country was your marriage solemnized?",
+        "Please specify the location (city and country) where you got married.",
+        "Could you tell us the city and country where your wedding ceremony occurred?",
+        "Where exactly, by city and country, did you marry your spouse?"
+      ]
     },
     {
       "id": "relationship-origin-meeting",
@@ -37,7 +55,13 @@
       "suggestedAnswer": "We first met {{relationship_origin_type}}, and our connection developed naturally over time through regular communication and shared values.",
       "guidance": "Focus on how the relationship developed naturally.",
       "tooltip": "Officers assess whether the relationship started naturally and is genuine.",
-      "priority": "high"
+      "priority": "high",
+      "variations": [
+        "Could you describe how and where you and your spouse initially connected?",
+        "What were the circumstances of your very first encounter with your spouse, and where was it?",
+        "Please explain the manner and location of your initial meeting with your spouse.",
+        "How did you two first cross paths, and in what place did that happen?"
+      ]
     },
     {
       "id": "relationship-origin-first-meeting",
@@ -46,7 +70,13 @@
       "suggestedAnswer": "We first met in person after knowing each other for {{courtship_duration}}, which helped us better understand each other and strengthen our bond.",
       "guidance": "Approximate details are acceptable if exact dates are unclear.",
       "tooltip": "Officers want to confirm the timeline of your relationship.",
-      "priority": "high"
+      "priority": "high",
+      "variations": [
+        "What was the date and location of your first physical meeting?",
+        "Could you tell us when and where you first met face-to-face?",
+        "When and where did you and your spouse have your initial in-person encounter?",
+        "Please specify the date and place of your very first physical meeting with your spouse."
+      ]
     },
     {
       "id": "relationship-origin-visits",
@@ -55,7 +85,13 @@
       "suggestedAnswer": "We have met in person {{number_of_in_person_visits}} times, while maintaining consistent communication between visits.",
       "guidance": "Be honest and approximate if unsure.",
       "tooltip": "Officers assess commitment through in-person interaction.",
-      "priority": "high"
+      "priority": "high",
+      "variations": [
+        "What is the total number of times you have met your spouse face-to-face?",
+        "How many physical visits have you made to see your spouse?",
+        "Could you state the total count of your in-person meetings with your spouse?",
+        "To date, how many times have you physically met with your spouse?"
+      ]
     },
     {
       "id": "relationship-timeline-started",
@@ -64,7 +100,13 @@
       "suggestedAnswer": "We first started communicating regularly at the beginning of our relationship, which gradually developed into a serious commitment.",
       "guidance": "Consistency matters more than exact dates.",
       "tooltip": "Officers analyze the progression of the relationship over time.",
-      "priority": "medium"
+      "priority": "medium",
+      "variations": [
+        "When did your communication with your spouse first commence?",
+        "On what date did you initiate contact with your spouse?",
+        "Could you tell us when you and your spouse first began communicating?",
+        "When was the earliest point you started conversing with your spouse?"
+      ]
     },
     {
       "id": "relationship-timeline-engagement",
@@ -73,7 +115,13 @@
       "suggestedAnswer": "We got engaged after spending sufficient time understanding each other and discussing our future together.",
       "guidance": "Engagement can be formal or informal.",
       "tooltip": "Engagement timing helps verify relationship progression.",
-      "priority": "medium"
+      "priority": "medium",
+      "variations": [
+        "What is the date of your engagement?",
+        "On what date did you become engaged to your spouse?",
+        "Could you please specify when your engagement took place?",
+        "When exactly were you and your spouse engaged?"
+      ]
     },
     {
       "id": "relationship-timeline-walkthrough",
@@ -82,7 +130,13 @@
       "suggestedAnswer": "Our relationship progressed from initial communication to regular interaction, in-person meetings totaling {{total_time_spent_together}}, engagement, and finally marriage after {{courtship_duration}}.",
       "guidance": "Explain naturally without memorization.",
       "tooltip": "Officers assess consistency across all answers.",
-      "priority": "high"
+      "priority": "high",
+      "variations": [
+        "Could you describe the progression of your relationship from its beginning to now?",
+        "Please detail the key milestones in your relationship's history.",
+        "How has your relationship developed over time?",
+        "Can you outline the journey of your relationship for me?"
+      ]
     },
     {
       "id": "proposal-details",
@@ -91,7 +145,13 @@
       "suggestedAnswer": "{{proposal_details}} The proposal reflected our mutual commitment and long-term intentions.",
       "guidance": "Sincerity matters more than details.",
       "tooltip": "Relationship milestones help establish genuineness.",
-      "priority": "high"
+      "priority": "high",
+      "variations": [
+        "Could you share the details of when and how you became engaged?",
+        "When and where did your spouse propose marriage?",
+        "Please describe the circumstances surrounding your marriage proposal.",
+        "Can you tell me about the event of your proposal, including the date and manner?"
+      ]
     },
     {
       "id": "marriage-decision",
@@ -100,7 +160,13 @@
       "suggestedAnswer": "We decided to get married because of mutual trust, shared goals, emotional support, and a desire to build a life together.",
       "guidance": "Avoid mentioning immigration benefits.",
       "tooltip": "Officers ensure marriage intent is genuine.",
-      "priority": "high"
+      "priority": "high",
+      "variations": [
+        "What were your reasons for deciding to marry your spouse?",
+        "Could you explain the factors that led to your decision to get married?",
+        "What prompted you to make the commitment of marriage?",
+        "Why did you choose to take this step into matrimony with your partner?"
+      ]
     },
     {
       "id": "wedding-details",
@@ -109,7 +175,13 @@
       "suggestedAnswer": "Our wedding was celebrated with {{wedding_attendees}} in {{marriage_location}}, reflecting our traditions and values.",
       "guidance": "Wedding size is not important.",
       "tooltip": "Wedding details help verify authenticity.",
-      "priority": "high"
+      "priority": "high",
+      "variations": [
+        "Could you provide some details about your wedding ceremony and celebration?",
+        "Please describe your wedding event.",
+        "What was your wedding like?",
+        "Can you share information regarding your marriage ceremony?"
+      ]
     },
     {
       "id": "family-approval",
@@ -118,7 +190,13 @@
       "suggestedAnswer": "Yes, both families were supportive and approved of our relationship and marriage. {{family_reaction_to_marriage}}",
       "guidance": "Cultural context is acceptable.",
       "tooltip": "Family approval can strengthen relationship credibility.",
-      "priority": "medium"
+      "priority": "medium",
+      "variations": [
+        "Do your respective families support your marriage?",
+        "Were your families supportive of your decision to marry?",
+        "Did your families express approval for your relationship?",
+        "What was your families' reaction to your relationship and marriage plans?"
+      ]
     },
     {
       "id": "family-met-spouse-family",
@@ -127,7 +205,13 @@
       "suggestedAnswer": "{{met_spouse_family ? 'Yes' : 'No'}}{{met_spouse_family ? ', I have met my spouse\\'s family and maintain ongoing communication with them.' : ''}}",
       "guidance": "Virtual interaction also counts.",
       "tooltip": "Family integration shows relationship depth.",
-      "priority": "medium"
+      "priority": "medium",
+      "variations": [
+        "Have you had the opportunity to meet your spouse's family members?",
+        "Are you acquainted with your spouse's family?",
+        "Have you been introduced to your spouse's relatives?",
+        "Do you know your spouse's family?"
+      ]
     },
     {
       "id": "daily-life-communication",
@@ -136,7 +220,13 @@
       "suggestedAnswer": "We communicate {{communication_frequency}} through {{daily_communication}} to stay connected despite distance.",
       "guidance": "Mention frequency and methods.",
       "tooltip": "Officers assess real ongoing communication.",
-      "priority": "high"
+      "priority": "high",
+      "variations": [
+        "What methods do you use to stay in touch when you are not together?",
+        "How do you maintain communication with your spouse during periods of separation?",
+        "When you are physically apart, how do you typically communicate with each other?",
+        "What are your usual ways of communicating across distance?"
+      ]
     },
     {
       "id": "relationship-language",
@@ -145,7 +235,13 @@
       "suggestedAnswer": "We communicate comfortably in a shared language that allows us to understand each other clearly.",
       "guidance": "Language differences are acceptable.",
       "tooltip": "Officers ensure effective communication exists.",
-      "priority": "low"
+      "priority": "low",
+      "variations": [
+        "In what language do you and your spouse primarily converse?",
+        "Which language do you predominantly use when communicating with your spouse?",
+        "What is the main language of communication between you and your spouse?",
+        "Please tell me the language you and your spouse speak to each other."
+      ]
     },
     {
       "id": "household-activities",
@@ -154,7 +250,13 @@
       "suggestedAnswer": "We enjoy shared activities such as {{shared_activities}}, supporting each other in daily life.",
       "guidance": "Focus on everyday routines.",
       "tooltip": "Shared lifestyle reflects compatibility.",
-      "priority": "high"
+      "priority": "high",
+      "variations": [
+        "How do you typically spend your time together as a couple?",
+        "What shared activities do you and your spouse engage in?",
+        "Could you describe your common routines or pastimes with your partner?",
+        "What do you and your spouse enjoy doing jointly?"
+      ]
     },
     {
       "id": "relationship-hobbies",
@@ -163,7 +265,13 @@
       "suggestedAnswer": "My spouse enjoys various activities and hobbies that we often discuss and sometimes enjoy together.",
       "guidance": "Basic familiarity is sufficient.",
       "tooltip": "Knowing personal details reflects closeness.",
-      "priority": "low"
+      "priority": "low",
+      "variations": [
+        "Could you tell me about your spouse's personal interests and leisure activities?",
+        "What does your spouse enjoy doing in their free time?",
+        "What are some of your spouse's favorite pastimes or hobbies?",
+        "Can you describe your spouse's personal pursuits?"
+      ]
     },
     {
       "id": "employment-spouse",
@@ -172,7 +280,13 @@
       "suggestedAnswer": "My spouse works as {{sponsor_employment}} and maintains stable employment.",
       "guidance": "Avoid guessing income.",
       "tooltip": "Employment stability is reviewed.",
-      "priority": "high"
+      "priority": "high",
+      "variations": [
+        "What is your spouse's current occupation?",
+        "Can you describe your spouse's profession?",
+        "What kind of work does your spouse do for a living?",
+        "What is your spouse's line of work?"
+      ]
     },
     {
       "id": "finances-shared",
@@ -181,7 +295,13 @@
       "suggestedAnswer": "{{joint_finances ? 'Yes' : 'No'}}. {{joint_finenses ? 'We manage finances jointly with transparency.' : 'We maintain separate finances but make joint decisions on major expenses.'}}",
       "guidance": "Joint or separate accounts are both acceptable.",
       "tooltip": "Financial interdependence indicates seriousness.",
-      "priority": "high"
+      "priority": "high",
+      "variations": [
+        "Do you and your spouse have joint financial arrangements?",
+        "Are your finances managed jointly with your spouse?",
+        "Do you share bank accounts or combine your income with your spouse?",
+        "Are your financial resources integrated as a couple?"
+      ]
     },
     {
       "id": "intent-move-us",
@@ -190,7 +310,13 @@
       "suggestedAnswer": "I want to live with my spouse and build a stable family life together in the United States.",
       "guidance": "Focus on family unity.",
       "tooltip": "Primary intent should align with petition purpose.",
-      "priority": "high"
+      "priority": "high",
+      "variations": [
+        "What is your primary motivation for relocating to the United States?",
+        "Could you explain your reasons for wishing to immigrate to the U.S.?",
+        "What factors have led you to decide on moving to the United States?",
+        "What is the purpose of your intended move to the United States?"
+      ]
     },
     {
       "id": "intent-plans",
@@ -199,7 +325,13 @@
       "suggestedAnswer": "I plan to settle with my spouse in {{intended_us_state}}, integrate into the community, and contribute responsibly once authorized. {{future_plans}}",
       "guidance": "Avoid unrealistic promises.",
       "tooltip": "Officers assess post-arrival intent.",
-      "priority": "high"
+      "priority": "high",
+      "variations": [
+        "What are your immediate intentions upon your arrival in the United States?",
+        "Could you outline your plans for settling in after reaching the U.S.?",
+        "What do you intend to do once you have arrived in the United States?",
+        "Can you describe your initial plans once you enter the U.S.?"
+      ]
     },
     {
       "id": "ties-home-country",
@@ -208,7 +340,13 @@
       "suggestedAnswer": "I will leave behind family and social connections while maintaining ties through regular communication.",
       "guidance": "Strong ties are normal.",
       "tooltip": "Officers assess relocation impact.",
-      "priority": "medium"
+      "priority": "medium",
+      "variations": [
+        "Which family members will remain in your home country?",
+        "Who will you be leaving behind in your country of origin?",
+        "Are there any immediate family members who will not be accompanying you to the U.S.?",
+        "Who among your relatives or dependents will stay in your home country?"
+      ]
     },
     {
       "id": "ties-property",
@@ -217,7 +355,13 @@
       "suggestedAnswer": "If applicable, I disclosed any property ownership honestly in my application.",
       "guidance": "Ownership is not required.",
       "tooltip": "Property ties may be reviewed.",
-      "priority": "low"
+      "priority": "low",
+      "variations": [
+        "Do you possess any real estate in your country of origin?",
+        "Are you the owner of any land or buildings in your home country?",
+        "Do you hold any property deeds in your country of residence?",
+        "Do you have ownership of any real property in your native country?"
+      ]
     },
     {
       "id": "security-arrest",
@@ -226,7 +370,13 @@
       "suggestedAnswer": "{{criminal_history ? 'Yes, I have disclosed this information honestly in my application.' : 'No, I have never been arrested or charged with a crime.'}}",
       "guidance": "Honesty is critical.",
       "tooltip": "Security screening is mandatory.",
-      "priority": "high"
+      "priority": "high",
+      "variations": [
+        "Have you ever faced any criminal charges or been apprehended by law enforcement?",
+        "Do you have any history of arrests or criminal indictments?",
+        "Have you ever been accused or convicted of a criminal offense?",
+        "Can you confirm if you have ever been taken into custody or prosecuted for any crime?"
+      ]
     },
     {
       "id": "security-military",
@@ -235,7 +385,13 @@
       "suggestedAnswer": "{{military_or_defense_background ? 'Yes, I have disclosed my service history truthfully.' : 'No, I have not served in the military.'}}",
       "guidance": "Military service is not negative by default.",
       "tooltip": "Military background requires review.",
-      "priority": "high"
+      "priority": "high",
+      "variations": [
+        "Have you previously been a member of any country's armed forces?",
+        "Can you tell me if you have any history of military service?",
+        "Were you ever enlisted in a military organization?",
+        "Have you completed national service or served in a defense force?"
+      ]
     },
     {
       "id": "travel-us-history",
@@ -244,7 +400,13 @@
       "suggestedAnswer": "{{previous_us_visits ? 'Yes, I have visited the US previously and complied with all visa conditions.' : 'No, I have never traveled to the United States.'}}",
       "guidance": "Consistency with records is essential.",
       "tooltip": "Travel history is verified.",
-      "priority": "high"
+      "priority": "high",
+      "variations": [
+        "Have you made any previous visits to the U.S.?",
+        "Is this your first time applying to enter the United States, or have you traveled here before?",
+        "Can you confirm if you have entered American territory on any prior occasion?",
+        "Have you previously visited the USA?"
+      ]
     },
     {
       "id": "travel-international",
@@ -253,7 +415,13 @@
       "suggestedAnswer": "Yes, I have traveled internationally while respecting visa laws of each country.",
       "guidance": "Mention compliance.",
       "tooltip": "International travel history shows compliance.",
-      "priority": "medium"
+      "priority": "medium",
+      "variations": [
+        "Have you previously traveled to other countries?",
+        "Do you have a history of international travel?",
+        "Have you visited any foreign nations prior to this application?",
+        "Have you traveled outside your home country before?"
+      ]
     },
     {
       "id": "basic-case-age",
@@ -262,7 +430,13 @@
       "suggestedAnswer": "My age range is {{age_range}}, and our age difference reflects our compatible life stages.",
       "guidance": "Focus on compatibility and shared life goals.",
       "tooltip": "Officers may assess age-related compatibility.",
-      "priority": "medium"
+      "priority": "medium",
+      "variations": [
+        "What is the age gap between you and your spouse?",
+        "By how many years are you and your spouse apart in age?",
+        "Could you state the difference in age between yourself and your spouse?",
+        "How many years separate your age from your spouse's age?"
+      ]
     },
     {
       "id": "basic-case-education",
@@ -271,7 +445,13 @@
       "suggestedAnswer": "My highest education is {{highest_education}}, which contributes to our shared intellectual interests.",
       "guidance": "Highlight how education supports relationship stability.",
       "tooltip": "Educational background may influence relationship dynamics.",
-      "priority": "medium"
+      "priority": "medium",
+      "variations": [
+        "Could you describe your academic history?",
+        "What is your level of education?",
+        "Please tell me about your schooling and qualifications.",
+        "What kind of education have you received?"
+      ]
     },
     {
       "id": "basic-case-marriage-timing",
@@ -280,7 +460,13 @@
       "suggestedAnswer": "We got married {{marriage_date}}, after spending {{months_since_marriage}} months in a committed relationship.",
       "guidance": "Be consistent with your application documents.",
       "tooltip": "Marriage timing affects relationship authenticity assessment.",
-      "priority": "high"
+      "priority": "high",
+      "variations": [
+        "What is the date of your marriage?",
+        "Could you please provide your wedding date?",
+        "When was your marriage solemnized?",
+        "On what date did you and your spouse get married?"
+      ]
     },
     {
       "id": "relationship-origin-how",
@@ -289,7 +475,13 @@
       "suggestedAnswer": "We met {{relationship_origin_type}}, which led to a natural development of our relationship.",
       "guidance": "Be specific about how you met.",
       "tooltip": "Meeting story is fundamental to relationship verification.",
-      "priority": "high"
+      "priority": "high",
+      "variations": [
+        "Could you describe the circumstances of how you first met your spouse?",
+        "Where and when did you first encounter your spouse?",
+        "How did your relationship with your spouse begin?",
+        "Please explain the story of how you and your spouse met."
+      ]
     },
     {
       "id": "relationship-timeline-duration",
@@ -298,7 +490,13 @@
       "suggestedAnswer": "We have been together for {{courtship_duration}}, with regular in-person visits totaling {{number_of_in_person_visits}} times.",
       "guidance": "Emphasize the consistent nature of your relationship.",
       "tooltip": "Timeline consistency is crucial for relationship verification.",
-      "priority": "high"
+      "priority": "high",
+      "variations": [
+        "When did your relationship with your spouse begin?",
+        "For what duration have you and your partner been together?",
+        "Could you specify the length of your relationship?",
+        "What is the period of time you have been involved with your spouse?"
+      ]
     },
     {
       "id": "daily-life-communication-pattern",
@@ -307,7 +505,13 @@
       "suggestedAnswer": "We communicate {{communication_frequency}} using {{daily_communication}}, maintaining regular contact.",
       "guidance": "Be specific about communication patterns.",
       "tooltip": "Communication patterns show ongoing relationship authenticity.",
-      "priority": "high"
+      "priority": "high",
+      "variations": [
+        "What methods do you use to communicate with your spouse when you are not together?",
+        "How often do you and your spouse typically communicate while living apart?",
+        "Please describe how you maintain contact with your spouse from a distance.",
+        "In what ways do you and your spouse keep in touch when you are in separate locations?"
+      ]
     },
     {
       "id": "family-reaction",
@@ -316,7 +520,13 @@
       "suggestedAnswer": "Both families reacted positively to our marriage, as {{family_reaction_to_marriage}}.",
       "guidance": "Focus on positive family support.",
       "tooltip": "Family acceptance strengthens relationship credibility.",
-      "priority": "medium"
+      "priority": "medium",
+      "variations": [
+        "What was the reaction of your respective families to your marriage?",
+        "Could you describe how both your family and your spouse's family received news of your marriage?",
+        "How did your families on both sides respond to your union?",
+        "What were the sentiments expressed by both families regarding your marriage?"
+      ]
     },
     {
       "id": "family-wedding",
@@ -325,7 +535,13 @@
       "suggestedAnswer": "Our wedding was attended by {{wedding_attendees}}, reflecting our strong family and social connections.",
       "guidance": "Provide specific details about attendees.",
       "tooltip": "Wedding attendance shows relationship authenticity.",
-      "priority": "high"
+      "priority": "high",
+      "variations": [
+        "Could you please list the key attendees at your wedding ceremony?",
+        "Who were the guests present at your marriage?",
+        "Please describe who was in attendance at your wedding celebration.",
+        "Who all was present at your nuptials?"
+      ]
     },
     {
       "id": "family-friends",
@@ -334,7 +550,13 @@
       "suggestedAnswer": "{{mutual_friends ? 'Yes' : 'No'}}. {{mutual_friends ? 'We have mutual friends who can attest to our relationship.' : 'We are building our social circle together.'}}",
       "guidance": "Mention how you connect with mutual friends.",
       "tooltip": "Mutual friends provide additional relationship verification.",
-      "priority": "medium"
+      "priority": "medium",
+      "variations": [
+        "Are there friends that you and your spouse share?",
+        "Do you and your partner have any friends in common?",
+        "Can you name any individuals who are mutual friends with both you and your spouse?",
+        "Are there shared acquaintances between you and your spouse?"
+      ]
     },
     {
       "id": "petitioner-status",
@@ -343,7 +565,13 @@
       "suggestedAnswer": "The petitioner has {{petitioner_status}} status, demonstrating their ability to sponsor me.",
       "guidance": "Confirm petitioner's legal status.",
       "tooltip": "Petitioner status affects visa eligibility.",
-      "priority": "high"
+      "priority": "high",
+      "variations": [
+        "Could you state the immigration status of the petitioner?",
+        "What is the current legal status of the individual who filed the petition on your behalf?",
+        "Please specify the immigration category of your petitioner.",
+        "What is the petitioner's current visa or residency status?"
+      ]
     },
     {
       "id": "petitioner-household",
@@ -352,7 +580,13 @@
       "suggestedAnswer": "Our household will consist of {{household_size}} members, with adequate financial support.",
       "guidance": "Explain household composition.",
       "tooltip": "Household size affects financial support calculations.",
-      "priority": "high"
+      "priority": "high",
+      "variations": [
+        "How many individuals reside in the petitioner's household?",
+        "Please state the total number of people living in the petitioner's home.",
+        "What is the current count of occupants in the petitioner's residence?",
+        "How many persons currently comprise the petitioner's household?"
+      ]
     },
     {
       "id": "finances-support",
@@ -361,7 +595,13 @@
       "suggestedAnswer": "We will be financially supported by the petitioner's income at the {{petitioner_income_level}} level, with a household size of {{household_size}}.",
       "guidance": "Focus on petitioner's financial stability.",
       "tooltip": "Financial support verification is critical for visa approval.",
-      "priority": "high"
+      "priority": "high",
+      "variations": [
+        "What will be your source of financial support once you are in the United States?",
+        "Please explain how you plan to cover your living expenses in the U.S.",
+        "Who will be responsible for your financial maintenance in the United States?",
+        "How do you intend to ensure your financial stability upon arriving in the US?"
+      ]
     },
     {
       "id": "security-visa-refusal",
@@ -370,7 +610,13 @@
       "suggestedAnswer": "{{previous_visa_refusal ? 'Yes' : 'No'}}. {{previous_visa_refusal ? 'I have addressed the reasons for refusal in my current application.' : ''}}",
       "guidance": "Be honest about any visa refusals.",
       "tooltip": "Visa refusal history requires detailed explanation.",
-      "priority": "high"
+      "priority": "high",
+      "variations": [
+        "Has a US visa application you submitted ever been denied?",
+        "Were you ever informed that you were ineligible for a US visa?",
+        "Have you previously received an unfavorable decision on a US visa application?",
+        "Has any application for a United States visa been unsuccessful?"
+      ]
     },
     {
       "id": "security-overstay",
@@ -379,7 +625,13 @@
       "suggestedAnswer": "{{visa_overstay_history ? 'Yes' : 'No'}}. {{visa_overstay_history ? 'I have disclosed this honestly in my application.' : ''}}",
       "guidance": "Honest disclosure is essential.",
       "tooltip": "Visa compliance history affects credibility.",
-      "priority": "high"
+      "priority": "high",
+      "variations": [
+        "Have you ever remained in a country beyond the authorized period of your visa?",
+        "Did you ever exceed the permitted duration of your visa in any nation?",
+        "In any country, have you ever stayed past the expiration date of your visa permission?",
+        "Have you, at any point, remained in a foreign country longer than your approved immigration status allowed?"
+      ]
     }
   ]
 }

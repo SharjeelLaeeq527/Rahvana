@@ -30,7 +30,7 @@
           "type": "number",
           "required": true,
           "validation": { "min": 18, "max": 65 },
-          "description": "F1 students must be at least 18 years old"
+          "description": "Pakistani students must be at least 18 years old for F1 student visa"
         },
         {
           "key": "country_of_residence",

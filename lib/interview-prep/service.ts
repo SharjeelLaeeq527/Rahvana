@@ -18,6 +18,7 @@ import {
 } from "./types";
 import { categoryLoader } from "./category-loader";
 import { loadRulesForCategory, getAppliedRules } from "./rules-loader";
+import { initializeVariationSession, applyVariationsToQuestions } from "./variation-selector";
 import type { InterviewQuestion } from "@/data/interview-categories/schema";
 import type { RulesConfig, QuestionSelectionRule } from "./rules-loader";
 
@@ -75,10 +76,7 @@ class DynamicQuestionSelectionEngine {
       // ONLY add to results if applicable
       if (isApplicable) {
         applicableQuestions.push({
-          id: this.generateQuestionId(
-            questionEntry.category,
-            questionEntry.question,
-          ),
+          id: questionEntry.id,
           category: questionEntry.category,
           question: questionEntry.question,
           suggestedAnswer: questionEntry.suggestedAnswer,
@@ -86,6 +84,7 @@ class DynamicQuestionSelectionEngine {
           tooltip: questionEntry.tooltip,
           applicable: true,
           priority,
+          variations: questionEntry.variations,
           reason,
         });
       }
@@ -293,6 +292,9 @@ export async function generateInterviewPrepOutput(
     throw new Error("Session not found");
   }
 
+  // Initialize variation session cache for consistent variation selection within this session
+  initializeVariationSession();
+
   const answers = await getSessionAnswersDB(sessionId);
   const categoryData = await categoryLoader.loadCategory(session.category_slug);
   
@@ -319,16 +321,19 @@ export async function generateInterviewPrepOutput(
     answersMap,
   );
 
-  await saveInterviewResultsDB(sessionId, generatedQuestions);
+  // Apply variation selection to each question
+  const questionsWithVariations = applyVariationsToQuestions(generatedQuestions);
+
+  await saveInterviewResultsDB(sessionId, questionsWithVariations);
 
   return {
     sessionId,
-    questions: generatedQuestions,
+    questions: questionsWithVariations,
     summary: {
       totalQuestions: categoryData.questionBank.questions.length,
-      applicableQuestions: generatedQuestions.length,
+      applicableQuestions: questionsWithVariations.length,
       categories: Array.from(
-        new Set(generatedQuestions.map((q) => q.category)),
+        new Set(questionsWithVariations.map((q) => q.category)),
       ),
     },
   };
