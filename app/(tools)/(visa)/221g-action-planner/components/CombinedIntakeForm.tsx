@@ -789,13 +789,13 @@ export default function CombinedIntakeForm({
     //   plan += `   If any documents are not in English, they must be accompanied by certified English translations.\n\n`;
     // }
 
-    plan += `**â‡¨ Assemble Your Packet**\n`;
+    plan += `**⇨ Assemble Your Packet**\n`;
     plan += `   Organize documents in the order shown in the Packet Assembly Checklist. Place the cover letter first, followed by a copy of your 221(g) letter.\n\n`;
 
-    plan += `**â‡¨ Submit Per Embassy Instructions**\n`;
+    plan += `**⇨ Submit Per Embassy Instructions**\n`;
     plan += `   Follow the submission method specified on your 221(g) letter. Most embassies use designated courier services. Do NOT mail documents directly to the embassy unless instructed.\n\n`;
 
-    plan += `**â‡¨ Track and Wait**\n`;
+    plan += `**⇨ Track and Wait**\n`;
     plan += `   After submission, check your CEAC status regularly at https://ceac.state.gov/CEACStatTracker/Status.aspx. Administrative processing duration varies by case and cannot be predicted. If your case enters administrative processing, additional security checks may be required, and timing is outside embassy control.\n\n`;
     plan += `   Source: U.S. Department of State - https://travel.state.gov/content/travel/en/us-visas/visa-information-resources/administrative-processing-information.html\n\n`;
 
@@ -976,12 +976,12 @@ export default function CombinedIntakeForm({
     // plan += `- Do NOT repeatedly contact the embassy as this does not expedite processing\n\n`;
 
     plan += `## FINAL REMINDERS\n\n`;
-    plan += `âœ“ Follow your embassy's 221(g) letter instructions above all else\n`;
-    plan += `âœ“ Submit ONLY what was requested - do not add unrequested documents\n`;
-    plan += `âœ“ Keep copies of everything you submit\n`;
-    plan += `âœ“ Use the designated courier service specified by your embassy\n`;
-    plan += `âœ“ Be patient - processing times vary and cannot be guaranteed\n`;
-    plan += `âœ“ For complex cases, consult an immigration attorney\n\n`;
+    plan += `✓ Follow your embassy's 221(g) letter instructions above all else\n`;
+    plan += `✓ Submit ONLY what was requested - do not add unrequested documents\n`;
+    plan += `✓ Keep copies of everything you submit\n`;
+    plan += `✓ Use the designated courier service specified by your embassy\n`;
+    plan += `✓ Be patient - processing times vary and cannot be guaranteed\n`;
+    plan += `✓ For complex cases, consult an immigration attorney\n\n`;
 
     // plan += `## IMPORTANT DISCLAIMER\n\n`;
     // plan += `This action plan is based on the information you provided and is for general guidance only. It is NOT legal advice. Always follow your embassy's 221(g) letter instructions if anything differs from this plan. For complex cases, consult an immigration attorney. Processing times vary and we cannot guarantee visa issuance or specific timelines.\n\n`;
@@ -2729,7 +2729,7 @@ export default function CombinedIntakeForm({
                                       {formData.consularPost ===
                                         embassy.value && (
                                         <span className="ml-auto text-primary text-xs">
-                                          âœ“
+                                          ✓
                                         </span>
                                       )}
                                     </button>
@@ -2854,7 +2854,7 @@ export default function CombinedIntakeForm({
                     !!dobError
                   }
                 >
-                  Continue to Checklist â†’
+                  Continue to Checklist →
                 </Button>
               </div>
             </div>
