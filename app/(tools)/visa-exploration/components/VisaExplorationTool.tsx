@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   ChevronRight, ChevronLeft, Search,
   Globe, CheckCircle, Clock, FileText, X, Lock, AlertCircle, ExternalLink,
-  Compass, Sparkles, ArrowRight,
+  Compass, ArrowRight,
 } from "lucide-react";
 
 // NEW MODULAR IMPORTS
@@ -453,7 +453,7 @@ function ResultsScreen({ answers, results, ineligibleCodes, onReset, onBack }: {
         <div className="p-8 sm:p-10 bg-gradient-to-br from-[#0D6E6E]/5 to-emerald-50/30 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-6">
           <div className="flex items-center gap-5">
             <div className="w-14 h-14 rounded-2xl bg-[#0D6E6E] text-white flex items-center justify-center flex-shrink-0 shadow-lg shadow-[#0D6E6E]/30">
-              {results.length > 0 ? <Sparkles size={28} /> : <Search size={28} />}
+              {results.length > 0 ? <CheckCircle size={28} /> : <Search size={28} />}
             </div>
             <div>
               <h2 className="text-xl sm:text-2xl font-black text-slate-800 tracking-tight">
@@ -682,7 +682,7 @@ export default function VisaExplorationTool() {
             {isLastStep && gatesDone ? (
               <button onClick={() => setShowResults(true)}
                 className="py-3.5 px-7 rounded-xl bg-[#0D6E6E] text-white font-bold text-[14px] hover:bg-[#095555] shadow-lg shadow-[#0D6E6E]/20 transition-all flex items-center gap-2.5">
-                <Sparkles size={16} /> See My Results
+                See My Results
               </button>
             ) : (
               <button onClick={handleNext} disabled={!currentStep?.canProceed}

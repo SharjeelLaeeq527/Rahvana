@@ -5,7 +5,7 @@
  * To add a new country, create a new file like this one and register it in registry.ts.
  */
 
-import { T, CountryData, VisaExplorationAnswers } from "../types";
+import { T, CountryData, VisaExplorationAnswers, Step } from "../types";
 
 // ─────────────────────────────────────────────────────────────
 // CANDIDATE CODES  (US-specific logic)
@@ -57,8 +57,136 @@ function getCandidateCodes(a: VisaExplorationAnswers): string[] {
     if (a.tempType === "USMCA")         c.push("TN");
   }
   if (a.purpose === "PROTECTION") c.push("Asylum", "U-Visa");
+  if (a.purpose === "RELIGIOUS")  c.push("R-1");
+  if (a.purpose === "ART_ATHLETE")c.push("P-1", "P-3");
+  if (a.purpose === "INVEST_TREATY") c.push("E-2");
+  if (a.purpose === "LOTTERY")    c.push("DV-1");
 
   return [...new Set(c)];
+}
+
+// ─────────────────────────────────────────────────────────────
+// FOLLOW-UP STEPS (US-specific wizard sequence)
+// ─────────────────────────────────────────────────────────────
+function buildFollowUpSteps(a: VisaExplorationAnswers): Step[] {
+  const steps: Step[] = [];
+
+  if (a.purpose === "FAMILY") {
+    steps.push({
+      id: "sponsor", type: "options", field: "sponsor",
+      title: "What is your family member's status there?",
+      subtitle: "The person who will help bring you there — what kind of status do they have?",
+      options: [
+        { label: "They are a U.S. Citizen", value: "US_CITIZEN", sub: "Born there, naturalized, or got citizenship through parents" },
+        { label: "They have a Green Card (Permanent Resident)", value: "LPR", sub: "They live there permanently but aren't a citizen yet" },
+      ],
+      canProceed: !!a.sponsor,
+    });
+
+    if (a.sponsor === "US_CITIZEN") {
+      steps.push({
+        id: "relationship", type: "options", field: "relationship",
+        title: "What is your relationship with this person?",
+        subtitle: "How are you related to the U.S. citizen? Different relationships lead to different visa categories.",
+        options: [
+          { label: "I am their husband or wife",           value: "SPOUSE",        sub: "We are legally married" },
+          { label: "I am their fiancé(e)",                 value: "FIANCE",        sub: "We're engaged but not married yet" },
+          { label: "I am their unmarried son or daughter", value: "CHILD",         sub: "I'm not married" },
+          { label: "I am their married son or daughter",   value: "MARRIED_CHILD", sub: "I'm married" },
+          { label: "I am their parent (mother or father)", value: "PARENT" },
+          { label: "I am their brother or sister",         value: "SIBLING" },
+        ],
+        canProceed: !!a.relationship,
+      });
+      if (a.relationship === "CHILD") {
+        steps.push({
+          id: "beneficiaryAge", type: "grid", field: "beneficiaryAge",
+          title: "How old are you?",
+          subtitle: "Your age makes a big difference in which visa category applies.",
+          options: [{ label: "Under 21", value: "UNDER_21" }, { label: "21 or older", value: "OVER_21" }],
+          canProceed: !!a.beneficiaryAge,
+        });
+      }
+      if (a.relationship && ["PARENT", "SIBLING"].includes(a.relationship)) {
+        steps.push({
+          id: "petitionerAge", type: "grid", field: "petitionerAge",
+          title: "How old is the U.S. citizen?",
+          subtitle: `To bring a ${a.relationship === "PARENT" ? "parent" : "sibling"} to the U.S., the citizen must be at least 21.`,
+          options: [{ label: "Under 21", value: "UNDER_21" }, { label: "21 or older", value: "OVER_21" }],
+          canProceed: !!a.petitionerAge,
+        });
+      }
+    }
+
+    if (a.sponsor === "LPR") {
+      steps.push({
+        id: "relationship", type: "options", field: "relationship",
+        title: "What is your relationship with the Green Card holder?",
+        subtitle: "Green Card holders can bring certain family members. Select your relationship.",
+        options: [
+          { label: "I am their husband or wife",           value: "SPOUSE" },
+          { label: "I am their unmarried son or daughter", value: "CHILD" },
+        ],
+        canProceed: !!a.relationship,
+      });
+      if (a.relationship === "CHILD") {
+        steps.push({
+          id: "beneficiaryAge", type: "grid", field: "beneficiaryAge",
+          title: "How old are you?",
+          subtitle: "This determines whether you fall under category F2A or F2B.",
+          options: [{ label: "Under 21", value: "UNDER_21" }, { label: "21 or older", value: "OVER_21" }],
+          canProceed: !!a.beneficiaryAge,
+        });
+      }
+    }
+  }
+
+  if (a.purpose === "WORK_PERMANENT") {
+    steps.push({
+      id: "workBase", type: "options", field: "workBase",
+      title: "Tell us a bit about yourself",
+      subtitle: "Which of these sounds most like you? We'll explain everything later.",
+      options: [
+        { label: "I'm exceptional in my field",                        value: "EXTRAORDINARY",  sub: "Major awards or significant recognition in sciences, arts, education, business, or athletics" },
+        { label: "I'm a professor or researcher",                      value: "RESEARCHER",      sub: "I have international recognition and 3+ years of academic experience" },
+        { label: "I'm a manager or executive at a company with U.S. offices", value: "MANAGER", sub: "My company has a branch, subsidiary, or parent company there" },
+        { label: "I have an advanced degree or strong expertise",      value: "ADVANCED_DEGREE", sub: "Master's, PhD, or a bachelor's with 5+ years of experience" },
+        { label: "I'm a skilled worker or professional",               value: "SKILLED",         sub: "2+ years of training/experience, or a bachelor's degree" },
+        { label: "I want to invest money and create jobs",             value: "INVESTOR",        sub: "I can invest $800K–$1.05M in a U.S. business that creates 10+ jobs" },
+      ],
+      canProceed: !!a.workBase,
+    });
+  }
+
+  if (a.purpose === "STUDY") {
+    steps.push({
+      id: "tempType", type: "options", field: "tempType",
+      title: "What kind of program are you interested in?",
+      subtitle: "This helps us figure out the right visa type for your studies.",
+      options: [
+        { label: "A degree program at a college or university", value: "ACADEMIC", sub: "Bachelor's, Master's, PhD, or professional degree at a certified institution" },
+        { label: "An exchange or cultural program",             value: "EXCHANGE", sub: "Research, teaching, au pair, internship, or cultural exchange sponsored program" },
+      ],
+      canProceed: !!a.tempType,
+    });
+  }
+
+  if (a.purpose === "WORK_TEMP") {
+    steps.push({
+      id: "tempType", type: "options", field: "tempType",
+      title: "What kind of work will you be doing?",
+      subtitle: "Different types of work have different visa options. Pick the one closest to your situation.",
+      options: [
+        { label: "A professional/specialty job",               value: "SPECIALTY",     sub: "IT, engineering, finance, medicine — the kind of job that needs a degree (H-1B)" },
+        { label: "My company is sending me to their U.S. office", value: "TRANSFER",  sub: "Same company, different country — internal transfer (L-1)" },
+        { label: "I'm at the top of my field",                 value: "EXTRAORDINARY", sub: "Nationally or internationally recognized in science, arts, education, business, or athletics (O-1)" },
+        { label: "I'm from Canada or Mexico with a USMCA profession", value: "USMCA", sub: "Specific professional occupations listed in the USMCA trade agreement (TN)" },
+      ],
+      canProceed: !!a.tempType,
+    });
+  }
+
+  return steps;
 }
 
 // ─────────────────────────────────────────────────────────────
@@ -69,6 +197,7 @@ export const US_DATA: CountryData = {
   code: "US",
   flag: "🇺🇸",
   getCandidateCodes,
+  buildFollowUpSteps,
 
   purposes: [
     { label: "Be with family",                           value: "FAMILY",        sub: "Someone in my family is already there (or will be), and I want to join them" },
@@ -77,6 +206,10 @@ export const US_DATA: CountryData = {
     { label: "Study at a school or university",          value: "STUDY",         sub: "I want to get a degree, take courses, or join an exchange program" },
     { label: "Work there temporarily",                   value: "WORK_TEMP",     sub: "I have a job offer or my company wants to send me — but I'm not settling forever" },
     { label: "I need safety or protection",              value: "PROTECTION",    sub: "I'm in danger because of my race, religion, nationality, or political views — or I'm a crime victim" },
+    { label: "Investment / Treaty Trade",                value: "INVEST_TREATY", sub: "My country has a treaty with the U.S. and I want to invest or trade" },
+    { label: "Religious Work",                           value: "RELIGIOUS",     sub: "I want to work for a religious non-profit or church" },
+    { label: "Arts, Athletics, or Entertainment",        value: "ART_ATHLETE",   sub: "I'm a professional athlete, artist, or performer" },
+    { label: "Diversity Visa (Green Card Lottery)",      value: "LOTTERY",       sub: "I want to apply for the annual US Green Card lottery program" },
   ],
 
   visas: {
@@ -262,6 +395,41 @@ export const US_DATA: CountryData = {
       processing: "4–7+ years due to annual cap of 10,000.",
       forms: ["I-918", "I-918B (law enforcement cert)"],
     },
+    "E-2": {
+      code: "E-2", label: "Treaty Investor", badge: "Non-Immigrant · Investment", color: T.warning,
+      description: "Allows nationals of treaty countries to be admitted to the U.S. when investing a substantial amount of capital in a U.S. business.",
+      criteria: ["Must be a national of a treaty country (e.g., Pakistan).", "Must have invested, or be actively in the process of investing, a substantial amount.", "Must be seeking entry solely to develop and direct the investment enterprise."],
+      processing: "2–4 months.",
+      forms: ["DS-160", "DS-156E"],
+    },
+    "R-1": {
+      code: "R-1", label: "Religious Worker", badge: "Non-Immigrant · Religion", color: "#8B5CF6",
+      description: "For people coming to the U.S. temporarily to be employed at least part-time by a non-profit religious organization.",
+      criteria: ["Must be a member of a religious denomination for at least 2 years.", "Coming to work as a minister or in a religious vocation/occupation.", "Must work for a bona fide non-profit religious organization."],
+      processing: "6–10 months.",
+      forms: ["I-129", "DS-160"],
+    },
+    "P-1": {
+      code: "P-1", label: "Athlete / Group Performer", badge: "Non-Immigrant · Arts", color: "#EC4899",
+      description: "For internationally recognized athletes or members of an entertainment group.",
+      criteria: ["Athlete: internationally recognized.", "Group: must have been together for at least 1 year.", "Specific competition or performance required."],
+      processing: "2–4 months.",
+      forms: ["I-129", "DS-160"],
+    },
+    "P-3": {
+      code: "P-3", label: "Culturally Unique Artist", badge: "Non-Immigrant · Arts", color: "#EC4899",
+      description: "For artists or entertainers coming to the U.S. to perform, teach, or coach under a program that is culturally unique.",
+      criteria: ["Program must be culturally unique.", "Evidence of excellence and uniqueness required.", "Coming for the purpose of developing, interpreting, representing, coaching, or teaching."],
+      processing: "2–4 months.",
+      forms: ["I-129", "DS-160"],
+    },
+    "DV-1": {
+      code: "DV-1", label: "Diversity Visa", badge: "Immigrant Lottery", color: T.success,
+      description: "Annual lottery program for individuals from countries with historically low rates of immigration to the United States.",
+      criteria: ["Must be a native of a qualifying country.", "Must have at least a high school education or 2 years of qualifying work experience.", "Must be selected in the annual lottery."],
+      processing: "Annual cycle; selection usually in May.",
+      forms: ["DS-5501 (electronic entry)", "DS-260 (if selected)"],
+    },
   },
 
   gateQuestions: {
@@ -379,6 +547,22 @@ export const US_DATA: CountryData = {
       { id:"crime", question:"Are you a victim of a qualifying crime — domestic violence, assault, sexual assault, trafficking, robbery, or related offenses?", source:"USCIS — U Visa: Qualifying Crimes list", sourceUrl:"https://www.uscis.gov/humanitarian/victims-of-human-trafficking-and-other-crimes/victims-of-criminal-activity-u-nonimmigrant-status", passWith:["YES"], failMsg:"U Visa is only for victims of specific qualifying crimes.", options:[{label:"Yes",value:"YES"},{label:"No",value:"NO"}] },
       { id:"abuse", question:"Did you suffer substantial physical or mental abuse as a result of the crime?", source:"USCIS — must have suffered substantial abuse", sourceUrl:"https://www.uscis.gov/humanitarian/victims-of-human-trafficking-and-other-crimes/victims-of-criminal-activity-u-nonimmigrant-status", passWith:["YES"], failMsg:"The U Visa requires substantial abuse.", options:[{label:"Yes",value:"YES"},{label:"No / Minor harm only",value:"NO"}] },
       { id:"le_coop", question:"Are you willing to cooperate with law enforcement and can you obtain a Form I-918B certification?", source:"USCIS — must be helpful to law enforcement", sourceUrl:"https://www.uscis.gov/humanitarian/victims-of-human-trafficking-and-other-crimes/victims-of-criminal-activity-u-nonimmigrant-status", passWith:["YES"], failMsg:"U Visa requires cooperation with law enforcement.", options:[{label:"Yes",value:"YES"},{label:"No",value:"NO"}] },
+    ],
+    "E-2": [
+      { id:"treaty_country", question:"Are you a national of an E-2 treaty country (e.g., Pakistan, UK, Germany)?", source:"USCIS — E-2 requires treaty nationality", sourceUrl:"https://www.uscis.gov/working-in-the-united-states/temporary-workers/e-2-treaty-investors", passWith:["YES"], failMsg:"E-2 is only for nationals of treaty countries.", options:[{label:"Yes",value:"YES"},{label:"No",value:"NO"}] },
+      { id:"substantial", question:"Are you investing a 'substantial' amount of capital (typically $100k+)?", source:"USCIS — E-2 requires substantial investment", sourceUrl:"https://www.uscis.gov/working-in-the-united-states/temporary-workers/e-2-treaty-investors", passWith:["YES"], failMsg:"USCIS requires the investment to be substantial in relation to the business cost.", options:[{label:"Yes",value:"YES"},{label:"No / Low amount",value:"NO"}] },
+      { id:"control", question:"Do you have at least 50% ownership or operational control of the enterprise?", source:"USCIS — must develop and direct the investment", sourceUrl:"https://www.uscis.gov/working-in-the-united-states/temporary-workers/e-2-treaty-investors", passWith:["YES"], failMsg:"Must have the power to develop and direct the enterprise.", options:[{label:"Yes",value:"YES"},{label:"No",value:"NO"}] },
+    ],
+    "R-1": [
+      { id:"member_2yr", question:"Have you been a member of the religious denomination for at least the last 2 years?", source:"USCIS — R-1 requires 2-year membership", sourceUrl:"https://www.uscis.gov/working-in-the-united-states/temporary-workers/r-1-nonimmigrant-religious-workers", passWith:["YES"], failMsg:"R-1 requires 2 years of prior membership.", options:[{label:"Yes",value:"YES"},{label:"No",value:"NO"}] },
+      { id:"non_profit", question:"Is your U.S. employer a bona-fide non-profit religious organization?", source:"USCIS — employer must be a 501(c)(3) religious non-profit", sourceUrl:"https://www.uscis.gov/working-in-the-united-states/temporary-workers/r-1-nonimmigrant-religious-workers", passWith:["YES"], failMsg:"Employer must qualify as a religious non-profit.", options:[{label:"Yes",value:"YES"},{label:"No",value:"NO"}] },
+    ],
+    "P-1": [
+      { id:"int_recog", question:"Are you internationally recognized as outstanding in your sport or group?", source:"USCIS — P-1: internationally recognized", sourceUrl:"https://www.uscis.gov/working-in-the-united-states/temporary-workers/p-1a-internationally-recognized-athlete", passWith:["YES"], failMsg:"P-1 requires international recognition.", options:[{label:"Yes",value:"YES"},{label:"No",value:"NO"}] },
+    ],
+    "DV-1": [
+      { id:"education", question:"Do you have at least a high school education or 2 years of qualifying work experience?", source:"Dept of State — DV Lottery requirements", sourceUrl:"https://travel.state.gov/content/travel/en/us-visas/immigrate/diversity-visa-program-instructions.html", passWith:["YES"], failMsg:"Minimum education or work experience is required.", options:[{label:"Yes",value:"YES"},{label:"No",value:"NO"}] },
+      { id:"passport", question:"Do you have a valid international passport?", source:"DV entry requirement", sourceUrl:"https://travel.state.gov/content/travel/en/us-visas/immigrate/diversity-visa-program-instructions.html", passWith:["YES"], failMsg:"A valid passport is required for entry.", options:[{label:"Yes",value:"YES"},{label:"No",value:"NO"}] },
     ],
   },
 };

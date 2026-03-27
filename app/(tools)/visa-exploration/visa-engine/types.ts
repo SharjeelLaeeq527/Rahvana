@@ -84,6 +84,8 @@ export interface CountryData {
   gateQuestions: GateQuestionsMap;
   /** getCandidateCodes function key — each country exports its own */
   getCandidateCodes: (answers: VisaExplorationAnswers) => string[];
+  /** buildFollowUpSteps function key — each country exports its own wizard sequence */
+  buildFollowUpSteps: (answers: VisaExplorationAnswers) => Step[];
 }
 
 // ─────────────────────────────────────────────────────────────

@@ -7,13 +7,16 @@
 
 import { CountryData } from "../types";
 import { US_DATA } from "./us";
+import { UK_DATA } from "./uk";
+import { GERMANY_DATA } from "./germany";
 
 // ─────────────────────────────────────────────────────────────
 // REGISTRY  — add new countries here only
 // ─────────────────────────────────────────────────────────────
 export const COUNTRY_REGISTRY: Record<string, CountryData> = {
   "United States": US_DATA,
-  // "United Kingdom": UK_DATA,   ← uncomment when uk.ts is ready
+  "United Kingdom": UK_DATA,
+  "Germany": GERMANY_DATA,
   // "Canada":         CA_DATA,
   // "Australia":      AU_DATA,
 };
