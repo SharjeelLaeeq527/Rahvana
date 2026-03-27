@@ -21,11 +21,14 @@ const VISA_CATEGORIES: VisaCategory[] = [
   "IR-2",
   "CR-2",
   "IR-5",
-  "F1",
-  "F2A",
-  "F2B",
-  "F3",
-  "F4",
+  // "F1",
+  "F-1 Student Visa",
+  "Australia Student Visa (Subclass 500)",
+  "China Student Visa (X1 & X2)",
+  // "F2A",
+  // "F2B",
+  // "F3",
+  // "F4",
 ];
 
 export function ConfigurationWizard({
