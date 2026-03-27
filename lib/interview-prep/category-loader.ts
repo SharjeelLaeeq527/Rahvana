@@ -90,6 +90,7 @@ class CategoryLoaderService {
       "f1-student",
       "uk-student",
       "ca-student",
+      "au-student",
     ];
 
     const results = await Promise.allSettled(

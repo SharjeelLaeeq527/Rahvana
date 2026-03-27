@@ -19,6 +19,7 @@ import ir5ParentQuestionnaire from "@/data/interview-categories/ir-5-parent/ques
 import f1StudentQuestionnaire from "@/data/interview-categories/f1-student/questionnaire.json";
 import ukStudentQuestionnaire from "@/data/interview-categories/uk-student/questionnaire.json";
 import caStudentQuestionnaire from "@/data/interview-categories/ca-student/questionnaire.json";
+import auStudentQuestionnaire from "@/data/interview-categories/au-student/questionnaire.json";
 
 interface QuestionnaireSection {
   id: string;
@@ -162,6 +163,8 @@ export function ReviewStep({
       return ukStudentQuestionnaire;
     } else if (categorySlug === "ca-student") {
       return caStudentQuestionnaire;
+    } else if (categorySlug === "au-student") {
+      return auStudentQuestionnaire;
     }
     return null;
   })();
@@ -276,8 +279,10 @@ export function ReviewStep({
                         : categorySlug === "uk-student"
                           ? "UK Student"
                           : categorySlug === "ca-student"
-                            ? "CA Student"
-                            : categorySlug || formData.caseType}
+                            ? "CA Student" 
+                            : categorySlug === "au-student"
+                              ? "AU Student"
+                              : categorySlug || formData.caseType}
               </p>
             </div>
           </div>

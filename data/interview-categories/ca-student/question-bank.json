@@ -1,520 +1,850 @@
 {
-    "categorySlug": "ca-student",
-    "version": "1.1.0",
-    "lastUpdated": "2026-03-25",
-    "questions": [
-      {
-        "id": "study-why-ca",
-        "category": "Study Plans",
-        "question": "Why do you want to study in Canada?",
-        "suggestedAnswer": "I want to study in Canada because {{why_this_field}}. The Canadian education system offers superior {{field_of_study}} programs and opportunities that will help me achieve my career goals in a way that is not available in {{country_of_residence}}.",
-        "guidance": "Explain what Canada offers that your home country cannot. Focus on educational advantages, not immigration intent.",
-        "tooltip": "Officers assess genuine educational motivation vs. immigration intent.",
-        "priority": "high"
-      },
-      {
-        "id": "study-major",
-        "category": "Study Plans",
-        "question": "What will be your major or field of study?",
-        "suggestedAnswer": "I will major in {{field_of_study}}.",
-        "guidance": "Be clear and specific about your major and intended specialization.",
-        "tooltip": "Demonstrates a well-thought-out educational plan.",
-        "priority": "high"
-      },
-      {
-        "id": "study-why-field",
-        "category": "Study Plans",
-        "question": "Why did you choose this field of study?",
-        "suggestedAnswer": "I chose {{field_of_study}} because {{why_this_field}}. This field aligns with my interests and long-term career aspirations.",
-        "guidance": "Show genuine passion and connection to your field. Explain what drew you to it.",
-        "tooltip": "Demonstrates thoughtful motivation for field selection.",
-        "priority": "high"
-      },
-      {
-        "id": "study-previous-education",
-        "category": "Study Plans",
-        "question": "Tell us about your previous education.",
-        "suggestedAnswer": "I completed my {{current_education_level}} with a GPA of {{previous_gpa}}. {{previous_education_details}} This educational foundation has prepared me well for advanced studies.",
-        "guidance": "Describe your educational timeline, GPA, and notable achievements.",
-        "tooltip": "Officers verify academic preparation for higher education.",
-        "priority": "high"
-      },
-      {
-        "id": "study-continuation-ca",
-        "category": "Study Plans",
-        "question": "Why are you planning to continue your education in Canada? Can you not continue in your home country?",
-        "suggestedAnswer": "While I could continue my education in {{country_of_residence}}, Canada offers superior {{field_of_study}} programs, world-renowned professors, and research opportunities that are unmatched. This will significantly enhance my qualifications.",
-        "guidance": "Be honest about limitations in your home country while explaining Canada-specific advantages.",
-        "tooltip": "Officers want to understand why Canadian education is specifically necessary.",
-        "priority": "high"
-      },
-      {
-        "id": "study-goals-alignment",
-        "category": "Study Plans",
-        "question": "How will this study program relate to your past work or studies?",
-        "suggestedAnswer": "My {{intended_degree}} at {{primary_university}} will advance my knowledge in {{field_of_study}} and enable me to {{post_graduation_job_plans}}. This represents a clear progression from my previous experience.",
-        "guidance": "Draw a clear connection between your past and future, showing coherent progression.",
-        "tooltip": "Demonstrates a coherent educational and career plan.",
-        "priority": "high"
-      },
-      {
-        "id": "uni-applications-count",
-        "category": "University Choice",
-        "question": "How many universities did you apply to?",
-        "suggestedAnswer": "I applied to {{total_universities_applied}} universities in total.",
-        "guidance": "State the exact number of universities you applied to.",
-        "tooltip": "Shows application selectivity and planning.",
-        "priority": "high"
-      },
-      {
-        "id": "uni-why-primary",
-        "category": "University Choice",
-        "question": "Why did you choose this university as your primary choice?",
-        "suggestedAnswer": "{{why_primary_university}} This university stands out because of its program strength, faculty expertise, and alignment with my academic and career goals.",
-        "guidance": "Explain what makes this university unique for you and your field.",
-        "tooltip": "Demonstrates genuine interest and informed decision-making.",
-        "priority": "high"
-      },
-      {
-        "id": "uni-research-details",
-        "category": "University Choice",
-        "question": "What do you know about your university's program?",
-        "suggestedAnswer": "{{university_knowledge}} I have researched the program curriculum, campus facilities, and community resources, and I am confident that this university is the right fit for me.",
-        "guidance": "Demonstrate detailed research about curriculum, facilities, professors, and campus life.",
-        "tooltip": "Shows genuine interest and preparation for arrival.",
-        "priority": "high"
-      },
-      {
-        "id": "uni-faculty-knowledge",
-        "category": "University Choice",
-        "question": "What do you know about professors or faculty in your field?",
-        "suggestedAnswer": "I have researched faculty in the {{field_of_study}} department at {{primary_university}}. I am particularly interested in learning from professors who specialize in that field.",
-        "guidance": "Mention specific professors or show knowledge of faculty research areas.",
-        "tooltip": "Demonstrates genuine academic interest in the institution.",
-        "priority": "medium"
-      },
-      {
-        "id": "uni-location",
-        "category": "University Choice",
-        "question": "In which city is your university located?",
-        "suggestedAnswer": "{{primary_university}} is located in {{university_city_state}}.",
-        "guidance": "Mention city clearly. In the Canada, this is typically in Ontario, Quebec, British Columbia, or other provinces.",
-        "tooltip": "Verifies university location knowledge and familiarity with Canadian geography.",
-        "priority": "high"
-      },
-      {
-        "id": "academic-english-test",
-        "category": "Academic Capability",
-        "question": "What are your English proficiency test scores (TOEFL or IELTS)?",
-        "suggestedAnswer": "I achieved a score of {{ielts_score ? '{{ielts_score}}' : '{{toefl_score}}'}} on the {{english_proficiency_test}} exam, which demonstrates my readiness for university-level coursework in English.",
-        "guidance": "State your test scores confidently and explain what they mean for your academic readiness.",
-        "tooltip": "Test scores are mandatory verification of English proficiency.",
-        "priority": "high"
-      },
-      {
-        "id": "academic-previous-gpa",
-        "category": "Academic Capability",
-        "question": "What was your GPA in your previous education?",
-        "suggestedAnswer": "My previous GPA was {{previous_gpa}}, which demonstrates my consistent academic performance and preparation for graduate-level work.",
-        "guidance": "State your GPA on the same scale as your previous institution.",
-        "tooltip": "Shows academic preparation for Canadian university standards.",
-        "priority": "high"
-      },
-      {
-        "id": "academic-english-medium",
-        "category": "Academic Capability",
-        "question": "Was your previous education conducted in English?",
-        "suggestedAnswer": "{{medium_of_instruction ? 'Yes, my previous education was conducted in English, which provides me a strong foundation for Canadian university studies.' : 'No, my education was not in English medium, however I have studied English extensively and achieved strong proficiency scores ({{english_proficiency_test}}: {{ielts_score ? ielts_score : toefl_score}}). I am well-prepared to succeed in English-medium academic coursework.'}}\n",
-        "guidance": "Answer honestly about your educational medium.",
-        "tooltip": "Determines English proficiency level and need for support.",
-        "priority": "high"
-      },
-      {
-        "id": "academic-english-confidence",
-        "category": "Academic Capability",
-        "question": "How confident are you in your English ability?",
-        "suggestedAnswer": "I would rate my English proficiency at {{english_confidence_rating}} out of 10. I have the foundation needed to succeed in English-medium coursework.",
-        "guidance": "Be honest about your comfort level with academic English.",
-        "tooltip": "Self-assessment of English readiness for Canadian university.",
-        "priority": "high"
-      },
-      {
-        "id": "academic-english-management",
-        "category": "Academic Capability",
-        "question": "How will you manage studying in English at a Canadian university?",
-        "suggestedAnswer": "{{how_you_will_manage_english}} I am committed to utilizing all available resources to ensure my academic success.",
-        "guidance": "Explain your strategies such as tutoring, study groups, or academic support services.",
-        "tooltip": "Demonstrates readiness to handle academic English challenges.",
-        "priority": "high"
-      },
-      {
-        "id": "academic-ca-comparison",
-        "category": "Academic Capability",
-        "question": "Why pursue your degree in Canada instead of other countries?",
-        "suggestedAnswer": "Canada offers a unique educational experience in {{field_of_study}} and {{primary_university}} specifically provides {{why_primary_university}}. While other countries have excellent programs, Canada aligns best with my career goals.",
-        "tooltip": "Shows thoughtful analysis of educational options.",
-        "priority": "medium"
-      },
-      {
-        "id": "academic-struggle-support",
-        "category": "Academic Capability",
-        "question": "What will you do if you struggle academically in the first semester?",
-        "suggestedAnswer": "{{academic_success_strategy}} I will also seek support from {{primary_university}} academic resources, meet with professors during office hours, form study groups, and utilize tutoring services if needed.",
-        "guidance": "Show proactive planning and knowledge of university support systems.",
-        "tooltip": "Demonstrates realistic expectations and commitment to success.",
-        "priority": "medium"
-      },
-      {
-        "id": "finance-sponsor-identity",
-        "category": "Financial Status",
-        "question": "Who is your financial sponsor?",
-        "suggestedAnswer": "My {{sponsor_relationship}} will sponsor my education.",
-        "guidance": "Identify your main source of financial support clearly.",
-        "tooltip": "Critical to establish who is funding your education.",
-        "priority": "high"
-      },
-      {
-        "id": "finance-sponsor-occupation",
-        "category": "Financial Status",
-        "question": "What is your sponsor's occupation?",
-        "suggestedAnswer": "My sponsor works as a {{sponsor_occupation}}.",
-        "guidance": "Describe the primary source of their income clearly.",
-        "tooltip": "Assesses financial stability and income source.",
-        "priority": "high"
-      },
-      {
-        "id": "finance-sponsor-income",
-        "category": "Financial Status",
-        "question": "What is your sponsor's annual income in USD?",
-        "suggestedAnswer": "My sponsor's annual income is approximately ${{sponsor_annual_income}}, which is sufficient to cover my education costs.",
-        "guidance": "Provide in USD, converting from local currency using current exchange rates.",
-        "tooltip": "Income is critical to prove financial capability for the full program duration.",
-        "priority": "high"
-      },
-      {
-        "id": "finance-income-proof",
-        "category": "Financial Status",
-        "question": "Do you have proof of your sponsor's income?",
-        "suggestedAnswer": "Yes, I have prepared comprehensive income documentation including {{sponsor_income_proof}} to verify my sponsor's financial capability for funding my education in Canada.",
-        "guidance": "Prepare tax returns (last 2 years), salary certificates, or business documents.",
-        "tooltip": "Essential documents for visa officer verification.",
-        "priority": "high"
-      },
-      {
-        "id": "finance-program-cost",
-        "category": "Financial Status",
-        "question": "What is the total estimated cost of your program?",
-        "suggestedAnswer": "The total estimated cost of my {{intended_degree}} program is approximately ${{total_program_cost}} per year, including tuition, fees, accommodation, and living expenses.",
-        "guidance": "Break down costs into components to show you've researched thoroughly.",
-        "tooltip": "Cost breakdown shows realistic planning.",
-        "priority": "high"
-      },
-      {
-        "id": "finance-available-funds",
-        "category": "Financial Status",
-        "question": "How much funding can you access for your education?",
-        "suggestedAnswer": "I have approximately ${{available_funds}} available for my education from my sponsor and personal resources.",
-        "guidance": "Include sponsor savings, family gifts, and any personal funds.",
-        "tooltip": "Must cover program cost to demonstrate financial capability.",
-        "priority": "high"
-      },
-      {
-        "id": "finance-funding-plan",
-        "category": "Financial Status",
-        "question": "How do you plan to fund your entire education?",
-        "suggestedAnswer": "My {{sponsor_relationship}} will provide approximately ${{available_funds}}, which covers the full cost of my education. {{scholarship_status ? 'I have also received a {{scholarship_type}} scholarship of ${{scholarship_amount}} from {{primary_university}}, which further strengthens my financial capability.' : 'I am financially supported by my sponsor and do not require additional scholarship funding.'}}",
-        "guidance": "Show complete picture: sponsor funds, scholarship (if any), and any personal contribution.",
-        "tooltip": "Officers need to see complete financing for all program years.",
-        "priority": "high"
-      },
-      {
-        "id": "finance-funds-proof",
-        "category": "Financial Status",
-        "question": "Do you have proof of available funds?",
-        "suggestedAnswer": "Yes, I have prepared comprehensive proof of available funds including {{funds_availability_proof}} that demonstrate my sponsor's and my financial capability to fund the complete cost of my studies in Canada.",
-        "guidance": "Prepare bank statements, affidavits of support, and investment documents.",
-        "tooltip": "Mandatory for CAS (Confirmation of Acceptance for Studies) and visa officer verification.",
-        "priority": "high"
-      },
-      {
-        "id": "finance-scholarship-status",
-        "category": "Financial Status",
-        "question": "Did you receive a scholarship?",
-        "suggestedAnswer": "{{scholarship_status ? 'Yes, I received a {{scholarship_type}} scholarship from {{primary_university}}, which significantly supports my education financially.' : 'No, I did not receive a scholarship, but my education is fully funded through my sponsor and personal resources.'}}",
-        "guidance": "Answer honestly about scholarship status.",
-        "tooltip": "Scholarships strengthen financial capability profile.",
-        "priority": "high"
-      },
-      {
-        "id": "finance-scholarship-amount",
-        "category": "Financial Status",
-        "question": "What is your scholarship amount?",
-        "suggestedAnswer": "I received a ${{scholarship_amount}} {{scholarship_type}} scholarship from {{primary_university}}.",
-        "guidance": "State the annual or total amount as specified in your scholarship letter.",
-        "tooltip": "Shows partial or full financial support from university.",
-        "priority": "high",
-        "skipIf": [
-          {
-            "field": "scholarship_status",
-            "notEquals": true
-          }
-        ]
-      },
-      {
-        "id": "finance-scholarship-type",
-        "category": "Financial Status",
-        "question": "What type of scholarship did you receive?",
-        "suggestedAnswer": "My scholarship is {{scholarship_type}}, which significantly reduces my financial burden for my education.",
-        "guidance": "Specify if it's merit-based, need-based, full tuition, etc.",
-        "tooltip": "Shows academic excellence or financial strength.",
-        "priority": "medium",
-        "skipIf": [
-          {
-            "field": "scholarship_status",
-            "notEquals": true
-          }
-        ]
-      },
-      {
-        "id": "finance-shortfall-backup",
-        "category": "Financial Status",
-        "question": "What if your sponsor cannot support you fully?",
-        "suggestedAnswer": "{{funding_shortfall_plan}} I have researched alternative funding and identified multiple backup plans to ensure I can complete my education.",
-        "guidance": "Describe alternative sources: loans, additional family funds, part-time work, etc.",
-        "tooltip": "Backup plans show maturity and serious commitment.",
-        "priority": "medium"
-      },
-      {
-        "id": "study-program-career-fit",
-        "category": "Study Plans",
-        "question": "How does this course fit your long-term career goals?",
-        "suggestedAnswer": "My long-term career goal is to {{post_graduation_job_plans}}. This {{intended_degree}} in {{field_of_study}} is the ideal stepping stone to achieve this. The program will equip me with the {{why_this_field}} skills that are directly needed for this role.",
-        "guidance": "Draw a clear connection between the specific program and your career objectives.",
-        "tooltip": "Demonstrates that your study plans are purposeful and aligned with realistic career goals.",
-        "priority": "high"
-      },
-      {
-        "id": "study-professional-preparation",
-        "category": "Study Plans",
-        "question": "How does your program prepare you for professional practice or registration in your home country or internationally?",
-        "suggestedAnswer": "This program is structured to meet international professional standards in {{field_of_study}}. Upon graduation, I will be eligible to pursue professional credentials and registrations such as {{field_of_study}} certifications, which are recognized in {{country_of_residence}} and internationally.",
-        "guidance": "Research the professional standards and certifications in your field for your home country.",
-        "tooltip": "Shows that your education has practical professional value beyond the degree itself.",
-        "priority": "high"
-      },
-      {
-        "id": "finance-personal-savings",
-        "category": "Financial Status",
-        "question": "Are you contributing any personal savings? If yes, what is the source?",
-        "suggestedAnswer": "{{personal_savings_contribution}}",
-        "guidance": "Be honest about personal financial contributions. If you have savings, explain the legitimate source.",
-        "tooltip": "Personal contributions strengthen your financial profile and show commitment.",
-        "priority": "medium",
-        "skipIf": [{"field": "personal_savings_contribution", "equals": ""}]
-      },
-      {
-        "id": "finance-part-time-work",
-        "category": "Financial Status",
-        "question": "Do you plan to work part-time while studying? How will you balance it with your studies?",
-        "suggestedAnswer": "{{part_time_work_plans}} I understand that Canadian student visa regulations allow international students to work up to 20 hours per week during school terms, and I plan to strictly adhere to these limitations to prioritize my academic success.",
-        "guidance": "Explain your work plans realistically and demonstrate awareness of visa work restrictions.",
-        "tooltip": "Shows realistic planning and understanding of visa regulations and academic priorities.",
-        "priority": "high"
-      },
-      {
-        "id": "postgrad-post-study-work-visa",
-        "category": "Post-Graduation Plans",
-        "question": "Do you plan to use the post-study work visa (PSW)? If yes, how does it fit into your career plan?",
-        "suggestedAnswer": "{{post_study_work_visa_plans ? 'I plan to {{post_study_work_visa_plans}}. However, after this temporary work period, I plan to return to {{country_of_residence}} and pursue my long-term career goals.' : 'I plan to return to {{country_of_residence}} immediately after completing my studies and begin my {{post_graduation_job_plans}}.'}} My ultimate goal is to {{post_graduation_job_plans}} in my home country.",
-        "guidance": "If planning to use PSW, explain how it's a stepping stone toward your ultimate career goals in your home country.",
-        "tooltip": "Post-study work is a temporary visa requiring clear connection to home country plans.",
-        "priority": "high"
-      },
-      {
-        "id": "postgrad-healthcare-management",
-        "category": "Post-Graduation Plans",
-        "question": "How will you manage healthcare while studying abroad?",
-        "suggestedAnswer": "{{healthcare_management_abroad}} I understand that as an international student, I will have access to provincial health services in Canada and will register with a local healthcare provider upon arrival. I am aware of health insurance requirements for international students and will maintain appropriate coverage throughout my studies.",
-        "guidance": "Demonstrate knowledge of Canadian provincial health systems and planning for health emergencies.",
-        "tooltip": "Shows practical preparation and understanding of health support systems available.",
-        "priority": "medium"
-      },
-      {
-        "id": "background-student-visa-conditions",
-        "category": "Background",
-        "question": "Do you understand the conditions of your student visa, including work limitations?",
-        "suggestedAnswer": "{{student_visa_conditions_understanding}} I am aware that as a student visa holder in Canada, I am permitted to work up to 20 hours per week during school terms and full-time during official university breaks. I also understand the Post-Graduation Work Permit (PGWP) eligibility and conditions. I understand these are strict conditions and I am committed to complying with all visa regulations.",
-        "guidance": "Demonstrate clear understanding of specific UK student visa work restrictions and conditions.",
-        "tooltip": "Critical for credibility - shows you've researched visa obligations and plan to comply.",
-        "priority": "high"
-      },
-      {
-        "id": "postgrad-career-goals",
-        "category": "Post-Graduation Plans",
-        "question": "What are your career goals after graduation?",
-        "suggestedAnswer": "{{post_graduation_job_plans}} I plan to pursue this career after completing my {{intended_degree}}.",
-        "guidance": "Describe specific, realistic career goals aligned with your degree.",
-        "tooltip": "Clear post-graduation plans strengthen student visa application.",
-        "priority": "high"
-      },
-      {
-        "id": "postgrad-return-intent",
-        "category": "Post-Graduation Plans",
-        "question": "Do you plan to return to your home country after graduation?",
-        "suggestedAnswer": "{{plan_to_return_home ? 'Yes, I plan to return to {{country_of_residence}} immediately after completing my studies to pursue my academic and career goals.' : 'I may initially pursue temporary work experience through a post-study work visa, but my long-term intention is to return to {{country_of_residence}}.'}} I have strong ties to my home country through my {{family_in_home_country ? 'close family members in {{country_of_residence}}' : 'professional and personal networks in {{country_of_residence}}'}} that make returning home a priority.",
-        "guidance": "Be honest about your intent. Strong home country ties provide credibility.",
-        "tooltip": "Intent to return is critical for student visa officer assessment.",
-        "priority": "high",
-        "skipIf": []
-      },
-      {
-        "id": "postgrad-home-ties",
-        "category": "Post-Graduation Plans",
-        "question": "What are your ties to your home country?",
-        "suggestedAnswer": "I have multiple strong ties to {{country_of_residence}} that make returning home important to me. {{family_in_home_country ? 'My family is based in {{country_of_residence}} - {{family_details}}.' : 'I have professional networks and personal commitments in {{country_of_residence}}.'}} {{property_or_assets_home ? 'Additionally, my family has property and assets in {{country_of_residence}}.' : ''}} After completing my {{intended_degree}}, I plan to {{post_graduation_job_plans}}.",
-        "guidance": "Mention family, property, business, and career opportunities.",
-        "tooltip": "Establishes personal and financial ties to home country.",
-        "priority": "high",
-        "skipIf": [{"field": "plan_to_return_home", "equals": false}]
-      },
-      {
-        "id": "postgrad-family-connections",
-        "category": "Post-Graduation Plans",
-        "question": "Do you have close family in your home country?",
-        "suggestedAnswer": "{{family_in_home_country ? 'Yes, I have close family in {{country_of_residence}}: {{family_details}}. These family ties are very important to me and provide strong motivation to return home after my studies.' : 'Most of my family is dispersed, but I have strong professional and personal connections to {{country_of_residence}} that are important to me.'}}",
-        "guidance": "Describe parents, siblings, or other family ties.",
-        "tooltip": "Critical indicator of home country attachment.",
-        "priority": "high",
-        "skipIf": [{"field": "plan_to_return_home", "equals": false}]
-      },
-      {
-        "id": "postgrad-property",
-        "category": "Post-Graduation Plans",
-        "question": "Do you have property or assets in your home country?",
-        "suggestedAnswer": "{{property_or_assets_home ? 'Yes, my family owns property in {{country_of_residence}} that represents significant financial and personal wealth. This reinforces my commitment to eventually returning home.' : 'My family has investments and financial assets in {{country_of_residence}} that represent our financial ties to our home country.'}}",
-        "guidance": "Land, house, or business ownership shows financial ties.",
-        "tooltip": "Financial ties strengthen return home commitment.",
-        "priority": "medium",
-        "skipIf": [{"field": "plan_to_return_home", "equals": false}]
-      },
-      {
-        "id": "postgrad-ca-stay-consideration",
-        "category": "Post-Graduation Plans",
-        "question": "Are you considering staying in Canada after graduation?",
-        "suggestedAnswer": "{{consider_staying_ca ? 'I may pursue a post-study work visa to gain professional experience in Canada initially, as outlined in {{post_study_work_visa_plans}}, but my ultimate intention is to return to {{country_of_residence}}.' : 'My primary goal is to complete my studies and return to my home country to pursue my career goals.'}}",
-        "guidance": "If considering PSW or other work visas, frame as temporary work experience before returning home.",
-        "tooltip": "Short-term Canada work followed by home country return demonstrates genuine student intent.",
-        "priority": "high",
-        "skipIf": [{"field": "plan_to_return_home", "equals": true}]
-      },
-      {
-        "id": "background-previous-ca-stays",
-        "category": "Background",
-        "question": "Have you visited Canada before?",
-        "suggestedAnswer": "{{previous_ca_visits ? 'Yes, I have previously visited Canada, which gave me direct experience with the country and strengthened my commitment to studying here.' : 'No, I have not visited Canada before, but I have conducted thorough research about Canadian universities, the education system, and student life to prepare myself well for this transition.'}}",
-        "guidance": "Answer honestly about travel history.",
-        "tooltip": "Checks travel experience and visa history.",
-        "priority": "medium"
-      },
-      {
-        "id": "background-ca-visit-details",
-        "category": "Background",
-        "question": "When did you visit Canada and what was the purpose?",
-        "suggestedAnswer": "I visited {{primary_university}} and other Canadian cities to tour campuses, research academic programs, and experience university life firsthand. This visit greatly strengthened my commitment to studying at {{primary_university}} and helped me understand what to expect as an international student in Canada.",
-        "guidance": "Provide approximate dates and mention campus tours or tourism.",
-        "tooltip": "Verifies legitimate travel and interest in Canada.",
-        "priority": "medium",
-        "skipIf": [
-          {
-            "field": "previous_ca_visits",
-            "equals": false
-          }
-        ]
-      },
-      {
-        "id": "background-visa-refusal",
-        "category": "Background",
-        "question": "Have you ever been denied any visa?",
-        "suggestedAnswer": "{{visa_refusal_history ? 'Yes, I was previously denied a visa, and I understand this will be carefully reviewed by the visa officer.' : 'No, I have never been denied a visa to any country, and I have a clean immigration record.'}}",
-        "guidance": "Honesty is critical - this will be verified in your records.",
-        "tooltip": "Previous refusals are reviewed carefully.",
-        "priority": "high"
-      },
-      {
-        "id": "background-visa-refusal-explanation",
-        "category": "Background",
-        "question": "Explain the visa refusal and what has changed.",
-        "suggestedAnswer": "I was previously denied a {{other_countries_visa_refusal ? 'visa to another country' : 'student visa'}} because {{visa_refusal_history ? 'of concerns regarding my documentation/financial capability/application details.' : ''}} Since then, my circumstances have significantly improved. I have: (1) Secured admission to {{primary_university}} with a strong academic profile, (2) Demonstrated comprehensive financial capability with bank statements and sponsor documentation, and (3) Established clear intent to study through detailed research and university engagement. I am now clearly eligible for a Canada student visa.",
-        "guidance": "Honestly explain the reason and how circumstances have improved.",
-        "tooltip": "Demonstrates addressing previous concerns.",
-        "priority": "high",
-        "skipIf": [
-          {
-            "field": "visa_refusal_history",
-            "equals": false
-          }
-        ]
-      },
-      {
-        "id": "background-criminal-record",
-        "category": "Background",
-        "question": "Do you have any criminal convictions?",
-        "suggestedAnswer": "{{criminal_record ? 'I am required to disclose criminal history to Canadian Visas and Immigration (IRCC), and I have documentation regarding my circumstances.' : 'No, I do not have any criminal record, and I have maintained clean legal standing throughout my life.'}}",
-        "guidance": "Always answer truthfully - criminal history triggers security reviews.",
-        "tooltip": "Criminal history is grounds for visa denial.",
-        "priority": "high",
-        "skipIf": [
-          {
-            "field": "criminal_record",
-            "equals": false
-          }
-        ]
-      },
-      {
-        "id": "background-ca-immigration-issues",
-        "category": "Background",
-        "question": "Do you have any legal issues in Canada?",
-        "suggestedAnswer": "{{any_ca_immigration_issues ? 'I have legal issues to disclose to the Canadian immigration authorities, and I have documentation prepared.' : 'No, I have no legal issues in Canada and intend to maintain full compliance with all Canadian laws as a student.'}}",
-        "guidance": "Disclose any arrests, legal violations, or previous Canadian visa issues if applicable.",
-        "tooltip": "Security clearance and admissibility requirement.",
-        "priority": "high",
-        "skipIf": [
-          {
-            "field": "any_ca_immigration_issues",
-            "equals": false
-          }
-        ]
-      },
-      {
-        "id": "background-visa-overstay",
-        "category": "Background",
-        "question": "Have you ever overstayed a visa in any country?",
-        "suggestedAnswer": "{{previous_overstay ? 'Yes, I must disclose a previous visa overstay and understand this is a serious immigration matter that will be reviewed carefully by the Canadian authorities.' : 'No, I have never overstayed a visa and have maintained strict compliance with all visa terms and departure requirements.'}}",
-        "guidance": "Answer truthfully - overstays are serious immigration violations.",
-        "tooltip": "Overstays can result in visa denials and bans.",
-        "priority": "high",
-        "skipIf": [
-          {
-            "field": "previous_overstay",
-            "equals": false
-          }
-        ]
-      },
-      {
-        "id": "background-other-visa-denials",
-        "category": "Background",
-        "question": "Have you been denied a visa to any other country?",
-        "suggestedAnswer": "{{other_countries_visa_refusal ? 'Yes, I have been denied visas to other countries, and I understand the Canadian authorities will review these decisions carefully.' : 'No, I have not been denied visas to other countries and maintain a strong visa and travel record.'}}",
-        "guidance": "Visa refusals to other countries may indicate patterns that require explanation.",
-        "tooltip": "Visa refusals to other countries are reviewed carefully.",
-        "priority": "high",
-        "skipIf": [
-          {
-            "field": "other_countries_visa_refusal",
-            "equals": false
-          }
-        ]
-      }
-    ]
-  }
-  
+  "categorySlug": "ca-student",
+  "version": "1.1.0",
+  "lastUpdated": "2026-03-27",
+  "questions": [
+    {
+      "id": "study-why-ca",
+      "category": "Study Plans",
+      "question": "Why do you want to study in Canada?",
+      "suggestedAnswer": "I want to study in Canada because {{why_this_field}}. The Canadian education system offers superior {{field_of_study}} programs and opportunities that will help me achieve my career goals in a way that is not available in {{country_of_residence}}.",
+      "guidance": "Explain what Canada offers that your home country cannot. Focus on educational advantages, not immigration intent.",
+      "tooltip": "Officers assess genuine educational motivation vs. immigration intent.",
+      "priority": "high",
+      "variations": [
+        "What are your reasons for pursuing your education in Canada?",
+        "Could you elaborate on your decision to select Canada for your studies?",
+        "What specifically attracts you to Canada as a country for higher education?",
+        "Why have you chosen Canada over other countries for your academic pursuits?"
+      ]
+    },
+    {
+      "id": "study-major",
+      "category": "Study Plans",
+      "question": "What will be your major or field of study?",
+      "suggestedAnswer": "I will major in {{field_of_study}}.",
+      "guidance": "Be clear and specific about your major and intended specialization.",
+      "tooltip": "Demonstrates a well-thought-out educational plan.",
+      "priority": "high",
+      "variations": [
+        "Which academic discipline do you intend to pursue?",
+        "Could you specify your intended area of specialization?",
+        "What is the particular field of study you plan to enroll in?",
+        "In which major will you be undertaking your program?"
+      ]
+    },
+    {
+      "id": "study-why-field",
+      "category": "Study Plans",
+      "question": "Why did you choose this field of study?",
+      "suggestedAnswer": "I chose {{field_of_study}} because {{why_this_field}}. This field aligns with my interests and long-term career aspirations.",
+      "guidance": "Show genuine passion and connection to your field. Explain what drew you to it.",
+      "tooltip": "Demonstrates thoughtful motivation for field selection.",
+      "priority": "high",
+      "variations": [
+        "What motivated you to select this specific academic discipline?",
+        "Could you explain your reasoning behind choosing this particular field?",
+        "What led you to decide on this area for your advanced studies?",
+        "Why is this field of study of particular interest to you?"
+      ]
+    },
+    {
+      "id": "study-previous-education",
+      "category": "Study Plans",
+      "question": "Tell us about your previous education.",
+      "suggestedAnswer": "I completed my {{current_education_level}} with a GPA of {{previous_gpa}}. {{previous_education_details}} This educational foundation has prepared me well for advanced studies.",
+      "guidance": "Describe your educational timeline, GPA, and notable achievements.",
+      "tooltip": "Officers verify academic preparation for higher education.",
+      "priority": "high",
+      "variations": [
+        "Could you provide a summary of your academic background?",
+        "Please describe your educational history prior to this application.",
+        "What are your qualifications from your earlier schooling?",
+        "Can you outline your past academic achievements and institutions?"
+      ]
+    },
+    {
+      "id": "study-continuation-ca",
+      "category": "Study Plans",
+      "question": "Why are you planning to continue your education in Canada? Can you not continue in your home country?",
+      "suggestedAnswer": "While I could continue my education in {{country_of_residence}}, Canada offers superior {{field_of_study}} programs, world-renowned professors, and research opportunities that are unmatched. This will significantly enhance my qualifications.",
+      "guidance": "Be honest about limitations in your home country while explaining Canada-specific advantages.",
+      "tooltip": "Officers want to understand why Canadian education is specifically necessary.",
+      "priority": "high",
+      "variations": [
+        "What are your reasons for seeking further education in Canada, rather than pursuing it domestically?",
+        "Why have you opted to advance your studies in Canada, and what limitations prevent you from doing so in your home country?",
+        "Could you explain your choice to pursue your continued education abroad in Canada, and why similar opportunities are unavailable or less suitable at home?",
+        "What specific advantages does continuing your education in Canada offer you, compared to the options available in your country of origin?"
+      ]
+    },
+    {
+      "id": "study-goals-alignment",
+      "category": "Study Plans",
+      "question": "How will this study program relate to your past work or studies?",
+      "suggestedAnswer": "My {{intended_degree}} at {{primary_university}} will advance my knowledge in {{field_of_study}} and enable me to {{post_graduation_job_plans}}. This represents a clear progression from my previous experience.",
+      "guidance": "Draw a clear connection between your past and future, showing coherent progression.",
+      "tooltip": "Demonstrates a coherent educational and career plan.",
+      "priority": "high",
+      "variations": [
+        "In what ways does this academic program align with your prior educational or professional background?",
+        "Could you articulate the connection between your previous academic and work experiences and this chosen course of study?",
+        "How does this program serve as a natural progression from your former studies or work history?",
+        "What is the relevance of this program to your existing academic qualifications or professional experience?"
+      ]
+    },
+    {
+      "id": "uni-applications-count",
+      "category": "University Choice",
+      "question": "How many universities did you apply to?",
+      "suggestedAnswer": "I applied to {{total_universities_applied}} universities in total.",
+      "guidance": "State the exact number of universities you applied to.",
+      "tooltip": "Shows application selectivity and planning.",
+      "priority": "high",
+      "variations": [
+        "To how many educational institutions did you submit applications?",
+        "Could you state the total number of universities where you sought admission?",
+        "Aside from this institution, how many other universities did you apply to?",
+        "What was the extent of your university application process in terms of numbers?"
+      ]
+    },
+    {
+      "id": "uni-why-primary",
+      "category": "University Choice",
+      "question": "Why did you choose this university as your primary choice?",
+      "suggestedAnswer": "{{why_primary_university}} This university stands out because of its program strength, faculty expertise, and alignment with my academic and career goals.",
+      "guidance": "Explain what makes this university unique for you and your field.",
+      "tooltip": "Demonstrates genuine interest and informed decision-making.",
+      "priority": "high",
+      "variations": [
+        "What led you to designate this university as your top preference?",
+        "Could you explain your specific reasons for selecting this institution as your first choice?",
+        "Why is this particular university your preferred institution for study?",
+        "What factors influenced your decision to prioritize this university above others?"
+      ]
+    },
+    {
+      "id": "uni-research-details",
+      "category": "University Choice",
+      "question": "What do you know about your university's program?",
+      "suggestedAnswer": "{{university_knowledge}} I have researched the program curriculum, campus facilities, and community resources, and I am confident that this university is the right fit for me.",
+      "guidance": "Demonstrate detailed research about curriculum, facilities, professors, and campus life.",
+      "tooltip": "Shows genuine interest and preparation for arrival.",
+      "priority": "high",
+      "variations": [
+        "Could you describe your understanding of the curriculum for your chosen program at this university?",
+        "What specific details have you learned about the program you intend to pursue here?",
+        "Please share your knowledge regarding the academic structure and content of your program.",
+        "What information have you gathered about the specifics of your university program?"
+      ]
+    },
+    {
+      "id": "uni-faculty-knowledge",
+      "category": "University Choice",
+      "question": "What do you know about professors or faculty in your field?",
+      "suggestedAnswer": "I have researched faculty in the {{field_of_study}} department at {{primary_university}}. I am particularly interested in learning from professors who specialize in that field.",
+      "guidance": "Mention specific professors or show knowledge of faculty research areas.",
+      "tooltip": "Demonstrates genuine academic interest in the institution.",
+      "priority": "medium",
+      "variations": [
+        "Could you tell us about any faculty members or professors in your area of study whom you are familiar with?",
+        "What information have you gathered about the academic staff specializing in your chosen field at this institution?",
+        "Are you aware of any specific professors or faculty members relevant to your discipline here?",
+        "Please share what you know regarding the expertise or research of the faculty in your department."
+      ]
+    },
+    {
+      "id": "uni-location",
+      "category": "University Choice",
+      "question": "In which city is your university located?",
+      "suggestedAnswer": "{{primary_university}} is located in {{university_city_state}}.",
+      "guidance": "Mention city clearly. In the Canada, this is typically in Ontario, Quebec, British Columbia, or other provinces.",
+      "tooltip": "Verifies university location knowledge and familiarity with Canadian geography.",
+      "priority": "high",
+      "variations": [
+        "In which city is your prospective university situated?",
+        "Could you please specify the urban center where your chosen university is located?",
+        "Where is the campus of your academic institution geographically situated?",
+        "What is the city of location for the university you plan to attend?"
+      ]
+    },
+    {
+      "id": "academic-english-test",
+      "category": "Academic Capability",
+      "question": "What are your English proficiency test scores (TOEFL or IELTS)?",
+      "suggestedAnswer": "I achieved a score of {{ielts_score ? '{{ielts_score}}' : '{{toefl_score}}'}} on the {{english_proficiency_test}} exam, which demonstrates my readiness for university-level coursework in English.",
+      "guidance": "State your test scores confidently and explain what they mean for your academic readiness.",
+      "tooltip": "Test scores are mandatory verification of English proficiency.",
+      "priority": "high",
+      "variations": [
+        "Could you provide your scores from your English language proficiency examination (TOEFL or IELTS)?",
+        "What were the results of your standardized English test, such as TOEFL or IELTS?",
+        "Please share your official scores for the TOEFL or IELTS assessment.",
+        "What scores did you achieve on your English proficiency test (TOEFL or IELTS)?"
+      ]
+    },
+    {
+      "id": "academic-previous-gpa",
+      "category": "Academic Capability",
+      "question": "What was your GPA in your previous education?",
+      "suggestedAnswer": "My previous GPA was {{previous_gpa}}, which demonstrates my consistent academic performance and preparation for graduate-level work.",
+      "guidance": "State your GPA on the same scale as your previous institution.",
+      "tooltip": "Shows academic preparation for Canadian university standards.",
+      "priority": "high",
+      "variations": [
+        "Could you tell me your cumulative GPA from your prior academic studies?",
+        "What was your grade point average during your most recent educational program?",
+        "Please state your academic GPA from your previous schooling.",
+        "What was the GPA you earned in your last educational institution?"
+      ]
+    },
+    {
+      "id": "academic-english-medium",
+      "category": "Academic Capability",
+      "question": "Was your previous education conducted in English?",
+      "suggestedAnswer": "{{medium_of_instruction ? 'Yes, my previous education was conducted in English, which provides me a strong foundation for Canadian university studies.' : 'No, my education was not in English medium, however I have studied English extensively and achieved strong proficiency scores ({{english_proficiency_test}}: {{ielts_score ? ielts_score : toefl_score}}). I am well-prepared to succeed in English-medium academic coursework.'}}\n",
+      "guidance": "Answer honestly about your educational medium.",
+      "tooltip": "Determines English proficiency level and need for support.",
+      "priority": "high",
+      "variations": [
+        "Was English the primary language of instruction for your prior academic program?",
+        "Did you receive your previous education through the medium of English?",
+        "Was the curriculum of your past studies delivered in English?",
+        "Was English used as the main teaching language in your previous educational experience?"
+      ]
+    },
+    {
+      "id": "academic-english-confidence",
+      "category": "Academic Capability",
+      "question": "How confident are you in your English ability?",
+      "suggestedAnswer": "I would rate my English proficiency at {{english_confidence_rating}} out of 10. I have the foundation needed to succeed in English-medium coursework.",
+      "guidance": "Be honest about your comfort level with academic English.",
+      "tooltip": "Self-assessment of English readiness for Canadian university.",
+      "priority": "high",
+      "variations": [
+        "How would you assess your confidence level in your English language skills?",
+        "On a scale of your own perception, how comfortable are you with your English proficiency?",
+        "What is your level of assurance regarding your English language capabilities?",
+        "How confident do you feel about your command of the English language?"
+      ]
+    },
+    {
+      "id": "academic-english-management",
+      "category": "Academic Capability",
+      "question": "How will you manage studying in English at a Canadian university?",
+      "suggestedAnswer": "{{how_you_will_manage_english}} I am committed to utilizing all available resources to ensure my academic success.",
+      "guidance": "Explain your strategies such as tutoring, study groups, or academic support services.",
+      "tooltip": "Demonstrates readiness to handle academic English challenges.",
+      "priority": "high",
+      "variations": [
+        "What is your strategy for adapting to an all-English academic environment in Canada?",
+        "How do you plan to successfully navigate your studies conducted entirely in English at a Canadian institution?",
+        "Could you explain your approach to studying effectively in English at a Canadian university?",
+        "What steps will you take to ensure you can manage academic work in English in Canada?"
+      ]
+    },
+    {
+      "id": "academic-ca-comparison",
+      "category": "Academic Capability",
+      "question": "Why pursue your degree in Canada instead of other countries?",
+      "suggestedAnswer": "Canada offers a unique educational experience in {{field_of_study}} and {{primary_university}} specifically provides {{why_primary_university}}. While other countries have excellent programs, Canada aligns best with my career goals.",
+      "tooltip": "Shows thoughtful analysis of educational options.",
+      "priority": "medium",
+      "variations": [
+        "What are your specific reasons for choosing Canada as your study destination over other nations?",
+        "Could you elaborate on why you prefer to obtain your degree in Canada rather than elsewhere?",
+        "What motivates your decision to pursue your education in Canada, as opposed to other countries?",
+        "Why have you opted for Canada to undertake your studies, rather than another international destination?"
+      ]
+    },
+    {
+      "id": "academic-struggle-support",
+      "category": "Academic Capability",
+      "question": "What will you do if you struggle academically in the first semester?",
+      "suggestedAnswer": "{{academic_success_strategy}} I will also seek support from {{primary_university}} academic resources, meet with professors during office hours, form study groups, and utilize tutoring services if needed.",
+      "guidance": "Show proactive planning and knowledge of university support systems.",
+      "tooltip": "Demonstrates realistic expectations and commitment to success.",
+      "priority": "medium",
+      "variations": [
+        "What is your plan of action if you encounter academic difficulties during your initial semester?",
+        "How would you address any academic challenges you might face in your first term?",
+        "What measures will you take if you find yourself struggling with your studies in the opening semester?",
+        "Should you experience academic struggles in your first semester, what support mechanisms would you utilize?"
+      ]
+    },
+    {
+      "id": "finance-sponsor-identity",
+      "category": "Financial Status",
+      "question": "Who is your financial sponsor?",
+      "suggestedAnswer": "My {{sponsor_relationship}} will sponsor my education.",
+      "guidance": "Identify your main source of financial support clearly.",
+      "tooltip": "Critical to establish who is funding your education.",
+      "priority": "high",
+      "variations": [
+        "Could you please identify the individual or entity responsible for your financial support?",
+        "Who will be funding your education and living expenses?",
+        "Who is providing the financial backing for your studies?",
+        "Please state the name of your financial guarantor."
+      ]
+    },
+    {
+      "id": "finance-sponsor-occupation",
+      "category": "Financial Status",
+      "question": "What is your sponsor's occupation?",
+      "suggestedAnswer": "My sponsor works as a {{sponsor_occupation}}.",
+      "guidance": "Describe the primary source of their income clearly.",
+      "tooltip": "Assesses financial stability and income source.",
+      "priority": "high",
+      "variations": [
+        "What is the profession or job title of your financial sponsor?",
+        "Could you describe your sponsor's line of work?",
+        "What type of employment does your financial guarantor hold?",
+        "What is your sponsor's current job or occupation?"
+      ]
+    },
+    {
+      "id": "finance-sponsor-income",
+      "category": "Financial Status",
+      "question": "What is your sponsor's annual income in USD?",
+      "suggestedAnswer": "My sponsor's annual income is approximately ${{sponsor_annual_income}}, which is sufficient to cover my education costs.",
+      "guidance": "Provide in USD, converting from local currency using current exchange rates.",
+      "tooltip": "Income is critical to prove financial capability for the full program duration.",
+      "priority": "high",
+      "variations": [
+        "Could you please state your sponsor's total annual earnings in US dollars?",
+        "What is the yearly income of your financial sponsor, expressed in USD?",
+        "In USD, what is the reported annual revenue of your sponsor?",
+        "Can you provide the figure for your sponsor's yearly income in US currency?"
+      ]
+    },
+    {
+      "id": "finance-income-proof",
+      "category": "Financial Status",
+      "question": "Do you have proof of your sponsor's income?",
+      "suggestedAnswer": "Yes, I have prepared comprehensive income documentation including {{sponsor_income_proof}} to verify my sponsor's financial capability for funding my education in Canada.",
+      "guidance": "Prepare tax returns (last 2 years), salary certificates, or business documents.",
+      "tooltip": "Essential documents for visa officer verification.",
+      "priority": "high",
+      "variations": [
+        "Do you possess documentation verifying your sponsor's income?",
+        "Can you present evidence of your financial sponsor's earnings?",
+        "Is proof of your sponsor's annual income available?",
+        "Do you have documents to substantiate your sponsor's financial capacity?"
+      ]
+    },
+    {
+      "id": "finance-program-cost",
+      "category": "Financial Status",
+      "question": "What is the total estimated cost of your program?",
+      "suggestedAnswer": "The total estimated cost of my {{intended_degree}} program is approximately ${{total_program_cost}} per year, including tuition, fees, accommodation, and living expenses.",
+      "guidance": "Break down costs into components to show you've researched thoroughly.",
+      "tooltip": "Cost breakdown shows realistic planning.",
+      "priority": "high",
+      "variations": [
+        "What is the comprehensive estimated expenditure for your academic program?",
+        "Could you specify the overall anticipated cost of your entire course of study?",
+        "What are the projected total expenses for the duration of your program?",
+        "Please state the estimated full cost associated with your educational program."
+      ]
+    },
+    {
+      "id": "finance-available-funds",
+      "category": "Financial Status",
+      "question": "How much funding can you access for your education?",
+      "suggestedAnswer": "I have approximately ${{available_funds}} available for my education from my sponsor and personal resources.",
+      "guidance": "Include sponsor savings, family gifts, and any personal funds.",
+      "tooltip": "Must cover program cost to demonstrate financial capability.",
+      "priority": "high",
+      "variations": [
+        "How much financial support do you have readily accessible for your studies?",
+        "What is the total amount of funding you can utilize for your education?",
+        "Could you indicate the sum of resources you can access for your academic pursuits?",
+        "What volume of funds is at your disposal to cover your educational expenses?"
+      ]
+    },
+    {
+      "id": "finance-funding-plan",
+      "category": "Financial Status",
+      "question": "How do you plan to fund your entire education?",
+      "suggestedAnswer": "My {{sponsor_relationship}} will provide approximately ${{available_funds}}, which covers the full cost of my education. {{scholarship_status ? 'I have also received a {{scholarship_type}} scholarship of ${{scholarship_amount}} from {{primary_university}}, which further strengthens my financial capability.' : 'I am financially supported by my sponsor and do not require additional scholarship funding.'}}",
+      "guidance": "Show complete picture: sponsor funds, scholarship (if any), and any personal contribution.",
+      "tooltip": "Officers need to see complete financing for all program years.",
+      "priority": "high",
+      "variations": [
+        "What is your strategy for financing your complete education?",
+        "How do you intend to cover the full costs of your academic program?",
+        "Can you explain your plan for funding your entire course of study?",
+        "What sources and methods will you use to finance your education comprehensively?"
+      ]
+    },
+    {
+      "id": "finance-funds-proof",
+      "category": "Financial Status",
+      "question": "Do you have proof of available funds?",
+      "suggestedAnswer": "Yes, I have prepared comprehensive proof of available funds including {{funds_availability_proof}} that demonstrate my sponsor's and my financial capability to fund the complete cost of my studies in Canada.",
+      "guidance": "Prepare bank statements, affidavits of support, and investment documents.",
+      "tooltip": "Mandatory for CAS (Confirmation of Acceptance for Studies) and visa officer verification.",
+      "priority": "high",
+      "variations": [
+        "Do you have documentary evidence of your available funds?",
+        "Can you provide verification of the funds you have access to?",
+        "Is there proof demonstrating the availability of your financial resources?",
+        "Do you possess documents to confirm your accessible funding?"
+      ]
+    },
+    {
+      "id": "finance-scholarship-status",
+      "category": "Financial Status",
+      "question": "Did you receive a scholarship?",
+      "suggestedAnswer": "{{scholarship_status ? 'Yes, I received a {{scholarship_type}} scholarship from {{primary_university}}, which significantly supports my education financially.' : 'No, I did not receive a scholarship, but my education is fully funded through my sponsor and personal resources.'}}",
+      "guidance": "Answer honestly about scholarship status.",
+      "tooltip": "Scholarships strengthen financial capability profile.",
+      "priority": "high",
+      "variations": [
+        "Have you been awarded any scholarships?",
+        "Did you receive any financial aid in the form of a scholarship?",
+        "Was a scholarship granted to you?",
+        "Are you a recipient of a scholarship?"
+      ]
+    },
+    {
+      "id": "finance-scholarship-amount",
+      "category": "Financial Status",
+      "question": "What is your scholarship amount?",
+      "suggestedAnswer": "I received a ${{scholarship_amount}} {{scholarship_type}} scholarship from {{primary_university}}.",
+      "guidance": "State the annual or total amount as specified in your scholarship letter.",
+      "tooltip": "Shows partial or full financial support from university.",
+      "priority": "high",
+      "skipIf": [
+        {
+          "field": "scholarship_status",
+          "notEquals": true
+        }
+      ],
+      "variations": [
+        "What is the monetary value of your scholarship?",
+        "Could you state the total sum of your scholarship award?",
+        "What is the financial worth of the scholarship you received?",
+        "How much funding does your scholarship provide?"
+      ]
+    },
+    {
+      "id": "finance-scholarship-type",
+      "category": "Financial Status",
+      "question": "What type of scholarship did you receive?",
+      "suggestedAnswer": "My scholarship is {{scholarship_type}}, which significantly reduces my financial burden for my education.",
+      "guidance": "Specify if it's merit-based, need-based, full tuition, etc.",
+      "tooltip": "Shows academic excellence or financial strength.",
+      "priority": "medium",
+      "skipIf": [
+        {
+          "field": "scholarship_status",
+          "notEquals": true
+        }
+      ],
+      "variations": [
+        "Could you describe the nature of the scholarship you were awarded?",
+        "What category does your scholarship fall under?",
+        "What kind of scholarship did you receive?",
+        "Can you specify the type of scholarship granted to you?"
+      ]
+    },
+    {
+      "id": "finance-shortfall-backup",
+      "category": "Financial Status",
+      "question": "What if your sponsor cannot support you fully?",
+      "suggestedAnswer": "{{funding_shortfall_plan}} I have researched alternative funding and identified multiple backup plans to ensure I can complete my education.",
+      "guidance": "Describe alternative sources: loans, additional family funds, part-time work, etc.",
+      "tooltip": "Backup plans show maturity and serious commitment.",
+      "priority": "medium",
+      "variations": [
+        "What alternative financial arrangements do you have if your sponsor's support is insufficient?",
+        "Should your sponsor be unable to provide full support, what is your contingency plan?",
+        "In the event your sponsor cannot fully fund your education, what is your backup plan?",
+        "If there's a shortfall in your sponsor's support, what is your plan to cover it?"
+      ]
+    },
+    {
+      "id": "study-program-career-fit",
+      "category": "Study Plans",
+      "question": "How does this course fit your long-term career goals?",
+      "suggestedAnswer": "My long-term career goal is to {{post_graduation_job_plans}}. This {{intended_degree}} in {{field_of_study}} is the ideal stepping stone to achieve this. The program will equip me with the {{why_this_field}} skills that are directly needed for this role.",
+      "guidance": "Draw a clear connection between the specific program and your career objectives.",
+      "tooltip": "Demonstrates that your study plans are purposeful and aligned with realistic career goals.",
+      "priority": "high",
+      "variations": [
+        "How does this academic program align with your long-term professional aspirations?",
+        "In what way will pursuing this course contribute to achieving your future career objectives?",
+        "Can you explain the relevance of this study program to your intended career path after graduation?",
+        "How do you envision this specific course advancing your progress towards your ultimate career goals?"
+      ]
+    },
+    {
+      "id": "study-professional-preparation",
+      "category": "Study Plans",
+      "question": "How does your program prepare you for professional practice or registration in your home country or internationally?",
+      "suggestedAnswer": "This program is structured to meet international professional standards in {{field_of_study}}. Upon graduation, I will be eligible to pursue professional credentials and registrations such as {{field_of_study}} certifications, which are recognized in {{country_of_residence}} and internationally.",
+      "guidance": "Research the professional standards and certifications in your field for your home country.",
+      "tooltip": "Shows that your education has practical professional value beyond the degree itself.",
+      "priority": "high",
+      "variations": [
+        "How will this program equip you for professional accreditation or practice in your home country or internationally?",
+        "What specific aspects of your chosen course of study prepare you for professional qualification or registration globally or in your native country?",
+        "To what extent does this curriculum prepare you for entry into professional practice or meeting licensing requirements in your country of origin or abroad?",
+        "Could you describe how your program will ready you for the professional standards and registration processes pertinent to your field, either domestically or internationally?"
+      ]
+    },
+    {
+      "id": "finance-personal-savings",
+      "category": "Financial Status",
+      "question": "Are you contributing any personal savings? If yes, what is the source?",
+      "suggestedAnswer": "{{personal_savings_contribution}}",
+      "guidance": "Be honest about personal financial contributions. If you have savings, explain the legitimate source.",
+      "tooltip": "Personal contributions strengthen your financial profile and show commitment.",
+      "priority": "medium",
+      "skipIf": [
+        {
+          "field": "personal_savings_contribution",
+          "equals": ""
+        }
+      ],
+      "variations": [
+        "Are you utilizing any of your own funds for this endeavor? If so, what is the origin of these savings?",
+        "Will you be contributing personal financial resources towards your studies? If yes, please specify their source.",
+        "Do you have personal savings that will be used to finance your education? If so, where do these funds come from?",
+        "Are you planning to fund a portion of your studies with your own assets? If applicable, could you disclose the source of these funds?"
+      ]
+    },
+    {
+      "id": "finance-part-time-work",
+      "category": "Financial Status",
+      "question": "Do you plan to work part-time while studying? How will you balance it with your studies?",
+      "suggestedAnswer": "{{part_time_work_plans}} I understand that Canadian student visa regulations allow international students to work up to 20 hours per week during school terms, and I plan to strictly adhere to these limitations to prioritize my academic success.",
+      "guidance": "Explain your work plans realistically and demonstrate awareness of visa work restrictions.",
+      "tooltip": "Shows realistic planning and understanding of visa regulations and academic priorities.",
+      "priority": "high",
+      "variations": [
+        "Do you intend to seek part-time employment during your studies? If so, what is your strategy for managing this alongside your academic commitments?",
+        "What are your plans regarding part-time work while you are studying? How will you ensure it doesn't interfere with your academic progress?",
+        "If you anticipate working part-time, how do you propose to balance these responsibilities with the demands of your coursework?",
+        "Are you considering part-time employment during your program? How will you maintain focus on your studies while working?"
+      ]
+    },
+    {
+      "id": "postgrad-post-study-work-visa",
+      "category": "Post-Graduation Plans",
+      "question": "Do you plan to use the post-study work visa (PSW)? If yes, how does it fit into your career plan?",
+      "suggestedAnswer": "{{post_study_work_visa_plans ? 'I plan to {{post_study_work_visa_plans}}. However, after this temporary work period, I plan to return to {{country_of_residence}} and pursue my long-term career goals.' : 'I plan to return to {{country_of_residence}} immediately after completing my studies and begin my {{post_graduation_job_plans}}.'}} My ultimate goal is to {{post_graduation_job_plans}} in my home country.",
+      "guidance": "If planning to use PSW, explain how it's a stepping stone toward your ultimate career goals in your home country.",
+      "tooltip": "Post-study work is a temporary visa requiring clear connection to home country plans.",
+      "priority": "high",
+      "variations": [
+        "Do you intend to apply for a post-study work visa? If so, how does this fit into your overall career development plan?",
+        "What are your plans concerning post-graduation work authorization? How will such an experience align with your professional goals?",
+        "If you choose to utilize the post-study work visa option, how will it serve your long-term career objectives?",
+        "Could you elaborate on how a potential post-study work period would integrate with your envisioned career trajectory?"
+      ]
+    },
+    {
+      "id": "postgrad-healthcare-management",
+      "category": "Post-Graduation Plans",
+      "question": "How will you manage healthcare while studying abroad?",
+      "suggestedAnswer": "{{healthcare_management_abroad}} I understand that as an international student, I will have access to provincial health services in Canada and will register with a local healthcare provider upon arrival. I am aware of health insurance requirements for international students and will maintain appropriate coverage throughout my studies.",
+      "guidance": "Demonstrate knowledge of Canadian provincial health systems and planning for health emergencies.",
+      "tooltip": "Shows practical preparation and understanding of health support systems available.",
+      "priority": "medium",
+      "variations": [
+        "What arrangements have you made for your healthcare needs while studying abroad?",
+        "How do you plan to access medical services and manage your health coverage during your time as an international student?",
+        "Could you outline your strategy for ensuring you have adequate healthcare provision while pursuing your studies in this country?",
+        "What provisions have you put in place to manage any health-related matters while you are studying internationally?"
+      ]
+    },
+    {
+      "id": "background-student-visa-conditions",
+      "category": "Background",
+      "question": "Do you understand the conditions of your student visa, including work limitations?",
+      "suggestedAnswer": "{{student_visa_conditions_understanding}} I am aware that as a student visa holder in Canada, I am permitted to work up to 20 hours per week during school terms and full-time during official university breaks. I also understand the Post-Graduation Work Permit (PGWP) eligibility and conditions. I understand these are strict conditions and I am committed to complying with all visa regulations.",
+      "guidance": "Demonstrate clear understanding of specific UK student visa work restrictions and conditions.",
+      "tooltip": "Critical for credibility - shows you've researched visa obligations and plan to comply.",
+      "priority": "high",
+      "variations": [
+        "Are you fully aware of the terms and conditions associated with your student visa, particularly regarding employment restrictions?",
+        "Do you understand the obligations and limitations of your student visa, including what you are permitted to do concerning work?",
+        "Are you familiar with the specific requirements of your student visa, especially those pertaining to part-time work or other employment?",
+        "Have you familiarized yourself with the stipulations of your student visa, including any guidelines on working while studying?"
+      ]
+    },
+    {
+      "id": "postgrad-career-goals",
+      "category": "Post-Graduation Plans",
+      "question": "What are your career goals after graduation?",
+      "suggestedAnswer": "{{post_graduation_job_plans}} I plan to pursue this career after completing my {{intended_degree}}.",
+      "guidance": "Describe specific, realistic career goals aligned with your degree.",
+      "tooltip": "Clear post-graduation plans strengthen student visa application.",
+      "priority": "high",
+      "variations": [
+        "What are your professional aspirations immediately following the completion of your degree?",
+        "Could you describe your intended career path once you graduate from this program?",
+        "What kind of professional roles or industries do you aim to pursue after obtaining your qualification?",
+        "What are your key career objectives that you hope to achieve upon receiving your degree?"
+      ]
+    },
+    {
+      "id": "postgrad-return-intent",
+      "category": "Post-Graduation Plans",
+      "question": "Do you plan to return to your home country after graduation?",
+      "suggestedAnswer": "{{plan_to_return_home ? 'Yes, I plan to return to {{country_of_residence}} immediately after completing my studies to pursue my academic and career goals.' : 'I may initially pursue temporary work experience through a post-study work visa, but my long-term intention is to return to {{country_of_residence}}.'}} I have strong ties to my home country through my {{family_in_home_country ? 'close family members in {{country_of_residence}}' : 'professional and personal networks in {{country_of_residence}}'}} that make returning home a priority.",
+      "guidance": "Be honest about your intent. Strong home country ties provide credibility.",
+      "tooltip": "Intent to return is critical for student visa officer assessment.",
+      "priority": "high",
+      "skipIf": [],
+      "variations": [
+        "Do you intend to return to your country of origin after completing your academic program?",
+        "What are your plans for returning to your native country once you have graduated?",
+        "Will you be relocating back to your home country after the successful completion of your studies?",
+        "Do you envision returning to reside in your home country once your degree is conferred?"
+      ]
+    },
+    {
+      "id": "postgrad-home-ties",
+      "category": "Post-Graduation Plans",
+      "question": "What are your ties to your home country?",
+      "suggestedAnswer": "I have multiple strong ties to {{country_of_residence}} that make returning home important to me. {{family_in_home_country ? 'My family is based in {{country_of_residence}} - {{family_details}}.' : 'I have professional networks and personal commitments in {{country_of_residence}}.'}} {{property_or_assets_home ? 'Additionally, my family has property and assets in {{country_of_residence}}.' : ''}} After completing my {{intended_degree}}, I plan to {{post_graduation_job_plans}}.",
+      "guidance": "Mention family, property, business, and career opportunities.",
+      "tooltip": "Establishes personal and financial ties to home country.",
+      "priority": "high",
+      "skipIf": [
+        {
+          "field": "plan_to_return_home",
+          "equals": false
+        }
+      ],
+      "variations": [
+        "What strong connections or commitments do you have to your home country?",
+        "Could you articulate the personal, familial, or professional links you maintain with your native country?",
+        "What are the significant reasons or relationships that would encourage your return to your country of origin?",
+        "Please describe any substantial affiliations or responsibilities that bind you to your home country."
+      ]
+    },
+    {
+      "id": "postgrad-family-connections",
+      "category": "Post-Graduation Plans",
+      "question": "Do you have close family in your home country?",
+      "suggestedAnswer": "{{family_in_home_country ? 'Yes, I have close family in {{country_of_residence}}: {{family_details}}. These family ties are very important to me and provide strong motivation to return home after my studies.' : 'Most of my family is dispersed, but I have strong professional and personal connections to {{country_of_residence}} that are important to me.'}}",
+      "guidance": "Describe parents, siblings, or other family ties.",
+      "tooltip": "Critical indicator of home country attachment.",
+      "priority": "high",
+      "skipIf": [
+        {
+          "field": "plan_to_return_home",
+          "equals": false
+        }
+      ],
+      "variations": [
+        "Are your immediate family members residing in your country of origin?",
+        "Do you have immediate family dependents currently living in your native country?",
+        "Could you confirm if your immediate family still lives in your home country?",
+        "Where do your immediate family members currently reside?"
+      ]
+    },
+    {
+      "id": "postgrad-property",
+      "category": "Post-Graduation Plans",
+      "question": "Do you have property or assets in your home country?",
+      "suggestedAnswer": "{{property_or_assets_home ? 'Yes, my family owns property in {{country_of_residence}} that represents significant financial and personal wealth. This reinforces my commitment to eventually returning home.' : 'My family has investments and financial assets in {{country_of_residence}} that represent our financial ties to our home country.'}}",
+      "guidance": "Land, house, or business ownership shows financial ties.",
+      "tooltip": "Financial ties strengthen return home commitment.",
+      "priority": "medium",
+      "skipIf": [
+        {
+          "field": "plan_to_return_home",
+          "equals": false
+        }
+      ],
+      "variations": [
+        "Are there any significant assets or properties you own in your country of origin?",
+        "Do you possess any real estate or substantial financial holdings in your native country?",
+        "Could you elaborate on any properties or significant assets you hold in your home country?",
+        "What financial ties, such as property or assets, do you maintain in your country of residence?"
+      ]
+    },
+    {
+      "id": "postgrad-ca-stay-consideration",
+      "category": "Post-Graduation Plans",
+      "question": "Are you considering staying in Canada after graduation?",
+      "suggestedAnswer": "{{consider_staying_ca ? 'I may pursue a post-study work visa to gain professional experience in Canada initially, as outlined in {{post_study_work_visa_plans}}, but my ultimate intention is to return to {{country_of_residence}}.' : 'My primary goal is to complete my studies and return to my home country to pursue my career goals.'}}",
+      "guidance": "If considering PSW or other work visas, frame as temporary work experience before returning home.",
+      "tooltip": "Short-term Canada work followed by home country return demonstrates genuine student intent.",
+      "priority": "high",
+      "skipIf": [
+        {
+          "field": "plan_to_return_home",
+          "equals": true
+        }
+      ],
+      "variations": [
+        "What are your plans following the completion of your studies in Canada?",
+        "Do you intend to remain in Canada once your academic program concludes?",
+        "Could you describe your intentions for after you graduate from your program here?",
+        "What are your long-term plans regarding your presence in Canada post-graduation?"
+      ]
+    },
+    {
+      "id": "background-previous-ca-stays",
+      "category": "Background",
+      "question": "Have you visited Canada before?",
+      "suggestedAnswer": "{{previous_ca_visits ? 'Yes, I have previously visited Canada, which gave me direct experience with the country and strengthened my commitment to studying here.' : 'No, I have not visited Canada before, but I have conducted thorough research about Canadian universities, the education system, and student life to prepare myself well for this transition.'}}",
+      "guidance": "Answer honestly about travel history.",
+      "tooltip": "Checks travel experience and visa history.",
+      "priority": "medium",
+      "variations": [
+        "Have you previously traveled to Canada?",
+        "Is this your first visit to Canada?",
+        "Do you have any prior history of travel to Canada?",
+        "Could you confirm if you have entered Canada on any previous occasions?"
+      ]
+    },
+    {
+      "id": "background-ca-visit-details",
+      "category": "Background",
+      "question": "When did you visit Canada and what was the purpose?",
+      "suggestedAnswer": "I visited {{primary_university}} and other Canadian cities to tour campuses, research academic programs, and experience university life firsthand. This visit greatly strengthened my commitment to studying at {{primary_university}} and helped me understand what to expect as an international student in Canada.",
+      "guidance": "Provide approximate dates and mention campus tours or tourism.",
+      "tooltip": "Verifies legitimate travel and interest in Canada.",
+      "priority": "medium",
+      "skipIf": [
+        {
+          "field": "previous_ca_visits",
+          "equals": false
+        }
+      ],
+      "variations": [
+        "Please specify the dates and reasons for your previous trips to Canada?",
+        "Could you provide information on the timing and objective of your prior visits to Canada?",
+        "When did your last visit to Canada occur, and what was its primary purpose?",
+        "For your previous entry into Canada, what were the dates and the nature of your visit?"
+      ]
+    },
+    {
+      "id": "background-visa-refusal",
+      "category": "Background",
+      "question": "Have you ever been denied any visa?",
+      "suggestedAnswer": "{{visa_refusal_history ? 'Yes, I was previously denied a visa, and I understand this will be carefully reviewed by the visa officer.' : 'No, I have never been denied a visa to any country, and I have a clean immigration record.'}}",
+      "guidance": "Honesty is critical - this will be verified in your records.",
+      "tooltip": "Previous refusals are reviewed carefully.",
+      "priority": "high",
+      "variations": [
+        "Have you ever experienced a visa rejection from any country?",
+        "Has an immigration authority ever refused you a visa?",
+        "Could you confirm if you have ever been denied entry or a visa to any nation?",
+        "Have there been any instances where a visa application of yours was not approved?"
+      ]
+    },
+    {
+      "id": "background-visa-refusal-explanation",
+      "category": "Background",
+      "question": "Explain the visa refusal and what has changed.",
+      "suggestedAnswer": "I was previously denied a {{other_countries_visa_refusal ? 'visa to another country' : 'student visa'}} because {{visa_refusal_history ? 'of concerns regarding my documentation/financial capability/application details.' : ''}} Since then, my circumstances have significantly improved. I have: (1) Secured admission to {{primary_university}} with a strong academic profile, (2) Demonstrated comprehensive financial capability with bank statements and sponsor documentation, and (3) Established clear intent to study through detailed research and university engagement. I am now clearly eligible for a Canada student visa.",
+      "guidance": "Honestly explain the reason and how circumstances have improved.",
+      "tooltip": "Demonstrates addressing previous concerns.",
+      "priority": "high",
+      "skipIf": [
+        {
+          "field": "visa_refusal_history",
+          "equals": false
+        }
+      ],
+      "variations": [
+        "Could you elaborate on the circumstances of the visa refusal and what has since been addressed?",
+        "Please provide details regarding the denial and describe any relevant changes since then.",
+        "What led to that visa rejection, and how have those issues been resolved or changed?",
+        "Explain the reasons for the previous visa denial and outline what is different in your current situation."
+      ]
+    },
+    {
+      "id": "background-criminal-record",
+      "category": "Background",
+      "question": "Do you have any criminal convictions?",
+      "suggestedAnswer": "{{criminal_record ? 'I am required to disclose criminal history to Canadian Visas and Immigration (IRCC), and I have documentation regarding my circumstances.' : 'No, I do not have any criminal record, and I have maintained clean legal standing throughout my life.'}}",
+      "guidance": "Always answer truthfully - criminal history triggers security reviews.",
+      "tooltip": "Criminal history is grounds for visa denial.",
+      "priority": "high",
+      "skipIf": [
+        {
+          "field": "criminal_record",
+          "equals": false
+        }
+      ],
+      "variations": [
+        "Have you ever been convicted of a criminal offense?",
+        "Do you have any past criminal convictions on record?",
+        "Can you confirm if you possess a criminal record?",
+        "Have there been any instances where you were found guilty of a criminal act?"
+      ]
+    },
+    {
+      "id": "background-ca-immigration-issues",
+      "category": "Background",
+      "question": "Do you have any legal issues in Canada?",
+      "suggestedAnswer": "{{any_ca_immigration_issues ? 'I have legal issues to disclose to the Canadian immigration authorities, and I have documentation prepared.' : 'No, I have no legal issues in Canada and intend to maintain full compliance with all Canadian laws as a student.'}}",
+      "guidance": "Disclose any arrests, legal violations, or previous Canadian visa issues if applicable.",
+      "tooltip": "Security clearance and admissibility requirement.",
+      "priority": "high",
+      "skipIf": [
+        {
+          "field": "any_ca_immigration_issues",
+          "equals": false
+        }
+      ],
+      "variations": [
+        "Are there any ongoing legal or immigration matters concerning you in Canada?",
+        "Have you encountered any legal difficulties or immigration-related problems while in Canada?",
+        "Could you disclose any existing legal entanglements or immigration challenges within Canada?",
+        "Are you currently involved in any legal proceedings or immigration disputes in Canada?"
+      ]
+    },
+    {
+      "id": "background-visa-overstay",
+      "category": "Background",
+      "question": "Have you ever overstayed a visa in any country?",
+      "suggestedAnswer": "{{previous_overstay ? 'Yes, I must disclose a previous visa overstay and understand this is a serious immigration matter that will be reviewed carefully by the Canadian authorities.' : 'No, I have never overstayed a visa and have maintained strict compliance with all visa terms and departure requirements.'}}",
+      "guidance": "Answer truthfully - overstays are serious immigration violations.",
+      "tooltip": "Overstays can result in visa denials and bans.",
+      "priority": "high",
+      "skipIf": [
+        {
+          "field": "previous_overstay",
+          "equals": false
+        }
+      ],
+      "variations": [
+        "Have you ever exceeded the permitted duration of a visa in any nation?",
+        "Have you ever remained in a country beyond the authorized period of your visa?",
+        "Could you confirm if you have ever overstayed a visa in any foreign country?",
+        "Was there ever an occasion when you stayed past your visa's expiry date in any country?"
+      ]
+    },
+    {
+      "id": "background-other-visa-denials",
+      "category": "Background",
+      "question": "Have you been denied a visa to any other country?",
+      "suggestedAnswer": "{{other_countries_visa_refusal ? 'Yes, I have been denied visas to other countries, and I understand the Canadian authorities will review these decisions carefully.' : 'No, I have not been denied visas to other countries and maintain a strong visa and travel record.'}}",
+      "guidance": "Visa refusals to other countries may indicate patterns that require explanation.",
+      "tooltip": "Visa refusals to other countries are reviewed carefully.",
+      "priority": "high",
+      "skipIf": [
+        {
+          "field": "other_countries_visa_refusal",
+          "equals": false
+        }
+      ],
+      "variations": [
+        "Has your application for a visa to another country ever been refused?",
+        "Have you previously experienced a visa denial from a different nation?",
+        "Do you have any history of a visa application being denied by another government?",
+        "To your knowledge, has any other country ever rejected your application for a visa?"
+      ]
+    }
+  ]
+}

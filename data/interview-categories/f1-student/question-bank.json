@@ -1,7 +1,7 @@
 {
   "categorySlug": "f1-student",
   "version": "2.0.0",
-  "lastUpdated": "2024-12-20",
+  "lastUpdated": "2026-03-27",
   "questions": [
     {
       "id": "study-why-us",
@@ -10,7 +10,13 @@
       "suggestedAnswer": "I want to study in the United States because {{why_this_field}}. The US education system offers superior {{field_of_study}} programs and opportunities that will help me achieve my career goals in a way that is not available in {{country_of_residence}}.",
       "guidance": "Explain what the US offers that your home country cannot. Focus on educational advantages, not immigration intent.",
       "tooltip": "Officers assess genuine educational motivation vs. immigration intent.",
-      "priority": "high"
+      "priority": "high",
+      "variations": [
+        "What are your reasons for pursuing your education in the United States?",
+        "Could you explain your rationale for selecting the United States as your study destination?",
+        "Why have you decided to undertake your academic pursuits specifically in America?",
+        "What motivates your choice to study in the U.S. rather than elsewhere?"
+      ]
     },
     {
       "id": "study-major",
@@ -19,7 +25,13 @@
       "suggestedAnswer": "I will major in {{field_of_study}}.",
       "guidance": "Be clear and specific about your major and intended specialization.",
       "tooltip": "Demonstrates a well-thought-out educational plan.",
-      "priority": "high"
+      "priority": "high",
+      "variations": [
+        "Which academic program do you intend to pursue?",
+        "What is your chosen discipline for your studies here?",
+        "Can you specify your intended area of academic concentration?",
+        "What course of study will you be undertaking?"
+      ]
     },
     {
       "id": "study-why-field",
@@ -28,7 +40,13 @@
       "suggestedAnswer": "I chose {{field_of_study}} because {{why_this_field}}. This field aligns with my interests and long-term career aspirations.",
       "guidance": "Show genuine passion and connection to your field. Explain what drew you to it.",
       "tooltip": "Demonstrates thoughtful motivation for field selection.",
-      "priority": "high"
+      "priority": "high",
+      "variations": [
+        "What led you to select this particular field for your studies?",
+        "Could you elaborate on your reasons for choosing this specific academic discipline?",
+        "What is your motivation behind pursuing this area of study?",
+        "Please explain your rationale for enrolling in this field of education."
+      ]
     },
     {
       "id": "study-previous-education",
@@ -37,7 +55,13 @@
       "suggestedAnswer": "I completed my {{current_education_level}} with a GPA of {{previous_gpa}}. {{previous_education_details}} This educational foundation has prepared me well for advanced studies.",
       "guidance": "Describe your educational timeline, GPA, and notable achievements.",
       "tooltip": "Officers verify academic preparation for higher education.",
-      "priority": "high"
+      "priority": "high",
+      "variations": [
+        "Could you please summarize your prior educational background and any notable academic accomplishments?",
+        "Provide an overview of your academic history and significant achievements.",
+        "What has been your educational journey so far, and what are your key academic successes?",
+        "Please share details regarding your previous schooling and any academic merits you've earned."
+      ]
     },
     {
       "id": "study-current-employer",
@@ -52,6 +76,12 @@
           "field": "current_employment_status",
           "equals": false
         }
+      ],
+      "variations": [
+        "Where are you currently employed?",
+        "Can you state the name of your present employer?",
+        "Who is the organization you are currently working for?",
+        "Could you tell us the name of your current company or institution of employment?"
       ]
     },
     {
@@ -67,6 +97,12 @@
           "field": "current_employment_status",
           "equals": false
         }
+      ],
+      "variations": [
+        "What is the total duration of your professional work experience?",
+        "Could you indicate the number of years you have worked professionally?",
+        "How long have you been employed in a professional capacity?",
+        "Please specify the total years of your relevant work experience?"
       ]
     },
     {
@@ -82,6 +118,12 @@
           "field": "current_employment_status",
           "equals": false
         }
+      ],
+      "variations": [
+        "In what ways does your professional experience connect with your intended course of study?",
+        "How will your past work experience inform or benefit your academic pursuits?",
+        "Can you explain the relevance of your work history to the program you wish to undertake?",
+        "Describe the alignment between your previous work and your chosen field of study."
       ]
     },
     {
@@ -91,7 +133,13 @@
       "suggestedAnswer": "While I could continue my education in {{country_of_residence}}, the United States offers superior {{field_of_study}} programs, world-renowned professors, and research opportunities that are unmatched. This will significantly enhance my qualifications.",
       "guidance": "Be honest about limitations in your home country while explaining US-specific advantages.",
       "tooltip": "Officers want to understand why US education is specifically necessary.",
-      "priority": "high"
+      "priority": "high",
+      "variations": [
+        "What are your specific reasons for choosing to pursue further education in the U.S., particularly if similar opportunities exist in your home country?",
+        "Could you explain your decision to advance your studies in America, and why your home country might not be suitable for these educational goals?",
+        "Why have you opted for the United States for your continued academic journey, especially considering the educational landscape in your native country?",
+        "Detail your rationale for seeking higher education in the U.S. at this stage, and clarify if comparable programs are available or suitable in your country of origin."
+      ]
     },
     {
       "id": "study-goals-alignment",
@@ -100,7 +148,13 @@
       "suggestedAnswer": "My {{intended_degree}} at {{primary_university}} will advance my knowledge in {{field_of_study}} and enable me to {{post_graduation_job_plans}}. This represents a clear progression from my previous experience.",
       "guidance": "Draw a clear connection between your past and future, showing coherent progression.",
       "tooltip": "Demonstrates a coherent educational and career plan.",
-      "priority": "high"
+      "priority": "high",
+      "variations": [
+        "How does this academic program align with your previous professional experience or educational background?",
+        "In what way will this course of study build upon your prior work or academic pursuits?",
+        "Explain the connection between your proposed study program and your existing work history or educational foundation.",
+        "How do you see this study program contributing to or extending your past studies or career path?"
+      ]
     },
     {
       "id": "uni-applications-count",
@@ -109,7 +163,13 @@
       "suggestedAnswer": "I applied to {{total_universities_applied}} universities in total.",
       "guidance": "State the exact number of universities you applied to.",
       "tooltip": "Shows application selectivity and planning.",
-      "priority": "high"
+      "priority": "high",
+      "variations": [
+        "To how many educational institutions did you submit applications?",
+        "What was the total number of universities you applied to for admission?",
+        "Could you state the quantity of applications you submitted to different schools?",
+        "Please inform us of the total count of universities where you sought admission."
+      ]
     },
     {
       "id": "uni-admits-count",
@@ -118,7 +178,13 @@
       "suggestedAnswer": "I received {{total_admits_received}} admission offers from universities.",
       "guidance": "State the number of acceptance letters you received.",
       "tooltip": "Indicates academic competitiveness and choices available.",
-      "priority": "high"
+      "priority": "high",
+      "variations": [
+        "How many universities offered you admission?",
+        "From how many institutions did you receive an acceptance offer?",
+        "What was the total number of admission offers you secured?",
+        "Could you specify the number of admission letters you obtained?"
+      ]
     },
     {
       "id": "uni-rejections-count",
@@ -127,7 +193,13 @@
       "suggestedAnswer": "{{waitlisted_universities ? 'Yes, I was waitlisted or rejected by some universities, but I received strong admissions from my preferred choices.' : 'I received admission from all universities I applied to or prioritized.'}}",
       "guidance": "Answer honestly, but frame rejections positively.",
       "tooltip": "Part of complete application picture.",
-      "priority": "medium"
+      "priority": "medium",
+      "variations": [
+        "Did any universities place you on a waitlist or deny your application?",
+        "Were there any institutions that did not offer you admission, or put you on a waitlist?",
+        "Can you share if you received any waitlist notifications or rejections from other schools?",
+        "What were the outcomes of your other university applications?"
+      ]
     },
     {
       "id": "uni-why-primary",
@@ -136,7 +208,13 @@
       "suggestedAnswer": "{{why_primary_university}} This university stands out because of its program strength, faculty expertise, and alignment with my academic and career goals.",
       "guidance": "Explain what makes this university unique for you and your field.",
       "tooltip": "Demonstrates genuine interest and informed decision-making.",
-      "priority": "high"
+      "priority": "high",
+      "variations": [
+        "What are your primary reasons for selecting this particular university?",
+        "Could you explain why this institution stands out as your top choice?",
+        "Why have you decided to attend this specific university above others?",
+        "What led you to choose this university as the one you wish to attend?"
+      ]
     },
     {
       "id": "uni-visited-before",
@@ -145,7 +223,13 @@
       "suggestedAnswer": "{{previous_us_visits ? 'Yes, I have visited the US previously, which helped me understand the environment.' : 'No, I have not visited the US before, but I have thoroughly researched {{primary_university}} through virtual tours, faculty websites, and student testimonials.'}}",
       "guidance": "If visited, explain what you learned. If not, show detailed knowledge through research.",
       "tooltip": "Officers assess your commitment and preparation.",
-      "priority": "high"
+      "priority": "high",
+      "variations": [
+        "Do you have any previous travel experience to the United States?",
+        "Is this your first time coming to America?",
+        "Have you previously traveled to the U.S. for any reason?",
+        "Have you ever visited the United States prior to this?"
+      ]
     },
     {
       "id": "uni-research-details",
@@ -154,7 +238,13 @@
       "suggestedAnswer": "{{university_knowledge}} I have researched the program curriculum, campus facilities, and community resources, and I am confident that this university is the right fit for me.",
       "guidance": "Demonstrate detailed research about curriculum, facilities, professors, and campus life.",
       "tooltip": "Shows genuine interest and preparation for arrival.",
-      "priority": "high"
+      "priority": "high",
+      "variations": [
+        "Please describe what you've learned about the academic program and facilities at your university.",
+        "Can you share your understanding of the curriculum and campus environment of your chosen institution?",
+        "What information have you gathered regarding the specific program you'll be undertaking and the university campus?",
+        "Tell me what you know about the structure of your course of study and the physical aspects of the university."
+      ]
     },
     {
       "id": "uni-faculty-knowledge",
@@ -163,7 +253,13 @@
       "suggestedAnswer": "I have researched faculty in the {{field_of_study}} department at {{primary_university}}. I am particularly interested in learning from professors who specialize in that field.",
       "guidance": "Mention specific professors or show knowledge of faculty research areas.",
       "tooltip": "Demonstrates genuine academic interest in the institution.",
-      "priority": "medium"
+      "priority": "medium",
+      "variations": [
+        "Are you familiar with any specific faculty members or professors in your area of study at the university?",
+        "What knowledge do you have about the academic staff specializing in your field?",
+        "Could you tell me if you have researched any professors within your department?",
+        "Who are some of the notable faculty members or researchers in your chosen field at this university?"
+      ]
     },
     {
       "id": "uni-location",
@@ -172,7 +268,13 @@
       "suggestedAnswer": "{{primary_university}} is located in {{university_city_state}}.",
       "guidance": "Mention city and state clearly.",
       "tooltip": "Verifies university location knowledge.",
-      "priority": "high"
+      "priority": "high",
+      "variations": [
+        "In which city and state is your chosen university situated?",
+        "Could you specify the geographic location, including the city and state, of your university?",
+        "Where exactly is your university located, in terms of city and state?",
+        "Can you name the city and state where your university is found?"
+      ]
     },
     {
       "id": "uni-city-knowledge",
@@ -181,7 +283,13 @@
       "suggestedAnswer": "{{university_knowledge}} The area offers various academic and recreational resources that will support my studies and personal growth.",
       "guidance": "Show knowledge of the city, campus resources, and community opportunities.",
       "tooltip": "Demonstrates realistic understanding of where you'll study.",
-      "priority": "medium"
+      "priority": "medium",
+      "variations": [
+        "What have you learned about the community and local surroundings of your university?",
+        "Could you tell me what you know about the city and neighborhood where your university is located?",
+        "What is your understanding of the area immediately surrounding the university campus?",
+        "Please describe what you know about the local environment and community near your university."
+      ]
     },
     {
       "id": "uni-i20-status",
@@ -190,7 +298,13 @@
       "suggestedAnswer": "{{i20_number ? 'Yes, I have received my I-20 document.' : 'I am still awaiting my I-20 from the university, but I expect to receive it soon.'}}",
       "guidance": "The I-20 is the official document required for F1 visa. Have you received it from the university?",
       "tooltip": "Critical requirement for F1 visa processing.",
-      "priority": "high"
+      "priority": "high",
+      "variations": [
+        "Is your Form I-20 readily available?",
+        "Can you present your Certificate of Eligibility for Nonimmigrant Student Status (Form I-20)?",
+        "Have you brought your I-20 form with you today?",
+        "Do you have the necessary I-20 document?"
+      ]
     },
     {
       "id": "academic-english-test",
@@ -199,7 +313,13 @@
       "suggestedAnswer": "I achieved a score of {{ielts_score ? ielts_score : toefl_score}} on the {{english_proficiency_test}} exam, which demonstrates my readiness for university-level coursework in English.",
       "guidance": "State your test scores confidently and explain what they mean for your academic readiness.",
       "tooltip": "Test scores are mandatory verification of English proficiency.",
-      "priority": "high"
+      "priority": "high",
+      "variations": [
+        "Could you please state your scores from your English language proficiency examination, such as TOEFL or IELTS?",
+        "What were your results on the standardized English assessment, like the TOEFL or IELTS?",
+        "Please provide your scores for either the TOEFL or IELTS test.",
+        "Can you confirm your scores for your English proficiency exam, be it TOEFL or IELTS?"
+      ]
     },
     {
       "id": "academic-standardized-test",
@@ -208,7 +328,13 @@
       "suggestedAnswer": "{{standardized_test ? 'Yes, I took the {{standardized_test}} and scored {{standardized_test_score}}.' : 'No, a standardized test was not required for my program.'}}",
       "guidance": "Many programs require GRE/GMAT for graduate and SAT/ACT for undergraduate programs.",
       "tooltip": "Validates academic capability for your program level.",
-      "priority": "high"
+      "priority": "high",
+      "variations": [
+        "Have you completed any standardized examinations like the GRE, GMAT, SAT, or ACT?",
+        "Were you required to take any standardized admissions tests such as the GRE, GMAT, SAT, or ACT?",
+        "Could you confirm if you have taken tests like the GRE, GMAT, SAT, or ACT?",
+        "Regarding your application, did you submit scores from standardized tests such as the GRE, GMAT, SAT, or ACT?"
+      ]
     },
     {
       "id": "academic-previous-gpa",
@@ -217,7 +343,13 @@
       "suggestedAnswer": "My previous GPA was {{previous_gpa}}, which demonstrates my consistent academic performance and preparation for graduate-level work.",
       "guidance": "State your GPA on the same scale as your previous institution.",
       "tooltip": "Shows academic preparation for US university standards.",
-      "priority": "high"
+      "priority": "high",
+      "variations": [
+        "Could you state your Grade Point Average from your prior academic institution?",
+        "What was your academic average or equivalent during your most recent studies?",
+        "Please provide your GPA for your previous educational program?",
+        "How would you describe your academic performance in your last educational experience, perhaps by your GPA?"
+      ]
     },
     {
       "id": "academic-english-medium",
@@ -226,7 +358,13 @@
       "suggestedAnswer": "{{medium_of_instruction ? 'Yes, my previous education was conducted in English, providing me a strong foundation.' : 'No, my education was not in English medium, but I have studied English extensively and achieved my proficiency scores.'}}",
       "guidance": "Answer honestly about your educational medium.",
       "tooltip": "Determines English proficiency level and need for support.",
-      "priority": "high"
+      "priority": "high",
+      "variations": [
+        "Was English the primary language of instruction for your prior education?",
+        "Did you complete your previous studies through the medium of English?",
+        "Can you confirm if your previous coursework was taught in English?",
+        "To what extent was English used as the language of instruction in your last academic program?"
+      ]
     },
     {
       "id": "academic-english-confidence",
@@ -235,7 +373,13 @@
       "suggestedAnswer": "I would rate my English proficiency at {{english_confidence_rating}} out of 10. I have the foundation needed to succeed in English-medium coursework.",
       "guidance": "Be honest about your comfort level with academic English.",
       "tooltip": "Self-assessment of English readiness for US university.",
-      "priority": "high"
+      "priority": "high",
+      "variations": [
+        "How would you rate your confidence in your English language skills?",
+        "To what extent do you feel prepared to handle academic work in English?",
+        "Are you comfortable with your current English proficiency for university-level studies?",
+        "Could you describe your level of self-assurance regarding your English communication skills for academic purposes?"
+      ]
     },
     {
       "id": "academic-english-management",
@@ -244,7 +388,13 @@
       "suggestedAnswer": "{{how_you_will_manage_english}} I am committed to utilizing all available resources to ensure my academic success.",
       "guidance": "Explain your strategies such as tutoring, study groups, or academic support services.",
       "tooltip": "Demonstrates readiness to handle academic English challenges.",
-      "priority": "high"
+      "priority": "high",
+      "variations": [
+        "What strategies do you plan to employ to succeed in an English-speaking academic environment at a US university?",
+        "How do you intend to adapt to the demands of coursework conducted entirely in English in the US?",
+        "Can you outline your approach to studying effectively in English at a university in the United States?",
+        "What measures will you take to ensure successful academic performance while studying in English here?"
+      ]
     },
     {
       "id": "academic-cultural-adaptation",
@@ -253,7 +403,13 @@
       "suggestedAnswer": "I understand that US universities have different teaching styles, participation expectations, and independent study requirements. I am prepared to adapt by utilizing university support services, joining student organizations, and building relationships with professors during office hours.",
       "guidance": "Show self-awareness about differences and concrete strategies to adapt.",
       "tooltip": "Officers want confidence in your ability to thrive beyond just academics.",
-      "priority": "high"
+      "priority": "high",
+      "variations": [
+        "What is your plan for adapting to the cultural and educational differences you may encounter in the United States?",
+        "How do you intend to navigate the distinct cultural and academic environments present in the US?",
+        "Could you explain your strategy for adjusting to the varying cultural norms and educational approaches in the US?",
+        "What steps will you take to successfully integrate into the cultural and educational landscape of the United States?"
+      ]
     },
     {
       "id": "academic-us-comparison",
@@ -262,7 +418,13 @@
       "suggestedAnswer": "The United States leads in {{field_of_study}} education and {{primary_university}} specifically offers {{why_primary_university}}. While other countries have good programs, the US aligns best with my career goals.",
       "guidance": "Acknowledge other countries but explain why US is specifically best for you.",
       "tooltip": "Shows thoughtful analysis of educational options.",
-      "priority": "medium"
+      "priority": "medium",
+      "variations": [
+        "What are your specific reasons for choosing the United States for your degree, rather than Canada, Australia, or the UK?",
+        "Can you elaborate on your decision to study in the US, as opposed to other countries like Canada, Australia, or the UK?",
+        "Why have you opted for a degree program in the United States over similar opportunities in nations such as Canada, Australia, or the UK?",
+        "What makes the US your preferred destination for your academic pursuits when considering alternatives like Canada, Australia, or the UK?"
+      ]
     },
     {
       "id": "academic-struggle-support",
@@ -271,7 +433,13 @@
       "suggestedAnswer": "{{academic_success_strategy}} I will also seek support from {{primary_university}} academic resources, meet with professors during office hours, form study groups, and utilize tutoring services if needed.",
       "guidance": "Show proactive planning and knowledge of university support systems.",
       "tooltip": "Demonstrates realistic expectations and commitment to success.",
-      "priority": "medium"
+      "priority": "medium",
+      "variations": [
+        "Should you encounter academic challenges during your initial semester, what steps do you intend to take?",
+        "If you find yourself facing academic difficulties in your first term, how will you address them?",
+        "What resources or actions would you utilize if your academic performance is not as expected in the first semester?",
+        "In the event of academic struggles in your first few months, what would be your course of action?"
+      ]
     },
     {
       "id": "finance-sponsor-identity",
@@ -280,7 +448,13 @@
       "suggestedAnswer": "My {{sponsor_relationship}} will sponsor my education.",
       "guidance": "Identify your main source of financial support clearly.",
       "tooltip": "Critical to establish who is funding your education.",
-      "priority": "high"
+      "priority": "high",
+      "variations": [
+        "Could you please state the name of your financial guarantor?",
+        "Who will be providing the financial support for your studies?",
+        "Please identify the individual or organization funding your education?",
+        "Who is responsible for covering your educational expenses?"
+      ]
     },
     {
       "id": "finance-sponsor-occupation",
@@ -289,7 +463,13 @@
       "suggestedAnswer": "My sponsor works as a {{sponsor_occupation}}.",
       "guidance": "Describe the primary source of their income clearly.",
       "tooltip": "Assesses financial stability and income source.",
-      "priority": "high"
+      "priority": "high",
+      "variations": [
+        "What is your financial sponsor's current profession?",
+        "Could you describe the nature of your sponsor's work or employment?",
+        "What type of work does your financial guarantor perform?",
+        "What is your sponsor's primary source of income or employment?"
+      ]
     },
     {
       "id": "finance-sponsor-income",
@@ -298,7 +478,13 @@
       "suggestedAnswer": "My sponsor's annual income is approximately ${{sponsor_annual_income}}, which is sufficient to cover my education costs.",
       "guidance": "Provide in USD, converting from local currency using current exchange rates.",
       "tooltip": "Income is critical to prove financial capability for the full program duration.",
-      "priority": "high"
+      "priority": "high",
+      "variations": [
+        "Could you state your sponsor's yearly earnings in US dollars?",
+        "What is the total annual income of your financial sponsor, expressed in USD?",
+        "Please provide the annual salary of your sponsor, denominated in US currency.",
+        "How much does your sponsor earn annually, in United States Dollars?"
+      ]
     },
     {
       "id": "finance-income-proof",
@@ -307,7 +493,13 @@
       "suggestedAnswer": "{{sponsor_income_proof ? 'Yes, I have prepared tax returns, salary certificates, and business documents as proof of income.' : 'I am working to gather the necessary documentation.'}}",
       "guidance": "Prepare tax returns (last 2 years), salary certificates, or business documents.",
       "tooltip": "Essential documents for visa officer verification.",
-      "priority": "high"
+      "priority": "high",
+      "variations": [
+        "Can you present documentation verifying your sponsor's income?",
+        "Is evidence of your sponsor's financial earnings available?",
+        "Do you possess supporting documents for your sponsor's declared income?",
+        "Could you provide verification of your sponsor's annual earnings?"
+      ]
     },
     {
       "id": "finance-program-cost",
@@ -316,7 +508,13 @@
       "suggestedAnswer": "The total estimated cost of my {{intended_degree}} program is approximately ${{total_program_cost}} per year, including tuition, fees, accommodation, and living expenses.",
       "guidance": "Break down costs into components to show you've researched thoroughly.",
       "tooltip": "Cost breakdown shows realistic planning.",
-      "priority": "high"
+      "priority": "high",
+      "variations": [
+        "What is the approximate total expense for your entire academic program?",
+        "Could you specify the overall projected cost of your chosen course of study?",
+        "How much is the complete estimated expenditure for your educational program?",
+        "What is the comprehensive anticipated cost of attending your program?"
+      ]
     },
     {
       "id": "finance-available-funds",
@@ -325,7 +523,13 @@
       "suggestedAnswer": "I have approximately ${{available_funds}} available for my education from my sponsor and personal resources.",
       "guidance": "Include sponsor savings, family gifts, and any personal funds.",
       "tooltip": "Must cover program cost to demonstrate financial capability.",
-      "priority": "high"
+      "priority": "high",
+      "variations": [
+        "What is the total sum of funds you have readily available for your studies?",
+        "Could you indicate the amount of financial resources accessible for your educational expenses?",
+        "How much capital do you have at your disposal for your schooling?",
+        "Please state the total amount of funding you are able to utilize for your program."
+      ]
     },
     {
       "id": "finance-funding-plan",
@@ -334,7 +538,13 @@
       "suggestedAnswer": "My sponsor will provide ${{available_funds}}, which covers my education costs. {{scholarship_status ? 'Additionally, my scholarship provides further support toward my education.' : ''}}",
       "guidance": "Show complete picture: sponsor funds, scholarship (if any), and any personal contribution.",
       "tooltip": "Officers need to see complete financing for all program years.",
-      "priority": "high"
+      "priority": "high",
+      "variations": [
+        "Could you describe your strategy for financing your complete academic journey?",
+        "What is your comprehensive plan for covering the expenses of your education?",
+        "How do you intend to secure the necessary funds for your entire program of study?",
+        "Please explain your approach to funding all aspects of your education."
+      ]
     },
     {
       "id": "finance-funds-proof",
@@ -343,7 +553,13 @@
       "suggestedAnswer": "{{funds_availability_proof ? 'Yes, I have bank statements for the last 6 months and affidavits of support documenting available funds.' : 'I am preparing bank statements and other financial documents.'}}",
       "guidance": "Prepare bank statements, affidavits of support, and investment documents.",
       "tooltip": "Mandatory for I-20 and visa officer verification.",
-      "priority": "high"
+      "priority": "high",
+      "variations": [
+        "Can you provide documentation to verify your available funds?",
+        "Do you have evidence supporting the amount of funds you have at your disposal?",
+        "Is there proof of your accessible financial resources?",
+        "Could you present verification of the funds you have available for your studies?"
+      ]
     },
     {
       "id": "finance-scholarship-status",
@@ -352,23 +568,35 @@
       "suggestedAnswer": "{{scholarship_status ? 'Yes, I received a scholarship from {{primary_university}}.' : 'No, I did not receive a scholarship, but my education is fully funded through my sponsor.'}}",
       "guidance": "Answer honestly about scholarship status.",
       "tooltip": "Scholarships strengthen financial capability profile.",
-      "priority": "high"
+      "priority": "high",
+      "variations": [
+        "Have you been awarded any scholarships?",
+        "Were you granted a scholarship for your studies?",
+        "Did you secure any form of financial aid in the form of a scholarship?",
+        "Is there a scholarship associated with your enrollment?"
+      ]
     },
-      {
-        "id": "finance-scholarship-amount",
-        "category": "Financial Status",
-        "question": "What is your scholarship amount?",
-        "suggestedAnswer": "I received a ${{scholarship_amount}} {{scholarship_type}} scholarship from {{primary_university}}.",
-        "guidance": "State the annual or total amount as specified in your scholarship letter.",
-        "tooltip": "Shows partial or full financial support from university.",
-        "priority": "high",
-        "skipIf": [
-          {
-            "field": "scholarship_status",
-            "notEquals": true
-          }
-        ]
-      },
+    {
+      "id": "finance-scholarship-amount",
+      "category": "Financial Status",
+      "question": "What is your scholarship amount?",
+      "suggestedAnswer": "I received a ${{scholarship_amount}} {{scholarship_type}} scholarship from {{primary_university}}.",
+      "guidance": "State the annual or total amount as specified in your scholarship letter.",
+      "tooltip": "Shows partial or full financial support from university.",
+      "priority": "high",
+      "skipIf": [
+        {
+          "field": "scholarship_status",
+          "notEquals": true
+        }
+      ],
+      "variations": [
+        "Could you state the value of your scholarship?",
+        "How much is your scholarship worth?",
+        "What is the monetary amount of the scholarship you received?",
+        "Please specify the total sum of your scholarship award."
+      ]
+    },
     {
       "id": "finance-scholarship-type",
       "category": "Financial Status",
@@ -382,6 +610,12 @@
           "field": "scholarship_status",
           "notEquals": true
         }
+      ],
+      "variations": [
+        "Can you describe the kind of scholarship you were awarded?",
+        "What is the nature of the scholarship you received?",
+        "Could you specify the category or type of your scholarship?",
+        "What sort of scholarship did you obtain?"
       ]
     },
     {
@@ -391,7 +625,13 @@
       "suggestedAnswer": "{{funding_shortfall_plan}} I have researched alternative funding and identified multiple backup plans to ensure I can complete my education.",
       "guidance": "Describe alternative sources: loans, additional family funds, part-time work, etc.",
       "tooltip": "Backup plans show maturity and serious commitment.",
-      "priority": "medium"
+      "priority": "medium",
+      "variations": [
+        "What is your contingency plan if your sponsor is unable to provide full support?",
+        "Should your sponsor be unable to cover all expenses, what alternative arrangements do you have?",
+        "If there's a shortfall in your sponsor's support, what is your backup funding strategy?",
+        "How would you address the financial gap if your sponsor cannot provide complete funding?"
+      ]
     },
     {
       "id": "postgrad-career-plans",
@@ -400,7 +640,13 @@
       "suggestedAnswer": "{{post_graduation_job_plans}} I plan to pursue this career after completing my {{intended_degree}}.",
       "guidance": "Describe specific, realistic career goals aligned with your degree.",
       "tooltip": "Clear post-graduation plans strengthen F1 visa application.",
-      "priority": "high"
+      "priority": "high",
+      "variations": [
+        "What do you intend to do professionally once you complete your studies?",
+        "Could you outline your professional aspirations following the completion of your degree?",
+        "How do you envision your professional path developing after you graduate?",
+        "What are your plans for your career upon earning your degree?"
+      ]
     },
     {
       "id": "postgrad-return-intent",
@@ -409,7 +655,13 @@
       "suggestedAnswer": "{{plan_to_return_home ? 'Yes, I plan to return to {{country_of_residence}} after graduation.' : 'I may pursue OPT or other visa options initially, but I intend to eventually return to {{country_of_residence}}.'}} I have strong ties to my home country including {{family_details}} and {{job_prospects_home_country}}.",
       "guidance": "Be honest about your intent. Strong home country ties provide credibility.",
       "tooltip": "Intent to return is critical for F1 visa officer assessment.",
-      "priority": "high"
+      "priority": "high",
+      "variations": [
+        "Is it your intention to return to your native country subsequent to your graduation?",
+        "Do you have plans to reside in your home country after completing your program?",
+        "Will you be going back to your country of origin once your studies conclude?",
+        "After you graduate, do you intend to relocate back to your home country?"
+      ]
     },
     {
       "id": "postgrad-home-ties",
@@ -418,7 +670,13 @@
       "suggestedAnswer": "{{why_will_return}} I have family in {{country_of_residence}} and plan to {{post_graduation_job_plans}} there after completing my studies.",
       "guidance": "Mention family, property, business, and career opportunities.",
       "tooltip": "Establishes personal and financial ties to home country.",
-      "priority": "high"
+      "priority": "high",
+      "variations": [
+        "Could you describe your connections to your country of origin?",
+        "What significant links do you maintain with your native country?",
+        "What factors bind you to your home country?",
+        "Can you explain what connections you have to your country of residence?"
+      ]
     },
     {
       "id": "postgrad-family-connections",
@@ -427,7 +685,13 @@
       "suggestedAnswer": "{{family_in_home_country ? 'Yes, I have close family in {{country_of_residence}}: {{family_details}}' : 'Most of my family is abroad, but I have strong connections to {{country_of_residence}}.'}}",
       "guidance": "Describe parents, siblings, or other family ties.",
       "tooltip": "Critical indicator of home country attachment.",
-      "priority": "high"
+      "priority": "high",
+      "variations": [
+        "Are your immediate family members currently residing in your country of origin?",
+        "Do you have any close relatives living in your native country?",
+        "Is your core family unit located in your home country?",
+        "Are there close family members who currently live in your country of nationality?"
+      ]
     },
     {
       "id": "postgrad-property",
@@ -442,6 +706,12 @@
           "field": "property_or_assets_home",
           "equals": false
         }
+      ],
+      "variations": [
+        "Do you possess any real estate or financial assets within your country of origin?",
+        "Are you the owner of any property or substantial holdings in your native country?",
+        "Have you invested in any assets or real property in your home country?",
+        "Do you hold any significant possessions or financial interests in your country of residence?"
       ]
     },
     {
@@ -451,7 +721,13 @@
       "suggestedAnswer": "{{consider_staying_usa ? 'I may pursue {{usa_stay_plans}} to gain work experience in the US initially, but I intend to return to {{country_of_residence}}.' : 'My primary goal is to complete my studies and return to my home country.'}}",
       "guidance": "If considering OPT/H1B, frame as temporary work experience before returning home.",
       "tooltip": "Short-term US work followed by home country return demonstrates non-immigrant intent.",
-      "priority": "high"
+      "priority": "high",
+      "variations": [
+        "Are you contemplating remaining in the United States once you complete your academic program?",
+        "Is it your intention to seek opportunities to extend your stay in the U.S. after graduating?",
+        "Have you thought about continuing to reside in the USA following your graduation?",
+        "Are you exploring options to stay in the United States subsequent to earning your degree?"
+      ]
     },
     {
       "id": "postgrad-usa-relatives",
@@ -460,7 +736,13 @@
       "suggestedAnswer": "{{relatives_in_usa ? 'Yes, I have {{relatives_usa_details}}, but my primary intent is to complete my studies and return to my home country where my main family is located.' : 'No, I do not have relatives or close friends in the USA, which reinforces my plan to return to {{country_of_residence}}.'}}",
       "guidance": "If you have US relatives, emphasize that home country ties are stronger.",
       "tooltip": "US relatives can be a concern - officers assess return intent.",
-      "priority": "medium"
+      "priority": "medium",
+      "variations": [
+        "Are there any family members or acquaintances currently residing in the United States?",
+        "Do you have any relatives or close friends who live in the U.S.?",
+        "Do you have personal connections, such as family or friends, living within the USA?",
+        "Are any of your family or friends located here in the United States?"
+      ]
     },
     {
       "id": "background-previous-us-stays",
@@ -469,7 +751,13 @@
       "suggestedAnswer": "{{previous_us_visits ? 'Yes, I have visited the USA before, which helped me understand the environment.' : 'No, I have not visited the USA before, but I am well-prepared through extensive research.'}}",
       "guidance": "Answer honestly about travel history.",
       "tooltip": "Checks travel experience and visa history.",
-      "priority": "medium"
+      "priority": "medium",
+      "variations": [
+        "Have you previously traveled to the United States?",
+        "Have you made any prior visits to the U.S.?",
+        "Is this your first time traveling to the USA, or have you been here before?",
+        "Have you entered the United States on a previous occasion?"
+      ]
     },
     {
       "id": "background-usa-visit-details",
@@ -484,6 +772,12 @@
           "field": "previous_us_visits",
           "equals": false
         }
+      ],
+      "variations": [
+        "Could you specify the dates and purpose of your previous visit(s) to the United States?",
+        "When did you last travel to the U.S., and what was the objective of that trip?",
+        "Please provide details on the timing and reason for any past trips to the USA?",
+        "What were the dates of your prior visit(s) to the United States, and what was its (their) purpose?"
       ]
     },
     {
@@ -493,7 +787,13 @@
       "suggestedAnswer": "{{visa_refusal_history ? 'Yes, I was denied a US visa previously.' : 'No, I have never been denied a US visa.'}}",
       "guidance": "Honesty is critical - this will be verified in your records.",
       "tooltip": "Previous refusals are reviewed carefully.",
-      "priority": "high"
+      "priority": "high",
+      "variations": [
+        "Has your application for a United States visa ever been refused?",
+        "Have you previously been informed that you were ineligible for a U.S. visa?",
+        "Was a United States visa application ever unsuccessful for you?",
+        "Have you ever received a denial for a visa to the United States?"
+      ]
     },
     {
       "id": "background-visa-refusal-explanation",
@@ -508,6 +808,12 @@
           "field": "visa_refusal_history",
           "equals": false
         }
+      ],
+      "variations": [
+        "Could you please elaborate on the details of your previous visa denial and how your situation has since changed?",
+        "We would like to understand the circumstances surrounding your past visa refusal and what current developments address the concerns from that time.",
+        "Please provide an account of any prior visa rejections you may have experienced and explain what is different now.",
+        "Can you describe the reasons for your previous visa denial and outline what steps have been taken or what new information is relevant since then?"
       ]
     },
     {
@@ -523,6 +829,12 @@
           "field": "criminal_record",
           "equals": false
         }
+      ],
+      "variations": [
+        "Have you ever been found guilty of a criminal offense?",
+        "Do you have a history of any criminal convictions or legal judgments against you?",
+        "Could you confirm if you have any arrests or convictions on your record?",
+        "Have you ever been subject to a criminal prosecution that resulted in a conviction?"
       ]
     },
     {
@@ -538,6 +850,12 @@
           "field": "any_us_immigration_issues",
           "equals": false
         }
+      ],
+      "variations": [
+        "Have you encountered any immigration complications or legal challenges within the United States?",
+        "Do you have any outstanding legal matters or immigration violations in the USA?",
+        "Have you ever faced any adverse immigration decisions or legal entanglements in the United States?",
+        "Are there any past or current legal or immigration issues connected to your presence in the U.S.?"
       ]
     },
     {
@@ -553,6 +871,12 @@
           "field": "previous_overstay",
           "equals": false
         }
+      ],
+      "variations": [
+        "Have you ever remained in any country beyond the authorized period of your visa?",
+        "Have you ever exceeded the permitted duration of stay granted by a visa in any nation?",
+        "Is there any instance where you have overstayed your welcome on a visa in a foreign country?",
+        "Have you ever violated the terms of a visa by remaining past its expiration date in another country?"
       ]
     },
     {
@@ -568,6 +892,12 @@
           "field": "other_countries_visa_refusal",
           "equals": false
         }
+      ],
+      "variations": [
+        "Has your application for a visa ever been refused by any other country?",
+        "Have you previously received a visa denial from a different nation?",
+        "Is there a record of you being denied a visa by any foreign government?",
+        "Have you ever faced a visa rejection from another country's consulate or embassy?"
       ]
     }
   ]

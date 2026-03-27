@@ -16,11 +16,11 @@ dotenv.config({ path: ".env.local" });
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 // Configuration
-const CATEGORIES = ["ir-2-child", "f1-student"];
+const CATEGORIES = ["au-student"];
 const QUESTION_BANK_BASE = path.join(__dirname, "../data/interview-categories");
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 
-const BATCH_SIZE = 8; // Generate variations for 8 questions in 1 API call
+const BATCH_SIZE = 10; // Generate variations for 10 questions in 1 API call
 const DELAY_BETWEEN_BATCHES_MS = 3000; // 3 seconds between batch calls
 const MAX_RETRIES = 3;
 const INITIAL_RETRY_DELAY_MS = 5000; // Start with 5 second delay for retries
