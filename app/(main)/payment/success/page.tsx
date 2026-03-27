@@ -116,7 +116,7 @@ function AnimatedSuccessIcon() {
       <div className="absolute inset-0 rounded-full bg-teal-400/20 animate-ping" />
       <div className="absolute inset-2 rounded-full bg-teal-300/20 animate-ping" style={{ animationDelay: '0.2s' }} />
       {/* Icon circle */}
-      <div className="relative w-20 h-20 rounded-full bg-gradient-to-br from-teal-400 to-teal-600 flex items-center justify-center shadow-lg shadow-teal-500/30">
+      <div className="relative w-20 h-20 rounded-full bg-linear-to-br from-teal-400 to-teal-600 flex items-center justify-center shadow-lg shadow-teal-500/30">
         <CheckCircle className="w-11 h-11 text-white" strokeWidth={2.5} />
       </div>
     </div>
@@ -141,14 +141,14 @@ function PaymentSuccessContent() {
 
   if (isVerifying) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-teal-50 to-cyan-50">
+      <div className="min-h-screen flex items-center justify-center bg-linear-to-br from-teal-50 to-cyan-50">
         <Loader size="md" text="Verifying your payment..." />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-teal-50 via-white to-cyan-50 px-4 py-12 relative">
+    <div className="min-h-screen flex items-center justify-center bg-linear-to-br from-teal-50 via-white to-cyan-50 px-4 py-12 relative">
       <ConfettiCanvas />
 
       <div className="relative z-10 max-w-md w-full">
@@ -164,7 +164,7 @@ function PaymentSuccessContent() {
           </p>
 
           {/* What's Next */}
-          <div className="bg-gradient-to-br from-teal-50 to-cyan-50 rounded-2xl p-5 mb-6 text-left border border-teal-100">
+          <div className="bg-linear-to-br from-teal-50 to-cyan-50 rounded-2xl p-5 mb-6 text-left border border-teal-100">
             <h2 className="font-bold text-teal-900 mb-3 text-[14px] tracking-widest uppercase">
               What&apos;s Next?
             </h2>
@@ -175,7 +175,7 @@ function PaymentSuccessContent() {
                 "Access your dashboard to explore premium features",
               ].map((item, i) => (
                 <li key={i} className="flex items-start gap-2.5 text-[14px] text-teal-800">
-                  <span className="flex-shrink-0 w-5 h-5 rounded-full bg-teal-500 flex items-center justify-center mt-0.5">
+                  <span className="shrink-0 w-5 h-5 rounded-full bg-teal-500 flex items-center justify-center mt-0.5">
                     <svg viewBox="0 0 12 12" fill="none" className="w-3 h-3">
                       <path d="M2 6l2.5 2.5L10 3.5" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
                     </svg>
@@ -218,7 +218,7 @@ export default function PaymentSuccessPage() {
   return (
     <Suspense
       fallback={
-        <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-teal-50 to-cyan-50">
+        <div className="min-h-screen flex items-center justify-center bg-linear-to-br from-teal-50 to-cyan-50">
           <Loader size="md" />
         </div>
       }
