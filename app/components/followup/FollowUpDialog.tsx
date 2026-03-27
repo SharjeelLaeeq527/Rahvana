@@ -82,7 +82,7 @@ export function FollowUpDialog({
           startX: rect.left + rect.width / 2,
           startY: rect.top + rect.height / 2,
         },
-      })
+      }),
     );
 
     // Actively save the guide via backend
@@ -204,7 +204,8 @@ export function FollowUpDialog({
   }, [answers, difficultyType]);
 
   const activeStep = steps[currentStep] || steps[steps.length - 1];
-  const isLastStep = currentStep === steps.length - 1 && activeStep?.type === "cta";
+  const isLastStep =
+    currentStep === steps.length - 1 && activeStep?.type === "cta";
 
   // Filter and deduplicate selected items to show only those marked as true
   const relevantDocs = useMemo(() => {
@@ -420,45 +421,64 @@ export function FollowUpDialog({
                       </SelectContent>
                     </Select>
 
-                    {difficultyDoc && (
-                      <div className="p-5 bg-primary/10 border border-primary/20 rounded-xl animate-in zoom-in-95 duration-200 shadow-sm">
-                        <p className="text-base text-primary font-medium mb-1">
-                          We have a guide for this!
-                        </p>
-                        <p className="text-sm text-primary leading-relaxed mb-3">
-                          {difficultyDoc === "other"
-                            ? "Check our comprehensive list of document guides."
-                            : `Learn exactly how to obtain your ${relevantDocs.find((d) => d.id === difficultyDoc)?.label}.`}
-                        </p>
-                        <Button
-                          asChild
-                          variant="default"
-                          className="w-full bg-primary hover:bg-primary/90"
-                        >
-                          <Link
-                            href={
-                              difficultyDoc === "other"
-                                ? "/guides"
-                                : relevantDocs.find(
-                                    (d) => d.id === difficultyDoc,
-                                  )?.href || "/guides"
-                            }
-                          >
-                            View Guide
-                          </Link>
-                        </Button>
+                    {difficultyDoc &&
+                      (() => {
+                        const isOther = difficultyDoc === "other";
+                        const selectedDocObj = isOther
+                          ? null
+                          : relevantDocs.find((d) => d.id === difficultyDoc);
+                        const hasGuide = isOther
+                          ? true
+                          : !!selectedDocObj?.hasGuide;
 
-                        <Button
-                          variant="outline"
-                          onClick={handleSaveForLater}
-                          disabled={saving}
-                          className="w-full h-10 border-primary/30 text-primary hover:bg-primary/10 transition-colors flex items-center gap-2 mt-2"
-                        >
-                          <Bookmark className="w-4 h-4" />
-                          {saving ? "Saving..." : "Save it for later"}
-                        </Button>
-                      </div>
-                    )}
+                        return (
+                          <div className="p-5 bg-primary/10 border border-primary/20 rounded-xl animate-in zoom-in-95 duration-200 shadow-sm">
+                            <p className="text-base text-primary font-medium mb-1">
+                              {hasGuide
+                                ? "We have a guide for this!"
+                                : "Guide Not Available Yet"}
+                            </p>
+                            <p className="text-sm text-primary leading-relaxed mb-3">
+                              {isOther
+                                ? "Check our comprehensive list of document guides."
+                                : hasGuide
+                                  ? `Learn exactly how to obtain your ${selectedDocObj?.label}.`
+                                  : `We don't have a guide for ${selectedDocObj?.label} yet. Please let us know if you need one using the feedback button—your input helps us prioritize new guides!`}
+                            </p>
+                            <Button
+                              asChild
+                              variant="default"
+                              className="w-full bg-primary hover:bg-primary/90"
+                            >
+                              <Link
+                                href={
+                                  hasGuide &&
+                                  selectedDocObj?.href &&
+                                  selectedDocObj.href !== "#"
+                                    ? selectedDocObj.href
+                                    : "/guides"
+                                }
+                              >
+                                {hasGuide
+                                  ? "View Guide"
+                                  : "Browse Available Guides"}
+                              </Link>
+                            </Button>
+
+                            {hasGuide && (
+                              <Button
+                                variant="outline"
+                                onClick={handleSaveForLater}
+                                disabled={saving}
+                                className="w-full h-10 border-primary/30 text-primary hover:bg-primary/10 transition-colors flex items-center gap-2 mt-2"
+                              >
+                                <Bookmark className="w-4 h-4" />
+                                {saving ? "Saving..." : "Save it for later"}
+                              </Button>
+                            )}
+                          </div>
+                        );
+                      })()}
                   </div>
                 </div>
               )}
