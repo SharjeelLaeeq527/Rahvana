@@ -20,6 +20,13 @@ function isDocumentRequired(
   visaCategory: VisaCategory,
   scenarioFlags: ScenarioFlags,
 ): boolean {
+  // If applicableVisas is defined, check if current visa is in the list
+  if (doc.applicableVisas && doc.applicableVisas.length > 0) {
+    if (!doc.applicableVisas.includes(visaCategory)) {
+      return false; // Document explicitly not for this visa
+    }
+  }
+
   // If document has no conditional requirements, return its base required status
   if (!doc.requiredWhen) {
     return doc.required;
@@ -70,6 +77,13 @@ export function generateRequiredDocuments(
     const optionalDocs = ALL_DOCUMENTS.filter((doc) => {
       // Skip if already in requiredDocs
       if (requiredDocs.includes(doc)) return false;
+
+      // Check applicableVisas first
+      if (doc.applicableVisas && doc.applicableVisas.length > 0) {
+        if (!doc.applicableVisas.includes(visaCategory)) {
+          return false;
+        }
+      }
 
       // Include if the document passes the requiredWhen check (it's applicable)
       // OR if it has no requiredWhen and is optional
@@ -259,11 +273,14 @@ export function getVisaCategoryDisplayName(
     "IR-2": "IR-2: Immediate Relative - Unmarried Child under 21",
     "CR-2": "CR-2: Conditional Resident - Unmarried Child under 21",
     "IR-5": "IR-5: Immediate Relative - Parent of U.S. Citizen",
-    F1: "F1: Unmarried Sons/Daughters of U.S. Citizens",
-    F2A: "F2A: Spouses/Children of Lawful Permanent Residents",
-    F2B: "F2B: Unmarried Sons/Daughters of LPR",
-    F3: "F3: Married Sons/Daughters of U.S. Citizens",
-    F4: "F4: Siblings of U.S. Citizens",
+    // F1: "F1: Unmarried Sons/Daughters of U.S. Citizens",
+    "F-1 Student Visa": "F-1 Student Visa",
+    "Australia Student Visa (Subclass 500)": "Australia Student Visa (Subclass 500)",
+    "China Student Visa (X1 & X2)": "China Student Visa (X1 & X2)",
+    // F2A: "F2A: Spouses/Children of Lawful Permanent Residents",
+    // F2B: "F2B: Unmarried Sons/Daughters of LPR",
+    // F3: "F3: Married Sons/Daughters of U.S. Citizens",
+    // F4: "F4: Siblings of U.S. Citizens",
   };
 
   return names[category] || category;
