@@ -39,6 +39,21 @@ function LoginContent() {
   const [mfaCode, setMfaCode] = useState("");
   const [profile, setProfile] = useState<Profile | null>(null);
 
+  // Check if MFA is required from query param
+  const isMfaActive = searchParams.get("mfa") === "true";
+
+  // Restore MFA credentials from storage when page has ?mfa=true
+  useEffect(() => {
+    if (isMfaActive) {
+      const factorIdStored = sessionStorage.getItem("factorId") || "";
+      const challengeIdStored = sessionStorage.getItem("challengeId") || "";
+      
+      setMfaRequired(true);
+      setFactorId(factorIdStored);
+      setChallengeId(challengeIdStored);
+    }
+  }, [isMfaActive]);
+
   // Check for messages from URL params
   useEffect(() => {
     const errorParam = searchParams.get("error");
@@ -71,15 +86,15 @@ function LoginContent() {
       : null;
 
   useEffect(() => {
-    // If MFA screen is active, do NOT redirect
-    if (!user || mfaPending || mfaRequired) return;
+    // If MFA screen is active (from URL query param), do NOT redirect
+    if (!user || mfaPending || mfaRequired || isMfaActive) return;
 
     if (redirect) {
       router.replace(redirect);
     } else {
       router.replace("/");
     }
-  }, [user, redirect, router, mfaPending, mfaRequired]);
+  }, [user, redirect, router, mfaPending, mfaRequired, isMfaActive]);
 
   // Listen for auth state changes
   useEffect(() => {
@@ -138,11 +153,16 @@ function LoginContent() {
 
       // MFA required
       if (isMfaRequired && fId && cId) {
+        sessionStorage.setItem("mfaRequired", "true");
+        sessionStorage.setItem("factorId", fId);
+        sessionStorage.setItem("challengeId", cId);
         setMfaRequired(true);
         setFactorId(fId);
         setChallengeId(cId);
         setSuccess("Please enter your authentication code");
         setIsSubmitting(false);
+        // Add ?mfa=true to URL so refresh doesn't cause redirect
+        window.history.replaceState(null, "", `${window.location.pathname}?mfa=true`);
         return;
       }
 
@@ -150,7 +170,7 @@ function LoginContent() {
       if (redirect) {
         window.location.assign(redirect);
       } else {
-        window.location.assign("/user-dashboard");
+        window.location.assign("/");
       }
     } catch {
       setError("An unexpected error occurred. Please try again.");
@@ -171,10 +191,17 @@ function LoginContent() {
       );
 
       if (success) {
+        // Clear MFA data
+        sessionStorage.removeItem("mfaRequired");
+        sessionStorage.removeItem("factorId");
+        sessionStorage.removeItem("challengeId");
+        // Remove ?mfa=true from URL
+        window.history.replaceState(null, "", window.location.pathname);
+        
         if (redirect) {
           window.location.assign(redirect);
         } else {
-          window.location.assign("/user-dashboard");
+          window.location.assign("/");
         }
       } else {
         setError(mfaError || "Invalid authentication code");

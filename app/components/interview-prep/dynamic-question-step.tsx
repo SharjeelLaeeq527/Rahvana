@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -37,6 +37,15 @@ export function DynamicQuestionStep({
   setError,
 }: DynamicQuestionStepProps) {
   const questionRefs = useRef<Record<string, HTMLDivElement | null>>({});
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+
+  const processTemplate = (template: string): string => {
+    if (!template) return template;
+    return template.replace(/\{\{(\w+)\}\}/g, (match, key) => {
+      const value = formData[key];
+      return value !== undefined && value !== null ? String(value) : match;
+    });
+  };
 
   const formatFieldName = (fieldKey: string): string => {
     return fieldKey
@@ -58,11 +67,11 @@ export function DynamicQuestionStep({
 
     if (question.required && shouldValidateRequired) {
       if (value === undefined || value === null) {
-        return `Error: ${fieldName} is required`;
+        return `${fieldName} is required`;
       }
 
       if (typeof value === "string" && value.trim() === "") {
-        return `Error: ${fieldName} is required`;
+        return `${fieldName} is required`;
       }
     }
 
@@ -73,7 +82,7 @@ export function DynamicQuestionStep({
           question.validation.maxLength &&
           value.length > question.validation.maxLength
         ) {
-          return `Error: ${fieldName} must be no more than ${question.validation.maxLength} characters`;
+          return `${fieldName} must be no more than ${question.validation.maxLength} characters`;
         }
 
         if (
@@ -81,7 +90,7 @@ export function DynamicQuestionStep({
           question.validation.min !== undefined &&
           value < question.validation.min
         ) {
-          return `Error: ${fieldName} must be at least ${question.validation.min}`;
+          return `${fieldName} must be at least ${question.validation.min}`;
         }
 
         if (
@@ -89,7 +98,7 @@ export function DynamicQuestionStep({
           question.validation.max !== undefined &&
           value > question.validation.max
         ) {
-          return `Error: ${fieldName} must be no more than ${question.validation.max}`;
+          return `${fieldName} must be no more than ${question.validation.max}`;
         }
       }
     }
@@ -99,6 +108,13 @@ export function DynamicQuestionStep({
 
   const handleInputChange = (key: string, value: unknown) => {
     onChange(key, value);
+
+    // Clear error for this field when user starts typing
+    if (fieldErrors[key]) {
+      const newErrors = { ...fieldErrors };
+      delete newErrors[key];
+      setFieldErrors(newErrors);
+    }
 
     // Reset dependent fields when parent changes
     if (key === "current_employment_status" && value === false) {
@@ -117,9 +133,9 @@ export function DynamicQuestionStep({
       onChange("property_details", "");
     }
 
-    // Reset USA stay fields when plan_to_return_home changes to true
+    // Reset Italy stay fields when plan_to_return_home changes to true
     if (key === "plan_to_return_home" && value === true) {
-      onChange("consider_staying_usa", false);
+      onChange("consider_staying_it", false);
       onChange("usa_stay_plans", "");
     }
 
@@ -160,8 +176,9 @@ export function DynamicQuestionStep({
   };
 
   const handleNext = () => {
+    const newFieldErrors: Record<string, string> = {};
     let hasErrors = false;
-    let firstErrorMessage = "";
+    let firstErrorKey = "";
 
     for (const question of section.questions) {
       if (shouldSkipQuestion(question)) {
@@ -173,25 +190,26 @@ export function DynamicQuestionStep({
         const errorMsg = validateQuestion(question, value);
 
         if (errorMsg) {
-          if (!firstErrorMessage) {
-            firstErrorMessage = errorMsg;
-            const el = questionRefs.current[question.key];
-            if (el) {
-              const rect = el.getBoundingClientRect();
-              const scrollTop =
-                window.pageYOffset || document.documentElement.scrollTop;
-              const top = rect.top + scrollTop - 100;
-              window.scrollTo({ top, behavior: "smooth" });
-            }
-          }
+          newFieldErrors[question.key] = errorMsg;
           hasErrors = true;
-          break;
+          if (!firstErrorKey) {
+            firstErrorKey = question.key;
+          }
         }
       }
     }
 
+    setFieldErrors(newFieldErrors);
+
     if (hasErrors) {
-      setError("Please complete all required fields before proceeding.");
+      const el = questionRefs.current[firstErrorKey];
+      if (el) {
+        const rect = el.getBoundingClientRect();
+        const scrollTop =
+          window.pageYOffset || document.documentElement.scrollTop;
+        const top = rect.top + scrollTop - 100;
+        window.scrollTo({ top, behavior: "smooth" });
+      }
       return;
     }
 
@@ -201,6 +219,12 @@ export function DynamicQuestionStep({
 
   const renderQuestion = (question: DynamicQuestion) => {
     const value = formData[question.key];
+    const fieldError = fieldErrors[question.key];
+    const hasError = !!fieldError;
+    const borderClass = hasError ? "border-red-500" : "border-border";
+    const focusClass = hasError 
+      ? "focus:ring-2 focus:ring-red-500 focus:border-red-500" 
+      : "focus:ring-2 focus:ring-teal-500 focus:border-teal-500";
 
     switch (question.type) {
       case "text":
@@ -210,7 +234,7 @@ export function DynamicQuestionStep({
             onChange={(e) => handleInputChange(question.key, e.target.value)}
             placeholder={question.placeholder}
             type="text"
-            className="w-full p-3 border border-border rounded-lg bg-background text-foreground focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-colors"
+            className={`w-full p-3 border rounded-lg bg-background text-foreground ${borderClass} ${focusClass} transition-colors`}
           />
         );
       case "textarea":
@@ -220,7 +244,7 @@ export function DynamicQuestionStep({
             onChange={(e) => handleInputChange(question.key, e.target.value)}
             placeholder={question.placeholder}
             rows={4}
-            className="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-colors"
+            className={`w-full p-3 border rounded-lg ${borderClass} ${focusClass} transition-colors`}
           />
         );
       case "number":
@@ -237,7 +261,7 @@ export function DynamicQuestionStep({
             type="number"
             min={question.validation?.min}
             max={question.validation?.max}
-            className="w-full p-3 border border-border rounded-lg bg-background text-foreground focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-colors"
+            className={`w-full p-3 border rounded-lg bg-background text-foreground ${borderClass} ${focusClass} transition-colors`}
           />
         );
       case "date":
@@ -246,7 +270,7 @@ export function DynamicQuestionStep({
             value={(value as string) || ""}
             onChange={(e) => handleInputChange(question.key, e.target.value)}
             type="date"
-            className="w-full p-3 border border-border rounded-lg bg-background text-foreground focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-colors"
+            className={`w-full p-3 border rounded-lg bg-background text-foreground ${borderClass} ${focusClass} transition-colors`}
             onClick={(e) => {
               (e.currentTarget as HTMLInputElement).showPicker?.();
             }}
@@ -254,7 +278,7 @@ export function DynamicQuestionStep({
         );
       case "boolean":
         return (
-          <div className="flex items-center justify-between p-3 bg-slate-50 rounded-lg border border-slate-200">
+          <div className={`flex items-center justify-between p-3 rounded-lg border ${hasError ? "bg-slate-50 border-red-500" : "bg-slate-50 border-slate-200"}`}>
             <span className="text-base font-medium text-foreground">
               {question.label}
             </span>
@@ -272,7 +296,7 @@ export function DynamicQuestionStep({
             value={(value as string) || ""}
             onValueChange={(val) => handleInputChange(question.key, val)}
           >
-            <SelectTrigger className="w-full h-12 p-3 border border-border rounded-lg bg-background text-foreground focus:ring-2 focus:ring-teal-500 focus:border-teal-500">
+            <SelectTrigger className={`w-full h-12 p-3 border rounded-lg bg-background text-foreground ${borderClass} ${focusClass}`}>
               <SelectValue placeholder="Select an option" />
             </SelectTrigger>
             <SelectContent>
@@ -289,7 +313,7 @@ export function DynamicQuestionStep({
           <Input
             value={(value as string) || ""}
             onChange={(e) => handleInputChange(question.key, e.target.value)}
-            className="w-full p-3 border border-border rounded-lg bg-background text-foreground focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-colors"
+            className={`w-full p-3 border rounded-lg bg-background text-foreground ${borderClass} ${focusClass} transition-colors`}
           />
         );
     }
@@ -306,30 +330,13 @@ export function DynamicQuestionStep({
         </p>
       </div>
 
-      {error && (
-        <div className="p-4 bg-red-50 border-l-4 border-red-500 rounded-lg text-red-700">
-          <div className="flex items-start">
-            <svg
-              className="h-5 w-5 text-red-500 mt-0.5 mr-3"
-              fill="currentColor"
-              viewBox="0 0 20 20"
-            >
-              <path
-                fillRule="evenodd"
-                d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
-                clipRule="evenodd"
-              />
-            </svg>
-            <span>{error}</span>
-          </div>
-        </div>
-      )}
-
       <div className="space-y-6">
         {section.questions.map((question) => {
           if (shouldSkipQuestion(question)) {
             return null;
           }
+
+          const fieldError = fieldErrors[question.key];
 
           return (
             <div
@@ -337,18 +344,27 @@ export function DynamicQuestionStep({
               ref={(el: HTMLDivElement | null) => {
                 questionRefs.current[question.key] = el;
               }}
-              className="space-y-3 p-4 bg-slate-50 rounded-xl border border-slate-200"
+              className={`space-y-2 p-4 rounded-xl border ${
+                fieldError
+                  ? "bg-slate-50 border-red-500"
+                  : "bg-slate-50 border-slate-200"
+              }`}
             >
               {question.type !== "boolean" && (
                 <label className="block text-lg font-semibold text-foreground">
-                  {question.label}
+                  {processTemplate(question.label)}
                   {question.required && (
                     <span className="text-red-500 ml-1">*</span>
                   )}
                 </label>
               )}
               {renderQuestion(question)}
-              {question.helpText && question.type !== "boolean" && (
+              {fieldError && (
+                <p className="text-sm text-red-600 font-medium mt-2">
+                  {fieldError}
+                </p>
+              )}
+              {!fieldError && question.helpText && question.type !== "boolean" && (
                 <p className="text-xs text-slate-500 mt-2">{question.helpText}</p>
               )}
             </div>

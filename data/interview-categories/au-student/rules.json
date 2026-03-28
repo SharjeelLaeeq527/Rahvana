@@ -1,0 +1,877 @@
+{
+  "categorySlug": "au-student",
+  "version": "1.0.0",
+  "lastUpdated": "2026-03-27",
+  "documentationRules": {
+    "category": "Question Selection Rules for Australia Student Visa Interview Preparation",
+    "description": "Intelligent question selection system that adapts question sets based on applicant profile and answers to optimally prepare students for Australia student visa interviews.",
+    "structure": {
+      "ruleTypes": [
+        "CORE_REQUIREMENTS - Always included questions for any Australia student",
+        "PROFILE_BASED - Triggered based on applicant's education level and career stage",
+        "CONDITIONAL_CONCERNS - Triggered when specific risk factors or strengths are identified",
+        "SCENARIO_SPECIFIC - Triggered for special circumstances (visa history, employment status, etc.)",
+        "FIELD_SPECIFIC - Adapted question focus based on program and field of study"
+      ],
+      "operatorTypes": ["equals", "notEquals", "greaterThan", "lessThan", "greaterThanOrEqual", "lessThanOrEqual"],
+      "conditionTypes": ["AND (all conditions must be true)", "OR (at least one condition must be true)", "NOT (condition must be false)"],
+      "priorityLevels": ["high", "medium", "low"]
+    }
+  },
+  "questionSelectionRules": [
+    {
+      "id": "rule_core_basic_identity",
+      "name": "Core - Basic Profile & Identity",
+      "description": "Always include basic identity and profile questions as foundation for Australia student visa interview",
+      "ruleType": "CORE_REQUIREMENTS",
+      "condition": {
+        "type": "AND",
+        "conditions": [
+          {
+            "field": "country_of_residence",
+            "operator": "notEquals",
+            "value": ""
+          }
+        ]
+      },
+      "actions": {
+        "includeCategories": ["Study Plans"],
+        "priorityBoost": ["high"],
+        "reason": "Basic identity verification establishes applicant eligibility and forms foundation for Australia student visa assessment including age requirement (16+)"
+      }
+    },
+    {
+      "id": "rule_core_study_plans",
+      "name": "Core - Study Plans & Motivation",
+      "description": "Always include study motivation and career alignment questions",
+      "ruleType": "CORE_REQUIREMENTS",
+      "condition": {
+        "type": "AND",
+        "conditions": [
+          {
+            "field": "country_of_residence",
+            "operator": "notEquals",
+            "value": ""
+          }
+        ]
+      },
+      "actions": {
+        "includeCategories": ["Study Plans"],
+        "priorityBoost": ["high"],
+        "reason": "Study motivation assessment is critical to determine genuine educational intent vs. immigration intent, core evaluation criteria for Australia student visa"
+      }
+    },
+    {
+      "id": "rule_core_university",
+      "name": "Core - University Choice & Acceptance",
+      "description": "Always include university selection and acceptance letter questions",
+      "ruleType": "CORE_REQUIREMENTS",
+      "condition": {
+        "type": "AND",
+        "conditions": [
+          {
+            "field": "country_of_residence",
+            "operator": "notEquals",
+            "value": ""
+          }
+        ]
+      },
+      "actions": {
+        "includeCategories": ["University Choice"],
+        "priorityBoost": ["high"],
+        "reason": "University verification confirms acceptance letter receipt, legitimate admission, and student visa eligibility, mandatory requirements for Australia student visa processing"
+      }
+    },
+    {
+      "id": "rule_core_academics",
+      "name": "Core - Academic Capability",
+      "description": "Always include test scores and academic preparation questions",
+      "ruleType": "CORE_REQUIREMENTS",
+      "condition": {
+        "type": "AND",
+        "conditions": [
+          {
+            "field": "country_of_residence",
+            "operator": "notEquals",
+            "value": ""
+          }
+        ]
+      },
+      "actions": {
+        "includeCategories": ["Academic Capability"],
+        "priorityBoost": ["high"],
+        "reason": "Academic capability verification through test scores (PTE/IELTS), GPA, and English proficiency is mandatory for Australia student visa approval"
+      }
+    },
+    {
+      "id": "rule_core_finance",
+      "name": "Core - Financial Capability & Proof of Funds",
+      "description": "Always include financial sponsor and funding questions - critical for Australia student visa",
+      "ruleType": "CORE_REQUIREMENTS",
+      "condition": {
+        "type": "AND",
+        "conditions": [
+          {
+            "field": "country_of_residence",
+            "operator": "notEquals",
+            "value": ""
+          }
+        ]
+      },
+      "actions": {
+        "includeCategories": ["Financial Status"],
+        "priorityBoost": ["high"],
+        "reason": "Financial capability verification is critical for Australia student visa - officers must confirm applicant/sponsor can fund entire education and living expenses without relying on Australian public funds"
+      }
+    },
+    {
+      "id": "rule_core_home_ties",
+      "name": "Core - Home Country Ties & Return Intent",
+      "description": "Always include post-graduation plans and home country ties questions - critical for Australia student visa",
+      "ruleType": "CORE_REQUIREMENTS",
+      "condition": {
+        "type": "AND",
+        "conditions": [
+          {
+            "field": "country_of_residence",
+            "operator": "notEquals",
+            "value": ""
+          }
+        ]
+      },
+      "actions": {
+        "includeCategories": ["Post-Graduation Plans"],
+        "priorityBoost": ["high"],
+        "reason": "Return home commitment and home country ties are CRITICAL for Australia student visa - officers must establish genuine student intent and evidence of commitment to return home after studies"
+      }
+    },
+    {
+      "id": "rule_core_visa_compliance",
+      "name": "Core - Visa Compliance & Legal Background",
+      "description": "Always include visa history and legal background questions",
+      "ruleType": "CORE_REQUIREMENTS",
+      "condition": {
+        "type": "AND",
+        "conditions": [
+          {
+            "field": "country_of_residence",
+            "operator": "notEquals",
+            "value": ""
+          }
+        ]
+      },
+      "actions": {
+        "includeCategories": ["Background"],
+        "priorityBoost": ["high"],
+        "reason": "Visa compliance and legal clearance are mandatory verification requirements for Australia student visa - any visa violations or criminal history must be disclosed and explained"
+      }
+    },
+
+    {
+      "id": "rule_strong_english",
+      "name": "Strong English Proficiency",
+      "description": "Applied when student has high English test scores (PTE 85+ or IELTS 8+)",
+      "ruleType": "CONDITIONAL_CONCERNS",
+      "condition": {
+        "type": "OR",
+        "conditions": [
+          {
+            "field": "pte_score",
+            "operator": "greaterThan",
+            "value": 85
+          },
+          {
+            "field": "ielts_score",
+            "operator": "greaterThan",
+            "value": 8
+          }
+        ]
+      },
+      "actions": {
+        "includeCategories": ["Academic Capability"],
+        "priorityBoost": ["low"],
+        "reason": "Strong English proficiency significantly strengthens Australia student visa application by confirming student can succeed in English-medium academic environment"
+      }
+    },
+    {
+      "id": "rule_weak_english",
+      "name": "Weak English Proficiency",
+      "description": "Applied when student has low English test scores (PTE below 65 or IELTS below 6.5) or low confidence rating",
+      "ruleType": "CONDITIONAL_CONCERNS",
+      "condition": {
+        "type": "OR",
+        "conditions": [
+          {
+            "field": "pte_score",
+            "operator": "lessThan",
+            "value": 65
+          },
+          {
+            "field": "ielts_score",
+            "operator": "lessThan",
+            "value": 6.5
+          }
+        ]
+      },
+      "actions": {
+        "includeCategories": ["Academic Capability"],
+        "priorityBoost": ["high"],
+        "reason": "Weak English proficiency raises concerns about academic success and requires detailed explanation of support systems and strategies for managing English-medium coursework at Australian university"
+      }
+    },
+    {
+      "id": "rule_strong_academics",
+      "name": "Strong Academic Record",
+      "description": "Applied when student has high GPA (3.5+) or strong test scores",
+      "ruleType": "CONDITIONAL_CONCERNS",
+      "condition": {
+        "type": "AND",
+        "conditions": [
+          {
+            "field": "previous_gpa",
+            "operator": "greaterThan",
+            "value": 3.5
+          }
+        ]
+      },
+      "actions": {
+        "includeCategories": ["Academic Capability"],
+        "priorityBoost": ["low"],
+        "reason": "Strong academic history demonstrates capability for Australian university coursework and reduces officer concerns about academic success"
+      }
+    },
+    {
+      "id": "rule_weak_academics",
+      "name": "Weak Academic Record",
+      "description": "Applied when student has low GPA (below 3.0) or low English test scores",
+      "ruleType": "CONDITIONAL_CONCERNS",
+      "condition": {
+        "type": "OR",
+        "conditions": [
+          {
+            "field": "previous_gpa",
+            "operator": "lessThan",
+            "value": 3.0
+          },
+          {
+            "field": "ielts_score",
+            "operator": "lessThan",
+            "value": 6.5
+          }
+        ]
+      },
+      "actions": {
+        "includeCategories": ["Academic Capability", "Financial Status"],
+        "priorityBoost": ["high"],
+        "reason": "Weaker academic record requires detailed explanation of academic preparation strategies and confirmation of financial support for full program duration despite potential academic challenges"
+      }
+    },
+
+    {
+      "id": "rule_strong_finances",
+      "name": "Strong Financial Capability",
+      "description": "Applied when sponsor income is high (AUD 100,000+ equivalent) or student has full scholarship",
+      "ruleType": "CONDITIONAL_CONCERNS",
+      "condition": {
+        "type": "OR",
+        "conditions": [
+          {
+            "field": "sponsor_annual_income",
+            "operator": "greaterThan",
+            "value": 100000
+          },
+          {
+            "field": "scholarship_type",
+            "operator": "equals",
+            "value": "Full Tuition + Stipend"
+          }
+        ]
+      },
+      "actions": {
+        "includeCategories": ["Financial Status"],
+        "priorityBoost": ["low"],
+        "reason": "Strong financial capability and funding sources significantly strengthen Australia student visa application by eliminating officer concern about student becoming financial burden on Australia"
+      }
+    },
+    {
+      "id": "rule_weak_finances",
+      "name": "Weak or Uncertain Financial Capability",
+      "description": "Applied when sponsor income is modest (below AUD 40,000) or available funds barely cover program costs",
+      "ruleType": "CONDITIONAL_CONCERNS",
+      "condition": {
+        "type": "OR",
+        "conditions": [
+          {
+            "field": "sponsor_annual_income",
+            "operator": "lessThan",
+            "value": 40000
+          },
+          {
+            "field": "available_funds",
+            "operator": "lessThan",
+            "value": 50000
+          }
+        ]
+      },
+      "actions": {
+        "includeCategories": ["Financial Status"],
+        "priorityBoost": ["high"],
+        "reason": "Limited financial resources require detailed documentation of sponsor income proof, detailed funding plan for all program years, and clear explanation of how expenses will be covered without Australian public funds"
+      }
+    },
+    {
+      "id": "rule_no_scholarship",
+      "name": "No Scholarship Funding",
+      "description": "Applied when student did not receive any scholarship",
+      "ruleType": "CONDITIONAL_CONCERNS",
+      "condition": {
+        "type": "AND",
+        "conditions": [
+          {
+            "field": "scholarship_status",
+            "operator": "equals",
+            "value": false
+          }
+        ]
+      },
+      "actions": {
+        "includeCategories": ["Financial Status"],
+        "priorityBoost": ["medium"],
+        "reason": "Absence of scholarship means full reliance on sponsor/personal funds - requires strong evidence of complete financial capability for entire program duration"
+      }
+    },
+    {
+      "id": "rule_has_scholarship",
+      "name": "Has Scholarship Funding",
+      "description": "Applied when student received any type of scholarship (merit-based, need-based, or partial)",
+      "ruleType": "CONDITIONAL_CONCERNS",
+      "condition": {
+        "type": "AND",
+        "conditions": [
+          {
+            "field": "scholarship_status",
+            "operator": "equals",
+            "value": true
+          }
+        ]
+      },
+      "actions": {
+        "includeCategories": ["Financial Status"],
+        "priorityBoost": ["low"],
+        "reason": "University scholarship significantly strengthens financial capability profile by confirming university investment in student and reducing sponsor burden"
+      }
+    },
+    {
+      "id": "rule_personal_savings",
+      "name": "Contributing Personal Savings",
+      "description": "Applied when student is contributing personal savings toward education",
+      "ruleType": "CONDITIONAL_CONCERNS",
+      "condition": {
+        "type": "AND",
+        "conditions": [
+          {
+            "field": "personal_savings_contribution",
+            "operator": "notEquals",
+            "value": ""
+          }
+        ]
+      },
+      "actions": {
+        "includeCategories": ["Financial Status"],
+        "priorityBoost": ["low"],
+        "reason": "Personal savings contribution demonstrates student commitment and financial investment in their own education, strengthening overall funding credibility"
+      }
+    },
+
+    {
+      "id": "rule_strong_home_ties",
+      "name": "Strong Home Country Ties",
+      "description": "Applied when student has multiple home country ties: family, property, job prospects, and strong intent to return",
+      "ruleType": "CONDITIONAL_CONCERNS",
+      "condition": {
+        "type": "AND",
+        "conditions": [
+          {
+            "field": "plan_to_return_home",
+            "operator": "equals",
+            "value": true
+          },
+          {
+            "field": "family_in_home_country",
+            "operator": "equals",
+            "value": true
+          }
+        ]
+      },
+      "actions": {
+        "includeCategories": ["Post-Graduation Plans"],
+        "priorityBoost": ["low"],
+        "reason": "Multiple strong home country ties (family, property, job prospects) provide clear evidence of genuine student intent and commitment to return home, significantly strengthening Australia student visa case"
+      }
+    },
+    {
+      "id": "rule_weak_home_ties",
+      "name": "Weak Home Country Ties",
+      "description": "Applied when student has few home country ties or uncertain return plans",
+      "ruleType": "CONDITIONAL_CONCERNS",
+      "condition": {
+        "type": "OR",
+        "conditions": [
+          {
+            "field": "plan_to_return_home",
+            "operator": "equals",
+            "value": false
+          },
+          {
+            "field": "family_in_home_country",
+            "operator": "equals",
+            "value": false
+          }
+        ]
+      },
+      "actions": {
+        "includeCategories": ["Post-Graduation Plans"],
+        "priorityBoost": ["high"],
+        "reason": "Limited home country ties or weak return intent raises officer concerns about genuine student intent and requires detailed, credible explanation of why student will return to home country"
+      }
+    },
+    {
+      "id": "rule_considering_graduate_work_visa",
+      "name": "Considering Graduate Work Visa",
+      "description": "Applied when student is considering staying in Australia after graduation using Graduate Work Visa",
+      "ruleType": "CONDITIONAL_CONCERNS",
+      "condition": {
+        "type": "AND",
+        "conditions": [
+          {
+            "field": "post_study_work_visa_plans",
+            "operator": "notEquals",
+            "value": ""
+          }
+        ]
+      },
+      "actions": {
+        "includeCategories": ["Post-Graduation Plans"],
+        "priorityBoost": ["high"],
+        "reason": "Graduate Work Visa consideration must be carefully framed as temporary work experience followed by return home to maintain genuine student intent. Requires clear explanation of how temporary Australia work aligns with long-term home country career plans"
+      }
+    },
+
+    {
+      "id": "rule_part_time_work_planned",
+      "name": "Plans Part-Time Work During Studies",
+      "description": "Applied when student plans to work part-time while studying",
+      "ruleType": "CONDITIONAL_CONCERNS",
+      "condition": {
+        "type": "AND",
+        "conditions": [
+          {
+            "field": "part_time_work_plans",
+            "operator": "notEquals",
+            "value": ""
+          }
+        ]
+      },
+      "actions": {
+        "includeCategories": ["Financial Status"],
+        "priorityBoost": ["medium"],
+        "reason": "Part-time work plans require demonstration of understanding Australia student visa work restrictions (20 hours/week during school terms) and realistic balance with academic commitments"
+      }
+    },
+
+    {
+      "id": "rule_healthcare_awareness",
+      "name": "Healthcare Management Planning",
+      "description": "Applied when student has documented healthcare awareness and planning",
+      "ruleType": "CONDITIONAL_CONCERNS",
+      "condition": {
+        "type": "AND",
+        "conditions": [
+          {
+            "field": "healthcare_management_abroad",
+            "operator": "notEquals",
+            "value": ""
+          }
+        ]
+      },
+      "actions": {
+        "includeCategories": ["Post-Graduation Plans"],
+        "priorityBoost": ["low"],
+        "reason": "Demonstrated healthcare planning and understanding of Australian state health services shows practical preparation and understanding of Australia life support systems"
+      }
+    },
+
+    {
+      "id": "rule_visa_compliance_understanding",
+      "name": "Student Visa Conditions Understanding",
+      "description": "Applied when student demonstrates understanding of visa conditions and limitations",
+      "ruleType": "CONDITIONAL_CONCERNS",
+      "condition": {
+        "type": "AND",
+        "conditions": [
+          {
+            "field": "student_visa_conditions_understanding",
+            "operator": "notEquals",
+            "value": ""
+          }
+        ]
+      },
+      "actions": {
+        "includeCategories": ["Background"],
+        "priorityBoost": ["low"],
+        "reason": "Clear understanding of Australia student visa conditions and Graduate Work Visa eligibility demonstrates serious preparation and commitment to legal compliance during studies"
+      }
+    },
+
+    {
+      "id": "rule_visa_refusal_history",
+      "name": "Visa Refusal History",
+      "description": "Applied when student has been denied a visa to any country previously",
+      "ruleType": "SCENARIO_SPECIFIC",
+      "condition": {
+        "type": "OR",
+        "conditions": [
+          {
+            "field": "visa_refusal_history",
+            "operator": "equals",
+            "value": true
+          },
+          {
+            "field": "other_countries_visa_refusal",
+            "operator": "equals",
+            "value": true
+          }
+        ]
+      },
+      "actions": {
+        "includeCategories": ["Background", "Post-Graduation Plans"],
+        "priorityBoost": ["high"],
+        "reason": "Visa refusal history is serious concern - requires transparent explanation of refusal reason, evidence that circumstances have changed, and demonstration that applicant is now clearly eligible for Australia student visa"
+      }
+    },
+    {
+      "id": "rule_criminal_history",
+      "name": "Criminal Record or Legal Issues",
+      "description": "Applied when student has any criminal convictions or legal issues",
+      "ruleType": "SCENARIO_SPECIFIC",
+      "condition": {
+        "type": "OR",
+        "conditions": [
+          {
+            "field": "criminal_record",
+            "operator": "equals",
+            "value": true
+          },
+          {
+            "field": "any_au_immigration_issues",
+            "operator": "equals",
+            "value": true
+          },
+          {
+            "field": "previous_overstay",
+            "operator": "equals",
+            "value": true
+          }
+        ]
+      },
+      "actions": {
+        "includeCategories": ["Background"],
+        "priorityBoost": ["high"],
+        "reason": "Criminal history or visa violations are serious impediments to Australia student visa approval - requires full disclosure, detailed explanation of circumstances, evidence of rehabilitation, and assurance of future lawful conduct"
+      }
+    },
+
+    {
+      "id": "rule_graduate_student",
+      "name": "Graduate Student (Master's/PhD)",
+      "description": "Applied when student is pursuing Master's degree or PhD",
+      "ruleType": "PROFILE_BASED",
+      "condition": {
+        "type": "OR",
+        "conditions": [
+          {
+            "field": "intended_degree",
+            "operator": "equals",
+            "value": "Master's (2 years)"
+          },
+          {
+            "field": "intended_degree",
+            "operator": "equals",
+            "value": "PhD / Doctoral (4+ years)"
+          }
+        ]
+      },
+      "actions": {
+        "includeCategories": ["Study Plans", "Academic Capability"],
+        "priorityBoost": ["medium"],
+        "reason": "Graduate students often present stronger credentials for Australia visa - can articulate specific research goals, have clearer career direction, and typically demonstrate stronger non-immigrant intent with existing professional experience"
+      }
+    },
+    {
+      "id": "rule_undergraduate_student",
+      "name": "Undergraduate Student (Bachelor's)",
+      "description": "Applied when student is pursuing Bachelor's degree",
+      "ruleType": "PROFILE_BASED",
+      "condition": {
+        "type": "AND",
+        "conditions": [
+          {
+            "field": "intended_degree",
+            "operator": "equals",
+            "value": "Bachelor's (4 years)"
+          }
+        ]
+      },
+      "actions": {
+        "includeCategories": ["Study Plans", "Post-Graduation Plans"],
+        "priorityBoost": ["medium"],
+        "reason": "Undergraduate students pursuing 4-year programs require careful assessment of return intent and home country ties since long program duration and typically younger age may raise immigration intent concerns"
+      }
+    },
+
+    {
+      "id": "rule_employed_with_experience",
+      "name": "Employed with Work Experience",
+      "description": "Applied when student is currently employed with relevant work experience",
+      "ruleType": "PROFILE_BASED",
+      "condition": {
+        "type": "AND",
+        "conditions": [
+          {
+            "field": "primary_sponsor",
+            "operator": "equals",
+            "value": "Self"
+          }
+        ]
+      },
+      "actions": {
+        "includeCategories": ["Study Plans", "Post-Graduation Plans"],
+        "priorityBoost": ["low"],
+        "reason": "Self-sponsored student or employed applicant demonstrates maturity, financial independence, clear professional motivation for studies, and strong ability to return to meaningful employment post-graduation"
+      }
+    },
+
+    {
+      "id": "rule_previous_au_visit",
+      "name": "Previous Australia Visit Experience",
+      "description": "Applied when student has visited Australia before",
+      "ruleType": "SCENARIO_SPECIFIC",
+      "condition": {
+        "type": "AND",
+        "conditions": [
+          {
+            "field": "previous_au_visits",
+            "operator": "equals",
+            "value": true
+          }
+        ]
+      },
+      "actions": {
+        "includeCategories": ["Academic Capability"],
+        "priorityBoost": ["low"],
+        "reason": "Previous Australia visits demonstrate clean immigration history, compliance with visa terms, real familiarity with Australia environment, and opportunity for campus visits which strengthen university commitment"
+      }
+    },
+    {
+      "id": "rule_no_au_visit",
+      "name": "No Previous Australia Visit",
+      "description": "Applied when student has never visited Australia before",
+      "ruleType": "SCENARIO_SPECIFIC",
+      "condition": {
+        "type": "AND",
+        "conditions": [
+          {
+            "field": "previous_au_visits",
+            "operator": "equals",
+            "value": false
+          }
+        ]
+      },
+      "actions": {
+        "includeCategories": ["University Choice"],
+        "priorityBoost": ["medium"],
+        "reason": "No Australia experience requires extra effort to demonstrate detailed university knowledge through virtual research, shows genuine interest despite not visiting campus, and reinforces commitment to specific university"
+      }
+    },
+
+    {
+      "id": "rule_acceptance_received",
+      "name": "Has Acceptance Letter",
+      "description": "Applied when student has received acceptance letter from university (ready for visa application)",
+      "ruleType": "SCENARIO_SPECIFIC",
+      "condition": {
+        "type": "AND",
+        "conditions": [
+          {
+            "field": "university_knowledge",
+            "operator": "notEquals",
+            "value": ""
+          }
+        ]
+      },
+      "actions": {
+        "includeCategories": ["University Choice"],
+        "priorityBoost": ["low"],
+        "reason": "Possession of acceptance letter confirms legitimate admission to Australian university and student visa eligibility, significantly advancing application readiness"
+      }
+    },
+
+    {
+      "id": "rule_high_risk_combination",
+      "name": "High-Risk Profile Combination",
+      "description": "Applied when student has combination of concerning factors: weak academics + weak finances + weak home country ties",
+      "ruleType": "CONDITIONAL_CONCERNS",
+      "condition": {
+        "type": "AND",
+        "conditions": [
+          {
+            "field": "previous_gpa",
+            "operator": "lessThan",
+            "value": 3.0
+          },
+          {
+            "field": "available_funds",
+            "operator": "lessThan",
+            "value": 60000
+          },
+          {
+            "field": "family_in_home_country",
+            "operator": "equals",
+            "value": false
+          }
+        ]
+      },
+      "actions": {
+        "includeCategories": ["Academic Capability", "Financial Status", "Post-Graduation Plans"],
+        "priorityBoost": ["high"],
+        "reason": "High-risk combination of weak academics + limited finances + weak home country ties requires comprehensive evidence addressing ALL concerns: strong support plan for academics, complete financial documentation, and very clear credible explanation of genuine student intent and return commitment despite weak ties"
+      }
+    },
+    {
+      "id": "rule_developing_country_resources",
+      "name": "Student from Developing Country with Resources",
+      "description": "Applied when student is from developing country with strong financial support",
+      "ruleType": "CONDITIONAL_CONCERNS",
+      "condition": {
+        "type": "AND",
+        "conditions": [
+          {
+            "field": "sponsor_annual_income",
+            "operator": "greaterThan",
+            "value": 50000
+          }
+        ]
+      },
+      "actions": {
+        "includeCategories": ["Financial Status", "Post-Graduation Plans"],
+        "priorityBoost": ["low"],
+        "reason": "Strong financial resources in developing country context often indicate family business or high-status employment, strengthening both financial capability and home country ties arguments for Australia student visa"
+      }
+    },
+    {
+      "id": "rule_non_english_medium_education",
+      "name": "Non-English Medium Education",
+      "description": "Applied when student did not study in English medium previously",
+      "ruleType": "CONDITIONAL_CONCERNS",
+      "condition": {
+        "type": "AND",
+        "conditions": [
+          {
+            "field": "medium_of_instruction",
+            "operator": "equals",
+            "value": false
+          }
+        ]
+      },
+      "actions": {
+        "includeCategories": ["Academic Capability"],
+        "priorityBoost": ["high"],
+        "reason": "Non-English prior education requires detailed explanation of English proficiency development, specific strategies for managing English-medium coursework, and discussion of university support systems available at Australian university"
+      }
+    },
+    {
+      "id": "rule_program_career_alignment",
+      "name": "Program Career Goals Alignment",
+      "description": "Applied when student demonstrates clear alignment between program and career goals",
+      "ruleType": "CONDITIONAL_CONCERNS",
+      "condition": {
+        "type": "AND",
+        "conditions": [
+          {
+            "field": "program_career_goals_alignment",
+            "operator": "notEquals",
+            "value": ""
+          }
+        ]
+      },
+      "actions": {
+        "includeCategories": ["Study Plans"],
+        "priorityBoost": ["low"],
+        "reason": "Strong program-career alignment demonstrates thoughtful application and genuine educational motivation, reducing officer concerns about immigration intent"
+      }
+    },
+    {
+      "id": "rule_professional_preparation",
+      "name": "Professional Practice Preparation Focus",
+      "description": "Applied when student focuses on program's professional preparation and qualifications",
+      "ruleType": "CONDITIONAL_CONCERNS",
+      "condition": {
+        "type": "AND",
+        "conditions": [
+          {
+            "field": "program_professional_preparation",
+            "operator": "notEquals",
+            "value": ""
+          }
+        ]
+      },
+      "actions": {
+        "includeCategories": ["Study Plans"],
+        "priorityBoost": ["low"],
+        "reason": "Focus on professional qualifications and certifications shows forward-thinking career planning and demonstrates Australia education's practical value in home country context"
+      }
+    },
+    {
+      "id": "rule_multiple_admissions",
+      "name": "Multiple University Admissions",
+      "description": "Applied when student received multiple admission offers (3+)",
+      "ruleType": "SCENARIO_SPECIFIC",
+      "condition": {
+        "type": "AND",
+        "conditions": [
+          {
+            "field": "total_universities_applied",
+            "operator": "greaterThan",
+            "value": 3
+          }
+        ]
+      },
+      "actions": {
+        "includeCategories": ["University Choice"],
+        "priorityBoost": ["low"],
+        "reason": "Multiple applications and selective university choices demonstrate strong academic competitiveness, thoughtful application strategy, and genuine educational opportunity in Australia"
+      }
+    },
+    {
+      "id": "rule_limited_applications",
+      "name": "Limited University Applications",
+      "description": "Applied when student applied to one or two universities",
+      "ruleType": "SCENARIO_SPECIFIC",
+      "condition": {
+        "type": "AND",
+        "conditions": [
+          {
+            "field": "total_universities_applied",
+            "operator": "lessThanOrEqual",
+            "value": 2
+          }
+        ]
+      },
+      "actions": {
+        "includeCategories": ["University Choice"],
+        "priorityBoost": ["medium"],
+        "reason": "Limited applications may require explanation of selection strategy and reaffirmation of genuine commitment to chosen Australian university as primary choice"
+      }
+    }
+  ]
+}

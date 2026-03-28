@@ -321,7 +321,7 @@ export function MFASetup() {
                 <Button
                   onClick={handleDisableMFA}
                   disabled={loading || disableOTP.trim().length !== 6}
-                  className="h-11 rounded-xl px-6 w-full sm:w-auto bg-destructive hover:bg-destructive/90 text-destructive-foreground"
+                  className="h-11 rounded-xl px-10 w-full sm:w-auto bg-destructive hover:bg-destructive/90 text-destructive-foreground"
                 >
                   {loading ? (
                     <Loader size="sm" text="Disabling..." />

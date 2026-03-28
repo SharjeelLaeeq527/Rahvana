@@ -85,6 +85,7 @@ export interface DynamicQuestionnaire {
 
 // Question Bank Types
 export interface InterviewQuestion {
+  variations: string[] | undefined;
   id: string;
   category: string;
   question: string;

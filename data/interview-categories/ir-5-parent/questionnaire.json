@@ -44,7 +44,7 @@
           "label": "What is your marital status?",
           "type": "select",
           "required": true,
-          "options": ["Married", "Widowed", "Divorced", "Single"]
+          "options": ["Married", "Widowed", "Divorced", "Single (Never married)", "Separated"]
         }
       ]
     },

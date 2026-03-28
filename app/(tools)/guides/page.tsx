@@ -36,7 +36,7 @@ import {
 // --- Data & Types ---
 
 type GuideCategory =
-  | "Pakistan Docs"
+  | "Pakistan Document"
   // | "Embassy Logistics"
   // | "Arrival & Travel"
   // | "Financial & Sponsorship"
@@ -48,6 +48,7 @@ type GuideCategory =
 interface Guide {
   id: string;
   title: string;
+  subtitle?: string;
   description: string;
   category: GuideCategory;
   href: string;
@@ -93,20 +94,23 @@ const GUIDES: Guide[] = [
   // },
   {
     id: "passport",
-    title: "Passport Guide",
+    title: "Passport",
+    subtitle: "",
     description:
-      "Complete guide to obtaining or renewing your Pakistani passport.",
-    category: "Pakistan Docs",
+      "DGIP roadmap for MRP and ePassport applications, renewals, and lost or damaged cases.",
+    category: "Pakistan Document",
     href: "/guides/passport-guide",
     icon: Globe,
   },
   {
     id: "police-verification",
     icon: Shield,
-    title: "Police Verification Guide",
-    description: "How to obtain Police Verification Certificate.",
+    title: "Police Character Certificate",
+    subtitle: "",
+    description:
+      "Province-wise PCC workflow with required documents, fee tiers, and verification steps.",
     href: "/guides/police-verification-guide",
-    category: "Pakistan Docs",
+    category: "Pakistan Document",
   },
   // {
   //   id: "pcc-reference",
@@ -119,34 +123,41 @@ const GUIDES: Guide[] = [
   // },
   {
     id: "cnic",
-    title: "CNIC (National ID)",
-    description: "Complete guide to obtaining and renewing your NADRA CNIC.",
-    category: "Pakistan Docs",
+    title: "CNIC",
+    subtitle: "Computerized National Identity Card",
+    description:
+      "NADRA CNIC workflow for new issuance, corrections, and replacement or renewal applications.",
+    category: "Pakistan Document",
     href: "/guides/cnic-guide",
     icon: FileText,
   },
   {
     id: "birth-certificate",
     title: "Birth Certificate",
-    description: "NADRA CRC, B-Form, and alternative birth documentation.",
-    category: "Pakistan Docs",
+    subtitle: "",
+    description:
+      "Union Council CBRC process for birth registration, correction, and replacement",
+    category: "Pakistan Document",
     href: "/guides/birth-certificate-guide",
     icon: FileText,
   },
   {
     id: "frc",
-    title: "FRC Guide",
+    title: "FRC",
+    subtitle: "NADRA Family Registration Certificate",
     description:
-      "Complete guide to obtaining your Family Registration Certificate (FRC).",
-    category: "Pakistan Docs",
+      "NADRA process to apply for an FRC and review registered family details.",
+    category: "Pakistan Document",
     href: "/guides/frc-guide",
     icon: Globe,
   },
   {
     id: "marriage-certificate",
-    title: "Marriage Certificate",
-    description: "Nikahnama, MRC, and certified English translations.",
-    category: "Pakistan Docs",
+    title: "Marriage Registration",
+    subtitle: "",
+    description:
+      "Nikah Nama registration through Union Council and NADRA MRC issuance with attestation pathway.",
+    category: "Pakistan Document",
     href: "/guides/nikah-nama-guide",
     icon: Heart,
   },
@@ -260,8 +271,10 @@ const GUIDES: Guide[] = [
   // },
   {
     id: "vaccinations",
-    title: "Vaccination Guide",
-    description: "CDC-required vaccinations and polio certificate.",
+    title: "Polio Vaccination",
+    subtitle: "",
+    description:
+      "Polio vaccination workflow with NIMS entry and travel certificate issuance.",
     category: "Medical & Exam",
     href: "/guides/polio-vaccination-guide",
     icon: Syringe,
@@ -299,7 +312,7 @@ const GUIDES: Guide[] = [
 
 const CATEGORIES: ("All" | GuideCategory)[] = [
   "All",
-  "Pakistan Docs",
+  "Pakistan Document",
   // "Embassy Logistics",
   // "Arrival & Travel",
   // "Financial & Sponsorship",
@@ -516,7 +529,7 @@ export default function GuidesPage() {
         </div>
 
         {/* Guides Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-y-10 gap-x-6 pt-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-7 pt-6">
           {filteredGuides.length > 0 ? (
             filteredGuides.map((guide, index) => (
               <GuideCard key={guide.id} guide={guide} index={index} />
@@ -543,7 +556,7 @@ const CATEGORY_STYLES: Record<
     borderGradient: string;
   }
 > = {
-  "Pakistan Docs": {
+  "Pakistan Document": {
     iconBox: "bg-green-600 text-white border-transparent dark:bg-green-500",
     innerBox: "bg-white/20",
     link: "text-green-600 dark:text-green-400",
@@ -642,21 +655,28 @@ function GuideCard({ guide, index }: { guide: Guide; index: number }) {
 
       {/* Content */}
       <div className="relative z-10 flex flex-col grow pt-2">
-        <h3 className="text-xl font-bold text-foreground mb-1 transition-colors">
+        <h3 className="text-lg md:text-xl leading-tight font-bold text-foreground mb-0.5 transition-colors">
           {guide.title}
         </h3>
+        <p
+          className={`text-[11px] leading-snug text-zinc-500 dark:text-zinc-400 mb-4 ${
+            guide.subtitle ? "" : "invisible"
+          }`}
+        >
+          {guide.subtitle || " "}
+        </p>
         <div className="mb-3">
-          <span className="text-[11px] font-bold uppercase tracking-wide text-muted-foreground/80 bg-muted px-2 py-0.5 rounded">
+          <span className="text-[10px] font-semibold uppercase tracking-[0.08em] text-primary/85 bg-primary/10 border border-primary/20 px-2 py-1 rounded">
             {guide.category}
           </span>
         </div>
-        <p className="text-slate-900 dark:text-white text-sm leading-relaxed mb-6 grow">
+        <p className="text-sm leading-6 font-medium text-slate-500 dark:text-slate-400 mb-5 grow [text-wrap:pretty]">
           {guide.description}
         </p>
       </div>
 
       {/* Footer / Action */}
-      <div className="relative z-10 flex items-center justify-between pt-4 border-t border-border mt-auto">
+      <div className="relative z-10 flex items-center justify-between pt-3.5 border-t border-border mt-auto">
         <span className="text-xs font-medium text-muted-foreground flex items-center gap-1">
           {/* Placeholder for stats or extra info if needed */}
         </span>
