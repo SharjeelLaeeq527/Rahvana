@@ -6,7 +6,7 @@ import { useAuth } from "@/app/context/AuthContext";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Globe } from "lucide-react";
+import { Globe, TrendingUp } from "lucide-react";
 import Link from "next/link";
 import { Loader } from "@/components/ui/spinner";
 
@@ -96,6 +96,13 @@ export default function AdminPanel() {
               <span className="text-sm text-muted-foreground">
                 Admin: {user?.email}
               </span>
+              <Link
+                href="/admin/dashboard"
+                className="text-white bg-teal-600 hover:bg-teal-700 rounded-lg px-3 py-1.5 text-sm font-medium transition-colors flex items-center gap-1.5"
+              >
+                <TrendingUp className="h-4 w-4" />
+                View Analytics
+              </Link>
               <button
                 onClick={() => setOpenFeatureModal(true)}
                 className="text-teal-600 border-2 border-teal-600 hover:bg-teal-100 hover:text-teal-700 rounded-lg p-1"

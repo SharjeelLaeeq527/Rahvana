@@ -105,11 +105,11 @@ export async function updateSession(request: NextRequest) {
 
     const { data: profile } = await supabaseAdmin
       .from("profiles")
-      .select("email")
+      .select("email, role")
       .eq("id", user.id)
       .single();
 
-    if (!profile || !ADMIN_EMAILS.includes(profile.email)) {
+    if (!profile || !ADMIN_EMAILS.includes(profile.email) || profile.role !== 'admin') {
       const url = request.nextUrl.clone();
       url.pathname = "/";
       return NextResponse.redirect(url);
