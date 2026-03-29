@@ -5,128 +5,61 @@
  * To add a new country, create a new file like this one and register it in registry.ts.
  */
 
-import { T, CountryData, VisaExplorationAnswers, CandidateRule, FollowUpStep } from "../types";
+import { T, CountryData, VisaExplorationAnswers } from "../types";
 
 // ─────────────────────────────────────────────────────────────
-// CANDIDATE RULES (Declarative logic)
+// CANDIDATE CODES  (US-specific logic)
 // ─────────────────────────────────────────────────────────────
-const CANDIDATE_RULES: CandidateRule[] = [
-  // Family - Citizen
-  { if: { purpose: "FAMILY", sponsor: "US_CITIZEN", relationship: "SPOUSE" }, then: ["IR-1", "CR-1"] },
-  { if: { purpose: "FAMILY", sponsor: "US_CITIZEN", relationship: "FIANCE" }, then: ["K-1"] },
-  { if: { purpose: "FAMILY", sponsor: "US_CITIZEN", relationship: "CHILD", beneficiaryAge: "UNDER_21" }, then: ["IR-2"] },
-  { if: { purpose: "FAMILY", sponsor: "US_CITIZEN", relationship: "CHILD", beneficiaryAge: "OVER_21" }, then: ["F1"] },
-  { if: { purpose: "FAMILY", sponsor: "US_CITIZEN", relationship: "MARRIED_CHILD" }, then: ["F3"] },
-  { if: { purpose: "FAMILY", sponsor: "US_CITIZEN", relationship: "PARENT", petitionerAge: "21 or older" }, then: ["IR-5"] },
-  { if: { purpose: "FAMILY", sponsor: "US_CITIZEN", relationship: "SIBLING", petitionerAge: "21 or older" }, then: ["F4"] },
-  
-  // Family - LPR
-  { if: { purpose: "FAMILY", sponsor: "LPR", relationship: "SPOUSE" }, then: ["F2A"] },
-  { if: { purpose: "FAMILY", sponsor: "LPR", relationship: "CHILD", beneficiaryAge: "UNDER_21" }, then: ["F2A"] },
-  { if: { purpose: "FAMILY", sponsor: "LPR", relationship: "CHILD", beneficiaryAge: "OVER_21" }, then: ["F2B"] },
+function getCandidateCodes(a: VisaExplorationAnswers): string[] {
+  if (!a.purpose) return [];
+  const c: string[] = [];
 
-  // Work Permanent
-  { if: { purpose: "WORK_PERMANENT", workBase: "EXTRAORDINARY" }, then: ["EB-1A"] },
-  { if: { purpose: "WORK_PERMANENT", workBase: "RESEARCHER" }, then: ["EB-1B"] },
-  { if: { purpose: "WORK_PERMANENT", workBase: "MANAGER" }, then: ["EB-1C"] },
-  { if: { purpose: "WORK_PERMANENT", workBase: "ADVANCED_DEGREE" }, then: ["EB-2-NIW", "EB-2"] },
-  { if: { purpose: "WORK_PERMANENT", workBase: "SKILLED" }, then: ["EB-3"] },
-  { if: { purpose: "WORK_PERMANENT", workBase: "INVESTOR" }, then: ["EB-5"] },
+  if (a.purpose === "FAMILY") {
+    if (a.sponsor === "US_CITIZEN") {
+      if (a.relationship === "SPOUSE")        c.push("IR-1", "CR-1");
+      if (a.relationship === "FIANCE")        c.push("K-1");
+      if (a.relationship === "CHILD") {
+        if (a.beneficiaryAge === "UNDER_21")  c.push("IR-2");
+        if (a.beneficiaryAge === "OVER_21")   c.push("F1");
+      }
+      if (a.relationship === "MARRIED_CHILD") c.push("F3");
+      if (a.relationship === "PARENT")        c.push("IR-5");
+      if (a.relationship === "SIBLING")       c.push("F4");
+    }
+    if (a.sponsor === "LPR") {
+      if (a.relationship === "SPOUSE")        c.push("F2A");
+      if (a.relationship === "CHILD") {
+        if (a.beneficiaryAge === "UNDER_21")  c.push("F2A");
+        if (a.beneficiaryAge === "OVER_21")   c.push("F2B");
+      }
+    }
+  }
 
-  // Visit / Study / Work Temp
-  { if: { purpose: "VISIT" }, then: ["B1/B2"] },
-  { if: { purpose: "STUDY", tempType: "ACADEMIC" }, then: ["F-1"] },
-  { if: { purpose: "STUDY", tempType: "EXCHANGE" }, then: ["J-1"] },
-  { if: { purpose: "WORK_TEMP", tempType: "SPECIALTY" }, then: ["H-1B"] },
-  { if: { purpose: "WORK_TEMP", tempType: "TRANSFER" }, then: ["L-1"] },
-  { if: { purpose: "WORK_TEMP", tempType: "EXTRAORDINARY" }, then: ["O-1"] },
-  { if: { purpose: "WORK_TEMP", tempType: "USMCA" }, then: ["TN"] },
-  { if: { purpose: "PROTECTION" }, then: ["Asylum", "U-Visa"] },
-];
+  if (a.purpose === "WORK_PERMANENT") {
+    if (a.workBase === "EXTRAORDINARY")  c.push("EB-1A");
+    if (a.workBase === "RESEARCHER")     c.push("EB-1B");
+    if (a.workBase === "MANAGER")        c.push("EB-1C");
+    if (a.workBase === "ADVANCED_DEGREE")c.push("EB-2-NIW", "EB-2");
+    if (a.workBase === "SKILLED")        c.push("EB-3");
+    if (a.workBase === "INVESTOR")       c.push("EB-5");
+  }
 
-// ─────────────────────────────────────────────────────────────
-// FOLLOW-UP STEPS
-// ─────────────────────────────────────────────────────────────
-const FOLLOW_UP_STEPS: FollowUpStep[] = [
-  {
-    id: "sponsor", type: "options", field: "sponsor",
-    title: "What is your family member's status there?",
-    subtitle: "The person who will help bring you there — what kind of status do they have?",
-    showIf: { purpose: "FAMILY" },
-    options: [
-      { label: "They are a U.S. Citizen", value: "US_CITIZEN", sub: "Born there, naturalized, or got citizenship through parents" },
-      { label: "They have a Green Card (Permanent Resident)", value: "LPR", sub: "They live there permanently but aren't a citizen yet" },
-    ],
-  },
-  {
-    id: "rel_citizen", type: "options", field: "relationship",
-    title: "What is your relationship with this person?",
-    subtitle: "How are you related to the U.S. citizen?",
-    showIf: { purpose: "FAMILY", sponsor: "US_CITIZEN" },
-    options: [
-      { label: "I am their husband or wife",           value: "SPOUSE",        sub: "We are legally married" },
-      { label: "I am their fiancé(e)",                 value: "FIANCE",        sub: "We're engaged but not married yet" },
-      { label: "I am their unmarried son or daughter", value: "CHILD",         sub: "I'm not married" },
-      { label: "I am their married son or daughter",   value: "MARRIED_CHILD", sub: "I'm married" },
-      { label: "I am their parent (mother or father)", value: "PARENT" },
-      { label: "I am their brother or sister",         value: "SIBLING" },
-    ],
-  },
-  {
-    id: "rel_lpr", type: "options", field: "relationship",
-    title: "What is your relationship with the Green Card holder?",
-    showIf: { purpose: "FAMILY", sponsor: "LPR" },
-    options: [
-      { label: "I am their husband or wife",           value: "SPOUSE" },
-      { label: "I am their unmarried son or daughter", value: "CHILD" },
-    ],
-  },
-  {
-    id: "child_age", type: "grid", field: "beneficiaryAge",
-    title: "How old are you?",
-    showIf: { purpose: "FAMILY", relationship: "CHILD" },
-    options: [{ label: "Under 21", value: "UNDER_21" }, { label: "21 or older", value: "OVER_21" }],
-  },
-  {
-    id: "petitioner_age", type: "grid", field: "petitionerAge",
-    title: "How old is the U.S. citizen?",
-    showIf: { purpose: "FAMILY", relationship: ["PARENT", "SIBLING"] },
-    options: [{ label: "Under 21", value: "UNDER_21" }, { label: "21 or older", value: "OVER_21" }],
-  },
-  {
-    id: "work_base", type: "options", field: "workBase",
-    title: "Tell us a bit about yourself",
-    showIf: { purpose: "WORK_PERMANENT" },
-    options: [
-      { label: "I'm exceptional in my field",                        value: "EXTRAORDINARY",  sub: "Major awards or significant recognition" },
-      { label: "I'm a professor or researcher",                      value: "RESEARCHER",      sub: "I have international recognition" },
-      { label: "I'm a manager or executive",                         value: "MANAGER",         sub: "At a company with U.S. offices" },
-      { label: "I have an advanced degree",                          value: "ADVANCED_DEGREE", sub: "Master's, PhD, or bachelor's + 5yrs" },
-      { label: "I'm a skilled worker or professional",               value: "SKILLED",         sub: "2+ years experience or bachelor's" },
-      { label: "I want to invest money",                             value: "INVESTOR",        sub: "Invest $800K+ and create 10+ jobs" },
-    ],
-  },
-  {
-    id: "study_type", type: "options", field: "tempType",
-    title: "What kind of program are you interested in?",
-    showIf: { purpose: "STUDY" },
-    options: [
-      { label: "Degree program (College/University)", value: "ACADEMIC" },
-      { label: "Exchange or cultural program",        value: "EXCHANGE" },
-    ],
-  },
-  {
-    id: "work_temp_type", type: "options", field: "tempType",
-    title: "What kind of work will you be doing?",
-    showIf: { purpose: "WORK_TEMP" },
-    options: [
-      { label: "Professional/specialty job",     value: "SPECIALTY" },
-      { label: "Intracompany transfer",          value: "TRANSFER" },
-      { label: "Top of my field",                value: "EXTRAORDINARY" },
-      { label: "Canada/Mexico professional",    value: "USMCA" },
-    ],
-  },
-];
+  if (a.purpose === "VISIT") c.push("B1/B2");
+  if (a.purpose === "STUDY") {
+    if (a.tempType === "ACADEMIC")  c.push("F-1");
+    if (a.tempType === "EXCHANGE")  c.push("J-1");
+    if (!a.tempType)                c.push("F-1", "J-1");
+  }
+  if (a.purpose === "WORK_TEMP") {
+    if (a.tempType === "SPECIALTY")     c.push("H-1B");
+    if (a.tempType === "TRANSFER")      c.push("L-1");
+    if (a.tempType === "EXTRAORDINARY") c.push("O-1");
+    if (a.tempType === "USMCA")         c.push("TN");
+  }
+  if (a.purpose === "PROTECTION") c.push("Asylum", "U-Visa");
+
+  return [...new Set(c)];
+}
 
 // ─────────────────────────────────────────────────────────────
 // US COUNTRY DATA
@@ -135,8 +68,7 @@ export const US_DATA: CountryData = {
   country: "United States",
   code: "US",
   flag: "🇺🇸",
-  candidateRules: CANDIDATE_RULES,
-  followUpSteps: FOLLOW_UP_STEPS,
+  getCandidateCodes,
 
   purposes: [
     { label: "Be with family",                           value: "FAMILY",        sub: "Someone in my family is already there (or will be), and I want to join them" },
