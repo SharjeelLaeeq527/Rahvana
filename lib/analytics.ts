@@ -44,6 +44,7 @@ export async function getAnalyticsData(startDate: string = '7daysAgo', endDate: 
     dimensions: [{ name: 'date' }],
     metrics: [
       { name: 'activeUsers' },
+      { name: 'newUsers' },
       { name: 'sessions' },
       { name: 'screenPageViews' },
       { name: 'eventCount' }
