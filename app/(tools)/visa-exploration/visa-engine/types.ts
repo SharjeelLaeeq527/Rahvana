@@ -56,16 +56,26 @@ export interface GateQuestion {
 export type GateQuestionsMap = Record<string, GateQuestion[]>;
 
 // ─────────────────────────────────────────────────────────────
-// CANDIDATE RULE  (data-driven, used by future countries)
+// CANDIDATE RULE (declarative filtering)
 // ─────────────────────────────────────────────────────────────
 export interface CandidateRule {
-  conditions: Record<string, string | string[]>;
-  visaCodes: string[];
+  if: Record<string, string | string[]>; // Field values that must match
+  then: string[];                        // Visa codes that become candidates
 }
 
 // ─────────────────────────────────────────────────────────────
-// PURPOSE OPTION  (shown in step 3)
+// CUSTOM FOLLOW-UP SUB-STEP
 // ─────────────────────────────────────────────────────────────
+export interface FollowUpStep {
+  id: string;
+  type: "options" | "grid";
+  field: string;
+  title: string;
+  subtitle?: string;
+  options: { label: string; value: string; sub?: string }[];
+  showIf: Record<string, string | string[]>; // When to show this step
+}
+
 export interface PurposeOption {
   label: string;
   value: string;
@@ -80,10 +90,12 @@ export interface CountryData {
   code: string;      // ISO 2-letter: "US", "UK", "CA"
   flag: string;      // emoji
   purposes: PurposeOption[];
+  followUpSteps: FollowUpStep[];
+  candidateRules: CandidateRule[];
   visas: VisaDataMap;
   gateQuestions: GateQuestionsMap;
-  /** getCandidateCodes function key — each country exports its own */
-  getCandidateCodes: (answers: VisaExplorationAnswers) => string[];
+  /** fallback function — optional if candidateRules is used */
+  getCandidateCodes?: (answers: VisaExplorationAnswers) => string[];
 }
 
 // ─────────────────────────────────────────────────────────────

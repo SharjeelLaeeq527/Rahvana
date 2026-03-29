@@ -3,8 +3,7 @@
 import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  ChevronRight, ChevronLeft, Search,
-  Globe, CheckCircle, Clock, FileText, X, Lock, AlertCircle, ExternalLink,
+  ChevronRight, ChevronLeft, Search, CheckCircle, Clock, FileText, X, Lock, AlertCircle, ExternalLink,
   Compass, Sparkles, ArrowRight,
 } from "lucide-react";
 
@@ -16,7 +15,8 @@ import { buildSteps, DOWNSTREAM_CLEAR_MAP } from "../visa-engine/logic/step-buil
 import { 
   getEligibleVisas, 
   allGateAnswered, 
-  evaluateGate 
+  evaluateGate,
+  getCandidateCodesForCountry 
 } from "../visa-engine/logic/gate-engine";
 
 // ─────────────────────────────────────────────────────────────
@@ -428,7 +428,7 @@ function UnsupportedScreen({ destination, onChangeDestination, onReset }: {
         <span className="inline-block text-[11px] font-black uppercase tracking-widest text-amber-600 bg-amber-50 border border-amber-200 px-4 py-1.5 rounded-full mb-6">Coming Soon</span>
         <h2 className="text-2xl sm:text-3xl font-black text-slate-800 mb-4 tracking-tight">Visa guidance for {destination}</h2>
         <p className="text-slate-500 text-[15px] leading-relaxed mb-10 max-w-md mx-auto">
-          We're working on adding detailed visa guidance for {destination}. Right now this tool specializes in <strong>United States</strong> immigration.
+          We&apos;re working on adding detailed visa guidance for {destination}. Right now this tool specializes in <strong>United States</strong> immigration.
         </p>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <button onClick={onChangeDestination} className="py-4 px-6 rounded-2xl border-2 border-[#0D6E6E] text-[#0D6E6E] font-bold hover:bg-[#0D6E6E]/5 transition-all">Change Destination</button>
@@ -459,7 +459,7 @@ function ResultsScreen({ answers, results, ineligibleCodes, onReset, onBack }: {
               <h2 className="text-xl sm:text-2xl font-black text-slate-800 tracking-tight">
                 {results.length > 0
                   ? `Great news! ${results.length} visa ${results.length === 1 ? "category" : "categories"} may work for you`
-                  : "We couldn't find a match this time"}
+                  : "We couldn&apos;t find a match this time"}
               </h2>
               <div className="flex items-center gap-2 mt-1.5 flex-wrap">
                 <span className="text-[13px] font-bold text-slate-400">{answers.origin as string}</span>
@@ -565,13 +565,13 @@ export default function VisaExplorationTool() {
   const destination = answers.destination as string;
   const countryData = destination ? getCountryData(destination) : null;
 
-  const gatesDone = countryData ? allGateAnswered(answers, countryData.getCandidateCodes, countryData.gateQuestions) : false;
+  const gatesDone = countryData ? allGateAnswered(answers, countryData) : false;
   
   const eligibleVisas = (gatesDone && countryData) 
-    ? getEligibleVisas(answers, countryData.getCandidateCodes, countryData.gateQuestions, countryData.visas) 
+    ? getEligibleVisas(answers, countryData) 
     : [];
 
-  const candidates = countryData ? countryData.getCandidateCodes(answers) : [];
+  const candidates = countryData ? getCandidateCodesForCountry(countryData, answers) : [];
   const ineligibleCodes = (gatesDone && countryData)
     ? candidates.filter((code) => !evaluateGate(code, countryData.gateQuestions, (answers.gateAnswers || {})[code] || {}).eligible)
     : [];

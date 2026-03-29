@@ -7,20 +7,36 @@
  * (3) Register in registry.ts
  */
 
-import { T, CountryData, VisaExplorationAnswers } from "../types";
+import { T, CountryData, CandidateRule, FollowUpStep } from "../types";
 
 // ─────────────────────────────────────────────────────────────
-// CANDIDATE CODES  (Country-specific logic)
+// CANDIDATE RULES (Declarative logic)
 // ─────────────────────────────────────────────────────────────
-function getCandidateCodes(a: VisaExplorationAnswers): string[] {
-  if (!a.purpose) return [];
-  const c: string[] = [];
+const CANDIDATE_RULES: CandidateRule[] = [
+  { 
+    if: { purpose: "STUDY" }, 
+    then: ["STUDENT_VISA_1"] 
+  },
+  // Add more rules here
+];
 
-  // TODO: Add logic to filter visa codes based on user answers
-  // Example: if (a.purpose === "STUDY") c.push("STUDENT_VISA_1");
-
-  return [...new Set(c)];
-}
+// ─────────────────────────────────────────────────────────────
+// FOLLOW-UP STEPS
+// ─────────────────────────────────────────────────────────────
+const FOLLOW_UP_STEPS: FollowUpStep[] = [
+  {
+    id: "enrolment_status", 
+    type: "options", 
+    field: "isEnrolled",
+    title: "Are you already enrolled?",
+    showIf: { purpose: "STUDY" },
+    options: [
+      { label: "Yes", value: "YES" },
+      { label: "No", value: "NO" },
+    ],
+  },
+  // Add more follow-up steps here
+];
 
 // ─────────────────────────────────────────────────────────────
 // COUNTRY DATA
@@ -29,13 +45,12 @@ export const TEMPLATE_DATA: CountryData = {
   country: "Template Country",
   code: "TC",
   flag: "🌐",
-  getCandidateCodes,
-
   purposes: [
     { label: "Study", value: "STUDY", sub: "Pursue education" },
     { label: "Work",  value: "WORK",  sub: "Professional opportunities" },
-    // ... add more purposes
   ],
+  candidateRules: CANDIDATE_RULES,
+  followUpSteps: FOLLOW_UP_STEPS,
 
   visas: {
     "STUDENT_VISA_1": {
@@ -45,7 +60,6 @@ export const TEMPLATE_DATA: CountryData = {
       processing: "2–4 weeks",
       forms: ["Form A", "Form B"],
     },
-    // ... add more visas
   },
 
   gateQuestions: {
@@ -59,7 +73,6 @@ export const TEMPLATE_DATA: CountryData = {
         failMsg: "You must be enrolled to qualify.", 
         options: [{ label: "Yes", value: "YES" }, { label: "No", value: "NO" }] 
       },
-      // ... add more questions
     ],
   },
 };
