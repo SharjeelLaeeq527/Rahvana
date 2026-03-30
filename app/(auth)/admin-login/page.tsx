@@ -94,9 +94,7 @@ function AdminLoginPageContent() {
 
   // ⏳ Loading state
   if (isLoading) {
-    return (
-      <Loader fullScreen text="Checking session..." />
-    );
+    return <Loader fullScreen text="Checking session..." />;
   }
 
   return (
@@ -280,11 +278,12 @@ function AdminLoginPageContent() {
               disabled={isSubmitting}
               className="w-full h-12 bg-primary hover:bg-primary/90 text-white font-medium rounded-xl transition-all disabled:opacity-50"
             >
-              {isSubmitting ? (
-              <Loader size="sm" text="Signing in..." />
-            ) : (
-                "Sign In"
-              )}
+              {isSubmitting
+                ? "Signing in..."
+                : //   (
+                  //   <Loader size="sm" text="Signing in..." />
+                  // )
+                  "Sign In"}
             </Button>
           </form>
         )}
