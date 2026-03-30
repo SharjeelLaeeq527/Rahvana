@@ -607,7 +607,7 @@ export const RapidFireModePage = ({
                         </span>
                       </div>
                       <h3 className="text-lg font-bold leading-tight">
-                        {reviewQuestion.question}
+                        {reviewQuestion.selectedQuestion || reviewQuestion.question}
                       </h3>
                     </div>
                     <div className="text-center">
@@ -762,7 +762,7 @@ export const RapidFireModePage = ({
                     </span>
                   </div>
                   <h2 className="text-2xl font-bold leading-tight text-slate-800 mb-8">
-                    {currentQuestion.question}
+                    {currentQuestion.selectedQuestion || currentQuestion.question}
                   </h2>
 
                   {!showAnswer && (

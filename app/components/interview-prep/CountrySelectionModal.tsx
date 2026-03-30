@@ -63,7 +63,7 @@ export default function CountrySelectionModal({
           <Accordion type="single" collapsible className="w-full">
             <AccordionItem
               value="why-we-ask"
-              className="border border-blue-200 dark:border-blue-900/50 rounded-lg"
+              className="border border-blue-200 dark:border-blue-900/50 rounded-lg overflow-hidden"
             >
               <AccordionTrigger className="px-4 py-3 bg-blue-50 dark:bg-blue-950/30 hover:no-underline cursor-pointer">
                 <div className="flex items-center gap-3">

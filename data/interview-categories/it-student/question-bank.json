@@ -1,0 +1,903 @@
+{
+    "categorySlug": "it-student",
+    "version": "1.1.0",
+    "lastUpdated": "2026-03-27",
+    "questions": [
+      {
+        "id": "study-why-it",
+        "category": "Study Plans",
+        "question": "Why do you want to study in Italy?",
+        "suggestedAnswer": "I want to study in Italy because {{why_this_field}}. The Italian education system offers superior {{field_of_study}} programs and opportunities that will help me achieve my career goals in a way that is not available in {{country_of_residence}}.",
+        "guidance": "Explain what Italy offers that your home country cannot. Focus on educational advantages, not immigration intent.",
+        "tooltip": "Officers assess genuine educational motivation vs. immigration intent.",
+        "priority": "high",
+        "variations": [
+          "What are your reasons for choosing Italy as your study destination?",
+          "Could you explain your motivation for pursuing your education in Italy?",
+          "What specifically appeals to you about studying in Italy?",
+          "Why have you decided to undertake your studies in Italy rather than elsewhere?"
+        ]
+      },
+      {
+        "id": "study-major",
+        "category": "Study Plans",
+        "question": "What will be your major or field of study?",
+        "suggestedAnswer": "I will major in {{field_of_study}}.",
+        "guidance": "Be clear and specific about your major and intended specialization.",
+        "tooltip": "Demonstrates a well-thought-out educational plan.",
+        "priority": "high",
+        "variations": [
+          "Could you please specify your intended academic major or area of specialization?",
+          "What is the particular field of study you plan to pursue?",
+          "Which specific discipline will you be focusing on for your degree?",
+          "Can you tell us about your chosen major or area of academic focus?"
+        ]
+      },
+      {
+        "id": "study-why-field",
+        "category": "Study Plans",
+        "question": "Why did you choose this field of study?",
+        "suggestedAnswer": "I chose {{field_of_study}} because {{why_this_field}}. This field aligns with my interests and long-term career aspirations.",
+        "guidance": "Show genuine passion and connection to your field. Explain what drew you to it.",
+        "tooltip": "Demonstrates thoughtful motivation for field selection.",
+        "priority": "high",
+        "variations": [
+          "What motivated you to select this particular field for your studies?",
+          "Can you elaborate on your reasons for choosing this specific academic discipline?",
+          "Why do you believe this field of study is the right choice for you?",
+          "What led you to decide on this particular area of academic pursuit?"
+        ]
+      },
+      {
+        "id": "study-previous-education",
+        "category": "Study Plans",
+        "question": "Tell us about your previous education.",
+        "suggestedAnswer": "I completed my {{current_education_level}} with a GPA of {{previous_gpa}}. {{previous_education_details}} This educational foundation has prepared me well for advanced studies.",
+        "guidance": "Describe your educational timeline, GPA, and notable achievements.",
+        "tooltip": "Officers verify academic preparation for higher education.",
+        "priority": "high",
+        "variations": [
+          "Could you provide details about your academic background prior to this application?",
+          "Please summarize your educational history and qualifications.",
+          "What has been your academic journey leading up to this point?",
+          "Can you describe your past schooling and any degrees or certificates you've earned?"
+        ]
+      },
+      {
+        "id": "study-continuation-it",
+        "category": "Study Plans",
+        "question": "Why are you planning to continue your education in Italy? Can you not continue in your home country?",
+        "suggestedAnswer": "While I could continue my education in {{country_of_residence}}, Italy offers superior {{field_of_study}} programs, world-renowned professors, and research opportunities that are unmatched. This will significantly enhance my qualifications.",
+        "guidance": "Be honest about limitations in your home country while explaining Italy-specific advantages.",
+        "tooltip": "Officers want to understand why Italian education is specifically necessary.",
+        "priority": "high",
+        "variations": [
+          "What are your specific reasons for choosing Italy to further your education, and why not your home country?",
+          "Why have you opted to continue your studies in Italy instead of pursuing similar opportunities domestically?",
+          "Could you explain your decision to advance your education in Italy, and if comparable options were available in your native country?",
+          "What makes studying in Italy preferable for your continued education, as opposed to undertaking it in your home country?"
+        ]
+      },
+      {
+        "id": "study-why-not-home-country",
+        "category": "Study Plans",
+        "question": "Why didn't you choose a similar course in your home country?",
+        "suggestedAnswer": "While similar courses are available in {{country_of_residence}}, I chose to study in Italy because {{why_this_field}}. The Italian programs in {{field_of_study}} offer superior curriculum depth, world-class faculty, cutting-edge research facilities, and international exposure that are not available in my home country. This will provide me with a competitive advantage in my career.",
+        "guidance": "Contrast the available options in your home country with what Italy uniquely offers. Be specific about program quality, infrastructure, and opportunities.",
+        "tooltip": "Shows genuine comparative analysis and justified choice for Italy.",
+        "priority": "high",
+        "variations": [
+          "Could you explain why you opted not to pursue an equivalent course of study in your home country?",
+          "What are the specific reasons you did not select a comparable academic program in your native country?",
+          "Why was a similar course in your home country not a suitable option for you?",
+          "What unique aspects of this course or location led you to choose it over similar offerings in your own country?"
+        ]
+      },
+      {
+        "id": "study-goals-alignment",
+        "category": "Study Plans",
+        "question": "How will this study program relate to your past work or studies?",
+        "suggestedAnswer": "My {{intended_degree}} at {{primary_university}} will advance my knowledge in {{field_of_study}} and enable me to {{post_graduation_job_plans}}. This represents a clear progression from my previous experience.",
+        "guidance": "Draw a clear connection between your past and future, showing coherent progression.",
+        "tooltip": "Demonstrates a coherent educational and career plan.",
+        "priority": "high",
+        "variations": [
+          "In what ways does this academic program build upon your previous educational background or professional experience?",
+          "How do you foresee this course of study connecting with your prior work or academic pursuits?",
+          "Can you explain the relevance of this program to your past studies or any professional experience you have?",
+          "How does this chosen study program align with your previous academic achievements or career history?"
+        ]
+      },
+      {
+        "id": "uni-why-primary",
+        "category": "University Choice",
+        "question": "Why did you choose this university as your primary choice?",
+        "suggestedAnswer": "{{why_primary_university}} This university stands out because of its program strength, faculty expertise, and alignment with my academic and career goals.",
+        "guidance": "Explain what makes this university unique for you and your field.",
+        "tooltip": "Demonstrates genuine interest and informed decision-making.",
+        "priority": "high",
+        "variations": [
+          "What were your primary reasons for selecting this specific university over other institutions?",
+          "Could you elaborate on why this university stands out as your top choice?",
+          "What factors led you to designate this university as your preferred institution for study?",
+          "Why have you prioritized this particular university for your academic pursuit?"
+        ]
+      },
+      {
+        "id": "uni-research-details",
+        "category": "University Choice",
+        "question": "What do you know about your university's program?",
+        "suggestedAnswer": "{{university_knowledge}} I have researched the program curriculum, campus facilities, and community resources, and I am confident that this university is the right fit for me.",
+        "guidance": "Demonstrate detailed research about curriculum, facilities, professors, and campus life.",
+        "tooltip": "Shows genuine interest and preparation for arrival.",
+        "priority": "high",
+        "variations": [
+          "Could you share your understanding of the specific program offered by your chosen university?",
+          "What details can you tell us about the academic program you intend to pursue at this university?",
+          "How familiar are you with the curriculum and structure of the program at your university?",
+          "What information have you gathered regarding the program you've applied for at this university?"
+        ]
+      },
+      {
+        "id": "uni-course-content",
+        "category": "University Choice",
+        "question": "What subjects/modules are included in your course?",
+        "suggestedAnswer": "My {{intended_degree}} program includes core modules such as {{field_of_study}} fundamentals, specialized electives, research methodology, and practical projects. The curriculum is designed to provide both theoretical knowledge and hands-on experience, with flexibility to choose electives aligned with my career interests.",
+        "guidance": "Mention specific subjects or modules you plan to study. Research your actual course structure and demonstrate detailed knowledge.",
+        "tooltip": "Demonstrates thorough research about program content and curriculum structure.",
+        "priority": "high",
+        "variations": [
+          "Could you list some of the main subjects or modules that comprise your chosen course?",
+          "What are the key academic components or units of study within your program?",
+          "Can you describe the core subjects and modules that make up the curriculum of your course?",
+          "What specific topics or modules will you be studying as part of this program?"
+        ]
+      },
+      {
+        "id": "uni-location",
+        "category": "University Choice",
+        "question": "In which city is your university located?",
+        "suggestedAnswer": "{{primary_university}} is located in {{university_city_state}}.",
+        "guidance": "Mention city clearly. In the Italy, this is typically in Rome, Milan, Florence, etc.",
+        "tooltip": "Verifies university location knowledge and familiarity with Italian geography.",
+        "priority": "high",
+        "variations": [
+          "Could you state the city where your chosen university is situated?",
+          "Which urban center hosts your university campus?",
+          "In what specific city will you be undertaking your studies?",
+          "Please confirm the geographical location of your university."
+        ]
+      },
+      {
+        "id": "academic-english-test",
+        "category": "Academic Capability",
+        "question": "What are your English proficiency test scores (TOEFL or IELTS)?",
+        "suggestedAnswer": "I achieved a score of {{ielts_score ? '{{ielts_score}}' : '{{toefl_score}}'}} on the {{english_proficiency_test}} exam, which demonstrates my readiness for university-level coursework in English.",
+        "guidance": "State your test scores confidently and explain what they mean for your academic readiness.",
+        "tooltip": "Test scores are mandatory verification of English proficiency.",
+        "priority": "high",
+        "dependsOn": { "key": "course_language", "valueIn": ["English", "Both English and Italian"] },
+        "variations": [
+          "Could you provide your scores for the TOEFL or IELTS English language proficiency test?",
+          "What were your results on your English competency examination, such as IELTS or TOEFL?",
+          "Please share your official English test scores from either TOEFL or IELTS.",
+          "Can you state the scores you achieved on your English proficiency assessment?"
+        ]
+      },
+      {
+        "id": "academic-previous-gpa",
+        "category": "Academic Capability",
+        "question": "What was your GPA in your previous education?",
+        "suggestedAnswer": "My previous GPA was {{previous_gpa}}, which demonstrates my consistent academic performance and preparation for graduate-level work.",
+        "guidance": "State your GPA on the same scale as your previous institution.",
+        "tooltip": "Shows academic preparation for Italian university standards.",
+        "priority": "high",
+        "variations": [
+          "What was your grade point average from your prior academic institution?",
+          "Could you tell me your GPA from your most recent educational program?",
+          "Please inform me of your academic standing, specifically your GPA, from your last completed degree.",
+          "What grade point average did you achieve in your previous course of study?"
+        ]
+      },
+      {
+        "id": "academic-english-medium",
+        "category": "Academic Capability",
+        "question": "Was your previous education conducted in English?",
+        "suggestedAnswer": "{{medium_of_instruction ? 'Yes, my previous education was conducted in English, which provides me a strong foundation for Italian university studies.' : 'No, my education was not in English medium, however I have studied English extensively and achieved strong proficiency scores ({{english_proficiency_test}}: {{ielts_score ? ielts_score : toefl_score}}). I am well-prepared to succeed in English-medium academic coursework.'}}\n",
+        "guidance": "Answer honestly about your educational medium.",
+        "tooltip": "Determines English proficiency level and need for support.",
+        "priority": "high",
+        "variations": [
+          "Was the language of instruction for your previous studies English?",
+          "Did you complete your prior education through the medium of English?",
+          "In your previous academic program, was English the primary language used for teaching?",
+          "Could you confirm if your prior coursework was delivered in English?"
+        ]
+      },
+      {
+        "id": "academic-it-comparison",
+        "category": "Academic Capability",
+        "question": "Why pursue your degree in Italy instead of other countries?",
+        "suggestedAnswer": "Italy offers a unique educational experience in {{field_of_study}} and {{primary_university}} specifically provides {{why_primary_university}}. While other countries have excellent programs, Italy aligns best with my career goals.",
+        "tooltip": "Shows thoughtful analysis of educational options.",
+        "priority": "medium",
+        "variations": [
+          "What are your reasons for selecting Italy as your study destination over other nations?",
+          "Could you explain your rationale for pursuing your degree in Italy rather than elsewhere?",
+          "Why have you opted for an Italian university for your studies instead of institutions in other countries?",
+          "What specific factors led you to choose Italy for your higher education over other global options?"
+        ]
+      },
+      {
+        "id": "academic-struggle-support",
+        "category": "Academic Capability",
+        "question": "What will you do if you struggle academically in the first semester?",
+        "suggestedAnswer": "{{academic_success_strategy}} I will also seek support from {{primary_university}} academic resources, meet with professors during office hours, form study groups, and utilize tutoring services if needed.",
+        "guidance": "Show proactive planning and knowledge of university support systems.",
+        "tooltip": "Demonstrates realistic expectations and commitment to success.",
+        "priority": "medium",
+        "variations": [
+          "What steps would you take if you face academic difficulties during your initial semester?",
+          "How do you plan to address any academic challenges that may arise in your first term of study?",
+          "In the event of academic struggles in your first semester, what is your strategy to overcome them?",
+          "What support mechanisms or actions would you utilize if you encounter academic struggles early in your program?"
+        ]
+      },
+      {
+        "id": "finance-sponsor-identity",
+        "category": "Financial Status",
+        "question": "Who is your financial sponsor?",
+        "suggestedAnswer": "My {{sponsor_relationship}} will sponsor my education.",
+        "guidance": "Identify your main source of financial support clearly.",
+        "tooltip": "Critical to establish who is funding your education.",
+        "priority": "high",
+        "variations": [
+          "Could you please state the identity of the individual or organization sponsoring your studies financially?",
+          "Who will be responsible for covering your educational and living expenses?",
+          "Please name your financial benefactor for this academic endeavor.",
+          "Who is providing the financial backing for your time in Italy?"
+        ]
+      },
+      {
+        "id": "finance-sponsor-occupation",
+        "category": "Financial Status",
+        "question": "What is your sponsor's occupation?",
+        "suggestedAnswer": "My sponsor works as a {{sponsor_occupation}}.",
+        "guidance": "Describe the primary source of their income clearly.",
+        "tooltip": "Assesses financial stability and income source.",
+        "priority": "high",
+        "variations": [
+          "What is the profession or job title of your financial sponsor?",
+          "Could you describe what your sponsor does for a living?",
+          "What is the primary occupation of the individual who is funding your studies?",
+          "Please state your sponsor's current employment or business."
+        ]
+      },
+      {
+        "id": "finance-sponsor-income",
+        "category": "Financial Status",
+        "question": "What is your sponsor's annual income in USD?",
+        "suggestedAnswer": "My sponsor's annual income is approximately ${{sponsor_annual_income}}, which is sufficient to cover my education costs.",
+        "guidance": "Provide in USD, converting from local currency using current exchange rates.",
+        "tooltip": "Income is critical to prove financial capability for the full program duration.",
+        "priority": "high",
+        "variations": [
+          "Could you provide your sponsor's yearly income in US Dollars?",
+          "What is the annual financial earning of your sponsor, expressed in USD?",
+          "Please state the total annual income of your financial sponsor in United States Dollars.",
+          "How much does your sponsor earn annually, converted to US dollars?"
+        ]
+      },
+      {
+        "id": "finance-income-proof",
+        "category": "Financial Status",
+        "question": "Do you have proof of your sponsor's income?",
+        "suggestedAnswer": "Yes, I have prepared comprehensive income documentation including {{sponsor_income_proof}} to verify my sponsor's financial capability for funding my education in Italy.",
+        "guidance": "Prepare tax returns (last 2 years), salary certificates, or business documents.",
+        "tooltip": "Essential documents for visa officer verification.",
+        "priority": "high",
+        "variations": [
+          "Do you have documentation verifying your sponsor's financial capacity?",
+          "Can you provide evidence of your sponsor's earnings?",
+          "May I see the supporting documents for your sponsor's income?",
+          "Is there any proof to demonstrate your sponsor's financial stability?"
+        ]
+      },
+      {
+        "id": "finance-program-cost",
+        "category": "Financial Status",
+        "question": "What is the total estimated cost of your program?",
+        "suggestedAnswer": "The total estimated cost of my {{intended_degree}} program is approximately ${{total_program_cost}} per year, including tuition, fees, accommodation, and living expenses.",
+        "guidance": "Break down costs into components to show you've researched thoroughly.",
+        "tooltip": "Cost breakdown shows realistic planning.",
+        "priority": "high",
+        "variations": [
+          "Could you state the projected overall expenses for your academic program?",
+          "What is the complete anticipated financial requirement for your course of study?",
+          "Can you outline the total estimated expenditure for your chosen program?",
+          "What do you anticipate the full cost of your entire study program to be?"
+        ]
+      },
+      {
+        "id": "finance-available-funds",
+        "category": "Financial Status",
+        "question": "How much funding can you access for your education?",
+        "suggestedAnswer": "I have approximately ${{available_funds}} available for my education from my sponsor and personal resources.",
+        "guidance": "Include sponsor savings, family gifts, and any personal funds.",
+        "tooltip": "Must cover program cost to demonstrate financial capability.",
+        "priority": "high",
+        "variations": [
+          "What is the total amount of financial resources you have readily available for your studies?",
+          "Could you specify the extent of funds you can utilize for your educational expenses?",
+          "To what amount do your current financial resources for education sum up?",
+          "What is the total sum of funds at your disposal for your academic pursuit?"
+        ]
+      },
+      {
+        "id": "finance-funding-plan",
+        "category": "Financial Status",
+        "question": "How do you plan to fund your entire education?",
+        "suggestedAnswer": "My {{sponsor_relationship}} will provide approximately ${{available_funds}}, which covers the full cost of my education. {{scholarship_status ? 'I have also received a {{scholarship_type}} scholarship of ${{scholarship_amount}} from {{primary_university}}, which further strengthens my financial capability.' : 'I am financially supported by my sponsor and do not require additional scholarship funding.'}}",
+        "guidance": "Show complete picture: sponsor funds, scholarship (if any), and any personal contribution.",
+        "tooltip": "Officers need to see complete financing for all program years.",
+        "priority": "high",
+        "variations": [
+          "Could you elaborate on your financial strategy for supporting your full educational journey?",
+          "What is your comprehensive plan for covering all costs associated with your studies?",
+          "Can you describe your approach to financing your complete academic program?",
+          "How do you intend to ensure financial coverage for the entirety of your education?"
+        ]
+      },
+      {
+        "id": "finance-funds-proof",
+        "category": "Financial Status",
+        "question": "Do you have proof of available funds?",
+        "suggestedAnswer": "Yes, I have prepared comprehensive proof of available funds including {{funds_availability_proof}} that demonstrate my sponsor's and my financial capability to fund the complete cost of my studies in Italy.",
+        "guidance": "Prepare bank statements, affidavits of support, and investment documents.",
+        "tooltip": "Mandatory for CAS (Confirmation of Acceptance for Studies) and visa officer verification.",
+        "priority": "high",
+        "variations": [
+          "Can you present documentation confirming your accessible funds?",
+          "Do you have evidence to substantiate the availability of your financial resources?",
+          "May I review the supporting documents for your financial capacity?",
+          "Is there any verifiable documentation for the funds you have available?"
+        ]
+      },
+      {
+        "id": "finance-scholarship-status",
+        "category": "Financial Status",
+        "question": "Did you receive a scholarship?",
+        "suggestedAnswer": "{{scholarship_status ? 'Yes, I received a {{scholarship_type}} scholarship from {{primary_university}}, which significantly supports my education financially.' : 'No, I did not receive a scholarship, but my education is fully funded through my sponsor and personal resources.'}}",
+        "guidance": "Answer honestly about scholarship status.",
+        "tooltip": "Scholarships strengthen financial capability profile.",
+        "priority": "high",
+        "variations": [
+          "Have you been awarded any scholarship?",
+          "Are you the recipient of a scholarship?",
+          "Was a scholarship granted to you for your studies?",
+          "Did you secure any financial aid in the form of a scholarship?"
+        ]
+      },
+      {
+        "id": "finance-scholarship-amount",
+        "category": "Financial Status",
+        "question": "What is your scholarship amount?",
+        "suggestedAnswer": "I received a ${{scholarship_amount}} {{scholarship_type}} scholarship from {{primary_university}}.",
+        "guidance": "State the annual or total amount as specified in your scholarship letter.",
+        "tooltip": "Shows partial or full financial support from university.",
+        "priority": "high",
+        "skipIf": [
+          {
+            "field": "scholarship_status",
+            "notEquals": true
+          }
+        ],
+        "variations": [
+          "Could you state the financial value of your scholarship?",
+          "What is the total sum awarded for your scholarship?",
+          "Please specify the monetary amount of the scholarship you received.",
+          "How much financial assistance does your scholarship provide?"
+        ]
+      },
+      {
+        "id": "finance-scholarship-type",
+        "category": "Financial Status",
+        "question": "What type of scholarship did you receive?",
+        "suggestedAnswer": "My scholarship is {{scholarship_type}}, which significantly reduces my financial burden for my education.",
+        "guidance": "Specify if it's merit-based, need-based, full tuition, etc.",
+        "tooltip": "Shows academic excellence or financial strength.",
+        "priority": "medium",
+        "skipIf": [
+          {
+            "field": "scholarship_status",
+            "notEquals": true
+          }
+        ],
+        "variations": [
+          "Could you describe the nature of the scholarship you were awarded?",
+          "What category does your scholarship fall under?",
+          "Please specify the kind of scholarship you obtained.",
+          "Can you explain what sort of scholarship you received?"
+        ]
+      },
+      {
+        "id": "study-program-career-fit",
+        "category": "Study Plans",
+        "question": "How does this course fit your long-term career goals?",
+        "suggestedAnswer": "My long-term career goal is to {{post_graduation_job_plans}}. This {{intended_degree}} in {{field_of_study}} is the ideal stepping stone to achieve this. The program will equip me with the {{why_this_field}} skills that are directly needed for this role.",
+        "guidance": "Draw a clear connection between the specific program and your career objectives.",
+        "tooltip": "Demonstrates that your study plans are purposeful and aligned with realistic career goals.",
+        "priority": "high",
+        "variations": [
+          "Could you explain the relevance of this program to your future professional aspirations?",
+          "How does pursuing this course align with your overall career objectives?",
+          "In what way will this program contribute to achieving your long-range career ambitions?",
+          "Please describe how this field of study supports your projected career path."
+        ]
+      },
+      {
+        "id": "study-professional-preparation",
+        "category": "Study Plans",
+        "question": "How does your program prepare you for professional practice or registration in your home country or internationally?",
+        "suggestedAnswer": "This program is structured to meet international professional standards in {{field_of_study}}. Upon graduation, I will be eligible to pursue professional credentials and registrations such as {{field_of_study}} certifications, which are recognized in {{country_of_residence}} and internationally.",
+        "guidance": "Research the professional standards and certifications in your field for your home country.",
+        "tooltip": "Shows that your education has practical professional value beyond the degree itself.",
+        "priority": "high",
+        "variations": [
+          "How does this program prepare you for your intended professional career or licensing requirements in your home country or abroad?",
+          "In what ways will this course equip you for professional practice or registration within your chosen field, either domestically or internationally?",
+          "What specific training or qualifications does this program offer to ensure you are ready for professional work or accreditation after graduation?",
+          "How will the curriculum you're undertaking support your eligibility for professional employment or regulatory registration in your country of origin or other nations?"
+        ]
+      },
+      {
+        "id": "study-skills-gained",
+        "category": "Study Plans",
+        "question": "What skills will you gain from this program?",
+        "suggestedAnswer": "Through this {{intended_degree}} program, I will develop both technical and soft skills essential for my career. I will gain expertise in {{field_of_study}}, including skills such as critical thinking, problem-solving, research methodology, and project management. Additionally, I will improve my communication abilities, teamwork capabilities, and digital literacy, which are valuable across all industries and will enhance my competitiveness in the global job market.",
+        "guidance": "Identify both technical skills specific to your field and transferable soft skills. Show how these skills will help you achieve your career goals.",
+        "tooltip": "Demonstrates understanding of program learning outcomes and career preparation.",
+        "priority": "high",
+        "variations": [
+          "Which core competencies do you anticipate acquiring from this program?",
+          "What new abilities or expertise do you expect to develop during your studies?",
+          "Can you describe the key learning outcomes you foresee achieving through this course?",
+          "What professional and academic skills will you have gained upon completion of this program?"
+        ]
+      },
+      {
+        "id": "finance-part-time-work",
+        "category": "Financial Status",
+        "question": "Do you plan to work part-time while studying? How will you balance it with your studies?",
+        "suggestedAnswer": "{{part_time_work_plans}} I understand that Italian student visa regulations allow international students to work up to 20 hours per week during school terms and full-time during official university breaks, and I plan to strictly adhere to these limitations to prioritize my academic success.",
+        "guidance": "Explain your work plans realistically and demonstrate awareness of visa work restrictions.",
+        "tooltip": "Shows realistic planning and understanding of visa regulations and academic priorities.",
+        "priority": "high",
+        "variations": [
+          "Do you intend to seek part-time employment during your studies? How will you manage this alongside your academic commitments?",
+          "Are you considering working part-time while enrolled in your program? What is your strategy for balancing work and studies effectively?",
+          "If you plan to engage in part-time work, how will you ensure it does not negatively impact your academic performance?",
+          "Do you have plans for part-time work during your course of study? How do you intend to integrate this with your academic schedule?"
+        ]
+      },
+      {
+        "id": "postgrad-healthcare-management",
+        "category": "Post-Graduation Plans",
+        "question": "How will you manage healthcare while studying abroad?",
+        "suggestedAnswer": "{{healthcare_management_abroad}} I understand that as an international student, I will have access to Italian state healthcare services and will register with a local healthcare provider upon arrival. I am aware of health insurance requirements for international students and will maintain appropriate coverage throughout my studies.",
+        "guidance": "Demonstrate knowledge of Italian state healthcare services and planning for health emergencies.",
+        "tooltip": "Shows practical preparation and understanding of health support systems available.",
+        "priority": "medium",
+        "variations": [
+          "What arrangements have you made for your healthcare while studying in this country?",
+          "How do you plan to access medical services and manage your health insurance during your time abroad?",
+          "What is your strategy for ensuring your health and well-being are covered while pursuing your studies internationally?",
+          "Can you explain your provisions for healthcare and medical support during your stay as a student?"
+        ]
+      },
+      {
+        "id": "postgrad-visa-expiry-plans",
+        "category": "Post-Graduation Plans",
+        "question": "What will you do after your visa expires?",
+        "suggestedAnswer": "After my student visa expires, {{plan_to_return_home ? 'I plan to return to {{country_of_residence}} to pursue my career goals in {{field_of_study}}.' : 'I may explore work opportunities in Italy or other EU countries through appropriate visa pathways, but my long-term intention is to return to {{country_of_residence}} to apply my professional qualifications.'}} {{job_prospects_home_country ? 'I have identified promising job opportunities and career prospects in {{country_of_residence}} that align with my {{intended_degree}} qualification.' : 'I am confident that my Italian {{intended_degree}} degree will provide me with a strong competitive advantage in the job market in {{country_of_residence}}.'}} My family ties and long-term aspirations are deeply rooted in {{country_of_residence}}, making it my ultimate destination.",
+        "guidance": "Clearly state your plans after visa expiry - whether returning home or applying for further work permits. Emphasize your intent and connections to your home country.",
+        "tooltip": "Critical question for visa officers to assess your genuine intent and post-graduation plans.",
+        "priority": "high",
+        "variations": [
+          "What are your intentions once your current visa concludes?",
+          "What do you plan to do after your visa's validity period ends?",
+          "Can you outline your plans for the period following the expiration of your student visa?",
+          "What will be your next steps when your current visa reaches its expiry date?"
+        ]
+      },
+      {
+        "id": "background-student-visa-conditions",
+        "category": "Background",
+        "question": "Do you understand the conditions of your student visa, including work limitations?",
+        "suggestedAnswer": "{{student_visa_conditions_understanding}} I am aware that as a student visa holder in Italy, I am permitted to work up to 20 hours per week during school terms and full-time during official university breaks. I understand these are strict conditions and I am fully committed to complying with all Italian visa regulations and requirements.",
+        "guidance": "Demonstrate clear understanding of specific UK student visa work restrictions and conditions.",
+        "tooltip": "Critical for credibility - shows you've researched visa obligations and plan to comply.",
+        "priority": "high",
+        "variations": [
+          "Are you aware of and do you understand the stipulations of your student visa, including any employment restrictions?",
+          "Do you comprehend the terms and conditions associated with your student visa, particularly regarding permissible work?",
+          "Are you familiar with the requirements of your student visa, including what you are allowed or not allowed to do concerning work?",
+          "Have you reviewed and understood the rules governing your student visa, specifically those that pertain to working while studying?"
+        ]
+      },
+      {
+        "id": "postgrad-career-goals",
+        "category": "Post-Graduation Plans",
+        "question": "What are your career goals after graduation?",
+        "suggestedAnswer": "{{post_graduation_job_plans}} I plan to pursue this career after completing my {{intended_degree}}.",
+        "guidance": "Describe specific, realistic career goals aligned with your degree.",
+        "tooltip": "Clear post-graduation plans strengthen student visa application.",
+        "priority": "high",
+        "variations": [
+          "What professional aspirations do you hold for after you complete your program?",
+          "Can you articulate your career objectives for the period following your graduation?",
+          "What do you envision yourself achieving professionally once you have earned your degree?",
+          "What are your long-term career plans subsequent to finishing your studies?"
+        ]
+      },
+      {
+        "id": "postgrad-return-intent",
+        "category": "Post-Graduation Plans",
+        "question": "Do you plan to return to your home country after graduation?",
+        "suggestedAnswer": "{{plan_to_return_home ? 'Yes, I plan to return to {{country_of_residence}} immediately after completing my studies to pursue my academic and career goals.' : 'I may initially pursue temporary work experience through a post-study work visa, but my long-term intention is to return to {{country_of_residence}}.'}} I have strong ties to my home country through my {{family_in_home_country ? 'close family members in {{country_of_residence}}' : 'professional and personal networks in {{country_of_residence}}'}} that make returning home a priority.",
+        "guidance": "Be honest about your intent. Strong home country ties provide credibility.",
+        "tooltip": "Intent to return is critical for student visa officer assessment.",
+        "priority": "high",
+        "variations": [
+          "Do you intend to return to your home country upon completing your graduation?",
+          "What are your plans for repatriation after you finish your academic program?",
+          "Is it your intention to reside in your country of origin once you have graduated?",
+          "Do you foresee yourself going back to your native country after you conclude your studies?"
+        ]
+      },
+      {
+        "id": "postgrad-home-ties",
+        "category": "Post-Graduation Plans",
+        "question": "What are your ties to your home country?",
+        "suggestedAnswer": "I have multiple strong ties to {{country_of_residence}} that make returning home important to me. {{family_in_home_country ? 'My family is based in {{country_of_residence}} - {{family_details}}.' : 'I have professional networks and personal commitments in {{country_of_residence}}.'}} {{property_or_assets_home ? 'Additionally, my family has property and assets in {{country_of_residence}}.' : ''}} After completing my {{intended_degree}}, I plan to {{post_graduation_job_plans}}.",
+        "guidance": "Mention family, property, business, and career opportunities.",
+        "tooltip": "Establishes personal and financial ties to home country.",
+        "priority": "high",
+        "skipIf": [
+          {
+            "field": "plan_to_return_home",
+            "equals": false
+          }
+        ],
+        "variations": [
+          "What connections do you maintain with your home country?",
+          "Could you describe your links to your country of origin?",
+          "What significant commitments do you have in your home country?",
+          "How would you describe your enduring connections to your native country?"
+        ]
+      },
+      {
+        "id": "postgrad-family-connections",
+        "category": "Post-Graduation Plans",
+        "question": "Do you have close family in your home country?",
+        "suggestedAnswer": "{{family_in_home_country ? 'Yes, I have close family in {{country_of_residence}}: {{family_details}}. These family ties are very important to me and provide strong motivation to return home after my studies.' : 'Most of my family is dispersed, but I have strong professional and personal connections to {{country_of_residence}} that are important to me.'}}",
+        "guidance": "Describe parents, siblings, or other family ties.",
+        "tooltip": "Critical indicator of home country attachment.",
+        "priority": "high",
+        "skipIf": [
+          {
+            "field": "plan_to_return_home",
+            "equals": false
+          }
+        ],
+        "variations": [
+          "Are your immediate family members residing in your home country?",
+          "Do you have immediate relatives living in your country of origin?",
+          "Is your core family unit located in your native country?",
+          "Are there close family members who depend on you in your home country?"
+        ]
+      },
+      {
+        "id": "postgrad-property",
+        "category": "Post-Graduation Plans",
+        "question": "Do you have property or assets in your home country?",
+        "suggestedAnswer": "{{property_or_assets_home ? 'Yes, my family owns property in {{country_of_residence}} that represents significant financial and personal wealth. This reinforces my commitment to eventually returning home.' : 'My family has investments and financial assets in {{country_of_residence}} that represent our financial ties to our home country.'}}",
+        "guidance": "Land, house, or business ownership shows financial ties.",
+        "tooltip": "Financial ties strengthen return home commitment.",
+        "priority": "medium",
+        "skipIf": [
+          {
+            "field": "plan_to_return_home",
+            "equals": false
+          }
+        ],
+        "variations": [
+          "Do you own any real estate or financial assets in your country of origin?",
+          "Are you the owner of any significant property or investments back home?",
+          "Could you specify any assets or holdings you possess in your native country?",
+          "Do you have any material possessions or investments located in your home country?"
+        ]
+      },
+      {
+        "id": "postgrad-stay-consideration",
+        "category": "Post-Graduation Plans",
+        "question": "Are you considering staying in Italy after graduation?",
+        "suggestedAnswer": "{{consider_staying_it ? 'I may explore opportunities to work and gain professional experience in Italy initially, but my ultimate intention is to return to {{country_of_residence}} and apply my skills in my home country.' : 'My primary goal is to complete my studies and return to my home country to pursue my career goals.'}}",
+        "guidance": "If considering temporary stay, frame as professional development before returning home.",
+        "tooltip": "Short-term Italy work experience followed by home country return demonstrates genuine student intent.",
+        "priority": "high",
+        "skipIf": [
+          {
+            "field": "plan_to_return_home",
+            "equals": true
+          }
+        ],
+        "variations": [
+          "Do you intend to remain in Italy following the completion of your studies?",
+          "What are your plans regarding your presence in Italy once you graduate?",
+          "Have you thought about extending your stay in Italy after your course finishes?",
+          "Is it your intention to seek post-graduation opportunities to reside in Italy?"
+        ]
+      },
+      {
+        "id": "background-previous-it-stays",
+        "category": "Background",
+        "question": "Have you visited Italy before?",
+        "suggestedAnswer": "{{previous_it_visits ? 'Yes, I have previously visited Italy, which gave me direct experience with the country and strengthened my commitment to studying here.' : 'No, I have not visited Italy before, but I have conducted thorough research about Italian universities, the education system, and student life to prepare myself well for this transition.'}}",
+        "guidance": "Answer honestly about travel history.",
+        "tooltip": "Checks travel experience and visa history.",
+        "priority": "medium",
+        "variations": [
+          "Have you previously traveled to Italy?",
+          "Is this your first visit to Italy?",
+          "Do you have a history of prior entries into Italy?",
+          "Have you made any earlier trips to Italy?"
+        ]
+      },
+      {
+        "id": "background-it-visit-details",
+        "category": "Background",
+        "question": "When did you visit Italy and what was the purpose?",
+        "suggestedAnswer": "I visited {{primary_university}} and other Italian cities to tour campuses, research academic programs, and experience university life firsthand. This visit greatly strengthened my commitment to studying at {{primary_university}} and helped me understand what to expect as an international student in Italy.",
+        "guidance": "Provide approximate dates and mention campus tours or tourism.",
+        "tooltip": "Verifies legitimate travel and interest in Italy.",
+        "priority": "medium",
+        "skipIf": [
+          {
+            "field": "previous_it_visits",
+            "equals": false
+          }
+        ],
+        "variations": [
+          "Could you provide the dates and purpose of your previous visits to Italy?",
+          "When were your prior trips to Italy, and what was the objective of each?",
+          "Please state the timing and reason for any earlier travel to Italy.",
+          "For your previous visits to Italy, what were the dates and the nature of your activities?"
+        ]
+      },
+      {
+        "id": "background-visa-refusal",
+        "category": "Background",
+        "question": "Have you ever been denied any visa?",
+        "suggestedAnswer": "{{visa_refusal_history ? 'Yes, I was previously denied a visa, and I understand this will be carefully reviewed by the visa officer.' : 'No, I have never been denied a visa to any country, and I have a clean immigration record.'}}",
+        "guidance": "Honesty is critical - this will be verified in your records.",
+        "tooltip": "Previous refusals are reviewed carefully.",
+        "priority": "high",
+        "variations": [
+          "Have you ever had a visa application refused by any country?",
+          "Has a visa ever been denied to you by any immigration authority?",
+          "Have you previously experienced a refusal for any visa application?",
+          "Are there any instances where a visa was not granted to you?"
+        ]
+      },
+      {
+        "id": "background-visa-refusal-explanation",
+        "category": "Background",
+        "question": "Explain the visa refusal and what has changed.",
+        "suggestedAnswer": "I was previously denied a {{other_countries_visa_refusal ? 'visa to another country' : 'student visa'}} because {{visa_refusal_history ? 'of concerns regarding my documentation/financial capability/application details.' : ''}} Since then, my circumstances have significantly improved. I have: (1) Secured admission to {{primary_university}} with a strong academic profile, (2) Demonstrated comprehensive financial capability with bank statements and sponsor documentation, and (3) Established clear intent to study through detailed research and university engagement. I am now clearly eligible for an Italy student visa.",
+        "guidance": "Honestly explain the reason and how circumstances have improved.",
+        "tooltip": "Demonstrates addressing previous concerns.",
+        "priority": "high",
+        "skipIf": [
+          {
+            "field": "visa_refusal_history",
+            "equals": false
+          }
+        ],
+        "variations": [
+          "Please account for the visa refusal and describe any subsequent changes in your situation.",
+          "Could you clarify the circumstances of that visa denial and outline what factors have since altered?",
+          "Provide details regarding the visa refusal and explain what adjustments have been made.",
+          "Elaborate on why the visa was denied and what modifications have occurred since then."
+        ]
+      },
+      {
+        "id": "background-criminal-record",
+        "category": "Background",
+        "question": "Do you have any criminal convictions?",
+        "suggestedAnswer": "{{criminal_record ? 'I am required to disclose criminal history to the Italian authorities, and I have documentation regarding my circumstances.' : 'No, I do not have any criminal record, and I have maintained clean legal standing throughout my life.'}}",
+        "guidance": "Always answer truthfully - criminal history triggers security reviews.",
+        "tooltip": "Criminal history is grounds for visa denial.",
+        "priority": "high",
+        "skipIf": [
+          {
+            "field": "criminal_record",
+            "equals": false
+          }
+        ],
+        "variations": [
+          "Have you ever been convicted of a criminal offense?",
+          "Do you have a record of any criminal convictions?",
+          "Have you been found guilty of any criminal charges?",
+          "Are there any instances of criminal convictions against your name?"
+        ]
+      },
+      {
+        "id": "background-it-immigration-issues",
+        "category": "Background",
+        "question": "Do you have any legal issues in Italy?",
+        "suggestedAnswer": "{{any_it_immigration_issues ? 'I have legal issues to disclose to the Italian immigration authorities, and I have documentation prepared.' : 'No, I have no legal issues in Italy and intend to maintain full compliance with all Italian laws as a student.'}}",
+        "guidance": "Disclose any arrests, legal violations, or previous Italian visa issues if applicable.",
+        "tooltip": "Security clearance and admissibility requirement.",
+        "priority": "high",
+        "skipIf": [
+          {
+            "field": "any_it_immigration_issues",
+            "equals": false
+          }
+        ],
+        "variations": [
+          "Are you currently involved in any legal proceedings within Italy?",
+          "Do you have any outstanding legal matters or disputes in Italy?",
+          "Are there any legal challenges or concerns you face in Italy?",
+          "Have you encountered any legal difficulties or immigration-related issues in Italy?"
+        ]
+      },
+      {
+        "id": "background-visa-overstay",
+        "category": "Background",
+        "question": "Have you ever overstayed a visa in any country?",
+        "suggestedAnswer": "{{previous_overstay ? 'Yes, I must disclose a previous visa overstay and understand this is a serious immigration matter that will be reviewed carefully by the Italian authorities.' : 'No, I have never overstayed a visa and have maintained strict compliance with all visa terms and departure requirements.'}}",
+        "guidance": "Answer truthfully - overstays are serious immigration violations.",
+        "tooltip": "Overstays can result in visa denials and bans.",
+        "priority": "high",
+        "skipIf": [
+          {
+            "field": "previous_overstay",
+            "equals": false
+          }
+        ],
+        "variations": [
+          "Have you ever stayed beyond the validity of a visa in any country?",
+          "Can you confirm whether you have ever overstayed your visa during any of your travels?",
+          "Have you ever failed to leave a country before your visa expired?",
+          "Is there any instance where you did not comply with the duration of stay allowed on your visa?"
+        ]
+      },
+      {
+        "id": "background-other-visa-denials",
+        "category": "Background",
+        "question": "Have you been denied a visa to any other country?",
+        "suggestedAnswer": "{{other_countries_visa_refusal ? 'Yes, I have been denied visas to other countries, and I understand the Italian authorities will review these decisions carefully.' : 'No, I have not been denied visas to other countries and maintain a strong visa and travel record.'}}",
+        "guidance": "Visa refusals to other countries may indicate patterns that require explanation.",
+        "tooltip": "Visa refusals to other countries are reviewed carefully.",
+        "priority": "high",
+        "skipIf": [
+          {
+            "field": "other_countries_visa_refusal",
+            "equals": false
+          }
+        ],
+        "variations": [
+          "Have you ever had a visa application refused by any country?",
+          "Can you tell me if you’ve faced any visa refusals in the past?",
+          "Has any country ever rejected your visa application?",
+          "Are there any instances where your visa was denied by another country?"
+        ]      },
+      {
+        "id": "academic-course-language",
+        "category": "Academic Background",
+        "question": "What language is your course taught in?",
+        "suggestedAnswer": "My {{intended_degree}} course is taught in {{course_language}}. I am aware that this choice requires appropriate language proficiency and I am prepared to meet the academic demands of studying in this language. My language preparation is aligned with the requirements of my program.",
+        "guidance": "Clearly state your course language and demonstrate appropriate language proficiency for that medium.",
+        "tooltip": "Course language determines your language proficiency requirements for Italy.",
+        "priority": "high",
+        "variations": [
+          "In which language is your course conducted?",
+          "Is your academic program delivered in Italian, English, or both languages?",
+          "What is the medium of instruction for your degree program?",
+          "Will your studies be in English, Italian, or a combination of both?"
+        ]
+      },
+      {
+        "id": "academic-italian-proficiency",
+        "category": "Academic Background",
+        "question": "What is your Italian language proficiency level?",
+        "suggestedAnswer": "My Italian language proficiency is at {{italian_proficiency_level}} level according to the CEFR framework. I am prepared to meet the language demands of my {{intended_degree}} program in Italy. Depending on my proficiency level, I have either foundational skills with active improvement plans, strong conversational and academic abilities, or excellent proficiency to handle all academic and professional contexts in Italian. I am committed to successfully managing my studies in this language.",
+        "guidance": "Provide accurate CEFR level (A1-C2) and describe your proficiency in relation to your course demands.",
+        "tooltip": "Italian proficiency is important for studies in Italy, particularly for courses taught in Italian.",
+        "priority": "high",
+        "dependsOn": { "key": "course_language", "valueIn": ["Italian", "Both English and Italian"] },
+        "variations": [
+          "How would you rate your Italian language abilities?",
+          "At what CEFR level would you assess your Italian language proficiency?",
+          "Can you describe your current level of Italian language competency?",
+          "What is your self-assessment of your ability to use Italian in academic settings?"
+        ]
+      },
+      {
+        "id": "academic-language-comfort",
+        "category": "Academic Background",
+        "question": "How comfortable are you with studying in your chosen course_language?",
+        "suggestedAnswer": "My comfort level with studying in {{course_language}} is {{language_comfort_level}}. I have strategies to support my academic success in this language, including utilizing available course resources, engaging with peer support, and committing to continuous language practice throughout my program. I am prepared to meet this academic challenge effectively.",
+        "guidance": "Honestly assess your confidence level and describe strategies for success if support is needed.",
+        "tooltip": "Shows realistic self-awareness and commitment to academic success.",
+        "priority": "high",
+        "variations": [
+          "How confident are you in your ability to study in your chosen course_language?",
+          "What is your comfort level with academic coursework delivered in your chosen course_language?",
+          "Can you assess your readiness for university-level studying in your chosen course_language?",
+          "How do you feel about managing your studies in your chosen course_language?"
+        ]
+      },
+      {
+        "id": "study-schengen-travel",
+        "category": "Study Plans",
+        "question": "Do you plan to travel within the Schengen Area during your studies?",
+        "suggestedAnswer": "{{schengen_travel_plans ? 'Yes, I plan to travel within the Schengen Area during my studies, which is one of the benefits of being a student in Italy. I plan to visit other EU countries during university breaks and official holidays, while ensuring that my travels do not interfere with my academic responsibilities and important coursework deadlines.' : 'I have not made specific plans to travel extensively within the Schengen Area, though I acknowledge this opportunity is available to me. I am primarily focused on completing my {{intended_degree}} program successfully and building a strong academic foundation in Italy.'}}",
+        "guidance": "If planning Schengen travel, explain how it will not impact your studies. If not planning travel, focus on academic commitment.",
+        "tooltip": "Responsible travel planning shows you understand your visa conditions and academic priorities.",
+        "priority": "medium",
+        "variations": [
+          "Are you interested in exploring other countries within the Schengen Area during your stay in Italy?",
+          "Do you intend to visit other European countries as a student in Italy?",
+          "What are your plans regarding travel within Europe while studying in Italy?",
+          "Will you be traveling to other Schengen countries during your academic program?"
+        ]
+      },
+      {
+        "id": "university-admission-letter",
+        "category": "University Choice",
+        "question": "Have you received an official admission letter from your Italian university?",
+        "suggestedAnswer": "{{admission_letter_received ? 'Yes, I have received an official admission letter from {{primary_university}} confirming my acceptance for the {{intended_degree}} program. This letter confirms my status as an accepted student and is a critical requirement for my Italy student visa application.' : 'I am in the process of receiving my admission letter from {{primary_university}}. I have applied and am awaiting formal confirmation of my acceptance.'}}",
+        "guidance": "Admission letter is mandatory for Italy student visa. If you don't have it yet, explain your expected timeline.",
+        "tooltip": "Official admission letter is a required document for Italy student visa applications.",
+        "priority": "critical",
+        "variations": [
+          "Have you been formally admitted to your chosen Italian university?",
+          "Do you have confirmation of acceptance from your Italian institution?",
+          "Has your Italian university issued your official admission letter?",
+          "Can you confirm your acceptance and receipt of admission documentation from your university?"
+        ]
+      },
+      {
+        "id": "accommodation-italy-plans",
+        "category": "Study Plans",
+        "question": "Where will you stay during your studies in Italy?",
+        "suggestedAnswer": "I will stay in {{accommodation_in_italy}} during my studies in Italy. This arrangement ensures I can focus on my studies while maintaining a comfortable and stable living situation. My accommodation choice reflects my understanding of costs and my ability to manage my finances responsibly during my studies.",
+        "guidance": "Describe where and with whom you'll live, and explain how this supports your studies.",
+        "tooltip": "Clear accommodation plans demonstrate your readiness and responsible planning.",
+        "priority": "high",
+        "variations": [
+          "What accommodation arrangements have you made for your time in Italy?",
+          "Where do you plan to live while studying in Italy?",
+          "Can you describe your living arrangements in Italy?",
+          "How have you organized your housing for your studies in Italy?"
+        ]
+      },
+      {
+        "id": "background-health-insurance",
+        "category": "Background",
+        "question": "Do you have valid health insurance coverage for your stay in Italy?",
+        "suggestedAnswer": "{{health_insurance_italy ? 'Yes, I have secured valid health insurance coverage for my stay in Italy. My insurance provides comprehensive medical coverage including emergency care, hospitalization, and outpatient treatment as required for Italy student visa requirements. This ensures I can access healthcare services without financial hardship.' : 'I am in the process of arranging comprehensive health insurance and will ensure I have complete coverage before my arrival in Italy. Health insurance coverage is mandatory for my student visa, and I am committed to meeting this requirement.'}}",
+        "guidance": "Health insurance is mandatory for Italy student visa. Describe your coverage plan.",
+        "tooltip": "Valid health insurance is a legal requirement for Italy student visa holders.",
+        "priority": "critical",
+        "variations": [
+          "Have you arranged health insurance for your time in Italy?",
+          "What health insurance coverage have you secured for your studies?",
+          "Can you confirm you have medical insurance for your stay in Italy?",
+          "What is your plan for healthcare coverage during your Italian studies?"
+        ]      }
+    ]
+  }

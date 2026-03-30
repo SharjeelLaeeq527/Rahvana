@@ -11,7 +11,6 @@ import { createBrowserClient } from "@supabase/ssr/dist/main/createBrowserClient
 import { useToast } from "../shared/ToastProvider";
 import { Loader } from "@/components/ui/spinner";
 
-
 export function MFASetup() {
   const supabase = createBrowserClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -321,13 +320,9 @@ export function MFASetup() {
                 <Button
                   onClick={handleDisableMFA}
                   disabled={loading || disableOTP.trim().length !== 6}
-                  className="h-11 rounded-xl px-6 w-full sm:w-auto bg-destructive hover:bg-destructive/90 text-destructive-foreground"
+                  className="h-11 rounded-xl px-10 w-full sm:w-auto bg-destructive hover:bg-destructive/90 text-destructive-foreground"
                 >
-                  {loading ? (
-                    <Loader size="sm" text="Disabling..." />
-                  ) : (
-                    "Disable 2FA"
-                  )}
+                  {loading ? "Disabling..." : "Disable 2FA"}
                 </Button>
               </div>
             </div>
