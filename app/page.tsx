@@ -769,7 +769,9 @@ function HomePageContent() {
                 <div className="flex flex-col lg:flex-row gap-8 lg:gap-12 w-full xl:w-[90%] 2xl:w-[85%] mx-auto">
                   {/* Left Column: Interactive List */}
                   <div className="w-full lg:w-5/12 flex flex-col gap-3">
-                    {ALL_SERVICES.filter((s) => s.href !== "/book-consultation")
+                    {ALL_SERVICES.filter(
+                      (s) => s.href !== "/book-consultation" && !s.disabled,
+                    )
                       .slice(0, 5)
                       .map((service, idx) => {
                         const isActive = activeService === idx;
@@ -812,14 +814,17 @@ function HomePageContent() {
                                 }`}
                               >
                                 {renderWithAbbr(
-                                  t(`homePage.servicesList.${idx}.title`) ||
-                                    service.title,
+                                  // t(`homePage.servicesList.${idx}.title`) ||
+                                  service.title,
                                 )}
                               </h4>
                               <p className="text-[10px] sm:text-xs text-muted-foreground truncate opacity-80 uppercase tracking-wider mt-0.5 sm:mt-1">
-                                {t(
-                                  `homePage.categoryLabels.${service.category}`,
-                                ) || service.category}
+                                {
+                                  // t(
+                                  //   `homePage.categoryLabels.${service.category}`,
+                                  // ) ||
+                                  service.category
+                                }
                               </p>
                             </div>
                             {/* Active indicator line */}
@@ -868,60 +873,68 @@ function HomePageContent() {
                               {
                                 ALL_SERVICES.filter(
                                   (s) =>
-                                    // !s.disabled &&
+                                    !s.disabled &&
                                     s.href !== "/book-consultation",
                                 )[activeService]?.icon
                               }
                             </div>
                             <div className="inline-block px-3 py-1 sm:px-4 sm:py-1.5 text-[10px] sm:text-xs font-bold uppercase tracking-wider rounded-full bg-rahvana-primary-pale text-rahvana-primary">
-                              {t(
-                                `homePage.categoryLabels.${
-                                  ALL_SERVICES.filter(
-                                    (s) =>
-                                      // !s.disabled &&
-                                      s.href !== "/book-consultation",
-                                  )[activeService]?.category
-                                }`,
-                              ) ||
+                              {
+                                // t(
+                                //   `homePage.categoryLabels.${
+                                //     ALL_SERVICES.filter(
+                                //       (s) =>
+                                //         !s.disabled &&
+                                //         s.href !== "/book-consultation",
+                                //     )[activeService]?.category
+                                //   }`,
+                                // ) ||
                                 ALL_SERVICES.filter(
                                   (s) =>
-                                    // !s.disabled &&
+                                    !s.disabled &&
                                     s.href !== "/book-consultation",
-                                )[activeService]?.category}
+                                )[activeService]?.category
+                              }
                             </div>
                           </div>
 
                           <h3 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold text-foreground mb-3 sm:mb-4 leading-tight">
                             {renderWithAbbr(
-                              t(
-                                `homePage.servicesList.${activeService}.title`,
-                              ) ||
-                                ALL_SERVICES.filter(
-                                  (s) =>
-                                    // !s.disabled &&
-                                    s.href !== "/book-consultation",
-                                )[activeService]?.title ||
-                                "",
+                              // t(
+                              //   `homePage.servicesList.${activeService}.title`,
+                              // ) ||
+                              ALL_SERVICES.filter(
+                                (s) =>
+                                  !s.disabled &&
+                                  s.href !== "/book-consultation",
+                              )[activeService]?.title || "",
                             )}
                           </h3>
                           <p className="text-muted-foreground text-sm sm:text-base md:text-lg leading-relaxed mb-6 sm:mb-8 flex-1">
                             {renderWithAbbr(
-                              t(
-                                `homePage.servicesList.${activeService}.desc`,
-                              ) ||
-                                ALL_SERVICES.filter(
-                                  (s) =>
-                                    // !s.disabled &&
-                                    s.href !== "/book-consultation",
-                                )[activeService]?.description ||
-                                "",
+                              // t(
+                              //   `homePage.servicesList.${activeService}.desc`,
+                              // ) ||
+                              ALL_SERVICES.filter(
+                                (s) =>
+                                  !s.disabled &&
+                                  s.href !== "/book-consultation",
+                              )[activeService]?.description || "",
                             )}
                           </p>
 
                           <div className="mt-auto">
                             <HydrationSafeButton
                               // disabled
-                              onClick={() => setShowComingSoon(true)}
+                              onClick={() => {
+                                router.push(
+                                  ALL_SERVICES.filter(
+                                    (s) =>
+                                      !s.disabled &&
+                                      s.href !== "/book-consultation",
+                                  )[activeService]?.href,
+                                );
+                              }}
                               className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-4 text-base font-bold text-white bg-rahvana-primary rounded-xl transition-all shadow-md cursor-pointer"
                             >
                               {t("homePage.servicesGetStarted")}{" "}
@@ -961,8 +974,8 @@ function HomePageContent() {
                         </span>
                       </p>
                       <button
-                        // onClick={handleConsultationClick}
-                        onClick={() => setShowComingSoon(true)}
+                        onClick={handleConsultationClick}
+                        // onClick={() => setShowComingSoon(true)}
                         className="inline-flex items-center px-10 py-5 bg-background text-rahvana-primary text-lg font-bold rounded-xl shadow-lg hover:shadow-2xl hover:-translate-y-1 transition-all cursor-pointer"
                       >
                         {t("homePage.consultationButton")}
