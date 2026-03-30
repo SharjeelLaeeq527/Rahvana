@@ -727,7 +727,8 @@ export const NAV_DATA: Record<string, NavSection> = {
               <FileText className="h-5 w-5 text-green-600 dark:text-green-400" />
             ),
             title: "CNIC",
-            description: "NADRA CNIC issuance, correction, and renewal workflow.",
+            description:
+              "NADRA CNIC issuance, correction, and renewal workflow.",
             href: "/guides/cnic-guide",
             // badge: "Live",
           },
@@ -753,7 +754,8 @@ export const NAV_DATA: Record<string, NavSection> = {
               <Heart className="h-5 w-5 text-green-600 dark:text-green-400" />
             ),
             title: "Marriage Registration",
-            description: "Union Council Nikah registration and NADRA MRC issuance.",
+            description:
+              "Union Council Nikah registration and NADRA MRC issuance.",
             href: "/guides/nikah-nama-guide",
             // badge: "Live",
           },
@@ -763,7 +765,8 @@ export const NAV_DATA: Record<string, NavSection> = {
               <Shield className="h-5 w-5 text-green-600 dark:text-green-400" />
             ),
             title: "Police Character Certificate",
-            description: "Province-wise PCC verification workflow and requirements.",
+            description:
+              "Province-wise PCC verification workflow and requirements.",
             href: "/guides/police-verification-guide",
             // badge: "Live",
           },
@@ -847,7 +850,8 @@ export const NAV_DATA: Record<string, NavSection> = {
               <Syringe className="h-5 w-5 text-teal-600 dark:text-teal-400" />
             ),
             title: "Polio Vaccination",
-            description: "Polio vaccination and NIMS travel certificate workflow.",
+            description:
+              "Polio vaccination and NIMS travel certificate workflow.",
             href: "/guides/polio-vaccination-guide",
           },
         ],
@@ -932,7 +936,7 @@ export const NAV_DATA: Record<string, NavSection> = {
             translationKey: "bookConsultation",
             description: "Book a call with an expert.",
             href: "/book-consultation",
-            disabled: true,
+            disabled: false,
           },
           {
             icon: (
@@ -961,7 +965,7 @@ export const NAV_DATA: Record<string, NavSection> = {
             translationKey: "pccSindh",
             description: "Done-for-you police certificate filing for Sindh.",
             href: "/police-verification/apply?province=Sindh",
-            disabled: true,
+            disabled: false,
             // href: "/guides/police-verification-guide",
             // badge: "Soon",
           },
@@ -1016,7 +1020,7 @@ export const NAV_DATA: Record<string, NavSection> = {
             translationKey: "bookMedical",
             description: "Book your panel physician medical exam appointment.",
             href: "/book-appointment",
-            disabled: true,
+            disabled: false,
             // badge: "Live",
           },
         ],
@@ -1035,7 +1039,7 @@ export const NAV_DATA: Record<string, NavSection> = {
             description:
               "Request certified translation + formatting for submission.",
             href: "/document-translation",
-            disabled: true,
+            disabled: false,
           },
         ],
       },
