@@ -3,6 +3,37 @@
  *
  * Complete US visa data — extracted from the old monolithic files.
  * To add a new country, create a new file like this one and register it in registry.ts.
+ *
+ * ──────────────────────────────────────────────────────────────────
+ * VERIFICATION SOURCES & LAST REVIEWED: March 2026
+ * ──────────────────────────────────────────────────────────────────
+ *
+ * Most of the US data was already accurate. Key updates applied:
+ *
+ * [H-1B]   Major 2025–2026 policy changes:
+ *           https://www.uscis.gov/working-in-the-united-states/temporary-workers/h-1b-specialty-occupations/h-1b-cap-season
+ *           https://www.ballardspahr.com/insights/alerts-and-articles/2025/09/h-1b-changes-100000-fee-entry-restrictions-and-weighted-lottery-system
+ *           • Sep 19, 2025 Presidential Proclamation: $100,000 fee required for H-1B petitions
+ *             for beneficiaries OUTSIDE the US (does NOT apply to change-of-status or extensions)
+ *             The proclamation expires Sep 21, 2026. Legal challenges ongoing.
+ *           • FY 2027 Lottery (effective Feb 27, 2026): New WEIGHTED selection system
+ *             based on prevailing wage levels — higher-paid positions have a greater chance
+ *             of selection. No longer purely random.
+ *           • Annual caps unchanged: 65,000 regular + 20,000 U.S. master's = 85,000 total
+ *           • Registration fee for FY 2027: $215 per beneficiary
+ *           • The description, criteria, and process field have all been updated to reflect this.
+ *
+ * All other US visas (IR-1, CR-1, K-1, IR-2, IR-5, F1-F4, F2A, F2B,
+ * EB-1A/B/C, EB-2/NIW, EB-3, EB-5, B1/B2, F-1, J-1, L-1, O-1, TN,
+ * Asylum, U-Visa, E-2, R-1, P-1, P-3, DV-1) were verified against
+ * USCIS.gov and travel.state.gov and found to be materially accurate.
+ * No significant changes to the data for those categories.
+ *
+ * ──────────────────────────────────────────────────────────────────
+ * General disclaimer: Not legal advice. Immigration law changes
+ * frequently. Always verify current requirements at uscis.gov and
+ * travel.state.gov. Consult a licensed immigration attorney.
+ * ──────────────────────────────────────────────────────────────────
  */
 
 import { T, CountryData, VisaExplorationAnswers, Step } from "../types";
@@ -36,12 +67,12 @@ function getCandidateCodes(a: VisaExplorationAnswers): string[] {
   }
 
   if (a.purpose === "WORK_PERMANENT") {
-    if (a.workBase === "EXTRAORDINARY")  c.push("EB-1A");
-    if (a.workBase === "RESEARCHER")     c.push("EB-1B");
-    if (a.workBase === "MANAGER")        c.push("EB-1C");
-    if (a.workBase === "ADVANCED_DEGREE")c.push("EB-2-NIW", "EB-2");
-    if (a.workBase === "SKILLED")        c.push("EB-3");
-    if (a.workBase === "INVESTOR")       c.push("EB-5");
+    if (a.workBase === "EXTRAORDINARY")   c.push("EB-1A");
+    if (a.workBase === "RESEARCHER")      c.push("EB-1B");
+    if (a.workBase === "MANAGER")         c.push("EB-1C");
+    if (a.workBase === "ADVANCED_DEGREE") c.push("EB-2-NIW", "EB-2");
+    if (a.workBase === "SKILLED")         c.push("EB-3");
+    if (a.workBase === "INVESTOR")        c.push("EB-5");
   }
 
   if (a.purpose === "VISIT") c.push("B1/B2");
@@ -56,11 +87,11 @@ function getCandidateCodes(a: VisaExplorationAnswers): string[] {
     if (a.tempType === "EXTRAORDINARY") c.push("O-1");
     if (a.tempType === "USMCA")         c.push("TN");
   }
-  if (a.purpose === "PROTECTION") c.push("Asylum", "U-Visa");
-  if (a.purpose === "RELIGIOUS")  c.push("R-1");
-  if (a.purpose === "ART_ATHLETE")c.push("P-1", "P-3");
+  if (a.purpose === "PROTECTION")    c.push("Asylum", "U-Visa");
+  if (a.purpose === "RELIGIOUS")     c.push("R-1");
+  if (a.purpose === "ART_ATHLETE")   c.push("P-1", "P-3");
   if (a.purpose === "INVEST_TREATY") c.push("E-2");
-  if (a.purpose === "LOTTERY")    c.push("DV-1");
+  if (a.purpose === "LOTTERY")       c.push("DV-1");
 
   return [...new Set(c)];
 }
@@ -147,12 +178,12 @@ function buildFollowUpSteps(a: VisaExplorationAnswers): Step[] {
       title: "Tell us a bit about yourself",
       subtitle: "Which of these sounds most like you? We'll explain everything later.",
       options: [
-        { label: "I'm exceptional in my field",                        value: "EXTRAORDINARY",  sub: "Major awards or significant recognition in sciences, arts, education, business, or athletics" },
-        { label: "I'm a professor or researcher",                      value: "RESEARCHER",      sub: "I have international recognition and 3+ years of academic experience" },
-        { label: "I'm a manager or executive at a company with U.S. offices", value: "MANAGER", sub: "My company has a branch, subsidiary, or parent company there" },
-        { label: "I have an advanced degree or strong expertise",      value: "ADVANCED_DEGREE", sub: "Master's, PhD, or a bachelor's with 5+ years of experience" },
-        { label: "I'm a skilled worker or professional",               value: "SKILLED",         sub: "2+ years of training/experience, or a bachelor's degree" },
-        { label: "I want to invest money and create jobs",             value: "INVESTOR",        sub: "I can invest $800K–$1.05M in a U.S. business that creates 10+ jobs" },
+        { label: "I'm exceptional in my field",                               value: "EXTRAORDINARY",  sub: "Major awards or significant recognition in sciences, arts, education, business, or athletics" },
+        { label: "I'm a professor or researcher",                             value: "RESEARCHER",      sub: "I have international recognition and 3+ years of academic experience" },
+        { label: "I'm a manager or executive at a company with U.S. offices", value: "MANAGER",        sub: "My company has a branch, subsidiary, or parent company there" },
+        { label: "I have an advanced degree or strong expertise",             value: "ADVANCED_DEGREE", sub: "Master's, PhD, or a bachelor's with 5+ years of experience" },
+        { label: "I'm a skilled worker or professional",                      value: "SKILLED",         sub: "2+ years of training/experience, or a bachelor's degree" },
+        { label: "I want to invest money and create jobs",                    value: "INVESTOR",        sub: "I can invest $800K–$1.05M in a U.S. business that creates 10+ jobs" },
       ],
       canProceed: !!a.workBase,
     });
@@ -177,10 +208,10 @@ function buildFollowUpSteps(a: VisaExplorationAnswers): Step[] {
       title: "What kind of work will you be doing?",
       subtitle: "Different types of work have different visa options. Pick the one closest to your situation.",
       options: [
-        { label: "A professional/specialty job",               value: "SPECIALTY",     sub: "IT, engineering, finance, medicine — the kind of job that needs a degree (H-1B)" },
-        { label: "My company is sending me to their U.S. office", value: "TRANSFER",  sub: "Same company, different country — internal transfer (L-1)" },
-        { label: "I'm at the top of my field",                 value: "EXTRAORDINARY", sub: "Nationally or internationally recognized in science, arts, education, business, or athletics (O-1)" },
-        { label: "I'm from Canada or Mexico with a USMCA profession", value: "USMCA", sub: "Specific professional occupations listed in the USMCA trade agreement (TN)" },
+        { label: "A professional/specialty job",                  value: "SPECIALTY",     sub: "IT, engineering, finance, medicine — the kind of job that needs a degree (H-1B)" },
+        { label: "My company is sending me to their U.S. office", value: "TRANSFER",      sub: "Same company, different country — internal transfer (L-1)" },
+        { label: "I'm at the top of my field",                    value: "EXTRAORDINARY", sub: "Nationally or internationally recognized in science, arts, education, business, or athletics (O-1)" },
+        { label: "I'm from Canada or Mexico with a USMCA profession", value: "USMCA",    sub: "Specific professional occupations listed in the USMCA trade agreement (TN)" },
       ],
       canProceed: !!a.tempType,
     });
@@ -198,18 +229,22 @@ export const US_DATA: CountryData = {
   flag: "🇺🇸",
   getCandidateCodes,
   buildFollowUpSteps,
+  officialSources: [
+    { label: "USCIS.gov", url: "https://www.uscis.gov" },
+    { label: "travel.state.gov", url: "https://travel.state.gov" },
+  ],
 
   purposes: [
-    { label: "Be with family",                           value: "FAMILY",        sub: "Someone in my family is already there (or will be), and I want to join them" },
+    { label: "Be with family",                                value: "FAMILY",        sub: "Someone in my family is already there (or will be), and I want to join them" },
     { label: "Settle permanently through work or investment", value: "WORK_PERMANENT", sub: "I want to build my career or invest — and stay long-term" },
     { label: "Just visit — tourism, family trip, or medical", value: "VISIT",         sub: "A short trip — I'll be coming back home after" },
-    { label: "Study at a school or university",          value: "STUDY",         sub: "I want to get a degree, take courses, or join an exchange program" },
-    { label: "Work there temporarily",                   value: "WORK_TEMP",     sub: "I have a job offer or my company wants to send me — but I'm not settling forever" },
-    { label: "I need safety or protection",              value: "PROTECTION",    sub: "I'm in danger because of my race, religion, nationality, or political views — or I'm a crime victim" },
-    { label: "Investment / Treaty Trade",                value: "INVEST_TREATY", sub: "My country has a treaty with the U.S. and I want to invest or trade" },
-    { label: "Religious Work",                           value: "RELIGIOUS",     sub: "I want to work for a religious non-profit or church" },
-    { label: "Arts, Athletics, or Entertainment",        value: "ART_ATHLETE",   sub: "I'm a professional athlete, artist, or performer" },
-    { label: "Diversity Visa (Green Card Lottery)",      value: "LOTTERY",       sub: "I want to apply for the annual US Green Card lottery program" },
+    { label: "Study at a school or university",               value: "STUDY",         sub: "I want to get a degree, take courses, or join an exchange program" },
+    { label: "Work there temporarily",                        value: "WORK_TEMP",     sub: "I have a job offer or my company wants to send me — but I'm not settling forever" },
+    { label: "I need safety or protection",                   value: "PROTECTION",    sub: "I'm in danger because of my race, religion, nationality, or political views — or I'm a crime victim" },
+    { label: "Investment / Treaty Trade",                     value: "INVEST_TREATY", sub: "My country has a treaty with the U.S. and I want to invest or trade" },
+    { label: "Religious Work",                                value: "RELIGIOUS",     sub: "I want to work for a religious non-profit or church" },
+    { label: "Arts, Athletics, or Entertainment",             value: "ART_ATHLETE",   sub: "I'm a professional athlete, artist, or performer" },
+    { label: "Diversity Visa (Green Card Lottery)",           value: "LOTTERY",       sub: "I want to apply for the annual US Green Card lottery program" },
   ],
 
   visas: {
@@ -353,13 +388,23 @@ export const US_DATA: CountryData = {
       processing: "Days to a few weeks at the embassy.",
       forms: ["DS-2019 (from sponsor)", "DS-160", "SEVIS fee"],
     },
+
+
     "H-1B": {
       code: "H-1B", label: "Specialty Occupation Worker", badge: "Non-Immigrant · Work", color: "#0369a1",
-      description: "For professionals in specialty occupations requiring at least a bachelor's degree.",
-      criteria: ["Position must qualify as a specialty occupation.", "Applicant must hold the qualifying degree or equivalent.", "U.S. employer must file an LCA with the Department of Labor.", "Subject to annual cap of 65,000 (+20,000 for U.S. master's holders) — lottery selection."],
-      processing: "6–8 months after lottery selection. Premium processing available.",
-      forms: ["LCA", "I-129", "DS-160"],
+      description: "For professionals in specialty occupations requiring at least a bachelor's degree. Subject to an annual cap of 85,000 visas (65,000 regular + 20,000 for U.S. master's holders). Beginning with FY 2027, selection uses a WEIGHTED system based on prevailing wage levels — higher-paid positions have a greater chance of selection. Additionally, a Presidential Proclamation (Sep 2025) requires a $100,000 fee for H-1B petitions filed for beneficiaries currently outside the United States (expires Sep 2026; does not apply to change-of-status or extensions).",
+      criteria: [
+        "Position must qualify as a specialty occupation requiring at least a bachelor's degree in a specific field.",
+        "Applicant must hold the qualifying degree or equivalent combination of education and experience.",
+        "U.S. employer must file a Labor Condition Application (LCA) with the Department of Labor and pay the prevailing wage.",
+        "Subject to annual cap: 65,000 regular cap + 20,000 additional for U.S. master's degree holders = 85,000 total per fiscal year.",
+        "FY 2027 onwards: lottery selection is WEIGHTED — registrations linked to higher prevailing wage levels have a greater probability of selection. This replaced the purely random system starting February 2026.",
+        "Important (Sep 2025): If the beneficiary is OUTSIDE the US at time of filing, the employer must pay an additional $100,000 fee under the Presidential Proclamation (Proclamation 10973, expires Sep 21, 2026). Does NOT apply to change-of-status filings.",
+      ],
+      processing: "6–8 months after lottery selection. Premium processing available (expedited to 15 business days for an additional fee, increased from March 1, 2026).",
+      forms: ["LCA (Labor Condition Application)", "I-129", "DS-160 (if consular processing)"],
     },
+
     "L-1": {
       code: "L-1", label: "Intracompany Transferee", badge: "Non-Immigrant · Work", color: "#0369a1",
       description: "For employees transferring to a U.S. branch, subsidiary, or affiliate. L-1A for managers/executives; L-1B for specialized knowledge.",
@@ -520,9 +565,9 @@ export const US_DATA: CountryData = {
       { id:"insurance", question:"Will you have qualifying health insurance for the duration?", source:"22 CFR 62.14 — J-1 health insurance requirement", sourceUrl:"https://travel.state.gov/content/travel/en/us-visas/study/exchange.html", passWith:["YES"], failMsg:"Health insurance meeting State Department standards is required.", options:[{label:"Yes",value:"YES"},{label:"No",value:"NO"}] },
     ],
     "H-1B": [
-      { id:"specialty", question:"Does the U.S. job qualify as a specialty occupation — requiring at least a bachelor's degree?", source:"USCIS — H-1B: Specialty Occupation Workers", sourceUrl:"https://www.uscis.gov/working-in-the-united-states/temporary-workers/h-1b-specialty-occupations", passWith:["YES"], failMsg:"H-1B is for specialty occupations requiring a bachelor's or higher.", options:[{label:"Yes",value:"YES"},{label:"No / General position",value:"NO"}] },
-      { id:"degree", question:"Do you hold a bachelor's degree or higher in the specific field?", source:"USCIS — degree must be directly related", sourceUrl:"https://www.uscis.gov/working-in-the-united-states/temporary-workers/h-1b-specialty-occupations", passWith:["YES"], failMsg:"Must hold a qualifying degree in the relevant field.", options:[{label:"Yes",value:"YES"},{label:"No",value:"NO"}] },
-      { id:"employer", question:"Does a U.S. employer agree to sponsor you?", source:"USCIS — H-1B requires employer-filed LCA and I-129", sourceUrl:"https://www.uscis.gov/working-in-the-united-states/temporary-workers/h-1b-specialty-occupations", passWith:["YES"], failMsg:"H-1B cannot be self-petitioned.", options:[{label:"Yes, employer will sponsor",value:"YES"},{label:"No",value:"NO"}] },
+      { id:"specialty", question:"Does the U.S. job qualify as a specialty occupation — requiring at least a bachelor's degree in a specific field?", source:"USCIS — H-1B: Specialty Occupation Workers", sourceUrl:"https://www.uscis.gov/working-in-the-united-states/temporary-workers/h-1b-specialty-occupations", passWith:["YES"], failMsg:"H-1B is for specialty occupations requiring a bachelor's or higher.", options:[{label:"Yes",value:"YES"},{label:"No / General position",value:"NO"}] },
+      { id:"degree", question:"Do you hold a bachelor's degree or higher in the specific field — or an equivalent combination of education and experience?", source:"USCIS — degree must be directly related to the specialty occupation", sourceUrl:"https://www.uscis.gov/working-in-the-united-states/temporary-workers/h-1b-specialty-occupations", passWith:["YES"], failMsg:"Must hold a qualifying degree or equivalent in the relevant field.", options:[{label:"Yes",value:"YES"},{label:"No",value:"NO"}] },
+      { id:"employer", question:"Does a U.S. employer agree to sponsor you and file a Labor Condition Application (LCA)?", source:"USCIS — H-1B requires employer-filed LCA and I-129 (cannot be self-petitioned)", sourceUrl:"https://www.uscis.gov/working-in-the-united-states/temporary-workers/h-1b-specialty-occupations", passWith:["YES"], failMsg:"H-1B cannot be self-petitioned. An employer must sponsor you, file the LCA with the Department of Labor, and submit Form I-129.", options:[{label:"Yes, employer will sponsor",value:"YES"},{label:"No",value:"NO"}] },
     ],
     "L-1": [
       { id:"one_year", question:"Have you been continuously employed by the same company outside the U.S. for at least 1 year in the past 3 years?", source:"USCIS — L-1 requires 1 continuous year", sourceUrl:"https://www.uscis.gov/working-in-the-united-states/temporary-workers/l-1a-intracompany-transferee-executive-or-manager", passWith:["YES"], failMsg:"At least 1 continuous year required.", options:[{label:"Yes",value:"YES"},{label:"No",value:"NO"}] },

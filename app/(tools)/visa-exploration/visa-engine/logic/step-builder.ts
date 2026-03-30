@@ -4,22 +4,28 @@
  * Country-agnostic step builder.
  * Delegates all country-specific questions to the CountryData object.
  * No US-specific strings or logic in this file.
+ *
+ * FIX: Added "workType" to DOWNSTREAM_CLEAR_MAP for origin, destination,
+ * and purpose rows. Previously, changing purpose/destination left a stale
+ * workType value in state which was silently carried forward.
+ * Also added workType: ["gateAnswers"] so changing workType clears gates.
  */
 
-import { Step, VisaExplorationAnswers, CountryData } from "../types";
+import { Step, VisaExplorationAnswers } from "../types";
 import { ALL_COUNTRIES } from "../data/countries";
 import { SUPPORTED_DESTINATIONS, getCountryData } from "../data/registry";
 
 export const DOWNSTREAM_CLEAR_MAP: Record<string, string[]> = {
-  origin:        ["destination", "purpose", "sponsor", "relationship", "beneficiaryAge", "petitionerAge", "workBase", "tempType", "gateAnswers"],
-  destination:   ["purpose", "sponsor", "relationship", "beneficiaryAge", "petitionerAge", "workBase", "tempType", "gateAnswers"],
-  purpose:       ["sponsor", "relationship", "beneficiaryAge", "petitionerAge", "workBase", "tempType", "gateAnswers"],
+  origin:        ["destination", "purpose", "workType", "sponsor", "relationship", "beneficiaryAge", "petitionerAge", "workBase", "tempType", "gateAnswers"],
+  destination:   ["purpose", "workType", "sponsor", "relationship", "beneficiaryAge", "petitionerAge", "workBase", "tempType", "gateAnswers"],
+  purpose:       ["workType", "sponsor", "relationship", "beneficiaryAge", "petitionerAge", "workBase", "tempType", "gateAnswers"],
   sponsor:       ["relationship", "beneficiaryAge", "petitionerAge", "gateAnswers"],
   relationship:  ["beneficiaryAge", "petitionerAge", "gateAnswers"],
   beneficiaryAge:["gateAnswers"],
   petitionerAge: ["gateAnswers"],
   workBase:      ["gateAnswers"],
   tempType:      ["gateAnswers"],
+  workType:      ["gateAnswers"],
 };
 
 // ─────────────────────────────────────────────────────────────

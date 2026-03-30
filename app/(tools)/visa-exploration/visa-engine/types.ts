@@ -1,13 +1,3 @@
-/**
- * visa-engine/types.ts
- *
- * Shared TypeScript interfaces for the entire visa engine.
- * Country-agnostic — no US-specific references here.
- */
-
-// ─────────────────────────────────────────────────────────────
-// THEME
-// ─────────────────────────────────────────────────────────────
 export const T = {
   primary:      "#0D6E6E",
   primaryLight: "#E8F4F4",
@@ -24,9 +14,6 @@ export const T = {
   warningLight: "#fffbeb",
 };
 
-// ─────────────────────────────────────────────────────────────
-// VISA DEFINITION
-// ─────────────────────────────────────────────────────────────
 export interface VisaInfo {
   code: string;
   label: string;
@@ -40,9 +27,6 @@ export interface VisaInfo {
 
 export type VisaDataMap = Record<string, VisaInfo>;
 
-// ─────────────────────────────────────────────────────────────
-// GATE QUESTIONS
-// ─────────────────────────────────────────────────────────────
 export interface GateQuestion {
   id: string;
   question: string;
@@ -55,59 +39,51 @@ export interface GateQuestion {
 
 export type GateQuestionsMap = Record<string, GateQuestion[]>;
 
-// ─────────────────────────────────────────────────────────────
-// CANDIDATE RULE  (data-driven, used by future countries)
-// ─────────────────────────────────────────────────────────────
 export interface CandidateRule {
   conditions: Record<string, string | string[]>;
   visaCodes: string[];
 }
 
-// ─────────────────────────────────────────────────────────────
-// PURPOSE OPTION  (shown in step 3)
-// ─────────────────────────────────────────────────────────────
 export interface PurposeOption {
   label: string;
   value: string;
   sub?: string;
 }
 
-// ─────────────────────────────────────────────────────────────
-// FULL COUNTRY DATA  (one object per country)
-// ─────────────────────────────────────────────────────────────
+export interface OfficialSource {
+  label: string;
+  url: string;
+}
+
 export interface CountryData {
   country: string;
-  code: string;      // ISO 2-letter: "US", "UK", "CA"
-  flag: string;      // emoji
+  code: string;
+  flag: string;
   purposes: PurposeOption[];
   visas: VisaDataMap;
   gateQuestions: GateQuestionsMap;
-  /** getCandidateCodes function key — each country exports its own */
+  officialSources?: OfficialSource[];
   getCandidateCodes: (answers: VisaExplorationAnswers) => string[];
-  /** buildFollowUpSteps function key — each country exports its own wizard sequence */
   buildFollowUpSteps: (answers: VisaExplorationAnswers) => Step[];
 }
 
-// ─────────────────────────────────────────────────────────────
-// WIZARD STATE
-// ─────────────────────────────────────────────────────────────
 export interface VisaExplorationAnswers {
   origin?: string;
   destination?: string;
   purpose?: string;
   sponsor?: string;
   relationship?: string;
+  sponsorStatus?: string;
+  workType?: string;
   beneficiaryAge?: string;
   petitionerAge?: string;
   workBase?: string;
+  workStage?: string;
   tempType?: string;
   gateAnswers?: Record<string, Record<string, string>>;
   [key: string]: unknown;
 }
 
-// ─────────────────────────────────────────────────────────────
-// WIZARD STEP
-// ─────────────────────────────────────────────────────────────
 export interface Step {
   id: string;
   type: "country" | "options" | "grid" | "unsupported" | "gate_question" | "info";

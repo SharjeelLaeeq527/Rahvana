@@ -13,10 +13,10 @@ import { T, VisaExplorationAnswers, Step } from "../visa-engine/types";
 import { ALL_COUNTRIES } from "../visa-engine/data/countries";
 import { SUPPORTED_DESTINATIONS, getCountryData } from "../visa-engine/data/registry";
 import { buildSteps, DOWNSTREAM_CLEAR_MAP } from "../visa-engine/logic/step-builder";
-import { 
-  getEligibleVisas, 
-  allGateAnswered, 
-  evaluateGate 
+import {
+  getEligibleVisas,
+  allGateAnswered,
+  evaluateGate
 } from "../visa-engine/logic/gate-engine";
 
 // ─────────────────────────────────────────────────────────────
@@ -76,7 +76,7 @@ function PhaseIndicator({ currentPhase }: { currentPhase: number }) {
 }
 
 // ─────────────────────────────────────────────────────────────
-// COUNTRY INPUT (improved)
+// COUNTRY INPUT
 // ─────────────────────────────────────────────────────────────
 function CountryInput({ value, onChange, placeholder, isDestination = false, hint }: {
   value: string; onChange: (v: string) => void; placeholder: string; isDestination?: boolean; hint?: string;
@@ -160,7 +160,7 @@ function CountryInput({ value, onChange, placeholder, isDestination = false, hin
 }
 
 // ─────────────────────────────────────────────────────────────
-// OPTION CARD (improved with emoji support)
+// OPTION CARD
 // ─────────────────────────────────────────────────────────────
 function OptionCard({ label, sub, selected, onClick, disabled }: {
   label: string; sub?: string; selected: boolean; onClick: () => void; disabled?: boolean; emoji?: string;
@@ -213,7 +213,7 @@ function OptionGrid({ options, value, onChange }: {
 }
 
 // ─────────────────────────────────────────────────────────────
-// GATE QUESTION (improved)
+// GATE QUESTION
 // ─────────────────────────────────────────────────────────────
 function GateQuestion({ step, answers, onAnswer }: {
   step: Step; answers: VisaExplorationAnswers; onAnswer: (f: string, v: any) => void;
@@ -396,9 +396,20 @@ function VisaDetailModal({ visa, onClose }: { visa: any; onClose: () => void }) 
           </div>
           <p className="text-[11px] text-slate-400 py-5 border-t border-slate-100 leading-relaxed text-center">
             Source:{" "}
-            <a href="https://www.uscis.gov" target="_blank" rel="noopener noreferrer" className="text-[#0D6E6E] underline">USCIS.gov</a>
-            {" / "}
-            <a href="https://travel.state.gov" target="_blank" rel="noopener noreferrer" className="text-[#0D6E6E] underline">travel.state.gov</a>
+            {visa.officialSources && visa.officialSources.length > 0 ? (
+              visa.officialSources.map((s: any, i: number) => (
+                <span key={s.url}>
+                  <a href={s.url} target="_blank" rel="noopener noreferrer" className="text-[#0D6E6E] underline">{s.label}</a>
+                  {visa.officialSources && i < visa.officialSources.length - 1 ? " / " : ""}
+                </span>
+              ))
+            ) : (
+              <>
+                <a href="https://www.uscis.gov" target="_blank" rel="noopener noreferrer" className="text-[#0D6E6E] underline">USCIS.gov</a>
+                {" / "}
+                <a href="https://travel.state.gov" target="_blank" rel="noopener noreferrer" className="text-[#0D6E6E] underline">travel.state.gov</a>
+              </>
+            )}
             . General guidance only — not legal advice.
           </p>
         </div>
@@ -501,9 +512,15 @@ function ResultsScreen({ answers, results, ineligibleCodes, onReset, onBack }: {
                 This doesn't mean there's no path for you — immigration is complex. We strongly recommend consulting a licensed immigration attorney who can review your full situation.
               </p>
             </div>
-          ) : results.map((visa) => (
-            <VisaResultCard key={visa.code} visa={visa} onClick={() => setModal(visa)} />
-          ))}
+          ) : results.map((v) => {
+            // Pass countryData's officialSources to the card if needed, 
+            // but VisaResultCard doesn't use it.
+            // However, the Modal DOES use it, so we should merge it.
+            const destination = answers.destination as string;
+            const countryData = getCountryData(destination);
+            const visaWithSources = { ...v, officialSources: countryData?.officialSources };
+            return <VisaResultCard key={v.code} visa={v} onClick={() => setModal(visaWithSources)} />;
+          })}
         </div>
 
         {/* Did not qualify */}
@@ -525,9 +542,24 @@ function ResultsScreen({ answers, results, ineligibleCodes, onReset, onBack }: {
         <div className="px-10 py-6 bg-slate-900 border-t border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-4">
           <p className="text-[11px] font-medium text-slate-400">
             Sources:{" "}
-            <a href="https://www.uscis.gov" target="_blank" rel="noopener noreferrer" className="text-[#0D6E6E] underline">USCIS.gov</a>
-            {" · "}
-            <a href="https://travel.state.gov" target="_blank" rel="noopener noreferrer" className="text-[#0D6E6E] underline">travel.state.gov</a>
+            {(() => {
+              const data = getCountryData(answers.destination as string);
+              if (data?.officialSources && data.officialSources.length > 0) {
+                return data.officialSources.map((s, i, arr) => (
+                  <span key={s.url}>
+                    <a href={s.url} target="_blank" rel="noopener noreferrer" className="text-[#0D6E6E] underline">{s.label}</a>
+                    {i < arr.length - 1 ? " · " : ""}
+                  </span>
+                ));
+              }
+              return (
+                <>
+                  <a href="https://www.uscis.gov" target="_blank" rel="noopener noreferrer" className="text-[#0D6E6E] underline">USCIS.gov</a>
+                  {" · "}
+                  <a href="https://travel.state.gov" target="_blank" rel="noopener noreferrer" className="text-[#0D6E6E] underline">travel.state.gov</a>
+                </>
+              );
+            })()}
             {" · General guidance only — not legal advice."}
           </p>
         </div>
@@ -560,18 +592,22 @@ export default function VisaExplorationTool() {
 
   const steps = buildSteps(answers);
   const currentStep = steps[stepIndex];
-  
+
   // Get active country data
   const destination = answers.destination as string;
   const countryData = destination ? getCountryData(destination) : null;
 
-  const gatesDone = countryData ? allGateAnswered(answers, countryData.getCandidateCodes, countryData.gateQuestions) : false;
-  
-  const eligibleVisas = (gatesDone && countryData) 
-    ? getEligibleVisas(answers, countryData.getCandidateCodes, countryData.gateQuestions, countryData.visas) 
+  // Derive candidates separately so we can use it in the button condition
+  const candidates = countryData ? countryData.getCandidateCodes(answers) : [];
+
+  const gatesDone = (countryData && candidates.length > 0)
+    ? allGateAnswered(answers, countryData.getCandidateCodes, countryData.gateQuestions)
+    : false;
+
+  const eligibleVisas = (gatesDone && countryData)
+    ? getEligibleVisas(answers, countryData.getCandidateCodes, countryData.gateQuestions, countryData.visas)
     : [];
 
-  const candidates = countryData ? countryData.getCandidateCodes(answers) : [];
   const ineligibleCodes = (gatesDone && countryData)
     ? candidates.filter((code) => !evaluateGate(code, countryData.gateQuestions, (answers.gateAnswers || {})[code] || {}).eligible)
     : [];
@@ -579,6 +615,14 @@ export default function VisaExplorationTool() {
   const isLastStep = stepIndex >= steps.length - 1;
   const progress = steps.length > 1 ? Math.round((stepIndex / (steps.length - 1)) * 100) : 3;
   const currentPhase = getPhase(currentStep, stepIndex);
+
+  // FIX: canSeeResults is true when:
+  //   (a) all gate questions are answered (normal flow), OR
+  //   (b) we're on the last step with no visa candidates at all
+  //       (e.g. FAMILY → CHILD or PARENT — no supported visa exists yet).
+  //       Without this, the user would be permanently stuck since
+  //       gatesDone=false and handleNext does nothing on the last step.
+  const canSeeResults = gatesDone || (isLastStep && candidates.length === 0);
 
   const handleNext = () => {
     if (!isLastStep) setStepIndex((i) => i + 1);
@@ -679,7 +723,9 @@ export default function VisaExplorationTool() {
                 Start over
               </button>
             )}
-            {isLastStep && gatesDone ? (
+            {/* FIX: was `isLastStep && gatesDone` — now uses `canSeeResults`
+                which also handles no-candidate paths (CHILD, PARENT, etc.)   */}
+            {isLastStep && canSeeResults ? (
               <button onClick={() => setShowResults(true)}
                 className="py-3.5 px-7 rounded-xl bg-[#0D6E6E] text-white font-bold text-[14px] hover:bg-[#095555] shadow-lg shadow-[#0D6E6E]/20 transition-all flex items-center gap-2.5">
                 See My Results
