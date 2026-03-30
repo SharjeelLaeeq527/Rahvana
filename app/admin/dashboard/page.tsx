@@ -22,6 +22,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 import { Loader } from "@/components/ui/spinner";
 import {
   Select,
@@ -38,9 +39,9 @@ import {
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
-  BarChart,
-  Bar,
-  Legend,
+  // BarChart,
+  // Bar,
+  // Legend,
 } from "recharts";
 
 interface AnalyticsData {
@@ -62,6 +63,7 @@ export default function AnalyticsDashboard() {
   const [period, setPeriod] = useState("this-week");
 
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
   const periods = [
     { value: "today", label: "Today" },
@@ -76,8 +78,12 @@ export default function AnalyticsDashboard() {
   const fetchAnalytics = React.useCallback(async (isRefresh = false) => {
     try {
       if (!isRefresh) setLoading(true);
-      const res = await fetch(`/api/analytics?period=${period}`);
+      setIsRefreshing(true);
+      
+      // Use cache-busting timestamp to ensure fresh data
+      const res = await fetch(`/api/analytics?period=${period}&t=${Date.now()}`);
       if (!res.ok) throw new Error("Failed to fetch analytics");
+      
       const json = await res.json();
       setData(json);
       setLastUpdated(new Date());
@@ -85,6 +91,7 @@ export default function AnalyticsDashboard() {
       setError(err.message);
     } finally {
       setLoading(false);
+      setIsRefreshing(false);
     }
   }, [period]);
 
@@ -203,20 +210,31 @@ export default function AnalyticsDashboard() {
                 size="icon"
                 className="rounded-xl h-11 w-11 shrink-0 border-border bg-card shadow-sm hover:bg-muted"
                 onClick={() => fetchAnalytics(true)}
-                disabled={loading}
+                disabled={isRefreshing}
               >
-                <Clock className={`h-4 w-4 text-teal-600 ${loading ? "animate-spin" : ""}`} />
+                <Clock className={`h-4 w-4 text-teal-600 ${isRefreshing ? "animate-spin" : ""}`} />
               </Button>
             </div>
 
             {/* Live Indicator */}
-            <div className="flex items-center gap-3 bg-teal-50 border border-teal-100 px-4 py-3 rounded-2xl">
+            <div 
+              className={cn(
+                "flex items-center gap-3 border px-4 py-3 rounded-2xl transition-all duration-500",
+                isRefreshing ? "bg-teal-100/50 border-teal-200 scale-[1.02]" : "bg-teal-50 border-teal-100"
+              )}
+            >
               <div className="relative flex h-3 w-3">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-teal-400 opacity-75"></span>
+                <span className={cn(
+                  "animate-ping absolute inline-flex h-full w-full rounded-full bg-teal-400 opacity-75",
+                  isRefreshing && "animate-none"
+                )}></span>
                 <span className="relative inline-flex rounded-full h-3 w-3 bg-teal-500"></span>
               </div>
               <div className="flex flex-col">
-                <span className="text-2xl font-bold text-teal-900 leading-none">
+                <span className={cn(
+                  "text-2xl font-bold text-teal-900 leading-none transition-all",
+                  isRefreshing ? "opacity-50 blur-[1px]" : "opacity-100"
+                )}>
                   {data?.realtime.activeUsers || "0"}
                 </span>
                 <span className="text-xs font-semibold text-teal-700 uppercase tracking-wider mt-0.5">

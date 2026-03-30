@@ -7,7 +7,7 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "@/app/context/AuthContext";
 import { MasterProfile } from "@/types/profile";
 import { ChevronRight, ChevronLeft, Save } from "lucide-react";
-import { Loader } from "@/components/ui/spinner";
+// import { Loader } from "@/components/ui/spinner";
 import {
   FormField,
   FormSelect,
@@ -1530,7 +1530,7 @@ export default function CompleteProfileForm() {
             className="h-9 px-4 text-sm min-w-30"
           >
             {loading ? (
-              <Loader size="sm" text="Saving..." />
+              "Saving..."
             ) : currentStep === steps.length - 1 ? (
               <>
                 Save & Complete
