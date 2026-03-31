@@ -9,12 +9,12 @@ import {
 } from "@/components/ui/select";
 import { ToggleSwitch } from "@/app/components/interview-prep/ToggleSwitch";
 import CountryAutocomplete from "@/app/components/shared/CountryAutoComplete";
-import { QuestionStepProps, FormData } from "../types";
+import { QuestionStepProps } from "../types";
+import { Question } from "@/lib/visa-checker/engine-types";
 
 const QuestionStep = ({
-  title,
-  description,
-  questions,
+  questionnaire,
+  section,
   formData,
   error,
   loading = false,
@@ -23,49 +23,70 @@ const QuestionStep = ({
   onNext,
   onBack,
 }: QuestionStepProps) => {
-  // Refs for each question to scroll
   const questionRefs = useRef<Record<string, HTMLDivElement | null>>({});
 
-  const handleChange = (id: keyof FormData, value: unknown) => {
+  const isVisible = (visibleIf?: string): boolean => {
+    if (!visibleIf) return true;
+
+    // Simple parser for "key == 'value'" or "key != 'value'" or "key == true"
+    const match = visibleIf.match(/^(\w+)\s*(==|!=|IN)\s*(.+)$/);
+    if (!match) return true;
+
+    const [_, key, op, valStr] = match;
+    const currentVal = formData[key];
+    const targetVal = valStr.trim().replace(/^'|'$/g, "");
+
+    if (op === "==") {
+      if (targetVal === "true") return currentVal === true;
+      if (targetVal === "false") return currentVal === false;
+      return String(currentVal ?? "") === targetVal;
+    }
+    if (op === "!=") {
+      if (targetVal === "true") return currentVal !== true;
+      if (targetVal === "false") return currentVal !== false;
+      return String(currentVal ?? "") !== targetVal;
+    }
+    if (op === "IN") {
+      const options = valStr
+        .replace(/^\(|\)$/g, "")
+        .split(",")
+        .map((s) => s.trim().replace(/^'|'$/g, ""));
+      return options.includes(String(currentVal ?? ""));
+    }
+
+    return true;
+  };
+
+  const handleChange = (id: string, value: unknown) => {
     const oldValue = formData[id];
     if (oldValue === value) return;
 
     onChange(id, value);
 
-    // Auto-scroll slightly (25px from top)
     const el = questionRefs.current[id];
     if (el) {
-      const rect = el.getBoundingClientRect();
-      const scrollTop =
-        window.pageYOffset || document.documentElement.scrollTop;
-      const top = rect.top + scrollTop - 25; // 25px offset from top
+      setTimeout(() => {
+        const rect = el.getBoundingClientRect();
+        const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+        const top = rect.top + scrollTop - 25;
 
-      window.scrollTo({
-        top,
-        behavior: "smooth",
-      });
+        window.scrollTo({
+          top,
+          behavior: "smooth",
+        });
+      }, 100);
     }
   };
 
-  const renderInput = (question: {
-    id: keyof FormData;
-    label: string;
-    type: "text" | "textarea" | "number" | "date" | "boolean" | "select";
-    options?: string | string[];
-    risk_tag?: string;
-  }) => {
-    const value = formData[question.id] as
-      | string
-      | number
-      | boolean
-      | undefined;
+  const renderInput = (question: Question) => {
+    const value = formData[question.id];
 
     if (question.id === "country_of_residence") {
       return (
         <CountryAutocomplete
-          formData={formData as unknown as Record<string, unknown>}
+          formData={formData}
           setFormData={(data) =>
-            setFormData((prev) => ({ ...prev, ...(data as Partial<FormData>) }))
+            setFormData((prev) => ({ ...prev, ...data }))
           }
           hideLabel
           inputClassName="w-full p-3 border border-input rounded-lg focus:ring-2 focus:ring-ring focus:border-ring transition-colors bg-background"
@@ -83,11 +104,9 @@ const QuestionStep = ({
             type={question.type}
             suppressHydrationWarning
             value={
-              typeof value === "number"
-                ? value.toString()
-                : typeof value === "string"
-                  ? value
-                  : ""
+              question.type === "number"
+                ? (value ?? "").toString()
+                : String(value ?? "")
             }
             onClick={(e) => {
               if (question.type === "date") {
@@ -97,9 +116,7 @@ const QuestionStep = ({
             onChange={(e) =>
               handleChange(
                 question.id,
-                question.type === "number"
-                  ? Number(e.target.value)
-                  : e.target.value,
+                question.type === "number" ? Number(e.target.value) : e.target.value
               )
             }
             className="w-full p-3 border border-input rounded-lg focus:ring-2 focus:ring-ring focus:border-ring transition-colors bg-background"
@@ -109,7 +126,7 @@ const QuestionStep = ({
       case "textarea":
         return (
           <textarea
-            value={typeof value === "string" ? value : ""}
+            value={String(value ?? "")}
             onChange={(e) => handleChange(question.id, e.target.value)}
             className="w-full p-3 border border-input rounded-lg focus:ring-2 focus:ring-ring focus:border-ring transition-colors bg-background"
             placeholder={`Enter details for ${question.label.toLowerCase()}`}
@@ -132,13 +149,11 @@ const QuestionStep = ({
         if (Array.isArray(question.options)) {
           return (
             <Select
-              value={typeof value === "string" ? value : ""}
+              value={String(value ?? "")}
               onValueChange={(newValue) => handleChange(question.id, newValue)}
             >
               <SelectTrigger className="w-full h-14">
-                <SelectValue
-                  placeholder={`Select ${question.label.toLowerCase()}`}
-                />
+                <SelectValue placeholder={`Select ${question.label.toLowerCase()}`} />
               </SelectTrigger>
               <SelectContent>
                 {question.options.map((option: string) => (
@@ -159,47 +174,16 @@ const QuestionStep = ({
   return (
     <div className="space-y-8">
       <div className="text-center mb-8">
-        <h2 className="text-3xl font-bold text-foreground mb-3">{title}</h2>
+        <div className="text-sm font-bold text-teal-600 mb-2 uppercase tracking-wider">{questionnaire.title} Assessment</div>
+        <h2 className="text-3xl font-bold text-foreground mb-3">{section.title}</h2>
         <p className="text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-          {description}
+          Step {questionnaire.sections.indexOf(section) + 1} of {questionnaire.sections.length}
         </p>
       </div>
 
       <div className="space-y-8">
-        {questions.map((question) => {
-          // Conditional hiding logic
-          if (question.id === "intended_us_state_of_residence") {
-            const relationshipType = formData.spousal_relationship_type;
-            if (
-              !relationshipType ||
-              relationshipType === "Select" ||
-              relationshipType === "No biological relation"
-            )
-              return null;
-          }
-
-          if (question.id === "highest_education_field") {
-            const educationLevel = formData.highest_education_level;
-            const qualifyingLevels = [
-              "Bachelor's degree",
-              "Master's degree",
-              "Doctorate (PhD)",
-            ];
-            if (!educationLevel || !qualifyingLevels.includes(educationLevel))
-              return null;
-          }
-
-          if (
-            [
-              "prior_military_service",
-              "specialized_weapons_training",
-              "unofficial_armed_groups",
-            ].includes(question.id as string)
-          ) {
-            const industrySector = formData.industry_sector;
-            if (!industrySector || industrySector !== "Military/Defense")
-              return null;
-          }
+        {section.questions.map((question) => {
+          if (!isVisible(question.visible_if)) return null;
 
           return (
             <div
@@ -222,16 +206,8 @@ const QuestionStep = ({
         {error && (
           <div className="p-4 bg-destructive/10 border-l-4 border-destructive rounded-lg text-destructive">
             <div className="flex items-start">
-              <svg
-                className="h-5 w-5 text-destructive mt-0.5 mr-3"
-                fill="currentColor"
-                viewBox="0 0 20 20"
-              >
-                <path
-                  fillRule="evenodd"
-                  d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
-                  clipRule="evenodd"
-                />
+              <svg className="h-5 w-5 text-destructive mt-0.5 mr-3" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
               </svg>
               <span>{error}</span>
             </div>
@@ -247,16 +223,14 @@ const QuestionStep = ({
           >
             ← Previous
           </Button>
-          <div className="flex flex-row gap-3">
-            <Button
-              onClick={onNext}
-              suppressHydrationWarning
-              disabled={loading}
-              className="bg-teal-600 hover:bg-teal-700 text-white py-4 md:py-6 text-lg disabled:opacity-60 disabled:cursor-not-allowed"
-            >
-              {loading ? "Please wait..." : "Next →"}
-            </Button>
-          </div>
+          <Button
+            onClick={onNext}
+            suppressHydrationWarning
+            disabled={loading}
+            className="bg-teal-600 hover:bg-teal-700 text-white py-4 md:py-6 text-lg disabled:opacity-60 disabled:cursor-not-allowed"
+          >
+            {loading ? "Please wait..." : "Next →"}
+          </Button>
         </div>
       </div>
     </div>

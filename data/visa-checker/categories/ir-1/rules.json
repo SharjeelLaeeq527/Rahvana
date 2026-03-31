@@ -1,0 +1,308 @@
+{
+  "category": "ir-1",
+  "baseScore": 100,
+  "componentWeights": {
+    "income": 25,
+    "relationship": 25,
+    "documents": 25,
+    "history": 25
+  },
+  "computedFacts": [
+    { "id": "povertyThreshold", "logic": "15960 + 5680 * max(0, hhSize - 1)" },
+    { "id": "incomeRatio", "logic": "income / threshold" },
+    { "id": "isMilitary", "logic": "industry == 'Military' OR prior_service == true" }
+  ],
+  "rules": [
+    {
+      "id": "income_high_risk",
+      "description": "Income below 125% of poverty guideline",
+      "conditions": [
+        { "fact": "incomeRatio", "operator": "lessThan", "value": 1.25 }
+      ],
+      "action": {
+        "type": "addFlag",
+        "flagCode": "SPONSOR_INCOME_BELOW_GUIDELINE",
+        "severity": "HIGH",
+        "pointsDeducted": 20,
+        "explanation": "Your sponsor's income is critically below 125% of the federal poverty guideline.",
+        "improvementSuggestions": "Identify a joint sponsor (Form I-864) or utilize significant assets (3x the income gap) to satisfy the financial requirement."
+      }
+    },
+    {
+      "id": "income_medium_risk",
+      "description": "Income below 150% of poverty guideline",
+      "conditions": [
+        { "fact": "incomeRatio", "operator": "greaterThan", "value": 1.25 },
+        { "fact": "incomeRatio", "operator": "lessThan", "value": 1.50 }
+      ],
+      "action": {
+        "type": "addFlag",
+        "flagCode": "SPONSOR_INCOME_BELOW_GUIDELINE",
+        "severity": "MEDIUM",
+        "pointsDeducted": 10,
+        "explanation": "Income is slightly below 150% of guidelines, which may trigger additional scrutiny.",
+        "improvementSuggestions": "Provide the last 3 years of tax returns and current pay stubs to demonstrate consistent stability."
+      }
+    },
+    {
+      "id": "unemployed_risk",
+      "description": "Public charge risk due to employment status",
+      "conditions": [
+        { "fact": "industry_sector", "operator": "equals", "value": "Unemployed/Student" }
+      ],
+      "action": {
+        "type": "addFlag",
+        "flagCode": "PUBLIC_CHARGE_RISK",
+        "severity": "LOW",
+        "pointsDeducted": 2,
+        "explanation": "Being currently unemployed or a student may increase scrutiny under 'Public Charge' rules.",
+        "improvementSuggestions": "Highlight specialized skills, language proficiency, and future employment prospects in the U.S."
+      }
+    },
+    {
+      "id": "rel_history_bonus",
+      "description": "Bonus for long-term relationship",
+      "conditions": [
+        { "fact": "relationshipMonths", "operator": "greaterThan", "value": 24 }
+      ],
+      "action": {
+        "type": "addFlag",
+        "flagCode": "LONG_RELATIONSHIP_HISTORY",
+        "severity": "LOW",
+        "pointsAdded": 5,
+        "explanation": "Your relationship history (> 2 years) is a significant strength.",
+        "improvementSuggestions": "Ensure your documentation (travel, photos) goes back several years to substantiate this history."
+      }
+    },
+    {
+      "id": "children_bonus",
+      "description": "Bonus for children together",
+      "conditions": [
+        { "fact": "children_together", "operator": "equals", "value": true }
+      ],
+      "action": {
+        "type": "addFlag",
+        "flagCode": "CHILDREN_BONUS",
+        "severity": "LOW",
+        "pointsAdded": 10,
+        "explanation": "Having children together is exceptionally strong evidence of a bona fide relationship.",
+        "improvementSuggestions": "Provide official birth certificates for all children showing both parents' names."
+      }
+    },
+    {
+      "id": "short_marriage_high",
+      "description": "Critically short marriage duration",
+      "conditions": [
+        { "fact": "marriageMonths", "operator": "lessThan", "value": 6 },
+        { "fact": "relationshipMonths", "operator": "lessThan", "value": 24 }
+      ],
+      "action": {
+        "type": "addFlag",
+        "flagCode": "SHORT_RELATIONSHIP_DURATION",
+        "severity": "HIGH",
+        "pointsDeducted": 20,
+        "explanation": "A marriage of less than 6 months with minimal pre-marriage history is often flagged for scrutiny.",
+        "improvementSuggestions": "Compile detailed evidence of how your relationship developed, including engagement photos and family affidavits."
+      }
+    },
+    {
+      "id": "short_marriage_medium",
+      "description": "Short marriage mitigated by long history",
+      "conditions": [
+        { "fact": "marriageMonths", "operator": "lessThan", "value": 6 },
+        { "fact": "relationshipMonths", "operator": "greaterThan", "value": 24 }
+      ],
+      "action": {
+        "type": "addFlag",
+        "flagCode": "SHORT_RELATIONSHIP_DURATION",
+        "severity": "MEDIUM",
+        "pointsDeducted": 10,
+        "explanation": "Marriage is short, but your long pre-marriage relationship history helps mitigate this risk.",
+        "improvementSuggestions": "Emphasize the timeline of your relationship prior to the legal marriage."
+      }
+    },
+    {
+      "id": "age_gap_risk",
+      "description": "High age gap risk",
+      "conditions": [
+        { "fact": "ageGap", "operator": "greaterThan", "value": 15 }
+      ],
+      "action": {
+        "type": "addFlag",
+        "flagCode": "AGE_GAP_HIGH",
+        "severity": "HIGH",
+        "pointsDeducted": 20,
+        "explanation": "A significant age gap (>15 years) can raise questions about relationship authenticity.",
+        "improvementSuggestions": "Provide extra evidence of family acceptance and shared common interests."
+      }
+    },
+    {
+      "id": "no_visits_risk",
+      "description": "No in-person meetings",
+      "conditions": [
+        { "fact": "number_of_in_person_visits", "operator": "equals", "value": 0 }
+      ],
+      "action": {
+        "type": "addFlag",
+        "flagCode": "NO_IN_PERSON_MEETINGS",
+        "severity": "HIGH",
+        "pointsDeducted": 20,
+        "explanation": "Consular officers rarely approve spouse visas without evidence of significant in-person interaction.",
+        "improvementSuggestions": "If travel was impossible, provide detailed affidavits and plans for an upcoming meeting before the interview."
+      }
+    },
+    {
+      "id": "few_visits_risk",
+      "description": "Limited in-person meetings",
+      "conditions": [
+        { "fact": "number_of_in_person_visits", "operator": "greaterThan", "value": 0 },
+        { "fact": "number_of_in_person_visits", "operator": "lessThan", "value": 3 }
+      ],
+      "action": {
+        "type": "addFlag",
+        "flagCode": "NO_IN_PERSON_MEETINGS",
+        "severity": "MEDIUM",
+        "pointsDeducted": 10,
+        "explanation": "Fewer than 3 in-person visits may be scrutinized, especially for short relationships.",
+        "improvementSuggestions": "Document every trip thoroughly with boarding passes, hotel receipts, and dated photos."
+      }
+    },
+    {
+      "id": "no_cohabitation_general",
+      "description": "No cohabitation evidence",
+      "conditions": [
+        { "fact": "cohabitation_proof", "operator": "equals", "value": false },
+        { "fact": "children_together", "operator": "equals", "value": false }
+      ],
+      "action": {
+        "type": "addFlag",
+        "flagCode": "NO_COHABITATION_EVIDENCE",
+        "severity": "MEDIUM",
+        "pointsDeducted": 10,
+        "explanation": "Lack of joint residential evidence is a common evidentiary gap.",
+        "improvementSuggestions": "Provide proof of regular visits, shared hotel bookings, or correspondence sent to the same address."
+      }
+    },
+    {
+      "id": "no_cohabitation_mitigated",
+      "description": "No cohabitation mitigated by children",
+      "conditions": [
+        { "fact": "cohabitation_proof", "operator": "equals", "value": false },
+        { "fact": "children_together", "operator": "equals", "value": true }
+      ],
+      "action": {
+        "type": "addFlag",
+        "flagCode": "NO_COHABITATION_EVIDENCE",
+        "severity": "LOW",
+        "pointsDeducted": 5,
+        "explanation": "Lack of joint residence is mitigated by having children together.",
+        "improvementSuggestions": "Focus on providing other relationship evidence like communication logs."
+      }
+    },
+    {
+      "id": "missing_nadra_cert",
+      "description": "Missing NADRA marriage certificate",
+      "conditions": [
+        { "fact": "nadra_marriage_registration_cert", "operator": "equals", "value": false }
+      ],
+      "action": {
+        "type": "addFlag",
+        "flagCode": "NO_NADRA_MARRIAGE_CERT",
+        "severity": "HIGH",
+        "pointsDeducted": 20,
+        "explanation": "The US Embassy in Pakistan strictly requires NADRA computerized certificates.",
+        "improvementSuggestions": "Apply for the computerized NADRA certificate immediately; manual Union Council certificates are NOT sufficient."
+      }
+    },
+    {
+      "id": "missing_frc",
+      "description": "Missing Family Registration Certificate",
+      "conditions": [
+        { "fact": "family_registration_certificate", "operator": "equals", "value": false }
+      ],
+      "action": {
+        "type": "addFlag",
+        "flagCode": "NO_FRC_AVAILABLE",
+        "severity": "HIGH",
+        "pointsDeducted": 20,
+        "explanation": "An FRC is critical for establishing family ties for Pakistani applicants.",
+        "improvementSuggestions": "Obtain an 'FRC by Marriage' or 'FRC by Birth' from NADRA."
+      }
+    },
+    {
+      "id": "immigration_denial",
+      "description": "Previous visa denial",
+      "conditions": [
+        { "fact": "previous_visa_denial", "operator": "equals", "value": true }
+      ],
+      "action": {
+        "type": "addFlag",
+        "flagCode": "PREVIOUS_US_VISA_DENIAL",
+        "severity": "HIGH",
+        "pointsDeducted": 20,
+        "explanation": "A prior US visa refusal can lead to increased scrutiny or potential section 212(a) inadmissibility.",
+        "improvementSuggestions": "Identify the exact refusal code (e.g., 214b, 221g) and prepare a clear explanation of why circumstances have changed."
+      }
+    },
+    {
+      "id": "i130_not_started",
+      "description": "I-130 petition not filed",
+      "conditions": [
+        { "fact": "i130_status", "operator": "equals", "value": "Not filed yet" }
+      ],
+      "action": {
+        "type": "addFlag",
+        "flagCode": "I130_PROCESS_NOT_STARTED",
+        "severity": "HIGH",
+        "pointsDeducted": 20,
+        "explanation": "The I-130 petition is the legal foundation of your spouse visa application.",
+        "improvementSuggestions": "File Form I-130 with USCIS to officially start the immigration process."
+      }
+    },
+    {
+      "id": "weapons_training_risk",
+      "description": "Specialized training risk",
+      "conditions": [
+        { "fact": "specialized_weapons_training", "operator": "equals", "value": true }
+      ],
+      "action": {
+        "type": "addFlag",
+        "flagCode": "DUAL_USE_TECHNOLOGY_RISK",
+        "severity": "HIGH",
+        "pointsDeducted": 20,
+        "explanation": "Background in specialized weapons or dual-use tech can trigger long Administrative Processing waits.",
+        "improvementSuggestions": "Prepare a detailed CV and job description to use if a 221(g) questionnaire is issued."
+      }
+    },
+    {
+      "id": "military_defense_risk",
+      "description": "Defense sector background scrutiny",
+      "conditions": [
+        { "fact": "industry_sector", "operator": "equals", "value": "Military/Defense" }
+      ],
+      "action": {
+        "type": "addFlag",
+        "flagCode": "WORKING_IN_DEFENSE_SECTOR",
+        "severity": "MEDIUM",
+        "pointsDeducted": 10,
+        "explanation": "Work in the defense sector often triggers additional security screenings.",
+        "improvementSuggestions": "Ensure your job duties are clearly explained to distinguish civilian roles from sensitive activities."
+      }
+    },
+    {
+       "id": "no_polio_cert",
+       "description": "Missing polio vaccination",
+       "conditions": [
+         { "fact": "polio_vaccination_certificate", "operator": "equals", "value": false }
+       ],
+       "action": {
+         "type": "addFlag",
+         "flagCode": "NO_POLIO_VACCINATION_PROOF",
+         "severity": "MEDIUM",
+         "pointsDeducted": 5,
+         "explanation": "Pakistan is a high-risk polio country; proof of vaccination is mandatory for visa issuance.",
+         "improvementSuggestions": "Ensure you receive an Oral Polio Vaccine (OPV) and obtain a yellow vaccination card."
+       }
+    }
+  ]
+}
