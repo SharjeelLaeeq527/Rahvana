@@ -696,7 +696,7 @@ export default function AffidavitSupportCalculator() {
       caseNumber: 1,
       caseName: "Primary Sponsor Alone",
       caseDescription:
-      "Using only the primary sponsor's income to meet the poverty guideline requirement.",
+        "Using only the primary sponsor's income to meet the poverty guideline requirement.",
     };
   };
 
@@ -916,7 +916,7 @@ export default function AffidavitSupportCalculator() {
       caseNumber: 10,
       caseName: "Self-Petitioning",
       caseDescription:
-        "Certain categories can self-petition without a sponsor: VAWA self-petitioners, widows of US citizens, and special immigrants.",
+        "Certain categories can self-petition without a sponsor: VAWA(Violence Against Women Act) self-petitioners, widows of US citizens, and special immigrants.",
     };
   };
 
