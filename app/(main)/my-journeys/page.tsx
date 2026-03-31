@@ -24,10 +24,123 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { ConfirmationModal } from "@/app/components/shared/ConfirmationModal";
 import { useLanguage } from "@/app/context/LanguageContext";
-const JOURNEY_ROUTES: Record<string, string> = {
-  ir1: "/visa-category/ir-category/ir1-journey",
-  ir5: "/visa-category/ir-category/ir5-journey",
-  k1: "/visa-category/ir-category/k1-journey",
+// Aliases: map any known DB variant → canonical ID
+// Handles cases like "ir-1" vs "ir1", "ir1-spouse-visa" vs "ir1", etc.
+const JOURNEY_ALIASES: Record<string, string> = {
+  "ir-1": "ir1",
+  "ir1-spouse": "ir1",
+  "ir1-spouse-visa": "ir1",
+  "ir-1-spouse": "ir1",
+  "ir-1-spouse-visa": "ir1",
+  "ir-5": "ir5",
+  "ir-2": "ir2",
+  "ir-3": "ir3_4",
+  "ir-4": "ir3_4",
+  "k-1": "k1",
+  "k-3": "k3",
+  "f-1": "f1",
+  "h-1b": "h1b",
+  "b-1": "b1",
+  "b-2": "b2",
+  "germany-student": "germany-student",
+  "italy-student": "italy-student",
+  "canada-student": "canada-student",
+};
+
+// Normalize any journey_id to its canonical form:
+// 1. lowercase + strip "-journey" suffix
+// 2. look up in aliases map
+const normalizeJourneyId = (id: string): string => {
+  const base = id.toLowerCase().replace(/-journey$/, "").trim();
+  return JOURNEY_ALIASES[base] ?? base;
+};
+
+interface JourneyMeta {
+  name: string;
+  description: string;
+  route: string;
+}
+
+// Single source of truth for all journey display data
+const JOURNEY_META: Record<string, JourneyMeta> = {
+  ir1: {
+    name: "IR-1 Spouse Visa",
+    description: "Immigration journey for a spouse of a U.S. citizen.",
+    route: "/visa-category/ir-category/ir1-journey",
+  },
+  ir5: {
+    name: "IR-5 Parents Visa",
+    description: "Immigration journey for parents of U.S. citizens.",
+    route: "/visa-category/ir-category/ir5-journey",
+  },
+  k1: {
+    name: "K-1 Fiancé Visa",
+    description: "Immigration journey for a fiancé of a U.S. citizen.",
+    route: "/visa-category/ir-category/k1-journey",
+  },
+  "germany-student": {
+    name: "Germany Student Visa",
+    description: "Study in Germany — national visa for university admission.",
+    route: "/visa-category/ir-category/germany-student-journey",
+  },
+  "italy-student": {
+    name: "Italy Student Visa",
+    description: "Study in Italy — student visa for university programs.",
+    route: "/visa-category/ir-category/italy-student-journey",
+  },
+  "canada-student": {
+    name: "Canada Student Permit",
+    description: "Study in Canada — student permit for academic programs.",
+    route: "/visa-category/ir-category/canada-student-journey",
+  },
+  f1: {
+    name: "F-1 Student Visa",
+    description: "Academic studies in the United States.",
+    route: "/visa-category/ir-category/f1-journey",
+  },
+  h1b: {
+    name: "H-1B Specialty Occupation",
+    description: "Work visa for specialty occupation professionals.",
+    route: "/visa-category/ir-category/h1b-journey",
+  },
+  b2: {
+    name: "B-2 Tourist Visa",
+    description: "For tourism, vacation, or visiting family.",
+    route: "/visa-category/ir-category/b2-journey",
+  },
+  b1: {
+    name: "B-1 Business Visitor",
+    description: "For business visits, conferences, and consultations.",
+    route: "/visa-category/ir-category/b1-journey",
+  },
+  k3: {
+    name: "K-3 Spouse Visa",
+    description: "Speed up family reunification for spouses.",
+    route: "/visa-category/ir-category/k3-journey",
+  },
+  ir2: {
+    name: "IR-2 / CR-2 Child Visa",
+    description: "For unmarried children (under 21) of U.S. citizens.",
+    route: "/visa-category/ir-category/ir2-journey",
+  },
+};
+
+// Resolve metadata for any raw journey_id from DB
+const resolveJourneyMeta = (rawId: string): JourneyMeta & { canonicalId: string } => {
+  const canonical = normalizeJourneyId(rawId);
+  const meta = JOURNEY_META[canonical];
+  if (meta) return { ...meta, canonicalId: canonical };
+  // Fallback: pretty-print the id
+  const prettyName = canonical
+    .split("-")
+    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+    .join(" ");
+  return {
+    name: prettyName,
+    description: "Active immigration track.",
+    route: "/",
+    canonicalId: canonical,
+  };
 };
 
 export default function MyJourneysPage() {
@@ -63,7 +176,17 @@ export default function MyJourneysPage() {
     try {
       const data = await listUserJourneys(user.id);
       if (!isMounted.current) return;
-      setJourneys(data);
+      // Deduplicate by NORMALIZED journey_id — handles variants like
+      // "germany-student" vs "germany-student-journey", "ir1" vs "ir1-journey" etc.
+      // Data is already ordered by last_updated_at DESC so first occurrence = latest.
+      const seen = new Set<string>();
+      const unique = data.filter((j) => {
+        const canonical = normalizeJourneyId(j.journey_id);
+        if (seen.has(canonical)) return false;
+        seen.add(canonical);
+        return true;
+      });
+      setJourneys(unique);
       setHasFetched(true);
     } catch (error) {
       console.error("Error fetching journeys:", error);
@@ -265,17 +388,7 @@ export default function MyJourneysPage() {
                     const progress = Math.round(
                       (j.completed_steps.length / 42) * 100,
                     );
-                    const journeyId = j.journey_id as "ir1" | "ir5" | "k1";
-                    const isValidJourney = ["ir1", "ir5", "k1"].includes(
-                      journeyId,
-                    );
-                    const journeyName = isValidJourney
-                      ? t(`myJourneys.journeyNames.${journeyId}`)
-                      : j.journey_id.toUpperCase();
-                    const description = isValidJourney
-                      ? t(`myJourneys.journeyDescriptions.${journeyId}`)
-                      : t("myJourneys.journeyDescriptions.fallback");
-                    const route = JOURNEY_ROUTES[j.journey_id] || "/";
+                    const { name: journeyName, description, route } = resolveJourneyMeta(j.journey_id);
 
                     return (
                       <motion.div

@@ -161,10 +161,6 @@ export const ITALY_DATA: CountryData = {
 
   getCandidateCodes,
   buildFollowUpSteps,
-  officialSources: [
-    { label: "Visto per l'Italia (Official)", url: "https://vistoperitalia.esteri.it/home/en" },
-    { label: "Ministry of Interior", url: "https://www.interno.gov.it/it" },
-  ],
 
   visas: {
     // ──────────────────────────────────────────────────────────────

@@ -10,24 +10,65 @@ import { T, CountryData, VisaExplorationAnswers, Step } from "../types";
 function getCandidateCodes(a: VisaExplorationAnswers): string[] {
   const c: string[] = [];
   if (!a.purpose) return [];
+
   if (a.purpose === "FAMILY") {
     if (a.sponsorStatus === "BRITISH" || a.sponsorStatus === "SETTLED") {
       if (a.relationship === "SPOUSE") c.push("UK-FAMILY-SPOUSE");
       if (a.relationship === "FIANCE") c.push("UK-FAMILY-FIANCE");
+      if (a.relationship === "PARENT") c.push("UK-FAMILY-PARENT");
+      if (a.relationship === "CHILD")  c.push("UK-FAMILY-CHILD");
+    }
+    if (a.sponsorStatus === "TEMP") {
+      c.push("UK-DEPENDENT");
     }
   }
+
   if (a.purpose === "WORK") {
     if (a.workType === "SKILLED")       c.push("UK-SKILLED-WORKER");
     if (a.workType === "HEALTH")        c.push("UK-HEALTH-CARE");
-    if (a.workType === "GRADUATE")      c.push("UK-GRADUATE");
-    if (a.workType === "SEASONAL")      c.push("UK-SEASONAL");
+    if (a.workType === "RELIGIOUS")     c.push("UK-MINISTER-RELIGION", "UK-TEMP-RELIGIOUS");
+    if (a.workType === "ICT")           c.push("UK-ICT");
     if (a.workType === "GLOBAL_TALENT") c.push("UK-GLOBAL-TALENT");
-    if (a.workType === "INNOVATOR")     c.push("UK-INNOVATOR-FOUNDER");
+    if (a.workType === "SCALE_UP")      c.push("UK-SCALE-UP");
     if (a.workType === "HPI")           c.push("UK-HPI");
+    if (a.workType === "GRADUATE")      c.push("UK-GRADUATE");
+    if (a.workType === "CREATIVE")      c.push("UK-TEMP-CREATIVE");
+    if (a.workType === "CHARITY")       c.push("UK-TEMP-CHARITY");
+    if (a.workType === "GAE")           c.push("UK-TEMP-GAE");
+    if (a.workType === "SEASONAL")      c.push("UK-SEASONAL");
   }
-  if (a.purpose === "STUDY") c.push("UK-STUDENT");
-  if (a.purpose === "VISIT") c.push("UK-VISIT");
-  if (a.purpose === "BUSINESS_INVEST") c.push("UK-INNOVATOR-FOUNDER");
+
+  if (a.purpose === "STUDY") {
+    if (a.studyType === "LONG")      c.push("UK-STUDENT");
+    if (a.studyType === "CHILD")     c.push("UK-CHILD-STUDENT");
+    if (a.studyType === "SHORT")     c.push("UK-SHORT-STUDY");
+    if (!a.studyType)                c.push("UK-STUDENT");
+  }
+
+  if (a.purpose === "VISIT") {
+    if (a.visitType === "TOURISM")   c.push("UK-VISITOR-STANDARD");
+    if (a.visitType === "MARRIAGE")  c.push("UK-VISITOR-MARRIAGE");
+    { if (a.visitType === "PAID")    c.push("UK-VISITOR-PAID"); }
+    if (!a.visitType)                c.push("UK-VISITOR-STANDARD");
+  }
+
+  if (a.purpose === "TRANSIT")       c.push("UK-TRANSIT-DIRECT", "UK-TRANSIT-VISITOR");
+
+  if (a.purpose === "BUSINESS_INVEST") {
+    c.push("UK-INNOVATOR-FOUNDER", "UK-EXPANSION-WORKER", "UK-START-UP");
+  }
+
+  if (a.purpose === "SETTLEMENT") {
+    if (a.settleRoute === "LONG")    c.push("UK-ILR-LONG");
+    if (a.settleRoute === "WORK")    c.push("UK-ILR-WORK");
+    if (a.settleRoute === "FAMILY")  c.push("UK-ILR-FAMILY");
+    if (a.settleRoute === "REFUGEE") c.push("UK-ILR-PROTECTION");
+  }
+
+  if (a.purpose === "SPECIAL") {
+    c.push("UK-ANCESTRY", "UK-FRONTIER");
+  }
+
   return [...new Set(c)];
 }
 
@@ -40,7 +81,7 @@ function buildFollowUpSteps(a: VisaExplorationAnswers): Step[] {
       options: [
         { label: "British Citizen", value: "BRITISH" },
         { label: "Settled (Indefinite Leave to Remain)", value: "SETTLED" },
-        { label: "On a work or student visa", value: "TEMP" },
+        { label: "On a work or student visa", value: "TEMP", sub: "Join them as a dependent" },
       ],
       canProceed: !!a.sponsorStatus,
     });
@@ -51,6 +92,7 @@ function buildFollowUpSteps(a: VisaExplorationAnswers): Step[] {
         options: [
           { label: "Spouse or partner", value: "SPOUSE" },
           { label: "Fiancé(e) or proposed civil partner", value: "FIANCE" },
+          { label: "Parent", value: "PARENT" },
           { label: "Child", value: "CHILD" },
         ],
         canProceed: !!a.relationship,
@@ -64,13 +106,54 @@ function buildFollowUpSteps(a: VisaExplorationAnswers): Step[] {
       options: [
         { label: "Skilled Worker", value: "SKILLED", sub: "Degree-level professional jobs with a licensed sponsor" },
         { label: "Health and Care Worker", value: "HEALTH", sub: "Doctors, nurses, and allied health professionals" },
-        { label: "Graduate Visa", value: "GRADUATE", sub: "If you just finished a UK degree — no job offer needed" },
-        { label: "Seasonal Worker", value: "SEASONAL", sub: "Agriculture and horticulture — up to 6 months" },
+        { label: "Minister of Religion", value: "RELIGIOUS", sub: "Religious work or preaching" },
+        { label: "ICT / Expansion Worker", value: "ICT", sub: "Intra-company transfer or UK expansion roles" },
         { label: "Global Talent", value: "GLOBAL_TALENT", sub: "Exceptional leaders in tech, science, arts or academia" },
-        { label: "High Potential Individual (HPI)", value: "HPI", sub: "For graduates of top 50 global universities" },
-        { label: "Innovator Founder", value: "INNOVATOR", sub: "Start an innovative business in the UK" },
+        { label: "Scale-up Worker", value: "SCALE_UP", sub: "Fast-track for high-growth businesses" },
+        { label: "High Potential Individual (HPI)", value: "HPI", sub: "Graduates of top 50 global universities" },
+        { label: "Graduate Visa", value: "GRADUATE", sub: "If you finished a UK degree — no job needed" },
+        { label: "Creative & Sporting", value: "CREATIVE", sub: "Artists, athletes, or entertainers (temporary)" },
+        { label: "Charity Worker", value: "CHARITY", sub: "Voluntary work for a licensed sponsor" },
+        { label: "Seasonal Worker", value: "SEASONAL", sub: "Agriculture or poultry — up to 6 months" },
       ],
       canProceed: !!a.workType,
+    });
+  }
+  if (a.purpose === "STUDY") {
+    steps.push({
+      id: "studyType", type: "options", field: "studyType",
+      title: "What is your level of study?",
+      options: [
+        { label: "Academic course (≥ 6 months)", value: "LONG", sub: "Degree, A-levels, etc. (Student Visa)" },
+        { label: "Child Student (4-17 years)", value: "CHILD" },
+        { label: "Short-term Study (< 6 months)", value: "SHORT", sub: "English language courses" },
+      ],
+      canProceed: !!a.studyType,
+    });
+  }
+  if (a.purpose === "VISIT") {
+    steps.push({
+      id: "visitType", type: "options", field: "visitType",
+      title: "Tell us about your visit",
+      options: [
+        { label: "Tourism, Family, or short-term study", value: "TOURISM", sub: "Standard Visitor Visa" },
+        { label: "Marriage / Civil Partnership", value: "MARRIAGE" },
+        { label: "Permitted Paid Engagement", value: "PAID", sub: "Experts, lecturers, etc. for short-term work" },
+      ],
+      canProceed: !!a.visitType,
+    });
+  }
+  if (a.purpose === "SETTLEMENT") {
+    steps.push({
+      id: "settleRoute", type: "options", field: "settleRoute",
+      title: "Based on what route are you applying for ILR?",
+      options: [
+        { label: "Long Residence (10+ years)", value: "LONG" },
+        { label: "Work Route (e.g. 5 years as Skilled Worker)", value: "WORK" },
+        { label: "Family Route (e.g. Spouse)", value: "FAMILY" },
+        { label: "Protection Route (Refugee/Humanitarian)", value: "REFUGEE" },
+      ],
+      canProceed: !!a.settleRoute,
     });
   }
   return steps;
@@ -84,14 +167,25 @@ export const UK_DATA: CountryData = {
     { label: "GOV.UK — Visas & Immigration", url: "https://www.gov.uk/browse/visas-immigration" },
   ],
   purposes: [
-    { label: "Family / Join a partner", value: "FAMILY", sub: "Join your spouse or family member who is already in the UK" },
-    { label: "Work in the UK", value: "WORK", sub: "Skilled Worker, Health & Care, Graduate, or Global Talent / HPI" },
-    { label: "Study", value: "STUDY", sub: "Short-term or long-term academic courses at a licensed UK institution" },
-    { label: "Visit / Tourism", value: "VISIT", sub: "Vacation, business meetings, or short medical treatment" },
-    { label: "Business & Innovation", value: "BUSINESS_INVEST", sub: "Innovator Founder visa for entrepreneurs" },
+    { label: "Family / Join a partner", value: "FAMILY", sub: "Join your spouse or family member in the UK" },
+    { label: "Work in the UK", value: "WORK", sub: "Skilled Worker, Health & Care, Graduate, or Global Talent" },
+    { label: "Study", value: "STUDY", sub: "Short-term or long-term academic courses" },
+    { label: "Visit / Tourism", value: "VISIT", sub: "Vacation, marriage, or short medical treatment" },
+    { label: "Transit", value: "TRANSIT", sub: "Passing through the UK en route to another country" },
+    { label: "Business & Innovation", value: "BUSINESS_INVEST", sub: "Innovator, Expansion Worker, or Start-up" },
+    { label: "Permanent Settlement (ILR)", value: "SETTLEMENT", sub: "Indefinite Leave to Remain for those already in the UK" },
+    { label: "Special Categories", value: "SPECIAL", sub: "UK Ancestry or Frontier Worker visas" },
   ],
   getCandidateCodes,
   buildFollowUpSteps,
+  getCountryNotes: (a) => {
+    const notes = [];
+    if (a.origin?.toLowerCase() === "pakistan") {
+      notes.push("⚠️ Mandatory: Tuberculosis (TB) test certificate from a UKVI-approved clinic (IOM Pakistan) is required for stays longer than 6 months.");
+      notes.push("⚠️ Official 2026 Policy: UK visit visas for Pakistanis are now fully digital (e-visas). No physical sticker will be placed in your passport.");
+    }
+    return notes;
+  },
   visas: {
     "UK-FAMILY-SPOUSE": {
       code: "Family (Spouse)", label: "Family Visa — Spouse / Partner", badge: "Settlement", color: T.primary,
@@ -145,6 +239,117 @@ export const UK_DATA: CountryData = {
       processing: "3 weeks.",
       forms: ["Online Application", "CoS from employer"],
     },
+    "UK-MINISTER-RELIGION": {
+      code: "Minister of Religion", label: "Minister of Religion Visa (T2)", badge: "Work", color: T.success,
+      description: "For people who have been offered a job within a faith community (e.g., as a minister, missionary, or member of a religious order).",
+      criteria: [
+        "Certificate of Sponsorship (CoS) from a licensed religious organization.",
+        "English proficiency at B1 level.",
+        "Must be a genuine role within a religious order.",
+      ],
+      processing: "3 weeks.",
+      forms: ["Online Application", "CoS from employer"],
+    },
+    "UK-ICT": {
+      code: "Global Business Mobility", label: "Intra-company Transfer / ICT", badge: "Work", color: T.success,
+      description: "Temporary route for employees being transferred to a UK branch of their international employer.",
+      criteria: [
+        "Must currently work for an organization that is linked to the UK sponsor.",
+        "Minimum salary requirement (varies by role).",
+        "Must have worked for the employer for a specific period abroad (usually 12 months).",
+      ],
+      processing: "3 weeks.",
+      forms: ["Online Application", "CoS from employer"],
+    },
+    "UK-SCALE-UP": {
+      code: "Scale-up Worker", label: "Scale-up Worker Visa", badge: "Work", color: T.success,
+      description: "For talented individuals with a job offer from a high-growth UK business.",
+      criteria: [
+        "Sponsorship from a licensed UK 'Scale-up' business.",
+        "Job offer at a high skill level (RQF 6).",
+        "Minimum salary of £36,300/year.",
+        "English B1 level.",
+      ],
+      processing: "3 weeks.",
+      forms: ["Online Application", "CoS from employer"],
+    },
+    "UK-TEMP-CREATIVE": {
+      code: "Creative Worker", label: "Temporary Worker — Creative", badge: "Non-Settlement", color: "#F59E0B",
+      description: "For people who have been offered work in the UK as a creative worker (e.g., artist, dancer, musician, or film crew).",
+      criteria: ["Job offer from a licensed sponsor.", "Unique contribution to the UK creative sector.", "Minimum salary (if applicable)."],
+      processing: "3 weeks.",
+      forms: ["Online Application", "CoS from employer"],
+    },
+    "UK-TEMP-CHARITY": {
+      code: "Charity Worker", label: "Temporary Worker — Charity", badge: "Non-Settlement", color: "#F59E0B",
+      description: "For people who want to do unpaid voluntary work for a charity in the UK.",
+      criteria: ["Sponsorship certificate from a licensed charity.", "Role must be directly related to the charity's purpose.", "Unpaid/Voluntary basis only."],
+      processing: "3 weeks.",
+      forms: ["Online Application", "CoS from employer"],
+    },
+    "UK-TEMP-GAE": {
+      code: "GAE Worker", label: "Government Authorised Exchange", badge: "Non-Settlement", color: "#F59E0B",
+      description: "For work experience, training, or language programs through approved schemes.",
+      criteria: ["Sponsorship from an approved scheme operator.", "Role must be supernumerary (not a permanent job)."],
+      processing: "3 weeks.",
+      forms: ["Online Application", "CoS from sponsor"],
+    },
+    "UK-TEMP-RELIGIOUS": {
+      code: "Religious Worker", label: "Temporary Worker — Religious", badge: "Non-Settlement", color: "#F59E0B",
+      description: "For short-term religious work or joining a religious order.",
+      criteria: ["Sponsorship from a licensed religious organization.", "Max stay 2 years."],
+      processing: "3 weeks.",
+      forms: ["Online Application", "CoS from employer"],
+    },
+    "UK-EXPANSION-WORKER": {
+      code: "UK Expansion Worker", label: "Expansion Worker Visa", badge: "Business", color: T.success,
+      description: "For senior managers or specialist employees who are coming to the UK to expand a foreign business that does not yet trade in the UK.",
+      criteria: ["Already working for the business outside the UK.", "The business must not have a UK footprint yet.", "Sponsor license required."],
+      processing: "3 weeks.",
+      forms: ["Online Application", "CoS from employer"],
+    },
+    "UK-START-UP": {
+      code: "Start-up Visa", label: "Start-up Visa", badge: "Business", color: T.success,
+      description: "For new entrepreneurs starting their first business in the UK. Note: Most new applicants now use Innovator Founder.",
+      criteria: ["Endorsement from an approved body.", "New, innovative, and scalable business idea."],
+      processing: "3 weeks.",
+      forms: ["Endorsement letter", "Online Application"],
+    },
+    "UK-VISITOR-STANDARD": {
+      code: "Standard Visitor", label: "Standard Visitor Visa", badge: "Visit", color: "#6366F1",
+      description: "For tourism, visiting family, or short business trips (up to 6 months).",
+      criteria: ["Genuine visitor intent.", "Sufficient funds.", "Plan to leave UK."],
+      processing: "3 weeks.",
+      forms: ["Online Application"],
+    },
+    "UK-VISITOR-MARRIAGE": {
+      code: "Marriage Visitor", label: "Marriage Visitor Visa", badge: "Visit", color: "#6366F1",
+      description: "For people who want to get married or register a civil partnership in the UK but do not intend to stay long-term.",
+      criteria: ["Must leave UK within 6 months.", "Proof of wedding/civil ceremony arrangement."],
+      processing: "3 weeks.",
+      forms: ["Online Application"],
+    },
+    "UK-VISITOR-PAID": {
+      code: "Paid Engagement", label: "Permitted Paid Engagement Visitor", badge: "Visit", color: "#6366F1",
+      description: "For experts who are invited to the UK by a UK-based organization for a specific paid task.",
+      criteria: ["Invitation from UK organization.", "Engagement must be completed within 1 month.", "Specific expert roles (e.g., lecturers, examiners)."],
+      processing: "3 weeks.",
+      forms: ["Online Application"],
+    },
+    "UK-TRANSIT-DIRECT": {
+      code: "DATV", label: "Direct Airside Transit Visa", badge: "Transit", color: "#475569",
+      description: "For transiting through a UK airport without passing through immigration (staying airside).",
+      criteria: ["Changing flights at a UK airport.", "Not passing through border control."],
+      processing: "Varies.",
+      forms: ["Online Application"],
+    },
+    "UK-TRANSIT-VISITOR": {
+      code: "Visitor in Transit", label: "Visitor in Transit Visa", badge: "Transit", color: "#475569",
+      description: "For people who will pass through UK border control but leave the UK within 48 hours.",
+      criteria: ["Passing through UK border control.", "Entering the UK for max 48 hours to continue journey."],
+      processing: "Varies.",
+      forms: ["Online Application"],
+    },
     "UK-GRADUATE": {
       code: "Graduate Visa", label: "Graduate Visa (Post-Study Work)", badge: "Work", color: "#6366F1",
       description: "Allows international students who completed a UK degree to live and work freely in the UK. No job offer required.",
@@ -190,23 +395,87 @@ export const UK_DATA: CountryData = {
         "Unconditional offer (CAS) from a licensed UK student sponsor.",
         "Proof of financial support (tuition fees + living costs).",
         "English language proficiency (as required by your institution).",
-        "TB (tuberculosis) test certificate — mandatory for Pakistani applicants who lived in Pakistan in the last 6 months. Test from a UKVI-approved clinic only.",
-        "Pakistan note (2025–26): Visa refusal rates from Pakistan ~18%. Choose accredited universities carefully — some have paused Pakistani admissions. Strong financial evidence and clear academic intent are critical.",
+        "TB (tuberculosis) test certificate — mandatory for Pakistani applicants.",
       ],
       processing: "3 weeks (outside UK).",
-      forms: ["Apply Online — GOV.UK", "CAS from institution", "TB Test — UKVI approved clinic (IOM Pakistan)"],
+      forms: ["Apply Online — GOV.UK", "CAS from institution"],
     },
-    "UK-VISIT": {
-      code: "Standard Visitor", label: "Standard Visitor Visa", badge: "Visit", color: "#6366F1",
-      description: "For tourism, business, short study (up to 6 months), and other permitted activities in the UK.",
-      criteria: [
-        "Genuine intention to leave the UK at the end of visit.",
-        "Ability to financially support yourself during the trip.",
-        "No intention to work or settle permanently.",
-        "Pakistan update (2026): UK visit visas for Pakistanis are now e-visas — digital record, no physical sticker. Keep your passport after biometrics. Generate a share code to prove your status at the border.",
-      ],
+    "UK-CHILD-STUDENT": {
+      code: "Child Student", label: "Child Student Visa", badge: "Study", color: "#6366F1",
+      description: "For children aged 4 to 17 who want to study at an independent school in the UK.",
+      criteria: ["CAS from independent school.", "Consent from parents.", "Proof of financial support."],
       processing: "3 weeks.",
-      forms: ["Online Application — GOV.UK", "Biometrics at VFS Global (Pakistan)"],
+      forms: ["Online Application"],
+    },
+    "UK-SHORT-STUDY": {
+      code: "Short-term Study", label: "Short-term Study Visa", badge: "Study", color: "#6366F1",
+      description: "For English language courses lasting between 6 and 11 months.",
+      criteria: ["Accepted onto an English language course.", "Must leave UK at end of course.", "No right to work."],
+      processing: "3 weeks.",
+      forms: ["Online Application"],
+    },
+    "UK-FAMILY-PARENT": {
+      code: "Family (Parent)", label: "Family Visa — Parent", badge: "Settlement", color: T.primary,
+      description: "For parents of children who are British citizens or settled in the UK.",
+      criteria: ["Child is under 18 (or was under 18 when you first applied).", "Child is British or settled.", "Shared responsibility for the child."],
+      processing: "24 weeks.",
+      forms: ["Online Application"],
+    },
+    "UK-FAMILY-CHILD": {
+      code: "Family (Child)", label: "Family Visa — Child", badge: "Settlement", color: T.primary,
+      description: "For children of British citizens or settled persons in the UK.",
+      criteria: ["Parent is British or settled.", "Under 18 (usually).", "Relationship evidence."],
+      processing: "24 weeks.",
+      forms: ["Online Application"],
+    },
+    "UK-DEPENDENT": {
+      code: "Dependent", label: "Dependent Visa (Partner/Child)", badge: "Non-Settlement", color: "#94a3b8",
+      description: "For family members of people on a work or student visa in the UK.",
+      criteria: ["Principal applicant has a valid UK visa.", "Spouse, partner, or unmarried child under 18."],
+      processing: "Varies.",
+      forms: ["Online Application"],
+    },
+    "UK-ILR-WORK": {
+      code: "ILR (Work)", label: "Settlement — Skilled Worker", badge: "Permanent", color: T.success,
+      description: "Indefinite Leave to Remain for people who have worked in the UK for 5 years.",
+      criteria: ["Lived in UK for 5 continuous years on a qualifying work visa.", "Minimum salary requirement for ILR.", "Passed Life in the UK test.", "English B1 level."],
+      processing: "6 months.",
+      forms: ["SET(O) Form"],
+    },
+    "UK-ILR-FAMILY": {
+      code: "ILR (Family)", label: "Settlement — Family Route", badge: "Permanent", color: T.primary,
+      description: "Indefinite Leave to Remain for partners or parents of people in the UK.",
+      criteria: ["Lived in UK for 2 or 5 years on a family visa (depending on the route).", "Genuine relationship evidence.", "Life in the UK test."],
+      processing: "6 months.",
+      forms: ["SET(M) Form"],
+    },
+    "UK-ILR-LONG": {
+      code: "ILR (Long Residence)", label: "Settlement — 10 Year Route", badge: "Permanent", color: "#475569",
+      description: "For people who have lived legally in the UK for at least 10 continuous years.",
+      criteria: ["10 years continuous legal residence.", "Passed Life in the UK test.", "English B1 level."],
+      processing: "6 months.",
+      forms: ["SET(LR) Form"],
+    },
+    "UK-ILR-PROTECTION": {
+      code: "Settlement (Protection)", label: "Settlement — Refugee / Humanitarian", badge: "Permanent", color: "#DC2626",
+      description: "For people who have been in the UK for 5 years with refugee status or humanitarian protection.",
+      criteria: ["Held refugee status or humanitarian protection for 5 years.", "Safe return to home country is not possible."],
+      processing: "6 months.",
+      forms: ["SET(P) Form"],
+    },
+    "UK-ANCESTRY": {
+      code: "Ancestry", label: "UK Ancestry Visa", badge: "Commonwealth", color: "#6366F1",
+      description: "For Commonwealth citizens with a grandparent born in the UK.",
+      criteria: ["Commonwealth citizen.", "Grandparent born in UK.", "Intention to work in UK."],
+      processing: "3 weeks.",
+      forms: ["Online Application"],
+    },
+    "UK-FRONTIER": {
+      code: "Frontier Worker", label: "Frontier Worker Permit", badge: "EU/EEA", color: "#475569",
+      description: "For EU, EEA or Swiss citizens who work in the UK but live elsewhere.",
+      criteria: ["EU/EEA/Swiss citizen.", "Worked in UK before 31 December 2020.", "Continue to work in UK at least once every 12 months."],
+      processing: "Varies.",
+      forms: ["Online Application"],
     },
     "UK-INNOVATOR-FOUNDER": {
       code: "Innovator Founder", label: "Innovator Founder Visa", badge: "Business", color: T.success,
@@ -356,6 +625,94 @@ export const UK_DATA: CountryData = {
         passWith: ["YES"],
         failMsg: "The HPI visa is only for graduates from a specific list of top 50 global universities. Check the official list for your graduation year on GOV.UK.",
         options: [{ label: "Yes", value: "YES" }, { label: "No / Unsure", value: "NO" }],
+      },
+    ],
+    "UK-MINISTER-RELIGION": [
+      { 
+        id: "cos", 
+        question: "Do you have a Certificate of Sponsorship from a licensed UK religious organization?", 
+        source: "GOV.UK — Minister of Religion visa",
+        sourceUrl: "https://www.gov.uk/minister-of-religion-visa",
+        passWith: ["YES"], 
+        failMsg: "A CoS is mandatory.", 
+        options: [{ label: "Yes", value: "YES" }, { label: "No", value: "NO" }] 
+      },
+    ],
+    "UK-ICT": [
+      { 
+        id: "current_emp", 
+        question: "Are you currently working for the international employer outside the UK?", 
+        source: "GOV.UK — Global Business Mobility",
+        sourceUrl: "https://www.gov.uk/intra-company-transfer-visa",
+        passWith: ["YES"], 
+        failMsg: "ICT is for existing employees only.", 
+        options: [{ label: "Yes", value: "YES" }, { label: "No", value: "NO" }] 
+      },
+    ],
+    "UK-SCALE-UP": [
+      { 
+        id: "cos", 
+        question: "Do you have a CoS from a licensed Scale-up business?", 
+        source: "GOV.UK — Scale-up Worker",
+        sourceUrl: "https://www.gov.uk/scale-up-worker-visa",
+        passWith: ["YES"], 
+        failMsg: "Sponsorship from a Scale-up business is required.", 
+        options: [{ label: "Yes", value: "YES" }, { label: "No", value: "NO" }] 
+      },
+    ],
+    "UK-VISITOR-MARRIAGE": [
+      { 
+        id: "intent", 
+        question: "Do you intend to marry or enter a civil partnership during your visit?", 
+        source: "GOV.UK — Marriage Visitor visa",
+        sourceUrl: "https://www.gov.uk/marriage-visitor-visa",
+        passWith: ["YES"], 
+        failMsg: "This visa is specifically for wedding/partnership arrangements.", 
+        options: [{ label: "Yes", value: "YES" }, { label: "No", value: "NO" }] 
+      },
+    ],
+    "UK-TRANSIT-DIRECT": [
+      { 
+        id: "transit", 
+        question: "Are you changing flights at a UK airport and staying 'airside'?", 
+        source: "GOV.UK — Transit Visas",
+        sourceUrl: "https://www.gov.uk/transit-visa",
+        passWith: ["YES"], 
+        failMsg: "DATV is for airside transit only.", 
+        options: [{ label: "Yes", value: "YES" }, { label: "No", value: "NO" }] 
+      },
+    ],
+    "UK-ILR-WORK": [
+      { 
+        id: "resid", 
+        question: "Have you lived in the UK legally for at least 5 continuous years on a work visa?", 
+        source: "GOV.UK — Indefinite Leave to Remain",
+        sourceUrl: "https://www.gov.uk/settle-in-the-uk",
+        passWith: ["YES"], 
+        failMsg: "5 years continuous residence is required for most work routes.", 
+        options: [{ label: "Yes", value: "YES" }, { label: "No", value: "NO" }] 
+      },
+    ],
+    "UK-ILR-LONG": [
+      { 
+        id: "ten_yrs", 
+        question: "Have you lived legally in the UK for at least 10 continuous years?", 
+        source: "GOV.UK — Long Residence Settlement",
+        sourceUrl: "https://www.gov.uk/long-residence",
+        passWith: ["YES"], 
+        failMsg: "10 years legal residence is mandatory.", 
+        options: [{ label: "Yes", value: "YES" }, { label: "No", value: "NO" }] 
+      },
+    ],
+    "UK-ANCESTRY": [
+      { 
+        id: "grandparent", 
+        question: "Was one of your grandparents born in the UK, Channel Islands, or Isle of Man?", 
+        source: "GOV.UK — UK Ancestry visa",
+        sourceUrl: "https://www.gov.uk/ancestry-visa",
+        passWith: ["YES"], 
+        failMsg: "Ancestry visa requires a UK-born grandparent.", 
+        options: [{ label: "Yes", value: "YES" }, { label: "No", value: "NO" }] 
       },
     ],
   },
