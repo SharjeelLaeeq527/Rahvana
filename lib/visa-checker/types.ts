@@ -1,122 +1,15 @@
-export type CaseType = 'Spouse';
+import { Questionnaire, Section } from "./engine-types";
+
+export type CaseType = string; // e.g., 'ir-1', 'k-1'
 
 export type RiskLevel = 'PENDING' | 'WEAK' | 'MODERATE' | 'STRONG';
 
 export type RiskSeverity = 'LOW' | 'MEDIUM' | 'HIGH';
 
-export type QuestionKey =
-  // Basic Profile
-  | 'sponsor_full_name'
-  | 'beneficiary_full_name'
-  | 'sponsor_dob'
-  | 'beneficiary_dob'
-  | 'country_of_residence'
-  | 'marriage_date'
-  | 'relationship_start_date'
-  | 'spousal_relationship_type'
-  | 'intended_us_state_of_residence'
-  | 'i130_status'
-  // Education & Employment Background
-  | 'highest_education_level'
-  | 'highest_education_field'
-  | 'current_occupation_role'
-  | 'industry_sector'
-  | 'prior_military_service'
-  | 'specialized_weapons_training'
-  | 'unofficial_armed_groups'
-  | 'employer_type'
-  // Relationship Strength
-  | 'how_did_you_meet'
-  | 'number_of_in_person_visits'
-  | 'cohabitation_proof'
-  | 'shared_financial_accounts'
-  | 'wedding_photos_available'
-  | 'communication_logs'
-  | 'money_transfer_receipts_available'
-  | 'driving_license_copy_available'
-  | 'children_together'
-  // Immigration History
-  | 'previous_visa_applications'
-  | 'previous_visa_denial'
-  | 'overstay_or_violation'
-  | 'criminal_record'
-  // Financial Profile
-  | 'sponsor_annual_income'
-  | 'household_size'
-  | 'has_tax_returns'
-  | 'has_employment_letter'
-  | 'has_paystubs'
-  | 'joint_sponsor_available'
-  | 'i864_affidavit_submitted'
-  | 'i864_supporting_financial_documents'
-  // Core Identity Documents
-  | 'urdu_marriage_certificate'
-  | 'english_translation_certificate'
-  | 'nadra_marriage_registration_cert'
-  | 'family_registration_certificate'
-  | 'birth_certificates'
-  | 'prior_marriages_exist'
-  | 'prior_marriage_termination_docs'
-  // Passport & Police Documents
-  | 'passports_available'
-  | 'passport_copy_available'
-  | 'valid_police_clearance_certificate'
-  // Interview & Medical Documents
-  | 'ds260_confirmation'
-  | 'interview_letter'
-  | 'courier_registration'
-  | 'medical_report_available'
-  | 'polio_vaccination_certificate'
+export type QuestionKey = string;
 
-  | 'passport_photos_2x2';
-
-export type FlagCode =
-  // Relationship red flags
-  | 'SHORT_RELATIONSHIP_DURATION'
-  | 'AGE_GAP_HIGH'
-  | 'NO_IN_PERSON_MEETINGS'
-  | 'NO_COHABITATION_EVIDENCE'
-  | 'NO_SHARED_FINANCIALS'
-  | 'NO_WEDDING_PHOTOS'
-  | 'NO_COMMUNICATION_HISTORY'
-  | 'LONG_RELATIONSHIP_HISTORY'
-  // Immigration history risks
-  | 'PREVIOUS_US_VISA_DENIAL'
-  | 'PRIOR_IMMIGRATION_VIOLATION'
-  | 'CRIMINAL_HISTORY_PRESENT'
-  // Financial risks
-  | 'SPONSOR_INCOME_BELOW_GUIDELINE'
-  | 'NO_TAX_RETURNS_AVAILABLE'
-  | 'NO_EMPLOYMENT_PROOF'
-  | 'NO_PAYSTUBS'
-  | 'NO_JOINT_SPONSOR_WHEN_REQUIRED'
-  // Document risks
-  | 'NO_MARRIAGE_CERTIFICATE'
-  | 'NO_MARRIAGE_TRANSLATION'
-  | 'NO_NADRA_MARRIAGE_CERT'
-  | 'NO_BIRTH_CERTIFICATES'
-  | 'NO_VALID_PASSPORTS'
-  | 'DS260_NOT_SUBMITTED'
-  | 'NO_INTERVIEW_LETTER'
-  | 'NO_COURIER_REGISTRATION'
-  | 'NO_MEDICAL_REPORT'
-  | 'NO_POLIO_VACCINATION_PROOF'
-  | 'CR1_I751_REMINDER'
-  | 'NO_PASSPORT_PHOTOS_2X2'
-  | 'NO_FRC_AVAILABLE'
-  | 'NO_PASSPORT_COPY'
-  | 'NO_VALID_POLICE_CLEARANCE_CERTIFICATE'
-  | 'NO_I864_SUBMITTED'
-  | 'I864_FINANCIAL_EVIDENCE_WEAK'
-  | 'NO_FINANCIAL_INTERACTION_EVIDENCE'
-  | 'CONSANGUINEOUS_MARRIAGE'
-  | 'MARRIAGE_INVALID_IN_INTENDED_STATE'
-  | 'WORKING_IN_DEFENSE_SECTOR'
-  | 'SENSITIVE_RESEARCH_FIELD'
-  | 'DUAL_USE_TECHNOLOGY_RISK'
-  | 'I130_PROCESS_NOT_STARTED'
-  | 'MISSING_PRIOR_MARRIAGE_DOCS'
-  | 'PUBLIC_CHARGE_RISK';
+// existing FlagCode remains for backend compatibility but is now also TEXT in DB
+export type FlagCode = string;
 
 export interface CreateSessionRequest {
   userEmail?: string;
@@ -174,4 +67,26 @@ export interface DeleteSessionResponse {
   sessionId: string;
   deleted: boolean;
   message: string;
+}
+
+export interface QuestionStepProps {
+  questionnaire: Questionnaire;
+  section: Section;
+  formData: Record<string, unknown>;
+  error?: string;
+  loading?: boolean;
+  onChange: (id: string, value: unknown) => void;
+  setFormData: (updater: (prev: Record<string, unknown>) => Record<string, unknown>) => void;
+  onNext: () => void;
+  onBack: () => void;
+}
+
+export interface ReviewStepProps {
+  questionnaire: Questionnaire;
+  formData: Record<string, unknown>;
+  error?: string;
+  loading?: boolean;
+  onSubmit: () => void;
+  onBack: () => void;
+  onSaveToProfile?: () => void;
 }
