@@ -34,112 +34,19 @@ import {
   Send,
   Globe,
   ExternalLink,
-  BookOpen,
 } from "lucide-react";
-import Link from "next/link";
 // import { useRouter } from "next/navigation";
-
-// ============================================================================
-// POVERTY GUIDELINES DATA (2025 HHS Poverty Guidelines)
-// ============================================================================
-
-const POVERTY_GUIDELINES: Record<
-  number,
-  { level100: number; level125: number }
-> = {
-  1: { level100: 16510, level125: 20638 },
-  2: { level100: 21150, level125: 26437 },
-  3: { level100: 26650, level125: 33312 },
-  4: { level100: 32150, level125: 40187 },
-  5: { level100: 37650, level125: 47062 },
-  6: { level100: 43150, level125: 53937 },
-  7: { level100: 48650, level125: 60812 },
-  8: { level100: 54150, level125: 67687 },
-};
-
-const ADDITIONAL_MEMBER_COST = {
-  level100: 5500,
-  level125: 6875,
-};
-
-// ============================================================================
-// TYPES & INTERFACES
-// ============================================================================
-
-type SponsorStatus = "citizen" | "greenCard";
-
-interface HouseholdMember {
-  id: string;
-  relationship: string;
-  annualIncome: number;
-}
-
-interface JointSponsor {
-  id: string;
-  name: string;
-  relationship: string;
-  annualIncome: number;
-}
-
-interface FormData {
-  sponsorStatus: SponsorStatus | null;
-  isMilitary: boolean | null;
-  isMarried: boolean | null;
-  numberOfChildren: number;
-  taxDependents: number;
-  hasPreviousSponsorship: boolean | null;
-  previousSponsoredCount: number;
-  currentSponsoredApplicant: boolean;
-  currentSponsoredSpouse: boolean;
-  currentSponsoredChildren: number;
-  annualIncome: number;
-  householdMembers: HouseholdMember[];
-  jointSponsors: JointSponsor[];
-  // Case 7: Substitute sponsor info
-  sponsorDeceased: boolean | null;
-  // Case 9: Assets
-  assetValue: number;
-  relationshipToApplicant: string;
-  // Case 10: Self-petition
-  isVAWA: boolean | null;
-  isWidow: boolean | null;
-  isSpecialImmigrant: boolean | null;
-  // Track used relationships for dropdown suggestions
-  usedHouseholdRelationships: string[];
-  usedJointSponsorRelationships: string[];
-}
-
-interface CalculatorResult {
-  householdSize: number;
-  requiredIncome: number;
-  povertyLevel: number;
-  ruleApplied: string;
-  isEligible: boolean;
-  shortfall: number;
-  caseNumber: number;
-  caseName: string;
-  caseDescription: string;
-}
-
-// ============================================================================
-// RELATIONSHIP OPTIONS
-// ============================================================================
-
-const RELATIONSHIP_OPTIONS = [
-  "Spouse",
-  "Child",
-  "Parent",
-  "Sibling",
-  "Grandparent",
-  "Grandchild",
-  "Aunt/Uncle",
-  "Niece/Nephew",
-  "Cousin",
-  "In-Law",
-  "Friend",
-  "Employer",
-  "Other",
-];
+import {
+  POVERTY_GUIDELINES,
+  ADDITIONAL_MEMBER_COST,
+  RELATIONSHIP_OPTIONS,
+  DEFAULT_FORM_DATA,
+  getFormsInfo,
+  type AffidavitFormData as FormData,
+  type HouseholdMember,
+  type JointSponsor,
+  type CalculatorResult,
+} from "./data";
 
 // ============================================================================
 // CURRENCY INPUT COMPONENT
@@ -240,7 +147,7 @@ function CurrencyInput({
         onChange={handleChange}
         onFocus={handleFocus}
         onBlur={handleBlur}
-        className="w-full pl-8 sm:pl-10 pr-4 py-3 sm:py-4 text-xl sm:text-2xl font-bold text-slate-900 bg-slate-50 border-2 border-slate-200 rounded-xl focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100 transition-all text-left placeholder:text-slate-400"
+        className="w-full pl-8 sm:pl-10 pr-4 py-3 sm:py-4 text-xl sm:text-2xl font-bold text-slate-900 bg-slate-50 border-2 border-slate-200 rounded-xl focus:border-[#0d7377] focus:ring-4 focus:ring-[#afdbdb]/30 transition-all text-left placeholder:text-slate-400"
       />
     </div>
   );
@@ -258,29 +165,7 @@ import { MasterProfile } from "@/types/profile";
 export default function AffidavitSupportCalculator() {
   // const router = useRouter();
   const [currentStep, setCurrentStep] = useState(1);
-  const [formData, setFormData] = useState<FormData>({
-    sponsorStatus: null,
-    isMilitary: null,
-    isMarried: null,
-    numberOfChildren: 0,
-    taxDependents: 0,
-    hasPreviousSponsorship: null,
-    previousSponsoredCount: 0,
-    currentSponsoredApplicant: true,
-    currentSponsoredSpouse: false,
-    currentSponsoredChildren: 0,
-    annualIncome: 0,
-    householdMembers: [],
-    jointSponsors: [],
-    sponsorDeceased: null,
-    assetValue: 0,
-    relationshipToApplicant: "",
-    isVAWA: null,
-    isWidow: null,
-    isSpecialImmigrant: null,
-    usedHouseholdRelationships: [],
-    usedJointSponsorRelationships: [],
-  });
+  const [formData, setFormData] = useState<FormData>(DEFAULT_FORM_DATA);
   const [profileLoaded, setProfileLoaded] = useState(false);
   const { user } = useAuth();
   const supabase = createBrowserClient(
@@ -309,24 +194,14 @@ export default function AffidavitSupportCalculator() {
 
           // Map profile data to form structure
           const mappedData = mapProfileToGenericForm(profile, {
-            sponsorStatus: formData.sponsorStatus,
-            isMilitary: formData.isMilitary,
-            isMarried: formData.isMarried,
-            numberOfChildren: formData.numberOfChildren,
-            taxDependents: formData.taxDependents,
-            hasPreviousSponsorship: formData.hasPreviousSponsorship,
-            previousSponsoredCount: formData.previousSponsoredCount,
-            currentSponsoredApplicant: formData.currentSponsoredApplicant,
-            currentSponsoredSpouse: formData.currentSponsoredSpouse,
-            currentSponsoredChildren: formData.currentSponsoredChildren,
-            annualIncome: formData.annualIncome,
-            sponsorDeceased: formData.sponsorDeceased,
-            assetValue: formData.assetValue,
-            relationshipToApplicant: formData.relationshipToApplicant,
-            isVAWA: formData.isVAWA,
-            isWidow: formData.isWidow,
-            isSpecialImmigrant: formData.isSpecialImmigrant,
+            ...DEFAULT_FORM_DATA
           });
+
+          // Filter out annualIncome if it matches the common 50000 placeholder 
+          // or is not explicitly set in the profile
+          if (mappedData.annualIncome === 50000) {
+            mappedData.annualIncome = 0;
+          }
 
           setFormData((prev) => ({
             ...prev,
@@ -444,9 +319,16 @@ export default function AffidavitSupportCalculator() {
   // ============================================================================
 
   const calculateHouseholdSize = (): number => {
+    // If the sponsor is married AND they are sponsoring their own spouse (IR-1 typical case),
+    // the spouse is already counted as the main applicant (currentSponsoredApplicant).
+    // So we only add isMarried +1 if the sponsor's spouse is NOT the applicant being sponsored.
+    const sponsoringOwnSpouse =
+      formData.isMarried &&
+      formData.relationshipToApplicant.toLowerCase() === "spouse";
+
     return (
       1 +
-      (formData.isMarried ? 1 : 0) +
+      (formData.isMarried && !sponsoringOwnSpouse ? 1 : 0) +
       formData.numberOfChildren +
       formData.taxDependents +
       formData.previousSponsoredCount +
@@ -461,17 +343,16 @@ export default function AffidavitSupportCalculator() {
       formData.isMilitary &&
       (formData.currentSponsoredApplicant || formData.currentSponsoredSpouse);
     const povertyLevel = isMilitarySpouseOrChild ? 100 : 125;
-
-    let baseIncome = POVERTY_GUIDELINES[8]?.[`level${povertyLevel}`] || 0;
-    const additionalCost = ADDITIONAL_MEMBER_COST[`level${povertyLevel}`];
-
-    if (householdSize <= 8 && POVERTY_GUIDELINES[householdSize]) {
-      baseIncome = POVERTY_GUIDELINES[householdSize][`level${povertyLevel}`];
-      return baseIncome;
+    const key = `level${povertyLevel}` as "level100" | "level125";
+    const additionalCost = ADDITIONAL_MEMBER_COST[key];
+    const base8 = POVERTY_GUIDELINES[8][key];
+    // Clamp to minimum size of 2 (sponsor + applicant always present)
+    const clampedSize = Math.max(householdSize, 2);
+    if (clampedSize <= 8) {
+      return POVERTY_GUIDELINES[clampedSize]?.[key] ?? base8;
     }
-
-    const extraMembers = householdSize - 8;
-    return baseIncome + extraMembers * additionalCost;
+    const extraMembers = clampedSize - 8;
+    return base8 + extraMembers * additionalCost;
   };
 
   const calculateTotalIncome = (): number => {
@@ -492,184 +373,6 @@ export default function AffidavitSupportCalculator() {
     );
     const multiplier = isSpouseOrParent ? 3 : 5;
     return formData.assetValue * multiplier;
-  };
-
-  // ============================================================================
-  // FORMS INFO HELPER
-  // ============================================================================
-
-  interface FormInfo {
-    name: string;
-    description: string;
-    whereToFile: string;
-    notes: string[];
-  }
-
-  const getFormsInfo = (caseNumber: number): FormInfo[] => {
-    const forms: Record<number, FormInfo[]> = {
-      // Case 1-6: Regular sponsorship with income
-      1: [
-        {
-          name: "I-864 - Affidavit of Support",
-          description: "Official sponsor income verification form",
-          whereToFile:
-            "USCIS (United States Citizenship and Immigration Services)",
-          notes: [
-            "File online or by mail with your I-130/I-485 application",
-            "Include copies of last 3 years of tax returns",
-            "Sponsor must sign in presence of notary or USCIS officer",
-          ],
-        },
-        {
-          name: "I-864A - Contract Between Sponsor and Household Member",
-          description: "Required if using household member's income",
-          whereToFile: "USCIS (file with I-864)",
-          notes: [
-            "Each household member contributing income must sign this",
-            "Include their tax returns and proof of residence",
-          ],
-        },
-        {
-          name: "I-864W - Request for Exemption (Optional)",
-          description: "For VAWA/self-petition cases",
-          whereToFile: "USCIS",
-          notes: ["Only needed if sponsor is exempt from income requirements"],
-        },
-      ],
-      // Case 5: Household member as sole sponsor
-      5: [
-        {
-          name: "I-864 - Affidavit of Support",
-          description: "Household member is the legal sponsor",
-          whereToFile: "USCIS",
-          notes: [
-            "Household member must be US citizen or LPR",
-            "They must meet household size requirements including their own family",
-            "Include all required documentation",
-          ],
-        },
-      ],
-      // Case 6: Joint sponsor only
-      6: [
-        {
-          name: "I-864 - Affidavit of Support",
-          description: "Joint sponsor becomes primary sponsor",
-          whereToFile: "USCIS",
-          notes: [
-            "Joint sponsor must fully meet income requirements alone",
-            "Primary sponsor still files I-864A as contract",
-            "Both sponsors are legally responsible",
-          ],
-        },
-        {
-          name: "I-864A - Contract Between Sponsor and Household Member",
-          description: "Primary sponsor's contract",
-          whereToFile: "USCIS (file with I-864)",
-          notes: [
-            "Primary sponsor acknowledges joint sponsorship",
-            "Must provide financial documents",
-          ],
-        },
-      ],
-      // Case 7: Substitute sponsor
-      7: [
-        {
-          name: "I-864 - Affidavit of Support",
-          description: "Substitute sponsor form",
-          whereToFile: "USCIS - File with I-130/I-485",
-          notes: [
-            "Must include Form I-363 Request to Designate or Substitute",
-            "Original sponsor's death certificate required",
-            "Substitute must be US citizen or LPR relative",
-          ],
-        },
-        {
-          name: "I-363 - Request to Designate or Substitute",
-          description: "Official request for substitute sponsorship",
-          whereToFile: "USCIS",
-          notes: [
-            "Required when original sponsor is deceased",
-            "Must include proof of death",
-            "Must show relationship to applicant",
-          ],
-        },
-      ],
-      // Case 8: Joint sponsor with their household
-      8: [
-        {
-          name: "I-864 - Affidavit of Support",
-          description: "Joint sponsor's form with household income",
-          whereToFile: "USCIS",
-          notes: [
-            "Joint sponsor includes their household members",
-            "Each household member signs I-864A",
-            "Must prove household members live at same address",
-          ],
-        },
-        {
-          name: "I-864A - Contract for Each Household Member",
-          description: "Joint sponsor's household contracts",
-          whereToFile: "USCIS (file with I-864)",
-          notes: [
-            "Each contributing household member must sign",
-            "Include their tax returns and proof of residence",
-          ],
-        },
-      ],
-      // Case 9: Using assets
-      9: [
-        {
-          name: "I-864 - Affidavit of Support",
-          description: "Asset-based sponsorship",
-          whereToFile: "USCIS",
-          notes: [
-            "Use Form I-864 Supplement 3 for asset documentation",
-            "Assets must be readily convertible to cash",
-            "Include proof of ownership and value",
-          ],
-        },
-        {
-          name: "I-864 Supplement 3 - Identifying Information for Asset",
-          description: "Asset documentation supplement",
-          whereToFile: "USCIS (file with I-864)",
-          notes: [
-            "List all assets being used",
-            "Provide valuation evidence",
-            "Property must be free of liens",
-          ],
-        },
-      ],
-      // Case 10: Self-petitioning
-      10: [
-        {
-          name: "I-360 - Petition for Amerasian, Widow(er), or Special Immigrant",
-          description: "Self-petition form",
-          whereToFile: "USCIS",
-          notes: [
-            "No sponsor required for VAWA, widow, or special immigrant cases",
-            "Include evidence of eligibility category",
-            "Consult immigration attorney for specific requirements",
-          ],
-        },
-        {
-          name: "I-485 - Application to Register Permanent Residence",
-          description: "Green card application",
-          whereToFile: "USCIS (after I-360 approval)",
-          notes: [
-            "File after I-360 is approved",
-            "Include all supporting documents",
-            "Biometrics appointment required",
-          ],
-        },
-      ],
-    };
-
-    // Default forms for cases 2, 3, 4 (regular combined support)
-    if ([2, 3, 4].includes(caseNumber)) {
-      return forms[1];
-    }
-
-    return forms[caseNumber] || forms[1];
   };
 
   // ============================================================================
@@ -989,7 +692,14 @@ export default function AffidavitSupportCalculator() {
   // ============================================================================
 
   const handleNext = () => {
-    if (currentStep === 7) {
+    if (currentStep === 2) {
+      // Skip Step 3 (Children) if sponsor is single
+      if (formData.isMarried === false) {
+        setCurrentStep(4);
+      } else {
+        setCurrentStep(3);
+      }
+    } else if (currentStep === 7) {
       const calcResult = calculateResult();
       setResult(calcResult);
       if (calcResult.isEligible) {
@@ -1042,12 +752,10 @@ export default function AffidavitSupportCalculator() {
     } else if (currentStep === 9) {
       setCurrentStep(8);
     } else if (currentStep === 8) {
-      const calcResult = calculateResult();
-      if (calcResult.isEligible) {
-        setCurrentStep(7);
-      } else {
-        setCurrentStep(7);
-      }
+      setCurrentStep(7);
+    } else if (currentStep === 4 && formData.isMarried === false) {
+      // Skip Step 3 (Children) going back if sponsor is single
+      setCurrentStep(2);
     } else {
       setCurrentStep((prev) => Math.max(prev - 1, 1));
     }
@@ -1055,29 +763,7 @@ export default function AffidavitSupportCalculator() {
 
   const handleReset = () => {
     setCurrentStep(1);
-    setFormData({
-      sponsorStatus: null,
-      isMilitary: null,
-      isMarried: null,
-      numberOfChildren: 0,
-      taxDependents: 0,
-      hasPreviousSponsorship: null,
-      previousSponsoredCount: 0,
-      currentSponsoredApplicant: true,
-      currentSponsoredSpouse: false,
-      currentSponsoredChildren: 0,
-      annualIncome: 0,
-      householdMembers: [],
-      jointSponsors: [],
-      sponsorDeceased: null,
-      assetValue: 0,
-      relationshipToApplicant: "",
-      isVAWA: null,
-      isWidow: null,
-      isSpecialImmigrant: null,
-      usedHouseholdRelationships: [],
-      usedJointSponsorRelationships: [],
-    });
+    setFormData(DEFAULT_FORM_DATA);
     setResult(null);
     setExpandedSections({});
   };
@@ -1120,7 +806,7 @@ export default function AffidavitSupportCalculator() {
   const renderStep1 = () => (
     <div className="space-y-6">
       <div className="text-center mb-8">
-        <div className="w-16 h-16 bg-linear-to-br from-blue-500 to-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
+        <div className="w-16 h-16 bg-[#0d7377] rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
           <User className="w-8 h-8 text-white" />
         </div>
         <h3 className="text-2xl font-bold text-slate-900">
@@ -1136,12 +822,12 @@ export default function AffidavitSupportCalculator() {
           onClick={() => setFormData({ ...formData, sponsorStatus: "citizen" })}
           className={`p-4 rounded-xl border-2 transition-all ${
             formData.sponsorStatus === "citizen"
-              ? "border-blue-500 bg-blue-50"
-              : "border-slate-200 hover:border-blue-300 hover:bg-slate-50"
+              ? "border-[#0d7377] bg-[#afdbdb]/10"
+              : "border-slate-200 hover:border-[#afdbdb] hover:bg-slate-50"
           }`}
         >
           <div className="text-center">
-            <Shield className="w-8 h-8 mx-auto mb-2 text-blue-600" />
+            <Shield className="w-8 h-8 mx-auto mb-2 text-[#0d7377]" />
             <p className="font-semibold text-slate-900">US Citizen</p>
           </div>
         </button>
@@ -1151,12 +837,12 @@ export default function AffidavitSupportCalculator() {
           }
           className={`p-4 rounded-xl border-2 transition-all ${
             formData.sponsorStatus === "greenCard"
-              ? "border-blue-500 bg-blue-50"
-              : "border-slate-200 hover:border-blue-300 hover:bg-slate-50"
+              ? "border-[#0d7377] bg-[#afdbdb]/10"
+              : "border-slate-200 hover:border-[#afdbdb] hover:bg-slate-50"
           }`}
         >
           <div className="text-center">
-            <User className="w-8 h-8 mx-auto mb-2 text-blue-600" />
+            <User className="w-8 h-8 mx-auto mb-2 text-[#0d7377]" />
             <p className="font-semibold text-slate-900">Green Card Holder</p>
           </div>
         </button>
@@ -1175,12 +861,12 @@ export default function AffidavitSupportCalculator() {
               onClick={() => setFormData({ ...formData, isMilitary: true })}
               className={`p-4 rounded-xl border-2 transition-all ${
                 formData.isMilitary === true
-                  ? "border-blue-500 bg-blue-50"
-                  : "border-slate-200 hover:border-blue-300 hover:bg-slate-50"
+                  ? "border-[#0d7377] bg-[#afdbdb]/10"
+                  : "border-slate-200 hover:border-[#afdbdb] hover:bg-slate-50"
               }`}
             >
               <div className="text-center">
-                <Flag className="w-8 h-8 mx-auto mb-2 text-blue-600" />
+                <Flag className="w-8 h-8 mx-auto mb-2 text-[#0d7377]" />
                 <p className="font-semibold text-slate-900">Yes, Active Duty</p>
               </div>
             </button>
@@ -1188,12 +874,12 @@ export default function AffidavitSupportCalculator() {
               onClick={() => setFormData({ ...formData, isMilitary: false })}
               className={`p-4 rounded-xl border-2 transition-all ${
                 formData.isMilitary === false
-                  ? "border-blue-500 bg-blue-50"
-                  : "border-slate-200 hover:border-blue-300 hover:bg-slate-50"
+                  ? "border-[#89a4a0] bg-[#89a4a0]/10"
+                  : "border-slate-200 hover:border-[#89a4a0] hover:bg-slate-50"
               }`}
             >
               <div className="text-center">
-                <User className="w-8 h-8 mx-auto mb-2 text-blue-600" />
+                <User className="w-8 h-8 mx-auto mb-2 text-[#89a4a0]" />
                 <p className="font-semibold text-slate-900">No, Civilian</p>
               </div>
             </button>
@@ -1206,7 +892,7 @@ export default function AffidavitSupportCalculator() {
   const renderStep2 = () => (
     <div className="space-y-6">
       <div className="text-center mb-8">
-        <div className="w-16 h-16 bg-linear-to-br from-purple-500 to-purple-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
+        <div className="w-16 h-16 bg-[#afdbdb] rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
           <Users className="w-8 h-8 text-white" />
         </div>
         <h3 className="text-2xl font-bold text-slate-900">Marital Status</h3>
@@ -1218,25 +904,31 @@ export default function AffidavitSupportCalculator() {
           onClick={() => setFormData({ ...formData, isMarried: true })}
           className={`p-6 rounded-xl border-2 transition-all ${
             formData.isMarried === true
-              ? "border-purple-500 bg-purple-50"
-              : "border-slate-200 hover:border-purple-300 hover:bg-slate-50"
+              ? "border-[#afdbdb] bg-[#afdbdb]/10"
+              : "border-slate-200 hover:border-[#afdbdb] hover:bg-slate-50"
           }`}
         >
           <div className="text-center">
-            <Users className="w-10 h-10 mx-auto mb-3 text-purple-600" />
+            <Users className="w-10 h-10 mx-auto mb-3 text-[#afdbdb]" />
             <p className="font-semibold text-slate-900">Yes, Married</p>
           </div>
         </button>
         <button
-          onClick={() => setFormData({ ...formData, isMarried: false })}
+          onClick={() =>
+            setFormData({
+              ...formData,
+              isMarried: false,
+              numberOfChildren: 0,
+            })
+          }
           className={`p-6 rounded-xl border-2 transition-all ${
             formData.isMarried === false
-              ? "border-purple-500 bg-purple-50"
-              : "border-slate-200 hover:border-purple-300 hover:bg-slate-50"
+              ? "border-[#afdbdb] bg-[#afdbdb]/10"
+              : "border-slate-200 hover:border-[#afdbdb] hover:bg-slate-50"
           }`}
         >
           <div className="text-center">
-            <User className="w-10 h-10 mx-auto mb-3 text-purple-600" />
+            <User className="w-10 h-10 mx-auto mb-3 text-[#afdbdb]" />
             <p className="font-semibold text-slate-900">No, Single</p>
           </div>
         </button>
@@ -1247,7 +939,7 @@ export default function AffidavitSupportCalculator() {
   const renderStep3 = () => (
     <div className="space-y-6">
       <div className="text-center mb-8">
-        <div className="w-16 h-16 bg-linear-to-br from-green-500 to-green-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
+        <div className="w-16 h-16 bg-[#cdadcc] rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
           <Users className="w-8 h-8 text-white" />
         </div>
         <h3 className="text-2xl font-bold text-slate-900">Your Children</h3>
@@ -1285,7 +977,7 @@ export default function AffidavitSupportCalculator() {
               numberOfChildren: formData.numberOfChildren + 1,
             })
           }
-          className="w-12 h-12 rounded-lg bg-green-600 hover:bg-green-700 text-white font-bold text-xl"
+          className="w-12 h-12 rounded-lg bg-[#cdadcc] hover:bg-[#b08eaf] text-white font-bold text-xl"
         >
           +
         </button>
@@ -1296,7 +988,7 @@ export default function AffidavitSupportCalculator() {
   const renderStep4 = () => (
     <div className="space-y-6">
       <div className="text-center mb-8">
-        <div className="w-16 h-16 bg-linear-to-br from-orange-500 to-orange-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
+        <div className="w-16 h-16 bg-[#db8090] rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
           <Users className="w-8 h-8 text-white" />
         </div>
         <h3 className="text-2xl font-bold text-slate-900">Tax Dependents</h3>
@@ -1336,7 +1028,7 @@ export default function AffidavitSupportCalculator() {
               taxDependents: formData.taxDependents + 1,
             })
           }
-          className="w-12 h-12 rounded-lg bg-orange-600 hover:bg-orange-700 text-white font-bold text-xl"
+          className="w-12 h-12 rounded-lg bg-[#db8090] hover:bg-[#c96d7d] text-white font-bold text-xl"
         >
           +
         </button>
@@ -1347,7 +1039,7 @@ export default function AffidavitSupportCalculator() {
   const renderStep5 = () => (
     <div className="space-y-6">
       <div className="text-center mb-8">
-        <div className="w-16 h-16 bg-linear-to-br from-red-500 to-red-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
+        <div className="w-16 h-16 bg-[#db8090] rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
           <Users className="w-8 h-8 text-white" />
         </div>
         <h3 className="text-2xl font-bold text-slate-900">
@@ -1366,12 +1058,12 @@ export default function AffidavitSupportCalculator() {
           }
           className={`p-4 rounded-xl border-2 transition-all ${
             formData.hasPreviousSponsorship === true
-              ? "border-red-500 bg-red-50"
-              : "border-slate-200 hover:border-red-300 hover:bg-slate-50"
+              ? "border-[#89a4a0] bg-[#89a4a0]/10"
+              : "border-slate-200 hover:border-[#89a4a0] hover:bg-slate-50"
           }`}
         >
           <div className="text-center">
-            <CheckCircle className="w-8 h-8 mx-auto mb-2 text-red-600" />
+            <CheckCircle className="w-8 h-8 mx-auto mb-2 text-[#89a4a0]" />
             <p className="font-semibold text-slate-900">Yes</p>
           </div>
         </button>
@@ -1385,12 +1077,12 @@ export default function AffidavitSupportCalculator() {
           }
           className={`p-4 rounded-xl border-2 transition-all ${
             formData.hasPreviousSponsorship === false
-              ? "border-red-500 bg-red-50"
-              : "border-slate-200 hover:border-red-300 hover:bg-slate-50"
+              ? "border-[#89a4a0] bg-[#89a4a0]/10"
+              : "border-slate-200 hover:border-[#89a4a0] hover:bg-slate-50"
           }`}
         >
           <div className="text-center">
-            <XCircle className="w-8 h-8 mx-auto mb-2 text-red-600" />
+            <XCircle className="w-8 h-8 mx-auto mb-2 text-[#89a4a0]" />
             <p className="font-semibold text-slate-900">No</p>
           </div>
         </button>
@@ -1439,7 +1131,7 @@ export default function AffidavitSupportCalculator() {
                   previousSponsoredCount: formData.previousSponsoredCount + 1,
                 })
               }
-              className="w-12 h-12 rounded-lg bg-red-600 hover:bg-red-700 text-white font-bold text-xl"
+              className="w-12 h-12 rounded-lg bg-[#89a4a0] hover:bg-[#7a938f] text-white font-bold text-xl"
             >
               +
             </button>
@@ -1449,10 +1141,17 @@ export default function AffidavitSupportCalculator() {
     </div>
   );
 
-  const renderStep6 = () => (
+  const renderStep6 = () => {
+    // IR-1 case: if sponsor is married and sponsoring their own spouse,
+    // the spouse IS the applicant — no need to ask 'Spouse of applicant' again.
+    const sponsoringOwnSpouse =
+      formData.isMarried &&
+      formData.relationshipToApplicant.toLowerCase() === "spouse";
+
+    return (
     <div className="space-y-6">
       <div className="text-center mb-8">
-        <div className="w-16 h-16 bg-linear-to-br from-indigo-500 to-indigo-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
+        <div className="w-16 h-16 bg-[#0d7377] rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
           <Users className="w-8 h-8 text-white" />
         </div>
         <h3 className="text-2xl font-bold text-slate-900">
@@ -1460,92 +1159,116 @@ export default function AffidavitSupportCalculator() {
         </h3>
       </div>
 
-      <div className="p-4 bg-indigo-50 rounded-xl border border-indigo-200">
+      {/* Main Applicant — always included */}
+      <div className="p-4 bg-[#0d7377]/10 rounded-xl border border-[#0d7377]/30">
         <div className="flex items-center gap-3">
-          <CheckCircle className="w-6 h-6 text-indigo-600" />
-          <p className="font-semibold text-indigo-900">
+          <CheckCircle className="w-6 h-6 text-[#0d7377]" />
+          <p className="font-semibold text-[#0d7377]">
             Main Applicant (always included)
           </p>
         </div>
       </div>
 
-      <label
-        className="flex items-center gap-3 p-4 rounded-xl border-2 cursor-pointer hover:border-indigo-300"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <input
-          type="checkbox"
-          checked={formData.currentSponsoredSpouse}
-          onChange={(e) =>
-            setFormData({
-              ...formData,
-              currentSponsoredSpouse: e.target.checked,
-            })
-          }
-          className="w-5 h-5 rounded border-slate-300 text-indigo-600"
-        />
-        <div>
-          <p className="font-semibold text-slate-900">Spouse of applicant</p>
-          <p className="text-sm text-slate-500">Add 1 to household</p>
+      {/* If married and sponsoring own spouse — explain it's already counted */}
+      {sponsoringOwnSpouse && (
+        <div className="p-4 bg-[#afdbdb]/10 rounded-xl border border-[#afdbdb]/30">
+          <div className="flex items-start gap-3">
+            <CheckCircle className="w-5 h-5 text-[#afdbdb] mt-0.5 shrink-0" />
+            <div>
+              <p className="font-semibold text-[#0d7377]">Spouse (You)</p>
+              <p className="text-sm text-slate-500">
+                Since you selected <strong>Married</strong> and your relationship to the applicant is <strong>Spouse</strong>, your spouse is already counted as the Main Applicant above. No extra count is added.
+              </p>
+            </div>
+          </div>
         </div>
-      </label>
+      )}
 
-      <div onClick={(e) => e.stopPropagation()}>
-        <p className="text-sm font-semibold text-slate-900 mb-3">
-          How many children of applicant?
-        </p>
-        <div className="flex items-center gap-3 justify-center">
-          <button
-            onClick={() =>
-              setFormData({
-                ...formData,
-                currentSponsoredChildren: Math.max(
-                  0,
-                  formData.currentSponsoredChildren - 1,
-                ),
-              })
-            }
-            className="w-12 h-12 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-900 font-bold text-xl"
-          >
-            -
-          </button>
+      {/* Show 'Spouse of applicant' only when NOT sponsoring own spouse */}
+      {!sponsoringOwnSpouse && (
+        <label
+          className="flex items-center gap-3 p-4 rounded-xl border-2 cursor-pointer hover:border-[#0d7377]/50"
+          onClick={(e) => e.stopPropagation()}
+        >
           <input
-            type="number"
-            min="0"
-            value={formData.currentSponsoredChildren}
+            type="checkbox"
+            checked={formData.currentSponsoredSpouse}
             onChange={(e) =>
               setFormData({
                 ...formData,
-                currentSponsoredChildren: Math.max(
-                  0,
-                  parseInt(e.target.value) || 0,
-                ),
+                currentSponsoredSpouse: e.target.checked,
               })
             }
-            className="w-24 text-center text-3xl font-bold text-slate-900 bg-transparent border-0 focus:outline-none"
+            className="w-5 h-5 rounded border-slate-300 text-[#0d7377]"
           />
-          <button
-            onClick={() =>
-              setFormData({
-                ...formData,
-                currentSponsoredChildren: formData.currentSponsoredChildren + 1,
-              })
-            }
-            className="w-12 h-12 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xl"
-          >
-            +
-          </button>
+          <div>
+            <p className="font-semibold text-slate-900">Spouse of applicant</p>
+            <p className="text-sm text-slate-500">
+              The person being sponsored also has a spouse immigrating with them
+            </p>
+          </div>
+        </label>
+      )}
+
+      {formData.currentSponsoredSpouse && !sponsoringOwnSpouse && (
+        <div onClick={(e) => e.stopPropagation()}>
+          <p className="text-sm font-semibold text-slate-900 mb-3">
+            How many children of applicant?
+          </p>
+          <div className="flex items-center gap-3 justify-center">
+            <button
+              onClick={() =>
+                setFormData({
+                  ...formData,
+                  currentSponsoredChildren: Math.max(
+                    0,
+                    formData.currentSponsoredChildren - 1,
+                  ),
+                })
+              }
+              className="w-12 h-12 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-900 font-bold text-xl"
+            >
+              -
+            </button>
+            <input
+              type="number"
+              min="0"
+              value={formData.currentSponsoredChildren}
+              onChange={(e) =>
+                setFormData({
+                  ...formData,
+                  currentSponsoredChildren: Math.max(
+                    0,
+                    parseInt(e.target.value) || 0,
+                  ),
+                })
+              }
+              className="w-24 text-center text-3xl font-bold text-slate-900 bg-transparent border-0 focus:outline-none focus:border-[#0d7377]"
+            />
+            <button
+              onClick={() =>
+                setFormData({
+                  ...formData,
+                  currentSponsoredChildren: formData.currentSponsoredChildren + 1,
+                })
+              }
+              className="w-12 h-12 rounded-lg bg-[#0d7377] hover:bg-[#0d7377]/90 text-white font-bold text-xl"
+            >
+              +
+            </button>
+          </div>
         </div>
-      </div>
+      )}
     </div>
-  );
+    );
+  };
 
   const renderStep7 = () => {
     const calcResult = calculateResult();
     return (
       <div className="space-y-6">
         <div className="text-center mb-8">
-          <div className="w-16 h-16 bg-linear-to-br from-emerald-500 to-emerald-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
+          <div className="w-16 h-16 bg-[#afdbdb] rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
             <DollarSign className="w-8 h-8 text-white" />
           </div>
           <h3 className="text-2xl font-bold text-slate-900">
@@ -1562,25 +1285,25 @@ export default function AffidavitSupportCalculator() {
           placeholder="0.00"
         />
 
-        <div className="p-4 bg-blue-50 rounded-xl border border-blue-200">
+        <div className="p-4 bg-[#afdbdb]/10 rounded-xl border border-[#afdbdb]/30">
           <div className="flex justify-between">
             <div>
-              <p className="text-sm text-blue-900">
-                <span className="font-semibold">Required:</span> $
+              <p className="text-sm text-[#afdbdb]">
+                <span className="font-semibold">Total Required:</span> $
                 {calcResult.requiredIncome.toLocaleString()}
               </p>
-              <p className="text-xs text-blue-700">
+              <p className="text-xs text-[#afdbdb]/60">
                 Household: {calcResult.householdSize} persons
               </p>
             </div>
-            <p className="text-xs text-blue-600">{calcResult.ruleApplied}</p>
+            <p className="text-xs text-[#afdbdb]/80">{calcResult.ruleApplied}</p>
           </div>
         </div>
       </div>
     );
   };
 
-  // Step 8: Add Support (Questionnaire Style)
+  // Step 8: Add Support
   const renderStep8 = () => {
     const calcResult = calculateResult();
     const totalIncome = calculateTotalIncome();
@@ -1592,7 +1315,7 @@ export default function AffidavitSupportCalculator() {
     return (
       <div className="space-y-6">
         <div className="text-center mb-8">
-          <div className="w-16 h-16 bg-linear-to-br from-amber-500 to-amber-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
+          <div className="w-16 h-16 bg-[#cdadcc] rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
             <Heart className="w-8 h-8 text-white" />
           </div>
           <h3 className="text-2xl font-bold text-slate-900">
@@ -1600,217 +1323,191 @@ export default function AffidavitSupportCalculator() {
           </h3>
           <p className="text-slate-600 mt-2">
             You need{" "}
-            <span className="font-bold text-amber-600">
+            <span className="font-bold text-[#db8090]">
               ${remainingShortfall.toLocaleString()}
             </span>{" "}
-            more
+            more to qualify
           </p>
         </div>
 
-        <div className="p-4 bg-amber-50 rounded-xl border border-amber-200">
+        <div className="p-4 bg-[#db8090]/10 rounded-xl border border-[#db8090]/30">
           <div className="flex justify-between">
-            <p className="text-sm text-amber-900">
-              Required: ${calcResult.requiredIncome.toLocaleString()} | Your
+            <p className="text-sm text-[#db8090]">
+              Total Required: ${calcResult.requiredIncome.toLocaleString()} | Your
               Total: ${totalIncome.toLocaleString()}
             </p>
           </div>
         </div>
 
-        {/* Option 1: Household Members */}
-        <div
-          className={`border-2 rounded-xl overflow-hidden transition-all ${
-            expandedSections.household
-              ? "border-emerald-500 bg-emerald-50/50"
-              : "border-emerald-200"
-          }`}
-        >
-          <div
-            className="flex items-center justify-between p-4 cursor-pointer hover:bg-emerald-50/50"
-            onClick={() => toggleSection("household")}
-          >
+        {/* Household Members — always visible */}
+        <div className="border-2 border-[#cdadcc]/30 rounded-xl overflow-hidden">
+          <div className="flex items-center justify-between p-4 bg-[#cdadcc]/10">
             <div className="flex items-center gap-2">
-              <Home className="w-5 h-5 text-emerald-600" />
-              <h4 className="font-semibold text-slate-900">
-                Household Members
-              </h4>
+              <Home className="w-5 h-5 text-[#cdadcc]" />
+              <h4 className="font-semibold text-slate-900">Household Members</h4>
+              {formData.householdMembers.length > 0 && (
+                <span className="text-xs bg-[#cdadcc] text-white rounded-full px-2 py-0.5">
+                  {formData.householdMembers.length}
+                </span>
+              )}
             </div>
-            {expandedSections.household ? (
-              <ChevronUp className="w-5 h-5 text-emerald-600" />
-            ) : (
-              <ChevronDown className="w-5 h-5 text-emerald-600" />
-            )}
+            <Button
+              onClick={addHouseholdMember}
+              size="sm"
+              className="bg-[#cdadcc] hover:bg-[#b08eaf] h-8 text-xs"
+            >
+              <Plus className="w-3 h-3 mr-1" /> Add
+            </Button>
           </div>
-
-          {expandedSections.household && (
-            <div className="p-4 pt-0" onClick={(e) => e.stopPropagation()}>
-              {formData.householdMembers.length === 0 ? (
-                <p className="text-sm text-slate-500 mb-4">
-                  No household members added
-                </p>
-              ) : (
-                <div className="space-y-3 mb-4">
-                  {formData.householdMembers.map((member) => (
-                    <div
-                      key={member.id}
-                      className="p-3 bg-white rounded-lg border border-slate-200"
-                    >
-                      <div className="flex items-center gap-2 mb-2">
-                        <select
-                          value={member.relationship}
-                          onChange={(e) =>
-                            updateHouseholdMember(member.id, {
-                              relationship: e.target.value,
-                            })
-                          }
-                          className="flex-1 text-sm border border-slate-200 rounded-lg px-3 py-2 bg-white"
-                        >
-                          <option value="">Select relationship...</option>
-                          {[
-                            ...formData.usedHouseholdRelationships,
-                            ...RELATIONSHIP_OPTIONS,
-                          ]
-                            .filter((v, i, a) => a.indexOf(v) === i)
-                            .map((rel) => (
-                              <option key={rel} value={rel}>
-                                {rel}
-                              </option>
-                            ))}
-                        </select>
-                        <button
-                          onClick={() => removeHouseholdMember(member.id)}
-                          className="text-red-500 p-2"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                      </div>
-                      <CurrencyInput
-                        value={member.annualIncome || 0}
-                        onChange={(value) =>
+          <div className="p-4" onClick={(e) => e.stopPropagation()}>
+            {formData.householdMembers.length === 0 ? (
+              <p className="text-sm text-slate-400 text-center py-2">
+                No household members added yet
+              </p>
+            ) : (
+              <div className="space-y-3">
+                {formData.householdMembers.map((member) => (
+                  <div
+                    key={member.id}
+                    className="p-3 bg-white rounded-lg border border-slate-200"
+                  >
+                    <div className="flex items-center gap-2 mb-2">
+                      <select
+                        value={member.relationship}
+                        onChange={(e) =>
                           updateHouseholdMember(member.id, {
-                            annualIncome: value,
+                            relationship: e.target.value,
                           })
                         }
-                        placeholder="0.00"
-                        className="text-sm"
-                      />
+                        className="flex-1 text-sm border border-slate-200 rounded-lg px-3 py-2 bg-white"
+                      >
+                        <option value="">Select relationship...</option>
+                        {[
+                          ...formData.usedHouseholdRelationships,
+                          ...RELATIONSHIP_OPTIONS,
+                        ]
+                          .filter((v, i, a) => a.indexOf(v) === i)
+                          .map((rel) => (
+                            <option key={rel} value={rel}>
+                              {rel}
+                            </option>
+                          ))}
+                      </select>
+                      <button
+                        onClick={() => removeHouseholdMember(member.id)}
+                        className="text-[#db8090] hover:text-[#db8090]/80 p-2 rounded-lg hover:bg-red-50 transition-colors"
+                        title="Remove"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
                     </div>
-                  ))}
-                </div>
-              )}
-
-              <Button
-                onClick={addHouseholdMember}
-                size="sm"
-                className="bg-emerald-600 hover:bg-emerald-700"
-              >
-                <Plus className="w-4 h-4 mr-1" /> Add Household Member
-              </Button>
-            </div>
-          )}
+                    <CurrencyInput
+                      value={member.annualIncome || 0}
+                      onChange={(value) =>
+                        updateHouseholdMember(member.id, {
+                          annualIncome: value,
+                        })
+                      }
+                      placeholder="0.00"
+                      className="text-sm"
+                    />
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
 
-        {/* Option 2: Joint Sponsors */}
-        <div
-          className={`border-2 rounded-xl overflow-hidden transition-all ${
-            expandedSections.joint
-              ? "border-rose-500 bg-rose-50/50"
-              : "border-rose-200"
-          }`}
-        >
-          <div
-            className="flex items-center justify-between p-4 cursor-pointer hover:bg-rose-50/50"
-            onClick={() => toggleSection("joint")}
-          >
+        {/* Joint Sponsors — always visible */}
+        <div className="border-2 border-[#89a4a0]/30 rounded-xl overflow-hidden">
+          <div className="flex items-center justify-between p-4 bg-[#89a4a0]/10">
             <div className="flex items-center gap-2">
-              <UserPlus className="w-5 h-5 text-rose-600" />
+              <UserPlus className="w-5 h-5 text-[#89a4a0]" />
               <h4 className="font-semibold text-slate-900">Joint Sponsors</h4>
+              {formData.jointSponsors.length > 0 && (
+                <span className="text-xs bg-[#89a4a0] text-white rounded-full px-2 py-0.5">
+                  {formData.jointSponsors.length}
+                </span>
+              )}
             </div>
-            {expandedSections.joint ? (
-              <ChevronUp className="w-5 h-5 text-rose-600" />
-            ) : (
-              <ChevronDown className="w-5 h-5 text-rose-600" />
-            )}
+            <Button
+              onClick={addJointSponsor}
+              size="sm"
+              className="bg-[#89a4a0] hover:bg-[#7a938f] h-8 text-xs"
+            >
+              <Plus className="w-3 h-3 mr-1" /> Add
+            </Button>
           </div>
-
-          {expandedSections.joint && (
-            <div className="p-4 pt-0" onClick={(e) => e.stopPropagation()}>
-              {formData.jointSponsors.length === 0 ? (
-                <p className="text-sm text-slate-500 mb-4">
-                  No joint sponsors added
-                </p>
-              ) : (
-                <div className="space-y-3 mb-4">
-                  {formData.jointSponsors.map((sponsor) => (
-                    <div
-                      key={sponsor.id}
-                      className="p-3 bg-white rounded-lg border border-slate-200"
-                    >
-                      <div className="flex items-center gap-2 mb-2">
-                        <input
-                          type="text"
-                          placeholder="Name"
-                          value={sponsor.name}
-                          onChange={(e) =>
-                            updateJointSponsor(sponsor.id, {
-                              name: e.target.value,
-                            })
-                          }
-                          className="flex-1 text-sm border border-slate-200 rounded-lg px-3 py-2"
-                        />
-                        <button
-                          onClick={() => removeJointSponsor(sponsor.id)}
-                          className="text-red-500 p-2"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                      </div>
-                      <div className="flex items-center gap-2 mb-2">
-                        <select
-                          value={sponsor.relationship}
-                          onChange={(e) =>
-                            updateJointSponsor(sponsor.id, {
-                              relationship: e.target.value,
-                            })
-                          }
-                          className="flex-1 text-sm border border-slate-200 rounded-lg px-3 py-2 bg-white"
-                        >
-                          <option value="">Select relationship...</option>
-                          {[
-                            ...formData.usedJointSponsorRelationships,
-                            ...RELATIONSHIP_OPTIONS,
-                          ]
-                            .filter((v, i, a) => a.indexOf(v) === i)
-                            .map((rel) => (
-                              <option key={rel} value={rel}>
-                                {rel}
-                              </option>
-                            ))}
-                        </select>
-                      </div>
-                      <CurrencyInput
-                        value={sponsor.annualIncome || 0}
-                        onChange={(value) =>
+          <div className="p-4" onClick={(e) => e.stopPropagation()}>
+            {formData.jointSponsors.length === 0 ? (
+              <p className="text-sm text-slate-400 text-center py-2">
+                No joint sponsors added yet
+              </p>
+            ) : (
+              <div className="space-y-3">
+                {formData.jointSponsors.map((sponsor) => (
+                  <div
+                    key={sponsor.id}
+                    className="p-3 bg-white rounded-lg border border-slate-200"
+                  >
+                    <div className="flex items-center gap-2 mb-2">
+                      <input
+                        type="text"
+                        placeholder="Name"
+                        value={sponsor.name}
+                        onChange={(e) =>
                           updateJointSponsor(sponsor.id, {
-                            annualIncome: value,
+                            name: e.target.value,
                           })
                         }
-                        placeholder="0.00"
-                        className="text-sm"
+                        className="flex-1 text-sm border border-slate-200 rounded-lg px-3 py-2"
                       />
+                      <button
+                        onClick={() => removeJointSponsor(sponsor.id)}
+                        className="text-[#db8090] hover:text-[#db8090]/80 p-2 rounded-lg hover:bg-red-50 transition-colors"
+                        title="Remove"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
                     </div>
-                  ))}
-                </div>
-              )}
-
-              <Button
-                onClick={addJointSponsor}
-                size="sm"
-                className="bg-rose-600 hover:bg-rose-700"
-              >
-                <Plus className="w-4 h-4 mr-1" /> Add Joint Sponsor
-              </Button>
-            </div>
-          )}
+                    <div className="mb-2">
+                      <select
+                        value={sponsor.relationship}
+                        onChange={(e) =>
+                          updateJointSponsor(sponsor.id, {
+                            relationship: e.target.value,
+                          })
+                        }
+                        className="w-full text-sm border border-slate-200 rounded-lg px-3 py-2 bg-white"
+                      >
+                        <option value="">Select relationship...</option>
+                        {[
+                          ...formData.usedJointSponsorRelationships,
+                          ...RELATIONSHIP_OPTIONS,
+                        ]
+                          .filter((v, i, a) => a.indexOf(v) === i)
+                          .map((rel) => (
+                            <option key={rel} value={rel}>
+                              {rel}
+                            </option>
+                          ))}
+                      </select>
+                    </div>
+                    <CurrencyInput
+                      value={sponsor.annualIncome || 0}
+                      onChange={(value) =>
+                        updateJointSponsor(sponsor.id, {
+                          annualIncome: value,
+                        })
+                      }
+                      placeholder="0.00"
+                      className="text-sm"
+                    />
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
 
         <div className="p-4 bg-slate-100 rounded-xl">
@@ -1824,7 +1521,7 @@ export default function AffidavitSupportCalculator() {
 
         <Button
           onClick={handleNext}
-          className="w-full bg-linear-to-r from-emerald-600 to-emerald-700 hover:from-emerald-700 hover:to-emerald-800"
+          className="w-full bg-[#0d7377] hover:bg-[#0d7377]/90 shadow-md text-white"
           size="lg"
         >
           <Calculator className="w-5 h-5 mr-2" />
@@ -1841,7 +1538,7 @@ export default function AffidavitSupportCalculator() {
     return (
       <div className="space-y-6">
         <div className="text-center mb-8">
-          <div className="w-16 h-16 bg-linear-to-br from-red-500 to-red-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
+          <div className="w-16 h-16 bg-[#db8090] rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
             <AlertTriangle className="w-8 h-8 text-white" />
           </div>
           <h3 className="text-2xl font-bold text-slate-900">
@@ -1900,11 +1597,11 @@ export default function AffidavitSupportCalculator() {
                     }
                     className={`flex-1 p-3 rounded-lg border-2 transition-all ${
                       formData.sponsorDeceased === true
-                        ? "border-green-500 bg-green-50"
-                        : "border-slate-200 hover:border-slate-300"
+                        ? "border-[#0d7377] bg-[#afdbdb]/10"
+                        : "border-slate-200 hover:border-[#afdbdb]"
                     }`}
                   >
-                    <span className="font-semibold text-slate-900">Yes</span>
+                    <span className="font-semibold text-[#0d7377]">Yes</span>
                   </button>
                   <button
                     onClick={() =>
@@ -1912,11 +1609,11 @@ export default function AffidavitSupportCalculator() {
                     }
                     className={`flex-1 p-3 rounded-lg border-2 transition-all ${
                       formData.sponsorDeceased === false
-                        ? "border-red-500 bg-red-50"
-                        : "border-slate-200 hover:border-slate-300"
+                        ? "border-[#db8090] bg-[#db8090]/10"
+                        : "border-slate-200 hover:border-[#db8090]/30"
                     }`}
                   >
-                    <span className="font-semibold text-slate-900">No</span>
+                    <span className="font-semibold text-[#db8090]">No</span>
                   </button>
                 </div>
               </div>
@@ -1968,7 +1665,7 @@ export default function AffidavitSupportCalculator() {
                   setExpandedSections((prev) => ({ ...prev, joint: true }));
                   setCurrentStep(8);
                 }}
-                className="w-full mt-4 bg-blue-600 hover:bg-blue-700"
+                className="w-full mt-4 bg-[#0d7377] hover:bg-[#0d7377]/90 text-white"
               >
                 <UserPlus className="w-4 h-4 mr-2" />
                 Add More Joint Sponsors
@@ -1997,7 +1694,7 @@ export default function AffidavitSupportCalculator() {
     return (
       <div className="space-y-6">
         <div className="text-center mb-8">
-          <div className="w-16 h-16 bg-linear-to-br from-purple-500 to-purple-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
+          <div className="w-16 h-16 bg-[#89a4a0] rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
             <Briefcase className="w-8 h-8 text-white" />
           </div>
           <h3 className="text-2xl font-bold text-slate-900">More Options</h3>
@@ -2008,8 +1705,8 @@ export default function AffidavitSupportCalculator() {
         <div
           className={`border-2 rounded-xl overflow-hidden transition-all ${
             expandedSections.case9
-              ? "border-amber-500 bg-amber-50"
-              : "border-amber-200"
+              ? "border-[#db8090] bg-[#db8090]/10"
+              : "border-[#db8090]/20"
           }`}
         >
           <div
@@ -2068,7 +1765,7 @@ export default function AffidavitSupportCalculator() {
                   />
                 </div>
 
-                <div className="p-3 bg-blue-50 rounded-lg border border-blue-200">
+                <div className="p-3 bg-[#afdbdb]/10 rounded-lg border border-[#afdbdb]/30">
                   <p className="text-sm text-blue-800">
                     <strong>Asset Alternative:</strong> $
                     {calculateAssetAlternative().toLocaleString()}
@@ -2076,12 +1773,12 @@ export default function AffidavitSupportCalculator() {
                       "spouse" ||
                     formData.relationshipToApplicant.toLowerCase() ===
                       "parent" ? (
-                      <span className="text-green-600">
+                      <span className="text-[#0d7377]">
                         {" "}
                         (3x multiplier applied)
                       </span>
                     ) : (
-                      <span className="text-amber-600">
+                      <span className="text-[#db8090]">
                         {" "}
                         (5x multiplier applied)
                       </span>
@@ -2097,8 +1794,8 @@ export default function AffidavitSupportCalculator() {
         <div
           className={`border-2 rounded-xl overflow-hidden transition-all ${
             expandedSections.case10
-              ? "border-indigo-500 bg-indigo-50"
-              : "border-indigo-200"
+              ? "border-[#0d7377] bg-[#afdbdb]/10"
+              : "border-[#0d7377]/20"
           }`}
         >
           <div
@@ -2132,7 +1829,7 @@ export default function AffidavitSupportCalculator() {
                         isVAWA: e.target.checked ? true : null,
                       })
                     }
-                    className="w-5 h-5 rounded border-slate-300 text-indigo-600"
+                    className="w-5 h-5 rounded border-slate-300 text-[#0d7377]"
                   />
                   <div>
                     <p className="font-semibold text-slate-900">
@@ -2154,7 +1851,7 @@ export default function AffidavitSupportCalculator() {
                         isWidow: e.target.checked ? true : null,
                       })
                     }
-                    className="w-5 h-5 rounded border-slate-300 text-indigo-600"
+                    className="w-5 h-5 rounded border-slate-300 text-[#0d7377]"
                   />
                   <div>
                     <p className="font-semibold text-slate-900">
@@ -2176,7 +1873,7 @@ export default function AffidavitSupportCalculator() {
                         isSpecialImmigrant: e.target.checked ? true : null,
                       })
                     }
-                    className="w-5 h-5 rounded border-slate-300 text-indigo-600"
+                    className="w-5 h-5 rounded border-slate-300 text-[#0d7377]"
                   />
                   <div>
                     <p className="font-semibold text-slate-900">
@@ -2200,7 +1897,7 @@ export default function AffidavitSupportCalculator() {
           </Button>
           <Button
             onClick={handleNext}
-            className="flex-1 bg-linear-to-r from-emerald-600 to-emerald-700"
+            className="flex-1 bg-[#0d7377] hover:bg-[#0d7377]/90 text-white"
           >
             See Results
             <ArrowRight className="w-4 h-4 ml-2" />
@@ -2212,30 +1909,33 @@ export default function AffidavitSupportCalculator() {
 
   // Step 11: Final Results
   const renderStep11 = () => {
-    const calcResult = result || calculateResult();
+    // Always recalculate fresh — avoids stale result state showing wrong eligibility
+    const calcResult = calculateResult();
     const totalIncome = calculateTotalIncome();
     const assetAlternative = calculateAssetAlternative();
+    const pendingIncome = Math.max(0, calcResult.requiredIncome - totalIncome);
     const isEligible =
       calcResult.isEligible ||
-      formData.isVAWA ||
-      formData.isWidow ||
-      formData.isSpecialImmigrant ||
-      assetAlternative >= calcResult.requiredIncome;
+      formData.isVAWA === true ||
+      formData.isWidow === true ||
+      formData.isSpecialImmigrant === true ||
+      // Guard: only count assets if assetValue > 0 to prevent 0 >= 0 false positive
+      (formData.assetValue > 0 && assetAlternative >= calcResult.requiredIncome);
 
     return (
       <div className="space-y-6">
         {/* Eligibility Status */}
         <Card
-          className={`border-2 ${isEligible ? "border-emerald-500 bg-emerald-50" : "border-red-500 bg-red-50"}`}
+          className={`border-2 ${isEligible ? "border-[#0d7377] bg-[#afdbdb]/10" : "border-[#db8090] bg-[#db8090]/10"}`}
         >
           <CardContent className="p-6">
             <div className="flex items-center gap-4">
               {isEligible ? (
-                <div className="w-14 h-14 bg-emerald-500 rounded-full flex items-center justify-center">
+                <div className="w-14 h-14 bg-[#0d7377] rounded-full flex items-center justify-center">
                   <CheckCircle className="w-8 h-8 text-white" />
                 </div>
               ) : (
-                <div className="w-14 h-14 bg-red-500 rounded-full flex items-center justify-center">
+                <div className="w-14 h-14 bg-[#db8090] rounded-full flex items-center justify-center">
                   <XCircle className="w-8 h-8 text-white" />
                 </div>
               )}
@@ -2286,7 +1986,7 @@ export default function AffidavitSupportCalculator() {
                 .map((member, index) => (
                   <div
                     key={member.id}
-                    className="flex justify-between text-emerald-600"
+                    className="flex justify-between text-[#0d7377]"
                   >
                     <span>
                       Household {index + 1} ({member.relationship}):
@@ -2301,7 +2001,7 @@ export default function AffidavitSupportCalculator() {
                 .map((sponsor, index) => (
                   <div
                     key={sponsor.id}
-                    className="flex justify-between text-rose-600"
+                    className="flex justify-between text-[#db8090]"
                   >
                     <span>
                       Joint {index + 1} ({sponsor.name || "Unnamed"}):
@@ -2316,9 +2016,15 @@ export default function AffidavitSupportCalculator() {
                 <span>${totalIncome.toLocaleString()}</span>
               </div>
               <div className="flex justify-between text-slate-500">
-                <span>Required:</span>
+                <span>Total Required:</span>
                 <span>${calcResult.requiredIncome.toLocaleString()}</span>
               </div>
+              {!isEligible && pendingIncome > 0 && (
+                <div className="flex justify-between font-semibold text-[#db8090] bg-[#db8090]/10 rounded-lg px-3 py-2 mt-1">
+                  <span>Pending Income:</span>
+                  <span>-${pendingIncome.toLocaleString()}</span>
+                </div>
+              )}
             </div>
           </CardContent>
         </Card>
@@ -2361,8 +2067,8 @@ export default function AffidavitSupportCalculator() {
           <Card className="border-0 shadow-md">
             <CardContent className="p-6">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-blue-100 rounded-xl flex items-center justify-center">
-                  <Users className="w-5 h-5 text-blue-600" />
+                <div className="w-10 h-10 bg-[#89a4a0]/20 rounded-xl flex items-center justify-center">
+                  <Users className="w-5 h-5 text-[#89a4a0]" />
                 </div>
                 <div>
                   <p className="text-xs text-slate-500">Household</p>
@@ -2376,11 +2082,11 @@ export default function AffidavitSupportCalculator() {
           <Card className="border-0 shadow-md">
             <CardContent className="p-6">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-purple-100 rounded-xl flex items-center justify-center">
-                  <DollarSign className="w-5 h-5 text-purple-600" />
+                <div className="w-10 h-10 bg-[#db8090]/20 rounded-xl flex items-center justify-center">
+                  <DollarSign className="w-5 h-5 text-[#db8090]" />
                 </div>
                 <div>
-                  <p className="text-xs text-slate-500">Required</p>
+                  <p className="text-xs text-slate-500">Total Required</p>
                   <p className="text-xl font-bold">
                     ${calcResult.requiredIncome.toLocaleString()}
                   </p>
@@ -2390,16 +2096,21 @@ export default function AffidavitSupportCalculator() {
           </Card>
         </div>
 
-        {/* Progress */}
+        {/* Amount Progress */}
         <Card className="border-0 shadow-md">
           <CardContent className="p-6">
-            <p className="text-sm font-semibold mb-2">Progress</p>
+            <div className="flex justify-between items-center mb-2">
+              <p className="text-sm font-semibold">Amount Progress</p>
+              <p className="text-xs text-slate-500">
+                ${totalIncome.toLocaleString()} / ${calcResult.requiredIncome.toLocaleString()}
+              </p>
+            </div>
             <Progress
-              value={Math.min(
-                (totalIncome / calcResult.requiredIncome) * 100,
-                100,
-              )}
+              value={calcResult.requiredIncome > 0
+                ? Math.min((totalIncome / calcResult.requiredIncome) * 100, 100)
+                : 100}
               className="h-3"
+              indicatorClassName="bg-[#0d7377]"
             />
             <p className="text-xs text-slate-500 mt-2">
               {calcResult.ruleApplied}
@@ -2412,7 +2123,7 @@ export default function AffidavitSupportCalculator() {
           <Card className="border-0 shadow-md">
             <CardContent className="p-6">
               <div className="flex items-center gap-2 mb-4">
-                <FileText className="w-5 h-5 text-blue-600" />
+                <FileText className="w-5 h-5 text-[#0d7377]" />
                 <h4 className="font-semibold text-slate-900">Forms to File</h4>
               </div>
 
@@ -2436,7 +2147,7 @@ export default function AffidavitSupportCalculator() {
                     </div>
                     <div className="p-3 space-y-2">
                       <div className="flex items-start gap-2">
-                        <Globe className="w-4 h-4 text-blue-600 mt-0.5 shrink-0" />
+                        <Globe className="w-4 h-4 text-[#0d7377] mt-0.5 shrink-0" />
                         <div>
                           <p className="text-xs font-semibold text-slate-700">
                             Where to File:
@@ -2447,7 +2158,7 @@ export default function AffidavitSupportCalculator() {
                         </div>
                       </div>
                       <div className="flex items-start gap-2">
-                        <CheckCircle className="w-4 h-4 text-emerald-600 mt-0.5 shrink-0" />
+                        <CheckCircle className="w-4 h-4 text-[#0d7377] mt-0.5 shrink-0" />
                         <div>
                           <p className="text-xs font-semibold text-slate-700">
                             Important Notes:
@@ -2471,8 +2182,8 @@ export default function AffidavitSupportCalculator() {
               </div>
 
               {/* Quick Links */}
-              <div className="mt-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
-                <p className="text-sm font-semibold text-blue-900 mb-2">
+              <div className="mt-4 p-3 bg-[#cdadcc]/10 rounded-lg border border-[#cdadcc]/30">
+                <p className="text-sm font-semibold text-[#cdadcc] mb-2">
                   Quick Access
                 </p>
                 <div className="flex flex-wrap gap-2">
@@ -2480,7 +2191,7 @@ export default function AffidavitSupportCalculator() {
                     href="https://www.uscis.gov/forms/all-forms"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center gap-1.5 px-3 py-1.5 bg-white rounded-lg text-sm text-blue-700 border border-blue-200 hover:bg-blue-50 transition-colors"
+                    className="flex items-center gap-1.5 px-3 py-1.5 bg-white rounded-lg text-sm text-[#0d7377] border border-[#afdbdb] hover:bg-[#afdbdb]/10 transition-colors"
                   >
                     <ExternalLink className="w-3.5 h-3.5" />
                     Download Forms
@@ -2489,7 +2200,7 @@ export default function AffidavitSupportCalculator() {
                     href="https://www.uscis.gov/file-online"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center gap-1.5 px-3 py-1.5 bg-white rounded-lg text-sm text-blue-700 border border-blue-200 hover:bg-blue-50 transition-colors"
+                    className="flex items-center gap-1.5 px-3 py-1.5 bg-white rounded-lg text-sm text-[#89a4a0] border border-[#89a4a0]/40 hover:bg-[#89a4a0]/10 transition-colors"
                   >
                     <Send className="w-3.5 h-3.5" />
                     File Online
@@ -2567,7 +2278,7 @@ export default function AffidavitSupportCalculator() {
   };
 
   return (
-    <div className="min-h-screen bg-linear-to-br from-slate-50 to-slate-100 p-4 md:p-8">
+    <div className="min-h-screen bg-[#afdbdb]/10 p-4 md:p-8">
       <div className="max-w-2xl mx-auto">
         {/* Header */}
         <div className="mb-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
@@ -2589,20 +2300,12 @@ export default function AffidavitSupportCalculator() {
               </p>
             </div>
           </div>
-          <Link href="/affidavit-support-calculator/guide">
-            <Button
-              variant="ghost"
-              className="text-blue-600 hover:text-blue-700 hover:bg-blue-50"
-            >
-              <BookOpen className="w-4 h-4 mr-2" />
-              Read Guide
-            </Button>
-          </Link>
+
         </div>
 
         {/* Progress */}
         <div className="mb-6">
-          <Progress value={getProgressValue()} className="h-2" />
+          <Progress value={getProgressValue()} className="h-2" indicatorClassName="bg-[#0d7377]" />
         </div>
 
         {/* Main Card */}
@@ -2655,7 +2358,7 @@ export default function AffidavitSupportCalculator() {
                 <Button
                   onClick={handleNext}
                   disabled={!canProceed()}
-                  className="rounded-xl bg-blue-600 hover:bg-blue-700 w-full sm:w-auto"
+                  className="rounded-xl bg-[#0d7377] hover:bg-[#0d7377]/90 text-white w-full sm:w-auto"
                 >
                   {currentStep === 7
                     ? "Check Eligibility"
