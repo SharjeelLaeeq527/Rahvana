@@ -670,7 +670,7 @@ export const ResultPage = ({
             <div className="mt-8 text-center">
               <Button
                 onClick={onRestart}
-                className="bg-teal-600 hover:bg-teal-700 text-white px-8 py-6 cursor-pointer text-lg"
+                className="bg-[#0d7377] hover:bg-[#0a5a5d] text-white px-8 py-6 cursor-pointer text-lg"
               >
                 Start New Interview Prep
               </Button>
@@ -680,9 +680,9 @@ export const ResultPage = ({
           {/* NEW: Answer Modal */}
           {showAnswerModal && selectedQuestion && (
             <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-              <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-hidden">
+              <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] flex flex-col overflow-hidden">
                 {/* Modal Header */}
-                <div className="bg-gradient-to-r from-teal-600 to-teal-700 p-6 text-white sticky top-0 flex justify-between items-start">
+                <div className="bg-gradient-to-r from-teal-600 to-teal-700 p-6 text-white flex justify-between items-start flex-shrink-0">
                   <div className="flex-1">
                     <h3 className="text-2xl font-bold">
                       {selectedQuestion.question}
@@ -700,109 +700,110 @@ export const ResultPage = ({
                   </button>
                 </div>
 
-                {/* Modal Body */}
-                <div className="p-6 space-y-6">
-                  {/* Sample Answer Reference - Premium Style */}
-                  <div className="bg-gradient-to-br from-[#e8f6f6] to-white p-5 rounded-xl border border-[#14a0a6]/20 shadow-sm hover:shadow-md transition-shadow">
-                    <h4 className="font-semibold text-sm text-[#0d7377] mb-3 flex items-center gap-2">
-                      Sample Answer
-                    </h4>
-                    <p className="text-sm text-[#0d7377] leading-relaxed italic">
-                      "{selectedQuestion.sampleAnswer}"
-                    </p>
-                  </div>
+                {/* Modal Body - Scrollable */}
+                <div className="overflow-y-auto flex-1 scrollbar-premium">
+                  <div className="p-6 space-y-6">
+                    {/* Sample Answer Reference - Premium Style */}
+                    <div className="bg-gradient-to-br from-[#e8f6f6] to-white p-5 rounded-xl border border-[#14a0a6]/20 shadow-sm hover:shadow-md transition-shadow">
+                      <h4 className="font-semibold text-sm text-[#0d7377] mb-3 flex items-center gap-2">
+                        Sample Answer
+                      </h4>
+                      <p className="text-sm text-[#0d7377] leading-relaxed italic">
+                        {selectedQuestion.sampleAnswer}
+                      </p>
+                    </div>
 
-                  {/* User's Text Input with Improve Icon */}
-                  <div>
-                    <label className="block text-sm font-semibold text-slate-700 mb-2">
-                      Your Answer:
-                    </label>
-                    <div className="relative">
-                      <Textarea
-                        value={userAnswers[selectedQuestion.id] || ""}
-                        onChange={(e) =>
-                          setUserAnswers((prev) => ({
-                            ...prev,
-                            [selectedQuestion.id]: e.target.value,
-                          }))
-                        }
-                        placeholder="Write your answer here... (minimum 10 characters)"
-                        className="min-h-40 text-base border-2 border-slate-200 focus:border-teal-500 rounded-lg pr-12"
-                      />
-                      {/* NEW: Only show AI icon if answer is saved */}
-                      {savedAnswers[selectedQuestion.id] && (
-                        <button
-                          onClick={() =>
-                            handleImproveAnswer(
-                              selectedQuestion.id,
-                              selectedQuestion.question,
-                              "clarity",
-                            )
+                    {/* User's Text Input with Improve Icon */}
+                    <div>
+                      <label className="block text-sm font-semibold text-slate-700 mb-2">
+                        Your Answer:
+                      </label>
+                      <div className="relative">
+                        <Textarea
+                          value={userAnswers[selectedQuestion.id] || ""}
+                          onChange={(e) =>
+                            setUserAnswers((prev) => ({
+                              ...prev,
+                              [selectedQuestion.id]: e.target.value,
+                            }))
                           }
-                          disabled={aiImproving[selectedQuestion.id]}
-                          className="absolute top-0 right-1 px-2 text-white rounded-lg transition-colors flex items-center justify-center"
-                          title="Improve with AI"
-                          aria-label="Improve answer with AI"
-                        >
-                          {aiImproving[selectedQuestion.id] ? (
-                            <Loader2 className="w-4 h-4 animate-spin text-teal-600" />
-                          ) : (
-                            <Image
-                              src="/rahvana-ai.png"
-                              alt="Rahvana"
-                              width={48}
-                              height={48}
-                            />
-                          )}
-                        </button>
-                      )}
-                    </div>
-                    <p className="text-xs text-slate-500 mt-2">
-                      {
-                        (userAnswers[selectedQuestion.id] || "")
-                          .split(/\s+/)
-                          .filter((w) => w).length
-                      }{" "}
-                      words
-                    </p>
-                  </div>
-
-                  {/* AI Improvements - Minimal Design */}
-                  {improvedAnswers[selectedQuestion.id] && (
-                    <div className="bg-gradient-to-br from-[#e8f6f6] to-white rounded-xl border border-[#14a0a6]/20 p-5 shadow-sm hover:shadow-md transition-shadow">
-                      <div className="flex items-start justify-between mb-3">
-                        <h4 className="font-semibold text-sm text-[#0d7377] flex items-center gap-2">
-                          AI-Improved Version
-                        </h4>
-                        <span className="text-xs px-2 py-1 rounded-full bg-[#14a0a6]/10 text-[#0d7377] font-medium">
-                          Review before using
-                        </span>
+                          placeholder="Write your answer here... (minimum 10 characters)"
+                          className="min-h-40 text-base border-2 border-slate-200 focus:border-teal-500 rounded-lg pr-12"
+                        />
+                        {/* NEW: Only show AI icon if answer is saved */}
+                        {savedAnswers[selectedQuestion.id] && (
+                          <button
+                            onClick={() =>
+                              handleImproveAnswer(
+                                selectedQuestion.id,
+                                selectedQuestion.question,
+                                "clarity",
+                              )
+                            }
+                            disabled={aiImproving[selectedQuestion.id]}
+                            className="absolute top-3 right-3 transition-opacity hover:opacity-80 disabled:opacity-60 cursor-pointer flex-shrink-0"
+                            title="Improve with AI"
+                            aria-label="Improve answer with AI"
+                          >
+                            {aiImproving[selectedQuestion.id] ? (
+                              <Loader2 className="w-6 h-6 animate-spin text-teal-600" />
+                            ) : (
+                              <Image
+                                src="/rahvana-ai.png"
+                                alt="AI Improve"
+                                width={48}
+                                height={48}
+                                className="w-8 h-8 object-contain"
+                              />
+                            )}
+                          </button>
+                        )}
                       </div>
-                      <p className="text-sm text-[#0d7377] leading-relaxed mb-4 italic">
-                        "{improvedAnswers[selectedQuestion.id]}"
-                      </p>
-                      <Button
-                        onClick={() => acceptImprovement(selectedQuestion.id)}
-                        size="sm"
-                        className="bg-[#0d7377] hover:bg-[#0a5a5d] text-white font-semibold"
-                      >
-                        <Check className="w-4 h-4 mr-2" />
-                        Use This Improvement
-                      </Button>
-                      <p className="text-xs text-[#0a5a5d] mt-4 pt-4 border-t border-[#14a0a6]/10">
-                        <span className="font-medium">Tip:</span> AI can make
-                        mistakes and may not fully reflect your intent. Please
-                        review carefully before using.
+                      <p className="text-xs text-slate-500 mt-2">
+                        {
+                          (userAnswers[selectedQuestion.id] || "")
+                            .split(/\s+/)
+                            .filter((w) => w).length
+                        }{" "}
+                        words
                       </p>
                     </div>
-                  )}
 
-                  {/* Action Buttons */}
-                  <div className="flex gap-3 flex-wrap">
+                    {/* AI Improvements - Minimal Design */}
+                    {improvedAnswers[selectedQuestion.id] && (
+                      <div className="bg-gradient-to-br from-[#e8f6f6] to-white rounded-xl border border-[#14a0a6]/20 p-5 shadow-sm hover:shadow-md transition-shadow">
+                        <div className="flex items-start justify-between mb-3">
+                          <h4 className="font-semibold text-sm text-[#0d7377] flex items-center gap-2">
+                            AI-Improved Version
+                          </h4>
+                          <span className="text-xs px-2 py-1 rounded-full bg-[#14a0a6]/10 text-[#0d7377] font-medium">
+                            Review before using
+                          </span>
+                        </div>
+                        <p className="text-sm text-[#0d7377] leading-relaxed mb-4 italic">
+                          "{improvedAnswers[selectedQuestion.id]}"
+                        </p>
+                        <Button
+                          onClick={() => acceptImprovement(selectedQuestion.id)}
+                          size="sm"
+                          className="bg-[#0d7377] hover:bg-[#0a5a5d] text-white font-semibold"
+                        >
+                          <Check className="w-4 h-4 mr-2" />
+                          Use This Improvement
+                        </Button>
+                        <p className="text-xs text-[#0a5a5d] mt-4 pt-4 border-t border-[#14a0a6]/10">
+                          <span className="font-medium">Tip:</span> AI can make
+                          mistakes and may not fully reflect your intent. Please
+                          review carefully before using.
+                        </p>
+                      </div>
+                    )}
+
+                    {/* Save Answer Button - Scrolls with content */}
                     <Button
                       onClick={() => handleSaveAnswer(selectedQuestion.id)}
                       disabled={savingAnswers[selectedQuestion.id]}
-                      className="flex-1 bg-teal-600 hover:bg-teal-700 text-white font-semibold"
+                      className="w-full bg-teal-600 hover:bg-teal-700 text-white font-semibold py-2"
                     >
                       {savingAnswers[selectedQuestion.id]
                         ? "Saving..."

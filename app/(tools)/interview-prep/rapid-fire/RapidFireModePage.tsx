@@ -629,7 +629,7 @@ export const RapidFireModePage = ({
                       </span>
                     </div>
 
-                    <div className="space-y-4 flex-1 overflow-y-auto pr-2">
+                    <div className="space-y-4 flex-1 overflow-y-auto pr-2 scrollbar-premium">
                       {savedAnswers[reviewQuestion.id] && (
                         <div>
                           <h4 className="text-emerald-200 font-semibold mb-2 flex items-center gap-2 text-sm">
@@ -749,7 +749,7 @@ export const RapidFireModePage = ({
         <div className="bg-white rounded-2xl shadow-xl p-8 mb-8 min-h-125 flex items-center justify-center">
           <div className="w-full max-w-2xl">
             <div
-              className={`relative w-full h-full min-h-112.5 cursor-pointer transition-transform duration-700 ease-out-cubic ${
+              className={`relative w-full h-auto min-h-112.5 cursor-pointer transition-transform duration-700 ease-out-cubic ${
                 isFlipped ? "transform rotate-y-180" : ""
               }`}
               style={{
@@ -891,7 +891,7 @@ export const RapidFireModePage = ({
                   </span>
                 </div>
 
-                <div className="space-y-6 flex-1 overflow-y-auto pr-2">
+                <div className="space-y-6 flex-1 overflow-y-auto pr-2 scrollbar-premium">
                   {savedAnswers[currentQuestion.id] && (
                     <div>
                       <h4 className="text-emerald-200 font-semibold mb-2 flex items-center gap-2">

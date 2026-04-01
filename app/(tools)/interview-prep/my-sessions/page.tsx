@@ -345,7 +345,7 @@ export default function MyInterviewSessions() {
       <div>
         <Button
           onClick={() => (window.location.href = "/interview-prep")}
-          className="bg-teal-600 hover:bg-teal-700 text-white py-4 px-6 text-lg"
+          className="bg-[#0d7377] hover:bg-[#0a5a5d] text-white py-4 px-6 text-lg"
         >
           <Plus className="w-5 h-5 mr-2" />
           Start Your First Session
@@ -418,7 +418,7 @@ export default function MyInterviewSessions() {
             )}
             <Button
               onClick={() => (window.location.href = "/interview-prep")}
-              className="bg-teal-600 hover:bg-teal-700 text-white py-5 px-6 text-lg"
+              className="bg-[#0d7377] hover:bg-[#0a5a5d] text-white py-5 px-6 text-lg"
             >
               <Plus className="w-5 h-5 mr-2" />
               New Session
@@ -441,7 +441,7 @@ export default function MyInterviewSessions() {
             <p className="text-lg text-gray-500 mb-6">{error}</p>
             <Button
               onClick={() => window.location.reload()}
-              className="bg-teal-600 hover:bg-teal-700 text-white py-4 px-6 text-lg"
+              className="bg-[#0d7377] hover:bg-[#0a5a5d] text-white py-4 px-6 text-lg"
             >
               Try Again
             </Button>

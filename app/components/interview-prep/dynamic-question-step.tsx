@@ -1,17 +1,21 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { CustomDropdown } from "@/app/components/shared/CustomDropdown";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { ToggleSwitch } from "./ToggleSwitch";
+  Heart,
+  Users,
+  Briefcase,
+  Home,
+  Shield,
+  DollarSign,
+  FileText,
+  CheckCircle2,
+  BookOpen,
+  GraduationCap,
+} from "lucide-react";
 import type {
   DynamicQuestion,
   QuestionnaireSection,
@@ -23,9 +27,69 @@ interface DynamicQuestionStepProps {
   onChange: (key: string, value: unknown) => void;
   onNext: () => void;
   onBack: () => void;
-  error?: string | null;
   setError: (msg: string | null) => void;
 }
+
+// Section-based icon mapping - using consistent teal color
+const SECTION_CONFIG: Record<
+  string,
+  { icon: React.ReactNode }
+> = {
+  marriage_and_basic_info: {
+    icon: <Heart className="w-8 h-8" />,
+  },
+  relationship_origin: {
+    icon: <Users className="w-8 h-8" />,
+  },
+  relationship_strength: {
+    icon: <Heart className="w-8 h-8" />,
+  },
+  financial_profile: {
+    icon: <DollarSign className="w-8 h-8" />,
+  },
+  immigration_history: {
+    icon: <Shield className="w-8 h-8" />,
+  },
+  documentation: {
+    icon: <FileText className="w-8 h-8" />,
+  },
+  work_and_education: {
+    icon: <Briefcase className="w-8 h-8" />,
+  },
+  living_situation: {
+    icon: <Home className="w-8 h-8" />,
+  },
+  education_background: {
+    icon: <GraduationCap className="w-8 h-8" />,
+  },
+  visa_and_interview: {
+    icon: <FileText className="w-8 h-8" />,
+  },
+  health_and_medical: {
+    icon: <CheckCircle2 className="w-8 h-8" />,
+  },
+  employment_and_income: {
+    icon: <Briefcase className="w-8 h-8" />,
+  },
+};
+
+// Fallback icon
+const DEFAULT_CONFIG = {
+  icon: <BookOpen className="w-8 h-8" />,
+};
+
+// Color Palette
+const COLORS = {
+  primary: "#0d7377",
+  primaryLight: "#0d737720",
+  primaryLightest: "#0d737710",
+  secondary: "#afdbdb",
+  accent: "#cdadcc",
+  warning: "#db8090",
+  warningLight: "#db809020",
+  neutral: "#89a4a0",
+  border: "#e5e7eb",
+};
 
 export function DynamicQuestionStep({
   section,
@@ -33,11 +97,14 @@ export function DynamicQuestionStep({
   onChange,
   onNext,
   onBack,
-  error,
   setError,
 }: DynamicQuestionStepProps) {
   const questionRefs = useRef<Record<string, HTMLDivElement | null>>({});
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+
+  // Get section-specific icon
+  const sectionConfig =
+    SECTION_CONFIG[section.id] || DEFAULT_CONFIG;
 
   const processTemplate = (template: string): string => {
     if (!template) return template;
@@ -49,9 +116,9 @@ export function DynamicQuestionStep({
 
   const formatFieldName = (fieldKey: string): string => {
     return fieldKey
-      .split('_')
-      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-      .join(' ');
+      .split("_")
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(" ");
   };
 
   if (!section) {
@@ -60,7 +127,7 @@ export function DynamicQuestionStep({
 
   const validateQuestion = (
     question: DynamicQuestion,
-    value: unknown,
+    value: unknown
   ): string | null => {
     const fieldName = formatFieldName(question.key);
     const shouldValidateRequired = question.type !== "boolean";
@@ -109,21 +176,18 @@ export function DynamicQuestionStep({
   const handleInputChange = (key: string, value: unknown) => {
     onChange(key, value);
 
-    // Clear error for this field when user starts typing
     if (fieldErrors[key]) {
       const newErrors = { ...fieldErrors };
       delete newErrors[key];
       setFieldErrors(newErrors);
     }
 
-    // Reset dependent fields when parent changes
     if (key === "current_employment_status" && value === false) {
       onChange("current_employer_role", "");
       onChange("work_experience_years", "");
       onChange("work_experience_details", "");
     }
 
-    // Reset home country fields when plan_to_return_home changes to false
     if (key === "plan_to_return_home" && value === false) {
       onChange("why_will_return", "");
       onChange("job_prospects_home_country", "");
@@ -133,13 +197,11 @@ export function DynamicQuestionStep({
       onChange("property_details", "");
     }
 
-    // Reset Italy stay fields when plan_to_return_home changes to true
     if (key === "plan_to_return_home" && value === true) {
       onChange("consider_staying_it", false);
       onChange("usa_stay_plans", "");
     }
 
-    // Auto-scroll to show question clearly (150px offset to show both question and answer field)
     const el = questionRefs.current[key];
     if (el) {
       const rect = el.getBoundingClientRect();
@@ -220,11 +282,6 @@ export function DynamicQuestionStep({
   const renderQuestion = (question: DynamicQuestion) => {
     const value = formData[question.key];
     const fieldError = fieldErrors[question.key];
-    const hasError = !!fieldError;
-    const borderClass = hasError ? "border-red-500" : "border-border";
-    const focusClass = hasError 
-      ? "focus:ring-2 focus:ring-red-500 focus:border-red-500" 
-      : "focus:ring-2 focus:ring-teal-500 focus:border-teal-500";
 
     switch (question.type) {
       case "text":
@@ -234,9 +291,13 @@ export function DynamicQuestionStep({
             onChange={(e) => handleInputChange(question.key, e.target.value)}
             placeholder={question.placeholder}
             type="text"
-            className={`w-full p-3 border rounded-lg bg-background text-foreground ${borderClass} ${focusClass} transition-colors`}
+            className="w-full px-4 py-3 border-2 rounded-lg text-base"
+            style={{
+              borderColor: fieldError ? COLORS.warning : COLORS.border,
+            }}
           />
         );
+
       case "textarea":
         return (
           <Textarea
@@ -244,9 +305,13 @@ export function DynamicQuestionStep({
             onChange={(e) => handleInputChange(question.key, e.target.value)}
             placeholder={question.placeholder}
             rows={4}
-            className={`w-full p-3 border rounded-lg ${borderClass} ${focusClass} transition-colors`}
+            className="w-full px-4 py-3 border-2 rounded-lg text-base"
+            style={{
+              borderColor: fieldError ? COLORS.warning : COLORS.border,
+            }}
           />
         );
+
       case "number":
         return (
           <Input
@@ -254,138 +319,266 @@ export function DynamicQuestionStep({
             onChange={(e) =>
               handleInputChange(
                 question.key,
-                e.target.value === "" ? "" : parseFloat(e.target.value),
+                e.target.value === "" ? "" : parseFloat(e.target.value)
               )
             }
             placeholder={question.placeholder}
             type="number"
             min={question.validation?.min}
             max={question.validation?.max}
-            className={`w-full p-3 border rounded-lg bg-background text-foreground ${borderClass} ${focusClass} transition-colors`}
+            className="w-full px-4 py-3 border-2 rounded-lg text-base"
+            style={{
+              borderColor: fieldError ? COLORS.warning : COLORS.border,
+            }}
           />
         );
+
       case "date":
         return (
           <Input
             value={(value as string) || ""}
             onChange={(e) => handleInputChange(question.key, e.target.value)}
             type="date"
-            className={`w-full p-3 border rounded-lg bg-background text-foreground ${borderClass} ${focusClass} transition-colors`}
-            onFocus={(e) => {
-              e.currentTarget.showPicker?.();
+            className="w-full px-4 py-3 border-2 rounded-lg text-base"
+            style={{
+              borderColor: fieldError ? COLORS.warning : COLORS.border,
             }}
           />
         );
+
       case "boolean":
         return (
-          <div className={`flex items-center justify-between p-3 rounded-lg border ${hasError ? "bg-slate-50 border-red-500" : "bg-slate-50 border-slate-200"}`}>
-            <span className="text-base font-medium text-foreground">
-              {question.label}
-            </span>
-            <ToggleSwitch
-              checked={(value as boolean) || false}
-              onChange={(checked) =>
-                handleInputChange(question.key, checked)
-              }
-            />
+          <div className="grid grid-cols-2 gap-3">
+            {["Yes", "No"].map((option) => (
+              <button
+                key={option}
+                onClick={() => handleInputChange(question.key, option === "Yes")}
+                className="p-4 rounded-xl border-2 transition-all font-semibold text-base"
+                style={{
+                  borderColor:
+                    (option === "Yes" && value === true) ||
+                    (option === "No" && value === false)
+                      ? COLORS.primary
+                      : COLORS.border,
+                  backgroundColor:
+                    (option === "Yes" && value === true) ||
+                    (option === "No" && value === false)
+                      ? COLORS.primaryLight
+                      : "white",
+                  color:
+                    (option === "Yes" && value === true) ||
+                    (option === "No" && value === false)
+                      ? COLORS.primary
+                      : "#374151",
+                }}
+              >
+                {option}
+              </button>
+            ))}
           </div>
         );
+
       case "select":
-        return (
-          <Select
-            value={(value as string) || ""}
-            onValueChange={(val) => handleInputChange(question.key, val)}
-          >
-            <SelectTrigger className={`w-full h-12 p-3 border rounded-lg bg-background text-foreground ${borderClass} ${focusClass}`}>
-              <SelectValue placeholder="Select an option" />
-            </SelectTrigger>
-            <SelectContent>
+        const optionCount = question.options?.length || 0;
+
+        // For 2 or 4 options: Use button-based selection (like page.tsx)
+        if (optionCount === 2 || optionCount === 4) {
+          return (
+            <div
+              className={`grid gap-3 ${
+                optionCount === 2 ? "grid-cols-2" : "grid-cols-2"
+              }`}
+            >
               {question.options?.map((option) => (
-                <SelectItem key={option} value={option}>
+                <button
+                  key={option}
+                  onClick={() => handleInputChange(question.key, option)}
+                  className="p-4 rounded-xl border-2 transition-all font-semibold text-base"
+                  style={{
+                    borderColor:
+                      value === option
+                        ? COLORS.primary
+                        : COLORS.border,
+                    backgroundColor:
+                      value === option
+                        ? COLORS.primaryLight
+                        : "white",
+                    color:
+                      value === option
+                        ? COLORS.primary
+                        : "#374151",
+                  }}
+                >
                   {option}
-                </SelectItem>
+                </button>
               ))}
-            </SelectContent>
-          </Select>
+            </div>
+          );
+        }
+
+        // For 3, 5 or more options: Use CustomDropdown
+        return (
+          <CustomDropdown
+            value={(value as string) || ""}
+            onChange={(val) => handleInputChange(question.key, val)}
+            options={
+              question.options?.map((opt) => ({ value: opt, label: opt })) || []
+            }
+            placeholder="Select an option"
+          />
         );
+
       default:
         return (
           <Input
             value={(value as string) || ""}
             onChange={(e) => handleInputChange(question.key, e.target.value)}
-            className={`w-full p-3 border rounded-lg bg-background text-foreground ${borderClass} ${focusClass} transition-colors`}
+            className="w-full px-4 py-3 border-2 rounded-lg text-base"
+            style={{
+              borderColor: fieldError ? COLORS.warning : COLORS.border,
+            }}
           />
         );
     }
   };
 
   return (
-    <div className="space-y-8 mx-2">
-      <div className="text-center mb-8">
-        <h2 className="text-3xl font-bold text-foreground mb-3">
-          {section.title}
-        </h2>
-        <p className="text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-          {section.description}
-        </p>
-      </div>
+    <div className="min-h-screen bg-white">
+      <div className="max-w-2xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
+        {/* Section Header with Icon */}
+        <div className="mb-10 sm:mb-14 text-center">
+          <div
+            className="w-20 h-20 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg text-white"
+            style={{ backgroundColor: COLORS.primary }}
+          >
+            {sectionConfig.icon}
+          </div>
 
-      <div className="space-y-6">
-        {section.questions.map((question) => {
-          if (shouldSkipQuestion(question)) {
-            return null;
-          }
+          <h2
+            className="text-3xl sm:text-4xl font-bold mb-3"
+            style={{ color: COLORS.primary }}
+          >
+            {section.title}
+          </h2>
 
-          const fieldError = fieldErrors[question.key];
+          <p className="text-lg text-slate-600 leading-relaxed max-w-xl mx-auto">
+            {section.description}
+          </p>
+        </div>
 
-          return (
-            <div
-              key={question.key}
-              ref={(el: HTMLDivElement | null) => {
-                questionRefs.current[question.key] = el;
-              }}
-              className={`space-y-2 p-4 rounded-xl border ${
-                fieldError
-                  ? "bg-slate-50 border-red-500"
-                  : "bg-slate-50 border-slate-200"
-              }`}
-            >
-              {question.type !== "boolean" && (
-                <label className="block text-lg font-semibold text-foreground">
-                  {processTemplate(question.label)}
-                  {question.required && (
-                    <span className="text-red-500 ml-1">*</span>
+        {/* Questions Container - Scrollable */}
+        <div className="space-y-8 mb-8 max-h-96 overflow-y-auto pr-4 questions-scroll" style={{
+          scrollbarWidth: 'thin',
+          scrollbarColor: `${COLORS.primary} #f3f4f6`
+        }}>
+          {/* Webkit Scrollbar Styling */}
+          <style>{`
+            .questions-scroll::-webkit-scrollbar {
+              width: 8px;
+            }
+            .questions-scroll::-webkit-scrollbar-track {
+              background: #f3f4f6;
+              border-radius: 10px;
+            }
+            .questions-scroll::-webkit-scrollbar-thumb {
+              background: ${COLORS.primary};
+              border-radius: 10px;
+            }
+            .questions-scroll::-webkit-scrollbar-thumb:hover {
+              background: #0a5a68;
+            }
+          `}</style>
+
+          <div className="space-y-8">
+            {section.questions.map((question) => {
+              if (shouldSkipQuestion(question)) {
+                return null;
+              }
+
+              const fieldError = fieldErrors[question.key];
+
+              return (
+                <div
+                  key={question.key}
+                  ref={(el) => {
+                    questionRefs.current[question.key] = el;
+                  }}
+                  className="space-y-4"
+                >
+                  {question.type !== "boolean" && (
+                    <div>
+                      <label
+                        className="text-lg font-semibold block"
+                        style={{ color: COLORS.primary }}
+                      >
+                        {processTemplate(question.label)}
+                        {question.required && (
+                          <span style={{ color: COLORS.warning }}> *</span>
+                        )}
+                      </label>
+                      {question.helpText && (
+                        <p className="text-sm text-slate-500 mt-2 leading-relaxed">
+                          {question.helpText}
+                        </p>
+                      )}
+                    </div>
                   )}
-                </label>
-              )}
-              {renderQuestion(question)}
-              {fieldError && (
-                <p className="text-sm text-red-600 font-medium mt-2">
-                  {fieldError}
-                </p>
-              )}
-              {!fieldError && question.helpText && question.type !== "boolean" && (
-                <p className="text-xs text-slate-500 mt-2">{question.helpText}</p>
-              )}
-            </div>
-          );
-        })}
-      </div>
 
-      <div className="flex justify-between pt-6">
-        <Button
-          onClick={onBack}
-          variant="outline"
-          className="bg-slate-100 hover:bg-slate-200 text-slate-800 border-slate-300 px-6 py-3 text-base"
-        >
-          ← Back
-        </Button>
-        <Button
-          onClick={handleNext}
-          className="bg-teal-600 hover:bg-teal-700 text-white px-6 py-3 text-base"
-        >
-          Next →
-        </Button>
+                  {question.type === "boolean" && (
+                    <div>
+                      <label
+                        className="text-lg font-semibold block"
+                        style={{ color: COLORS.primary }}
+                      >
+                        {processTemplate(question.label)}
+                        {question.required && (
+                          <span style={{ color: COLORS.warning }}> *</span>
+                        )}
+                      </label>
+                    </div>
+                  )}
+
+                  <div className="mt-4">
+                    {renderQuestion(question)}
+                  </div>
+
+                  {fieldError && (
+                    <p
+                      className="text-sm font-medium mt-3"
+                      style={{ color: COLORS.warning }}
+                    >
+                      {fieldError}
+                    </p>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Navigation Buttons */}
+        <div className="flex gap-3 justify-between pt-6 border-t border-slate-200">
+          <button
+            onClick={onBack}
+            className="px-6 py-2 rounded-lg font-semibold text-sm border-2 transition-all bg-white hover:bg-slate-50"
+            style={{
+              borderColor: COLORS.primary,
+              color: COLORS.primary,
+            }}
+          >
+            ← Back
+          </button>
+
+          <button
+            onClick={handleNext}
+            className="px-6 py-2 rounded-lg font-semibold text-sm text-white transition-all hover:opacity-90"
+            style={{
+              backgroundColor: COLORS.primary,
+            }}
+          >
+            Next →
+          </button>
+        </div>
       </div>
     </div>
   );
