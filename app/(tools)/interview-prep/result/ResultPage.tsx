@@ -46,10 +46,10 @@ export const ResultPage = ({
     Record<string, string>
   >({});
   const [showAnswerModal, setShowAnswerModal] = useState(false);
-  
+
   // NEW: Track which questions have saved answers (loaded from DB)
   const [savedAnswers, setSavedAnswers] = useState<Record<string, string>>({});
-  
+
   // NEW: Toggle to show/hide sample answer in flashcard
   const [showSampleAnswerInFlashcard, setShowSampleAnswerInFlashcard] =
     useState<Record<string, boolean>>({});
@@ -57,7 +57,7 @@ export const ResultPage = ({
   // NEW: Confirmation modal state
   const [confirmModalOpen, setConfirmModalOpen] = useState(false);
   const [pendingAction, setPendingAction] = useState<"restore-session" | null>(
-    null
+    null,
   );
 
   // Shuffle algorithm
@@ -320,6 +320,8 @@ export const ResultPage = ({
           {mode === "prep" && (
             <div className="mb-6 px-4 lg:px-0">
               <ExpandableTooltip
+                icon={<Info className="w-5 h-5" />}
+                title="Important Disclaimer"
                 message="The interview questions and sample answers provided by Rahvana are for educational and preparation purposes only. We do not guarantee that these exact questions will be asked during your interview. You are solely responsible for how you choose to respond in your actual interview."
                 defaultOpen={true}
               />
@@ -495,7 +497,9 @@ export const ResultPage = ({
                         <div className="absolute inset-0 backface-hidden rotate-y-180 bg-linear-to-br from-teal-600 to-teal-800 rounded-2xl p-8 flex flex-col text-white shadow-xl">
                           <div className="flex justify-between items-start mb-6">
                             <span className="bg-white/20 px-3 py-1 rounded-full text-sm font-medium">
-                              {savedAnswers[selectedQuestion.id] ? "Your Answer" : "Answer & Guidance"}
+                              {savedAnswers[selectedQuestion.id]
+                                ? "Your Answer"
+                                : "Answer & Guidance"}
                             </span>
                           </div>
 
@@ -562,13 +566,11 @@ export const ResultPage = ({
                               <button
                                 onClick={(e) => {
                                   e.stopPropagation(); // Prevent card flip when clicking toggle
-                                  setShowSampleAnswerInFlashcard(
-                                    (prev) => ({
-                                      ...prev,
-                                      [selectedQuestion.id]:
-                                        !prev[selectedQuestion.id],
-                                    }),
-                                  )
+                                  setShowSampleAnswerInFlashcard((prev) => ({
+                                    ...prev,
+                                    [selectedQuestion.id]:
+                                      !prev[selectedQuestion.id],
+                                  }));
                                 }}
                                 className="w-full text-teal-100 hover:text-white text-sm font-medium transition-colors underline"
                               >
@@ -584,7 +586,10 @@ export const ResultPage = ({
                           {/* NEW: Answer button on back of card */}
                           <div className="mt-6 flex gap-2">
                             <Button
-                              onClick={(e) => { e.stopPropagation(); setShowAnswerModal(true); }}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setShowAnswerModal(true);
+                              }}
                               className="flex-1 bg-white text-teal-700 hover:bg-teal-50 font-semibold"
                             >
                               {savedAnswers[selectedQuestion.id]
@@ -776,7 +781,9 @@ export const ResultPage = ({
                         Use This Improvement
                       </Button>
                       <p className="text-xs text-[#0a5a5d] mt-4 pt-4 border-t border-[#14a0a6]/10">
-                        <span className="font-medium">Tip:</span> AI can make mistakes and may not fully reflect your intent. Please review carefully before using.
+                        <span className="font-medium">Tip:</span> AI can make
+                        mistakes and may not fully reflect your intent. Please
+                        review carefully before using.
                       </p>
                     </div>
                   )}

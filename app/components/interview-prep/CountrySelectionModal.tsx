@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import SearchableIndexedDropdown from "@/app/(tools)/(visa)/visa-category/ir-category/components/SearchableIndexedDropdown";
 import { COUNTRIES } from "@/data/countries";
-import { Globe, AlertCircle } from "lucide-react";
+import { Globe, AlertCircle, Info } from "lucide-react";
 import { ExpandableTooltip } from "../shared/ExpandableTooltip";
 
 interface CountrySelectionModalProps {
@@ -54,6 +54,8 @@ export default function CountrySelectionModal({
         {/* Body */}
         <div className="px-6 py-6 space-y-6">
           <ExpandableTooltip
+            icon={<Info className="w-5 h-5" />}
+            title="Why This Matters"
             message="Visa interviews vary from country to country. Based on your
                           selection, we'll show you the relevant interview categories
                           and preparation content we've built for that country to help

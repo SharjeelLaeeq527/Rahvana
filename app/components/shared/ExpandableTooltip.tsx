@@ -4,11 +4,15 @@ import { useState } from "react";
 import { ChevronDown } from "lucide-react";
 
 interface ExpandableTooltipProps {
+  icon: React.ReactNode;
+  title: string;
   message: string;
   defaultOpen?: boolean;
 }
 
 export const ExpandableTooltip = ({
+  icon,
+  title,
   message,
   defaultOpen = true,
 }: ExpandableTooltipProps) => {
@@ -22,10 +26,10 @@ export const ExpandableTooltip = ({
       >
         <div className="flex items-center gap-2">
           <div className="w-5 h-5 rounded-full bg-[#0d7377] text-white text-xs flex items-center justify-center font-semibold">
-            i
+            {icon}
           </div>
           <span className="text-sm font-medium text-[#0d7377]">
-            Important Information
+            {title}
           </span>
         </div>
         <ChevronDown
