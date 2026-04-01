@@ -634,10 +634,10 @@ export const RapidFireModePage = ({
                       <div>
                         <h4 className="text-teal-200 font-semibold mb-2 flex items-center gap-2 text-sm">
                           <span className="w-2 h-2 bg-teal-200 rounded-full"></span>
-                          Suggested Answer
+                          Sample Answer
                         </h4>
                         <p className="text-slate-100 text-sm leading-relaxed">
-                          {reviewQuestion.suggestedAnswer}
+                          {reviewQuestion.sampleAnswer}
                         </p>
                       </div>
 
@@ -884,10 +884,10 @@ export const RapidFireModePage = ({
                   <div>
                     <h4 className="text-teal-200 font-semibold mb-2 flex items-center gap-2">
                       <span className="w-2 h-2 bg-teal-200 rounded-full"></span>
-                      Suggested Answer
+                      Sample Answer
                     </h4>
                     <p className="text-slate-100 leading-relaxed">
-                      {currentQuestion.suggestedAnswer}
+                      {currentQuestion.sampleAnswer}
                     </p>
                   </div>
 

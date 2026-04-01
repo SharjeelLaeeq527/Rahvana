@@ -139,12 +139,12 @@ export function DynamicQuestionStep({
       onChange("usa_stay_plans", "");
     }
 
-    // Auto-scroll slightly (25px from top) when answer changes
+    // Auto-scroll to show question clearly (150px offset to show both question and answer field)
     const el = questionRefs.current[key];
     if (el) {
       const rect = el.getBoundingClientRect();
       const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-      const top = rect.top + scrollTop - 25;
+      const top = rect.top + scrollTop - 150;
 
       window.scrollTo({
         top,
@@ -271,8 +271,8 @@ export function DynamicQuestionStep({
             onChange={(e) => handleInputChange(question.key, e.target.value)}
             type="date"
             className={`w-full p-3 border rounded-lg bg-background text-foreground ${borderClass} ${focusClass} transition-colors`}
-            onClick={(e) => {
-              (e.currentTarget as HTMLInputElement).showPicker?.();
+            onFocus={(e) => {
+              e.currentTarget.showPicker?.();
             }}
           />
         );

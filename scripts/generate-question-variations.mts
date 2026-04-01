@@ -30,7 +30,7 @@ interface Question {
   category: string;
   question: string;
   variations?: string[];
-  suggestedAnswer: string;
+  sampleAnswer: string;
   [key: string]: unknown;
 }
 

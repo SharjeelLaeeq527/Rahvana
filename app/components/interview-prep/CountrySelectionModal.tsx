@@ -2,14 +2,10 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import CountryAutocomplete from "@/app/components/shared/CountryAutoComplete";
+import SearchableIndexedDropdown from "@/app/(tools)/(visa)/visa-category/ir-category/components/SearchableIndexedDropdown";
+import { COUNTRIES } from "@/data/countries";
 import { Globe, AlertCircle } from "lucide-react";
-import {
-  Accordion,
-  AccordionItem,
-  AccordionTrigger,
-  AccordionContent,
-} from "@/components/ui/accordion";
+import { ExpandableTooltip } from "../shared/ExpandableTooltip";
 
 interface CountrySelectionModalProps {
   isOpen: boolean;
@@ -24,18 +20,15 @@ export default function CountrySelectionModal({
   isLoading = false,
   noDataMessage,
 }: CountrySelectionModalProps) {
-  const [selectedCountry, setSelectedCountry] = useState<
-    Record<string, unknown>
-  >({});
+  const [selectedCountry, setSelectedCountry] = useState<string>("");
 
   if (!isOpen) return null;
 
-  const country = (selectedCountry?.country_of_residence as string) || "";
-  const isCountrySelected = country.trim().length > 0;
+  const isCountrySelected = selectedCountry.trim().length > 0;
 
   const handleConfirm = () => {
     if (isCountrySelected) {
-      onCountrySelected(country);
+      onCountrySelected(selectedCountry);
     }
   };
 
@@ -49,7 +42,7 @@ export default function CountrySelectionModal({
               <Globe className="w-5 h-5" />
             </div>
             <h3 className="text-xl font-semibold text-foreground">
-              Select Your Country
+              Select Your Destination Country
             </h3>
           </div>
           <p className="text-sm text-muted-foreground">
@@ -60,43 +53,24 @@ export default function CountrySelectionModal({
 
         {/* Body */}
         <div className="px-6 py-6 space-y-6">
-          <Accordion type="single" collapsible className="w-full">
-            <AccordionItem
-              value="why-we-ask"
-              className="border border-blue-200 dark:border-blue-900/50 rounded-lg overflow-hidden"
-            >
-              <AccordionTrigger className="px-4 py-3 bg-blue-50 dark:bg-blue-950/30 hover:no-underline cursor-pointer">
-                <div className="flex items-center gap-3">
-                  <AlertCircle className="w-5 h-5 text-blue-600 dark:text-blue-400" />
-                  <span className="text-sm font-medium text-blue-900 dark:text-blue-200">
-                    Why This Matters
-                  </span>
-                </div>
-              </AccordionTrigger>
-
-              <AccordionContent className="px-4 pb-4 bg-blue-50 dark:bg-blue-950/30">
-                <p className="text-sm text-blue-800 dark:text-blue-300">
-                  Visa interviews vary from country to country. Based on your
-                  selection, we&apos;ll show you the relevant interview categories
-                  and preparation content we&apos;ve built for that country to help
-                  you get ready with confidence.
-                </p>
-              </AccordionContent>
-            </AccordionItem>
-          </Accordion>
+          <ExpandableTooltip
+            message="Visa interviews vary from country to country. Based on your
+                          selection, we'll show you the relevant interview categories
+                          and preparation content we've built for that country to help
+                          you get ready with confidence."
+            defaultOpen={false}
+          />
 
           {/* Country Selection */}
           <div className="space-y-2">
-            <label className="text-base font-medium text-foreground">
-              Country
-            </label>
-            <CountryAutocomplete
-              formData={selectedCountry}
-              setFormData={setSelectedCountry}
-              valueKey="country_of_residence"
-              hideLabel
-              placeholder="Enter your country..."
-              inputClassName="w-full border border-border rounded-lg px-4 py-3 bg-background text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition"
+            <SearchableIndexedDropdown
+              id="destinationCountry"
+              label="Destination Country"
+              value={selectedCountry}
+              onChange={setSelectedCountry}
+              options={COUNTRIES}
+              placeholder="Select your country..."
+              disabledOptions={COUNTRIES.filter((c) => c !== "United States")}
             />
           </div>
 

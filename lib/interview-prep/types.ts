@@ -1,4 +1,4 @@
-// Types for the IR/CR-1 Interview Preparation Tool
+// Types for the Interview Preparation Tool
 export interface InterviewSession {
   id: string;
   user_id: string | null;
@@ -58,7 +58,7 @@ export interface IntakeQuestionnaire {
 export interface QuestionBankEntry {
   category: string;
   question: string;
-  suggestedAnswer: string;
+  sampleAnswer: string;
   guidance: string;
   tooltip: string;
 }
@@ -70,12 +70,12 @@ export interface QuestionBank {
 }
 
 export interface GeneratedQuestion {
+  sampleAnswer: string;
   id: string;
   category: string;
   question: string;
   variations?: string[];
   selectedQuestion?: string; 
-  suggestedAnswer: string;
   guidance: string;
   tooltip: string;
   applicable: boolean;
@@ -91,4 +91,27 @@ export interface InterviewPrepOutput {
     applicableQuestions: number;
     categories: string[];
   };
+}
+
+// Interfaces for user answers with AI improvements
+export interface AIImprovement {
+  version: number;
+  originalAnswer: string;
+  improvedAnswer: string;
+  improvementType: 'clarity' | 'professional' | 'complete' | 'concise';
+  generatedAt: string;
+  acceptedAt?: string;
+}
+
+export interface UserAnswer {
+  id: string;
+  session_id: string;
+  question_id: string;
+  user_answer_text: string;
+  word_count: number;
+  ai_improvements: AIImprovement[];
+  confidence_score?: number;
+  status: 'draft' | 'completed' | 'improved';
+  created_at: string;
+  updated_at: string;
 }
