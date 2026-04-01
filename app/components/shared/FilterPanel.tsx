@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Filter, X } from "lucide-react";
 import { CustomDropdown, DropdownOption } from "./CustomDropdown";
 
-export interface FilterOption extends DropdownOption {}
+export type FilterOption = DropdownOption;
 
 export interface FilterField {
   key: string;
@@ -19,7 +19,6 @@ interface FilterPanelProps {
   onFilterChange: (filters: Record<string, string>) => void;
   itemCount: number;
   totalCount: number;
-  compact?: boolean;
 }
 
 export const FilterPanel = ({
@@ -27,7 +26,6 @@ export const FilterPanel = ({
   onFilterChange,
   itemCount,
   totalCount,
-  compact = false,
 }: FilterPanelProps) => {
   const [showPopover, setShowPopover] = useState(false);
   const [localFilters, setLocalFilters] = useState<Record<string, string>>(
@@ -36,14 +34,31 @@ export const FilterPanel = ({
   const popoverRef = useRef<HTMLDivElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
 
-  // Close popover when clicking outside
+  // Update local filters when parent props change (sync from parent)
+  useEffect(() => {
+    const updatedFilters = fields.reduce(
+      (acc, field) => ({ ...acc, [field.key]: field.value }),
+      {}
+    );
+    setLocalFilters(updatedFilters);
+  }, [fields]);
+
+  // Close popover when clicking outside (but not on select dropdowns)
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as HTMLElement;
+      
+      // Check if click is from a select dropdown trigger/content
+      const isSelectDropdown = target.closest(
+        '[role="combobox"], [role="listbox"], [role="option"]'
+      );
+      
       if (
+        !isSelectDropdown &&
         popoverRef.current &&
-        !popoverRef.current.contains(event.target as Node) &&
+        !popoverRef.current.contains(target) &&
         buttonRef.current &&
-        !buttonRef.current.contains(event.target as Node)
+        !buttonRef.current.contains(target)
       ) {
         setShowPopover(false);
       }
@@ -108,15 +123,17 @@ export const FilterPanel = ({
             </button>
           </div>
 
-          <div className="p-4 space-y-4">
+          <div className="p-4 space-y-4" onClick={(e) => e.stopPropagation()}>
             {fields.map((field) => (
-              <div key={field.key}>
+              <div key={field.key} onClick={(e) => e.stopPropagation()}>
                 <label className="block text-xs font-semibold text-slate-900 mb-2 uppercase tracking-wide">
                   {field.label}
                 </label>
                 <CustomDropdown
-                  value={localFilters[field.key]}
-                  onChange={(val) => handleFilterChange(field.key, val)}
+                  value={localFilters[field.key] || ""}
+                  onChange={(val) => {
+                    handleFilterChange(field.key, val);
+                  }}
                   options={field.options}
                   placeholder={`Select ${field.label}`}
                 />
@@ -125,14 +142,25 @@ export const FilterPanel = ({
           </div>
 
           <div className="px-4 py-3 border-t border-slate-100 space-y-3 sticky bottom-0 bg-slate-50">
-            {activeFiltersCount > 0 && (
+            <div className="flex gap-2">
+              {activeFiltersCount > 0 && (
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleReset();
+                  }}
+                  className="flex-1 text-sm text-white bg-teal-600 hover:bg-teal-700 font-medium transition-colors py-2 px-3 rounded-lg"
+                >
+                  Reset
+                </button>
+              )}
               <button
-                onClick={handleReset}
-                className="w-full text-sm text-teal-600 hover:text-teal-700 font-medium transition-colors"
+                onClick={() => setShowPopover(false)}
+                className="flex-1 text-sm text-slate-700 bg-slate-200 hover:bg-slate-300 font-medium transition-colors py-2 px-3 rounded-lg"
               >
-                Reset Filters
+                Done
               </button>
-            )}
+            </div>
             <div className="text-xs text-slate-600 text-center">
               Showing{" "}
               <span className="font-semibold text-slate-900">{itemCount}</span>{" "}

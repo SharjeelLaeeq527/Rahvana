@@ -11,19 +11,13 @@ import {
   Heart,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import Pagination from "@/components/ui/pagination";
 import { Loader } from "@/components/ui/spinner";
 import { ElementType } from "react";
 import ActionMenu from "@/app/components/shared/ActionMenu";
 import { ConfirmationModal } from "@/app/components/shared/ConfirmationModal";
+import { DataTable, Column } from "@/app/components/shared/table/DataTable";
+import { FilterPanel } from "@/app/components/shared/FilterPanel";
 
 type RiskLevel = "STRONG" | "MODERATE" | "WEAK" | "PENDING";
 type CaseType = "Spouse";
@@ -68,7 +62,7 @@ const RiskLevelBadge = ({
     },
     PENDING: {
       color: "bg-gray-100 text-gray-800",
-      icon: Clock,
+      icon: AlertTriangle,
       label: "Pending",
     },
   };
@@ -97,6 +91,7 @@ const getCategoryIcon = (caseType: CaseType) => {
 
 export default function MyCases() {
   const [cases, setCases] = useState<UserCase[]>([]);
+  const [filteredCases, setFilteredCases] = useState<UserCase[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedSessionId, setSelectedSessionId] = useState<string | null>(
@@ -104,6 +99,10 @@ export default function MyCases() {
   );
   const [modalOpen, setModalOpen] = useState(false);
   const [loadingDelete, setLoadingDelete] = useState(false);
+
+  // Filter states
+  const [selectedCaseType, setSelectedCaseType] = useState<string>("all");
+  const [selectedRiskLevel, setSelectedRiskLevel] = useState<string>("all");
 
   // pagination state
   const [currentPage, setCurrentPage] = useState<number>(1);
@@ -135,6 +134,24 @@ export default function MyCases() {
 
     fetchUserCases();
   }, []);
+
+  // Apply filters
+  useEffect(() => {
+    let filtered = cases;
+
+    // Case type filter
+    if (selectedCaseType !== "all") {
+      filtered = filtered.filter((c) => c.caseType === selectedCaseType);
+    }
+
+    // Risk level filter
+    if (selectedRiskLevel !== "all") {
+      filtered = filtered.filter((c) => c.riskLevel === selectedRiskLevel);
+    }
+
+    setFilteredCases(filtered);
+    setCurrentPage(1);
+  }, [cases, selectedCaseType, selectedRiskLevel]);
 
   // open modal when session is selected
   useEffect(() => {
@@ -173,10 +190,13 @@ export default function MyCases() {
   };
 
   // pagination calculations
-  const totalPages = Math.max(1, Math.ceil(cases.length / ITEMS_PER_PAGE));
+  const totalPages = Math.max(
+    1,
+    Math.ceil(filteredCases.length / ITEMS_PER_PAGE)
+  );
   const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
   const endIndex = startIndex + ITEMS_PER_PAGE;
-  const currentCases = cases.slice(startIndex, endIndex);
+  const currentCases = filteredCases.slice(startIndex, endIndex);
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString("en-US", {
@@ -197,6 +217,94 @@ export default function MyCases() {
     }
   };
 
+  const uniqueCaseTypes = Array.from(
+    new Set(cases.map((c) => c.caseType))
+  );
+
+  const columns: Column<UserCase>[] = [
+    {
+      key: "caseType",
+      label: "Case Type",
+      width: "30%",
+      render: (userCase) => {
+        const Icon = getCategoryIcon(userCase.caseType);
+        return (
+          <div className="flex items-center">
+            <div className="bg-teal-100 text-teal-800 w-10 h-10 rounded-full flex items-center justify-center mr-3">
+              <Icon className="w-5 h-5 text-teal-600" />
+            </div>
+            <div className="text-base font-semibold text-slate-900">
+              {getCaseTypeLabel(userCase.caseType)}
+            </div>
+          </div>
+        );
+      },
+    },
+    {
+      key: "createdAt",
+      label: "Submitted Date",
+      width: "25%",
+      render: (userCase) => (
+        <div className="flex items-center">
+          <div className="bg-slate-100 text-slate-800 w-10 h-10 rounded-full flex items-center justify-center mr-3">
+            <Calendar className="w-4 h-4 text-slate-600" />
+          </div>
+          <div className="text-base text-slate-700">
+            {formatDate(userCase.createdAt)}
+          </div>
+        </div>
+      ),
+    },
+    {
+      key: "riskLevel",
+      label: "Status",
+      width: "25%",
+      render: (userCase) => (
+        <RiskLevelBadge
+          riskLevel={userCase.riskLevel}
+          score={userCase.overallScore}
+        />
+      ),
+    },
+    {
+      key: "actions",
+      label: "Actions",
+      width: "20%",
+      className: "text-right",
+      render: (userCase) => (
+        <ActionMenu
+          onView={() =>
+            (window.location.href = `/visa-case-strength-checker/result?sessionId=${userCase.sessionId}`)
+          }
+          onDelete={() => setSelectedSessionId(userCase.sessionId)}
+        />
+      ),
+    },
+  ];
+
+  const emptyState = (
+    <div className="bg-white rounded-xl shadow-lg overflow-hidden text-center py-16">
+      <FileText className="w-16 h-16 text-gray-300 mx-auto mb-6" />
+      <h3 className="text-2xl font-bold text-gray-900 mb-2">
+        No cases found
+      </h3>
+      <p className="text-lg text-gray-500 mb-8">
+        You haven&apos;t submitted any visa case assessments yet.
+      </p>
+      <div>
+        <Button
+          onClick={() =>
+            (window.location.href = "/visa-case-strength-checker")
+          }
+          className="bg-teal-600 hover:bg-teal-700 text-white py-4 px-6 text-lg"
+        >
+          <Plus className="w-5 h-5 mr-2" />
+          Start Your First Assessment
+        </Button>
+      </div>
+    </div>
+  );
+
   return (
     <div className="min-h-screen bg-linear-to-br from-slate-50 to-slate-100 text-gray-800 py-12 px-4">
       <div className="max-w-6xl mx-auto">
@@ -211,15 +319,53 @@ export default function MyCases() {
 
         <div className="flex flex-col sm:flex-row justify-between items-center mb-10 gap-4">
           <h2 className="text-2xl font-bold text-slate-800">All Cases</h2>
-          <Button
-            onClick={() =>
-              (window.location.href = "/visa-case-strength-checker")
-            }
-            className="bg-teal-600 hover:bg-teal-700 text-white py-5 px-6 text-lg"
-          >
-            <Plus className="w-5 h-5 mr-2" />
-            New Assessment
-          </Button>
+          <div className="flex items-center gap-3">
+            {cases.length > 0 && (
+              <FilterPanel
+                fields={[
+                  {
+                    key: "caseType",
+                    label: "Case Type",
+                    options: [
+                      { value: "all", label: "All Types" },
+                      ...uniqueCaseTypes.map((type) => ({
+                        value: type,
+                        label: getCaseTypeLabel(type),
+                      })),
+                    ],
+                    value: selectedCaseType,
+                  },
+                  {
+                    key: "riskLevel",
+                    label: "Risk Level",
+                    options: [
+                      { value: "all", label: "All Levels" },
+                      { value: "STRONG", label: "Strong" },
+                      { value: "MODERATE", label: "Moderate" },
+                      { value: "WEAK", label: "Weak" },
+                      { value: "PENDING", label: "Pending" },
+                    ],
+                    value: selectedRiskLevel,
+                  },
+                ]}
+                onFilterChange={(filters) => {
+                  setSelectedCaseType(filters.caseType || "all");
+                  setSelectedRiskLevel(filters.riskLevel || "all");
+                }}
+                itemCount={filteredCases.length}
+                totalCount={cases.length}
+              />
+            )}
+            <Button
+              onClick={() =>
+                (window.location.href = "/visa-case-strength-checker")
+              }
+              className="bg-teal-600 hover:bg-teal-700 text-white py-5 px-6 text-lg"
+            >
+              <Plus className="w-5 h-5 mr-2" />
+              New Assessment
+            </Button>
+          </div>
         </div>
 
         {loading ? (
@@ -240,118 +386,28 @@ export default function MyCases() {
               Try Again
             </Button>
           </div>
-        ) : cases.length === 0 ? (
-          <div className="bg-white rounded-xl shadow-lg overflow-hidden text-center py-16">
-            <FileText className="w-16 h-16 text-gray-300 mx-auto mb-6" />
-            <h3 className="text-2xl font-bold text-gray-900 mb-2">
-              No cases found
-            </h3>
-            <p className="text-lg text-gray-500 mb-8">
-              You haven&apos;t submitted any visa case assessments yet.
-            </p>
-            <div>
-              <Button
-                onClick={() =>
-                  (window.location.href = "/visa-case-strength-checker")
-                }
-                className="bg-teal-600 hover:bg-teal-700 text-white py-4 px-6 text-lg"
-              >
-                <Plus className="w-5 h-5 mr-2" />
-                Start Your First Assessment
-              </Button>
-            </div>
-          </div>
         ) : (
-          <div className="bg-white rounded-xl shadow-lg overflow-hidden border border-slate-200">
-            <div className="overflow-x-auto w-full">
-              <Table className="w-full">
-                <TableHeader>
-                  <TableRow className="border-b-2 border-slate-200">
-                    <TableHead className="text-lg font-bold text-slate-800 py-4">
-                      Case Type
-                    </TableHead>
-                    <TableHead className="text-lg font-bold text-slate-800 py-4">
-                      Submitted Date
-                    </TableHead>
-                    <TableHead className="text-lg font-bold text-slate-800 py-4">
-                      Status
-                    </TableHead>
-                    <TableHead className="text-lg font-bold text-slate-800 py-4 text-right">
-                      Actions
-                    </TableHead>
-                  </TableRow>
-                </TableHeader>
+          <>
+            <DataTable
+              columns={columns}
+              data={currentCases}
+              rowKey={(userCase) => userCase.sessionId}
+              emptyState={emptyState}
+              loading={false}
+            />
 
-                <TableBody>
-                  {currentCases.map((userCase) => (
-                    <TableRow
-                      key={userCase.sessionId}
-                      className="hover:bg-slate-50 border-b border-slate-100"
-                    >
-                      <TableCell className="py-5">
-                        <div className="flex items-center">
-                          <div className="bg-teal-100 text-teal-800 w-10 h-10 rounded-full flex items-center justify-center mr-3">
-                            {(() => {
-                              const Icon = getCategoryIcon(userCase.caseType);
-                              return <Icon className="w-5 h-5 text-teal-600" />;
-                            })()}
-                          </div>
-                          <div className="text-base font-semibold text-slate-900">
-                            {getCaseTypeLabel(userCase.caseType)}
-                          </div>
-                        </div>
-                      </TableCell>
-
-                      <TableCell className="py-5">
-                        <div className="flex items-center">
-                          <div className="bg-slate-100 text-slate-800 w-10 h-10 rounded-full flex items-center justify-center mr-3">
-                            <Calendar className="w-4 h-4 text-slate-600" />
-                          </div>
-                          <div className="text-base text-slate-700">
-                            {formatDate(userCase.createdAt)}
-                          </div>
-                        </div>
-                      </TableCell>
-
-                      <TableCell className="py-5">
-                        <RiskLevelBadge
-                          riskLevel={userCase.riskLevel}
-                          score={userCase.overallScore}
-                        />
-                      </TableCell>
-
-                      <TableCell className="py-5 text-right">
-                        <ActionMenu
-                          onView={() =>
-                            (window.location.href = `/visa-case-strength-checker/result?sessionId=${userCase.sessionId}`)
-                          }
-                          onDelete={() =>
-                            setSelectedSessionId(userCase.sessionId)
-                          }
-                        />
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-
-                {/* Pagination - only show if there are cases and multiple pages */}
-                {cases.length > 0 && totalPages > 1 && (
-                  <TableRow>
-                    <TableCell colSpan={4} className="py-6">
-                      <div className="w-full flex justify-center">
-                        <Pagination
-                          currentPage={currentPage}
-                          totalItems={cases.length}
-                          itemsPerPage={ITEMS_PER_PAGE}
-                          onPageChange={setCurrentPage}
-                        />
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                )}
-              </Table>
-            </div>
-          </div>
+            {/* Pagination - only show if there are cases and multiple pages */}
+            {filteredCases.length > 0 && totalPages > 1 && (
+              <div className="py-6 flex justify-center">
+                <Pagination
+                  currentPage={currentPage}
+                  totalItems={filteredCases.length}
+                  itemsPerPage={ITEMS_PER_PAGE}
+                  onPageChange={setCurrentPage}
+                />
+              </div>
+            )}
+          </>
         )}
       </div>
 

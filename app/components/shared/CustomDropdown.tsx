@@ -30,20 +30,30 @@ export const CustomDropdown = ({
   className = "",
   disabled = false,
 }: CustomDropdownProps) => {
+  const handleSelect = (selectedValue: string) => {
+    onChange(selectedValue);
+  };
+
   return (
-    <Select value={value || ""} onValueChange={onChange} disabled={disabled}>
-      <SelectTrigger
-        className={`w-full h-10 px-3 py-2 text-sm rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-teal-500 bg-white hover:border-slate-400 transition-colors ${className}`}
-      >
-        <SelectValue placeholder={placeholder} />
-      </SelectTrigger>
-      <SelectContent>
-        {options.map((option) => (
-          <SelectItem key={option.value} value={option.value}>
-            {option.label}
-          </SelectItem>
-        ))}
-      </SelectContent>
-    </Select>
+    <div
+      onClick={(e) => e.stopPropagation()}
+      onMouseDown={(e) => e.stopPropagation()}
+    >
+      <Select value={value || ""} onValueChange={handleSelect} disabled={disabled}>
+        <SelectTrigger
+          className={`w-full h-10 px-3 py-2 text-sm rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-teal-500 bg-white hover:border-slate-400 transition-colors ${className}`}
+          onClick={(e) => e.stopPropagation()}
+        >
+          <SelectValue placeholder={placeholder} />
+        </SelectTrigger>
+        <SelectContent onClick={(e) => e.stopPropagation()}>
+          {options.map((option) => (
+            <SelectItem key={option.value} value={option.value}>
+              {option.label}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+    </div>
   );
 };

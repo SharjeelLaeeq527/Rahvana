@@ -5,13 +5,21 @@ import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Textarea } from "@/components/ui/textarea";
-import { BookOpen, Info, Shuffle, Zap, Sparkles, Check, X } from "lucide-react";
+import {
+  BookOpen,
+  Info,
+  Shuffle,
+  Zap,
+  Check,
+  X,
+  Loader2
+} from "lucide-react";
 import { InterviewPrepOutput, GeneratedQuestion } from "@/lib/interview-prep";
 import { RapidFireModePage } from "../rapid-fire/RapidFireModePage";
 import { Loader } from "@/components/ui/spinner";
 import { ExpandableTooltip } from "@/app/components/shared/ExpandableTooltip";
 import { useToast } from "@/app/components/shared/ToastProvider";
-import { ConfirmationModal } from "@/app/components/shared/ConfirmationModal";
+
 interface ResultPageProps {
   sessionId: string;
   results?: InterviewPrepOutput | null;
@@ -737,11 +745,11 @@ export const ResultPage = ({
                           aria-label="Improve answer with AI"
                         >
                           {aiImproving[selectedQuestion.id] ? (
-                            <span className="text-xs animate-pulse">✨</span>
+                            <Loader2 className="w-4 h-4 animate-spin text-teal-600" />
                           ) : (
                             <Image
                               src="/rahvana-ai.png"
-                              alt="AI"
+                              alt="Rahvana"
                               width={48}
                               height={48}
                             />
