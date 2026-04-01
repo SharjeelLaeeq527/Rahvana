@@ -79,7 +79,7 @@ class DynamicQuestionSelectionEngine {
           id: questionEntry.id,
           category: questionEntry.category,
           question: questionEntry.question,
-          suggestedAnswer: questionEntry.suggestedAnswer,
+          sampleAnswer: questionEntry.sampleAnswer,
           guidance: questionEntry.guidance,
           tooltip: questionEntry.tooltip,
           applicable: true,
@@ -139,7 +139,7 @@ class AnswerGenerationEngine {
   ): GeneratedQuestion[] {
     return questions.map((question) => {
       const personalizedAnswer = this.processTemplate(
-        question.suggestedAnswer,
+        question.sampleAnswer,
         answersMap,
       );
       const personalizedGuidance = this.processTemplate(
@@ -153,7 +153,7 @@ class AnswerGenerationEngine {
 
       return {
         ...question,
-        suggestedAnswer: personalizedAnswer,
+        sampleAnswer: personalizedAnswer,
         guidance: personalizedGuidance,
         tooltip: personalizedTooltip,
       };

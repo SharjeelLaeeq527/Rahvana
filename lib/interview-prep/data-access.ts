@@ -64,6 +64,59 @@ export async function getInterviewSessionDB(
   return data as InterviewSession;
 }
 
+// Get latest incomplete session for current user
+export async function getLatestIncompleteSessionDB(): Promise<InterviewSession | null> {
+  const { supabase, user } = await getSupabaseWithUser();
+
+  const { data, error } = await supabase
+    .from("interview_prep_sessions")
+    .select("*")
+    .eq("user_id", user.id)
+    .eq("completed", false)
+    .order("updated_at", { ascending: false })
+    .limit(1)
+    .single();
+
+  if (error) {
+    if (error.code === "PGRST116") return null;
+    throw new Error(error.message);
+  }
+
+  return data as InterviewSession;
+}
+
+// Get all sessions for current user (with optional filters)
+export async function getAllUserSessionsDB(
+  limit?: number,
+  completed?: boolean
+): Promise<InterviewSession[]> {
+  const { supabase, user } = await getSupabaseWithUser();
+
+  let query = supabase
+    .from("interview_prep_sessions")
+    .select("*")
+    .eq("user_id", user.id);
+
+  // Optional filter by completion status
+  if (completed !== undefined) {
+    query = query.eq("completed", completed);
+  }
+
+  // Order by most recent first
+  query = query.order("updated_at", { ascending: false });
+
+  // Apply limit if specified
+  if (limit) {
+    query = query.limit(limit);
+  }
+
+  const { data, error } = await query;
+
+  if (error) throw new Error(error.message);
+
+  return data as InterviewSession[];
+}
+
 // Update session
 export async function updateInterviewSessionDB(
   sessionId: string,
@@ -171,4 +224,136 @@ export async function getInterviewResultsDB(
   }
 
   return data as InterviewResult;
+}
+
+// STEP 5: Save user answer text for interview question
+export async function saveUserAnswerDB(
+  sessionId: string,
+  questionId: string,
+  userAnswerText: string,
+  confidenceScore?: number
+): Promise<any> {
+  const { supabase, user } = await getSupabaseWithUser();
+
+  // Verify session ownership
+  const session = await getInterviewSessionDB(sessionId);
+  if (!session) throw new Error("Session not found");
+
+  const wordCount = userAnswerText.trim().split(/\s+/).length;
+
+  const { data, error } = await supabase
+    .from("interview_user_answers")
+    .upsert(
+      {
+        session_id: sessionId,
+        question_id: questionId,
+        user_answer_text: userAnswerText,
+        confidence_score: confidenceScore || null,
+        word_count: wordCount,
+        status: "saved",
+        updated_at: new Date().toISOString(),
+      },
+      {
+        onConflict: "session_id,question_id",
+      }
+    )
+    .select()
+    .single();
+
+  if (error) throw new Error(error.message);
+
+  return data;
+}
+
+// STEP 5: Get user's saved answers for a session
+export async function getUserAnswersForSessionDB(
+  sessionId: string
+): Promise<any[]> {
+  const { supabase, user } = await getSupabaseWithUser();
+
+  // Verify session ownership
+  const session = await getInterviewSessionDB(sessionId);
+  if (!session) throw new Error("Session not found");
+
+  const { data, error } = await supabase
+    .from("interview_user_answers")
+    .select("*")
+    .eq("session_id", sessionId)
+    .order("created_at", { ascending: true });
+
+  if (error) throw new Error(error.message);
+
+  return data || [];
+}
+
+// STEP 5: Get single user answer for a question
+export async function getUserAnswerDB(
+  sessionId: string,
+  questionId: string
+): Promise<any | null> {
+  const { supabase, user } = await getSupabaseWithUser();
+
+  // Verify session ownership
+  const session = await getInterviewSessionDB(sessionId);
+  if (!session) throw new Error("Session not found");
+
+  const { data, error } = await supabase
+    .from("interview_user_answers")
+    .select("*")
+    .eq("session_id", sessionId)
+    .eq("question_id", questionId)
+    .single();
+
+  if (error) {
+    if (error.code === "PGRST116") return null;
+    throw new Error(error.message);
+  }
+
+  return data;
+}
+
+// STEP 5: Save AI improvement suggestion
+export async function saveAIImprovementDB(
+  sessionId: string,
+  questionId: string,
+  originalAnswer: string,
+  improvedAnswer: string,
+  improvementType: string
+): Promise<any> {
+  const { supabase, user } = await getSupabaseWithUser();
+
+  // Verify session ownership
+  const session = await getInterviewSessionDB(sessionId);
+  if (!session) throw new Error("Session not found");
+
+  // Get current answer with improvements
+  const currentAnswer = await getUserAnswerDB(sessionId, questionId);
+
+  if (!currentAnswer) throw new Error("Answer not found");
+
+  const improvements = currentAnswer.ai_improvements || [];
+  improvements.push({
+    version: improvements.length + 1,
+    originalAnswer,
+    improvedAnswer,
+    improvementType,
+    acceptedAt: null,
+    generatedAt: new Date().toISOString(),
+  });
+
+  // Update answer with new improvement
+  const { data, error } = await supabase
+    .from("interview_user_answers")
+    .update({
+      ai_improvements: improvements,
+      updated_at: new Date().toISOString(),
+    })
+    .eq("session_id", sessionId)
+    .eq("question_id", questionId)
+    .select()
+    .single();
+
+  if (error) throw new Error(error.message);
+
+  return data;
 }

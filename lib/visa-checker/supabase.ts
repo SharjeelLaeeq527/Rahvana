@@ -4,7 +4,11 @@ import {
   SaveAnswersRequest,
   CaseType,
   RiskLevel,
+  ScoringResultsResponse,
 } from "./types";
+import { ScoringEngine } from "./engine";
+import fs from "fs";
+import path from "path";
 
 export class VisaCheckerSupabaseService {
   // ------------------------------
@@ -134,50 +138,58 @@ export class VisaCheckerSupabaseService {
   // ------------------------------
   // SUBMIT FOR SCORING
   // ------------------------------
-  static async submitForScoring(sessionId: string) {
+  static async submitForScoring(sessionId: string): Promise<ScoringResultsResponse> {
     const supabase = await createClient();
-
     const sessionDetails = await this.getSessionDetails(sessionId);
+    const caseTypeSlug = sessionDetails.caseType.toLowerCase().replace(/\//g, "-");
 
-    const {
-      totalScore,
-      allRisks,
-      riskLevel,
-      summaryReasons,
-      improvementSuggestions,
-    } = await import("./scoring-rules").then((rules) =>
-      rules.ScoringRules.calculateTotalScore(sessionDetails.answers),
-    );
+    // 1. Load Category Rules from JSON
+    let categoryRules;
+    try {
+      const rulesPath = path.join(process.cwd(), "data", "visa-checker", "categories", caseTypeSlug, "rules.json");
+      if (!fs.existsSync(rulesPath)) {
+        throw new Error(`Rules configuration not found for case type: ${sessionDetails.caseType}`);
+      }
+      categoryRules = JSON.parse(fs.readFileSync(rulesPath, "utf8"));
+    } catch (err) {
+      console.error("Error loading rules:", err);
+      throw new Error("Failed to load scoring rules for this visa category.");
+    }
 
+    // 2. Evaluate using ScoringEngine
+    const engine = new ScoringEngine(categoryRules);
+    const results = await engine.evaluate(sessionDetails.answers);
+
+    // 3. Update Session in Database
     const { error: updateError } = await supabase
       .from("user_case_sessions")
       .update({
-        overall_score: totalScore,
-        risk_level: riskLevel,
-        summary_reasons: summaryReasons,
-        improvement_suggestions: improvementSuggestions,
+        overall_score: results.overallScore,
+        risk_level: results.riskLevel,
+        summary_reasons: results.summaryReasons,
+        improvement_suggestions: results.improvementSuggestions,
         completed: true,
         updated_at: new Date().toISOString(),
       })
       .eq("id", sessionId);
+
     if (updateError) throw new Error(`Failed to update session: ${updateError.message}`);
 
-    // Delete existing risk flags
+    // 4. Save Risk Flags
     const { error: deleteFlagsError } = await supabase
       .from("risk_flags")
       .delete()
       .eq("session_id", sessionId);
     if (deleteFlagsError) throw new Error(`Failed to clear risk flags: ${deleteFlagsError.message}`);
 
-    if (allRisks.length > 0) {
-      const { RISK_POINTS_DEDUCTION } = await import("./scoring-config");
-      const flagRecords = allRisks.map((flag) => ({
+    if (results.riskFlags.length > 0) {
+      const flagRecords = results.riskFlags.map((flag) => ({
         session_id: sessionId,
         flag_code: flag.flagCode,
         severity: flag.severity,
-        points_deducted: RISK_POINTS_DEDUCTION[flag.severity],
+        points_deducted: flag.pointsDeducted,
         explanation: flag.explanation,
-        improvement_suggestions: flag.improvement,
+        improvement_suggestions: flag.improvementSuggestions,
         improvement_priority: this.getPriorityNumber(flag.severity),
       }));
 
@@ -188,12 +200,8 @@ export class VisaCheckerSupabaseService {
     }
 
     return {
+      ...results,
       sessionId,
-      overallScore: totalScore,
-      riskLevel,
-      riskFlags: allRisks,
-      summaryReasons,
-      improvementSuggestions,
     };
   }
 

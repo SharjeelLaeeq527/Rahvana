@@ -4,12 +4,12 @@
     "description": "Marriage-based immigrant visa for spouses of US citizens and permanent residents",
     "visaCountry": "United States",
     "metadata": {
-      "version": "1.0.0",
-      "questionnaireVersion": "1.0.0",
-      "questionBankVersion": "1.0.0",
+      "version": "2.0.0",
+      "questionnaireVersion": "2.0.0",
+      "questionBankVersion": "2.0.0",
       "estimatedDurationMinutes": 15,
-      "totalQuestions": 44,
-      "totalIntakeQuestions": 30
+      "totalQuestions": 47,
+      "totalIntakeQuestions": 12
     },
     "features": {
       "hasRapidFire": true,

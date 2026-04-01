@@ -1,68 +1,20 @@
 {
   "categorySlug": "ir-1-spouse",
-  "version": "1.0.0",
-  "lastUpdated": "2026-03-18",
+  "version": "2.0.0",
+  "lastUpdated": "2026-03-30",
   "sections": [
     {
-      "id": "basic_case_information",
-      "title": "Basic Case Information",
-      "description": "General details about you, your spouse, and your marriage.",
+      "id": "marriage_and_basic_info",
+      "title": "Marriage & Basic Information",
+      "description": "Core details about your marriage.",
       "order": 1,
       "questions": [
-        {
-          "key": "beneficiary_country",
-          "label": "Which country is the beneficiary applying from?",
-          "type": "text",
-          "required": true,
-          "validation": { "minLength": 2, "maxLength": 100 },
-          "placeholder": "e.g., Pakistan"
-        },
-        {
-          "key": "age_range",
-          "label": "What is your age range?",
-          "type": "select",
-          "required": true,
-          "options": ["18-25", "26-35", "36-45", "46-55", "56+"]
-        },
-        {
-          "key": "highest_education",
-          "label": "What is your highest level of education?",
-          "type": "select",
-          "required": true,
-          "options": [
-            "High School",
-            "Bachelors",
-            "Masters",
-            "Doctorate",
-            "Other"
-          ]
-        },
-        {
-          "key": "marriage_date",
-          "label": "What is your date of marriage?",
-          "type": "date",
-          "required": true
-        },
-        {
-          "key": "months_since_marriage",
-          "label": "How many months have passed since marriage? (0 if not yet married)",
-          "type": "number",
-          "required": true,
-          "validation": { "min": 0 }
-        },
-        {
-          "key": "marriage_location",
-          "label": "Where did the marriage take place (city & country)?",
-          "type": "text",
-          "required": true,
-          "validation": { "minLength": 5, "maxLength": 200 },
-          "placeholder": "e.g., Lahore, Pakistan"
-        },
         {
           "key": "previous_marriages",
           "label": "Have you or your spouse been married before?",
           "type": "select",
           "required": true,
+          "helpText": "Indicate if either of you has been married previously",
           "options": ["No", "Yes – Beneficiary", "Yes – Sponsor", "Yes – Both"]
         }
       ]
@@ -78,76 +30,36 @@
           "label": "How did you meet your spouse?",
           "type": "select",
           "required": true,
+          "helpText": "Select how you first met your spouse",
           "options": [
             "Met Online First",
             "Met In Person",
             "Arranged/Family",
             "Work/School"
           ]
-        },
-        {
-          "key": "total_time_spent_together",
-          "label": "Total time spent together in person",
-          "type": "select",
-          "required": true,
-          "options": [
-            "Less than 2 weeks",
-            "2-4 weeks",
-            "1-3 months",
-            "3+ months"
-          ]
-        },
-        {
-          "key": "number_of_in_person_visits",
-          "label": "How many times have you met in person?",
-          "type": "number",
-          "required": true,
-          "validation": { "min": 0 }
-        },
-        {
-          "key": "proposal_details",
-          "label": "How and when did the proposal happen?",
-          "type": "textarea",
-          "required": true,
-          "validation": { "minLength": 20, "maxLength": 1000 },
-          "placeholder": "Describe how and when the proposal happened..."
-        },
-        {
-          "key": "courtship_duration",
-          "label": "How long did you know each other before getting married?",
-          "type": "text",
-          "required": true,
-          "validation": { "minLength": 5, "maxLength": 200 },
-          "placeholder": "e.g., 6 months, 2 years"
         }
       ]
     },
     {
-      "id": "married_life",
-      "title": "Married Life & Daily Interaction",
-      "description": "Your daily communication and relationship behavior.",
+      "id": "relationship_strength",
+      "title": "Relationship Strength",
+      "description": "Your current communication and relationship dynamics.",
       "order": 3,
       "questions": [
         {
-          "key": "current_living_arrangement",
+          "key": "living_arrangement",
           "label": "Are you currently living together?",
           "type": "select",
           "required": true,
+          "helpText": "Specify your current living situation",
           "options": ["Yes", "No – Living apart"]
-        },
-        {
-          "key": "spouse_address",
-          "label": "Where does your spouse currently live?",
-          "type": "text",
-          "required": true,
-          "validation": { "minLength": 10, "maxLength": 300 },
-          "placeholder": "Full address including city and country"
         },
         {
           "key": "communication_frequency",
           "label": "How often do you communicate?",
           "type": "select",
           "required": true,
+          "helpText": "Select how frequently you communicate with your spouse",
           "options": ["Daily", "Several times/week", "Occasionally", "Rarely"]
         },
         {
@@ -155,76 +67,47 @@
           "label": "How do you communicate regularly?",
           "type": "select",
           "required": true,
+          "helpText": "Select your primary method(s) of communication",
           "options": [
             "Phone calls",
             "Video calls",
             "Text messages",
             "All of the above"
           ]
-        },
-        {
-          "key": "shared_activities",
-          "label": "What activities do you enjoy doing together?",
-          "type": "textarea",
-          "required": true,
-          "validation": { "minLength": 20, "maxLength": 1000 },
-          "placeholder": "Describe activities you enjoy together..."
-        },
-        {
-          "key": "important_dates_knowledge",
-          "label": "Do you know your spouse's birthday and important dates?",
-          "type": "boolean",
-          "required": true
         }
       ]
     },
     {
       "id": "family_and_social",
-      "title": "Family & Social Knowledge",
-      "description": "Your awareness of each other's family and social life.",
+      "title": "Family & Social Proof",
+      "description": "Your connection with each other's family and social circle.",
       "order": 4,
       "questions": [
         {
           "key": "met_spouse_family",
           "label": "Have you met your spouse's family?",
           "type": "boolean",
-          "required": true
-        },
-        {
-          "key": "family_reaction_to_marriage",
-          "label": "How did both families react to your marriage?",
-          "type": "textarea",
           "required": true,
-          "validation": { "minLength": 20, "maxLength": 1000 },
-          "placeholder": "Describe both families' reactions..."
-        },
-        {
-          "key": "wedding_attendees",
-          "label": "Who attended your wedding?",
-          "type": "textarea",
-          "required": true,
-          "validation": { "minLength": 10, "maxLength": 500 },
-          "placeholder": "List who attended your wedding..."
+          "helpText": "Indicate whether you have met your spouse's family members"
         },
         {
           "key": "marriage_type",
-          "label": "Was your marriage religious, civil, or both?",
+          "label": "How was your marriage legally conducted?",
           "type": "select",
           "required": true,
-          "options": ["Religious", "Civil", "Both"]
-        },
-        {
-          "key": "mutual_friends",
-          "label": "Do you have mutual friends?",
-          "type": "boolean",
-          "required": true
+          "helpText": "Indicate whether your marriage was performed through a religious ceremony, a civil (court) process, or both.",
+          "options": [
+            "Religious (Nikah) ceremony only",
+            "Civil (court) marriage only",
+            "Both religious and civil"
+          ]
         }
       ]
     },
     {
-      "id": "petitioner_information",
-      "title": "Petitioner Information",
-      "description": "Details about your US-based sponsor.",
+      "id": "petitioner_and_plans",
+      "title": "Petitioner & Settlement Plans",
+      "description": "Key details about your sponsor and your relocation plan.",
       "order": 5,
       "questions": [
         {
@@ -232,6 +115,7 @@
           "label": "What is the petitioner's immigration status?",
           "type": "select",
           "required": true,
+          "helpText": "Specify the immigration status of the person filing the petition",
           "options": ["US Citizen", "Lawful Permanent Resident"]
         },
         {
@@ -239,129 +123,37 @@
           "label": "What is the petitioner's income level?",
           "type": "select",
           "required": true,
+          "helpText": "Select the appropriate income bracket relative to the poverty guidelines",
           "options": ["Below 125% Poverty", "Meets 125%", "150-200%", "200%+"]
-        },
-        {
-          "key": "household_size",
-          "label": "What is the household size?",
-          "type": "select",
-          "required": true,
-          "options": ["1-2", "3-4", "5-6", "7+"]
         }
       ]
     },
     {
-      "id": "background_and_plans",
-      "title": "Background & Future Plans",
-      "description": "Employment, language, and US settlement plans.",
+      "id": "background_check",
+      "title": "Background & Compliance",
+      "description": "Mandatory background and immigration compliance checks.",
       "order": 6,
       "questions": [
-        {
-          "key": "beneficiary_employment",
-          "label": "What is your current occupation?",
-          "type": "text",
-          "required": true,
-          "validation": { "minLength": 5, "maxLength": 200 },
-          "placeholder": "Your current job title or profession"
-        },
-        {
-          "key": "sponsor_employment",
-          "label": "What does your spouse do for work?",
-          "type": "text",
-          "required": true,
-          "validation": { "minLength": 5, "maxLength": 200 },
-          "placeholder": "Spouse's job title or profession"
-        },
-        {
-          "key": "english_proficiency",
-          "label": "How well do you speak and understand English?",
-          "type": "select",
-          "required": true,
-          "options": ["Not at all", "Basic", "Intermediate", "Fluent"]
-        },
-        {
-          "key": "intended_us_state",
-          "label": "Which US state does the beneficiary plan to live in?",
-          "type": "text",
-          "required": true,
-          "validation": { "minLength": 2, "maxLength": 100 },
-          "placeholder": "e.g., California, Texas, New York"
-        },
-        {
-          "key": "living_arrangements_in_us",
-          "label": "Where will the beneficiary live initially in the US?",
-          "type": "textarea",
-          "required": true,
-          "validation": { "minLength": 20, "maxLength": 500 },
-          "placeholder": "Describe your living arrangements..."
-        },
-        {
-          "key": "future_plans",
-          "label": "What are the beneficiary's plans after moving to the US?",
-          "type": "textarea",
-          "required": true,
-          "validation": { "minLength": 30, "maxLength": 1000 },
-          "placeholder": "Describe your career and life plans..."
-        }
-      ]
-    },
-    {
-      "id": "travel_and_background_history",
-      "title": "Travel & Background History",
-      "description": "Answer these questions honestly. Your answers help us tailor practice questions.",
-      "order": 7,
-      "questions": [
-        {
-          "key": "previous_us_visits",
-          "label": "Have you previously traveled to the United States?",
-          "type": "boolean",
-          "required": true
-        },
         {
           "key": "previous_visa_refusal",
           "label": "Have you ever been denied a US visa?",
           "type": "boolean",
-          "required": true
+          "required": true,
+          "helpText": "Indicate if you have previously had a US visa application denied"
         },
         {
           "key": "visa_overstay_history",
           "label": "Have you ever overstayed a visa in any country?",
           "type": "boolean",
-          "required": true
+          "required": true,
+          "helpText": "Indicate if you have ever remained in a country beyond your authorized visa period"
         },
         {
           "key": "criminal_history",
           "label": "Have you ever been arrested or charged with a crime?",
           "type": "boolean",
-          "required": true
-        },
-        {
-          "key": "military_or_defense_background",
-          "label": "Have you ever served in the military, defense, or law enforcement?",
-          "type": "boolean",
-          "required": true
-        }
-      ]
-    },
-    {
-      "id": "finances_and_household",
-      "title": "Finances & Household Management",
-      "description": "How you manage money and household responsibilities together.",
-      "order": 8,
-      "questions": [
-        {
-          "key": "joint_finances",
-          "label": "Do you share finances?",
-          "type": "boolean",
-          "required": true
-        },
-        {
-          "key": "financial_arrangement_description",
-          "label": "Describe how household finances are managed",
-          "type": "textarea",
           "required": true,
-          "validation": { "minLength": 20, "maxLength": 1000 },
-          "placeholder": "Explain your financial arrangement..."
+          "helpText": "Honestly indicate any criminal history or arrests"
         }
       ]
     }

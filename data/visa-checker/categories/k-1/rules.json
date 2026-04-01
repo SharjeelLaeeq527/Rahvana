@@ -1,0 +1,44 @@
+{
+  "category": "k-1",
+  "baseScore": 100,
+  "componentWeights": {
+    "ELIGIBILITY": 100
+  },
+  "computedFacts": [],
+  "rules": [
+    {
+      "id": "not_met_in_person",
+      "description": "Fiance(e)s must meet in person within 2 years unless they have a religious waiver.",
+      "conditions": [
+        {
+          "fact": "met_in_person_last_2_years",
+          "operator": "equals",
+          "value": false
+        }
+      ],
+      "action": {
+        "type": "addFlag",
+        "flagCode": "K1_NOT_MET_IN_PERSON",
+        "severity": "HIGH",
+        "pointsDeducted": 50
+      }
+    },
+    {
+      "id": "no_intention_to_marry",
+      "description": "Fiance(e)s must intend to marry within 90 days of arrival.",
+      "conditions": [
+        {
+          "fact": "intention_to_marry",
+          "operator": "equals",
+          "value": false
+        }
+      ],
+      "action": {
+        "type": "addFlag",
+        "flagCode": "K1_NO_INTENTION_TO_MARRY",
+        "severity": "HIGH",
+        "pointsDeducted": 100
+      }
+    }
+  ]
+}
