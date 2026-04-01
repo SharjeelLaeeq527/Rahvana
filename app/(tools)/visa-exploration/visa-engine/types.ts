@@ -1,12 +1,19 @@
 /**
  * visa-engine/types.ts
  *
- * Shared TypeScript interfaces for the entire visa engine.
- * Country-agnostic — no US-specific references here.
+ * Central type definitions for the visa exploration engine.
+ * Country-agnostic — no country-specific strings or logic here.
+ *
+ * CHANGELOG:
+ *   March 2026 — Added `getCountryNotes` to CountryData interface.
+ *     Optional method that returns origin-aware advisory strings
+ *     (e.g. Pakistan polio vaccination requirement, diplomatic passport
+ *     exemptions). Called by the UI layer (VisaDetailModal / ResultsScreen)
+ *     to inject country-specific banners above visa criteria.
  */
 
 // ─────────────────────────────────────────────────────────────
-// THEME
+// THEME TOKENS
 // ─────────────────────────────────────────────────────────────
 export const T = {
   primary:      "#0D6E6E",
@@ -25,7 +32,7 @@ export const T = {
 };
 
 // ─────────────────────────────────────────────────────────────
-// VISA DEFINITION
+// VISA INFO
 // ─────────────────────────────────────────────────────────────
 export interface VisaInfo {
   code: string;
@@ -56,38 +63,76 @@ export interface GateQuestion {
 export type GateQuestionsMap = Record<string, GateQuestion[]>;
 
 // ─────────────────────────────────────────────────────────────
-// CANDIDATE RULE  (data-driven, used by future countries)
+// COUNTRY STRUCTURE
 // ─────────────────────────────────────────────────────────────
 export interface CandidateRule {
   conditions: Record<string, string | string[]>;
   visaCodes: string[];
 }
 
-// ─────────────────────────────────────────────────────────────
-// PURPOSE OPTION  (shown in step 3)
-// ─────────────────────────────────────────────────────────────
 export interface PurposeOption {
   label: string;
   value: string;
   sub?: string;
 }
 
-// ─────────────────────────────────────────────────────────────
-// FULL COUNTRY DATA  (one object per country)
-// ─────────────────────────────────────────────────────────────
+export interface OfficialSource {
+  label: string;
+  url: string;
+}
+
 export interface CountryData {
   country: string;
-  code: string;      // ISO 2-letter: "US", "UK", "CA"
-  flag: string;      // emoji
+  code: string;
+  flag: string;
   purposes: PurposeOption[];
   visas: VisaDataMap;
   gateQuestions: GateQuestionsMap;
-  /** getCandidateCodes function key — each country exports its own */
+
+  /**
+   * Optional list of official sources shown in the results footer
+   * and visa detail modal. Each country data file provides its own.
+   */
+  officialSources?: OfficialSource[];
+
+  /**
+   * Optional origin-aware advisory notes.
+   *
+   * Returns an array of human-readable warning/info strings that
+   * should be displayed prominently in the UI (e.g. as banner alerts
+   * above visa criteria) when the user's origin matches specific rules.
+   *
+   * Examples of use:
+   *   - Pakistan: mandatory polio vaccination certificate for all visas
+   *   - Pakistan: diplomatic passport exemption from Italian visa requirement
+   *   - India: biometric enrollment required at designated VACs only
+   *
+   * Returning an empty array (or omitting this method) means no
+   * origin-specific notes apply — the UI should render nothing extra.
+   *
+   * The UI layer should call this AFTER the user has selected their
+   * origin country and inject the notes into the results/detail views.
+   *
+   * @param answers - Full current VisaExplorationAnswers state
+   * @returns string[] — Advisory strings (may contain emoji prefixes)
+   */
+  getCountryNotes?: (answers: VisaExplorationAnswers) => string[];
+
+  /**
+   * Returns the list of visa codes that are candidates given the
+   * current answers. Called by both the step-builder and gate-engine.
+   */
   getCandidateCodes: (answers: VisaExplorationAnswers) => string[];
+
+  /**
+   * Returns any country-specific intermediate steps to inject between
+   * the purpose step and the gate questions. Return [] if none needed.
+   */
+  buildFollowUpSteps: (answers: VisaExplorationAnswers) => Step[];
 }
 
 // ─────────────────────────────────────────────────────────────
-// WIZARD STATE
+// ANSWERS STATE
 // ─────────────────────────────────────────────────────────────
 export interface VisaExplorationAnswers {
   origin?: string;
@@ -95,16 +140,19 @@ export interface VisaExplorationAnswers {
   purpose?: string;
   sponsor?: string;
   relationship?: string;
+  sponsorStatus?: string;
+  workType?: string;
   beneficiaryAge?: string;
   petitionerAge?: string;
   workBase?: string;
+  workStage?: string;
   tempType?: string;
   gateAnswers?: Record<string, Record<string, string>>;
   [key: string]: unknown;
 }
 
 // ─────────────────────────────────────────────────────────────
-// WIZARD STEP
+// STEP
 // ─────────────────────────────────────────────────────────────
 export interface Step {
   id: string;
@@ -115,7 +163,13 @@ export interface Step {
   canProceed: boolean;
   isUnsupported?: boolean;
   isDestination?: boolean;
-  options?: { label: string; value: string; sub?: string; disabled?: boolean; emoji?: string }[];
+  options?: {
+    label: string;
+    value: string;
+    sub?: string;
+    disabled?: boolean;
+    emoji?: string;
+  }[];
   visaCode?: string;
   visaLabel?: string;
   visaColor?: string;

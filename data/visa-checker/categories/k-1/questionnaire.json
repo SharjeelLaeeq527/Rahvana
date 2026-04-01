@@ -1,0 +1,22 @@
+{
+  "category": "k-1",
+  "title": "K-1 Fiance(e) Visa",
+  "sections": [
+    {
+      "id": "eligibility",
+      "title": "Basic Eligibility",
+      "questions": [
+        {
+          "id": "intention_to_marry",
+          "label": "Are you intending to marry within 90 days of arrival?",
+          "type": "boolean"
+        },
+        {
+          "id": "met_in_person_last_2_years",
+          "label": "Have you met in person within the last 2 years?",
+          "type": "boolean"
+        }
+      ]
+    }
+  ]
+}

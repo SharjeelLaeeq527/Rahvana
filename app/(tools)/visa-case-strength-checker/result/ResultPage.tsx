@@ -33,7 +33,7 @@ interface ResultPageProps {
   sessionId?: string;
   onRestart: () => void;
   onEdit: () => void;
-  onSaveToProfile: () => Promise<void>;
+  onSaveToProfile?: () => Promise<void>;
 }
 
 export function ResultPage({

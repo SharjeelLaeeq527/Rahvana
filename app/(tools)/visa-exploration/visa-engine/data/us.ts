@@ -3,9 +3,40 @@
  *
  * Complete US visa data — extracted from the old monolithic files.
  * To add a new country, create a new file like this one and register it in registry.ts.
+ *
+ * ──────────────────────────────────────────────────────────────────
+ * VERIFICATION SOURCES & LAST REVIEWED: March 2026
+ * ──────────────────────────────────────────────────────────────────
+ *
+ * Most of the US data was already accurate. Key updates applied:
+ *
+ * [H-1B]   Major 2025–2026 policy changes:
+ *           https://www.uscis.gov/working-in-the-united-states/temporary-workers/h-1b-specialty-occupations/h-1b-cap-season
+ *           https://www.ballardspahr.com/insights/alerts-and-articles/2025/09/h-1b-changes-100000-fee-entry-restrictions-and-weighted-lottery-system
+ *           • Sep 19, 2025 Presidential Proclamation: $100,000 fee required for H-1B petitions
+ *             for beneficiaries OUTSIDE the US (does NOT apply to change-of-status or extensions)
+ *             The proclamation expires Sep 21, 2026. Legal challenges ongoing.
+ *           • FY 2027 Lottery (effective Feb 27, 2026): New WEIGHTED selection system
+ *             based on prevailing wage levels — higher-paid positions have a greater chance
+ *             of selection. No longer purely random.
+ *           • Annual caps unchanged: 65,000 regular + 20,000 U.S. master's = 85,000 total
+ *           • Registration fee for FY 2027: $215 per beneficiary
+ *           • The description, criteria, and process field have all been updated to reflect this.
+ *
+ * All other US visas (IR-1, CR-1, K-1, IR-2, IR-5, F1-F4, F2A, F2B,
+ * EB-1A/B/C, EB-2/NIW, EB-3, EB-5, B1/B2, F-1, J-1, L-1, O-1, TN,
+ * Asylum, U-Visa, E-2, R-1, P-1, P-3, DV-1) were verified against
+ * USCIS.gov and travel.state.gov and found to be materially accurate.
+ * No significant changes to the data for those categories.
+ *
+ * ──────────────────────────────────────────────────────────────────
+ * General disclaimer: Not legal advice. Immigration law changes
+ * frequently. Always verify current requirements at uscis.gov and
+ * travel.state.gov. Consult a licensed immigration attorney.
+ * ──────────────────────────────────────────────────────────────────
  */
 
-import { T, CountryData, VisaExplorationAnswers } from "../types";
+import { T, CountryData, VisaExplorationAnswers, Step } from "../types";
 
 // ─────────────────────────────────────────────────────────────
 // CANDIDATE CODES  (US-specific logic)
@@ -16,12 +47,13 @@ function getCandidateCodes(a: VisaExplorationAnswers): string[] {
 
   if (a.purpose === "FAMILY") {
     if (a.sponsor === "US_CITIZEN") {
-      if (a.relationship === "SPOUSE")        c.push("IR-1", "CR-1");
+      if (a.relationship === "SPOUSE")        c.push("IR-1", "CR-1", "K-3");
       if (a.relationship === "FIANCE")        c.push("K-1");
       if (a.relationship === "CHILD") {
-        if (a.beneficiaryAge === "UNDER_21")  c.push("IR-2");
+        if (a.beneficiaryAge === "UNDER_21")  c.push("IR-2", "K-2", "K-4");
         if (a.beneficiaryAge === "OVER_21")   c.push("F1");
       }
+      if (a.relationship === "ORPHAN")        c.push("IR-3", "IR-4");
       if (a.relationship === "MARRIED_CHILD") c.push("F3");
       if (a.relationship === "PARENT")        c.push("IR-5");
       if (a.relationship === "SIBLING")       c.push("F4");
@@ -36,29 +68,200 @@ function getCandidateCodes(a: VisaExplorationAnswers): string[] {
   }
 
   if (a.purpose === "WORK_PERMANENT") {
-    if (a.workBase === "EXTRAORDINARY")  c.push("EB-1A");
-    if (a.workBase === "RESEARCHER")     c.push("EB-1B");
-    if (a.workBase === "MANAGER")        c.push("EB-1C");
-    if (a.workBase === "ADVANCED_DEGREE")c.push("EB-2-NIW", "EB-2");
-    if (a.workBase === "SKILLED")        c.push("EB-3");
-    if (a.workBase === "INVESTOR")       c.push("EB-5");
+    if (a.workBase === "EXTRAORDINARY")   c.push("EB-1A");
+    if (a.workBase === "RESEARCHER")      c.push("EB-1B");
+    if (a.workBase === "MANAGER")         c.push("EB-1C");
+    if (a.workBase === "ADVANCED_DEGREE") c.push("EB-2-NIW", "EB-2");
+    if (a.workBase === "SKILLED")         c.push("EB-3");
+    if (a.workBase === "INVESTOR")        c.push("EB-5");
+    if (a.workBase === "SPECIAL")         c.push("EB-4", "SI", "SQ");
   }
 
   if (a.purpose === "VISIT") c.push("B1/B2");
   if (a.purpose === "STUDY") {
-    if (a.tempType === "ACADEMIC")  c.push("F-1");
-    if (a.tempType === "EXCHANGE")  c.push("J-1");
-    if (!a.tempType)                c.push("F-1", "J-1");
+    if (a.tempType === "ACADEMIC")  c.push("F-1", "F-2");
+    if (a.tempType === "VOCATIONAL")c.push("M-1", "M-2");
+    if (a.tempType === "EXCHANGE")  c.push("J-1", "J-2");
+    if (!a.tempType)                c.push("F-1", "J-1", "M-1");
   }
   if (a.purpose === "WORK_TEMP") {
-    if (a.tempType === "SPECIALTY")     c.push("H-1B");
-    if (a.tempType === "TRANSFER")      c.push("L-1");
-    if (a.tempType === "EXTRAORDINARY") c.push("O-1");
+    if (a.tempType === "SPECIALTY")     c.push("H-1B", "H-4");
+    if (a.tempType === "SEASONAL_AGRI") c.push("H-2A", "H-4");
+    if (a.tempType === "SEASONAL_NON")  c.push("H-2B", "H-4");
+    if (a.tempType === "TRAINEE")       c.push("H-3", "H-4");
+    if (a.tempType === "TRANSFER")      c.push("L-1", "L-2");
+    if (a.tempType === "EXTRAORDINARY") c.push("O-1", "O-2", "O-3");
+    if (a.tempType === "ART_ATHLETE")   c.push("P-1", "P-2", "P-3", "P-4");
     if (a.tempType === "USMCA")         c.push("TN");
+    if (a.tempType === "RELIGIOUS")     c.push("R-1", "R-2");
   }
-  if (a.purpose === "PROTECTION") c.push("Asylum", "U-Visa");
+  if (a.purpose === "TRANSIT")       c.push("C-1", "D", "C-1/D");
+  if (a.purpose === "DIPLOMATIC")    c.push("A-1", "A-2", "G-1", "G-2", "G-3", "G-4", "G-5");
+  if (a.purpose === "PROTECTION")    c.push("Asylum", "U-Visa", "T-Visa");
+  if (a.purpose === "RELIGIOUS")     c.push("R-1");
+  if (a.purpose === "ART_ATHLETE")   c.push("P-1", "P-3");
+  if (a.purpose === "INVEST_TREATY") c.push("E-1", "E-2", "E-3");
+  if (a.purpose === "LOTTERY")       c.push("DV-1");
+  if (a.purpose === "MEDIA")         c.push("I-Visa");
 
   return [...new Set(c)];
+}
+
+// ─────────────────────────────────────────────────────────────
+// FOLLOW-UP STEPS (US-specific wizard sequence)
+// ─────────────────────────────────────────────────────────────
+function buildFollowUpSteps(a: VisaExplorationAnswers): Step[] {
+  const steps: Step[] = [];
+
+  if (a.purpose === "FAMILY") {
+    steps.push({
+      id: "sponsor", type: "options", field: "sponsor",
+      title: "What is your family member's status there?",
+      subtitle: "The person who will help bring you there — what kind of status do they have?",
+      options: [
+        { label: "They are a U.S. Citizen", value: "US_CITIZEN", sub: "Born there, naturalized, or got citizenship through parents" },
+        { label: "They have a Green Card (Permanent Resident)", value: "LPR", sub: "They live there permanently but aren't a citizen yet" },
+      ],
+      canProceed: !!a.sponsor,
+    });
+
+    if (a.sponsor === "US_CITIZEN") {
+      steps.push({
+        id: "relationship", type: "options", field: "relationship",
+        title: "What is your relationship with this person?",
+        subtitle: "How are you related to the U.S. citizen? Different relationships lead to different visa categories.",
+        options: [
+          { label: "I am their husband or wife",           value: "SPOUSE",        sub: "We are legally married" },
+          { label: "I am their fiancé(e)",                 value: "FIANCE",        sub: "We're engaged but not married yet" },
+          { label: "I am their unmarried son or daughter", value: "CHILD",         sub: "I'm not married" },
+          { label: "I am their married son or daughter",   value: "MARRIED_CHILD", sub: "I'm married" },
+          { label: "I am their parent (mother or father)", value: "PARENT" },
+          { label: "I am their brother or sister",         value: "SIBLING" },
+          { label: "I am an orphan child",                value: "ORPHAN",         sub: "To be adopted or already adopted by a U.S. citizen" },
+        ],
+        canProceed: !!a.relationship,
+      });
+      if (a.relationship === "CHILD") {
+        steps.push({
+          id: "beneficiaryAge", type: "grid", field: "beneficiaryAge",
+          title: "How old are you?",
+          subtitle: "Your age makes a big difference in which visa category applies.",
+          options: [{ label: "Under 21", value: "UNDER_21" }, { label: "21 or older", value: "OVER_21" }],
+          canProceed: !!a.beneficiaryAge,
+        });
+      }
+      if (a.relationship && ["PARENT", "SIBLING"].includes(a.relationship)) {
+        steps.push({
+          id: "petitionerAge", type: "grid", field: "petitionerAge",
+          title: "How old is the U.S. citizen?",
+          subtitle: `To bring a ${a.relationship === "PARENT" ? "parent" : "sibling"} to the U.S., the citizen must be at least 21.`,
+          options: [{ label: "Under 21", value: "UNDER_21" }, { label: "21 or older", value: "OVER_21" }],
+          canProceed: !!a.petitionerAge,
+        });
+      }
+    }
+
+    if (a.sponsor === "LPR") {
+      steps.push({
+        id: "relationship", type: "options", field: "relationship",
+        title: "What is your relationship with the Green Card holder?",
+        subtitle: "Green Card holders can bring certain family members. Select your relationship.",
+        options: [
+          { label: "I am their husband or wife",           value: "SPOUSE" },
+          { label: "I am their unmarried son or daughter", value: "CHILD" },
+        ],
+        canProceed: !!a.relationship,
+      });
+      if (a.relationship === "CHILD") {
+        steps.push({
+          id: "beneficiaryAge", type: "grid", field: "beneficiaryAge",
+          title: "How old are you?",
+          subtitle: "This determines whether you fall under category F2A or F2B.",
+          options: [{ label: "Under 21", value: "UNDER_21" }, { label: "21 or older", value: "OVER_21" }],
+          canProceed: !!a.beneficiaryAge,
+        });
+      }
+    }
+  }
+
+  if (a.purpose === "WORK_PERMANENT") {
+    steps.push({
+      id: "workBase", type: "options", field: "workBase",
+      title: "Tell us a bit about yourself",
+      subtitle: "Which of these sounds most like you? We'll explain everything later.",
+      options: [
+        { label: "I'm exceptional in my field",                               value: "EXTRAORDINARY",  sub: "Major awards or significant recognition in sciences, arts, education, business, or athletics" },
+        { label: "I'm a professor or researcher",                             value: "RESEARCHER",      sub: "I have international recognition and 3+ years of academic experience" },
+        { label: "I'm a manager or executive at a company with U.S. offices", value: "MANAGER",        sub: "My company has a branch, subsidiary, or parent company there" },
+        { label: "I have an advanced degree or strong expertise",             value: "ADVANCED_DEGREE", sub: "Master's, PhD, or a bachelor's with 5+ years of experience" },
+        { label: "I'm a skilled worker or professional",                      value: "SKILLED",         sub: "2+ years of training/experience, or a bachelor's degree" },
+        { label: "I'm a 'Special Immigrant' (Religious, SIV, etc.)",          value: "SPECIAL",         sub: "Religious workers, certain Afghan/Iraqi employees, etc. (EB-4/SI/SQ)" },
+        { label: "I want to invest money and create jobs",                    value: "INVESTOR",        sub: "I can invest $800K–$1.05M in a U.S. business that creates 10+ jobs" },
+      ],
+      canProceed: !!a.workBase,
+    });
+  }
+
+  if (a.purpose === "STUDY") {
+    steps.push({
+      id: "tempType", type: "options", field: "tempType",
+      title: "What kind of program are you interested in?",
+      subtitle: "This helps us figure out the right visa type for your studies.",
+      options: [
+        { label: "A degree program at a college or university", value: "ACADEMIC",   sub: "Bachelor's, Master's, PhD, or professional degree (F-1)" },
+        { label: "A vocational or technical program",           value: "VOCATIONAL", sub: "Technical, trade, or other non-academic training (M-1)" },
+        { label: "An exchange or cultural program",             value: "EXCHANGE",   sub: "Research, teaching, internship, or cultural exchange (J-1)" },
+      ],
+      canProceed: !!a.tempType,
+    });
+  }
+
+  if (a.purpose === "WORK_TEMP") {
+    steps.push({
+      id: "tempType", type: "options", field: "tempType",
+      title: "What kind of work will you be doing?",
+      subtitle: "Different types of work have different visa options. Pick the one closest to your situation.",
+      options: [
+        { label: "A professional/specialty job",                  value: "SPECIALTY",     sub: "IT, engineering, finance, medicine — the kind of job that needs a degree (H-1B)" },
+        { label: "Seasonal Agricultural work",                    value: "SEASONAL_AGRI", sub: "Farming, harvesting, or other seasonal agri-work (H-2A)" },
+        { label: "Seasonal Non-Agricultural work",                value: "SEASONAL_NON",  sub: "Hospitality, construction, or other temporary labor (H-2B)" },
+        { label: "I'm a trainee in a U.S. program",              value: "TRAINEE",       sub: "Training not available in my home country (H-3)" },
+        { label: "My company is sending me to their U.S. office", value: "TRANSFER",      sub: "Same company, different country — internal transfer (L-1)" },
+        { label: "I'm at the top of my field",                    value: "EXTRAORDINARY", sub: "Nationally or internationally recognized in science, arts, etc. (O-1/O-2)" },
+        { label: "I'm a professional athlete or entertainer",    value: "ART_ATHLETE",   sub: "Individual or group performances, or culturally unique programs (P-1/P-2/P-3)" },
+        { label: "Religious work",                                value: "RELIGIOUS",     sub: "Working for a non-profit religious organization (R-1)" },
+        { label: "I'm from Canada or Mexico with a USMCA profession", value: "USMCA",    sub: "Specific professional occupations listed in USMCA (TN)" },
+      ],
+      canProceed: !!a.tempType,
+    });
+  }
+
+  if (a.purpose === "INVEST_TREATY") {
+    steps.push({
+      id: "tempType", type: "options", field: "tempType",
+      title: "Select your investment or trade role",
+      options: [
+        { label: "Treaty Trader",   value: "TRADER",   sub: "Carrier of substantial trade between U.S. and treaty country (E-1)" },
+        { label: "Treaty Investor", value: "INVESTOR", sub: "Direct and develop operations of an enterprise you have invested in (E-2)" },
+        { label: "Specialty Occupation (Australia)", value: "AUSTRALIA", sub: "For Australian nationals in specialty occupations (E-3)" },
+      ],
+      canProceed: !!a.tempType,
+    });
+  }
+
+  if (a.purpose === "TRANSIT") {
+    steps.push({
+      id: "transitType", type: "options", field: "transitType",
+      title: "Are you transiting or a crew member?",
+      options: [
+        { label: "Just transiting through the U.S.", value: "TRANSIT", sub: "Immediate and continuous transit to another country (C-1)" },
+        { label: "I'm a crew member",                value: "CREW",    sub: "Serving on a sea vessel or aircraft (D / C-1/D)" },
+      ],
+      canProceed: true,
+    });
+  }
+
+  return steps;
 }
 
 // ─────────────────────────────────────────────────────────────
@@ -69,14 +272,26 @@ export const US_DATA: CountryData = {
   code: "US",
   flag: "🇺🇸",
   getCandidateCodes,
+  buildFollowUpSteps,
+  officialSources: [
+    { label: "USCIS.gov", url: "https://www.uscis.gov" },
+    { label: "travel.state.gov", url: "https://travel.state.gov" },
+  ],
 
   purposes: [
-    { label: "Be with family",                           value: "FAMILY",        sub: "Someone in my family is already there (or will be), and I want to join them" },
+    { label: "Be with family",                                value: "FAMILY",        sub: "Someone in my family is already there (or will be), and I want to join them" },
     { label: "Settle permanently through work or investment", value: "WORK_PERMANENT", sub: "I want to build my career or invest — and stay long-term" },
     { label: "Just visit — tourism, family trip, or medical", value: "VISIT",         sub: "A short trip — I'll be coming back home after" },
-    { label: "Study at a school or university",          value: "STUDY",         sub: "I want to get a degree, take courses, or join an exchange program" },
-    { label: "Work there temporarily",                   value: "WORK_TEMP",     sub: "I have a job offer or my company wants to send me — but I'm not settling forever" },
-    { label: "I need safety or protection",              value: "PROTECTION",    sub: "I'm in danger because of my race, religion, nationality, or political views — or I'm a crime victim" },
+    { label: "Study at a school or university",               value: "STUDY",         sub: "I want to get a degree, take courses, or join an exchange program" },
+    { label: "Work there temporarily",                        value: "WORK_TEMP",     sub: "I have a job offer or my company wants to send me — but I'm not settling forever" },
+    { label: "Transit / Crew member",                         value: "TRANSIT",       sub: "Passing through the U.S. or working on a ship/airline" },
+    { label: "Diplomat / Official",                           value: "DIPLOMATIC",    sub: "Representing a foreign government or international organization" },
+    { label: "I need safety or protection",                   value: "PROTECTION",    sub: "I'm in danger because of my race, religion, nationality, or political views — or I'm a crime victim" },
+    { label: "Investment / Treaty Trade",                     value: "INVEST_TREATY", sub: "My country has a treaty with the U.S. and I want to invest or trade" },
+    { label: "Religious Work",                                value: "RELIGIOUS",     sub: "I want to work for a religious non-profit or church" },
+    { label: "Arts, Athletics, or Entertainment",             value: "ART_ATHLETE",   sub: "I'm a professional athlete, artist, or performer" },
+    { label: "Diversity Visa (Green Card Lottery)",           value: "LOTTERY",       sub: "I want to apply for the annual US Green Card lottery program" },
+    { label: "Media / Journalist",                            value: "MEDIA",         sub: "I work for a foreign media outlet (press, radio, film)" },
   ],
 
   visas: {
@@ -115,6 +330,20 @@ export const US_DATA: CountryData = {
       processing: "Approximately 6–14 months.",
       forms: ["I-130", "DS-260", "I-864"],
     },
+    "IR-3": {
+      code: "IR-3", label: "Orphan Adopted Abroad", badge: "Immediate Relative", color: T.primary,
+      description: "For an orphan who is adopted abroad by a U.S. citizen.",
+      criteria: ["Adoption was completed abroad.", "U.S. citizen child and at least one adoptive parent saw the child before or during the adoption process."],
+      processing: "Varies.",
+      forms: ["I-600", "DS-260"],
+    },
+    "IR-4": {
+      code: "IR-4", label: "Orphan to be Adopted in U.S.", badge: "Immediate Relative", color: T.primary,
+      description: "For an orphan who is coming to the U.S. to be adopted by a U.S. citizen.",
+      criteria: ["Child is coming to the U.S. for adoption.", "Prospective adoptive parents have legal custody of the child."],
+      processing: "Varies.",
+      forms: ["I-600", "DS-260"],
+    },
     "F1": {
       code: "F1", label: "Unmarried Adult Child of U.S. Citizen", badge: "Family Preference — 1st", color: "#0369a1",
       description: "For unmarried sons and daughters aged 21 or older of U.S. citizens. Subject to annual caps.",
@@ -128,6 +357,13 @@ export const US_DATA: CountryData = {
       criteria: ["Petitioner must be a Lawful Permanent Resident (Green Card holder).", "Beneficiary must be the spouse or unmarried child under 21.", "Subject to annual numerical limits."],
       processing: "Approximately 2–4 years.",
       forms: ["I-130", "DS-260", "I-864"],
+    },
+    "K-3": {
+      code: "K-3", label: "Spouse of U.S. Citizen", badge: "Non-Immigrant", color: "#7C3AED",
+      description: "For the spouse of a U.S. citizen while awaiting the processing of an immigrant visa petition (I-130).",
+      criteria: ["Married to a U.S. citizen.", "Form I-130 must have already been filed.", "Allows the spouse to enter the U.S. and adjust status."],
+      processing: "Varies (often similar to I-130 times).",
+      forms: ["I-129F", "I-130"],
     },
     "F2B": {
       code: "F2B", label: "Unmarried Adult Child of Permanent Resident", badge: "Family Preference — 2B", color: "#0369a1",
@@ -220,17 +456,34 @@ export const US_DATA: CountryData = {
       processing: "Days to a few weeks at the embassy.",
       forms: ["DS-2019 (from sponsor)", "DS-160", "SEVIS fee"],
     },
+
+
     "H-1B": {
       code: "H-1B", label: "Specialty Occupation Worker", badge: "Non-Immigrant · Work", color: "#0369a1",
-      description: "For professionals in specialty occupations requiring at least a bachelor's degree.",
-      criteria: ["Position must qualify as a specialty occupation.", "Applicant must hold the qualifying degree or equivalent.", "U.S. employer must file an LCA with the Department of Labor.", "Subject to annual cap of 65,000 (+20,000 for U.S. master's holders) — lottery selection."],
-      processing: "6–8 months after lottery selection. Premium processing available.",
-      forms: ["LCA", "I-129", "DS-160"],
+      description: "For professionals in specialty occupations requiring at least a bachelor's degree. Subject to an annual cap of 85,000 visas (65,000 regular + 20,000 for U.S. master's holders). Beginning with FY 2027, selection uses a WEIGHTED system based on prevailing wage levels — higher-paid positions have a greater chance of selection. Additionally, a Presidential Proclamation (Sep 2025) requires a $100,000 fee for H-1B petitions filed for beneficiaries currently outside the United States (expires Sep 2026; does not apply to change-of-status or extensions).",
+      criteria: [
+        "Position must qualify as a specialty occupation requiring at least a bachelor's degree in a specific field.",
+        "Applicant must hold the qualifying degree or equivalent combination of education and experience.",
+        "U.S. employer must file a Labor Condition Application (LCA) with the Department of Labor and pay the prevailing wage.",
+        "Subject to annual cap: 65,000 regular cap + 20,000 additional for U.S. master's degree holders = 85,000 total per fiscal year.",
+        "FY 2027 onwards: lottery selection is WEIGHTED — registrations linked to higher prevailing wage levels have a greater probability of selection. This replaced the purely random system starting February 2026.",
+        "Important (Sep 2025): If the beneficiary is OUTSIDE the US at time of filing, the employer must pay an additional $100,000 fee under the Presidential Proclamation (Proclamation 10973, expires Sep 21, 2026). Does NOT apply to change-of-status filings.",
+        "Visa Integrity Fee (2026): A mandatory $250 fee for all non-immigrant H and L petition filings.",
+      ],
+      processing: "6–8 months after lottery selection. Premium processing available (expedited to 15 business days for an additional fee, increased from March 1, 2026).",
+      forms: ["LCA (Labor Condition Application)", "I-129", "DS-160 (if consular processing)"],
     },
+
     "L-1": {
       code: "L-1", label: "Intracompany Transferee", badge: "Non-Immigrant · Work", color: "#0369a1",
       description: "For employees transferring to a U.S. branch, subsidiary, or affiliate. L-1A for managers/executives; L-1B for specialized knowledge.",
-      criteria: ["Employed by the same company outside the U.S. for 1 continuous year within the last 3 years.", "L-1A: transferring in a managerial or executive capacity.", "L-1B: transferring in a specialized knowledge capacity.", "Qualifying corporate relationship required."],
+      criteria: [
+        "Employed by the same company outside the U.S. for 1 continuous year within the last 3 years.",
+        "L-1A: transferring in a managerial or executive capacity.",
+        "L-1B: transferring in a specialized knowledge capacity.",
+        "Qualifying corporate relationship required.",
+        "Visa Integrity Fee (2026): A mandatory $250 fee for all non-immigrant H and L petition filings.",
+      ],
       processing: "1–4 months. Premium processing available.",
       forms: ["I-129", "DS-160"],
     },
@@ -261,6 +514,265 @@ export const US_DATA: CountryData = {
       criteria: ["Victim of a qualifying crime (domestic violence, assault, trafficking, robbery, etc.).", "Suffered substantial physical or mental abuse.", "Helpful to law enforcement in the investigation or prosecution.", "Must obtain a law enforcement certification (Form I-918B)."],
       processing: "4–7+ years due to annual cap of 10,000.",
       forms: ["I-918", "I-918B (law enforcement cert)"],
+    },
+    "E-2": {
+      code: "E-2", label: "Treaty Investor", badge: "Non-Immigrant · Investment", color: T.warning,
+      description: "Allows nationals of treaty countries to be admitted to the U.S. when investing a substantial amount of capital in a U.S. business.",
+      criteria: ["Must be a national of a treaty country (e.g., Pakistan).", "Must have invested, or be actively in the process of investing, a substantial amount.", "Must be seeking entry solely to develop and direct the investment enterprise."],
+      processing: "2–4 months.",
+      forms: ["DS-160", "DS-156E"],
+    },
+    "R-1": {
+      code: "R-1", label: "Religious Worker", badge: "Non-Immigrant · Religion", color: "#8B5CF6",
+      description: "For people coming to the U.S. temporarily to be employed at least part-time by a non-profit religious organization.",
+      criteria: ["Must be a member of a religious denomination for at least 2 years.", "Coming to work as a minister or in a religious vocation/occupation.", "Must work for a bona fide non-profit religious organization."],
+      processing: "6–10 months.",
+      forms: ["I-129", "DS-160"],
+    },
+    "P-1": {
+      code: "P-1", label: "Athlete / Group Performer", badge: "Non-Immigrant · Arts", color: "#EC4899",
+      description: "For internationally recognized athletes or members of an entertainment group.",
+      criteria: ["Athlete: internationally recognized.", "Group: must have been together for at least 1 year.", "Specific competition or performance required."],
+      processing: "2–4 months.",
+      forms: ["I-129", "DS-160"],
+    },
+    "P-3": {
+      code: "P-3", label: "Culturally Unique Artist", badge: "Non-Immigrant · Arts", color: "#EC4899",
+      description: "For artists or entertainers coming to the U.S. to perform, teach, or coach under a program that is culturally unique.",
+      criteria: ["Program must be culturally unique.", "Evidence of excellence and uniqueness required.", "Coming for the purpose of developing, interpreting, representing, coaching, or teaching."],
+      processing: "2–4 months.",
+      forms: ["I-129", "DS-160"],
+    },
+    "DV-1": {
+      code: "DV-1", label: "Diversity Visa", badge: "Immigrant Lottery", color: T.success,
+      description: "Annual lottery program for individuals from countries with historically low rates of immigration to the United States.",
+      criteria: ["Must be a native of a qualifying country.", "Must have at least a high school education or 2 years of qualifying work experience.", "Must be selected in the annual lottery."],
+      processing: "Annual cycle; selection usually in May.",
+      forms: ["DS-5501 (electronic entry)", "DS-260 (if selected)"],
+    },
+    "H-2A": {
+      code: "H-2A", label: "Temporary Agricultural Worker", badge: "Non-Immigrant · Work", color: "#0369a1",
+      description: "For agricultural work of a temporary or seasonal nature.",
+      criteria: ["Must have a job offer from a U.S. employer for temporary agricultural work.", "Employer must obtain a temporary labor certification from the DOL.", "Must be from a designated eligible country."],
+      processing: "1–3 months.",
+      forms: ["I-129", "DS-160"],
+    },
+    "H-2B": {
+      code: "H-2B", label: "Temporary Non-Agricultural Worker", badge: "Non-Immigrant · Work", color: "#0369a1",
+      description: "For non-agricultural work of a temporary or seasonal nature.",
+      criteria: ["Must have a job offer for temporary non-agricultural work.", "Employer must prove there are no U.S. workers available.", "Subject to an annual cap (66,000 per year)."],
+      processing: "1–3 months.",
+      forms: ["I-129", "DS-160"],
+    },
+    "H-3": {
+      code: "H-3", label: "Non-Immigrant Trainee", badge: "Non-Immigrant · Work", color: "#0369a1",
+      description: "For training in any field of endeavor, other than graduate medical education or training, that is not available in the home country.",
+      criteria: ["Must be invited by an individual or organization for training.", "Training must not be available in your home country.", "Must not be engaged in productive employment unless incidental to training."],
+      processing: "2–4 months.",
+      forms: ["I-129", "DS-160"],
+    },
+    "H-4": {
+      code: "H-4", label: "Dependent of H Visa Holder", badge: "Non-Immigrant · Dependent", color: "#94a3b8",
+      description: "For spouses and children under 21 of H-1B, H-2A, H-2B, or H-3 visa holders.",
+      criteria: ["Must be the spouse or unmarried child (under 21) of a principal H visa holder.", "Principal must maintain valid H status."],
+      processing: "Varies; usually processed with principal.",
+      forms: ["I-539", "DS-160"],
+    },
+    "L-2": {
+      code: "L-2", label: "Dependent of L-1 Holder", badge: "Non-Immigrant · Dependent", color: "#94a3b8",
+      description: "For spouses and children under 21 of L-1A or L-1B visa holders.",
+      criteria: ["Spouse or unmarried child under 21 of an L-1 holder.", "Principal must maintain valid L-1 status.", "Spouses are authorized to work in the U.S. (incident to status)."],
+      processing: "Varies; usually same as principal.",
+      forms: ["I-539", "DS-160"],
+    },
+    "C-1": {
+      code: "C-1", label: "Transit Visa", badge: "Non-Immigrant · Transit", color: "#475569",
+      description: "For individuals in immediate and continuous transit through the United States en route to another country.",
+      criteria: ["Must show immediate and continuous transit.", "Must have a ticket or other evidence of transportation to destination.", "Must have permission to enter your destination country."],
+      processing: "Days to weeks.",
+      forms: ["DS-160"],
+    },
+    "D": {
+      code: "D", label: "Crewmember Visa", badge: "Non-Immigrant · Crew", color: "#475569",
+      description: "For crewmembers serving onboard a sea vessel or aircraft in the United States.",
+      criteria: ["Must be a crewmember on a vessel or aircraft.", "The vessel/aircraft must be in the U.S. temporarily.", "Must intend to depart on a vessel/aircraft within 29 days."],
+      processing: "Days to weeks.",
+      forms: ["DS-160"],
+    },
+    "C-1/D": {
+      code: "C-1/D", label: "Transit/Crewmember Visa", badge: "Non-Immigrant · Crew", color: "#475569",
+      description: "A combination visa for crewmembers transiting to join a vessel or aircraft.",
+      criteria: ["Qualify as both a transit traveler and a crewmember."],
+      processing: "Days to weeks.",
+      forms: ["DS-160"],
+    },
+    "E-1": {
+      code: "E-1", label: "Treaty Trader", badge: "Non-Immigrant · Trade", color: T.warning,
+      description: "For nationals of a country with which the United States maintains a treaty of commerce and navigation who are coming to engage in substantial trade.",
+      criteria: ["Must be a national of a treaty country.", "Engagement in substantial trade primarily between the U.S. and the treaty country."],
+      processing: "2–4 months.",
+      forms: ["DS-160", "DS-156E"],
+    },
+    "E-3": {
+      code: "E-3", label: "Specialty Occupation (Australia)", badge: "Non-Immigrant · Work", color: "#0369a1",
+      description: "For Australian nationals coming to the U.S. to perform services in a specialty occupation.",
+      criteria: ["Must be an Australian citizen.", "Possess a bachelor's degree or higher in the specialty field.", "Have a legitimate offer of employment in the U.S."],
+      processing: "1–2 months.",
+      forms: ["LCA", "DS-160"],
+    },
+    "A-1": {
+      code: "A-1", label: "Diplomat / Government Official", badge: "Official", color: "#1e293b",
+      description: "For ambassadors, public ministers, career diplomatic or consular officers, and their immediate family members.",
+      criteria: ["Must be traveling to the U.S. on behalf of your national government to engage solely in official activities."],
+      processing: "Varies.",
+      forms: ["DS-1648"],
+    },
+    "A-2": {
+      code: "A-2", label: "Other Government Official", badge: "Official", color: "#1e293b",
+      description: "For other accredited officials and employees of foreign governments and their immediate family members.",
+      criteria: ["Must be traveling to the U.S. to engage in official government business."],
+      processing: "Varies.",
+      forms: ["DS-1648"],
+    },
+    "G-1": {
+      code: "G-1", label: "Rep of International Org (Principal)", badge: "Official", color: "#1e293b",
+      description: "Members of a permanent mission of a recognized government to an international organization.",
+      criteria: ["Accredited representative of a government to an international organization (like the UN or World Bank)."],
+      processing: "Varies.",
+      forms: ["DS-1648"],
+    },
+    "G-2": {
+      code: "G-2", label: "Other Rep of recognized government", badge: "Official", color: "#1e293b",
+      description: "Representatives of a recognized government traveling to the U.S. temporarily to attend meetings of a designated international organization.",
+      criteria: ["Official representative of a recognized government."],
+      processing: "Varies.",
+      forms: ["DS-1648"],
+    },
+    "G-4": {
+      code: "G-4", label: "International Org Officer/Employee", badge: "Official", color: "#1e293b",
+      description: "Individual who is heading to the U.S. to take up an appointment at a designated international organization (e.g., UN, IMF).",
+      criteria: ["Must have an appointment from a designated international organization."],
+      processing: "Varies.",
+      forms: ["DS-1648"],
+    },
+    "O-2": {
+      code: "O-2", label: "Essential Support for O-1", badge: "Non-Immigrant · Support", color: "#94a3b8",
+      description: "For individuals who will accompany an O-1 artist or athlete to assist in a specific event or performance.",
+      criteria: ["Must be an integral part of the O-1's actual performance.", "Must have critical skills and experience with the O-1 that are not of a general nature."],
+      processing: "2–4 months.",
+      forms: ["I-129", "DS-160"],
+    },
+    "O-3": {
+      code: "O-3", label: "Dependent of O-1/O-2", badge: "Non-Immigrant · Dependent", color: "#94a3b8",
+      description: "For spouses and children of O-1 and O-2 visa holders.",
+      criteria: ["Spouse or unmarried child under 21 of an O-1 or O-2 holder."],
+      processing: "Varies.",
+      forms: ["DS-160"],
+    },
+    "P-2": {
+      code: "P-2", label: "Artist/Entertainer (Exchange Program)", badge: "Non-Immigrant · Arts", color: "#EC4899",
+      description: "For artists or entertainers who will perform under a reciprocal exchange program between a U.S. organization and an organization in another country.",
+      criteria: ["Must be coming to perform under a reciprocal exchange program.", "Possess skills comparable to those of the U.S. artists/entertainers taking part in the program outside the U.S."],
+      processing: "2-4 months.",
+      forms: ["I-129", "DS-160"],
+    },
+    "P-4": {
+      code: "P-4", label: "Dependent of P-1, P-2, or P-3", badge: "Non-Immigrant · Dependent", color: "#94a3b8",
+      description: "For spouses and children of P-1, P-2, and P-3 visa holders.",
+      criteria: ["Spouse or unmarried child under 21 of a P-1, P-2, or P-3 holder."],
+      processing: "Varies.",
+      forms: ["DS-160"],
+    },
+    "F-2": {
+      code: "F-2", label: "Dependent of F-1 Student", badge: "Non-Immigrant · Dependent", color: "#94a3b8",
+      description: "For spouses and children of F-1 student visa holders.",
+      criteria: ["Spouse or unmarried child under 21 of an F-1 holder.", "Principal must maintain full-time student status."],
+      processing: "Varies.",
+      forms: ["DS-160", "I-20 (Dependent)"],
+    },
+    "M-2": {
+      code: "M-2", label: "Dependent of M-1 Student", badge: "Non-Immigrant · Dependent", color: "#94a3b8",
+      description: "For spouses and children of M-1 vocational student visa holders.",
+      criteria: ["Spouse or unmarried child under 21 of an M-1 holder."],
+      processing: "Varies.",
+      forms: ["DS-160", "I-20 (Dependent)"],
+    },
+    "J-2": {
+      code: "J-2", label: "Dependent of J-1 Exchange Visitor", badge: "Non-Immigrant · Dependent", color: "#94a3b8",
+      description: "For spouses and children of J-1 exchange visitor visa holders.",
+      criteria: ["Spouse or unmarried child under 21 of a J-1 holder.", "J-2 holders may apply for work authorization (EAD)."],
+      processing: "Varies.",
+      forms: ["DS-160", "DS-2019 (Dependent)"],
+    },
+    "R-2": {
+      code: "R-2", label: "Dependent of R-1 Holder", badge: "Non-Immigrant · Dependent", color: "#94a3b8",
+      description: "For spouses and children of R-1 religious worker visa holders.",
+      criteria: ["Spouse or unmarried child under 21 of an R-1 holder."],
+      processing: "Varies.",
+      forms: ["DS-160"],
+    },
+    "K-2": {
+      code: "K-2", label: "Child of K-1 Fiance(e)", badge: "Non-Immigrant", color: "#7C3AED",
+      description: "For the child of a K-1 fiancé(e) visa holder.",
+      criteria: ["Unmarried child under 21 of a K-1 holder.", "Must be listed on the I-129F petition."],
+      processing: "Processed with K-1.",
+      forms: ["DS-160"],
+    },
+    "K-4": {
+      code: "K-4", label: "Child of K-3 Spouse", badge: "Non-Immigrant", color: "#7C3AED",
+      description: "For the child of a K-3 visa holder.",
+      criteria: ["Unmarried child under 21 of a K-3 holder."],
+      processing: "Processed with K-3.",
+      forms: ["DS-160"],
+    },
+    "EB-4": {
+      code: "EB-4", label: "Special Immigrants", badge: "Employment — 4th Preference", color: T.success,
+      description: "A category for various special classes of immigrants including religious workers, special education teachers, and certain retirees.",
+      criteria: ["Must meet the specific requirements of one of the many sub-groups (e.g., Religious worker).", "Most require Form I-360."],
+      processing: "12–24 months.",
+      forms: ["I-360", "DS-260 or I-485"],
+    },
+    "SI": {
+      code: "SI", label: "SIV — Iraqi/Afghan Translators", badge: "Special Immigrant", color: T.success,
+      description: "For certain Iraqi and Afghan nationals who worked as translators/interpreters for the U.S. Armed Forces.",
+      criteria: ["Served as a translator/interpreter directly with the U.S. Armed Forces.", "Obtain a letter of recommendation from a General or Flag Officer."],
+      processing: "Varies.",
+      forms: ["I-360", "DS-260"],
+    },
+    "SQ": {
+      code: "SQ", label: "SIV — Iraqi/Afghan Employees", badge: "Special Immigrant", color: T.success,
+      description: "For certain Iraqi and Afghan nationals who were employed by or on behalf of the U.S. government.",
+      criteria: ["Employed by or on behalf of the U.S. government for at least one year.", "Experienced an ongoing serious threat because of that employment."],
+      processing: "Varies.",
+      forms: ["I-360", "DS-260"],
+    },
+    "I-Visa": {
+      code: "I", label: "Media / Journalist Visa", badge: "Non-Immigrant · Media", color: "#475569",
+      description: "For representatives of foreign media (press, radio, film, or other information media) traveling to the U.S. to engage in their profession.",
+      criteria: ["Must be a representative of a foreign media outlet.", "Engaged in qualifying information-dissemination activities.", "Must have credentials from the media organization."],
+      processing: "Days to weeks.",
+      forms: ["DS-160", "Employer support letter"],
+    },
+    "T-Visa": {
+      code: "T", label: "Trafficking Victim Visa", badge: "Humanitarian", color: "#DC2626",
+      description: "For victims of severe forms of human trafficking who are in the U.S. and assist law enforcement.",
+      criteria: ["Victim of a severe form of human trafficking.", "Physically present in the U.S. on account of trafficking.", "Complied with reasonable requests for assistance from law enforcement.", "Would suffer extreme hardship involving unusual and severe harm if removed."],
+      processing: "12-24 months.",
+      forms: ["I-914"],
+    },
+    "M-Visa": {
+      code: "M-1", label: "Vocational Student Visa", badge: "Non-Immigrant · Study", color: "#6366F1",
+      description: "For students attending vocational or other non-academic programs (e.g., flight school, technical training).",
+      criteria: ["Accepted by a SEVP-certified vocational institution.", "Obtain Form I-20.", "Sufficient funds for duration of study.", "Nonimmigrant intent."],
+      processing: "Days to weeks.",
+      forms: ["I-20", "DS-160", "SEVIS fee"],
+    },
+    "Q-Visa": {
+      code: "Q-1", label: "Cultural Exchange Visitor", badge: "Non-Immigrant · Exchange", color: "#6366F1",
+      description: "For participants in international cultural exchange programs that provide practical training and employment and the sharing of history, culture, and traditions.",
+      criteria: ["Program must be designated by USCIS.", "Participant must be at least 18 years old.", "Must be able to communicate effectively about their home country's culture."],
+      processing: "2-4 months.",
+      forms: ["I-129", "DS-160"],
     },
   },
 
@@ -352,9 +864,9 @@ export const US_DATA: CountryData = {
       { id:"insurance", question:"Will you have qualifying health insurance for the duration?", source:"22 CFR 62.14 — J-1 health insurance requirement", sourceUrl:"https://travel.state.gov/content/travel/en/us-visas/study/exchange.html", passWith:["YES"], failMsg:"Health insurance meeting State Department standards is required.", options:[{label:"Yes",value:"YES"},{label:"No",value:"NO"}] },
     ],
     "H-1B": [
-      { id:"specialty", question:"Does the U.S. job qualify as a specialty occupation — requiring at least a bachelor's degree?", source:"USCIS — H-1B: Specialty Occupation Workers", sourceUrl:"https://www.uscis.gov/working-in-the-united-states/temporary-workers/h-1b-specialty-occupations", passWith:["YES"], failMsg:"H-1B is for specialty occupations requiring a bachelor's or higher.", options:[{label:"Yes",value:"YES"},{label:"No / General position",value:"NO"}] },
-      { id:"degree", question:"Do you hold a bachelor's degree or higher in the specific field?", source:"USCIS — degree must be directly related", sourceUrl:"https://www.uscis.gov/working-in-the-united-states/temporary-workers/h-1b-specialty-occupations", passWith:["YES"], failMsg:"Must hold a qualifying degree in the relevant field.", options:[{label:"Yes",value:"YES"},{label:"No",value:"NO"}] },
-      { id:"employer", question:"Does a U.S. employer agree to sponsor you?", source:"USCIS — H-1B requires employer-filed LCA and I-129", sourceUrl:"https://www.uscis.gov/working-in-the-united-states/temporary-workers/h-1b-specialty-occupations", passWith:["YES"], failMsg:"H-1B cannot be self-petitioned.", options:[{label:"Yes, employer will sponsor",value:"YES"},{label:"No",value:"NO"}] },
+      { id:"specialty", question:"Does the U.S. job qualify as a specialty occupation — requiring at least a bachelor's degree in a specific field?", source:"USCIS — H-1B: Specialty Occupation Workers", sourceUrl:"https://www.uscis.gov/working-in-the-united-states/temporary-workers/h-1b-specialty-occupations", passWith:["YES"], failMsg:"H-1B is for specialty occupations requiring a bachelor's or higher.", options:[{label:"Yes",value:"YES"},{label:"No / General position",value:"NO"}] },
+      { id:"degree", question:"Do you hold a bachelor's degree or higher in the specific field — or an equivalent combination of education and experience?", source:"USCIS — degree must be directly related to the specialty occupation", sourceUrl:"https://www.uscis.gov/working-in-the-united-states/temporary-workers/h-1b-specialty-occupations", passWith:["YES"], failMsg:"Must hold a qualifying degree or equivalent in the relevant field.", options:[{label:"Yes",value:"YES"},{label:"No",value:"NO"}] },
+      { id:"employer", question:"Does a U.S. employer agree to sponsor you and file a Labor Condition Application (LCA)?", source:"USCIS — H-1B requires employer-filed LCA and I-129 (cannot be self-petitioned)", sourceUrl:"https://www.uscis.gov/working-in-the-united-states/temporary-workers/h-1b-specialty-occupations", passWith:["YES"], failMsg:"H-1B cannot be self-petitioned. An employer must sponsor you, file the LCA with the Department of Labor, and submit Form I-129.", options:[{label:"Yes, employer will sponsor",value:"YES"},{label:"No",value:"NO"}] },
     ],
     "L-1": [
       { id:"one_year", question:"Have you been continuously employed by the same company outside the U.S. for at least 1 year in the past 3 years?", source:"USCIS — L-1 requires 1 continuous year", sourceUrl:"https://www.uscis.gov/working-in-the-united-states/temporary-workers/l-1a-intracompany-transferee-executive-or-manager", passWith:["YES"], failMsg:"At least 1 continuous year required.", options:[{label:"Yes",value:"YES"},{label:"No",value:"NO"}] },
@@ -380,5 +892,67 @@ export const US_DATA: CountryData = {
       { id:"abuse", question:"Did you suffer substantial physical or mental abuse as a result of the crime?", source:"USCIS — must have suffered substantial abuse", sourceUrl:"https://www.uscis.gov/humanitarian/victims-of-human-trafficking-and-other-crimes/victims-of-criminal-activity-u-nonimmigrant-status", passWith:["YES"], failMsg:"The U Visa requires substantial abuse.", options:[{label:"Yes",value:"YES"},{label:"No / Minor harm only",value:"NO"}] },
       { id:"le_coop", question:"Are you willing to cooperate with law enforcement and can you obtain a Form I-918B certification?", source:"USCIS — must be helpful to law enforcement", sourceUrl:"https://www.uscis.gov/humanitarian/victims-of-human-trafficking-and-other-crimes/victims-of-criminal-activity-u-nonimmigrant-status", passWith:["YES"], failMsg:"U Visa requires cooperation with law enforcement.", options:[{label:"Yes",value:"YES"},{label:"No",value:"NO"}] },
     ],
+    "E-2": [
+      { id:"treaty_country", question:"Are you a national of an E-2 treaty country (e.g., Pakistan, UK, Germany)?", source:"USCIS — E-2 requires treaty nationality", sourceUrl:"https://www.uscis.gov/working-in-the-united-states/temporary-workers/e-2-treaty-investors", passWith:["YES"], failMsg:"E-2 is only for nationals of treaty countries.", options:[{label:"Yes",value:"YES"},{label:"No",value:"NO"}] },
+      { id:"substantial", question:"Are you investing a 'substantial' amount of capital (typically $100k+)?", source:"USCIS — E-2 requires substantial investment", sourceUrl:"https://www.uscis.gov/working-in-the-united-states/temporary-workers/e-2-treaty-investors", passWith:["YES"], failMsg:"USCIS requires the investment to be substantial in relation to the business cost.", options:[{label:"Yes",value:"YES"},{label:"No / Low amount",value:"NO"}] },
+      { id:"control", question:"Do you have at least 50% ownership or operational control of the enterprise?", source:"USCIS — must develop and direct the investment", sourceUrl:"https://www.uscis.gov/working-in-the-united-states/temporary-workers/e-2-treaty-investors", passWith:["YES"], failMsg:"Must have the power to develop and direct the enterprise.", options:[{label:"Yes",value:"YES"},{label:"No",value:"NO"}] },
+    ],
+    "R-1": [
+      { id:"member_2yr", question:"Have you been a member of the religious denomination for at least the last 2 years?", source:"USCIS — R-1 requires 2-year membership", sourceUrl:"https://www.uscis.gov/working-in-the-united-states/temporary-workers/r-1-nonimmigrant-religious-workers", passWith:["YES"], failMsg:"R-1 requires 2 years of prior membership.", options:[{label:"Yes",value:"YES"},{label:"No",value:"NO"}] },
+      { id:"non_profit", question:"Is your U.S. employer a bona-fide non-profit religious organization?", source:"USCIS — employer must be a 501(c)(3) religious non-profit", sourceUrl:"https://www.uscis.gov/working-in-the-united-states/temporary-workers/r-1-nonimmigrant-religious-workers", passWith:["YES"], failMsg:"Employer must qualify as a religious non-profit.", options:[{label:"Yes",value:"YES"},{label:"No",value:"NO"}] },
+    ],
+    "P-1": [
+      { id:"int_recog", question:"Are you internationally recognized as outstanding in your sport or group?", source:"USCIS — P-1: internationally recognized", sourceUrl:"https://www.uscis.gov/working-in-the-united-states/temporary-workers/p-1a-internationally-recognized-athlete", passWith:["YES"], failMsg:"P-1 requires international recognition.", options:[{label:"Yes",value:"YES"},{label:"No",value:"NO"}] },
+    ],
+    "DV-1": [
+      { id:"education", question:"Do you have at least a high school education or 2 years of qualifying work experience?", source:"Dept of State — DV Lottery requirements", sourceUrl:"https://travel.state.gov/content/travel/en/us-visas/immigrate/diversity-visa-program-instructions.html", passWith:["YES"], failMsg:"Minimum education or work experience is required.", options:[{label:"Yes",value:"YES"},{label:"No",value:"NO"}] },
+      { id:"passport", question:"Do you have a valid international passport?", source:"DV entry requirement", sourceUrl:"https://travel.state.gov/content/travel/en/us-visas/immigrate/diversity-visa-program-instructions.html", passWith:["YES"], failMsg:"A valid passport is required for entry.", options:[{label:"Yes",value:"YES"},{label:"No",value:"NO"}] },
+    ],
+    "H-2A": [
+      { id:"ag_offer", question:"Do you have a temporary or seasonal agricultural job offer in the U.S.?", source:"USCIS — H-2A requirement", sourceUrl:"https://www.uscis.gov/working-in-the-united-states/temporary-workers/h-2a-temporary-agricultural-workers", passWith:["YES"], failMsg:"H-2A requires a specific agricultural job offer.", options:[{label:"Yes",value:"YES"},{label:"No",value:"NO"}] },
+      { id:"labor_cert", question:"Has your employer obtained a temporary labor certification from the Department of Labor?", source:"USCIS — H-2A labor certification", sourceUrl:"https://www.uscis.gov/working-in-the-united-states/temporary-workers/h-2a-temporary-agricultural-workers", passWith:["YES"], failMsg:"A valid labor certification is mandatory.", options:[{label:"Yes",value:"YES"},{label:"No",value:"NO"}] },
+    ],
+    "H-2B": [
+      { id:"non_ag_offer", question:"Do you have a temporary or seasonal non-agricultural job offer in the U.S.?", source:"USCIS — H-2B requirement", sourceUrl:"https://www.uscis.gov/working-in-the-united-states/temporary-workers/h-2b-temporary-non-agricultural-workers", passWith:["YES"], failMsg:"H-2B requires a specific non-agricultural job offer.", options:[{label:"Yes",value:"YES"},{label:"No",value:"NO"}] },
+      { id:"labor_cert", question:"Has your employer obtained a temporary labor certification from the Department of Labor?", source:"USCIS — H-2B labor certification", sourceUrl:"https://www.uscis.gov/working-in-the-united-states/temporary-workers/h-2b-temporary-non-agricultural-workers", passWith:["YES"], failMsg:"A valid labor certification is mandatory.", options:[{label:"Yes",value:"YES"},{label:"No",value:"NO"}] },
+    ],
+    "C-1": [
+      { id:"transit_intent", question:"Are you in immediate and continuous transit through the U.S. to another country?", source:"travel.state.gov — C-1 transit", sourceUrl:"https://travel.state.gov/content/travel/en/us-visas/other-visas/transit.html", passWith:["YES"], failMsg:"C-1 requires immediate and continuous transit.", options:[{label:"Yes",value:"YES"},{label:"No",value:"NO"}] },
+    ],
+    "D": [
+      { id:"crew_status", question:"Are you a crewmember serving on a sea vessel or aircraft?", source:"travel.state.gov — D visa", sourceUrl:"https://travel.state.gov/content/travel/en/us-visas/other-visas/crewmember-visas.html", passWith:["YES"], failMsg:"D visa is for serving crewmembers only.", options:[{label:"Yes",value:"YES"},{label:"No",value:"NO"}] },
+    ],
+    "E-1": [
+      { id:"treaty_national", question:"Are you a national of a treaty country?", source:"USCIS — E-1 Treaty Trader", sourceUrl:"https://www.uscis.gov/working-in-the-united-states/temporary-workers/e-1-treaty-traders", passWith:["YES"], failMsg:"E-1 requires treaty country nationality.", options:[{label:"Yes",value:"YES"},{label:"No",value:"NO"}] },
+      { id:"trade_volume", question:"Will you engage in 'substantial trade' primarily between the U.S. and your country?", source:"USCIS — E-1 trade requirement", sourceUrl:"https://www.uscis.gov/working-in-the-united-states/temporary-workers/e-1-treaty-traders", passWith:["YES"], failMsg:"Substantial trade volume is required.", options:[{label:"Yes",value:"YES"},{label:"No",value:"NO"}] },
+    ],
+    "E-3": [
+      { id:"aus_citizen", question:"Are you a citizen of Australia?", source:"USCIS — E-3 for Australians", sourceUrl:"https://www.uscis.gov/working-in-the-united-states/temporary-workers/e-3-specialty-occupation-workers-from-australia", passWith:["YES"], failMsg:"E-3 is exclusively for Australian citizens.", options:[{label:"Yes",value:"YES"},{label:"No",value:"NO"}] },
+    ],
+    "K-3": [
+      { id:"i130_filed", question:"Has your U.S. citizen spouse already filed Form I-130 for you?", source:"USCIS — K-3 spouse requirement", sourceUrl:"https://www.uscis.gov/family/family-of-us-citizens/visas-for-spouses-of-us-citizens-k-3", passWith:["YES"], failMsg:"K-3 requires a pending I-130 petition.", options:[{label:"Yes",value:"YES"},{label:"No",value:"NO"}] },
+    ],
+    "EB-4": [
+      { id:"special_class", question:"Do you belong to a recognized special immigrant category (e.g., Religious Worker, Special Education Teacher)?", source:"USCIS — EB-4 categories", sourceUrl:"https://www.uscis.gov/working-in-the-united-states/permanent-workers/employment-based-immigration-fourth-preference-eb-4", passWith:["YES"], failMsg:"Must meet specific criteria for a recognized special class.", options:[{label:"Yes",value:"YES"},{label:"No",value:"NO"}] },
+    ],
+    "SQ": [
+      { id:"threat", question:"Have you experienced an ongoing serious threat because of your employment by the U.S. government?", source:"Dept of State — SIV SQ", sourceUrl:"https://travel.state.gov/content/travel/en/us-visas/immigrate/special-immg-visa-afghans-employed-us-gov.html", passWith:["YES"], failMsg:"SQ requires evidence of a serious threat.", options:[{label:"Yes",value:"YES"},{label:"No",value:"NO"}] },
+    ],
+    "H-4": [{ id:"dependent_rel", question:"Are you the spouse or unmarried child under 21 of the principal H-visa holder?", source:"USCIS", sourceUrl:"https://www.uscis.gov", passWith:["YES"], failMsg:"Required to be a qualifying dependent.", options:[{label:"Yes",value:"YES"},{label:"No",value:"NO"}] }],
+    "L-2": [{ id:"dependent_rel", question:"Are you the spouse or unmarried child under 21 of the principal L-1 holder?", source:"USCIS", sourceUrl:"https://www.uscis.gov", passWith:["YES"], failMsg:"Required to be a qualifying dependent.", options:[{label:"Yes",value:"YES"},{label:"No",value:"NO"}] }],
+    "F-2": [{ id:"dependent_rel", question:"Are you the spouse or unmarried child under 21 of the principal F-1 holder?", source:"USCIS", sourceUrl:"https://www.uscis.gov", passWith:["YES"], failMsg:"Required to be a qualifying dependent.", options:[{label:"Yes",value:"YES"},{label:"No",value:"NO"}] }],
+    "M-2": [{ id:"dependent_rel", question:"Are you the spouse or unmarried child under 21 of the principal M-1 holder?", source:"USCIS", sourceUrl:"https://www.uscis.gov", passWith:["YES"], failMsg:"Required to be a qualifying dependent.", options:[{label:"Yes",value:"YES"},{label:"No",value:"NO"}] }],
+    "J-2": [{ id:"dependent_rel", question:"Are you the spouse or unmarried child under 21 of the principal J-1 holder?", source:"USCIS", sourceUrl:"https://www.uscis.gov", passWith:["YES"], failMsg:"Required to be a qualifying dependent.", options:[{label:"Yes",value:"YES"},{label:"No",value:"NO"}] }],
+    "O-3": [{ id:"dependent_rel", question:"Are you the spouse or unmarried child under 21 of the principal O-1/O-2 holder?", source:"USCIS", sourceUrl:"https://www.uscis.gov", passWith:["YES"], failMsg:"Required to be a qualifying dependent.", options:[{label:"Yes",value:"YES"},{label:"No",value:"NO"}] }],
+    "P-4": [{ id:"dependent_rel", question:"Are you the spouse or unmarried child under 21 of the principal P-1/P-2/P-3 holder?", source:"USCIS", sourceUrl:"https://www.uscis.gov", passWith:["YES"], failMsg:"Required to be a qualifying dependent.", options:[{label:"Yes",value:"YES"},{label:"No",value:"NO"}] }],
+    "R-2": [{ id:"dependent_rel", question:"Are you the spouse or unmarried child under 21 of the principal R-1 holder?", source:"USCIS", sourceUrl:"https://www.uscis.gov", passWith:["YES"], failMsg:"Required to be a qualifying dependent.", options:[{label:"Yes",value:"YES"},{label:"No",value:"NO"}] }],
+    "IR-3": [
+      { id:"adopted_abroad", question:"Was the adoption completed abroad and did both parents see the child?", source:"USCIS — IR-3 Orphan Adoption", sourceUrl:"https://www.uscis.gov/adoption/adoption-process/bringing-your-internationally-adopted-child-to-the-united-states", passWith:["YES"], failMsg:"IR-3 requires adoption completion abroad.", options:[{label:"Yes",value:"YES"},{label:"No",value:"NO"}] },
+    ],
+    "IR-4": [
+      { id:"adopt_in_us", question:"Is the child coming to the U.S. specifically to be adopted?", source:"USCIS — IR-4 process", sourceUrl:"https://www.uscis.gov/adoption/adoption-process/bringing-your-internationally-adopted-child-to-the-united-states", passWith:["YES"], failMsg:"IR-4 is for children who will be adopted in the U.S.", options:[{label:"Yes",value:"YES"},{label:"No",value:"NO"}] },
+    ],
+    "K-2": [{ id:"dependent_rel", question:"Are you the unmarried child under 21 of a K-1 fiancé(e)?", source:"USCIS", sourceUrl:"https://www.uscis.gov", passWith:["YES"], failMsg:"Required to be a qualifying dependent.", options:[{label:"Yes",value:"YES"},{label:"No",value:"NO"}] }],
+    "K-4": [{ id:"dependent_rel", question:"Are you the unmarried child under 21 of a K-3 spouse?", source:"USCIS", sourceUrl:"https://www.uscis.gov", passWith:["YES"], failMsg:"Required to be a qualifying dependent.", options:[{label:"Yes",value:"YES"},{label:"No",value:"NO"}] }],
   },
 };

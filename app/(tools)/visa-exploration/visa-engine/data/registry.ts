@@ -7,15 +7,24 @@
 
 import { CountryData } from "../types";
 import { US_DATA } from "./us";
+import { UK_DATA } from "./uk";
+import { GERMANY_DATA } from "./germany";
+import { AUSTRALIA_DATA } from "./australia";
+import { CHINA_DATA } from "./china";
+import { CANADA_DATA } from "./canada";
+import { ITALY_DATA } from "./italy";
 
 // ─────────────────────────────────────────────────────────────
 // REGISTRY  — add new countries here only
 // ─────────────────────────────────────────────────────────────
 export const COUNTRY_REGISTRY: Record<string, CountryData> = {
   "United States": US_DATA,
-  // "United Kingdom": UK_DATA,   ← uncomment when uk.ts is ready
-  // "Canada":         CA_DATA,
-  // "Australia":      AU_DATA,
+  "United Kingdom": UK_DATA,
+  "Germany": GERMANY_DATA,
+  "Australia": AUSTRALIA_DATA,
+  "China": CHINA_DATA,
+  "Canada": CANADA_DATA,
+  "Italy": ITALY_DATA,
 };
 
 export const SUPPORTED_DESTINATIONS = Object.keys(COUNTRY_REGISTRY);
