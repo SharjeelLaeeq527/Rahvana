@@ -1,181 +1,244 @@
 {
   "categorySlug": "ir-1-spouse",
-  "version": "1.0.0",
+  "version": "3.1.0",
+  "description": "Smart rules engine that actually filters questions intelligently.",
+  "designPrinciples": {
+    "philosophy": "Provide ONLY questions relevant to case profile. No question overload.",
+    "baseQuestions": "13 essential questions always shown (Relationship Origin, Basic Case Info, Security, Travel)",
+    "selectiveAdditions": "Add more based on case characteristics.",
+    "conditionalsWork": "Rules now have REAL conditions"
+  },
+  "selectionStrategy": {
+    "approach": "Layered filtering with true conditional logic",
+    "baselineQuestionCount": 13,
+    "maxQuestionsPerSession": 25,
+    "priorityHierarchy": ["critical", "high", "medium", "low"]
+  },
   "questionSelectionRules": [
     {
-      "id": "rule_core_basic_case_information",
-      "name": "Core - Basic Case Information",
-      "description": "Always include basic case information questions as foundation for any interview",
+      "id": "rule-critical-foundation",
+      "name": "Critical foundation - shown in ALL cases",
+      "description": "These questions establish basic relationship existence, authenticity proof, and immigration intent. Non-negotiable for every case.",
+      "priority": "critical",
+      "condition": {
+        "type": "AND",
+        "conditions": []
+      },
+      "actions": {
+        "includeCategories": [
+          "Basic Case Information",
+          "Relationship Origin",
+          "Security",
+          "Travel"
+        ],
+        "priorityBoost": ["critical"],
+        "relevanceScore": 100,
+        "reason": "Foundation category for all IR-1 spouse cases. Establishes relationship existence and identity verification. Mandatory."
+      }
+    },
+    {
+      "id": "rule-relationship-timeline-strength",
+      "name": "Relationship Timeline & Strength - shown when relationship under 2 years",
+      "description": "Recent relationships need more timeline-focused questions to establish authenticity. Longer relationships can skip some foundation questions.",
+      "priority": "high",
       "condition": {
         "type": "AND",
         "conditions": [
           {
-            "field": "beneficiary_country",
+            "field": "relationship_origin_type",
             "operator": "notEquals",
-            "value": ""
+            "value": "Arranged/Family"
           }
         ]
       },
       "actions": {
-        "includeCategories": ["Basic Case Information"],
+        "includeCategories": [
+          "Relationship Timeline",
+          "Marriage Decision"
+        ],
         "priorityBoost": ["high"],
-        "reason": "Basic case information forms the foundation of every interview"
+        "relevanceScore": 85,
+        "reason": "Natural origin relationships need timeline proof to show organic development. Not needed for arranged marriages which are formalized differently."
       }
     },
     {
-      "id": "rule_core_relationship_origin",
-      "name": "Core - Relationship Origin",
-      "description": "Always include relationship origin questions as they establish how the relationship began",
+      "id": "rule-arranged-marriage-family-verification",
+      "name": "For arranged marriages - Family involvement & approval is critical proof",
+      "description": "Arranged/family marriages require explicit family documentation and approval evidence. This is the PROOF of legitimacy for this category.",
+      "priority": "critical",
       "condition": {
         "type": "AND",
         "conditions": [
           {
-            "field": "beneficiary_country",
-            "operator": "notEquals",
-            "value": ""
+            "field": "relationship_origin_type",
+            "operator": "equals",
+            "value": "Arranged/Family"
           }
         ]
       },
       "actions": {
-        "includeCategories": ["Relationship Origin"],
-        "priorityBoost": ["high"],
-        "reason": "Understanding how the relationship began is critical for authenticity assessment"
+        "includeCategories": [
+          "Family",
+          "Spouse Information",
+          "Marriage Decision"
+        ],
+        "priorityBoost": ["critical"],
+        "relevanceScore": 105,
+        "reason": "Arranged marriages derive legitimacy from family involvement. Family approval IS the proof. Must emphasize family decision-making process."
       }
     },
     {
-      "id": "rule_core_relationship_timeline",
-      "name": "Core - Relationship Timeline",
-      "description": "Always include relationship timeline questions to verify relationship progression",
+      "id": "rule-natural-meet-proposal-wedding",
+      "name": "For natural meet relationships - Proposal & Wedding details are proof",
+      "description": "Non-arranged relationships need proposal and wedding details as primary proof of authenticity and commitment. This replaces family-as-proof in other contexts.",
+      "priority": "high",
       "condition": {
         "type": "AND",
         "conditions": [
           {
-            "field": "beneficiary_country",
+            "field": "relationship_origin_type",
             "operator": "notEquals",
-            "value": ""
+            "value": "Arranged/Family"
           }
         ]
       },
       "actions": {
-        "includeCategories": ["Relationship Timeline"],
+        "includeCategories": [
+          "Proposal",
+          "Wedding"
+        ],
         "priorityBoost": ["high"],
-        "reason": "Timeline consistency is essential for relationship verification"
+        "relevanceScore": 90,
+        "reason": "Natural meet (online, in-person, work/school) relationships prove authenticity through proposal and wedding commitment. Core evidence for non-arranged."
       }
     },
     {
-      "id": "rule_core_marriage_intent",
-      "name": "Core - Marriage Intent and Intent",
-      "description": "Always include marriage decision and intent questions",
+      "id": "rule-living-together-daily-household",
+      "name": "Couples living together - show Daily/Household life details",
+      "description": "Cohabiting couples can provide specific daily routines and household integration evidence. This is credible, detailed evidence. Do NOT ask if long-distance - answers would be fabricated.",
+      "priority": "high",
       "condition": {
         "type": "AND",
         "conditions": [
           {
-            "field": "beneficiary_country",
-            "operator": "notEquals",
-            "value": ""
+            "field": "living_arrangement",
+            "operator": "equals",
+            "value": "Yes"
           }
         ]
       },
       "actions": {
-        "includeCategories": ["Marriage Decision", "Intent", "Proposal"],
+        "includeCategories": [
+          "Daily Life",
+          "Household Life"
+        ],
         "priorityBoost": ["high"],
-        "reason": "Marriage motivation and immigration intent must be honest and clear"
+        "relevanceScore": 88,
+        "reason": "Living together couples provide authentic daily routine evidence. Specific household details validate relationship integration and legitimacy."
       }
     },
     {
-      "id": "rule_core_wedding_petitioner",
-      "name": "Core - Wedding and Petitioner Information",
-      "description": "Always include wedding details and petitioner information",
+      "id": "rule-living-apart-communication-focus",
+      "name": "Long-distance couples - focus on Communication consistency",
+      "description": "Long-distance couples' strongest evidence is daily communication maintaining the relationship despite distance. Focus on communication patterns and frequency.",
+      "priority": "high",
       "condition": {
         "type": "AND",
         "conditions": [
           {
-            "field": "beneficiary_country",
-            "operator": "notEquals",
-            "value": ""
-          }
-        ]
-      },
-      "actions": {
-        "includeCategories": ["Wedding", "Petitioner Information"],
-        "priorityBoost": ["high"],
-        "reason": "Wedding details verify marriage authenticity and petitioner is the legal sponsor"
-      }
-    },
-    {
-      "id": "rule_long_distance",
-      "name": "Long Distance Relationship",
-      "description": "Applied when couple is living apart",
-      "condition": {
-        "type": "AND",
-        "conditions": [
-          {
-            "field": "current_living_arrangement",
+            "field": "living_arrangement",
             "operator": "equals",
             "value": "No – Living apart"
           }
         ]
       },
       "actions": {
-        "includeCategories": ["Daily Life", "Household Life", "Relationship"],
+        "includeCategories": [
+          "Relationship"
+        ],
         "priorityBoost": ["high"],
-        "reason": "Long-distance relationships require more scrutiny on communication patterns, daily life synchronization, and relationship commitment"
+        "relevanceScore": 85,
+        "reason": "Long-distance couples prove relationship maintenance through consistent communication. Communication frequency and methods become critical proof element."
       }
     },
     {
-      "id": "rule_previous_marriage_beneficiary",
-      "name": "Previous Marriage - Beneficiary",
-      "description": "Applied when beneficiary was previously married",
+      "id": "rule-employment-finances-stability",
+      "name": "Employment & Finances - verify petitioner's ability to support",
+      "description": "Petitioner's employment and financial capacity is mandatory for Affidavit of Support approval. All cases need some employment/financial verification.",
+      "priority": "high",
       "condition": {
-        "type": "OR",
+        "type": "AND",
         "conditions": [
           {
-            "field": "previous_marriages",
-            "operator": "equals",
-            "value": "Yes – Beneficiary"
-          },
-          {
-            "field": "previous_marriages",
-            "operator": "equals",
-            "value": "Yes – Both"
+            "field": "petitioner_status",
+            "operator": "notEquals",
+            "value": "Unemployed"
           }
         ]
       },
       "actions": {
-        "includeCategories": ["Security", "Family"],
+        "includeCategories": [
+          "Employment",
+          "Finances"
+        ],
         "priorityBoost": ["high"],
-        "reason": "Previous marriages require detailed background verification, family acceptance re-assessment, and clear documentation of divorce/annulment"
+        "relevanceScore": 88,
+        "reason": "Petitioner employment and financial capacity required for visa approval and Affidavit of Support. Non-negotiable evidence of support ability."
       }
     },
     {
-      "id": "rule_previous_marriage_sponsor",
-      "name": "Previous Marriage - Sponsor",
-      "description": "Applied when sponsor was previously married",
+      "id": "rule-intent-future-plans",
+      "name": "Intent & Future Plans - prove marriage is primary not immigration vehicle",
+      "description": "Immigration intent questions prove that THIS MARRIAGE is genuine primary purpose, not a backdoor to US entry. Critical for visa/green card approval.",
+      "priority": "critical",
       "condition": {
-        "type": "OR",
+        "type": "AND",
         "conditions": [
           {
-            "field": "previous_marriages",
+            "field": "petitioner_status",
             "operator": "equals",
-            "value": "Yes – Sponsor"
-          },
-          {
-            "field": "previous_marriages",
-            "operator": "equals",
-            "value": "Yes – Both"
+            "value": "US Citizen"
           }
         ]
       },
       "actions": {
-        "includeCategories": ["Petitioner Information", "Finances"],
-        "priorityBoost": ["medium"],
-        "reason": "Sponsor's previous marriage may affect financial obligations, child support, and household composition assessment"
+        "includeCategories": [
+          "Intent"
+        ],
+        "priorityBoost": ["critical"],
+        "relevanceScore": 95,
+        "reason": "Visa officers must confirm marriage is motive, not immigration is motive. Petitioner status (USC) makes this intent verification critical."
       }
     },
     {
-      "id": "rule_visa_refusal",
-      "name": "Visa Refusal History",
-      "description": "Applied when there's a previous visa refusal",
+      "id": "rule-previous-marriages-dissolved",
+      "name": "Previous marriages - verify legitimate dissolution before current marriage",
+      "description": "Previous marriages MUST be legally dissolved. This is mandatory for validity of current marriage. Questions prove dissolution and time gap.",
+      "priority": "critical",
+      "condition": {
+        "type": "AND",
+        "conditions": [
+          {
+            "field": "previous_marriages",
+            "operator": "notEquals",
+            "value": "No"
+          }
+        ]
+      },
+      "actions": {
+        "includeCategories": [
+          "Spouse Information"
+        ],
+        "priorityBoost": ["critical"],
+        "relevanceScore": 110,
+        "reason": "Previous marriages require dissolution proof (divorce decree, annulment, death cert). Questions establish legal validity of current marriage."
+      }
+    },
+    {
+      "id": "rule-visa-refusal-history-enhanced",
+      "name": "Previous visa refusal - deep security & ties investigation required",
+      "description": "Visa refusal is RED FLAG. Requires detailed explanation of what changed + proof of commitment to compliance. Enhanced security screening triggered.",
+      "priority": "critical",
       "condition": {
         "type": "AND",
         "conditions": [
@@ -187,38 +250,27 @@
         ]
       },
       "actions": {
-        "includeCategories": ["Security", "Travel", "Intent"],
-        "priorityBoost": ["high"],
-        "reason": "Visa refusal history requires detailed explanation of what changed, supporting evidence of changed circumstances, and clarification of refusal reasons"
+        "includeCategories": [
+          "Ties"
+        ],
+        "priorityBoost": ["critical"],
+        "relevanceScore": 105,
+        "reason": "Visa refusal history requires demonstrable ties to home country, proof of changed circumstances, and commitment to temporary visit status."
       }
     },
     {
-      "id": "rule_visa_overstay",
-      "name": "Visa Overstay History",
-      "description": "Applied when there's visa overstay history",
+      "id": "rule-overstay-or-criminal-maximum-scrutiny",
+      "name": "Overstay/Criminal history - maximum security scrutiny",
+      "description": "Overstay or criminal records are major red flags. Requires comprehensive security review and proof of rehabilitation/committment.",
+      "priority": "critical",
       "condition": {
-        "type": "AND",
+        "type": "OR",
         "conditions": [
           {
             "field": "visa_overstay_history",
             "operator": "equals",
             "value": true
-          }
-        ]
-      },
-      "actions": {
-        "includeCategories": ["Security", "Travel", "Intent", "Ties"],
-        "priorityBoost": ["high"],
-        "reason": "Visa overstay is a serious violation requiring full explanation with evidence of compliance commitment and circumstances preventing departure"
-      }
-    },
-    {
-      "id": "rule_criminal_history",
-      "name": "Criminal History",
-      "description": "Applied when there's criminal history",
-      "condition": {
-        "type": "AND",
-        "conditions": [
+          },
           {
             "field": "criminal_history",
             "operator": "equals",
@@ -227,75 +279,19 @@
         ]
       },
       "actions": {
-        "includeCategories": ["Security"],
-        "priorityBoost": ["high"],
-        "reason": "Criminal history requires full disclosure, documentation of rehabilitation, and detailed explanation of circumstances and consequences"
+        "includeCategories": [
+          "Security"
+        ],
+        "priorityBoost": ["critical"],
+        "relevanceScore": 115,
+        "reason": "Overstay/criminal history = near-disqualifying. Must show comprehensive security background review and rehabilitation commitment."
       }
     },
     {
-      "id": "rule_military_background",
-      "name": "Military/Defense Background",
-      "description": "Applied when there's military or defense service",
-      "condition": {
-        "type": "AND",
-        "conditions": [
-          {
-            "field": "military_or_defense_background",
-            "operator": "equals",
-            "value": true
-          }
-        ]
-      },
-      "actions": {
-        "includeCategories": ["Security"],
-        "priorityBoost": ["high"],
-        "reason": "Military/defense service triggers additional security screening and background verification requirements"
-      }
-    },
-    {
-      "id": "rule_shared_finances",
-      "name": "Shared Finances",
-      "description": "Applied when couple shares finances",
-      "condition": {
-        "type": "AND",
-        "conditions": [
-          {
-            "field": "joint_finances",
-            "operator": "equals",
-            "value": true
-          }
-        ]
-      },
-      "actions": {
-        "includeCategories": ["Finances", "Household Life"],
-        "priorityBoost": ["medium"],
-        "reason": "Shared finances demonstrate financial interdependence, commitment, and integrated household planning"
-      }
-    },
-    {
-      "id": "rule_met_family",
-      "name": "Met Spouse's Family",
-      "description": "Applied when beneficiary has met spouse's family",
-      "condition": {
-        "type": "AND",
-        "conditions": [
-          {
-            "field": "met_spouse_family",
-            "operator": "equals",
-            "value": true
-          }
-        ]
-      },
-      "actions": {
-        "includeCategories": ["Family"],
-        "priorityBoost": ["medium"],
-        "reason": "Meeting spouse's family demonstrates relationship integration, family acceptance, and relationship depth"
-      }
-    },
-    {
-      "id": "rule_frequent_communication",
-      "name": "Frequent Communication",
-      "description": "Applied when couple communicates daily or very frequently",
+      "id": "rule-high-communication-validation",
+      "name": "High daily communication - validates relationship maintenance",
+      "description": "Couples with daily/frequent communication patterns demonstrate active relationship maintenance. Strengthens authenticity claim.",
+      "priority": "medium",
       "condition": {
         "type": "AND",
         "conditions": [
@@ -307,90 +303,16 @@
         ]
       },
       "actions": {
-        "includeCategories": ["Daily Life", "Relationship"],
+        "includeCategories": [
+          "Relationship"
+        ],
         "priorityBoost": ["medium"],
-        "reason": "Daily communication pattern demonstrates strong ongoing relationship commitment and active engagement"
-      }
-    },
-    {
-      "id": "rule_employment_financials",
-      "name": "Employment and Financial Stability",
-      "description": "Applied to verify employment and financial capacity for supporting beneficiary",
-      "condition": {
-        "type": "AND",
-        "conditions": [
-          {
-            "field": "beneficiary_country",
-            "operator": "notEquals",
-            "value": ""
-          }
-        ]
-      },
-      "actions": {
-        "includeCategories": ["Employment", "Finances"],
-        "priorityBoost": ["high"],
-        "reason": "Petitioner's employment and financial stability are critical for I-864 Affidavit of Support requirements"
-      }
-    },
-    {
-      "id": "rule_travel_us_experience",
-      "name": "US Travel Experience",
-      "description": "Applied to assess travel history and familiarity with US",
-      "condition": {
-        "type": "AND",
-        "conditions": [
-          {
-            "field": "beneficiary_country",
-            "operator": "notEquals",
-            "value": ""
-          }
-        ]
-      },
-      "actions": {
-        "includeCategories": ["Travel"],
-        "priorityBoost": ["medium"],
-        "reason": "Travel history and US familiarity help assess credibility and commitment to immigration plan"
-      }
-    },
-    {
-      "id": "rule_future_ties",
-      "name": "Future Plans and Home Country Ties",
-      "description": "Applied to assess commitment to US immigration and ties remaining at home",
-      "condition": {
-        "type": "AND",
-        "conditions": [
-          {
-            "field": "beneficiary_country",
-            "operator": "notEquals",
-            "value": ""
-          }
-        ]
-      },
-      "actions": {
-        "includeCategories": ["Ties"],
-        "priorityBoost": ["medium"],
-        "reason": "Understanding future plans and remaining ties helps verify genuine intent to immigrate and establish US residence"
-      }
-    },
-    {
-      "id": "rule_household_family_integration",
-      "name": "Household Life and Family Integration",
-      "description": "Applied to verify household planning and family relationships",
-      "condition": {
-        "type": "AND",
-        "conditions": [
-          {
-            "field": "beneficiary_country",
-            "operator": "notEquals",
-            "value": ""
-          }
-        ]
-      },
-      "actions": {
-        "includeCategories": ["Household Life"],
-        "priorityBoost": ["medium"],
-        "reason": "Household planning demonstrates practical integration and relationship authenticity through daily life organization"
+        "relevanceScore": 70,
+        "reason": "Daily communication frequency is strong indicator of active relationship. Supports authenticity claims across all case types."
       }
     }
-  ]
+  ],
+  "migrationNotes": {
+    "v3.0_to_v3.1": "Complete redesign with genuine conditional logic. Removed 6 rules with empty conditions that were causing 42-question overload. New rules have REAL conditions based on intake questionnaire."
+  }
 }

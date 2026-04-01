@@ -416,6 +416,32 @@
   scrollbar-color: rgba(255, 255, 255, 0.25) transparent;
 }
 
+/* Premium Scrollbar - Teal Theme */
+.scrollbar-premium::-webkit-scrollbar {
+  width: 6px;
+}
+
+.scrollbar-premium::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.scrollbar-premium::-webkit-scrollbar-thumb {
+  background: #0d7377;
+  border-radius: 3px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+
+.scrollbar-premium::-webkit-scrollbar-thumb:hover {
+  background: #0a5a5d;
+  background-clip: padding-box;
+}
+
+.scrollbar-premium {
+  scrollbar-width: thin;
+  scrollbar-color: #0d7377 transparent;
+}
+
 @keyframes rotate-line {
   0% {
     transform: translate(-50%, -50%) rotate(0deg);

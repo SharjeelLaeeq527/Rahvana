@@ -69,3 +69,51 @@ export function generateQuestionId(category: string, question: string): string {
   const baseString = `${category}-${question}`.toLowerCase().replace(/\s+/g, '-');
   return `${baseString}-${Date.now()}`;
 }
+
+// Helper function to generate AI prompt based on improvement type
+export function generatePrompt(
+  question: string,
+  answer: string,
+  type: string = 'clarity'
+): string {
+  const prompts: Record<string, string> = {
+    clarity: `
+You are an immigration interview coach. Improve this answer for CLARITY and STRUCTURE.
+
+QUESTION: "${question}"
+CURRENT ANSWER: "${answer}"
+
+Make it clearer, easier to understand, and better organized while keeping the user's authentic voice and facts intact.
+Return ONLY the improved answer, no explanations or markdown formatting.
+    `.trim(),
+    professional: `
+You are an immigration interview coach. Make this answer more PROFESSIONAL in tone.
+
+QUESTION: "${question}"
+CURRENT ANSWER: "${answer}"
+
+Polish the tone to be more professional and formal while keeping it sincere and authentic. Remove informal language or filler words.
+Return ONLY the improved answer, no explanations or markdown formatting.
+    `.trim(),
+    complete: `
+You are an immigration interview coach. Make this answer more COMPLETE and DETAILED.
+
+QUESTION: "${question}"
+CURRENT ANSWER: "${answer}"
+
+Add relevant details that strengthen the answer and show deeper understanding. Consider what an immigration officer would want to know.
+Return ONLY the improved answer, no explanations or markdown formatting.
+    `.trim(),
+    concise: `
+You are an immigration interview coach. Make this answer more CONCISE and FOCUSED.
+
+QUESTION: "${question}"
+CURRENT ANSWER: "${answer}"
+
+Remove unnecessary details while keeping the most important information. Make it direct and to the point.
+Return ONLY the improved answer, no explanations or markdown formatting.
+    `.trim(),
+  };
+
+  return prompts[type] || prompts['clarity'];
+}

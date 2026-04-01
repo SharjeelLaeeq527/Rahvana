@@ -66,6 +66,7 @@ export async function updateSession(request: NextRequest) {
     "/portal-wallet",
     "/221g-action-planner",
     "/visa-case-strength-checker",
+    "/visa-case-strength-checker/my-cases",
     "/document-vault",
     "/passport",
     "/visa-forms",
@@ -75,6 +76,7 @@ export async function updateSession(request: NextRequest) {
     "/visa-eligibility",
     "/visa-category/ir-category/ir1-journey",
     "/interview-prep",
+    "/interview-prep/my-sessions",
   ];
 
   const adminRoutes = ["/admin"];

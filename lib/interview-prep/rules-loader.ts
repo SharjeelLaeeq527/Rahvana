@@ -16,9 +16,10 @@ export interface QuestionSelectionRule {
   description: string;
   condition: RuleConditionGroup;
   actions: {
-    includeCategories: string[];
-    priorityBoost: ("high" | "medium" | "low")[];
-    reason: string;
+    includeCategories?: string[];
+    priorityBoost?: ("high" | "medium" | "low" | "critical")[];
+    reason?: string;
+    [key: string]: unknown; // Allow additional properties from v3.0.0 rules
   };
 }
 
@@ -87,9 +88,9 @@ export function getAppliedRules(
 ): QuestionSelectionRule[] {
   return rules.filter((rule) => {
     const ruleMatches = evaluateConditionGroup(rule.condition, answers);
-    const categoryMatches = rule.actions.includeCategories.includes(
-      questionCategory,
-    );
+    // Safely check if includeCategories exists and contains the category
+    const categoryMatches =
+      rule.actions.includeCategories?.includes(questionCategory) ?? false;
     return ruleMatches && categoryMatches;
   });
 }

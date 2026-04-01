@@ -10,13 +10,17 @@ import {
   generateInterviewPrepOutput,
   completeInterviewSession,
 } from "@/lib/interview-prep/service";
+import {
+  getSessionAnswersDB,
+  getInterviewResultsDB,
+} from "@/lib/interview-prep/data-access";
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> },
+  { params }: { params: Promise<{ sessionId: string }> },
 ) {
   try {
-    const { id: sessionId } = await params;
+    const { sessionId } = await params;
     const body = await request.json();
     const { action, answers } = body;
 
@@ -77,10 +81,10 @@ export async function POST(
 
 export async function GET(
   _request: NextRequest,
-  { params }: { params: Promise<{ id: string }> },
+  { params }: { params: Promise<{ sessionId: string }> },
 ) {
   try {
-    const { id: sessionId } = await params;
+    const { sessionId } = await params;
 
     if (!sessionId || sessionId === "undefined") {
       return NextResponse.json(
@@ -95,7 +99,30 @@ export async function GET(
       return NextResponse.json({ error: "Session not found" }, { status: 404 });
     }
 
-    return NextResponse.json({ success: true, session });
+    // Load answers and results for this session
+    let answers = [];
+    let results = null;
+
+    try {
+      answers = await getSessionAnswersDB(sessionId);
+    } catch (err) {
+      console.error("Error loading answers:", err);
+    }
+
+    try {
+      results = await getInterviewResultsDB(sessionId);
+    } catch (err) {
+      console.error("Error loading results:", err);
+    }
+
+    return NextResponse.json({
+      success: true,
+      session: {
+        ...session,
+        answers,
+        interview_prep_results: results,
+      },
+    });
   } catch (error) {
     console.error("Error fetching session:", error);
     return NextResponse.json(

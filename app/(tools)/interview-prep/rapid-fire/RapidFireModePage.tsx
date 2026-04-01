@@ -11,6 +11,7 @@ interface RapidFireModeProps {
   questions: GeneratedQuestion[];
   onExit: () => void;
   onSwitchToPrep: () => void;
+  savedAnswers?: Record<string, string>;
 }
 
 interface QuestionResponse {
@@ -59,6 +60,7 @@ export const RapidFireModePage = ({
   questions,
   onExit,
   onSwitchToPrep,
+  savedAnswers = {},
 }: RapidFireModeProps) => {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [timeLeft, setTimeLeft] = useState(10);
@@ -213,9 +215,6 @@ export const RapidFireModePage = ({
       ).length;
       const partialCount = allResponses.filter(
         (r) => r.response === "partial",
-      ).length;
-      const missedCount = allResponses.filter(
-        (r) => r.response === "missed",
       ).length;
       const skippedCount = allResponses.filter(
         (r) => r.response === "skipped",
@@ -596,7 +595,7 @@ export const RapidFireModePage = ({
                   onClick={handleReviewCardClick}
                 >
                   {/* Front of Card - Question */}
-                  <div className="absolute inset-0 backface-hidden bg-gradient-to-br from-teal-500 to-teal-700 rounded-xl p-6 flex flex-col justify-between text-white shadow-lg">
+                  <div className="absolute inset-0 backface-hidden bg-linear-to-br from-teal-500 to-teal-700 rounded-xl p-6 flex flex-col justify-between text-white shadow-lg">
                     <div>
                       <div className="flex justify-between items-start mb-4">
                         <span className="bg-white/20 backdrop-blur-sm px-2 py-1 rounded text-xs font-medium">
@@ -623,21 +622,33 @@ export const RapidFireModePage = ({
                   </div>
 
                   {/* Back of Card - Answer & Guidance */}
-                  <div className="absolute inset-0 backface-hidden rotate-y-180 bg-gradient-to-br from-teal-600 to-teal-800 rounded-xl p-6 flex flex-col text-white shadow-lg">
+                  <div className="absolute inset-0 backface-hidden rotate-y-180 bg-linear-to-br from-teal-600 to-teal-800 rounded-xl p-6 flex flex-col text-white shadow-lg">
                     <div className="flex justify-between items-start mb-4">
                       <span className="bg-white/20 px-2 py-1 rounded text-xs font-medium">
                         Answer & Guidance
                       </span>
                     </div>
 
-                    <div className="space-y-4 flex-1 overflow-y-auto pr-2">
+                    <div className="space-y-4 flex-1 overflow-y-auto pr-2 scrollbar-premium">
+                      {savedAnswers[reviewQuestion.id] && (
+                        <div>
+                          <h4 className="text-emerald-200 font-semibold mb-2 flex items-center gap-2 text-sm">
+                            <span className="w-2 h-2 bg-emerald-200 rounded-full"></span>
+                            Your Saved Answer
+                          </h4>
+                          <p className="text-slate-100 text-sm leading-relaxed">
+                            {savedAnswers[reviewQuestion.id]}
+                          </p>
+                        </div>
+                      )}
+
                       <div>
                         <h4 className="text-teal-200 font-semibold mb-2 flex items-center gap-2 text-sm">
                           <span className="w-2 h-2 bg-teal-200 rounded-full"></span>
-                          Suggested Answer
+                          Sample Answer
                         </h4>
                         <p className="text-slate-100 text-sm leading-relaxed">
-                          {reviewQuestion.suggestedAnswer}
+                          {reviewQuestion.sampleAnswer}
                         </p>
                       </div>
 
@@ -738,7 +749,7 @@ export const RapidFireModePage = ({
         <div className="bg-white rounded-2xl shadow-xl p-8 mb-8 min-h-125 flex items-center justify-center">
           <div className="w-full max-w-2xl">
             <div
-              className={`relative w-full h-full min-h-112.5 cursor-pointer transition-transform duration-700 ease-out-cubic ${
+              className={`relative w-full h-auto min-h-112.5 cursor-pointer transition-transform duration-700 ease-out-cubic ${
                 isFlipped ? "transform rotate-y-180" : ""
               }`}
               style={{
@@ -880,14 +891,26 @@ export const RapidFireModePage = ({
                   </span>
                 </div>
 
-                <div className="space-y-6 flex-1">
+                <div className="space-y-6 flex-1 overflow-y-auto pr-2 scrollbar-premium">
+                  {savedAnswers[currentQuestion.id] && (
+                    <div>
+                      <h4 className="text-emerald-200 font-semibold mb-2 flex items-center gap-2">
+                        <span className="w-2 h-2 bg-emerald-200 rounded-full"></span>
+                        Your Saved Answer
+                      </h4>
+                      <p className="text-slate-100 leading-relaxed">
+                        {savedAnswers[currentQuestion.id]}
+                      </p>
+                    </div>
+                  )}
+
                   <div>
                     <h4 className="text-teal-200 font-semibold mb-2 flex items-center gap-2">
                       <span className="w-2 h-2 bg-teal-200 rounded-full"></span>
-                      Suggested Answer
+                      Sample Answer
                     </h4>
                     <p className="text-slate-100 leading-relaxed">
-                      {currentQuestion.suggestedAnswer}
+                      {currentQuestion.sampleAnswer}
                     </p>
                   </div>
 
