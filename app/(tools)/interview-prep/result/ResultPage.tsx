@@ -271,6 +271,7 @@ export const ResultPage = ({
         questions={questionsList}
         onExit={handleRapidFirePageExit}
         onSwitchToPrep={handleSwitchToPrep}
+        savedAnswers={savedAnswers}
       />
     );
   }

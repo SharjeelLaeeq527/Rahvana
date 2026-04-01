@@ -4,11 +4,11 @@ import { useState, useEffect } from "react";
 import {
   FileText,
   Calendar,
-  Clock,
   Eye,
   Plus,
   CheckCircle,
   AlertTriangle,
+  Heart,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -84,6 +84,15 @@ const RiskLevelBadge = ({
       {score !== null ? `${config.label} (${Math.round(score)})` : config.label}
     </span>
   );
+};
+
+const getCategoryIcon = (caseType: CaseType) => {
+  switch (caseType) {
+    case "Spouse":
+      return Heart;
+    default:
+      return FileText;
+  }
 };
 
 export default function MyCases() {
@@ -254,8 +263,8 @@ export default function MyCases() {
           </div>
         ) : (
           <div className="bg-white rounded-xl shadow-lg overflow-hidden border border-slate-200">
-            <div className="overflow-x-auto">
-              <Table>
+            <div className="overflow-x-auto w-full">
+              <Table className="w-full">
                 <TableHeader>
                   <TableRow className="border-b-2 border-slate-200">
                     <TableHead className="text-lg font-bold text-slate-800 py-4">
@@ -282,7 +291,10 @@ export default function MyCases() {
                       <TableCell className="py-5">
                         <div className="flex items-center">
                           <div className="bg-teal-100 text-teal-800 w-10 h-10 rounded-full flex items-center justify-center mr-3">
-                            <FileText className="w-5 h-5 text-teal-600" />
+                            {(() => {
+                              const Icon = getCategoryIcon(userCase.caseType);
+                              return <Icon className="w-5 h-5 text-teal-600" />;
+                            })()}
                           </div>
                           <div className="text-base font-semibold text-slate-900">
                             {getCaseTypeLabel(userCase.caseType)}

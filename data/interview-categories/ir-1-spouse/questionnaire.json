@@ -92,11 +92,15 @@
         },
         {
           "key": "marriage_type",
-          "label": "Was your marriage religious, civil, or both?",
+          "label": "How was your marriage legally conducted?",
           "type": "select",
           "required": true,
-          "helpText": "Select the type of marriage ceremony you had",
-          "options": ["Religious", "Civil", "Both"]
+          "helpText": "Indicate whether your marriage was performed through a religious ceremony, a civil (court) process, or both.",
+          "options": [
+            "Religious (Nikah) ceremony only",
+            "Civil (court) marriage only",
+            "Both religious and civil"
+          ]
         }
       ]
     },

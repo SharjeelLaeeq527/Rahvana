@@ -3,30 +3,23 @@
 import { useState, useEffect } from "react";
 import {
   BookOpen,
-  Calendar,
-  Clock,
   Plus,
   AlertTriangle,
   CheckCircle,
   BarChart3,
+  Heart,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import Pagination from "@/components/ui/pagination";
 import { Loader } from "@/components/ui/spinner";
 import { ElementType } from "react";
 import ActionMenu from "@/app/components/shared/ActionMenu";
 import { ConfirmationModal } from "@/app/components/shared/ConfirmationModal";
+import { DataTable, Column } from "@/app/components/shared/table";
+import { FilterPanel, FilterField } from "@/app/components/shared/FilterPanel";
 
-type VisaCategory = "IR-1";
 type SessionStatus = "COMPLETED" | "IN_PROGRESS" | "NOT_STARTED";
+type TimeFilter = "all" | "today" | "week" | "month";
 
 interface SessionWithDetails {
   id: string;
@@ -42,19 +35,46 @@ interface SessionWithDetails {
 }
 
 const CategoryLabel: Record<string, string> = {
-  "ir-1-spouse": "IR-1 Spouse",
+  "ir-1-spouse": "IR-1/CR-1 Spouse",
 };
 
 const getCategoryLabel = (slug: string): string => {
   return CategoryLabel[slug] || slug;
 };
 
+const getRelativeTime = (dateString: string): string => {
+  const date = new Date(dateString);
+  const now = new Date();
+  const diffMs = now.getTime() - date.getTime();
+  const diffMins = Math.floor(diffMs / 60000);
+  const diffHours = Math.floor(diffMs / 3600000);
+  const diffDays = Math.floor(diffMs / 86400000);
+
+  if (diffMins < 1) return "Just now";
+  if (diffMins < 60) return `${diffMins} min${diffMins > 1 ? "s" : ""} ago`;
+  if (diffHours < 24) return `${diffHours} hour${diffHours > 1 ? "s" : ""} ago`;
+  if (diffDays < 7) return `${diffDays} day${diffDays > 1 ? "s" : ""} ago`;
+  if (diffDays < 30) {
+    const weeks = Math.floor(diffDays / 7);
+    return `${weeks} week${weeks > 1 ? "s" : ""} ago`;
+  }
+  const months = Math.floor(diffDays / 30);
+  return `${months} month${months > 1 ? "s" : ""} ago`;
+};
+
+const formatCreatedDate = (dateString: string): string => {
+  const date = new Date(dateString);
+  return date.toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+  });
+};
+
 const CompletionBadge = ({
   status,
-  percentage,
 }: {
   status: SessionStatus;
-  percentage: number;
 }) => {
   const statusConfig: Record<
     SessionStatus,
@@ -72,7 +92,7 @@ const CompletionBadge = ({
     },
     NOT_STARTED: {
       color: "bg-gray-100 text-gray-800",
-      icon: Clock,
+      icon: CheckCircle,
       label: "Not Started",
     },
   };
@@ -81,52 +101,7 @@ const CompletionBadge = ({
   const Icon = config.icon;
 
   return (
-    <div className="flex items-center gap-3 site-main-px site-main-py">
-      <div className="relative w-12 h-12">
-        <svg className="w-full h-full" viewBox="0 0 100 100">
-          <circle
-            cx="50"
-            cy="50"
-            r="45"
-            fill="none"
-            stroke="#e5e7eb"
-            strokeWidth="8"
-          />
-          <circle
-            cx="50"
-            cy="50"
-            r="45"
-            fill="none"
-            stroke={
-              status === "COMPLETED"
-                ? "#10b981"
-                : status === "IN_PROGRESS"
-                  ? "#3b82f6"
-                  : "#9ca3af"
-            }
-            strokeWidth="8"
-            strokeDasharray={`${(percentage / 100) * 282.7} 282.7`}
-            strokeLinecap="round"
-            transform="rotate(-90 50 50)"
-          />
-          <text
-            x="50"
-            y="55"
-            textAnchor="middle"
-            fontSize="24"
-            fontWeight="bold"
-            fill={
-              status === "COMPLETED"
-                ? "#10b981"
-                : status === "IN_PROGRESS"
-                  ? "#3b82f6"
-                  : "#9ca3af"
-            }
-          >
-            {Math.round(percentage)}%
-          </text>
-        </svg>
-      </div>
+    <div className="flex items-center gap-3">
       <div>
         <span
           className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium ${config.color}`}
@@ -141,6 +116,9 @@ const CompletionBadge = ({
 
 export default function MyInterviewSessions() {
   const [sessions, setSessions] = useState<SessionWithDetails[]>([]);
+  const [filteredSessions, setFilteredSessions] = useState<SessionWithDetails[]>(
+    []
+  );
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedSessionId, setSelectedSessionId] = useState<string | null>(
@@ -148,6 +126,11 @@ export default function MyInterviewSessions() {
   );
   const [modalOpen, setModalOpen] = useState(false);
   const [loadingDelete, setLoadingDelete] = useState(false);
+
+  // Filter states
+  const [selectedCategory, setSelectedCategory] = useState<string>("all");
+  const [selectedStatus, setSelectedStatus] = useState<string>("all");
+  const [selectedTime, setSelectedTime] = useState<TimeFilter>("all");
 
   // pagination state
   const [currentPage, setCurrentPage] = useState<number>(1);
@@ -179,6 +162,47 @@ export default function MyInterviewSessions() {
 
     fetchUserSessions();
   }, []);
+
+  // Apply filters
+  useEffect(() => {
+    let filtered = sessions;
+
+    // Category filter
+    if (selectedCategory !== "all") {
+      filtered = filtered.filter((s) => s.category_slug === selectedCategory);
+    }
+
+    // Status filter
+    if (selectedStatus !== "all") {
+      filtered = filtered.filter(
+        (s) => getSessionStatus(s) === selectedStatus
+      );
+    }
+
+    // Time filter
+    if (selectedTime !== "all") {
+      const now = new Date();
+      filtered = filtered.filter((s) => {
+        const createdDate = new Date(s.created_at);
+        const diffMs = now.getTime() - createdDate.getTime();
+        const diffDays = diffMs / (1000 * 60 * 60 * 24);
+
+        switch (selectedTime) {
+          case "today":
+            return diffDays < 1;
+          case "week":
+            return diffDays < 7;
+          case "month":
+            return diffDays < 30;
+          default:
+            return true;
+        }
+      });
+    }
+
+    setFilteredSessions(filtered);
+    setCurrentPage(1);
+  }, [sessions, selectedCategory, selectedStatus, selectedTime]);
 
   // open modal when session is selected
   useEffect(() => {
@@ -220,20 +244,13 @@ export default function MyInterviewSessions() {
   };
 
   // pagination calculations
-  const totalPages = Math.max(1, Math.ceil(sessions.length / ITEMS_PER_PAGE));
+  const totalPages = Math.max(
+    1,
+    Math.ceil(filteredSessions.length / ITEMS_PER_PAGE)
+  );
   const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
   const endIndex = startIndex + ITEMS_PER_PAGE;
-  const currentSessions = sessions.slice(startIndex, endIndex);
-
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-    });
-  };
+  const currentSessions = filteredSessions.slice(startIndex, endIndex);
 
   const getSessionStatus = (session: SessionWithDetails): SessionStatus => {
     if (session.completed || session.completionPercentage === 100) {
@@ -244,6 +261,98 @@ export default function MyInterviewSessions() {
       return "NOT_STARTED";
     }
   };
+
+  const uniqueCategories = Array.from(
+    new Set(sessions.map((s) => s.category_slug))
+  );
+
+  const getCategoryIcon = (categorySlug: string) => {
+    if (categorySlug.includes("spouse") || categorySlug.includes("ir-1")) {
+      return Heart;
+    }
+    return BookOpen;
+  };
+
+  const columns: Column<SessionWithDetails>[] = [
+    {
+      key: "category",
+      label: "Visa Category",
+      width: "25%",
+      render: (session) => {
+        const Icon = getCategoryIcon(session.category_slug);
+        return (
+          <div className="flex items-center">
+            <div className="bg-teal-100 text-teal-800 w-10 h-10 rounded-full flex items-center justify-center mr-3">
+              <Icon className="w-5 h-5 text-teal-600" />
+            </div>
+            <div className="text-base font-semibold text-slate-900">
+              {getCategoryLabel(session.category_slug)}
+            </div>
+          </div>
+        );
+      },
+    },
+    {
+      key: "created",
+      label: "Created",
+      width: "25%",
+      render: (session) => (
+        <div className="flex flex-col">
+          <div className="text-base font-medium text-slate-900">
+            {formatCreatedDate(session.created_at)}
+          </div>
+          <div className="text-sm text-slate-500">
+            Last active {getRelativeTime(session.updated_at)}
+          </div>
+        </div>
+      ),
+    },
+    {
+      key: "status",
+      label: "Status",
+      width: "25%",
+      render: (session) => (
+        <CompletionBadge
+          status={getSessionStatus(session)}
+        />
+      ),
+    },
+    {
+      key: "actions",
+      label: "Actions",
+      width: "25%",
+      className: "text-right",
+      render: (session) => (
+        <ActionMenu
+          onView={() =>
+            (window.location.href = `/interview-prep/result?sessionId=${session.id}`)
+          }
+          onDelete={() => setSelectedSessionId(session.id)}
+        />
+      ),
+    },
+  ];
+
+  const emptyState = (
+    <div className="bg-white rounded-xl shadow-lg overflow-hidden text-center py-16">
+      <BookOpen className="w-16 h-16 text-gray-300 mx-auto mb-6" />
+      <h3 className="text-2xl font-bold text-gray-900 mb-2">
+        No sessions found
+      </h3>
+      <p className="text-lg text-gray-500 mb-8">
+        You haven&apos;t created any interview preparation sessions yet.
+      </p>
+      <div>
+        <Button
+          onClick={() => (window.location.href = "/interview-prep")}
+          className="bg-teal-600 hover:bg-teal-700 text-white py-4 px-6 text-lg"
+        >
+          <Plus className="w-5 h-5 mr-2" />
+          Start Your First Session
+        </Button>
+      </div>
+    </div>
+  );
 
   return (
     <div className="min-h-screen bg-linear-to-br from-slate-50 to-slate-100 text-gray-800 py-12 px-4">
@@ -259,14 +368,65 @@ export default function MyInterviewSessions() {
 
         <div className="flex flex-col sm:flex-row justify-between items-center mb-10 gap-4">
           <h2 className="text-2xl font-bold text-slate-800">All Sessions</h2>
-          <Button
-            onClick={() => (window.location.href = "/interview-prep")}
-            className="bg-teal-600 hover:bg-teal-700 text-white py-5 px-6 text-lg"
-          >
-            <Plus className="w-5 h-5 mr-2" />
-            New Session
-          </Button>
+          <div className="flex items-center gap-3">
+            {sessions.length > 0 && (
+              <FilterPanel
+                fields={[
+                  {
+                    key: "category",
+                    label: "Visa Category",
+                    options: [
+                      { value: "all", label: "All Categories" },
+                      ...uniqueCategories.map((cat) => ({
+                        value: cat,
+                        label: getCategoryLabel(cat),
+                      })),
+                    ],
+                    value: selectedCategory,
+                  },
+                  {
+                    key: "status",
+                    label: "Status",
+                    options: [
+                      { value: "all", label: "All Statuses" },
+                      { value: "COMPLETED", label: "Completed" },
+                      { value: "IN_PROGRESS", label: "In Progress" },
+                      { value: "NOT_STARTED", label: "Not Started" },
+                    ],
+                    value: selectedStatus,
+                  },
+                  {
+                    key: "time",
+                    label: "Created",
+                    options: [
+                      { value: "all", label: "All Time" },
+                      { value: "today", label: "Today" },
+                      { value: "week", label: "This Week" },
+                      { value: "month", label: "This Month" },
+                    ],
+                    value: selectedTime,
+                  },
+                ]}
+                onFilterChange={(filters) => {
+                  setSelectedCategory(filters.category || "all");
+                  setSelectedStatus(filters.status || "all");
+                  setSelectedTime((filters.time || "all") as TimeFilter);
+                }}
+                itemCount={filteredSessions.length}
+                totalCount={sessions.length}
+              />
+            )}
+            <Button
+              onClick={() => (window.location.href = "/interview-prep")}
+              className="bg-teal-600 hover:bg-teal-700 text-white py-5 px-6 text-lg"
+            >
+              <Plus className="w-5 h-5 mr-2" />
+              New Session
+            </Button>
+          </div>
         </div>
+
+        {!loading && sessions.length > 0 && null}
 
         {loading ? (
           <div className="flex justify-center items-center h-64">
@@ -286,125 +446,29 @@ export default function MyInterviewSessions() {
               Try Again
             </Button>
           </div>
-        ) : sessions.length === 0 ? (
-          <div className="bg-white rounded-xl shadow-lg overflow-hidden text-center py-16">
-            <BookOpen className="w-16 h-16 text-gray-300 mx-auto mb-6" />
-            <h3 className="text-2xl font-bold text-gray-900 mb-2">
-              No sessions found
-            </h3>
-            <p className="text-lg text-gray-500 mb-8">
-              You haven&apos;t created any interview preparation sessions yet.
-            </p>
-            <div>
-              <Button
-                onClick={() => (window.location.href = "/interview-prep")}
-                className="bg-teal-600 hover:bg-teal-700 text-white py-4 px-6 text-lg"
-              >
-                <Plus className="w-5 h-5 mr-2" />
-                Start Your First Session
-              </Button>
-            </div>
-          </div>
+        ) : filteredSessions.length === 0 ? (
+          emptyState
         ) : (
-          <div className="bg-white rounded-xl shadow-lg overflow-hidden border border-slate-200">
-            <div className="overflow-x-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow className="border-b-2 border-slate-200">
-                    <TableHead className="text-lg font-bold text-slate-800 py-4">
-                      Visa Category
-                    </TableHead>
-                    <TableHead className="text-lg font-bold text-slate-800 py-4">
-                      Created
-                    </TableHead>
-                    <TableHead className="text-lg font-bold text-slate-800 py-4">
-                      Last Updated
-                    </TableHead>
-                    <TableHead className="text-lg font-bold text-slate-800 py-4">
-                      Progress
-                    </TableHead>
-                    <TableHead className="text-lg font-bold text-slate-800 py-4 text-right">
-                      Actions
-                    </TableHead>
-                  </TableRow>
-                </TableHeader>
+          <>
+            <DataTable
+              columns={columns}
+              data={currentSessions}
+              rowKey={(session) => session.id}
+              loading={false}
+            />
 
-                <TableBody>
-                  {currentSessions.map((session) => (
-                    <TableRow
-                      key={session.id}
-                      className="hover:bg-slate-50 border-b border-slate-100"
-                    >
-                      <TableCell className="py-5">
-                        <div className="flex items-center">
-                          <div className="bg-teal-100 text-teal-800 w-10 h-10 rounded-full flex items-center justify-center mr-3">
-                            <BookOpen className="w-5 h-5 text-teal-600" />
-                          </div>
-                          <div className="text-base font-semibold text-slate-900">
-                            {getCategoryLabel(session.category_slug)}
-                          </div>
-                        </div>
-                      </TableCell>
-
-                      <TableCell className="py-5">
-                        <div className="flex items-center">
-                          <div className="bg-slate-100 text-slate-800 w-10 h-10 rounded-full flex items-center justify-center mr-3">
-                            <Calendar className="w-4 h-4 text-slate-600" />
-                          </div>
-                          <div className="text-base text-slate-700">
-                            {formatDate(session.created_at)}
-                          </div>
-                        </div>
-                      </TableCell>
-
-                      <TableCell className="py-5">
-                        <div className="flex items-center">
-                          <div className="bg-slate-100 text-slate-800 w-10 h-10 rounded-full flex items-center justify-center mr-3">
-                            <Clock className="w-4 h-4 text-slate-600" />
-                          </div>
-                          <div className="text-base text-slate-700">
-                            {formatDate(session.updated_at)}
-                          </div>
-                        </div>
-                      </TableCell>
-
-                      <TableCell className="py-5">
-                        <CompletionBadge
-                          status={getSessionStatus(session)}
-                          percentage={session.completionPercentage}
-                        />
-                      </TableCell>
-
-                      <TableCell className="py-5 text-right">
-                        <ActionMenu
-                          onView={() =>
-                            (window.location.href = `/interview-prep/result?sessionId=${session.id}`)
-                          }
-                          onDelete={() => setSelectedSessionId(session.id)}
-                        />
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-
-                {/* Pagination - only show if there are sessions and multiple pages */}
-                {sessions.length > 0 && totalPages > 1 && (
-                  <TableRow>
-                    <TableCell colSpan={5} className="py-6">
-                      <div className="w-full flex justify-center">
-                        <Pagination
-                          currentPage={currentPage}
-                          totalItems={sessions.length}
-                          itemsPerPage={ITEMS_PER_PAGE}
-                          onPageChange={setCurrentPage}
-                        />
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                )}
-              </Table>
-            </div>
-          </div>
+            {/* Pagination */}
+            {filteredSessions.length > ITEMS_PER_PAGE && totalPages > 1 && (
+              <div className="py-6 flex justify-center">
+                <Pagination
+                  currentPage={currentPage}
+                  totalItems={filteredSessions.length}
+                  itemsPerPage={ITEMS_PER_PAGE}
+                  onPageChange={setCurrentPage}
+                />
+              </div>
+            )}
+          </>
         )}
       </div>
 
