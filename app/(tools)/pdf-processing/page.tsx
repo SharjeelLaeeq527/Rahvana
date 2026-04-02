@@ -5,18 +5,41 @@ import dynamic from "next/dynamic";
 import { usePDFStore } from "@/lib/store";
 
 // Dynamically import components (client-only)
-const PDFUpload = dynamic(() => import("@/app/components/pdf-editor/PdfUpload").then(mod => mod.PDFUpload), { ssr: false });
-const PDFEditor = dynamic(() => import("@/app/components/pdf-editor/PdfEditor").then(mod => mod.PDFEditor), { ssr: false });
-const PDFMergeAdvanced = dynamic(() => import("@/app/components/pdf-tools/PdfMerge"), { ssr: false });
-const CompressPDF = dynamic(() => import("@/app/components/pdf-tools/CompressPdf"), { ssr: false });
-const MultiFormatConverter = dynamic(() => import("@/app/components/pdf-tools/MultiFormatConverter"), { ssr: false });
+const PDFUpload = dynamic(
+  () =>
+    import("@/app/components/pdf-editor/PdfUpload").then(
+      (mod) => mod.PDFUpload,
+    ),
+  { ssr: false },
+);
+const PDFEditor = dynamic(
+  () =>
+    import("@/app/components/pdf-editor/PdfEditor").then(
+      (mod) => mod.PDFEditor,
+    ),
+  { ssr: false },
+);
+const PDFMergeAdvanced = dynamic(
+  () => import("@/app/components/pdf-tools/PdfMerge"),
+  { ssr: false },
+);
+const CompressPDF = dynamic(
+  () => import("@/app/components/pdf-tools/CompressPdf"),
+  { ssr: false },
+);
+const MultiFormatConverter = dynamic(
+  () => import("@/app/components/pdf-tools/MultiFormatConverter"),
+  { ssr: false },
+);
 import { useLanguage } from "@/app/context/LanguageContext";
 
 export default function PDFProcessingPage() {
   const { t } = useLanguage();
   const { pdfFile, reset } = usePDFStore();
   // Add "compress" and "convert" to tabs
-  const [activeTab, setActiveTab] = useState<"upload" | "merge" | "compress" | "convert">("upload");
+  const [activeTab, setActiveTab] = useState<
+    "upload" | "merge" | "compress" | "convert"
+  >("upload");
 
   const handleCloseEditor = () => reset();
 
@@ -25,7 +48,7 @@ export default function PDFProcessingPage() {
   }, []);
 
   return (
-    <main className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-6">
+    <main className="bg-gray-50 flex flex-col items-center justify-center site-main-py site-main-px">
       {/* Full Screen Editor (only for "Edit" flow) */}
       {pdfFile && (
         <div className="fixed inset-0 z-50 bg-white">
@@ -91,7 +114,7 @@ export default function PDFProcessingPage() {
           </div>
 
           {/* Content based on active tab */}
-          <div className="w-full max-w-6xl bg-white shadow-xl rounded-2xl p-6 md:p-8 md:min-h-[60vh]">
+          <div className="w-full bg-white shadow-xl rounded-2xl p-6 md:p-8 md:min-h-[60vh]">
             {activeTab === "upload" && <PDFUpload />}
             {activeTab === "merge" && <PDFMergeAdvanced />}
             {activeTab === "compress" && <CompressPDF />}

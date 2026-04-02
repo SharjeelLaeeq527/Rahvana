@@ -31,10 +31,7 @@ interface DynamicQuestionStepProps {
 }
 
 // Section-based icon mapping - using consistent teal color
-const SECTION_CONFIG: Record<
-  string,
-  { icon: React.ReactNode }
-> = {
+const SECTION_CONFIG: Record<string, { icon: React.ReactNode }> = {
   marriage_and_basic_info: {
     icon: <Heart className="w-8 h-8" />,
   },
@@ -103,8 +100,7 @@ export function DynamicQuestionStep({
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
   // Get section-specific icon
-  const sectionConfig =
-    SECTION_CONFIG[section.id] || DEFAULT_CONFIG;
+  const sectionConfig = SECTION_CONFIG[section.id] || DEFAULT_CONFIG;
 
   const processTemplate = (template: string): string => {
     if (!template) return template;
@@ -127,7 +123,7 @@ export function DynamicQuestionStep({
 
   const validateQuestion = (
     question: DynamicQuestion,
-    value: unknown
+    value: unknown,
   ): string | null => {
     const fieldName = formatFieldName(question.key);
     const shouldValidateRequired = question.type !== "boolean";
@@ -205,7 +201,8 @@ export function DynamicQuestionStep({
     const el = questionRefs.current[key];
     if (el) {
       const rect = el.getBoundingClientRect();
-      const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+      const scrollTop =
+        window.pageYOffset || document.documentElement.scrollTop;
       const top = rect.top + scrollTop - 150;
 
       window.scrollTo({
@@ -319,7 +316,7 @@ export function DynamicQuestionStep({
             onChange={(e) =>
               handleInputChange(
                 question.key,
-                e.target.value === "" ? "" : parseFloat(e.target.value)
+                e.target.value === "" ? "" : parseFloat(e.target.value),
               )
             }
             placeholder={question.placeholder}
@@ -352,7 +349,9 @@ export function DynamicQuestionStep({
             {["Yes", "No"].map((option) => (
               <button
                 key={option}
-                onClick={() => handleInputChange(question.key, option === "Yes")}
+                onClick={() =>
+                  handleInputChange(question.key, option === "Yes")
+                }
                 className="p-4 rounded-xl border-2 transition-all font-semibold text-base"
                 style={{
                   borderColor:
@@ -396,17 +395,10 @@ export function DynamicQuestionStep({
                   className="p-4 rounded-xl border-2 transition-all font-semibold text-base"
                   style={{
                     borderColor:
-                      value === option
-                        ? COLORS.primary
-                        : COLORS.border,
+                      value === option ? COLORS.primary : COLORS.border,
                     backgroundColor:
-                      value === option
-                        ? COLORS.primaryLight
-                        : "white",
-                    color:
-                      value === option
-                        ? COLORS.primary
-                        : "#374151",
+                      value === option ? COLORS.primaryLight : "white",
+                    color: value === option ? COLORS.primary : "#374151",
                   }}
                 >
                   {option}
@@ -443,8 +435,8 @@ export function DynamicQuestionStep({
   };
 
   return (
-    <div className="min-h-screen bg-white">
-      <div className="max-w-2xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
+    <div className="bg-white">
+      <div className="site-main-px site-main-py">
         {/* Section Header with Icon */}
         <div className="mb-10 sm:mb-14 text-center">
           <div
@@ -467,10 +459,13 @@ export function DynamicQuestionStep({
         </div>
 
         {/* Questions Container - Scrollable */}
-        <div className="space-y-8 mb-8 max-h-96 overflow-y-auto pr-4 questions-scroll" style={{
-          scrollbarWidth: 'thin',
-          scrollbarColor: `${COLORS.primary} #f3f4f6`
-        }}>
+        <div
+          className="space-y-8 mb-8 max-h-96 overflow-y-auto pr-4 questions-scroll"
+          style={{
+            scrollbarWidth: "thin",
+            scrollbarColor: `${COLORS.primary} #f3f4f6`,
+          }}
+        >
           {/* Webkit Scrollbar Styling */}
           <style>{`
             .questions-scroll::-webkit-scrollbar {
@@ -538,9 +533,7 @@ export function DynamicQuestionStep({
                     </div>
                   )}
 
-                  <div className="mt-4">
-                    {renderQuestion(question)}
-                  </div>
+                  <div className="mt-4">{renderQuestion(question)}</div>
 
                   {fieldError && (
                     <p

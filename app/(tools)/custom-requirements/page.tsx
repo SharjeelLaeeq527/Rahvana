@@ -48,8 +48,8 @@ const staggerContainer = {
 
 export default function ArrivalGuidePage() {
   return (
-    <div className="min-h-screen bg-slate-50/50 py-6 md:py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-5xl mx-auto space-y-8 md:space-y-12">
+    <div className="bg-slate-50/50 site-main-px site-main-py">
+      <div className="space-y-8 md:space-y-12">
         {/* Header Section */}
         <motion.div
           className="text-center space-y-3 md:space-y-4"
@@ -198,7 +198,7 @@ export default function ArrivalGuidePage() {
                 variants={fadeInUp}
                 initial="initial"
                 animate="animate"
-                className="max-w-3xl mx-auto px-1 sm:px-0"
+                className="px-1 sm:px-0"
               >
                 <Card className="border-none shadow-xl shadow-slate-200/50 rounded-2xl md:rounded-3xl overflow-hidden bg-white">
                   <CardHeader className="bg-blue-50 border-b border-blue-100 p-5 md:pb-6">
@@ -285,7 +285,7 @@ export default function ArrivalGuidePage() {
                 variants={fadeInUp}
                 initial="initial"
                 animate="animate"
-                className="max-w-3xl mx-auto space-y-6 px-1 sm:px-0"
+                className="space-y-6 px-1 sm:px-0"
               >
                 <Card className="border-none shadow-xl shadow-slate-200/50 rounded-2xl md:rounded-3xl overflow-hidden bg-white">
                   <CardHeader className="bg-red-50 border-b border-red-100 p-5 md:pb-6">

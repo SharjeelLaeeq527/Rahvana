@@ -130,7 +130,8 @@ const TOOLS: Tool[] = [
   {
     id: "uscis-case-status",
     title: "USCIS Case Status",
-    description: "Real-time USCIS case status lookup via the official Torch API. Enter your receipt number for an instant update.",
+    description:
+      "Real-time USCIS case status lookup via the official Torch API. Enter your receipt number for an instant update.",
     category: "Tracking",
     href: "/case-status",
     icon: FileSearch,
@@ -295,14 +296,14 @@ export default function ToolsPage() {
   }).sort((a, b) => a.title.localeCompare(b.title));
 
   return (
-    <div className="min-h-screen bg-background text-foreground font-sans overflow-x-hidden selection:bg-primary selection:text-primary-foreground">
+    <div className="bg-background text-foreground font-sans overflow-x-hidden selection:bg-primary selection:text-primary-foreground">
       {/* Ambient Glow */}
       <div className="fixed top-0 left-0 w-full h-full pointer-events-none -z-10">
         <div className="absolute top-[10%] left-[15%] w-[500px] h-[500px] bg-[#0d7377]/5 rounded-full blur-3xl" />
         <div className="absolute bottom-[20%] right-[10%] w-[600px] h-[600px] bg-[#32e0c4]/5 rounded-full blur-3xl" />
       </div>
 
-      <div className="max-w-7xl mx-auto px-6 py-8">
+      <div className="site-main-px site-main-py">
         {/* Hero Section */}
         <section className="text-center mb-5 md:mb-10">
           <h1 className="text-3xl md:text-5xl font-bold mb-4 bg-clip-text text-transparent bg-linear-to-r from-foreground to-muted-foreground animate-fade-up">

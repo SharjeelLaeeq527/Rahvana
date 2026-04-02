@@ -167,7 +167,9 @@ export default function DocumentVaultPage() {
 
   useEffect(() => {
     if (!authLoading && !user) {
-      router.push(`/login?redirectTo=${encodeURIComponent(window.location.pathname + window.location.search)}`);
+      router.push(
+        `/login?redirectTo=${encodeURIComponent(window.location.pathname + window.location.search)}`,
+      );
       return;
     }
 
@@ -441,10 +443,10 @@ export default function DocumentVaultPage() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50/50 dark:bg-slate-950/50 pb-20">
+    <div className="bg-slate-50/50 dark:bg-slate-950/50">
       {/* Top Professional Header */}
       <div className="bg-white dark:bg-slate-900 border-b shadow-sm sticky top-0 z-30">
-        <div className="container mx-auto px-6 py-4 max-w-[1800px]">
+        <div className="site-main-px py-4">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div className="flex items-center gap-4">
               <div className="hidden sm:flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/10 text-primary shadow-inner">
@@ -610,9 +612,9 @@ export default function DocumentVaultPage() {
                               ? "Required"
                               : cat === "optional"
                                 ? "Optional"
-                                : t(`documentVaultPage.categories.${cat}`).split(
-                                    " ",
-                                  )[0]}
+                                : t(
+                                    `documentVaultPage.categories.${cat}`,
+                                  ).split(" ")[0]}
                         </TabsTrigger>
                       ))}
                       {categories.length > 5 && (
@@ -876,47 +878,47 @@ export default function DocumentVaultPage() {
                     <div className="space-y-4">
                       {viewMode === "grid" ? (
                         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-5">
-                          {getFilteredDocumentsForSpecialFilter[activeTab as "required" | "optional"]?.map(
-                            (doc) => {
-                              const uploadedDoc = uploadedDocuments.find(
-                                (ud) => ud.documentDefId === doc.id,
-                              );
-                              return (
-                                <DocumentCard
-                                  key={doc.id}
-                                  documentDef={doc}
-                                  uploadedDoc={uploadedDoc}
-                                  onUpload={() => openUploadModal(doc.id)}
-                                  onPreview={
-                                    uploadedDoc
-                                      ? () => handlePreview(uploadedDoc)
-                                      : undefined
-                                  }
-                                  onDownload={
-                                    uploadedDoc
-                                      ? () => handleDownload(uploadedDoc.id)
-                                      : undefined
-                                  }
-                                  onDelete={
-                                    uploadedDoc
-                                      ? () => handleDelete(uploadedDoc.id)
-                                      : undefined
-                                  }
-                                  onExport={
-                                    uploadedDoc
-                                      ? () =>
-                                          handleExportSingle(
-                                            uploadedDoc.id,
-                                            uploadedDoc.hasCompressedVersion ||
-                                              false,
-                                          )
-                                      : undefined
-                                  }
-                                  onOpenWizard={() => openWizard(doc.id)}
-                                />
-                              );
-                            },
-                          )}
+                          {getFilteredDocumentsForSpecialFilter[
+                            activeTab as "required" | "optional"
+                          ]?.map((doc) => {
+                            const uploadedDoc = uploadedDocuments.find(
+                              (ud) => ud.documentDefId === doc.id,
+                            );
+                            return (
+                              <DocumentCard
+                                key={doc.id}
+                                documentDef={doc}
+                                uploadedDoc={uploadedDoc}
+                                onUpload={() => openUploadModal(doc.id)}
+                                onPreview={
+                                  uploadedDoc
+                                    ? () => handlePreview(uploadedDoc)
+                                    : undefined
+                                }
+                                onDownload={
+                                  uploadedDoc
+                                    ? () => handleDownload(uploadedDoc.id)
+                                    : undefined
+                                }
+                                onDelete={
+                                  uploadedDoc
+                                    ? () => handleDelete(uploadedDoc.id)
+                                    : undefined
+                                }
+                                onExport={
+                                  uploadedDoc
+                                    ? () =>
+                                        handleExportSingle(
+                                          uploadedDoc.id,
+                                          uploadedDoc.hasCompressedVersion ||
+                                            false,
+                                        )
+                                    : undefined
+                                }
+                                onOpenWizard={() => openWizard(doc.id)}
+                              />
+                            );
+                          })}
                         </div>
                       ) : (
                         <DocumentTableView
@@ -1047,7 +1049,9 @@ export default function DocumentVaultPage() {
         open={deleteModalOpen}
         onOpenChange={setDeleteModalOpen}
         title="Delete Document?"
-        description={"Are you sure you want to delete this document? This cannot be undone."}
+        description={
+          "Are you sure you want to delete this document? This cannot be undone."
+        }
         confirmText="Delete"
         cancelText="Cancel"
         confirmVariant="danger"

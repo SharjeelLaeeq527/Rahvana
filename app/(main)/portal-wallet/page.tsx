@@ -58,7 +58,7 @@ const portals: {
       />
     ),
     iconBgColor: "bg-[#e8f6f6]",
-    iconHoverBgColor: "group-hover:bg-[#0d7377]"
+    iconHoverBgColor: "group-hover:bg-[#0d7377]",
   },
   {
     type: "NVC",
@@ -76,7 +76,7 @@ const portals: {
       />
     ),
     iconBgColor: "bg-[#fef3c7]",
-    iconHoverBgColor: "group-hover:bg-[#f59e0b]"
+    iconHoverBgColor: "group-hover:bg-[#f59e0b]",
   },
   {
     type: "COURIER",
@@ -94,7 +94,7 @@ const portals: {
       />
     ),
     iconBgColor: "bg-[#eef2ff]",
-    iconHoverBgColor: "group-hover:bg-[#4f46e5]"
+    iconHoverBgColor: "group-hover:bg-[#4f46e5]",
   },
 ];
 
@@ -319,7 +319,7 @@ const PortalWallet: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-[#f8fafa]">
-      <div className="max-w-275 mx-auto px-6 py-10">
+      <div className="w-full site-main-px site-main-py">
         {/* Header */}
         <div className="text-center mb-10">
           <h1 className="text-[28px] font-bold text-[#0a1128] mb-2">
@@ -411,7 +411,7 @@ const PortalWallet: React.FC = () => {
         onRevealInvoiceId={handleRevealNVCInvoiceID}
         onEdit={() => {
           setViewModal({ open: false, portalType: viewModal.portalType });
-        
+
           setFormModal({
             open: true,
             portalType: viewModal.portalType,
@@ -420,7 +420,7 @@ const PortalWallet: React.FC = () => {
         }}
         onDelete={() => {
           setViewModal({ open: false, portalType: viewModal.portalType });
-        
+
           setDeletePortal(viewModal.portalType);
           setShowConfirmation(true);
         }}

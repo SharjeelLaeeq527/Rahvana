@@ -14,7 +14,7 @@ import { FormField, FormSelect, FormCheckbox } from "./form-field";
 import { useLanguage } from "@/app/context/LanguageContext";
 
 export default function ProfilePage() {
-  const {t} = useLanguage();
+  const { t } = useLanguage();
   const { user, isLoading } = useAuth();
   const router = useRouter();
   const supabase = createBrowserClient(
@@ -61,7 +61,7 @@ export default function ProfilePage() {
       // ── SECURE FETCH: Using our server API to decrypt sensitive fields ──────
       const apiResponse = await fetch("/api/profile");
       if (!apiResponse.ok) throw new Error("Failed to fetch profile");
-      
+
       const { profile } = await apiResponse.json();
 
       if (profile?.profile_details) {
@@ -78,7 +78,9 @@ export default function ProfilePage() {
 
   useEffect(() => {
     if (!isLoading && !user) {
-      router.push(`/login?redirectTo=${encodeURIComponent(window.location.pathname + window.location.search)}`);
+      router.push(
+        `/login?redirectTo=${encodeURIComponent(window.location.pathname + window.location.search)}`,
+      );
       return;
     }
 
@@ -178,24 +180,26 @@ export default function ProfilePage() {
     }));
   };
 
-      <div className="min-h-screen flex items-center justify-center bg-slate-50">
-        <Loader size="md" />
-      </div>
+  <div className="min-h-screen flex items-center justify-center bg-slate-50">
+    <Loader size="md" />
+  </div>;
 
   if (!user) return null;
 
   const completeness = formData.name ? getProfileCompleteness(formData) : 0;
 
   return (
-    <div className="min-h-screen bg-slate-50 p-4 lg:p-6">
-      <div className="max-w-3xl mx-auto">
+    <div className="min-h-screen bg-slate-50">
+      <div className="w-full">
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
           <div>
             <h1 className="text-xl md:text-2xl font-bold text-slate-900 tracking-tight">
               {t("profile.title")}
             </h1>
-            <p className="text-slate-500 text-sm mt-1">{t("profile.subtitle")}</p>
+            <p className="text-slate-500 text-sm mt-1">
+              {t("profile.subtitle")}
+            </p>
           </div>
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full md:w-auto mt-2 md:mt-0">
             <Button
@@ -346,7 +350,10 @@ export default function ProfilePage() {
                       value={formData.sex || "Male"}
                       onChange={(v: string) => updateStrictField("sex", v)}
                       options={[
-                        { value: "Male", label: t("profile.fields.sex.options.male") },
+                        {
+                          value: "Male",
+                          label: t("profile.fields.sex.options.male"),
+                        },
                         {
                           value: "Female",
                           label: t("profile.fields.sex.options.female"),
@@ -384,11 +391,15 @@ export default function ProfilePage() {
                         },
                         {
                           value: "LPR",
-                          label: t("profile.fields.citizenshipStatus.options.lpr"),
+                          label: t(
+                            "profile.fields.citizenshipStatus.options.lpr",
+                          ),
                         },
                         {
                           value: "Other",
-                          label: t("profile.fields.citizenshipStatus.options.other"),
+                          label: t(
+                            "profile.fields.citizenshipStatus.options.other",
+                          ),
                         },
                       ]}
                     />
@@ -397,10 +408,14 @@ export default function ProfilePage() {
                       label={t("profile.fields.citizenshipStatus.label")}
                       value={
                         formData.citizenshipStatus === "USCitizen"
-                          ? t("profile.fields.citizenshipStatus.options.usCitizen")
+                          ? t(
+                              "profile.fields.citizenshipStatus.options.usCitizen",
+                            )
                           : formData.citizenshipStatus === "LPR"
                             ? t("profile.fields.citizenshipStatus.options.lpr")
-                            : t("profile.fields.citizenshipStatus.options.other")
+                            : t(
+                                "profile.fields.citizenshipStatus.options.other",
+                              )
                       }
                       onChange={() => {}}
                       readOnly
@@ -416,27 +431,39 @@ export default function ProfilePage() {
                       options={[
                         {
                           value: "Single",
-                          label: t("profile.fields.maritalStatus.options.single"),
+                          label: t(
+                            "profile.fields.maritalStatus.options.single",
+                          ),
                         },
                         {
                           value: "Married",
-                          label: t("profile.fields.maritalStatus.options.married"),
+                          label: t(
+                            "profile.fields.maritalStatus.options.married",
+                          ),
                         },
                         {
                           value: "Divorced",
-                          label: t("profile.fields.maritalStatus.options.divorced"),
+                          label: t(
+                            "profile.fields.maritalStatus.options.divorced",
+                          ),
                         },
                         {
                           value: "Widowed",
-                          label: t("profile.fields.maritalStatus.options.widowed"),
+                          label: t(
+                            "profile.fields.maritalStatus.options.widowed",
+                          ),
                         },
                         {
                           value: "Separated",
-                          label: t("profile.fields.maritalStatus.options.separated"),
+                          label: t(
+                            "profile.fields.maritalStatus.options.separated",
+                          ),
                         },
                         {
                           value: "Annulled",
-                          label: t("profile.fields.maritalStatus.options.annulled"),
+                          label: t(
+                            "profile.fields.maritalStatus.options.annulled",
+                          ),
                         },
                       ]}
                     />
@@ -558,7 +585,7 @@ export default function ProfilePage() {
 
                 <div className="border-t border-slate-100 pt-4">
                   <h4 className="text-xs font-medium text-slate-600 mb-3">
-                    {t("profile.fields.currentAddress")}
+                    Current Address
                   </h4>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div className="sm:col-span-2">
@@ -987,19 +1014,27 @@ export default function ProfilePage() {
                       options={[
                         {
                           value: "Technology",
-                          label: t("profile.fields.industrySector.options.technology"),
+                          label: t(
+                            "profile.fields.industrySector.options.technology",
+                          ),
                         },
                         {
                           value: "Healthcare",
-                          label: t("profile.fields.industrySector.options.healthcare"),
+                          label: t(
+                            "profile.fields.industrySector.options.healthcare",
+                          ),
                         },
                         {
                           value: "Education",
-                          label: t("profile.fields.industrySector.options.education"),
+                          label: t(
+                            "profile.fields.industrySector.options.education",
+                          ),
                         },
                         {
                           value: "Finance",
-                          label: t("profile.fields.industrySector.options.finance"),
+                          label: t(
+                            "profile.fields.industrySector.options.finance",
+                          ),
                         },
                         {
                           value: "Construction",
@@ -1015,19 +1050,27 @@ export default function ProfilePage() {
                         },
                         {
                           value: "Retail",
-                          label: t("profile.fields.industrySector.options.retail"),
+                          label: t(
+                            "profile.fields.industrySector.options.retail",
+                          ),
                         },
                         {
                           value: "Government",
-                          label: t("profile.fields.industrySector.options.government"),
+                          label: t(
+                            "profile.fields.industrySector.options.government",
+                          ),
                         },
                         {
                           value: "Military/Defense",
-                          label: t("profile.fields.industrySector.options.military"),
+                          label: t(
+                            "profile.fields.industrySector.options.military",
+                          ),
                         },
                         {
                           value: "Other",
-                          label: t("profile.fields.industrySector.options.other"),
+                          label: t(
+                            "profile.fields.industrySector.options.other",
+                          ),
                         },
                       ]}
                       placeholder={t("profile.placeholders.sector")}
@@ -1050,31 +1093,45 @@ export default function ProfilePage() {
                       options={[
                         {
                           value: "Did not graduate high school",
-                          label: t("profile.fields.educationLevel.options.notGraduate"),
+                          label: t(
+                            "profile.fields.educationLevel.options.notGraduate",
+                          ),
                         },
                         {
                           value: "High School",
-                          label: t("profile.fields.educationLevel.options.highSchool"),
+                          label: t(
+                            "profile.fields.educationLevel.options.highSchool",
+                          ),
                         },
                         {
                           value: "Some College",
-                          label: t("profile.fields.educationLevel.options.someCollege"),
+                          label: t(
+                            "profile.fields.educationLevel.options.someCollege",
+                          ),
                         },
                         {
                           value: "Associate Degree",
-                          label: t("profile.fields.educationLevel.options.associate"),
+                          label: t(
+                            "profile.fields.educationLevel.options.associate",
+                          ),
                         },
                         {
                           value: "Bachelor&apos;s Degree",
-                          label: t("profile.fields.educationLevel.options.bachelor"),
+                          label: t(
+                            "profile.fields.educationLevel.options.bachelor",
+                          ),
                         },
                         {
                           value: "Master&apos;s Degree",
-                          label: t("profile.fields.educationLevel.options.master"),
+                          label: t(
+                            "profile.fields.educationLevel.options.master",
+                          ),
                         },
                         {
                           value: "Doctorate",
-                          label: t("profile.fields.educationLevel.options.doctorate"),
+                          label: t(
+                            "profile.fields.educationLevel.options.doctorate",
+                          ),
                         },
                       ]}
                       placeholder={t("profile.placeholders.education")}
@@ -1253,11 +1310,15 @@ export default function ProfilePage() {
                     options={[
                       {
                         value: "Spouse",
-                        label: t("profile.fields.relationshipType.options.spouse"),
+                        label: t(
+                          "profile.fields.relationshipType.options.spouse",
+                        ),
                       },
                       {
                         value: "Fiance",
-                        label: t("profile.fields.relationshipType.options.fiance"),
+                        label: t(
+                          "profile.fields.relationshipType.options.fiance",
+                        ),
                       },
                     ]}
                     placeholder={t("profile.placeholders.selectGeneric")}
@@ -1527,11 +1588,15 @@ export default function ProfilePage() {
                       options={[
                         {
                           value: "citizen",
-                          label: t("profile.fields.sponsorStatus.options.citizen"),
+                          label: t(
+                            "profile.fields.sponsorStatus.options.citizen",
+                          ),
                         },
                         {
                           value: "greenCard",
-                          label: t("profile.fields.sponsorStatus.options.greenCard"),
+                          label: t(
+                            "profile.fields.sponsorStatus.options.greenCard",
+                          ),
                         },
                       ]}
                       placeholder={t("profile.placeholders.selectGeneric")}
@@ -1943,11 +2008,15 @@ export default function ProfilePage() {
                           },
                           {
                             value: "LPR",
-                            label: t("profile.fields.petitionerStatus.options.lpr"),
+                            label: t(
+                              "profile.fields.petitionerStatus.options.lpr",
+                            ),
                           },
                           {
                             value: "NONE",
-                            label: t("profile.fields.petitionerStatus.options.none"),
+                            label: t(
+                              "profile.fields.petitionerStatus.options.none",
+                            ),
                           },
                         ]}
                         placeholder={t("profile.placeholders.selectGeneric")}
@@ -1976,11 +2045,15 @@ export default function ProfilePage() {
                         options={[
                           {
                             value: "UNDER_21",
-                            label: t("profile.fields.petitionerAge.options.under21"),
+                            label: t(
+                              "profile.fields.petitionerAge.options.under21",
+                            ),
                           },
                           {
                             value: "OVER_21",
-                            label: t("profile.fields.petitionerAge.options.over21"),
+                            label: t(
+                              "profile.fields.petitionerAge.options.over21",
+                            ),
                           },
                         ]}
                         placeholder={t("profile.placeholders.selectGeneric")}
@@ -2013,15 +2086,21 @@ export default function ProfilePage() {
                         options={[
                           {
                             value: "BIRTH",
-                            label: t("profile.fields.statusOrigin.options.birth"),
+                            label: t(
+                              "profile.fields.statusOrigin.options.birth",
+                            ),
                           },
                           {
                             value: "NATURALIZED",
-                            label: t("profile.fields.statusOrigin.options.naturalized"),
+                            label: t(
+                              "profile.fields.statusOrigin.options.naturalized",
+                            ),
                           },
                           {
                             value: "GREEN_CARD",
-                            label: t("profile.fields.statusOrigin.options.greenCard"),
+                            label: t(
+                              "profile.fields.statusOrigin.options.greenCard",
+                            ),
                           },
                         ]}
                         placeholder={t("profile.placeholders.selectGeneric")}
@@ -2073,19 +2152,27 @@ export default function ProfilePage() {
                         options={[
                           {
                             value: "FAMILY",
-                            label: t("profile.fields.sponsorBase.options.family"),
+                            label: t(
+                              "profile.fields.sponsorBase.options.family",
+                            ),
                           },
                           {
                             value: "EMPLOYMENT",
-                            label: t("profile.fields.sponsorBase.options.employment"),
+                            label: t(
+                              "profile.fields.sponsorBase.options.employment",
+                            ),
                           },
                           {
                             value: "INVESTMENT",
-                            label: t("profile.fields.sponsorBase.options.investment"),
+                            label: t(
+                              "profile.fields.sponsorBase.options.investment",
+                            ),
                           },
                           {
                             value: "HUMANITARIAN",
-                            label: t("profile.fields.sponsorBase.options.humanitarian"),
+                            label: t(
+                              "profile.fields.sponsorBase.options.humanitarian",
+                            ),
                           },
                         ]}
                         placeholder={t("profile.placeholders.selectGeneric")}
@@ -2116,15 +2203,21 @@ export default function ProfilePage() {
                         options={[
                           {
                             value: "NO",
-                            label: t("profile.fields.violationHistory.options.no"),
+                            label: t(
+                              "profile.fields.violationHistory.options.no",
+                            ),
                           },
                           {
                             value: "YES",
-                            label: t("profile.fields.violationHistory.options.yes"),
+                            label: t(
+                              "profile.fields.violationHistory.options.yes",
+                            ),
                           },
                           {
                             value: "NOT_SURE",
-                            label: t("profile.fields.violationHistory.options.unsure"),
+                            label: t(
+                              "profile.fields.violationHistory.options.unsure",
+                            ),
                           },
                         ]}
                         placeholder={t("profile.placeholders.selectGeneric")}
@@ -2148,15 +2241,21 @@ export default function ProfilePage() {
                         options={[
                           {
                             value: "MARRIAGE_REGISTERED",
-                            label: t("profile.fields.legalStatus.options.registered"),
+                            label: t(
+                              "profile.fields.legalStatus.options.registered",
+                            ),
                           },
                           {
                             value: "BIOLOGICAL",
-                            label: t("profile.fields.legalStatus.options.biological"),
+                            label: t(
+                              "profile.fields.legalStatus.options.biological",
+                            ),
                           },
                           {
                             value: "ADOPTIVE",
-                            label: t("profile.fields.legalStatus.options.adoptive"),
+                            label: t(
+                              "profile.fields.legalStatus.options.adoptive",
+                            ),
                           },
                           {
                             value: "STEP",

@@ -206,8 +206,8 @@ export default function CaseStatusPage() {
   const theme = result ? getStatusTheme(result.status) : null;
 
   return (
-    <div className="min-h-screen bg-linear-to-b from-primary/10 to-white py-10 px-4">
-      <div className="max-w-4xl mx-auto">
+    <div className="bg-linear-to-b from-primary/10 to-white site-main-px site-main-py">
+      <div className="">
         {/* Header Section */}
         <div className="mb-8">
           <div className="inline-flex items-center gap-2 px-3 py-1 bg-primary/10 text-primary rounded-full text-[11px] font-bold uppercase tracking-widest mb-4">

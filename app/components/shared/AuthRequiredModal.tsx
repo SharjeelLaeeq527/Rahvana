@@ -17,7 +17,9 @@ export const AuthRequiredModal = ({ open, onClose, redirectTo }: Props) => {
     if (redirectTo) {
       router.push(`/login?redirect=${redirectTo}`);
     } else {
-      router.push(`/login?redirectTo=${encodeURIComponent(window.location.pathname + window.location.search)}`);
+      router.push(
+        `/login?redirectTo=${encodeURIComponent(window.location.pathname + window.location.search)}`,
+      );
     }
   };
 
@@ -36,7 +38,7 @@ export const AuthRequiredModal = ({ open, onClose, redirectTo }: Props) => {
             initial={{ scale: 0.9, opacity: 0, y: 20 }}
             animate={{ scale: 1, opacity: 1, y: 0 }}
             exit={{ scale: 0.9, opacity: 0, y: 20 }}
-            className="relative w-full max-w-md bg-card rounded-2xl sm:rounded-3xl p-6 sm:p-8 shadow-2xl border border-border mx-4"
+            className="relative w-full max-w-md xl:max-w-lg bg-card rounded-2xl sm:rounded-3xl p-6 sm:p-8 shadow-2xl border border-border mx-4"
           >
             <button
               onClick={onClose}

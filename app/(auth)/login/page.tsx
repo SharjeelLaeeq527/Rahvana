@@ -47,7 +47,7 @@ function LoginContent() {
     if (isMfaActive) {
       const factorIdStored = sessionStorage.getItem("factorId") || "";
       const challengeIdStored = sessionStorage.getItem("challengeId") || "";
-      
+
       setMfaRequired(true);
       setFactorId(factorIdStored);
       setChallengeId(challengeIdStored);
@@ -162,7 +162,11 @@ function LoginContent() {
         setSuccess("Please enter your authentication code");
         setIsSubmitting(false);
         // Add ?mfa=true to URL so refresh doesn't cause redirect
-        window.history.replaceState(null, "", `${window.location.pathname}?mfa=true`);
+        window.history.replaceState(
+          null,
+          "",
+          `${window.location.pathname}?mfa=true`,
+        );
         return;
       }
 
@@ -197,7 +201,7 @@ function LoginContent() {
         sessionStorage.removeItem("challengeId");
         // Remove ?mfa=true from URL
         window.history.replaceState(null, "", window.location.pathname);
-        
+
         if (redirect) {
           window.location.assign(redirect);
         } else {
@@ -349,11 +353,7 @@ function LoginContent() {
                 disabled={isSubmitting || mfaCode.length !== 6}
                 className="w-full h-12 bg-primary hover:bg-primary/90 text-white font-medium rounded-xl transition-all disabled:opacity-50"
               >
-                {isSubmitting ? (
-                  <Loader size="sm" text="Verifying..." />
-                ) : (
-                  "Verify Code"
-                )}
+                {isSubmitting ? "Verifying..." : "Verify Code"}
               </Button>
             </form>
           ) : (
@@ -485,11 +485,7 @@ function LoginContent() {
                 disabled={isSubmitting}
                 className="w-full h-12 bg-primary hover:bg-primary/90 text-primary-foreground font-medium rounded-xl transition-all disabled:opacity-50"
               >
-                {isSubmitting ? (
-                  <Loader size="sm" text="Signing in..." />
-                ) : (
-                  "Sign In"
-                )}
+                {isSubmitting ? "Signing in..." : "Sign In"}
               </Button>
             </form>
           )}

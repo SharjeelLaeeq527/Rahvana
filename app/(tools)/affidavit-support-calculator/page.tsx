@@ -2318,7 +2318,7 @@ export default function AffidavitSupportCalculator() {
             </CardDescription>
           </CardHeader>
           <CardContent className="pt-0">
-            <div className="min-h-100">
+            <div className="">
               {currentStep === 1 && renderStep1()}
               {currentStep === 2 && renderStep2()}
               {currentStep === 3 && renderStep3()}

@@ -54,7 +54,7 @@ export default function IRCategorySection() {
   // };
 
   return (
-    <section id="ir-category" className="container mx-auto px-6 py-8 sm:py-14">
+    <section id="ir-category" className="site-main-px site-main-py">
       <JourneyRouteMap
         selectedOrigin={selectedOrigin}
         setSelectedOrigin={setSelectedOrigin}

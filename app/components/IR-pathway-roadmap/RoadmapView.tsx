@@ -43,7 +43,7 @@ export default function RoadmapView({ showTitle = true }: RoadmapViewProps) {
       
       {/* Header with Progress */}
       <div className="sticky top-0 z-40 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-border shadow-sm px-6 py-6">
-        <div className="flex flex-col gap-4 max-w-7xl mx-auto w-full">
+        <div className="flex flex-col gap-4 w-full">
           {showTitle && (
             <div className="animate-slide-left">
               <h1 className="text-3xl md:text-4xl font-bold text-foreground text-balance">
@@ -58,7 +58,7 @@ export default function RoadmapView({ showTitle = true }: RoadmapViewProps) {
 
       <main className="flex-1 overflow-y-auto p-6 md:p-8">
         {/* Steps Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-7xl mx-auto">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 w-full">
           {immigrationSteps.map((step, index) => (
             <div
               key={step.id}

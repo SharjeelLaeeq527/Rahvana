@@ -22,30 +22,30 @@ function ResultPageInner() {
     // Implementation for saving results to user's profile
     // This would typically involve calling an API endpoint
     try {
-      const response = await fetch('/api/visa-checker/save-results', {
-        method: 'POST',
+      const response = await fetch("/api/visa-checker/save-results", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({ sessionId }),
       });
 
       if (!response.ok) {
-        throw new Error('Failed to save results');
+        throw new Error("Failed to save results");
       }
 
       // Optionally show success notification here
-      console.log('Results saved successfully');
+      console.log("Results saved successfully");
     } catch (error) {
-      console.error('Error saving results:', error);
+      console.error("Error saving results:", error);
       throw error; // Re-throw to be handled by the component
     }
   };
 
   if (!sessionId) {
     return (
-      <div className="min-h-screen bg-linear-to-br from-slate-50 to-slate-100 flex items-center justify-center">
-        <div className="text-center max-w-md">
+      <div className="bg-linear-to-br from-slate-50 to-slate-100 flex items-center justify-center">
+        <div className="text-center max-w-md xl:max-w-xl">
           <div className="bg-white rounded-xl shadow-lg p-8">
             <h2 className="text-2xl font-bold text-slate-900 mb-4">
               Invalid Session
@@ -53,7 +53,6 @@ function ResultPageInner() {
             <p className="text-slate-600 mb-6">
               No session ID provided. Please start a new assessment.
             </p>
-
           </div>
         </div>
       </div>
@@ -61,8 +60,8 @@ function ResultPageInner() {
   }
 
   return (
-    <div className="min-h-screen bg-linear-to-br from-slate-50 to-slate-100 py-12 px-4">
-      <div className="max-w-6xl mx-auto">
+    <div className="bg-linear-to-br from-slate-50 to-slate-100 site-main-px site-main-py">
+      <div className="">
         <div className="mb-6">
           <button
             onClick={() => window.history.back()}

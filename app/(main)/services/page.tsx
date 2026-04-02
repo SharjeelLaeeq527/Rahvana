@@ -164,7 +164,7 @@ export default function ServicesPage() {
         <div className="absolute bottom-[20%] right-[10%] w-[600px] h-[600px] bg-[#32e0c4]/5 rounded-full blur-3xl" />
       </div>
 
-      <div className="max-w-7xl mx-auto px-6 py-8">
+      <div className="w-full site-main-px site-main-py">
         {/* Hero Section */}
         <section className="text-center mb-5 md:mb-10">
           <h1 className="text-3xl md:text-5xl font-bold mb-4 bg-clip-text text-transparent bg-linear-to-r from-foreground to-muted-foreground animate-fade-up">
@@ -188,7 +188,10 @@ export default function ServicesPage() {
         </div>
 
         {/* Categories */}
-        <div ref={containerRef} className="relative w-full mb-8">
+        <div
+          ref={containerRef}
+          className="relative w-full mb-8 flex justify-center"
+        >
           {/* Hidden container for measuring */}
           <div
             ref={measureRef}

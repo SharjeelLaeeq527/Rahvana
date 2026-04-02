@@ -309,8 +309,8 @@ export default function CourierRegistrationPage() {
   );
 
   return (
-    <div className="min-h-screen bg-slate-50/50 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-5xl mx-auto space-y-8">
+    <div className="min-h-screen bg-slate-50/50 site-main-px site-main-py">
+      <div className="w-full">
         {/* Header Section */}
         <div className="text-center space-y-4">
           <motion.div
@@ -1014,7 +1014,7 @@ export default function CourierRegistrationPage() {
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 1.05 }}
-                className="max-w-3xl mx-auto"
+                className="max-w-3xl xl:max-w-5xl mx-auto"
               >
                 <div className="space-y-6">
                   <Card className="border-none shadow-2xl shadow-primary/5 rounded-[2.5rem] bg-white overflow-hidden border border-gray-100">
@@ -1303,12 +1303,7 @@ export default function CourierRegistrationPage() {
                                 className="h-16 rounded-2xl font-black text-lg shadow-xl shadow-primary/20 transition-all active:scale-[0.98] gap-3"
                               >
                                 {isSaving ? (
-                                  <Loader
-                                    size="sm"
-                                    text={t(
-                                      "pages.courierRegistration.securityVault.savingBtn",
-                                    )}
-                                  />
+                                  "Saving..."
                                 ) : (
                                   <>
                                     <Save size={20} />

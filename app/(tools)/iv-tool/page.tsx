@@ -261,9 +261,7 @@ export default function Home() {
           setCountryOptions(data.countryOptions);
           setError(null);
         } else {
-          setError(
-            data.message || t("ivTool.errors.noResults"),
-          );
+          setError(data.message || t("ivTool.errors.noResults"));
           setCountryOptions([]);
         }
         return;
@@ -305,25 +303,21 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-linear-to-b from-primary/10 to-white py-10 px-4">
-      <div className="max-w-4xl mx-auto">
+    <div className="bg-linear-to-b from-primary/10 to-white site-main-px site-main-py">
+      <div className="">
         <h1 className="text-3xl font-bold text-primary mb-2">
           {t("ivTool.title")}
         </h1>
-        <p className="text-gray-600 mb-6">
-          {t("ivTool.subtitle")}
-        </p>
+        <p className="text-gray-600 mb-6">{t("ivTool.subtitle")}</p>
 
         <div className="bg-white p-6 rounded-lg shadow-md mb-8 text-gray-700 text-sm leading-relaxed">
-          <p className="mb-3">
-            {t("ivTool.description.p1")}
-          </p>
+          <p className="mb-3">{t("ivTool.description.p1")}</p>
           <p>
             <strong>Important:</strong> {t("ivTool.description.p2")}
           </p>
         </div>
 
-        <div className="bg-gray-100 p-8 rounded-lg shadow-sm mb-8">
+        <div className="bg-gray-100 p-8 rounded-lg shadow-sm">
           <h2 className="text-xl font-semibold text-gray-800 mb-6">
             {t("ivTool.findStatus")}
           </h2>
@@ -331,11 +325,15 @@ export default function Home() {
           <div className="space-y-6">
             <div>
               <label className="block text-sm font-semibold text-gray-800 mb-4">
-                {t("ivTool.categoryLabel")} <span className="text-red-600">*</span>
+                {t("ivTool.categoryLabel")}{" "}
+                <span className="text-red-600">*</span>
               </label>
               <div className="space-y-3">
                 {[
-                  { value: "immediate-relative", label: t("ivTool.categories.immediate") },
+                  {
+                    value: "immediate-relative",
+                    label: t("ivTool.categories.immediate"),
+                  },
                   {
                     value: "family-sponsored",
                     label: t("ivTool.categories.family"),
@@ -368,8 +366,7 @@ export default function Home() {
                 htmlFor="city"
                 className="block text-sm font-semibold text-gray-800 mb-2"
               >
-                {t("ivTool.cityLabel")}{" "}
-                <span className="text-red-600">*</span>
+                {t("ivTool.cityLabel")} <span className="text-red-600">*</span>
               </label>
               <p className="text-xs text-gray-600 mb-2">
                 {t("ivTool.cityExamples")}
@@ -436,7 +433,9 @@ export default function Home() {
           <div className="bg-red-50 border border-red-200 p-4 rounded-lg mb-8 flex gap-3 items-start">
             <AlertCircle className="h-5 w-5 text-red-600 shrink-0 mt-0.5" />
             <div>
-              <p className="font-semibold text-red-900">{t("ivTool.errors.title")}</p>
+              <p className="font-semibold text-red-900">
+                {t("ivTool.errors.title")}
+              </p>
               <p className="text-red-700 text-sm">{error}</p>
             </div>
           </div>

@@ -353,8 +353,8 @@ export const RapidFireModePage = ({
 
   if (!currentQuestion) {
     return (
-      <div className="min-h-screen bg-linear-to-br from-slate-50 to-teal-50 p-6">
-        <div className="max-w-2xl mx-auto text-center py-12">
+      <div className="bg-linear-to-br from-slate-50 to-teal-50 site-main-py site-main-px">
+        <div className="">
           <div className="bg-white rounded-xl shadow-lg p-8">
             <h3 className="text-xl font-bold mb-4">No Questions Available</h3>
             <p className="text-slate-600 mb-6">
@@ -379,8 +379,8 @@ export const RapidFireModePage = ({
 
   if (totalScore !== null) {
     return (
-      <div className="min-h-screen bg-linear-to-br from-slate-50 to-teal-50 p-6">
-        <div className="max-w-2xl mx-auto">
+      <div className="bg-linear-to-br from-slate-50 to-teal-50 site-main-py site-main-px">
+        <div className="">
           <div className="text-center mb-8">
             <h1 className="text-3xl font-bold text-slate-900 mb-2">
               Rapid Fire Completed!
@@ -606,7 +606,8 @@ export const RapidFireModePage = ({
                         </span>
                       </div>
                       <h3 className="text-lg font-bold leading-tight">
-                        {reviewQuestion.selectedQuestion || reviewQuestion.question}
+                        {reviewQuestion.selectedQuestion ||
+                          reviewQuestion.question}
                       </h3>
                     </div>
                     <div className="text-center">
@@ -703,8 +704,8 @@ export const RapidFireModePage = ({
   }
 
   return (
-    <div className="min-h-screen bg-linear-to-br from-slate-50 to-teal-50 p-6">
-      <div className="max-w-4xl mx-auto">
+    <div className="bg-linear-to-br from-slate-50 to-teal-50 p-6">
+      <div className="site-main-px">
         <div className="flex justify-between items-center mb-6">
           <div>
             <h1 className="text-2xl font-bold text-slate-900 flex items-center gap-2">
@@ -747,7 +748,7 @@ export const RapidFireModePage = ({
         </div>
 
         <div className="bg-white rounded-2xl shadow-xl p-8 mb-8 min-h-125 flex items-center justify-center">
-          <div className="w-full max-w-2xl">
+          <div className="w-full">
             <div
               className={`relative w-full h-auto min-h-112.5 cursor-pointer transition-transform duration-700 ease-out-cubic ${
                 isFlipped ? "transform rotate-y-180" : ""
@@ -773,7 +774,8 @@ export const RapidFireModePage = ({
                     </span>
                   </div>
                   <h2 className="text-2xl font-bold leading-tight text-slate-800 mb-8">
-                    {currentQuestion.selectedQuestion || currentQuestion.question}
+                    {currentQuestion.selectedQuestion ||
+                      currentQuestion.question}
                   </h2>
 
                   {!showAnswer && (

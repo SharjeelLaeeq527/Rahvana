@@ -35,7 +35,7 @@ export function Dashboard({
 
   return (
     <section id="dashboard" className="block">
-      <div className="max-w-[1400px] mx-auto px-6 py-[60px]">
+      <div className="w-full px-6 py-[60px]">
         <h1 className="text-[40px] font-bold mb-4">{t("dashboard.title")}</h1>
         <p className="text-slate-500 text-lg mb-12">{t("dashboard.subtitle")}</p>
 

@@ -73,7 +73,7 @@ export default function Actual221GFormChecker({
   };
 
   return (
-    <Card className="w-full max-w-4xl mx-auto">
+    <Card className="w-full">
       <CardHeader>
         <CardTitle className="text-2xl font-bold text-primary">
           221(g) Form Checker
