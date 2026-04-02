@@ -25,6 +25,7 @@ type Analytics = {
   guides: { total: number };
   document_translations: { total: number };
   case_strength: { total: number };
+  interview_prep: { total: number };
 };
 
 const UserDashboard = () => {
@@ -109,14 +110,16 @@ const UserDashboard = () => {
       href: "/visa-case-strength-checker/my-cases",
     },
     {
-      title: "Book a Consultation",
+      title: "Interview Prep",
       icon: (
         <MessageSquare className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
       ),
-      status: "coming-soon" as const,
+      status: "live" as const,
+      count: analytics?.interview_prep.total || 0,
+      countLabel: "sessions completed",
       description:
-        "Book a consultation call with an immigration expert to review your case and documents.",
-      href: "#",
+        "Prepare smarter and deliver confident answers when it matters most.",
+      href: "/interview-prep/my-sessions",
     },
     {
       title: "Expert Case Review",

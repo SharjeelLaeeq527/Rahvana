@@ -43,6 +43,12 @@ export async function GET() {
       .select("*", { count: "exact", head: true })
       .eq("user_id", userId);
 
+      // INTERVIEW PREP SESSIONS 
+      const { count: interviewPrepCount } = await supabase
+        .from("interview_prep_sessions")
+        .select("*", { count: "exact", head: true })
+        .eq("user_id", userId);
+
     return NextResponse.json({
       guides: {
         total: totalGuides || 0,
@@ -55,6 +61,9 @@ export async function GET() {
       },
       case_strength: {
         total: caseStrengthCount || 0,
+      },
+      interview_prep: {
+        total: interviewPrepCount || 0,
       },
     });
   } catch (error) {

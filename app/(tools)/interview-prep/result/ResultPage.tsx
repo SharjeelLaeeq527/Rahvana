@@ -345,16 +345,16 @@ export const ResultPage = ({
           <div className="flex flex-col lg:flex-row gap-4 lg:gap-6">
             {/* Questions Sidebar - Only in prep mode */}
             {mode === "prep" && !sidebarCollapsed && (
-              <div className="lg:w-2/5 px-4 lg:px-0">
-                <div className="bg-white rounded-xl shadow-lg p-4 h-[calc(90vh-1rem)] sticky top-6">
-                  <div className="flex justify-between items-center mb-4">
-                    <h3 className="font-semibold text-lg text-slate-800 flex items-center gap-2">
+              <div className="lg:w-1/3 px-4 lg:px-0">
+                <div className="bg-white rounded-2xl shadow-lg p-4 h-[350px] sm:h-[400px] lg:h-[450px] sticky top-6 flex flex-col border border-slate-200/50">
+                  <div className="flex justify-between items-center mb-4 pb-3 border-b border-slate-200/50">
+                    <h3 className="font-bold text-base text-slate-800 flex items-center gap-2">
                       <BookOpen className="w-5 h-5 text-teal-600" />
                       Questions ({questionsList.length})
                     </h3>
                     <button
                       onClick={() => setSidebarCollapsed(true)}
-                      className="text-slate-500 hover:text-slate-700"
+                      className="text-slate-500 hover:text-teal-600 transition-colors p-1 hover:bg-slate-100 rounded"
                       aria-label="Collapse sidebar"
                     >
                       <svg
@@ -371,7 +371,7 @@ export const ResultPage = ({
                       </svg>
                     </button>
                   </div>
-                  <ScrollArea className="h-[calc(100%-4rem)] pr-4">
+                  <ScrollArea className="flex-1 pr-4">
                     <div className="space-y-3">
                       {questionsList.map(
                         (item: GeneratedQuestion, index: number) => (
@@ -435,13 +435,15 @@ export const ResultPage = ({
             {/* Flashcard Area - Only in prep mode */}
             {mode === "prep" && (
               <div
-                className={`${sidebarCollapsed ? "lg:w-11/12" : "lg:w-[75%]"} px-4 lg:px-0`}
+                className={`${
+                  sidebarCollapsed ? "lg:flex-1" : "lg:w-2/3"
+                } px-4 lg:px-0 flex flex-col`}
               >
-                <div className="bg-white rounded-xl shadow-lg p-4 sm:p-6 lg:p-2 flex items-center justify-center">
+                <div className="bg-white rounded-2xl shadow-xl border border-slate-200/50 overflow-hidden h-[350px] sm:h-[400px] lg:h-[450px]">
                   {selectedQuestion ? (
-                    <div className="w-full max-w-2xl">
+                    <div className="w-full h-full flex items-center justify-center p-3 sm:p-4 lg:p-6">
                       <div
-                        className={`relative w-full h-full min-h-[575px] cursor-pointer transition-transform duration-700 ease-out-cubic ${
+                        className={`relative w-full h-full cursor-pointer transition-transform duration-700 ease-out-cubic ${
                           isFlipped ? "transform rotate-y-180" : ""
                         }`}
                         style={{
@@ -451,10 +453,10 @@ export const ResultPage = ({
                         onClick={handleCardClick}
                       >
                         {/* Front of Card - Question */}
-                        <div className="absolute inset-0 backface-hidden bg-linear-to-br from-teal-500 to-teal-700 rounded-2xl p-8 flex flex-col justify-between text-white shadow-xl">
-                          <div>
-                            <div className="flex justify-between items-start mb-6">
-                              <span className="bg-white/20 backdrop-blur-sm px-3 py-1 rounded-full text-sm font-medium">
+                        <div className="absolute inset-0 backface-hidden bg-linear-to-br from-teal-500 to-teal-700 rounded-2xl p-3 sm:p-4 lg:p-6 flex flex-col justify-between text-white shadow-2xl border border-teal-400/40">
+                          <div className="space-y-2 sm:space-y-3">
+                            <div className="flex justify-between items-start gap-2 sm:gap-4">
+                              <span className="bg-white/20 backdrop-blur-sm px-2 sm:px-3 py-0.5 sm:py-1 rounded-full text-xs font-medium whitespace-nowrap">
                                 {selectedQuestion.category}
                               </span>
                               {selectedQuestion.tooltip && (
@@ -463,57 +465,52 @@ export const ResultPage = ({
                                     size={20}
                                     className="text-white/80 hover:text-white"
                                   />
-                                  <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 hidden group-hover:block w-64 bg-slate-800 text-white text-xs rounded-lg p-3 z-50 shadow-xl border border-slate-700">
+                                  <div className="absolute bottom-full right-0 mb-2 hidden group-hover:block w-64 bg-slate-800 text-white text-xs rounded-lg p-3 z-50 shadow-xl border border-slate-700">
                                     <div className="text-teal-300 font-medium mb-1 flex items-center gap-1">
-                                      <Info
-                                        size={14}
-                                        className="text-teal-300"
-                                      />
+                                      <Info size={14} className="text-teal-300" />
                                       Tip
                                     </div>
                                     <p>{selectedQuestion.tooltip}</p>
-                                    <div className="absolute top-full left-1/2 transform -translate-x-1/2 border-8 border-transparent border-t-slate-800"></div>
+                                    <div className="absolute top-full right-4 border-8 border-transparent border-t-slate-800"></div>
                                   </div>
                                 </div>
                               )}
                             </div>
-                            <h3 className="text-2xl font-bold leading-tight">
+                            <h3 className="text-lg sm:text-xl lg:text-2xl font-bold leading-snug line-clamp-5 sm:line-clamp-4">
                               {selectedQuestion.selectedQuestion ||
                                 selectedQuestion.question}
                             </h3>
                           </div>
-                          <div className="text-center">
-                            <p className="text-teal-100 text-sm mb-2">
-                              Click card to reveal answer
-                            </p>
+                          <div className="text-center space-y-1">
+                            <p className="text-teal-100 text-xs">Click to reveal</p>
                             <div className="flex justify-center">
-                              <div className="w-8 h-8 border-2 border-white/50 rounded-full animate-bounce flex items-center justify-center">
-                                <div className="w-2 h-2 bg-white/80 rounded-full"></div>
+                              <div className="w-4 h-4 border-2 border-white/50 rounded-full animate-bounce flex items-center justify-center">
+                                <div className="w-1 h-1 bg-white/80 rounded-full"></div>
                               </div>
                             </div>
                           </div>
                         </div>
 
                         {/* Back of Card - Answer & Guidance */}
-                        <div className="absolute inset-0 backface-hidden rotate-y-180 bg-linear-to-br from-teal-600 to-teal-800 rounded-2xl p-8 flex flex-col text-white shadow-xl">
-                          <div className="flex justify-between items-start mb-6">
-                            <span className="bg-white/20 px-3 py-1 rounded-full text-sm font-medium">
+                        <div className="absolute inset-0 backface-hidden rotate-y-180 bg-linear-to-br from-teal-600 to-teal-800 rounded-2xl p-3 sm:p-4 lg:p-6 flex flex-col text-white shadow-2xl border border-teal-500/40">
+                          <div className="flex justify-between items-start mb-2 sm:mb-3 pb-2 border-b border-white/10">
+                            <span className="bg-white/20 px-2 sm:px-3 py-0.5 sm:py-1 rounded-full text-xs font-medium">
                               {savedAnswers[selectedQuestion.id]
                                 ? "Your Answer"
                                 : "Answer & Guidance"}
                             </span>
                           </div>
 
-                          <ScrollArea className="flex-1 pr-4">
-                            <div className="space-y-6">
+                          <ScrollArea className="flex-1 pr-2 sm:pr-3">
+                            <div className="space-y-3 sm:space-y-4">
                               {/* Show saved answer if it exists */}
                               {savedAnswers[selectedQuestion.id] && (
                                 <div>
-                                  <h4 className="text-green-200 font-semibold mb-2 flex items-center gap-2">
-                                    <span className="w-2 h-2 bg-green-200 rounded-full"></span>
+                                  <h4 className="text-green-200 font-semibold mb-1 flex items-center gap-2 text-xs sm:text-sm">
+                                    <span className="w-1.5 h-1.5 bg-green-200 rounded-full"></span>
                                     Your Saved Answer
                                   </h4>
-                                  <p className="text-slate-100 leading-relaxed">
+                                  <p className="text-slate-100 leading-relaxed text-xs sm:text-sm line-clamp-3">
                                     {savedAnswers[selectedQuestion.id]}
                                   </p>
                                 </div>
@@ -526,32 +523,32 @@ export const ResultPage = ({
                               ] ? (
                                 <>
                                   <div>
-                                    <h4 className="text-teal-200 font-semibold mb-2 flex items-center gap-2">
-                                      <span className="w-2 h-2 bg-teal-200 rounded-full"></span>
-                                      Sample Answer
+                                    <h4 className="text-teal-200 font-semibold mb-1 flex items-center gap-2 text-xs sm:text-sm">
+                                      <span className="w-1.5 h-1.5 bg-teal-200 rounded-full"></span>
+                                      Sample
                                     </h4>
-                                    <p className="text-slate-100 leading-relaxed">
+                                    <p className="text-slate-100 leading-snug text-xs sm:text-sm line-clamp-3">
                                       {selectedQuestion.sampleAnswer}
                                     </p>
                                   </div>
 
                                   <div>
-                                    <h4 className="text-blue-200 font-semibold mb-2 flex items-center gap-2">
-                                      <span className="w-2 h-2 bg-blue-200 rounded-full"></span>
+                                    <h4 className="text-blue-200 font-semibold mb-1 flex items-center gap-2 text-xs sm:text-sm">
+                                      <span className="w-1.5 h-1.5 bg-blue-200 rounded-full"></span>
                                       Guidance
                                     </h4>
-                                    <p className="text-slate-200 leading-relaxed">
+                                    <p className="text-slate-200 leading-snug text-xs sm:text-sm line-clamp-3">
                                       {selectedQuestion.guidance}
                                     </p>
                                   </div>
 
                                   {selectedQuestion.tooltip && (
                                     <div>
-                                      <h4 className="text-amber-200 font-semibold mb-2 flex items-center gap-2">
-                                        <span className="w-2 h-2 bg-amber-200 rounded-full"></span>
+                                      <h4 className="text-amber-200 font-semibold mb-1 flex items-center gap-2 text-xs sm:text-sm">
+                                        <span className="w-1.5 h-1.5 bg-amber-200 rounded-full"></span>
                                         Tip
                                       </h4>
-                                      <p className="text-slate-300 text-sm italic">
+                                      <p className="text-slate-300 text-xs sm:text-sm italic line-clamp-2">
                                         {selectedQuestion.tooltip}
                                       </p>
                                     </div>
@@ -563,7 +560,7 @@ export const ResultPage = ({
 
                           {/* Toggle button if answer is saved */}
                           {savedAnswers[selectedQuestion.id] && (
-                            <div className="mt-4 mb-2">
+                            <div className="mt-2 sm:mt-3 mb-1">
                               <button
                                 onClick={(e) => {
                                   e.stopPropagation(); // Prevent card flip when clicking toggle
@@ -573,41 +570,36 @@ export const ResultPage = ({
                                       !prev[selectedQuestion.id],
                                   }));
                                 }}
-                                className="w-full text-teal-100 hover:text-white text-sm font-medium transition-colors underline"
+                                className="w-full text-teal-100 hover:text-white text-xs sm:text-sm font-medium transition-colors underline"
                               >
                                 {showSampleAnswerInFlashcard[
                                   selectedQuestion.id
                                 ]
                                   ? "Hide Sample"
-                                  : "Compare with Sample"}
+                                  : "Compare"}
                               </button>
                             </div>
                           )}
 
-                          {/* NEW: Answer button on back of card */}
-                          <div className="mt-6 flex gap-2">
+                          {/* Answer button on back of card */}
+                          <div className="mt-3 sm:mt-4 flex gap-2">
                             <Button
                               onClick={(e) => {
                                 e.stopPropagation();
                                 setShowAnswerModal(true);
                               }}
-                              className="flex-1 bg-white text-teal-700 hover:bg-teal-50 font-semibold"
+                              className="flex-1 bg-white text-teal-700 hover:bg-teal-50 font-semibold text-xs sm:text-sm py-1 sm:py-2"
                             >
                               {savedAnswers[selectedQuestion.id]
-                                ? "Edit Answer"
-                                : "Answer This Question"}
+                                ? "Edit"
+                                : "Answer"}
                             </Button>
                           </div>
 
-                          <div className="text-center mt-4">
-                            <p className="text-slate-300 text-sm">
-                              Click card to flip back
+                          <div className="text-center mt-2">
+                            <p className="text-slate-300 text-xs">
+                              Click to flip
                             </p>
-                            <div className="flex justify-center mt-2">
-                              <div className="w-8 h-8 border-2 border-slate-300 rounded-full animate-bounce flex items-center justify-center">
-                                <div className="w-2 h-2 bg-slate-300 rounded-full"></div>
-                              </div>
-                            </div>
                           </div>
                         </div>
                       </div>
