@@ -5,15 +5,7 @@ import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  BookOpen,
-  Info,
-  Shuffle,
-  Zap,
-  Check,
-  X,
-  Loader2
-} from "lucide-react";
+import { BookOpen, Info, Shuffle, Zap, Check, X, Loader2 } from "lucide-react";
 import { InterviewPrepOutput, GeneratedQuestion } from "@/lib/interview-prep";
 import { RapidFireModePage } from "../rapid-fire/RapidFireModePage";
 import { Loader } from "@/components/ui/spinner";
@@ -286,8 +278,8 @@ export const ResultPage = ({
 
   if (results && results.questions) {
     return (
-      <div className="min-h-screen bg-white p-4 sm:p-6">
-        <div className="max-w-7xl mx-auto">
+      <div className="bg-white site-main-py site-main-px">
+        <div className="">
           {/* removed  mx-auto from above div */}
           <div className="text-center mb-8">
             <div className="flex justify-center gap-4 mb-4">
@@ -445,7 +437,7 @@ export const ResultPage = ({
               <div
                 className={`${sidebarCollapsed ? "lg:w-11/12" : "lg:w-[75%]"} px-4 lg:px-0`}
               >
-                <div className="bg-white rounded-xl shadow-lg p-4 sm:p-6 lg:p-2 min-h-[calc(90vh-2rem)] flex items-center justify-center">
+                <div className="bg-white rounded-xl shadow-lg p-4 sm:p-6 lg:p-2 flex items-center justify-center">
                   {selectedQuestion ? (
                     <div className="w-full max-w-2xl">
                       <div
@@ -639,8 +631,8 @@ export const ResultPage = ({
             {/* Rapid Fire Mode */}
             {mode === "rapid" && (
               <div className="w-full">
-                <div className="bg-white rounded-xl shadow-lg p-8 min-h-[calc(90vh-2rem)]">
-                  <div className="text-center py-12">
+                <div className="bg-white rounded-xl shadow-lg site-main-px">
+                  <div className="text-center site-main-py">
                     <Zap className="w-16 h-16 text-orange-500 mx-auto mb-4" />
                     <h3 className="text-2xl font-bold text-slate-900 mb-4">
                       Rapid Fire Mode
