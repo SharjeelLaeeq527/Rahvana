@@ -269,19 +269,34 @@ export function SiteHeader({
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [scrolled, setScrolled] = useState(false);
+  const [heroTransitioned, setHeroTransitioned] = useState(false);
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 20);
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
+  useEffect(() => {
+    const handleHeroTransition = (event: Event) => {
+      const customEvent = event as CustomEvent<{ transitioned?: boolean }>;
+      setHeroTransitioned(Boolean(customEvent.detail?.transitioned));
+    };
+
+    window.addEventListener("home-hero-transition", handleHeroTransition);
+    return () => {
+      window.removeEventListener("home-hero-transition", handleHeroTransition);
+    };
+  }, []);
+
+  const isHomeHeroState = pathname === "/" && !scrolled && !heroTransitioned;
+
   return (
     <header
-      className={`sticky top-0 left-0 right-0 z-50 transition-all duration-300 bg-background/80 backdrop-blur-md shadow-lg py-2`}
-      //   scrolled
-      //     ? "bg-background/80 backdrop-blur-md shadow-lg py-2"
-      //     : "bg-background py-4"
-      // } border-b border-border`}
+      className={`sticky top-0 left-0 right-0 z-50 transition-all duration-300 ${
+        isHomeHeroState
+          ? "bg-transparent border-transparent shadow-none py-3"
+          : "bg-background/80 backdrop-blur-md shadow-lg py-2"
+      }`}
     >
       {/* ------------------------------------------------------------------ */}
       {/* Desktop navigation */}
@@ -291,7 +306,11 @@ export function SiteHeader({
         <div className="flex items-center gap-4">
           {/* Mobile Menu Trigger */}
           <HydrationSafeButton
-            className="lg:hidden text-foreground p-1 hover:bg-muted rounded-md transition-colors"
+            className={`lg:hidden p-1 rounded-md transition-colors ${
+              isHomeHeroState
+                ? "text-white hover:bg-white/15"
+                : "text-foreground hover:bg-muted"
+            }`}
             onClick={() => setIsMenuOpen(true)}
             aria-label="Open menu"
           >
@@ -319,7 +338,9 @@ export function SiteHeader({
             <svg
               xmlns="http://www.w3.org/2000/svg"
               viewBox="152 220 710 215"
-              className="h-8 w-auto text-rahvana-primary fill-current"
+              className={`h-8 w-auto fill-current ${
+                isHomeHeroState ? "text-white drop-shadow-sm" : "text-rahvana-primary"
+              }`}
             >
               <path d="M194.478302,411.482117C188.648972,398.666321 181.184067,387.211884 174.078979,375.556946C161.946335,355.654999 154.218430,334.429535 152.466766,310.927032C150.965759,290.787415 151.490814,271.069061 158.657028,251.953415C161.906097,243.286591 167.372574,236.333282 175.068100,231.098938C187.972153,222.321823 212.377777,222.515015 222.031631,242.165817C226.003326,250.250381 232.154404,254.994858 241.386230,255.103607C240.874603,257.700470 239.210571,257.303253 238.057617,257.539734C214.604111,262.350281 200.098267,276.975067 192.363480,299.065857C184.921768,320.319672 187.555267,352.132874 198.628662,372.172211C195.346085,360.736084 194.548477,349.072571 194.585556,337.231354C194.686203,305.091156 209.071442,282.030487 237.587112,267.388245C252.463837,259.749298 268.363953,254.738281 283.791870,248.515182C300.024750,241.967392 315.867065,234.607849 330.889893,225.571030C331.848022,224.994675 332.727417,224.133804 334.330139,224.642090C334.086884,229.016586 332.356110,232.995224 331.110291,237.029678C325.877838,253.974487 319.356995,270.258270 307.731262,284.109070C295.584656,298.580475 279.797791,306.307983 261.751282,310.259583C255.743668,311.575104 249.729248,312.898682 243.795959,314.506500C229.390137,318.410126 220.388382,329.212219 218.286926,343.947327C216.575470,355.947906 217.905655,367.798737 218.737152,379.737518C219.623474,392.463135 221.756760,405.206818 219.303925,418.003387C217.963852,424.994537 214.710114,430.344635 207.688766,433.006439C204.303909,434.289673 202.544754,433.679260 201.368622,430.074707C199.358749,423.914886 196.908096,417.898895 194.478302,411.482117z"></path>
               <path d="M347.022308,320.000671C347.016052,314.839264 347.105347,310.174835 346.965759,305.517273C346.865234,302.162506 348.128204,300.629364 351.628418,300.734467C356.786560,300.889313 361.960175,300.922363 367.113922,300.699646C370.973633,300.532806 372.427643,301.928192 372.368347,305.879303C372.186157,318.023376 372.301971,330.171936 372.301971,342.083649C373.283447,342.867767 373.819183,342.426117 374.318726,342.006836C383.782745,334.063324 394.575775,332.615875 406.196838,335.633057C415.899536,338.152130 422.744904,346.587646 423.310516,356.622040C424.267090,373.593201 423.737030,390.584991 423.953217,407.566589C423.995270,410.868988 423.022247,412.495087 419.405853,412.347473C414.084778,412.130249 408.740967,412.096069 403.421997,412.329346C399.633331,412.495514 398.561127,410.970825 398.606415,407.354187C398.766998,394.531891 398.675171,381.706299 398.663269,368.881958C398.653717,358.575378 395.399567,354.366302 387.286011,354.116821C377.843262,353.826508 372.628845,358.719452 372.391693,368.828339C372.122253,380.313904 372.349670,391.810638 372.318054,403.302399C372.289795,413.578827 373.113983,412.175079 363.109467,412.274994C359.445770,412.311584 355.772827,412.113037 352.119568,412.309662C348.129639,412.524414 346.894379,410.660309 346.908722,406.924530C346.998840,383.444702 346.970551,359.964386 346.985443,336.484253C346.988831,331.156372 347.007996,325.828522 347.022308,320.000671z"></path>
@@ -341,8 +362,12 @@ export function SiteHeader({
               <HydrationSafeButton
                 className={`flex items-center gap-1.5 px-4 py-2 text-sm font-semibold rounded-lg transition-all cursor-pointer ${
                   isActive("journeys") || activeMenu === "journeys"
-                    ? "bg-muted text-primary"
-                    : "text-muted-foreground hover:bg-muted hover:text-primary"
+                    ? isHomeHeroState
+                      ? "bg-white/20 text-white"
+                      : "bg-muted text-primary"
+                    : isHomeHeroState
+                      ? "text-white/90 hover:bg-white/15 hover:text-white"
+                      : "text-muted-foreground hover:bg-muted hover:text-primary"
                 }`}
               >
                 Explore Journeys
@@ -366,8 +391,12 @@ export function SiteHeader({
               <HydrationSafeButton
                 className={`flex items-center gap-1.5 px-4 py-2 text-sm font-semibold rounded-lg transition-all cursor-pointer ${
                   isActive("tools", "/tools") || activeMenu === "tools"
-                    ? "bg-muted text-primary"
-                    : "text-muted-foreground hover:bg-muted hover:text-primary"
+                    ? isHomeHeroState
+                      ? "bg-white/20 text-white"
+                      : "bg-muted text-primary"
+                    : isHomeHeroState
+                      ? "text-white/90 hover:bg-white/15 hover:text-white"
+                      : "text-muted-foreground hover:bg-muted hover:text-primary"
                 }`}
               >
                 Toolbox
@@ -391,8 +420,12 @@ export function SiteHeader({
               <HydrationSafeButton
                 className={`flex items-center gap-1.5 px-4 py-2 text-sm font-semibold rounded-lg transition-all cursor-pointer ${
                   isActive("guides") || activeMenu === "guides"
-                    ? "bg-muted text-primary"
-                    : "text-muted-foreground hover:bg-muted hover:text-primary"
+                    ? isHomeHeroState
+                      ? "bg-white/20 text-white"
+                      : "bg-muted text-primary"
+                    : isHomeHeroState
+                      ? "text-white/90 hover:bg-white/15 hover:text-white"
+                      : "text-muted-foreground hover:bg-muted hover:text-primary"
                 }`}
               >
                 Guides
@@ -416,8 +449,12 @@ export function SiteHeader({
               <HydrationSafeButton
                 className={`flex items-center gap-1.5 px-4 py-2 text-sm font-semibold rounded-lg transition-all cursor-pointer ${
                   isActive("services", "/services") || activeMenu === "services"
-                    ? "bg-muted text-primary"
-                    : "text-muted-foreground hover:bg-muted hover:text-primary"
+                    ? isHomeHeroState
+                      ? "bg-white/20 text-white"
+                      : "bg-muted text-primary"
+                    : isHomeHeroState
+                      ? "text-white/90 hover:bg-white/15 hover:text-white"
+                      : "text-muted-foreground hover:bg-muted hover:text-primary"
                 }`}
               >
                 Services
@@ -437,8 +474,12 @@ export function SiteHeader({
                 onClick={(e) => handleNav("pricing", e)}
                 className={`block px-4 py-2 text-sm font-semibold rounded-lg transition-all ${
                   isActive("pricing", "/pricing")
-                    ? "bg-muted text-primary"
-                    : "text-muted-foreground hover:bg-muted hover:text-primary"
+                    ? isHomeHeroState
+                      ? "bg-white/20 text-white"
+                      : "bg-muted text-primary"
+                    : isHomeHeroState
+                      ? "text-white/90 hover:bg-white/15 hover:text-white"
+                      : "text-muted-foreground hover:bg-muted hover:text-primary"
                 }`}
               >
                 Pricing
@@ -450,8 +491,12 @@ export function SiteHeader({
                 onClick={(e) => handleNav("faq", e)}
                 className={`block px-4 py-2 text-sm font-semibold rounded-lg transition-all ${
                   isActive("faq")
-                    ? "bg-muted text-primary"
-                    : "text-muted-foreground hover:bg-muted hover:text-primary"
+                    ? isHomeHeroState
+                      ? "bg-white/20 text-white"
+                      : "bg-muted text-primary"
+                    : isHomeHeroState
+                      ? "text-white/90 hover:bg-white/15 hover:text-white"
+                      : "text-muted-foreground hover:bg-muted hover:text-primary"
                 }`}
               >
                 FAQ
@@ -463,8 +508,12 @@ export function SiteHeader({
                 onClick={(e) => handleNav("contact", e)}
                 className={`block px-4 py-2 text-sm font-semibold rounded-lg transition-all ${
                   isActive("contact")
-                    ? "bg-muted text-primary"
-                    : "text-muted-foreground hover:bg-muted hover:text-primary"
+                    ? isHomeHeroState
+                      ? "bg-white/20 text-white"
+                      : "bg-muted text-primary"
+                    : isHomeHeroState
+                      ? "text-white/90 hover:bg-white/15 hover:text-white"
+                      : "text-muted-foreground hover:bg-muted hover:text-primary"
                 }`}
               >
                 Contact
@@ -522,7 +571,11 @@ export function SiteHeader({
                     size="icon"
                     aria-label="Notifications"
                     onClick={() => setNotificationsOpen((prev) => !prev)}
-                    className="relative bg-transparent hover:bg-primary/10 p-2 rounded-md text-muted-foreground hover:text-primary transition-colors"
+                    className={`relative p-2 rounded-md transition-colors ${
+                      isHomeHeroState
+                        ? "bg-white/10 text-white hover:bg-white/20 hover:text-white"
+                        : "bg-transparent text-muted-foreground hover:bg-primary/10 hover:text-primary"
+                    }`}
                   >
                     <Bell className="h-5 w-5" aria-hidden="true" />
                   </HydrationSafeButton>
@@ -600,7 +653,11 @@ export function SiteHeader({
                   if (menuTimeoutRef.current) clearTimeout(menuTimeoutRef.current);
                   setActiveMenu(activeMenu === "profile" ? null : "profile");
                 }}
-                className="flex items-center justify-center w-10 h-10 rounded-full bg-primary/10 border-2 border-primary/20 text-primary hover:bg-primary/20 transition-all shadow-sm font-semibold text-lg"
+                className={`flex items-center justify-center w-10 h-10 rounded-full border-2 transition-all shadow-sm font-semibold text-lg ${
+                  isHomeHeroState
+                    ? "bg-white/92 border-white/85 text-[#6f9fa0] hover:bg-white"
+                    : "bg-primary/10 border-primary/20 text-primary hover:bg-primary/20"
+                }`}
               >
                 {(
                   profile?.full_name ||
@@ -721,7 +778,11 @@ export function SiteHeader({
           ) : (
             <HydrationSafeButton
               onClick={() => onToggleAuth?.()}
-              className="font-semibold text-white bg-primary hover:bg-primary/90 shadow-md px-6 py-2 rounded-lg transition-all"
+              className={`font-semibold px-6 py-2 rounded-lg transition-all shadow-md ${
+                isHomeHeroState
+                  ? "text-[#6d9a9b] bg-white/50 hover:bg-white/65"
+                  : "text-white bg-primary hover:bg-primary/90"
+              }`}
             >
               LOGIN
             </HydrationSafeButton>

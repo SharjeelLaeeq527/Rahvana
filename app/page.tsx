@@ -18,6 +18,7 @@ import Image from "next/image";
 import { StackedCarousel } from "./components/StackedCarousel";
 import Link from "next/link";
 import HydrationSafeButton from "@/app/components/HydrationSafeButton";
+import { CinematicHero } from "./components/home-page/HeroSection";
 import { ComingSoonModal } from "./components/shared/ComingSoonModal";
 import { useAuth } from "./context/AuthContext";
 import { createClient } from "@/lib/supabase/client";
@@ -195,108 +196,7 @@ function HomePageContent() {
       <main className="min-h-[calc(100vh-200px)]">
         {activeSection === "home" && (
           <div className="flex flex-col">
-            {/* HERO SECTION */}
-            <section className="relative py-8 md:py-12 overflow-hidden bg-background">
-              <div className="w-full mx-auto site-main-px">
-                <div className="flex flex-col lg:flex-row items-center gap-16">
-                  <motion.div
-                    initial={{ opacity: 0, y: 30 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.8, ease: "easeOut" }}
-                    viewport={{ once: true }}
-                    className="w-full lg:w-1/2 xl:w-[45%]"
-                  >
-                    <div className="inline-flex items-center gap-2 px-4 py-2 mb-6 text-sm font-medium rounded-full bg-rahvana-primary-pale text-rahvana-primary">
-                      <Icons.ShieldCheck className="w-4 h-4" />
-                      {t("homePage.trustedBy")}
-                    </div>
-                    <h1 className="text-3xl md:text-5xl lg:text-6xl font-bold leading-tight text-foreground mb-6">
-                      {t("homePage.heroTitle1")}
-                      {/* <br /> */}
-                      <span className="bg-linear-to-r from-rahvana-primary to-rahvana-primary-light bg-clip-text text-fill-transparent">
-                        {t("homePage.heroTitle2")}
-                      </span>
-                    </h1>
-                    <p className="text-lg text-muted-foreground leading-relaxed mb-8">
-                      {t("homePage.heroDescription")}
-                    </p>
-                    <div className="flex flex-wrap gap-4 mb-10">
-                      {user && (
-                        <Link href={"/my-journeys"}>
-                          <HydrationSafeButton
-                            onClick={() => {}}
-                            className="inline-flex items-center gap-2 px-8 py-4 text-base font-semibold text-white rounded-lg bg-linear-to-r from-rahvana-primary to-rahvana-primary-light shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all"
-                          >
-                            {t("homePage.resumeJourney")}
-                            <Icons.ArrowRight className="w-5 h-5" />
-                          </HydrationSafeButton>
-                        </Link>
-                      )}
-                      <Link href={"/visa-category/ir-category"}>
-                        <HydrationSafeButton
-                          onClick={() => {}}
-                          className={
-                            user
-                              ? "inline-flex items-center px-8 py-4 text-base font-semibold text-rahvana-primary rounded-lg border border-border bg-background hover:bg-rahvana-primary-pale hover:border-rahvana-primary transition-all"
-                              : "inline-flex items-center px-8 py-4 text-base font-semibold text-white rounded-lg bg-linear-to-r from-rahvana-primary to-rahvana-primary-light shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all"
-                          }
-                        >
-                          {t("homePage.exploreJourneys")}
-                        </HydrationSafeButton>
-                      </Link>
-                    </div>
-                    <div className="flex flex-wrap gap-8">
-                      {[
-                        {
-                          icon: Icons.Lock,
-                          text: t("homePage.heroFeatures.0") || "Secure Vault",
-                        },
-                        {
-                          icon: Icons.Cpu,
-                          text: t("homePage.heroFeatures.1") || "AI Insights",
-                        },
-                        {
-                          icon: Icons.CheckCircle,
-                          text:
-                            t("homePage.heroFeatures.2") ||
-                            "Step-by-Step Guidance",
-                        },
-                      ].map((item, i) => (
-                        <div key={i} className="flex items-center gap-3">
-                          <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-rahvana-primary-pale text-rahvana-primary">
-                            <item.icon className="w-5 h-5" />
-                          </div>
-                          <span className="text-sm font-medium text-muted-foreground">
-                            {item.text}
-                          </span>
-                        </div>
-                      ))}
-                    </div>
-                  </motion.div>
-
-                  <motion.div
-                    initial={{ opacity: 0, scale: 0.95 }}
-                    whileInView={{ opacity: 1, scale: 1 }}
-                    transition={{ duration: 0.8, delay: 0.2, ease: "easeOut" }}
-                    viewport={{ once: true }}
-                    className="w-full lg:w-1/2 relative"
-                  >
-                    <div className="absolute -top-12 -right-12 w-64 h-64 rounded-full bg-rahvana-primary-pale/50 -z-10 blur-3xl"></div>
-                    <div className="absolute -bottom-12 -left-12 w-48 h-48 rounded-full bg-rahvana-primary-pale/50 -z-10 blur-3xl"></div>
-                    <div className="relative rounded-3xl overflow-hidden shadow-2xl border-8 border-white">
-                      <Image
-                        src="/assets/images/hero-journey.jpg"
-                        alt="Family reunion"
-                        className="w-full h-auto aspect-4/3 object-cover"
-                        height={600}
-                        width={600}
-                      />
-                      <div className="absolute inset-0 bg-linear-to-tr from-rahvana-primary/10 to-transparent pointer-events-none"></div>
-                    </div>
-                  </motion.div>
-                </div>
-              </div>
-            </section>
+            <CinematicHero />
 
             {/* HOW RAHVANA WORKS SECTION */}
             <section className="py-12 md:py-24 bg-muted/30" id="about">
