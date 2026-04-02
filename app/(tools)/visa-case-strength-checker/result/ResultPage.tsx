@@ -94,8 +94,8 @@ export function ResultPage({
 
   if (!sessionId) {
     return (
-      <Card className="max-w-4xl mx-auto">
-        <CardContent className="p-8 text-center">
+      <Card className="">
+        <CardContent className="text-center site-main-px site-main-py">
           <AlertCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
           <h3 className="text-xl font-semibold text-slate-900 mb-2">
             Session not found
@@ -111,8 +111,8 @@ export function ResultPage({
 
   if (sessionGone || error) {
     return (
-      <Card className="max-w-4xl mx-auto">
-        <CardContent className="p-8 text-center">
+      <Card className="">
+        <CardContent className="text-center site-main-px site-main-py">
           <AlertCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
           <h3 className="text-xl font-semibold text-slate-900 mb-2">
             {sessionGone ? "Previous Session Expired" : "Error Loading Results"}
@@ -165,7 +165,7 @@ export function ResultPage({
   };
 
   return (
-    <div className="max-w-6xl mx-auto space-y-10">
+    <div className="site-main-px site-main-py">
       {/* Header Section */}
       <div className="text-center space-y-4">
         <h1 className="text-4xl font-bold text-slate-900">

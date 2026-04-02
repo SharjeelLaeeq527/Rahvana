@@ -95,7 +95,6 @@ export default function SignatureRemoverPage() {
       setIsProcessing(false);
     }
   };
-  
 
   const handleDownload = () => {
     if (processedImage && imageProcessorModule) {
@@ -114,8 +113,8 @@ export default function SignatureRemoverPage() {
   };
 
   return (
-    <div className="min-h-screen bg-white">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16">
+    <div className="bg-white">
+      <div className="site-main-px site-main-py">
         <header className="text-center mb-12">
           <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-slate-900 mb-3">
             {t("signatureProcessing.title")}
@@ -125,7 +124,7 @@ export default function SignatureRemoverPage() {
           </p>
         </header>
 
-        <div className="bg-slate-50 rounded-lg border border-slate-200 p-6 sm:p-8 mb-8 max-w-5xl mx-auto">
+        <div className="bg-slate-50 rounded-lg border border-slate-200 p-6 sm:p-8 mb-8">
           <h2 className="text-lg sm:text-xl font-semibold text-slate-900 mb-6">
             {t("signatureProcessing.bestPractices")}
           </h2>

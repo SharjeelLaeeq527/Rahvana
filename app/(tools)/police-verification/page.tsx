@@ -105,8 +105,8 @@ export default function PoliceVerificationPage() {
   };
 
   return (
-    <div className="min-h-screen w-full flex items-center justify-center p-4 bg-background">
-      <div className="w-full max-w-4xl bg-card rounded-3xl shadow-xl overflow-hidden flex flex-col min-h-[600px] border border-border">
+    <div className="w-full flex items-center justify-center bg-background site-main-px site-main-py">
+      <div className="w-full bg-card rounded-3xl shadow-xl overflow-hidden flex flex-col min-h-[600px] border border-border">
         {/* Header */}
         <div className="p-8 pb-6 border-b border-border bg-card sticky top-0 z-10">
           <h1 className="text-2xl font-bold text-foreground flex items-center gap-3">
@@ -885,11 +885,7 @@ function PKMLocator({ province }: { province: string }) {
           disabled={loading}
           className="flex-1 flex items-center justify-center gap-2 p-4 rounded-2xl bg-primary/5 text-primary font-semibold hover:bg-primary/10 transition-all border border-primary/20"
         >
-          {loading ? (
-            <Loader size="sm" />
-          ) : (
-            <Navigation size={20} />
-          )}
+          {loading ? <Loader size="sm" /> : <Navigation size={20} />}
           Use My Current Location
         </button>
         <div className="flex-1">
@@ -906,11 +902,7 @@ function PKMLocator({ province }: { province: string }) {
               disabled={loading}
               className="absolute right-2 top-2 p-2 rounded-xl bg-primary text-white hover:bg-primary/90 transition-all"
             >
-              {loading ? (
-                <Loader size="sm" />
-              ) : (
-                <Search size={20} />
-              )}
+              {loading ? <Loader size="sm" /> : <Search size={20} />}
             </button>
           </form>
         </div>
@@ -1538,7 +1530,7 @@ function LetterModal({
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
         exit={{ opacity: 0, scale: 0.95 }}
-        className="bg-card w-full max-w-2xl my-auto rounded-3xl shadow-2xl overflow-hidden flex flex-col border border-border"
+        className="bg-card w-full max-w-2xl xl:max-w-4xl my-auto rounded-3xl shadow-2xl overflow-hidden flex flex-col border border-border"
       >
         <div className="p-6 md:p-8 overflow-y-auto bg-card">
           <div className="flex items-center justify-between mb-8">

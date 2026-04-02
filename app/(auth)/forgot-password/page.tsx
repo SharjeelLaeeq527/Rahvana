@@ -90,8 +90,8 @@ export default function ForgotPasswordPage() {
   // Success State - Email Sent
   if (success) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background px-4 sm:px-6 py-12">
-        <div className="w-full max-w-[480px]">
+      <div className="min-h-screen flex items-center justify-center bg-background px-4 sm:px-6 py-8 lg:py-12">
+        <div className="w-full max-w-md">
           {/* Card */}
           <div className="bg-card rounded-2xl shadow-xl border border-border overflow-hidden">
             {/* Header */}
@@ -205,8 +205,8 @@ export default function ForgotPasswordPage() {
 
   // Default State - Enter Email
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background px-4 sm:px-6 py-12">
-      <div className="w-full max-w-[480px]">
+    <div className="min-h-screen flex items-center justify-center bg-background px-4 sm:px-6 py-8 lg:py-12">
+      <div className="w-full max-w-md">
         {/* Logo */}
         <div className="flex justify-center mb-6">
           <svg
@@ -308,11 +308,7 @@ export default function ForgotPasswordPage() {
                 suppressHydrationWarning
                 className="w-full h-12 bg-primary hover:bg-primary/90 text-white font-medium rounded-xl transition-all disabled:opacity-50 shadow-lg shadow-primary/10"
               >
-                {isSubmitting ? (
-                  <Loader size="sm" text="Sending reset link..." />
-                ) : (
-                  "Send reset link"
-                )}
+                {isSubmitting ? "Sending reset link..." : "Send reset link"}
               </Button>
             </form>
           </div>

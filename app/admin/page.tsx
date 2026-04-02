@@ -10,7 +10,6 @@ import { Globe, TrendingUp } from "lucide-react";
 import Link from "next/link";
 import { Loader } from "@/components/ui/spinner";
 
-
 import TranslationQueueTable from "./components/translation-queue/TranslationQueueTable";
 import PoliceVerificationTable from "./components/police-verifications/PoliceVerificationTable";
 import BookAppointmentTable from "./components/book-appointment/BookAppointmentTable";
@@ -54,8 +53,8 @@ export default function AdminPanel() {
 
   if (!user || !isAdmin) {
     return (
-      <div className="min-h-screen bg-background p-6">
-        <Card className="max-w-2xl mx-auto">
+      <div className="bg-background p-6">
+        <Card className="">
           <CardHeader>
             <CardTitle className="text-red-600">Access Denied</CardTitle>
           </CardHeader>
@@ -73,10 +72,10 @@ export default function AdminPanel() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="bg-background">
       {/* Admin Header */}
       <header className="bg-card shadow-sm border-b border-border">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="site-main-px site-main-py">
           <div className="flex justify-between h-16">
             <div className="flex items-center">
               <h1 className="text-xl font-bold text-foreground">
@@ -122,8 +121,8 @@ export default function AdminPanel() {
         </div>
       </header>
 
-      <main className="p-6">
-        <div className="max-w-7xl mx-auto">
+      <main className="site-main-px py-6">
+        <div className="">
           <div className="mb-8">
             <h1 className="text-3xl font-bold text-foreground">Admin Panel</h1>
             <p className="text-muted-foreground">

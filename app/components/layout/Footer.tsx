@@ -44,7 +44,7 @@ export default function Footer() {
 
   return (
     <footer className="bg-slate-900 overflow-hidden py-24 pb-12 text-slate-200">
-      <div className="container mx-auto px-6">
+      <div className="w-full site-main-px">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-12 mb-16">
           {/* Brand Column */}
           <div className="max-w-70">
@@ -252,7 +252,10 @@ export default function Footer() {
         {/* Bottom Bar */}
         <div className="pt-8 border-t border-white/10 flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-slate-500">
           <div className="flex flex-col sm:flex-row gap-1 sm:gap-2 items-center text-center sm:text-left">
-            <p>{t("footer.rightsReserved") || "© 2026 Rahvana. All rights reserved."}</p>
+            <p>
+              {t("footer.rightsReserved") ||
+                "© 2026 Rahvana. All rights reserved."}
+            </p>
             <span className="hidden sm:inline text-slate-700">·</span>
             <p className="text-slate-600 text-xs">
               Rahvana is not a law firm and does not provide legal advice.
@@ -265,10 +268,7 @@ export default function Footer() {
             >
               {t("footer.privacyPolicy") || "Privacy Policy"}
             </Link>
-            <Link
-              href="/terms"
-              className="hover:text-white transition-colors"
-            >
+            <Link href="/terms" className="hover:text-white transition-colors">
               {t("footer.termsOfService") || "Terms of Service"}
             </Link>
             <Link

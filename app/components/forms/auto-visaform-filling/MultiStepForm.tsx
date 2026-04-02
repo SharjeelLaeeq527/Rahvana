@@ -253,10 +253,10 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
   }
 
   return (
-    <div className="w-full min-h-screen">
+    <div className="w-full">
       {/* Header */}
       <div className="bg-linear-to-r from-primary to-primary text-white p-4 md:p-6 shadow-lg">
-        <div className="max-w-7xl mx-auto flex items-center gap-4">
+        <div className="flex items-center gap-4">
           {/* Mobile Menu Button */}
           {view === "form" && (
             <button
@@ -364,7 +364,7 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
       </div>
 
       {/* Main Content - Sidebar Layout */}
-      <div className="max-w-7xl mx-auto flex gap-6 p-4 md:p-6">
+      <div className="flex gap-6 p-4 md:p-6">
         {/* Desktop Left Sidebar - Progress & Navigation */}
         {view === "form" && (
           <div className="hidden lg:block w-80 shrink-0">

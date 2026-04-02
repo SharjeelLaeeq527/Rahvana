@@ -13,38 +13,41 @@ export default function PassportPhoto() {
   const { t } = useLanguage();
 
   // Photo size presets (width x height in pixels at 300 DPI)
-  const SIZE_PRESETS = useMemo(() => [
-    {
-      name: t("passportPhoto.presets.us"),
-      width: 600,
-      height: 600,
-      description: t("passportPhoto.presets.usDesc"),
-    },
-    {
-      name: t("passportPhoto.presets.uk"),
-      width: 413,
-      height: 531,
-      description: t("passportPhoto.presets.ukDesc"),
-    },
-    {
-      name: t("passportPhoto.presets.india"),
-      width: 413,
-      height: 413,
-      description: t("passportPhoto.presets.indiaDesc"),
-    },
-    {
-      name: t("passportPhoto.presets.canada"),
-      width: 390,
-      height: 567,
-      description: t("passportPhoto.presets.canadaDesc"),
-    },
-    {
-      name: t("passportPhoto.presets.custom"),
-      width: 600,
-      height: 600,
-      description: t("passportPhoto.presets.customDesc"),
-    },
-  ], [t]);
+  const SIZE_PRESETS = useMemo(
+    () => [
+      {
+        name: t("passportPhoto.presets.us"),
+        width: 600,
+        height: 600,
+        description: t("passportPhoto.presets.usDesc"),
+      },
+      {
+        name: t("passportPhoto.presets.uk"),
+        width: 413,
+        height: 531,
+        description: t("passportPhoto.presets.ukDesc"),
+      },
+      {
+        name: t("passportPhoto.presets.india"),
+        width: 413,
+        height: 413,
+        description: t("passportPhoto.presets.indiaDesc"),
+      },
+      {
+        name: t("passportPhoto.presets.canada"),
+        width: 390,
+        height: 567,
+        description: t("passportPhoto.presets.canadaDesc"),
+      },
+      {
+        name: t("passportPhoto.presets.custom"),
+        width: 600,
+        height: 600,
+        description: t("passportPhoto.presets.customDesc"),
+      },
+    ],
+    [t],
+  );
 
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
@@ -146,7 +149,7 @@ export default function PassportPhoto() {
   };
 
   return (
-    <div className="min-h-screen bg-linear-to-br from-slate-50 to-slate-100 text-gray-800 flex flex-col items-center py-8 md:py-12 px-4">
+    <div className="bg-linear-to-br from-slate-50 to-slate-100 text-gray-800 flex flex-col items-center site-main-px site-main-py">
       {/* Header */}
       <header className="text-center mb-8 md:mb-10 w-full max-w-2xl">
         <h1 className="text-3xl md:text-5xl font-bold text-primary/90 leading-tight">
@@ -158,7 +161,7 @@ export default function PassportPhoto() {
       </header>
 
       {/* Official Guidelines */}
-      <section className="w-full max-w-4xl mb-8 md:mb-12 bg-white rounded-xl shadow-lg p-5 md:p-8">
+      <section className="w-full mb-8 md:mb-12 bg-white rounded-xl shadow-lg p-5 md:p-8">
         <h2 className="flex items-center gap-2 text-xl md:text-2xl font-semibold text-primary/90 mb-4 md:mb-6">
           <AlertCircle className="w-5 h-5 md:w-6 md:h-6 shrink-0" />
           {t("passportPhoto.requirementsTitle")}
@@ -177,7 +180,7 @@ export default function PassportPhoto() {
       </section>
 
       {/* Upload Section */}
-      <section className="w-full max-w-md">
+      <section className="w-full">
         <div className="bg-white rounded-xl shadow-md p-4 sm:p-6">
           <label className="block text-sm font-medium text-gray-700 mb-3">
             {t("passportPhoto.uploadLabel")}
@@ -256,7 +259,7 @@ export default function PassportPhoto() {
 
       {/* Result */}
       {result && (
-        <section className="mt-12 w-full max-w-md">
+        <section className="mt-12 w-full">
           <div className="bg-white rounded-xl shadow-lg p-4 sm:p-6 text-center">
             <p className="text-xl font-semibold text-green-600 mb-4 flex items-center justify-center gap-2">
               <CheckCircle className="w-6 h-6" />

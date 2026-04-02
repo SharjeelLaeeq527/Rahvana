@@ -8,9 +8,9 @@ import QuestionStep from "./components/QuestionStep";
 import ReviewStep from "./components/ReviewStep";
 import { Questionnaire } from "@/lib/visa-checker/engine-types";
 import { createBrowserClient } from "@supabase/ssr";
-import { 
-  mapProfileToVisaChecker, 
-  mapFormToProfile 
+import {
+  mapProfileToVisaChecker,
+  mapFormToProfile,
 } from "@/lib/autoFill/mapper";
 import type { MasterProfile } from "@/types/profile";
 
@@ -19,19 +19,21 @@ export default function VisaCaseStrengthChecker() {
   const [formData, setFormData] = useState<Record<string, unknown>>({
     caseType: "",
   });
-  const [questionnaire, setQuestionnaire] = useState<Questionnaire | null>(null);
+  const [questionnaire, setQuestionnaire] = useState<Questionnaire | null>(
+    null,
+  );
   const [loading, setLoading] = useState<boolean>(false);
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const { user, isAuthenticated } = useAuth();
-  
+
   const supabase = createBrowserClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
   );
 
   const [profileLoaded, setProfileLoaded] = useState(false);
-  
+
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "smooth" });
   }, [step]);
@@ -42,12 +44,12 @@ export default function VisaCaseStrengthChecker() {
       const slug = String(formData.caseType).toLowerCase().replace(/\//g, "-");
       setLoading(true);
       fetch(`/api/visa-checker/categories/${slug}/questionnaire`)
-        .then(res => res.json())
-        .then(data => {
+        .then((res) => res.json())
+        .then((data) => {
           setQuestionnaire(data);
           setLoading(false);
         })
-        .catch(err => {
+        .catch((err) => {
           console.error("Error loading questionnaire:", err);
           setError("Failed to load questionnaire for this visa category.");
           setLoading(false);
@@ -72,7 +74,10 @@ export default function VisaCaseStrengthChecker() {
           const profile = data.profile_details as MasterProfile;
 
           // 1. Check for specific Saved Case Strength Session
-          if (profile.caseStrength?.lastSessionId && profile.caseStrength?.answers) {
+          if (
+            profile.caseStrength?.lastSessionId &&
+            profile.caseStrength?.answers
+          ) {
             setFormData({
               caseType: String(profile.caseStrength.caseType || ""),
               ...profile.caseStrength.answers,
@@ -84,9 +89,9 @@ export default function VisaCaseStrengthChecker() {
 
           // 2. Fallback: Generic Auto-fill
           const mappedData = mapProfileToVisaChecker(profile);
-          setFormData(prev => ({
+          setFormData((prev) => ({
             ...prev,
-            ...mappedData
+            ...mappedData,
           }));
           setProfileLoaded(true);
         }
@@ -123,7 +128,7 @@ export default function VisaCaseStrengthChecker() {
           },
           updated_at: new Date().toISOString(),
         },
-        { onConflict: "id" }
+        { onConflict: "id" },
       );
 
       if (error) throw error;
@@ -156,7 +161,7 @@ export default function VisaCaseStrengthChecker() {
             const currentVal = formData[key];
             const targetVal = valStr.trim().replace(/^'|'$/g, "");
             let visible = true;
-            
+
             if (op === "==") {
               if (targetVal === "true") visible = currentVal === true;
               else if (targetVal === "false") visible = currentVal === false;
@@ -178,7 +183,10 @@ export default function VisaCaseStrengthChecker() {
         }
 
         const val = formData[q.id];
-        if (q.type !== "boolean" && (val === undefined || val === null || val === "")) {
+        if (
+          q.type !== "boolean" &&
+          (val === undefined || val === null || val === "")
+        ) {
           setError(`Please provide an answer for: ${q.label}`);
           return false;
         }
@@ -213,7 +221,7 @@ export default function VisaCaseStrengthChecker() {
       setLoading(false);
     }
 
-    setStep(prev => prev + 1);
+    setStep((prev) => prev + 1);
     setError(null);
   };
 
@@ -221,7 +229,7 @@ export default function VisaCaseStrengthChecker() {
     if (step === 0) {
       window.history.back();
     } else {
-      setStep(prev => prev - 1);
+      setStep((prev) => prev - 1);
       setError(null);
     }
   };
@@ -241,7 +249,8 @@ export default function VisaCaseStrengthChecker() {
       );
     }
 
-    if (!questionnaire) return <div className="p-20 text-center">Loading...</div>;
+    if (!questionnaire)
+      return <div className="p-20 text-center">Loading...</div>;
 
     if (step <= questionnaire.sections.length) {
       return (
@@ -251,7 +260,9 @@ export default function VisaCaseStrengthChecker() {
           formData={formData}
           error={error || undefined}
           loading={loading}
-          onChange={(id, val) => setFormData(prev => ({ ...prev, [id]: val }))}
+          onChange={(id, val) =>
+            setFormData((prev) => ({ ...prev, [id]: val }))
+          }
           setFormData={setFormData}
           onNext={nextStep}
           onBack={prevStep}
@@ -279,12 +290,15 @@ export default function VisaCaseStrengthChecker() {
                 body: JSON.stringify({ answers }),
               });
 
-              const res = await fetch(`/api/visa-checker/session/${sessionId}/submit`, {
-                method: "POST",
-              });
-              
+              const res = await fetch(
+                `/api/visa-checker/session/${sessionId}/submit`,
+                {
+                  method: "POST",
+                },
+              );
+
               if (res.ok) {
-                setStep(prev => prev + 1);
+                setStep((prev) => prev + 1);
               } else {
                 throw new Error("Failed to analyze results.");
               }
@@ -295,7 +309,7 @@ export default function VisaCaseStrengthChecker() {
             }
           }}
           onBack={prevStep}
-          onSaveToProfile={user ? handleSaveToProfile : undefined} 
+          onSaveToProfile={user ? handleSaveToProfile : undefined}
         />
       );
     }
@@ -315,10 +329,8 @@ export default function VisaCaseStrengthChecker() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-4xl mx-auto">
-        {renderCurrentStep()}
-      </div>
+    <div className="bg-slate-50 site-main-px site-main-py">
+      <div className="">{renderCurrentStep()}</div>
     </div>
   );
 }

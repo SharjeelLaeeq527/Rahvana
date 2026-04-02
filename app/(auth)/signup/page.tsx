@@ -475,11 +475,7 @@ export default function SignupPage() {
               }
               className="w-full h-12 bg-primary hover:bg-primary/90 text-white font-medium rounded-xl transition-all disabled:opacity-50"
             >
-              {isSubmitting ? (
-                <Loader size="sm" text="Creating account..." />
-              ) : (
-                "Create Account"
-              )}
+              {isSubmitting ? "Creating account..." : "Create Account"}
             </Button>
           </form>
         </Card>

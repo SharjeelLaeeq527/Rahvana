@@ -183,7 +183,7 @@ export default function IR1JourneyPage() {
 
   return (
     <section id={visaJourneyParam} className="block">
-      <div className="w-full px-4 md:px-6 xl:px-8 py-8 md:py-[60px]">
+      <div className="w-full site-main-px site-main-py">
         <div className="w-full mb-8 md:mb-12">
           {/* Header */}
           <div className="flex flex-col md:flex-row md:items-start justify-between gap-4 mb-2">
@@ -308,7 +308,7 @@ export default function IR1JourneyPage() {
               </Tooltip>
             </TooltipProvider>
           )}
-          
+
           {/* Overview */}
           {/* <div className="flex flex-col">
             {roadmapData.visaOverview && (

@@ -40,7 +40,7 @@ export default function AcceptableUse() {
     <div className="min-h-screen bg-slate-50 text-slate-900">
       {/* Hero */}
       <div className="bg-white border-b border-slate-200">
-        <div className="container mx-auto px-6 py-16">
+        <div className="site-main-px site-main-py">
           <div className="flex items-center gap-2 text-sm text-slate-500 mb-6">
             <Link href="/" className="hover:text-teal-600 transition-colors">Home</Link>
             <span>/</span>
@@ -62,8 +62,8 @@ export default function AcceptableUse() {
         </div>
       </div>
 
-      <div className="container mx-auto px-6 py-12">
-        <div className="flex gap-12 max-w-6xl mx-auto">
+      <div className="site-main-px site-main-py">
+        <div className="flex gap-12">
           {/* Sticky Sidebar */}
           <aside className="hidden lg:block w-64 shrink-0">
             <div className="sticky top-24">
@@ -87,7 +87,7 @@ export default function AcceptableUse() {
           </aside>
 
           {/* Content */}
-          <main className="flex-1 min-w-0 max-w-3xl">
+          <main className="flex-1 min-w-0 w-full">
             <div className="prose prose-slate max-w-none
               prose-headings:text-slate-900 prose-headings:font-bold
               prose-p:text-slate-600 prose-p:leading-relaxed
