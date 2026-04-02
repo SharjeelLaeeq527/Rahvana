@@ -107,7 +107,7 @@ function ResetPasswordContent() {
   if (!isValidToken) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background px-4">
-        <div className="w-full max-w-120">
+      <div className="w-full max-w-md">
           <div className="bg-card rounded-2xl shadow-xl border border-border overflow-hidden">
             <div className="px-8 py-12 text-center">
               {/* Error Icon */}
@@ -161,7 +161,7 @@ function ResetPasswordContent() {
   if (success) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background px-4">
-        <div className="w-full max-w-120">
+      <div className="w-full max-w-md">
           <div className="bg-card rounded-2xl shadow-xl border border-border overflow-hidden">
             <div className="px-8 py-12 text-center">
               {/* Success Icon */}
@@ -613,11 +613,7 @@ function ResetPasswordContent() {
                 }
                 className="w-full h-12 bg-primary hover:bg-primary/90 text-white font-medium rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-primary/10"
               >
-                {isSubmitting ? (
-                  <Loader size="sm" text="Updating password..." />
-                ) : (
-                  "Reset password"
-                )}
+                {isSubmitting ? "Updating password..." : "Reset password"}
               </Button>
             </form>
           </div>

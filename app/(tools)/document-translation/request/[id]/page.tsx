@@ -250,8 +250,8 @@ export default function TranslationRequestDetails({
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-linear-to-br from-slate-50 to-slate-100 text-gray-800 py-12 px-4">
-        <div className="max-w-4xl mx-auto">
+      <div className="min-h-[50vh] bg-linear-to-br from-slate-50 to-slate-100 text-gray-800 py-12 px-4">
+        <div className="">
           <div className="flex justify-center items-center h-64">
             <Loader size="lg" text="Loading translation request..." />
           </div>
@@ -262,8 +262,8 @@ export default function TranslationRequestDetails({
 
   if (!request) {
     return (
-      <div className="min-h-screen bg-linear-to-br from-slate-50 to-slate-100 text-gray-800 py-12 px-4">
-        <div className="max-w-4xl mx-auto">
+      <div className="bg-linear-to-br from-slate-50 to-slate-100 text-gray-800 site-main-px site-main-py">
+        <div className="">
           <div className="bg-white rounded-xl shadow-md p-8 text-center">
             <XCircle className="w-16 h-16 text-red-500 mx-auto mb-4" />
             <h2 className="text-2xl font-bold text-gray-800 mb-2">
@@ -287,8 +287,8 @@ export default function TranslationRequestDetails({
   }
 
   return (
-    <div className="min-h-screen bg-linear-to-br from-slate-50 to-slate-100 text-gray-800 py-12 px-4">
-      <div className="max-w-4xl mx-auto">
+    <div className="bg-linear-to-br from-slate-50 to-slate-100 text-gray-800 site-main-px site-main-py">
+      <div className="">
         {/* Header */}
         <header className="mb-8">
           <h1 className="text-3xl md:text-4xl font-bold text-primary/90">

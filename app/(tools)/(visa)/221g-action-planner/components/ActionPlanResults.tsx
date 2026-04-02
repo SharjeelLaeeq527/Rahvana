@@ -11,7 +11,6 @@ import {
   SaveIcon,
   CheckCircle2,
 } from "lucide-react";
-import { Checkbox } from "@/components/ui/checkbox";
 import { FormData, FormSelections } from "../types/221g";
 import { classifySituation } from "../utils/classifier";
 import { generateActionPlan as generateDynamicActionPlan } from "../utils/actionPlanGenerator";
@@ -35,7 +34,7 @@ export default function ActionPlanResults({
 
   if (!formData || !selectedItems) {
     return (
-      <div className="container mx-auto py-12 px-4 text-center">
+      <div className="w-full site-main-px py-12 text-center">
         <p className="text-muted-foreground">Generating results...</p>
       </div>
     );
@@ -276,7 +275,7 @@ export default function ActionPlanResults({
   };
 
   return (
-    <div className="max-w-4xl mx-auto py-8 px-4 space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+    <div className="w-full space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">

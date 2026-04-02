@@ -286,7 +286,7 @@ export function SiteHeader({
       {/* ------------------------------------------------------------------ */}
       {/* Desktop navigation */}
       {/* ------------------------------------------------------------------ */}
-      <div className="container mx-auto px-6 py-3 md:py-4 flex items-center justify-between">
+      <div className="w-full site-main-px flex items-center justify-between">
         {/* Left side */}
         <div className="flex items-center gap-4">
           {/* Mobile Menu Trigger */}
@@ -476,7 +476,7 @@ export function SiteHeader({
         {/* --- GLOBAL MEGAMENU PLACEMENT --- */}
         <div
           ref={megaMenuContainerRef}
-          className="absolute top-[calc(100%-14px)] left-0 right-0 max-w-7xl mx-auto px-6 pointer-events-auto z-50"
+          className="absolute top-[calc(100%-14px)] left-0 right-0 w-full px-6 pointer-events-auto z-50"
           onMouseEnter={() => {
             if (activeMenu && activeMenu !== "profile") {
               if (menuTimeoutRef.current) clearTimeout(menuTimeoutRef.current);

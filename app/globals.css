@@ -59,6 +59,43 @@
   --guide-card-shadow: 0 4px 24px -4px hsl(168 70% 42% / 0.15);
   --guide-card-hover-shadow: 0 8px 32px -4px hsl(168 70% 42% / 0.25);
   --guide-grid-color: hsl(168 70% 42% / 0.025);
+
+  /* Global Site Padding Variables */
+  --site-px-default: 1rem; /* px-4 */
+  --site-px-sm: 1.5rem; /* px-6 */
+  --site-px-md: 2rem; /* px-8 */
+  --site-px-2xl: 7.5rem; /* px-30 */
+  --site-py: 2.5rem; /* py-10 */
+}
+
+@layer utilities {
+  .site-main-px {
+    padding-left: var(--site-px-default);
+    padding-right: var(--site-px-default);
+  }
+  @media (min-width: 640px) {
+    .site-main-px {
+      padding-left: var(--site-px-sm);
+      padding-right: var(--site-px-sm);
+    }
+  }
+  @media (min-width: 768px) {
+    .site-main-px {
+      padding-left: var(--site-px-md);
+      padding-right: var(--site-px-md);
+    }
+  }
+  @media (min-width: 1536px) {
+    .site-main-px {
+      padding-left: var(--site-px-2xl);
+      padding-right: var(--site-px-2xl);
+    }
+  }
+
+  .site-main-py {
+    padding-top: var(--site-py);
+    padding-bottom: var(--site-py);
+  }
 }
 
 @keyframes beaconPulse {
@@ -99,9 +136,18 @@
 }
 
 @keyframes blinking {
-  0% { opacity: 1; transform: scale(1); }
-  50% { opacity: 0.5; transform: scale(1.1); }
-  100% { opacity: 1; transform: scale(1); }
+  0% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.5;
+    transform: scale(1.1);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 
 .animate-blinking {
@@ -239,15 +285,16 @@
   }
 
   @keyframes gradient-x {
-  0%,100% {
-    background-size: 200% 200%;
-    background-position: left center;
+    0%,
+    100% {
+      background-size: 200% 200%;
+      background-position: left center;
+    }
+    50% {
+      background-size: 200% 200%;
+      background-position: right center;
+    }
   }
-  50% {
-    background-size: 200% 200%;
-    background-position: right center;
-  }
-}
 }
 
 .animate-gradient-x {

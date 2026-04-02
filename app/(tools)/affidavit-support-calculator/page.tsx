@@ -2567,8 +2567,8 @@ export default function AffidavitSupportCalculator() {
   };
 
   return (
-    <div className="min-h-screen bg-linear-to-br from-slate-50 to-slate-100 p-4 md:p-8">
-      <div className="max-w-2xl mx-auto">
+    <div className="bg-linear-to-br from-slate-50 to-slate-100 site-main-px site-main-py">
+      <div className="">
         {/* Header */}
         <div className="mb-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div className="flex items-center gap-4">
@@ -2615,7 +2615,7 @@ export default function AffidavitSupportCalculator() {
             </CardDescription>
           </CardHeader>
           <CardContent className="pt-0">
-            <div className="min-h-100">
+            <div className="">
               {currentStep === 1 && renderStep1()}
               {currentStep === 2 && renderStep2()}
               {currentStep === 3 && renderStep3()}

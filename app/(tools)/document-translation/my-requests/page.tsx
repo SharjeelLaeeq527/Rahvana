@@ -153,8 +153,8 @@ export default function MyTranslationRequests() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 text-gray-800 py-8 md:py-12 px-4 sm:px-6">
-      <div className="max-w-6xl mx-auto">
+    <div className="min-h-[50vh] bg-linear-to-br from-slate-50 to-slate-100 text-gray-800 site-main-px site-main-py">
+      <div className="">
         <header className="mb-8 md:mb-10">
           <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-primary/90">
             {t("documentTranslation.myRequestsPage.title")}

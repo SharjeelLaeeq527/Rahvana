@@ -637,7 +637,7 @@ export function VisaEligibilityTool() {
       <div className="w-full bg-white/95 rounded-3xl overflow-hidden flex flex-col h-full">
         {/* Header / Progress */}
         <div className="p-8 pb-0">
-          <div className="flex justify-between items-center mb-6">
+          <div className="flex justify-between items-center mb-6 pr-10">
             <h1 className="text-2xl font-bold bg-clip-text text-black">
               Immigration Questionnaire
             </h1>
@@ -662,7 +662,7 @@ export function VisaEligibilityTool() {
             {step === 1 && (
               <motion.div key="step1" {...fadeIn} className="space-y-8">
                 <div className="text-center">
-                  <div className="bg-indigo-100 w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4 text-indigo-600">
+                  <div className="bg-primary/10 w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4 text-primary">
                     <Flag size={32} />
                   </div>
                   <h2 className="text-2xl font-bold text-gray-800">
@@ -809,7 +809,7 @@ export function VisaEligibilityTool() {
             {step === 2 && (
               <motion.div key="step2" {...fadeIn} className="space-y-8">
                 <div className="text-center">
-                  <div className="bg-purple-100 w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4 text-purple-600">
+                  <div className="bg-primary/10 w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4 text-primary">
                     <Heart size={32} />
                   </div>
                   <h2 className="text-2xl font-bold text-gray-800">
@@ -976,7 +976,7 @@ export function VisaEligibilityTool() {
             {step === 3 && (
               <motion.div key="step3" {...fadeIn} className="space-y-8">
                 <div className="text-center">
-                  <div className="bg-pink-100 w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4 text-pink-600">
+                  <div className="bg-primary/10 w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4 text-primary">
                     <User size={32} />
                   </div>
                   <h2 className="text-2xl font-bold text-gray-800">

@@ -18,9 +18,8 @@ export default function Compress() {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<CompressionResult | null>(null);
   const [error, setError] = useState("");
-  
-const API_BASE =
-  process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
+
+  const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
 
   useEffect(() => {
     setMounted(true);
@@ -107,9 +106,7 @@ const API_BASE =
       });
     } catch (err: unknown) {
       const message =
-        err instanceof Error
-          ? err.message
-          : t("pdfProcessing.errors.failed");
+        err instanceof Error ? err.message : t("pdfProcessing.errors.failed");
       console.error("Compression error:", err);
       setError(message);
     } finally {
@@ -191,12 +188,10 @@ const API_BASE =
         <button
           onClick={handleCompress}
           disabled={!file || loading}
-          className="w-full bg-primary/90 text-white py-4 rounded-xl font-semibold text-lg hover:bg-primary disabled:bg-gray-400 disabled:cursor-not-allowed transition-all flex items-center justify-center shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+          className="w-full lg:w-1/2 mx-auto bg-primary/90 text-white py-4 rounded-xl font-semibold text-lg hover:bg-primary disabled:bg-gray-400 disabled:cursor-not-allowed transition-all flex items-center justify-center shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
         >
           {loading ? (
-            <>
-              <Loader size="sm" text={t("pdfProcessing.compress.compressing")} />
-            </>
+            <>{t("pdfProcessing.compress.compressing")}</>
           ) : (
             <>
               <Download className="mr-2 h-6 w-6" />
@@ -223,7 +218,9 @@ const API_BASE =
           <div className="mt-6 p-6 bg-linear-to-r from-green-50 to-emerald-50 border-l-4 border-green-500 rounded-lg shadow-sm">
             <div className="flex items-center text-green-700 mb-4">
               <FileCheck className="h-6 w-6 mr-3" />
-              <span className="font-bold text-lg">{t("pdfProcessing.compress.success")}</span>
+              <span className="font-bold text-lg">
+                {t("pdfProcessing.compress.success")}
+              </span>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
               <div className="bg-white p-4 rounded-lg shadow-sm">

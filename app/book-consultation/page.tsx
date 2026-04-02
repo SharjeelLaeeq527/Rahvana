@@ -1367,9 +1367,9 @@ const ConsultationBookingPage = () => {
 
   if (activeView === ("requests" as "booking" | "requests")) {
     return (
-      <div className="min-h-screen bg-gray-50 pb-12">
+      <div className="bg-gray-50 pb-12">
         <div className="bg-linear-to-r from-teal-800 to-teal-600 text-white py-12 mb-10 shadow-lg relative overflow-hidden">
-          <div className="max-w-4xl mx-auto px-4 relative z-10">
+          <div className="w-full px-4 relative z-10">
             <div className="flex justify-between items-center mb-4">
               <h1 className="text-3xl font-black tracking-tight">
                 My <span className="text-teal-200">Requests</span>
@@ -1389,7 +1389,7 @@ const ConsultationBookingPage = () => {
           <Globe className="absolute -right-20 -top-20 h-64 w-64 text-white/5 transform -rotate-12" />
         </div>
 
-        <div className="max-w-4xl mx-auto px-4">
+        <div className="w-full mx-auto px-4">
           <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden min-h-100">
             <div className="p-6 border-b bg-gray-50 flex flex-col sm:flex-row gap-4 justify-between items-center">
               <div className="relative w-full sm:max-w-md">
@@ -1567,9 +1567,9 @@ const ConsultationBookingPage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-12">
+    <div className="bg-gray-50 pb-12">
       <div className="bg-linear-to-r from-teal-800 to-teal-600 text-white py-16 mb-10 relative overflow-hidden">
-        <div className="max-w-4xl mx-auto px-4 relative z-10">
+        <div className="w-full px-4 relative z-10">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
             <div>
               <h1 className="text-4xl md:text-5xl font-black mb-4">
@@ -1608,7 +1608,7 @@ const ConsultationBookingPage = () => {
         <Globe className="absolute -right-20 -bottom-20 h-80 w-80 text-white/5" />
       </div>
 
-      <div className="max-w-4xl mx-auto px-4 relative z-20">
+      <div className="max-w-7xl mx-auto px-4 relative z-20">
         <div className="bg-white rounded-3xl shadow-2xl border border-teal-100 overflow-hidden slide-up">
           {/* Improved Progress Tracker */}
           <div className="bg-gray-50/50 border-b border-gray-100 p-8">

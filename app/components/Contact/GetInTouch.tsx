@@ -82,7 +82,7 @@ export default function GetInTouch() {
         aria-hidden="true"
       ></div>
 
-      <div className="relative z-10 max-w-[1200px] mx-auto px-5">
+      <div className="relative z-10 w-full mx-auto px-6 sm:px-8 md:px-12 2xl:px-30">
         {/* Section Header */}
         <div className="text-center mb-12">
           <span className="inline-flex items-center gap-2 px-4 py-2 bg-primary/10 text-primary text-sm font-medium rounded-full mb-5">

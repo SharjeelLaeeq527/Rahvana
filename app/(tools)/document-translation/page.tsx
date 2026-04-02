@@ -117,7 +117,7 @@ export default function DocumentTranslationUpload() {
   };
 
   return (
-    <div className="min-h-screen bg-linear-to-br from-slate-50 to-slate-100 text-gray-800 flex flex-col items-center py-8 md:py-12 px-4 sm:px-6">
+    <div className="bg-linear-to-br from-slate-50 to-slate-100 text-gray-800 flex flex-col items-center site-main-px site-main-py">
       {/* Header */}
       <header className="text-center mb-8 md:mb-10 w-full max-w-4xl">
         <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-primary/90 leading-tight">
@@ -131,7 +131,7 @@ export default function DocumentTranslationUpload() {
       {!uploadSuccess ? (
         <>
           {/* Requirements Section */}
-          <section className="w-full max-w-4xl mb-8 md:mb-12 bg-white rounded-xl shadow-lg p-5 sm:p-6 md:p-8 border border-slate-100">
+          <section className="w-full mb-8 md:mb-12 bg-white rounded-xl shadow-lg p-5 sm:p-6 md:p-8 border border-slate-100">
             <h2 className="flex items-center gap-2 text-xl sm:text-2xl font-semibold text-primary/90 mb-5 sm:mb-6">
               <AlertCircle className="w-5 h-5 sm:w-6 sm:h-6" />
               {t("documentTranslation.uploadPage.requirementsTitle")}
@@ -157,7 +157,7 @@ export default function DocumentTranslationUpload() {
           </section>
 
           {/* Upload Section */}
-          <section className="w-full max-w-md">
+          <section className="w-full">
             <div className="bg-white rounded-xl shadow-md p-5 sm:p-6 border border-slate-100">
               <label className="block text-sm font-medium text-gray-700 mb-3">
                 {t("documentTranslation.uploadPage.uploadSectionTitle")}

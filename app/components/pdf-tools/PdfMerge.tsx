@@ -622,9 +622,7 @@ export default function PDFMergeAdvanced() {
       }
     } catch (err) {
       const message =
-        err instanceof Error
-          ? err.message
-          : t("pdfProcessing.errors.failed");
+        err instanceof Error ? err.message : t("pdfProcessing.errors.failed");
       setError(message);
       console.error("Merge error:", err);
     }
@@ -663,7 +661,9 @@ export default function PDFMergeAdvanced() {
         {/* Top Bar */}
         <div className="flex items-center justify-between p-2 border-b bg-gray-50 rounded-t-xl">
           <span className="text-xs font-bold text-gray-500 bg-white px-2 py-0.5 rounded border">
-            {isEncrypted ? t("pdfProcessing.merge.encrypted") : `${file.pages.length} ${t("pdfProcessing.merge.pages")}`}
+            {isEncrypted
+              ? t("pdfProcessing.merge.encrypted")
+              : `${file.pages.length} ${t("pdfProcessing.merge.pages")}`}
           </span>
           <GripHorizontal
             className="text-gray-300 cursor-grab active:cursor-grabbing"
@@ -693,7 +693,9 @@ export default function PDFMergeAdvanced() {
           ) : (
             <div className="flex flex-col items-center justify-center w-full h-full text-center p-4">
               <AlertCircle className="text-red-500 mb-2" size={32} />
-              <p className="text-red-500 text-sm font-medium">{t("pdfProcessing.merge.noPreview")}</p>
+              <p className="text-red-500 text-sm font-medium">
+                {t("pdfProcessing.merge.noPreview")}
+              </p>
               <p className="text-gray-500 text-xs mt-1">
                 Cannot display content
               </p>
@@ -904,7 +906,9 @@ export default function PDFMergeAdvanced() {
           {/* Pages Sidebar - Increased Width */}
           <div className="bg-white rounded-xl shadow-md p-5 w-full max-w-md">
             <h3 className="text-lg font-semibold mb-4">
-              {t("pdfProcessing.preview.pagesTitle", { count: allPages.length })}
+              {t("pdfProcessing.preview.pagesTitle", {
+                count: allPages.length,
+              })}
             </h3>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 max-h-[70vh] overflow-y-auto">
               {allPages.map((page, i) => (
@@ -912,8 +916,8 @@ export default function PDFMergeAdvanced() {
               ))}
             </div>
           </div>
-          </div>
         </div>
+      </div>
     );
   }
 
@@ -959,7 +963,9 @@ export default function PDFMergeAdvanced() {
             {files.length > 0 ? (
               <div>
                 <p className="text-primary/90 font-semibold text-lg mb-1">
-                  {t("pdfProcessing.merge.filesSelected", { count: files.length })}
+                  {t("pdfProcessing.merge.filesSelected", {
+                    count: files.length,
+                  })}
                 </p>
                 <p className="text-sm text-gray-500">
                   {files.reduce((total, file) => total + file.file.size, 0) > 0
@@ -1006,11 +1012,11 @@ export default function PDFMergeAdvanced() {
         <button
           onClick={() => handleMerge()}
           disabled={files.length === 0 || loading}
-          className="w-full bg-primary/90 text-white py-4 rounded-xl font-semibold text-lg hover:bg-primary disabled:bg-gray-400 disabled:cursor-not-allowed transition-all flex items-center justify-center shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+          className="w-full lg:w-1/2 mx-auto bg-primary/90 text-white py-4 rounded-xl font-semibold text-lg hover:bg-primary disabled:bg-gray-400 disabled:cursor-not-allowed transition-all flex items-center justify-center shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
         >
           {loading ? (
             <>
-              <Loader size="sm" text={t("pdfProcessing.merge.merging")} />
+              {t("pdfProcessing.merge.merging")}
             </>
           ) : (
             <>

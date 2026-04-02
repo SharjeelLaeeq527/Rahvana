@@ -39,7 +39,9 @@ export default function SecurityQuestionsPreviewPage() {
 
   useEffect(() => {
     if (!authLoading && !user) {
-      router.push(`/login?redirectTo=${encodeURIComponent(window.location.pathname + window.location.search)}`);
+      router.push(
+        `/login?redirectTo=${encodeURIComponent(window.location.pathname + window.location.search)}`,
+      );
     }
   }, [user, authLoading, router]);
 
@@ -69,7 +71,10 @@ export default function SecurityQuestionsPreviewPage() {
     return (
       <div className="min-h-screen flex items-center justify-center bg-slate-50">
         <div className="flex flex-col items-center gap-4">
-          <Loader size="lg" text={t("pages.courierRegistration.securityPreview.loadingSession")} />
+          <Loader
+            size="lg"
+            text={t("pages.courierRegistration.securityPreview.loadingSession")}
+          />
         </div>
       </div>
     );
@@ -78,8 +83,8 @@ export default function SecurityQuestionsPreviewPage() {
   if (!user) return null;
 
   return (
-    <div className="min-h-screen bg-slate-50/50 py-6 sm:py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-3xl mx-auto space-y-6 sm:space-y-8">
+    <div className="min-h-screen bg-slate-50/50 site-main-px site-main-py">
+      <div className="space-y-6 sm:space-y-8">
         {/* Header Navigation */}
         <div className="flex items-center justify-between">
           <Button
@@ -112,7 +117,7 @@ export default function SecurityQuestionsPreviewPage() {
         </div>
 
         {!data ? (
-          <Card className="border-none shadow-xl rounded-[2.5rem] bg-white overflow-hidden text-center py-12">
+          <Card className="border-none shadow-xl rounded-[2.5rem] bg-white overflow-hidden text-center ite-main-py">
             <CardContent className="space-y-6">
               <div className="flex justify-center">
                 <div className="p-6 bg-orange-50 rounded-full border-4 border-white shadow-sm">

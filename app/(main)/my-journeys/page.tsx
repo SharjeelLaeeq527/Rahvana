@@ -51,7 +51,10 @@ const JOURNEY_ALIASES: Record<string, string> = {
 // 1. lowercase + strip "-journey" suffix
 // 2. look up in aliases map
 const normalizeJourneyId = (id: string): string => {
-  const base = id.toLowerCase().replace(/-journey$/, "").trim();
+  const base = id
+    .toLowerCase()
+    .replace(/-journey$/, "")
+    .trim();
   return JOURNEY_ALIASES[base] ?? base;
 };
 
@@ -126,7 +129,9 @@ const JOURNEY_META: Record<string, JourneyMeta> = {
 };
 
 // Resolve metadata for any raw journey_id from DB
-const resolveJourneyMeta = (rawId: string): JourneyMeta & { canonicalId: string } => {
+const resolveJourneyMeta = (
+  rawId: string,
+): JourneyMeta & { canonicalId: string } => {
   const canonical = normalizeJourneyId(rawId);
   const meta = JOURNEY_META[canonical];
   if (meta) return { ...meta, canonicalId: canonical };
@@ -201,7 +206,9 @@ export default function MyJourneysPage() {
     if (authLoading) return;
 
     if (!user) {
-      router.push(`/login?redirectTo=${encodeURIComponent(window.location.pathname + window.location.search)}`);
+      router.push(
+        `/login?redirectTo=${encodeURIComponent(window.location.pathname + window.location.search)}`,
+      );
       return;
     }
 
@@ -258,20 +265,20 @@ export default function MyJourneysPage() {
   };
 
   // Auth loading state is still blocking to prevent layout shift for unauthenticated users
-    if (authLoading) {
-  return (
-    <div className="min-h-[80vh] flex flex-col items-center justify-center">
-      <Loader size="md" text={t("myJourneys.loading")} />
-    </div>
-  );
-}
+  if (authLoading) {
+    return (
+      <div className="min-h-[80vh] flex flex-col items-center justify-center">
+        <Loader size="md" text={t("myJourneys.loading")} />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-slate-50/50 pb-20">
       {/* Header Section */}
-      <div className="bg-white border-b border-slate-200 pt-10 pb-12">
-        <div className="container mx-auto px-6">
-          <div className="max-w-5xl mx-auto flex flex-col md:flex-row md:items-end justify-between gap-6">
+      <div className="bg-white border-b border-slate-200 site-main-py pb-12">
+        <div className="w-full site-main-px">
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
             <div className="space-y-4">
               <div className="flex items-center gap-2">
                 <div className="flex items-center gap-1.5 px-2.5 py-1 bg-primary/10 text-primary rounded-full text-[10px] font-black uppercase tracking-widest border border-primary/20">
@@ -289,7 +296,7 @@ export default function MyJourneysPage() {
                   {t("myJourneys.header.title.highlight")}
                 </span>
               </h1>
-              <p className="text-slate-500 max-w-lg text-lg font-medium leading-relaxed">
+              <p className="text-slate-500 text-lg font-medium leading-relaxed">
                 {t("myJourneys.header.description")}
               </p>
             </div>
@@ -324,8 +331,8 @@ export default function MyJourneysPage() {
         </div>
       </div>
 
-      <div className="container mx-auto px-6 mt-12">
-        <div className="max-w-5xl mx-auto">
+      <div className="w-full site-main-px mt-12">
+        <div>
           {loading && journeys.length === 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {[1, 2, 3, 4].map((i) => (
@@ -388,7 +395,11 @@ export default function MyJourneysPage() {
                     const progress = Math.round(
                       (j.completed_steps.length / 42) * 100,
                     );
-                    const { name: journeyName, description, route } = resolveJourneyMeta(j.journey_id);
+                    const {
+                      name: journeyName,
+                      description,
+                      route,
+                    } = resolveJourneyMeta(j.journey_id);
 
                     return (
                       <motion.div

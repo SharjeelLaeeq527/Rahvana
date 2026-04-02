@@ -81,7 +81,7 @@ export default function SignaturePreview({
   }
 
   return (
-    <div className="space-y-8 animate-fade-in max-w-7xl mx-auto">
+    <div className="space-y-8 animate-fade-in">
       <div className="bg-linear-to-r from-green-50 to-emerald-50 border border-green-200 rounded-xl p-6 shadow-md">
         <div className="flex items-center justify-between flex-wrap gap-4">
           <h2 className="text-xl sm:text-2xl font-bold text-gray-900 w-full sm:w-auto text-center sm:text-left">
@@ -116,7 +116,9 @@ export default function SignaturePreview({
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8">
         <div className="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden">
           <div className="bg-linear-to-r from-gray-100 to-gray-200 border-b border-gray-300 px-6 py-4">
-            <p className="text-gray-900 font-bold text-xl">{t("signatureProcessing.originalPhoto")}</p>
+            <p className="text-gray-900 font-bold text-xl">
+              {t("signatureProcessing.originalPhoto")}
+            </p>
           </div>
           <div className="p-8 bg-white">
             <div className="relative rounded-xl overflow-hidden border-2 border-gray-200 shadow-sm min-h-[200px]">
@@ -134,7 +136,9 @@ export default function SignaturePreview({
         <div className="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden">
           <div className="bg-linear-to-r from-purple-100 to-pink-100 border-b border-purple-300 px-6 py-4">
             <p className="text-gray-900 font-bold text-xl">
-              {editedImage ? t("signatureProcessing.finalSignature") : t("signatureProcessing.transparentBg")}
+              {editedImage
+                ? t("signatureProcessing.finalSignature")
+                : t("signatureProcessing.transparentBg")}
             </p>
           </div>
           <div

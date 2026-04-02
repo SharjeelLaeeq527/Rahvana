@@ -1,6 +1,12 @@
 "use client";
 
-import React, { useEffect, useState, useMemo, useCallback, Suspense } from "react";
+import React, {
+  useEffect,
+  useState,
+  useMemo,
+  useCallback,
+  Suspense,
+} from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import CheckoutButton from "@/app/components/payment/CheckoutButton";
 import Link from "next/link";
@@ -78,7 +84,8 @@ function PricingContent() {
   // const { t } = useLanguage();
   const [userId, setUserId] = useState<string | null>(null);
   const [isLoadingUser, setIsLoadingUser] = useState(true);
-  const [isProcessingAutoCheckout, setIsProcessingAutoCheckout] = useState(false);
+  const [isProcessingAutoCheckout, setIsProcessingAutoCheckout] =
+    useState(false);
 
   const [origin, setOrigin] = useState("Pakistan");
   const [destination, setDestination] = useState("United States");
@@ -95,28 +102,31 @@ function PricingContent() {
   const [openFaqIndex, setOpenFaqIndex] = useState<number>(0);
 
   // Handle Checkout Logic shared for button and auto-checkout
-  const handleCheckout = useCallback(async (uid: string, planOverride?: string, addonsOverride?: string[]) => {
-    if (isProcessingAutoCheckout) return;
-    setIsProcessingAutoCheckout(true);
-    try {
-      const response = await fetch("/api/stripe/checkout", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          productTier: planOverride || selectedPlan,
-          addons: addonsOverride || Array.from(selectedAddons),
-          visaCategory: visa,
-          userId: uid,
-        }),
-      });
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.error || "Checkout failed");
-      if (data.url) window.location.href = data.url;
-    } catch (err) {
-      console.error("Checkout error:", err);
-      setIsProcessingAutoCheckout(false);
-    }
-  }, [selectedPlan, selectedAddons, visa, isProcessingAutoCheckout]);
+  const handleCheckout = useCallback(
+    async (uid: string, planOverride?: string, addonsOverride?: string[]) => {
+      if (isProcessingAutoCheckout) return;
+      setIsProcessingAutoCheckout(true);
+      try {
+        const response = await fetch("/api/stripe/checkout", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            productTier: planOverride || selectedPlan,
+            addons: addonsOverride || Array.from(selectedAddons),
+            visaCategory: visa,
+            userId: uid,
+          }),
+        });
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.error || "Checkout failed");
+        if (data.url) window.location.href = data.url;
+      } catch (err) {
+        console.error("Checkout error:", err);
+        setIsProcessingAutoCheckout(false);
+      }
+    },
+    [selectedPlan, selectedAddons, visa, isProcessingAutoCheckout],
+  );
 
   // Restore State from URL and Auto-checkout Trigger
   useEffect(() => {
@@ -134,10 +144,20 @@ function PricingContent() {
       // Clear the params after triggering checkout
       const newUrl = window.location.pathname;
       window.history.replaceState({}, "", newUrl);
-      
-      handleCheckout(userId, plan || undefined, addons ? addons.split(",") : undefined);
+
+      handleCheckout(
+        userId,
+        plan || undefined,
+        addons ? addons.split(",") : undefined,
+      );
     }
-  }, [searchParams, userId, isLoadingUser, handleCheckout, isProcessingAutoCheckout]);
+  }, [
+    searchParams,
+    userId,
+    isLoadingUser,
+    handleCheckout,
+    isProcessingAutoCheckout,
+  ]);
 
   useEffect(() => {
     const supabase = createClient();
@@ -189,7 +209,7 @@ function PricingContent() {
     return groups;
   }, [searchQuery]);
 
-  const containerClass = "max-w-[1180px] mx-auto px-4 md:px-6";
+  const containerClass = "mx-auto site-main-px py-[34px]";
   const eyebrowClass =
     "text-[12px] tracking-[0.14em] uppercase font-bold text-primary mb-3";
   const h1Class =
@@ -209,7 +229,7 @@ function PricingContent() {
   return (
     <div className="min-h-screen text-foreground font-sans selection:bg-primary/20 pb-[48px]">
       {activeStep === "plans" && (
-        <section className="pt-10 md:pt-16 pb-7">
+        <section className="site-main-py">
           <div className={containerClass}>
             <div className={eyebrowClass}>Plain Pricing</div>
             <h1 className={h1Class}>
@@ -360,7 +380,7 @@ function PricingContent() {
       <main>
         {activeStep === "plans" && (
           <div className="animate-in fade-in duration-300">
-            <section id="plans" className="py-8">
+            <section id="plans" className="">
               <div className={containerClass}>
                 <div className="flex flex-col md:flex-row justify-between md:items-end mb-[18px] gap-5">
                   <div>
@@ -402,13 +422,13 @@ function PricingContent() {
                         )}
                       </div>
 
-{plan.monthlyPrice && (
-  <div className="mb-[18px]">
-    <div className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-primary/10 text-primary rounded-lg border border-primary/20 text-[14px] font-bold max-w-fit">
-      ${plan.monthlyPrice.toFixed(2)}/mo over 12 months
-    </div>
-  </div>
-)}
+                      {plan.monthlyPrice && (
+                        <div className="mb-[18px]">
+                          <div className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-primary/10 text-primary rounded-lg border border-primary/20 text-[14px] font-bold max-w-fit">
+                            ${plan.monthlyPrice.toFixed(2)}/mo over 12 months
+                          </div>
+                        </div>
+                      )}
                       <div className="text-muted-foreground text-[14px] leading-[1.55] mb-[18px] min-h-[64px]">
                         {plan.tagline}
                       </div>
@@ -495,7 +515,7 @@ function PricingContent() {
               </div>
             </section>
 
-            <section id="comparison" className="py-[34px]">
+            <section id="comparison" className="">
               <div className={containerClass}>
                 <div className="flex flex-col md:flex-row justify-between md:items-end mb-[18px] gap-5">
                   <div className={eyebrowClass}>Comparison Table</div>
@@ -530,24 +550,26 @@ function PricingContent() {
                           <th className="p-[14px_16px] border-b border-border text-[12px] tracking-widest uppercase text-muted-foreground bg-muted/30">
                             Feature
                           </th>
-                          {activePlans.filter(p => p.id !== "free").map((p) => (
-                            <th
-                              key={p.id}
-                              className="p-[14px_16px] border-b border-border text-center bg-muted/30"
-                            >
-                              <div className="text-[12px] tracking-widest uppercase text-muted-foreground mb-1">
-                                {p.name}
-                              </div>
-                              {p.monthlyPrice && (
-                                <div className="text-[11px] text-primary lowercase mt-0.5 normal-case font-bold">
-                                  ${p.monthlyPrice.toFixed(2)}/mo x 12
-                                  <div className="text-[10px] text-muted-foreground font-medium opacity-80">
-                                    Total: ${p.price}
-                                  </div>
+                          {activePlans
+                            .filter((p) => p.id !== "free")
+                            .map((p) => (
+                              <th
+                                key={p.id}
+                                className="p-[14px_16px] border-b border-border text-center bg-muted/30"
+                              >
+                                <div className="text-[12px] tracking-widest uppercase text-muted-foreground mb-1">
+                                  {p.name}
                                 </div>
-                              )}
-                            </th>
-                          ))}
+                                {p.monthlyPrice && (
+                                  <div className="text-[11px] text-primary lowercase mt-0.5 normal-case font-bold">
+                                    ${p.monthlyPrice.toFixed(2)}/mo x 12
+                                    <div className="text-[10px] text-muted-foreground font-medium opacity-80">
+                                      Total: ${p.price}
+                                    </div>
+                                  </div>
+                                )}
+                              </th>
+                            ))}
                         </tr>
                       </thead>
                       <tbody>
@@ -692,7 +714,7 @@ function PricingContent() {
               </div>
             </section> */}
 
-            <section className="py-[34px]">
+            <section className="">
               <div className={containerClass}>
                 <div className="flex flex-col md:flex-row justify-between mb-[18px] gap-5">
                   <div>
@@ -731,7 +753,7 @@ function PricingContent() {
               </div>
             </section>
 
-            <section className="py-[34px]">
+            <section className="">
               <div className={containerClass}>
                 <div className="bg-primary rounded-[28px] p-[34px] text-white flex flex-col lg:flex-row justify-between gap-5 lg:items-center">
                   <div>
@@ -768,7 +790,7 @@ function PricingContent() {
 
         {activeStep === "addons" && (
           <div className="animate-in fade-in duration-300">
-            <section id="addonsStep" className="py-[34px]">
+            <section id="addonsStep" className="">
               <div className={containerClass}>
                 <div className="flex flex-col md:flex-row justify-between md:items-end mb-[18px] gap-5">
                   <div>
@@ -858,7 +880,8 @@ function PricingContent() {
                         {currentPlanData.monthlyPrice ? (
                           <div className="text-[12px] mt-1.5">
                             <span className="inline-block px-2 py-1 bg-primary/10 text-primary rounded-md border border-primary/20 font-bold mb-1">
-                              ${currentPlanData.monthlyPrice.toFixed(2)}/mo over 12 months
+                              ${currentPlanData.monthlyPrice.toFixed(2)}/mo over
+                              12 months
                             </span>
                             <div className="text-muted-foreground font-medium italic opacity-80">
                               Total: ${currentPlanData.price} per journey
@@ -1043,13 +1066,17 @@ function PricingContent() {
 
 export default function PricingSection() {
   return (
-    <Suspense fallback={
-      <div className="min-h-screen bg-background flex flex-col items-center justify-center p-6 text-center">
-        <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin mb-4 mx-auto"></div>
-        <h2 className="text-xl font-bold mb-2">Loading Pricing Journey...</h2>
-        <p className="text-muted-foreground">Preparing your personalized roadmap details.</p>
-      </div>
-    }>
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-background flex flex-col items-center justify-center p-6 text-center">
+          <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin mb-4 mx-auto"></div>
+          <h2 className="text-xl font-bold mb-2">Loading Pricing Journey...</h2>
+          <p className="text-muted-foreground">
+            Preparing your personalized roadmap details.
+          </p>
+        </div>
+      }
+    >
       <PricingContent />
     </Suspense>
   );

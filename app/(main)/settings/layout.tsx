@@ -1,4 +1,4 @@
-import { ReactNode } from 'react';
+import { ReactNode } from "react";
 
 interface SettingsLayoutProps {
   children: ReactNode;
@@ -7,12 +7,10 @@ interface SettingsLayoutProps {
 export default function SettingsLayout({ children }: SettingsLayoutProps) {
   return (
     <div className="min-h-screen bg-linear-to-br from-slate-50 to-slate-100">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="site-main-px site-main-py">
         <div className="flex justify-center">
           {/* Main Content */}
-          <div className="w-full max-w-3xl">
-            {children}
-          </div>
+          <div className="w-full">{children}</div>
         </div>
       </div>
     </div>
