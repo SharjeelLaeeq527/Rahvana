@@ -85,13 +85,13 @@ class CategoryLoaderService {
   async getActiveCategories(country?: string): Promise<InterviewCategoryConfig[]> {
     const slugs = [
       "ir-1-spouse",
-      "ir-2-child",
-      "ir-5-parent",
-      "f1-student",
-      "uk-student",
-      "ca-student",
-      "au-student",
-      "it-student",
+      // "ir-2-child",
+      // "ir-5-parent",
+      // "f1-student",
+      // "uk-student",
+      // "ca-student",
+      // "au-student",
+      // "it-student",
     ];
 
     const results = await Promise.allSettled(

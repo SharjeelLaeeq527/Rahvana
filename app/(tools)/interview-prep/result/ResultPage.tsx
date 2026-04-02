@@ -346,7 +346,7 @@ export const ResultPage = ({
             {/* Questions Sidebar - Only in prep mode */}
             {mode === "prep" && !sidebarCollapsed && (
               <div className="lg:w-1/3 px-4 lg:px-0">
-                <div className="bg-white rounded-2xl shadow-lg p-4 h-[350px] sm:h-[400px] lg:h-[450px] sticky top-6 flex flex-col border border-slate-200/50">
+                <div className="bg-white rounded-2xl shadow-lg p-4 h-87.5 sm:h-100 lg:h-112.5 sticky top-6 flex flex-col border border-slate-200/50">
                   <div className="flex justify-between items-center mb-4 pb-3 border-b border-slate-200/50">
                     <h3 className="font-bold text-base text-slate-800 flex items-center gap-2">
                       <BookOpen className="w-5 h-5 text-teal-600" />
@@ -460,18 +460,18 @@ export const ResultPage = ({
                                 {selectedQuestion.category}
                               </span>
                               {selectedQuestion.tooltip && (
-                                <div className="group relative">
+                                <div className="group relative z-50">
                                   <Info
                                     size={20}
                                     className="text-white/80 hover:text-white"
                                   />
-                                  <div className="absolute bottom-full right-0 mb-2 hidden group-hover:block w-64 bg-slate-800 text-white text-xs rounded-lg p-3 z-50 shadow-xl border border-slate-700">
+                                  <div className="absolute top-full right-0 mt-2 hidden group-hover:block w-64 bg-slate-800 text-white text-xs rounded-lg p-3 z-50 shadow-xl border border-slate-700">
                                     <div className="text-teal-300 font-medium mb-1 flex items-center gap-1">
                                       <Info size={14} className="text-teal-300" />
                                       Tip
                                     </div>
                                     <p>{selectedQuestion.tooltip}</p>
-                                    <div className="absolute top-full right-4 border-8 border-transparent border-t-slate-800"></div>
+                                    <div className="absolute bottom-full right-4 border-8 border-transparent border-b-slate-800"></div>
                                   </div>
                                 </div>
                               )}
