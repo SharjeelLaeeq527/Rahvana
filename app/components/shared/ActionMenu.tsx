@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 
 interface ActionMenuProps {
   onView: () => void;
-  onDelete: () => void;
+  onDelete?: () => void;
 }
 
 export default function ActionMenu({ onView, onDelete }: ActionMenuProps) {
@@ -35,7 +35,7 @@ export default function ActionMenu({ onView, onDelete }: ActionMenuProps) {
       </Button>
 
       {open && (
-        <div className="absolute right-0 mt-2 w-40 bg-white shadow-lg rounded-md border border-slate-200 z-50">
+        <div className="absolute right-0 mt-2 w-40 bg-white shadow-xl rounded-md border border-slate-200 z-50">
           <button
             className="flex items-center gap-2 w-full px-4 py-2 hover:bg-slate-100"
             onClick={() => {
@@ -45,15 +45,17 @@ export default function ActionMenu({ onView, onDelete }: ActionMenuProps) {
           >
             <Eye className="w-4 h-4" /> View Details
           </button>
-          <button
-            className="flex items-center gap-2 w-full px-4 py-2 hover:bg-slate-100 text-red-600"
-            onClick={() => {
-              setOpen(false);
-              onDelete();
-            }}
-          >
-            <Trash2 className="w-4 h-4" /> Delete
-          </button>
+          {onDelete && (
+            <button
+              className="flex items-center gap-2 w-full px-4 py-2 hover:bg-slate-100 text-red-600"
+              onClick={() => {
+                setOpen(false);
+                onDelete();
+              }}
+            >
+              <Trash2 className="w-4 h-4" /> Delete
+            </button>
+          )}
         </div>
       )}
     </div>

@@ -458,32 +458,8 @@ export function DynamicQuestionStep({
           </p>
         </div>
 
-        {/* Questions Container - Scrollable */}
-        <div
-          className="space-y-8 mb-8 max-h-96 overflow-y-auto pr-4 questions-scroll"
-          style={{
-            scrollbarWidth: "thin",
-            scrollbarColor: `${COLORS.primary} #f3f4f6`,
-          }}
-        >
-          {/* Webkit Scrollbar Styling */}
-          <style>{`
-            .questions-scroll::-webkit-scrollbar {
-              width: 8px;
-            }
-            .questions-scroll::-webkit-scrollbar-track {
-              background: #f3f4f6;
-              border-radius: 10px;
-            }
-            .questions-scroll::-webkit-scrollbar-thumb {
-              background: ${COLORS.primary};
-              border-radius: 10px;
-            }
-            .questions-scroll::-webkit-scrollbar-thumb:hover {
-              background: #0a5a68;
-            }
-          `}</style>
-
+        {/* Questions Container */}
+        <div className="space-y-8 mb-8">
           <div className="space-y-8">
             {section.questions.map((question) => {
               if (shouldSkipQuestion(question)) {
