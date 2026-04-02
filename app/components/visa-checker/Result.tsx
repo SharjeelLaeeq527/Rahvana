@@ -42,7 +42,7 @@ export default function Result({ data }: { data: VisaData }) {
   const hasWaitEstimate = waitEstimate && waitEstimate.formatted;
 
   return (
-    <div className="bg-white p-8 rounded-xl shadow-xl max-w-2xl mx-auto font-sans">
+    <div className="bg-white p-8 rounded-xl shadow-xl max-w-2xl xl:max-w-4xl mx-auto font-sans">
       {/* Header */}
       <div
         className={`p-4 rounded-t-xl text-white font-bold text-xl ${

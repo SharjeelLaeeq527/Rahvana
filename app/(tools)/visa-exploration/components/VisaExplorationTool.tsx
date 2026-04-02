@@ -3,26 +3,46 @@
 import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  ChevronRight, ChevronLeft, Search,
-  Globe, CheckCircle, Clock, FileText, X, Lock, AlertCircle, ExternalLink,
-  Compass, ArrowRight,
+  ChevronRight,
+  ChevronLeft,
+  Search,
+  Globe,
+  CheckCircle,
+  Clock,
+  FileText,
+  X,
+  Lock,
+  AlertCircle,
+  ExternalLink,
+  Compass,
+  ArrowRight,
 } from "lucide-react";
 
 // NEW MODULAR IMPORTS
 import { T, VisaExplorationAnswers, Step } from "../visa-engine/types";
 import { ALL_COUNTRIES } from "../visa-engine/data/countries";
-import { SUPPORTED_DESTINATIONS, getCountryData } from "../visa-engine/data/registry";
-import { buildSteps, DOWNSTREAM_CLEAR_MAP } from "../visa-engine/logic/step-builder";
+import {
+  SUPPORTED_DESTINATIONS,
+  getCountryData,
+} from "../visa-engine/data/registry";
+import {
+  buildSteps,
+  DOWNSTREAM_CLEAR_MAP,
+} from "../visa-engine/logic/step-builder";
 import {
   getEligibleVisas,
   allGateAnswered,
-  evaluateGate
+  evaluateGate,
 } from "../visa-engine/logic/gate-engine";
 
 // ─────────────────────────────────────────────────────────────
 // HELPERS
 // ─────────────────────────────────────────────────────────────
-function setNestedAnswer(answers: VisaExplorationAnswers, field: string, value: any): VisaExplorationAnswers {
+function setNestedAnswer(
+  answers: VisaExplorationAnswers,
+  field: string,
+  value: any,
+): VisaExplorationAnswers {
   if (!field.startsWith("gateAnswers.")) return { ...answers, [field]: value };
   const [, visaCode, questionId] = field.split(".");
   return {
@@ -55,19 +75,25 @@ function PhaseIndicator({ currentPhase }: { currentPhase: number }) {
     <div className="flex items-center gap-1.5">
       {PHASE_LABELS.map((label, i) => (
         <div key={i} className="flex items-center gap-1.5">
-          <div className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold tracking-wide transition-all duration-300 ${
-            i < currentPhase ? "bg-[#E8F6F6] text-[#0D7377]" :
-            i === currentPhase ? "bg-[#0D7377]/10 text-[#0D7377]" :
-            "bg-slate-100 text-slate-400"
-          }`}>
+          <div
+            className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold tracking-wide transition-all duration-300 ${
+              i < currentPhase
+                ? "bg-[#E8F6F6] text-[#0D7377]"
+                : i === currentPhase
+                  ? "bg-[#0D7377]/10 text-[#0D7377]"
+                  : "bg-slate-100 text-slate-400"
+            }`}
+          >
             {i < currentPhase ? <CheckCircle size={11} /> : null}
             <span className="hidden sm:inline">{label}</span>
             <span className="sm:hidden">{i + 1}</span>
           </div>
           {i < PHASE_LABELS.length - 1 && (
-            <div className={`w-4 h-0.5 rounded-full transition-colors duration-300 ${
-              i < currentPhase ? "bg-[#14A0A6]" : "bg-slate-200"
-            }`} />
+            <div
+              className={`w-4 h-0.5 rounded-full transition-colors duration-300 ${
+                i < currentPhase ? "bg-[#14A0A6]" : "bg-slate-200"
+              }`}
+            />
           )}
         </div>
       ))}
@@ -78,30 +104,54 @@ function PhaseIndicator({ currentPhase }: { currentPhase: number }) {
 // ─────────────────────────────────────────────────────────────
 // COUNTRY INPUT
 // ─────────────────────────────────────────────────────────────
-function CountryInput({ value, onChange, placeholder, isDestination = false, hint }: {
-  value: string; onChange: (v: string) => void; placeholder: string; isDestination?: boolean; hint?: string;
+function CountryInput({
+  value,
+  onChange,
+  placeholder,
+  isDestination = false,
+  hint,
+}: {
+  value: string;
+  onChange: (v: string) => void;
+  placeholder: string;
+  isDestination?: boolean;
+  hint?: string;
 }) {
   const [query, setQuery] = useState(value || "");
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
-  useEffect(() => { if (value) setQuery(value); }, [value]);
+  useEffect(() => {
+    if (value) setQuery(value);
+  }, [value]);
 
-  const filtered = query.length >= 1
-    ? ALL_COUNTRIES.filter((c) => c.toLowerCase().includes(query.toLowerCase())).slice(0, 8)
-    : [];
+  const filtered =
+    query.length >= 1
+      ? ALL_COUNTRIES.filter((c) =>
+          c.toLowerCase().includes(query.toLowerCase()),
+        ).slice(0, 8)
+      : [];
 
   useEffect(() => {
-    const h = (e: MouseEvent) => { if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false); };
+    const h = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node))
+        setOpen(false);
+    };
     document.addEventListener("mousedown", h);
     return () => document.removeEventListener("mousedown", h);
   }, []);
 
   return (
     <div ref={ref} className="relative">
-      <div className={`border-2 rounded-2xl bg-white flex items-center gap-3 px-5 py-4 transition-all duration-200 ${
-        open ? "border-[#0D7377] shadow-lg shadow-[#0D7377]/10" : value ? "border-[#32E0C4] shadow-sm" : "border-slate-200 hover:border-slate-300"
-      }`}>
+      <div
+        className={`border-2 rounded-2xl bg-white flex items-center gap-3 px-5 py-4 transition-all duration-200 ${
+          open
+            ? "border-[#0D7377] shadow-lg shadow-[#0D7377]/10"
+            : value
+              ? "border-[#32E0C4] shadow-sm"
+              : "border-slate-200 hover:border-slate-300"
+        }`}
+      >
         {value ? (
           <div className="w-8 h-8 rounded-full bg-[#E8F6F6] flex items-center justify-center flex-shrink-0">
             <CheckCircle size={16} className="text-[#0D7377]" />
@@ -113,7 +163,11 @@ function CountryInput({ value, onChange, placeholder, isDestination = false, hin
         )}
         <input
           value={query}
-          onChange={(e) => { setQuery(e.target.value); onChange(""); setOpen(true); }}
+          onChange={(e) => {
+            setQuery(e.target.value);
+            onChange("");
+            setOpen(true);
+          }}
           onFocus={() => setOpen(true)}
           placeholder={placeholder}
           className="flex-1 border-none outline-none text-[16px] text-slate-800 bg-transparent placeholder:text-slate-400 font-medium"
@@ -121,7 +175,9 @@ function CountryInput({ value, onChange, placeholder, isDestination = false, hin
       </div>
 
       {!value && !open && hint && (
-        <p className="text-[12px] text-slate-400 mt-2 ml-1 font-medium">{hint}</p>
+        <p className="text-[12px] text-slate-400 mt-2 ml-1 font-medium">
+          {hint}
+        </p>
       )}
 
       <AnimatePresence>
@@ -134,13 +190,21 @@ function CountryInput({ value, onChange, placeholder, isDestination = false, hin
             className="absolute z-[100] top-[calc(100%+6px)] left-0 right-0 bg-white border border-slate-200 rounded-2xl shadow-2xl overflow-hidden"
           >
             {filtered.map((country) => {
-              const comingSoon = isDestination && !SUPPORTED_DESTINATIONS.includes(country);
+              const comingSoon =
+                isDestination && !SUPPORTED_DESTINATIONS.includes(country);
               return (
-                <button key={country}
-                  onClick={() => { onChange(country); setQuery(country); setOpen(false); }}
+                <button
+                  key={country}
+                  onClick={() => {
+                    onChange(country);
+                    setQuery(country);
+                    setOpen(false);
+                  }}
                   disabled={comingSoon}
                   className={`flex items-center justify-between w-full px-5 py-3.5 text-left transition-colors ${
-                    comingSoon ? "text-slate-400 cursor-not-allowed" : "text-slate-700 hover:bg-[#0D7377]/5"
+                    comingSoon
+                      ? "text-slate-400 cursor-not-allowed"
+                      : "text-slate-700 hover:bg-[#0D7377]/5"
                   }`}
                 >
                   <span className="text-[15px] font-semibold">{country}</span>
@@ -162,12 +226,24 @@ function CountryInput({ value, onChange, placeholder, isDestination = false, hin
 // ─────────────────────────────────────────────────────────────
 // OPTION CARD
 // ─────────────────────────────────────────────────────────────
-function OptionCard({ label, sub, selected, onClick, disabled }: {
-  label: string; sub?: string; selected: boolean; onClick: () => void; disabled?: boolean; emoji?: string;
+function OptionCard({
+  label,
+  sub,
+  selected,
+  onClick,
+  disabled,
+}: {
+  label: string;
+  sub?: string;
+  selected: boolean;
+  onClick: () => void;
+  disabled?: boolean;
+  emoji?: string;
 }) {
   return (
     <button
-      onClick={disabled ? undefined : onClick} disabled={disabled}
+      onClick={disabled ? undefined : onClick}
+      disabled={disabled}
       className={`w-full text-left p-5 rounded-2xl transition-all duration-200 flex items-start gap-4 border-2 group ${
         selected
           ? "border-[#0D7377] bg-[#0D7377]/5 shadow-md shadow-[#0D7377]/10"
@@ -175,13 +251,28 @@ function OptionCard({ label, sub, selected, onClick, disabled }: {
       } ${disabled ? "opacity-50 cursor-not-allowed" : "cursor-pointer active:scale-[0.995]"}`}
     >
       <div className="flex-1 min-w-0">
-        <h3 className={`text-[15px] font-bold leading-snug ${selected ? "text-[#0D7377]" : "text-slate-800"}`}>{label}</h3>
-        {sub && <p className="text-[13px] text-slate-500 mt-1.5 leading-relaxed">{sub}</p>}
+        <h3
+          className={`text-[15px] font-bold leading-snug ${selected ? "text-[#0D7377]" : "text-slate-800"}`}
+        >
+          {label}
+        </h3>
+        {sub && (
+          <p className="text-[13px] text-slate-500 mt-1.5 leading-relaxed">
+            {sub}
+          </p>
+        )}
       </div>
-      <div className={`p-1 rounded-full flex-shrink-0 mt-0.5 transition-all ${
-        selected ? "bg-[#0D7377] text-white scale-110" : "bg-slate-100 text-slate-300 group-hover:bg-slate-200"
-      }`}>
-        <CheckCircle size={18} className={selected ? "opacity-100" : "opacity-40"} />
+      <div
+        className={`p-1 rounded-full flex-shrink-0 mt-0.5 transition-all ${
+          selected
+            ? "bg-[#0D7377] text-white scale-110"
+            : "bg-slate-100 text-slate-300 group-hover:bg-slate-200"
+        }`}
+      >
+        <CheckCircle
+          size={18}
+          className={selected ? "opacity-100" : "opacity-40"}
+        />
       </div>
     </button>
   );
@@ -190,22 +281,36 @@ function OptionCard({ label, sub, selected, onClick, disabled }: {
 // ─────────────────────────────────────────────────────────────
 // OPTION GRID
 // ─────────────────────────────────────────────────────────────
-function OptionGrid({ options, value, onChange }: {
-  options: any[]; value: string; onChange: (v: string) => void;
+function OptionGrid({
+  options,
+  value,
+  onChange,
+}: {
+  options: any[];
+  value: string;
+  onChange: (v: string) => void;
 }) {
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
       {options.map((opt: any) => (
-        <button key={opt.value}
-          onClick={opt.disabled ? undefined : () => onChange(opt.value)} disabled={opt.disabled}
+        <button
+          key={opt.value}
+          onClick={opt.disabled ? undefined : () => onChange(opt.value)}
+          disabled={opt.disabled}
           className={`p-6 rounded-2xl transition-all duration-200 text-center flex flex-col items-center justify-center gap-2 border-2 ${
             value === opt.value
               ? "border-[#0D7377] bg-[#0D7377]/5 shadow-md shadow-[#0D7377]/10"
               : "border-slate-100 bg-white hover:border-slate-200 hover:bg-slate-50"
           } ${opt.disabled ? "opacity-50 cursor-not-allowed" : "cursor-pointer active:scale-[0.98]"}`}
         >
-          <span className={`text-[16px] font-black ${value === opt.value ? "text-[#0D7377]" : "text-slate-800"}`}>{opt.label}</span>
-          {opt.sub && <span className="text-[12px] text-slate-500">{opt.sub}</span>}
+          <span
+            className={`text-[16px] font-black ${value === opt.value ? "text-[#0D7377]" : "text-slate-800"}`}
+          >
+            {opt.label}
+          </span>
+          {opt.sub && (
+            <span className="text-[12px] text-slate-500">{opt.sub}</span>
+          )}
         </button>
       ))}
     </div>
@@ -215,8 +320,14 @@ function OptionGrid({ options, value, onChange }: {
 // ─────────────────────────────────────────────────────────────
 // GATE QUESTION
 // ─────────────────────────────────────────────────────────────
-function GateQuestion({ step, answers, onAnswer }: {
-  step: Step; answers: VisaExplorationAnswers; onAnswer: (f: string, v: any) => void;
+function GateQuestion({
+  step,
+  answers,
+  onAnswer,
+}: {
+  step: Step;
+  answers: VisaExplorationAnswers;
+  onAnswer: (f: string, v: any) => void;
 }) {
   const visaGate = (answers.gateAnswers || {})[step.visaCode!] || {};
   const current = visaGate[step.questionId!];
@@ -226,11 +337,19 @@ function GateQuestion({ step, answers, onAnswer }: {
   return (
     <div className="space-y-4">
       <div className="flex items-center gap-2.5 mb-2">
-        <span className="text-[11px] font-black px-3 py-1.5 rounded-full border"
-          style={{ color: step.visaColor, background: step.visaColor + "12", borderColor: step.visaColor + "25" }}>
+        <span
+          className="text-[11px] font-black px-3 py-1.5 rounded-full border"
+          style={{
+            color: step.visaColor,
+            background: step.visaColor + "12",
+            borderColor: step.visaColor + "25",
+          }}
+        >
           {step.visaCode}
         </span>
-        <span className="text-[11px] text-slate-400 font-medium">{step.visaLabel}</span>
+        <span className="text-[11px] text-slate-400 font-medium">
+          {step.visaLabel}
+        </span>
       </div>
 
       <div className="flex flex-col gap-3">
@@ -238,19 +357,32 @@ function GateQuestion({ step, answers, onAnswer }: {
           const isPassOpt = step.passWith!.includes(opt.value);
           const isSel = current === opt.value;
           return (
-            <button key={opt.value}
+            <button
+              key={opt.value}
               onClick={() => onAnswer(step.field!, opt.value)}
               className={`w-full text-left p-4 rounded-2xl transition-all duration-200 flex items-center justify-between gap-4 border-2 cursor-pointer active:scale-[0.995] ${
                 isSel
-                  ? (isPassOpt ? "border-[#32E0C4] bg-[#E8F6F6] shadow-sm" : "border-red-300 bg-red-50/80 shadow-sm")
+                  ? isPassOpt
+                    ? "border-[#32E0C4] bg-[#E8F6F6] shadow-sm"
+                    : "border-red-300 bg-red-50/80 shadow-sm"
                   : "border-slate-100 bg-white hover:border-slate-200 hover:bg-slate-50"
               }`}
             >
-              <span className={`text-[14px] font-semibold flex-1 ${
-                isSel ? (isPassOpt ? "text-[#0D7377]" : "text-red-700") : "text-slate-700"
-              }`}>{opt.label}</span>
+              <span
+                className={`text-[14px] font-semibold flex-1 ${
+                  isSel
+                    ? isPassOpt
+                      ? "text-[#0D7377]"
+                      : "text-red-700"
+                    : "text-slate-700"
+                }`}
+              >
+                {opt.label}
+              </span>
               {isSel && (
-                <div className={`p-1 rounded-full ${isPassOpt ? "bg-[#0D7377]" : "bg-red-400"} text-white`}>
+                <div
+                  className={`p-1 rounded-full ${isPassOpt ? "bg-[#0D7377]" : "bg-red-400"} text-white`}
+                >
                   <CheckCircle size={14} />
                 </div>
               )}
@@ -261,25 +393,45 @@ function GateQuestion({ step, answers, onAnswer }: {
 
       <AnimatePresence>
         {isFailing && (
-          <motion.div initial={{ opacity:0, y:-6, height:0 }} animate={{ opacity:1, y:0, height:"auto" }} exit={{ opacity:0, y:-6, height:0 }}
-            className="flex gap-3 p-4 rounded-2xl bg-red-50 border border-red-200 overflow-hidden">
-            <AlertCircle size={18} className="text-red-500 flex-shrink-0 mt-0.5" />
-            <p className="text-[13px] text-red-700 leading-relaxed">{step.failMsg}</p>
+          <motion.div
+            initial={{ opacity: 0, y: -6, height: 0 }}
+            animate={{ opacity: 1, y: 0, height: "auto" }}
+            exit={{ opacity: 0, y: -6, height: 0 }}
+            className="flex gap-3 p-4 rounded-2xl bg-red-50 border border-red-200 overflow-hidden"
+          >
+            <AlertCircle
+              size={18}
+              className="text-red-500 flex-shrink-0 mt-0.5"
+            />
+            <p className="text-[13px] text-red-700 leading-relaxed">
+              {step.failMsg}
+            </p>
           </motion.div>
         )}
         {isPassing && (
-          <motion.div initial={{ opacity:0, y:-6, height:0 }} animate={{ opacity:1, y:0, height:"auto" }} exit={{ opacity:0, y:-6, height:0 }}
-            className="flex gap-3 p-3.5 rounded-xl bg-[#E8F6F6] border border-[#14A0A6]/30 items-center overflow-hidden">
+          <motion.div
+            initial={{ opacity: 0, y: -6, height: 0 }}
+            animate={{ opacity: 1, y: 0, height: "auto" }}
+            exit={{ opacity: 0, y: -6, height: 0 }}
+            className="flex gap-3 p-3.5 rounded-xl bg-[#E8F6F6] border border-[#14A0A6]/30 items-center overflow-hidden"
+          >
             <CheckCircle size={15} className="text-[#0D7377] flex-shrink-0" />
-            <p className="text-[12px] text-[#0D7377]/80 font-semibold">This meets the requirement.</p>
+            <p className="text-[12px] text-[#0D7377]/80 font-semibold">
+              This meets the requirement.
+            </p>
           </motion.div>
         )}
       </AnimatePresence>
 
       {step.sourceUrl && (
-        <a href={step.sourceUrl} target="_blank" rel="noopener noreferrer"
-          className="flex items-center gap-1.5 text-[11px] text-slate-400 hover:text-[#32E0C4] transition-colors no-underline mt-1">
-          <ExternalLink size={10} /><span>{step.subtitle}</span>
+        <a
+          href={step.sourceUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex items-center gap-1.5 text-[11px] text-slate-400 hover:text-[#32E0C4] transition-colors no-underline mt-1"
+        >
+          <ExternalLink size={10} />
+          <span>{step.subtitle}</span>
         </a>
       )}
     </div>
@@ -289,29 +441,55 @@ function GateQuestion({ step, answers, onAnswer }: {
 // ─────────────────────────────────────────────────────────────
 // STEP CONTENT
 // ─────────────────────────────────────────────────────────────
-function StepContent({ step, answers, onAnswer }: {
-  step: Step; answers: VisaExplorationAnswers; onAnswer: (f: string, v: any) => void;
+function StepContent({
+  step,
+  answers,
+  onAnswer,
+}: {
+  step: Step;
+  answers: VisaExplorationAnswers;
+  onAnswer: (f: string, v: any) => void;
 }) {
   if (!step) return null;
-  if (step.type === "country") return (
-    <CountryInput value={(answers[step.field!] as string) || ""} onChange={(v) => onAnswer(step.field!, v)}
-      placeholder={step.isDestination ? "Search destination country..." : "Search your country..."}
-      isDestination={step.isDestination} hint={step.hint} />
-  );
-  if (step.type === "options") return (
-    <div className="flex flex-col gap-3">
-      {step.options!.map((opt) => (
-        <OptionCard key={opt.value} label={opt.label} sub={opt.sub} disabled={opt.disabled}
-          selected={answers[step.field!] === opt.value} onClick={() => onAnswer(step.field!, opt.value)} />
-      ))}
-    </div>
-  );
-  if (step.type === "grid") return (
-    <OptionGrid options={step.options!} value={(answers[step.field!] as string) || ""} onChange={(v) => onAnswer(step.field!, v)} />
-  );
-  if (step.type === "gate_question") return (
-    <GateQuestion step={step} answers={answers} onAnswer={onAnswer} />
-  );
+  if (step.type === "country")
+    return (
+      <CountryInput
+        value={(answers[step.field!] as string) || ""}
+        onChange={(v) => onAnswer(step.field!, v)}
+        placeholder={
+          step.isDestination
+            ? "Search destination country..."
+            : "Search your country..."
+        }
+        isDestination={step.isDestination}
+        hint={step.hint}
+      />
+    );
+  if (step.type === "options")
+    return (
+      <div className="flex flex-col gap-3">
+        {step.options!.map((opt) => (
+          <OptionCard
+            key={opt.value}
+            label={opt.label}
+            sub={opt.sub}
+            disabled={opt.disabled}
+            selected={answers[step.field!] === opt.value}
+            onClick={() => onAnswer(step.field!, opt.value)}
+          />
+        ))}
+      </div>
+    );
+  if (step.type === "grid")
+    return (
+      <OptionGrid
+        options={step.options!}
+        value={(answers[step.field!] as string) || ""}
+        onChange={(v) => onAnswer(step.field!, v)}
+      />
+    );
+  if (step.type === "gate_question")
+    return <GateQuestion step={step} answers={answers} onAnswer={onAnswer} />;
   return null;
 }
 
@@ -320,30 +498,44 @@ function StepContent({ step, answers, onAnswer }: {
 // ─────────────────────────────────────────────────────────────
 function VisaResultCard({ visa, onClick }: { visa: any; onClick: () => void }) {
   return (
-    <button onClick={onClick}
-      className="group w-full text-left p-6 rounded-2xl bg-white border-2 border-slate-100 hover:border-[#0D7377]/40 hover:shadow-2xl hover:shadow-[#0D7377]/10 transition-all duration-300 relative overflow-hidden">
+    <button
+      onClick={onClick}
+      className="group w-full text-left p-6 rounded-2xl bg-white border-2 border-slate-100 hover:border-[#0D7377]/40 hover:shadow-2xl hover:shadow-[#0D7377]/10 transition-all duration-300 relative overflow-hidden"
+    >
       <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-[#0D7377]/5 to-transparent -mr-16 -mt-16 rounded-full group-hover:scale-150 transition-transform duration-700" />
-      
+
       <div className="relative z-10">
         <div className="flex items-start justify-between mb-4">
           <div className="w-12 h-12 rounded-xl bg-[#0D7377]/5 flex items-center justify-center group-hover:bg-[#0D7377] group-hover:text-white transition-all duration-300">
-            <span className="text-xl font-black tracking-tight leading-none">{visa.code}</span>
+            <span className="text-xl font-black tracking-tight leading-none">
+              {visa.code}
+            </span>
           </div>
           <span className="text-[10px] font-black uppercase tracking-widest px-3 py-1.5 rounded-lg bg-slate-50 text-slate-500 group-hover:bg-[#0D7377]/10 group-hover:text-[#0D7377] transition-all border border-slate-100">
             {visa.badge}
           </span>
         </div>
-        
-        <h4 className="text-[17px] font-black text-slate-800 mb-2 group-hover:text-[#0D7377] transition-colors">{visa.label}</h4>
-        <p className="text-[13px] text-slate-500 leading-relaxed mb-5 line-clamp-2 font-medium">{visa.description}</p>
-        
+
+        <h4 className="text-[17px] font-black text-slate-800 mb-2 group-hover:text-[#0D7377] transition-colors">
+          {visa.label}
+        </h4>
+        <p className="text-[13px] text-slate-500 leading-relaxed mb-5 line-clamp-2 font-medium">
+          {visa.description}
+        </p>
+
         <div className="flex items-center justify-between border-t border-slate-50 pt-4">
           <div className="flex items-center gap-2 text-[13px] font-bold text-[#0D7377]">
-            View details <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
+            View details{" "}
+            <ArrowRight
+              size={14}
+              className="group-hover:translate-x-1 transition-transform"
+            />
           </div>
           <div className="flex items-center gap-1.5">
             <div className="w-1.5 h-1.5 rounded-full bg-[#14A0A6] group-hover:animate-pulse" />
-            <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wide">Official 2026</span>
+            <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wide">
+              Official 2026
+            </span>
           </div>
         </div>
       </div>
@@ -354,40 +546,65 @@ function VisaResultCard({ visa, onClick }: { visa: any; onClick: () => void }) {
 // ─────────────────────────────────────────────────────────────
 // VISA DETAIL MODAL
 // ─────────────────────────────────────────────────────────────
-function VisaDetailModal({ visa, onClose, origin, countryNotes = [] }: {
-  visa: any; onClose: () => void; origin?: string; countryNotes?: string[]
+function VisaDetailModal({
+  visa,
+  onClose,
+  origin,
+  countryNotes = [],
+}: {
+  visa: any;
+  onClose: () => void;
+  origin?: string;
+  countryNotes?: string[];
 }) {
   const displayCriteria = [...countryNotes, ...visa.criteria];
 
   return (
-    <motion.div initial={{ opacity:0 }} animate={{ opacity:1 }} exit={{ opacity:0 }}
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
       onClick={onClose}
-      className="fixed inset-0 z-[200] bg-slate-900/40 backdrop-blur-md flex items-center justify-center p-4">
+      className="fixed inset-0 z-[200] bg-slate-900/40 backdrop-blur-md flex items-center justify-center p-4"
+    >
       <motion.div
-        initial={{ y:20,opacity:0,scale:0.95 }} animate={{ y:0,opacity:1,scale:1 }}
-        exit={{ y:20,opacity:0,scale:0.95 }}
+        initial={{ y: 20, opacity: 0, scale: 0.95 }}
+        animate={{ y: 0, opacity: 1, scale: 1 }}
+        exit={{ y: 20, opacity: 0, scale: 0.95 }}
         onClick={(e) => e.stopPropagation()}
-        className="bg-white rounded-[2rem] w-full max-w-lg max-h-[90vh] flex flex-col shadow-2xl overflow-hidden">
+        className="bg-white rounded-4xl w-full max-h-[90vh] flex flex-col shadow-2xl overflow-hidden"
+      >
         <div className="px-8 py-6 border-b border-slate-100 bg-slate-50/50">
           <div className="flex items-start justify-between">
             <div className="space-y-1">
               <div className="flex items-center gap-3">
-                <span className="text-2xl font-black text-[#0D7377] tracking-tight">{visa.code}</span>
-                <span className="text-[10px] font-bold uppercase tracking-widest px-2.5 py-1 rounded-full bg-[#0D7377]/10 text-[#0D7377]">{visa.badge}</span>
+                <span className="text-2xl font-black text-[#0D7377] tracking-tight">
+                  {visa.code}
+                </span>
+                <span className="text-[10px] font-bold uppercase tracking-widest px-2.5 py-1 rounded-full bg-[#0D7377]/10 text-[#0D7377]">
+                  {visa.badge}
+                </span>
               </div>
               <h3 className="text-lg font-bold text-slate-800">{visa.label}</h3>
             </div>
-            <button onClick={onClose} className="p-2 hover:bg-white hover:shadow-md rounded-xl transition-all text-slate-400 hover:text-slate-600">
+            <button
+              onClick={onClose}
+              className="p-2 hover:bg-white hover:shadow-md rounded-xl transition-all text-slate-400 hover:text-slate-600"
+            >
               <X size={22} />
             </button>
           </div>
         </div>
 
         <div className="flex-1 overflow-y-auto px-8 py-7 space-y-7">
-          <p className="text-sm text-slate-500 leading-relaxed italic">{visa.description}</p>
+          <p className="text-sm text-slate-500 leading-relaxed italic">
+            {visa.description}
+          </p>
           <section className="space-y-3">
             <div className="flex items-center justify-between">
-              <h5 className="text-[11px] font-black uppercase tracking-widest text-slate-400">Eligibility Requirements</h5>
+              <h5 className="text-[11px] font-black uppercase tracking-widest text-slate-400">
+                Eligibility Requirements
+              </h5>
               {countryNotes.length > 0 && (
                 <span className="text-[9px] font-bold text-[#0D7377] bg-[#E8F6F6] px-2 py-0.5 rounded-md border border-[#14A0A6]/20">
                   {origin} Specifics Included
@@ -398,9 +615,19 @@ function VisaDetailModal({ visa, onClose, origin, countryNotes = [] }: {
               {displayCriteria.map((c: string, i: number) => {
                 const isWarning = c.startsWith("⚠️");
                 return (
-                  <div key={i} className={`flex gap-3 p-3.5 rounded-xl border ${isWarning ? "bg-amber-50 border-amber-100" : "bg-slate-50 border-slate-100/50"}`}>
-                    <CheckCircle size={16} className={`${isWarning ? "text-amber-500" : "text-[#0D7377]"} flex-shrink-0 mt-0.5`} />
-                    <p className={`text-[13px] leading-normal font-medium ${isWarning ? "text-amber-800" : "text-slate-700"}`}>{c}</p>
+                  <div
+                    key={i}
+                    className={`flex gap-3 p-3.5 rounded-xl border ${isWarning ? "bg-amber-50 border-amber-100" : "bg-slate-50 border-slate-100/50"}`}
+                  >
+                    <CheckCircle
+                      size={16}
+                      className={`${isWarning ? "text-amber-500" : "text-[#0D7377]"} flex-shrink-0 mt-0.5`}
+                    />
+                    <p
+                      className={`text-[13px] leading-normal font-medium ${isWarning ? "text-amber-800" : "text-slate-700"}`}
+                    >
+                      {c}
+                    </p>
                   </div>
                 );
               })}
@@ -410,16 +637,24 @@ function VisaDetailModal({ visa, onClose, origin, countryNotes = [] }: {
             <div className="p-4 rounded-xl bg-indigo-50/50 border border-indigo-100/50">
               <div className="flex items-center gap-2 mb-2">
                 <Clock size={14} className="text-indigo-500" />
-                <span className="text-[10px] font-black uppercase tracking-widest text-indigo-400">Processing</span>
+                <span className="text-[10px] font-black uppercase tracking-widest text-indigo-400">
+                  Processing
+                </span>
               </div>
-              <p className="text-[13px] font-bold text-slate-800 leading-snug">{visa.processing}</p>
+              <p className="text-[13px] font-bold text-slate-800 leading-snug">
+                {visa.processing}
+              </p>
             </div>
             <div className="p-4 rounded-xl bg-teal-50/50 border border-teal-100/50">
               <div className="flex items-center gap-2 mb-2">
                 <FileText size={14} className="text-teal-500" />
-                <span className="text-[10px] font-black uppercase tracking-widest text-teal-400">Key Forms</span>
+                <span className="text-[10px] font-black uppercase tracking-widest text-teal-400">
+                  Key Forms
+                </span>
               </div>
-              <p className="text-[13px] font-bold text-slate-800 leading-snug">{visa.forms.join(" · ")}</p>
+              <p className="text-[13px] font-bold text-slate-800 leading-snug">
+                {visa.forms.join(" · ")}
+              </p>
             </div>
           </div>
           <p className="text-[11px] text-slate-400 py-5 border-t border-slate-100 leading-relaxed text-center">
@@ -427,17 +662,47 @@ function VisaDetailModal({ visa, onClose, origin, countryNotes = [] }: {
             {visa.officialSources && visa.officialSources.length > 0 ? (
               visa.officialSources.map((s: any, i: number) => (
                 <span key={s.url}>
-                  <a href={s.url} target="_blank" rel="noopener noreferrer" className="text-[#0D7377] underline">{s.label}</a>
-                  {visa.officialSources && i < visa.officialSources.length - 1 ? " / " : ""}
+                  <a
+                    href={s.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-[#0D7377] underline"
+                  >
+                    {s.label}
+                  </a>
+                  {visa.officialSources && i < visa.officialSources.length - 1
+                    ? " / "
+                    : ""}
                 </span>
               ))
             ) : (
               <>
-                <a href="https://www.uscis.gov" target="_blank" rel="noopener noreferrer" className="text-[#0D7377] underline">USCIS.gov</a>
+                <a
+                  href="https://www.uscis.gov"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-[#0D7377] underline"
+                >
+                  USCIS.gov
+                </a>
                 {" / "}
-                <a href="https://www.uscis.gov" target="_blank" rel="noopener noreferrer" className="text-[#0D7377] underline">USCIS.gov</a>
+                <a
+                  href="https://www.uscis.gov"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-[#0D7377] underline"
+                >
+                  USCIS.gov
+                </a>
                 {" / "}
-                <a href="https://travel.state.gov" target="_blank" rel="noopener noreferrer" className="text-[#0D7377] underline">travel.state.gov</a>
+                <a
+                  href="https://travel.state.gov"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-[#0D7377] underline"
+                >
+                  travel.state.gov
+                </a>
               </>
             )}
             . General guidance only — not legal advice.
@@ -445,7 +710,10 @@ function VisaDetailModal({ visa, onClose, origin, countryNotes = [] }: {
         </div>
 
         <div className="p-5 bg-slate-50 border-t border-slate-100">
-          <button onClick={onClose} className="w-full py-3.5 rounded-xl bg-slate-900 text-white font-bold hover:bg-slate-800 transition-all text-[14px]">
+          <button
+            onClick={onClose}
+            className="w-full py-3.5 rounded-xl bg-slate-900 text-white font-bold hover:bg-slate-800 transition-all text-[14px]"
+          >
             Got it
           </button>
         </div>
@@ -457,23 +725,45 @@ function VisaDetailModal({ visa, onClose, origin, countryNotes = [] }: {
 // ─────────────────────────────────────────────────────────────
 // UNSUPPORTED DESTINATION
 // ─────────────────────────────────────────────────────────────
-function UnsupportedScreen({ destination, onChangeDestination, onReset }: {
-  destination: string; onChangeDestination: () => void; onReset: () => void;
+function UnsupportedScreen({
+  destination,
+  onChangeDestination,
+  onReset,
+}: {
+  destination: string;
+  onChangeDestination: () => void;
+  onReset: () => void;
 }) {
   return (
-    <div className="w-full max-w-2xl mx-auto p-4 sm:p-8">
-      <div className="bg-white rounded-[2rem] p-10 text-center shadow-2xl shadow-slate-200/50 border-2 border-slate-100/50">
+    <div className="w-full ">
+      <div className="bg-white rounded-4xl p-10 text-center shadow-2xl shadow-slate-200/50 border-2 border-slate-100/50">
         <div className="w-16 h-16 rounded-2xl bg-amber-100 text-amber-600 flex items-center justify-center mx-auto mb-6">
           <Lock size={32} />
         </div>
-        <span className="inline-block text-[11px] font-black uppercase tracking-widest text-amber-600 bg-amber-50 border border-amber-200 px-4 py-1.5 rounded-full mb-6">Coming Soon</span>
-        <h2 className="text-2xl sm:text-3xl font-black text-slate-800 mb-4 tracking-tight">Visa guidance for {destination}</h2>
+        <span className="inline-block text-[11px] font-black uppercase tracking-widest text-amber-600 bg-amber-50 border border-amber-200 px-4 py-1.5 rounded-full mb-6">
+          Coming Soon
+        </span>
+        <h2 className="text-2xl sm:text-3xl font-black text-slate-800 mb-4 tracking-tight">
+          Visa guidance for {destination}
+        </h2>
         <p className="text-slate-500 text-[15px] leading-relaxed mb-10 max-w-md mx-auto">
-          We're working on adding detailed visa guidance for {destination}. Right now this tool specializes in <strong>United States</strong> immigration.
+          We're working on adding detailed visa guidance for {destination}.
+          Right now this tool specializes in <strong>United States</strong>{" "}
+          immigration.
         </p>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <button onClick={onChangeDestination} className="py-4 px-6 rounded-2xl border-2 border-[#0D7377] text-[#0D7377] font-bold hover:bg-[#0D7377]/5 transition-all">Change Destination</button>
-          <button onClick={onReset} className="py-4 px-6 rounded-2xl bg-[#0D7377] text-white font-bold hover:bg-[#0D7377]/90 shadow-xl shadow-[#0D7377]/20 transition-all">Start Over</button>
+          <button
+            onClick={onChangeDestination}
+            className="py-4 px-6 rounded-2xl border-2 border-[#0D7377] text-[#0D7377] font-bold hover:bg-[#0D7377]/5 transition-all"
+          >
+            Change Destination
+          </button>
+          <button
+            onClick={onReset}
+            className="py-4 px-6 rounded-2xl bg-[#0D7377] text-white font-bold hover:bg-[#0D7377]/90 shadow-xl shadow-[#0D7377]/20 transition-all"
+          >
+            Start Over
+          </button>
         </div>
       </div>
     </div>
@@ -483,18 +773,32 @@ function UnsupportedScreen({ destination, onChangeDestination, onReset }: {
 // ─────────────────────────────────────────────────────────────
 // RESULTS SCREEN
 // ─────────────────────────────────────────────────────────────
-function ResultsScreen({ answers, results, ineligibleCodes, onReset, onBack }: {
-  answers: VisaExplorationAnswers; results: any[]; ineligibleCodes: string[]; onReset: () => void; onBack: () => void;
+function ResultsScreen({
+  answers,
+  results,
+  ineligibleCodes,
+  onReset,
+  onBack,
+}: {
+  answers: VisaExplorationAnswers;
+  results: any[];
+  ineligibleCodes: string[];
+  onReset: () => void;
+  onBack: () => void;
 }) {
   const [modal, setModal] = useState<any>(null);
   return (
-    <div className="w-full max-w-4xl mx-auto p-4 sm:p-8">
-      <div className="bg-white rounded-[2rem] shadow-2xl shadow-slate-200/60 border-2 border-slate-100/50 overflow-hidden flex flex-col mt-12 md:mt-2">
+    <div className="w-full">
+      <div className="bg-white rounded-4xl shadow-2xl shadow-slate-200/60 border-2 border-slate-100/50 overflow-hidden flex flex-col">
         {/* Header */}
-        <div className="p-8 sm:p-10 bg-gradient-to-br from-[#0D7377]/5 to-[#E8F6F6]/30 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-6">
+        <div className="p-8 sm:p-10 bg-linear-to-br from-[#0D7377]/5 to-[#E8F6F6]/30 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-6">
           <div className="flex items-center gap-5">
             <div className="w-14 h-14 rounded-2xl bg-[#0D7377] text-white flex items-center justify-center flex-shrink-0 shadow-lg shadow-[#0D7377]/30">
-              {results.length > 0 ? <CheckCircle size={28} /> : <Search size={28} />}
+              {results.length > 0 ? (
+                <CheckCircle size={28} />
+              ) : (
+                <Search size={28} />
+              )}
             </div>
             <div>
               <h2 className="text-xl sm:text-2xl font-black text-slate-800 tracking-tight">
@@ -503,17 +807,27 @@ function ResultsScreen({ answers, results, ineligibleCodes, onReset, onBack }: {
                   : "We couldn't find a match this time"}
               </h2>
               <div className="flex items-center gap-2 mt-1.5 flex-wrap">
-                <span className="text-[13px] font-bold text-slate-400">{answers.origin as string}</span>
+                <span className="text-[13px] font-bold text-slate-400">
+                  {answers.origin as string}
+                </span>
                 <ArrowRight size={14} className="text-slate-300" />
-                <span className="text-[13px] font-bold text-[#0D7377] px-2 py-0.5 rounded-md border border-[#0D7377]/20 bg-[#0D7377]/5">{answers.destination as string}</span>
+                <span className="text-[13px] font-bold text-[#0D7377] px-2 py-0.5 rounded-md border border-[#0D7377]/20 bg-[#0D7377]/5">
+                  {answers.destination as string}
+                </span>
               </div>
             </div>
           </div>
           <div className="flex items-center gap-3">
-            <button onClick={onBack} className="px-5 py-3 rounded-xl bg-white shadow-sm border border-slate-200 text-slate-600 font-bold text-sm hover:bg-slate-50 transition-all flex-shrink-0 flex items-center gap-2">
+            <button
+              onClick={onBack}
+              className="px-5 py-3 rounded-xl bg-white shadow-sm border border-slate-200 text-slate-600 font-bold text-sm hover:bg-slate-50 transition-all flex-shrink-0 flex items-center gap-2"
+            >
               <ChevronLeft size={16} /> Back
             </button>
-            <button onClick={onReset} className="px-5 py-3 rounded-xl bg-white shadow-sm border border-slate-200 text-slate-600 font-bold text-sm hover:bg-slate-50 transition-all flex-shrink-0">
+            <button
+              onClick={onReset}
+              className="px-5 py-3 rounded-xl bg-white shadow-sm border border-slate-200 text-slate-600 font-bold text-sm hover:bg-slate-50 transition-all flex-shrink-0"
+            >
               Start Over
             </button>
           </div>
@@ -523,7 +837,9 @@ function ResultsScreen({ answers, results, ineligibleCodes, onReset, onBack }: {
         {results.length > 0 && (
           <div className="px-8 sm:px-10 pt-6">
             <p className="text-[13px] text-slate-500 leading-relaxed bg-blue-50/50 border border-blue-100 rounded-xl p-4">
-              Based on your answers, these are the visa categories you may be eligible for. Tap on any card to see full details, requirements, processing times, and the forms you'll need.
+              Based on your answers, these are the visa categories you may be
+              eligible for. Tap on any card to see full details, requirements,
+              processing times, and the forms you'll need.
             </p>
           </div>
         )}
@@ -539,42 +855,66 @@ function ResultsScreen({ answers, results, ineligibleCodes, onReset, onBack }: {
                 Based on your answers, no visa category matched perfectly.
               </p>
               <p className="text-slate-500 text-[13px] max-w-sm mx-auto leading-relaxed">
-                This doesn't mean there's no path for you — immigration is complex. We strongly recommend consulting a licensed immigration attorney who can review your full situation.
+                This doesn't mean there's no path for you — immigration is
+                complex. We strongly recommend consulting a licensed immigration
+                attorney who can review your full situation.
               </p>
             </div>
-          ) : results.map((v) => {
-            // Pass countryData's officialSources to the card if needed, 
-            // but VisaResultCard doesn't use it.
-            // However, the Modal DOES use it, so we should merge it.
-            const destination = answers.destination as string;
-            const countryData = getCountryData(destination);
-            const visaWithSources = { ...v, countryId: countryData?.id, officialSources: countryData?.officialSources };
-            const countryNotes = countryData?.getCountryNotes?.(answers) || [];
-            
-            return (
-              <div key={v.code} className="relative group">
-                <div className="absolute -top-2 -right-2 z-10 transition-transform group-hover:translate-y-[-2px] group-hover:scale-105 duration-300">
-                  <span className="flex items-center gap-1 text-[9px] font-black uppercase tracking-tighter bg-[#0D7377] text-white px-2.5 py-1.5 rounded-lg shadow-lg shadow-[#0D7377]/30 border border-[#14A0A6]/50">
-                    <CheckCircle size={10} strokeWidth={3} /> Verified 2026
-                  </span>
+          ) : (
+            results.map((v) => {
+              // Pass countryData's officialSources to the card if needed,
+              // but VisaResultCard doesn't use it.
+              // However, the Modal DOES use it, so we should merge it.
+              const destination = answers.destination as string;
+              const countryData = getCountryData(destination);
+              const visaWithSources = {
+                ...v,
+                countryId: countryData?.id,
+                officialSources: countryData?.officialSources,
+              };
+              const countryNotes =
+                countryData?.getCountryNotes?.(answers) || [];
+
+              return (
+                <div key={v.code} className="relative group">
+                  <div className="absolute -top-2 -right-2 z-10 transition-transform group-hover:translate-y-[-2px] group-hover:scale-105 duration-300">
+                    <span className="flex items-center gap-1 text-[9px] font-black uppercase tracking-tighter bg-[#0D7377] text-white px-2.5 py-1.5 rounded-lg shadow-lg shadow-[#0D7377]/30 border border-[#14A0A6]/50">
+                      <CheckCircle size={10} strokeWidth={3} /> Verified 2026
+                    </span>
+                  </div>
+                  <VisaResultCard
+                    visa={v}
+                    onClick={() =>
+                      setModal({ visa: visaWithSources, notes: countryNotes })
+                    }
+                  />
                 </div>
-                <VisaResultCard visa={v} onClick={() => setModal({ visa: visaWithSources, notes: countryNotes })} />
-              </div>
-            );
-          })}
+              );
+            })
+          )}
         </div>
 
         {/* Did not qualify */}
         {ineligibleCodes.length > 0 && (
           <div className="px-8 sm:px-10 pb-6">
             <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200">
-              <p className="text-[11px] font-black uppercase tracking-widest text-slate-400 mb-3">Didn't qualify for these</p>
+              <p className="text-[11px] font-black uppercase tracking-widest text-slate-400 mb-3">
+                Didn't qualify for these
+              </p>
               <div className="flex flex-wrap gap-2">
                 {ineligibleCodes.map((code) => (
-                  <span key={code} className="text-[12px] font-semibold text-slate-400 bg-white border border-slate-200 px-3 py-1 rounded-full line-through">{code}</span>
+                  <span
+                    key={code}
+                    className="text-[12px] font-semibold text-slate-400 bg-white border border-slate-200 px-3 py-1 rounded-full line-through"
+                  >
+                    {code}
+                  </span>
                 ))}
               </div>
-              <p className="text-[11px] text-slate-400 mt-2">Based on your answers to the eligibility questions. A lawyer may find additional options.</p>
+              <p className="text-[11px] text-slate-400 mt-2">
+                Based on your answers to the eligibility questions. A lawyer may
+                find additional options.
+              </p>
             </div>
           </div>
         )}
@@ -588,18 +928,46 @@ function ResultsScreen({ answers, results, ineligibleCodes, onReset, onBack }: {
               if (data?.officialSources && data.officialSources.length > 0) {
                 return data.officialSources.map((s, i, arr) => (
                   <span key={s.url}>
-                    <a href={s.url} target="_blank" rel="noopener noreferrer" className="text-[#0D7377] underline">{s.label}</a>
+                    <a
+                      href={s.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-[#0D7377] underline"
+                    >
+                      {s.label}
+                    </a>
                     {i < arr.length - 1 ? " · " : ""}
                   </span>
                 ));
               }
               return (
                 <>
-                  <a href="https://www.uscis.gov" target="_blank" rel="noopener noreferrer" className="text-[#0D7377] underline">USCIS.gov</a>
+                  <a
+                    href="https://www.uscis.gov"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-[#0D7377] underline"
+                  >
+                    USCIS.gov
+                  </a>
                   {" · "}
-                  <a href="https://www.uscis.gov" target="_blank" rel="noopener noreferrer" className="text-[#0D7377] underline">USCIS.gov</a>
-                {" / "}
-                <a href="https://travel.state.gov" target="_blank" rel="noopener noreferrer" className="text-[#0D7377] underline">travel.state.gov</a>
+                  <a
+                    href="https://www.uscis.gov"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-[#0D7377] underline"
+                  >
+                    USCIS.gov
+                  </a>
+                  {" / "}
+                  <a
+                    href="https://travel.state.gov"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-[#0D7377] underline"
+                  >
+                    travel.state.gov
+                  </a>
                 </>
               );
             })()}
@@ -633,7 +1001,9 @@ export default function VisaExplorationTool() {
     setAnswersState((prev) => {
       let next = setNestedAnswer(prev, field, value);
       if (!field.startsWith("gateAnswers.")) {
-        (DOWNSTREAM_CLEAR_MAP[field] || []).forEach((k) => delete (next as any)[k]);
+        (DOWNSTREAM_CLEAR_MAP[field] || []).forEach(
+          (k) => delete (next as any)[k],
+        );
       }
       return next;
     });
@@ -650,20 +1020,40 @@ export default function VisaExplorationTool() {
   // Derive candidates separately so we can use it in the button condition
   const candidates = countryData ? countryData.getCandidateCodes(answers) : [];
 
-  const gatesDone = (countryData && candidates.length > 0)
-    ? allGateAnswered(answers, countryData.getCandidateCodes, countryData.gateQuestions)
-    : false;
+  const gatesDone =
+    countryData && candidates.length > 0
+      ? allGateAnswered(
+          answers,
+          countryData.getCandidateCodes,
+          countryData.gateQuestions,
+        )
+      : false;
 
-  const eligibleVisas = (gatesDone && countryData)
-    ? getEligibleVisas(answers, countryData.getCandidateCodes, countryData.gateQuestions, countryData.visas)
-    : [];
+  const eligibleVisas =
+    gatesDone && countryData
+      ? getEligibleVisas(
+          answers,
+          countryData.getCandidateCodes,
+          countryData.gateQuestions,
+          countryData.visas,
+        )
+      : [];
 
-  const ineligibleCodes = (gatesDone && countryData)
-    ? candidates.filter((code) => !evaluateGate(code, countryData.gateQuestions, (answers.gateAnswers || {})[code] || {}).eligible)
-    : [];
+  const ineligibleCodes =
+    gatesDone && countryData
+      ? candidates.filter(
+          (code) =>
+            !evaluateGate(
+              code,
+              countryData.gateQuestions,
+              (answers.gateAnswers || {})[code] || {},
+            ).eligible,
+        )
+      : [];
 
   const isLastStep = stepIndex >= steps.length - 1;
-  const progress = steps.length > 1 ? Math.round((stepIndex / (steps.length - 1)) * 100) : 3;
+  const progress =
+    steps.length > 1 ? Math.round((stepIndex / (steps.length - 1)) * 100) : 3;
   const currentPhase = getPhase(currentStep, stepIndex);
 
   // FIX: canSeeResults is true when:
@@ -678,31 +1068,47 @@ export default function VisaExplorationTool() {
     if (!isLastStep) setStepIndex((i) => i + 1);
   };
   const handleBack = () => {
-    if (showResults) { setShowResults(false); return; }
+    if (showResults) {
+      setShowResults(false);
+      return;
+    }
     setStepIndex((i) => Math.max(0, i - 1));
   };
-  const handleReset = () => { setAnswersState({}); setStepIndex(0); setShowResults(false); };
+  const handleReset = () => {
+    setAnswersState({});
+    setStepIndex(0);
+    setShowResults(false);
+  };
 
   if (currentStep?.isUnsupported && !showResults) {
     return (
-      <div className="w-full min-h-[80vh] flex items-center justify-center bg-transparent">
-        <UnsupportedScreen destination={destination} onChangeDestination={() => setStepIndex(1)} onReset={handleReset} />
+      <div className="w-full min-h-[40vh] flex items-center justify-center bg-transparent">
+        <UnsupportedScreen
+          destination={destination}
+          onChangeDestination={() => setStepIndex(1)}
+          onReset={handleReset}
+        />
       </div>
     );
   }
 
   if (showResults) {
     return (
-      <div className="w-full min-h-[80vh] flex items-center justify-center bg-transparent">
-        <ResultsScreen answers={answers} results={eligibleVisas} ineligibleCodes={ineligibleCodes} onReset={handleReset} onBack={handleBack} />
+      <div className="w-full flex items-center justify-center bg-transparent">
+        <ResultsScreen
+          answers={answers}
+          results={eligibleVisas}
+          ineligibleCodes={ineligibleCodes}
+          onReset={handleReset}
+          onBack={handleBack}
+        />
       </div>
     );
   }
 
   return (
-    <div className="w-full max-w-5xl flex flex-col items-center justify-center">
-      <div className="w-full bg-white/95 rounded-[2rem] flex flex-col shadow-2xl shadow-slate-200/50 border border-slate-100/50 overflow-hidden">
-
+    <div className="w-full flex flex-col items-center justify-center">
+      <div className="w-full bg-white/95 rounded-4xl flex flex-col shadow-2xl shadow-slate-200/50 border border-slate-100/50 overflow-hidden">
         {/* Header */}
         <div className="px-8 sm:px-10 pt-8 sm:pt-10 pb-6 shrink-0">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
@@ -714,7 +1120,9 @@ export default function VisaExplorationTool() {
                 <h1 className="text-xl font-black text-slate-800 tracking-tight">
                   Visa <span className="text-[#0D7377]">Explorer</span>
                 </h1>
-                <p className="text-[11px] text-slate-400 font-medium">Find the right visa for your journey</p>
+                <p className="text-[11px] text-slate-400 font-medium">
+                  Find the right visa for your journey
+                </p>
               </div>
             </div>
             <PhaseIndicator currentPhase={currentPhase} />
@@ -722,35 +1130,45 @@ export default function VisaExplorationTool() {
 
           {/* Progress bar */}
           <div className="h-1 w-full bg-slate-100 rounded-full overflow-hidden">
-            <motion.div layout className="h-full bg-gradient-to-r from-[#0D7377] to-[#14A0A6] rounded-full"
-              initial={{ width:0 }} animate={{ width:`${Math.max(progress, 3)}%` }}
-              transition={{ duration:0.5, ease:"circOut" }} />
+            <motion.div
+              layout
+              className="h-full bg-gradient-to-r from-[#0D7377] to-[#14A0A6] rounded-full"
+              initial={{ width: 0 }}
+              animate={{ width: `${Math.max(progress, 3)}%` }}
+              transition={{ duration: 0.5, ease: "circOut" }}
+            />
           </div>
         </div>
 
         {/* Content */}
         <div className="flex-1 px-8 sm:px-10 pb-4">
           <AnimatePresence mode="wait">
-            <motion.div key={currentStep?.id || stepIndex}
-              initial={{ opacity:0, y:12 }}
-              animate={{ opacity:1, y:0 }}
-              exit={{ opacity:0, y:-8 }}
-              transition={{ duration:0.25, ease:"easeOut" }}
-              className="max-w-2xl mx-auto py-2">
-
+            <motion.div
+              key={currentStep?.id || stepIndex}
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -8 }}
+              transition={{ duration: 0.25, ease: "easeOut" }}
+              className="mx-auto py-2"
+            >
               <div className="mb-7">
                 <h2 className="text-2xl sm:text-3xl font-black text-slate-800 mb-3 tracking-tight leading-tight">
                   {currentStep?.title}
                 </h2>
-                {currentStep?.subtitle && currentStep.type !== "gate_question" && (
-                  <p className="text-slate-500 text-[14px] sm:text-[15px] leading-relaxed font-medium">
-                    {currentStep.subtitle}
-                  </p>
-                )}
+                {currentStep?.subtitle &&
+                  currentStep.type !== "gate_question" && (
+                    <p className="text-slate-500 text-[14px] sm:text-[15px] leading-relaxed font-medium">
+                      {currentStep.subtitle}
+                    </p>
+                  )}
               </div>
 
               <div className="w-full">
-                <StepContent step={currentStep} answers={answers} onAnswer={handleAnswer} />
+                <StepContent
+                  step={currentStep}
+                  answers={answers}
+                  onAnswer={handleAnswer}
+                />
               </div>
             </motion.div>
           </AnimatePresence>
@@ -760,33 +1178,42 @@ export default function VisaExplorationTool() {
         <div className="px-8 py-6 shrink-0 bg-slate-50/80 border-t border-slate-100 flex items-center justify-between gap-4">
           <div>
             {stepIndex > 0 && (
-              <button onClick={handleBack}
-                className="flex items-center gap-2 text-[13px] font-bold text-slate-400 hover:text-slate-600 transition-colors py-2 px-3 rounded-lg hover:bg-white">
+              <button
+                onClick={handleBack}
+                className="flex items-center gap-2 text-[13px] font-bold text-slate-400 hover:text-slate-600 transition-colors py-2 px-3 rounded-lg hover:bg-white"
+              >
                 <ChevronLeft size={16} /> Back
               </button>
             )}
           </div>
           <div className="flex items-center gap-3">
             {stepIndex > 2 && (
-              <button onClick={handleReset}
-                className="text-[12px] font-bold text-slate-400 hover:text-red-500 transition-colors py-2 px-3 rounded-lg hover:bg-white">
+              <button
+                onClick={handleReset}
+                className="text-[12px] font-bold text-slate-400 hover:text-red-500 transition-colors py-2 px-3 rounded-lg hover:bg-white"
+              >
                 Start over
               </button>
             )}
             {/* FIX: was `isLastStep && gatesDone` — now uses `canSeeResults`
                 which also handles no-candidate paths (CHILD, PARENT, etc.)   */}
             {isLastStep && canSeeResults ? (
-              <button onClick={() => setShowResults(true)}
-                className="py-3.5 px-7 rounded-xl bg-[#0D7377] text-white font-bold text-[14px] hover:bg-[#0A5A5D] shadow-lg shadow-[#0D7377]/20 transition-all flex items-center gap-2.5">
+              <button
+                onClick={() => setShowResults(true)}
+                className="py-3.5 px-7 rounded-xl bg-[#0D7377] text-white font-bold text-[14px] hover:bg-[#0A5A5D] shadow-lg shadow-[#0D7377]/20 transition-all flex items-center gap-2.5"
+              >
                 See My Results
               </button>
             ) : (
-              <button onClick={handleNext} disabled={!currentStep?.canProceed}
+              <button
+                onClick={handleNext}
+                disabled={!currentStep?.canProceed}
                 className={`py-3.5 px-7 rounded-xl font-bold text-[14px] transition-all flex items-center gap-2.5 ${
                   currentStep?.canProceed
                     ? "bg-[#0D7377] text-white shadow-lg shadow-[#0D7377]/20 hover:bg-[#0A5A5D]"
                     : "bg-slate-200 text-slate-400 cursor-not-allowed"
-                }`}>
+                }`}
+              >
                 Continue <ChevronRight size={16} />
               </button>
             )}

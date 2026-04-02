@@ -145,7 +145,8 @@ export function PDFUpload() {
                   {t("pdfProcessing.editor.successUpload")}
                 </p>
                 <p className="text-sm text-gray-500">
-                  {formatBytes(result.originalSize)} • {result.totalPages} {t("pdfProcessing.merge.pages")}
+                  {formatBytes(result.originalSize)} • {result.totalPages}{" "}
+                  {t("pdfProcessing.merge.pages")}
                 </p>
                 <p className="text-xs text-gray-400 mt-2">
                   {t("pdfProcessing.compress.changeFile")}
@@ -168,12 +169,10 @@ export function PDFUpload() {
         <Button
           onClick={handleButtonClick}
           disabled={loading}
-          className="w-full bg-primary/90 text-white py-4 rounded-xl font-semibold text-lg hover:bg-primary disabled:bg-gray-400 disabled:cursor-not-allowed transition-all flex items-center justify-center shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+          className="w-full lg:w-1/2 lg:mx-auto bg-primary/90 text-white py-4 lg:py-7 rounded-xl font-semibold text-lg hover:bg-primary disabled:bg-gray-400 disabled:cursor-not-allowed transition-all flex items-center justify-center shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
         >
           {loading ? (
-            <>
-              <Loader size="sm" text={t("pdfProcessing.editor.loading")} />
-            </>
+            <>{t("pdfProcessing.editor.loading")}</>
           ) : (
             <>
               <Upload className="mr-2 h-6 w-6" />
@@ -214,7 +213,9 @@ export function PDFUpload() {
                 </p>
               </div>
               <div className="bg-white p-4 rounded-lg shadow-sm">
-                <p className="text-gray-500 text-xs font-medium mb-1">{t("pdfProcessing.merge.pages")}</p>
+                <p className="text-gray-500 text-xs font-medium mb-1">
+                  {t("pdfProcessing.merge.pages")}
+                </p>
                 <p className="text-gray-800 font-bold text-xl">
                   {result.totalPages}
                 </p>

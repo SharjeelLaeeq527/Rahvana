@@ -75,25 +75,30 @@ export default function AnalyticsDashboard() {
     { value: "last-year", label: "Last year" },
   ];
 
-  const fetchAnalytics = React.useCallback(async (isRefresh = false) => {
-    try {
-      if (!isRefresh) setLoading(true);
-      setIsRefreshing(true);
-      
-      // Use cache-busting timestamp to ensure fresh data
-      const res = await fetch(`/api/analytics?period=${period}&t=${Date.now()}`);
-      if (!res.ok) throw new Error("Failed to fetch analytics");
-      
-      const json = await res.json();
-      setData(json);
-      setLastUpdated(new Date());
-    } catch (err: any) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
-      setIsRefreshing(false);
-    }
-  }, [period]);
+  const fetchAnalytics = React.useCallback(
+    async (isRefresh = false) => {
+      try {
+        if (!isRefresh) setLoading(true);
+        setIsRefreshing(true);
+
+        // Use cache-busting timestamp to ensure fresh data
+        const res = await fetch(
+          `/api/analytics?period=${period}&t=${Date.now()}`,
+        );
+        if (!res.ok) throw new Error("Failed to fetch analytics");
+
+        const json = await res.json();
+        setData(json);
+        setLastUpdated(new Date());
+      } catch (err: any) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+        setIsRefreshing(false);
+      }
+    },
+    [period],
+  );
 
   useEffect(() => {
     fetchAnalytics();
@@ -155,8 +160,8 @@ export default function AnalyticsDashboard() {
     };
 
   return (
-    <div className="min-h-screen bg-background p-6 lg:p-10">
-      <div className="mx-auto max-w-7xl">
+    <div className="min-h-screen bg-background site-main-px site-main-py">
+      <div className="">
         {/* Header */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-10 gap-6">
           <div>
@@ -212,29 +217,37 @@ export default function AnalyticsDashboard() {
                 onClick={() => fetchAnalytics(true)}
                 disabled={isRefreshing}
               >
-                <Clock className={`h-4 w-4 text-teal-600 ${isRefreshing ? "animate-spin" : ""}`} />
+                <Clock
+                  className={`h-4 w-4 text-teal-600 ${isRefreshing ? "animate-spin" : ""}`}
+                />
               </Button>
             </div>
 
             {/* Live Indicator */}
-            <div 
+            <div
               className={cn(
                 "flex items-center gap-3 border px-4 py-3 rounded-2xl transition-all duration-500",
-                isRefreshing ? "bg-teal-100/50 border-teal-200 scale-[1.02]" : "bg-teal-50 border-teal-100"
+                isRefreshing
+                  ? "bg-teal-100/50 border-teal-200 scale-[1.02]"
+                  : "bg-teal-50 border-teal-100",
               )}
             >
               <div className="relative flex h-3 w-3">
-                <span className={cn(
-                  "animate-ping absolute inline-flex h-full w-full rounded-full bg-teal-400 opacity-75",
-                  isRefreshing && "animate-none"
-                )}></span>
+                <span
+                  className={cn(
+                    "animate-ping absolute inline-flex h-full w-full rounded-full bg-teal-400 opacity-75",
+                    isRefreshing && "animate-none",
+                  )}
+                ></span>
                 <span className="relative inline-flex rounded-full h-3 w-3 bg-teal-500"></span>
               </div>
               <div className="flex flex-col">
-                <span className={cn(
-                  "text-2xl font-bold text-teal-900 leading-none transition-all",
-                  isRefreshing ? "opacity-50 blur-[1px]" : "opacity-100"
-                )}>
+                <span
+                  className={cn(
+                    "text-2xl font-bold text-teal-900 leading-none transition-all",
+                    isRefreshing ? "opacity-50 blur-[1px]" : "opacity-100",
+                  )}
+                >
                   {data?.realtime.activeUsers || "0"}
                 </span>
                 <span className="text-xs font-semibold text-teal-700 uppercase tracking-wider mt-0.5">
@@ -251,7 +264,7 @@ export default function AnalyticsDashboard() {
           </div>
         ) : error ? (
           <div className="py-20 flex flex-col items-center justify-center bg-background">
-            <Card className="max-w-md w-full border-red-200 bg-red-50">
+            <Card className="max-w-md xl:max-w-lg w-full border-red-200 bg-red-50">
               <CardHeader>
                 <CardTitle className="text-red-700 flex items-center gap-2">
                   Error Fetching Analytics

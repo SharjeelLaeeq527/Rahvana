@@ -251,312 +251,326 @@ const BasicInfoStep = ({
       </div>
 
       <div className="space-y-6">
-        {isAMC && (
-          <>
-            <div className="space-y-2">
-              <Label htmlFor="interviewDate">
-                {t("bookAppointment.basicInfoStep.interviewDate")}
-              </Label>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {isAMC && (
+            <>
+              <div className="space-y-2">
+                <Label htmlFor="interviewDate">
+                  {t("bookAppointment.basicInfoStep.interviewDate")}
+                </Label>
+                <Input
+                  id="interviewDate"
+                  name="interviewDate"
+                  type="date"
+                  value={formData.interviewDate}
+                  onChange={onChange}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="visaCategory">
+                  {t("bookAppointment.basicInfoStep.visaCategory")}
+                </Label>
+                <Select
+                  value={formData.visaCategory}
+                  onValueChange={onSelectChange("visaCategory")}
+                >
+                  <SelectTrigger id="visaCategory">
+                    <SelectValue
+                      placeholder={t(
+                        "bookAppointment.basicInfoStep.selectVisaCategory",
+                      )}
+                    />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Immigrant Visa">
+                      {t(
+                        "bookAppointment.basicInfoStep.visaCategories.immigrant",
+                      )}
+                    </SelectItem>
+                    <SelectItem value="Non-immigrant Visa">
+                      {t(
+                        "bookAppointment.basicInfoStep.visaCategories.nonImmigrant",
+                      )}
+                    </SelectItem>
+                    <SelectItem value="K-1 Fiance Visa">
+                      {t(
+                        "bookAppointment.basicInfoStep.visaCategories.k1Fiance",
+                      )}
+                    </SelectItem>
+                    <SelectItem value="Student Visa">
+                      {t(
+                        "bookAppointment.basicInfoStep.visaCategories.student",
+                      )}
+                    </SelectItem>
+                    <SelectItem value="Work Visa">
+                      {t("bookAppointment.basicInfoStep.visaCategories.work")}
+                    </SelectItem>
+                    <SelectItem value="Tourist Visa">
+                      {t(
+                        "bookAppointment.basicInfoStep.visaCategories.tourist",
+                      )}
+                    </SelectItem>
+                    <SelectItem value="Other">
+                      {t("bookAppointment.basicInfoStep.visaCategories.other")}
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="hadMedicalBefore">
+                  {t("bookAppointment.basicInfoStep.hadMedicalBefore")}
+                </Label>
+                <Select
+                  value={formData.hadMedicalBefore}
+                  onValueChange={onSelectChange("hadMedicalBefore")}
+                >
+                  <SelectTrigger>
+                    <SelectValue
+                      placeholder={t(
+                        "bookAppointment.basicInfoStep.selectYesNo",
+                      )}
+                    />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Yes">
+                      {t("bookAppointment.basicInfoStep.yes")}
+                    </SelectItem>
+                    <SelectItem value="No">
+                      {t("bookAppointment.basicInfoStep.no")}
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </>
+          )}
+
+          <div className="space-y-2">
+            <Label htmlFor="primaryContact">
+              {t("bookAppointment.basicInfoStep.mobileNo")}
+            </Label>
+            <div className="flex gap-2">
+              <div className="flex items-center justify-center w-24 px-3 py-2 border border-gray-300 rounded-md bg-gray-50 text-sm font-medium">
+                🇵🇰 92
+              </div>
               <Input
-                id="interviewDate"
-                name="interviewDate"
-                type="date"
-                value={formData.interviewDate}
+                id="primaryContact"
+                name="primaryContact"
+                value={formData.primaryContact}
                 onChange={onChange}
+                placeholder="3001234567"
+                type="tel"
+                className="flex-1"
               />
             </div>
+          </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="visaCategory">
-                {t("bookAppointment.basicInfoStep.visaCategory")}
-              </Label>
-              <Select
-                value={formData.visaCategory}
-                onValueChange={onSelectChange("visaCategory")}
-              >
-                <SelectTrigger id="visaCategory">
-                  <SelectValue
-                    placeholder={t(
-                      "bookAppointment.basicInfoStep.selectVisaCategory",
-                    )}
-                  />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="Immigrant Visa">
-                    {t(
-                      "bookAppointment.basicInfoStep.visaCategories.immigrant",
-                    )}
-                  </SelectItem>
-                  <SelectItem value="Non-immigrant Visa">
-                    {t(
-                      "bookAppointment.basicInfoStep.visaCategories.nonImmigrant",
-                    )}
-                  </SelectItem>
-                  <SelectItem value="K-1 Fiance Visa">
-                    {t("bookAppointment.basicInfoStep.visaCategories.k1Fiance")}
-                  </SelectItem>
-                  <SelectItem value="Student Visa">
-                    {t("bookAppointment.basicInfoStep.visaCategories.student")}
-                  </SelectItem>
-                  <SelectItem value="Work Visa">
-                    {t("bookAppointment.basicInfoStep.visaCategories.work")}
-                  </SelectItem>
-                  <SelectItem value="Tourist Visa">
-                    {t("bookAppointment.basicInfoStep.visaCategories.tourist")}
-                  </SelectItem>
-                  <SelectItem value="Other">
-                    {t("bookAppointment.basicInfoStep.visaCategories.other")}
-                  </SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="hadMedicalBefore">
-                {t("bookAppointment.basicInfoStep.hadMedicalBefore")}
-              </Label>
-              <Select
-                value={formData.hadMedicalBefore}
-                onValueChange={onSelectChange("hadMedicalBefore")}
-              >
-                <SelectTrigger>
-                  <SelectValue
-                    placeholder={t("bookAppointment.basicInfoStep.selectYesNo")}
-                  />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="Yes">
-                    {t("bookAppointment.basicInfoStep.yes")}
-                  </SelectItem>
-                  <SelectItem value="No">
-                    {t("bookAppointment.basicInfoStep.no")}
-                  </SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </>
-        )}
-
-        <div className="space-y-2">
-          <Label htmlFor="primaryContact">
-            {t("bookAppointment.basicInfoStep.mobileNo")}
-          </Label>
-          <div className="flex gap-2">
-            <div className="flex items-center justify-center w-24 px-3 py-2 border border-gray-300 rounded-md bg-gray-50 text-sm font-medium">
-              🇵🇰 92
-            </div>
+          <div className="space-y-2">
+            <Label htmlFor="email">
+              {t("bookAppointment.basicInfoStep.email")}
+            </Label>
             <Input
-              id="primaryContact"
-              name="primaryContact"
-              value={formData.primaryContact}
+              id="email"
+              name="email"
+              type="email"
+              value={formData.email}
               onChange={onChange}
-              placeholder="3001234567"
-              type="tel"
-              className="flex-1"
+              placeholder="abc@gmail.com"
             />
           </div>
-        </div>
 
-        <div className="space-y-2">
-          <Label htmlFor="email">
-            {t("bookAppointment.basicInfoStep.email")}
-          </Label>
-          <Input
-            id="email"
-            name="email"
-            type="email"
-            value={formData.email}
-            onChange={onChange}
-            placeholder="abc@gmail.com"
-          />
-        </div>
+          {isAMC && (
+            <>
+              <div className="space-y-2">
+                <Label htmlFor="city">
+                  {t("bookAppointment.basicInfoStep.city")}
+                </Label>
+                <Input
+                  id="city"
+                  name="city"
+                  value={formData.city}
+                  onChange={onChange}
+                  placeholder={t("bookAppointment.basicInfoStep.enterCity")}
+                />
+              </div>
 
-        {isAMC && (
-          <>
-            <div className="space-y-2">
-              <Label htmlFor="city">
-                {t("bookAppointment.basicInfoStep.city")}
-              </Label>
-              <Input
-                id="city"
-                name="city"
-                value={formData.city}
-                onChange={onChange}
-                placeholder={t("bookAppointment.basicInfoStep.enterCity")}
-              />
-            </div>
+              <div className="space-y-2">
+                <Label htmlFor="caseRef">
+                  {t("bookAppointment.basicInfoStep.caseRef")}
+                </Label>
+                <Input
+                  id="caseRef"
+                  name="caseRef"
+                  value={formData.caseRef}
+                  onChange={onChange}
+                  placeholder={t("bookAppointment.basicInfoStep.enterCaseRef")}
+                />
+              </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="caseRef">
-                {t("bookAppointment.basicInfoStep.caseRef")}
-              </Label>
-              <Input
-                id="caseRef"
-                name="caseRef"
-                value={formData.caseRef}
-                onChange={onChange}
-                placeholder={t("bookAppointment.basicInfoStep.enterCaseRef")}
-              />
-            </div>
+              <div className="space-y-2">
+                <Label htmlFor="numberOfApplicants">
+                  {t("bookAppointment.basicInfoStep.numberOfApplicants")}
+                </Label>
+                <Select
+                  value={formData.numberOfApplicants}
+                  onValueChange={onSelectChange("numberOfApplicants")}
+                >
+                  <SelectTrigger>
+                    <SelectValue
+                      placeholder={t(
+                        "bookAppointment.basicInfoStep.selectNumber",
+                      )}
+                    />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((num) => (
+                      <SelectItem key={num} value={num.toString()}>
+                        {num}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </>
+          )}
 
-            <div className="space-y-2">
-              <Label htmlFor="numberOfApplicants">
-                {t("bookAppointment.basicInfoStep.numberOfApplicants")}
-              </Label>
-              <Select
-                value={formData.numberOfApplicants}
-                onValueChange={onSelectChange("numberOfApplicants")}
-              >
-                <SelectTrigger>
-                  <SelectValue
-                    placeholder={t(
-                      "bookAppointment.basicInfoStep.selectNumber",
-                    )}
-                  />
-                </SelectTrigger>
-                <SelectContent>
-                  {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((num) => (
-                    <SelectItem key={num} value={num.toString()}>
-                      {num}
+          {isWilcare && (
+            <>
+              <div className="space-y-2">
+                <Label htmlFor="appointmentType">
+                  {t("bookAppointment.basicInfoStep.appointmentType")}
+                </Label>
+                <Select
+                  value={formData.appointmentType}
+                  onValueChange={onSelectChange("appointmentType")}
+                >
+                  <SelectTrigger>
+                    <SelectValue
+                      placeholder={t(
+                        "bookAppointment.basicInfoStep.selectAppointmentType",
+                      )}
+                    />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Individual">
+                      {t(
+                        "bookAppointment.basicInfoStep.appointmentTypes.individual",
+                      )}
                     </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          </>
-        )}
+                    <SelectItem value="Family">
+                      {t(
+                        "bookAppointment.basicInfoStep.appointmentTypes.family",
+                      )}
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
 
-        {isWilcare && (
-          <>
-            <div className="space-y-2">
-              <Label htmlFor="appointmentType">
-                {t("bookAppointment.basicInfoStep.appointmentType")}
-              </Label>
-              <Select
-                value={formData.appointmentType}
-                onValueChange={onSelectChange("appointmentType")}
-              >
-                <SelectTrigger>
-                  <SelectValue
-                    placeholder={t(
-                      "bookAppointment.basicInfoStep.selectAppointmentType",
-                    )}
-                  />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="Individual">
-                    {t(
-                      "bookAppointment.basicInfoStep.appointmentTypes.individual",
-                    )}
-                  </SelectItem>
-                  <SelectItem value="Family">
-                    {t("bookAppointment.basicInfoStep.appointmentTypes.family")}
-                  </SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+              <div className="space-y-2">
+                <Label htmlFor="visaType">
+                  {t("bookAppointment.basicInfoStep.visaType")}
+                </Label>
+                <Select
+                  value={formData.visaType}
+                  onValueChange={onSelectChange("visaType")}
+                >
+                  <SelectTrigger id="visaType">
+                    <SelectValue
+                      placeholder={t(
+                        "bookAppointment.basicInfoStep.selectVisaType",
+                      )}
+                    />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="B-2">
+                      {t("bookAppointment.basicInfoStep.visaTypes.b2")}
+                    </SelectItem>
+                    <SelectItem value="B-1/B-2">
+                      {t("bookAppointment.basicInfoStep.visaTypes.b1b2")}
+                    </SelectItem>
+                    <SelectItem value="F-1">
+                      {t("bookAppointment.basicInfoStep.visaTypes.f1")}
+                    </SelectItem>
+                    <SelectItem value="H-1B">
+                      {t("bookAppointment.basicInfoStep.visaTypes.h1b")}
+                    </SelectItem>
+                    <SelectItem value="K-1">
+                      {t("bookAppointment.basicInfoStep.visaTypes.k1")}
+                    </SelectItem>
+                    <SelectItem value="IR-1">
+                      {t("bookAppointment.basicInfoStep.visaTypes.ir1")}
+                    </SelectItem>
+                    <SelectItem value="CR-1">
+                      {t("bookAppointment.basicInfoStep.visaTypes.cr1")}
+                    </SelectItem>
+                    <SelectItem value="Other">
+                      {t("bookAppointment.basicInfoStep.visaTypes.other")}
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="visaType">
-                {t("bookAppointment.basicInfoStep.visaType")}
-              </Label>
-              <Select
-                value={formData.visaType}
-                onValueChange={onSelectChange("visaType")}
-              >
-                <SelectTrigger id="visaType">
-                  <SelectValue
-                    placeholder={t(
-                      "bookAppointment.basicInfoStep.selectVisaType",
-                    )}
-                  />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="B-2">
-                    {t("bookAppointment.basicInfoStep.visaTypes.b2")}
-                  </SelectItem>
-                  <SelectItem value="B-1/B-2">
-                    {t("bookAppointment.basicInfoStep.visaTypes.b1b2")}
-                  </SelectItem>
-                  <SelectItem value="F-1">
-                    {t("bookAppointment.basicInfoStep.visaTypes.f1")}
-                  </SelectItem>
-                  <SelectItem value="H-1B">
-                    {t("bookAppointment.basicInfoStep.visaTypes.h1b")}
-                  </SelectItem>
-                  <SelectItem value="K-1">
-                    {t("bookAppointment.basicInfoStep.visaTypes.k1")}
-                  </SelectItem>
-                  <SelectItem value="IR-1">
-                    {t("bookAppointment.basicInfoStep.visaTypes.ir1")}
-                  </SelectItem>
-                  <SelectItem value="CR-1">
-                    {t("bookAppointment.basicInfoStep.visaTypes.cr1")}
-                  </SelectItem>
-                  <SelectItem value="Other">
-                    {t("bookAppointment.basicInfoStep.visaTypes.other")}
-                  </SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+              <div className="space-y-2">
+                <Label htmlFor="originalPassport">
+                  {t("bookAppointment.basicInfoStep.originalPassport")}
+                </Label>
+                <Select
+                  value={formData.originalPassport}
+                  onValueChange={onSelectChange("originalPassport")}
+                >
+                  <SelectTrigger>
+                    <SelectValue
+                      placeholder={t(
+                        "bookAppointment.basicInfoStep.originalPassportOptions.yes",
+                      )}
+                    />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="YES">
+                      {t(
+                        "bookAppointment.basicInfoStep.originalPassportOptions.yes",
+                      )}
+                    </SelectItem>
+                    <SelectItem value="NO">
+                      {t(
+                        "bookAppointment.basicInfoStep.originalPassportOptions.no",
+                      )}
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="originalPassport">
-                {t("bookAppointment.basicInfoStep.originalPassport")}
-              </Label>
-              <Select
-                value={formData.originalPassport}
-                onValueChange={onSelectChange("originalPassport")}
-              >
-                <SelectTrigger>
-                  <SelectValue
-                    placeholder={t(
-                      "bookAppointment.basicInfoStep.originalPassportOptions.yes",
-                    )}
-                  />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="YES">
-                    {t(
-                      "bookAppointment.basicInfoStep.originalPassportOptions.yes",
-                    )}
-                  </SelectItem>
-                  <SelectItem value="NO">
-                    {t(
-                      "bookAppointment.basicInfoStep.originalPassportOptions.no",
-                    )}
-                  </SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="medicalType">
-                {t("bookAppointment.basicInfoStep.medicalType")}
-              </Label>
-              <Select
-                value={formData.medicalType}
-                onValueChange={onSelectChange("medicalType")}
-              >
-                <SelectTrigger>
-                  <SelectValue
-                    placeholder={t(
-                      "bookAppointment.basicInfoStep.selectMedicalType",
-                    )}
-                  />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="First Medical">
-                    {t("bookAppointment.basicInfoStep.medicalTypes.first")}
-                  </SelectItem>
-                  <SelectItem value="Re-Medical">
-                    {t("bookAppointment.basicInfoStep.medicalTypes.reMedical")}
-                  </SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </>
-        )}
+              <div className="space-y-2">
+                <Label htmlFor="medicalType">
+                  {t("bookAppointment.basicInfoStep.medicalType")}
+                </Label>
+                <Select
+                  value={formData.medicalType}
+                  onValueChange={onSelectChange("medicalType")}
+                >
+                  <SelectTrigger>
+                    <SelectValue
+                      placeholder={t(
+                        "bookAppointment.basicInfoStep.selectMedicalType",
+                      )}
+                    />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="First Medical">
+                      {t("bookAppointment.basicInfoStep.medicalTypes.first")}
+                    </SelectItem>
+                    <SelectItem value="Re-Medical">
+                      {t(
+                        "bookAppointment.basicInfoStep.medicalTypes.reMedical",
+                      )}
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </>
+          )}
+        </div>
 
         {error && (
           <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
@@ -1363,56 +1377,58 @@ const ScheduleStep = ({
       </div>
 
       <div className="space-y-6">
-        <div className="space-y-2">
-          <Label htmlFor="estimatedCharges">
-            {t("bookAppointment.scheduleStep.estCharges")}
-          </Label>
-          <Input
-            id="estimatedCharges"
-            name="estimatedCharges"
-            value={formData.estimatedCharges}
-            onChange={onChange}
-            placeholder="97,458"
-          />
-        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="space-y-2">
+            <Label htmlFor="estimatedCharges">
+              {t("bookAppointment.scheduleStep.estCharges")}
+            </Label>
+            <Input
+              id="estimatedCharges"
+              name="estimatedCharges"
+              value={formData.estimatedCharges}
+              onChange={onChange}
+              placeholder="97,458"
+            />
+          </div>
 
-        <div className="space-y-2">
-          <Label htmlFor="preferredAppointmentDate">
-            {t("bookAppointment.scheduleStep.preferredDate")}
-          </Label>
-          <Input
-            id="preferredAppointmentDate"
-            name="preferredAppointmentDate"
-            type="date"
-            value={formData.preferredAppointmentDate}
-            onChange={onChange}
-          />
-        </div>
+          <div className="space-y-2">
+            <Label htmlFor="preferredAppointmentDate">
+              {t("bookAppointment.scheduleStep.preferredDate")}
+            </Label>
+            <Input
+              id="preferredAppointmentDate"
+              name="preferredAppointmentDate"
+              type="date"
+              value={formData.preferredAppointmentDate}
+              onChange={onChange}
+            />
+          </div>
 
-        <div className="space-y-2">
-          <Label htmlFor="preferredTime">
-            {t("bookAppointment.scheduleStep.time")}
-          </Label>
-          <Select
-            value={formData.preferredTime}
-            onValueChange={onSelectChange("preferredTime")}
-          >
-            <SelectTrigger>
-              <SelectValue
-                placeholder={t("bookAppointment.scheduleStep.selectTimeSlot")}
-              />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="08:00-08:30">08:00 AM - 08:30 AM</SelectItem>
-              <SelectItem value="08:30-09:00">08:30 AM - 09:00 AM</SelectItem>
-              <SelectItem value="09:00-09:30">09:00 AM - 09:30 AM</SelectItem>
-              <SelectItem value="09:30-10:00">09:30 AM - 10:00 AM</SelectItem>
-              <SelectItem value="10:00-10:30">10:00 AM - 10:30 AM</SelectItem>
-              <SelectItem value="10:30-11:00">10:30 AM - 11:00 AM</SelectItem>
-              <SelectItem value="11:00-11:30">11:00 AM - 11:30 AM</SelectItem>
-              <SelectItem value="11:30-12:00">11:30 AM - 12:00 PM</SelectItem>
-            </SelectContent>
-          </Select>
+          <div className="space-y-2">
+            <Label htmlFor="preferredTime">
+              {t("bookAppointment.scheduleStep.time")}
+            </Label>
+            <Select
+              value={formData.preferredTime}
+              onValueChange={onSelectChange("preferredTime")}
+            >
+              <SelectTrigger>
+                <SelectValue
+                  placeholder={t("bookAppointment.scheduleStep.selectTimeSlot")}
+                />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="08:00-08:30">08:00 AM - 08:30 AM</SelectItem>
+                <SelectItem value="08:30-09:00">08:30 AM - 09:00 AM</SelectItem>
+                <SelectItem value="09:00-09:30">09:00 AM - 09:30 AM</SelectItem>
+                <SelectItem value="09:30-10:00">09:30 AM - 10:00 AM</SelectItem>
+                <SelectItem value="10:00-10:30">10:00 AM - 10:30 AM</SelectItem>
+                <SelectItem value="10:30-11:00">10:30 AM - 11:00 AM</SelectItem>
+                <SelectItem value="11:00-11:30">11:00 AM - 11:30 AM</SelectItem>
+                <SelectItem value="11:30-12:00">11:30 AM - 12:00 PM</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
         </div>
 
         {error && (
@@ -2646,8 +2662,8 @@ export default function WilcareAppointmentForm() {
   };
 
   return (
-    <div className="min-h-screen bg-linear-to-br from-slate-50 to-slate-100 py-6 sm:py-12 px-2 sm:px-4">
-      <div className="max-w-4xl mx-auto">
+    <div className="bg-linear-to-br from-slate-50 to-slate-100 site-main-px site-main-py">
+      <div className="">
         <div className="mb-6 sm:mb-8 text-center">
           <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 mb-2">
             {t("bookAppointment.title")}

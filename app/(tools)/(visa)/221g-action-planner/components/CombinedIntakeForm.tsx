@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -2520,7 +2520,7 @@ export default function CombinedIntakeForm({
 
         <div className="flex flex-wrap items-center justify-between gap-4 border-t pt-2">
           <Button variant="outline" onClick={goBack}>
-            â† Back to Review
+            ← Back to Review
           </Button>
           <Button
             variant="outline"
@@ -2538,7 +2538,7 @@ export default function CombinedIntakeForm({
   // Main render
   // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   return (
-    <div className="w-full space-y-6 max-w-5xl mx-auto py-8">
+    <div className="w-full space-y-6">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div className="min-w-0 flex-1">
           <ProgressIndicator />
@@ -2668,7 +2668,7 @@ export default function CombinedIntakeForm({
                       value={embassySearchText}
                       onChange={(e) => handleEmbassyInputChange(e.target.value)}
                       onFocus={() => setShowEmbassySuggestions(true)}
-                      placeholder="Search embassy or countryâ€¦"
+                      placeholder="Search embassy or country"
                       className="pl-9 pr-9"
                     />
                     <ChevronDown

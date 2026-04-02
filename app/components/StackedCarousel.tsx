@@ -80,7 +80,7 @@ export const StackedCarousel = ({
   };
 
   return (
-    <div className="relative w-full max-w-4xl mx-auto h-[450px] md:h-112.5 flex items-center justify-center">
+    <div className="relative w-full mx-6 sm:mx-8 md:mx-12 2xl:mx-30 h-[450px] md:h-112.5 flex items-center justify-center">
       {/* Navigation Buttons */}
       <HydrationSafeButton
         onClick={handlePrev}
@@ -182,7 +182,10 @@ export const StackedCarousel = ({
                         : "text-rahvana-primary hover:bg-rahvana-primary-pale"
                     }`}
                   >
-                    {journey.live ? (t("homePage.carousel.startJourney") || "Start Journey") : (t("homePage.carousel.getEarlyAccess") || "Get Early Access")}
+                    {journey.live
+                      ? t("homePage.carousel.startJourney") || "Start Journey"
+                      : t("homePage.carousel.getEarlyAccess") ||
+                        "Get Early Access"}
                   </HydrationSafeButton>
                 </div>
               </motion.div>

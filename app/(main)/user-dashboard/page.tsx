@@ -151,8 +151,8 @@ const UserDashboard = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-[#f8fafa]">
-      <div className="max-w-275 mx-auto px-6 py-10">
+    <div className="bg-[#f8fafa]">
+      <div className="w-full site-main-px site-main-py">
         {/* Header */}
         <div className="mb-8">
           <div className="flex justify-center mb-2">
@@ -165,7 +165,7 @@ const UserDashboard = () => {
             Welcome back, {profile?.full_name || "Valued User"}!
           </h1>
 
-          <p className="text-[15px] text-[#67737e] max-w-lg">
+          <p className="text-[15px] text-[#67737e]">
             Track your immigration progress, manage requests, and access tools
             that help you prepare every step of your journey.
           </p>

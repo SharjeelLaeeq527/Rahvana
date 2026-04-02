@@ -208,11 +208,7 @@ export default function Form() {
               : "bg-primary hover:bg-primary/90 active:bg-primary/80"
           }`}
         >
-          {loading ? (
-            <Loader size="sm" text={t("visaChecker.form.checking")} />
-          ) : (
-            t("visaChecker.form.checkBtn")
-          )}
+          {loading ? t("visaChecker.form.checking") : t("visaChecker.form.checkBtn")}
         </button>
       </div>
     </div>

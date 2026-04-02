@@ -203,7 +203,11 @@ const JOURNEY_DETAILS: Record<string, Station[]> = {
       label: "Admission",
       summary: "Get Admission Letter",
       whatYouDo: "Apply to German universities and receive Zulassungsbescheid.",
-      uploadsNeeded: ["Admission letter", "Language certificates", "Transcripts"],
+      uploadsNeeded: [
+        "Admission letter",
+        "Language certificates",
+        "Transcripts",
+      ],
       pitfalls: ["Late application", "Missing certified translations"],
     },
     {
@@ -219,14 +223,20 @@ const JOURNEY_DETAILS: Record<string, Station[]> = {
       label: "Appointment",
       summary: "Embassy Visit",
       whatYouDo: "Book and attend visa interview at German Embassy.",
-      uploadsNeeded: ["Application form", "Passport", "Photos", "Proof of funds"],
+      uploadsNeeded: [
+        "Application form",
+        "Passport",
+        "Photos",
+        "Proof of funds",
+      ],
       pitfalls: ["Incomplete documents", "Interview performance"],
     },
     {
       key: "arrival",
       label: "Arrival",
       summary: "Register in DE",
-      whatYouDo: "Travel to Germany, register address, and get residence permit.",
+      whatYouDo:
+        "Travel to Germany, register address, and get residence permit.",
       uploadsNeeded: ["Registration certificate", "Enrollment certificate"],
       pitfalls: ["Missing deadlines", "Expired visa"],
     },
@@ -395,7 +405,8 @@ const JOURNEYS: Journey[] = [
     title: "Germany Student Visa",
     category: "Study",
     process: "Consular",
-    description: "National study visa for Germany. Requires university admission.",
+    description:
+      "National study visa for Germany. Requires university admission.",
     matchScore: 82,
     time: "4-8 mo",
     cost: "€11,208 (Blocked)",
@@ -1176,7 +1187,9 @@ export default function ExploreJourneys({
 
   const getTranslated = (journey: Journey, prop: keyof Journey): any => {
     if (prop === "quickRoadmap") {
-      const roadmap = t(`visaCategory.journeys.${journey.id}.quickRoadmap`, { returnObjects: true });
+      const roadmap = t(`visaCategory.journeys.${journey.id}.quickRoadmap`, {
+        returnObjects: true,
+      });
       return Array.isArray(roadmap) ? roadmap : journey.quickRoadmap;
     }
     const val = t(`visaCategory.journeys.${journey.id}.${prop}`);
@@ -1259,7 +1272,7 @@ export default function ExploreJourneys({
     <div className="w-full bg-slate-50/50 min-h-screen font-sans text-slate-800">
       {/* Filters Section */}
       <section className="top-0 z-20 bg-white/80 backdrop-blur-md border-b border-slate-200 shadow-sm py-4">
-        <div className="container mx-auto px-4 md:px-6">
+        <div className="site-main-px">
           <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-6">
             <h3 className="text-lg font-semibold text-slate-800 flex items-center gap-2">
               <Search className="w-5 h-5 text-primary" />
@@ -1273,8 +1286,16 @@ export default function ExploreJourneys({
             onOpenChange={setIsCompareModalOpen}
           >
             <DialogContent className="max-h-[85vh] overflow-y-auto w-[95%] max-w-4xl p-4 md:p-6 rounded-xl gap-4">
+              <button
+                onClick={() => setIsCompareModalOpen(false)}
+                className="absolute right-4 top-4 rounded-full p-2 hover:bg-slate-100 transition-colors z-50 text-slate-500"
+              >
+                <X className="w-5 h-5" />
+              </button>
               <DialogHeader>
-                <DialogTitle className="pr-8">{t("visaCategory.journeyComparison")}</DialogTitle>
+                <DialogTitle className="pr-12">
+                  {t("visaCategory.journeyComparison")}
+                </DialogTitle>
                 <DialogDescription className="sr-only">
                   {t("visaCategory.journeyComparisonDesc")}
                 </DialogDescription>
@@ -1305,7 +1326,9 @@ export default function ExploreJourneys({
                             key={id}
                             className="py-4 px-4 font-bold text-slate-900 min-w-50"
                           >
-                            {journey ? getTranslated(journey, "title") : t("visaCategory.unknown")}
+                            {journey
+                              ? getTranslated(journey, "title")
+                              : t("visaCategory.unknown")}
                           </th>
                         );
                       })}
@@ -1393,8 +1416,14 @@ export default function ExploreJourneys({
             onOpenChange={setIsQuickRoadmapOpen}
           >
             <DialogContent className="w-[95%] max-w-2xl p-4 md:p-6 rounded-xl gap-4">
+              <button
+                onClick={() => setIsQuickRoadmapOpen(false)}
+                className="absolute right-4 top-4 rounded-full p-2 hover:bg-slate-100 transition-colors z-50 text-slate-500"
+              >
+                <X className="w-5 h-5" />
+              </button>
               <DialogHeader>
-                <DialogTitle className="pr-8">
+                <DialogTitle className="pr-12">
                   Quick Roadmap:{" "}
                   {highlightedJourney
                     ? JOURNEYS.find((j) => j.id === highlightedJourney)
@@ -1430,8 +1459,14 @@ export default function ExploreJourneys({
             onOpenChange={(open) => !open && setVideoModalJourney(null)}
           >
             <DialogContent className="w-[95%] max-w-2xl bg-white p-0 overflow-hidden rounded-xl">
+              <button
+                onClick={() => setVideoModalJourney(null)}
+                className="absolute right-4 top-4 rounded-full p-2 hover:bg-slate-100 transition-colors z-[60] text-slate-500 bg-white/80 backdrop-blur-sm"
+              >
+                <X className="w-5 h-5" />
+              </button>
               <DialogHeader className="p-6 pb-2">
-                <DialogTitle className="text-xl font-bold text-slate-900 pr-8">
+                <DialogTitle className="text-xl font-bold text-slate-900 pr-12">
                   {videoModalJourney?.introVideo?.title || "Journey Overview"}
                 </DialogTitle>
                 <DialogDescription className="sr-only">
@@ -1485,7 +1520,13 @@ export default function ExploreJourneys({
                   Help you determine the best visa category for your situation.
                 </DialogDescription>
               </DialogHeader>
-              <div className="w-full h-full bg-white rounded-xl overflow-hidden shadow-2xl">
+              <div className="w-full h-full bg-white rounded-xl overflow-hidden shadow-2xl relative">
+                <button
+                  onClick={() => setIsVisaWizardOpen(false)}
+                  className="absolute right-4 top-4 rounded-full p-2 hover:bg-slate-100 transition-colors z-[60] text-slate-500 bg-white/80 backdrop-blur-sm"
+                >
+                  <X className="w-5 h-5" />
+                </button>
                 <VisaEligibilityTool />
               </div>
             </DialogContent>
@@ -1498,9 +1539,13 @@ export default function ExploreJourneys({
                 {t("visaCategory.route")}
               </div>
               <div className="flex items-center gap-2 bg-slate-100 rounded-lg p-2 border border-slate-200 text-sm font-medium text-slate-700">
-                <span className="truncate">{origin || t("visaCategory.origin")}</span>
+                <span className="truncate">
+                  {origin || t("visaCategory.origin")}
+                </span>
                 <ArrowRight className="w-4 h-4 text-slate-400 shrink-0" />
-                <span className="truncate">{destination || t("visaCategory.destination")}</span>
+                <span className="truncate">
+                  {destination || t("visaCategory.destination")}
+                </span>
               </div>
             </div>
 
@@ -1581,7 +1626,9 @@ export default function ExploreJourneys({
                           : "text-slate-500 hover:text-slate-700",
                       )}
                     >
-                      {proc === "Consular" ? t("visaCategory.processes.Consular") : t("visaCategory.processes.Adjustment of Status")}
+                      {proc === "Consular"
+                        ? t("visaCategory.processes.Consular")
+                        : t("visaCategory.processes.Adjustment of Status")}
                     </button>
                   ))}
                 </div>
@@ -1602,13 +1649,12 @@ export default function ExploreJourneys({
       </section>
 
       {/* Main Content */}
-      <main className="container mx-auto px-4 md:px-6 py-8 grid grid-cols-1 lg:grid-cols-5 gap-8">
+      <main className="site-main-px py-8 grid grid-cols-1 lg:grid-cols-5 gap-8">
         {/* Journey Shelf */}
         <div className="lg:col-span-2 space-y-8 lg:h-[calc(100vh-180px)] lg:overflow-y-auto h-auto pr-3 pb-24 scroll-smooth">
           {bestMatches.length > 0 && (
             <div className="space-y-4">
               <div className="flex items-center gap-2">
-
                 <h2 className="text-xl font-bold text-slate-800">
                   {t("visaCategory.bestMatches")}
                 </h2>
@@ -1636,8 +1682,9 @@ export default function ExploreJourneys({
 
           <div className="space-y-4">
             <div className="flex items-center gap-2">
-
-              <h2 className="text-xl font-bold text-slate-800">{t("visaCategory.all")}</h2>
+              <h2 className="text-xl font-bold text-slate-800">
+                {t("visaCategory.all")}
+              </h2>
             </div>
             {otherJourneys.length > 0 ? (
               <div className="grid gap-4">
@@ -1873,13 +1920,21 @@ export default function ExploreJourneys({
 
                 {/* Footer Actions */}
                 <div className="p-6 border-t border-slate-100 flex items-center gap-3 bg-slate-50/50">
-                  {highlightedJourney && ["ir1", "ir5", "f1", "germany-student"].includes(highlightedJourney) ? (
-                    <Link href={`/visa-category/ir-category/${
-                      highlightedJourney === "ir1" ? "ir1-journey" : 
-                      highlightedJourney === "ir5" ? "ir5-journey" : 
-                      highlightedJourney === "f1" ? "f-1" : 
-                      highlightedJourney
-                    }`}>
+                  {highlightedJourney &&
+                  ["ir1", "ir5", "f1", "germany-student"].includes(
+                    highlightedJourney,
+                  ) ? (
+                    <Link
+                      href={`/visa-category/ir-category/${
+                        highlightedJourney === "ir1"
+                          ? "ir1-journey"
+                          : highlightedJourney === "ir5"
+                            ? "ir5-journey"
+                            : highlightedJourney === "f1"
+                              ? "f-1"
+                              : highlightedJourney
+                      }`}
+                    >
                       <Button className="bg-teal-700 hover:bg-teal-800 text-white shadow-sm shadow-teal-900/10 transition-all active:scale-95">
                         Start Journey
                       </Button>
@@ -1928,7 +1983,7 @@ export default function ExploreJourneys({
       {/* Compare Tray */}
       {selectedJourneys.length > 0 && (
         <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 animate-in slide-in-from-bottom-6 w-[92%] md:w-auto max-w-2xl">
-          <div className="bg-slate-900 text-white px-4 md:px-6 py-3 rounded-full shadow-2xl shadow-indigo-500/20 flex items-center justify-between md:justify-start gap-3 md:gap-6 border border-slate-800 w-full">
+          <div className="bg-slate-900 text-white px-4 md:px-6 py-3 rounded-full shadow-2xl shadow-primary/20 flex items-center justify-between md:justify-start gap-3 md:gap-6 border border-slate-800 w-full">
             <div className="flex items-center gap-2 md:gap-3">
               <span className="font-semibold text-sm md:text-base whitespace-nowrap">
                 {selectedJourneys.length}/3
@@ -1949,7 +2004,7 @@ export default function ExploreJourneys({
               <Button
                 size="sm"
                 onClick={() => setIsCompareModalOpen(true)}
-                className="bg-indigo-500 hover:bg-indigo-400 text-white rounded-full text-xs md:text-sm px-3 md:px-4"
+                className="bg-primary hover:bg-primary/90 text-white rounded-full text-xs md:text-sm px-3 md:px-4"
               >
                 Compare <span className="hidden sm:inline ml-1">Journeys</span>{" "}
                 <ArrowRight className="w-3 h-3 md:w-4 md:h-4 ml-1" />
@@ -2004,7 +2059,9 @@ function JourneyCard({
 
   const getTranslated = (prop: keyof Journey): any => {
     if (prop === "quickRoadmap") {
-      const roadmap = t(`visaCategory.journeys.${journey.id}.quickRoadmap`, { returnObjects: true });
+      const roadmap = t(`visaCategory.journeys.${journey.id}.quickRoadmap`, {
+        returnObjects: true,
+      });
       return Array.isArray(roadmap) ? roadmap : journey.quickRoadmap;
     }
     const val = t(`visaCategory.journeys.${journey.id}.${prop}`);
@@ -2030,13 +2087,15 @@ function JourneyCard({
               "px-3 py-1 rounded-full text-xs font-semibold bg-white border border-slate-200 text-slate-600",
             )}
           >
-            {t(`visaCategory.categories.${journey.category}`) || journey.category}
+            {t(`visaCategory.categories.${journey.category}`) ||
+              journey.category}
           </span>
           {journey.matchScore > 90 && (
             <span className="hidden md:block">
               {" "}
               <span className="text-xs font-bold text-emerald-600 bg-emerald-50 px-2 py-1 rounded-full border border-emerald-100 flex items-center gap-1 ">
-                <CheckCircle className="w-3 h-3 " /> {journey.matchScore}% {t("visaCategory.match") || "Match"}
+                <CheckCircle className="w-3 h-3 " /> {journey.matchScore}%{" "}
+                {t("visaCategory.match") || "Match"}
               </span>
             </span>
           )}
@@ -2045,7 +2104,9 @@ function JourneyCard({
             <span className="text-xs font-bold text-teal-700 bg-teal-50 px-2 py-1 rounded-full border border-teal-200 flex items-center gap-1">
               <Clock className="w-3 h-3" />
               {progressPercent !== undefined
-                ? t("visaCategory.completePercent", { percent: progressPercent.toString() })
+                ? t("visaCategory.completePercent", {
+                    percent: progressPercent.toString(),
+                  })
                 : t("visaCategory.inProgress")}
             </span>
           )}
@@ -2120,10 +2181,13 @@ function JourneyCard({
               hasProgress
                 ? "/my-journeys"
                 : `/visa-category/ir-category/${
-                    journey.id === "ir1" ? "ir1-journey" : 
-                    journey.id === "ir5" ? "ir5-journey" : 
-                    journey.id === "f1" ? "f-1" : 
-                    journey.id
+                    journey.id === "ir1"
+                      ? "ir1-journey"
+                      : journey.id === "ir5"
+                        ? "ir5-journey"
+                        : journey.id === "f1"
+                          ? "f-1"
+                          : journey.id
                   }`
             }
           >
@@ -2143,7 +2207,8 @@ function JourneyCard({
                 </>
               ) : hasProgress ? (
                 <>
-                  <ArrowRight className="w-4 h-4 mr-1" /> {t("visaCategory.resumeJourney")}
+                  <ArrowRight className="w-4 h-4 mr-1" />{" "}
+                  {t("visaCategory.resumeJourney")}
                 </>
               ) : (
                 t("visaCategory.startJourney")

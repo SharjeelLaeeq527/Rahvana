@@ -10,7 +10,7 @@ export function HomeSection({
 }) {
   return (
     <section id="home" className="block">
-      <div className="max-w-[1400px] mx-auto px-6 py-8 md:py-12">
+      <div className="w-full px-6 py-8 md:py-12">
         {/* Hero */}
         <div className="bg-linear-to-br from-[#0d9488]/10 to-[#f59e0b]/10 py-20 px-6 text-center rounded-xl mb-[60px]">
           <h1 className="text-3xl md:text-5xl font-extrabold text-slate-900 mb-4 leading-tight">
@@ -176,7 +176,7 @@ export function VisaCategorySection({
 }) {
   return (
     <section id="journeys" className="block">
-      <div className="max-w-[1400px] mx-auto px-6 py-8 md:py-12">
+      <div className="w-full px-6 py-8 md:py-12">
         <h1 className="text-[40px] font-bold mb-4">Visa Category</h1>
         <p className="text-slate-500 text-lg mb-12">
           Choose your visa type to start your guided journey.
@@ -287,7 +287,7 @@ export function ToolsSection() {
 
   return (
     <section id="tools" className="block">
-      <div className="max-w-[1400px] mx-auto px-6 py-8 md:py-12">
+      <div className="w-full px-6 py-8 md:py-12">
         <h1 className="text-[40px] font-bold mb-4">Immigration Tools</h1>
         <p className="text-slate-500 text-lg mb-12">
           Free technical tools to help you prepare your application documents.
@@ -343,7 +343,7 @@ export function ToolsSection() {
 export function PricingSection() {
   return (
     <section id="pricing" className="block">
-      <div className="max-w-[1400px] mx-auto px-6 py-8 md:py-12">
+      <div className="w-full px-6 py-8 md:py-12">
         <h1 className="text-[40px] font-bold mb-4 text-center">
           Plain Pricing
         </h1>
@@ -460,7 +460,7 @@ export function IR1JourneyDetail({
 }) {
   return (
     <section id="ir1-journey" className="block">
-      <div className="max-w-[1400px] mx-auto px-6 py-8 md:py-12">
+      <div className="w-full px-6 py-8 md:py-12">
         <div className="max-w-5xl mx-auto mb-12">
           <h1 className="text-5xl font-bold mb-4">
             IR-1/CR-1 Spouse Visa Journey

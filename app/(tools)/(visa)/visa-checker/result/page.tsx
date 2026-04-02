@@ -51,15 +51,15 @@ export default function ResultPage() {
 
   if (!result) {
     return (
-      <div className="text-center p-10">
+      <div className="text-center flex items-center justify-center p-10 min-h-[50vh]">
         <p>{t("visaChecker.result.noResult")}</p>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-blue-50 p-6">
-      <div className="max-w-2xl mx-auto">
+    <div className="bg-blue-50 site-main-px site-main-py">
+      <div className="max-w-2xl xl:max-w-4xl mx-auto">
         <Result data={result} />
       </div>
     </div>

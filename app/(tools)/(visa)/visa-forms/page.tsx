@@ -687,7 +687,7 @@ export default function VisaFormSelector() {
 
   return (
     <div className="min-h-screen bg-linear-to-br from-primary/10 via-white to-primary/5">
-      <div className="max-w-7xl mx-auto px-4 py-8 md:py-12 sm:px-6 lg:px-8">
+      <div className="site-main-px site-main-py">
         {/* Header */}
         <div className="text-center mb-8 md:mb-12">
           <div className="inline-flex items-center justify-center w-12 h-12 md:w-16 md:h-16 bg-primary/10 rounded-full mb-4">
@@ -739,7 +739,7 @@ export default function VisaFormSelector() {
         {/* Search & View Toggle Section */}
 
         {/* Content Grid */}
-        <div className="grid lg:grid-cols-[280px_1fr] gap-6 lg:gap-8 items-start mb-12">
+        <div className="grid lg:grid-cols-[280px_1fr] gap-6 lg:gap-8 items-start">
           {/* Sidebar Filters Mobile Backdrop */}
           {isMobileFiltersOpen && (
             <div

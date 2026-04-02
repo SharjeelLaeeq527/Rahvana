@@ -18,6 +18,9 @@ const config: Config = {
   			md: 'calc(var(--radius) - 2px)',
   			sm: 'calc(var(--radius) - 4px)'
   		},
+      spacing: {
+        '30': '7.5rem',
+      },
   		colors: {
   			background: 'var(--background)',
   			foreground: 'var(--foreground)',

@@ -351,8 +351,8 @@ function PoliceApplyContent() {
   };
 
   return (
-    <div className="min-h-screen w-full bg-[#f8fafc] flex flex-col items-center py-6 md:py-12 px-4">
-      <div className="w-full max-w-4xl bg-white rounded-3xl md:rounded-[2.5rem] shadow-2xl shadow-gray-200/50 overflow-hidden flex flex-col min-h-[700px] border border-gray-100">
+    <div className="w-full bg-[#f8fafc] flex flex-col items-center site-main-px site-main-py">
+      <div className="w-full bg-white rounded-3xl md:rounded-[2.5rem] shadow-2xl shadow-gray-200/50 overflow-hidden flex flex-col min-h-[700px] border border-gray-100">
         {/* Header */}
         <div className="p-6 md:p-8 pb-4 md:pb-6 border-b border-gray-100 bg-white/80 backdrop-blur-md sticky top-0 z-20">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 sm:gap-6 mb-6">

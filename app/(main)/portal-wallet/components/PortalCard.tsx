@@ -23,7 +23,7 @@ const PortalCard: React.FC<PortalCardProps> = ({
   iconHoverBgColor,
 }) => {
   return (
-    <div className="flex flex-col items-center bg-white rounded-2xl border border-[#e0f0f0] p-6 w-full max-w-85 hover:shadow-lg hover:border-[#0d7377]/30 transition-all duration-300 group">
+    <div className="flex flex-col items-center bg-white rounded-2xl border border-[#e0f0f0] p-6 w-full max-w-85 lg:max-w-100 hover:shadow-lg hover:border-[#0d7377]/30 transition-all duration-300 group">
       {/* Icon */}
       <div
         className={`w-16 h-16 rounded-2xl flex items-center justify-center mb-5 

@@ -121,7 +121,9 @@ export default function SettingsPage() {
 
   useEffect(() => {
     if (!isLoading && !user) {
-      router.push(`/login?redirectTo=${encodeURIComponent(window.location.pathname + window.location.search)}`);
+      router.push(
+        `/login?redirectTo=${encodeURIComponent(window.location.pathname + window.location.search)}`,
+      );
       return;
     }
 
@@ -183,7 +185,9 @@ export default function SettingsPage() {
 
   const handleSignOut = async () => {
     await signOut();
-    router.push(`/login?redirectTo=${encodeURIComponent(window.location.pathname + window.location.search)}`);
+    router.push(
+      `/login?redirectTo=${encodeURIComponent(window.location.pathname + window.location.search)}`,
+    );
   };
 
   const handleDeleteAccount = () => {
@@ -230,8 +234,8 @@ export default function SettingsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-linear-to-br from-slate-50 to-slate-100 pb-2 px-2 sm:p-4 md:p-6">
-      <div className="max-w-4xl mx-auto pb-2 sm:py-4 md:py-6">
+    <div className="min-h-screen bg-linear-to-br from-slate-50 to-slate-100 pb-2">
+      <div className="pb-2">
         <div className="mb-6 sm:mb-8">
           <h1 className="text-2xl sm:text-3xl font-bold text-slate-900">
             {t("pages.settings.title")}
@@ -471,17 +475,17 @@ export default function SettingsPage() {
       />
 
       <ConfirmationModal
-              open={confirmSignOutOpen}
-              onOpenChange={setConfirmSignOutOpen}
-              title="Sign Out?"
-              description="Are you sure you want to sign out? You will need to log in again to access your account."
-              cancelText="Cancel"
-              confirmText="Sign Out"
-              onConfirm={() => {
-                handleSignOut(); // Sign out
-                setConfirmSignOutOpen(false);
-              }}
-            />
+        open={confirmSignOutOpen}
+        onOpenChange={setConfirmSignOutOpen}
+        title="Sign Out?"
+        description="Are you sure you want to sign out? You will need to log in again to access your account."
+        cancelText="Cancel"
+        confirmText="Sign Out"
+        onConfirm={() => {
+          handleSignOut(); // Sign out
+          setConfirmSignOutOpen(false);
+        }}
+      />
     </div>
   );
 }
