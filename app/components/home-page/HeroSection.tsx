@@ -74,7 +74,7 @@ export function CinematicHero() {
             layout
             className={`z-10 shrink-0 overflow-hidden will-change-transform ${
               hasTransitioned
-                ? "relative h-[42svh] w-full max-h-[620px] sm:h-[48svh] md:h-[60vh] md:w-[60%] lg:h-[64vh] lg:w-[59%] md:rounded-r-[2.25rem] shadow-xl shadow-teal-900/5"
+                ? "relative h-[42svh] w-full max-h-[620px] rounded-[1.75rem] sm:h-[48svh] md:h-[60vh] md:w-[60%] md:rounded-r-[2.25rem] md:rounded-l-none lg:h-[64vh] lg:w-[59%] shadow-xl shadow-teal-900/5"
                 : "fixed inset-0 h-full w-full rounded-none shadow-none"
             }`}
             transition={{ layout: { duration: layoutDuration, ease: customEase } }}
@@ -114,7 +114,7 @@ export function CinematicHero() {
           </motion.div>
 
           <div
-            className={`relative z-20 mt-0 flex w-full flex-col items-start justify-center px-5 pb-3 text-left sm:px-7 md:w-[40%] md:justify-center md:pl-9 md:pr-6 md:pb-0 lg:w-[41%] lg:pl-11 lg:pr-7 xl:pl-13 xl:pr-8 ${
+            className={`relative z-20 mt-0 flex w-full flex-col items-center justify-center px-5 pb-4 text-center sm:px-7 sm:pb-5 md:w-[40%] md:items-start md:text-left md:justify-center md:pl-9 md:pr-6 md:pb-0 lg:w-[41%] lg:pl-11 lg:pr-7 xl:pl-13 xl:pr-8 ${
               hasTransitioned ? "block" : "hidden"
             }`}
           >
@@ -125,40 +125,40 @@ export function CinematicHero() {
                   animate={{ opacity: 1, x: 0 }}
                   exit={{ opacity: 0, x: 10, transition: { duration: 0.4, ease: "easeOut" } }}
                   transition={{ duration: 1.2, delay: 0.6, ease: customEase }}
-                  className="flex w-full max-w-[22rem] flex-col items-start sm:max-w-[24rem] md:max-w-[25rem] lg:max-w-[27rem] xl:max-w-[29rem]"
+                  className="flex w-full max-w-[42rem] flex-col items-center gap-y-6 sm:max-w-[48rem] sm:gap-y-7 md:max-w-[25rem] md:items-start md:gap-y-0 lg:max-w-[27rem] xl:max-w-[29rem]"
                 >
-                  <h2 className="mb-3 text-[1.55rem] font-bold leading-[1.1] tracking-tight text-[#71a1a1] sm:text-[1.75rem] md:mb-4 md:text-[2rem] lg:text-[2.25rem]">
+                  <h2 className="max-w-[20ch] text-center text-[1.2rem] font-bold leading-[1.1] tracking-tight text-[#71a1a1] sm:max-w-none sm:text-[1.4rem] sm:leading-[1.08] md:mb-4 md:text-left md:text-[1.85rem] lg:text-[2.25rem]">
                     Where could your life
                     <br />
                     go next?
                   </h2>
 
-                  <p className="mb-5 max-w-[34ch] text-[13px] leading-relaxed font-medium text-gray-500 sm:text-[14px] md:mb-6">
+                  <p className="max-w-[50ch] text-balance text-center text-[11px] leading-[1.8] font-medium text-gray-500 sm:max-w-[56ch] sm:text-[12px] sm:leading-relaxed md:mb-6 md:max-w-[34ch] md:text-left md:text-[14px]">
                     Navigate the complexities of immigration with confidence.
                     Rahvana provides step-by-step guidance, smart tools, and
                     expert support to help you reunite with loved ones.
                   </p>
 
-                  <div className="flex flex-wrap items-center gap-3">
+                  <div className="flex w-full flex-row flex-wrap items-center justify-center gap-3 pt-2 sm:justify-start sm:pt-0">
                     {user && (
                       <Link
                         href="/my-journeys"
-                        className="group inline-flex items-center justify-center gap-2 rounded-full border border-[#f4a8c4] bg-transparent py-2 pl-6 pr-3 text-[12px] font-bold uppercase tracking-wider text-[#f4a8c4] transition-transform duration-200 ease-out hover:-translate-y-0.5"
+                        className="group inline-flex w-fit whitespace-nowrap items-center justify-center gap-2 rounded-full border border-[#f4a8c4] bg-transparent px-4 py-2 text-[11px] font-bold uppercase tracking-wider text-[#f4a8c4] transition-transform duration-200 ease-out hover:-translate-y-0.5 sm:px-5 sm:text-[12px]"
                       >
                         {t("homePage.resumeJourney")}
-                        <span className="flex h-7 w-7 items-center justify-center rounded-full text-[#f4a8c4] transition-transform duration-200 ease-out group-hover:translate-x-0.5">
-                          <ArrowRight className="h-3.5 w-3.5 stroke-[3]" />
+                        <span className="flex h-5 w-5 flex-none items-center justify-center rounded-full text-[#f4a8c4] transition-transform duration-200 ease-out group-hover:translate-x-0.5 sm:h-6 sm:w-6">
+                          <ArrowRight className="h-3 w-3 stroke-[3]" />
                         </span>
                       </Link>
                     )}
 
                     <Link
                       href="/visa-category/ir-category"
-                      className="group inline-flex items-center justify-center gap-2 rounded-full bg-[#f4a8c4] py-2 pl-6 pr-3 text-[12px] font-bold uppercase tracking-wider text-white shadow-lg shadow-[#f4a8c4]/30 transition-all hover:bg-[#e89db8]"
+                      className="group inline-flex w-fit whitespace-nowrap items-center justify-center gap-2 rounded-full bg-[#f4a8c4] px-4 py-2 text-[11px] font-bold uppercase tracking-wider text-white shadow-lg shadow-[#f4a8c4]/30 transition-all hover:bg-[#e89db8] sm:px-5 sm:text-[12px]"
                     >
                       {t("homePage.exploreJourneys")}
-                      <span className="flex h-7 w-7 items-center justify-center rounded-full bg-white text-[#f4a8c4] transition-transform group-hover:scale-110">
-                        <ArrowUpRight className="h-3.5 w-3.5 stroke-[3]" />
+                      <span className="flex h-5 w-5 flex-none items-center justify-center rounded-full bg-white text-[#f4a8c4] transition-transform group-hover:scale-110 sm:h-6 sm:w-6">
+                        <ArrowUpRight className="h-3 w-3 stroke-[3]" />
                       </span>
                     </Link>
                   </div>
@@ -189,9 +189,9 @@ export function CinematicHero() {
                   journey, <span className="font-serif font-normal italic text-[#fdf0f4]">simplified.</span>
                 </h1>
 
-                <div className="mt-8 flex items-start gap-4 md:mt-10">
+                <div className="mt-8 flex items-start gap-4 md:mt-10 md:gap-5">
                   <div className="mt-1.5 h-10 w-[2px] rounded-t-full bg-gradient-to-b from-[#f4a8c4] to-transparent" />
-                  <p className="max-w-[28rem] text-[15px] font-light leading-[1.8] tracking-wide text-white/90 drop-shadow-md md:text-base">
+                  <p className="max-w-[22rem] text-[14px] font-light leading-[1.7] tracking-wide text-white/90 drop-shadow-md sm:max-w-[26rem] sm:text-[15px] sm:leading-[1.78] md:max-w-[28rem] md:text-base">
                     Bespoke residency and citizenship advisory. We handle the
                     intricacies of your international relocation with absolute
                     discretion and precision.
