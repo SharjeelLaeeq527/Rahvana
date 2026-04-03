@@ -62,7 +62,7 @@ export function CinematicHero() {
     <section className="relative min-h-screen overflow-x-hidden bg-[#FCFCFC] text-gray-900 selection:bg-teal-100 selection:text-teal-900">
       <div
         className={`relative flex min-h-screen items-center pb-8 md:pb-10 ${
-          hasTransitioned ? "pt-2 md:pt-3" : "pt-20"
+          hasTransitioned ? "pt-0 md:pt-3" : "pt-20"
         }`}
       >
         <div
@@ -74,7 +74,7 @@ export function CinematicHero() {
             layout
             className={`z-10 shrink-0 overflow-hidden will-change-transform ${
               hasTransitioned
-                ? "relative h-[42svh] w-full max-h-[620px] rounded-[1.75rem] sm:h-[48svh] md:h-[60vh] md:w-[60%] md:rounded-r-[2.25rem] md:rounded-l-none lg:h-[64vh] lg:w-[59%] shadow-xl shadow-teal-900/5"
+                ? "relative h-[42svh] w-full max-h-[620px] rounded-t-none rounded-b-[1.75rem] sm:h-[48svh] md:h-[60vh] md:w-[60%] md:rounded-r-[2.25rem] md:rounded-l-none lg:h-[64vh] lg:w-[59%] shadow-xl shadow-teal-900/5"
                 : "fixed inset-0 h-full w-full rounded-none shadow-none"
             }`}
             transition={{ layout: { duration: layoutDuration, ease: customEase } }}
@@ -114,7 +114,7 @@ export function CinematicHero() {
           </motion.div>
 
           <div
-            className={`relative z-20 mt-0 flex w-full flex-col items-center justify-center px-5 pb-4 text-center sm:px-7 sm:pb-5 md:w-[40%] md:items-start md:text-left md:justify-center md:pl-9 md:pr-6 md:pb-0 lg:w-[41%] lg:pl-11 lg:pr-7 xl:pl-13 xl:pr-8 ${
+            className={`relative z-20 mt-4 flex w-full flex-col items-center justify-center px-5 pb-4 text-center sm:mt-5 sm:px-7 sm:pb-5 md:mt-0 md:w-[40%] md:items-start md:text-left md:justify-center md:pl-9 md:pr-6 md:pb-0 lg:w-[41%] lg:pl-11 lg:pr-7 xl:pl-13 xl:pr-8 ${
               hasTransitioned ? "block" : "hidden"
             }`}
           >
@@ -143,22 +143,22 @@ export function CinematicHero() {
                     {user && (
                       <Link
                         href="/my-journeys"
-                        className="group inline-flex w-fit whitespace-nowrap items-center justify-center gap-2 rounded-full border border-[#f4a8c4] bg-transparent px-4 py-2 text-[11px] font-bold uppercase tracking-wider text-[#f4a8c4] transition-transform duration-200 ease-out hover:-translate-y-0.5 sm:px-5 sm:text-[12px]"
+                        className="group inline-flex w-fit whitespace-nowrap items-center justify-center gap-2 rounded-full border-2 border-[#f4a8c4] bg-white px-5 py-2.5 text-[12px] font-bold text-[#ea7fad] shadow-md shadow-[#f4a8c4]/15 transition-all duration-200 ease-out hover:-translate-y-0.5 hover:bg-[#fff4f9] sm:px-6 sm:py-3 sm:text-[13px]"
                       >
                         {t("homePage.resumeJourney")}
-                        <span className="flex h-5 w-5 flex-none items-center justify-center rounded-full text-[#f4a8c4] transition-transform duration-200 ease-out group-hover:translate-x-0.5 sm:h-6 sm:w-6">
-                          <ArrowRight className="h-3 w-3 stroke-[3]" />
+                        <span className="flex h-5 w-5 flex-none items-center justify-center rounded-full text-[#ea7fad] transition-transform duration-200 ease-out group-hover:translate-x-0.5 sm:h-6 sm:w-6">
+                          <ArrowRight className="h-3.5 w-3.5 stroke-[3]" />
                         </span>
                       </Link>
                     )}
 
                     <Link
                       href="/visa-category/ir-category"
-                      className="group inline-flex w-fit whitespace-nowrap items-center justify-center gap-2 rounded-full bg-[#f4a8c4] px-4 py-2 text-[11px] font-bold uppercase tracking-wider text-white shadow-lg shadow-[#f4a8c4]/30 transition-all hover:bg-[#e89db8] sm:px-5 sm:text-[12px]"
+                      className="group inline-flex w-fit whitespace-nowrap items-center justify-center gap-2 rounded-full bg-[#f4a8c4] px-5 py-2.5 text-[12px] font-bold text-white shadow-xl shadow-[#f4a8c4]/35 transition-all duration-200 ease-out hover:-translate-y-0.5 hover:bg-[#e89db8] sm:px-6 sm:py-3 sm:text-[13px]"
                     >
                       {t("homePage.exploreJourneys")}
                       <span className="flex h-5 w-5 flex-none items-center justify-center rounded-full bg-white text-[#f4a8c4] transition-transform group-hover:scale-110 sm:h-6 sm:w-6">
-                        <ArrowUpRight className="h-3 w-3 stroke-[3]" />
+                        <ArrowUpRight className="h-3.5 w-3.5 stroke-[3]" />
                       </span>
                     </Link>
                   </div>
