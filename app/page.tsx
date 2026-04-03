@@ -3,6 +3,7 @@
 import React, { useState, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
+import { motion as BannerMotion } from "motion/react";
 import * as Icons from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Wizard } from "./components/home-page/Wizard";
@@ -52,6 +53,167 @@ const renderWithAbbr = (text: string) => {
 const ALL_SERVICES = NAV_DATA.services.tabs.flatMap((tab) =>
   tab.items ? tab.items.map((item) => ({ ...item, category: tab.label })) : [],
 );
+
+const LiveBackground = () => {
+  return (
+    <div className="pointer-events-none absolute inset-0 z-0 size-full overflow-hidden">
+      <BannerMotion.div
+        className="absolute h-[260px] w-[260px] rounded-full mix-blend-screen opacity-20 sm:h-[500px] sm:w-[500px]"
+        style={{
+          backgroundColor: "#afdbdb",
+          filter: "blur(80px)",
+          top: "-10%",
+          left: "-12%",
+        }}
+        animate={{ scale: [1, 1.1, 1], opacity: [0.15, 0.25, 0.15] }}
+        transition={{ duration: 7, repeat: Infinity, ease: "easeInOut" }}
+      />
+      <BannerMotion.div
+        className="absolute h-[220px] w-[220px] rounded-full mix-blend-screen opacity-20 sm:h-[400px] sm:w-[400px]"
+        style={{
+          backgroundColor: "#db8090",
+          filter: "blur(80px)",
+          right: "-12%",
+          bottom: "-14%",
+        }}
+        animate={{ scale: [1, 1.2, 1], opacity: [0.1, 0.2, 0.1] }}
+        transition={{ duration: 8, repeat: Infinity, ease: "easeInOut", delay: 1 }}
+      />
+      <BannerMotion.div
+        className="absolute h-[160px] w-[160px] rounded-full mix-blend-screen opacity-10 sm:h-[300px] sm:w-[300px]"
+        style={{
+          backgroundColor: "#cdadcc",
+          filter: "blur(60px)",
+          left: "52%",
+          top: "12%",
+        }}
+        animate={{ scale: [1, 1.15, 1], opacity: [0.1, 0.2, 0.1] }}
+        transition={{ duration: 9, repeat: Infinity, ease: "easeInOut", delay: 2 }}
+      />
+
+      <div
+        className="absolute inset-0 opacity-[0.04]"
+        style={{
+          backgroundImage: "radial-gradient(#afdbdb 1px, transparent 1px)",
+          backgroundSize: "32px 32px",
+        }}
+      />
+
+      <BannerMotion.div
+        className="absolute right-[-18%] top-1/2 z-0 flex -translate-y-1/2 items-center justify-center rounded-full sm:right-[-10%] sm:z-10 md:right-[5%]"
+        style={{
+          width: "220px",
+          height: "220px",
+          backgroundColor: "rgba(175, 219, 219, 0.02)",
+          border: "1px dashed rgba(175, 219, 219, 0.15)",
+        }}
+        animate={{ rotate: 360 }}
+        transition={{ duration: 40, repeat: Infinity, ease: "linear" }}
+      >
+        <Icons.Globe className="h-20 w-20 sm:h-32 sm:w-32" color="#afdbdb" strokeWidth={0.5} opacity={0.4} />
+
+        <BannerMotion.div
+          className="absolute"
+          animate={{ rotate: -360 }}
+          transition={{ duration: 15, repeat: Infinity, ease: "linear" }}
+          style={{ width: "300px", height: "300px" }}
+        >
+          <div className="absolute left-1/2 top-0 -translate-x-1/2 -translate-y-1/2 rotate-90">
+            <Icons.Plane className="h-4 w-4 sm:h-7 sm:w-7" color="#db8090" fill="#db8090" opacity={0.7} />
+          </div>
+        </BannerMotion.div>
+
+        <BannerMotion.div
+          className="absolute"
+          animate={{ rotate: 360 }}
+          transition={{ duration: 22, repeat: Infinity, ease: "linear" }}
+          style={{ width: "360px", height: "360px" }}
+        >
+          <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2 -rotate-90">
+            <Icons.Plane className="h-3.5 w-3.5 sm:h-5 sm:w-5" color="#cdadcc" opacity={0.5} />
+          </div>
+        </BannerMotion.div>
+      </BannerMotion.div>
+
+      <BannerMotion.div
+        className="absolute left-[58%] top-[16%] z-0 rounded-xl p-2.5 shadow-2xl backdrop-blur-md sm:left-[55%] sm:top-[20%] sm:p-3.5 sm:z-20"
+        style={{
+          backgroundColor: "rgba(205, 173, 204, 0.15)",
+          border: "1px solid rgba(205, 173, 204, 0.2)",
+        }}
+        animate={{ y: [0, -20, 0], rotate: [-5, 5, -5] }}
+        transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
+      >
+        <Icons.FileText className="h-4 w-4 sm:h-7 sm:w-7" color="#cdadcc" strokeWidth={1.5} />
+      </BannerMotion.div>
+
+      <BannerMotion.div
+        className="absolute bottom-[16%] left-[10%] z-0 rounded-xl p-2.5 shadow-2xl backdrop-blur-md sm:bottom-[20%] sm:left-[40%] sm:p-3.5 sm:z-20"
+        style={{
+          backgroundColor: "rgba(219, 128, 144, 0.15)",
+          border: "1px solid rgba(219, 128, 144, 0.2)",
+        }}
+        animate={{ y: [0, 15, 0], scale: [1, 1.05, 1], rotate: [5, -5, 5] }}
+        transition={{ duration: 5, repeat: Infinity, ease: "easeInOut", delay: 1 }}
+      >
+        <Icons.MessagesSquare className="h-4 w-4 sm:h-7 sm:w-7" color="#db8090" strokeWidth={1.5} />
+      </BannerMotion.div>
+
+      <BannerMotion.div
+        className="absolute right-[28%] top-[72%] z-0 rounded-full p-2 backdrop-blur-md sm:right-[35%] sm:top-[70%] sm:p-2.5 sm:z-10"
+        style={{
+          backgroundColor: "rgba(175, 219, 219, 0.15)",
+          border: "1px solid rgba(175, 219, 219, 0.2)",
+        }}
+        animate={{ y: [0, -12, 0], scale: [1, 1.1, 1] }}
+        transition={{ duration: 4.5, repeat: Infinity, ease: "easeInOut", delay: 0.5 }}
+      >
+        <Icons.MapPin className="h-4 w-4 sm:h-6 sm:w-6" color="#afdbdb" strokeWidth={1.5} />
+      </BannerMotion.div>
+    </div>
+  );
+};
+
+function ConsultationBanner({ onConsultationClick }: { onConsultationClick: () => void }) {
+  return (
+    <section className="w-full px-3 py-6 sm:px-4 md:px-6 md:py-8">
+      <div
+        className="relative flex min-h-[280px] w-full items-center overflow-hidden rounded-2xl bg-[#0d7377] shadow-[0_20px_40px_rgba(13,115,119,0.25)] sm:min-h-[300px] sm:rounded-[1.4rem]"
+      >
+        <LiveBackground />
+
+        <div className="pointer-events-none relative z-10 flex w-full flex-col justify-center p-5 sm:p-7 md:w-[68%] md:p-9 lg:w-3/5 lg:p-10">
+          <BannerMotion.div
+            className="pointer-events-auto"
+            initial={{ opacity: 0, x: -20 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6, ease: "easeOut" }}
+          >
+            <h2 className="mb-2 text-2xl font-bold tracking-tight text-white drop-shadow-sm sm:mb-3 sm:text-3xl lg:mb-4 lg:text-5xl">
+              Book a Consultation
+            </h2>
+
+            <p className="mb-4 max-w-[60ch] text-[15px] font-light leading-relaxed text-white/95 drop-shadow-sm sm:mb-5 sm:text-base lg:mb-6 lg:text-lg">
+              Get personalized advice from specialists who understand your journey.
+            </p>
+
+            <BannerMotion.button
+              type="button"
+              onClick={onConsultationClick}
+              className="flex w-full items-center justify-center gap-2 rounded-xl px-6 py-3 text-sm font-bold shadow-lg transition-colors sm:w-auto sm:px-7 sm:py-3.5 sm:text-base"
+              style={{ backgroundColor: "#db8090", color: "#ffffff" }}
+              whileHover={{ scale: 1.02, backgroundColor: "#e294a2" }}
+              whileTap={{ scale: 0.98 }}
+            >
+              Book a Consultation
+            </BannerMotion.button>
+          </BannerMotion.div>
+        </div>
+      </div>
+    </section>
+  );
+}
 
 export default function HomePage() {
   return (
@@ -849,52 +1011,7 @@ function HomePageContent() {
               </div>
             </section>
 
-            {/* CONSULTATION BANNER */}
-            <section className="py-8 md:py-12 bg-background">
-              <div className="w-full mx-auto px-6 sm:px-8 md:px-12  2xl:px-30 ">
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  className="relative bg-linear-to-r from-rahvana-primary to-rahvana-primary-light rounded-3xl overflow-hidden shadow-2xl"
-                >
-                  <div className="grid grid-cols-1 lg:grid-cols-2">
-                    <div className="p-6 md:p-10 lg:p-16 text-white self-center">
-                      <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/20 text-sm font-semibold mb-6">
-                        <Icons.MessageSquare className="w-4 h-4" />
-                        {t("homePage.consultationBadge")}
-                      </div>
-                      <h2 className="text-3xl lg:text-5xl font-bold mb-6">
-                        {t("homePage.consultationTitle")}
-                      </h2>
-                      <p className="text-lg opacity-90 leading-relaxed mb-8">
-                        {t("homePage.consultationDescription")}{" "}
-                        <span className="inline-block px-3 py-1 rounded-md bg-white/20 font-bold">
-                          {t("homePage.consultationSignUp")}
-                        </span>
-                      </p>
-                      <button
-                        onClick={handleConsultationClick}
-                        // onClick={() => setShowComingSoon(true)}
-                        className="inline-flex items-center px-10 py-5 bg-background text-rahvana-primary text-lg font-bold rounded-xl shadow-lg hover:shadow-2xl hover:-translate-y-1 transition-all cursor-pointer"
-                      >
-                        {t("homePage.consultationButton")}
-                      </button>
-                    </div>
-                    <div className="relative h-64 lg:h-full min-h-100 rounded-r-2xl">
-                      <Image
-                        src="/assets/images/consultation.jpg"
-                        alt="Consultation"
-                        className="absolute inset-0 w-full h-full object-cover rounded-r-2xl"
-                        height={400}
-                        width={400}
-                      />
-                      <div className="absolute inset-0 bg-linear-to-l from-transparent to-rahvana-primary/20 pointer-events-none"></div>
-                    </div>
-                  </div>
-                </motion.div>
-              </div>
-            </section>
+            <ConsultationBanner onConsultationClick={handleConsultationClick} />
 
             {/* FAQ SECTION */}
             <section className="py-8 md:py-12 bg-background" id="faq">
