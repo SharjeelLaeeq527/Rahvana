@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "motion/react";
 import {
@@ -14,28 +14,77 @@ const heroImage = "/assets/images/herobg.jpg";
 
 export function CinematicHero() {
   const [hasTransitioned, setHasTransitioned] = useState(false);
+  const touchStartYRef = useRef<number | null>(null);
   const { user } = useAuth();
-  const { t } = useLanguage();
+     const { t } = useLanguage();
 
   useEffect(() => {
-    if (hasTransitioned) return;
+    const shouldIgnore = (target: EventTarget | null) => {
+      return (
+        target instanceof Element &&
+        target.closest("button, a, input, textarea, select, [role='dialog']")
+      );
+    };
 
-    const handleInteraction = (event: Event) => {
-      if (event.target instanceof Element && event.target.closest("button")) {
+    const handleWheel = (event: WheelEvent) => {
+      if (shouldIgnore(event.target)) {
         return;
       }
 
-      setHasTransitioned(true);
+      if (!hasTransitioned && event.deltaY > 6) {
+        setHasTransitioned(true);
+      }
+
+          if (hasTransitioned && event.deltaY < -6 && window.scrollY <= 80) {
+        setHasTransitioned(false);
+      }
     };
 
-    window.addEventListener("wheel", handleInteraction, { passive: true });
-    window.addEventListener("touchmove", handleInteraction, { passive: true });
-    window.addEventListener("click", handleInteraction);
+    const handleTouchStart = (event: TouchEvent) => {
+      touchStartYRef.current = event.touches[0]?.clientY ?? null;
+    };
+
+    const handleTouchMove = (event: TouchEvent) => {
+      if (shouldIgnore(event.target) || touchStartYRef.current === null) {
+        return;
+      }
+
+      const currentY = event.touches[0]?.clientY;
+      if (typeof currentY !== "number") {
+        return;
+      }
+
+      const deltaY = touchStartYRef.current - currentY;
+
+      if (!hasTransitioned && deltaY > 18) {
+        setHasTransitioned(true);
+      }
+
+          if (hasTransitioned && deltaY < -18 && window.scrollY <= 80) {
+        setHasTransitioned(false);
+      }
+    };
+
+    const handleClick = (event: MouseEvent) => {
+      if (shouldIgnore(event.target)) {
+        return;
+      }
+
+      if (!hasTransitioned) {
+        setHasTransitioned(true);
+      }
+    };
+
+    window.addEventListener("wheel", handleWheel, { passive: true });
+    window.addEventListener("touchstart", handleTouchStart, { passive: true });
+    window.addEventListener("touchmove", handleTouchMove, { passive: true });
+    window.addEventListener("click", handleClick);
 
     return () => {
-      window.removeEventListener("wheel", handleInteraction);
-      window.removeEventListener("touchmove", handleInteraction);
-      window.removeEventListener("click", handleInteraction);
+      window.removeEventListener("wheel", handleWheel);
+      window.removeEventListener("touchstart", handleTouchStart);
+      window.removeEventListener("touchmove", handleTouchMove);
+      window.removeEventListener("click", handleClick);
     };
   }, [hasTransitioned]);
 
@@ -61,8 +110,8 @@ export function CinematicHero() {
   return (
     <section className="relative min-h-screen overflow-x-hidden bg-[#FCFCFC] text-gray-900 selection:bg-teal-100 selection:text-teal-900">
       <div
-        className={`relative flex min-h-screen items-center pb-8 md:pb-10 ${
-          hasTransitioned ? "pt-0 md:pt-3" : "pt-20"
+        className={`relative flex min-h-screen pb-8 md:pb-10 ${
+          hasTransitioned ? "items-start pt-0 md:items-center md:pt-3" : "items-center pt-20"
         }`}
       >
         <div
@@ -74,7 +123,7 @@ export function CinematicHero() {
             layout
             className={`z-10 shrink-0 overflow-hidden will-change-transform ${
               hasTransitioned
-                ? "relative h-[42svh] w-full max-h-[620px] rounded-t-none rounded-b-[1.75rem] sm:h-[48svh] md:h-[60vh] md:w-[60%] md:rounded-r-[2.25rem] md:rounded-l-none lg:h-[64vh] lg:w-[59%] shadow-xl shadow-teal-900/5"
+                    ? "relative h-[42svh] w-full max-h-[620px] rounded-t-none rounded-b-[1.75rem] sm:h-[48svh] md:h-[60vh] md:w-[60%] md:rounded-r-[2.25rem] md:rounded-l-none lg:h-[64vh] lg:w-[59%] shadow-xl shadow-teal-900/5"
                 : "fixed inset-0 h-full w-full rounded-none shadow-none"
             }`}
             transition={{ layout: { duration: layoutDuration, ease: customEase } }}
@@ -114,7 +163,7 @@ export function CinematicHero() {
           </motion.div>
 
           <div
-            className={`relative z-20 mt-4 flex w-full flex-col items-center justify-center px-5 pb-4 text-center sm:mt-5 sm:px-7 sm:pb-5 md:mt-0 md:w-[40%] md:items-start md:text-left md:justify-center md:pl-9 md:pr-6 md:pb-0 lg:w-[41%] lg:pl-11 lg:pr-7 xl:pl-13 xl:pr-8 ${
+            className={`relative z-20 mt-4 flex w-full flex-col items-center justify-center px-5 pb-4 text-center sm:mt-5 sm:px-7 sm:pb-5 md:mt-0 md:w-[44%] md:items-start md:text-left md:justify-center md:pl-9 md:pr-4 md:pb-0 lg:w-[45%] lg:pl-11 lg:pr-5 xl:pl-13 xl:pr-6 ${
               hasTransitioned ? "block" : "hidden"
             }`}
           >
@@ -125,28 +174,27 @@ export function CinematicHero() {
                   animate={{ opacity: 1, x: 0 }}
                   exit={{ opacity: 0, x: 10, transition: { duration: 0.4, ease: "easeOut" } }}
                   transition={{ duration: 1.2, delay: 0.6, ease: customEase }}
-                  className="flex w-full max-w-[42rem] flex-col items-center gap-y-6 sm:max-w-[48rem] sm:gap-y-7 md:max-w-[25rem] md:items-start md:gap-y-0 lg:max-w-[27rem] xl:max-w-[29rem]"
+                  className="flex w-full max-w-[44rem] flex-col items-center gap-y-4 px-1 sm:max-w-[48rem] sm:gap-y-5 sm:px-2 md:max-w-[31rem] md:items-start md:gap-y-3 md:px-0 lg:max-w-[34rem] xl:max-w-[36rem]"
                 >
-                  <h2 className="max-w-[20ch] text-center text-[1.2rem] font-bold leading-[1.1] tracking-tight text-[#71a1a1] sm:max-w-none sm:text-[1.4rem] sm:leading-[1.08] md:mb-4 md:text-left md:text-[1.85rem] lg:text-[2.25rem]">
+                  <h2 className="max-w-[20ch] text-center text-[1.22rem] font-bold leading-[1.12] tracking-tight text-[#71a1a1] sm:max-w-[24ch] sm:text-[1.42rem] sm:leading-[1.1] md:mb-2.5 md:max-w-none md:text-left md:text-[1.9rem] lg:text-[2.3rem]">
                     Where could your life
                     <br />
                     go next?
                   </h2>
 
-                  <p className="max-w-[50ch] text-balance text-center text-[11px] leading-[1.8] font-medium text-gray-500 sm:max-w-[56ch] sm:text-[12px] sm:leading-relaxed md:mb-6 md:max-w-[34ch] md:text-left md:text-[14px]">
-                    Navigate the complexities of immigration with confidence.
-                    Rahvana provides step-by-step guidance, smart tools, and
-                    expert support to help you reunite with loved ones.
+                  <p className="max-w-[58ch] text-balance text-center text-[11.5px] leading-[1.78] font-medium text-gray-500 sm:max-w-[66ch] sm:text-[12.5px] sm:leading-relaxed md:mb-4 md:max-w-[48ch] md:text-left md:text-[14px]">
+                    Rahvana turns the visa process into a clear, confident
+                    journey, with tools and support designed around you.
                   </p>
 
-                  <div className="flex w-full flex-row flex-wrap items-center justify-center gap-3 pt-2 sm:justify-start sm:pt-0">
+                  <div className="flex w-full flex-row flex-wrap items-center justify-center gap-3 pt-1 sm:justify-start sm:pt-0 md:pt-1">
                     {user && (
                       <Link
                         href="/my-journeys"
-                        className="group inline-flex w-fit whitespace-nowrap items-center justify-center gap-2 rounded-full border-2 border-[#f4a8c4] bg-white px-5 py-2.5 text-[12px] font-bold text-[#ea7fad] shadow-md shadow-[#f4a8c4]/15 transition-all duration-200 ease-out hover:-translate-y-0.5 hover:bg-[#fff4f9] sm:px-6 sm:py-3 sm:text-[13px]"
+                        className="group inline-flex w-fit whitespace-nowrap items-center justify-center gap-2 rounded-full border-2 border-[#d88ab0] bg-[#fff8fc] px-5 py-2.5 text-[12px] font-bold uppercase tracking-wider text-[#c86c99] shadow-md shadow-[#d88ab0]/15 transition-all duration-200 ease-out hover:-translate-y-0.5 hover:bg-[#fff2f9] sm:px-6 sm:py-3 sm:text-[13px]"
                       >
                         {t("homePage.resumeJourney")}
-                        <span className="flex h-5 w-5 flex-none items-center justify-center rounded-full text-[#ea7fad] transition-transform duration-200 ease-out group-hover:translate-x-0.5 sm:h-6 sm:w-6">
+                        <span className="flex h-5 w-5 flex-none items-center justify-center rounded-full text-[#c86c99] transition-transform duration-200 ease-out group-hover:translate-x-0.5 sm:h-6 sm:w-6">
                           <ArrowRight className="h-3.5 w-3.5 stroke-[3]" />
                         </span>
                       </Link>
@@ -154,10 +202,10 @@ export function CinematicHero() {
 
                     <Link
                       href="/visa-category/ir-category"
-                      className="group inline-flex w-fit whitespace-nowrap items-center justify-center gap-2 rounded-full bg-[#f4a8c4] px-5 py-2.5 text-[12px] font-bold text-white shadow-xl shadow-[#f4a8c4]/35 transition-all duration-200 ease-out hover:-translate-y-0.5 hover:bg-[#e89db8] sm:px-6 sm:py-3 sm:text-[13px]"
+                      className="group inline-flex w-fit whitespace-nowrap items-center justify-center gap-2 rounded-full bg-[#d884ae] px-5 py-2.5 text-[12px] font-bold uppercase tracking-wider text-white shadow-lg shadow-[#d884ae]/30 transition-all duration-200 ease-out hover:-translate-y-0.5 hover:bg-[#c976a0] sm:px-6 sm:py-3 sm:text-[13px]"
                     >
                       {t("homePage.exploreJourneys")}
-                      <span className="flex h-5 w-5 flex-none items-center justify-center rounded-full bg-white text-[#f4a8c4] transition-transform group-hover:scale-110 sm:h-6 sm:w-6">
+                      <span className="flex h-5 w-5 flex-none items-center justify-center rounded-full bg-white text-[#d884ae] transition-transform group-hover:scale-110 sm:h-6 sm:w-6">
                         <ArrowUpRight className="h-3.5 w-3.5 stroke-[3]" />
                       </span>
                     </Link>
