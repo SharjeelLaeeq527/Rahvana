@@ -105,6 +105,13 @@ export async function POST(req: Request) {
       );
     }
 
+    const { data: existingCred } = await supabase
+      .from("portal_wallet_credentials")
+      .select("encrypted_password")
+      .eq("user_id", user.id)
+      .eq("portal_type", portalType)
+      .single();
+
     if (portalType === "NVC") {
       if (!nvcCaseNumber || !nvcInvoiceId) {
         return NextResponse.json(
@@ -113,7 +120,8 @@ export async function POST(req: Request) {
         );
       }
     } else {
-      if (!username || !password) {
+      // For USCIS/COURIER, username is required. Password is required for ADD, optional for EDIT.
+      if (!username || (!password && !existingCred)) {
         return NextResponse.json(
           { error: "Username and password required" },
           { status: 400 },
@@ -121,9 +129,10 @@ export async function POST(req: Request) {
       }
     }
 
-    const encryptedPassword = password ? encrypt(password) : null;
+    const encryptedPassword = password
+      ? encrypt(password)
+      : existingCred?.encrypted_password || null;
     const encryptedCaseNumber = nvcCaseNumber ? encrypt(nvcCaseNumber) : null;
-
     const encryptedInvoiceId = nvcInvoiceId ? encrypt(nvcInvoiceId) : null;
 
     const { data: credential, error } = await supabase
@@ -132,10 +141,8 @@ export async function POST(req: Request) {
         {
           user_id: user.id,
           portal_type: portalType,
-
           username: username || null,
           encrypted_password: encryptedPassword,
-
           nvc_case_number: encryptedCaseNumber,
           nvc_invoice_id: encryptedInvoiceId,
         },

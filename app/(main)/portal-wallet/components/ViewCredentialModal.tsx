@@ -65,11 +65,15 @@ const ViewCredentialModal: React.FC<ViewCredentialModalProps> = ({
 
   useEffect(() => {
     if (isOpen) {
+      document.body.style.overflow = "hidden";
       setRevealedPassword(null);
       setRevealedAnswers({});
       setRevealedCaseNumber(null);
       setRevealedInvoiceId(null);
     }
+    return () => {
+      document.body.style.overflow = "unset";
+    };
   }, [credential?.id, isOpen]);
 
   const copyToClipboard = (text: string, field: string) => {
@@ -128,15 +132,12 @@ const ViewCredentialModal: React.FC<ViewCredentialModalProps> = ({
   if (!isOpen || !credential) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
       {/* Overlay */}
-      <div
-        className="absolute inset-0 bg-black/60 backdrop-blur-sm"
-        onClick={handleClose}
-      />
+      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
 
-      {/* Modal */}
-      <div className="relative bg-white rounded-2xl w-full max-w-xl max-h-[85vh] overflow-hidden shadow-2xl flex flex-col">
+      {/* Modal Container */}
+      <div className="relative bg-white rounded-2xl w-full max-w-xl max-h-[85vh] overflow-hidden shadow-2xl flex flex-col z-[101]">
         {/* Header */}
         <div className="flex items-center justify-between border-b border-[#e0f0f0] px-6 py-4">
           <div className="flex items-center gap-3">

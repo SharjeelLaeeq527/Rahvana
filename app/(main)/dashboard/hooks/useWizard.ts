@@ -24,6 +24,10 @@ export interface WizardState {
   >;
   notes: Record<string, string>;
   started: boolean;
+  // New Journey Engine fields
+  answers: Record<string, any>;
+  metadata: Record<string, any>;
+  unresolvedTasks: string[];
 }
 
 const LOCAL_STORAGE_KEY = "rahvanaWizardState";
@@ -40,6 +44,9 @@ const DEFAULT_STATE: WizardState = {
   docUploads: {},
   notes: {},
   started: false,
+  answers: {},
+  metadata: {},
+  unresolvedTasks: [],
 };
 
 interface UseWizardOptions {
@@ -95,7 +102,7 @@ export function useWizard(options: UseWizardOptions = {}) {
               await saveJourneyProgress(userId, journeyId, {
                 ...DEFAULT_STATE,
                 ...localData,
-              });
+              } as WizardState);
               clearLocalStorage();
             } else {
               setState(DEFAULT_STATE);
@@ -109,7 +116,7 @@ export function useWizard(options: UseWizardOptions = {}) {
         const localData = loadFromLocalStorage();
         if (!cancelled) {
           if (localData) {
-            setState((prev) => ({ ...prev, ...localData }));
+            setState((prev) => ({ ...prev, ...localData } as WizardState));
             setHasExistingProgress(localData.started ?? false);
           } else {
             setState(DEFAULT_STATE);
@@ -229,7 +236,6 @@ export function useWizard(options: UseWizardOptions = {}) {
       setState((prev) => {
         const newCompleted = new Set(prev.completedSteps);
         const newCollapsed = { ...prev.collapsedSteps };
-        // let newStepIdx = prev.currentStep;
 
         if (newCompleted.has(stepId)) {
           newCompleted.delete(stepId);
@@ -237,24 +243,12 @@ export function useWizard(options: UseWizardOptions = {}) {
         } else {
           newCompleted.add(stepId);
           newCollapsed[stepId] = true;
-
-          // const stage = activeRoadmap.stages[prev.currentStage];
-          // if (stage) {
-          //   const currentStepId = stage.steps[prev.currentStep ?? 0]?.id;
-          //   if (currentStepId === stepId) {
-          //     const nextIdx = stage.steps.findIndex((s: any) => !newCompleted.has(s.id));
-          //     if (nextIdx !== -1) {
-          //       newStepIdx = nextIdx;
-          //     }
-          //   }
-          // }
         }
 
         return {
           ...prev,
           completedSteps: newCompleted,
           collapsedSteps: newCollapsed,
-          // currentStep: newStepIdx,
         };
       });
     },
@@ -365,6 +359,20 @@ export function useWizard(options: UseWizardOptions = {}) {
 
       setState(DEFAULT_STATE);
       setHasExistingProgress(false);
+    },
+
+    updateAnswers: (answers: Record<string, any>) => {
+      setState((prev) => ({
+        ...prev,
+        answers: { ...prev.answers, ...answers },
+      }));
+    },
+
+    updateMetadata: (metadata: Record<string, any>) => {
+      setState((prev) => ({
+        ...prev,
+        metadata: { ...prev.metadata, ...metadata },
+      }));
     },
   };
 

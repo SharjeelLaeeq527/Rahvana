@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   Select,
   SelectContent,
@@ -8,7 +8,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { X, Eye, EyeOff, Shield } from "lucide-react";
+import { X, Eye, EyeOff } from "lucide-react";
 import securityQuestionsData from "../../../../data/portal-wallet-security-questions-questionnaire.json";
 
 type PortalType = "USCIS" | "NVC" | "COURIER";
@@ -48,12 +48,6 @@ interface CredentialFormModalProps {
   isSubmitting: boolean;
 }
 
-const portalTypeMap: Record<PortalType, string> = {
-  USCIS: "USCIS",
-  NVC: "NVC",
-  COURIER: "COURIER",
-};
-
 const CredentialFormModal: React.FC<CredentialFormModalProps> = ({
   isOpen,
   onClose,
@@ -85,6 +79,7 @@ const CredentialFormModal: React.FC<CredentialFormModalProps> = ({
 
   useEffect(() => {
     if (isOpen) {
+      document.body.style.overflow = "hidden";
       if (mode === "edit" && initialData) {
         setUsername(initialData.username || "");
         setPassword("");
@@ -111,6 +106,10 @@ const CredentialFormModal: React.FC<CredentialFormModalProps> = ({
         );
       }
     }
+
+    return () => {
+      document.body.style.overflow = "unset";
+    };
   }, [isOpen, mode, initialData, questionLimit]);
 
   const handleQuestionChange = (index: number, question: string) => {
@@ -171,6 +170,8 @@ const CredentialFormModal: React.FC<CredentialFormModalProps> = ({
     });
   };
 
+  const modalRef = useRef<HTMLDivElement>(null);
+
   if (!isOpen) return null;
 
   return (
@@ -178,12 +179,16 @@ const CredentialFormModal: React.FC<CredentialFormModalProps> = ({
       {/* Overlay */}
       <div
         className="absolute inset-0 bg-black/60 backdrop-blur-sm"
-        onClick={onClose}
+        // onClick={onClose}
       />
 
-      {/* Modal */}
-      <div className="relative bg-white rounded-2xl w-full max-w-xl max-h-[85vh] overflow-hidden mx-4 shadow-2xl flex flex-col">
-        {/* Header */}{" "}
+      {/* Modal Container */}
+      <div
+        ref={modalRef}
+        // onClick={(e) => e.stopPropagation()}
+        className="relative bg-white rounded-2xl w-full max-w-xl max-h-[85vh] overflow-hidden mx-4 shadow-2xl flex flex-col z-[101]"
+      >
+        {/* Header */}
         <div className="sticky top-0 bg-white rounded-t-2xl border-b border-[#e0f0f0] px-6 py-4 flex items-center justify-between z-10">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-[#e8f6f6] flex items-center justify-center text-[#0d7377]">
@@ -203,15 +208,17 @@ const CredentialFormModal: React.FC<CredentialFormModalProps> = ({
           </div>
           <button
             onClick={onClose}
+            type="button"
             className="w-8 h-8 rounded-lg hover:bg-[#f0f2f4] flex items-center justify-center text-[#9ca3af] hover:text-[#0a1128] transition-colors"
           >
             <X size={16} />
           </button>
         </div>
-        {/* Form */}
+
+        {/* Form Body */}
         <form
           onSubmit={handleSubmit}
-          className="px-6 py-5 space-y-5 overflow-y-auto"
+          className="px-6 py-5 space-y-5 overflow-y-auto flex-1"
         >
           {portalType !== "NVC" && (
             <>
@@ -274,7 +281,7 @@ const CredentialFormModal: React.FC<CredentialFormModalProps> = ({
                     setNvcCaseNumber(value);
                   }}
                   placeholder="Enter NVC case number"
-                  className="w-full h-11 px-4 rounded-xl border border-[#e0f0f0] bg-[#f8fafa]"
+                  className="w-full h-11 px-4 rounded-xl border border-[#e0f0f0] bg-[#f8fafa] text-[14px] text-[#0a1128] placeholder:text-[#c0c7ce] focus:outline-none focus:border-[#0d7377] focus:ring-2 focus:ring-[#0d7377]/10 transition-all"
                 />
               </div>
 
@@ -294,7 +301,7 @@ const CredentialFormModal: React.FC<CredentialFormModalProps> = ({
                     setNvcInvoiceId(value);
                   }}
                   placeholder="Enter invoice ID number"
-                  className="w-full h-11 px-4 rounded-xl border border-[#e0f0f0] bg-[#f8fafa]"
+                  className="w-full h-11 px-4 rounded-xl border border-[#e0f0f0] bg-[#f8fafa] text-[14px] text-[#0a1128] placeholder:text-[#c0c7ce] focus:outline-none focus:border-[#0d7377] focus:ring-2 focus:ring-[#0d7377]/10 transition-all"
                 />
               </div>
             </>
@@ -357,7 +364,7 @@ const CredentialFormModal: React.FC<CredentialFormModalProps> = ({
             <button
               type="submit"
               disabled={isSubmitting}
-              className="w-full py-3 rounded-xl bg-primary text-white text-[14px] font-semibold hover:from-[#0a5a5d] hover:to-[#0d7377] transition-all duration-200 shadow-sm hover:shadow-md disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer"
+              className="w-full py-3 rounded-xl bg-primary text-white text-[14px] font-semibold hover:bg-teal-700 transition-all duration-200 shadow-sm hover:shadow-md disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer"
             >
               {isSubmitting
                 ? "Saving..."

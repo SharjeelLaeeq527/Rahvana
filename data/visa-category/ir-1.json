@@ -6,14 +6,15 @@
   "stages": [
     {
       "id": 1,
-      "name": "Stage I: USCIS Petition",
-      "description": "U.S. Petitioner files I-130 → USCIS processes → Approval",
+      "name": "Stage I: USCIS Petition Filing",
+      "description": "File Form I-130 with USCIS to begin the IR-1 spouse visa process for your Pakistani spouse.",
       "timeline": "17-65 months average",
       "steps": [
         {
           "id": "I-01",
           "name": "Determine Eligibility",
-          "who": "Both",
+          "type": "quest",
+          "who": "Confirm IR-1 qualification",
           "where": "Self-assessment",
           "actions": [
             "Verify petitioner is U.S. citizen",
@@ -22,16 +23,637 @@
             "Check domicile requirements",
             "Confirm no bars to immigration"
           ],
+          "questData": {
+            "id": "eligibility-suite",
+            "title": "Initial Eligibility Check",
+            "subtitle": "Complete these five thematic screens to confirm you meet the core requirements before filing.",
+            "quests": [
+              {
+                "id": "q1",
+                "title": "Petitioner is a U.S. Citizen",
+                "subtitle": "Screen for petitioner's citizenship status and primary eligibility",
+                "screens": [
+                  {
+                    "id": "q1s1",
+                    "label": "Petitioner Status",
+                    "question": "What is the petitioner's current immigration status?",
+                    "helper": "The IR-1 visa is only available when the petitioner is a U.S. citizen — not a green card holder.",
+                    "type": "single",
+                    "options": [
+                      {
+                        "label": "U.S. citizen",
+                        "value": "citizen",
+                        "outcome": "next"
+                      },
+                      {
+                        "label": "Lawful Permanent Resident (green card holder)",
+                        "value": "lpr",
+                        "outcome": "stop",
+                        "sub": "Spouse of LPR uses a different visa category (F2A), not IR-1."
+                      },
+                      {
+                        "label": "Not sure",
+                        "value": "unsure",
+                        "outcome": "review"
+                      },
+                      {
+                        "label": "Other / none of these",
+                        "value": "other",
+                        "outcome": "review"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "q1s2",
+                    "label": "How Citizenship Was Obtained",
+                    "question": "How did the petitioner become a U.S. citizen?",
+                    "helper": "Each path to citizenship is valid for this petition. Pick the one that applies.",
+                    "type": "single",
+                    "options": [
+                      {
+                        "label": "Born in the United States",
+                        "value": "birth_us",
+                        "outcome": "next"
+                      },
+                      {
+                        "label": "Born abroad to a U.S. citizen parent (acquired or derived citizenship)",
+                        "value": "birth_abroad",
+                        "outcome": "next"
+                      },
+                      {
+                        "label": "Naturalized (took the oath after immigrating)",
+                        "value": "naturalized",
+                        "outcome": "next"
+                      },
+                      {
+                        "label": "Not sure",
+                        "value": "unsure",
+                        "outcome": "review"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "q1s3",
+                    "label": "Proof of Citizenship",
+                    "question": "Does the petitioner have at least one accepted proof of U.S. citizenship?",
+                    "helper": "USCIS accepts several document types. You do not need all of them — just one valid proof.",
+                    "type": "single",
+                    "hint": {
+                      "intro": "Commonly accepted proofs include:",
+                      "items": [
+                        "Valid or recently expired U.S. passport",
+                        "U.S. birth certificate issued by a state or county",
+                        "USCIS Certificate of Naturalization (Form N-550)",
+                        "USCIS Certificate of Citizenship (Form N-560)",
+                        "U.S. Consular Report of Birth Abroad (Form FS-240)"
+                      ]
+                    },
+                    "options": [
+                      {
+                        "label": "Yes — I have at least one of these documents",
+                        "value": "yes",
+                        "outcome": "next"
+                      },
+                      {
+                        "label": "Not yet — but I can obtain one",
+                        "value": "can_get",
+                        "outcome": "next"
+                      },
+                      {
+                        "label": "No — and I'm not sure how to get one",
+                        "value": "no",
+                        "outcome": "caution"
+                      },
+                      {
+                        "label": "Not sure",
+                        "value": "unsure",
+                        "outcome": "caution"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "q1s4",
+                    "label": "Name Consistency",
+                    "question": "Does the name on the citizenship document match the name the petitioner will use on this petition?",
+                    "helper": "Name discrepancies are manageable with supporting documents. Flag this now so it isn't a surprise later.",
+                    "type": "single",
+                    "options": [
+                      {
+                        "label": "Yes — name matches exactly",
+                        "value": "match",
+                        "outcome": "pass"
+                      },
+                      {
+                        "label": "No — but I have legal proof of the name change",
+                        "value": "diff_proof",
+                        "outcome": "pass"
+                      },
+                      {
+                        "label": "No — and I don't have name-change proof yet",
+                        "value": "diff_no_proof",
+                        "outcome": "caution"
+                      },
+                      {
+                        "label": "Not sure",
+                        "value": "unsure",
+                        "outcome": "caution"
+                      }
+                    ]
+                  }
+                ],
+                "resultLogic": "(function() { if (answers['q1s1'] === 'lpr') return { state: 'stop', title: 'IR-1 requires a U.S. citizen petitioner', body: 'The IR-1 spouse visa is only available when the petitioner is a U.S. citizen. Lawful Permanent Residents may be eligible to petition under a different category (F2A preference visa). Consider speaking with an attorney about your options.' }; if (answers['q1s1'] === 'unsure' || answers['q1s1'] === 'other' || answers['q1s2'] === 'unsure') return { state: 'review', title: 'Petitioner\\'s citizenship status needs clarification', body: 'The petitioner\\'s status or citizenship path was marked as unclear. Confirm the petitioner\\'s status before moving forward — this is the foundational requirement for the IR-1 petition.' }; if (answers['q1s3'] === 'no' || answers['q1s3'] === 'unsure' || (answers['q1s4'] && (answers['q1s4'] === 'diff_no_proof' || answers['q1s4'] === 'unsure'))) return { state: 'caution', title: 'Citizenship appears likely — but proof needs attention', body: 'The petitioner appears to be a U.S. citizen, but proof of citizenship or name-match documentation may need to be gathered or organized before filing. Address this early to avoid delays.' }; return { state: 'pass', title: 'Petitioner eligibility looks solid', body: 'The petitioner appears to be a U.S. citizen with identifiable proof. This core requirement is on track. Continue to the next section.' }; })()"
+              },
+              {
+                "id": "q2",
+                "title": "A legally valid marriage exists",
+                "subtitle": "Confirm there is a current, legally recognized civil marriage",
+                "screens": [
+                  {
+                    "id": "q2s1",
+                    "label": "Relationship Status",
+                    "question": "Which of these best describes the couple's current legal relationship?",
+                    "helper": "USCIS requires an existing, legally recognized civil marriage — not just an engagement or ceremony.",
+                    "type": "single",
+                    "options": [
+                      {
+                        "label": "Legally married (civil registration is in place)",
+                        "value": "married",
+                        "outcome": "next"
+                      },
+                      {
+                        "label": "Only engaged — not yet married",
+                        "value": "engaged",
+                        "outcome": "stop"
+                      },
+                      {
+                        "label": "Religious or cultural ceremony only — no civil registration",
+                        "value": "ceremony_only",
+                        "outcome": "stop",
+                        "sub": "Civil registration is typically required for immigration purposes."
+                      },
+                      {
+                        "label": "Separated or in the process of divorce",
+                        "value": "separated",
+                        "outcome": "stop"
+                      },
+                      {
+                        "label": "Not sure",
+                        "value": "unsure",
+                        "outcome": "review"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "q2s2",
+                    "label": "Legal Recognition",
+                    "question": "Was the marriage legally recognized under the laws of the place where it occurred?",
+                    "helper": "USCIS evaluates marriage validity under the law of the place where it was celebrated. Most civil marriages are valid, but some may have local registration gaps.",
+                    "type": "single",
+                    "options": [
+                      {
+                        "label": "Yes — it was a legally registered civil marriage there",
+                        "value": "yes",
+                        "outcome": "next"
+                      },
+                      {
+                        "label": "No — it was not legally registered or recognized there",
+                        "value": "no",
+                        "outcome": "stop"
+                      },
+                      {
+                        "label": "Not sure",
+                        "value": "unsure",
+                        "outcome": "review"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "q2s3",
+                    "label": "Marriage Certificate",
+                    "question": "Is there an official marriage certificate or record issued by the appropriate civil authority?",
+                    "helper": "USCIS expects the official civil marriage certificate from the relevant government or registry office — not wedding photos or invitations.",
+                    "type": "single",
+                    "hint": {
+                      "intro": "Valid marriage records typically include:",
+                      "items": [
+                        "Government-issued marriage certificate from the country or state where you married",
+                        "Certified copy from a civil registry office",
+                        "Apostille or official authentication if issued abroad"
+                      ]
+                    },
+                    "options": [
+                      {
+                        "label": "Yes — I have the official certificate",
+                        "value": "yes",
+                        "outcome": "next"
+                      },
+                      {
+                        "label": "Not yet — but I can obtain a certified copy",
+                        "value": "can_get",
+                        "outcome": "caution"
+                      },
+                      {
+                        "label": "No — and I'm not sure how to get one",
+                        "value": "no",
+                        "outcome": "caution"
+                      },
+                      {
+                        "label": "Not sure",
+                        "value": "unsure",
+                        "outcome": "caution"
+                      }
+                    ]
+                  }
+                ],
+                "resultLogic": "(function() { if (answers['q2s1'] === 'engaged' || answers['q2s1'] === 'ceremony_only' || answers['q2s1'] === 'separated' || answers['q2s2'] === 'no') return { state: 'stop', title: 'A legally valid marriage is required for the IR-1', body: 'USCIS requires an existing, legally recognized civil marriage. Engagements, religious-only ceremonies, and ongoing separations or divorces do not qualify at the time of filing. Review the couple\\'s current legal status.' }; if (answers['q2s1'] === 'unsure' || answers['q2s2'] === 'unsure') return { state: 'review', title: 'Marriage validity needs confirmation', body: 'The legal recognition of the marriage is unclear. This is a foundational requirement — confirm the marriage was properly registered under the applicable local law before proceeding.' }; if (answers['q2s3'] === 'can_get' || answers['q2s3'] === 'no' || answers['q2s3'] === 'unsure') return { state: 'caution', title: 'Marriage appears valid — certificate still needed', body: 'The marriage appears legally valid, but obtaining the official marriage certificate is an important early task. Start that process now — certified copies can take time, especially for international records.' }; return { state: 'pass', title: 'Marriage eligibility looks solid', body: 'A legally recognized civil marriage with official documentation appears to be in place. This requirement is on track.' }; })()"
+              },
+              {
+                "id": "q3",
+                "title": "All prior marriages were legally terminated",
+                "subtitle": "Confirm neither spouse was still married to anyone else when this marriage occurred",
+                "screens": [
+                  {
+                    "id": "q3s1",
+                    "label": "Prior Marriage History",
+                    "question": "Before this marriage, did either spouse have any previous legally registered marriages?",
+                    "helper": "Count any marriage that was legally registered — anywhere in the world. Religious-only or unregistered ceremonies generally do not count.",
+                    "type": "single",
+                    "options": [
+                      {
+                        "label": "No — neither spouse had any prior legally registered marriages",
+                        "value": "none",
+                        "outcome": "pass_direct"
+                      },
+                      {
+                        "label": "Yes — the petitioner had a prior marriage",
+                        "value": "petitioner",
+                        "outcome": "next"
+                      },
+                      {
+                        "label": "Yes — the beneficiary had a prior marriage",
+                        "value": "beneficiary",
+                        "outcome": "next"
+                      },
+                      {
+                        "label": "Yes — both had prior marriages",
+                        "value": "both",
+                        "outcome": "next"
+                      },
+                      {
+                        "label": "Not sure",
+                        "value": "unsure",
+                        "outcome": "review"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "q3s2",
+                    "label": "Termination Timing",
+                    "question": "Did every prior marriage end before the date of the current marriage?",
+                    "helper": "A prior marriage must have ended first — by final divorce, annulment, or the death of the prior spouse — before the new marriage is legally valid.",
+                    "type": "single",
+                    "options": [
+                      {
+                        "label": "Yes — all prior marriages ended before the current marriage",
+                        "value": "yes",
+                        "outcome": "next"
+                      },
+                      {
+                        "label": "No — at least one prior marriage was still ongoing",
+                        "value": "no",
+                        "outcome": "stop"
+                      },
+                      {
+                        "label": "Not sure about the exact timing",
+                        "value": "unsure",
+                        "outcome": "review"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "q3s3",
+                    "label": "Proof of Termination",
+                    "question": "Is there documentation showing how each prior marriage legally ended?",
+                    "helper": "USCIS will want to see this proof for every prior marriage — for both spouses.",
+                    "type": "single",
+                    "hint": {
+                      "intro": "Accepted termination documents include:",
+                      "items": [
+                        "Final divorce decree or judgment",
+                        "Court-issued annulment order",
+                        "Death certificate of the former spouse"
+                      ]
+                    },
+                    "options": [
+                      {
+                        "label": "Yes — documentation exists for all prior marriages",
+                        "value": "yes",
+                        "outcome": "pass"
+                      },
+                      {
+                        "label": "Some, but not all — documentation is missing for at least one",
+                        "value": "partial",
+                        "outcome": "caution"
+                      },
+                      {
+                        "label": "No — no documentation yet",
+                        "value": "no",
+                        "outcome": "caution"
+                      },
+                      {
+                        "label": "Not sure",
+                        "value": "unsure",
+                        "outcome": "caution"
+                      }
+                    ]
+                  }
+                ],
+                "resultLogic": "(function() { if (answers['q3s1'] === 'none') return { state: 'pass', title: 'No prior marriages to verify', body: 'Neither spouse had a prior legally registered marriage, so this section is not an issue for your case. Well done — move on to the next section.' }; if (answers['q3s1'] === 'unsure') return { state: 'review', title: 'Prior marriage history needs clarification', body: 'It\\'s unclear whether either spouse had a prior marriage. This should be confirmed — USCIS will require documentation if any prior marriages existed.' }; if (answers['q3s2'] === 'no') return { state: 'stop', title: 'Potential bigamy issue — legal review needed', body: 'If a prior marriage had not ended before the current marriage occurred, the current marriage may not be legally valid for immigration purposes. This is a serious issue that requires legal review before proceeding.' }; if (answers['q3s2'] === 'unsure') return { state: 'review', title: 'Termination timing is unclear', body: 'The timing of when prior marriages ended relative to the current marriage start date needs to be confirmed. This is a critical fact — consult an attorney if uncertain.' }; if (answers['q3s3'] === 'partial' || answers['q3s3'] === 'no' || answers['q3s3'] === 'unsure') return { state: 'caution', title: 'Prior marriages appear terminated — documents needed', body: 'The prior marriage(s) appear to have ended before the current marriage, but documentation is missing or incomplete. Gathering divorce decrees, annulment orders, or death certificates is an important early task.' }; return { state: 'pass', title: 'Prior marriage termination looks clear', body: 'All prior marriages appear to have legally ended before the current marriage, and documentation is available. This requirement is on track.' }; })()"
+              },
+              {
+                "id": "q4",
+                "title": "Marriage is bona fide",
+                "subtitle": "Screen for good-faith intent and evidence of a genuine relationship",
+                "screens": [
+                  {
+                    "id": "q4s1",
+                    "label": "Genuine Intent",
+                    "question": "When both spouses married, was it with the genuine intention to build a shared life together?",
+                    "helper": "USCIS looks at whether the marriage was entered in good faith — not primarily for immigration purposes.",
+                    "type": "single",
+                    "options": [
+                      {
+                        "label": "Yes — both intended a genuine marriage",
+                        "value": "yes",
+                        "outcome": "next"
+                      },
+                      {
+                        "label": "No — immigration was the primary reason for the marriage",
+                        "value": "no",
+                        "outcome": "stop"
+                      },
+                      {
+                        "label": "I'm not sure how to answer this",
+                        "value": "unsure",
+                        "outcome": "review"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "q4s2",
+                    "label": "Relationship Evidence",
+                    "question": "Which of these types of relationship evidence do you currently have?",
+                    "helper": "Select all that apply. Having multiple types of evidence across different categories strengthens the case significantly.",
+                    "type": "multi",
+                    "options": [
+                      {
+                        "label": "Shared address or co-habitation history",
+                        "value": "address"
+                      },
+                      {
+                        "label": "Joint finances, bank accounts, or shared bills",
+                        "value": "finances"
+                      },
+                      {
+                        "label": "Photos, travel records, messages, or call logs",
+                        "value": "photos"
+                      },
+                      {
+                        "label": "Children together, pregnancy, or family evidence",
+                        "value": "children"
+                      },
+                      {
+                        "label": "Statements from family, friends, or community who know the couple",
+                        "value": "affidavits"
+                      },
+                      {
+                        "label": "None of the above yet",
+                        "value": "none"
+                      }
+                    ],
+                    "multiPassLogic": "(function(values) { if (values.includes('none')) return 'caution'; if (values.length >= 2) return 'next_strong'; return 'next_medium'; })(answers['q4s2'] || [])"
+                  },
+                  {
+                    "id": "q4s3",
+                    "label": "Consistency",
+                    "question": "Can both spouses describe the relationship consistently — timeline, how they met, living situation, and future plans?",
+                    "helper": "USCIS interviews often test whether both spouses' stories match on basic facts. This is not about perfection, but about genuine shared knowledge.",
+                    "type": "single",
+                    "options": [
+                      {
+                        "label": "Yes — both are comfortable and consistent on the basics",
+                        "value": "yes",
+                        "outcome": "next"
+                      },
+                      {
+                        "label": "Mostly — there may be some minor gaps or differences",
+                        "value": "mostly",
+                        "outcome": "caution"
+                      },
+                      {
+                        "label": "No — there are significant inconsistencies",
+                        "value": "no",
+                        "outcome": "review"
+                      },
+                      {
+                        "label": "Not sure",
+                        "value": "unsure",
+                        "outcome": "caution"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "q4s4",
+                    "label": "Fraud Risk Flags",
+                    "question": "Are there facts in this case that might raise questions about the relationship's authenticity?",
+                    "helper": "This is just a flag — having a complicating factor doesn't mean the marriage isn't real. It means you'll want to address it proactively.",
+                    "type": "single",
+                    "hint": {
+                      "intro": "Common factors that may invite closer review:",
+                      "items": [
+                        "Very short time between meeting and marriage (a few weeks)",
+                        "Prior spousal petition filed by either spouse for a different person",
+                        "Very limited documented contact or time spent together",
+                        "Significant age difference with limited shared history",
+                        "Prior finding of marriage fraud in either spouse's immigration history"
+                      ]
+                    },
+                    "options": [
+                      {
+                        "label": "No — no significant fraud-risk factors I can think of",
+                        "value": "no",
+                        "outcome": "pass"
+                      },
+                      {
+                        "label": "Yes — there is at least one factor that may need explanation",
+                        "value": "yes",
+                        "outcome": "review"
+                      },
+                      {
+                        "label": "Not sure",
+                        "value": "unsure",
+                        "outcome": "review"
+                      }
+                    ]
+                  }
+                ],
+                "resultLogic": "(function() { if (answers['q4s1'] === 'no') return { state: 'stop', title: 'Good-faith intent is required', body: 'USCIS requires that the marriage was entered in good faith — not primarily to obtain immigration benefits. A marriage entered primarily for immigration is considered fraudulent. This is a serious issue that should be discussed with an attorney.' }; if (answers['q4s1'] === 'unsure' || answers['q4s4'] === 'yes' || answers['q4s4'] === 'unsure' || answers['q4s3'] === 'no') return { state: 'review', title: 'Potential bona fide marriage concerns', body: 'Some answers suggest this case may face closer scrutiny on bona fide marriage. This does not mean the marriage is invalid — but it means gathering strong, varied evidence early is important, and an attorney review is recommended.' }; const q4s2vals = answers['q4s2'] || []; if (q4s2vals.includes('none') || answers['q4s3'] === 'mostly' || answers['q4s3'] === 'unsure') return { state: 'caution', title: 'Marriage appears genuine — strengthen evidence early', body: 'The marriage appears to be in good faith, but the current evidence is thin or there are minor consistency concerns. Start building your evidence package now — across multiple categories.' }; return { state: 'pass', title: 'Bona fide marriage looks solid', body: 'Good-faith intent is affirmed, relationship evidence exists across multiple categories, and no major fraud-risk flags were identified. This section looks strong.' }; })()"
+              },
+              {
+                "id": "q5",
+                "title": "Additional possible visa ineligibilities",
+                "subtitle": "Early screening for common immigrant visa admissibility concerns",
+                "screens": [
+                  {
+                    "id": "q5s1",
+                    "label": "Prior Immigration Actions",
+                    "question": "Has the beneficiary ever been refused a U.S. visa, denied an immigration benefit, ordered removed, deported, or accused of using fraud or misrepresentation in any immigration matter?",
+                    "helper": "Prior refusals don't automatically disqualify a case. But fraud or misrepresentation can be a serious bar to admissibility.",
+                    "type": "single",
+                    "options": [
+                      {
+                        "label": "No — none of the above",
+                        "value": "no",
+                        "outcome": "next"
+                      },
+                      {
+                        "label": "Yes — at least one of these applies",
+                        "value": "yes",
+                        "outcome": "review"
+                      },
+                      {
+                        "label": "Not sure",
+                        "value": "unsure",
+                        "outcome": "review"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "q5s2",
+                    "label": "Criminal History",
+                    "question": "Does the beneficiary have any arrest, charge, or criminal conviction — anywhere in the world?",
+                    "helper": "Even minor or older matters can affect immigration eligibility. Do not guess or omit — certain convictions can trigger bars to admissibility.",
+                    "type": "single",
+                    "options": [
+                      {
+                        "label": "No — no arrests, charges, or convictions",
+                        "value": "no",
+                        "outcome": "next"
+                      },
+                      {
+                        "label": "Yes — there is at least one arrest, charge, or conviction",
+                        "value": "yes",
+                        "outcome": "review"
+                      },
+                      {
+                        "label": "Not sure",
+                        "value": "unsure",
+                        "outcome": "review"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "q5s3",
+                    "label": "Health & Medical",
+                    "question": "Is there any known health issue that might arise during the required immigration medical exam?",
+                    "helper": "The beneficiary must pass a medical exam by a USCIS-designated physician. This screen only asks whether there's a known concern to plan around.",
+                    "type": "single",
+                    "hint": {
+                      "intro": "Medical grounds of inadmissibility can include:",
+                      "items": [
+                        "Certain communicable diseases of public health significance",
+                        "Failure to have required immigration vaccinations",
+                        "Certain documented substance use disorders"
+                      ]
+                    },
+                    "options": [
+                      {
+                        "label": "No known health concern for the medical exam",
+                        "value": "no",
+                        "outcome": "next"
+                      },
+                      {
+                        "label": "Yes — there is a health concern that may come up",
+                        "value": "yes",
+                        "outcome": "review"
+                      },
+                      {
+                        "label": "Not sure",
+                        "value": "unsure",
+                        "outcome": "review"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "q5s4",
+                    "label": "Prior U.S. Immigration History",
+                    "question": "Has the beneficiary ever entered the U.S. without inspection, overstayed a visa, or accumulated unlawful presence in the United States?",
+                    "helper": "Unlawful presence can trigger multi-year or permanent bars to admissibility depending on the amount of time and how departure occurred.",
+                    "type": "single",
+                    "options": [
+                      {
+                        "label": "No — the beneficiary has no such U.S. immigration history",
+                        "value": "no",
+                        "outcome": "next"
+                      },
+                      {
+                        "label": "Yes — at least one of these applies",
+                        "value": "yes",
+                        "outcome": "review"
+                      },
+                      {
+                        "label": "Not sure",
+                        "value": "unsure",
+                        "outcome": "review"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "q5s5",
+                    "label": "Financial Sponsorship",
+                    "question": "Is there any concern that meeting the financial sponsorship requirements (Affidavit of Support) may be difficult?",
+                    "helper": "This does not affect eligibility right now — it's a forward-looking flag to plan for. The petitioner will need to meet the minimum income threshold or secure a joint sponsor.",
+                    "type": "single",
+                    "options": [
+                      {
+                        "label": "No known concern — petitioner can likely meet the income requirement",
+                        "value": "no",
+                        "outcome": "pass"
+                      },
+                      {
+                        "label": "Yes — there may be a challenge meeting the income threshold",
+                        "value": "yes",
+                        "outcome": "caution"
+                      },
+                      {
+                        "label": "Not sure yet",
+                        "value": "unsure",
+                        "outcome": "caution"
+                      }
+                    ]
+                  }
+                ],
+                "resultLogic": "(function() { const r = ['q5s1','q5s2','q5s3','q5s4'].filter(k => answers[k] === 'yes' || answers[k] === 'unsure'); if (r.length > 0) return { state: 'review', title: 'One or more admissibility concerns flagged', body: 'This screening identified at least one area — prior immigration actions, criminal history, medical, or unlawful presence — that warrants closer legal review. These issues do not automatically disqualify the case, but they require attorney analysis before proceeding.' }; if (answers['q5s5'] === 'yes' || answers['q5s5'] === 'unsure') return { state: 'caution', title: 'Financial sponsorship may need planning', body: 'No admissibility red flags were identified. However, the financial sponsorship requirement may need attention. Review the current income thresholds and consider whether a joint sponsor may be needed.' }; return { state: 'pass', title: 'No significant ineligibility flags identified', body: 'Based on this early screening, no major admissibility concerns were flagged. Remember: this is not a legal determination. Always review the full case with a qualified immigration attorney.' }; })()"
+              }
+            ]
+          },
           "output": "Eligibility confirmed",
           "notes": "Petitioner must be U.S. citizen (not green card holder). Marriage must be legal and genuine.",
           "relevantTools": [
-            { "label": "Visa Path Finder", "labelUr": "ویزہ پاتھ فائنڈر", "href": "/visa-eligibility", "type": "tool" }
+            {
+              "label": "Visa Path Finder",
+              "labelUr": "ویزہ پاتھ فائنڈر",
+              "href": "/visa-eligibility",
+              "type": "tool"
+            }
           ]
         },
         {
           "id": "I-02",
           "name": "Gather Required Documents",
-          "who": "Both",
+          "type": "docs",
+          "description": "Prepare the documents needed for your IR-1 spouse petition. Open each item to see exactly what is needed, where to get it, and what to watch out for.",
+          "who": "Pakistan-specific full checklist",
           "where": "Various sources",
           "timeline": "4-8 weeks",
           "actions": [
@@ -43,48 +665,372 @@
             "Apply for police certificate",
             "Take passport photos"
           ],
-          "documents": [
-            "U.S. Passport/Birth Certificate",
-            "Pakistani Passport",
-            "NADRA Birth Certificate",
-            "Nikah Nama (original)",
-            "English translation of Nikah Nama",
-            "Union Council Marriage Registration",
-            "Police Certificate",
-            "Passport Photos (2x2 inches)"
+          "documentItems": [
+            {
+              "id": "doc_citizenship",
+              "name": "Proof of U.S. Citizenship",
+              "subtitle": "Establishes the petitioner's right to file for an IR-1 spouse",
+              "tag": "petitioner",
+              "guideUrl": "/guides",
+              "icon": "ShieldCheck",
+              "group": "Required Now"
+            },
+            {
+              "id": "doc_passport_ben",
+              "name": "Beneficiary Passport",
+              "subtitle": "Pakistan passport of the immigrant spouse",
+              "tag": "beneficiary",
+              "guideUrl": "/guides/passport-guide",
+              "icon": "User",
+              "group": "Required Now"
+            },
+            {
+              "id": "doc_nikah_nama",
+              "name": "Nikah Nama (Original)",
+              "subtitle": "Islamic marriage contract — the foundational marriage document",
+              "tag": "beneficiary",
+              "guideUrl": "/guides/nikah-nama-guide",
+              "icon": "FileText",
+              "group": "Required Now"
+            },
+            {
+              "id": "doc_mrc",
+              "name": "NADRA Marriage Certificate",
+              "subtitle": "Government civil registration of the marriage (MRC)",
+              "tag": "beneficiary",
+              "guideUrl": "/guides/nikah-nama-guide",
+              "icon": "FileCheck",
+              "group": "Required Now"
+            },
+            {
+              "id": "doc_relationship",
+              "name": "Relationship Evidence",
+              "subtitle": "Proof the marriage is genuine and entered in good faith",
+              "tag": "both",
+              "guideUrl": "/guides",
+              "icon": "MessageSquare",
+              "group": "Required Now"
+            },
+            {
+              "id": "doc_prior_marriage",
+              "name": "Prior Marriage Termination Proof",
+              "subtitle": "Required if either spouse had a previous marriage",
+              "tag": "both",
+              "guideUrl": "/guides",
+              "icon": "Scale",
+              "group": "Required if Applicable"
+            },
+            {
+              "id": "doc_translations",
+              "name": "Translations",
+              "subtitle": "Certified English translations of non-English documents",
+              "tag": "third party",
+              "guideUrl": "/guides",
+              "icon": "Globe",
+              "group": "Required if Applicable"
+            },
+            {
+              "id": "doc_birth_cert",
+              "name": "Birth Certificate",
+              "subtitle": "Beneficiary's Pakistan birth record — needed at consular stage",
+              "tag": "beneficiary",
+              "guideUrl": "/guides/birth-certificate-guide",
+              "icon": "ClipboardList",
+              "group": "Gather Now for Later"
+            },
+            {
+              "id": "doc_police_cert",
+              "name": "Police Character Certificate",
+              "subtitle": "Pakistan PCC — required at consular stage",
+              "tag": "beneficiary",
+              "guideUrl": "/guides/police-verification-guide",
+              "icon": "Lock",
+              "group": "Gather Now for Later"
+            },
+            {
+              "id": "doc_passport_photos",
+              "name": "Passport Photos",
+              "subtitle": "Required at consular and visa application stages",
+              "tag": "beneficiary",
+              "guideUrl": "/guides",
+              "icon": "Camera",
+              "group": "Gather Now for Later"
+            }
           ],
           "pakistanSpecific": "Union Council registration increasingly required by Islamabad Embassy. Police certificate: 3-7 days processing for Punjab/Islamabad.",
           "relevantTools": [
-            { "label": "Marriage Cert Guide", "labelUr": "نکاح نامہ گائیڈ", "href": "/guides/nikah-nama-guide", "type": "guide" },
-            { "label": "Birth Cert Guide", "labelUr": "برتھ سرٹیفکیٹ گائیڈ", "href": "/guides/birth-certificate-guide", "type": "guide" },
-            { "label": "Passport Guide", "labelUr": "پاسپورٹ گائیڈ", "href": "/guides/passport-guide", "type": "guide" },
-            { "label": "Police Cert Guide", "labelUr": "پولیس ویریفیکیشن گائیڈ", "href": "/guides/police-verification-guide", "type": "guide" },
-            { "label": "Urdu → English Translation", "labelUr": "اردو سے انگریزی ترجمہ", "href": "/document-translation", "type": "service" },
-            { "label": "Photo Booth", "labelUr": "فوٹو بوتھ", "href": "/passport", "type": "tool" }
+            {
+              "label": "Marriage Cert Guide",
+              "labelUr": "نکاح نامہ گائیڈ",
+              "href": "/guides/nikah-nama-guide",
+              "type": "guide"
+            },
+            {
+              "label": "Birth Cert Guide",
+              "labelUr": "برتھ سرٹیفکیٹ گائیڈ",
+              "href": "/guides/birth-certificate-guide",
+              "type": "guide"
+            },
+            {
+              "label": "Passport Guide",
+              "labelUr": "پاسپورٹ گائیڈ",
+              "href": "/guides/passport-guide",
+              "type": "guide"
+            },
+            {
+              "label": "Police Cert Guide",
+              "labelUr": "پولیس ویریفیکیشن گائیڈ",
+              "href": "/guides/police-verification-guide",
+              "type": "guide"
+            },
+            {
+              "label": "Urdu → English Translation",
+              "labelUr": "اردو سے انگریزی ترجمہ",
+              "href": "/document-translation",
+              "type": "service"
+            },
+            {
+              "label": "Photo Booth",
+              "labelUr": "فوٹو بوتھ",
+              "href": "/passport",
+              "type": "tool"
+            }
           ]
         },
         {
           "id": "I-03",
-          "name": "Decide Filing Method",
-          "who": "Petitioner",
+          "name": "Choose Filing Method",
+          "description": "Choose how to file Form I-130 with USCIS. Both methods are fully accepted and take the same amount of time to process — select the one that works best for you.",
+          "type": "filing",
+          "who": "Online $625 or Paper $675",
           "where": "Decision point",
           "actions": [
             "Compare online ($625) vs paper ($675)",
             "Consider processing speed",
             "Choose filing method"
           ],
-          "fee": "Online: $625, Paper: $675",
-          "notes": "Online filing recommended - faster receipt, lower fee, electronic tracking"
+          "filingData": {
+            "id": "filing-method-comparison",
+            "title": "Decide Filing Method",
+            "subtitle": "Choose how to file Form I-130 with USCIS. Both methods are fully accepted and take the same amount of time to process — select the one that works best for you.",
+            "state": {
+              "isLocked": "const [isLocked, setIsLocked] = useState(state.metadata.filingMethodConfirmed || false);",
+              "hintOpen": "const [hintOpen, setHintOpen] = useState<Record<string, boolean>>({});",
+              "isLaunched": "const [isLaunched, setIsLaunched] = useState(false);"
+            },
+            "methods": [
+              {
+                "id": "online",
+                "title": "ONLINE FILING",
+                "name": "File Online",
+                "price": "$625",
+                "subtitle": "via myUSCIS account",
+                "features": [
+                  "Instant receipt number",
+                  "Upload documents digitally",
+                  "Manage case in your account",
+                  "Saves $50 vs. paper"
+                ],
+                "icon": "Monitor",
+                "color": "emerald"
+              },
+              {
+                "id": "paper",
+                "title": "PAPER FILING",
+                "name": "File by Mail",
+                "price": "$675",
+                "subtitle": "mail packet to USCIS",
+                "features": [
+                  "Send physical document copies",
+                  "Pay by check or money order",
+                  "Receipt notice arrives by mail",
+                  "Same processing time as online"
+                ],
+                "icon": "Mail",
+                "color": "violet"
+              }
+            ],
+            "footerNote": "Fees as of March 2026 per the USCIS G-1055 fee schedule. Processing time is the same for both methods. Always verify at uscis.gov before filing.",
+            "quiz": {
+              "screens": [
+                {
+                  "id": "attorney",
+                  "question": "Is an attorney or accredited representative managing the filing for you?",
+                  "helper": "If a representative is handling the paperwork, they typically decide the filing method — this walkthrough may not apply.",
+                  "hint": {
+                    "items": [
+                      "Attorneys can file I-130 online via their USCIS representative account, or by mailing a paper packet — both work",
+                      "Ask your attorney or document preparer which method they prefer before deciding"
+                    ]
+                  },
+                  "options": [
+                    {
+                      "label": "Yes — a representative is handling this",
+                      "value": "yes",
+                      "signal": "discuss"
+                    },
+                    {
+                      "label": "No — I'm filing on my own",
+                      "value": "no",
+                      "signal": "neutral"
+                    },
+                    {
+                      "label": "Not sure yet",
+                      "value": "unsure",
+                      "signal": "discuss"
+                    }
+                  ]
+                },
+                {
+                  "id": "online-account",
+                  "question": "Can the petitioner create and manage a USCIS online account?",
+                  "helper": "Online filing requires a free USCIS account at my.uscis.gov — used to complete the form, upload documents, and pay the filing fee.",
+                  "hint": {
+                    "items": [
+                      "Account setup takes a few minutes and just needs a valid email address",
+                      "Your USCIS account also delivers notices, requests for evidence, and case updates",
+                      "Paper filers can add their case to a USCIS account later using the mailed receipt number"
+                    ]
+                  },
+                  "options": [
+                    {
+                      "label": "Yes — comfortable setting up and using an online account",
+                      "value": "yes",
+                      "signal": "online"
+                    },
+                    {
+                      "label": "No — online accounts aren't practical right now",
+                      "value": "no",
+                      "signal": "paper"
+                    },
+                    {
+                      "label": "Not sure",
+                      "value": "unsure",
+                      "signal": "neutral"
+                    }
+                  ]
+                },
+                {
+                  "id": "doc-upload",
+                  "question": "Are the required documents available in digital form for upload?",
+                  "helper": "Online filing requires uploading scanned or photographed copies. Paper filing uses physical copies sent by mail.",
+                  "hint": {
+                    "items": [
+                      "PDF, JPG, or PNG are accepted — a phone camera usually works fine",
+                      "Documents must be clear and fully legible",
+                      "A flatbed scanner gives better results for dense documents like a Nikah Nama"
+                    ]
+                  },
+                  "options": [
+                    {
+                      "label": "Yes — documents are ready or easy to scan",
+                      "value": "yes",
+                      "signal": "online"
+                    },
+                    {
+                      "label": "No — physical copies only, hard to digitize right now",
+                      "value": "no",
+                      "signal": "paper"
+                    },
+                    {
+                      "label": "Not sure",
+                      "value": "unsure",
+                      "signal": "neutral"
+                    }
+                  ]
+                },
+                {
+                  "id": "preference",
+                  "question": "Does the petitioner have a preference for how to file?",
+                  "helper": "Both methods are fully valid. Your comfort level is a legitimate deciding factor — there is no wrong choice.",
+                  "options": [
+                    {
+                      "label": "Prefer online — convenient and saves $50",
+                      "value": "online",
+                      "signal": "online"
+                    },
+                    {
+                      "label": "Prefer paper — more comfortable mailing a physical packet",
+                      "value": "paper",
+                      "signal": "paper"
+                    },
+                    {
+                      "label": "No strong preference — happy with whatever works best",
+                      "value": "neutral",
+                      "signal": "neutral"
+                    }
+                  ]
+                }
+              ]
+            }
+          }
         },
         {
           "id": "I-04",
-          "name": "Complete Form I-130",
-          "who": "Petitioner",
-          "where": "my.uscis.gov or paper",
+          "name": "Fill Form I-130",
+          "description": "Use Rahvana's guided Autoform Filler to complete the I-130 Petition for Alien Relative — with structured step-by-step support, clear prompts, and a built-in review flow.",
+          "type": "tool",
+          "logic": "filingMethod === 'online'",
+          "toolData": {
+            "id": "i130-filler-online",
+            "eyebrow": "Fill Form I-130",
+            "title": "Fill Form I-130",
+            "subtitle": "Use Rahvana's guided Autoform Filler to complete the I-130 Petition for Alien Relative — with structured step-by-step support, clear prompts, and a built-in review flow.",
+            "chips": [
+              {
+                "label": "Petitioner",
+                "type": "role"
+              },
+              {
+                "label": "Rahvana Tool",
+                "type": "tool"
+              },
+              {
+                "label": "Opens in new tab",
+                "type": "newtab"
+              }
+            ],
+            "launchModule": {
+              "icon": "form",
+              "eyebrow": "Autoform Filler · USCIS Form I-130",
+              "heading": "Guided completion, start to finish",
+              "features": [
+                "Question-by-question guided flow",
+                "Plain-language prompts for every field",
+                "Built-in review before you finalize",
+                "Pakistan-context defaults where relevant"
+              ],
+              "buttonLabel": "Launch I-130 Autoform Filler",
+              "href": "/visa-forms/i130/wizard",
+              "note": "Opens in a new browser tab — you can return to the roadmap anytime"
+            },
+            "supportCards": [
+              {
+                "label": "Have these ready",
+                "items": [
+                  "Petitioner's citizenship proof",
+                  "Beneficiary's passport details",
+                  "Marriage certificate info",
+                  "Addresses for the past 5 years"
+                ]
+              },
+              {
+                "label": "Good to know",
+                "items": [
+                  "You can save progress and return",
+                  "No fee is charged inside the tool",
+                  "USCIS account setup is a separate step",
+                  "Complete this before uploading to USCIS"
+                ]
+              }
+            ],
+            "disclaimer": "Rahvana provides structured guidance only. This is not legal advice. Consult a licensed immigration attorney for case-specific decisions."
+          },
+          "who": "via Rahvana wizard",
+          "where": "my.uscis.gov",
           "timeline": "2-4 hours",
-          "filingType": "both",
           "actions": [
-            "Create USCIS account (if online)",
+            "Create USCIS account",
             "Complete Part 1: Relationship",
             "Complete Part 2: Petitioner information",
             "Complete Part 3: Beneficiary information",
@@ -101,28 +1047,213 @@
           "output": "Completed I-130 form",
           "officialSource": "https://www.uscis.gov/i-130",
           "relevantTools": [
-            { "label": "Smart Form Filler", "labelUr": "سمارٹ فارم فلر", "href": "/visa-forms", "type": "tool" }
+            {
+              "label": "Smart Form Filler",
+              "labelUr": "سمارٹ فارم فلر",
+              "href": "/visa-forms",
+              "type": "tool"
+            }
           ]
         },
         {
           "id": "I-05",
-          "name": "Complete Form I-130A",
-          "who": "Beneficiary",
-          "where": "Online or paper with I-130",
-          "actions": [
-            "Provide beneficiary biographic information",
-            "Include parent information",
-            "Provide physical characteristics",
-            "Sign form"
-          ],
-          "notes": "Always required for spouse petitions, no separate fee"
+          "name": "Fill Form I-130A",
+          "description": "Complete the beneficiary spouse information form using Rahvana's guided Autoform Filler — structured prompts, field-by-field clarity, and a built-in review before you finalize.",
+          "companion": "Companion form to I-130 · Beneficiary spouse focus",
+          "who": "via Rahvana wizard",
+          "type": "tool",
+          "toolData": {
+            "title": "Fill Form I-130A",
+            "subtitle": "Complete the beneficiary spouse information form using Rahvana's guided Autoform Filler — structured prompts, field-by-field clarity, and a built-in review before you finalize.",
+            "chips": [
+              {
+                "label": "Beneficiary",
+                "type": "role"
+              },
+              {
+                "label": "Rahvana Tool",
+                "type": "tool"
+              },
+              {
+                "label": "Opens in new tab",
+                "type": "newtab"
+              }
+            ],
+            "launchModule": {
+              "icon": "user",
+              "eyebrow": "Autoform Filler · USCIS Form I-130A",
+              "heading": "Spouse beneficiary information, guided",
+              "features": [
+                "Step-by-step beneficiary info collection",
+                "Residence and employment history prompts",
+                "Plain-language guidance on every field",
+                "Built-in review before you finalize"
+              ],
+              "buttonLabel": "Launch I-130A Autoform Filler",
+              "href": "/visa-forms/i130a/wizard",
+              "note": "Opens in a new browser tab — you can return to the roadmap anytime"
+            },
+            "supportCards": [
+              {
+                "label": "Have these ready",
+                "items": [
+                  "Spouse's full legal name and DOB",
+                  "Addresses for the past 5 years",
+                  "Employment history (last 5 years)",
+                  "Passport and immigration info"
+                ]
+              },
+              {
+                "label": "Good to know",
+                "items": [
+                  "Best completed right after Form I-130",
+                  "Filed together as one petition package",
+                  "You can save progress and return later",
+                  "No fee is charged inside the tool"
+                ]
+              }
+            ]
+          }
         },
         {
           "id": "I-06",
+          "name": "Create USCIS Account",
+          "type": "tool",
+          "description": "Set up the petitioner's USCIS online account — the gateway for filing Form I-130 digitally, tracking the case, and responding to any USCIS requests.",
+          "who": "myaccount.uscis.gov",
+          "toolData": {
+            "id": "uscis-account-setup",
+            "title": "Create USCIS Account",
+            "subtitle": "Set up the petitioner's USCIS online account — the gateway for filing Form I-130 digitally, tracking the case, and responding to any USCIS requests.",
+            "chips": [
+              {
+                "label": "Petitioner",
+                "type": "role"
+              },
+              {
+                "label": "Online Filing",
+                "type": "uscis"
+              },
+              {
+                "label": "USCIS Account",
+                "type": "uscis"
+              }
+            ],
+            "launchModule": {
+              "icon": "shield",
+              "eyebrow": "Official USCIS · myUSCIS Portal",
+              "heading": "Create your secure USCIS online account",
+              "features": [
+                "Free account at myaccount.uscis.gov",
+                "Required before online I-130 filing",
+                "Two-step verification for security",
+                "Choose \"applicant, petitioner, or requestor\""
+              ],
+              "buttonLabel": "Create USCIS Account",
+              "href": "https://myaccount.uscis.gov/create-account",
+              "note": "Opens USCIS account creation page in a new tab"
+            },
+            "secondaryActions": [
+              {
+                "id": "uscis-tutorial",
+                "type": "tutorial",
+                "title": "Step-by-Step Account Setup Guide",
+                "subtitle": "Walk through the USCIS account creation process screen by screen.",
+                "cta": "View guide",
+                "icon": "book"
+              },
+              {
+                "id": "uscis-wallet",
+                "type": "wallet",
+                "title": "Save USCIS Credentials",
+                "subtitle": "Securely store your USCIS login details in Rahvana's Portal Wallet.",
+                "cta": "Open credential vault",
+                "icon": "wallet"
+              }
+            ],
+            "walletIntegration": {
+              "portalType": "USCIS"
+            },
+            "disclaimer": "Rahvana provides structured guidance only. This is not legal advice. Credentials are stored locally for your session only. Manage them in your Portal Wallet."
+          }
+        },
+        {
+          "id": "I-07",
+          "name": "Start Form I-130 on USCIS",
+          "type": "tool",
+          "who": "Begin petition online",
+          "toolData": {
+            "id": "start-i130-uscis",
+            "title": "Start Form I-130 on USCIS",
+            "subtitle": "Sign in to your USCIS account and begin the online I-130 petition. From your account dashboard, click \"File a Form Online\" to start the form.",
+            "chips": [
+              {
+                "label": "Petitioner",
+                "type": "role"
+              },
+              {
+                "label": "Online Filing",
+                "type": "uscis"
+              }
+            ],
+            "launchModule": {
+              "icon": "form",
+              "eyebrow": "USCIS Portal · myaccount.uscis.gov",
+              "heading": "Start the online I-130 petition on USCIS",
+              "features": [
+                "Sign in at myaccount.uscis.gov",
+                "Click \"File a Form Online\" on the dashboard",
+                "Select Form I-130 and begin the draft",
+                "Progress saves automatically as you go"
+              ],
+              "buttonLabel": "Go to USCIS Portal",
+              "href": "https://myaccount.uscis.gov/",
+              "note": "Opens your USCIS account in a new tab — return here after starting the form"
+            }
+          }
+        },
+        {
+          "id": "I-08",
+          "name": "Upload Forms & Evidence",
+          "type": "tool",
+          "who": "PDF/JPG, 12 MB max",
+          "toolData": {
+            "id": "uscis-upload-evidence",
+            "title": "Upload Forms & Evidence",
+            "subtitle": "Attach your supporting documents inside the USCIS online portal. This is the evidence-upload phase.",
+            "chips": [
+              {
+                "label": "Petitioner",
+                "type": "role"
+              },
+              {
+                "label": "Online Filing",
+                "type": "uscis"
+              }
+            ],
+            "launchModule": {
+              "icon": "form",
+              "eyebrow": "USCIS Portal · Evidence Upload Phase",
+              "heading": "Attach your evidence files to the I-130 filing",
+              "features": [
+                "Sign in and open your I-130 draft",
+                "Navigate to the evidence-upload section",
+                "Attach each document file individually",
+                "Confirm each upload appears correctly"
+              ],
+              "buttonLabel": "Open USCIS Portal",
+              "href": "https://myaccount.uscis.gov/",
+              "note": "Accepted formats: PDF, JPG, or JPEG only. Max 12MB per file."
+            }
+          }
+        },
+        {
+          "id": "I-09",
           "name": "Pay Filing Fee",
-          "who": "Petitioner",
+          "who": "$625 at USCIS",
           "where": "Pay.gov or Form G-1450/G-1650",
           "fee": "Online: $625, Paper: $675",
+          "logic": "filingMethod === 'online' || filingMethod === 'paper'",
           "actions": [
             "Select payment method",
             "Enter payment information",
@@ -133,9 +1264,9 @@
           "officialSource": "https://www.uscis.gov/g-1055"
         },
         {
-          "id": "I-07",
+          "id": "I-10",
           "name": "Submit Application",
-          "who": "Petitioner",
+          "who": "Receipt number begins IOE",
           "where": "Online or mail",
           "actions": [
             "Review entire application",
@@ -147,7 +1278,7 @@
           "nextTrigger": "Receipt notice within 2-4 weeks"
         },
         {
-          "id": "I-08",
+          "id": "I-11",
           "name": "Receive Receipt Notice (I-797C)",
           "who": "Petitioner",
           "where": "Mail or online account",
@@ -161,7 +1292,7 @@
           "output": "Receipt number obtained"
         },
         {
-          "id": "I-09",
+          "id": "I-12",
           "name": "Wait for Processing",
           "who": "Both",
           "where": "Current locations",
@@ -174,13 +1305,28 @@
           ],
           "notes": "RFE deadline usually 30-87 days. Respond promptly to avoid delays.",
           "relevantTools": [
-            { "label": "Case Status Tracker", "labelUr": "کیس اسٹیٹس ٹریکر", "href": "/case-status", "type": "tool" },
-            { "label": "Case Strength Analyzer", "labelUr": "کیس سٹرینتھ اینالائزر", "href": "/visa-case-strength-checker", "type": "tool" },
-            { "label": "Visa Bulletin Monitor", "labelUr": "ویزہ بلٹن مانیٹر", "href": "/visa-checker", "type": "tool" }
+            {
+              "label": "Case Status Tracker",
+              "labelUr": "کیس اسٹیٹس ٹریکر",
+              "href": "/case-status",
+              "type": "tool"
+            },
+            {
+              "label": "Case Strength Analyzer",
+              "labelUr": "کیس سٹرینتھ اینالائزر",
+              "href": "/visa-case-strength-checker",
+              "type": "tool"
+            },
+            {
+              "label": "Visa Bulletin Monitor",
+              "labelUr": "ویزہ بلٹن مانیٹر",
+              "href": "/visa-checker",
+              "type": "tool"
+            }
           ]
         },
         {
-          "id": "I-10",
+          "id": "I-13",
           "name": "Receive Approval Notice (I-797)",
           "who": "Petitioner",
           "where": "Mail",
@@ -313,8 +1459,18 @@
           "notes": "Minimum income: $25,550 for household of 2 (2025). Use joint sponsor if needed.",
           "officialSource": "https://www.uscis.gov/i-864",
           "relevantTools": [
-            { "label": "Sponsorship Calculator", "labelUr": "سپانسرشپ کیلکولیٹر", "href": "/affidavit-support-calculator", "type": "tool" },
-            { "label": "Snap & Sign", "labelUr": "سنیپ اینڈ سائن", "href": "/signature-image-processing", "type": "tool" }
+            {
+              "label": "Sponsorship Calculator",
+              "labelUr": "سپانسرشپ کیلکولیٹر",
+              "href": "/affidavit-support-calculator",
+              "type": "tool"
+            },
+            {
+              "label": "Snap & Sign",
+              "labelUr": "سنیپ اینڈ سائن",
+              "href": "/signature-image-processing",
+              "type": "tool"
+            }
           ]
         },
         {
@@ -332,7 +1488,12 @@
           "output": "All documents uploaded",
           "notes": "Upload one at a time. Max 4 MB per file. PDF preferred.",
           "relevantTools": [
-            { "label": "PDF Toolkit", "labelUr": "پی ڈی ایف ٹول کٹ", "href": "/pdf-processing", "type": "tool" }
+            {
+              "label": "PDF Toolkit",
+              "labelUr": "پی ڈی ایف ٹول کٹ",
+              "href": "/pdf-processing",
+              "type": "tool"
+            }
           ]
         },
         {
@@ -396,7 +1557,12 @@
           ],
           "notes": "Cannot speed up this process. Interview scheduled by embassy.",
           "relevantTools": [
-            { "label": "DQ Status Tracker", "labelUr": "ڈی کیو سٹیٹس ٹریکر", "href": "/iv-tool", "type": "tool" }
+            {
+              "label": "DQ Status Tracker",
+              "labelUr": "ڈی کیو سٹیٹس ٹریکر",
+              "href": "/iv-tool",
+              "type": "tool"
+            }
           ]
         },
         {
@@ -438,7 +1604,12 @@
           "fee": "$200-300 USD equivalent",
           "notes": "Medical results valid 6 months. Schedule 2-3 days before interview ideally.",
           "relevantTools": [
-            { "label": "Polio Vaccination Guide", "labelUr": "پولیو ویکسینیشن گائیڈ", "href": "/guides/polio-vaccination-guide", "type": "guide" }
+            {
+              "label": "Polio Vaccination Guide",
+              "labelUr": "پولیو ویکسینیشن گائیڈ",
+              "href": "/guides/polio-vaccination-guide",
+              "type": "guide"
+            }
           ]
         },
         {
@@ -505,7 +1676,12 @@
           "output": "Sealed medical envelope",
           "notes": "DO NOT OPEN envelope. Results ready in 2-5 days. Collect 1-2 days before interview.",
           "relevantTools": [
-            { "label": "Book Medical Appointment", "labelUr": "میڈیکل اپائنٹمنٹ بک کریں", "href": "/book-appointment", "type": "service" }
+            {
+              "label": "Book Medical Appointment",
+              "labelUr": "میڈیکل اپائنٹمنٹ بک کریں",
+              "href": "/book-appointment",
+              "type": "service"
+            }
           ]
         },
         {
@@ -523,7 +1699,12 @@
           ],
           "notes": "Be truthful, consistent. Know spouse details well. Dress professionally - no jeans/t-shirts.",
           "relevantTools": [
-            { "label": "Interview Prep Tool", "labelUr": "انٹرویو پریپ ٹول", "href": "/interview-prep", "type": "tool" }
+            {
+              "label": "Interview Prep Tool",
+              "labelUr": "انٹرویو پریپ ٹول",
+              "href": "/interview-prep",
+              "type": "tool"
+            }
           ]
         },
         {
@@ -550,7 +1731,12 @@
           ],
           "notes": "Common questions: How did you meet? Tell me about your wedding. Where will you live?",
           "relevantTools": [
-            { "label": "221(g) Action Planner", "labelUr": "221(g) ایکشن پلانر", "href": "/221g-action-planner", "type": "tool" }
+            {
+              "label": "221(g) Action Planner",
+              "labelUr": "221(g) ایکشن پلانر",
+              "href": "/221g-action-planner",
+              "type": "tool"
+            }
           ]
         },
         {
