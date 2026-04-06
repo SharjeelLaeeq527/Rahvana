@@ -136,17 +136,17 @@ export function useWizard(options: UseWizardOptions = {}) {
   // ─── Normalize State After Load ───────────────────────────────────────────
 
   const normalizeState = useCallback(() => {
-    if (!activeRoadmap || !activeRoadmap.stages) return;
+    if (!activeRoadmap || !(activeRoadmap.chapters || activeRoadmap.stages)) return;
 
     setState((prev) => {
       let { currentStage, currentStep } = prev;
 
       if (currentStage < 0) currentStage = 0;
-      if (currentStage >= activeRoadmap.stages.length) {
-        currentStage = Math.max(0, activeRoadmap.stages.length - 1);
+      if (currentStage >= (activeRoadmap.chapters || activeRoadmap.stages).length) {
+        currentStage = Math.max(0, (activeRoadmap.chapters || activeRoadmap.stages).length - 1);
       }
 
-      const stage = activeRoadmap.stages[currentStage];
+      const stage = (activeRoadmap.chapters || activeRoadmap.stages)[currentStage];
       if (!stage) return { ...prev, currentStage, currentStep: null };
 
       let narrowedStep: number;
@@ -156,14 +156,14 @@ export function useWizard(options: UseWizardOptions = {}) {
         currentStep >= stage.steps.length
       ) {
         const firstIncomplete = stage.steps.findIndex(
-          (s: any) => !prev.completedSteps.has(s.id),
+          (s: any) => !prev.completedSteps.has(s.step_key || s.id),
         );
         narrowedStep = firstIncomplete === -1 ? 0 : firstIncomplete;
       } else {
         narrowedStep = currentStep;
       }
 
-      const stepId = stage.steps[narrowedStep]?.id;
+      const stepId = stage.steps[narrowedStep]?.step_key || stage.steps[narrowedStep]?.id;
       const newCollapsed = { ...prev.collapsedSteps };
       if (stepId) {
         newCollapsed[stepId] = false;
@@ -220,13 +220,13 @@ export function useWizard(options: UseWizardOptions = {}) {
 
     setCurrentStep: (idx: number) => {
       setState((prev) => {
-        const stage = activeRoadmap.stages[prev.currentStage];
+        const stage = (activeRoadmap.chapters || activeRoadmap.stages)[prev.currentStage];
         if (!stage) return prev;
 
         const step = stage.steps[idx];
         const newCollapsed = { ...prev.collapsedSteps };
         if (step) {
-          newCollapsed[step.id] = false;
+          newCollapsed[step.step_key || step.id] = false;
         }
         return { ...prev, currentStep: idx, collapsedSteps: newCollapsed };
       });

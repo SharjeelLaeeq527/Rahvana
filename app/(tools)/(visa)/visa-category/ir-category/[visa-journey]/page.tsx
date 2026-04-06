@@ -52,8 +52,9 @@ export default function IR1JourneyPage() {
         .then((mod) => {
           const data = mod.default || mod;
           setRoadmapData(data);
-          const hasScenarioSteps = data.stages.some((s: RoadmapStage) =>
-            s.steps.some((st) => st.scenarioSpecific),
+          const chapters = data.chapters || data.stages || [];
+          const hasScenarioSteps = chapters.some((s: any) =>
+            (s.steps || []).some((st: any) => st.scenarioSpecific),
           );
           setHasScenarios(hasScenarioSteps);
           setDataLoaded(true);
@@ -135,16 +136,16 @@ export default function IR1JourneyPage() {
             <div className="flex-1">
               <div className="flex items-center gap-2 mb-3 md:mb-4">
                 <h1 className="text-3xl md:text-5xl font-bold">
-                  {language === "ur" && roadmapData.titleUr
-                    ? roadmapData.titleUr
-                    : roadmapData.title || t("ir1Journey.title")}
+                  {language === "ur" && (roadmapData as any).titleUr
+                    ? (roadmapData as any).titleUr
+                    : (roadmapData as any).journey_name || roadmapData.title || t("ir1Journey.title")}
                 </h1>
                 <VisaCategoryTooltip roadmapData={roadmapData} language={language} />
               </div>
               <p className="text-slate-500 mb-6 md:mb-8 text-base md:text-lg max-w-2xl">
-                {language === "ur" && roadmapData.descriptionUr
-                  ? roadmapData.descriptionUr
-                  : roadmapData.description || t("ir1Journey.description")}
+                {language === "ur" && (roadmapData as any).descriptionUr
+                  ? (roadmapData as any).descriptionUr
+                  : (roadmapData as any).journey_description || roadmapData.description || t("ir1Journey.description")}
               </p>
             </div>
             {isSignedIn && (
@@ -221,21 +222,24 @@ export default function IR1JourneyPage() {
               <div className="w-1 h-6 md:h-8 bg-primary rounded-full" />
               <h2 className="text-xl md:text-2xl font-bold text-slate-900 tracking-tight">
                 {(() => {
-                  const visibleStagesCount = roadmapData.stages.filter(
-                    (s) => !hasScenarios || !s.scenarioSpecific || s.scenarioSpecific === state.scenarioType,
+                  const chapters = roadmapData.chapters || (roadmapData as any).stages || [];
+                  const visibleStagesCount = chapters.filter(
+                    (s: any) => !hasScenarios || !s.scenarioSpecific || s.scenarioSpecific === state.scenarioType,
                   ).length;
                   return `The ${visibleStagesCount} Stages of Your Journey`;
                 })()}
               </h2>
             </div>
             <div className="flex overflow-x-auto w-full justify-start gap-4 pb-6 pt-2 snap-x snap-mandatory px-4">
-              {roadmapData.stages
-                .filter((stage: RoadmapStage) => !hasScenarios || !stage.scenarioSpecific || stage.scenarioSpecific === state.scenarioType)
-                .map((stage: RoadmapStage, sIdx: number, filteredStages: RoadmapStage[]) => {
-                  const Icon = (icons as unknown as Record<string, React.ElementType>)[stage.icon || "FileText"] || icons.FileText;
+              {(roadmapData.chapters || (roadmapData as any).stages || [])
+                .filter((stage: any) => !hasScenarios || !stage.scenarioSpecific || stage.scenarioSpecific === state.scenarioType)
+                .map((stage: any, sIdx: number, filteredStages: any[]) => {
+                  const Icon = (icons as unknown as Record<string, React.ElementType>)[(stage.icon || (stage as any).chapter_icon) || "FileText"] || icons.FileText;
                   const isLast = sIdx === filteredStages.length - 1;
+                  const stageId = stage.chapter_key || stage.id;
+                  const stageName = stage.chapter_name || stage.name;
                   return (
-                    <div key={stage.id} className="relative shrink-0 w-52 snap-center">
+                    <div key={stageId} className="relative shrink-0 w-52 snap-center">
                       <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm h-full flex flex-col">
                         <div className="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center mb-4">
                           <Icon className="w-5 h-5 text-primary" />
@@ -243,7 +247,7 @@ export default function IR1JourneyPage() {
                         <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">
                           {t("visaJourney.stageShort", { stage: sIdx + 1 })}
                         </span>
-                        <h4 className="font-bold text-slate-800 text-[15px] mb-2">{stage.name}</h4>
+                        <h4 className="font-bold text-slate-800 text-[15px] mb-2">{stageName}</h4>
                       </div>
                       {!isLast && (
                         <div className="hidden lg:flex absolute top-1/2 left-[calc(100%+8px)] -translate-y-1/2">
@@ -306,7 +310,7 @@ function Wizard({ roadmapData, state, actions, isLoaded, selectedScenario, hasSc
 
   if (!isLoaded) return null;
 
-  const currentStage = roadmapData.stages[state.currentStage];
+  const currentStage = (roadmapData.chapters || (roadmapData as any).stages || [])[state.currentStage];
   const currentStep = currentStage?.steps[state.currentStep || 0];
 
   if (!currentStep || !currentStage) return null;

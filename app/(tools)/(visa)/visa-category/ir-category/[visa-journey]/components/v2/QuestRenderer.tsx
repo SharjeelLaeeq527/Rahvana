@@ -35,10 +35,13 @@ export function QuestRenderer({
 }: QuestRendererProps) {
   const [activeQuestId, setActiveQuestId] = useState<string | null>(null);
   const [currentScreenIdx, setCurrentScreenIdx] = useState(0);
+
+  const suiteId = (suite as any).id || (suite as any).step_key;
+
   const [suiteAnswers, setSuiteAnswers] = useState<
     Record<string, Record<string, string | string[]>>
   >(
-    (state.answers?.[suite.id] as Record<
+    (state.answers?.[suiteId] as Record<
       string,
       Record<string, string | string[]>
     >) || {},
@@ -136,7 +139,7 @@ export function QuestRenderer({
     setSuiteAnswers(finalAnswers);
     actions.updateAnswers({ [suite.id]: finalAnswers });
 
-    const result = evaluateLogic(activeQuest.resultLogic, tempAnswers);
+    const result = evaluateLogic(activeQuest.result_logic, tempAnswers);
     setQuestResults((prev) => ({ ...prev, [activeQuest.id]: result }));
     setView("result");
   };
@@ -188,7 +191,7 @@ export function QuestRenderer({
       default:
         return {
           label: "Completed",
-          color: "text-[#3b7dd8]",
+          color: "text-primary",
           icon: <CheckCircle2 size={14} />,
           bg: "bg-[#f0f7ff]",
           border: "border-[#d0e4f7]",
@@ -207,7 +210,7 @@ export function QuestRenderer({
             {/* <div className="text-[11px] font-semibold uppercase tracking-[0.12em] text-[#6b8097] mb-1.5">
               Chapter 1 · USCIS Petition Filing
             </div>
-            <div className="text-[11px] font-medium uppercase tracking-[0.08em] text-[#3b7dd8] mb-5">
+            <div className="text-[11px] font-medium uppercase tracking-[0.08em] text-primary mb-5">
               Step 1 — Determine Eligibility
             </div> */}
             <h1 className="text-[clamp(26px,4vw,34px)] font-black text-[#0f1f38] mb-2.5 leading-[1.2]">
@@ -219,9 +222,9 @@ export function QuestRenderer({
           </div>
 
           <div className="mb-9">
-            <div className="w-full h-[5px] bg-[#d0e4f7] rounded-[10px] overflow-hidden">
+            <div className="w-full h-[5px] bg-primary/30 rounded-[10px] overflow-hidden">
               <div
-                className="h-full bg-linear-to-r from-[#3b7dd8] to-[#5b95e8] transition-all duration-1000 ease-out rounded-[10px]"
+                className="h-full bg-linear-to-r from-primary to-bg-primary transition-all duration-1000 ease-out rounded-[10px]"
                 style={{ width: `${progressPct}%` }}
               />
             </div>
@@ -234,7 +237,7 @@ export function QuestRenderer({
                 <button
                   key={q.id}
                   onClick={() => handleStartQuest(q.id)}
-                  className={`w-full flex items-center gap-[16px] px-[20px] py-[18px] rounded-[14px] border-[1.5px] text-left transition-all hover:border-[#3b7dd8] hover:shadow-[0_8px_32px_rgba(15,31,56,0.12),0_2px_8px_rgba(15,31,56,0.06)] hover:-translate-y-px active:translate-y-0 active:shadow-[0_2px_12px_rgba(15,31,56,0.07),0_1px_3px_rgba(15,31,56,0.04)] group
+                  className={`w-full flex items-center gap-[16px] px-[20px] py-[18px] rounded-[14px] border-[1.5px] text-left transition-all hover:border-primary hover:shadow-[0_8px_32px_rgba(15,31,56,0.12),0_2px_8px_rgba(15,31,56,0.06)] hover:-translate-y-px active:translate-y-0 active:shadow-[0_2px_12px_rgba(15,31,56,0.07),0_1px_3px_rgba(15,31,56,0.04)] group
                     ${meta.bg} ${meta.border} bg-white shadow-[0_2px_12px_rgba(15,31,56,0.07),0_1px_3px_rgba(15,31,56,0.04)]`}
                 >
                   <div
@@ -268,7 +271,7 @@ export function QuestRenderer({
             <div className="mt-12 text-center">
               <button
                 onClick={onComplete}
-                className="px-12 py-5 bg-[#3b7dd8] text-white rounded-[16px] font-bold text-[16px] shadow-lg shadow-[#3b7dd8]/20 hover:bg-[#0f1f38] transition-all"
+                className="px-12 py-5 bg-primary text-white rounded-[16px] font-bold text-[16px] shadow-lg shadow-primary/20 hover:bg-[#0f1f38] transition-all"
               >
                 Continue to Document Prep →
               </button>
@@ -311,13 +314,13 @@ export function QuestRenderer({
           <div className="flex flex-col gap-3 max-w-[280px] mx-auto">
             <button
               onClick={() => setView("landing")}
-              className="px-8 py-4 bg-[#3b7dd8] text-white rounded-[16px] font-bold text-[15px] hover:bg-[#0f1f38] transition-all shadow-md active:scale-95"
+              className="px-8 py-4 bg-primary text-white rounded-[16px] font-bold text-[15px] hover:bg-[#0f1f38] transition-all shadow-md active:scale-95"
             >
               Back to Overview
             </button>
             <button
               onClick={() => setView("quest")}
-              className="px-8 py-3.5 bg-white text-[#6b8097] border border-[#d0e4f7] rounded-[16px] font-medium text-[14px] hover:border-[#3b7dd8] hover:text-[#3b7dd8] transition-all"
+              className="px-8 py-3.5 bg-white text-[#6b8097] border border-[#d0e4f7] rounded-[16px] font-medium text-[14px] hover:border-primary hover:text-primary transition-all"
             >
               Review my answers
             </button>
@@ -356,9 +359,9 @@ export function QuestRenderer({
             </svg>
           </button>
 
-          <div className="flex-1 h-[5px] bg-[#d0e4f7] rounded-[10px] overflow-hidden">
+          <div className="flex-1 h-[5px] bg-primary/30 rounded-[10px] overflow-hidden">
             <div
-              className="h-full bg-linear-to-r from-[#3b7dd8] to-[#5b95e8] rounded-[10px] transition-all duration-400 ease-out"
+              className="h-full bg-linear-to-r from-primary to-bg-primary rounded-[10px] transition-all duration-400 ease-out"
               style={{ width: `${progressPct}%` }}
             />
           </div>
@@ -371,7 +374,7 @@ export function QuestRenderer({
         {/* Quest Body */}
         <div className="flex-1 overflow-y-auto flex flex-col items-center p-[48px_24px_32px]">
           <div className="w-full max-w-[560px] flex flex-col">
-            <div className="text-[11px] font-semibold uppercase tracking-widest text-[#3b7dd8] mb-[18px]">
+            <div className="text-[11px] font-semibold uppercase tracking-widest text-primary mb-[18px]">
               {activeQuest.title}
             </div>
             <h2 className="text-[clamp(20px,3.5vw,26px)] font-serif text-[#0f1f38] mb-2.5 leading-[1.35]">
@@ -398,11 +401,11 @@ export function QuestRenderer({
                       handleOptionSelect(screen.id, opt.value, screen.type)
                     }
                     className={`w-full flex items-start gap-3.5 px-5 py-4 rounded-[14px] border-[1.5px] text-left transition-all duration-200
-                      ${isSelected ? "border-[#3b7dd8] bg-[#3b7dd8]/5 shadow-[0_0_0_3px_rgba(59,125,216,0.12)]" : "border-[#d0e4f7] bg-white hover:border-[#3b7dd8] hover:bg-[#3b7dd8]/5"}`}
+                      ${isSelected ? "border-primary bg-primary/5 shadow-[0_0_0_3px_rgba(59,125,216,0.12)]" : "border-[#d0e4f7] bg-white hover:border-primary hover:bg-primary/5"}`}
                   >
                     <div
                       className={`w-5 h-5 rounded-full border-2 flex items-center justify-center mt-px shrink-0 transition-all
-                      ${isSelected ? "border-[#3b7dd8] bg-[#3b7dd8]" : "border-[#d0e4f7] bg-white"}`}
+                      ${isSelected ? "border-primary bg-primary" : "border-[#d0e4f7] bg-white"}`}
                     >
                       {isSelected && (
                         <div className="w-2 h-2 rounded-full bg-white animate-in zoom-in-50" />
@@ -429,7 +432,7 @@ export function QuestRenderer({
               <div className="mb-8">
                 <button
                   onClick={() => setShowHint(!showHint)}
-                  className="flex items-center gap-1.5 text-[14px] font-bold text-[#3b7dd8] hover:opacity-80 transition-opacity"
+                  className="flex items-center gap-1.5 text-[14px] font-bold text-primary hover:opacity-80 transition-opacity"
                 >
                   <span>{showHint ? "▾" : "▸"}</span>
                   <span>Examples & accepted documents</span>
@@ -447,7 +450,7 @@ export function QuestRenderer({
                           key={i}
                           className="flex gap-2 text-[13.5px] text-[#3a4f63] leading-relaxed"
                         >
-                          <span className="text-[#3b7dd8] mt-1">•</span>
+                          <span className="text-primary mt-1">•</span>
                           <span>{it}</span>
                         </li>
                       ))}
@@ -461,7 +464,7 @@ export function QuestRenderer({
               <button
                 disabled={!isAnswered}
                 onClick={handleNext}
-                className="w-full py-5 bg-[#3b7dd8] text-white rounded-[18px] font-bold text-[16px] shadow-lg shadow-[#3b7dd8]/20 hover:bg-[#0f1f38] transition-all disabled:opacity-30 disabled:cursor-not-allowed group flex items-center justify-center gap-2"
+                className="w-full py-3 bg-primary text-white rounded-lg font-bold text-[16px] shadow-lg shadow-primary/20 hover:bg-[#0f1f38] transition-all disabled:opacity-30 disabled:cursor-not-allowed group flex items-center justify-center gap-2"
               >
                 {currentScreenIdx === activeQuest.screens.length - 1
                   ? "Get Results"

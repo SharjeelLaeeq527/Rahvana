@@ -1,21 +1,30 @@
 {
-  "title": "IR-1/CR-1 Spouse Visa Journey",
-  "titleUr": "آئی آر-۱/سی آر-۱ شریک حیات ویزا کا سفر",
-  "description": "Your complete guide to bringing your spouse to the United States on an IR-1 or CR-1 immigrant visa.",
-  "descriptionUr": "آئی آر-۱ یا سی آر-۱ تارک وطن ویزا پر اپنے شریک حیات کو ریاستہائے متحدہ لانے کے لیے آپ کی مکمل رہنمائی۔",
-  "stages": [
+  "journey_type": "IR1",
+  "journey_name": "IR-1/CR-1 Spouse Visa Journey",
+  "journey_description": "Your complete guide to bringing your spouse to the United States on an IR-1 or CR-1 immigrant visa.",
+  "total_estimated_months": 24,
+  "chapters": [
     {
-      "id": 1,
-      "name": "Stage I: USCIS Petition Filing",
-      "description": "File Form I-130 with USCIS to begin the IR-1 spouse visa process for your Pakistani spouse.",
-      "timeline": "17-65 months average",
+      "chapter_key": "chapter_1",
+      "chapter_number": 1,
+      "chapter_name": "Stage I: USCIS Petition Filing",
+      "chapter_description": "File Form I-130 with USCIS to begin the IR-1 spouse visa process for your Pakistani spouse.",
+      "estimated_duration_months": 15,
+      "display_order": 1,
       "steps": [
         {
-          "id": "I-01",
-          "name": "Determine Eligibility",
-          "type": "quest",
+          "step_key": "step_1_1",
+          "step_number": 1,
+          "step_name": "Determine Eligibility",
+          "step_description": "Check if you qualify for IR-1 visa",
+          "step_type": "quest",
           "who": "Confirm IR-1 qualification",
           "where": "Self-assessment",
+          "dependencies": [],
+          "visible_when": {},
+          "estimated_duration_days": 1,
+          "is_required": true,
+          "display_order": 1,
           "actions": [
             "Verify petitioner is U.S. citizen",
             "Confirm legal marriage exists",
@@ -23,15 +32,15 @@
             "Check domicile requirements",
             "Confirm no bars to immigration"
           ],
-          "questData": {
+          "quest_data": {
             "id": "eligibility-suite",
-            "title": "Initial Eligibility Check",
-            "subtitle": "Complete these five thematic screens to confirm you meet the core requirements before filing.",
+            "title": "Determine Eligibility",
+            "subtitle": "Before filing, confirm that the core eligibility conditions for an IR-1 spouse petition are in place. Complete each section below.",
             "quests": [
               {
                 "id": "q1",
                 "title": "Petitioner is a U.S. Citizen",
-                "subtitle": "Screen for petitioner's citizenship status and primary eligibility",
+                "subtitle": "Confirm the petitioner qualifies to file an IR-1 spouse petition",
                 "screens": [
                   {
                     "id": "q1s1",
@@ -566,6 +575,7 @@
                         "Certain documented substance use disorders"
                       ]
                     },
+                    "multi_pass_logic": null,
                     "options": [
                       {
                         "label": "No known health concern for the medical exam",
@@ -633,25 +643,26 @@
                     ]
                   }
                 ],
-                "resultLogic": "(function() { const r = ['q5s1','q5s2','q5s3','q5s4'].filter(k => answers[k] === 'yes' || answers[k] === 'unsure'); if (r.length > 0) return { state: 'review', title: 'One or more admissibility concerns flagged', body: 'This screening identified at least one area — prior immigration actions, criminal history, medical, or unlawful presence — that warrants closer legal review. These issues do not automatically disqualify the case, but they require attorney analysis before proceeding.' }; if (answers['q5s5'] === 'yes' || answers['q5s5'] === 'unsure') return { state: 'caution', title: 'Financial sponsorship may need planning', body: 'No admissibility red flags were identified. However, the financial sponsorship requirement may need attention. Review the current income thresholds and consider whether a joint sponsor may be needed.' }; return { state: 'pass', title: 'No significant ineligibility flags identified', body: 'Based on this early screening, no major admissibility concerns were flagged. Remember: this is not a legal determination. Always review the full case with a qualified immigration attorney.' }; })()"
+                "result_logic": "(function() { const r = ['q5s1','q5s2','q5s3','q5s4'].filter(k => answers[k] === 'yes' || answers[k] === 'unsure'); if (r.length > 0) return { state: 'review', title: 'One or more admissibility concerns flagged', body: 'This screening identified at least one area — prior immigration actions, criminal history, medical, or unlawful presence — that warrants closer legal review. These issues do not automatically disqualify the case, but they require attorney analysis before proceeding.' }; if (answers['q5s5'] === 'yes' || answers['q5s5'] === 'unsure') return { state: 'caution', title: 'Financial sponsorship may need planning', body: 'No admissibility red flags were identified. However, the financial sponsorship requirement may need attention. Review the current income thresholds and consider whether a joint sponsor may be needed.' }; return { state: 'pass', title: 'No significant ineligibility flags identified', body: 'Based on this early screening, no major admissibility concerns were flagged. Remember: this is not a legal determination. Always review the full case with a qualified immigration attorney.' }; })()"
               }
             ]
           },
           "output": "Eligibility confirmed",
           "notes": "Petitioner must be U.S. citizen (not green card holder). Marriage must be legal and genuine.",
-          "relevantTools": [
+          "relevant_tools": [
             {
               "label": "Visa Path Finder",
-              "labelUr": "ویزہ پاتھ فائنڈر",
+              "label_ur": "ویزہ پاتھ فائنڈر",
               "href": "/visa-eligibility",
               "type": "tool"
             }
           ]
         },
         {
-          "id": "I-02",
-          "name": "Gather Required Documents",
-          "type": "docs",
+          "step_key": "step_1_2",
+          "step_number": 2,
+          "step_name": "Gather Required Documents",
+          "step_type": "docs",
           "description": "Prepare the documents needed for your IR-1 spouse petition. Open each item to see exactly what is needed, where to get it, and what to watch out for.",
           "who": "Pakistan-specific full checklist",
           "where": "Various sources",
@@ -665,7 +676,7 @@
             "Apply for police certificate",
             "Take passport photos"
           ],
-          "documentItems": [
+          "document_items": [
             {
               "id": "doc_citizenship",
               "name": "Proof of U.S. Citizenship",
@@ -798,26 +809,24 @@
           ]
         },
         {
-          "id": "I-03",
-          "name": "Choose Filing Method",
-          "description": "Choose how to file Form I-130 with USCIS. Both methods are fully accepted and take the same amount of time to process — select the one that works best for you.",
-          "type": "filing",
-          "who": "Online $625 or Paper $675",
-          "where": "Decision point",
-          "actions": [
-            "Compare online ($625) vs paper ($675)",
-            "Consider processing speed",
-            "Choose filing method"
+          "step_key": "step_1_3",
+          "step_number": 3,
+          "step_name": "Review Filing Methods",
+          "step_type": "filing",
+          "step_description": "Decide between Online vs. Paper filing",
+          "who": "Decision required",
+          "where": "Rahvana tool",
+          "dependencies": [
+            "step_1_2"
           ],
-          "filingData": {
+          "visible_when": {},
+          "estimated_duration_days": 1,
+          "is_required": true,
+          "display_order": 3,
+          "filing_data": {
             "id": "filing-method-comparison",
             "title": "Decide Filing Method",
             "subtitle": "Choose how to file Form I-130 with USCIS. Both methods are fully accepted and take the same amount of time to process — select the one that works best for you.",
-            "state": {
-              "isLocked": "const [isLocked, setIsLocked] = useState(state.metadata.filingMethodConfirmed || false);",
-              "hintOpen": "const [hintOpen, setHintOpen] = useState<Record<string, boolean>>({});",
-              "isLaunched": "const [isLaunched, setIsLaunched] = useState(false);"
-            },
             "methods": [
               {
                 "id": "online",
@@ -966,12 +975,13 @@
           }
         },
         {
-          "id": "I-04",
-          "name": "Fill Form I-130",
-          "description": "Use Rahvana's guided Autoform Filler to complete the I-130 Petition for Alien Relative — with structured step-by-step support, clear prompts, and a built-in review flow.",
-          "type": "tool",
+          "step_key": "step_1_4",
+          "step_number": 4,
+          "step_name": "Fill Form I-130",
+          "step_description": "Use Rahvana's guided Autoform Filler to complete the I-130 Petition for Alien Relative — with structured step-by-step support, clear prompts, and a built-in review flow.",
+          "step_type": "tool",
           "logic": "filingMethod === 'online'",
-          "toolData": {
+          "tool_data": {
             "id": "i130-filler-online",
             "eyebrow": "Fill Form I-130",
             "title": "Fill Form I-130",
@@ -990,7 +1000,7 @@
                 "type": "newtab"
               }
             ],
-            "launchModule": {
+            "launch_module": {
               "icon": "form",
               "eyebrow": "Autoform Filler · USCIS Form I-130",
               "heading": "Guided completion, start to finish",
@@ -1000,11 +1010,11 @@
                 "Built-in review before you finalize",
                 "Pakistan-context defaults where relevant"
               ],
-              "buttonLabel": "Launch I-130 Autoform Filler",
+              "button_label": "Launch I-130 Autoform Filler",
               "href": "/visa-forms/i130/wizard",
               "note": "Opens in a new browser tab — you can return to the roadmap anytime"
             },
-            "supportCards": [
+            "support_cards": [
               {
                 "label": "Have these ready",
                 "items": [
@@ -1029,8 +1039,12 @@
           "who": "via Rahvana wizard",
           "where": "my.uscis.gov",
           "timeline": "2-4 hours",
+          "dependencies": ["step_1_3"],
+          "visible_when": {},
+          "estimated_duration_days": 2,
+          "is_required": true,
+          "display_order": 4,
           "actions": [
-            "Create USCIS account",
             "Complete Part 1: Relationship",
             "Complete Part 2: Petitioner information",
             "Complete Part 3: Beneficiary information",
@@ -1038,31 +1052,29 @@
             "Review all information",
             "Upload supporting documents"
           ],
-          "inputs": [
-            "Petitioner citizenship proof",
-            "Marriage evidence",
-            "Relationship photos",
-            "Communication records"
-          ],
           "output": "Completed I-130 form",
-          "officialSource": "https://www.uscis.gov/i-130",
-          "relevantTools": [
+          "official_source": "https://www.uscis.gov/i-130",
+          "relevant_tools": [
             {
               "label": "Smart Form Filler",
-              "labelUr": "سمارٹ فارم فلر",
               "href": "/visa-forms",
               "type": "tool"
             }
           ]
         },
         {
-          "id": "I-05",
-          "name": "Fill Form I-130A",
-          "description": "Complete the beneficiary spouse information form using Rahvana's guided Autoform Filler — structured prompts, field-by-field clarity, and a built-in review before you finalize.",
-          "companion": "Companion form to I-130 · Beneficiary spouse focus",
+          "step_key": "step_1_5",
+          "step_number": 5,
+          "step_name": "Fill Form I-130A",
+          "step_description": "Complete the beneficiary spouse information form using Rahvana's guided Autoform Filler — structured prompts, field-by-field clarity, and a built-in review before you finalize.",
+          "step_type": "tool",
           "who": "via Rahvana wizard",
-          "type": "tool",
-          "toolData": {
+          "dependencies": ["step_1_4"],
+          "visible_when": {},
+          "estimated_duration_days": 1,
+          "is_required": true,
+          "display_order": 5,
+          "tool_data": {
             "title": "Fill Form I-130A",
             "subtitle": "Complete the beneficiary spouse information form using Rahvana's guided Autoform Filler — structured prompts, field-by-field clarity, and a built-in review before you finalize.",
             "chips": [
@@ -1079,7 +1091,7 @@
                 "type": "newtab"
               }
             ],
-            "launchModule": {
+            "launch_module": {
               "icon": "user",
               "eyebrow": "Autoform Filler · USCIS Form I-130A",
               "heading": "Spouse beneficiary information, guided",
@@ -1089,11 +1101,11 @@
                 "Plain-language guidance on every field",
                 "Built-in review before you finalize"
               ],
-              "buttonLabel": "Launch I-130A Autoform Filler",
+              "button_label": "Launch I-130A Autoform Filler",
               "href": "/visa-forms/i130a/wizard",
               "note": "Opens in a new browser tab — you can return to the roadmap anytime"
             },
-            "supportCards": [
+            "support_cards": [
               {
                 "label": "Have these ready",
                 "items": [
@@ -1116,12 +1128,18 @@
           }
         },
         {
-          "id": "I-06",
-          "name": "Create USCIS Account",
-          "type": "tool",
-          "description": "Set up the petitioner's USCIS online account — the gateway for filing Form I-130 digitally, tracking the case, and responding to any USCIS requests.",
+          "step_key": "step_1_6",
+          "step_number": 6,
+          "step_name": "Create USCIS Account",
+          "step_type": "tool",
+          "step_description": "Set up the petitioner's USCIS online account — the gateway for filing Form I-130 digitally, tracking the case, and responding to any USCIS requests.",
           "who": "myaccount.uscis.gov",
-          "toolData": {
+          "dependencies": ["step_1_3"],
+          "visible_when": {},
+          "estimated_duration_days": 1,
+          "is_required": true,
+          "display_order": 6,
+          "tool_data": {
             "id": "uscis-account-setup",
             "title": "Create USCIS Account",
             "subtitle": "Set up the petitioner's USCIS online account — the gateway for filing Form I-130 digitally, tracking the case, and responding to any USCIS requests.",
@@ -1139,7 +1157,7 @@
                 "type": "uscis"
               }
             ],
-            "launchModule": {
+            "launch_module": {
               "icon": "shield",
               "eyebrow": "Official USCIS · myUSCIS Portal",
               "heading": "Create your secure USCIS online account",
@@ -1149,11 +1167,11 @@
                 "Two-step verification for security",
                 "Choose \"applicant, petitioner, or requestor\""
               ],
-              "buttonLabel": "Create USCIS Account",
+              "button_label": "Create USCIS Account",
               "href": "https://myaccount.uscis.gov/create-account",
               "note": "Opens USCIS account creation page in a new tab"
             },
-            "secondaryActions": [
+            "secondary_actions": [
               {
                 "id": "uscis-tutorial",
                 "type": "tutorial",
@@ -1171,8 +1189,8 @@
                 "icon": "wallet"
               }
             ],
-            "walletIntegration": {
-              "portalType": "USCIS"
+            "wallet_integration": {
+              "portal_type": "USCIS"
             },
             "disclaimer": "Rahvana provides structured guidance only. This is not legal advice. Credentials are stored locally for your session only. Manage them in your Portal Wallet."
           }

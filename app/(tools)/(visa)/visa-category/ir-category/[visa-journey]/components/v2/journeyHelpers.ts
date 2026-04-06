@@ -1,28 +1,30 @@
-import { RoadmapData, RoadmapStep } from "./types";
+import { RoadmapData, RoadmapStep, RoadmapChapter } from "../types";
 import { WizardState } from "@/app/(main)/dashboard/hooks/useWizard";
 
 /**
- * Returns all steps for a given stage index that are applicable based on the filing method.
+ * Returns all steps for a given stage/chapter index that are applicable based on the filing method.
  */
-export function getActiveStepsForStage(data: RoadmapData, stageIdx: number, filingMethod: string | null): RoadmapStep[] {
-  const stage = data.stages[stageIdx];
-  if (!stage) return [];
+export function getActiveStepsForStage(data: RoadmapData, index: number, filingMethod: string | null): RoadmapStep[] {
+  const chapters = data.chapters || (data as any).stages;
+  const chapter = chapters?.[index] as RoadmapChapter;
+  if (!chapter) return [];
   
   const method = filingMethod || 'online'; // Default to online if not set
-  return stage.steps.filter(step => {
-    // If step branch is 'both', it's always included.
-    // If step branch matches current method, it's included.
-    // In our JSON, branch is optional or 'both' | 'online' | 'paper'
-    if (!step.branch || step.branch === 'both') return true;
-    return step.branch === method;
+  return chapter.steps.filter((step: RoadmapStep) => {
+    // Check both legacy 'branch' and any new logic
+    const branch = (step as any).branch;
+    if (!branch || branch === 'both') return true;
+    return branch === method;
   });
 }
 
 /**
- * Returns all active steps across all stages.
+ * Returns all active steps across all chapters.
  */
 export function getAllActiveSteps(data: RoadmapData, filingMethod: string | null): RoadmapStep[] {
-  return data.stages.reduce((acc, _, idx) => {
+  const chapters = data.chapters || (data as any).stages;
+  if (!chapters) return [];
+  return chapters.reduce((acc: RoadmapStep[], _: any, idx: number) => {
     return acc.concat(getActiveStepsForStage(data, idx, filingMethod));
   }, [] as RoadmapStep[]);
 }
@@ -30,17 +32,24 @@ export function getAllActiveSteps(data: RoadmapData, filingMethod: string | null
 /**
  * Finds the first uncompleted active step across the entire journey.
  */
-export function getNextBestAction(data: RoadmapData, state: WizardState): { step: RoadmapStep; stageIdx: number; stepIdxInStage: number } | null {
-  const allActive = getAllActiveSteps(data, state.metadata.filingMethod);
-  const nextStep = allActive.find(s => !state.completedSteps.has(s.id));
+export function getNextBestAction(data: RoadmapData, state: WizardState): { step: RoadmapStep; chapterIdx: number; stepIdxInChapter: number } | null {
+  const filingMethod = state.metadata?.filingMethod || state.filingType;
+  const allActive = getAllActiveSteps(data, filingMethod);
+  
+  const nextStep = allActive.find(s => {
+    const sId = s.step_key || (s as any).id;
+    return !state.completedSteps.has(sId);
+  });
   
   if (!nextStep) return null;
   
-  // Find where this step lives to help navigation
-  for (let sIdx = 0; sIdx < data.stages.length; sIdx++) {
-    const stepInStageIdx = data.stages[sIdx].steps.findIndex(s => s.id === nextStep.id);
-    if (stepInStageIdx !== -1) {
-      return { step: nextStep, stageIdx: sIdx, stepIdxInStage: stepInStageIdx };
+  const chapters = data.chapters || (data as any).stages;
+  for (let cIdx = 0; cIdx < chapters.length; cIdx++) {
+    const stepInChapterIdx = chapters[cIdx].steps.findIndex((s: any) => 
+      (s.step_key || s.id) === (nextStep.step_key || (nextStep as any).id)
+    );
+    if (stepInChapterIdx !== -1) {
+      return { step: nextStep, chapterIdx: cIdx, stepIdxInChapter: stepInChapterIdx };
     }
   }
   
@@ -48,13 +57,18 @@ export function getNextBestAction(data: RoadmapData, state: WizardState): { step
 }
 
 /**
- * Calculates progress for a specific stage.
+ * Calculates progress for a specific chapter.
  */
-export function getStageProgress(data: RoadmapData, stageIdx: number, state: WizardState) {
-  const activeSteps = getActiveStepsForStage(data, stageIdx, state.metadata.filingMethod);
+export function getStageProgress(data: RoadmapData, chapterIdx: number, state: WizardState) {
+  const filingMethod = state.metadata?.filingMethod || state.filingType;
+  const activeSteps = getActiveStepsForStage(data, chapterIdx, filingMethod);
   if (activeSteps.length === 0) return { done: 0, total: 0, pct: 0 };
   
-  const done = activeSteps.filter(s => state.completedSteps.has(s.id)).length;
+  const done = activeSteps.filter(s => {
+    const sId = s.step_key || (s as any).id;
+    return state.completedSteps.has(sId);
+  }).length;
+  
   return {
     done,
     total: activeSteps.length,
@@ -63,11 +77,11 @@ export function getStageProgress(data: RoadmapData, stageIdx: number, state: Wiz
 }
 
 /**
- * Checks if a stage should be unlocked (all steps in previous stage completed).
+ * Checks if a chapter should be unlocked (all steps in previous chapter completed).
  */
-export function isStageUnlocked(data: RoadmapData, stageIdx: number, state: WizardState): boolean {
-  if (stageIdx === 0) return true; // First chapter is always unlocked
+export function isStageUnlocked(data: RoadmapData, chapterIdx: number, state: WizardState): boolean {
+  if (chapterIdx === 0) return true; // First chapter is always unlocked
   
-  const prevStageProgress = getStageProgress(data, stageIdx - 1, state);
-  return prevStageProgress.done === prevStageProgress.total && prevStageProgress.total > 0;
+  const prevChapterProgress = getStageProgress(data, chapterIdx - 1, state);
+  return prevChapterProgress.done === prevChapterProgress.total && prevChapterProgress.total > 0;
 }

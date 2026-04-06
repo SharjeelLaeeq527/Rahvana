@@ -100,39 +100,46 @@ export function StepView({ data, state, actions, onBack }: StepViewProps) {
   const [isTutorialOpen, setIsTutorialOpen] = useState(false);
   const [tutorialIdx, setTutorialIdx] = useState(0);
 
-  const currentStage = data.stages[state.currentStage];
+  const chapters = data.chapters || (data as any).stages;
+  const currentChapter = chapters?.[state.currentStage];
 
-  const activeStepsInStage = useMemo(() => {
-    const filingMethod = state.metadata.filingMethod || "online";
-    return currentStage.steps.filter(
-      (step) =>
+  const filingMethod =
+    state.metadata?.filingMethod || state.filingType || "online";
+
+  const activeStepsInChapter = useMemo(() => {
+    if (!currentChapter) return [];
+    return currentChapter.steps.filter(
+      (step: any) =>
         !step.branch || step.branch === "both" || step.branch === filingMethod,
     );
-  }, [currentStage, state.metadata.filingMethod]);
+  }, [currentChapter, filingMethod]);
 
-  const currentStep = currentStage?.steps[state.currentStep || 0];
-  const isCompleted = state.completedSteps.has(currentStep?.id || "");
+  const currentStep = currentChapter?.steps[state.currentStep || 0];
+  const sId = currentStep?.step_key || (currentStep as any)?.id || "";
+  const isCompleted = state.completedSteps.has(sId);
 
   const allActiveSteps = useMemo(
-    () => getAllActiveSteps(data, state.metadata.filingMethod),
-    [data, state.metadata.filingMethod],
+    () => getAllActiveSteps(data, filingMethod),
+    [data, filingMethod],
   );
 
-  const globalIdx = allActiveSteps.findIndex((s) => s.id === currentStep?.id);
+  const globalIdx = allActiveSteps.findIndex(
+    (s) => (s.step_key || (s as any).id) === sId,
+  );
   const prevStep = globalIdx > 0 ? allActiveSteps[globalIdx - 1] : null;
   const nextStep =
     globalIdx < allActiveSteps.length - 1
       ? allActiveSteps[globalIdx + 1]
       : null;
   const progressPct = Math.round((globalIdx / allActiveSteps.length) * 100);
-  const activeIdxInStage = activeStepsInStage.findIndex(
-    (s) => s.id === currentStep?.id,
+  const activeIdxInChapter = activeStepsInChapter.findIndex(
+    (s: any) => (s.step_key || s.id) === sId,
   );
 
   useEffect(() => {
     const scrollContainer = document.querySelector(".scrollbar-hide");
     if (scrollContainer) scrollContainer.scrollTop = 0;
-  }, [currentStep?.id]);
+  }, [sId]);
 
   useEffect(() => {
     setIsLocked(state.metadata.filingMethodConfirmed || false);
@@ -155,7 +162,7 @@ export function StepView({ data, state, actions, onBack }: StepViewProps) {
 
   useEffect(() => {
     fetchCredentials();
-  }, [fetchCredentials, currentStep?.id]);
+  }, [fetchCredentials, sId]);
 
   // Disable body scroll when overlays are open
   useEffect(() => {
@@ -189,8 +196,8 @@ export function StepView({ data, state, actions, onBack }: StepViewProps) {
       setIsWalletFormOpen(false);
       await fetchCredentials();
 
-      if (data.portalType === "USCIS" && currentStep?.id === "I-06") {
-        if (!isCompleted) actions.toggleComplete("I-06");
+      if (data.portalType === "USCIS" && sId === "step_1_6") {
+        if (!isCompleted) actions.toggleComplete("step_1_6");
       }
     } catch {
       toast.error("Failed to save credentials. Please try again.");
@@ -365,7 +372,7 @@ export function StepView({ data, state, actions, onBack }: StepViewProps) {
   };
 
   const handleNextQuiz = () => {
-    const quiz = currentStep.filingData?.quiz;
+    const quiz = currentStep.filing_data?.quiz;
     if (!quiz) return;
     const screen = quiz.screens[quizScreenIdx];
 
@@ -399,12 +406,15 @@ export function StepView({ data, state, actions, onBack }: StepViewProps) {
       setCompleteFlash(true);
       setTimeout(() => setCompleteFlash(false), 800);
     }
-    actions.toggleComplete(currentStep.id);
+    actions.toggleComplete(currentStep.step_key || sId);
   };
 
   const handleNavigate = (stepId: string) => {
-    for (let sIdx = 0; sIdx < data.stages.length; sIdx++) {
-      const spIdx = data.stages[sIdx].steps.findIndex((s) => s.id === stepId);
+    const activeChapters = data.chapters || (data as any).stages;
+    for (let sIdx = 0; sIdx < activeChapters.length; sIdx++) {
+      const spIdx = activeChapters[sIdx].steps.findIndex(
+        (s: any) => (s.step_key || s.id) === stepId,
+      );
       if (spIdx !== -1) {
         actions.setStage(sIdx);
         actions.setCurrentStep(spIdx);
@@ -414,12 +424,14 @@ export function StepView({ data, state, actions, onBack }: StepViewProps) {
   };
 
   const renderToolStep = () => {
-    const tool = currentStep.toolData;
+    const tool = currentStep.tool_data || currentStep.tool_data;
     if (!tool) return null;
 
     // Theme detection based on icon or ID
     const isBeneficiaryTheme =
-      tool.launchModule.icon === "user" || currentStep.id === "I-05";
+      tool.launch_module.icon === "user" ||
+      sId === "step_1_5" ||
+      sId === "step_1_2_b";
     const accentColor = "#2f6fd4";
     // const accentColor = isBeneficiaryTheme ? "#0f7373" : "#2f6fd4";
     const launchBg = isBeneficiaryTheme ? "#12192e" : "#0e1e38";
@@ -428,22 +440,22 @@ export function StepView({ data, state, actions, onBack }: StepViewProps) {
       : "linear-gradient(90deg, #2f6fd4 0%, #6aa8f0 60%, transparent 100%)";
 
     const IconComponent =
-      tool.launchModule.icon === "form"
+      tool.launch_module.icon === "form"
         ? FileText
-        : tool.launchModule.icon === "calc"
+        : tool.launch_module.icon === "calc"
           ? Scale
-          : tool.launchModule.icon === "search"
+          : tool.launch_module.icon === "search"
             ? Search
-            : tool.launchModule.icon === "user"
+            : tool.launch_module.icon === "user"
               ? User
-              : tool.launchModule.icon === "shield"
+              : tool.launch_module.icon === "shield"
                 ? ShieldCheck
                 : CheckCircle2;
 
     return (
-      <div className="animate-in fade-in slide-in-from-bottom-4 duration-740 flex flex-col items-center w-full bg-[#f4f7fb] min-h-full">
+      <div className="animate-in fade-in slide-in-from-bottom-4 duration-740 flex flex-col items-center w-full min-h-full">
         {/* Page Shell */}
-        <div className="w-full max-w-[680px] pt-[52px] px-[24px] pb-[96px] flex flex-col">
+        <div className="w-full max-w-[680px] px-[24px] pb-[96px] flex flex-col">
           {/* Eyebrow / Breadcrumb Row */}
           <div className="flex items-center gap-[8px] mb-[6px]">
             <span className="text-[11px] font-[600] uppercase tracking-[0.12em] text-[#636b97]">
@@ -455,7 +467,7 @@ export function StepView({ data, state, actions, onBack }: StepViewProps) {
                 isBeneficiaryTheme ? "text-[#0f7373]" : "text-[#2f6fd4]"
               }`}
             >
-              {currentStep.name}
+              {currentStep.step_name}
             </span>
           </div>
 
@@ -464,17 +476,17 @@ export function StepView({ data, state, actions, onBack }: StepViewProps) {
             className="text-[clamp(28px,4.5vw,38px)] font-black text-[#0c1b33] leading-[1.15] tracking-[-0.01em] mb-[12px]"
             style={{ fontFamily: "'DM Serif Display', serif" }}
           >
-            {currentStep.name}
+            {currentStep.step_name}
           </h1>
 
-          {currentStep.description && (
+          {currentStep.step_description && (
             <p className="text-[#3a4f63] text-[15px] leading-[1.7] mb-[24px] max-w-[480px]">
-              {currentStep.description}
+              {currentStep.step_description}
             </p>
           )}
 
           {/* Companion Context Badge (Step 5 Specific) */}
-          {currentStep.id === "I-05" && (
+          {(sId === "step_1_5" || sId === "step_1_2_b") && (
             <div className="flex items-center gap-[9px] mb-[22px]">
               <div className="flex-1 h-[1px] bg-linear-to-r from-[#d0e4f7] to-transparent" />
               <div className="inline-flex items-center gap-[6px] bg-[#e6f6f6] border border-[#9fd8d8] rounded-full px-[13px] py-[5px]">
@@ -497,7 +509,7 @@ export function StepView({ data, state, actions, onBack }: StepViewProps) {
                     chip.type === "role"
                       ? isBeneficiaryTheme
                         ? "bg-[#e9f4ee] text-[#1a5f3f] border-[#b0dcc0]"
-                        : "bg-[#e8f1fb] text-[#2d4a6e] border-[#d0e4f7]"
+                        : "bg-[#e8f1fb] text-primary/80 border-[#d0e4f7]"
                       : chip.type === "tool"
                         ? "bg-[#f3f0fb] text-[#4a2d8a] border-[#c9bef2]"
                         : chip.type === "uscis" || chip.type === "path"
@@ -514,7 +526,7 @@ export function StepView({ data, state, actions, onBack }: StepViewProps) {
                   className={`text-[11px] font-[600] uppercase tracking-[0.06em] px-[12px] py-[5px] rounded-full border ${
                     isBeneficiaryTheme
                       ? "bg-[#e9f4ee] text-[#1a5f3f] border-[#b0dcc0]"
-                      : "bg-[#e8f1fb] text-[#2d4a6e] border-[#d0e4f7]"
+                      : "bg-[#e8f1fb] text-primary/80 border-[#d0e4f7]"
                   }`}
                 >
                   {isBeneficiaryTheme ? "Beneficiary" : "Petitioner"}
@@ -535,12 +547,12 @@ export function StepView({ data, state, actions, onBack }: StepViewProps) {
               <div className="text-[16px] mt-[1px] text-[#15744f]">✓</div>
               <div className="flex-1">
                 <div className="text-[13px] font-[600] text-[#15744f] mb-[2px]">
-                  {currentStep.id === "I-06"
+                  {sId === "step_1_6" || sId === "step_1_3"
                     ? "USCIS account page opened in a new tab"
                     : "Tool launched in a new tab"}
                 </div>
                 <div className="text-[12px] text-[#3a4f63] leading-[1.5]">
-                  {currentStep.id === "I-06"
+                  {sId === "step_1_6" || sId === "step_1_3"
                     ? "Complete the sign-up there, then return here to save your credentials."
                     : "Complete the form at your own pace. Return here when you're done to continue the roadmap."}
                 </div>
@@ -570,14 +582,14 @@ export function StepView({ data, state, actions, onBack }: StepViewProps) {
                   />
                 </div>
                 <div className="flex-1">
-                  <div className="text-[10px] font-[700] uppercase tracking-[0.12em] text-white/35 mb-[5px]">
-                    {tool.launchModule.eyebrow}
+                  <div className="text-[10px] font-bold uppercase tracking-[0.12em] text-white/35 mb-[5px]">
+                    {tool.launch_module.eyebrow}
                   </div>
                   <h2
                     className="text-[clamp(20px,3vw,24px)] font-serif text-white/90 leading-[1.25]"
                     style={{ fontFamily: "'DM Serif Display', serif" }}
                   >
-                    {tool.launchModule.heading}
+                    {tool.launch_module.heading}
                   </h2>
                 </div>
               </div>
@@ -586,7 +598,7 @@ export function StepView({ data, state, actions, onBack }: StepViewProps) {
 
               {/* Feature Cues Grid */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-[10px] mb-[30px]">
-                {tool.launchModule.features.map((feat, i) => (
+                {tool.launch_module.features.map((feat, i) => (
                   <div
                     key={i}
                     className="bg-white/6 border border-white/10 rounded-[10px] p-[12px_14px] flex items-start gap-[10px]"
@@ -607,9 +619,9 @@ export function StepView({ data, state, actions, onBack }: StepViewProps) {
               <div className="flex flex-col gap-[12px]">
                 <button
                   onClick={() => {
-                    if (tool.launchModule.href) {
+                    if (tool.launch_module.href) {
                       window.open(
-                        tool.launchModule.href,
+                        tool.launch_module.href,
                         "_blank",
                         "noopener,noreferrer",
                       );
@@ -619,7 +631,7 @@ export function StepView({ data, state, actions, onBack }: StepViewProps) {
                   className="inline-flex items-center justify-center gap-[10px] w-full p-[17px_28px] text-white rounded-[12px] font-sans text-[15px] font-semibold tracking-[0.01em] shadow-[0_4px_20px_rgba(47,111,212,0.35)] hover:translate-y-[-2px] hover:shadow-[0_8px_32px_rgba(47,111,212,0.45)] transition-all duration-220 group cursor-pointer"
                   style={{ backgroundColor: accentColor }}
                 >
-                  <span>{tool.launchModule.buttonLabel}</span>
+                  <span>{tool.launch_module.button_label}</span>
                   <div className="transition-transform duration-220 group-hover:translate-x-[2px]">
                     <ArrowRight size={16} strokeWidth={2} />
                   </div>
@@ -637,35 +649,37 @@ export function StepView({ data, state, actions, onBack }: StepViewProps) {
           </div>
 
           {/* SUPPORT LAYER (Step 4 & 5 ONLY) */}
-          {currentStep.id !== "I-06" &&
-            tool.supportCards &&
-            tool.supportCards.length > 0 && (
+          {sId !== "step_1_6" &&
+            (tool.support_cards || tool.support_cards) &&
+            (tool.support_cards || tool.support_cards).length > 0 && (
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-[10px] mb-[32px]">
-                {tool.supportCards.map((card, i) => (
-                  <div
-                    key={i}
-                    className="bg-[#fafcff] border-[1.5px] border-[#d0e4f7] rounded-[10px] p-[16px_18px]"
-                  >
-                    <div className="text-[10px] font-[700] uppercase tracking-[0.1em] text-[#6b8097] mb-[10px]">
-                      {card.label}
+                {(tool.support_cards || tool.support_cards).map(
+                  (card: any, i: number) => (
+                    <div
+                      key={i}
+                      className="bg-[#fafcff] border-[1.5px] border-[#d0e4f7] rounded-[10px] p-[16px_18px]"
+                    >
+                      <div className="text-[10px] font-bold uppercase tracking-[0.1em] text-[#6b8097] mb-[10px]">
+                        {card.label}
+                      </div>
+                      <div className="flex flex-col gap-[7px]">
+                        {card.items?.map((item: string, j: number) => (
+                          <div key={j} className="flex items-start gap-[8px]">
+                            <div className="w-[4px] h-[4px] rounded-full bg-[#b8d4f0] mt-[5px] shrink-0" />
+                            <span className="text-[13px] text-[#3a4f63] leading-[1.4]">
+                              {item}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
                     </div>
-                    <div className="flex flex-col gap-[7px]">
-                      {card.items?.map((item: string, j: number) => (
-                        <div key={j} className="flex items-start gap-[8px]">
-                          <div className="w-[4px] h-[4px] rounded-full bg-[#b8d4f0] mt-[5px] shrink-0" />
-                          <span className="text-[13px] text-[#3a4f63] leading-[1.4]">
-                            {item}
-                          </span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                ))}
+                  ),
+                )}
               </div>
             )}
 
           {/* SECONDARY ACTIONS ROW (Step 6 SPECIFIC) */}
-          {currentStep.id === "I-06" && (
+          {sId === "step_1_6" && (
             <div className="flex flex-col mb-[28px]">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-[12px] mb-[12px]">
                 {/* Tutorial Card */}
@@ -826,12 +840,12 @@ export function StepView({ data, state, actions, onBack }: StepViewProps) {
           <div>
             <div className="text-[9px] font-semibold uppercase tracking-[0.12em] text-[#6b8097] leading-none mb-1 px-0.5">
               Chapter {state.currentStage + 1} ·{" "}
-              {activeIdxInStage !== -1
-                ? `Step ${activeIdxInStage + 1}`
-                : currentStep.id}
+              {activeIdxInChapter !== -1
+                ? `Step ${activeIdxInChapter + 1}`
+                : sId}
             </div>
             <h1 className="text-[15px] md:text-[16px] font-bold text-[#0f1f38] leading-none truncate max-w-[180px] md:max-w-md tracking-tight">
-              {currentStep.name}
+              {currentStep.step_name}
             </h1>
           </div>
         </div>
@@ -840,7 +854,7 @@ export function StepView({ data, state, actions, onBack }: StepViewProps) {
           <button
             onClick={handleToggleComplete}
             className={`flex items-center gap-2 px-5 py-2 rounded-full border-[1.5px] transition-all font-bold text-[12px] shadow-sm animate-in fade-in duration-300
-              ${isCompleted ? "bg-[#eaf7f2] border-[#b5e0d0] text-[#1a7a5e]" : "bg-white border-[#d0e4f7] text-[#3a4f63] hover:bg-[#fafcff] hover:border-[#3b7dd8] hover:text-[#3b7dd8]"} 
+              ${isCompleted ? "bg-[#eaf7f2] border-[#b5e0d0] text-[#1a7a5e]" : "bg-white border-[#d0e4f7] text-[#3a4f63] hover:bg-[#fafcff] hover:border-primary hover:text-primary"} 
               ${completeFlash ? "scale-105 ring-6 ring-emerald-50 border-emerald-300 shadow-xl" : ""}`}
           >
             <Check size={15} strokeWidth={3} />
@@ -852,7 +866,7 @@ export function StepView({ data, state, actions, onBack }: StepViewProps) {
       {/* Main Content Area */}
       <div
         className={`flex-1 overflow-y-auto scrollbar-hide flex flex-col items-center relative ${
-          currentStep.type === "quest" ? "" : "p-6 md:p-10 lg:p-12"
+          currentStep.step_type === "quest" ? "" : "p-6 md:p-10 lg:p-12"
         }`}
       >
         {/* Quiz Overlay Refinement - Now absolute below headers */}
@@ -873,7 +887,7 @@ export function StepView({ data, state, actions, onBack }: StepViewProps) {
                     style={{
                       width: quizResult
                         ? "100%"
-                        : `${((quizScreenIdx + 1) / (currentStep.filingData?.quiz?.screens.length || 1)) * 100}%`,
+                        : `${((quizScreenIdx + 1) / (currentStep.filing_data?.quiz?.screens.length || 1)) * 100}%`,
                     }}
                   />
                 </div>
@@ -882,7 +896,7 @@ export function StepView({ data, state, actions, onBack }: StepViewProps) {
               <div className="text-[12px] font-bold text-slate-400 whitespace-nowrap shrink-0">
                 {quizResult
                   ? "Done"
-                  : `${quizScreenIdx + 1} / ${currentStep.filingData?.quiz?.screens.length}`}
+                  : `${quizScreenIdx + 1} / ${currentStep.filing_data?.quiz?.screens.length}`}
               </div>
             </header>
 
@@ -891,12 +905,12 @@ export function StepView({ data, state, actions, onBack }: StepViewProps) {
                 {!quizResult ? (
                   (() => {
                     const screen =
-                      currentStep.filingData?.quiz?.screens[quizScreenIdx];
+                      currentStep.filing_data?.quiz?.screens[quizScreenIdx];
                     if (!screen) return null;
                     const selVal = quizAnswers[screen.id]?.value;
                     return (
                       <div className="animate-in fade-in slide-in-from-right-[10px] duration-[0.22s] ease-out w-full">
-                        <div className="text-[10px] font-black uppercase tracking-[0.15em] text-[#3b7dd8] mb-[14px]">
+                        <div className="text-[10px] font-black uppercase tracking-[0.15em] text-primary mb-[14px]">
                           Step 3 · Decide Filing Method
                         </div>
                         <h2 className="text-[clamp(20px,3.5vw,26px)] font-serif text-[#0f1f38] mb-[10px] leading-[1.35]">
@@ -920,10 +934,10 @@ export function StepView({ data, state, actions, onBack }: StepViewProps) {
                                 })
                               }
                               className={`w-full p-[16px_20px] rounded-[14px] border-[1.5px] text-left transition-all duration-[0.22s] flex items-start gap-[14px] select-none
-                                      ${selVal === opt.value ? "border-[#3b7dd8] bg-[rgba(59,125,216,0.15)] shadow-[0_0_0_3px_rgba(59,125,216,0.12)]" : "border-[#d0e4f7] bg-[#fafcff] hover:border-[#3b7dd8] hover:bg-[rgba(59,125,216,0.15)]"}`}
+                                      ${selVal === opt.value ? "border-primary bg-[rgba(59,125,216,0.15)] shadow-[0_0_0_3px_rgba(59,125,216,0.12)]" : "border-[#d0e4f7] bg-[#fafcff] hover:border-primary hover:bg-[rgba(59,125,216,0.15)]"}`}
                             >
                               <div
-                                className={`w-[20px] h-[20px] mt-[1px] rounded-full border-[2px] flex items-center justify-center shrink-0 transition-colors duration-[0.22s] ${selVal === opt.value ? "border-[#3b7dd8] bg-[#3b7dd8]" : "border-[#d0e4f7]"}`}
+                                className={`w-[20px] h-[20px] mt-[1px] rounded-full border-[2px] flex items-center justify-center shrink-0 transition-colors duration-[0.22s] ${selVal === opt.value ? "border-primary bg-primary" : "border-[#d0e4f7]"}`}
                               >
                                 {selVal === opt.value && (
                                   <div className="w-[8px] h-[8px] rounded-full bg-white animate-in zoom-in duration-150" />
@@ -940,8 +954,8 @@ export function StepView({ data, state, actions, onBack }: StepViewProps) {
                           onClick={handleNextQuiz}
                           className={`w-full p-[16px] rounded-[14px] font-semibold text-[15px] transition-all duration-[0.2s] ${
                             selVal
-                              ? "bg-[#3b7dd8] text-white hover:bg-[#2d4a6e] hover:-translate-y-[1px] hover:shadow-[0_6px_20px_rgba(59,125,216,0.28)]"
-                              : "bg-[#d0e4f7] text-[#6b8097] cursor-not-allowed opacity-50"
+                              ? "bg-primary text-white hover:bg-primary/80 hover:-translate-y-px hover:shadow-[0_6px_20px_rgba(59,125,216,0.28)]"
+                              : "bg-primary/30 text-[#6b8097] cursor-not-allowed opacity-50"
                           }`}
                         >
                           Continue
@@ -1038,11 +1052,11 @@ export function StepView({ data, state, actions, onBack }: StepViewProps) {
                             handleConfirmation("online");
                           }}
                           className={`flex flex-col relative w-full p-[18px_20px] text-left rounded-[14px] border-[2px] transition-all duration-[0.2s] group select-none hover:-translate-y-[1px]
-                          ${quizResult.emphasize === "online" || quizResult.type === "lean-online" ? "bg-[#f0faf6] border-[#8ecdb8] hover:bg-[#0e5c42] hover:border-[#0a4330]" : "bg-white border-[#d0e4f7] hover:border-[#3b7dd8]"}`}
+                          ${quizResult.emphasize === "online" || quizResult.type === "lean-online" ? "bg-[#f0faf6] border-[#8ecdb8] hover:bg-[#0e5c42] hover:border-[#0a4330]" : "bg-white border-[#d0e4f7] hover:border-primary"}`}
                         >
                           <div
                             className={`text-[10px] font-bold tracking-[0.09em] uppercase mb-[6px] transition-colors
-                            ${quizResult.emphasize === "online" || quizResult.type === "lean-online" ? "text-[#0e5c42] group-hover:text-white/85" : "text-[#3b7dd8]"}`}
+                            ${quizResult.emphasize === "online" || quizResult.type === "lean-online" ? "text-[#0e5c42] group-hover:text-white/85" : "text-primary"}`}
                           >
                             Online
                           </div>
@@ -1060,7 +1074,7 @@ export function StepView({ data, state, actions, onBack }: StepViewProps) {
                           </div>
                           {(quizResult.emphasize === "online" ||
                             quizResult.type === "lean-online") && (
-                            <div className="absolute top-[14px] right-[14px] text-[9px] font-bold uppercase tracking-[0.06em] px-[9px] py-[3px] rounded-full bg-[#3b7dd8] text-white">
+                            <div className="absolute top-[14px] right-[14px] text-[9px] font-bold uppercase tracking-[0.06em] px-[9px] py-[3px] rounded-full bg-primary text-white">
                               Recommended
                             </div>
                           )}
@@ -1072,7 +1086,7 @@ export function StepView({ data, state, actions, onBack }: StepViewProps) {
                             handleConfirmation("paper");
                           }}
                           className={`flex flex-col relative w-full p-[18px_20px] text-left rounded-[14px] border-[2px] transition-all duration-[0.2s] group select-none hover:-translate-y-[1px]
-                          ${quizResult.emphasize === "paper" ? "bg-[#f2f0fb] border-[#b0a6e2] hover:bg-[#2e1f72] hover:border-[#1e1348]" : "bg-white border-[#d0e4f7] hover:border-[#3b7dd8]"}`}
+                          ${quizResult.emphasize === "paper" ? "bg-[#f2f0fb] border-[#b0a6e2] hover:bg-[#2e1f72] hover:border-[#1e1348]" : "bg-white border-[#d0e4f7] hover:border-primary"}`}
                         >
                           <div
                             className={`text-[10px] font-bold tracking-[0.09em] uppercase mb-[6px] transition-colors
@@ -1093,7 +1107,7 @@ export function StepView({ data, state, actions, onBack }: StepViewProps) {
                             $675 · mail packet
                           </div>
                           {quizResult.emphasize === "paper" && (
-                            <div className="absolute top-[14px] right-[14px] text-[9px] font-bold uppercase tracking-[0.06em] px-[9px] py-[3px] rounded-full bg-[#3b7dd8] text-white">
+                            <div className="absolute top-[14px] right-[14px] text-[9px] font-bold uppercase tracking-[0.06em] px-[9px] py-[3px] rounded-full bg-primary text-white">
                               Recommended
                             </div>
                           )}
@@ -1118,49 +1132,49 @@ export function StepView({ data, state, actions, onBack }: StepViewProps) {
         )}
 
         <div
-          className={`w-full ${currentStep.type === "quest" ? "" : "max-w-4xl"}`}
+          className={`w-full ${currentStep.step_type === "quest" ? "" : "max-w-4xl"}`}
         >
-          {currentStep.type === "quest" ? (
+          {currentStep.step_type === "quest" ? (
             <div className="w-full min-h-[600px] flex flex-col items-center">
               <QuestRenderer
-                quest={currentStep.questData as unknown as QuestSuite}
+                quest={currentStep.quest_data as unknown as QuestSuite}
                 onComplete={handleToggleComplete}
                 state={state}
                 actions={actions}
               />
             </div>
-          ) : currentStep.type === "tool" ? (
+          ) : currentStep.step_type === "tool" ? (
             renderToolStep()
-          ) : currentStep.type === "docs" ? (
+          ) : currentStep.step_type === "docs" ? (
             <div className="w-full flex flex-col items-center animate-in fade-in slide-in-from-bottom-6 duration-1000">
               {/* Header for Docs */}
               <div className="text-left w-full max-w-[740px] mb-[36px]">
                 <h1 className="text-[clamp(26px,4vw,34px)] font-black text-[#0f1f38] leading-[1.2]">
-                  {currentStep.name}
+                  {currentStep.step_name}
                 </h1>
                 <p className="text-[#3a4f63] text-[15px] leading-[1.65] mb-[28px] max-w-[500px]">
-                  {currentStep.description}
+                  {currentStep.step_description}
                 </p>
 
                 {/* Local Progress Bar - Refined like Reference */}
-                {currentStep.documentItems &&
-                  currentStep.documentItems.length > 0 && (
+                {currentStep.document_items &&
+                  currentStep.document_items.length > 0 && (
                     <div className="w-full flex items-center gap-[12px] mt-3">
-                      <div className="flex-1 h-[5px] bg-[#d0e4f7] rounded-full overflow-hidden">
+                      <div className="flex-1 h-[5px] bg-primary/30 rounded-full overflow-hidden">
                         <div
-                          className="h-full bg-linear-to-r from-[#3b7dd8] to-[#6aa8f0] transition-all duration-1000 ease-out"
+                          className="h-full bg-linear-to-r from-primary to-primary transition-all duration-1000 ease-out"
                           style={{
-                            width: `${(currentStep.documentItems.filter((d) => state.documentChecklist[d.name]).length / currentStep.documentItems.length) * 100}%`,
+                            width: `${(currentStep.document_items.filter((d) => state.documentChecklist[d.name]).length / currentStep.document_items.length) * 100}%`,
                           }}
                         />
                       </div>
                       <span className="text-[12px] font-medium text-[#6b8097] whitespace-nowrap">
                         {
-                          currentStep.documentItems.filter(
+                          currentStep.document_items.filter(
                             (d) => state.documentChecklist[d.name],
                           ).length
                         }{" "}
-                        of {currentStep.documentItems.length} reviewed
+                        of {currentStep.document_items.length} reviewed
                       </span>
                     </div>
                   )}
@@ -1174,8 +1188,11 @@ export function StepView({ data, state, actions, onBack }: StepViewProps) {
                     "Required if Applicable",
                     "Gather Now for Later",
                   ].map((groupName) => {
-                    const groupItems = currentStep.documentItems?.filter(
-                      (d) => (d.group || "Required Now") === groupName,
+                    const docItems =
+                      (currentStep as any).document_items ||
+                      currentStep.document_items;
+                    const groupItems = docItems?.filter(
+                      (d: any) => (d.group || "Required Now") === groupName,
                     );
 
                     if (!groupItems || groupItems.length === 0) return null;
@@ -1200,11 +1217,11 @@ export function StepView({ data, state, actions, onBack }: StepViewProps) {
                             </span>
                           )}
                           {groupName === "Gather Now for Later" && (
-                            <span className="text-[10px] font-semibold tracking-[0.06em] uppercase px-[9px] py-[3px] rounded-full bg-[#e8f1fb] text-[#2d4a6e] border border-[#d0e4f7]">
+                            <span className="text-[10px] font-semibold tracking-[0.06em] uppercase px-[9px] py-[3px] rounded-full bg-[#e8f1fb] text-primary/80 border border-[#d0e4f7]">
                               Gather
                             </span>
                           )} */}
-                          <div className="h-px flex-1 bg-[#d0e4f7]" />
+                          <div className="h-px flex-1 bg-primary/30" />
                         </div>
 
                         <div className="flex flex-col">
@@ -1231,7 +1248,7 @@ export function StepView({ data, state, actions, onBack }: StepViewProps) {
                                     setSelectedGuideId(doc.id || null);
                                   }
                                 }}
-                                className={`group flex items-center gap-[16px] px-[20px] py-[18px] rounded-[14px] border-[1.5px] transition-all cursor-pointer relative shadow-[0_2px_12px_rgba(15,31,56,0.07),0_1px_3px_rgba(15,31,56,0.04)] hover:border-[#3b7dd8] hover:shadow-[0_8px_32px_rgba(15,31,56,0.12),0_2px_8px_rgba(15,31,56,0.06)] hover:-translate-y-[1px] active:translate-y-0 active:shadow-[0_2px_12px_rgba(15,31,56,0.07),0_1px_3px_rgba(15,31,56,0.04)] mb-[10px]
+                                className={`group flex items-center gap-[16px] px-[20px] py-[18px] rounded-[14px] border-[1.5px] transition-all cursor-pointer relative shadow-[0_2px_12px_rgba(15,31,56,0.07),0_1px_3px_rgba(15,31,56,0.04)] hover:border-primary hover:shadow-[0_8px_32px_rgba(15,31,56,0.12),0_2px_8px_rgba(15,31,56,0.06)] hover:-translate-y-[1px] active:translate-y-0 active:shadow-[0_2px_12px_rgba(15,31,56,0.07),0_1px_3px_rgba(15,31,56,0.04)] mb-[10px]
                                 ${
                                   isReviewed
                                     ? "bg-[#eaf7ff] border-[#b8daff]"
@@ -1247,7 +1264,7 @@ export function StepView({ data, state, actions, onBack }: StepViewProps) {
                                       ? "bg-[#1a7a5e] text-white border-[#1a7a5e]"
                                       : isInProgress
                                         ? "bg-white border-[#fde68a] text-[#d97706]"
-                                        : "bg-[#e8f1fb] border-[#d0e4f7] text-[#2d4a6e]"
+                                        : "bg-[#e8f1fb] border-[#d0e4f7] text-primary/80"
                                   }`}
                                 >
                                   {isReviewed ? (
@@ -1295,7 +1312,7 @@ export function StepView({ data, state, actions, onBack }: StepViewProps) {
                                         className={`px-[9px] py-[3px] rounded-full text-[11px] font-semibold tracking-[0.04em]
                                         ${
                                           isPetitioner
-                                            ? "bg-[#e8f1fb] text-[#2d4a6e]"
+                                            ? "bg-[#e8f1fb] text-primary/80"
                                             : isBeneficiary
                                               ? "bg-[#eaf7f2] text-[#1a7a5e]"
                                               : "bg-[#f3f0fb] text-[#4a2d80]"
@@ -1321,7 +1338,7 @@ export function StepView({ data, state, actions, onBack }: StepViewProps) {
                                         ? "bg-[#eaf7f2] text-[#1a7a5e] border-[#b5e0d0]"
                                         : isInProgress
                                           ? "bg-[#fff9e6] text-[#d97706] border-[#fde68a]"
-                                          : "bg-white text-[#6b8097] border-[#d0e4f7] hover:border-[#3b7dd8] hover:text-[#3b7dd8]"
+                                          : "bg-white text-[#6b8097] border-[#d0e4f7] hover:border-primary hover:text-primary"
                                     }`}
                                   >
                                     {isReviewed
@@ -1349,18 +1366,19 @@ export function StepView({ data, state, actions, onBack }: StepViewProps) {
                 decisions.
               </div>
             </div>
-          ) : currentStep.type === "filing" ? (
+          ) : currentStep.step_type === "filing" ? (
             <div className="w-full flex flex-col items-center animate-in fade-in slide-in-from-bottom-6 duration-1000">
               <div className="flex flex-col w-full max-w-[660px] pb-[80px] px-[24px]">
                 <h1 className="text-[clamp(26px,4vw,34px)] font-black text-[#0f1f38] leading-[1.2]">
-                  {currentStep.name}
+                  {currentStep.step_name}
                 </h1>
                 <p className="text-[#3a4f63] text-[15px] leading-[1.65] mb-[28px] max-w-[500px]">
-                  {currentStep.description}
+                  {currentStep.filing_data?.subtitle ||
+                    currentStep.step_description}
                 </p>
 
                 <div className="flex flex-wrap gap-[8px] mb-[36px]">
-                  <span className="text-[11px] font-semibold tracking-[0.06em] uppercase px-[12px] py-[5px] rounded-full bg-[#e8f1fb] text-[#2d4a6e] border border-[#d0e4f7]">
+                  <span className="text-[11px] font-semibold tracking-[0.06em] uppercase px-[12px] py-[5px] rounded-full bg-[#e8f1fb] text-primary/80 border border-[#d0e4f7]">
                     Petitioner
                   </span>
                   <span className="text-[11px] font-semibold tracking-[0.06em] uppercase px-[12px] py-[5px] rounded-full bg-[#f3f0fb] text-[#4a2d8a] border border-[#c9bef2]">
@@ -1419,7 +1437,7 @@ export function StepView({ data, state, actions, onBack }: StepViewProps) {
                       Select your filing method
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-[12px] mb-[16px]">
-                      {currentStep.filingData?.methods.map((method) => {
+                      {currentStep.filing_data?.methods.map((method) => {
                         const isSelected =
                           state.metadata.filingMethod === method.id;
                         const isOnline = method.id === "online";
@@ -1542,7 +1560,7 @@ export function StepView({ data, state, actions, onBack }: StepViewProps) {
                           setQuizAnswers({});
                           setQuizResult(null);
                         }}
-                        className="w-full p-[14px_24px] bg-transparent border-[1.5px] border-[#d0e4f7] text-[#3a4f63] rounded-[14px] font-medium text-[14px] hover:border-[#3b7dd8] hover:text-[#3b7dd8] hover:bg-[#3b7dd8]/[0.12] transition-all flex items-center justify-center gap-[9px] group"
+                        className="w-full p-[14px_24px] bg-transparent border-[1.5px] border-[#d0e4f7] text-[#3a4f63] rounded-[14px] font-medium text-[14px] hover:border-primary hover:text-primary hover:bg-primary/[0.12] transition-all flex items-center justify-center gap-[9px] group"
                       >
                         <div
                           className="w-[20px] h-[20px] border-[1.5px] border-current flex items-center justify-center text-[11px] font-bold shrink-0"
@@ -1555,9 +1573,8 @@ export function StepView({ data, state, actions, onBack }: StepViewProps) {
                     </div>
 
                     <p className="p-[12px_16px] bg-[#e8f1fb] rounded-[9px] text-[12px] text-[#6b8097] leading-[1.6] m-0">
-                      Fees as of March 2026 per the USCIS G-1055 fee schedule.
-                      Processing time is the same for both methods. Always
-                      verify at uscis.gov before filing.
+                      {currentStep.filing_data?.footerNote ||
+                        "Fees as of March 2026 per the USCIS G-1055 fee schedule. Processing time is the same for both methods. Always verify at uscis.gov before filing."}
                     </p>
                   </div>
                 )}
@@ -1573,14 +1590,14 @@ export function StepView({ data, state, actions, onBack }: StepViewProps) {
             </div>
           ) : (
             <div className="bg-white border border-[#d0e4f7] rounded-[32px] p-10 md:p-14 lg:p-20 shadow-xl shadow-[#0f1f38]/5 animate-in fade-in zoom-in-95 duration-700 w-full max-w-[740px] mx-auto">
-              <div className="text-[11px] font-bold uppercase tracking-[0.2em] text-[#3b7dd8] mb-4 opacity-70">
+              <div className="text-[11px] font-bold uppercase tracking-[0.2em] text-primary mb-4 opacity-70">
                 Case Update
               </div>
               <h1 className="text-[clamp(26px,4vw,34px)] font-black text-[#0f1f38] leading-[1.2]">
-                {currentStep.name}
+                {currentStep.step_name}
               </h1>
               <p className="text-[#3a4f63] text-[15px] leading-[1.65] mb-[28px] max-w-[500px]">
-                {currentStep.description}
+                {currentStep.step_description}
               </p>
 
               {currentStep.actions && currentStep.actions.length > 0 && (
@@ -1589,15 +1606,15 @@ export function StepView({ data, state, actions, onBack }: StepViewProps) {
                     <span className="text-[12px] font-bold uppercase tracking-widest text-[#6b8097]">
                       Key Tasks
                     </span>
-                    <div className="h-px flex-1 bg-[#d0e4f7]/50" />
+                    <div className="h-px flex-1 bg-primary/30" />
                   </div>
                   {currentStep.actions.map((act: string, i: number) => (
                     <div
                       key={i}
-                      className="flex gap-4 p-5 rounded-[20px] bg-[#fafcff] border border-[#d0e4f7] group hover:border-[#3b7dd8] transition-all"
+                      className="flex gap-4 p-5 rounded-[20px] bg-[#fafcff] border border-[#d0e4f7] group hover:border-primary transition-all"
                     >
-                      <div className="w-6 h-6 rounded-full bg-white border-2 border-[#d0e4f7] flex items-center justify-center shrink-0 group-hover:border-[#3b7dd8] transition-colors mt-0.5">
-                        <div className="w-1.5 h-1.5 rounded-full bg-[#d0e4f7] group-hover:bg-[#3b7dd8]" />
+                      <div className="w-6 h-6 rounded-full bg-white border-2 border-[#d0e4f7] flex items-center justify-center shrink-0 group-hover:border-primary transition-colors mt-0.5">
+                        <div className="w-1.5 h-1.5 rounded-full bg-primary/30 group-hover:bg-primary" />
                       </div>
                       <span className="text-[16px] text-[#0f1f38] font-bold tracking-tight">
                         {act}
@@ -1614,7 +1631,10 @@ export function StepView({ data, state, actions, onBack }: StepViewProps) {
       {/* Bottom Navigation Footer */}
       <footer className="h-20 border-t border-slate-200 bg-white flex items-center justify-between px-6 md:px-8 shrink-0 z-40 shadow-[0_-4px_30_rgba(0,0,0,0.02)]">
         <button
-          onClick={() => prevStep && handleNavigate(prevStep.id)}
+          onClick={() =>
+            prevStep &&
+            handleNavigate((prevStep as any).step_key || (prevStep as any).id)
+          }
           className={`flex items-center gap-3 text-[13px] font-black text-slate-900 transition-colors hover:text-primary ${!prevStep ? "opacity-0 pointer-events-none" : "hover:translate-x-[-6px]"}`}
         >
           <ArrowLeft size={16} strokeWidth={3} />
@@ -1635,7 +1655,10 @@ export function StepView({ data, state, actions, onBack }: StepViewProps) {
 
         <div className="min-w-[120px] flex justify-end">
           <button
-            onClick={() => nextStep && handleNavigate(nextStep.id)}
+            onClick={() =>
+              nextStep &&
+              handleNavigate((nextStep as any).step_key || (nextStep as any).id)
+            }
             className={`flex items-center gap-3 px-6 py-3 rounded-md bg-primary text-white text-[13px] font-black shadow-xl shadow-primary/25 transition-all
               ${!nextStep || !isCompleted ? "opacity-0 pointer-events-none" : "hover:translate-x-2 hover:bg-primary/90 active:scale-95"}`}
           >
@@ -1713,7 +1736,7 @@ export function StepView({ data, state, actions, onBack }: StepViewProps) {
           <div className="flex items-center p-[18px_24px] border-b border-[#d0e4f7] gap-[16px] shrink-0">
             <button
               onClick={() => setSelectedGuideId(null)}
-              className="w-[36px] h-[36px] rounded-full border-none bg-[#f5f7fa] cursor-pointer flex items-center justify-center transition-all hover:bg-[#e8f1fb] shrink-0 outline-none focus:ring-2 focus:ring-[#3b7dd8]"
+              className="w-[36px] h-[36px] rounded-full border-none bg-[#f5f7fa] cursor-pointer flex items-center justify-center transition-all hover:bg-[#e8f1fb] shrink-0 outline-none focus:ring-2 focus:ring-primary"
               aria-label="Close guide"
             >
               <svg
@@ -1725,8 +1748,8 @@ export function StepView({ data, state, actions, onBack }: StepViewProps) {
                 <line x1="6" y1="6" x2="18" y2="18" />
               </svg>
             </button>
-            <div className="flex-1 h-[5px] bg-[#d0e4f7] rounded-full overflow-hidden">
-              <div className="h-full bg-gradient-to-r from-[#3b7dd8] to-[#6aa8f0] transition-all duration-300 w-full" />
+            <div className="flex-1 h-[5px] bg-primary/30 rounded-full overflow-hidden">
+              <div className="h-full bg-linear-to-r from-primary to-primary transition-all duration-300 w-full" />
             </div>
             <div className="text-[12px] font-medium text-[#6b8097] whitespace-nowrap shrink-0">
               Guide
@@ -1736,12 +1759,12 @@ export function StepView({ data, state, actions, onBack }: StepViewProps) {
           {/* Guide Body */}
           <div className="flex-1 overflow-y-auto flex flex-col items-center p-[48px_24px_40px] bg-white">
             <div className="w-full max-w-[600px] flex flex-col">
-              {/* <div className="text-[11px] font-semibold tracking-[0.1em] uppercase text-[#3b7dd8] mb-[16px]">
+              {/* <div className="text-[11px] font-semibold tracking-[0.1em] uppercase text-primary mb-[16px]">
                 Step 2 · Gather Required Documents
               </div> */}
               <div className="inline-flex items-center gap-[5px] bg-[#e8f1fb] border border-[#d0e4f7] rounded-full p-[4px_12px] text-[11px] font-medium text-[#3a4f63] mb-[24px] w-fit">
                 <div
-                  className={`w-[6px] h-[6px] rounded-full shrink-0 ${InlineGuideData[selectedGuideId].sourceType === "internal" ? "bg-[#6b8097]" : "bg-[#3b7dd8]"}`}
+                  className={`w-[6px] h-[6px] rounded-full shrink-0 ${InlineGuideData[selectedGuideId].sourceType === "internal" ? "bg-[#6b8097]" : "bg-primary"}`}
                 />
                 {InlineGuideData[selectedGuideId].sourceType === "internal"
                   ? "Roadmap Module"
@@ -1803,12 +1826,12 @@ export function StepView({ data, state, actions, onBack }: StepViewProps) {
           <div className="flex items-center h-[72px] border-b border-[#d0e4f7] px-6 gap-4 shrink-0 bg-[#fafcff]">
             <button
               onClick={() => setIsTutorialOpen(false)}
-              className="w-9 h-9 rounded-full bg-[#f4f7fb] border-none flex items-center justify-center text-[#3a4f63] hover:bg-[#d0e4f7] transition-all cursor-pointer"
+              className="w-9 h-9 rounded-full bg-[#f4f7fb] border-none flex items-center justify-center text-[#3a4f63] hover:bg-primary/30 transition-all cursor-pointer"
             >
               <X size={16} strokeWidth={2} />
             </button>
 
-            <div className="flex-1 h-[5px] bg-[#d0e4f7] rounded-[10px] overflow-hidden">
+            <div className="flex-1 h-[5px] bg-primary/30 rounded-[10px] overflow-hidden">
               <div
                 className="h-full bg-linear-to-r from-primary to-primary rounded-[10px] transition-all duration-[0.4s] ease-[cubic-bezier(0.4,0,0.2,1)]"
                 style={{
@@ -1842,7 +1865,7 @@ export function StepView({ data, state, actions, onBack }: StepViewProps) {
               <div className="w-full bg-[#eef3fa] border-[1.5px] border-[#d0e4f7] rounded-[10px] overflow-hidden mb-5 relative flex flex-col">
                 {/* Image Placeholder Area (aspect-[16/9])*/}
                 <div className="bg-[#eef3fa] flex flex-col items-center justify-center p-9 text-center">
-                  <div className="w-11 h-11 rounded-full bg-[#d0e4f7] flex items-center justify-center mb-2.5 shadow-sm">
+                  <div className="w-11 h-11 rounded-full bg-primary/30 flex items-center justify-center mb-2.5 shadow-sm">
                     <Search
                       size={22}
                       className="text-[#6b8097]"

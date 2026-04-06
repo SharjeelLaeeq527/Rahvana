@@ -1,54 +1,57 @@
 export interface RoadmapStep {
-  stepNumber?: number;
-  id: string;
-  name: string;
-  nameUr?: string;
-  title?: string;
-  titleUr?: string;
-  description?: string;
-  descriptionUr?: string;
+  step_key: string;
+  step_number: number;
+  step_name: string;
+  step_description: string;
+  step_type:
+    | "informational"
+    | "form_fillable"
+    | "form_submit"
+    | "awaiting_response"
+    | "document_upload"
+    | "appointment_scheduling"
+    | "review"
+    | "decision"
+    | "quest"
+    | "tool"
+    | "docs"
+    | "filing";
+  tool_integration?: string | null;
+  dependencies: string[];
+  visible_when: Record<string, any>;
+  estimated_duration_days: number;
+  is_required: boolean;
+  display_order: number;
+
+  // UI-specific properties (now in snake_case)
   who?: string;
-  whoUr?: string;
   where?: string;
-  whereUr?: string;
   actions?: string[];
-  actionsUr?: string[];
   output?: string;
-  outputUr?: string;
   notes?: string;
-  notesUr?: string;
   info?: string;
   warn?: string;
   timeline?: string;
-  documents?: string[];
-  documentsUr?: string[];
-  pakistanSpecific?: string;
   fee?: string;
-  filingType?: string;
-  inputs?: string[];
-  officialSource?: string;
-  nextTrigger?: string;
-  relevantTools?: {
+  official_source?: string;
+  next_trigger?: string;
+  relevant_tools?: {
     label: string;
-    labelUr?: string;
     href: string;
     type?: "tool" | "service" | "guide";
   }[];
-  possibleOutcomes?: string[];
-  scenarioSpecific?: string;
+  possible_outcomes?: string[];
+  scenario_specific?: string;
   success?: string;
-  successUr?: string;
 
-  // New Journey Engine fields
-  type?: "info" | "quest" | "tool" | "tutorial" | "docs" | "filing";
-  documentItems?: DocumentItem[];
-  filingData?: FilingData;
-  questData?: QuestData;
-  toolData?: ToolData;
-  logic?: string; // visibility logic e.g. "filingMethod === 'online'"
-  prerequisites?: string[]; // IDs of steps
-  isPersistent?: boolean;
-  chapterId?: string | number;
+  document_items?: DocumentItem[];
+  filing_data?: FilingData;
+  quest_data?: QuestData;
+  tool_data?: ToolData;
+  logic?: string;
+  prerequisites?: string[];
+  is_persistent?: boolean;
+  chapter_id?: string | number;
   branch?: "online" | "paper" | "both";
 }
 
@@ -70,7 +73,7 @@ export interface QuestScreen {
     intro?: string;
     items: string[];
   };
-  multiPassLogic?: string;
+  multi_pass_logic?: string;
 }
 
 export interface QuestData {
@@ -78,7 +81,7 @@ export interface QuestData {
   title: string;
   subtitle: string;
   screens: QuestScreen[];
-  resultLogic: string;
+  result_logic: string;
 }
 
 export interface QuestSuite {
@@ -91,15 +94,20 @@ export interface QuestSuite {
 export interface FilingMethod {
   id: string;
   name: string;
+  title?: string;
   price: string;
   subtitle: string;
   features: string[];
   icon?: string;
+  color?: string;
 }
 
 export interface FilingData {
   id: string;
+  title?: string;
+  subtitle?: string;
   methods: FilingMethod[];
+  footerNote?: string;
   quiz?: FilingQuiz;
 }
 
@@ -110,7 +118,8 @@ export interface FilingQuiz {
 export interface FilingQuizScreen {
   id: string;
   question: string;
-  helper: string;
+  helper?: string;
+  hint?: { items: string[] };
   options: {
     label: string;
     value: string;
@@ -118,13 +127,12 @@ export interface FilingQuizScreen {
   }[];
 }
 
-
 export interface DocumentItem {
   id: string;
   name: string;
   subtitle?: string;
   tag?: "petitioner" | "beneficiary" | "both" | "other" | "third party";
-  guideUrl?: string;
+  guide_url?: string;
   icon?: string;
   group?: string;
 }
@@ -159,20 +167,20 @@ export interface ToolData {
     label: string;
     type: "role" | "tool" | "newtab" | "uscis";
   }[];
-  launchModule: {
+  launch_module: {
     icon: "form" | "calc" | "search" | "user" | "shield";
     eyebrow: string;
     heading: string;
     features: string[];
-    buttonLabel: string;
+    button_label: string;
     href: string;
     note?: string;
   };
-  secondaryActions?: SecondaryAction[];
-  walletIntegration?: {
-    portalType: "USCIS" | "NVC" | "COURIER";
+  secondary_actions?: SecondaryAction[];
+  wallet_integration?: {
+    portal_type: "USCIS" | "NVC" | "COURIER";
   };
-  supportCards?: {
+  support_cards?: {
     label: string;
     items: string[];
   }[];
@@ -180,86 +188,61 @@ export interface ToolData {
 }
 
 export interface JourneyState {
-  currentChapterId: string | number;
-  currentStepId: string;
-  completedSteps: string[];
-  unresolvedTasks: string[];
+  current_chapter_id: string | number;
+  current_step_id: string;
+  completed_steps: string[];
+  unresolved_tasks: string[];
   answers: Record<string, any>;
-  metadata: Record<string, any>; // e.g., filingMethod: 'online'
+  metadata: Record<string, any>;
 }
 
 export interface RoadmapSource {
   label: string;
-  labelUr?: string;
   url: string;
 }
 
-export interface RoadmapStage {
-  id: number | string;
-  name: string;
-  nameUr?: string;
+export interface RoadmapChapter {
+  chapter_key: string;
+  chapter_number: number;
+  chapter_name: string;
+  chapter_description: string;
+  estimated_duration_months: number;
+  display_order: number;
+  steps: RoadmapStep[];
+
+  // Optional legacy support fields
+  id?: number | string;
+  name?: string;
   title?: string;
-  titleUr?: string;
   description?: string;
-  descriptionUr?: string;
   timeline?: string;
   icon?: string;
   color?: string;
-  scenarioSpecific?: string;
+  scenario_specific?: string;
   sources?: RoadmapSource[];
-  steps: RoadmapStep[];
-  progress?: number; // Calculated progress percentage
-}
-
-export interface ScenarioOption {
-  id: string;
-  title: string;
-  desc: string;
+  progress?: number;
 }
 
 export interface RoadmapData {
-  scenarios: any;
+  journey_type: string;
+  journey_name: string;
+  journey_description: string;
+  total_estimated_months: number;
+  chapters: RoadmapChapter[];
 
+  // Optional legacy or additional top-level keys
+  scenarios?: any;
   info?: string;
-
-  infoLink?: string;
-  infoLinkText?: string;
-
-  infoLinks?: {
+  info_links?: {
     text: string;
     url: string;
   }[];
-
   disclaimer?: string;
-  disclaimerUr?: string;
-
-  disclaimerLink?: string;
-  disclaimerLinkText?: string;
-
-  disclaimerLinks?: {
-    text: string;
-    url: string;
-  }[];
-
-  scenarioNotes: Record<string, string>;
-
-  title?: string;
-  titleUr?: string;
-
-  description?: string;
-  descriptionUr?: string;
-
-  stages: RoadmapStage[];
-
-  documents?: string[];
-
-  visaOverview?: {
+  visa_overview?: {
     title: string;
-    titleUr?: string;
     text: string;
-    textUr?: string;
     flag: string;
     link: string;
-    linkText?: string;
+    link_text?: string;
   };
-}
+}

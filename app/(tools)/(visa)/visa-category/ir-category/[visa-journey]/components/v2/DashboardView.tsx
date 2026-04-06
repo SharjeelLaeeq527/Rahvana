@@ -1,13 +1,14 @@
 "use client";
 
 import React, { useMemo, useState } from "react";
-import {
-  ChevronDown,
-  ArrowRight,
-} from "lucide-react";
+import { ChevronDown, ArrowRight } from "lucide-react";
 import { RoadmapData } from "../types";
 import { WizardState } from "@/app/(main)/dashboard/hooks/useWizard";
-import { getNextBestAction, getStageProgress, isStageUnlocked } from "./journeyHelpers";
+import {
+  getNextBestAction,
+  getStageProgress,
+  isStageUnlocked,
+} from "./journeyHelpers";
 
 interface DashboardViewProps {
   data: RoadmapData;
@@ -28,9 +29,11 @@ export function DashboardView({
     () => getNextBestAction(data, state),
     [data, state],
   );
-  const [openAccordions, setOpenAccordions] = useState<Record<string, boolean>>({
-    "case-details": true,
-  });
+  const [openAccordions, setOpenAccordions] = useState<Record<string, boolean>>(
+    {
+      "case-details": true,
+    },
+  );
 
   const toggleAccordion = (id: string) => {
     setOpenAccordions((prev) => ({
@@ -126,7 +129,9 @@ export function DashboardView({
         <div className="text-[10px] font-bold uppercase tracking-[0.12em] text-slate-400 mb-2">
           IR-1 Spouse Visa · Pakistan
         </div>
-        <h1 className="font-serif text-[clamp(22px,3vw,28px)] text-[#0c1b33] mb-6">Case Dashboard</h1>
+        <h1 className="font-serif text-[clamp(22px,3vw,28px)] text-[#0c1b33] mb-6">
+          Case Dashboard
+        </h1>
 
         {/* Hero Section */}
         <section className="bg-[#0c1b33] rounded-2xl p-[22px_26px] mb-3 relative overflow-hidden animate-in zoom-in duration-500 after:content-[''] after:absolute after:-top-[50px] after:-right-[50px] after:w-[180px] after:h-[180px] after:rounded-full after:bg-primary/12 after:pointer-events-none">
@@ -135,18 +140,26 @@ export function DashboardView({
               Next best action
             </div>
             <h2 className="text-white/95 text-xl font-serif leading-tight mb-1">
-              {nextActionData?.step.name || "Journey Complete!"}
+              {nextActionData?.step.step_name || "Journey Complete!"}
             </h2>
             <p className="text-white/45 text-[12.5px] leading-relaxed mb-4 max-w-md">
-              {nextActionData?.step.description || "You have reached the end of the roadmap. All major verification steps are fulfilled."}
+              {nextActionData?.step.step_description ||
+                "You have reached the end of the roadmap. All major verification steps are fulfilled."}
             </p>
             <button
-              onClick={() => nextActionData && actions.setCurrentStep(nextActionData.stepIdxInStage)}
+              onClick={() =>
+                nextActionData &&
+                actions.setCurrentStep(nextActionData.stepIdxInChapter)
+              }
               disabled={!nextActionData}
               className="inline-flex items-center gap-2 px-4 py-2.5 bg-primary hover:bg-primary/90 disabled:opacity-50 text-white rounded-[10px] font-bold text-[13px] shadow-lg shadow-primary/40 transition-all active:scale-95 group"
             >
               Continue
-              <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" strokeWidth={3} />
+              <ArrowRight
+                size={14}
+                className="group-hover:translate-x-1 transition-transform"
+                strokeWidth={3}
+              />
             </button>
           </div>
         </section>
@@ -167,9 +180,17 @@ export function DashboardView({
                         : "bg-[#e8f5ef] border-[#a8d9be] text-[#15744f]"
                 }`}
               >
-                <div className={`w-1.5 h-1.5 rounded-full mt-1.5 shrink-0 ${
-                  alert.type === "gold" ? "bg-[#b38600]" : alert.type === "sky" ? "bg-primary" : alert.type === "amber" ? "bg-[#8a6200]" : "bg-[#15744f]"
-                }`} />
+                <div
+                  className={`w-1.5 h-1.5 rounded-full mt-1.5 shrink-0 ${
+                    alert.type === "gold"
+                      ? "bg-[#b38600]"
+                      : alert.type === "sky"
+                        ? "bg-primary"
+                        : alert.type === "amber"
+                          ? "bg-[#8a6200]"
+                          : "bg-[#15744f]"
+                  }`}
+                />
                 <div className="text-[12.5px] leading-relaxed">
                   <strong className="font-bold block">{alert.title}</strong>
                   <span className="opacity-80">{alert.text}</span>
@@ -181,8 +202,8 @@ export function DashboardView({
 
         {/* Chapter Strip */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2.5 mb-3">
-          {data.stages
-            .map((stage, originalIdx) => ({ stage, originalIdx }))
+          {(data.chapters || (data as any).stages || [])
+            .map((stage: any, originalIdx: number) => ({ stage, originalIdx }))
             .filter(
               ({ stage }) =>
                 !state.scenarioType ||
@@ -197,7 +218,7 @@ export function DashboardView({
 
               return (
                 <div
-                  key={stage.id}
+                  key={stage.chapter_key || stage.id}
                   onClick={() => !isLocked && onSelectChapter(originalIdx)}
                   className={`bg-white border-[1.5px] rounded-[10px] p-[14px_16px] transition-all flex flex-col ${
                     isLocked
@@ -213,7 +234,10 @@ export function DashboardView({
                     Chapter {originalIdx + 1}
                   </div>
                   <h3 className="text-[12.5px] font-bold text-[#0c1b33] leading-[1.3] mb-2">
-                    {stage.name.replace(/^Stage\s[IVX]+:\s/, "")}
+                    {(stage.chapter_name || stage.name).replace(
+                      /^Stage\s[IVX]+:\s/,
+                      "",
+                    )}
                   </h3>
 
                   <div className="flex items-center gap-1.5 mt-auto">
@@ -240,12 +264,20 @@ export function DashboardView({
               onClick={() => toggleAccordion("case-details")}
               className={`flex items-center p-[14px_18px] cursor-pointer hover:bg-[#eef3fa] transition-colors ${openAccordions["case-details"] ? "bg-[#eef3fa]/50" : ""}`}
             >
-              <span className="text-[12.5px] font-bold text-[#0c1b33]">Case details</span>
-              <span className="text-[11px] text-[#6b8097] ml-auto mr-2">
-                {caseFields.some(f => f.value) ? "Recorded" : "Not recorded"}
+              <span className="text-[12.5px] font-bold text-[#0c1b33]">
+                Case details
               </span>
-              <div className={`transition-transform duration-200 ${openAccordions["case-details"] ? "rotate-180" : ""}`}>
-                <ChevronDown size={14} strokeWidth={2.5} className="text-[#6b8097]" />
+              <span className="text-[11px] text-[#6b8097] ml-auto mr-2">
+                {caseFields.some((f) => f.value) ? "Recorded" : "Not recorded"}
+              </span>
+              <div
+                className={`transition-transform duration-200 ${openAccordions["case-details"] ? "rotate-180" : ""}`}
+              >
+                <ChevronDown
+                  size={14}
+                  strokeWidth={2.5}
+                  className="text-[#6b8097]"
+                />
               </div>
             </div>
             {openAccordions["case-details"] && (
@@ -256,8 +288,12 @@ export function DashboardView({
                       key={i}
                       className="flex justify-between items-center py-2 border-b border-[#d0e4f7]/50 last:border-0"
                     >
-                      <span className="text-[12.5px] text-[#6b8097]">{item.label}</span>
-                      <span className={`text-[12.5px] font-medium ${!item.value ? "text-[#6b8097] italic" : "text-[#0c1b33]"}`}>
+                      <span className="text-[12.5px] text-[#6b8097]">
+                        {item.label}
+                      </span>
+                      <span
+                        className={`text-[12.5px] font-medium ${!item.value ? "text-[#6b8097] italic" : "text-[#0c1b33]"}`}
+                      >
                         {item.value || "Not recorded"}
                       </span>
                     </div>
@@ -273,12 +309,20 @@ export function DashboardView({
               onClick={() => toggleAccordion("milestones")}
               className={`flex items-center p-[14px_18px] cursor-pointer hover:bg-[#eef3fa] transition-colors ${openAccordions["milestones"] ? "bg-[#eef3fa]/50" : ""}`}
             >
-              <span className="text-[12.5px] font-bold text-[#0c1b33]">Milestone history</span>
+              <span className="text-[12.5px] font-bold text-[#0c1b33]">
+                Milestone history
+              </span>
               <span className="text-[11px] text-[#6b8097] ml-auto mr-2">
                 {milestonesReached} of {milestones.length} reached
               </span>
-              <div className={`transition-transform duration-200 ${openAccordions["milestones"] ? "rotate-180" : ""}`}>
-                <ChevronDown size={14} strokeWidth={2.5} className="text-[#6b8097]" />
+              <div
+                className={`transition-transform duration-200 ${openAccordions["milestones"] ? "rotate-180" : ""}`}
+              >
+                <ChevronDown
+                  size={14}
+                  strokeWidth={2.5}
+                  className="text-[#6b8097]"
+                />
               </div>
             </div>
             {openAccordions["milestones"] && (
@@ -289,13 +333,22 @@ export function DashboardView({
                       ? !!(state.metadata && state.metadata[m.key])
                       : !!(state.answers && state.answers[m.sid!]);
                     return (
-                      <div key={i} className="flex items-center gap-2.5 py-1.5 border-b border-[#d0e4f7]/50 last:border-0">
-                        <div className={`w-[18px] h-[18px] rounded-full flex items-center justify-center text-[8px] font-bold ${
-                          isDone ? "bg-[#15744f] text-white" : "bg-[#d0e4f7] text-[#6b8097]"
-                        }`}>
+                      <div
+                        key={i}
+                        className="flex items-center gap-2.5 py-1.5 border-b border-[#d0e4f7]/50 last:border-0"
+                      >
+                        <div
+                          className={`w-[18px] h-[18px] rounded-full flex items-center justify-center text-[8px] font-bold ${
+                            isDone
+                              ? "bg-[#15744f] text-white"
+                              : "bg-[#d0e4f7] text-[#6b8097]"
+                          }`}
+                        >
                           {isDone ? "✓" : "•"}
                         </div>
-                        <span className={`text-[12.5px] font-medium ${isDone ? "text-[#1c2b3a]" : "text-[#6b8097]"}`}>
+                        <span
+                          className={`text-[12.5px] font-medium ${isDone ? "text-[#1c2b3a]" : "text-[#6b8097]"}`}
+                        >
                           {m.label}
                         </span>
                       </div>
