@@ -2,6 +2,7 @@ export interface RoadmapStep {
   step_key: string;
   step_number: number;
   step_name: string;
+  step_short_description: string;
   step_description: string;
   step_type:
     | "informational"
@@ -157,6 +158,22 @@ export interface SecondaryAction {
   href?: string;
 }
 
+export interface TutorialStepData {
+  label: string;
+  heading: string;
+  instruction: string;
+  url: string;
+  /** Path or URL to a real screenshot. When supplied the image replaces the
+   *  structured placeholder. Leave null/undefined to keep the placeholder. */
+  screenshot?: string | null;
+  ss_label: string;
+  ss_headline: string;
+  ss_desc: string;
+  ss_highlight: string | null;
+  caption: string;
+  note: string | null;
+}
+
 export interface ToolData {
   id: string;
   title: string;
@@ -165,17 +182,23 @@ export interface ToolData {
   companion?: string;
   chips?: {
     label: string;
-    type: "role" | "tool" | "newtab" | "uscis";
+    type: "role" | "tool" | "newtab" | "uscis" | "path";
   }[];
   launch_module: {
-    icon: "form" | "calc" | "search" | "user" | "shield";
+    icon: "form" | "calc" | "search" | "user" | "shield" | "portal" | "upload";
     eyebrow: string;
     heading: string;
     features: string[];
     button_label: string;
+    button_launched_label?: string;
     href: string;
     note?: string;
+    launched_note?: string;
+    return_note?: { title: string; body: string };
   };
+  guide_card?: { title: string; subtitle: string };
+  tutorial_steps?: TutorialStepData[];
+  upload_requirements?: string[];
   secondary_actions?: SecondaryAction[];
   wallet_integration?: {
     portal_type: "USCIS" | "NVC" | "COURIER";

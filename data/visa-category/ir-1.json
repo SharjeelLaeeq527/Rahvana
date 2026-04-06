@@ -16,6 +16,7 @@
           "step_key": "step_1_1",
           "step_number": 1,
           "step_name": "Determine Eligibility",
+          "step_short_description": "Confirm IR-1 qualification",
           "step_description": "Check if you qualify for IR-1 visa",
           "step_type": "quest",
           "who": "Confirm IR-1 qualification",
@@ -662,6 +663,7 @@
           "step_key": "step_1_2",
           "step_number": 2,
           "step_name": "Gather Required Documents",
+          "step_short_description": "Pakistan-specific full checklist",
           "step_type": "docs",
           "description": "Prepare the documents needed for your IR-1 spouse petition. Open each item to see exactly what is needed, where to get it, and what to watch out for.",
           "who": "Pakistan-specific full checklist",
@@ -812,6 +814,7 @@
           "step_key": "step_1_3",
           "step_number": 3,
           "step_name": "Review Filing Methods",
+          "step_short_description": "Online $625 or Paper $675",
           "step_type": "filing",
           "step_description": "Decide between Online vs. Paper filing",
           "who": "Decision required",
@@ -978,6 +981,7 @@
           "step_key": "step_1_4",
           "step_number": 4,
           "step_name": "Fill Form I-130",
+          "step_short_description": "via Rahvana wizard",
           "step_description": "Use Rahvana's guided Autoform Filler to complete the I-130 Petition for Alien Relative — with structured step-by-step support, clear prompts, and a built-in review flow.",
           "step_type": "tool",
           "logic": "filingMethod === 'online'",
@@ -1039,7 +1043,9 @@
           "who": "via Rahvana wizard",
           "where": "my.uscis.gov",
           "timeline": "2-4 hours",
-          "dependencies": ["step_1_3"],
+          "dependencies": [
+            "step_1_3"
+          ],
           "visible_when": {},
           "estimated_duration_days": 2,
           "is_required": true,
@@ -1066,10 +1072,13 @@
           "step_key": "step_1_5",
           "step_number": 5,
           "step_name": "Fill Form I-130A",
+          "step_short_description": "via Rahvana wizard",
           "step_description": "Complete the beneficiary spouse information form using Rahvana's guided Autoform Filler — structured prompts, field-by-field clarity, and a built-in review before you finalize.",
           "step_type": "tool",
           "who": "via Rahvana wizard",
-          "dependencies": ["step_1_4"],
+          "dependencies": [
+            "step_1_4"
+          ],
           "visible_when": {},
           "estimated_duration_days": 1,
           "is_required": true,
@@ -1131,10 +1140,13 @@
           "step_key": "step_1_6",
           "step_number": 6,
           "step_name": "Create USCIS Account",
+          "step_short_description": "myaccount.uscis.gov",
           "step_type": "tool",
           "step_description": "Set up the petitioner's USCIS online account — the gateway for filing Form I-130 digitally, tracking the case, and responding to any USCIS requests.",
           "who": "myaccount.uscis.gov",
-          "dependencies": ["step_1_3"],
+          "dependencies": [
+            "step_1_3"
+          ],
           "visible_when": {},
           "estimated_duration_days": 1,
           "is_required": true,
@@ -1196,11 +1208,22 @@
           }
         },
         {
-          "id": "I-07",
-          "name": "Start Form I-130 on USCIS",
-          "type": "tool",
-          "who": "Begin petition online",
-          "toolData": {
+          "step_key": "step_1_7",
+          "step_number": 7,
+          "step_name": "Start Form I-130 on USCIS",
+          "step_short_description": "Begin petition online",
+          "step_type": "tool",
+          "step_description": "Sign in to your USCIS account and begin the online I-130 petition. From your account dashboard, click \"File a Form Online\" to start the form and enter your prepared information.",
+          "who": "Petitioner",
+          "where": "myaccount.uscis.gov",
+          "dependencies": [
+            "step_1_6"
+          ],
+          "visible_when": {},
+          "estimated_duration_days": 1,
+          "is_required": true,
+          "display_order": 7,
+          "tool_data": {
             "id": "start-i130-uscis",
             "title": "Start Form I-130 on USCIS",
             "subtitle": "Sign in to your USCIS account and begin the online I-130 petition. From your account dashboard, click \"File a Form Online\" to start the form.",
@@ -1211,12 +1234,16 @@
               },
               {
                 "label": "Online Filing",
+                "type": "path"
+              },
+              {
+                "label": "USCIS Portal",
                 "type": "uscis"
               }
             ],
-            "launchModule": {
-              "icon": "form",
-              "eyebrow": "USCIS Portal · myaccount.uscis.gov",
+            "launch_module": {
+              "icon": "portal",
+              "eyebrow": "USCIS Portal \u00b7 myaccount.uscis.gov",
               "heading": "Start the online I-130 petition on USCIS",
               "features": [
                 "Sign in at myaccount.uscis.gov",
@@ -1224,18 +1251,102 @@
                 "Select Form I-130 and begin the draft",
                 "Progress saves automatically as you go"
               ],
-              "buttonLabel": "Go to USCIS Portal",
+              "button_label": "Go to USCIS Portal",
+              "button_launched_label": "Portal Opened",
               "href": "https://myaccount.uscis.gov/",
-              "note": "Opens your USCIS account in a new tab — return here after starting the form"
-            }
+              "note": "Opens your USCIS account in a new tab \u2014 return here after starting the form",
+              "launched_note": "Sign in and click \"File a Form Online\" to begin the I-130 draft",
+              "return_note": {
+                "title": "USCIS portal opened in a new tab",
+                "body": "Sign in and click \"File a Form Online\" to begin. You can save progress and return to continue later."
+              }
+            },
+            "guide_card": {
+              "title": "View Step-by-Step USCIS Portal Guide",
+              "subtitle": "Not sure where to click? A focused walkthrough shows you exactly how to start the I-130 on the USCIS portal."
+            },
+            "tutorial_steps": [
+              {
+                "label": "Step 1 of 5 \u2014 Sign in to USCIS",
+                "heading": "Sign in to your USCIS account",
+                "instruction": "Go to <strong>myaccount.uscis.gov</strong> and sign in with the email address and password you set up when creating the account. Complete the two-step verification prompt.",
+                "url": "myaccount.uscis.gov",
+                "ss_label": "USCIS Account Sign-In",
+                "ss_headline": "Sign in to your account",
+                "ss_desc": "Enter email \u2192 Enter password \u2192 Complete verification",
+                "ss_highlight": null,
+                "caption": "Two-step verification is required on every login \u2014 have your phone or authenticator app ready.",
+                "note": null
+              },
+              {
+                "label": "Step 2 of 5 \u2014 Reach the account dashboard",
+                "heading": "Find your account dashboard",
+                "instruction": "After signing in, you will land on your <strong>myUSCIS account homepage</strong>. This is your central hub for filing forms, checking case status, and sending secure messages to USCIS.",
+                "url": "my.uscis.gov",
+                "ss_label": "myUSCIS Dashboard",
+                "ss_headline": "Your USCIS Account Home",
+                "ss_desc": "Your filed cases, notices, and account tools appear here.",
+                "ss_highlight": null,
+                "caption": "If you have existing draft cases, they will appear here. Look for the \"File a Form Online\" option to start a new filing.",
+                "note": null
+              },
+              {
+                "label": "Step 3 of 5 \u2014 Click \"File a Form Online\"",
+                "heading": "Click \"File a Form Online\" on the dashboard",
+                "instruction": "From the account homepage, locate and click the <strong>\"File a Form Online\"</strong> button or link. This is the official USCIS starting point for all online form submissions, including Form I-130.",
+                "url": "my.uscis.gov",
+                "ss_label": "Account Dashboard",
+                "ss_headline": "File a Form Online",
+                "ss_desc": "This button appears on the myUSCIS account homepage.",
+                "ss_highlight": "File a Form Online",
+                "caption": "Per official USCIS guidance, \"File a Form Online\" is the starting point for all new online submissions.",
+                "note": "\"File a Form Online\" is the exact label used by USCIS. If you do not see it immediately, scroll down on the dashboard \u2014 its position may vary."
+              },
+              {
+                "label": "Step 4 of 5 \u2014 Select Form I-130",
+                "heading": "Find and select Form I-130",
+                "instruction": "After clicking \"File a Form Online,\" you will see a list of forms available to file digitally. Locate <strong>Form I-130, Petition for Alien Relative</strong> and select it to begin.",
+                "url": "my.uscis.gov/file-online",
+                "ss_label": "Online Form Selection",
+                "ss_headline": "Form I-130",
+                "ss_desc": "Petition for Alien Relative \u2014 select to start the online draft",
+                "ss_highlight": "I-130, Petition for Alien Relative",
+                "caption": "Form I-130 is listed on the forms-available-to-file-online page. USCIS confirms it is currently available for online filing.",
+                "note": null
+              },
+              {
+                "label": "Step 5 of 5 \u2014 Begin the online I-130 draft",
+                "heading": "Start the I-130 filing draft",
+                "instruction": "Once you select Form I-130, the USCIS portal will walk you through the form section by section. <strong>Progress saves automatically</strong> \u2014 you can return and continue at any time.",
+                "url": "my.uscis.gov",
+                "ss_label": "I-130 Filing Draft",
+                "ss_headline": "Form I-130 \u2014 In Progress",
+                "ss_desc": "Complete each section and save. Return to finish anytime.",
+                "ss_highlight": null,
+                "caption": "USCIS offers two filing methods: guided online workflow or PDF upload. Complete review before paying the $625 filing fee.",
+                "note": "Do not pay the fee until you have reviewed all entered information carefully. Fees are generally non-refundable once submitted."
+              }
+            ],
+            "disclaimer": "Rahvana provides structured guidance only. This is not legal advice. USCIS.gov is the official filing portal. Always verify information at uscis.gov before submitting."
           }
         },
         {
-          "id": "I-08",
-          "name": "Upload Forms & Evidence",
-          "type": "tool",
-          "who": "PDF/JPG, 12 MB max",
-          "toolData": {
+          "step_key": "step_1_8",
+          "step_number": 8,
+          "step_name": "Upload Forms & Evidence",
+          "step_short_description": "PDF/JPG, 12 MB max",
+          "step_type": "tool",
+          "step_description": "Attach your supporting documents inside the USCIS online portal. This is the evidence-upload phase \u2014 your documents become part of the official I-130 filing record.",
+          "who": "Petitioner",
+          "where": "myaccount.uscis.gov",
+          "dependencies": [
+            "step_1_7"
+          ],
+          "visible_when": {},
+          "estimated_duration_days": 1,
+          "is_required": true,
+          "display_order": 8,
+          "tool_data": {
             "id": "uscis-upload-evidence",
             "title": "Upload Forms & Evidence",
             "subtitle": "Attach your supporting documents inside the USCIS online portal. This is the evidence-upload phase.",
@@ -1246,12 +1357,16 @@
               },
               {
                 "label": "Online Filing",
+                "type": "path"
+              },
+              {
+                "label": "USCIS Portal",
                 "type": "uscis"
               }
             ],
-            "launchModule": {
-              "icon": "form",
-              "eyebrow": "USCIS Portal · Evidence Upload Phase",
+            "launch_module": {
+              "icon": "upload",
+              "eyebrow": "USCIS Portal \u00b7 Evidence Upload Phase",
               "heading": "Attach your evidence files to the I-130 filing",
               "features": [
                 "Sign in and open your I-130 draft",
@@ -1259,10 +1374,83 @@
                 "Attach each document file individually",
                 "Confirm each upload appears correctly"
               ],
-              "buttonLabel": "Open USCIS Portal",
+              "button_label": "Open USCIS Portal",
               "href": "https://myaccount.uscis.gov/",
-              "note": "Accepted formats: PDF, JPG, or JPEG only. Max 12MB per file."
-            }
+              "note": "Accepted formats: PDF, JPG, or JPEG only. Max 12 MB per file."
+            },
+            "upload_requirements": [
+              "Accepted formats: PDF, JPG, or JPEG only",
+              "Maximum file size: 12 MB per file",
+              "Files must not be encrypted or password-protected",
+              "Foreign-language documents require a certified English translation uploaded alongside the original"
+            ],
+            "guide_card": {
+              "title": "View Step-by-Step Upload Guide",
+              "subtitle": "A focused walkthrough showing how to locate and complete the evidence upload section inside the USCIS portal."
+            },
+            "tutorial_steps": [
+              {
+                "label": "Step 1 of 5 \u2014 Open your I-130 draft",
+                "heading": "Sign in and open the I-130 draft",
+                "instruction": "Sign in to <strong>myaccount.uscis.gov</strong> and locate your I-130 case in progress. Open the draft filing to continue from where you left off.",
+                "url": "myaccount.uscis.gov",
+                "ss_label": "myUSCIS Dashboard",
+                "ss_headline": "Your Cases",
+                "ss_desc": "Find your in-progress I-130 draft and open it.",
+                "ss_highlight": null,
+                "caption": "Your in-progress forms appear in your account dashboard. Click the I-130 draft to continue.",
+                "note": null
+              },
+              {
+                "label": "Step 2 of 5 \u2014 Find the evidence upload section",
+                "heading": "Locate the evidence upload section",
+                "instruction": "Inside the I-130 draft, navigate to the <strong>evidence or supporting documents</strong> section. USCIS labels this as the upload step in the guided online filing workflow.",
+                "url": "my.uscis.gov",
+                "ss_label": "I-130 Filing Draft",
+                "ss_headline": "Upload Supporting Documents",
+                "ss_desc": "This section appears as part of the online filing workflow.",
+                "ss_highlight": "Upload Supporting Documents",
+                "caption": "The evidence upload section is a dedicated step inside the online filing workflow.",
+                "note": null
+              },
+              {
+                "label": "Step 3 of 5 \u2014 Attach each document",
+                "heading": "Attach each supporting document",
+                "instruction": "Upload each document individually. Use the upload interface to select and attach your files. You can upload as many files as needed.",
+                "url": "my.uscis.gov",
+                "ss_label": "Evidence Upload",
+                "ss_headline": "Attach Files",
+                "ss_desc": "Select each document file and upload it.",
+                "ss_highlight": null,
+                "caption": "USCIS accepts PDF, JPG, and JPEG files up to 12 MB each. Do not encrypt or password-protect files.",
+                "note": "If a document is in a foreign language \u2014 such as a Nikah Nama in Urdu \u2014 upload the original <strong>and</strong> the certified English translation as separate files. USCIS requires both."
+              },
+              {
+                "label": "Step 4 of 5 \u2014 Verify each upload",
+                "heading": "Confirm each file appears correctly",
+                "instruction": "After uploading each file, verify it appears in the list of attached documents. Open or preview any file to confirm it is legible, complete, and the correct document.",
+                "url": "my.uscis.gov",
+                "ss_label": "Uploaded Documents",
+                "ss_headline": "Review Attached Files",
+                "ss_desc": "Each uploaded file should appear in the attachment list.",
+                "ss_highlight": null,
+                "caption": "Check that file names and previews match what you intended to upload before moving on.",
+                "note": "A blurry, rotated, or incomplete scan can lead to a Request for Evidence (RFE). Verify each file is fully legible before continuing."
+              },
+              {
+                "label": "Step 5 of 5 \u2014 Proceed to review",
+                "heading": "Complete uploads and proceed to review",
+                "instruction": "Once all required documents are attached and verified, continue to the next phase of the online filing workflow. The next step will ask you to review your completed filing before signing and paying.",
+                "url": "my.uscis.gov",
+                "ss_label": "Upload Complete",
+                "ss_headline": "All Documents Attached",
+                "ss_desc": "Proceed to the review step when uploads are complete.",
+                "ss_highlight": "Continue to Review",
+                "caption": "Do not proceed until all required evidence is attached \u2014 adding documents after submission requires a separate step.",
+                "note": null
+              }
+            ],
+            "disclaimer": "Rahvana provides structured guidance only. This is not legal advice. Always verify current requirements at uscis.gov before submitting."
           }
         },
         {
