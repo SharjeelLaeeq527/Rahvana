@@ -4,6 +4,7 @@ import React, { useEffect, useMemo, useState, useCallback } from "react";
 import {
   ArrowLeft,
   CheckCircle2,
+  CheckCircle,
   ArrowRight,
   FileText,
   ShieldCheck,
@@ -24,6 +25,7 @@ import {
   ExternalLink,
   Monitor,
   Upload,
+  CreditCard,
 } from "lucide-react";
 
 import { RoadmapData, QuestSuite, TutorialStepData } from "../types";
@@ -437,10 +439,20 @@ export function StepView({ data, state, actions, onBack }: StepViewProps) {
       sId === "step_1_2_b";
     const accentColor = "#2f6fd4";
     // const accentColor = isBeneficiaryTheme ? "#0f7373" : "#2f6fd4";
-    const launchBg = isBeneficiaryTheme ? "#12192e" : "#0e1e38";
-    const stripeGradient = isBeneficiaryTheme
-      ? "linear-gradient(90deg, #2f6fd4 0%, #20a8a8 55%, transparent 100%)"
-      : "linear-gradient(90deg, #2f6fd4 0%, #6aa8f0 60%, transparent 100%)";
+    // Background colour: explicit bg_color wins, then beneficiary/default theme
+    const launchBg =
+      tool.launch_module.bg_color ??
+      (isBeneficiaryTheme ? "#12192e" : "#0e1e38");
+
+    // Accent stripe: data-driven via stripe_variant
+    const stripeGradient =
+      tool.launch_module.stripe_variant === "gold"
+        ? "linear-gradient(90deg, #2f6fd4 0%, #d4a82f 55%, transparent 100%)"
+        : tool.launch_module.stripe_variant === "green"
+          ? "linear-gradient(90deg, #2f6fd4 0%, #15744f 60%, transparent 100%)"
+          : isBeneficiaryTheme
+            ? "linear-gradient(90deg, #2f6fd4 0%, #20a8a8 55%, transparent 100%)"
+            : "linear-gradient(90deg, #2f6fd4 0%, #6aa8f0 60%, transparent 100%)";
 
     const IconComponent =
       tool.launch_module.icon === "form"
@@ -457,7 +469,9 @@ export function StepView({ data, state, actions, onBack }: StepViewProps) {
                   ? ExternalLink
                   : tool.launch_module.icon === "upload"
                     ? Upload
-                    : CheckCircle2;
+                    : tool.launch_module.icon === "payment"
+                      ? CreditCard
+                      : CheckCircle;
 
     return (
       <div className="animate-in fade-in slide-in-from-bottom-4 duration-740 flex flex-col items-center w-full min-h-full">
@@ -519,9 +533,13 @@ export function StepView({ data, state, actions, onBack }: StepViewProps) {
                         : "bg-[#e8f1fb] text-primary/80 border-[#d0e4f7]"
                       : chip.type === "tool"
                         ? "bg-[#f3f0fb] text-[#4a2d8a] border-[#c9bef2]"
-                        : chip.type === "uscis" || chip.type === "path"
-                          ? "bg-[#fafcff] text-[#6b8097] border-[#d0e4f7]"
-                          : "bg-[#fafcff] text-[#6b8097] border-[#d0e4f7]"
+                        : chip.type === "pay"
+                          ? "bg-[#fffbec] text-[#c49a0a] border-[#e8d47a]"
+                          : chip.type === "final"
+                            ? "bg-[#e8f5ef] text-[#15744f] border-[#a8d9be]"
+                            : chip.type === "uscis" || chip.type === "path"
+                              ? "bg-[#fff7ed] text-[#b45309] border-[#fed7aa]"
+                              : "bg-[#fafcff] text-[#6b8097] border-[#d0e4f7]"
                   }`}
                 >
                   {chip.label}
@@ -607,8 +625,65 @@ export function StepView({ data, state, actions, onBack }: StepViewProps) {
 
               <div className="h-[1px] bg-white/9 mb-[22px]" />
 
+              {/* Fee Block (Step 9 — Pay Filing Fee) */}
+              {tool.fee_block && (
+                <div className="flex items-center gap-[16px] bg-white/[0.05] border border-white/[0.09] rounded-[10px] p-[16px_18px] mb-[16px] flex-wrap">
+                  <div className="flex flex-col gap-[2px] shrink-0">
+                    <div className="text-[10px] font-bold uppercase tracking-[0.1em] text-white/35">
+                      {tool.fee_block.label}
+                    </div>
+                    <div
+                      className="text-[32px] font text-white/90 tracking-[-0.02em] leading-none"
+                      style={{ fontFamily: "'DM Serif Display', serif" }}
+                    >
+                      {tool.fee_block.amount}
+                    </div>
+                    <div className="text-[11px] text-white/35 mt-[2px]">
+                      {tool.fee_block.note}
+                    </div>
+                  </div>
+                  <div className="w-[1px] h-[48px] bg-white/12 shrink-0 hidden sm:block" />
+                  <div className="flex flex-col gap-[6px] flex-1">
+                    {tool.fee_block.details.map((d, i) => (
+                      <div
+                        key={i}
+                        className="flex items-start gap-[8px] text-[12px] text-white/55"
+                      >
+                        <div className="w-[4px] h-[4px] rounded-full bg-[rgba(200,170,100,0.7)] shrink-0 mt-[5px]" />
+                        <span>{d}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Review Checklist (Step 10 — Review & Submit) */}
+              {tool.review_checklist && tool.review_checklist.length > 0 && (
+                <div className="flex flex-col gap-[8px] mb-[20px]">
+                  {tool.review_checklist.map((item, i) => (
+                    <div
+                      key={i}
+                      className="flex items-start gap-[12px] bg-white/[0.06] border border-white/10 rounded-[10px] p-[12px_14px]"
+                    >
+                      <div className="w-[20px] h-[20px] rounded-full bg-[rgba(21,116,79,0.25)] border border-[rgba(21,116,79,0.4)] flex items-center justify-center shrink-0 mt-[1px]">
+                        <Check
+                          size={11}
+                          strokeWidth={2.5}
+                          className="text-[rgba(100,220,160,0.9)]"
+                        />
+                      </div>
+                      <div className="text-[13px] text-white/55 leading-[1.45]">
+                        {item}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+
               {/* Feature Cues Grid */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-[10px] mb-[26px]">
+              <div
+                className={`grid grid-cols-1 sm:grid-cols-2 gap-[10px] ${tool.launch_module.button_label ? "mb-[26px]" : "mb-0"}`}
+              >
                 {tool.launch_module.features.map((feat, i) => (
                   <div
                     key={i}
@@ -616,7 +691,13 @@ export function StepView({ data, state, actions, onBack }: StepViewProps) {
                   >
                     <div
                       className={`w-[5px] h-[5px] rounded-full mt-[6px] shrink-0 ${
-                        isBeneficiaryTheme ? "bg-[#20a8a8bf]" : "bg-[#6aa8f0b3]"
+                        tool.launch_module.stripe_variant === "gold"
+                          ? "bg-[rgba(212,168,47,0.7)]"
+                          : tool.launch_module.stripe_variant === "green"
+                            ? "bg-[rgba(100,220,160,0.6)]"
+                            : isBeneficiaryTheme
+                              ? "bg-[#20a8a8bf]"
+                              : "bg-[#6aa8f0b3]"
                       }`}
                     />
                     <div className="text-[13px] text-white/55 leading-[1.4]">
@@ -647,64 +728,65 @@ export function StepView({ data, state, actions, onBack }: StepViewProps) {
                   </div>
                 )}
 
-              {/* CTA Area */}
-              <div className="flex flex-col gap-[11px]">
-                <button
-                  onClick={() => {
-                    if (tool.launch_module.href) {
-                      window.open(
-                        tool.launch_module.href,
-                        "_blank",
-                        "noopener,noreferrer",
-                      );
-                      setIsLaunched(true);
+              {/* CTA Area — only rendered when a button_label is defined */}
+              {tool.launch_module.button_label && (
+                <div className="flex flex-col gap-[11px]">
+                  <button
+                    onClick={() => {
+                      if (tool.launch_module.href) {
+                        window.open(
+                          tool.launch_module.href,
+                          "_blank",
+                          "noopener,noreferrer",
+                        );
+                        setIsLaunched(true);
+                      }
+                    }}
+                    className={`inline-flex items-center justify-center gap-[10px] w-full p-[16px_28px] text-white rounded-[12px] font-sans text-[15px] font-semibold tracking-[0.01em] transition-all duration-300 group cursor-pointer ${
+                      isLaunched && tool.launch_module.return_note
+                        ? "bg-[#3b7dd8] shadow-[0_4px_20px_rgba(14,92,60,0.3)] pointer-events-none"
+                        : "shadow-[0_4px_20px_rgba(47,111,212,0.35)] hover:translate-y-[-2px] hover:shadow-[0_8px_32px_rgba(47,111,212,0.45)]"
+                    }`}
+                    style={
+                      isLaunched && tool.launch_module.return_note
+                        ? {}
+                        : { backgroundColor: accentColor }
                     }
-                  }}
-                  className={`inline-flex items-center justify-center gap-[10px] w-full p-[16px_28px] text-white rounded-[12px] font-sans text-[15px] font-semibold tracking-[0.01em] transition-all duration-300 group cursor-pointer ${
-                    isLaunched && tool.launch_module.return_note
-                      ? "bg-[#3b7dd8] shadow-[0_4px_20px_rgba(14,92,60,0.3)] pointer-events-none"
-                      : "shadow-[0_4px_20px_rgba(47,111,212,0.35)] hover:translate-y-[-2px] hover:shadow-[0_8px_32px_rgba(47,111,212,0.45)]"
-                  }`}
-                  style={
-                    isLaunched && tool.launch_module.return_note
-                      ? {}
-                      : { backgroundColor: accentColor }
-                  }
-                >
-                  {isLaunched && tool.launch_module.return_note ? (
-                    <>
-                      <span>✓</span>
-                      <span>
-                        {tool.launch_module.button_launched_label || "Opened"}
-                      </span>
-                    </>
-                  ) : (
-                    <>
-                      <span>{tool.launch_module.button_label}</span>
-                      <div className="transition-transform duration-220 group-hover:translate-x-[2px]">
-                        <ArrowRight size={16} strokeWidth={2} />
-                      </div>
-                    </>
-                  )}
-                </button>
+                  >
+                    {isLaunched && tool.launch_module.return_note ? (
+                      <>
+                        <span>✓</span>
+                        <span>
+                          {tool.launch_module.button_launched_label || "Opened"}
+                        </span>
+                      </>
+                    ) : (
+                      <>
+                        <span>{tool.launch_module.button_label}</span>
+                        <div className="transition-transform duration-220 group-hover:translate-x-[2px]">
+                          <ArrowRight size={16} strokeWidth={2} />
+                        </div>
+                      </>
+                    )}
+                  </button>
 
-                <div
-                  className={`flex items-center justify-center gap-[5px] text-[12px] text-center leading-[1.4] transition-colors duration-300 ${
-                    isLaunched && tool.launch_module.return_note
-                      ? // ? "text-[#a8d9be]/80"
-                        "text-white/35"
-                      : "text-white/35"
-                  }`}
-                >
-                  <ExternalLink size={11} strokeWidth={1.8} />
-                  <span>
-                    {isLaunched && tool.launch_module.launched_note
-                      ? tool.launch_module.launched_note
-                      : tool.launch_module.note ||
-                        "Opens in a new browser tab — you can return to the roadmap anytime"}
-                  </span>
+                  <div
+                    className={`flex items-center justify-center gap-[5px] text-[12px] text-center leading-[1.4] transition-colors duration-300 ${
+                      isLaunched && tool.launch_module.return_note
+                        ? "text-white/35"
+                        : "text-white/35"
+                    }`}
+                  >
+                    <ExternalLink size={11} strokeWidth={1.8} />
+                    <span>
+                      {isLaunched && tool.launch_module.launched_note
+                        ? tool.launch_module.launched_note
+                        : tool.launch_module.note ||
+                          "Opens in a new browser tab — you can return to the roadmap anytime"}
+                    </span>
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
           </div>
 
@@ -2023,8 +2105,15 @@ export function StepView({ data, state, actions, onBack }: StepViewProps) {
                         </div>
                       )}
 
-                      {/* Caption Bar — always visible */}
-                      <div className="p-[8px_14px_10px] bg-white border-t border-[#d0e4f7] text-[11px] text-[#6b8097] leading-[1.5]">
+                      {/* Caption Bar — always visible; green tint for "success" captionClass */}
+                      <div
+                        className={`p-[8px_14px_10px] border-t text-[11px] leading-[1.5] ${
+                          (currentTutStep as TutorialStepData).caption_class ===
+                          "success"
+                            ? "bg-[#e8f5ef] border-[#a8d9be] text-[#15744f] font-medium"
+                            : "bg-white border-[#d0e4f7] text-[#6b8097]"
+                        }`}
+                      >
                         {(currentTutStep as TutorialStepData).caption}
                       </div>
                     </div>

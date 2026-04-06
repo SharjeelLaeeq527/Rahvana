@@ -171,7 +171,15 @@ export interface TutorialStepData {
   ss_desc: string;
   ss_highlight: string | null;
   caption: string;
+  caption_class?: "success" | null;
   note: string | null;
+}
+
+export interface FeeBlock {
+  label: string;       // e.g. "Current online fee"
+  amount: string;      // e.g. "$625"
+  note: string;        // e.g. "Form I-130 · online filing"
+  details: string[];   // bullet points shown on the right side
 }
 
 export interface ToolData {
@@ -182,20 +190,38 @@ export interface ToolData {
   companion?: string;
   chips?: {
     label: string;
-    type: "role" | "tool" | "newtab" | "uscis" | "path";
+    type: "role" | "tool" | "newtab" | "uscis" | "path" | "pay" | "final";
   }[];
   launch_module: {
-    icon: "form" | "calc" | "search" | "user" | "shield" | "portal" | "upload";
+    icon:
+      | "form"
+      | "calc"
+      | "search"
+      | "user"
+      | "shield"
+      | "portal"
+      | "upload"
+      | "payment"
+      | "submit";
+    /** Controls the right-end colour of the top accent stripe.
+     *  "gold" → payment step, "green" → final submit step (default: blue) */
+    stripe_variant?: "blue" | "gold" | "green";
+    /** Optional custom background hex for the dark module */
+    bg_color?: string;
     eyebrow: string;
     heading: string;
     features: string[];
-    button_label: string;
+    button_label?: string;
     button_launched_label?: string;
-    href: string;
+    href?: string;
     note?: string;
     launched_note?: string;
     return_note?: { title: string; body: string };
   };
+  /** Payment fee display block — shown inside the launch module for step 9 */
+  fee_block?: FeeBlock;
+  /** Pre-submission checklist — shown inside the launch module for step 10 */
+  review_checklist?: string[];
   guide_card?: { title: string; subtitle: string };
   tutorial_steps?: TutorialStepData[];
   upload_requirements?: string[];
