@@ -224,7 +224,7 @@ export function QuestRenderer({
           <div className="mb-9">
             <div className="w-full h-[5px] bg-primary/30 rounded-[10px] overflow-hidden">
               <div
-                className="h-full bg-linear-to-r from-primary to-bg-primary transition-all duration-1000 ease-out rounded-[10px]"
+                className="h-full bg-primary transition-all duration-1000 ease-out rounded-[10px]"
                 style={{ width: `${progressPct}%` }}
               />
             </div>
@@ -361,7 +361,7 @@ export function QuestRenderer({
 
           <div className="flex-1 h-[5px] bg-primary/30 rounded-[10px] overflow-hidden">
             <div
-              className="h-full bg-linear-to-r from-primary to-bg-primary rounded-[10px] transition-all duration-400 ease-out"
+              className="h-full bg-primary rounded-[10px] transition-all duration-400 ease-out"
               style={{ width: `${progressPct}%` }}
             />
           </div>

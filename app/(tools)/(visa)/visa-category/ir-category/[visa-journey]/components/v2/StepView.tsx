@@ -4,6 +4,7 @@ import React, { useEffect, useMemo, useState, useCallback } from "react";
 import {
   ArrowLeft,
   CheckCircle2,
+  CheckCircle,
   ArrowRight,
   FileText,
   ShieldCheck,
@@ -22,9 +23,12 @@ import {
   X,
   Mail,
   ExternalLink,
+  Monitor,
+  Upload,
+  CreditCard,
 } from "lucide-react";
 
-import { RoadmapData, QuestSuite } from "../types";
+import { RoadmapData, QuestSuite, TutorialStepData } from "../types";
 import { WizardState } from "@/app/(main)/dashboard/hooks/useWizard";
 import { QuestRenderer } from "./QuestRenderer";
 import { getAllActiveSteps } from "./journeyHelpers";
@@ -34,6 +38,7 @@ import { toast } from "sonner";
 import { ConfirmationModal } from "@/app/components/shared/ConfirmationModal";
 import { InlineGuideData } from "./InlineGuideData";
 import { USCIS_TUTORIAL_STEPS } from "./UscisTutorialData";
+import Image from "next/image";
 
 interface SecurityQuestion {
   id: string;
@@ -434,10 +439,20 @@ export function StepView({ data, state, actions, onBack }: StepViewProps) {
       sId === "step_1_2_b";
     const accentColor = "#2f6fd4";
     // const accentColor = isBeneficiaryTheme ? "#0f7373" : "#2f6fd4";
-    const launchBg = isBeneficiaryTheme ? "#12192e" : "#0e1e38";
-    const stripeGradient = isBeneficiaryTheme
-      ? "linear-gradient(90deg, #2f6fd4 0%, #20a8a8 55%, transparent 100%)"
-      : "linear-gradient(90deg, #2f6fd4 0%, #6aa8f0 60%, transparent 100%)";
+    // Background colour: explicit bg_color wins, then beneficiary/default theme
+    const launchBg =
+      tool.launch_module.bg_color ??
+      (isBeneficiaryTheme ? "#12192e" : "#0e1e38");
+
+    // Accent stripe: data-driven via stripe_variant
+    const stripeGradient =
+      tool.launch_module.stripe_variant === "gold"
+        ? "linear-gradient(90deg, #2f6fd4 0%, #d4a82f 55%, transparent 100%)"
+        : tool.launch_module.stripe_variant === "green"
+          ? "linear-gradient(90deg, #2f6fd4 0%, #15744f 60%, transparent 100%)"
+          : isBeneficiaryTheme
+            ? "linear-gradient(90deg, #2f6fd4 0%, #20a8a8 55%, transparent 100%)"
+            : "linear-gradient(90deg, #2f6fd4 0%, #6aa8f0 60%, transparent 100%)";
 
     const IconComponent =
       tool.launch_module.icon === "form"
@@ -450,7 +465,13 @@ export function StepView({ data, state, actions, onBack }: StepViewProps) {
               ? User
               : tool.launch_module.icon === "shield"
                 ? ShieldCheck
-                : CheckCircle2;
+                : tool.launch_module.icon === "portal"
+                  ? ExternalLink
+                  : tool.launch_module.icon === "upload"
+                    ? Upload
+                    : tool.launch_module.icon === "payment"
+                      ? CreditCard
+                      : CheckCircle;
 
     return (
       <div className="animate-in fade-in slide-in-from-bottom-4 duration-740 flex flex-col items-center w-full min-h-full">
@@ -512,9 +533,13 @@ export function StepView({ data, state, actions, onBack }: StepViewProps) {
                         : "bg-[#e8f1fb] text-primary/80 border-[#d0e4f7]"
                       : chip.type === "tool"
                         ? "bg-[#f3f0fb] text-[#4a2d8a] border-[#c9bef2]"
-                        : chip.type === "uscis" || chip.type === "path"
-                          ? "bg-[#fafcff] text-[#6b8097] border-[#d0e4f7]"
-                          : "bg-[#fafcff] text-[#6b8097] border-[#d0e4f7]"
+                        : chip.type === "pay"
+                          ? "bg-[#fffbec] text-[#c49a0a] border-[#e8d47a]"
+                          : chip.type === "final"
+                            ? "bg-[#e8f5ef] text-[#15744f] border-[#a8d9be]"
+                            : chip.type === "uscis" || chip.type === "path"
+                              ? "bg-[#fff7ed] text-[#b45309] border-[#fed7aa]"
+                              : "bg-[#fafcff] text-[#6b8097] border-[#d0e4f7]"
                   }`}
                 >
                   {chip.label}
@@ -541,20 +566,24 @@ export function StepView({ data, state, actions, onBack }: StepViewProps) {
             )}
           </div>
 
-          {/* Return Note (Success Banner) */}
+          {/* Return Note (Success Banner — shown after portal launch) */}
           {isLaunched && (
-            <div className="mb-[20px] bg-[#e8f5ef] border border-[#a8d9be] rounded-[10px] p-[14px_18px] flex items-start gap-[12px] animate-in slide-in-from-top-2 duration-380 fill-mode-both">
-              <div className="text-[16px] mt-[1px] text-[#15744f]">✓</div>
+            <div className="mb-[20px] bg-[#e8f5ef] border border-[#a8d9be] rounded-[10px] p-[14px_18px] flex items-start gap-[12px] animate-in slide-in-from-top-2 duration-300 fill-mode-both">
+              <div className="text-[15px] mt-[1px] text-[#15744f] shrink-0">
+                ✓
+              </div>
               <div className="flex-1">
-                <div className="text-[13px] font-[600] text-[#15744f] mb-[2px]">
-                  {sId === "step_1_6" || sId === "step_1_3"
-                    ? "USCIS account page opened in a new tab"
-                    : "Tool launched in a new tab"}
+                <div className="text-[13px] font-semibold text-[#15744f] mb-[2px]">
+                  {tool.launch_module.return_note?.title ||
+                    (sId === "step_1_6"
+                      ? "USCIS account page opened in a new tab"
+                      : "Tool launched in a new tab")}
                 </div>
                 <div className="text-[12px] text-[#3a4f63] leading-[1.5]">
-                  {sId === "step_1_6" || sId === "step_1_3"
-                    ? "Complete the sign-up there, then return here to save your credentials."
-                    : "Complete the form at your own pace. Return here when you're done to continue the roadmap."}
+                  {tool.launch_module.return_note?.body ||
+                    (sId === "step_1_6"
+                      ? "Complete the sign-up there, then return here to save your credentials."
+                      : "Complete the form at your own pace. Return here when you're done to continue the roadmap.")}
                 </div>
               </div>
             </div>
@@ -596,8 +625,65 @@ export function StepView({ data, state, actions, onBack }: StepViewProps) {
 
               <div className="h-[1px] bg-white/9 mb-[22px]" />
 
+              {/* Fee Block (Step 9 — Pay Filing Fee) */}
+              {tool.fee_block && (
+                <div className="flex items-center gap-[16px] bg-white/[0.05] border border-white/[0.09] rounded-[10px] p-[16px_18px] mb-[16px] flex-wrap">
+                  <div className="flex flex-col gap-[2px] shrink-0">
+                    <div className="text-[10px] font-bold uppercase tracking-[0.1em] text-white/35">
+                      {tool.fee_block.label}
+                    </div>
+                    <div
+                      className="text-[32px] font text-white/90 tracking-[-0.02em] leading-none"
+                      style={{ fontFamily: "'DM Serif Display', serif" }}
+                    >
+                      {tool.fee_block.amount}
+                    </div>
+                    <div className="text-[11px] text-white/35 mt-[2px]">
+                      {tool.fee_block.note}
+                    </div>
+                  </div>
+                  <div className="w-[1px] h-[48px] bg-white/12 shrink-0 hidden sm:block" />
+                  <div className="flex flex-col gap-[6px] flex-1">
+                    {tool.fee_block.details.map((d, i) => (
+                      <div
+                        key={i}
+                        className="flex items-start gap-[8px] text-[12px] text-white/55"
+                      >
+                        <div className="w-[4px] h-[4px] rounded-full bg-[rgba(200,170,100,0.7)] shrink-0 mt-[5px]" />
+                        <span>{d}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Review Checklist (Step 10 — Review & Submit) */}
+              {tool.review_checklist && tool.review_checklist.length > 0 && (
+                <div className="flex flex-col gap-[8px] mb-[20px]">
+                  {tool.review_checklist.map((item, i) => (
+                    <div
+                      key={i}
+                      className="flex items-start gap-[12px] bg-white/[0.06] border border-white/10 rounded-[10px] p-[12px_14px]"
+                    >
+                      <div className="w-[20px] h-[20px] rounded-full bg-[rgba(21,116,79,0.25)] border border-[rgba(21,116,79,0.4)] flex items-center justify-center shrink-0 mt-[1px]">
+                        <Check
+                          size={11}
+                          strokeWidth={2.5}
+                          className="text-[rgba(100,220,160,0.9)]"
+                        />
+                      </div>
+                      <div className="text-[13px] text-white/55 leading-[1.45]">
+                        {item}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+
               {/* Feature Cues Grid */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-[10px] mb-[30px]">
+              <div
+                className={`grid grid-cols-1 sm:grid-cols-2 gap-[10px] ${tool.launch_module.button_label ? "mb-[26px]" : "mb-0"}`}
+              >
                 {tool.launch_module.features.map((feat, i) => (
                   <div
                     key={i}
@@ -605,84 +691,172 @@ export function StepView({ data, state, actions, onBack }: StepViewProps) {
                   >
                     <div
                       className={`w-[5px] h-[5px] rounded-full mt-[6px] shrink-0 ${
-                        isBeneficiaryTheme ? "bg-[#20a8a8bf]" : "bg-[#6aa8f0b3]"
+                        tool.launch_module.stripe_variant === "gold"
+                          ? "bg-[rgba(212,168,47,0.7)]"
+                          : tool.launch_module.stripe_variant === "green"
+                            ? "bg-[rgba(100,220,160,0.6)]"
+                            : isBeneficiaryTheme
+                              ? "bg-[#20a8a8bf]"
+                              : "bg-[#6aa8f0b3]"
                       }`}
                     />
-                    <div className="text-[14px] text-white/55 font-semibold leading-[1.45]">
+                    <div className="text-[13px] text-white/55 leading-[1.4]">
                       {feat}
                     </div>
                   </div>
                 ))}
               </div>
 
-              {/* CTA Area */}
-              <div className="flex flex-col gap-[12px]">
-                <button
-                  onClick={() => {
-                    if (tool.launch_module.href) {
-                      window.open(
-                        tool.launch_module.href,
-                        "_blank",
-                        "noopener,noreferrer",
-                      );
-                      setIsLaunched(true);
-                    }
-                  }}
-                  className="inline-flex items-center justify-center gap-[10px] w-full p-[17px_28px] text-white rounded-[12px] font-sans text-[15px] font-semibold tracking-[0.01em] shadow-[0_4px_20px_rgba(47,111,212,0.35)] hover:translate-y-[-2px] hover:shadow-[0_8px_32px_rgba(47,111,212,0.45)] transition-all duration-220 group cursor-pointer"
-                  style={{ backgroundColor: accentColor }}
-                >
-                  <span>{tool.launch_module.button_label}</span>
-                  <div className="transition-transform duration-220 group-hover:translate-x-[2px]">
-                    <ArrowRight size={16} strokeWidth={2} />
+              {/* Upload Requirements Info Block (Step 8 only) */}
+              {tool.upload_requirements &&
+                tool.upload_requirements.length > 0 && (
+                  <div className="bg-white/5 border border-white/9 rounded-[10px] p-[14px_16px] mb-[26px]">
+                    <div className="text-[11px] font-bold uppercase tracking-[0.07em] text-white/35 mb-[10px]">
+                      USCIS upload requirements
+                    </div>
+                    <div className="flex flex-col gap-[7px]">
+                      {tool.upload_requirements.map((req, i) => (
+                        <div
+                          key={i}
+                          className="flex items-start gap-[10px] text-[13px] text-white/55 leading-[1.45]"
+                        >
+                          <div className="w-[4px] h-[4px] rounded-full bg-[#6aa8f0]/60 shrink-0 mt-[5px]" />
+                          <span>{req}</span>
+                        </div>
+                      ))}
+                    </div>
                   </div>
-                </button>
+                )}
 
-                <div className="flex items-center justify-center gap-[5px] text-[12px] text-white/35 text-center leading-[1.4]">
-                  <ExternalLink size={11} strokeWidth={1.8} />
-                  <span>
-                    Opens in a new browser tab — you can return to the roadmap
-                    anytime
-                  </span>
+              {/* CTA Area — only rendered when a button_label is defined */}
+              {tool.launch_module.button_label && (
+                <div className="flex flex-col gap-[11px]">
+                  <button
+                    onClick={() => {
+                      if (tool.launch_module.href) {
+                        window.open(
+                          tool.launch_module.href,
+                          "_blank",
+                          "noopener,noreferrer",
+                        );
+                        setIsLaunched(true);
+                      }
+                    }}
+                    className={`inline-flex items-center justify-center gap-[10px] w-full p-[16px_28px] text-white rounded-[12px] font-sans text-[15px] font-semibold tracking-[0.01em] transition-all duration-300 group cursor-pointer ${
+                      isLaunched && tool.launch_module.return_note
+                        ? "bg-[#3b7dd8] shadow-[0_4px_20px_rgba(14,92,60,0.3)] pointer-events-none"
+                        : "shadow-[0_4px_20px_rgba(47,111,212,0.35)] hover:translate-y-[-2px] hover:shadow-[0_8px_32px_rgba(47,111,212,0.45)]"
+                    }`}
+                    style={
+                      isLaunched && tool.launch_module.return_note
+                        ? {}
+                        : { backgroundColor: accentColor }
+                    }
+                  >
+                    {isLaunched && tool.launch_module.return_note ? (
+                      <>
+                        <span>✓</span>
+                        <span>
+                          {tool.launch_module.button_launched_label || "Opened"}
+                        </span>
+                      </>
+                    ) : (
+                      <>
+                        <span>{tool.launch_module.button_label}</span>
+                        <div className="transition-transform duration-220 group-hover:translate-x-[2px]">
+                          <ArrowRight size={16} strokeWidth={2} />
+                        </div>
+                      </>
+                    )}
+                  </button>
+
+                  <div
+                    className={`flex items-center justify-center gap-[5px] text-[12px] text-center leading-[1.4] transition-colors duration-300 ${
+                      isLaunched && tool.launch_module.return_note
+                        ? "text-white/35"
+                        : "text-white/35"
+                    }`}
+                  >
+                    <ExternalLink size={11} strokeWidth={1.8} />
+                    <span>
+                      {isLaunched && tool.launch_module.launched_note
+                        ? tool.launch_module.launched_note
+                        : tool.launch_module.note ||
+                          "Opens in a new browser tab — you can return to the roadmap anytime"}
+                    </span>
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
           </div>
 
-          {/* SUPPORT LAYER (Step 4 & 5 ONLY) */}
-          {sId !== "step_1_6" &&
-            (tool.support_cards || tool.support_cards) &&
-            (tool.support_cards || tool.support_cards).length > 0 && (
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-[10px] mb-[32px]">
-                {(tool.support_cards || tool.support_cards).map(
-                  (card: any, i: number) => (
-                    <div
-                      key={i}
-                      className="bg-[#fafcff] border-[1.5px] border-[#d0e4f7] rounded-[10px] p-[16px_18px]"
-                    >
-                      <div className="text-[10px] font-bold uppercase tracking-[0.1em] text-[#6b8097] mb-[10px]">
-                        {card.label}
+          {/* SUPPORT CARDS (Step 4 & 5 only) */}
+          {tool.support_cards && tool.support_cards.length > 0 && (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-[10px] mb-[32px]">
+              {tool.support_cards.map((card, i) => (
+                <div
+                  key={i}
+                  className="bg-[#fafcff] border-[1.5px] border-[#d0e4f7] rounded-[10px] p-[16px_18px]"
+                >
+                  <div className="text-[10px] font-bold uppercase tracking-[0.1em] text-[#6b8097] mb-[10px]">
+                    {card.label}
+                  </div>
+                  <div className="flex flex-col gap-[7px]">
+                    {card.items?.map((item, j) => (
+                      <div key={j} className="flex items-start gap-[8px]">
+                        <div className="w-[4px] h-[4px] rounded-full bg-[#b8d4f0] mt-[5px] shrink-0" />
+                        <span className="text-[13px] text-[#3a4f63] leading-[1.4]">
+                          {item}
+                        </span>
                       </div>
-                      <div className="flex flex-col gap-[7px]">
-                        {card.items?.map((item: string, j: number) => (
-                          <div key={j} className="flex items-start gap-[8px]">
-                            <div className="w-[4px] h-[4px] rounded-full bg-[#b8d4f0] mt-[5px] shrink-0" />
-                            <span className="text-[13px] text-[#3a4f63] leading-[1.4]">
-                              {item}
-                            </span>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  ),
-                )}
-              </div>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* GUIDE CARD (Steps 7 & 8: tutorial trigger) */}
+          {tool.guide_card &&
+            tool.tutorial_steps &&
+            tool.tutorial_steps.length > 0 && (
+              <button
+                onClick={() => {
+                  setTutorialIdx(0);
+                  setIsTutorialOpen(true);
+                }}
+                className="w-full bg-[#fafcff] border-[1.5px] border-[#d0e4f7] rounded-[16px] p-[22px] cursor-pointer transition-all hover:border-[#2f6fd4] hover:shadow-[0_4px_20px_rgba(47,111,212,0.1)] hover:-translate-y-[1px] active:translate-y-0 text-left user-select-none flex items-center gap-[18px] mb-[28px]"
+              >
+                <div className="w-[44px] h-[44px] rounded-[11px] bg-[#f3f0fb] border border-[#c9bef2] flex items-center justify-center shrink-0">
+                  <Monitor
+                    size={20}
+                    className="text-[#4a2d8a]"
+                    strokeWidth={1.7}
+                  />
+                </div>
+                <div className="flex-1">
+                  <div className="text-[15px] font-semibold text-[#0c1b33] mb-[4px]">
+                    {tool.guide_card.title}
+                  </div>
+                  <div className="text-[13px] text-[#6b8097] leading-[1.5]">
+                    {tool.guide_card.subtitle}
+                  </div>
+                </div>
+                <div className="w-[32px] h-[32px] rounded-full bg-[#eef3fa] flex items-center justify-center shrink-0 transition-all group-hover:bg-[rgba(47,111,212,0.12)]">
+                  <ArrowRight
+                    size={14}
+                    className="text-[#6b8097]"
+                    strokeWidth={2}
+                  />
+                </div>
+              </button>
             )}
 
           {/* SECONDARY ACTIONS ROW (Step 6 SPECIFIC) */}
           {sId === "step_1_6" && (
             <div className="flex flex-col mb-[28px]">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-[12px] mb-[12px]">
-                {/* Tutorial Card */}
+                {/* Tutorial Card — uses USCIS_TUTORIAL_STEPS for step 6 */}
                 <button
                   onClick={() => {
                     setTutorialIdx(0);
@@ -815,9 +989,8 @@ export function StepView({ data, state, actions, onBack }: StepViewProps) {
 
           {/* Disclaimer */}
           <p className="text-[11.5px] text-[#6b8097] leading-[1.65] text-center pt-[8px]">
-            Rahvana provides structured guidance only. This is not legal advice.
-            <br />
-            Consult a licensed immigration attorney for case-specific decisions.
+            {tool.disclaimer ||
+              "Rahvana provides structured guidance only. This is not legal advice. Consult a licensed immigration attorney for case-specific decisions."}
           </p>
         </div>
       </div>
@@ -871,7 +1044,7 @@ export function StepView({ data, state, actions, onBack }: StepViewProps) {
       >
         {/* Quiz Overlay Refinement - Now absolute below headers */}
         {showQuiz && (
-          <div className="absolute inset-0 z-50 bg-[#fafcff] animate-in slide-in-from-bottom-[20px] fade-in duration-[0.28s] ease-[cubic-bezier(0.4,0,0.2,1)] flex flex-col font-sans">
+          <div className="fixed inset-0 z-[110] bg-[#fafcff] animate-in slide-in-from-bottom-[20px] fade-in duration-[0.28s] ease-[cubic-bezier(0.4,0,0.2,1)] flex flex-col font-sans">
             <header className="h-[64px] border-b border-[#e1eefc] bg-white flex items-center px-[24px] shrink-0 gap-[32px]">
               <button
                 onClick={() => setShowQuiz(false)}
@@ -881,7 +1054,7 @@ export function StepView({ data, state, actions, onBack }: StepViewProps) {
               </button>
 
               <div className="flex-1">
-                <div className="h-[4px] w-full bg-[#e1eefc] rounded-full overflow-hidden">
+                <div className="h-[4px] w-full bg-primary/30 rounded-full overflow-hidden">
                   <div
                     className="h-full bg-primary transition-all duration-500 ease-out"
                     style={{
@@ -1820,124 +1993,212 @@ export function StepView({ data, state, actions, onBack }: StepViewProps) {
         </div>
       )}
       {/* Tutorial Overlay */}
-      {isTutorialOpen && (
-        <div className="fixed inset-0 bg-[#fafcff] z-[120] flex flex-col overflow-hidden animate-in slide-in-from-bottom-[18px] duration-[0.28s] ease-[cubic-bezier(0.4,0,0.2,1)]">
-          {/* Tutorial Topbar */}
-          <div className="flex items-center h-[72px] border-b border-[#d0e4f7] px-6 gap-4 shrink-0 bg-[#fafcff]">
-            <button
-              onClick={() => setIsTutorialOpen(false)}
-              className="w-9 h-9 rounded-full bg-[#f4f7fb] border-none flex items-center justify-center text-[#3a4f63] hover:bg-primary/30 transition-all cursor-pointer"
-            >
-              <X size={16} strokeWidth={2} />
-            </button>
+      {isTutorialOpen &&
+        (() => {
+          // Use tool-specific tutorial_steps if available (steps 7, 8),
+          // otherwise fall back to the static USCIS_TUTORIAL_STEPS (step 6)
+          const tool = currentStep?.tool_data;
+          const dynamicSteps = tool?.tutorial_steps;
+          const steps =
+            dynamicSteps && dynamicSteps.length > 0
+              ? dynamicSteps
+              : USCIS_TUTORIAL_STEPS;
+          const isDynamic = !!(dynamicSteps && dynamicSteps.length > 0);
+          const currentTutStep = steps[tutorialIdx];
 
-            <div className="flex-1 h-[5px] bg-primary/30 rounded-[10px] overflow-hidden">
-              <div
-                className="h-full bg-linear-to-r from-primary to-primary rounded-[10px] transition-all duration-[0.4s] ease-[cubic-bezier(0.4,0,0.2,1)]"
-                style={{
-                  width: `${((tutorialIdx + 1) / USCIS_TUTORIAL_STEPS.length) * 100}%`,
-                }}
-              />
-            </div>
+          return (
+            <div className="fixed inset-0 bg-[#fafcff] z-[120] flex flex-col overflow-hidden animate-in slide-in-from-bottom-[18px] duration-[0.28s] ease-in-out">
+              {/* Tutorial Topbar */}
+              <div className="flex items-center h-[72px] border-b border-[#d0e4f7] px-6 gap-4 shrink-0 bg-[#fafcff]">
+                <button
+                  onClick={() => setIsTutorialOpen(false)}
+                  className="w-9 h-9 rounded-full bg-[#f4f7fb] border-none flex items-center justify-center text-[#3a4f63] hover:bg-primary/30 transition-all cursor-pointer"
+                >
+                  <X size={16} strokeWidth={2} />
+                </button>
 
-            <div className="text-[12px] font-medium text-[#6b8097] whitespace-nowrap shrink-0">
-              {tutorialIdx + 1} / {USCIS_TUTORIAL_STEPS.length}
-            </div>
-          </div>
-
-          {/* Tutorial Body */}
-          <div className="flex-1 overflow-y-auto bg-[#fafcff] p-[48px_24px_40px] flex flex-col items-center">
-            <div className="w-full max-w-[580px] flex flex-col">
-              <div className="text-[11px] font-semibold tracking-[0.1em] uppercase text-[#2f6fd4] mb-4">
-                {USCIS_TUTORIAL_STEPS[tutorialIdx].label}
-              </div>
-              <h2 className="text-[clamp(20px,3.2vw,26px)] font-black text-[#0c1b33] mb-2 leading-[1.3]">
-                {USCIS_TUTORIAL_STEPS[tutorialIdx].heading}
-              </h2>
-              <div
-                className="text-[14px] text-[#3a4f63] leading-[1.7] mb-5"
-                dangerouslySetInnerHTML={{
-                  __html: USCIS_TUTORIAL_STEPS[tutorialIdx].instruction,
-                }}
-              />
-
-              {/* Screenshot Wrap */}
-              <div className="w-full bg-[#eef3fa] border-[1.5px] border-[#d0e4f7] rounded-[10px] overflow-hidden mb-5 relative flex flex-col">
-                {/* Image Placeholder Area (aspect-[16/9])*/}
-                <div className="bg-[#eef3fa] flex flex-col items-center justify-center p-9 text-center">
-                  <div className="w-11 h-11 rounded-full bg-primary/30 flex items-center justify-center mb-2.5 shadow-sm">
-                    <Search
-                      size={22}
-                      className="text-[#6b8097]"
-                      strokeWidth={1.6}
-                    />
-                  </div>
-                  <div className="text-[13px] font-semibold text-[#6b8097] mb-1">
-                    Screenshot not yet added
-                  </div>
-                  <div className="text-[11px] font-mono text-[#b8d4f0] bg-[#e8f1fb] px-2.5 py-1 rounded-[4px] break-all max-w-[280px]">
-                    {USCIS_TUTORIAL_STEPS[tutorialIdx].screenshot}
-                  </div>
-                  <div className="mt-4 text-[11px] text-[#6b8097] max-w-[300px] leading-[1.55]">
-                    Place the real USCIS screenshot at the path above to display
-                    it here.
-                  </div>
+                <div className="flex-1 h-[5px] bg-primary/30 rounded-[10px] overflow-hidden">
+                  <div
+                    className="h-full bg-linear-to-r from-primary to-primary rounded-[10px] transition-all duration-[0.4s] ease-out"
+                    style={{
+                      width: `${((tutorialIdx + 1) / steps.length) * 100}%`,
+                    }}
+                  />
                 </div>
 
-                {/* Caption Bar */}
-                <div className="p-[8px_12px_10px] bg-[#f4f7fb] border-t border-[#d0e4f7] text-[11px] text-[#6b8097] leading-[1.5] text-left">
-                  {USCIS_TUTORIAL_STEPS[tutorialIdx].caption}
+                <div className="text-[12px] font-medium text-[#6b8097] whitespace-nowrap shrink-0">
+                  {tutorialIdx + 1} / {steps.length}
                 </div>
               </div>
 
-              {/* Note Block */}
-              {USCIS_TUTORIAL_STEPS[tutorialIdx].note && (
-                <div className="bg-[#fef8e8] border border-[#f0d98a] rounded-[10px] p-[12px_15px] mb-[22px] flex flex-col">
-                  <div className="text-[13px] text-[#8a6200] leading-[1.55]">
-                    <div
-                      dangerouslySetInnerHTML={{
-                        __html: USCIS_TUTORIAL_STEPS[tutorialIdx].note
-                          .replace("Important:", "<strong>Important:</strong>")
-                          .replace(
-                            "Avoid this:",
-                            "<strong>Avoid this:</strong>",
-                          ),
-                      }}
-                    />
+              {/* Tutorial Body */}
+              <div className="flex-1 overflow-y-auto bg-[#fafcff] p-[48px_24px_40px] flex flex-col items-center">
+                <div className="w-full max-w-[580px] flex flex-col">
+                  <div className="text-[11px] font-semibold tracking-[0.1em] uppercase text-[#2f6fd4] mb-4">
+                    {isDynamic
+                      ? currentTutStep.label
+                      : (currentTutStep as (typeof USCIS_TUTORIAL_STEPS)[0])
+                          .label}
+                  </div>
+                  <h2 className="text-[clamp(20px,3.2vw,26px)] font-black text-[#0c1b33] mb-2 leading-[1.3]">
+                    {currentTutStep.heading}
+                  </h2>
+                  <div
+                    className="text-[14px] text-[#3a4f63] leading-[1.7] mb-5"
+                    dangerouslySetInnerHTML={{
+                      __html: currentTutStep.instruction,
+                    }}
+                  />
+
+                  {/* Screenshot Block */}
+                  {isDynamic ? (
+                    /* Dynamic steps: browser chrome + structured visual (from HTML reference) */
+                    <div className="w-full rounded-[10px] overflow-hidden border-[1.5px] border-[#d0e4f7] mb-5 shadow-[0_2px_12px_rgba(12,27,51,0.06)]">
+                      {/* Browser Chrome Bar — always visible */}
+                      <div className="bg-[#eef3fa] border-b border-[#d0e4f7] h-[34px] flex items-center px-[14px] gap-[7px]">
+                        <div className="w-[10px] h-[10px] rounded-full bg-[#f87171]" />
+                        <div className="w-[10px] h-[10px] rounded-full bg-[#fbbf24]" />
+                        <div className="w-[10px] h-[10px] rounded-full bg-[#34d399]" />
+                        <div className="flex-1 h-[20px] bg-[#fafcff] rounded-[5px] border border-[#d0e4f7] ml-[10px] flex items-center px-[10px]">
+                          <span className="text-[10px] text-[#6b8097] font-mono">
+                            {(currentTutStep as TutorialStepData).url}
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Content Area — real image OR structured placeholder */}
+                      {(currentTutStep as TutorialStepData).screenshot ? (
+                        /* ── REAL SCREENSHOT ─────────────────────────────────
+                           To use: set  "screenshot": "/path/or/url.png"
+                           on the tutorial step in ir-1.json.
+                           The image fills the frame at full width.          */
+                        <Image
+                          src={(currentTutStep as TutorialStepData).screenshot!}
+                          alt={(currentTutStep as TutorialStepData).ss_label}
+                          className="w-full block object-cover"
+                          draggable={false}
+                        />
+                      ) : (
+                        /* ── PLACEHOLDER (no screenshot yet) ────────────────
+                           Replace by adding a "screenshot" field above.     */
+                        <div className="bg-[#f4f7fb] flex items-center justify-center px-[24px] py-[28px] text-center min-h-[190px]">
+                          <div className="flex flex-col items-center gap-[12px] max-w-[420px] w-full">
+                            <span className="text-[11px] font-semibold uppercase tracking-[0.07em] text-[#6b8097] bg-[#e8f1fb] border border-[#d0e4f7] rounded-full px-[12px] py-[4px]">
+                              {(currentTutStep as TutorialStepData).ss_label}
+                            </span>
+                            <div className="text-[17px] font-semibold text-[#0c1b33]">
+                              {(currentTutStep as TutorialStepData).ss_headline}
+                            </div>
+                            <div className="text-[13px] text-[#3a4f63] leading-[1.55]">
+                              {(currentTutStep as TutorialStepData).ss_desc}
+                            </div>
+                            {(currentTutStep as TutorialStepData)
+                              .ss_highlight && (
+                              <div className="px-[16px] py-[10px] bg-[rgba(47,111,212,0.12)] border-[1.5px] border-[rgba(47,111,212,0.22)] rounded-[10px] text-[13px] font-semibold text-[#2f6fd4]">
+                                {
+                                  (currentTutStep as TutorialStepData)
+                                    .ss_highlight
+                                }
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Caption Bar — always visible; green tint for "success" captionClass */}
+                      <div
+                        className={`p-[8px_14px_10px] border-t text-[11px] leading-[1.5] ${
+                          (currentTutStep as TutorialStepData).caption_class ===
+                          "success"
+                            ? "bg-[#e8f5ef] border-[#a8d9be] text-[#15744f] font-medium"
+                            : "bg-white border-[#d0e4f7] text-[#6b8097]"
+                        }`}
+                      >
+                        {(currentTutStep as TutorialStepData).caption}
+                      </div>
+                    </div>
+                  ) : (
+                    /* Static USCIS steps: screenshot placeholder */
+                    <div className="w-full bg-[#eef3fa] border-[1.5px] border-[#d0e4f7] rounded-[10px] overflow-hidden mb-5 relative flex flex-col">
+                      <div className="bg-[#eef3fa] flex flex-col items-center justify-center p-9 text-center">
+                        <div className="w-11 h-11 rounded-full bg-primary/30 flex items-center justify-center mb-2.5 shadow-sm">
+                          <Search
+                            size={22}
+                            className="text-[#6b8097]"
+                            strokeWidth={1.6}
+                          />
+                        </div>
+                        <div className="text-[13px] font-semibold text-[#6b8097] mb-1">
+                          Screenshot not yet added
+                        </div>
+                        <div className="text-[11px] font-mono text-[#b8d4f0] bg-[#e8f1fb] px-2.5 py-1 rounded-[4px] break-all max-w-[280px]">
+                          {
+                            (currentTutStep as (typeof USCIS_TUTORIAL_STEPS)[0])
+                              .screenshot
+                          }
+                        </div>
+                      </div>
+                      <div className="p-[8px_12px_10px] bg-[#f4f7fb] border-t border-[#d0e4f7] text-[11px] text-[#6b8097] leading-[1.5] text-left">
+                        {
+                          (currentTutStep as (typeof USCIS_TUTORIAL_STEPS)[0])
+                            .caption
+                        }
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Note Block */}
+                  {currentTutStep.note && (
+                    <div className="bg-[#fef8e8] border border-[#f0d98a] rounded-[10px] p-[12px_15px] mb-[22px]">
+                      <div className="text-[13px] text-[#8a6200] leading-[1.55]">
+                        <div
+                          dangerouslySetInnerHTML={{
+                            __html: currentTutStep.note
+                              .replace(
+                                "Important:",
+                                "<strong>Important:</strong>",
+                              )
+                              .replace(
+                                "Avoid this:",
+                                "<strong>Avoid this:</strong>",
+                              ),
+                          }}
+                        />
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Nav buttons */}
+                  <div className="flex gap-[10px] items-center">
+                    {tutorialIdx > 0 && (
+                      <button
+                        onClick={() => setTutorialIdx(tutorialIdx - 1)}
+                        className="p-[13px_22px] bg-transparent text-[#3a4f63] border-[1.5px] border-[#d0e4f7] rounded-[10px] font-sans text-[14px] font-medium cursor-pointer transition-all hover:border-[#3a4f63] hover:text-[#1c2b3a]"
+                      >
+                        ← Back
+                      </button>
+                    )}
+                    {tutorialIdx < steps.length - 1 ? (
+                      <button
+                        onClick={() => setTutorialIdx(tutorialIdx + 1)}
+                        className="flex-1 p-[13px_22px] bg-primary text-white border-none rounded-[10px] font-sans text-[14px] font-semibold cursor-pointer transition-all hover:bg-primary/80 hover:-translate-y-[1px] active:translate-y-0 text-center"
+                      >
+                        Next →
+                      </button>
+                    ) : (
+                      <button
+                        onClick={() => setIsTutorialOpen(false)}
+                        className="flex-1 p-[13px_22px] bg-[#15744f] text-white border-none rounded-[10px] font-sans text-[14px] font-semibold cursor-pointer transition-all hover:bg-[#0e5c3c] hover:-translate-y-[1px] text-center"
+                      >
+                        Done — return to step
+                      </button>
+                    )}
                   </div>
                 </div>
-              )}
-
-              {/* Nav buttons */}
-              <div className="flex gap-[10px] items-center">
-                {tutorialIdx > 0 && (
-                  <button
-                    onClick={() => setTutorialIdx(tutorialIdx - 1)}
-                    className="p-[13px_22px] bg-transparent text-[#3a4f63] border-[1.5px] border-[#d0e4f7] rounded-[10px] font-sans text-[14px] font-medium cursor-pointer transition-all hover:border-[#3a4f63] hover:text-[#1c2b3a]"
-                  >
-                    ← Back
-                  </button>
-                )}
-                {tutorialIdx < USCIS_TUTORIAL_STEPS.length - 1 ? (
-                  <button
-                    onClick={() => setTutorialIdx(tutorialIdx + 1)}
-                    className="flex-1 p-[13px_22px] bg-primary text-white border-none rounded-[10px] font-sans text-[14px] font-semibold cursor-pointer transition-all hover:bg-[#2460bb] hover:-translate-y-[1px] active:translate-y-0 text-center"
-                  >
-                    Next →
-                  </button>
-                ) : (
-                  <button
-                    onClick={() => setIsTutorialOpen(false)}
-                    className="flex-1 p-[13px_22px] bg-[#15744f] text-white border-none rounded-[10px] font-sans text-[14px] font-semibold cursor-pointer transition-all hover:bg-[#0e5c3c] hover:-translate-y-[1px] text-center"
-                  >
-                    Done — return to step
-                  </button>
-                )}
               </div>
             </div>
-          </div>
-        </div>
-      )}
+          );
+        })()}
     </div>
   );
 }

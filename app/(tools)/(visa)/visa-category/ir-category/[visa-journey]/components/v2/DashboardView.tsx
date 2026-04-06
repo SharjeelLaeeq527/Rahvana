@@ -134,7 +134,7 @@ export function DashboardView({
         </h1>
 
         {/* Hero Section */}
-        <section className="bg-[#0c1b33] rounded-2xl p-[22px_26px] mb-3 relative overflow-hidden animate-in zoom-in duration-500 after:content-[''] after:absolute after:-top-[50px] after:-right-[50px] after:w-[180px] after:h-[180px] after:rounded-full after:bg-primary/12 after:pointer-events-none">
+        <section className="bg-[#0c1b33] rounded-2xl p-[22px_26px] mb-3 relative overflow-hidden animate-in zoom-in duration-500 after:content-[''] after:absolute after:-top-[50px] after:-right-[50px] after:w-[180px] after:h-[180px] after:rounded-full after:bg-[#2f6fd41f] after:pointer-events-none">
           <div className="relative z-10">
             <div className="text-[10px] font-bold uppercase tracking-[0.12em] text-white/40 mb-1.5">
               Next best action
@@ -220,7 +220,7 @@ export function DashboardView({
                 <div
                   key={stage.chapter_key || stage.id}
                   onClick={() => !isLocked && onSelectChapter(originalIdx)}
-                  className={`bg-white border-[1.5px] rounded-[10px] p-[14px_16px] transition-all flex flex-col ${
+                  className={`bg-white border-[1.5px] rounded-[10px] p-[12px_16px] transition-all flex flex-col ${
                     isLocked
                       ? "opacity-50 cursor-default border-[#d0e4f7]"
                       : isDone
@@ -233,7 +233,7 @@ export function DashboardView({
                   <div className="text-[9px] font-bold tracking-[0.1em] uppercase text-[#6b8097] mb-1.25">
                     Chapter {originalIdx + 1}
                   </div>
-                  <h3 className="text-[12.5px] font-bold text-[#0c1b33] leading-[1.3] mb-2">
+                  <h3 className="text-[12.5px] font-semibold text-[#0c1b33] leading-[1.3] mb-2">
                     {(stage.chapter_name || stage.name).replace(
                       /^Stage\s[IVX]+:\s/,
                       "",
