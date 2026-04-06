@@ -113,11 +113,11 @@ export function SiteHeader({
 
   const MOBILE_ICONS: Record<string, React.ReactNode> = {
     journeys: (
-      <Briefcase className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+      <Briefcase className="w-5 h-5 text-teal-600 dark:text-teal-400" />
     ),
-    tools: <Wand2 className="w-5 h-5 text-violet-600 dark:text-violet-400" />,
-    guides: <BookOpen className="w-5 h-5 text-amber-600 dark:text-amber-400" />,
-    services: <Zap className="w-5 h-5 text-rose-600 dark:text-rose-400" />,
+    tools: <Wand2 className="w-5 h-5 text-teal-600 dark:text-teal-400" />,
+    guides: <BookOpen className="w-5 h-5 text-teal-600 dark:text-teal-400" />,
+    services: <Zap className="w-5 h-5 text-teal-600 dark:text-teal-400" />,
   };
 
   const pathname = usePathname();
@@ -364,10 +364,10 @@ export function SiteHeader({
                   isActive("journeys") || activeMenu === "journeys"
                     ? isHomeHeroState
                       ? "bg-white/20 text-white"
-                      : "bg-muted text-primary"
+                      : "bg-muted text-[#0d7377]"
                     : isHomeHeroState
                       ? "text-white/90 hover:bg-white/15 hover:text-white"
-                      : "text-muted-foreground hover:bg-muted hover:text-primary"
+                      : "text-muted-foreground hover:bg-muted hover:text-[#0d7377]"
                 }`}
               >
                 Explore Journeys
@@ -393,10 +393,10 @@ export function SiteHeader({
                   isActive("tools", "/tools") || activeMenu === "tools"
                     ? isHomeHeroState
                       ? "bg-white/20 text-white"
-                      : "bg-muted text-primary"
+                      : "bg-muted text-[#0d7377]"
                     : isHomeHeroState
                       ? "text-white/90 hover:bg-white/15 hover:text-white"
-                      : "text-muted-foreground hover:bg-muted hover:text-primary"
+                      : "text-muted-foreground hover:bg-muted hover:text-[#0d7377]"
                 }`}
               >
                 Toolbox
@@ -422,10 +422,10 @@ export function SiteHeader({
                   isActive("guides") || activeMenu === "guides"
                     ? isHomeHeroState
                       ? "bg-white/20 text-white"
-                      : "bg-muted text-primary"
+                      : "bg-muted text-[#0d7377]"
                     : isHomeHeroState
                       ? "text-white/90 hover:bg-white/15 hover:text-white"
-                      : "text-muted-foreground hover:bg-muted hover:text-primary"
+                      : "text-muted-foreground hover:bg-muted hover:text-[#0d7377]"
                 }`}
               >
                 Guides
@@ -451,10 +451,10 @@ export function SiteHeader({
                   isActive("services", "/services") || activeMenu === "services"
                     ? isHomeHeroState
                       ? "bg-white/20 text-white"
-                      : "bg-muted text-primary"
+                      : "bg-muted text-[#0d7377]"
                     : isHomeHeroState
                       ? "text-white/90 hover:bg-white/15 hover:text-white"
-                      : "text-muted-foreground hover:bg-muted hover:text-primary"
+                      : "text-muted-foreground hover:bg-muted hover:text-[#0d7377]"
                 }`}
               >
                 Services
@@ -476,10 +476,10 @@ export function SiteHeader({
                   isActive("pricing", "/pricing")
                     ? isHomeHeroState
                       ? "bg-white/20 text-white"
-                      : "bg-muted text-primary"
+                      : "bg-muted text-[#0d7377]"
                     : isHomeHeroState
                       ? "text-white/90 hover:bg-white/15 hover:text-white"
-                      : "text-muted-foreground hover:bg-muted hover:text-primary"
+                      : "text-muted-foreground hover:bg-muted hover:text-[#0d7377]"
                 }`}
               >
                 Pricing
@@ -493,10 +493,10 @@ export function SiteHeader({
                   isActive("faq")
                     ? isHomeHeroState
                       ? "bg-white/20 text-white"
-                      : "bg-muted text-primary"
+                      : "bg-muted text-[#0d7377]"
                     : isHomeHeroState
                       ? "text-white/90 hover:bg-white/15 hover:text-white"
-                      : "text-muted-foreground hover:bg-muted hover:text-primary"
+                      : "text-muted-foreground hover:bg-muted hover:text-[#0d7377]"
                 }`}
               >
                 FAQ
@@ -510,10 +510,10 @@ export function SiteHeader({
                   isActive("contact")
                     ? isHomeHeroState
                       ? "bg-white/20 text-white"
-                      : "bg-muted text-primary"
+                      : "bg-muted text-[#0d7377]"
                     : isHomeHeroState
                       ? "text-white/90 hover:bg-white/15 hover:text-white"
-                      : "text-muted-foreground hover:bg-muted hover:text-primary"
+                      : "text-muted-foreground hover:bg-muted hover:text-[#0d7377]"
                 }`}
               >
                 Contact
@@ -574,7 +574,7 @@ export function SiteHeader({
                     className={`relative p-2 rounded-md transition-colors ${
                       isHomeHeroState
                         ? "bg-white/10 text-white hover:bg-white/20 hover:text-white"
-                        : "bg-transparent text-muted-foreground hover:bg-primary/10 hover:text-primary"
+                        : "bg-transparent text-muted-foreground hover:bg-[#0d7377]/10 hover:text-[#0d7377]"
                     }`}
                   >
                     <Bell className="h-5 w-5" aria-hidden="true" />
@@ -592,7 +592,7 @@ export function SiteHeader({
                         {/* Header */}
                         <div className="flex items-center justify-between px-4 py-3 border-b border-border bg-muted/30">
                           <div className="flex items-center gap-2">
-                            <Bell className="w-4 h-4 text-primary" />
+                            <Bell className="w-4 h-4 text-[#0d7377]" />
                             <span className="text-sm font-bold text-foreground">Notifications</span>
                           </div>
                           <span className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground bg-muted px-2 py-0.5 rounded-full">
@@ -606,8 +606,8 @@ export function SiteHeader({
                             <div className="w-16 h-16 rounded-2xl bg-muted flex items-center justify-center shadow-inner">
                               <BellOff className="w-7 h-7 text-muted-foreground/50" />
                             </div>
-                            <span className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-primary/10 flex items-center justify-center">
-                              <Sparkles className="w-3 h-3 text-primary" />
+                            <span className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-[#0d7377]/10 flex items-center justify-center">
+                              <Sparkles className="w-3 h-3 text-[#0d7377]" />
                             </span>
                           </div>
                           <div className="text-center space-y-1">
@@ -621,7 +621,7 @@ export function SiteHeader({
                         {/* Footer */}
                         <div className="px-4 py-3 border-t border-border bg-muted/20 flex items-center justify-center">
                           <button
-                            className="text-xs text-muted-foreground hover:text-primary font-medium transition-colors"
+                            className="text-xs text-muted-foreground hover:text-[#0d7377] font-medium transition-colors"
                             onClick={() => setNotificationsOpen(false)}
                           >
                             Dismiss
@@ -635,7 +635,7 @@ export function SiteHeader({
 
           {/* LOGIN / PROFILE toggle */}
           {isLoading && !resolvedUser ? (
-            <div className="w-22 h-10 rounded-lg bg-primary/10 animate-pulse" />
+            <div className="w-22 h-10 rounded-lg bg-[#0d7377]/10 animate-pulse" />
           ) : user ? (
             <div
               className="relative"
@@ -656,7 +656,7 @@ export function SiteHeader({
                 className={`flex items-center justify-center w-10 h-10 rounded-full border-2 transition-all shadow-sm font-semibold text-lg ${
                   isHomeHeroState
                     ? "bg-white/92 border-white/85 text-[#6f9fa0] hover:bg-white"
-                    : "bg-primary/10 border-primary/20 text-primary hover:bg-primary/20"
+                    : "bg-teal-500/10 border-teal-500/20 text-teal-700 hover:bg-teal-500/20"
                 }`}
               >
                 {(
@@ -695,28 +695,28 @@ export function SiteHeader({
                       <button
                         id="my-dashboard-menu-item"
                         onClick={() => handleNav("dashboard")}
-                        className="flex items-center gap-3 w-full py-2.5 px-5 text-muted-foreground hover:bg-muted hover:text-primary transition-colors text-sm font-medium"
+                        className="flex items-center gap-3 w-full py-2.5 px-5 text-muted-foreground hover:bg-muted hover:text-teal-700 transition-colors text-sm font-medium"
                       >
                         <Layout className="w-4 h-4 text-cyan-600 dark:text-cyan-400" />
                         My Dashboard
                       </button>
                       <button
                         onClick={() => handleNav("profile")}
-                        className="flex items-center gap-3 w-full py-2.5 px-5 text-muted-foreground hover:bg-muted hover:text-primary transition-colors text-sm font-medium"
+                        className="flex items-center gap-3 w-full py-2.5 px-5 text-muted-foreground hover:bg-muted hover:text-teal-700 transition-colors text-sm font-medium"
                       >
                         <UserIcon className="w-4 h-4 text-violet-600 dark:text-violet-400" />
                         My Profile
                       </button>
                       <button
                         onClick={() => handleNav("document-vault")}
-                        className="flex items-center gap-3 w-full py-2.5 px-5 text-muted-foreground hover:bg-muted hover:text-primary transition-colors text-sm font-medium"
+                        className="flex items-center gap-3 w-full py-2.5 px-5 text-muted-foreground hover:bg-muted hover:text-teal-700 transition-colors text-sm font-medium"
                       >
                         <FolderLock className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
                         Document Vault
                       </button>
                       <button
                         onClick={() => handleNav("portal-wallet")}
-                        className="flex items-center gap-3 w-full py-2.5 px-5 text-muted-foreground hover:bg-muted hover:text-primary transition-colors text-sm font-medium"
+                        className="flex items-center gap-3 w-full py-2.5 px-5 text-muted-foreground hover:bg-muted hover:text-teal-700 transition-colors text-sm font-medium"
                       >
                         <LockIcon className="w-4 h-4 text-indigo-500 dark:text-indigo-400" />
                         Portal Wallet
@@ -726,7 +726,7 @@ export function SiteHeader({
                         onClick={() =>
                           setTheme(theme === "dark" ? "light" : "dark")
                         }
-                        className="flex items-center gap-3 w-full py-2.5 px-5 text-muted-foreground hover:bg-muted hover:text-primary transition-colors text-sm font-medium"
+                        className="flex items-center gap-3 w-full py-2.5 px-5 text-muted-foreground hover:bg-muted hover:text-teal-700 transition-colors text-sm font-medium"
                       >
                         <div className="relative w-4 h-4">
                           <Sun className="absolute w-4 h-4 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
@@ -740,21 +740,21 @@ export function SiteHeader({
                     <div className="py-2 border-b border-border">
                       <button
                         onClick={() => handleNav("settings")}
-                        className="flex items-center gap-3 w-full py-2.5 px-5 text-muted-foreground hover:bg-muted hover:text-primary transition-colors text-sm font-medium"
+                        className="flex items-center gap-3 w-full py-2.5 px-5 text-muted-foreground hover:bg-muted hover:text-teal-700 transition-colors text-sm font-medium"
                       >
                         <Settings className="w-4 h-4 text-slate-500 dark:text-slate-400" />
                         Account Settings
                       </button>
                       {/* <button
                         onClick={() => handleNav("view-security-questions")}
-                        className="flex items-center gap-3 w-full py-2.5 px-5 text-muted-foreground hover:bg-muted hover:text-primary transition-colors text-sm font-medium"
+                        className="flex items-center gap-3 w-full py-2.5 px-5 text-muted-foreground hover:bg-muted hover:text-teal-700 transition-colors text-sm font-medium"
                       >
                         <Shield className="w-4 h-4 text-emerald-500 dark:text-emerald-400" />
                         My Credentials
                       </button> */}
                       <button
                         onClick={() => {}} // Placeholder
-                        className="flex items-center gap-3 w-full py-2.5 px-5 text-muted-foreground hover:bg-muted hover:text-primary transition-colors text-sm font-medium"
+                        className="flex items-center gap-3 w-full py-2.5 px-5 text-muted-foreground hover:bg-muted hover:text-teal-700 transition-colors text-sm font-medium"
                       >
                         <HelpCircle className="w-4 h-4 text-cyan-500 dark:text-cyan-400" />
                         Help Center
@@ -893,7 +893,7 @@ export function SiteHeader({
                   >
                     <div className="flex items-center gap-3">
                       {MOBILE_ICONS[section.id] || (
-                        <Briefcase className="w-5 h-5 text-primary" />
+                        <Briefcase className="w-5 h-5 text-[#0d7377]" />
                       )}
                       <span className="font-bold">{section.label}</span>
                     </div>
@@ -938,8 +938,8 @@ export function SiteHeader({
                                         item.disabled
                                           ? "text-slate-400 cursor-not-allowed"
                                           : isActive(item.title, item.href)
-                                            ? "text-primary font-semibold bg-primary/10"
-                                            : "text-slate-600 hover:text-primary hover:bg-slate-50"
+                                            ? "text-[#0d7377] font-semibold bg-[#0d7377]/10"
+                                            : "text-slate-600 hover:text-[#0d7377] hover:bg-slate-50"
                                       }`}
                                     >
                                       <span className="flex items-center gap-2">
@@ -971,8 +971,8 @@ export function SiteHeader({
                                     item.disabled
                                       ? "text-slate-400 cursor-not-allowed"
                                       : isActive(item.title, item.href)
-                                        ? "text-primary font-semibold bg-primary/10"
-                                        : "text-slate-600 hover:text-primary hover:bg-slate-50"
+                                        ? "text-[#0d7377] font-semibold bg-[#0d7377]/10"
+                                        : "text-slate-600 hover:text-[#0d7377] hover:bg-slate-50"
                                   }`}
                                 >
                                   <span className="flex items-center gap-2">
@@ -999,7 +999,7 @@ export function SiteHeader({
                             <Link
                               href={section.footerLink.href}
                               onClick={() => setIsMenuOpen(false)}
-                              className="text-sm font-semibold text-primary hover:underline mt-2 flex items-center gap-1 px-2"
+                              className="text-sm font-semibold text-[#0d7377] hover:underline mt-2 flex items-center gap-1 px-2"
                             >
                               {section.footerLink.label} &rarr;
                             </Link>
@@ -1016,7 +1016,7 @@ export function SiteHeader({
                 onClick={() => handleNav("pricing")}
                 className={`flex items-center gap-3 px-4 py-3 rounded-xl text-left transition-all ${
                   isActive("pricing")
-                    ? "bg-primary/10 text-primary"
+                    ? "bg-[#0d7377]/10 text-[#0d7377]"
                     : "text-muted-foreground hover:bg-muted"
                 }`}
               >
@@ -1027,7 +1027,7 @@ export function SiteHeader({
                 onClick={() => handleNav("faq")}
                 className={`flex items-center gap-3 px-4 py-3 rounded-xl text-left transition-all ${
                   isActive("faq")
-                    ? "bg-primary/10 text-primary"
+                    ? "bg-[#0d7377]/10 text-[#0d7377]"
                     : "text-muted-foreground hover:bg-muted"
                 }`}
               >
@@ -1101,7 +1101,7 @@ export function SiteHeader({
                     : "text-muted-foreground hover:bg-muted"
                 }`}
               >
-                <Mail className="w-5 h-5 text-rose-500 dark:text-rose-400" />
+                <Mail className="w-5 h-5 text-[#0d7377]" />
                 <span className="font-bold">Contact</span>
               </HydrationSafeButton>
             </nav>
