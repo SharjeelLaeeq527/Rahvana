@@ -1,4 +1,5 @@
-import DataValidationService from '../lib/services/DataValidationService.ts'
+import DataValidationService from '../lib/services/DataValidationService'
+// @ts-ignore (for ts-node context)
 
 function logTest(name: string, passed: boolean, msg: string) {
   const result = passed ? '✅ PASS' : '❌ FAIL'

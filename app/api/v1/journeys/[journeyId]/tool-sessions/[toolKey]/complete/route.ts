@@ -84,7 +84,7 @@ export async function POST(
       try {
         // Call Hammad's case-data API to store the sponsor structure
         // This ensures Hashir never writes directly to case_data table
-        const baseUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000'
+        const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'
         await fetch(`${baseUrl}/api/v1/journeys/${journeyId}/case-data`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -102,7 +102,7 @@ export async function POST(
     // ─── Notify Hammad's StepCompletionEngine ────────────────────────────
     // TODO: Once Hammad exposes StepCompletionEngine, call it here:
     //
-    // const baseUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000'
+    // const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'
     // await fetch(`${baseUrl}/api/v1/steps/${completedSession.step_key}/complete`, {
     //   method: 'POST',
     //   headers: { 'Content-Type': 'application/json' },

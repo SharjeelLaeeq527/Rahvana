@@ -67,9 +67,10 @@ const TOOL_REGISTRY: Record<string, {
   },
 }
 
-// Base URL for internal API calls (calling Hammad's API)
+// Base URL for internal API calls (standardizing on NEXT_PUBLIC_APP_URL)
 function getSiteBaseUrl(): string {
-  return process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000'
+  if (process.env.NEXT_PUBLIC_APP_URL) return process.env.NEXT_PUBLIC_APP_URL
+  return 'http://localhost:3000'
 }
 
 // ─────────────────────────────────────────────────────────────
