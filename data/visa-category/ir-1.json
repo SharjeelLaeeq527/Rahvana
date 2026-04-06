@@ -16,6 +16,7 @@
           "step_key": "step_1_1",
           "step_number": 1,
           "step_name": "Determine Eligibility",
+          "step_short_description": "Confirm IR-1 qualification",
           "step_description": "Check if you qualify for IR-1 visa",
           "step_type": "quest",
           "who": "Confirm IR-1 qualification",
@@ -662,6 +663,7 @@
           "step_key": "step_1_2",
           "step_number": 2,
           "step_name": "Gather Required Documents",
+          "step_short_description": "Pakistan-specific full checklist",
           "step_type": "docs",
           "description": "Prepare the documents needed for your IR-1 spouse petition. Open each item to see exactly what is needed, where to get it, and what to watch out for.",
           "who": "Pakistan-specific full checklist",
@@ -812,6 +814,7 @@
           "step_key": "step_1_3",
           "step_number": 3,
           "step_name": "Review Filing Methods",
+          "step_short_description": "Online $625 or Paper $675",
           "step_type": "filing",
           "step_description": "Decide between Online vs. Paper filing",
           "who": "Decision required",
@@ -978,6 +981,7 @@
           "step_key": "step_1_4",
           "step_number": 4,
           "step_name": "Fill Form I-130",
+          "step_short_description": "via Rahvana wizard",
           "step_description": "Use Rahvana's guided Autoform Filler to complete the I-130 Petition for Alien Relative — with structured step-by-step support, clear prompts, and a built-in review flow.",
           "step_type": "tool",
           "logic": "filingMethod === 'online'",
@@ -1039,7 +1043,9 @@
           "who": "via Rahvana wizard",
           "where": "my.uscis.gov",
           "timeline": "2-4 hours",
-          "dependencies": ["step_1_3"],
+          "dependencies": [
+            "step_1_3"
+          ],
           "visible_when": {},
           "estimated_duration_days": 2,
           "is_required": true,
@@ -1066,10 +1072,13 @@
           "step_key": "step_1_5",
           "step_number": 5,
           "step_name": "Fill Form I-130A",
+          "step_short_description": "via Rahvana wizard",
           "step_description": "Complete the beneficiary spouse information form using Rahvana's guided Autoform Filler — structured prompts, field-by-field clarity, and a built-in review before you finalize.",
           "step_type": "tool",
           "who": "via Rahvana wizard",
-          "dependencies": ["step_1_4"],
+          "dependencies": [
+            "step_1_4"
+          ],
           "visible_when": {},
           "estimated_duration_days": 1,
           "is_required": true,
@@ -1131,10 +1140,13 @@
           "step_key": "step_1_6",
           "step_number": 6,
           "step_name": "Create USCIS Account",
+          "step_short_description": "myaccount.uscis.gov",
           "step_type": "tool",
           "step_description": "Set up the petitioner's USCIS online account — the gateway for filing Form I-130 digitally, tracking the case, and responding to any USCIS requests.",
           "who": "myaccount.uscis.gov",
-          "dependencies": ["step_1_3"],
+          "dependencies": [
+            "step_1_3"
+          ],
           "visible_when": {},
           "estimated_duration_days": 1,
           "is_required": true,
@@ -1196,11 +1208,22 @@
           }
         },
         {
-          "id": "I-07",
-          "name": "Start Form I-130 on USCIS",
-          "type": "tool",
-          "who": "Begin petition online",
-          "toolData": {
+          "step_key": "step_1_7",
+          "step_number": 7,
+          "step_name": "Start Form I-130 on USCIS",
+          "step_short_description": "Begin petition online",
+          "step_type": "tool",
+          "step_description": "Sign in to your USCIS account and begin the online I-130 petition. From your account dashboard, click \"File a Form Online\" to start the form and enter your prepared information.",
+          "who": "Petitioner",
+          "where": "myaccount.uscis.gov",
+          "dependencies": [
+            "step_1_6"
+          ],
+          "visible_when": {},
+          "estimated_duration_days": 1,
+          "is_required": true,
+          "display_order": 7,
+          "tool_data": {
             "id": "start-i130-uscis",
             "title": "Start Form I-130 on USCIS",
             "subtitle": "Sign in to your USCIS account and begin the online I-130 petition. From your account dashboard, click \"File a Form Online\" to start the form.",
@@ -1211,12 +1234,16 @@
               },
               {
                 "label": "Online Filing",
+                "type": "path"
+              },
+              {
+                "label": "USCIS Portal",
                 "type": "uscis"
               }
             ],
-            "launchModule": {
-              "icon": "form",
-              "eyebrow": "USCIS Portal · myaccount.uscis.gov",
+            "launch_module": {
+              "icon": "portal",
+              "eyebrow": "USCIS Portal \u00b7 myaccount.uscis.gov",
               "heading": "Start the online I-130 petition on USCIS",
               "features": [
                 "Sign in at myaccount.uscis.gov",
@@ -1224,18 +1251,102 @@
                 "Select Form I-130 and begin the draft",
                 "Progress saves automatically as you go"
               ],
-              "buttonLabel": "Go to USCIS Portal",
+              "button_label": "Go to USCIS Portal",
+              "button_launched_label": "Portal Opened",
               "href": "https://myaccount.uscis.gov/",
-              "note": "Opens your USCIS account in a new tab — return here after starting the form"
-            }
+              "note": "Opens your USCIS account in a new tab \u2014 return here after starting the form",
+              "launched_note": "Sign in and click \"File a Form Online\" to begin the I-130 draft",
+              "return_note": {
+                "title": "USCIS portal opened in a new tab",
+                "body": "Sign in and click \"File a Form Online\" to begin. You can save progress and return to continue later."
+              }
+            },
+            "guide_card": {
+              "title": "View Step-by-Step USCIS Portal Guide",
+              "subtitle": "Not sure where to click? A focused walkthrough shows you exactly how to start the I-130 on the USCIS portal."
+            },
+            "tutorial_steps": [
+              {
+                "label": "Step 1 of 5 \u2014 Sign in to USCIS",
+                "heading": "Sign in to your USCIS account",
+                "instruction": "Go to <strong>myaccount.uscis.gov</strong> and sign in with the email address and password you set up when creating the account. Complete the two-step verification prompt.",
+                "url": "myaccount.uscis.gov",
+                "ss_label": "USCIS Account Sign-In",
+                "ss_headline": "Sign in to your account",
+                "ss_desc": "Enter email \u2192 Enter password \u2192 Complete verification",
+                "ss_highlight": null,
+                "caption": "Two-step verification is required on every login \u2014 have your phone or authenticator app ready.",
+                "note": null
+              },
+              {
+                "label": "Step 2 of 5 \u2014 Reach the account dashboard",
+                "heading": "Find your account dashboard",
+                "instruction": "After signing in, you will land on your <strong>myUSCIS account homepage</strong>. This is your central hub for filing forms, checking case status, and sending secure messages to USCIS.",
+                "url": "my.uscis.gov",
+                "ss_label": "myUSCIS Dashboard",
+                "ss_headline": "Your USCIS Account Home",
+                "ss_desc": "Your filed cases, notices, and account tools appear here.",
+                "ss_highlight": null,
+                "caption": "If you have existing draft cases, they will appear here. Look for the \"File a Form Online\" option to start a new filing.",
+                "note": null
+              },
+              {
+                "label": "Step 3 of 5 \u2014 Click \"File a Form Online\"",
+                "heading": "Click \"File a Form Online\" on the dashboard",
+                "instruction": "From the account homepage, locate and click the <strong>\"File a Form Online\"</strong> button or link. This is the official USCIS starting point for all online form submissions, including Form I-130.",
+                "url": "my.uscis.gov",
+                "ss_label": "Account Dashboard",
+                "ss_headline": "File a Form Online",
+                "ss_desc": "This button appears on the myUSCIS account homepage.",
+                "ss_highlight": "File a Form Online",
+                "caption": "Per official USCIS guidance, \"File a Form Online\" is the starting point for all new online submissions.",
+                "note": "\"File a Form Online\" is the exact label used by USCIS. If you do not see it immediately, scroll down on the dashboard \u2014 its position may vary."
+              },
+              {
+                "label": "Step 4 of 5 \u2014 Select Form I-130",
+                "heading": "Find and select Form I-130",
+                "instruction": "After clicking \"File a Form Online,\" you will see a list of forms available to file digitally. Locate <strong>Form I-130, Petition for Alien Relative</strong> and select it to begin.",
+                "url": "my.uscis.gov/file-online",
+                "ss_label": "Online Form Selection",
+                "ss_headline": "Form I-130",
+                "ss_desc": "Petition for Alien Relative \u2014 select to start the online draft",
+                "ss_highlight": "I-130, Petition for Alien Relative",
+                "caption": "Form I-130 is listed on the forms-available-to-file-online page. USCIS confirms it is currently available for online filing.",
+                "note": null
+              },
+              {
+                "label": "Step 5 of 5 \u2014 Begin the online I-130 draft",
+                "heading": "Start the I-130 filing draft",
+                "instruction": "Once you select Form I-130, the USCIS portal will walk you through the form section by section. <strong>Progress saves automatically</strong> \u2014 you can return and continue at any time.",
+                "url": "my.uscis.gov",
+                "ss_label": "I-130 Filing Draft",
+                "ss_headline": "Form I-130 \u2014 In Progress",
+                "ss_desc": "Complete each section and save. Return to finish anytime.",
+                "ss_highlight": null,
+                "caption": "USCIS offers two filing methods: guided online workflow or PDF upload. Complete review before paying the $625 filing fee.",
+                "note": "Do not pay the fee until you have reviewed all entered information carefully. Fees are generally non-refundable once submitted."
+              }
+            ],
+            "disclaimer": "Rahvana provides structured guidance only. This is not legal advice. USCIS.gov is the official filing portal. Always verify information at uscis.gov before submitting."
           }
         },
         {
-          "id": "I-08",
-          "name": "Upload Forms & Evidence",
-          "type": "tool",
-          "who": "PDF/JPG, 12 MB max",
-          "toolData": {
+          "step_key": "step_1_8",
+          "step_number": 8,
+          "step_name": "Upload Forms & Evidence",
+          "step_short_description": "PDF/JPG, 12 MB max",
+          "step_type": "tool",
+          "step_description": "Attach your supporting documents inside the USCIS online portal. This is the evidence-upload phase \u2014 your documents become part of the official I-130 filing record.",
+          "who": "Petitioner",
+          "where": "myaccount.uscis.gov",
+          "dependencies": [
+            "step_1_7"
+          ],
+          "visible_when": {},
+          "estimated_duration_days": 1,
+          "is_required": true,
+          "display_order": 8,
+          "tool_data": {
             "id": "uscis-upload-evidence",
             "title": "Upload Forms & Evidence",
             "subtitle": "Attach your supporting documents inside the USCIS online portal. This is the evidence-upload phase.",
@@ -1246,12 +1357,16 @@
               },
               {
                 "label": "Online Filing",
+                "type": "path"
+              },
+              {
+                "label": "USCIS Portal",
                 "type": "uscis"
               }
             ],
-            "launchModule": {
-              "icon": "form",
-              "eyebrow": "USCIS Portal · Evidence Upload Phase",
+            "launch_module": {
+              "icon": "upload",
+              "eyebrow": "USCIS Portal \u00b7 Evidence Upload Phase",
               "heading": "Attach your evidence files to the I-130 filing",
               "features": [
                 "Sign in and open your I-130 draft",
@@ -1259,103 +1374,332 @@
                 "Attach each document file individually",
                 "Confirm each upload appears correctly"
               ],
-              "buttonLabel": "Open USCIS Portal",
+              "button_label": "Open USCIS Portal",
               "href": "https://myaccount.uscis.gov/",
-              "note": "Accepted formats: PDF, JPG, or JPEG only. Max 12MB per file."
-            }
+              "note": "Accepted formats: PDF, JPG, or JPEG only. Max 12 MB per file."
+            },
+            "upload_requirements": [
+              "Accepted formats: PDF, JPG, or JPEG only",
+              "Maximum file size: 12 MB per file",
+              "Files must not be encrypted or password-protected",
+              "Foreign-language documents require a certified English translation uploaded alongside the original"
+            ],
+            "guide_card": {
+              "title": "View Step-by-Step Upload Guide",
+              "subtitle": "A focused walkthrough showing how to locate and complete the evidence upload section inside the USCIS portal."
+            },
+            "tutorial_steps": [
+              {
+                "label": "Step 1 of 5 \u2014 Open your I-130 draft",
+                "heading": "Sign in and open the I-130 draft",
+                "instruction": "Sign in to <strong>myaccount.uscis.gov</strong> and locate your I-130 case in progress. Open the draft filing to continue from where you left off.",
+                "url": "myaccount.uscis.gov",
+                "ss_label": "myUSCIS Dashboard",
+                "ss_headline": "Your Cases",
+                "ss_desc": "Find your in-progress I-130 draft and open it.",
+                "ss_highlight": null,
+                "caption": "Your in-progress forms appear in your account dashboard. Click the I-130 draft to continue.",
+                "note": null
+              },
+              {
+                "label": "Step 2 of 5 \u2014 Find the evidence upload section",
+                "heading": "Locate the evidence upload section",
+                "instruction": "Inside the I-130 draft, navigate to the <strong>evidence or supporting documents</strong> section. USCIS labels this as the upload step in the guided online filing workflow.",
+                "url": "my.uscis.gov",
+                "ss_label": "I-130 Filing Draft",
+                "ss_headline": "Upload Supporting Documents",
+                "ss_desc": "This section appears as part of the online filing workflow.",
+                "ss_highlight": "Upload Supporting Documents",
+                "caption": "The evidence upload section is a dedicated step inside the online filing workflow.",
+                "note": null
+              },
+              {
+                "label": "Step 3 of 5 \u2014 Attach each document",
+                "heading": "Attach each supporting document",
+                "instruction": "Upload each document individually. Use the upload interface to select and attach your files. You can upload as many files as needed.",
+                "url": "my.uscis.gov",
+                "ss_label": "Evidence Upload",
+                "ss_headline": "Attach Files",
+                "ss_desc": "Select each document file and upload it.",
+                "ss_highlight": null,
+                "caption": "USCIS accepts PDF, JPG, and JPEG files up to 12 MB each. Do not encrypt or password-protect files.",
+                "note": "If a document is in a foreign language \u2014 such as a Nikah Nama in Urdu \u2014 upload the original <strong>and</strong> the certified English translation as separate files. USCIS requires both."
+              },
+              {
+                "label": "Step 4 of 5 \u2014 Verify each upload",
+                "heading": "Confirm each file appears correctly",
+                "instruction": "After uploading each file, verify it appears in the list of attached documents. Open or preview any file to confirm it is legible, complete, and the correct document.",
+                "url": "my.uscis.gov",
+                "ss_label": "Uploaded Documents",
+                "ss_headline": "Review Attached Files",
+                "ss_desc": "Each uploaded file should appear in the attachment list.",
+                "ss_highlight": null,
+                "caption": "Check that file names and previews match what you intended to upload before moving on.",
+                "note": "A blurry, rotated, or incomplete scan can lead to a Request for Evidence (RFE). Verify each file is fully legible before continuing."
+              },
+              {
+                "label": "Step 5 of 5 \u2014 Proceed to review",
+                "heading": "Complete uploads and proceed to review",
+                "instruction": "Once all required documents are attached and verified, continue to the next phase of the online filing workflow. The next step will ask you to review your completed filing before signing and paying.",
+                "url": "my.uscis.gov",
+                "ss_label": "Upload Complete",
+                "ss_headline": "All Documents Attached",
+                "ss_desc": "Proceed to the review step when uploads are complete.",
+                "ss_highlight": "Continue to Review",
+                "caption": "Do not proceed until all required evidence is attached \u2014 adding documents after submission requires a separate step.",
+                "note": null
+              }
+            ],
+            "disclaimer": "Rahvana provides structured guidance only. This is not legal advice. Always verify current requirements at uscis.gov before submitting."
           }
         },
         {
-          "id": "I-09",
-          "name": "Pay Filing Fee",
-          "who": "$625 at USCIS",
-          "where": "Pay.gov or Form G-1450/G-1650",
-          "fee": "Online: $625, Paper: $675",
-          "logic": "filingMethod === 'online' || filingMethod === 'paper'",
-          "actions": [
-            "Select payment method",
-            "Enter payment information",
-            "Submit payment",
-            "Save confirmation"
-          ],
-          "notes": "As of Oct 28, 2025: Checks/money orders NO LONGER accepted. Electronic payment only.",
-          "officialSource": "https://www.uscis.gov/g-1055"
-        },
-        {
-          "id": "I-10",
-          "name": "Submit Application",
-          "who": "Receipt number begins IOE",
-          "where": "Online or mail",
-          "actions": [
-            "Review entire application",
-            "Verify documents uploaded",
-            "Click Submit (online) or mail package",
-            "Save confirmation/receipt"
-          ],
-          "output": "Application submitted, confirmation received",
-          "nextTrigger": "Receipt notice within 2-4 weeks"
-        },
-        {
-          "id": "I-11",
-          "name": "Receive Receipt Notice (I-797C)",
+          "step_key": "step_1_9",
+          "step_number": 9,
+          "step_name": "Pay Filing Fee",
+          "step_short_description": "$625 online · non-refundable",
+          "step_type": "tool",
+          "step_description": "After completing your form review and digital signature inside the USCIS portal, you will reach the payment step. Pay securely online to complete the I-130 submission.",
           "who": "Petitioner",
-          "where": "Mail or online account",
-          "timeline": "1-2 weeks (online) or 2-4 weeks (paper)",
-          "actions": [
-            "Check mail/account for receipt notice",
-            "Verify all information correct",
-            "Save receipt number",
-            "Note priority date"
+          "where": "my.uscis.gov / pay.gov",
+          "timeline": "Same session as submission",
+          "dependencies": [
+            "step_1_8"
           ],
-          "output": "Receipt number obtained"
+          "visible_when": {},
+          "estimated_duration_days": 1,
+          "is_required": true,
+          "display_order": 9,
+          "tool_data": {
+            "id": "step_1_9",
+            "title": "Pay Filing Fee",
+            "subtitle": "After completing your form review and digital signature inside the USCIS portal, you will reach the payment step. Pay securely online to complete the I-130 submission.",
+            "chips": [
+              {
+                "label": "Petitioner",
+                "type": "role"
+              },
+              {
+                "label": "Online Filing",
+                "type": "path"
+              },
+              {
+                "label": "USCIS Payment",
+                "type": "pay"
+              }
+            ],
+            "launch_module": {
+              "icon": "payment",
+              "stripe_variant": "gold",
+              "bg_color": "#121c2e",
+              "eyebrow": "USCIS Portal · Payment Phase",
+              "heading": "Complete the filing fee payment online",
+              "features": [
+                "Payment follows your review and digital signature",
+                "Use a valid U.S.-based payment method",
+                "No personal checks or money orders online",
+                "Receipt number issued immediately after payment"
+              ]
+            },
+            "fee_block": {
+              "label": "Current online fee",
+              "amount": "$625",
+              "note": "Form I-130 · online filing",
+              "details": [
+                "Confirm the exact amount shown in your portal",
+                "Fees are confirmed non-refundable once submitted",
+                "Credit, debit, or ACH bank transfer accepted"
+              ]
+            },
+            "guide_card": {
+              "title": "View Step-by-Step Payment Guide",
+              "subtitle": "Walk through the USCIS portal payment sequence — from the review step to completing payment and receiving your receipt."
+            },
+            "tutorial_steps": [
+              {
+                "label": "Step 1 of 4 — Complete review and digital signature",
+                "heading": "Review your form and digitally sign",
+                "instruction": "Before payment, USCIS requires you to review a summary of all the information you have entered. After confirming it is correct, you will be prompted to <strong>digitally sign</strong> by entering your full legal name in the space provided.",
+                "url": "my.uscis.gov",
+                "screenshot": null,
+                "ss_label": "Form Review & Signature",
+                "ss_headline": "Review Summary",
+                "ss_desc": "Check all entries, then enter your full legal name to sign.",
+                "ss_highlight": "Sign — Enter Your Full Legal Name",
+                "caption": "Per USCIS guidance, digital signing involves entering your full name. The system affixes the signature and date automatically.",
+                "note": "Review every entry carefully before signing. Once you proceed to payment and submit, changes require contacting USCIS."
+              },
+              {
+                "label": "Step 2 of 4 — Reach the payment step",
+                "heading": "Proceed to the USCIS payment step",
+                "instruction": "After signing, the portal will advance to the payment section. You will see the filing fee amount displayed. Confirm the amount matches the current USCIS fee schedule before proceeding.",
+                "url": "my.uscis.gov",
+                "screenshot": null,
+                "ss_label": "Payment Step",
+                "ss_headline": "Filing Fee",
+                "ss_desc": "The fee is shown before you enter payment details.",
+                "ss_highlight": "$625 — Form I-130 Online Filing",
+                "caption": "The online filing fee for I-130 is currently $625 (as of March 2026 per USCIS G-1055). Confirm the amount shown in your portal.",
+                "note": null
+              },
+              {
+                "label": "Step 3 of 4 — Enter payment details",
+                "heading": "Enter your payment method",
+                "instruction": "USCIS accepts credit cards, debit cards, and ACH bank transfers for online filings. Personal checks and money orders are <strong>not accepted</strong> for online submissions. Enter your payment details in the USCIS payment interface.",
+                "url": "pay.gov",
+                "screenshot": null,
+                "ss_label": "USCIS Payment Portal",
+                "ss_headline": "Select Payment Method",
+                "ss_desc": "Credit card · Debit card · ACH bank transfer",
+                "ss_highlight": null,
+                "caption": "USCIS uses Pay.gov for online fee collection. Your payment information is handled by that secure federal payment system.",
+                "note": "Do not close the browser tab during payment processing. Wait for the confirmation page before navigating away."
+              },
+              {
+                "label": "Step 4 of 4 — Receive your receipt notice",
+                "heading": "Payment complete — receipt issued immediately",
+                "instruction": "After successful payment, USCIS immediately issues a <strong>receipt notice</strong> with your case number (typically beginning with \"IOE\"). Your case is now officially submitted. Download or save this receipt — you will need the case number to track your case.",
+                "url": "my.uscis.gov",
+                "screenshot": null,
+                "ss_label": "Submission Complete",
+                "ss_headline": "Receipt Notice Issued",
+                "ss_desc": "Case number issued immediately — save it now.",
+                "ss_highlight": "Download Receipt Notice",
+                "caption": "The receipt number lets you track your I-130 case status. It also begins the official USCIS processing clock.",
+                "note": null
+              }
+            ],
+            "disclaimer": "Rahvana provides structured guidance only. This is not legal advice.\nAlways verify the current fee at uscis.gov/g-1055 before paying — fees are subject to change."
+          }
         },
         {
-          "id": "I-12",
-          "name": "Wait for Processing",
-          "who": "Both",
-          "where": "Current locations",
-          "timeline": "14.8 months average (17-65 months range)",
-          "actions": [
-            "Check case status weekly",
-            "Respond to any RFE immediately",
-            "Keep address updated",
-            "Gather NVC documents meanwhile"
-          ],
-          "notes": "RFE deadline usually 30-87 days. Respond promptly to avoid delays.",
-          "relevantTools": [
-            {
-              "label": "Case Status Tracker",
-              "labelUr": "کیس اسٹیٹس ٹریکر",
-              "href": "/case-status",
-              "type": "tool"
-            },
-            {
-              "label": "Case Strength Analyzer",
-              "labelUr": "کیس سٹرینتھ اینالائزر",
-              "href": "/visa-case-strength-checker",
-              "type": "tool"
-            },
-            {
-              "label": "Visa Bulletin Monitor",
-              "labelUr": "ویزہ بلٹن مانیٹر",
-              "href": "/visa-checker",
-              "type": "tool"
-            }
-          ]
-        },
-        {
-          "id": "I-13",
-          "name": "Receive Approval Notice (I-797)",
+          "step_key": "step_1_10",
+          "step_number": 10,
+          "step_name": "Review & Submit",
+          "step_short_description": "Final submission · receipt issued",
+          "step_type": "tool",
+          "step_description": "This is the final step before your I-130 petition is officially submitted to USCIS. Review everything carefully, sign electronically, pay the filing fee, and submit.",
           "who": "Petitioner",
-          "where": "Mail",
-          "actions": [
-            "Receive approval notice",
-            "Make multiple copies",
-            "Wait for NVC contact (4-6 weeks)",
-            "Begin Stage II preparation"
+          "where": "my.uscis.gov",
+          "timeline": "Same session as payment",
+          "dependencies": [
+            "step_1_9"
           ],
-          "output": "I-130 approved",
-          "nextTrigger": "Case transferred to NVC"
+          "visible_when": {},
+          "estimated_duration_days": 1,
+          "is_required": true,
+          "display_order": 10,
+          "tool_data": {
+            "id": "step_1_10",
+            "title": "Review & Submit",
+            "subtitle": "This is the final step before your I-130 petition is officially submitted to USCIS. Review everything carefully, sign electronically, pay the filing fee, and submit.",
+            "chips": [
+              {
+                "label": "Petitioner",
+                "type": "role"
+              },
+              {
+                "label": "Online Filing",
+                "type": "path"
+              },
+              {
+                "label": "Final Submission",
+                "type": "final"
+              }
+            ],
+            "launch_module": {
+              "icon": "submit",
+              "stripe_variant": "green",
+              "bg_color": "#101e35",
+              "eyebrow": "USCIS Portal · Final Submission Phase",
+              "heading": "Review, sign, pay, and submit the I-130",
+              "features": [
+                "Review the full filing summary in the portal",
+                "Sign digitally by entering your full legal name",
+                "Pay the $625 online filing fee",
+                "Receipt number issued immediately after submission"
+              ]
+            },
+            "review_checklist": [
+              "All form fields completed and accurate",
+              "All required evidence documents attached and verified",
+              "Payment method ready (credit/debit card or ACH bank transfer)",
+              "USCIS account email is actively monitored — receipts and notices will arrive there"
+            ],
+            "guide_card": {
+              "title": "View Step-by-Step Review & Submit Guide",
+              "subtitle": "Walk through the final USCIS portal sequence — reviewing your filing, signing, paying, and receiving your receipt confirmation."
+            },
+            "tutorial_steps": [
+              {
+                "label": "Step 1 of 5 — Open the filing review",
+                "heading": "Open the review summary in your filing draft",
+                "instruction": "Sign in to your USCIS account, open your I-130 draft, and navigate to the <strong>review step</strong>. The portal will display a full summary of everything you have entered — form fields, selected options, and attached evidence.",
+                "url": "myaccount.uscis.gov",
+                "screenshot": null,
+                "ss_label": "Filing Review",
+                "ss_headline": "Review Your Application",
+                "ss_desc": "All entered information and attachments appear here.",
+                "ss_highlight": null,
+                "caption": "Read the review summary carefully — this is your last opportunity to spot errors before the official submission.",
+                "note": "Per USCIS guidance: \"Review the summary of the information you provided\" before signing. Take your time here — do not rush."
+              },
+              {
+                "label": "Step 2 of 5 — Check uploaded evidence",
+                "heading": "Confirm your attached evidence is correct",
+                "instruction": "Within the review, verify that each piece of supporting evidence is correctly attached. Check that file names match the documents they represent and that nothing is missing.",
+                "url": "my.uscis.gov",
+                "screenshot": null,
+                "ss_label": "Attached Evidence",
+                "ss_headline": "Review Supporting Documents",
+                "ss_desc": "Confirm each attachment is the correct file.",
+                "ss_highlight": null,
+                "caption": "A missing or incorrect attachment is harder to fix after submission — verify each file at this stage.",
+                "note": null
+              },
+              {
+                "label": "Step 3 of 5 — Digitally sign the filing",
+                "heading": "Sign the filing with your full legal name",
+                "instruction": "After completing the review, USCIS will prompt you to <strong>digitally sign</strong>. Enter your full legal name — first, middle (if applicable), and last — exactly as it appears in official documents. The system affixes your signature and the signing date automatically.",
+                "url": "my.uscis.gov",
+                "screenshot": null,
+                "ss_label": "Electronic Signature",
+                "ss_headline": "Digitally Sign Your Application",
+                "ss_desc": "Enter your full legal name to sign.",
+                "ss_highlight": "Sign — Enter Full Legal Name",
+                "caption": "Entering your name constitutes your legal certification that the information is accurate and complete.",
+                "note": "Once you sign and proceed to payment, going back to edit requires contacting USCIS. Be certain before continuing."
+              },
+              {
+                "label": "Step 4 of 5 — Pay the filing fee",
+                "heading": "Pay the I-130 online filing fee",
+                "instruction": "After signing, the portal advances to the payment step. Confirm the filing fee displayed (currently $625 for online I-130 filing as of March 2026). Enter your credit card, debit card, or ACH bank transfer details to complete payment.",
+                "url": "pay.gov",
+                "screenshot": null,
+                "ss_label": "USCIS Payment",
+                "ss_headline": "Filing Fee — $625",
+                "ss_desc": "Pay by credit card, debit card, or ACH bank transfer.",
+                "ss_highlight": null,
+                "caption": "Do not close the browser tab during payment processing. Wait for the confirmation screen.",
+                "note": "USCIS fees are generally non-refundable once a case is accepted for processing. Confirm the fee in your portal before entering payment information."
+              },
+              {
+                "label": "Step 5 of 5 — Submit and receive your receipt",
+                "heading": "Submit and save your receipt notice",
+                "instruction": "After payment, your I-130 petition is officially submitted. USCIS immediately issues a <strong>receipt notice</strong> containing your case number (typically beginning with \"IOE\"). <strong>Download this receipt now</strong> — it is your proof of filing and your case tracking number.",
+                "url": "my.uscis.gov",
+                "screenshot": null,
+                "ss_label": "Submission Confirmed",
+                "ss_headline": "Receipt Notice Issued",
+                "ss_desc": "Your case number begins with \"IOE\" — save it immediately.",
+                "ss_highlight": "Download Receipt Notice",
+                "caption": "Case submitted successfully. Your I-130 petition is now in USCIS processing.",
+                "caption_class": "success",
+                "note": null
+              }
+            ],
+            "disclaimer": "Rahvana provides structured guidance only. This is not legal advice.\nReview your filing carefully before submitting — USCIS fees are non-refundable once a case is accepted."
+          }
         }
       ]
     },
@@ -1769,195 +2113,6 @@
             "Be patient - no way to expedite"
           ],
           "notes": "AP duration: 2 weeks to 12+ months (unpredictable). Common for security clearances."
-        }
-      ]
-    },
-    {
-      "id": 4,
-      "name": "Stage IV: Post-Interview & Travel",
-      "description": "Receive passport with visa \u2192 Pay USCIS fee \u2192 Travel to U.S.",
-      "timeline": "1-2 weeks for passport",
-      "steps": [
-        {
-          "id": "IV-01",
-          "name": "Receive Passport with Visa",
-          "who": "Beneficiary",
-          "where": "Courier delivery (Pakistan)",
-          "timeline": "1-2 weeks after approval",
-          "actions": [
-            "Track courier (TCS)",
-            "Receive passport",
-            "Verify visa foil information",
-            "Check expiration date",
-            "Make copies",
-            "Verify: name, DOB, passport number, visa category (IR-1/CR-1)"
-          ],
-          "output": "Passport with immigrant visa",
-          "notes": "MUST enter U.S. before visa expiration (typically 6 months from medical exam)"
-        },
-        {
-          "id": "IV-02",
-          "name": "Pay USCIS Immigrant Fee",
-          "who": "Either",
-          "where": "uscis.gov/uscis-immigrant-fee",
-          "fee": "$220",
-          "actions": [
-            "Create account at USCIS immigrant fee site",
-            "Enter A-Number from visa",
-            "Enter U.S. mailing address (CRITICAL)",
-            "Pay $220 fee",
-            "Save confirmation"
-          ],
-          "output": "Green card production authorized",
-          "notes": "Pay BEFORE travel recommended. Green card mailed to this address within 90 days."
-        },
-        {
-          "id": "IV-03",
-          "name": "Prepare for Travel",
-          "who": "Beneficiary",
-          "where": "Pakistan",
-          "actions": [
-            "Book flight with buffer before visa expiration",
-            "Pack carry-on: passport, sealed envelopes, confirmations",
-            "DO NOT open sealed envelopes",
-            "Prepare prohibited items list",
-            "Notify petitioner of flight details"
-          ],
-          "notes": "Sealed immigration packet MUST stay sealed. Pack in carry-on, never checked luggage."
-        },
-        {
-          "id": "IV-04",
-          "name": "Understand Immigration Status",
-          "who": "Beneficiary",
-          "where": "Knowledge",
-          "actions": [
-            "Understand: become LPR upon entry",
-            "Know IR-1 vs CR-1 difference",
-            "Understand rights and responsibilities",
-            "Know cannot vote until citizen"
-          ],
-          "notes": "IR-1: 10-year green card. CR-1: 2-year conditional, must file I-751 to remove conditions."
-        }
-      ]
-    },
-    {
-      "id": 5,
-      "name": "Stage V: U.S. Arrival",
-      "description": "Enter U.S. \u2192 CBP inspection \u2192 I-551 stamp \u2192 Green card delivery",
-      "timeline": "Green card within 90 days",
-      "steps": [
-        {
-          "id": "V-01",
-          "name": "Arrival at Port of Entry",
-          "who": "Beneficiary",
-          "where": "U.S. airport",
-          "actions": [
-            "Follow signs to Passport Control",
-            "Go to Foreign Nationals line",
-            "Approach CBP officer",
-            "Inform: first entry as immigrant",
-            "Present passport and sealed packet",
-            "Answer questions",
-            "Fingerprints taken"
-          ],
-          "notes": "Common questions: Purpose? Where living? How long married?"
-        },
-        {
-          "id": "V-02",
-          "name": "Secondary Inspection (If Needed)",
-          "who": "Beneficiary",
-          "where": "Secondary area",
-          "timeline": "30 minutes - 2 hours",
-          "actions": [
-            "If directed, proceed to secondary",
-            "Wait for officer",
-            "Provide additional information",
-            "Be patient and cooperative"
-          ],
-          "notes": "Common for immigrant visa holders. Don't worry - routine."
-        },
-        {
-          "id": "V-03",
-          "name": "Receive I-551 Stamp",
-          "who": "CBP Officer",
-          "where": "Port of entry",
-          "actions": [
-            "Officer stamps passport with I-551",
-            "Passport returned",
-            "Sealed packet retained by CBP"
-          ],
-          "output": "I-551 stamp = temporary green card (valid 1 year)",
-          "notes": "This stamp proves permanent residence and work authorization until physical card arrives"
-        },
-        {
-          "id": "V-04",
-          "name": "Clear Customs",
-          "who": "Beneficiary",
-          "where": "Airport customs",
-          "actions": [
-            "Collect baggage",
-            "Fill customs form",
-            "Declare items over $800 or restricted items",
-            "Present to customs officer",
-            "Exit airport"
-          ],
-          "notes": "Declare any food, plants, amounts over $10,000 cash"
-        },
-        {
-          "id": "V-05",
-          "name": "Post-Arrival Actions",
-          "who": "Beneficiary",
-          "where": "U.S. residence",
-          "timeline": "First week",
-          "actions": [
-            "Arrive at U.S. residence",
-            "Wait for Social Security card (2-4 weeks)",
-            "If doesn't arrive, apply at SSA office",
-            "Verify green card mailing address",
-            "Register for Selective Service if male 18-25"
-          ],
-          "notes": "SSN auto-issued if checked Yes on DS-260. Green card arrives within 90 days of entry or payment."
-        },
-        {
-          "id": "V-06",
-          "name": "Receive Green Card",
-          "who": "Beneficiary",
-          "where": "U.S. mailing address",
-          "timeline": "30-90 days",
-          "actions": [
-            "Track via USCIS immigrant fee account",
-            "Receive green card via USPS",
-            "Verify all information correct",
-            "Sign back of card immediately"
-          ],
-          "output": "Physical green card (I-551)",
-          "notes": "If error on card, file I-90 immediately. IR-1: valid 10 years. CR-1: valid 2 years."
-        },
-        {
-          "id": "V-07",
-          "name": "Maintain Green Card",
-          "who": "Beneficiary (LPR)",
-          "where": "United States",
-          "actions": [
-            "Carry green card at all times",
-            "File U.S. taxes annually",
-            "Update address with USCIS within 10 days (AR-11)",
-            "Don't leave U.S. for 6+ months without planning",
-            "For CR-1: File I-751 within 90 days of 2-year anniversary"
-          ],
-          "notes": "CR-1 CRITICAL: Must file I-751 jointly with spouse to remove conditions. Failure = loss of status."
-        },
-        {
-          "id": "V-08",
-          "name": "Path to Citizenship (Future)",
-          "who": "LPR",
-          "where": "Future planning",
-          "timeline": "3 years (if still married to USC)",
-          "actions": [
-            "After 3 years as LPR, can apply for citizenship via N-400",
-            "Requirements: physical presence, good moral character, English, civics test"
-          ],
-          "notes": "Optional - can remain LPR indefinitely. Citizenship allows voting, more job options, cannot be deported."
         }
       ]
     }
