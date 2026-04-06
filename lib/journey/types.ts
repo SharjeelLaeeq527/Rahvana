@@ -4,6 +4,7 @@ export interface Journey {
   user_id: string;
   journey_type: string; // e.g. "IR1", "IR5", "F1"
   case_id?: string; // Optional external case ID for reference
+  journey_name?: string; // Display name from config (e.g., "Immediate Relative - IR1")
   filing_method: string; // 'online' | 'paper'
   sponsor_structure: string; // 'individual' | 'joint_sponsor'
   status: "not_started" | "in_progress" | "completed" | "paused"; // Journey lifecycle
@@ -61,6 +62,7 @@ export interface Step {
   // Tool Integration
   tool_integration?: string; // e.g. "autofill_i130", "interview_prep", "case_strength"
   tool_key?: string; // Unique key to identify tool in integrations
+  metadata?: Record<string, unknown>; // Additional step metadata from JSON config (quest_data, tool_data, filing_data)
 
   // Timing & Deadlines
   estimated_duration_days?: number; // How many days this step typically takes
@@ -72,10 +74,39 @@ export interface Step {
   updated_at: string; // ISO timestamp
 }
 
+export interface CaseData {
+  id: string; 
+  journey_id: string; 
+  data_key: string; // e.g., 'filing_method', 'visa_category', 'beneficiary_age', etc.
+  data_value: any; // JSONB - flexible value storage (string, number, boolean, array, object, null)
+  data_type: "string" | "number" | "boolean" | "array" | "object" | "date"; // Data type hint
+  label?: string; // User-friendly label for this data
+  description?: string; // Description of what this data represents
+
+  // Source tracking
+  source: "user_input" | "form_extraction" | "system_calculated" | "external_api" | "tool_output";
+  source_reference?: string; // Reference to step_id, tool_name, form_name, etc.
+
+  // Validation & Status
+  is_validated: boolean; // Whether this data has been validated
+  validation_errors: string[]; // Array of validation error messages
+  is_verified: boolean; // Whether user explicitly verified this data
+
+  // Versioning
+  version: number; // Increment on updates for audit trail
+  previous_value?: any; // Store previous value for audit trail
+
+  // Timestamps
+  captured_at: string; // ISO timestamp when data was first captured
+  created_at: string; // ISO timestamp
+  updated_at: string; // ISO timestamp
+}
+
 //    API Input types - only fields user/system should provide
 export interface JourneyInput {
   journey_type: string; // Required: "IR1", "IR5", "F1"
   case_id?: string; // Optional: external case ID
+  journey_name?: string; // Optional: display name from config
   filing_method: string; // Required: "online" | "paper"
   sponsor_structure: string; // Required: "individual" | "joint_sponsor"
   // Note: user_id, status, counts, percentages, current_chapter_id, current_step_id are set server-side
@@ -116,7 +147,20 @@ export interface StepInput {
   tool_key?: string; // Optional: unique key to identify tool
   estimated_duration_days?: number; // Optional: estimated days to complete
   due_date?: string; // Optional: target completion date
+  metadata?: Record<string, unknown>; // Optional: additional metadata (quest_data, tool_data, filing_data)
   // chapter_id comes from URL, status defaults to "not_started"
+}
+
+export interface CaseDataInput {
+  data_key: string; // Required: unique identifier (e.g., 'filing_method')
+  data_value: any; // Required: the actual value
+  data_type?: "string" | "number" | "boolean" | "array" | "object" | "date"; // Optional: type hint
+  label?: string; // Optional: human-readable label
+  description?: string; // Optional: description
+  source?: "user_input" | "form_extraction" | "system_calculated" | "external_api" | "tool_output"; // Optional: defaults to 'user_input'
+  source_reference?: string; // Optional: reference to source (step_id, tool_name, etc.)
+  is_verified?: boolean; // Optional: user verified this (defaults to false)
+  // journey_id comes from URL, created_at/updated_at set by system
 }
 
 export interface ChapterUpdate {
@@ -150,6 +194,26 @@ export interface StepUpdate {
   due_date?: string;
 }
 
+export interface CaseDataUpdate {
+  data_value?: any; // Update the value
+  data_type?: string; // Update type hint
+  label?: string;
+  description?: string;
+  is_validated?: boolean;
+  validation_errors?: string[]; // Array of validation error messages
+  is_verified?: boolean;
+  source?: string; // Update source if needed
+  source_reference?: string;
+}
+
+export interface CaseDataHistoryEntry {
+  version: number;
+  previous_value: any;
+  changed_by: string; // email or user_id
+  changed_at: string; // ISO timestamp
+  change_reason?: string;
+}
+
 //    API Response types - with metadata for UI construction
 export interface JourneyResponse extends Journey {
   chapters?: ChapterResponse[];
@@ -172,6 +236,11 @@ export interface ChapterResponse extends Chapter {
     steps_remaining: number;
     estimated_days_remaining: number;
   };
+}
+
+export interface CaseDataResponse extends CaseData {
+  is_editable: boolean; // Whether user can edit this
+  edit_history?: CaseDataHistoryEntry[]; // Optional: full change history
 }
 
 export interface StepResponse extends Step {
@@ -212,6 +281,49 @@ export interface DependencyCheckResult {
   reason: string;
 }
 
+export interface CaseDataBatchOperation {
+  operation: "set" | "update" | "delete"; // Batch operation type
+  data_key: string; // Target key
+  data_value?: any; // Value for set/update
+  is_verified?: boolean;
+}
+
+// Case Data Validation Result
+export interface CaseDataValidationResult {
+  is_valid: boolean;
+  data_key: string;
+  errors: string[];
+  warnings?: string[];
+  suggestions?: string[];
+  affected_steps?: string[]; // Steps that depend on this data
+}
+
+// Complete Case Profile (all data for a journey)
+export interface CaseProfile {
+  journey_id: string;
+  filing_method?: string; // 'online', 'embassy', 'consulate', etc.
+  visa_category?: string; // 'EB-1C', 'EB-3', 'F-1', etc.
+  beneficiary_age?: number;
+  beneficiary_relationship?: string;
+  beneficiary_country_of_residence?: string;
+  employer_state?: string;
+  sponsor_type?: string; // 'individual', 'employer', 'family', etc.
+  case_status?: string; // 'initial', 'in_progress', 'submitted', etc.
+  critical_data_keys: string[]; // Keys that are required for case
+  optional_data_keys: string[]; // Keys that are optional
+  completion_percentage: number; // % of required data filled
+  last_updated: string;
+  all_data: Record<string, CaseData>; // All case data keyed by data_key
+}
+
+// Case Data Dependency Map (what steps depend on what case data)
+export interface DataDependencyMap {
+  data_key: string;
+  depends_on: string[]; // Other data_keys that must be filled first
+  steps_that_depend_on_this: string[]; // Step IDs that need this data
+  blocks_steps?: string[]; // Steps that are blocked if this is missing
+}
+
 //    Error Response Types (not stored, API only)
 export interface ErrorResponse {
   error: string; // User-friendly error message
@@ -242,6 +354,15 @@ export interface StepFilters {
   status?: "not_started" | "in_progress" | "completed" | "blocked" | "skipped";
   step_type?: string;
   visible_only?: boolean; // Only return visible steps (apply visibility logic)
+  limit?: number;
+  offset?: number;
+}
+
+export interface CaseDataFilters {
+  data_key?: string; // Filter by specific key
+  source?: string; // Filter by source
+  is_validated?: boolean; // Only validated data
+  is_verified?: boolean; // Only verified data
   limit?: number;
   offset?: number;
 }

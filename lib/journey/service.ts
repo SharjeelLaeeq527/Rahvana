@@ -14,8 +14,10 @@ import {
   StepInput,
   StepCompletionResult,
   StepUpdate,
+  CaseDataInput,
 } from "./types";
 import * as db from "./data-access";
+import { ConfigLoader } from "./config-loader";
 
 /**
  * PROGRESS CALCULATION SERVICE
@@ -633,7 +635,91 @@ export class JourneyService {
   private progressService = new ProgressCalculationService();
   private conditionalEngine = new ConditionalLogicEngine();
 
-  //   Create a new journey with initial chapter structure. Called once per visa journey (IR-1, IR-5, F-1, etc.)
+  async createJourneyFromConfig(
+    filePath: string,
+    overrides?: {
+      filing_method?: "online" | "paper";
+      visa_category?: string;
+    },
+  ) {
+    try {
+      console.log(`Creating journey from config: ${filePath}`);
+
+      // Load and transform JSON to database schema
+      const rawJSON = ConfigLoader.loadJourneyJSON(filePath);
+      const journeyInput = ConfigLoader.transformJourneyInput(rawJSON);
+      const chaptersInput = ConfigLoader.transformChaptersInput(rawJSON.chapters);
+      const caseDataKeys = ConfigLoader.extractCaseDataKeys(rawJSON);
+      const caseDataInput = ConfigLoader.generateInitialCaseData(caseDataKeys);
+
+      // Apply overrides if provided
+      if (overrides?.filing_method) {
+        journeyInput.filing_method = overrides.filing_method;
+      }
+      if (overrides?.visa_category) {
+        journeyInput.visa_category = overrides.visa_category;
+      }
+
+      console.log(`Loaded: ${journeyInput.journey_name} with ${chaptersInput.length} chapters`);
+
+      // Create journey in database
+      const journey = await db.createJourneyDB(journeyInput);
+
+      // Create chapters and steps
+      const createdChapters: Chapter[] = [];
+      let totalStepsCreated = 0;
+
+      for (let i = 0; i < rawJSON.chapters.length; i++) {
+        const rawChapter = rawJSON.chapters[i];
+        const chapterInput = chaptersInput[i];
+
+        const chapter = await db.createChapterDB(journey.id, chapterInput);
+        createdChapters.push(chapter);
+
+        const stepsInput = ConfigLoader.transformStepsInput(
+          rawChapter.steps,
+          rawChapter.chapter_key,
+        );
+
+        const createdSteps = await Promise.all(
+          stepsInput.map((stepInput) =>
+            db.createStepDB(chapter.id, stepInput),
+          ),
+        );
+
+        totalStepsCreated += createdSteps.length;
+      }
+
+      // Initialize case data keys
+      // const createdCaseData = await Promise.all(
+      //   caseDataInput.map((caseInput) =>
+      //     db.createOrUpdateCaseDataDB(journey.id, caseInput.data_key, caseInput),
+      //   ),
+      // );
+
+      // Calculate initial progress
+      const progressSummary =
+        await this.progressService.calculateJourneyProgress(journey.id);
+
+      return {
+        journey,
+        chapters: createdChapters,
+        total_steps_created: totalStepsCreated,
+        case_data_keys: caseDataKeys,
+        // case_data_initialized: createdCaseData.length,
+        progress_summary: progressSummary,
+        message: `Journey created: ${journeyInput.journey_name} (${createdChapters.length} chapters, ${totalStepsCreated} steps)`,
+      };
+    } catch (error) {
+      console.error("Error creating journey from config:", error);
+      throw error;
+    }
+  }
+
+  /**
+   * Create journey with manual chapter structure
+   * (Legacy method - use createJourneyFromConfig instead)
+   */
   async createJourneyWithChapters(
     journeyData: JourneyInput,
     chaptersData?: ChapterInput[],
