@@ -50,8 +50,8 @@ export function DataTable<T>({
   }
 
   return (
-    <div className="bg-white rounded-xl shadow-lg overflow-hidden border border-slate-200">
-      <div className="overflow-x-auto">
+    <div className="bg-white rounded-xl shadow-lg border border-slate-200">
+      <div className="overflow-x-auto overflow-y-visible">
         <Table>
           <TableHeader>
             <TableRow className="border-b-2 border-slate-200">

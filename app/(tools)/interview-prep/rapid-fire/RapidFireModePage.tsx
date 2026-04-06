@@ -570,9 +570,9 @@ export const RapidFireModePage = ({
 
             {/* Review Question Card */}
             {reviewQuestion && (
-              <div className="mb-8 bg-white rounded-xl p-6 border border-slate-200">
+              <div className="mb-8 bg-white rounded-2xl p-6 border border-slate-200 shadow-lg\">
                 <div className="flex justify-between items-center mb-4">
-                  <h4 className="font-semibold text-slate-900">
+                  <h4 className="font-semibold text-slate-900 text-lg\">
                     Question Review
                   </h4>
                   <Button
@@ -585,7 +585,7 @@ export const RapidFireModePage = ({
                 </div>
 
                 <div
-                  className={`relative w-full h-80 cursor-pointer transition-transform duration-700 ease-out-cubic ${
+                  className={`relative w-full h-72 cursor-pointer transition-transform duration-700 ease-out-cubic ${
                     isReviewFlipped ? "transform rotate-y-180" : ""
                   }`}
                   style={{
@@ -595,7 +595,7 @@ export const RapidFireModePage = ({
                   onClick={handleReviewCardClick}
                 >
                   {/* Front of Card - Question */}
-                  <div className="absolute inset-0 backface-hidden bg-linear-to-br from-teal-500 to-teal-700 rounded-xl p-6 flex flex-col justify-between text-white shadow-lg">
+                  <div className="absolute inset-0 backface-hidden bg-linear-to-br from-teal-500 to-teal-700 rounded-xl p-6 flex flex-col justify-between text-white shadow-lg border border-teal-400/30">
                     <div>
                       <div className="flex justify-between items-start mb-4">
                         <span className="bg-white/20 backdrop-blur-sm px-2 py-1 rounded text-xs font-medium">
@@ -623,7 +623,7 @@ export const RapidFireModePage = ({
                   </div>
 
                   {/* Back of Card - Answer & Guidance */}
-                  <div className="absolute inset-0 backface-hidden rotate-y-180 bg-linear-to-br from-teal-600 to-teal-800 rounded-xl p-6 flex flex-col text-white shadow-lg">
+                  <div className="absolute inset-0 backface-hidden rotate-y-180 bg-linear-to-br from-teal-600 to-teal-800 rounded-xl p-6 flex flex-col text-white shadow-lg border border-teal-500/30">
                     <div className="flex justify-between items-start mb-4">
                       <span className="bg-white/20 px-2 py-1 rounded text-xs font-medium">
                         Answer & Guidance
@@ -704,8 +704,8 @@ export const RapidFireModePage = ({
   }
 
   return (
-    <div className="bg-linear-to-br from-slate-50 to-teal-50 p-6">
-      <div className="site-main-px">
+    <div className="bg-linear-to-br from-slate-50 to-teal-50 min-h-screen w-full">
+      <div className="site-main-px py-6">
         <div className="flex justify-between items-center mb-6">
           <div>
             <h1 className="text-2xl font-bold text-slate-900 flex items-center gap-2">
@@ -747,10 +747,10 @@ export const RapidFireModePage = ({
           </div>
         </div>
 
-        <div className="bg-white rounded-2xl shadow-xl p-8 mb-8 min-h-125 flex items-center justify-center">
-          <div className="w-full">
+        <div className="bg-white rounded-2xl shadow-xl overflow-hidden h-[350px] sm:h-[400px] lg:h-[450px] mb-8">
+          <div className="w-full h-full flex items-center justify-center p-3 sm:p-4 lg:p-6">
             <div
-              className={`relative w-full h-auto min-h-112.5 cursor-pointer transition-transform duration-700 ease-out-cubic ${
+              className={`relative w-full h-full cursor-pointer transition-transform duration-700 ease-out-cubic ${
                 isFlipped ? "transform rotate-y-180" : ""
               }`}
               style={{
@@ -759,7 +759,7 @@ export const RapidFireModePage = ({
               }}
             >
               <div
-                className={`absolute inset-0 backface-hidden bg-white rounded-2xl p-8 flex flex-col justify-between text-slate-900 shadow-xl border-4 ${
+                className={`absolute inset-0 backface-hidden bg-white rounded-2xl p-3 sm:p-4 lg:p-6 flex flex-col justify-between text-slate-900 shadow-2xl border-4 ${
                   !showAnswer
                     ? timeLeft <= 3
                       ? "border-red-500 animate-pulse"
@@ -768,19 +768,19 @@ export const RapidFireModePage = ({
                 }`}
               >
                 <div>
-                  <div className="flex justify-between items-start mb-6">
-                    <span className="bg-teal-100 text-teal-800 px-3 py-1 rounded-full text-sm font-medium">
+                  <div className="flex justify-between items-start mb-3 sm:mb-4">
+                    <span className="bg-teal-100 text-teal-800 px-2 sm:px-3 py-0.5 sm:py-1 rounded-full text-xs sm:text-sm font-medium">
                       {currentQuestion.category}
                     </span>
                   </div>
-                  <h2 className="text-2xl font-bold leading-tight text-slate-800 mb-8">
+                  <h2 className="text-lg sm:text-xl lg:text-2xl font-bold leading-snug text-slate-800 mb-4 sm:mb-6 line-clamp-5 sm:line-clamp-4">
                     {currentQuestion.selectedQuestion ||
                       currentQuestion.question}
                   </h2>
 
                   {!showAnswer && (
-                    <div className="flex justify-center mt-14">
-                      <div className="relative w-44 h-44">
+                    <div className="flex justify-center mt-2 sm:mt-4">
+                      <div className="relative w-28 h-28 sm:w-32 sm:h-32">
                         {/* Subtle outer ring for depth */}
                         <div
                           className={`absolute inset-0 rounded-full ${timeLeft <= 3 ? "ring-2 ring-red-100" : "ring-2 ring-teal-100"} opacity-50`}
@@ -857,14 +857,14 @@ export const RapidFireModePage = ({
 
                         {/* Enhanced timer display */}
                         <div className="absolute inset-0 flex flex-col items-center justify-center">
-                          <div className="text-center bg-white/80 backdrop-blur-sm rounded-xl px-4 py-2">
+                          <div className="text-center bg-white/80 backdrop-blur-sm rounded-xl px-2 sm:px-4 py-1 sm:py-2">
                             <div
-                              className={`text-5xl font-black tracking-tight ${timeLeft <= 3 ? "text-red-600" : "text-teal-600"} transition-all duration-500 ${timeLeft <= 3 ? "scale-105" : ""}`}
+                              className={`text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight ${timeLeft <= 3 ? "text-red-600" : "text-teal-600"} transition-all duration-500 ${timeLeft <= 3 ? "scale-105" : ""}`}
                             >
                               {timeLeft}
                             </div>
-                            <div className="text-xs text-slate-500 font-medium uppercase tracking-widest mt-1">
-                              seconds
+                            <div className="text-xs text-slate-500 font-medium uppercase tracking-widest mt-0.5 sm:mt-1">
+                              sec
                             </div>
                           </div>
                         </div>
@@ -874,60 +874,74 @@ export const RapidFireModePage = ({
                 </div>
                 <div className="text-center">
                   {!showAnswer ? (
-                    <div className="inline-flex items-center gap-2 text-slate-600">
-                      <div className="w-3 h-3 bg-teal-500 rounded-full animate-pulse"></div>
-                      <span>Preparing your response...</span>
+                    <div className="inline-flex items-center gap-2 text-slate-600 text-xs sm:text-sm">
+                      <div className="w-2 h-2 bg-teal-500 rounded-full animate-pulse"></div>
+                      <span>Preparing response...</span>
                     </div>
                   ) : (
-                    <p className="text-slate-600 text-sm">
-                      Click card to see answer
+                    <p className="text-slate-600 text-xs sm:text-sm">
+                      Click to see answer
                     </p>
                   )}
                 </div>
               </div>
 
-              <div className="absolute inset-0 backface-hidden rotate-y-180 bg-linear-to-br from-teal-600 to-teal-800 rounded-2xl p-8 flex flex-col text-white shadow-xl">
-                <div className="flex justify-between items-start mb-6">
-                  <span className="bg-white/20 px-3 py-1 rounded-full text-sm font-medium">
+              <div className="absolute inset-0 backface-hidden rotate-y-180 bg-linear-to-br from-teal-600 to-teal-800 rounded-2xl p-3 sm:p-4 lg:p-6 flex flex-col text-white shadow-2xl border border-teal-500/40">
+                <div className="flex justify-between items-start mb-2 sm:mb-3 pb-2 border-b border-white/10">
+                  <span className="bg-white/20 px-2 sm:px-3 py-0.5 sm:py-1 rounded-full text-xs font-medium">
                     Answer & Guidance
                   </span>
                 </div>
 
-                <div className="space-y-6 flex-1 overflow-y-auto pr-2 scrollbar-premium">
-                  {savedAnswers[currentQuestion.id] && (
+                <div className="flex-1 overflow-y-auto pr-2 sm:pr-3 scrollbar-premium">
+                  <div className="space-y-3 sm:space-y-4">
+                    {savedAnswers[currentQuestion.id] && (
+                      <div>
+                        <h4 className="text-emerald-200 font-semibold mb-1 flex items-center gap-2 text-xs sm:text-sm">
+                          <span className="w-1.5 h-1.5 bg-emerald-200 rounded-full"></span>
+                          Your Saved Answer
+                        </h4>
+                        <p className="text-slate-100 leading-relaxed text-xs sm:text-sm line-clamp-3">
+                          {savedAnswers[currentQuestion.id]}
+                        </p>
+                      </div>
+                    )}
+
                     <div>
-                      <h4 className="text-emerald-200 font-semibold mb-2 flex items-center gap-2">
-                        <span className="w-2 h-2 bg-emerald-200 rounded-full"></span>
-                        Your Saved Answer
+                      <h4 className="text-teal-200 font-semibold mb-1 flex items-center gap-2 text-xs sm:text-sm">
+                        <span className="w-1.5 h-1.5 bg-teal-200 rounded-full"></span>
+                        Sample
                       </h4>
-                      <p className="text-slate-100 leading-relaxed">
-                        {savedAnswers[currentQuestion.id]}
+                      <p className="text-slate-100 leading-snug text-xs sm:text-sm line-clamp-3">
+                        {currentQuestion.sampleAnswer}
                       </p>
                     </div>
-                  )}
 
-                  <div>
-                    <h4 className="text-teal-200 font-semibold mb-2 flex items-center gap-2">
-                      <span className="w-2 h-2 bg-teal-200 rounded-full"></span>
-                      Sample Answer
-                    </h4>
-                    <p className="text-slate-100 leading-relaxed">
-                      {currentQuestion.sampleAnswer}
-                    </p>
-                  </div>
+                    <div>
+                      <h4 className="text-blue-200 font-semibold mb-1 flex items-center gap-2 text-xs sm:text-sm">
+                        <span className="w-1.5 h-1.5 bg-blue-200 rounded-full"></span>
+                        Guidance
+                      </h4>
+                      <p className="text-slate-200 leading-snug text-xs sm:text-sm line-clamp-3">
+                        {currentQuestion.guidance}
+                      </p>
+                    </div>
 
-                  <div>
-                    <h4 className="text-blue-200 font-semibold mb-2 flex items-center gap-2">
-                      <span className="w-2 h-2 bg-blue-200 rounded-full"></span>
-                      Guidance
-                    </h4>
-                    <p className="text-slate-200 leading-relaxed">
-                      {currentQuestion.guidance}
-                    </p>
+                    {currentQuestion.tooltip && (
+                      <div>
+                        <h4 className="text-amber-200 font-semibold mb-1 flex items-center gap-2 text-xs sm:text-sm">
+                          <span className="w-1.5 h-1.5 bg-amber-200 rounded-full"></span>
+                          Tip
+                        </h4>
+                        <p className="text-slate-300 text-xs sm:text-sm italic line-clamp-2">
+                          {currentQuestion.tooltip}
+                        </p>
+                      </div>
+                    )}
                   </div>
                 </div>
 
-                <div className="grid grid-cols-3 gap-3 mt-6">
+                <div className="grid grid-cols-3 gap-1 sm:gap-2 mt-2 sm:mt-4">
                   <Button
                     onClick={() => handleResponse("covered")}
                     disabled={userResponse !== null}
@@ -935,10 +949,10 @@ export const RapidFireModePage = ({
                       userResponse === "covered"
                         ? "bg-emerald-600 hover:bg-emerald-700"
                         : "bg-emerald-500 hover:bg-emerald-600"
-                    } h-14 flex items-center justify-center`}
+                    } min-h-8 sm:min-h-10 flex items-center justify-center text-xs gap-0`}
                   >
-                    <span className="text-sm">Covered Most</span>
-                    <span className="text-xs">+10 pts</span>
+                    <span>Covered</span>
+                    <span className="text-xs">+10</span>
                   </Button>
 
                   <Button
@@ -948,10 +962,10 @@ export const RapidFireModePage = ({
                       userResponse === "partial"
                         ? "bg-amber-600 hover:bg-amber-700"
                         : "bg-amber-500 hover:bg-amber-600"
-                    } h-14 flex items-center justify-center`}
+                    } min-h-8 sm:min-h-10 flex items-center justify-center text-xs gap-0`}
                   >
-                    <span className="text-sm">Partial</span>
-                    <span className="text-xs">+5 pts</span>
+                    <span>Partial</span>
+                    <span className="text-xs">+5</span>
                   </Button>
 
                   <Button
@@ -961,10 +975,10 @@ export const RapidFireModePage = ({
                       userResponse === "missed"
                         ? "bg-rose-600 hover:bg-rose-700"
                         : "bg-rose-500 hover:bg-rose-600"
-                    } h-14 flex items-center justify-center`}
+                    } min-h-8 sm:min-h-10 flex items-center justify-center text-xs gap-0`}
                   >
-                    <span className="text-sm">Missed</span>
-                    <span className="text-xs">+0 pts</span>
+                    <span>Missed</span>
+                    <span className="text-xs">+0</span>
                   </Button>
                 </div>
               </div>
@@ -972,24 +986,22 @@ export const RapidFireModePage = ({
           </div>
         </div>
 
-        <div className="float-right items-center">
-          <div className="flex gap-3">
-            {!showAnswer ? (
-              <Button onClick={skipQuestion} variant="outline">
-                Skip Question
-              </Button>
-            ) : (
-              <Button
-                onClick={nextQuestion}
-                className="bg-orange-600 hover:bg-orange-700"
-                disabled={userResponse === null}
-              >
-                {currentQuestionIndex < shuffledQuestions.length - 1
-                  ? "Next Question"
-                  : "Finish"}
-              </Button>
-            )}
-          </div>
+        <div className="flex justify-center gap-3 mt-4">
+          {!showAnswer ? (
+            <Button onClick={skipQuestion} variant="outline" className="bg-white hover:bg-slate-50">
+              Skip Question
+            </Button>
+          ) : (
+            <Button
+              onClick={nextQuestion}
+              className="bg-orange-600 hover:bg-orange-700"
+              disabled={userResponse === null}
+            >
+              {currentQuestionIndex < shuffledQuestions.length - 1
+                ? "Next Question"
+                : "Finish"}
+            </Button>
+          )}
         </div>
       </div>
     </div>

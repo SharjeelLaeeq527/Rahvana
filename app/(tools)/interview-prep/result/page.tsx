@@ -128,7 +128,7 @@ export default function InterviewPrepResultPage() {
   }
 
   return (
-    <div className="container mx-auto site-main-px site-main-py max-w-4xl">
+    <div className="container mx-auto">
     <ToastProvider>
       <ResultPage 
         sessionId={sessionId || ''} 
