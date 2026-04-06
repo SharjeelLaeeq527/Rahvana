@@ -37,6 +37,41 @@ export interface Chapter {
   updated_at: string; // ISO timestamp
 }
 
+export interface Step {
+  id: string;
+  chapter_id: string;
+  step_key: string; // e.g. "step_1_1", unique per chapter
+  step_number: number; // Sequential within chapter: 1, 2, 3...
+  step_name: string; // Display name: "Complete I-130 Form", "Schedule Interview", etc.
+  step_description?: string; // Detailed description of what to do in this step
+  step_type: string; // e.g. "form_fillable", "document_upload", "form_submit", etc.
+  status: "not_started" | "in_progress" | "completed" | "blocked" | "skipped"; // Step lifecycle
+  substatus?: string; // Additional status detail: "awaiting_uscis_response", "document_rejected", etc.
+  completion_percentage: number; // 0-100, manual tracking per step
+  display_order: number; // Order to display within chapter
+  is_visible: boolean; // Can be hidden based on conditions
+  is_required: boolean; // Can step be skipped by user?
+
+  // Dependencies & Visibility
+  dependencies: string[]; // Array of step IDs (in JSONB as string[]) that must be completed first
+  visible_when: Record<string, unknown>; // JSON conditions for visibility
+  // Example: { "filing_method": "online", "sponsor_structure": "individual" }
+  visibility_rules?: string; // Human-readable description of when step is visible
+
+  // Tool Integration
+  tool_integration?: string; // e.g. "autofill_i130", "interview_prep", "case_strength"
+  tool_key?: string; // Unique key to identify tool in integrations
+
+  // Timing & Deadlines
+  estimated_duration_days?: number; // How many days this step typically takes
+  started_at?: string; // ISO timestamp when user first viewed step
+  completed_at?: string; // ISO timestamp when fully completed
+  due_date?: string; // Optional target completion date (e.g., filing deadline)
+
+  created_at: string; // ISO timestamp
+  updated_at: string; // ISO timestamp
+}
+
 //    API Input types - only fields user/system should provide
 export interface JourneyInput {
   journey_type: string; // Required: "IR1", "IR5", "F1"
@@ -66,6 +101,24 @@ export interface ChapterInput {
   // journey_id comes from URL, status defaults to "not_started", is_visible defaults to true
 }
 
+export interface StepInput {
+  step_key: string; // Required: unique identifier (e.g., "step_1_1")
+  step_number: number; // Required: sequential number
+  step_name: string; // Required: display name (e.g., "Complete I-130 Form")
+  step_description?: string; // Optional: detailed description
+  step_type: string; // Required: type of step (form_fillable, document_upload, etc.)
+  display_order?: number; // Optional: display order (defaults to step_number)
+  is_required?: boolean; // Optional: can user skip this step? (defaults to true)
+  visible_when?: Record<string, unknown>; // Optional: conditional visibility
+  visibility_rules?: string; // Optional: human-readable description of visibility conditions
+  dependencies?: string[]; // Optional: dependency step IDs that must be completed first
+  tool_integration?: string; // Optional: tool to integrate
+  tool_key?: string; // Optional: unique key to identify tool
+  estimated_duration_days?: number; // Optional: estimated days to complete
+  due_date?: string; // Optional: target completion date
+  // chapter_id comes from URL, status defaults to "not_started"
+}
+
 export interface ChapterUpdate {
   chapter_name?: string;
   chapter_description?: string;
@@ -75,6 +128,26 @@ export interface ChapterUpdate {
   status?: "not_started" | "in_progress" | "completed";
   started_at?: string;
   completed_at?: string;
+}
+
+export interface StepUpdate {
+  step_name?: string;
+  step_description?: string;
+  display_order?: number;
+  is_required?: boolean;
+  is_visible?: boolean;
+  visible_when?: Record<string, unknown>;
+  visibility_rules?: string;
+  dependencies?: string[];
+  tool_integration?: string;
+  tool_key?: string;
+  status?: "not_started" | "in_progress" | "completed" | "blocked" | "skipped";
+  substatus?: string;
+  completion_percentage?: number;
+  estimated_duration_days?: number;
+  started_at?: string;
+  completed_at?: string;
+  due_date?: string;
 }
 
 //    API Response types - with metadata for UI construction
@@ -101,6 +174,17 @@ export interface ChapterResponse extends Chapter {
   };
 }
 
+export interface StepResponse extends Step {
+  chapter?: Chapter;
+  dependencies_completed?: boolean; // Are all dependency steps completed?
+  blocked_reason?: string; // Why step is blocked, if blocked
+  next_steps?: Step[]; // Steps that depend on this one
+  progress_in_chapter?: {
+    step_position: number; // e.g., "1 of 5"
+    total_steps_in_chapter: number;
+  };
+}
+
 //    Business Logic Return Types - from Service/Engine methods
 export interface ProgressData {
   total_steps_count: number;
@@ -116,9 +200,16 @@ export interface VisibilityCheckResult {
 export interface StepCompletionResult {
   step_id: string;
   was_completed: boolean;
-  newly_unlocked_steps: string[]; // steps that became available
-  chapter_completion_percentage: number; // updated
-  journey_completion_percentage: number; // updated
+  newly_unlocked_steps: string[]; // Steps that became available
+  chapter_completion_percentage: number;
+  journey_completion_percentage: number;
+  next_step?: Step; // The next step to work on
+}
+
+export interface DependencyCheckResult {
+  all_dependencies_met: boolean;
+  pending_dependencies: string[]; // Step IDs not yet completed
+  reason: string;
 }
 
 //    Error Response Types (not stored, API only)
@@ -143,6 +234,14 @@ export interface JourneyFilters {
 
 export interface ChapterFilters {
   status?: "not_started" | "in_progress" | "completed";
+  limit?: number;
+  offset?: number;
+}
+
+export interface StepFilters {
+  status?: "not_started" | "in_progress" | "completed" | "blocked" | "skipped";
+  step_type?: string;
+  visible_only?: boolean; // Only return visible steps (apply visibility logic)
   limit?: number;
   offset?: number;
 }

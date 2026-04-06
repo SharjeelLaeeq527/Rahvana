@@ -8,6 +8,9 @@ import {
   ChapterInput,
   ChapterUpdate,
   ProgressData,
+  StepInput,
+  Step,
+  StepUpdate,
 } from "./types";
 
 // Helper: Get authenticated Supabase client - Throws "Unauthorized" if no user session
@@ -427,6 +430,310 @@ export async function deleteChapterDB(chapterId: string): Promise<boolean> {
     .from("chapters")
     .delete()
     .eq("id", chapterId);
+
+  if (error) throw new Error(error.message);
+
+  return true;
+}
+
+// Step Operations
+// Create a new step for a chapter
+export async function createStepDB(
+  chapterId: string,
+  stepData: StepInput,
+): Promise<Step> {
+  const { supabase, user } = await getSupabaseWithUser();
+
+  // Check if chapter exists
+  const existingChapter = await getChapterDB(chapterId);
+  if (!existingChapter) throw new Error("Chapter not found or not owned");
+
+  const { data, error } = await supabase
+    .from("steps")
+    .insert([
+      {
+        chapter_id: chapterId,
+        step_key: stepData.step_key,
+        step_number: stepData.step_number,
+        step_name: stepData.step_name,
+        step_description: stepData.step_description || null,
+        step_type: stepData.step_type,
+        status: "not_started",
+        substatus: null,
+        completion_percentage: 0.0,
+        display_order: stepData.display_order || stepData.step_number,
+        is_visible: true,
+        is_required: stepData.is_required !== false,
+        visible_when: stepData.visible_when || null,
+        visibility_rules: stepData.visibility_rules || null,
+        dependencies: stepData.dependencies || [],
+        tool_integration: stepData.tool_integration || null,
+        tool_key: stepData.tool_key || null,
+        estimated_duration_days: stepData.estimated_duration_days || null,
+        started_at: null,
+        completed_at: null,
+        due_date: stepData.due_date || null,
+      },
+    ])
+    .select()
+    .single();
+
+  if (error) throw new Error(error.message);
+
+  return data as Step;
+}
+
+// Get a specific step by ID
+export async function getStepDB(stepId: string): Promise<Step | null> {
+  const { supabase, user } = await getSupabaseWithUser();
+
+  const { data, error } = await supabase
+    .from("steps")
+    .select(
+      `*,
+    chapters!inner(
+      id,
+      journey_id,
+      journeys!inner(user_id)
+    )`,
+    )
+    .eq("id", stepId)
+    .eq("chapters.journeys.user_id", user.id)
+    .single();
+
+  if (error) {
+    if (error.code === "PGRST116") return null;
+    throw new Error(error.message);
+  }
+
+  // Extract step from response and remove nested data
+  const stepData = data as any;
+  delete stepData.chapters;
+  return stepData as Step;
+}
+
+// Get all steps for a chapter
+export async function getStepsForChapterDB(
+  chapterId: string,
+  filters?: {
+    status?: string;
+    step_type?: string;
+    limit?: number;
+    offset?: number;
+  },
+): Promise<Step[]> {
+  const { supabase, user } = await getSupabaseWithUser();
+
+  // Check if chapter exists
+  const existingChapter = await getChapterDB(chapterId);
+  if (!existingChapter) throw new Error("Chapter not found or not owned");
+
+  let query = supabase
+    .from("steps")
+    .select(
+      `
+      *,
+      chapters!inner(
+        journey_id,
+        journeys!inner(user_id)
+      )
+    `,
+    )
+    .eq("chapter_id", chapterId)
+    .eq("chapters.journeys.user_id", user.id)
+    .order("display_order", { ascending: true });
+
+  if (filters?.status) {
+    query = query.eq("status", filters.status);
+  }
+  if (filters?.step_type) {
+    query = query.eq("step_type", filters.step_type);
+  }
+  if (filters?.limit) {
+    query = query.limit(filters.limit);
+  }
+  if (filters?.offset && filters.limit) {
+    query = query.range(filters.offset, filters.offset + filters.limit - 1);
+  }
+
+  const { data, error } = await query;
+
+  if (error) throw new Error(error.message);
+
+  return (data as Step[]) || [];
+}
+
+// Get all steps for a journey (across chapters)
+export async function getStepsForJourneyDB(
+  journeyId: string,
+  filters?: {
+    status?: string;
+    limit?: number;
+    offset?: number;
+  },
+): Promise<Step[]> {
+  const { supabase, user } = await getSupabaseWithUser();
+
+  // Check if chapter exists
+  const existingJourney = await getJourneyDB(journeyId);
+  if (!existingJourney) throw new Error("Journey not found or not owned");
+
+  let query = supabase
+    .from("steps")
+    .select(
+      `
+      *,
+      chapters!inner(
+        journey_id,
+      )
+    `,
+    )
+    .eq("chapters.journey_id", journeyId)
+    .order("display_order", { ascending: true });
+
+  if (filters?.status) {
+    query = query.eq("status", filters.status);
+  }
+  if (filters?.limit) {
+    query = query.limit(filters.limit);
+  }
+  if (filters?.offset && filters.limit) {
+    query = query.range(filters.offset, filters.offset + filters.limit - 1);
+  }
+
+  const { data, error } = await query;
+
+  if (error) throw new Error(error.message);
+
+  // Remove nested data
+  const steps = (data as any[]) || [];
+  return steps.map((s) => {
+    delete s.chapters;
+    return s as Step;
+  });
+}
+
+// Get current step for a journey (first incomplete step)
+export async function getCurrentStepForJourneyDB(
+  journeyId: string,
+): Promise<Step | null> {
+  const { supabase, user } = await getSupabaseWithUser();
+
+  // Check if journey exists
+  const existingJourney = await getJourneyDB(journeyId);
+  if (!existingJourney) throw new Error("Journey not found or not owned");
+
+  const { data, error } = await supabase
+    .from("steps")
+    .select(`*, chapters!inner(journey_id)`)
+    .eq("chapters.journey_id", journeyId)
+    .eq("status", "not_started")
+    .order("display_order", { ascending: true })
+    .limit(1)
+    .single();
+
+  if (error) {
+    if (error.code === "PGRST116") return null;
+    throw new Error(error.message);
+  }
+
+  const stepData = data as any;
+  delete stepData.chapters;
+  return stepData as Step;
+}
+
+// Update Step
+export async function updateStepDB(
+  stepId: string,
+  updates: StepUpdate,
+): Promise<Step> {
+  const { supabase, user } = await getSupabaseWithUser();
+
+  // Check if step exists
+  const existing = await getStepDB(stepId);
+  if (!existing) throw new Error("Step not found or not owned");
+
+  const { data, error } = await supabase
+    .from("steps")
+    .update({
+      ...(updates.step_name && { step_name: updates.step_name }),
+      ...(updates.step_description !== undefined && {
+        step_description: updates.step_description,
+      }),
+      ...(updates.display_order && { display_order: updates.display_order }),
+      ...(updates.is_required !== undefined && {
+        is_required: updates.is_required,
+      }),
+      ...(updates.is_visible !== undefined && {
+        is_visible: updates.is_visible,
+      }),
+      ...(updates.visible_when && { visible_when: updates.visible_when }),
+      ...(updates.visibility_rules && {
+        visibility_rules: updates.visibility_rules,
+      }),
+      ...(updates.dependencies && { dependencies: updates.dependencies }),
+      ...(updates.tool_integration && {
+        tool_integration: updates.tool_integration,
+      }),
+      ...(updates.tool_key && { tool_key: updates.tool_key }),
+      ...(updates.status && { status: updates.status }),
+      ...(updates.substatus && { substatus: updates.substatus }),
+      ...(updates.completion_percentage !== undefined && {
+        completion_percentage: updates.completion_percentage,
+      }),
+      ...(updates.estimated_duration_days && {
+        estimated_duration_days: updates.estimated_duration_days,
+      }),
+      ...(updates.started_at && { started_at: updates.started_at }),
+      ...(updates.completed_at && { completed_at: updates.completed_at }),
+      ...(updates.due_date && { due_date: updates.due_date }),
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", stepId)
+    .select()
+    .single();
+
+  if (error) throw new Error(error.message);
+
+  return data as Step;
+}
+
+// Complete a step (mark as completed)
+export async function completeStepDB(stepId: string): Promise<Step> {
+  const { supabase, user } = await getSupabaseWithUser();
+
+  // Check if step exists
+  const existing = await getStepDB(stepId);
+  if (!existing) throw new Error("Step not found or not owned");
+
+  const now = new Date().toISOString();
+
+  const { data, error } = await supabase
+    .from("steps")
+    .update({
+      status: "completed",
+      substatus: null,
+      completion_percentage: 100,
+      completed_at: now,
+    })
+    .eq("id", stepId)
+    .select()
+    .single();
+
+  if (error) throw new Error(error.message);
+
+  return data as Step;
+}
+
+// Delete a step
+export async function deleteStepDB(stepId: string): Promise<boolean> {
+  const {supabase, user} = await getSupabaseWithUser();
+
+  // Check if step exists
+  const existing = await getStepDB(stepId);
+  if (!existing) throw new Error("Step not found or not owned");
+
+  const {error} = await supabase.from("steps").delete().eq("id", stepId);
 
   if (error) throw new Error(error.message);
 
