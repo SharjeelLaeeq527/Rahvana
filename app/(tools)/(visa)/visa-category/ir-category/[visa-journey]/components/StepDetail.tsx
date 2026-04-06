@@ -26,7 +26,7 @@ import {
   Heart,
   Shield,
   Zap,
-  BookOpen
+  BookOpen,
 } from "lucide-react";
 import * as icons from "lucide-react";
 import {
@@ -35,7 +35,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { RoadmapStep, RoadmapStage } from "./types";
+import { RoadmapStep, RoadmapChapter } from "./types";
 import { WizardState } from "@/app/(main)/dashboard/hooks/useWizard";
 import { useLanguage } from "@/app/context/LanguageContext";
 import { useRouter } from "next/navigation";
@@ -44,7 +44,7 @@ import { motion } from "framer-motion";
 
 interface StepDetailProps {
   step: RoadmapStep;
-  stage: RoadmapStage;
+  stage: RoadmapChapter;
   state: WizardState;
   onToggleComplete: (stepId: string, e: React.MouseEvent) => void;
   onNext: () => void;
@@ -56,23 +56,35 @@ interface StepDetailProps {
 const getToolIcon = (href: string) => {
   const h = href.toLowerCase();
 
-  if (h.includes("visa-case-strength-checker")) return <icons.Brain className="w-3.5 h-3.5" />;
-  if (h.includes("221g-action-planner")) return <icons.LifeBuoy className="w-3.5 h-3.5" />;
-  if (h.includes("visa-eligibility")) return <icons.Compass className="w-3.5 h-3.5" />;
-  if (h.includes("interview-prep")) return <icons.MessageSquare className="w-3.5 h-3.5" />;
-  if (h.includes("affidavit-support-calculator")) return <icons.Calculator className="w-3.5 h-3.5" />;
+  if (h.includes("visa-case-strength-checker"))
+    return <icons.Brain className="w-3.5 h-3.5" />;
+  if (h.includes("221g-action-planner"))
+    return <icons.LifeBuoy className="w-3.5 h-3.5" />;
+  if (h.includes("visa-eligibility"))
+    return <icons.Compass className="w-3.5 h-3.5" />;
+  if (h.includes("interview-prep"))
+    return <icons.MessageSquare className="w-3.5 h-3.5" />;
+  if (h.includes("affidavit-support-calculator"))
+    return <icons.Calculator className="w-3.5 h-3.5" />;
   if (h.includes("iv-tool")) return <icons.Clock className="w-3.5 h-3.5" />;
-  if (h.includes("visa-checker")) return <icons.Calendar className="w-3.5 h-3.5" />;
-  if (h.includes("passport") && h.includes("guide")) return <icons.Globe className="w-3.5 h-3.5" />;
+  if (h.includes("visa-checker"))
+    return <icons.Calendar className="w-3.5 h-3.5" />;
+  if (h.includes("passport") && h.includes("guide"))
+    return <icons.Globe className="w-3.5 h-3.5" />;
   if (h.includes("passport")) return <icons.Camera className="w-3.5 h-3.5" />;
-  if (h.includes("pdf-processing")) return <icons.Files className="w-3.5 h-3.5" />;
-  if (h.includes("signature-image-processing")) return <icons.PenTool className="w-3.5 h-3.5" />;
+  if (h.includes("pdf-processing"))
+    return <icons.Files className="w-3.5 h-3.5" />;
+  if (h.includes("signature-image-processing"))
+    return <icons.PenTool className="w-3.5 h-3.5" />;
   if (h.includes("visa-forms")) return <icons.Wand2 className="w-3.5 h-3.5" />;
-  if (h.includes("document-vault")) return <icons.FolderLock className="w-3.5 h-3.5" />;
-  
-  if (h.includes("cnic-guide") || h.includes("birth-certificate-guide")) return <icons.FileText className="w-3.5 h-3.5" />;
+  if (h.includes("document-vault"))
+    return <icons.FolderLock className="w-3.5 h-3.5" />;
+
+  if (h.includes("cnic-guide") || h.includes("birth-certificate-guide"))
+    return <icons.FileText className="w-3.5 h-3.5" />;
   if (h.includes("frc-guide")) return <icons.Globe className="w-3.5 h-3.5" />;
-  if (h.includes("marriage") || h.includes("nikah")) return <icons.Heart className="w-3.5 h-3.5" />;
+  if (h.includes("marriage") || h.includes("nikah"))
+    return <icons.Heart className="w-3.5 h-3.5" />;
   if (h.includes("police")) return <icons.Shield className="w-3.5 h-3.5" />;
   if (h.includes("services")) return <icons.Zap className="w-3.5 h-3.5" />;
   if (h.includes("guide")) return <icons.BookOpen className="w-3.5 h-3.5" />;
@@ -92,48 +104,69 @@ export function StepDetail({
 }: StepDetailProps) {
   const router = useRouter();
   const { t, language } = useLanguage();
-  const isCompleted = state.completedSteps.has(step.id);
+  const sId = step.step_key || (step as any).id;
+  const isCompleted = state.completedSteps.has(sId);
   const isUrdu = language === "ur";
 
   // Logic to match tools to specific actions or documents
-  const allTools = step.relevantTools || [];
+  const allTools = step.relevant_tools || [];
   const matchedToolLabels = new Set<string>();
   const toolAssignments: Record<string, any[]> = {};
 
-  const checkMatch = (text: string | undefined, toolLabel: string | undefined) => {
+  const checkMatch = (
+    text: string | undefined,
+    toolLabel: string | undefined,
+  ) => {
     if (!text || !toolLabel) return false;
-    
+
     const textLower = text.toLowerCase();
     const toolLower = toolLabel.toLowerCase();
 
     // Direct inclusion check (loose)
-    const ignoreWords = ["guide", "tool", "service", "app", "calculator", "finder", "monitor", "tracker", "analyzer", "prep", "filler", "toolkit", "booth", "kit"];
-    const importantWords = toolLower.split(/\s+/).filter(w => w.length > 3 && !ignoreWords.includes(w));
-    
-    if (importantWords.some(w => textLower.includes(w))) return true;
+    const ignoreWords = [
+      "guide",
+      "tool",
+      "service",
+      "app",
+      "calculator",
+      "finder",
+      "monitor",
+      "tracker",
+      "analyzer",
+      "prep",
+      "filler",
+      "toolkit",
+      "booth",
+      "kit",
+    ];
+    const importantWords = toolLower
+      .split(/\s+/)
+      .filter((w) => w.length > 3 && !ignoreWords.includes(w));
+
+    if (importantWords.some((w) => textLower.includes(w))) return true;
 
     // Hardcoded synonym matches for the specific domain
     const synonymMap: Record<string, string[]> = {
-      "nikah": ["marriage", "wedding", "nikahnama"],
-      "marriage": ["nikah", "wedding"],
-      "birth": ["born", "birth"],
-      "passport": ["travel document", "photo", "biometric"],
-      "photo": ["passport", "booth", "picture"],
-      "translation": ["urdu", "english", "translator"],
-      "police": ["character", "criminal", "clearance"],
-      "medical": ["health", "vaccination", "polio", "doctor", "clinic"],
-      "affidavit": ["support", "sponsor", "financial"],
-      "form": ["i-130", "i-864", "ds-260", "filler", "application"],
-      "status": ["tracking", "case", "checker"],
+      nikah: ["marriage", "wedding", "nikahnama"],
+      marriage: ["nikah", "wedding"],
+      birth: ["born", "birth"],
+      passport: ["travel document", "photo", "biometric"],
+      photo: ["passport", "booth", "picture"],
+      translation: ["urdu", "english", "translator"],
+      police: ["character", "criminal", "clearance"],
+      medical: ["health", "vaccination", "polio", "doctor", "clinic"],
+      affidavit: ["support", "sponsor", "financial"],
+      form: ["i-130", "i-864", "ds-260", "filler", "application"],
+      status: ["tracking", "case", "checker"],
     };
 
     for (const [key, synonyms] of Object.entries(synonymMap)) {
       const toolHasKey = toolLower.includes(key);
-      const textHasSynonym = synonyms.some(s => textLower.includes(s));
+      const textHasSynonym = synonyms.some((s) => textLower.includes(s));
       if (toolHasKey && textHasSynonym) return true;
-      
+
       const textHasKey = textLower.includes(key);
-      const toolHasSynonym = synonyms.some(s => toolLower.includes(s));
+      const toolHasSynonym = synonyms.some((s) => toolLower.includes(s));
       if (textHasKey && toolHasSynonym) return true;
     }
 
@@ -463,15 +496,24 @@ export function StepDetail({
 
         <div className="flex justify-center mt-4">
           {(() => {
-            const hasOutput = isUrdu && step.outputUr ? step.outputUr : step.output || step.success;
+            const hasOutput =
+              isUrdu && step.outputUr
+                ? step.outputUr
+                : step.output || step.success;
             const toggleButton = (
-              <div 
+              <div
                 className="flex items-center gap-4 cursor-pointer select-none group"
-                onClick={(e) => onToggleComplete(step.id, e)}
+                onClick={(e) =>
+                  onToggleComplete(step.step_key || (step as any).id, e)
+                }
               >
                 <div className="flex flex-col text-left rtl:text-right">
-                  <span className={`text-lg md:text-xl font-bold transition-colors ${isCompleted ? 'text-emerald-600' : 'text-slate-700'}`}>
-                    {isCompleted ? t("visaJourney.completed") : t("visaJourney.markAsComplete")}
+                  <span
+                    className={`text-lg md:text-xl font-bold transition-colors ${isCompleted ? "text-emerald-600" : "text-slate-700"}`}
+                  >
+                    {isCompleted
+                      ? t("visaJourney.completed")
+                      : t("visaJourney.markAsComplete")}
                   </span>
                   {!isCompleted && (
                     <span className="text-[11px] md:text-xs font-medium text-slate-400 uppercase tracking-widest mt-0.5">
@@ -480,14 +522,16 @@ export function StepDetail({
                   )}
                 </div>
 
-                <div 
+                <div
                   className={`relative w-[60px] h-[32px] rounded-full transition-all duration-300 shadow-inner ${
-                    isCompleted ? 'bg-emerald-500 shadow-emerald-600/20' : 'bg-slate-200 shadow-slate-300/20'
+                    isCompleted
+                      ? "bg-emerald-500 shadow-emerald-600/20"
+                      : "bg-slate-200 shadow-slate-300/20"
                   }`}
                 >
                   <motion.div
                     className="absolute top-1 left-1 w-6 h-6 rounded-full bg-white shadow-md flex items-center justify-center"
-                    animate={{ 
+                    animate={{
                       x: isCompleted ? 28 : 0,
                     }}
                     transition={{ type: "spring", stiffness: 500, damping: 30 }}
@@ -504,9 +548,7 @@ export function StepDetail({
               return (
                 <TooltipProvider>
                   <Tooltip>
-                    <TooltipTrigger asChild>
-                      {toggleButton}
-                    </TooltipTrigger>
+                    <TooltipTrigger asChild>{toggleButton}</TooltipTrigger>
                     <TooltipContent
                       side="top"
                       className="max-w-[300px] p-5 bg-white border-indigo-100 shadow-2xl rounded-2xl z-50 feedback-tooltip"

@@ -1,0 +1,447 @@
+  if (!currentStep) return null;
+
+  return (
+    <div className="flex-1 flex flex-col h-full bg-slate-50 relative overflow-hidden font-sans">
+      {/* Top Header */}
+      <header className="h-[64px] border-b border-slate-200 bg-white/90 backdrop-blur-md flex items-center justify-between px-5 md:px-8 shrink-0 z-40 shadow-sm sticky top-0">
+        <div className="flex items-center gap-4">
+          <button
+            onClick={onBack}
+            className="w-9 h-9 rounded-full border border-slate-200 flex items-center justify-center text-slate-400 hover:bg-slate-50 hover:text-primary transition-all active:scale-95 shadow-sm"
+          >
+            <ArrowLeft size={18} />
+          </button>
+          <div>
+            <div className="text-[9px] font-semibold uppercase tracking-[0.12em] text-[#6b8097] leading-none mb-1 px-0.5">
+              Chapter {state.currentStage + 1} · {activeIdxInStage !== -1 ? `Step ${activeIdxInStage + 1}` : currentStep.id}
+            </div>
+            <h1 className="text-[15px] md:text-[16px] font-bold text-[#0f1f38] leading-none truncate max-w-[180px] md:max-w-md tracking-tight">
+              {currentStep.name}
+            </h1>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-3">
+          <button
+            onClick={handleToggleComplete}
+            className={`flex items-center gap-2 px-5 py-2 rounded-full border-[1.5px] transition-all font-bold text-[12px] shadow-sm animate-in fade-in duration-300
+              ${isCompleted ? "bg-[#eaf7f2] border-[#b5e0d0] text-[#1a7a5e]" : "bg-white border-[#d0e4f7] text-[#3a4f63] hover:bg-[#fafcff] hover:border-[#3b7dd8] hover:text-[#3b7dd8]"} 
+              ${completeFlash ? "scale-105 ring-6 ring-emerald-50 border-emerald-300 shadow-xl" : ""}`}
+          >
+            <Check size={15} strokeWidth={3} />
+            <span>{isCompleted ? "Completed" : "Complete Step"}</span>
+          </button>
+        </div>
+      </header>
+
+      {/* Main Content Area */}
+      <div className="flex-1 overflow-y-auto scrollbar-hide p-6 md:p-10 lg:p-12 flex flex-col items-center">
+        <div className="w-full max-w-4xl">
+          {currentStep.type === "quest" ? (
+            <div className="w-full min-h-[600px] flex flex-col items-center">
+              <QuestRenderer
+                quest={currentStep.questData as any}
+                onComplete={handleToggleComplete}
+                isCompleted={isCompleted}
+                state={state}
+                actions={actions}
+              />
+            </div>
+          ) : currentStep.type === "tool" ? (
+            renderToolStep()
+          ) : currentStep.type === "docs" ? (
+            <div className="w-full flex flex-col items-center animate-in fade-in slide-in-from-bottom-6 duration-1000">
+              {/* Header for Docs */}
+              <div className="text-left w-full max-w-[640px] mb-12 px-4">
+                <div className="text-[11px] font-bold uppercase tracking-[0.15em] text-[#6b8097] mb-1.5 opacity-70">
+                  Chapter {state.currentStage + 1} · Step {activeIdxInStage + 1}
+                </div>
+                <h1 className="text-4xl md:text-5xl font-serif text-[#0f1f38] mb-4 font-medium tracking-tight leading-[1.1] italic">
+                  {currentStep.name}
+                </h1>
+                <p className="text-[#3a4f63] text-[17px] leading-[1.65] mb-10 max-w-[540px] opacity-80 font-medium">
+                  {currentStep.description}
+                </p>
+
+                {/* Local Progress Bar */}
+                {currentStep.documentItems &&
+                  currentStep.documentItems.length > 0 && (
+                    <div className="w-full max-w-md">
+                      <div className="flex items-center justify-between mb-3">
+                         <span className="text-[12px] font-bold text-[#0f1f38] uppercase tracking-wider">
+                           {Math.round((currentStep.documentItems.filter((d) => state.documentChecklist[d.name]).length / currentStep.documentItems.length) * 100)}% Reviewed
+                         </span>
+                         <span className="text-[12px] font-bold text-[#6b8097] opacity-60">
+                          {currentStep.documentItems.filter((d) => state.documentChecklist[d.name]).length} / {currentStep.documentItems.length}
+                         </span>
+                      </div>
+                      <div className="h-[6px] w-full bg-[#d0e4f7] rounded-full overflow-hidden">
+                        <div
+                          className="h-full bg-[#3b7dd8] transition-all duration-1000 ease-out"
+                          style={{
+                            width: `${(currentStep.documentItems.filter((d) => state.documentChecklist[d.name]).length / currentStep.documentItems.length) * 100}%`,
+                          }}
+                        />
+                      </div>
+                    </div>
+                  )}
+              </div>
+
+              {/* Document Cards */}
+              <div className="w-full max-w-[640px] space-y-16 px-4">
+                <div className="w-full space-y-16">
+                  {[
+                    "Required Now",
+                    "Required if Applicable",
+                    "Gather Now for Later",
+                  ].map((groupName) => {
+                    const groupItems = currentStep.documentItems?.filter(
+                      (d) => (d.group || "Required Now") === groupName,
+                    );
+
+                    if (!groupItems || groupItems.length === 0) return null;
+
+                    return (
+                      <div key={groupName} className="animate-in fade-in slide-in-from-bottom-4 duration-700">
+                        <div className="flex items-center gap-4 mb-6">
+                          <span className="text-[12px] font-bold tracking-[0.1em] uppercase text-[#6b8097] whitespace-nowrap">
+                            {groupName}
+                          </span>
+                          <div className="h-px flex-1 bg-[#d0e4f7]/60" />
+                        </div>
+
+                        <div className="space-y-3">
+                          {groupItems.map((doc, idx) => {
+                            const isReviewed = state.documentChecklist[doc.name];
+                            const hasAttachment = state.docUploads[doc.name] || state.notes[doc.name];
+                            const isInProgress = hasAttachment && !isReviewed;
+
+                            return (
+                              <div key={doc.id || idx} className="flex flex-col gap-2">
+                                <div
+                                  onClick={() => actions.toggleComplete(doc.name)}
+                                  className={`group flex items-center gap-5 p-5 md:p-6 rounded-[18px] border-[1.5px] transition-all cursor-pointer relative
+                                  ${isReviewed
+                                      ? "border-[#b5e0d0] bg-[#f0faf6] shadow-sm"
+                                      : isInProgress
+                                        ? "border-[#f0d98a] bg-[#fef8e8] shadow-sm"
+                                        : "border-[#d0e4f7] bg-white hover:border-[#3b7dd8] hover:shadow-xl hover:shadow-[#0f1f38]/5 hover:-translate-y-1"
+                                  }`}
+                                >
+                                  <div
+                                    className={`w-11 h-11 rounded-[14px] flex items-center justify-center shrink-0 transition-all duration-300
+                                    ${isReviewed
+                                        ? "bg-[#1a7a5e] text-white shadow-lg shadow-[#1a7a5e]/15"
+                                        : isInProgress
+                                          ? "bg-amber-600 text-white shadow-lg shadow-amber-600/15"
+                                          : "bg-[#f0f7ff] text-[#3b7dd8] border border-[#d0e4f7] group-hover:bg-[#3b7dd8] group-hover:text-white"
+                                    }`}
+                                  >
+                                    {isReviewed ? <CheckCircle2 size={24} strokeWidth={2.5} /> : (
+                                       (() => {
+                                        switch(doc.icon) {
+                                          case "ShieldCheck": return <ShieldCheck size={23} />;
+                                          case "User": return <User size={23} />;
+                                          case "FileText": return <FileText size={23} />;
+                                          case "FileCheck": return <FileCheck size={23} />;
+                                          case "MessageSquare": return <MessageSquare size={23} />;
+                                          case "Scale": return <Scale size={23} />;
+                                          case "Globe": return <Globe size={23} />;
+                                          case "ClipboardList": return <ClipboardList size={23} />;
+                                          case "Lock": return <Lock size={23} />;
+                                          case "Camera": return <Camera size={23} />;
+                                          default: return <FileText size={23} />;
+                                        }
+                                      })()
+                                    )}
+                                  </div>
+
+                                  <div className="flex-1 min-w-0">
+                                    <h3 className={`text-[17px] font-bold leading-tight mb-1 transition-colors ${isReviewed ? "text-[#1a7a5e]" : "text-[#0f1f38]"}`}>
+                                      {doc.name}
+                                    </h3>
+                                    <p className="text-[14px] text-[#6b8097] leading-snug mb-2 font-medium opacity-80">
+                                      {doc.subtitle}
+                                    </p>
+                                    <div className="flex flex-wrap gap-2">
+                                      {doc.tag && (
+                                        <span className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border
+                                          ${doc.tag === "petitioner" ? "bg-[#f0f7ff] text-[#3b7dd8] border-[#d0e4f7]" : 
+                                            doc.tag === "beneficiary" ? "bg-[#f0faf6] text-[#1a7a5e] border-[#b5e0d0]" : 
+                                            "bg-[#f5f0ff] text-[#633bd8] border-[#cbd0f7]"}`}>
+                                          {doc.tag}
+                                        </span>
+                                      )}
+                                    </div>
+                                  </div>
+
+                                  <div className="shrink-0">
+                                    <div className={`px-4 py-2 rounded-full border text-[12px] font-bold tracking-tight transition-all
+                                      ${isReviewed ? "bg-[#1a7a5e] text-white border-[#1a7a5e]" : 
+                                        isInProgress ? "bg-amber-600 text-white border-amber-600" : 
+                                        "bg-white text-[#6b8097] border-[#d0e4f7] group-hover:border-[#3b7dd8] group-hover:text-[#3b7dd8]"}`}>
+                                      {isReviewed ? "✓ Reviewed" : isInProgress ? "Working..." : "View Guide →"}
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+          ) : currentStep.type === "filing" ? (
+            <div className="w-full flex flex-col items-center animate-in fade-in slide-in-from-bottom-6 duration-1000">
+               <div className="text-left w-full max-w-[640px] pt-12 pb-20 px-6">
+                <div className="text-[11px] font-bold uppercase tracking-[0.2em] text-[#6b8097] mb-2 opacity-70">
+                  Chapter 1 · USCIS Petition filing
+                </div>
+                <h1 className="text-4xl md:text-5xl font-serif text-[#0f1f38] mb-4 font-medium tracking-tight leading-[1.1] italic">
+                  {currentStep.name}
+                </h1>
+                <p className="text-[#3a4f63] text-[17px] leading-[1.65] mb-10 max-w-[500px] font-medium opacity-80">
+                  {currentStep.description}
+                </p>
+
+                {/* Locked Selection exactly like reference */}
+                {isLocked ? (
+                  <div className={`mb-10 p-6 md:p-8 rounded-[24px] border-[2px] flex items-center gap-6 animate-in zoom-in-95 duration-500 shadow-xl
+                    ${state.metadata.filingMethod === "online" ? "bg-[#0e5c42] border-[#0a4330] text-white" : "bg-[#2e1f72] border-[#1e1348] text-white"}`}>
+                    <div className={`w-14 h-14 rounded-full flex items-center justify-center shrink-0 text-2xl shadow-inner
+                      ${state.metadata.filingMethod === "online" ? "bg-[#6dddb8] text-[#0e5c42]" : "bg-[#a89af5] text-[#2e1f72]"}`}>
+                      ✓
+                    </div>
+                    <div className="flex-1">
+                       <span className={`text-[10px] font-bold uppercase tracking-[0.2em] mb-1 block opacity-80
+                        ${state.metadata.filingMethod === "online" ? "text-[#6dddb8]" : "text-[#a89af5]"}`}>
+                         Filing method selected
+                       </span>
+                       <h3 className="text-2xl md:text-3xl font-serif font-medium mb-1 tracking-tight">
+                         {state.metadata.filingMethod === "online" ? "File Online via myUSCIS" : "File by Mail (Paper Packet)"}
+                       </h3>
+                       <p className="text-sm opacity-60 font-medium whitespace-nowrap overflow-hidden text-ellipsis">
+                         {state.metadata.filingMethod === "online" ? "$625 · Instant receipt number · Fast upload" : "$675 · Physical submission · No online portal"}
+                       </p>
+                    </div>
+                    <button 
+                      onClick={() => { setIsLocked(false); actions.updateMetadata({ filingMethodConfirmed: false }); }}
+                      className="px-5 py-2.5 rounded-full border border-white/30 text-white text-[12px] font-bold uppercase tracking-wider hover:bg-white/10 transition-all active:scale-95 whitespace-nowrap"
+                    >
+                      Change
+                    </button>
+                  </div>
+                ) : (
+                  <div className="space-y-8">
+                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {currentStep.filingData?.methods.map((method) => {
+                          const isSelected = state.metadata.filingMethod === method.id;
+                          const isOnline = method.id === "online";
+                          
+                          return (
+                            <button
+                              key={method.id}
+                              onClick={() => actions.updateMetadata({ filingMethod: method.id })}
+                              className={`relative p-6 md:p-8 rounded-[24px] border-[2.5px] text-left transition-all duration-300 group hover:shadow-2xl hover:-translate-y-1 active:scale-[0.98]
+                                ${isSelected 
+                                  ? (isOnline ? "bg-[#0e5c42] border-[#0a4330] text-white shadow-[#0e5c42]/20" : "bg-[#2e1f72] border-[#1e1348] text-white shadow-[#2e1f72]/20")
+                                  : (isOnline ? "bg-[#f0faf6] border-[#8ecdb8] text-[#0e5c42]" : "bg-[#f2f0fb] border-[#b0a6e2] text-[#2e1f72]")}`}
+                            >
+                               <div className={`text-[10px] font-bold uppercase tracking-[0.2em] mb-4 
+                                 ${isSelected ? "opacity-60" : "opacity-80"}`}>
+                                 {isOnline ? "Recommended" : "Traditional"}
+                               </div>
+                               <div className="flex justify-between items-start mb-1">
+                                 <h3 className="text-2xl font-serif font-medium tracking-tight">
+                                   {method.name}
+                                 </h3>
+                                 {isSelected && <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs ${isOnline ? "bg-[#6dddb8] text-[#0e5c42]" : "bg-[#a89af5] text-[#2e1f72]"}`}>✓</div>}
+                               </div>
+                               <div className="flex items-baseline gap-1 mb-1">
+                                  <span className="text-3xl font-black">{method.price}</span>
+                                  <span className="text-xs opacity-60 font-bold uppercase tracking-widest">USD</span>
+                               </div>
+                               <p className="text-[13px] font-medium opacity-70 mb-6 leading-tight">
+                                 {method.subtitle}
+                               </p>
+                               <ul className="space-y-3">
+                                 {method.features.map((f, i) => (
+                                   <li key={i} className="flex gap-2.5 text-[12.5px] leading-snug">
+                                      <div className={`w-1.5 h-1.5 rounded-full mt-1.5 shrink-0 ${isSelected ? "bg-current opacity-40" : "bg-current opacity-30"}`} />
+                                      <span className="font-medium">{f}</span>
+                                   </li>
+                                 ))}
+                               </ul>
+                            </button>
+                          );
+                        })}
+                     </div>
+
+                     <div className="pt-4 flex flex-col gap-4">
+                        {state.metadata.filingMethod && (
+                          <button 
+                            onClick={() => handleConfirmation(state.metadata.filingMethod as string)}
+                            className={`w-full py-5 rounded-[20px] text-white font-bold text-lg shadow-xl transition-all hover:scale-[1.02] active:scale-[0.98]
+                              ${state.metadata.filingMethod === "online" ? "bg-[#0e5c42] shadow-[#0e5c42]/20" : "bg-[#2e1f72] shadow-[#2e1f72]/20"}`}
+                          >
+                            Confirm {state.metadata.filingMethod === "online" ? "Online" : "Paper"} Submission
+                          </button>
+                        )}
+                        <button 
+                          onClick={() => { setShowQuiz(true); setQuizScreenIdx(0); setQuizAnswers({}); setQuizResult(null); }}
+                          className="w-full py-5 bg-white border-[1.5px] border-[#d0e4f7] text-[#0f1f38] rounded-[20px] font-bold text-[15px] hover:border-[#3b7dd8] hover:text-[#3b7dd8] transition-all flex items-center justify-center gap-3"
+                        >
+                          <div className="w-6 h-6 rounded-full border-2 border-current flex items-center justify-center text-[13px]">?</div>
+                          Not sure? Help me choose the right method
+                        </button>
+                     </div>
+                  </div>
+                )}
+
+                <div className="mt-12 p-6 rounded-[18px] bg-[#e8f1fb] border border-[#d0e4f7] text-[13px] text-[#3a4f63] leading-relaxed font-medium">
+                  <strong className="text-[#0f1f38]">Important Note:</strong> Fees as of March 2026 per the USCIS G-1055 fee schedule. Processing time is currently estimated at 12-14 months regardless of method. Always verify official fees at uscis.gov.
+                </div>
+               </div>
+
+                {/* Quiz Overlay Refinement */}
+                {showQuiz && (
+                  <div className="fixed inset-0 z-[100] bg-white animate-in slide-in-from-bottom duration-500 flex flex-col">
+                    <header className="h-20 border-b border-[#d0e4f7]/50 flex items-center justify-between px-8 shrink-0">
+                      <button onClick={() => setShowQuiz(false)} className="w-10 h-10 rounded-full border border-[#d0e4f7] flex items-center justify-center text-[#6b8097] hover:border-[#3b7dd8] hover:text-[#3b7dd8] transition-all">←</button>
+                      <div className="flex-1 max-w-sm mx-10">
+                         <div className="h-2 w-full bg-[#d0e4f7] rounded-full overflow-hidden">
+                           <div className="h-full bg-[#3b7dd8] transition-all duration-500" style={{ width: quizResult ? "100%" : `${((quizScreenIdx + 1) / (currentStep.filingData?.quiz?.screens.length || 1)) * 100}%` }} />
+                         </div>
+                      </div>
+                      <span className="text-[14px] font-bold text-[#6b8097] tracking-widest">{quizResult ? "Done" : `${quizScreenIdx + 1}/${currentStep.filingData?.quiz?.screens.length}`}</span>
+                    </header>
+                    <div className="flex-1 overflow-y-auto flex flex-col items-center bg-[#fafcff]">
+                       <div className="w-full max-w-[600px] py-20 px-8">
+                          {!quizResult ? (
+                            (() => {
+                              const screen = currentStep.filingData?.quiz?.screens[quizScreenIdx];
+                              if (!screen) return null;
+                              const selVal = quizAnswers[screen.id]?.value;
+                              return (
+                                <div className="animate-in fade-in slide-in-from-right-4 duration-500">
+                                   <div className="text-[11px] font-bold uppercase tracking-[0.2em] text-[#3b7dd8] mb-4">Filing Method Assessment</div>
+                                   <h2 className="text-3xl md:text-4xl font-serif text-[#0f1f38] mb-4 leading-tight tracking-tight italic">{screen.question}</h2>
+                                   <p className="text-[#3a4f63] text-lg mb-10 opacity-80 leading-relaxed font-medium">{screen.helper}</p>
+                                   <div className="space-y-3 mb-10">
+                                      {screen.options.map(opt => (
+                                        <button key={opt.value} onClick={() => setQuizAnswers({...quizAnswers, [screen.id]: {value: opt.value, signal: opt.signal as any}})}
+                                          className={`w-full p-5 rounded-[20px] border-[2px] text-left transition-all duration-200 flex items-center gap-4
+                                            ${selVal === opt.value ? "border-[#3b7dd8] bg-[#f0f7ff] shadow-lg" : "border-[#d0e4f7] bg-white hover:border-[#3b7dd8]"}`}>
+                                            <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${selVal === opt.value ? "border-[#3b7dd8] bg-[#3b7dd8]" : "border-[#d0e4f7]"}`}>
+                                               {selVal === opt.value && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
+                                            </div>
+                                            <span className={`text-16px font-bold ${selVal === opt.value ? "text-[#0f1f38]" : "text-[#1c2b3a]"}`}>{opt.label}</span>
+                                        </button>
+                                      ))}
+                                   </div>
+                                   <button disabled={!selVal} onClick={handleNextQuiz}
+                                     className="w-full py-5 bg-[#3b7dd8] text-white rounded-[20px] font-bold text-lg shadow-xl shadow-[#3b7dd8]/20 disabled:opacity-30 transition-all hover:bg-[#0f1f38]">
+                                     Continue assessment →
+                                   </button>
+                                </div>
+                              );
+                            })()
+                          ) : (
+                            <div className="animate-in zoom-in-95 fade-in duration-500 text-center">
+                               <div className={`w-24 h-24 rounded-full mx-auto mb-10 flex items-center justify-center text-4xl shadow-xl border-[4px] border-white
+                                 ${quizResult.type === "online" ? "bg-[#f0faf6] text-[#0e5c42]" : quizResult.type === "paper" ? "bg-[#f2f0fb] text-[#2e1f72]" : "bg-[#fef8e8] text-[#8a6200]"}`}>
+                                 {quizResult.type === "online" ? "💻" : quizResult.type === "paper" ? "📮" : "⚖️"}
+                               </div>
+                               <div className={`inline-block px-4 py-1.5 rounded-full text-[11px] font-bold uppercase tracking-widest mb-6 border
+                                 ${quizResult.type === "online" ? "bg-[#0e5c42] text-white" : quizResult.type === "paper" ? "bg-[#2e1f72] text-white" : "bg-amber-600 text-white"}`}>
+                                 {quizResult.headline}
+                               </div>
+                               <p className="text-lg text-[#3a4f63] mb-12 leading-relaxed opacity-80 font-medium">
+                                 {quizResult.body}
+                               </p>
+                               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                                  <button onClick={() => handleConfirmation("online")} className="p-6 rounded-[24px] border-2 border-[#8ecdb8] bg-[#f0faf6] hover:bg-[#0e5c42] group transition-all text-left">
+                                     <div className="text-[10px] font-bold uppercase tracking-widest text-[#0e5c42] group-hover:text-white/80 mb-1">Online</div>
+                                     <div className="text-xl font-serif font-medium group-hover:text-white">File Online</div>
+                                     <div className="text-xs group-hover:text-white/60">$625 · Credit/Debit</div>
+                                  </button>
+                                  <button onClick={() => handleConfirmation("paper")} className="p-6 rounded-[24px] border-2 border-[#b0a6e2] bg-[#f2f0fb] hover:bg-[#2e1f72] group transition-all text-left">
+                                     <div className="text-[10px] font-bold uppercase tracking-widest text-[#2e1f72] group-hover:text-white/80 mb-1">Paper</div>
+                                     <div className="text-xl font-serif font-medium group-hover:text-white">File by Mail</div>
+                                     <div className="text-xs group-hover:text-white/60">$675 · Check/Money Order</div>
+                                  </button>
+                                </div>
+                               <button onClick={() => { setQuizResult(null); setQuizScreenIdx(0); }} className="w-full py-4 text-[#6b8097] text-sm font-bold hover:text-[#0f1f38] transition-all">← Restart assessment</button>
+                            </div>
+                          )}
+                       </div>
+                    </div>
+                  </div>
+                )}
+            </div>
+          ) : (
+            <div className="bg-white border border-[#d0e4f7] rounded-[32px] p-10 md:p-14 lg:p-20 shadow-xl shadow-[#0f1f38]/5 animate-in fade-in zoom-in-95 duration-700 w-full max-w-[740px] mx-auto">
+               <div className="text-[11px] font-bold uppercase tracking-[0.2em] text-[#3b7dd8] mb-4 opacity-70">Case Update</div>
+               <h2 className="text-4xl md:text-5xl font-serif text-[#0f1f38] mb-6 tracking-tight leading-tight italic">{currentStep.name}</h2>
+               <p className="text-[18px] text-[#3a4f63] leading-relaxed mb-12 opacity-80 font-medium">{currentStep.description}</p>
+               
+               {currentStep.actions && currentStep.actions.length > 0 && (
+                 <div className="space-y-3 mb-12">
+                    <div className="flex items-center gap-4 mb-6">
+                       <span className="text-[12px] font-bold uppercase tracking-widest text-[#6b8097]">Key Tasks</span>
+                       <div className="h-px flex-1 bg-[#d0e4f7]/50" />
+                    </div>
+                    {currentStep.actions.map((act: any, i: number) => (
+                      <div key={i} className="flex gap-4 p-5 rounded-[20px] bg-[#fafcff] border border-[#d0e4f7] group hover:border-[#3b7dd8] transition-all">
+                         <div className="w-6 h-6 rounded-full bg-white border-2 border-[#d0e4f7] flex items-center justify-center shrink-0 group-hover:border-[#3b7dd8] transition-colors mt-0.5">
+                            <div className="w-1.5 h-1.5 rounded-full bg-[#d0e4f7] group-hover:bg-[#3b7dd8]" />
+                         </div>
+                         <span className="text-[16px] text-[#0f1f38] font-bold tracking-tight">{act}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Bottom Navigation Footer */}
+      <footer className="h-20 border-t border-slate-200 bg-white flex items-center justify-between px-6 md:px-8 shrink-0 z-40 shadow-[0_-4px_30_rgba(0,0,0,0.02)]">
+        <button
+          onClick={() => prevStep && handleNavigate(prevStep.id)}
+          className={`flex items-center gap-3 text-[13px] font-black text-slate-900 transition-colors hover:text-primary ${!prevStep ? "opacity-0 pointer-events-none" : "hover:translate-x-[-6px]"}`}
+        >
+          <ArrowLeft size={16} strokeWidth={3} />
+          Previous
+        </button>
+
+        <div className="flex-1 max-w-xs md:max-w-sm px-6 flex flex-col items-center">
+          <div className="w-full h-1 bg-slate-100 rounded-full overflow-hidden mb-1.5">
+            <div
+              className="h-full bg-primary transition-all duration-700 ease-out shadow-[0_0_10px_rgba(13,115,119,0.2)]"
+              style={{ width: `${progressPct}%` }}
+            />
+          </div>
+          <div className="text-[9px] font-black text-slate-400 uppercase tracking-[0.15em] flex items-center gap-2">
+            Progress <span className="text-slate-900">{progressPct}%</span>
+          </div>
+        </div>
+
+        <div className="min-w-[120px] flex justify-end">
+          <button
+            onClick={() => nextStep && handleNavigate(nextStep.id)}
+            className={`flex items-center gap-3 px-6 py-3 rounded-full bg-primary text-white text-[13px] font-black shadow-xl shadow-primary/25 transition-all
+              ${!nextStep || !isCompleted ? "opacity-0 pointer-events-none" : "hover:translate-x-2 hover:bg-primary/90 active:scale-95"}`}
+          >
+            Next
+            <ArrowRight size={16} strokeWidth={3} />
+          </button>
+        </div>
+      </footer>
+    </div>
+  );
+}

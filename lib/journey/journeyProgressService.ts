@@ -18,6 +18,9 @@ export interface JourneyProgressRecord {
   started_at: string;
   last_updated_at: string;
   doc_uploads: Record<string, { name: string; size: number; lastModified: number }>;
+  // New Journey Engine fields
+  answers?: Record<string, any>;
+  metadata?: Record<string, any>;
 }
 
 /**
@@ -150,13 +153,15 @@ export async function saveJourneyProgress(
       current_stage: state.currentStage,
       current_step: state.currentStep ?? 0,
       completed_steps: Array.from(state.completedSteps),
-      collapsed_steps: state.collapsedSteps,
+      collapsed_steps: state.collapsed_steps,
       role: state.role,
       filing_type: state.filingType,
       document_checklist: state.documentChecklist,
       notes: state.notes,
       doc_uploads: state.docUploads,
       started: state.started,
+      answers: state.answers || {},
+      metadata: state.metadata || {},
     };
 
     const { error } = await withTimeout<any>(
@@ -226,5 +231,7 @@ export function recordToWizardState(record: JourneyProgressRecord): Partial<Wiza
     notes: record.notes,
     started: record.started,
     docUploads: record.doc_uploads || {},
+    answers: record.answers || {},
+    metadata: record.metadata || {},
   };
 }

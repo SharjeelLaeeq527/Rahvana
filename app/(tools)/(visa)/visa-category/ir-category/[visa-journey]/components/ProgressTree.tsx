@@ -70,17 +70,17 @@ export function ProgressTree({
           </p>
         </div>
 
-        {roadmapData.stages
+        {(roadmapData.chapters || (roadmapData as any).stages || [])
           .filter(
-            (stage: RoadmapStage) =>
+            (stage: any) =>
               !hasScenarios ||
               !stage.scenarioSpecific ||
               stage.scenarioSpecific === selectedScenario,
           )
-          .map((stage: RoadmapStage, sIdx: number) => {
+          .map((stage: any, sIdx: number) => {
             // Find the actual index in the original roadmapData.stages for state.currentStage comparison
-            const originalStageIdx = roadmapData.stages.findIndex(
-              (s) => s.id === stage.id,
+            const originalStageIdx = (roadmapData.chapters || (roadmapData as any).stages).findIndex(
+              (s: any) => (s.chapter_key || s.id) === (stage.chapter_key || stage.id),
             );
             const isActiveStage = state.currentStage === originalStageIdx;
             const isExpanded = expandedStages[originalStageIdx];
@@ -92,7 +92,7 @@ export function ProgressTree({
                 s.scenarioSpecific === selectedScenario,
             );
             const completedInStage = visibleSteps.filter((s: RoadmapStep) =>
-              state.completedSteps.has(s.id),
+              state.completedSteps.has(s.step_key || (s as any).id),
             ).length;
             const stageProgress =
               visibleSteps.length > 0
@@ -100,10 +100,10 @@ export function ProgressTree({
                 : 0;
 
             const stageNameDisplay =
-              language === "ur" && stage.nameUr ? stage.nameUr : stage.name;
+              language === "ur" && (stage.chapter_name_ur || stage.nameUr) ? (stage.chapter_name_ur || stage.nameUr) : (stage.chapter_name || stage.name);
 
             return (
-              <div key={stage.id} className="group/stage">
+              <div key={stage.chapter_key || stage.id} className="group/stage">
                 <div
                   className={`p-3.5 rounded-xl cursor-pointer transition-all flex flex-col gap-2 relative border mb-1 ${
                     isActiveStage
@@ -143,18 +143,19 @@ export function ProgressTree({
                 {isExpanded && (
                   <div className="mt-1 mb-4 ml-3.5 border-l-2 border-slate-100 pl-3 space-y-1.5 animate-in fade-in slide-in-from-top-1 duration-200">
                     {visibleSteps.map((step: RoadmapStep) => {
+                      const sId = step.step_key || (step as any).id;
                       const actualStepIdx = stage.steps.findIndex(
-                        (s) => s.id === step.id,
+                        (s: any) => (s.step_key || s.id) === sId,
                       );
                       const isCurrentStep =
                         state.currentStep === actualStepIdx && isActiveStage;
-                      const isStepCompleted = state.completedSteps.has(step.id);
+                      const isStepCompleted = state.completedSteps.has(sId);
                       const stepNameDisplay =
                         isUrdu && step.nameUr ? step.nameUr : step.name;
 
                       return (
                         <div
-                          key={step.id}
+                          key={sId}
                           onClick={() =>
                             onSelectStep(originalStageIdx, actualStepIdx)
                           }
@@ -263,7 +264,9 @@ export function ProgressTree({
 
       {/* Official Sources - Fixed at bottom */}
       {(() => {
-        const currentStageSources = roadmapData.stages[state.currentStage]?.sources;
+        const chapters = roadmapData.chapters || (roadmapData as any).stages || [];
+        const currentChapter = chapters[state.currentStage];
+        const currentStageSources = currentChapter?.sources;
         if (!currentStageSources || currentStageSources.length === 0) return null;
 
         return (

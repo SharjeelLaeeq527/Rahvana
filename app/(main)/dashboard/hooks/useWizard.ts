@@ -24,6 +24,10 @@ export interface WizardState {
   >;
   notes: Record<string, string>;
   started: boolean;
+  // New Journey Engine fields
+  answers: Record<string, any>;
+  metadata: Record<string, any>;
+  unresolvedTasks: string[];
 }
 
 const LOCAL_STORAGE_KEY = "rahvanaWizardState";
@@ -40,6 +44,9 @@ const DEFAULT_STATE: WizardState = {
   docUploads: {},
   notes: {},
   started: false,
+  answers: {},
+  metadata: {},
+  unresolvedTasks: [],
 };
 
 interface UseWizardOptions {
@@ -95,7 +102,7 @@ export function useWizard(options: UseWizardOptions = {}) {
               await saveJourneyProgress(userId, journeyId, {
                 ...DEFAULT_STATE,
                 ...localData,
-              });
+              } as WizardState);
               clearLocalStorage();
             } else {
               setState(DEFAULT_STATE);
@@ -109,7 +116,7 @@ export function useWizard(options: UseWizardOptions = {}) {
         const localData = loadFromLocalStorage();
         if (!cancelled) {
           if (localData) {
-            setState((prev) => ({ ...prev, ...localData }));
+            setState((prev) => ({ ...prev, ...localData } as WizardState));
             setHasExistingProgress(localData.started ?? false);
           } else {
             setState(DEFAULT_STATE);
@@ -129,17 +136,17 @@ export function useWizard(options: UseWizardOptions = {}) {
   // ─── Normalize State After Load ───────────────────────────────────────────
 
   const normalizeState = useCallback(() => {
-    if (!activeRoadmap || !activeRoadmap.stages) return;
+    if (!activeRoadmap || !(activeRoadmap.chapters || activeRoadmap.stages)) return;
 
     setState((prev) => {
       let { currentStage, currentStep } = prev;
 
       if (currentStage < 0) currentStage = 0;
-      if (currentStage >= activeRoadmap.stages.length) {
-        currentStage = Math.max(0, activeRoadmap.stages.length - 1);
+      if (currentStage >= (activeRoadmap.chapters || activeRoadmap.stages).length) {
+        currentStage = Math.max(0, (activeRoadmap.chapters || activeRoadmap.stages).length - 1);
       }
 
-      const stage = activeRoadmap.stages[currentStage];
+      const stage = (activeRoadmap.chapters || activeRoadmap.stages)[currentStage];
       if (!stage) return { ...prev, currentStage, currentStep: null };
 
       let narrowedStep: number;
@@ -149,14 +156,14 @@ export function useWizard(options: UseWizardOptions = {}) {
         currentStep >= stage.steps.length
       ) {
         const firstIncomplete = stage.steps.findIndex(
-          (s: any) => !prev.completedSteps.has(s.id),
+          (s: any) => !prev.completedSteps.has(s.step_key || s.id),
         );
         narrowedStep = firstIncomplete === -1 ? 0 : firstIncomplete;
       } else {
         narrowedStep = currentStep;
       }
 
-      const stepId = stage.steps[narrowedStep]?.id;
+      const stepId = stage.steps[narrowedStep]?.step_key || stage.steps[narrowedStep]?.id;
       const newCollapsed = { ...prev.collapsedSteps };
       if (stepId) {
         newCollapsed[stepId] = false;
@@ -213,13 +220,13 @@ export function useWizard(options: UseWizardOptions = {}) {
 
     setCurrentStep: (idx: number) => {
       setState((prev) => {
-        const stage = activeRoadmap.stages[prev.currentStage];
+        const stage = (activeRoadmap.chapters || activeRoadmap.stages)[prev.currentStage];
         if (!stage) return prev;
 
         const step = stage.steps[idx];
         const newCollapsed = { ...prev.collapsedSteps };
         if (step) {
-          newCollapsed[step.id] = false;
+          newCollapsed[step.step_key || step.id] = false;
         }
         return { ...prev, currentStep: idx, collapsedSteps: newCollapsed };
       });
@@ -229,7 +236,6 @@ export function useWizard(options: UseWizardOptions = {}) {
       setState((prev) => {
         const newCompleted = new Set(prev.completedSteps);
         const newCollapsed = { ...prev.collapsedSteps };
-        // let newStepIdx = prev.currentStep;
 
         if (newCompleted.has(stepId)) {
           newCompleted.delete(stepId);
@@ -237,24 +243,12 @@ export function useWizard(options: UseWizardOptions = {}) {
         } else {
           newCompleted.add(stepId);
           newCollapsed[stepId] = true;
-
-          // const stage = activeRoadmap.stages[prev.currentStage];
-          // if (stage) {
-          //   const currentStepId = stage.steps[prev.currentStep ?? 0]?.id;
-          //   if (currentStepId === stepId) {
-          //     const nextIdx = stage.steps.findIndex((s: any) => !newCompleted.has(s.id));
-          //     if (nextIdx !== -1) {
-          //       newStepIdx = nextIdx;
-          //     }
-          //   }
-          // }
         }
 
         return {
           ...prev,
           completedSteps: newCompleted,
           collapsedSteps: newCollapsed,
-          // currentStep: newStepIdx,
         };
       });
     },
@@ -365,6 +359,20 @@ export function useWizard(options: UseWizardOptions = {}) {
 
       setState(DEFAULT_STATE);
       setHasExistingProgress(false);
+    },
+
+    updateAnswers: (answers: Record<string, any>) => {
+      setState((prev) => ({
+        ...prev,
+        answers: { ...prev.answers, ...answers },
+      }));
+    },
+
+    updateMetadata: (metadata: Record<string, any>) => {
+      setState((prev) => ({
+        ...prev,
+        metadata: { ...prev.metadata, ...metadata },
+      }));
     },
   };
 
