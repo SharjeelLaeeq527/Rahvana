@@ -1,4 +1,5 @@
 // CRUD Operations - Journey Data Access
+import { detect } from "tesseract.js";
 import { createClient } from "../supabase/server";
 import {
   Journey,
@@ -11,6 +12,11 @@ import {
   StepInput,
   Step,
   StepUpdate,
+  CaseDataInput,
+  CaseData,
+  CaseDataFilters,
+  CaseDataUpdate,
+  CaseDataBatchOperation,
 } from "./types";
 
 // Helper: Get authenticated Supabase client - Throws "Unauthorized" if no user session
@@ -727,15 +733,268 @@ export async function completeStepDB(stepId: string): Promise<Step> {
 
 // Delete a step
 export async function deleteStepDB(stepId: string): Promise<boolean> {
-  const {supabase, user} = await getSupabaseWithUser();
+  const { supabase, user } = await getSupabaseWithUser();
 
   // Check if step exists
   const existing = await getStepDB(stepId);
   if (!existing) throw new Error("Step not found or not owned");
 
-  const {error} = await supabase.from("steps").delete().eq("id", stepId);
+  const { error } = await supabase.from("steps").delete().eq("id", stepId);
 
   if (error) throw new Error(error.message);
 
   return true;
+}
+
+// Case Data Operations
+// Create or update case data for a journey
+export async function upsertCaseDataDB(
+  journeyId: string,
+  dataKey: string,
+  caseDataInput: CaseDataInput,
+): Promise<CaseData> {
+  const { supabase, user } = await getSupabaseWithUser();
+
+  // Check if journey exists and belongs to user
+  const existingJourney = await getJourneyDB(journeyId);
+  if (!existingJourney) throw new Error("Journey not found or not owned");
+
+  // Prepare data with defaults
+  const now = new Date().toISOString();
+  const dataType =
+    caseDataInput.data_type || detectDataType(caseDataInput.data_value);
+
+  // Upsert case data
+  const { data, error } = await supabase
+    .from("case_data")
+    .upsert(
+      {
+        journey_id: journeyId,
+        data_key: dataKey,
+        data_value: caseDataInput.data_value,
+        data_type: dataType,
+        label: caseDataInput.label,
+        description: caseDataInput.description,
+        source: caseDataInput.source || "user_input",
+        source_reference: caseDataInput.source_reference,
+        is_verified: caseDataInput.is_verified || false,
+        captured_at: now,
+        updated_at: now,
+      },
+      { onConflict: "journey_id,data_key" },
+    )
+    .select()
+    .single();
+
+  if (error) throw new Error(error.message);
+
+  return data as CaseData;
+}
+
+// Get single case data by key for a journey
+export async function getCaseDataByKeyDB(
+  journeyId: string,
+  dataKey: string,
+): Promise<CaseData | null> {
+  const { supabase, user } = await getSupabaseWithUser();
+
+  // Check if journey exists and belongs to user
+  const existingJourney = await getJourneyDB(journeyId);
+  if (!existingJourney) throw new Error("Journey not found or not owned");
+
+  const { data, error } = await supabase
+    .from("case_data")
+    .select("*")
+    .eq("journey_id", journeyId)
+    .eq("data_key", dataKey)
+    .single();
+
+  if (error) {
+    if (error.code === "PGRST116") return null;
+    throw new Error(error.message);
+  }
+
+  return data as CaseData;
+}
+
+// Get all case data for a journey
+export async function getCaseDataForJourneyDB(
+  journeyId: string,
+  filters?: CaseDataFilters,
+): Promise<CaseData[]> {
+  const { supabase, user } = await getSupabaseWithUser();
+
+  // Check if journey exists and belongs to user
+  const existingJourney = await getJourneyDB(journeyId);
+  if (!existingJourney) throw new Error("Journey not found or not owned");
+
+  let query = supabase
+    .from("case_data")
+    .select("*")
+    .eq("journey_id", journeyId)
+    .order("updated_at", { ascending: false });
+
+  // Apply filters
+  if (filters?.source) {
+    query = query.eq("source", filters.source);
+  }
+  if (filters?.is_validated !== undefined) {
+    query = query.eq("is_validated", filters.is_validated);
+  }
+  if (filters?.is_verified !== undefined) {
+    query = query.eq("is_verified", filters.is_verified);
+  }
+  if (filters?.limit) {
+    query = query.limit(filters.limit);
+  }
+  if (filters?.offset && filters.limit) {
+    query = query.range(filters.offset, filters.offset + filters.limit - 1);
+  }
+
+  const { data, error } = await query;
+
+  if (error) throw new Error(error.message);
+
+  return (data as CaseData[]) || [];
+}
+
+// Get multiple case data by keys
+export async function getCaseDataByKeysDB(
+  journeyId: string,
+  dataKeys: string[],
+): Promise<Record<string, CaseData>> {
+  const { supabase, user } = await getSupabaseWithUser();
+
+  // Check if journey exists and belongs to user
+  const existingJourney = await getJourneyDB(journeyId);
+  if (!existingJourney) throw new Error("Journey not found or not owned");
+
+  const { data, error } = await supabase
+    .from("case_data")
+    .select("*")
+    .eq("journey_id", journeyId)
+    .in("data_key", dataKeys);
+
+  if (error) throw new Error(error.message);
+
+  // Transform to object keyed by data_key
+  const result: Record<string, CaseData> = {};
+  (data as CaseData[]).forEach((item) => {
+    result[item.data_key] = item;
+  });
+
+  return result;
+}
+
+// Update case data for a journey
+export async function updateCaseDataDB(
+  journeyId: string,
+  dataKey: string,
+  updates: CaseDataUpdate,
+): Promise<CaseData> {
+  const { supabase, user } = await getSupabaseWithUser();
+
+  // Check if journey exists and belongs to user
+  const existingJourney = await getJourneyDB(journeyId);
+  if (!existingJourney) throw new Error("Journey not found or not owned");
+
+  const { data, error } = await supabase
+    .from("case_data")
+    .update({
+      ...updates,
+      updated_at: new Date().toISOString(),
+    })
+    .eq("journey_id", journeyId)
+    .eq("data_key", dataKey)
+    .select()
+    .single();
+
+  if (error) throw new Error(error.message);
+
+  return data as CaseData;
+}
+
+// Batch update case data for a journey
+export async function batchUpdateCaseDataDB(
+  journeyId: string,
+  operations: CaseDataBatchOperation[],
+): Promise<CaseData[]> {
+  const { supabase, user } = await getSupabaseWithUser();
+
+  // Check if journey exists and belongs to user
+  const existingJourney = await getJourneyDB(journeyId);
+  if (!existingJourney) throw new Error("Journey not found or not owned");
+
+  const results: CaseData[] = [];
+
+  for (const op of operations) {
+    if (op.operation === "set" || op.operation === "update") {
+      const result = await upsertCaseDataDB(journeyId, op.data_key, {
+        data_value: op.data_value,
+        is_verified: op.is_verified,
+        data_key: "",
+      });
+      results.push(result);
+    } else if (op.operation === "delete") {
+      await deleteCaseDataDB(journeyId, op.data_key);
+    }
+  }
+
+  return results;
+}
+
+// Delete case data
+export async function deleteCaseDataDB(
+  journeyId: string,
+  dataKey: string,
+): Promise<boolean> {
+  const { supabase, user } = await getSupabaseWithUser();
+
+  // Check if journey exists and belongs to user
+  const existingJourney = await getJourneyDB(journeyId);
+  if (!existingJourney) throw new Error("Journey not found or not owned");
+
+  const { error } = await supabase
+    .from("case_data")
+    .delete()
+    .eq("journey_id", journeyId)
+    .eq("data_key", dataKey);
+
+  if (error) throw new Error(error.message);
+
+  return true;
+}
+
+// Get all case data with validation status
+export async function getCaseDataValidationStatusDB(
+  journeyId: string,
+): Promise<CaseData[]> {
+  const { supabase, user } = await getSupabaseWithUser();
+
+  // Check if journey exists and belongs to user
+  const existingJourney = await getJourneyDB(journeyId);
+  if (!existingJourney) throw new Error("Journey not found or not owned");
+
+  const { data, error } = await supabase
+    .from("case_data")
+    .select("*")
+    .eq("journey_id", journeyId)
+    .order("is_validated", { ascending: false })
+    .order("updated_at", { ascending: false });
+
+  if (error) throw new Error(error.message);
+
+  return (data as CaseData[]) || [];
+}
+
+// Helper: Detect data type from value
+export function detectDataType(value: any): string {
+  if (value === null || value === undefined) return "string";
+  if (Array.isArray(value)) return "array";
+  if (typeof value === "object") return "object";
+  if (typeof value === "number") return "number";
+  if (typeof value === "boolean") return "boolean";
+  // Try to parse as date
+  if (typeof value === "string" && !isNaN(Date.parse(value))) return "date";
+  return "string";
 }
