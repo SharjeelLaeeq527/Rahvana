@@ -984,7 +984,7 @@
           "step_short_description": "via Rahvana wizard",
           "step_description": "Use Rahvana's guided Autoform Filler to complete the I-130 Petition for Alien Relative — with structured step-by-step support, clear prompts, and a built-in review flow.",
           "step_type": "tool",
-          "logic": "filingMethod === 'online'",
+          "branch": "online",
           "tool_data": {
             "id": "i130-filler-online",
             "eyebrow": "Fill Form I-130",
@@ -1075,6 +1075,7 @@
           "step_short_description": "via Rahvana wizard",
           "step_description": "Complete the beneficiary spouse information form using Rahvana's guided Autoform Filler — structured prompts, field-by-field clarity, and a built-in review before you finalize.",
           "step_type": "tool",
+          "branch": "online",
           "who": "via Rahvana wizard",
           "dependencies": [
             "step_1_4"
@@ -1142,6 +1143,7 @@
           "step_name": "Create USCIS Account",
           "step_short_description": "myaccount.uscis.gov",
           "step_type": "tool",
+          "branch": "online",
           "step_description": "Set up the petitioner's USCIS online account — the gateway for filing Form I-130 digitally, tracking the case, and responding to any USCIS requests.",
           "who": "myaccount.uscis.gov",
           "dependencies": [
@@ -1213,6 +1215,7 @@
           "step_name": "Start Form I-130 on USCIS",
           "step_short_description": "Begin petition online",
           "step_type": "tool",
+          "branch": "online",
           "step_description": "Sign in to your USCIS account and begin the online I-130 petition. From your account dashboard, click \"File a Form Online\" to start the form and enter your prepared information.",
           "who": "Petitioner",
           "where": "myaccount.uscis.gov",
@@ -1336,6 +1339,7 @@
           "step_name": "Upload Forms & Evidence",
           "step_short_description": "PDF/JPG, 12 MB max",
           "step_type": "tool",
+          "branch": "online",
           "step_description": "Attach your supporting documents inside the USCIS online portal. This is the evidence-upload phase \u2014 your documents become part of the official I-130 filing record.",
           "who": "Petitioner",
           "where": "myaccount.uscis.gov",
@@ -1459,6 +1463,7 @@
           "step_name": "Pay Filing Fee",
           "step_short_description": "$625 online · non-refundable",
           "step_type": "tool",
+          "branch": "online",
           "step_description": "After completing your form review and digital signature inside the USCIS portal, you will reach the payment step. Pay securely online to complete the I-130 submission.",
           "who": "Petitioner",
           "where": "my.uscis.gov / pay.gov",
@@ -1578,6 +1583,7 @@
           "step_name": "Review & Submit",
           "step_short_description": "Final submission · receipt issued",
           "step_type": "tool",
+          "branch": "online",
           "step_description": "This is the final step before your I-130 petition is officially submitted to USCIS. Review everything carefully, sign electronically, pay the filing fee, and submit.",
           "who": "Petitioner",
           "where": "my.uscis.gov",
@@ -1699,6 +1705,130 @@
               }
             ],
             "disclaimer": "Rahvana provides structured guidance only. This is not legal advice.\nReview your filing carefully before submitting — USCIS fees are non-refundable once a case is accepted."
+          }
+        },
+        {
+          "step_key": "step_1_11",
+          "step_number": 11,
+          "step_name": "Download & Print Forms",
+          "step_short_description": "I-130, I-130A, G-1145",
+          "step_type": "tool",
+          "branch": "paper",
+          "step_description": "Download the latest versions of Form I-130 and I-130A from USCIS. Fill them out on your computer or by hand (black ink), print them, and prepare for signing.",
+          "who": "Petitioner",
+          "where": "uscis.gov/i-130",
+          "timeline": "1-2 days",
+          "dependencies": ["step_1_3"],
+          "is_required": true,
+          "display_order": 11,
+          "tool_data": {
+            "id": "paper-forms-download",
+            "title": "Download & Print Forms",
+            "subtitle": "Get the official USCIS paper forms and instructions. Ensure you are using the most current version to avoid rejection.",
+            "chips": [
+              { "label": "Paper Path", "type": "path" },
+              { "label": "USCIS Forms", "type": "uscis" }
+            ],
+            "launch_module": {
+              "icon": "file",
+              "heading": "Download official I-130 forms",
+              "features": [
+                "Form I-130 (Petition for Alien Relative)",
+                "Form I-130A (Spouse Beneficiary Info)",
+                "Form G-1145 (e-Notification)",
+                "Official I-130 Instructions PDF"
+              ],
+              "button_label": "Go to USCIS I-130 Page",
+              "href": "https://www.uscis.gov/i-130"
+            }
+          }
+        },
+        {
+          "step_key": "step_1_12",
+          "step_number": 12,
+          "step_name": "Assemble Paper Packet",
+          "step_short_description": "Order: Fee → G-1145 → Forms → Evidence",
+          "step_type": "docs",
+          "branch": "paper",
+          "step_description": "Organize your I-130 filing in the exact order USCIS prefers. A well-organized packet prevents missing documents and speeds up intake processing.",
+          "who": "Petitioner",
+          "where": "Physical assembly",
+          "timeline": "2-4 hours",
+          "dependencies": ["step_1_11"],
+          "is_required": true,
+          "display_order": 12,
+          "document_items": [
+            {
+              "id": "p_fee",
+              "name": "Filing Fee ($675)",
+              "subtitle": "Personal check, money order, or Form G-1450 (Credit Card)",
+              "tag": "petitioner",
+              "group": "USCIS Intake Order"
+            },
+            {
+              "id": "p_g1145",
+              "name": "Form G-1145",
+              "subtitle": "e-Notification of Application/Petition Acceptance",
+              "tag": "petitioner",
+              "group": "USCIS Intake Order"
+            },
+            {
+              "id": "p_i130",
+              "name": "Form I-130 (Signed)",
+              "subtitle": "Ensure all 12 pages are included and original signature is in black ink",
+              "tag": "petitioner",
+              "group": "USCIS Intake Order"
+            },
+            {
+              "id": "p_i130a",
+              "name": "Form I-130A (Signed)",
+              "subtitle": "Spouse beneficiary info — must be filed with the I-130",
+              "tag": "beneficiary",
+              "group": "USCIS Intake Order"
+            },
+            {
+              "id": "p_evidence",
+              "name": "Supporting Evidence Binder",
+              "subtitle": "Chronological evidence of genuine relationship",
+              "tag": "both",
+              "group": "Supporting Evidence"
+            }
+          ]
+        },
+        {
+          "step_key": "step_1_13",
+          "step_number": 13,
+          "step_name": "Mail to USCIS Lockbox",
+          "step_short_description": "Use UPS/FedEx/DHL for tracking",
+          "step_type": "tool",
+          "branch": "paper",
+          "step_description": "Send your completed, signed, and organized I-130 packet to the correct USCIS Lockbox based on your state of residence. Use a reliable courier with tracking.",
+          "who": "Petitioner",
+          "where": "Courier service (UPS/FedEx)",
+          "timeline": "1-3 days shipping",
+          "dependencies": ["step_1_12"],
+          "is_required": true,
+          "display_order": 13,
+          "tool_data": {
+            "id": "mailing-lockbox",
+            "title": "Mail to USCIS Lockbox",
+            "subtitle": "Final step for paper filing. Ensure you use the correct address to avoid processing delays or lost mail.",
+            "chips": [
+              { "label": "Final Step", "type": "final" },
+              { "label": "Courier Tracking", "type": "path" }
+            ],
+            "launch_module": {
+              "icon": "mail",
+              "heading": "Find your USCIS Lockbox address",
+              "features": [
+                "Address depends on your state of residence",
+                "Different address for UPS/FedEx vs. US Postal Service",
+                "Always check the latest 'Where to File' list",
+                "Keep your tracking number securely"
+              ],
+              "button_label": "View Filing Addresses",
+              "href": "https://www.uscis.gov/i-130-addresses"
+            }
           }
         }
       ]

@@ -366,3 +366,47 @@ export interface CaseDataFilters {
   limit?: number;
   offset?: number;
 }
+
+// ────────────────────────────────────────────────
+// JOURNEY DOCUMENTS (TABLE: journey_documents)
+// ────────────────────────────────────────────────
+
+export type JourneyDocumentStatus =
+  | 'not_started'
+  | 'requested'
+  | 'pending'
+  | 'received'
+  | 'uploaded'
+  | 'expired'
+  | 'rejected';
+
+export interface JourneyDocument {
+  id: string;
+  journey_id: string;
+  step_key?: string; // e.g. "I.2", "II.4"
+  document_type: string; // Machine ID: "marriage_cert", "police_cert"
+  document_label?: string; // Human readable: "Marriage Certificate"
+  status: JourneyDocumentStatus;
+  is_required: boolean;
+  is_recommended: boolean;
+  vault_file_id?: string;
+  vault_file_url?: string;
+  uploaded_date?: string;
+  expiry_date?: string;
+  notes?: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface JourneyDocumentInput {
+  document_type: string;
+  document_label?: string;
+  status?: JourneyDocumentStatus;
+  is_required?: boolean;
+  is_recommended?: boolean;
+  vault_file_id?: string;
+  vault_file_url?: string;
+  uploaded_date?: string;
+  expiry_date?: string;
+  notes?: string;
+}

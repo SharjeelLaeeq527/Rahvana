@@ -401,6 +401,7 @@ export function StepView({ data, state, actions, onBack }: StepViewProps) {
       filingMethod: methodId,
       filingMethodConfirmed: true,
     });
+
     setIsLocked(true);
     if (!isCompleted) handleToggleComplete();
     setShowQuiz(false);
@@ -471,7 +472,11 @@ export function StepView({ data, state, actions, onBack }: StepViewProps) {
                     ? Upload
                     : tool.launch_module.icon === "payment"
                       ? CreditCard
-                      : CheckCircle;
+                      : tool.launch_module.icon === "mail"
+                        ? Mail
+                        : tool.launch_module.icon === "file"
+                          ? FileText
+                          : CheckCircle;
 
     return (
       <div className="animate-in fade-in slide-in-from-bottom-4 duration-740 flex flex-col items-center w-full min-h-full">
@@ -852,105 +857,115 @@ export function StepView({ data, state, actions, onBack }: StepViewProps) {
               </button>
             )}
 
-          {/* SECONDARY ACTIONS ROW (Step 6 SPECIFIC) */}
-          {sId === "step_1_6" && (
+          {/* SECONDARY ACTIONS ROW (Data Driven) */}
+          {tool.secondary_actions && tool.secondary_actions.length > 0 && (
             <div className="flex flex-col mb-[28px]">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-[12px] mb-[12px]">
-                {/* Tutorial Card — uses USCIS_TUTORIAL_STEPS for step 6 */}
-                <button
-                  onClick={() => {
-                    setTutorialIdx(0);
-                    setIsTutorialOpen(true);
-                  }}
-                  className="bg-[#fafcff] border-[1.5px] border-[#d0e4f7] rounded-[16px] p-[20px] text-left group hover:border-[#2f6fd4] hover:shadow-[0_4px_20px_rgba(47,111,212,0.1)] hover:-translate-y-[1px] transition-all cursor-pointer select-none flex flex-col"
-                >
-                  <div className="flex items-center gap-[10px] mb-[12px]">
-                    <div className="w-[36px] h-[36px] rounded-[9px] bg-[#f3f0fb] border border-[#c9bef2] flex items-center justify-center shrink-0">
-                      <Book
-                        size={18}
-                        className="text-[#4a2d8a]"
-                        strokeWidth={1.7}
-                      />
-                    </div>
-                  </div>
-                  <h3 className="text-[14px] font-semibold text-[#0c1b33] mb-1">
-                    Step-by-Step Account Setup Guide
-                  </h3>
-                  <p className="text-[12px] text-[#6b8097] leading-[1.5]">
-                    Walk through the USCIS account creation process screen by
-                    screen.
-                  </p>
-                  <div className="flex items-center gap-1 mt-3 text-[12px] font-semibold text-[#2f6fd4]">
-                    <span>View guide</span>
-                    <ArrowRight size={11} strokeWidth={2} />
-                  </div>
-                </button>
+                {tool.secondary_actions.map((action: any) => {
+                  if (action.type === "tutorial") {
+                    return (
+                      <button
+                        key={action.id}
+                        onClick={() => {
+                          setTutorialIdx(0);
+                          setIsTutorialOpen(true);
+                        }}
+                        className="bg-[#fafcff] border-[1.5px] border-[#d0e4f7] rounded-[16px] p-[20px] text-left group hover:border-[#2f6fd4] hover:shadow-[0_4px_20px_rgba(47,111,212,0.1)] hover:-translate-y-[1px] transition-all cursor-pointer select-none flex flex-col"
+                      >
+                        <div className="flex items-center gap-[10px] mb-[12px]">
+                          <div className="w-[36px] h-[36px] rounded-[9px] bg-[#f3f0fb] border border-[#c9bef2] flex items-center justify-center shrink-0">
+                            <Book
+                              size={18}
+                              className="text-[#4a2d8a]"
+                              strokeWidth={1.7}
+                            />
+                          </div>
+                        </div>
+                        <h3 className="text-[14px] font-semibold text-[#0c1b33] mb-1">
+                          {action.title}
+                        </h3>
+                        <p className="text-[12px] text-[#6b8097] leading-[1.5]">
+                          {action.subtitle}
+                        </p>
+                        <div className="flex items-center gap-1 mt-3 text-[12px] font-semibold text-[#2f6fd4]">
+                          <span>{action.cta || "View guide"}</span>
+                          <ArrowRight size={11} strokeWidth={2} />
+                        </div>
+                      </button>
+                    );
+                  }
 
-                {/* Credentials Card (Toggle Unsaved/Saved) */}
-                {uscisCredentials ? (
-                  /* Saved Card */
-                  <button
-                    onClick={() => setIsWalletViewOpen(true)}
-                    className="bg-[#e8f5ef] border-[1.5px] border-[#a8d9be] rounded-[16px] p-[20px] text-left group hover:border-[#15744f] hover:shadow-[0_4px_20px_rgba(21,116,79,0.1)] hover:-translate-y-[1px] transition-all cursor-pointer select-none flex flex-col"
-                  >
-                    <div className="flex items-center gap-[10px] mb-[12px]">
-                      <div className="w-[36px] h-[36px] rounded-[9px] bg-[#e8f5ef] border border-[#a8d9be] flex items-center justify-center shrink-0">
-                        <Lock
-                          size={18}
-                          className="text-[#15744f]"
-                          strokeWidth={1.7}
-                        />
-                      </div>
-                    </div>
-                    <h3 className="text-[14px] font-semibold text-[#0c1b33] mb-1">
-                      ✓ Credentials Saved
-                    </h3>
-                    <p className="text-[12px] text-[#6b8097] leading-[1.5]">
-                      USCIS credentials are stored in your Portal Wallet.
-                    </p>
-                    <div className="flex items-center gap-1 mt-3 text-[12px] font-semibold text-[#15744f]">
-                      <span>View saved credentials</span>
-                      <ArrowRight size={11} strokeWidth={2} />
-                    </div>
-                  </button>
-                ) : (
-                  /* Unsaved Card */
-                  <button
-                    onClick={() => setIsWalletFormOpen(true)}
-                    className="bg-[#fafcff] border-[1.5px] border-[#d0e4f7] rounded-[16px] p-[20px] text-left group hover:border-[#2f6fd4] hover:shadow-[0_4px_20px_rgba(47,111,212,0.1)] hover:-translate-y-[1px] transition-all cursor-pointer select-none flex flex-col"
-                  >
-                    <div className="flex items-center gap-[10px] mb-[12px]">
-                      <div className="w-[36px] h-[36px] rounded-[9px] bg-[#e8f5ef] border border-[#a8d9be] flex items-center justify-center shrink-0">
-                        <Wallet
-                          size={18}
-                          className="text-[#15744f]"
-                          strokeWidth={1.7}
-                        />
-                      </div>
-                    </div>
-                    <h3 className="text-[14px] font-semibold text-[#0c1b33] mb-1">
-                      Save USCIS Credentials
-                    </h3>
-                    <p className="text-[12px] text-[#6b8097] leading-[1.5]">
-                      Securely store your USCIS login details in Rahvana&apos;s
-                      Portal Wallet.
-                    </p>
-                    <div className="flex items-center gap-1 mt-3 text-[12px] font-semibold text-[#2f6fd4]">
-                      <span>Open credential vault</span>
-                      <ArrowRight size={11} strokeWidth={2} />
-                    </div>
-                  </button>
-                )}
+                  if (action.type === "wallet") {
+                    const portalType = tool.wallet_integration?.portal_type || "Portal";
+                    return (
+                      <React.Fragment key={action.id}>
+                        {uscisCredentials ? (
+                          <button
+                            onClick={() => setIsWalletViewOpen(true)}
+                            className="bg-[#eaf7f2] border-[1.5px] border-[#b5e0d0] rounded-[16px] p-[20px] text-left group hover:border-[#1a7a5e] hover:shadow-[0_4px_20px_rgba(21,116,79,0.1)] hover:-translate-y-[1px] transition-all cursor-pointer select-none flex flex-col"
+                          >
+                            <div className="flex items-center gap-[10px] mb-[12px]">
+                              <div className="w-[36px] h-[36px] rounded-[9px] bg-[#eaf7f2] border border-[#b5e0d0] flex items-center justify-center shrink-0">
+                                <Lock
+                                  size={18}
+                                  className="text-[#1a7a5e]"
+                                  strokeWidth={1.7}
+                                />
+                              </div>
+                            </div>
+                            <h3 className="text-[14px] font-semibold text-[#0c1b33] mb-1">
+                              ✓ Credentials Saved
+                            </h3>
+                            <p className="text-[12px] text-[#6b8097] leading-[1.5]">
+                              {portalType} credentials stored in your Portal Wallet.
+                            </p>
+                            <div className="flex items-center gap-1 mt-3 text-[12px] font-semibold text-[#1a7a5e]">
+                              <span>View saved details</span>
+                              <ArrowRight size={11} strokeWidth={2} />
+                            </div>
+                          </button>
+                        ) : (
+                          <button
+                            onClick={() => setIsWalletFormOpen(true)}
+                            className="bg-[#fafcff] border-[1.5px] border-[#d0e4f7] rounded-[16px] p-[20px] text-left group hover:border-[#2f6fd4] hover:shadow-[0_4px_20px_rgba(47,111,212,0.1)] hover:-translate-y-[1px] transition-all cursor-pointer select-none flex flex-col"
+                          >
+                            <div className="flex items-center gap-[10px] mb-[12px]">
+                              <div className="w-[36px] h-[36px] rounded-[9px] bg-[#e8f1fb] border border-[#d0e4f7] flex items-center justify-center shrink-0">
+                                <Wallet
+                                  size={18}
+                                  className="text-primary"
+                                  strokeWidth={1.7}
+                                />
+                              </div>
+                            </div>
+                            <h3 className="text-[14px] font-semibold text-[#0c1b33] mb-1">
+                              {action.title}
+                            </h3>
+                            <p className="text-[12px] text-[#6b8097] leading-[1.5]">
+                              {action.subtitle}
+                            </p>
+                            <div className="flex items-center gap-1 mt-3 text-[12px] font-semibold text-[#2f6fd4]">
+                              <span>{action.cta || "Open vault"}</span>
+                              <ArrowRight size={11} strokeWidth={2} />
+                            </div>
+                          </button>
+                        )}
+                      </React.Fragment>
+                    );
+                  }
+
+                  return null;
+                })}
               </div>
 
-              {/* Detailed View (Below Row, Only when saved) */}
-              {uscisCredentials && (
-                <div className="bg-[#e8f5ef] border-[1.5px] border-[#a8d9be] rounded-[16px] p-5 flex flex-col">
-                  <div className="text-[10px] font-bold uppercase tracking-[0.08em] text-[#15744f] mb-[10px]">
-                    USCIS Credentials — Saved
+              {/* Detailed Wallet View (Inline when saved) */}
+              {uscisCredentials && tool.wallet_integration && (
+                <div className="bg-[#eaf7f2] border-[1.5px] border-[#b5e0d0] rounded-[16px] p-5 flex flex-col animate-in fade-in duration-500">
+                  <div className="text-[10px] font-bold uppercase tracking-[0.08em] text-[#1a7a5e] mb-[10px]">
+                    {tool.wallet_integration.portal_type} Credentials — Saved
                   </div>
                   <div className="flex-1 flex flex-col">
-                    <div className="flex justify-between items-center py-1.5 border-b border-[#a8d9be]">
+                    <div className="flex justify-between items-center py-1.5 border-b border-[#b5e0d0]/50">
                       <span className="text-[12px] text-[#3a4f63] font-medium">
                         Username / Email
                       </span>
@@ -958,7 +973,7 @@ export function StepView({ data, state, actions, onBack }: StepViewProps) {
                         {uscisCredentials.username}
                       </span>
                     </div>
-                    <div className="flex justify-between items-center py-1.5 border-b border-[#a8d9be]">
+                    <div className="flex justify-between items-center py-1.5 border-b border-[#b5e0d0]/50">
                       <span className="text-[12px] text-[#3a4f63] font-medium">
                         Password
                       </span>
@@ -966,20 +981,12 @@ export function StepView({ data, state, actions, onBack }: StepViewProps) {
                         ••••••••
                       </span>
                     </div>
-                    <div className="flex justify-between items-center py-1.5 border-b border-[#a8d9be]">
-                      <span className="text-[12px] text-[#3a4f63] font-medium">
-                        Security Questions
-                      </span>
-                      <span className="text-[12px] text-[#1c2b3a] font-semibold">
-                        {uscisCredentials.security_questions.length} saved
-                      </span>
-                    </div>
                   </div>
                   <button
                     onClick={() => setIsWalletFormOpen(true)}
-                    className="inline-flex items-center gap-[5px] mt-[12px] text-[12px] font-semibold text-[#15744f] hover:underline cursor-pointer w-fit"
+                    className="inline-flex items-center gap-[5px] mt-[12px] text-[12px] font-semibold text-[#1a7a5e] hover:underline cursor-pointer w-fit"
                   >
-                    <span>Edit or update in Portal Wallet</span>
+                    <span>Update in Portal Wallet</span>
                     <ExternalLink size={11} strokeWidth={2} />
                   </button>
                 </div>
@@ -1398,7 +1405,7 @@ export function StepView({ data, state, actions, onBack }: StepViewProps) {
                         </div>
 
                         <div className="flex flex-col">
-                          {groupItems.map((doc, idx) => {
+                          {groupItems.map((doc: any, idx: number) => {
                             const isReviewed =
                               state.documentChecklist[doc.name];
                             const hasAttachment =

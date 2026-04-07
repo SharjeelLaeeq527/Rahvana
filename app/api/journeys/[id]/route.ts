@@ -1,9 +1,72 @@
 import { NextRequest, NextResponse } from "next/server";
 import { journeyService } from "@/lib/journey/service";
+import * as db from "@/lib/journey/data-access";
+import { progressService } from "@/lib/journey/service";
 import type { JourneyUpdate } from "@/lib/journey/types";
 
-// GET /api/journeys/[id] - Get journey details
-// TODO: Will do later on when we will work on case_data table.
+// GET /api/journeys/[id] - Get journey details with chapters, steps, and case_data
+export async function GET(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> },
+) {
+  try {
+    const journeyId = (await params).id;
+
+    // Get journey
+    const journey = await db.getJourneyDB(journeyId);
+    if (!journey) {
+      return NextResponse.json(
+        { error: "Journey not found", code: "NOT_FOUND" },
+        { status: 404 },
+      );
+    }
+
+    // Get chapters
+    const chapters = await db.getChaptersForJourneyDB(journeyId);
+
+    // Get all steps for journey
+    const steps = await db.getStepsForJourneyDB(journeyId);
+
+    // Get case data
+    const caseData = await db.getCaseDataForJourneyDB(journeyId);
+
+    // Get progress summary
+    const progressSummary =
+      await progressService.getJourneyProgressSummary(journeyId);
+
+    return NextResponse.json(
+      {
+        success: true,
+        data: {
+          journey,
+          chapters,
+          steps,
+          case_data: caseData,
+          progress_summary: progressSummary,
+        },
+      },
+      { status: 200 },
+    );
+  } catch (error) {
+    console.error(`Error in GET /api/journeys/[id]:`, error);
+
+    if (error instanceof Error && error.message === "Unauthorized") {
+      return NextResponse.json(
+        { error: "Unauthorized", code: "UNAUTHORIZED" },
+        { status: 401 },
+      );
+    }
+
+    return NextResponse.json(
+      {
+        error: "Failed to get journey details",
+        code: "SERVER_ERROR",
+        details: error instanceof Error ? error.message : "Unknown error",
+      },
+      { status: 500 },
+    );
+  }
+}
 
 // PATCH /api/journeys/[id] - Update journey details
 export async function PATCH(

@@ -75,8 +75,35 @@ export class ReminderEngine {
       )
   }
 
+  /**
+   * TRIGGER 8: Find the first actionable step that is 'not_started' and prompt the user.
+   */
+  private async checkNewStepsAvailable(journeyId: string, reminders: any[]) {
+    const { data: currentStep } = await this.supabase
+      .from('journey_steps')
+      .select('id, step_name')
+      .eq('journey_id', journeyId)
+      .eq('status', 'not_started')
+      .order('sequence_order', { ascending: true })
+      .limit(1)
+      .single();
+
+    if (currentStep) {
+       reminders.push({
+         reminder_type: 'step_available',
+         priority: 'normal',
+         title: `Next Step: ${currentStep.step_name}`,
+         body: `Ready for the next phase? Begin ${currentStep.step_name} to keep your case moving.`,
+         action_label: 'Start Now',
+         action_url: `/visa-category/ir-category/ir1-journey`,
+         dedup_key: `${journeyId}:step_available:${currentStep.id}`
+       });
+    }
+  }
+
   // ─────────────────────────────────────────────────────────────
-  // CHECKER 1: Missing Required Documents
+  // HELPERS
+  // ─────────────────────────────────────────────────────────────
   // Trigger: journey_documents rows where is_required=true and
   //          status is 'not_started' or 'requested'
   // Priority: high
@@ -168,7 +195,7 @@ export class ReminderEngine {
   private async checkPoliceCertificatePending(journeyId: string): Promise<ReminderCandidate[]> {
     const { data: docs } = await this.supabase
       .from('journey_documents')
-      .select('id, status')
+      .select('id, status, updated_at')
       .eq('journey_id', journeyId)
       .eq('document_type', 'police_certificate')
       .in('status', ['requested', 'pending'])
@@ -177,11 +204,18 @@ export class ReminderEngine {
 
     if (!docs || docs.length === 0) return []
 
+    // Check if older than 6 months (180 days)
+    const sixMonthsAgo = new Date();
+    sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
+    const isStale = new Date(docs[0].updated_at) < sixMonthsAgo;
+
     return [{
       reminder_type: 'police_certificate_pending' as const,
       priority: 'high' as const,
-      title: 'Police Certificate Not Yet Received',
-      body: 'Your police certificate has been requested but not yet received. Keep following up with the issuing authority — it must be fresh and received before your interview.',
+      title: isStale ? 'Police Certificate May Be Expired' : 'Police Certificate Not Yet Received',
+      body: isStale 
+        ? 'Your police certificate request is over 6 months old. Ensure it is still valid for your interview date.'
+        : 'Your police certificate has been requested but not yet received. Keep following up with the issuing authority.',
       step_key: 'III.2',
       reference_id: docs[0].id,
       action_url: '/visa-category/ir-category/ir1-journey',

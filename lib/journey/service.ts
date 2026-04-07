@@ -24,6 +24,7 @@ import {
 import * as db from "./data-access";
 import { ConfigLoader } from "./config-loader";
 import { detectDataType } from "./data-access";
+import { CaseStrengthEngine } from "./CaseStrengthEngine";
 
 /**
  * PROGRESS CALCULATION SERVICE
@@ -1392,11 +1393,9 @@ export class StepService {
   }
 }
 
-/**
- * CASE DATA SERVICE - High-level case data operations
- */
 export class CaseDataService {
   private validationEngine = new CaseDataValidationEngine();
+  private strengthEngine = new CaseStrengthEngine(this);
 
   // Create or update case data for a journey
   async setCaseData(
@@ -1409,7 +1408,10 @@ export class CaseDataService {
       source_reference?: string;
     },
   ): Promise<CaseDataResponse> {
-    // Validate
+    // 1. Prevent recursion if the engine itself is updating the score
+    const isInternalUpdate = options?.source === 'CaseStrengthEngine' || dataKey === 'case_strength_score';
+
+    // 2. Validate
     const validation = this.validationEngine.validateCaseData(
       dataKey,
       dataValue,
@@ -1417,7 +1419,7 @@ export class CaseDataService {
 
     const response = await db.upsertCaseDataDB(journeyId, dataKey, {
       data_value: dataValue,
-      data_type: detectDataType(dataValue),
+      data_type: detectDataType(dataValue) as any,
       is_verified: options?.is_verified || false,
       source: options?.source || "user_input",
       source_reference: options?.source_reference,
@@ -1431,10 +1433,44 @@ export class CaseDataService {
       });
     }
 
+    // 3. Run Data-Driven Triggers & Re-calculate Case Strength (unless it's an internal update)
+    if (!isInternalUpdate) {
+      await this.runTriggersAndScoring(journeyId, dataKey, dataValue);
+    }
+
     return {
       ...response,
       is_editable: true,
     };
+  }
+
+  /**
+   * DATA TRIGGERS & SCORING
+   * Handles automated actions based on data changes (e.g. NVC fee unlock)
+   */
+  private async runTriggersAndScoring(journeyId: string, dataKey: string, dataValue: any) {
+    try {
+      // TRIGGER 1: NVC Fee Auto-Unlock
+      // Requirement §552: If NVC fee is posted, complete Step II.2 to unlock II.3 (DS-260)
+      if (dataKey === 'nvc_fee_status' && (dataValue === 'posted' || dataValue === '"posted"')) {
+        const steps = await db.getStepsForJourneyByStepKeyDB(journeyId, 'II.2');
+        if (steps && steps.length > 0 && steps[0].status !== 'completed') {
+           // We use the completion engine to ensure dependent steps are unlocked correctly
+           await new StepCompletionEngine().completeStep(steps[0].id, journeyId, {
+             source: 'system_auto_unlock',
+             trigger_data_key: 'nvc_fee_status'
+           });
+        }
+      }
+
+      // TRIGGER 2: Update Case Strength Score
+      // This runs on EVERY change to maintain live accuracy
+      await this.strengthEngine.calculateJourneyStrength(journeyId);
+      
+    } catch (e) {
+      console.error("[CaseDataService] Trigger execution failed:", e);
+      // We don't throw here to ensure the original data-save succeeds even if triggers fail
+    }
   }
 
   // Get case data with full details
@@ -1540,6 +1576,19 @@ export class CaseDataService {
     );
 
     const results = await db.batchUpdateCaseDataDB(journeyId, operations);
+
+    // After batch, trigger scoring (just once for the whole batch)
+    try {
+      // Check for fee status in the batch specifically
+      const feeOp = operations.find(op => op.data_key === 'nvc_fee_status');
+      if (feeOp) {
+        await this.runTriggersAndScoring(journeyId, 'nvc_fee_status', feeOp.data_value);
+      } else {
+        await this.strengthEngine.calculateJourneyStrength(journeyId);
+      }
+    } catch (e) {
+      console.error("[BatchCaseData] Trigger error:", e);
+    }
 
     return results.map((d) => ({
       ...d,

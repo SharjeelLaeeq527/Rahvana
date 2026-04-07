@@ -17,6 +17,7 @@ import {
   CaseDataFilters,
   CaseDataUpdate,
   CaseDataBatchOperation,
+  JourneyDocument,
 } from "./types";
 
 // Helper: Get authenticated Supabase client - Throws "Unauthorized" if no user session
@@ -996,5 +997,46 @@ export function detectDataType(value: any): string {
   if (typeof value === "boolean") return "boolean";
   // Try to parse as date
   if (typeof value === "string" && !isNaN(Date.parse(value))) return "date";
+  // Try to parse as date
+  if (typeof value === "string" && !isNaN(Date.parse(value))) return "date";
   return "string";
+}
+
+// Get steps for a journey filtered by step_key (e.g. "II.2")
+export async function getStepsForJourneyByStepKeyDB(
+  journeyId: string,
+  stepKey: string,
+): Promise<Step[]> {
+  const { supabase, user } = await getSupabaseWithUser();
+
+  const { data, error } = await supabase
+    .from("steps")
+    .select(`*, chapters!inner(journey_id)`)
+    .eq("chapters.journey_id", journeyId)
+    .eq("step_key", stepKey);
+
+  if (error) throw new Error(error.message);
+
+  const steps = (data as any[]) || [];
+  return steps.map((s) => {
+    delete s.chapters;
+    return s as Step;
+  });
+}
+
+// Get all documents for a journey
+export async function getJourneyDocumentsDB(
+  journeyId: string,
+): Promise<JourneyDocument[]> {
+  const { supabase, user } = await getSupabaseWithUser();
+
+  const { data, error } = await supabase
+    .from("journey_documents")
+    .select("*")
+    .eq("journey_id", journeyId)
+    .is("deleted_at", null);
+
+  if (error) throw new Error(error.message);
+
+  return (data as JourneyDocument[]) || [];
 }
