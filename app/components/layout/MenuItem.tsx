@@ -33,23 +33,23 @@ export const MenuItem = ({ item, index, simple = false }: MenuItemProps) => (
     <Link
       href={item.disabled ? "#" : item.href}
       className={`group flex items-center gap-4 p-2 rounded-lg transition-all ${
-        item.disabled ? "opacity-60 cursor-not-allowed" : "hover:bg-primary/5"
+        item.disabled ? "opacity-60 cursor-not-allowed" : "hover:bg-[#0d7377]/5"
       }`}
     >
       {!simple && (
-        <div className="shrink-0 w-10 h-10 rounded-lg bg-primary/10 text-primary flex items-center justify-center transition-all group-hover:bg-primary/20">
+        <div className="shrink-0 w-10 h-10 rounded-lg bg-[#0d7377]/10 text-[#0d7377] flex items-center justify-center transition-all group-hover:bg-[#0d7377]/20">
           {item.icon}
         </div>
       )}
       {simple && (
-        <div className="shrink-0 text-primary group-hover:text-primary transition-colors">
+        <div className="shrink-0 text-[#0d7377] group-hover:text-[#0d7377] transition-colors">
           {item.icon}
         </div>
       )}
 
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2">
-          <span className="text-sm font-semibold text-slate-700 group-hover:text-primary transition-colors">
+          <span className="text-sm font-semibold text-slate-700 group-hover:text-[#0d7377] transition-colors">
             {renderWithAbbr(item.title)}
           </span>
           {item.badge && (

@@ -15,9 +15,15 @@ import {
   StepCompletionResult,
   StepUpdate,
   CaseDataInput,
+  CaseDataValidationResult,
+  CaseData,
+  CaseDataResponse,
+  CaseProfile,
+  CaseDataBatchOperation,
 } from "./types";
 import * as db from "./data-access";
 import { ConfigLoader } from "./config-loader";
+import { detectDataType } from "./data-access";
 
 /**
  * PROGRESS CALCULATION SERVICE
@@ -383,6 +389,14 @@ export class ConditionalLogicEngine {
         };
       }
 
+      // If step is skipped but marked as persistent, keep it visible
+      if (step.status === "skipped" && step.substatus === "persistent") {
+        return {
+          is_visible: true,
+          reason: "Step is optional but persistent - can be completed later",
+        };
+      }
+
       // If step is not required and user has skipped it, it's in skipped status
       if (step.status === "skipped") {
         return {
@@ -624,6 +638,321 @@ export class StepCompletionEngine {
       throw error;
     }
   }
+
+  // Skip step but keep it visible and persistent on dashboard (for optional tasks like Police Certificate)
+  async skipStepButKeepPersistent(
+    stepId: string,
+    journeyId: string,
+    reason?: string,
+  ) {
+    try {
+      // Get step and verify it exists
+      const step = await db.getStepDB(stepId);
+      if (!step) throw new Error("Step not found");
+      if (step.status === "completed")
+        throw new Error("Step is already completed");
+
+      // Check if step is skippable (not required)
+      if (step.is_required) {
+        throw new Error(
+          "Cannot skip required step. This step must be completed.",
+        );
+      }
+
+      // Mark as skipped with "persistent" substatus
+      // This keeps the step visible on dashboard but marks it as skipped
+      await db.updateStepDB(stepId, {
+        status: "skipped",
+        substatus: "persistent", // Signals dashboard to keep visible
+        completion_percentage: 0,
+      });
+
+      // Get chapter for progress calculation
+      const chapter = await db.getChapterDB(step.chapter_id);
+
+      if (chapter) {
+        const chapterProgress =
+          await new ProgressCalculationService().calculateChapterProgress(
+            step.chapter_id,
+          );
+
+        const journeyProgress =
+          await new ProgressCalculationService().calculateJourneyProgress(
+            journeyId,
+          );
+
+        return {
+          step_id: stepId,
+          action: "skipped",
+          substatus: "persistent",
+          reason: reason || "User skipped this optional step",
+          is_visible: true,
+          is_persistent: true,
+          chapter_completion_percentage: chapterProgress.completion_percentage,
+          journey_completion_percentage: journeyProgress.completion_percentage,
+          message:
+            "Step skipped but will remain visible until completed or resolved",
+        };
+      }
+
+      return {
+        step_id: stepId,
+        action: "skipped",
+        substatus: "persistent",
+        reason: reason || "User skipped this optional step",
+        is_visible: true,
+        is_persistent: true,
+        chapter_completion_percentage: 0,
+        journey_completion_percentage: 0,
+      };
+    } catch (error) {
+      console.error(`Error skipping persistent step ${stepId}:`, error);
+      throw error;
+    }
+  }
+
+  // Mark an incomplete step as "passed" (for review-only or informational steps)
+  // This is for steps that don't require completion but should be marked as reviewed
+  async markStepAsIncompleteButPassed(
+    stepId: string,
+    journeyId: string,
+    reviewNotes?: string,
+  ) {
+    try {
+      const step = await db.getStepDB(stepId);
+      if (!step) throw new Error("Step not found");
+
+      // Mark substatus to indicate review was done but not fully completed
+      await db.updateStepDB(stepId, {
+        status: "in_progress",
+        substatus: "reviewed-incomplete",
+        completion_percentage: 50, // Half-way progress for visual indicator
+      });
+
+      const chapter = await db.getChapterDB(step.chapter_id);
+      if (chapter) {
+        const chapterProgress =
+          await new ProgressCalculationService().calculateChapterProgress(
+            step.chapter_id,
+          );
+        const journeyProgress =
+          await new ProgressCalculationService().calculateJourneyProgress(
+            journeyId,
+          );
+
+        return {
+          step_id: stepId,
+          status: "incomplete-but-passed",
+          substatus: "reviewed-incomplete",
+          is_visible: true,
+          completion_percentage: 50,
+          review_notes: reviewNotes,
+          chapter_completion_percentage: chapterProgress.completion_percentage,
+          journey_completion_percentage: journeyProgress.completion_percentage,
+          message: "Step marked as reviewed but incomplete (optional)",
+        };
+      }
+
+      return {
+        step_id: stepId,
+        status: "incomplete-but-passed",
+        substatus: "reviewed-incomplete",
+        is_visible: true,
+        completion_percentage: 50,
+        review_notes: reviewNotes,
+        message: "Step marked as reviewed but incomplete (optional)",
+      };
+    } catch (error) {
+      console.error(
+        `Error marking step as incomplete-but-passed ${stepId}:`,
+        error,
+      );
+      throw error;
+    }
+  }
+
+  // Get skippable-but-persistent steps (for dashboard display)
+  // Returns steps that are skipped but should remain visible
+  async getSkippablePersistentSteps(journeyId: string): Promise<Step[]> {
+    try {
+      const allSteps = await db.getStepsForJourneyDB(journeyId);
+      return allSteps.filter(
+        (s) =>
+          s.status === "skipped" &&
+          s.substatus === "persistent" &&
+          !s.is_required,
+      );
+    } catch (error) {
+      console.error(
+        `Error getting skippable-persistent steps for ${journeyId}:`,
+        error,
+      );
+      throw error;
+    }
+  }
+}
+
+/**
+ * CASE DATA VALIDATION ENGINE
+ * Responsible for:
+ * - Validating case data against rules
+ * - Checking data types and formats
+ * - Tracking validation errors
+ * - Determining data completeness
+ */
+export class CaseDataValidationEngine {
+  // Validation rules for common case data keys
+  private validationRules: Record<string, (value: any) => string[]> = {
+    filing_method: (value) => {
+      const valid = ["online", "paper"];
+      return Array.isArray(value) || typeof value !== "string"
+        ? ["Must be a single string value"]
+        : !valid.includes(value)
+          ? [`Must be one of: ${valid.join(", ")}`]
+          : [];
+    },
+
+    visa_category: (value) => {
+      const valid = ["IR-1"];
+      return !valid.includes(value)
+        ? [`Must be a valid visa category from: ${valid.join(", ")}`]
+        : [];
+    },
+
+    beneficiary_age: (value) => {
+      if (typeof value !== "number") return ["Must be a number"];
+      if (value < 0 || value > 150) return ["Age must be between 0 and 150"];
+      return [];
+    },
+
+    beneficiary_country_of_residence: (value) => {
+      if (typeof value !== "string" || value.length < 2)
+        return ["Must be a valid country name"];
+      return [];
+    },
+
+    employer_state: (value) => {
+      const validUSStates = [
+        "AL",
+        "AK",
+        "AZ",
+        "AR",
+        "CA",
+        "CO",
+        "CT",
+        "DE",
+        "FL",
+        "GA",
+        "HI",
+        "ID",
+        "IL",
+        "IN",
+        "IA",
+        "KS",
+        "KY",
+        "LA",
+        "ME",
+        "MD",
+        "MA",
+        "MI",
+        "MN",
+        "MS",
+        "MO",
+        "MT",
+        "NE",
+        "NV",
+        "NH",
+        "NJ",
+        "NM",
+        "NY",
+        "NC",
+        "ND",
+        "OH",
+        "OK",
+        "OR",
+        "PA",
+        "RI",
+        "SC",
+        "SD",
+        "TN",
+        "TX",
+        "UT",
+        "VT",
+        "VA",
+        "WA",
+        "WV",
+        "WI",
+        "WY",
+      ];
+      return !validUSStates.includes(value?.toUpperCase())
+        ? ["Must be a valid US state code"]
+        : [];
+    },
+  };
+
+  // Validate a single case data item
+  validateCaseData(dataKey: string, dataValue: any): CaseDataValidationResult {
+    const errors: string[] = [];
+
+    // Check if we have validation rules for this key
+    if (this.validationRules[dataKey]) {
+      const ruleErrors = this.validationRules[dataKey](dataValue);
+      errors.push(...ruleErrors);
+    }
+
+    // Basic type checks
+    if (dataValue === null || dataValue === undefined) {
+      errors.push("Value cannot be null or undefined");
+    }
+
+    return {
+      is_valid: errors.length === 0,
+      data_key: dataKey,
+      errors,
+    };
+  }
+
+  // Validate complete case profile
+  validateCaseProfile(
+    caseData: Record<string, CaseData>,
+  ): Record<string, CaseDataValidationResult> {
+    const results: Record<string, CaseDataValidationResult> = {};
+
+    for (const [dataKey, caseDataItem] of Object.entries(caseData)) {
+      results[dataKey] = this.validateCaseData(
+        dataKey,
+        caseDataItem.data_value,
+      );
+    }
+
+    return results;
+  }
+
+  // Add custom validation rule
+  addValidationRule(
+    dataKey: string,
+    validator: (value: any) => string[],
+  ): void {
+    this.validationRules[dataKey] = validator;
+  }
+
+  // Check if required data is complete
+  checkDataCompleteness(
+    caseData: Record<string, CaseData>,
+    requiredKeys: string[],
+  ): { complete: boolean; missing_keys: string[] } {
+    const missing_keys = requiredKeys.filter(
+      (key) =>
+        !caseData[key] ||
+        caseData[key].data_value === null ||
+        caseData[key].data_value === undefined,
+    );
+
+    return {
+      complete: missing_keys.length === 0,
+      missing_keys,
+    };
+  }
 }
 
 /**
@@ -648,7 +977,9 @@ export class JourneyService {
       // Load and transform JSON to database schema
       const rawJSON = ConfigLoader.loadJourneyJSON(filePath);
       const journeyInput = ConfigLoader.transformJourneyInput(rawJSON);
-      const chaptersInput = ConfigLoader.transformChaptersInput(rawJSON.chapters);
+      const chaptersInput = ConfigLoader.transformChaptersInput(
+        rawJSON.chapters,
+      );
       const caseDataKeys = ConfigLoader.extractCaseDataKeys(rawJSON);
       const caseDataInput = ConfigLoader.generateInitialCaseData(caseDataKeys);
 
@@ -660,7 +991,9 @@ export class JourneyService {
         journeyInput.visa_category = overrides.visa_category;
       }
 
-      console.log(`Loaded: ${journeyInput.journey_name} with ${chaptersInput.length} chapters`);
+      console.log(
+        `Loaded: ${journeyInput.journey_name} with ${chaptersInput.length} chapters`,
+      );
 
       // Create journey in database
       const journey = await db.createJourneyDB(journeyInput);
@@ -682,9 +1015,7 @@ export class JourneyService {
         );
 
         const createdSteps = await Promise.all(
-          stepsInput.map((stepInput) =>
-            db.createStepDB(chapter.id, stepInput),
-          ),
+          stepsInput.map((stepInput) => db.createStepDB(chapter.id, stepInput)),
         );
 
         totalStepsCreated += createdSteps.length;
@@ -1000,11 +1331,234 @@ export class StepService {
       throw error;
     }
   }
+
+  // Skip an optional step but keep it visible on dashboard (persistent)
+  // Used for tasks like Police Certificate that can be skipped but should remain visible
+  async skipStepButKeepPersistent(
+    stepId: string,
+    journeyId: string,
+    reason?: string,
+  ) {
+    try {
+      return await this.completionEngine.skipStepButKeepPersistent(
+        stepId,
+        journeyId,
+        reason,
+      );
+    } catch (error) {
+      console.error(
+        `Error skipping persistent step ${stepId}:`,
+        error,
+      );
+      throw error;
+    }
+  }
+
+  // Mark a step as reviewed/incomplete but passed
+  // Used for informational or review-only steps
+  async markStepAsIncompleteButPassed(
+    stepId: string,
+    journeyId: string,
+    reviewNotes?: string,
+  ) {
+    try {
+      return await this.completionEngine.markStepAsIncompleteButPassed(
+        stepId,
+        journeyId,
+        reviewNotes,
+      );
+    } catch (error) {
+      console.error(
+        `Error marking step as incomplete-but-passed ${stepId}:`,
+        error,
+      );
+      throw error;
+    }
+  }
+
+  // Get persistent-skipped steps (for dashboard display)
+  async getSkippablePersistentSteps(journeyId: string) {
+    try {
+      return await this.completionEngine.getSkippablePersistentSteps(
+        journeyId,
+      );
+    } catch (error) {
+      console.error(
+        `Error getting skippable-persistent steps for ${journeyId}:`,
+        error,
+      );
+      throw error;
+    }
+  }
 }
 
-//   Export service instances for use in API routes
+/**
+ * CASE DATA SERVICE - High-level case data operations
+ */
+export class CaseDataService {
+  private validationEngine = new CaseDataValidationEngine();
+
+  // Create or update case data for a journey
+  async setCaseData(
+    journeyId: string,
+    dataKey: string,
+    dataValue: any,
+    options?: {
+      is_verified?: boolean;
+      source?: string;
+      source_reference?: string;
+    },
+  ): Promise<CaseDataResponse> {
+    // Validate
+    const validation = this.validationEngine.validateCaseData(
+      dataKey,
+      dataValue,
+    );
+
+    const response = await db.upsertCaseDataDB(journeyId, dataKey, {
+      data_value: dataValue,
+      data_type: detectDataType(dataValue),
+      is_verified: options?.is_verified || false,
+      source: options?.source || "user_input",
+      source_reference: options?.source_reference,
+    });
+
+    // If validation failed, update with errors
+    if (!validation.is_valid) {
+      await db.updateCaseDataDB(journeyId, dataKey, {
+        is_validated: false,
+        validation_errors: validation.errors.map((err) => ({ error: err })),
+      });
+    }
+
+    return {
+      ...response,
+      is_editable: true,
+    };
+  }
+
+  // Get case data with full details
+  async getCaseData(
+    journeyId: string,
+    dataKey: string,
+  ): Promise<CaseDataResponse> {
+    const caseData = await db.getCaseDataByKeyDB(journeyId, dataKey);
+    if (!caseData) throw new Error("Case data not found");
+
+    return {
+      ...caseData,
+      is_editable: true,
+    };
+  }
+
+  // Get complete case profile
+  async getCaseProfile(journeyId: string): Promise<CaseProfile> {
+    const allCaseData = await db.getCaseDataForJourneyDB(journeyId);
+
+    const caseDataByKey: Record<string, CaseData> = {};
+    allCaseData.forEach((item) => {
+      caseDataByKey[item.data_key] = item;
+    });
+
+    // Count required data filled
+    const requiredKeys = [
+      "filing_method",
+      "visa_category",
+      "beneficiary_country_of_residence",
+    ];
+    const completeness = this.validationEngine.checkDataCompleteness(
+      caseDataByKey,
+      requiredKeys,
+    );
+    const completionPercentage = Math.round(
+      ((requiredKeys.length - completeness.missing_keys.length) /
+        requiredKeys.length) *
+        100,
+    );
+
+    return {
+      journey_id: journeyId,
+      filing_method: caseDataByKey["filing_method"]?.data_value,
+      visa_category: caseDataByKey["visa_category"]?.data_value,
+      beneficiary_age: caseDataByKey["beneficiary_age"]?.data_value,
+      beneficiary_relationship:
+        caseDataByKey["beneficiary_relationship"]?.data_value,
+      beneficiary_country_of_residence:
+        caseDataByKey["beneficiary_country_of_residence"]?.data_value,
+      employer_state: caseDataByKey["employer_state"]?.data_value,
+      sponsor_type: caseDataByKey["sponsor_type"]?.data_value,
+      case_status: caseDataByKey["case_status"]?.data_value,
+      critical_data_keys: requiredKeys,
+      optional_data_keys: allCaseData
+        .filter((d) => !requiredKeys.includes(d.data_key))
+        .map((d) => d.data_key),
+      completion_percentage: completionPercentage,
+      last_updated:
+        allCaseData.length > 0
+          ? allCaseData[0].updated_at
+          : new Date().toISOString(),
+      all_data: caseDataByKey,
+    };
+  }
+
+  // Validate all case data for a journey
+  async validateAllCaseData(
+    journeyId: string,
+  ): Promise<Record<string, CaseDataValidationResult>> {
+    const allCaseData = await db.getCaseDataForJourneyDB(journeyId);
+
+    const caseDataByKey: Record<string, CaseData> = {};
+    allCaseData.forEach((item) => {
+      caseDataByKey[item.data_key] = item;
+    });
+
+    const validationResults =
+      this.validationEngine.validateCaseProfile(caseDataByKey);
+
+    // Update validation status in database
+    for (const [dataKey, result] of Object.entries(validationResults)) {
+      await db.updateCaseDataDB(journeyId, dataKey, {
+        is_validated: result.is_valid,
+        validation_errors: result.errors.map((err) => ({ error: err })),
+      });
+    }
+
+    return validationResults;
+  }
+
+  // Batch set case data
+  async batchSetCaseData(
+    journeyId: string,
+    dataObject: Record<string, any>,
+  ): Promise<CaseDataResponse[]> {
+    const operations: CaseDataBatchOperation[] = Object.entries(dataObject).map(
+      ([key, value]) => ({
+        operation: "set",
+        data_key: key,
+        data_value: value,
+      }),
+    );
+
+    const results = await db.batchUpdateCaseDataDB(journeyId, operations);
+
+    return results.map((d) => ({
+      ...d,
+      is_editable: true,
+    }));
+  }
+
+  // Delete case data
+  async deleteCaseData(journeyId: string, dataKey: string): Promise<void> {
+    await db.deleteCaseDataDB(journeyId, dataKey);
+  }
+}
+
+// Export service instances for use in API routes
 export const journeyService = new JourneyService();
 export const stepService = new StepService();
+export const caseDataService = new CaseDataService();
+
 export const progressService = new ProgressCalculationService();
 export const conditionalLogicEngine = new ConditionalLogicEngine();
 export const stepCompletionEngine = new StepCompletionEngine();
+export const caseDataValidationEngine = new CaseDataValidationEngine();

@@ -14,6 +14,7 @@ const heroImage = "/assets/images/herobg.jpg";
 
 export function CinematicHero() {
   const [hasTransitioned, setHasTransitioned] = useState(false);
+  const heroSectionRef = useRef<HTMLElement | null>(null);
   const touchStartYRef = useRef<number | null>(null);
   const { user } = useAuth();
      const { t } = useLanguage();
@@ -89,41 +90,73 @@ export function CinematicHero() {
   }, [hasTransitioned]);
 
   useEffect(() => {
+    const emitHeroVisibility = () => {
+      const heroBounds = heroSectionRef.current?.getBoundingClientRect();
+      const inHeroSection =
+        !!heroBounds && heroBounds.bottom > 0 && heroBounds.top < window.innerHeight;
+
+      window.dispatchEvent(
+        new CustomEvent("home-hero-visibility", {
+          detail: { inHero: inHeroSection },
+        }),
+      );
+    };
+
     window.dispatchEvent(
       new CustomEvent("home-hero-transition", {
         detail: { transitioned: hasTransitioned },
       }),
     );
 
+    emitHeroVisibility();
+    window.addEventListener("scroll", emitHeroVisibility, { passive: true });
+    window.addEventListener("resize", emitHeroVisibility);
+
     return () => {
+      window.removeEventListener("scroll", emitHeroVisibility);
+      window.removeEventListener("resize", emitHeroVisibility);
+
       window.dispatchEvent(
         new CustomEvent("home-hero-transition", {
           detail: { transitioned: false },
+        }),
+      );
+
+      window.dispatchEvent(
+        new CustomEvent("home-hero-visibility", {
+          detail: { inHero: false },
         }),
       );
     };
   }, [hasTransitioned]);
 
   const customEase = [0.25, 1, 0.5, 1] as const;
-  const layoutDuration = 1.6;
+  const layoutDuration = 0.4;
 
   return (
-    <section className="relative min-h-screen overflow-x-hidden bg-[#FCFCFC] text-gray-900 selection:bg-teal-100 selection:text-teal-900">
+    <section
+      ref={heroSectionRef}
+      className={`relative overflow-x-hidden bg-[#FCFCFC] text-gray-900 selection:bg-teal-100 selection:text-teal-900 ${
+        hasTransitioned ? "min-h-screen" : "min-h-screen"
+      }`}
+    >
       <div
-        className={`relative flex min-h-screen pb-8 md:pb-10 ${
-          hasTransitioned ? "items-start pt-0 md:items-center md:pt-3" : "items-center pt-20"
+        className={`relative flex pb-0 md:pb-8 ${
+          hasTransitioned ? "min-h-screen" : "min-h-screen"
+        } ${
+          hasTransitioned ? "items-center justify-center pt-0 md:items-center md:justify-start md:pt-0" : "items-center pt-16"
         }`}
       >
         <div
           className={`relative flex h-full w-full flex-col md:flex-row ${
-            hasTransitioned ? "items-stretch" : "items-center"
+            hasTransitioned ? "items-center" : "items-center"
           }`}
         >
           <motion.div
             layout
             className={`z-10 shrink-0 overflow-hidden will-change-transform ${
               hasTransitioned
-                    ? "relative h-[42svh] w-full max-h-[620px] rounded-t-none rounded-b-[1.75rem] sm:h-[48svh] md:h-[60vh] md:w-[60%] md:rounded-r-[2.25rem] md:rounded-l-none lg:h-[64vh] lg:w-[59%] shadow-xl shadow-teal-900/5"
+                    ? "relative h-[42svh] w-full max-h-[620px] rounded-t-none rounded-b-[2.4rem] sm:h-[48svh] sm:rounded-b-[2.7rem] md:h-[60vh] md:w-[60%] md:rounded-r-[2.25rem] md:rounded-l-none lg:h-[64vh] lg:w-[59%] shadow-xl shadow-teal-900/5 px-4 sm:px-6 md:px-0"
                 : "fixed inset-0 h-full w-full rounded-none shadow-none"
             }`}
             transition={{ layout: { duration: layoutDuration, ease: customEase } }}
@@ -146,7 +179,7 @@ export function CinematicHero() {
             <motion.div
               className="pointer-events-none absolute inset-0 will-change-opacity"
               animate={{ opacity: hasTransitioned ? 0 : 1 }}
-              transition={{ duration: 1.2, ease: customEase }}
+              transition={{ duration: 0.3, ease: customEase }}
             >
               <div
                 className="absolute inset-0 bg-gradient-to-t from-[#305254]/90 via-[#305254]/30 to-transparent"
@@ -163,7 +196,7 @@ export function CinematicHero() {
           </motion.div>
 
           <div
-            className={`relative z-20 mt-4 flex w-full flex-col items-center justify-center px-5 pb-4 text-center sm:mt-5 sm:px-7 sm:pb-5 md:mt-0 md:w-[44%] md:items-start md:text-left md:justify-center md:pl-9 md:pr-4 md:pb-0 lg:w-[45%] lg:pl-11 lg:pr-5 xl:pl-13 xl:pr-6 ${
+            className={`relative z-20 mt-0 flex w-full flex-col items-center justify-center px-5 pb-0 text-center sm:mt-0 sm:px-7 sm:pb-0 md:mt-0 md:w-[44%] md:items-start md:text-left md:justify-center md:pl-9 md:pr-4 md:pb-0 lg:w-[45%] lg:pl-11 lg:pr-5 xl:pl-13 xl:pr-6 ${
               hasTransitioned ? "block" : "hidden"
             }`}
           >
@@ -172,8 +205,8 @@ export function CinematicHero() {
                 <motion.div
                   initial={{ opacity: 0, x: 20 }}
                   animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: 10, transition: { duration: 0.4, ease: "easeOut" } }}
-                  transition={{ duration: 1.2, delay: 0.6, ease: customEase }}
+                  exit={{ opacity: 0, x: 10, transition: { duration: 0.1, ease: "easeOut" } }}
+                  transition={{ duration: 0.3, delay: 0.1, ease: customEase }}
                   className="flex w-full max-w-[44rem] flex-col items-center gap-y-4 px-1 sm:max-w-[48rem] sm:gap-y-5 sm:px-2 md:max-w-[31rem] md:items-start md:gap-y-3 md:px-0 lg:max-w-[34rem] xl:max-w-[36rem]"
                 >
                   <h2 className="max-w-[20ch] text-center text-[1.22rem] font-bold leading-[1.12] tracking-tight text-[#71a1a1] sm:max-w-[24ch] sm:text-[1.42rem] sm:leading-[1.1] md:mb-2.5 md:max-w-none md:text-left md:text-[1.9rem] lg:text-[2.3rem]">
@@ -187,14 +220,16 @@ export function CinematicHero() {
                     journey, with tools and support designed around you.
                   </p>
 
-                  <div className="flex w-full flex-row flex-wrap items-center justify-center gap-3 pt-1 sm:justify-start sm:pt-0 md:pt-1">
+                  <div className="flex w-full flex-row flex-wrap items-center justify-center gap-3 pt-0 sm:justify-start sm:pt-0 md:pt-1">
                     {user && (
                       <Link
                         href="/my-journeys"
-                        className="group inline-flex w-fit whitespace-nowrap items-center justify-center gap-2 rounded-full border-2 border-[#d88ab0] bg-[#fff8fc] px-5 py-2.5 text-[12px] font-bold uppercase tracking-wider text-[#c86c99] shadow-md shadow-[#d88ab0]/15 transition-all duration-200 ease-out hover:-translate-y-0.5 hover:bg-[#fff2f9] sm:px-6 sm:py-3 sm:text-[13px]"
+                        className="group inline-flex w-fit whitespace-nowrap items-center justify-center gap-2 rounded-full border-2 bg-transparent px-5 py-2.5 text-[12px] font-bold uppercase tracking-wider transition-all duration-200 ease-out hover:-translate-y-0.5 sm:px-6 sm:py-3 sm:text-[13px]"
+                        style={{ borderColor: "#cfa3b9", color: "#a96583", boxShadow: "0 8px 14px -18px rgba(169, 101, 131, 0.22)" }}
                       >
                         {t("homePage.resumeJourney")}
-                        <span className="flex h-5 w-5 flex-none items-center justify-center rounded-full text-[#c86c99] transition-transform duration-200 ease-out group-hover:translate-x-0.5 sm:h-6 sm:w-6">
+                        <span className="flex h-5 w-5 flex-none items-center justify-center rounded-full transition-transform duration-200 ease-out group-hover:translate-x-0.5 sm:h-6 sm:w-6"
+                              style={{ color: "#a96583" }}>
                           <ArrowRight className="h-3.5 w-3.5 stroke-[3]" />
                         </span>
                       </Link>
@@ -202,10 +237,12 @@ export function CinematicHero() {
 
                     <Link
                       href="/visa-category/ir-category"
-                      className="group inline-flex w-fit whitespace-nowrap items-center justify-center gap-2 rounded-full bg-[#d884ae] px-5 py-2.5 text-[12px] font-bold uppercase tracking-wider text-white shadow-lg shadow-[#d884ae]/30 transition-all duration-200 ease-out hover:-translate-y-0.5 hover:bg-[#c976a0] sm:px-6 sm:py-3 sm:text-[13px]"
+                      className="group inline-flex w-fit whitespace-nowrap items-center justify-center gap-2 rounded-full px-5 py-2.5 text-[12px] font-bold uppercase tracking-wider text-white shadow-lg transition-all duration-200 ease-out hover:-translate-y-0.5 sm:px-6 sm:py-3 sm:text-[13px]"
+                      style={{ backgroundColor: "#c984a2", boxShadow: "0 10px 18px -18px rgba(201, 132, 162, 0.28)" }}
                     >
                       {t("homePage.exploreJourneys")}
-                      <span className="flex h-5 w-5 flex-none items-center justify-center rounded-full bg-white text-[#d884ae] transition-transform group-hover:scale-110 sm:h-6 sm:w-6">
+                      <span className="flex h-5 w-5 flex-none items-center justify-center rounded-full bg-white transition-transform group-hover:scale-110 sm:h-6 sm:w-6"
+                            style={{ color: "#c984a2" }}>
                         <ArrowUpRight className="h-3.5 w-3.5 stroke-[3]" />
                       </span>
                     </Link>
@@ -223,12 +260,12 @@ export function CinematicHero() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0, y: 20, scale: 0.98 }}
-              transition={{ duration: 1.2, ease: customEase }}
+              transition={{ duration: 0.3, ease: customEase }}
             >
               <motion.div
                 initial={{ opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 1.4, delay: 0.2, ease: customEase }}
+                transition={{ duration: 0.4, delay: 0.05, ease: customEase }}
                 className="max-w-3xl"
               >
                 <h1 className="text-4xl font-light leading-[1.06] tracking-[-0.03em] text-white drop-shadow-lg sm:text-5xl md:text-[3.6rem] lg:text-[4.6rem]">
