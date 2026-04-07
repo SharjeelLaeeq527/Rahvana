@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { MessageCircle, X, Upload } from "lucide-react";
 import { useToast } from "./shared/ToastProvider";
 import { usePathname } from "next/navigation";
@@ -28,6 +28,7 @@ export default function FeedbackButton({
   onSubmit,
 }: FeedbackButtonProps) {
   const [isOpen, setIsOpen] = useState(false);
+  const [inHero, setInHero] = useState(false);
   const pathname = usePathname();
   const [feedback, setFeedback] = useState({
     category: "",
@@ -51,6 +52,20 @@ export default function FeedbackButton({
       document.body.style.overflow = "unset";
     };
   }, [isOpen]);
+
+  // Listen for hero visibility changes
+  useEffect(() => {
+    const handleHeroVisibility = (event: Event) => {
+      if (event instanceof CustomEvent) {
+        setInHero(event.detail.inHero);
+      }
+    };
+
+    window.addEventListener("home-hero-visibility", handleHeroVisibility);
+    return () => {
+      window.removeEventListener("home-hero-visibility", handleHeroVisibility);
+    };
+  }, []);
 
   // Update step if it changes externally while modal is open
   React.useEffect(() => {
@@ -150,7 +165,11 @@ export default function FeedbackButton({
       {/* Sticky Feedback Button */}
       <button
         onClick={() => setIsOpen(true)}
-        className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-40 inline-flex items-center justify-center gap-2 bg-primary text-white p-3 sm:px-5 sm:py-3 rounded-full shadow-lg hover:bg-primary/80 transition-all duration-200 hover:scale-[1.03] focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/70 focus-visible:ring-offset-2"
+        className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-40 inline-flex items-center justify-center gap-2 text-white p-3 sm:px-5 sm:py-3 rounded-full shadow-lg transition-all duration-200 hover:scale-[1.03] focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2"
+        style={{ 
+          backgroundColor: inHero ? "var(--feedback-button-hero, #71a1a1)" : "var(--feedback-button-bg, #0d7377)", 
+          boxShadow: "0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -4px rgba(0,0,0,0.1)"
+        }}
         aria-label="Provide feedback"
       >
         <MessageCircle className="w-5 h-5" />
