@@ -1834,99 +1834,679 @@
       ]
     },
     {
-      "id": 2,
-      "name": "Stage II: NVC/CEAC Processing",
-      "description": "Pay fees → Submit DS-260 → Upload documents → Documentarily Qualified",
-      "timeline": "4-9 months",
+      "chapter_key": "chapter_2",
+      "chapter_number": 2,
+      "chapter_name": "Stage II: NVC / CEAC Processing",
+      "chapter_description": "Pay fees → Submit DS-260 → Upload documents → Documentarily Qualified",
+      "estimated_duration_months": 7,
+      "display_order": 2,
       "steps": [
         {
-          "id": "II-01",
-          "name": "Receive NVC Welcome Letter",
+          "step_key": "step_2_1",
+          "step_number": 1,
+          "step_name": "Access CEAC Case",
+          "step_short_description": "Secure case details & sign in",
+          "step_description": "Your NVC Welcome Letter contains the case number and invoice ID needed to access CEAC — the online portal where NVC processing continues.",
+          "step_type": "tool",
           "who": "Petitioner",
-          "where": "Email + physical mail",
-          "timeline": "4-6 weeks after I-130 approval",
+          "where": "NVC Welcome Letter / ceac.state.gov",
+          "dependencies": [],
+          "visible_when": {},
+          "estimated_duration_days": 1,
+          "is_required": true,
+          "display_order": 1,
           "actions": [
-            "Check email (including spam)",
-            "Note Case Number (ISL...)",
-            "Note Invoice ID Number",
-            "Save both numbers securely"
+            "Find NVC Case Number (ISL...)",
+            "Find Invoice ID Number",
+            "Sign in to CEAC portal",
+            "Save credentials to Portal Wallet"
           ],
-          "output": "Case Number and Invoice ID obtained",
-          "notes": "Case Number starts with ISL for Islamabad"
+          "tool_data": {
+            "id": "step_2_1",
+            "title": "Access CEAC Case",
+            "subtitle": "Your NVC Welcome Letter contains the case number and invoice ID needed to access CEAC — the online portal where NVC processing continues.",
+            "chips": [
+              {
+                "label": "Petitioner",
+                "type": "role"
+              },
+              {
+                "label": "NVC / CEAC",
+                "type": "tool"
+              },
+              {
+                "label": "Welcome Letter",
+                "type": "uscis"
+              }
+            ],
+            "launch_module": {
+              "icon": "portal",
+              "stripe_variant": "blue",
+              "eyebrow": "Official NVC / CEAC Portal",
+              "heading": "Open your CEAC case access page",
+              "features": [
+                "Find your NVC Case Number in the Welcome Letter",
+                "Find your Invoice ID Number in the same letter",
+                "Use both to sign in to CEAC",
+                "First-time login begins your NVC processing"
+              ],
+              "button_label": "Open CEAC Portal",
+              "href": "https://ceac.state.gov/IV/Login.aspx",
+              "note": "Opens the official CEAC portal in a new tab"
+            },
+            "guide_card": {
+              "title": "Step-by-Step CEAC Access Guide",
+              "subtitle": "Show where to find your case number and invoice ID, and how first-time CEAC login works."
+            },
+            "wallet_card": {
+              "type": "ceac_creds",
+              "title": "Save CEAC Credentials",
+              "subtitle": "Store your NVC Case Number, Invoice ID, and notification email in Rahvana's Portal Wallet."
+            },
+            "tutorial_steps": [
+              {
+                "label": "Step 1 of 5 — Find your NVC Welcome Letter",
+                "heading": "Find your NVC Welcome Letter",
+                "instruction": "After USCIS approves your I-130 petition, your case is transferred to the National Visa Center (NVC). The NVC sends a Welcome Letter or email to the petitioner's address — this communication contains the two key details you need to access CEAC.",
+                "url": "NVC Welcome Communication",
+                "ss_label": "NVC Welcome Communication",
+                "ss_headline": "Notice of NVC Receipt",
+                "ss_desc": "Check both physical mail and email. The letter may arrive weeks after I-130 approval. The subject line typically references your NVC Case Number.",
+                "note": "Check both physical mail and email. The letter may arrive weeks after I-130 approval. The subject line typically references your NVC Case Number."
+              },
+              {
+                "label": "Step 2 of 5 — Locate your NVC Case Number",
+                "heading": "Locate your NVC Case Number",
+                "instruction": "The NVC Case Number appears clearly in the Welcome Letter or email. For IR-1 spouse cases from Pakistan, it typically follows a format like <strong>ISL2026XXXXXX</strong> — beginning with your consulate code, followed by the year and case digits.",
+                "url": "NVC Case Number Location",
+                "ss_label": "NVC Case Number Location",
+                "ss_headline": "Notice of NVC Receipt",
+                "ss_desc": "ISL2026XXXXXX"
+              },
+              {
+                "label": "Step 3 of 5 — Locate your Invoice ID Number",
+                "heading": "Locate your Invoice ID Number",
+                "instruction": "The Invoice ID Number (also called the Invoice Identification Number) also appears in the same letter. This is a separate number from the case number and is required alongside it to complete first-time CEAC login.",
+                "url": "Invoice ID Location",
+                "ss_label": "Invoice ID Location",
+                "ss_headline": "Invoice Identification Number",
+                "ss_desc": "XXXXXXXXXXXXXXXX",
+                "note": "Both the NVC Case Number and the Invoice ID are required for CEAC login. Neither alone is sufficient."
+              },
+              {
+                "label": "Step 4 of 5 — Enter your details into CEAC",
+                "heading": "Enter your case details into CEAC",
+                "instruction": "Go to the CEAC portal and enter your NVC Case Number and Invoice ID Number to access your case for the first time. This creates your CEAC session and allows you to begin the immigrant visa application process.",
+                "url": "ceac.state.gov",
+                "ss_label": "CEAC Portal Login",
+                "ss_headline": "Immigrant Visa Case — CEAC Login",
+                "ss_desc": "Sign In"
+              },
+              {
+                "label": "Step 5 of 5 — Return and save your details",
+                "heading": "Return here and save your CEAC details",
+                "instruction": "Once you have located your case number and invoice ID and accessed CEAC, return to this Rahvana step and save both details in the Portal Wallet. This keeps them secure and easy to retrieve throughout your NVC processing.",
+                "url": "Save to Portal Wallet",
+                "ss_label": "Save to Portal Wallet",
+                "ss_headline": "CEAC accessed successfully",
+                "ss_desc": "Return to this Rahvana step and use the credential vault."
+              }
+            ],
+            "disclaimer": "Rahvana provides structured guidance only. This is not legal advice.\nCredentials are stored locally for your session only. Manage them in your Portal Wallet."
+          }
         },
         {
-          "id": "II-02",
-          "name": "Create CEAC Account",
-          "who": "Either",
-          "where": "ceac.state.gov",
-          "actions": [
-            "Navigate to CEAC portal",
-            "Create account",
-            "Enter Invoice ID",
-            "Enter SSN and DOB",
-            "Add case to account"
-          ],
-          "output": "CEAC account active with case",
-          "officialSource": "https://ceac.state.gov"
-        },
-        {
-          "id": "II-03",
-          "name": "Pay NVC Fees",
+          "step_key": "step_2_2",
+          "step_number": 2,
+          "step_name": "Pay NVC Fees",
+          "step_short_description": "AOS & IV fee payment",
+          "step_description": "NVC fee payment must be completed in CEAC before document submission and later processing can continue.",
+          "step_type": "tool",
           "who": "Petitioner",
-          "where": "CEAC portal or Pay.gov",
-          "fee": "AOS Fee: $120, IV Fee: $345, Total: $465",
+          "where": "CEAC Portal",
+          "dependencies": [],
+          "visible_when": {},
+          "estimated_duration_days": 2,
+          "is_required": true,
+          "display_order": 2,
           "actions": [
-            "Log into CEAC",
+            "Log into CEAC portal",
+            "Open fee payment area",
             "Pay Affidavit of Support fee ($120)",
             "Pay Immigrant Visa fee ($345)",
-            "Save payment confirmations"
+            "Save payment status"
           ],
-          "output": "Both fees paid, forms unlocked",
-          "notes": "Fees are non-refundable. Payment reflects in 1-2 business days."
+          "tool_data": {
+            "id": "step_2_2",
+            "title": "Pay Your NVC Fees",
+            "subtitle": "NVC fee payment must be completed in CEAC before document submission and later processing can continue.",
+            "chips": [
+              {
+                "label": "Petitioner",
+                "type": "role"
+              },
+              {
+                "label": "CEAC Portal",
+                "type": "tool"
+              },
+              {
+                "label": "Fee Payment",
+                "type": "uscis"
+              }
+            ],
+            "launch_module": {
+              "icon": "payment",
+              "stripe_variant": "blue",
+              "eyebrow": "Official NVC / CEAC Portal",
+              "heading": "Open CEAC to pay your required fees",
+              "features": [
+                "Sign in with your CEAC case details",
+                "Open the fee payment area",
+                "Review the available fee invoices",
+                "Return here after payment is submitted"
+              ],
+              "button_label": "Open CEAC Portal",
+              "href": "https://ceac.state.gov/IV/Login.aspx",
+              "note": "Opens the official CEAC portal in a new tab"
+            },
+            "guide_card": {
+              "title": "Step-by-Step Payment Guide",
+              "subtitle": "Shows how to log into CEAC, open the fee section, and submit payment step by step."
+            },
+            "wallet_card": {
+              "type": "nvc_fee",
+              "title": "Save Fee Payment Status",
+              "subtitle": "Record your NVC fee payment progress in Rahvana's Portal Wallet."
+            },
+            "tutorial_steps": [
+              {
+                "label": "Step 1 of 6 — Open CEAC",
+                "heading": "Open CEAC and sign in",
+                "instruction": "Go to the CEAC portal and sign in using the NVC Case Number and Invoice ID from your Welcome Letter.",
+                "url": "ceac.state.gov",
+                "ss_label": "CEAC Login",
+                "ss_headline": "Sign In to Your Immigrant Visa Case",
+                "ss_desc": "Sign In"
+              },
+              {
+                "label": "Step 2 of 6 — Enter case details",
+                "heading": "Enter your case information",
+                "instruction": "Enter your case number and invoice ID exactly as they appear in the NVC Welcome Letter. Both fields are required to access the case.",
+                "url": "ceac.state.gov",
+                "ss_label": "Case Access",
+                "ss_headline": "Case Number & Invoice ID Required",
+                "ss_desc": "ISL2026XXXXXX — Invoice ID confirmed",
+                "note": "Keep your NVC Welcome Letter accessible. Both numbers are case-sensitive."
+              },
+              {
+                "label": "Step 3 of 6 — Fee payment area",
+                "heading": "Go to the fee payment section",
+                "instruction": "After entering CEAC, navigate to the payment or invoices area. This is where NVC fee invoices are listed and where you can initiate payment.",
+                "url": "ceac.state.gov",
+                "ss_label": "CEAC Dashboard",
+                "ss_headline": "Fee Payment",
+                "ss_desc": "Fee Payment — Available"
+              },
+              {
+                "label": "Step 4 of 6 — Review fee invoices",
+                "heading": "Review the required fee invoices",
+                "instruction": "CEAC will display the required fee invoices for your case. Review both the Affidavit of Support fee and the Immigrant Visa fee before proceeding.",
+                "url": "ceac.state.gov",
+                "ss_label": "Fee Invoices",
+                "ss_headline": "Review Fees",
+                "ss_desc": "Affidavit of Support Fee / Immigrant Visa Fee",
+                "note": "Confirm the exact amounts shown in your CEAC portal before paying. Do not rely on third-party estimates."
+              },
+              {
+                "label": "Step 5 of 6 — Submit payment",
+                "heading": "Follow the payment prompts carefully",
+                "instruction": "Proceed through the CEAC payment flow. Complete the payment method selection and confirm the transaction according to the portal prompts.",
+                "url": "ceac.state.gov",
+                "ss_label": "Payment",
+                "ss_headline": "Confirm and Pay",
+                "ss_desc": "Submit Payment",
+                "note": "Do not close the browser tab during payment processing. Wait for the confirmation screen."
+              },
+              {
+                "label": "Step 6 of 6 — Return and save",
+                "heading": "Return here and save your payment record",
+                "instruction": "Once payment is submitted, return to this Rahvana step and save the fee status in the Portal Wallet for reference throughout your NVC processing.",
+                "url": "Save to Portal Wallet",
+                "ss_label": "Payment Submitted",
+                "ss_headline": "Return to Rahvana",
+                "ss_desc": "Use the credential vault to save your fee payment status."
+              }
+            ],
+            "disclaimer": "Rahvana provides structured guidance only. This is not legal advice.\nFee availability and status must be confirmed in CEAC. Saved data is local/session-based."
+          }
         },
         {
-          "id": "II-04",
-          "name": "Complete DS-260 Form",
+          "step_key": "step_2_3",
+          "step_number": 3,
+          "step_name": "Complete Form DS-260",
+          "step_short_description": "Immigrant visa application",
+          "step_description": "Use Rahvana's guided Autoform Filler to prepare your answers first, then use the generated PDF as an answer key when completing the DS-260 inside CEAC — or fill the form directly in the portal.",
+          "step_type": "tool",
           "who": "Beneficiary",
-          "where": "CEAC portal",
-          "timeline": "2-4 hours",
+          "where": "CEAC Portal",
+          "estimated_duration_days": 1,
+          "is_required": true,
+          "display_order": 3,
           "actions": [
-            "Access DS-260 in CEAC",
-            "Complete all 24 parts",
-            "Answer security questions truthfully",
-            "Review entire application",
-            "Sign and submit electronically"
+            "Launch DS-260 Autoform Filler",
+            "Complete guided sections",
+            "Review and generate PDF",
+            "Enter answers in CEAC",
+            "Submit DS-260 and save confirmation"
           ],
-          "inputs": [
-            "Passport",
-            "Travel history",
-            "Employment history (10 years)",
-            "Address history (5 years)",
-            "Education history"
-          ],
-          "output": "DS-260 submitted",
-          "notes": "Cannot change after submission except via NVC email. Save frequently!",
-          "pakistanSpecific": "Select post: Islamabad, Pakistan"
+          "tool_data": {
+            "id": "step_2_3",
+            "title": "Complete Form DS-260",
+            "subtitle": "Use Rahvana's guided Autoform Filler to prepare your answers first, then use the generated PDF as an answer key when completing the DS-260 inside CEAC — or fill the form directly in the portal.",
+            "chips": [
+              {
+                "label": "Beneficiary",
+                "role": "role"
+              },
+              {
+                "label": "Rahvana Tool",
+                "tool": "tool"
+              },
+              {
+                "label": "CEAC Portal",
+                "uscis": "uscis"
+              }
+            ],
+            "alert_note": "The DS-260 becomes available in CEAC only after NVC fee payment has been successfully processed.",
+            "launch_module": {
+              "icon": "file",
+              "eyebrow": "Autoform Filler · DS-260",
+              "heading": "Complete DS-260 in simpler guided language",
+              "features": [
+                "Easier question flow than the portal",
+                "Plain-language guidance for each section",
+                "Built-in review before finalizing",
+                "Generate a PDF answer key for CEAC entry"
+              ],
+              "button_label": "Launch DS-260 Autoform Filler",
+              "href": "https://www.rahvana.com/visa-forms/ds260/wizard",
+              "note": "Opens in a new tab — return here when finished"
+            },
+            "support_cards": [
+              {
+                "label": "Two ways to complete",
+                "items": [
+                  "Option 1: Fill in Rahvana first, then use the generated PDF as your CEAC answer key",
+                  "Option 2: Fill the DS-260 directly in CEAC"
+                ]
+              },
+              {
+                "label": "Good to know",
+                "items": [
+                  "DS-260 is completed by the immigrant visa applicant",
+                  "You can review answers before submitting",
+                  "Keep answers consistent across immigration forms",
+                  "Submit only after a careful final review"
+                ]
+              }
+            ],
+            "action_cards": [
+              {
+                "id": "tutorial",
+                "type": "tutorial",
+                "icon": "tutorial",
+                "title": "Step-by-Step CEAC DS-260 Guide",
+                "subtitle": "Shows how to access, start, continue, review, sign, and submit the DS-260 in CEAC.",
+                "cta_label": "View guide"
+              },
+              {
+                "id": "external",
+                "type": "external",
+                "icon": "portal",
+                "title": "Open DS-260 in CEAC",
+                "subtitle": "Prefer to fill directly? Open the official CEAC portal and complete the DS-260 there.",
+                "cta_label": "Open CEAC",
+                "href": "https://ceac.state.gov/IV/Login.aspx"
+              }
+            ],
+            "tutorial_steps": [
+              {
+                "label": "Step 1 of 7 — Sign in to CEAC",
+                "heading": "Sign in to CEAC",
+                "instruction": "Enter CEAC using your NVC Case Number and Invoice ID from the Welcome Letter. Your fees must be fully processed before DS-260 is available.",
+                "ss_label": "CEAC Login",
+                "ss_headline": "Immigrant Visa Case — Sign In",
+                "ss_desc": "NVC Case Number: ISL2026XXXXXX, Invoice ID: ••••••••••••••••"
+              },
+              {
+                "label": "Step 2 of 7 — Open the DS-260 section",
+                "heading": "Open the DS-260 section",
+                "instruction": "Once fee payment is processed, DS-260 becomes available inside your CEAC case. Navigate to the DS-260 area and select Start or Resume.",
+                "ss_label": "CEAC Case",
+                "ss_headline": "DS-260 Immigrant Visa Application",
+                "ss_desc": "Available after NVC fee processing is confirmed.",
+                "note": "If DS-260 is not yet available, confirm both NVC fees are paid."
+              },
+              {
+                "label": "Step 3 of 7 — Start your DS-260",
+                "heading": "Start your DS-260",
+                "instruction": "Click Start or Resume to begin. The form is divided into multiple sections. Use your Rahvana-generated PDF as a reference while completing each section.",
+                "ss_label": "DS-260 Form",
+                "ss_headline": "Begin Application",
+                "ss_desc": "Work through the form section by section using your prepared answers."
+              },
+              {
+                "label": "Step 4 of 7 — Complete section by section",
+                "heading": "Complete section by section",
+                "instruction": "Move through each DS-260 section in sequence. Enter your information carefully. Keep answers consistent with other immigration forms in your case.",
+                "ss_label": "Form Progress",
+                "ss_headline": "Section-by-Section",
+                "ss_desc": "Personal info → Travel history → Work/education → Security questions → Review",
+                "note": "Answers must be consistent with your I-130 and other submitted forms."
+              },
+              {
+                "label": "Step 5 of 7 — Review your answers carefully",
+                "heading": "Review your answers carefully",
+                "instruction": "Use the review stage to check for errors or missing information before certifying. This is your last opportunity to make edits.",
+                "ss_label": "Review",
+                "ss_headline": "Review All Answers",
+                "ss_desc": "Check each section before proceeding to final certification."
+              },
+              {
+                "label": "Step 6 of 7 — Sign and submit the DS-260",
+                "heading": "Sign and submit the DS-260",
+                "instruction": "The final step requires certification. Read carefully before submitting — changes after submission are not straightforward.",
+                "ss_label": "Certification",
+                "ss_headline": "Sign and Submit",
+                "ss_desc": "Certify accuracy of your application before final submission.",
+                "note": "Submission is final. Contact the NVC if corrections are needed after submitting."
+              },
+              {
+                "label": "Step 7 of 7 — Save your confirmation page",
+                "heading": "Save your confirmation page",
+                "instruction": "After submission, CEAC displays a confirmation page. Save or print this for your records as proof that DS-260 has been received.",
+                "ss_label": "Certification",
+                "ss_headline": "DS-260 Submitted",
+                "ss_desc": "Application Received"
+              }
+            ],
+            "disclaimer": "Rahvana provides structured guidance only. This is not legal advice.\nReview all answers carefully. DS-260 availability depends on NVC fee processing."
+          }
         },
         {
-          "id": "II-05",
-          "name": "Prepare Civil Documents",
+          "step_key": "step_2_4",
+          "step_number": 4,
+          "step_name": "Prepare Civil Documents",
+          "step_short_description": "Gather required records",
+          "step_description": "Review and prepare the civil documents needed for NVC / CEAC document upload and later consular interview readiness.",
+          "step_type": "tool",
           "who": "Both",
           "where": "Document gathering",
+          "estimated_duration_days": 10,
+          "is_required": true,
+          "display_order": 4,
           "actions": [
             "Scan all documents (300 DPI, PDF)",
             "Ensure translations certified",
             "Verify all stamps/seals visible",
             "Name files clearly"
           ],
-          "documents": [
-            "Birth certificate (NADRA)",
-            "Marriage certificate (Nikah Nama + translation + Union Council)",
-            "Police certificate (original)",
-            "Passport biographical page",
-            "Previous marriage termination (if applicable)"
-          ],
-          "pakistanSpecific": "Police certificate valid 1 year. Union Council registration increasingly required."
+          "tool_data": {
+            "id": "step_2_4",
+            "title": "Prepare Civil Documents",
+            "subtitle": "Review and prepare the civil documents needed for NVC / CEAC document upload and later consular interview readiness.",
+            "doc_list": {
+              "groups": [
+                {
+                  "id": "required",
+                  "label": "Required",
+                  "badge": "req",
+                  "items": [
+                    {
+                      "id": "passport",
+                      "icon": "📘",
+                      "title": "Beneficiary Passport Biographic Page",
+                      "sub": "Current passport page showing photo and personal details",
+                      "tags": [
+                        "bene",
+                        "govt"
+                      ],
+                      "external_href": "/guides/passport-guide"
+                    },
+                    {
+                      "id": "birth",
+                      "icon": "📋",
+                      "title": "Birth Certificate",
+                      "sub": "Beneficiary's civil birth record",
+                      "tags": [
+                        "bene",
+                        "govt"
+                      ],
+                      "external_href": "/guides/birth-certificate-guide"
+                    },
+                    {
+                      "id": "marriage",
+                      "icon": "📜",
+                      "title": "Marriage Certificate / Record",
+                      "sub": "Official civil proof of the marriage — Nikah Nama and NADRA MRC",
+                      "tags": [
+                        "both",
+                        "govt"
+                      ],
+                      "external_href": "/guides/nikah-nama-guide"
+                    },
+                    {
+                      "id": "police",
+                      "icon": "🔒",
+                      "title": "Police Certificate",
+                      "sub": "Pakistan Police Character Certificate (PCC) for the beneficiary",
+                      "tags": [
+                        "bene",
+                        "govt"
+                      ],
+                      "external_href": "/guides/police-verification-guide"
+                    },
+                    {
+                      "id": "translations",
+                      "icon": "🌐",
+                      "title": "Certified English Translations",
+                      "sub": "Required for all non-English civil documents",
+                      "tags": [
+                        "bene",
+                        "3p"
+                      ],
+                      "external_href": "/document-translation",
+                      "sections": [
+                        {
+                          "t": "Requirement",
+                          "c": "<p>Every document not in English must be accompanied by a full certified English translation. This applies to all stages — USCIS, NVC, and consular.</p>"
+                        },
+                        {
+                          "t": "What certified means",
+                          "c": "<p>A certification statement from the translator attesting that they are competent to translate from the source language to English and that the translation is accurate and complete.</p>"
+                        },
+                        {
+                          "t": "Upload pairing",
+                          "c": "<p>Upload the original document and its translation as separate files or clearly labeled together. CEAC expects both — original and translation — for each non-English document.</p>"
+                        },
+                        {
+                          "t": "Watch out for",
+                          "c": "<div class=\"note-box\"><p>Do not translate only part of a document. The entire document must be translated. Partial translations may trigger an RFE or document request from NVC.</p></div>"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "id": "conditional",
+                  "label": "Required if Applicable",
+                  "badge": "cond",
+                  "items": [
+                    {
+                      "id": "prior-marriage",
+                      "icon": "⚖️",
+                      "title": "Prior Marriage Termination Documents",
+                      "sub": "Required if either spouse was previously married",
+                      "tags": [
+                        "both",
+                        "govt"
+                      ],
+                      "sections": [
+                        {
+                          "t": "When needed",
+                          "c": "<p>If either the petitioner or beneficiary was previously married, CEAC will require proof that every prior marriage legally ended before the current marriage.</p>"
+                        },
+                        {
+                          "t": "Accepted documents",
+                          "c": "<ul><li>Final divorce decree or judgment</li><li>Annulment order</li><li>Death certificate of former spouse</li></ul>"
+                        },
+                        {
+                          "t": "Pakistan-specific",
+                          "c": "<p>For talaq in Pakistan: the divorce is not legally effective until the 90-day reconciliation period expires and the Union Council issues the final divorce certificate. Ensure you have the final certificate, not just the initial notice.</p>"
+                        },
+                        {
+                          "t": "Translation",
+                          "c": "<p>All termination documents in Urdu must be accompanied by certified English translations.</p>"
+                        }
+                      ]
+                    },
+                    {
+                      "id": "death-cert",
+                      "icon": "📄",
+                      "title": "Death Certificate of Former Spouse",
+                      "sub": "Only if prior marriage ended by death",
+                      "tags": [
+                        "both",
+                        "govt"
+                      ],
+                      "sections": [
+                        {
+                          "t": "When needed",
+                          "c": "<p>Required only if a prior marriage ended because of the death of the former spouse. A death certificate from the appropriate civil authority is needed.</p>"
+                        },
+                        {
+                          "t": "Translation",
+                          "c": "<p>If in Urdu or another language, a certified English translation is required alongside the original.</p>"
+                        }
+                      ]
+                    },
+                    {
+                      "id": "namechange",
+                      "icon": "📝",
+                      "title": "Name Change Documents",
+                      "sub": "Legal proof of any name change used in the case",
+                      "tags": [
+                        "bene",
+                        "govt"
+                      ],
+                      "sections": [
+                        {
+                          "t": "When needed",
+                          "c": "<p>If the beneficiary's name in the passport or marriage record differs from the name used in other documents due to a legal name change, documentation of that change is required.</p>"
+                        },
+                        {
+                          "t": "Examples",
+                          "c": "<ul><li>Court order for name change</li><li>Marriage certificate showing a change of surname</li></ul>"
+                        }
+                      ]
+                    },
+                    {
+                      "id": "missing",
+                      "icon": "❓",
+                      "title": "Missing Document / Record Unavailability Evidence",
+                      "sub": "When a required record genuinely does not exist",
+                      "tags": [
+                        "bene",
+                        "3p"
+                      ],
+                      "sections": [
+                        {
+                          "t": "When this applies",
+                          "c": "<p>If a required document — such as a birth certificate or civil record — is genuinely unavailable or was never issued, substitute documentation may be submitted.</p>"
+                        },
+                        {
+                          "t": "What to provide",
+                          "c": "<ul><li>A statement from the relevant civil authority confirming the record does not exist</li><li>Secondary evidence supporting the missing fact (hospital records, school records, etc.)</li><li>Personal affidavit explaining the circumstances</li></ul>"
+                        },
+                        {
+                          "t": "Caution",
+                          "c": "<div class=\"note-box\"><p>Missing-document submissions require careful handling. Consult an immigration attorney if a key civil record is unavailable before uploading substitutes.</p></div>"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "id": "recommended",
+                  "label": "Recommended to Improve Case Strength",
+                  "badge": "rec",
+                  "items": [
+                    {
+                      "id": "transet",
+                      "icon": "🗂️",
+                      "title": "Organized Translation Set",
+                      "sub": "All translations paired and labeled with their originals",
+                      "tags": [
+                        "bene"
+                      ],
+                      "sections": [
+                        {
+                          "t": "Why this helps",
+                          "c": "<p>Keeping each original and its certified translation clearly paired and labeled reduces the chance of upload errors in CEAC and makes case review easier.</p>"
+                        },
+                        {
+                          "t": "Suggested organization",
+                          "c": "<ul><li>Name each file pair clearly: e.g., \"NikahNama_Original.pdf\" and \"NikahNama_Translation.pdf\"</li><li>Group translations by person and document type before upload</li></ul>"
+                        }
+                      ]
+                    },
+                    {
+                      "id": "upload-copies",
+                      "icon": "💾",
+                      "title": "Upload-Ready File Copies",
+                      "sub": "Clean, legible, properly formatted scan set",
+                      "tags": [
+                        "both"
+                      ],
+                      "sections": [
+                        {
+                          "t": "Standards",
+                          "c": "<p>CEAC has a 4 MB file size limit per upload. Files must be clear, legible, and properly cropped with no missing edges.</p>"
+                        },
+                        {
+                          "t": "Best practices",
+                          "c": "<ul><li>Use consistent file naming across the packet</li><li>Verify each file opens correctly and is fully readable</li><li>PDF format is generally preferable for multi-page documents</li></ul>"
+                        },
+                        {
+                          "t": "File compression",
+                          "c": "<div class=\"info-box\"><p>If files are larger than 4 MB, use Rahvana's Document Vault compression tool to bring them within the CEAC upload limit.</p></div>"
+                        }
+                      ]
+                    },
+                    {
+                      "id": "rel-evidence",
+                      "icon": "💬",
+                      "title": "Relationship Evidence Backup Set",
+                      "sub": "Supporting bona fide marriage evidence for later use",
+                      "tags": [
+                        "both"
+                      ],
+                      "sections": [
+                        {
+                          "t": "Why keep this ready",
+                          "c": "<p>While relationship evidence is not a core NVC civil document, having an organized backup set ready ensures you are prepared for any document requests or interview questions about the marriage.</p>"
+                        },
+                        {
+                          "t": "What to include",
+                          "c": "<ul><li>Photos together (wedding and casual, across different dates)</li><li>Communication history samples</li><li>Travel/visit documentation</li><li>Financial ties or joint records</li></ul>"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          }
         },
         {
           "id": "II-06",

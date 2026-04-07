@@ -153,7 +153,7 @@ export function ChapterView({
                     {step.step_name || (step as any).name}
                   </div>
                   <div className="text-[11.5px] text-[#6b8097] mt-0.25">
-                    {step.who || "Applicant"}
+                    {step.step_short_description || ""}
                   </div>
                 </div>
                 <ChevronRight
