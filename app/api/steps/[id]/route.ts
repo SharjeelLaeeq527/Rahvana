@@ -197,7 +197,7 @@ export async function POST(
 
     if (
       error instanceof Error &&
-      error.message.includes("Cannot complete step")
+      error.message?.includes("Cannot complete step")
     ) {
       return NextResponse.json(
         {
@@ -208,7 +208,7 @@ export async function POST(
       );
     }
 
-    if (error instanceof Error && error.message.includes("Validation failed")) {
+    if (error instanceof Error && error.message?.includes("Validation failed")) {
       return NextResponse.json(
         {
           error: error.message,

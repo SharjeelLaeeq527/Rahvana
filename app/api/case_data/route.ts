@@ -7,9 +7,9 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
 
     // Validate required fields
-    if (!body.journeyId) {
+    if (!body.journey_id) {
       return NextResponse.json(
-        { success: false, message: "Journey Id is required" },
+        { success: false, message: "Journey_id is required" },
         { status: 400 },
       );
     }
@@ -25,7 +25,7 @@ export async function POST(request: NextRequest) {
 
       const results = await caseDataService.batchSetCaseData(
         body.journey_id,
-        body.operations.reduce((acc: Record<string, any>, op) => {
+        body.operations.reduce((acc: Record<string, any>, op: any) => {
           if (op.operation === "set" || op.operation === "update") {
             acc[op.data_key] = op.data_value;
           }

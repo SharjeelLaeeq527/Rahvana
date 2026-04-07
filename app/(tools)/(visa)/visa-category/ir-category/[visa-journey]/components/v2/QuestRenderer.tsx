@@ -66,7 +66,9 @@ export function QuestRenderer({
 
   // Sync results to metadata
   useEffect(() => {
-    actions.updateMetadata({ questResults });
+    if (Object.keys(questResults).length > 0) {
+      actions.updateMetadata({ questResults });
+    }
   }, [questResults, actions]);
 
   const handleStartQuest = (id: string) => {
@@ -306,10 +308,10 @@ export function QuestRenderer({
             {meta.label}
           </div>
           <h2 className="text-3xl md:text-4xl font-serif text-[#0f1f38] mb-4 tracking-tight italic">
-            {result.title}
+            {result?.title || "Evaluating Result..."}
           </h2>
           <p className="text-[#3a4f63] text-[16px] mb-10 leading-relaxed max-w-[400px] mx-auto opacity-90">
-            {result.body}
+            {result?.body || "Please wait while we calculate your status."}
           </p>
           <div className="flex flex-col gap-3 max-w-[280px] mx-auto">
             <button

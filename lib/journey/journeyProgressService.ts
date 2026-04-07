@@ -153,7 +153,7 @@ export async function saveJourneyProgress(
       current_stage: state.currentStage,
       current_step: state.currentStep ?? 0,
       completed_steps: Array.from(state.completedSteps),
-      collapsed_steps: state.collapsed_steps,
+      collapsed_steps: state.collapsedSteps,
       role: state.role,
       filing_type: state.filingType,
       document_checklist: state.documentChecklist,

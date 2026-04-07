@@ -1,11 +1,5 @@
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { roadmapData } from "../../../../data/roadmap";
-import {
-  loadJourneyProgress,
-  saveJourneyProgress,
-  deleteJourneyProgress,
-  recordToWizardState,
-} from "@/lib/journey/journeyProgressService";
 import { toast } from "sonner";
 import { mapDocumentNameToId } from "@/lib/document-vault/journey-mapping";
 
@@ -28,9 +22,9 @@ export interface WizardState {
   answers: Record<string, any>;
   metadata: Record<string, any>;
   unresolvedTasks: string[];
+  backendId?: string; // Supabase UUID
+  stepMap: Record<string, string>; // step_key -> uuid
 }
-
-const LOCAL_STORAGE_KEY = "rahvanaWizardState";
 
 const DEFAULT_STATE: WizardState = {
   currentStage: 0,
@@ -47,6 +41,7 @@ const DEFAULT_STATE: WizardState = {
   answers: {},
   metadata: {},
   unresolvedTasks: [],
+  stepMap: {},
 };
 
 interface UseWizardOptions {
@@ -65,7 +60,6 @@ export function useWizard(options: UseWizardOptions = {}) {
     roadmapData: externalRoadmapData,
   } = options;
 
-  // Use external roadmap data if provided, else fallback to default
   const activeRoadmap = externalRoadmapData || roadmapData;
 
   const [state, setState] = useState<WizardState>(DEFAULT_STATE);
@@ -73,88 +67,24 @@ export function useWizard(options: UseWizardOptions = {}) {
   const [hasExistingProgress, setHasExistingProgress] = useState(false);
   const [isSyncing, setIsSyncing] = useState(false);
 
-  // Debounce ref to avoid saving on every keystroke
-  const saveTimerRef = useRef<NodeJS.Timeout | null>(null);
-
-  // ─── Load Progress ────────────────────────────────────────────────────────
-
-  useEffect(() => {
-    let cancelled = false;
-
-    async function loadProgress() {
-      setIsLoaded(false);
-
-      if (userId) {
-        // Logged in: load from Supabase
-        const record = await loadJourneyProgress(userId, journeyId);
-        if (!cancelled) {
-          if (record) {
-            const wizardState = recordToWizardState(record);
-            setState((prev) => ({ ...prev, ...wizardState }));
-            setHasExistingProgress(record.started);
-          } else {
-            // No DB record — check localStorage as fallback (e.g., started before login)
-            const localData = loadFromLocalStorage();
-            if (localData && localData.started) {
-              setState((prev) => ({ ...prev, ...localData }));
-              setHasExistingProgress(true);
-              // Immediately sync local data to DB
-              await saveJourneyProgress(userId, journeyId, {
-                ...DEFAULT_STATE,
-                ...localData,
-              } as WizardState);
-              clearLocalStorage();
-            } else {
-              setState(DEFAULT_STATE);
-              setHasExistingProgress(false);
-            }
-          }
-          setIsLoaded(true);
-        }
-      } else {
-        // Logged out: load from localStorage
-        const localData = loadFromLocalStorage();
-        if (!cancelled) {
-          if (localData) {
-            setState((prev) => ({ ...prev, ...localData } as WizardState));
-            setHasExistingProgress(localData.started ?? false);
-          } else {
-            setState(DEFAULT_STATE);
-            setHasExistingProgress(false);
-          }
-          setIsLoaded(true);
-        }
-      }
-    }
-
-    loadProgress();
-    return () => {
-      cancelled = true;
-    };
-  }, [userId, journeyId]);
-
-  // ─── Normalize State After Load ───────────────────────────────────────────
-
+  // ─── Normalize State (Moved up for use in useEffect and Memoized actions) ───────────
   const normalizeState = useCallback(() => {
     if (!activeRoadmap || !(activeRoadmap.chapters || activeRoadmap.stages)) return;
 
     setState((prev) => {
       let { currentStage, currentStep } = prev;
+      const chapters = activeRoadmap.chapters || activeRoadmap.stages;
 
       if (currentStage < 0) currentStage = 0;
-      if (currentStage >= (activeRoadmap.chapters || activeRoadmap.stages).length) {
-        currentStage = Math.max(0, (activeRoadmap.chapters || activeRoadmap.stages).length - 1);
+      if (currentStage >= chapters.length) {
+        currentStage = Math.max(0, chapters.length - 1);
       }
 
-      const stage = (activeRoadmap.chapters || activeRoadmap.stages)[currentStage];
+      const stage = chapters[currentStage];
       if (!stage) return { ...prev, currentStage, currentStep: null };
 
       let narrowedStep: number;
-      if (
-        currentStep === null ||
-        currentStep < 0 ||
-        currentStep >= stage.steps.length
-      ) {
+      if (currentStep === null || currentStep < 0 || currentStep >= stage.steps.length) {
         const firstIncomplete = stage.steps.findIndex(
           (s: any) => !prev.completedSteps.has(s.step_key || s.id),
         );
@@ -163,56 +93,116 @@ export function useWizard(options: UseWizardOptions = {}) {
         narrowedStep = currentStep;
       }
 
-      const stepId = stage.steps[narrowedStep]?.step_key || stage.steps[narrowedStep]?.id;
-      const newCollapsed = { ...prev.collapsedSteps };
-      if (stepId) {
-        newCollapsed[stepId] = false;
-      }
-
       return {
         ...prev,
         currentStage,
         currentStep: narrowedStep,
-        collapsedSteps: newCollapsed,
       };
     });
   }, [activeRoadmap]);
 
+  // ─── Load Progress ────────────────────────────────────────────────────────
   useEffect(() => {
-    if (isLoaded) {
-      normalizeState();
+    let cancelled = false;
+
+    async function loadProgress() {
+      if (!userId) return;
+      setIsLoaded(false);
+
+      try {
+        console.log(`[useWizard] Syncing for journey: ${journeyId}`);
+
+        // 1. Find existing journey (Case-Insensitive search)
+        const listRes = await fetch(`/api/journeys?journey_type=${journeyId.toUpperCase()}`);
+        const listData = await listRes.json();
+
+        let targetJourneyId: string | null = null;
+        if (listData.success && listData.data && listData.data.length > 0) {
+          // Look for exact or case-insensitive match
+          const found = listData.data.find(
+            (j: any) => j.journey.journey_type.toLowerCase() === journeyId.toLowerCase()
+          );
+          if (found) targetJourneyId = found.journey.id;
+        }
+
+        // 2. Auto-Initialize if not found
+        if (!targetJourneyId) {
+          console.log(`[useWizard] No existing journey found for ${journeyId}. Initializing...`);
+          const initRes = await fetch('/api/journeys/create-from-config', {
+            method: 'POST',
+            body: JSON.stringify({ visa_type: journeyId.toLowerCase() }),
+          });
+          const initData = await initRes.json();
+          if (initData.success) {
+            targetJourneyId = initData.data.journey.id;
+          } else {
+             // Handle "already exists" error gracefully - might have been created concurrently
+            if (initData.error?.includes("unique constraint")) {
+               const retryRes = await fetch(`/api/journeys?journey_type=${journeyId.toUpperCase()}`);
+               const retryData = await retryRes.json();
+               if (retryData.success && retryData.data.length > 0) {
+                 targetJourneyId = retryData.data[0].journey.id;
+               } else throw new Error("Conflict during creation and failed to fetch.");
+            } else {
+              throw new Error(initData.error || 'Failed to initialize journey');
+            }
+          }
+        }
+
+        if (cancelled) return;
+
+        // 3. Load full state tree
+        const detailRes = await fetch(`/api/journeys/${targetJourneyId}`);
+        const detailData = await detailRes.json();
+
+        if (detailData.success && !cancelled) {
+          const { journey, steps, case_data, progress_summary } = detailData.data;
+
+          const stepMap: Record<string, string> = {};
+          const completedSet = new Set<string>();
+          steps.forEach((s: any) => {
+            stepMap[s.step_key] = s.id;
+            if (s.status === 'completed') {
+              completedSet.add(s.step_key);
+            }
+          });
+
+          const metadata: Record<string, any> = {};
+          case_data.forEach((cd: any) => {
+            metadata[cd.data_key] = cd.data_value;
+          });
+
+          setState((prev) => ({
+            ...prev,
+            backendId: targetJourneyId!,
+            stepMap,
+            completedSteps: completedSet,
+            metadata,
+            currentStage: progress_summary?.current_chapter_index ?? prev.currentStage,
+            currentStep: progress_summary?.current_step_index ?? prev.currentStep,
+            started: journey.status !== 'not_started',
+          }));
+
+          setHasExistingProgress(journey.status !== 'not_started');
+          setIsLoaded(true);
+        }
+      } catch (err) {
+        console.error("[useWizard] Critical sync error:", err);
+        toast.error("Cloud synchronization failed.");
+        setIsLoaded(true);
+      }
     }
+
+    loadProgress();
+    return () => { cancelled = true; };
+  }, [userId, journeyId]);
+
+  useEffect(() => {
+    if (isLoaded) normalizeState();
   }, [isLoaded, normalizeState]);
 
-  // ─── Auto-Save on State Change ────────────────────────────────────────────
-
-  useEffect(() => {
-    if (!isLoaded) return;
-
-    // Debounce saves by 800ms to avoid hammering the DB
-    if (saveTimerRef.current) {
-      clearTimeout(saveTimerRef.current);
-    }
-
-    saveTimerRef.current = setTimeout(async () => {
-      if (userId) {
-        setIsSyncing(true);
-        await saveJourneyProgress(userId, journeyId, state);
-        setIsSyncing(false);
-      } else {
-        // Save to localStorage for guest users
-        saveToLocalStorage(state);
-      }
-    }, 800);
-
-    return () => {
-      if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
-    };
-  }, [state, isLoaded, userId, journeyId]);
-
-  // ─── Actions ──────────────────────────────────────────────────────────────
-
-  const actions = {
+  // ─── Actions (Memoized to prevent infinite update loops) ───────────────────
+  const actions = useMemo(() => ({
     setStage: (idx: number) => {
       setState((prev) => ({ ...prev, currentStage: idx, currentStep: null }));
       setTimeout(normalizeState, 0);
@@ -220,145 +210,76 @@ export function useWizard(options: UseWizardOptions = {}) {
 
     setCurrentStep: (idx: number) => {
       setState((prev) => {
-        const stage = (activeRoadmap.chapters || activeRoadmap.stages)[prev.currentStage];
+        const chapters = activeRoadmap.chapters || activeRoadmap.stages;
+        const stage = chapters[prev.currentStage];
         if (!stage) return prev;
-
-        const step = stage.steps[idx];
-        const newCollapsed = { ...prev.collapsedSteps };
-        if (step) {
-          newCollapsed[step.step_key || step.id] = false;
-        }
-        return { ...prev, currentStep: idx, collapsedSteps: newCollapsed };
-      });
-    },
-
-    toggleComplete: (stepId: string) => {
-      setState((prev) => {
-        const newCompleted = new Set(prev.completedSteps);
-        const newCollapsed = { ...prev.collapsedSteps };
-
-        if (newCompleted.has(stepId)) {
-          newCompleted.delete(stepId);
-          newCollapsed[stepId] = false;
-        } else {
-          newCompleted.add(stepId);
-          newCollapsed[stepId] = true;
-        }
-
-        return {
-          ...prev,
-          completedSteps: newCompleted,
-          collapsedSteps: newCollapsed,
+        const stepId = stage.steps[idx]?.step_key || stage.steps[idx]?.id;
+        return { 
+          ...prev, 
+          currentStep: idx, 
+          collapsedSteps: { ...prev.collapsedSteps, [stepId]: false } 
         };
       });
     },
 
-    toggleCollapse: (stepId: string) => {
-      setState((prev) => ({
-        ...prev,
-        collapsedSteps: {
-          ...prev.collapsedSteps,
-          [stepId]: !prev.collapsedSteps[stepId],
-        },
-      }));
+    toggleComplete: async (stepKey: string) => {
+      if (!state.backendId || !state.stepMap[stepKey]) return;
+      const stepUuid = state.stepMap[stepKey];
+      const isCompleted = state.completedSteps.has(stepKey);
+
+      setState((prev) => {
+        const newCompleted = new Set(prev.completedSteps);
+        if (newCompleted.has(stepKey)) newCompleted.delete(stepKey);
+        else newCompleted.add(stepKey);
+        return { ...prev, completedSteps: newCompleted };
+      });
+
+      try {
+        const url = isCompleted 
+          ? `/api/steps/${stepUuid}` 
+          : `/api/steps/${stepUuid}?action=complete`;
+        
+        await fetch(url, {
+          method: isCompleted ? "PATCH" : "POST",
+          body: JSON.stringify(isCompleted ? { status: "not_started" } : {}),
+        });
+      } catch (err) {
+        console.error("[useWizard] Step sync failed:", err);
+        toast.error("Failed to update step.");
+      }
     },
 
-    setRole: (role: WizardState["role"]) =>
-      setState((prev) => ({ ...prev, role })),
+    updateMetadata: async (metadata: Record<string, any>) => {
+      // Deep comparison to prevent redundant updates
+      const hasChanges = Object.entries(metadata).some(
+        ([key, val]) => JSON.stringify(state.metadata[key]) !== JSON.stringify(val)
+      );
+      if (!hasChanges) return;
 
-    setFilingType: (type: WizardState["filingType"]) =>
-      setState((prev) => ({ ...prev, filingType: type })),
-
-    updateNote: (doc: string, note: string) => {
-      setState((prev) => ({ ...prev, notes: { ...prev.notes, [doc]: note } }));
-    },
-
-    setScenario: (scenario: string) => {
       setState((prev) => ({
         ...prev,
-        scenarioType: scenario,
-      }));
-    },
-
-    toggleDocument: (doc: string) => {
-      setState((prev) => ({
-        ...prev,
-        documentChecklist: {
-          ...prev.documentChecklist,
-          [doc]: !prev.documentChecklist[doc],
-        },
-      }));
-    },
-
-    uploadDocument: async (doc: string, file: File) => {
-      // 1. Update local state metadata immediately for responsiveness
-      setState((prev) => ({
-        ...prev,
-        docUploads: {
-          ...prev.docUploads,
-          [doc]: {
-            name: file.name,
-            size: file.size,
-            lastModified: file.lastModified,
-          },
-        },
+        metadata: { ...prev.metadata, ...metadata }
       }));
 
-      // 2. If logged in, perform actual upload to Document Vault
-      if (userId) {
-        toast.loading(`Uploading ${file.name} to vault...`, { id: "vault-upload" });
+      if (state.backendId) {
         try {
-          const documentDefId = mapDocumentNameToId(doc);
-          const formData = new FormData();
-          formData.append("file", file);
-          formData.append("documentDefId", documentDefId);
-          formData.append("role", state.role === "both" ? "BENEFICIARY" : state.role.toUpperCase());
-          formData.append("personName", state.role === "petitioner" ? "Petitioner" : "Beneficiary");
-          formData.append("caseId", journeyId.toUpperCase());
-          formData.append("notes", `Uploaded via ${journeyId} journey checklist.`);
-
-          const response = await fetch("/api/documents/upload", {
+          const ops = Object.entries(metadata).map(([key, val]) => ({
+            operation: "set",
+            data_key: key,
+            data_value: val,
+          }));
+          await fetch("/api/case_data", {
             method: "POST",
-            body: formData,
+            body: JSON.stringify({
+              journey_id: state.backendId,
+              batch: true,
+              operations: ops,
+            }),
           });
-
-          if (!response.ok) {
-            const errorData = await response.json();
-            throw new Error(errorData.error || "Upload failed");
-          }
-
-          toast.success(`${file.name} saved to vault`, { id: "vault-upload" });
-        } catch (error) {
-          console.error("[useWizard] Upload failed:", error);
-          toast.error(`Failed to save to vault: ${error instanceof Error ? error.message : "Unknown error"}`, { id: "vault-upload" });
+        } catch (err) {
+          console.error("[useWizard] Case data sync failed:", err);
         }
       }
-    },
-
-    clearDocument: (doc: string) => {
-      setState((prev) => {
-        const newUploads = { ...prev.docUploads };
-        delete newUploads[doc];
-        return { ...prev, docUploads: newUploads };
-      });
-    },
-
-    /** Mark journey as officially started */
-    startJourney: () => {
-      setState((prev) => ({ ...prev, started: true }));
-      setHasExistingProgress(true);
-    },
-
-    /** Reset all progress (Start Fresh) */
-    resetProgress: async () => {
-      if (userId) {
-        await deleteJourneyProgress(userId, journeyId);
-      } else {
-        clearLocalStorage();
-      }
-
-      setState(DEFAULT_STATE);
-      setHasExistingProgress(false);
     },
 
     updateAnswers: (answers: Record<string, any>) => {
@@ -368,45 +289,60 @@ export function useWizard(options: UseWizardOptions = {}) {
       }));
     },
 
-    updateMetadata: (metadata: Record<string, any>) => {
+    setRole: (role: WizardState["role"]) => setState((prev) => ({ ...prev, role })),
+    
+    setFilingType: (type: WizardState["filingType"]) => setState((prev) => ({ ...prev, filingType: type })),
+    
+    setScenario: (scenario: string) => setState((prev) => ({ ...prev, scenarioType: scenario })),
+
+    toggleCollapse: (stepId: string) => setState((prev) => ({
+      ...prev,
+      collapsedSteps: { ...prev.collapsedSteps, [stepId]: !prev.collapsedSteps[stepId] }
+    })),
+
+    uploadDocument: async (doc: string, file: File) => {
       setState((prev) => ({
         ...prev,
-        metadata: { ...prev.metadata, ...metadata },
+        docUploads: { ...prev.docUploads, [doc]: { name: file.name, size: file.size, lastModified: file.lastModified } }
       }));
+
+      if (userId) {
+        toast.loading(`Saving ${file.name} to vault...`, { id: "vault-upload" });
+        try {
+          const documentDefId = mapDocumentNameToId(doc);
+          const formData = new FormData();
+          formData.append("file", file);
+          formData.append("documentDefId", documentDefId);
+          formData.append("caseId", journeyId.toUpperCase());
+
+          const res = await fetch("/api/documents/upload", { method: "POST", body: formData });
+          if (!res.ok) throw new Error();
+          toast.success("Saved to vault", { id: "vault-upload" });
+        } catch {
+          toast.error("Vault save failed", { id: "vault-upload" });
+        }
+      }
     },
-  };
+
+    resetProgress: async () => {
+      if (state.backendId) {
+        await fetch(`/api/journeys/${state.backendId}`, { method: "DELETE" }).catch(() => {});
+      }
+      setState(DEFAULT_STATE);
+      setHasExistingProgress(false);
+    },
+
+    startJourney: async () => {
+      if (state.backendId) {
+        await fetch(`/api/journeys/${state.backendId}`, {
+          method: "PATCH",
+          body: JSON.stringify({ status: "in_progress" }),
+        });
+      }
+      setState((prev) => ({ ...prev, started: true }));
+      setHasExistingProgress(true);
+    }
+  }), [state.backendId, state.metadata, state.completedSteps, state.stepMap, state.role, journeyId, userId, activeRoadmap, normalizeState]);
 
   return { state, actions, isLoaded, hasExistingProgress, isSyncing };
-}
-
-// ─── localStorage Helpers ─────────────────────────────────────────────────────
-
-function loadFromLocalStorage(): Partial<WizardState> | null {
-  try {
-    const saved = localStorage.getItem(LOCAL_STORAGE_KEY);
-    if (!saved) return null;
-    const parsed = JSON.parse(saved);
-    if (parsed.completedSteps) {
-      parsed.completedSteps = new Set(parsed.completedSteps);
-    }
-    return parsed;
-  } catch {
-    return null;
-  }
-}
-
-function saveToLocalStorage(state: WizardState) {
-  try {
-    const toSave = {
-      ...state,
-      completedSteps: Array.from(state.completedSteps),
-    };
-    localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(toSave));
-  } catch {
-    // ignore storage errors
-  }
-}
-
-function clearLocalStorage() {
-  localStorage.removeItem(LOCAL_STORAGE_KEY);
 }

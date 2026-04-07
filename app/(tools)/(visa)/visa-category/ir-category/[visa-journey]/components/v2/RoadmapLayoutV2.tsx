@@ -76,14 +76,14 @@ export default function RoadmapLayoutV2({
     (() => {
       const chapter = data.chapters?.[state.currentStage];
       const step = chapter?.steps[state.currentStep];
-      const sId = step?.step_key || step?.id;
+      const sId = step?.step_key;
       return state.completedSteps.has(sId);
     })();
 
   const handleToggleComplete = () => {
     const chapter = data.chapters?.[state.currentStage];
     const step = chapter?.steps[state.currentStep || 0];
-    const sKey = step?.step_key || step?.id;
+    const sKey = step?.step_key;
     if (sKey) actions.toggleComplete(sKey);
   };
 

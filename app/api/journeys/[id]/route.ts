@@ -124,7 +124,7 @@ export async function PATCH(
       );
     }
 
-    if (error instanceof Error && error.message.includes("Journey not found")) {
+    if (error instanceof Error && error.message?.includes("Journey not found")) {
       return NextResponse.json(
         { error: "Journey not found", code: "NOT_FOUND" },
         { status: 404 },
@@ -163,7 +163,7 @@ export async function DELETE(
       );
     }
 
-    if (error instanceof Error && error.message.includes("Journey not found")) {
+    if (error instanceof Error && error.message?.includes("Journey not found")) {
       return NextResponse.json(
         { error: "Journey not found", code: "NOT_FOUND" },
         { status: 404 },

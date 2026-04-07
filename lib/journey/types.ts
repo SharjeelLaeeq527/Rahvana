@@ -106,9 +106,12 @@ export interface CaseData {
 export interface JourneyInput {
   journey_type: string; // Required: "IR1", "IR5", "F1"
   case_id?: string; // Optional: external case ID
-  journey_name?: string; // Optional: display name from config
-  filing_method: string; // Required: "online" | "paper"
+  visa_category?: string; // Optional: specific visa ID
   sponsor_structure: string; // Required: "individual" | "joint_sponsor"
+  filing_method: string; // Required: "online" | "paper"
+  journey_description?: string; // Metadata for display
+  journey_name?: string; // Metadata for display
+  total_estimated_months?: number; // Estimated duration
   // Note: user_id, status, counts, percentages, current_chapter_id, current_step_id are set server-side
 }
 

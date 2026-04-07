@@ -55,7 +55,7 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error("Error in POST /api/journeys/create-from-config:", error);
 
-    const errorMessage = error instanceof Error ? error.message : "Unknown error";
+    const errorMessage = (error instanceof Error ? error.message : String(error)) || "Unknown error";
 
     // Handle specific error cases
     if (errorMessage.includes("ENOENT") || errorMessage.includes("not found")) {

@@ -212,6 +212,8 @@ export interface ToolData {
       | "portal"
       | "upload"
       | "payment"
+      | "mail"
+      | "file"
       | "submit";
     /** Controls the right-end colour of the top accent stripe.
      *  "gold" → payment step, "green" → final submit step (default: blue) */

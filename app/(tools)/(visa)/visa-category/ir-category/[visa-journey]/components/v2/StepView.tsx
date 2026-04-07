@@ -28,7 +28,7 @@ import {
   CreditCard,
 } from "lucide-react";
 
-import { RoadmapData, QuestSuite, TutorialStepData } from "../types";
+import { RoadmapData, QuestSuite, TutorialStepData, ActionCard } from "../types";
 import { WizardState } from "@/app/(main)/dashboard/hooks/useWizard";
 import { QuestRenderer } from "./QuestRenderer";
 import { getAllActiveSteps } from "./journeyHelpers";
@@ -1227,17 +1227,17 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
               {tool.wallet_card && (
                 <button
                   onClick={() => {
-                    if (tool.wallet_card.type === "nvc_fee") {
+                    if (tool.wallet_card?.type === "nvc_fee") {
                       setIsNvcFeeModalOpen(true);
-                    } else if (tool.wallet_card.type === "ceac_creds") {
+                    } else if (tool.wallet_card?.type === "ceac_creds") {
                       setIsCeacModalOpen(true);
                     }
                   }}
                   className={`bg-[#fafcff] border-[1.5px] rounded-[16px] p-[20px] text-left group hover:shadow-[0_4px_20px_rgba(47,111,212,0.1)] hover:-translate-y-px transition-all cursor-pointer select-none flex flex-col
                     ${
-                      (tool.wallet_card.type === "ceac_creds" &&
+                      (tool.wallet_card?.type === "ceac_creds" &&
                         ceacCredentials) ||
-                      (tool.wallet_card.type === "nvc_fee" &&
+                      (tool.wallet_card?.type === "nvc_fee" &&
                         state.metadata.nvcFeeStatus)
                         ? "border-[#a8d9be] bg-[#e8f5ef]"
                         : "border-[#d0e4f7] hover:border-primary"
@@ -1248,18 +1248,18 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                     <div
                       className={`w-[36px] h-[36px] rounded-[9px] border flex items-center justify-center shrink-0
                       ${
-                        (tool.wallet_card.type === "ceac_creds" &&
+                        (tool.wallet_card?.type === "ceac_creds" &&
                           ceacCredentials) ||
-                        (tool.wallet_card.type === "nvc_fee" &&
+                        (tool.wallet_card?.type === "nvc_fee" &&
                           state.metadata.nvcFeeStatus)
                           ? "bg-[#e8f5ef] border-[#a8d9be]"
-                          : tool.wallet_card.type === "ceac_creds"
+                          : tool.wallet_card?.type === "ceac_creds"
                             ? "bg-[#e8f5ef] border-[#a8d9be]"
                             : "bg-[#e6f6f6] border-[#9fd8d8]"
                       }
                     `}
                     >
-                      {tool.wallet_card.type === "ceac_creds" ? (
+                      {tool.wallet_card?.type === "ceac_creds" ? (
                         <Lock
                           size={18}
                           className="text-[#15744f]"
@@ -1276,41 +1276,41 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                   </div>
                   <h3
                     className={`text-[14px] font-semibold mb-1 ${
-                      (tool.wallet_card.type === "ceac_creds" &&
+                      (tool.wallet_card?.type === "ceac_creds" &&
                         ceacCredentials) ||
-                      (tool.wallet_card.type === "nvc_fee" &&
+                      (tool.wallet_card?.type === "nvc_fee" &&
                         state.metadata.nvcFeeStatus)
                         ? "text-[#15744f]"
                         : "text-[#0c1b33]"
                     }`}
                   >
-                    {(tool.wallet_card.type === "ceac_creds" &&
+                    {(tool.wallet_card?.type === "ceac_creds" &&
                       ceacCredentials) ||
-                    (tool.wallet_card.type === "nvc_fee" &&
+                    (tool.wallet_card?.type === "nvc_fee" &&
                       state.metadata.nvcFeeStatus)
-                      ? `✓ ${tool.wallet_card.title.replace("Save", "Details")}`
-                      : tool.wallet_card.title}
+                      ? `✓ ${tool.wallet_card?.title.replace("Save", "Details")}`
+                      : tool.wallet_card?.title}
                   </h3>
                   <p className="text-[12px] text-[#6b8097] leading-normal">
-                    {tool.wallet_card.subtitle}
+                    {tool.wallet_card?.subtitle}
                   </p>
                   <div
                     className={`flex items-center gap-1 mt-3 text-[12px] font-semibold ${
-                      (tool.wallet_card.type === "ceac_creds" &&
+                      (tool.wallet_card?.type === "ceac_creds" &&
                         ceacCredentials) ||
-                      (tool.wallet_card.type === "nvc_fee" &&
+                      (tool.wallet_card?.type === "nvc_fee" &&
                         state.metadata.nvcFeeStatus)
                         ? "text-[#15744f]"
                         : "text-primary"
                     }`}
                   >
                     <span>
-                      {(tool.wallet_card.type === "ceac_creds" &&
+                      {(tool.wallet_card?.type === "ceac_creds" &&
                         ceacCredentials) ||
-                      (tool.wallet_card.type === "nvc_fee" &&
+                      (tool.wallet_card?.type === "nvc_fee" &&
                         state.metadata.nvcFeeStatus)
                         ? "View saved details"
-                        : tool.wallet_card.type === "ceac_creds"
+                        : tool.wallet_card?.type === "ceac_creds"
                           ? "Open credential vault"
                           : "Update payment record"}
                     </span>

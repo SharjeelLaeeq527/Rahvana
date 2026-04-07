@@ -137,9 +137,7 @@ export class ConfigLoader {
       total_estimated_months: rawJSON.total_estimated_months,
       visa_category: this.extractVisaCategoryFromType(rawJSON.journey_type),
       filing_method: "online", // Default, can be overridden later
-      status: "not_started",
-      current_chapter_index: 0,
-      current_step_index: 0,
+      sponsor_structure: "individual", // Default, can be updated through Affidavit Calculator
     };
   }
 
@@ -183,7 +181,7 @@ export class ConfigLoader {
         stepType,
         toolData
       );
-      const toolKey = toolData?.id || undefined;
+      const toolKey = typeof toolData?.id === "string" ? toolData.id : undefined;
 
       // Combine all metadata into a single JSONB field
       const metadata = {
@@ -283,7 +281,7 @@ export class ConfigLoader {
       data_key: key,
       data_value: null,
       data_type: "string",
-      source: "system",
+      source: "system_calculated", // Match valid source literally
       is_verified: false,
     }));
   }

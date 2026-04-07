@@ -1098,10 +1098,11 @@ export class JourneyService {
       // If case data provided, check chapter visibility
       let visibleChapters = chapters;
       if (caseData) {
-        visibleChapters = await this.conditionalEngine.getVisibleChapters(
+        const checkResults = await this.conditionalEngine.getVisibleChapters(
           journeyId,
           caseData,
         );
+        visibleChapters = checkResults.map((res: any) => res.chapter);
       }
 
       return {
@@ -1203,7 +1204,7 @@ export class StepService {
 
       return {
         ...step,
-        chapter,
+        chapter: chapter ?? undefined,
         dependencies_completed: true,
       };
     } catch (error) {
@@ -1224,13 +1225,13 @@ export class StepService {
       // Check visibility
       const visibilityCheck = this.conditionalLogic.evaluateStepVisibility(
         step,
-        caseData,
+        caseData || {},
       );
 
       // Check if blocked
       const blockedReason = this.conditionalLogic.evaluateBlockedStatus(
         step,
-        caseData,
+        caseData || {},
       );
 
       // Check dependencies
@@ -1256,9 +1257,9 @@ export class StepService {
 
       return {
         ...step,
-        chapter,
+        chapter: chapter ?? undefined,
         dependencies_completed: dependenciesCompleted,
-        blocked_reason: blockedReason || undefined,
+        blocked_reason: blockedReason.is_visible ? undefined : blockedReason.reason,
         next_steps: nextSteps,
         progress_in_chapter: {
           step_position: stepPosition,
@@ -1418,10 +1419,11 @@ export class CaseDataService {
     );
 
     const response = await db.upsertCaseDataDB(journeyId, dataKey, {
+      data_key: dataKey,
       data_value: dataValue,
       data_type: detectDataType(dataValue) as any,
       is_verified: options?.is_verified || false,
-      source: options?.source || "user_input",
+      source: (options?.source as any) || "user_input",
       source_reference: options?.source_reference,
     });
 
@@ -1429,7 +1431,7 @@ export class CaseDataService {
     if (!validation.is_valid) {
       await db.updateCaseDataDB(journeyId, dataKey, {
         is_validated: false,
-        validation_errors: validation.errors.map((err) => ({ error: err })),
+        validation_errors: validation.errors,
       });
     }
 
@@ -1555,7 +1557,7 @@ export class CaseDataService {
     for (const [dataKey, result] of Object.entries(validationResults)) {
       await db.updateCaseDataDB(journeyId, dataKey, {
         is_validated: result.is_valid,
-        validation_errors: result.errors.map((err) => ({ error: err })),
+        validation_errors: result.errors,
       });
     }
 
