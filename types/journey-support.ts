@@ -294,3 +294,65 @@ export interface ValidationError {
   field: string
   issue: string
 }
+
+// ─────────────────────────────────────────────────────────────
+// JOURNEY REMINDERS (in-app notification engine)
+// ─────────────────────────────────────────────────────────────
+
+export type ReminderType =
+  | 'missing_document'
+  | 'appointment_approaching'
+  | 'police_certificate_pending'
+  | 'receipt_not_captured'
+  | 'nvc_fee_not_confirmed'
+  | 'account_setup_incomplete'
+  | 'ceac_upload_incomplete'
+  | 'tool_session_abandoned'
+  | 'step_pending_too_long'
+  | 'appointment_not_recorded'
+
+export type ReminderPriority = 'critical' | 'high' | 'normal' | 'low'
+
+export type ReminderAction = 'dismiss' | 'snooze'
+
+/** A row in the journey_reminders table */
+export interface JourneyReminder {
+  id: string
+  journey_id: string
+  reminder_type: ReminderType
+  priority: ReminderPriority
+  title: string
+  body: string
+  step_key: string | null
+  reference_id: string | null
+  action_url: string | null
+  action_label: string | null
+  is_dismissed: boolean
+  dismissed_at: string | null
+  snoozed_until: string | null
+  dedup_key: string
+  created_at: string
+  updated_at: string
+}
+
+/** Body for PATCH /api/v1/journeys/[id]/reminders/[reminderId] */
+export interface UpdateReminderBody {
+  action: ReminderAction
+  snooze_days?: number // 1, 3, 7, or 14
+}
+
+/** GET /api/v1/journeys/[id]/reminders response */
+export interface ReminderListResponse {
+  success: true
+  reminders: JourneyReminder[]
+  total: number
+  critical_count: number
+  high_count: number
+}
+
+/** PATCH /api/v1/journeys/[id]/reminders/[id] response */
+export interface ReminderUpdateResponse {
+  success: true
+  message: string
+  reminder: JourneyReminder
+}
