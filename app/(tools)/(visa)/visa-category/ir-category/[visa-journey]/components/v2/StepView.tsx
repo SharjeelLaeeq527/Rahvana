@@ -77,8 +77,7 @@ interface FilingQuizResult {
   emphasize: "online" | "paper" | null;
 }
 
-export function StepView({ data, state, actions, onBack }: StepViewProps) {
-  const [completeFlash, setCompleteFlash] = useState(false);
+export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
   const [selectedGuideId, setSelectedGuideId] = useState<string | null>(null);
 
   // Filing Quiz States
@@ -100,6 +99,26 @@ export function StepView({ data, state, actions, onBack }: StepViewProps) {
   const [isWalletViewOpen, setIsWalletViewOpen] = useState(false);
   const [isSubmittingCreds, setIsSubmittingCreds] = useState(false);
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
+
+  // NVC Fee States
+  const [isNvcFeeModalOpen, setIsNvcFeeModalOpen] = useState(false);
+  const nvcFeeData = state.metadata.nvcFeeStatus || {
+    aos: "Not Started",
+    iv: "Not Started",
+    date: "",
+    note: "",
+  };
+
+  // CEAC Credentials States
+  const [ceacCredentials, setCeacCredentials] =
+    useState<PortalCredential | null>(null);
+  const [isCeacModalOpen, setIsCeacModalOpen] = useState(false);
+
+  // Civil Documents States
+  const [activeCivilDoc, setActiveCivilDoc] = useState<any>(null);
+  const [isCivilDocGuideOpen, setIsCivilDocGuideOpen] = useState(false);
+  const civilDocsStatus =
+    (state.metadata.civilDocsStatus as Record<string, string>) || {};
 
   // Tutorial State
   const [isTutorialOpen, setIsTutorialOpen] = useState(false);
@@ -137,9 +156,6 @@ export function StepView({ data, state, actions, onBack }: StepViewProps) {
       ? allActiveSteps[globalIdx + 1]
       : null;
   const progressPct = Math.round((globalIdx / allActiveSteps.length) * 100);
-  const activeIdxInChapter = activeStepsInChapter.findIndex(
-    (s: any) => (s.step_key || s.id) === sId,
-  );
 
   useEffect(() => {
     const scrollContainer = document.querySelector(".scrollbar-hide");
@@ -158,7 +174,11 @@ export function StepView({ data, state, actions, onBack }: StepViewProps) {
         const uscis = data.credentials.find(
           (c: PortalCredential) => c.portal_type.toUpperCase() === "USCIS",
         );
+        const ceac = data.credentials.find(
+          (c: PortalCredential) => c.portal_type.toUpperCase() === "NVC",
+        );
         setUscisCredentials(uscis || null);
+        setCeacCredentials(ceac || null);
       }
     } catch (err) {
       console.error("Failed to fetch credentials:", err);
@@ -171,7 +191,14 @@ export function StepView({ data, state, actions, onBack }: StepViewProps) {
 
   // Disable body scroll when overlays are open
   useEffect(() => {
-    if (isTutorialOpen || selectedGuideId || showQuiz) {
+    if (
+      isTutorialOpen ||
+      selectedGuideId ||
+      showQuiz ||
+      isCivilDocGuideOpen ||
+      isNvcFeeModalOpen ||
+      isCeacModalOpen
+    ) {
       document.body.style.overflow = "hidden";
     } else {
       document.body.style.overflow = "";
@@ -179,7 +206,14 @@ export function StepView({ data, state, actions, onBack }: StepViewProps) {
     return () => {
       document.body.style.overflow = "";
     };
-  }, [isTutorialOpen, selectedGuideId, showQuiz]);
+  }, [
+    isTutorialOpen,
+    selectedGuideId,
+    showQuiz,
+    isCeacModalOpen,
+    isNvcFeeModalOpen,
+    isCivilDocGuideOpen,
+  ]);
 
   const handleSaveCredentials = async (data: {
     portalType: "USCIS" | "NVC" | "COURIER";
@@ -259,6 +293,16 @@ export function StepView({ data, state, actions, onBack }: StepViewProps) {
       toast.error("Failed to delete credentials.");
     } finally {
       setIsSubmittingCreds(false);
+    }
+  };
+
+  const handleSaveNvcFee = (newData: any) => {
+    actions.updateMetadata({ nvcFeeStatus: newData });
+    setIsNvcFeeModalOpen(false);
+    toast.success("Payment status saved to your Portal Wallet!");
+    // Auto-complete step if both are paid
+    if (newData.aos === "Paid" && newData.iv === "Paid") {
+      if (!isCompleted) handleToggleComplete();
     }
   };
 
@@ -407,11 +451,29 @@ export function StepView({ data, state, actions, onBack }: StepViewProps) {
   };
 
   const handleToggleComplete = () => {
-    if (!isCompleted) {
-      setCompleteFlash(true);
-      setTimeout(() => setCompleteFlash(false), 800);
-    }
     actions.toggleComplete(currentStep.step_key || sId);
+  };
+
+  const handleMarkDocReviewed = (docId: string) => {
+    const next = { ...civilDocsStatus, [docId]: "reviewed" };
+    actions.updateMetadata({ civilDocsStatus: next });
+
+    // Auto-complete step 2.4 if all are reviewed
+    if (sId === "step_2_4") {
+      const tool = currentStep.tool_data;
+      if (tool?.doc_list) {
+        const total = tool.doc_list.groups.reduce(
+          (acc: number, g: any) => acc + g.items.length,
+          0,
+        );
+        const reviewedCount = Object.values(next).filter(
+          (s) => s === "reviewed",
+        ).length;
+        if (reviewedCount === total && !isCompleted) {
+          handleToggleComplete();
+        }
+      }
+    }
   };
 
   const handleNavigate = (stepId: string) => {
@@ -429,7 +491,7 @@ export function StepView({ data, state, actions, onBack }: StepViewProps) {
   };
 
   const renderToolStep = () => {
-    const tool = currentStep.tool_data || currentStep.tool_data;
+    const tool = currentStep.tool_data;
     if (!tool) return null;
 
     // Theme detection based on icon or ID
@@ -479,13 +541,14 @@ export function StepView({ data, state, actions, onBack }: StepViewProps) {
         <div className="w-full max-w-[680px] px-[24px] pb-[96px] flex flex-col">
           {/* Eyebrow / Breadcrumb Row */}
           <div className="flex items-center gap-[8px] mb-[6px]">
-            <span className="text-[11px] font-[600] uppercase tracking-[0.12em] text-[#636b97]">
-              Chapter 1 · USCIS Petition Filing
+            <span className="text-[11px] font-[600] uppercase tracking-widest text-[#636b97]">
+              Chapter {currentChapter?.chapter_number || state.currentStage + 1}{" "}
+              · {currentChapter?.chapter_name || currentChapter?.name}
             </span>
             <span className="text-[11px] text-[#b8d4f0]">›</span>
             <span
               className={`text-[11px] font-[600] uppercase tracking-[0.08em] ${
-                isBeneficiaryTheme ? "text-[#0f7373]" : "text-[#2f6fd4]"
+                isBeneficiaryTheme ? "text-primary" : "text-primary"
               }`}
             >
               {currentStep.step_name}
@@ -494,7 +557,7 @@ export function StepView({ data, state, actions, onBack }: StepViewProps) {
 
           {/* Title + Description */}
           <h1
-            className="text-[clamp(28px,4.5vw,38px)] font-black text-[#0c1b33] leading-[1.15] tracking-[-0.01em] mb-[12px]"
+            className="text-[clamp(28px,4.5vw,38px)] font-black text-[#0c1b33] leading-normal tracking-[-0.01em] mb-[12px]"
             style={{ fontFamily: "'DM Serif Display', serif" }}
           >
             {currentStep.step_name}
@@ -521,23 +584,25 @@ export function StepView({ data, state, actions, onBack }: StepViewProps) {
           )}
 
           {/* Meta Chips */}
-          <div className="flex flex-wrap gap-[7px] mb-[44px]">
+          <div className="flex flex-wrap gap-[7px] mb-[32px]">
             {tool.chips ? (
-              tool.chips.map((chip, i) => (
+              tool.chips.map((chip: any, i: number) => (
                 <span
                   key={i}
                   className={`text-[11px] font-[600] uppercase tracking-[0.06em] px-[12px] py-[5px] rounded-full border ${
-                    chip.type === "role"
+                    chip.type === "role" || chip.role === "role"
                       ? isBeneficiaryTheme
                         ? "bg-[#e9f4ee] text-[#1a5f3f] border-[#b0dcc0]"
                         : "bg-[#e8f1fb] text-primary/80 border-[#d0e4f7]"
-                      : chip.type === "tool"
+                      : chip.type === "tool" || chip.tool === "tool"
                         ? "bg-[#f3f0fb] text-[#4a2d8a] border-[#c9bef2]"
                         : chip.type === "pay"
                           ? "bg-[#fffbec] text-[#c49a0a] border-[#e8d47a]"
                           : chip.type === "final"
                             ? "bg-[#e8f5ef] text-[#15744f] border-[#a8d9be]"
-                            : chip.type === "uscis" || chip.type === "path"
+                            : chip.type === "uscis" ||
+                                chip.uscis === "uscis" ||
+                                chip.type === "path"
                               ? "bg-[#fff7ed] text-[#b45309] border-[#fed7aa]"
                               : "bg-[#fafcff] text-[#6b8097] border-[#d0e4f7]"
                   }`}
@@ -566,6 +631,16 @@ export function StepView({ data, state, actions, onBack }: StepViewProps) {
             )}
           </div>
 
+          {/* ALERT NOTE (Step 3 SPECIFIC) */}
+          {tool.alert_note && (
+            <div className="flex items-center gap-[10px] bg-[#fef8e8] border border-[#f0d98a] rounded-[10px] padding-12 px-[16px] py-[12px] mb-[28px]">
+              <div className="text-[14px] shrink-0">⚡</div>
+              <div className="text-[13px] text-[#8a6200] leading-normal">
+                {tool.alert_note}
+              </div>
+            </div>
+          )}
+
           {/* Return Note (Success Banner — shown after portal launch) */}
           {isLaunched && (
             <div className="mb-[20px] bg-[#e8f5ef] border border-[#a8d9be] rounded-[10px] p-[14px_18px] flex items-start gap-[12px] animate-in slide-in-from-top-2 duration-300 fill-mode-both">
@@ -579,7 +654,7 @@ export function StepView({ data, state, actions, onBack }: StepViewProps) {
                       ? "USCIS account page opened in a new tab"
                       : "Tool launched in a new tab")}
                 </div>
-                <div className="text-[12px] text-[#3a4f63] leading-[1.5]">
+                <div className="text-[12px] text-[#3a4f63] leading-normal">
                   {tool.launch_module.return_note?.body ||
                     (sId === "step_1_6"
                       ? "Complete the sign-up there, then return here to save your credentials."
@@ -611,7 +686,7 @@ export function StepView({ data, state, actions, onBack }: StepViewProps) {
                   />
                 </div>
                 <div className="flex-1">
-                  <div className="text-[10px] font-bold uppercase tracking-[0.12em] text-white/35 mb-[5px]">
+                  <div className="text-[10px] font-bold uppercase tracking-widest text-white/35 mb-[5px]">
                     {tool.launch_module.eyebrow}
                   </div>
                   <h2
@@ -629,7 +704,7 @@ export function StepView({ data, state, actions, onBack }: StepViewProps) {
               {tool.fee_block && (
                 <div className="flex items-center gap-[16px] bg-white/[0.05] border border-white/[0.09] rounded-[10px] p-[16px_18px] mb-[16px] flex-wrap">
                   <div className="flex flex-col gap-[2px] shrink-0">
-                    <div className="text-[10px] font-bold uppercase tracking-[0.1em] text-white/35">
+                    <div className="text-[10px] font-bold uppercase tracking-widest text-white/35">
                       {tool.fee_block.label}
                     </div>
                     <div
@@ -644,7 +719,7 @@ export function StepView({ data, state, actions, onBack }: StepViewProps) {
                   </div>
                   <div className="w-[1px] h-[48px] bg-white/12 shrink-0 hidden sm:block" />
                   <div className="flex flex-col gap-[6px] flex-1">
-                    {tool.fee_block.details.map((d, i) => (
+                    {tool.fee_block.details.map((d: string, i: number) => (
                       <div
                         key={i}
                         className="flex items-start gap-[8px] text-[12px] text-white/55"
@@ -660,7 +735,7 @@ export function StepView({ data, state, actions, onBack }: StepViewProps) {
               {/* Review Checklist (Step 10 — Review & Submit) */}
               {tool.review_checklist && tool.review_checklist.length > 0 && (
                 <div className="flex flex-col gap-[8px] mb-[20px]">
-                  {tool.review_checklist.map((item, i) => (
+                  {tool.review_checklist.map((item: string, i: number) => (
                     <div
                       key={i}
                       className="flex items-start gap-[12px] bg-white/[0.06] border border-white/10 rounded-[10px] p-[12px_14px]"
@@ -684,7 +759,7 @@ export function StepView({ data, state, actions, onBack }: StepViewProps) {
               <div
                 className={`grid grid-cols-1 sm:grid-cols-2 gap-[10px] ${tool.launch_module.button_label ? "mb-[26px]" : "mb-0"}`}
               >
-                {tool.launch_module.features.map((feat, i) => (
+                {tool.launch_module.features.map((feat: string, i: number) => (
                   <div
                     key={i}
                     className="bg-white/6 border border-white/10 rounded-[10px] p-[12px_14px] flex items-start gap-[10px]"
@@ -711,19 +786,21 @@ export function StepView({ data, state, actions, onBack }: StepViewProps) {
               {tool.upload_requirements &&
                 tool.upload_requirements.length > 0 && (
                   <div className="bg-white/5 border border-white/9 rounded-[10px] p-[14px_16px] mb-[26px]">
-                    <div className="text-[11px] font-bold uppercase tracking-[0.07em] text-white/35 mb-[10px]">
+                    <div className="text-[11px] font-bold uppercase tracking-widest text-white/35 mb-[10px]">
                       USCIS upload requirements
                     </div>
                     <div className="flex flex-col gap-[7px]">
-                      {tool.upload_requirements.map((req, i) => (
-                        <div
-                          key={i}
-                          className="flex items-start gap-[10px] text-[13px] text-white/55 leading-[1.45]"
-                        >
-                          <div className="w-[4px] h-[4px] rounded-full bg-[#6aa8f0]/60 shrink-0 mt-[5px]" />
-                          <span>{req}</span>
-                        </div>
-                      ))}
+                      {tool.upload_requirements.map(
+                        (req: string, i: number) => (
+                          <div
+                            key={i}
+                            className="flex items-start gap-[10px] text-[13px] text-white/55 leading-[1.45]"
+                          >
+                            <div className="w-[4px] h-[4px] rounded-full bg-[#6aa8f0]/60 shrink-0 mt-[5px]" />
+                            <span>{req}</span>
+                          </div>
+                        ),
+                      )}
                     </div>
                   </div>
                 )}
@@ -742,7 +819,7 @@ export function StepView({ data, state, actions, onBack }: StepViewProps) {
                         setIsLaunched(true);
                       }
                     }}
-                    className={`inline-flex items-center justify-center gap-[10px] w-full p-[16px_28px] text-white rounded-[12px] font-sans text-[15px] font-semibold tracking-[0.01em] transition-all duration-300 group cursor-pointer ${
+                    className={`inline-flex items-center justify-center gap-[10px] w-full p-[16px_28px] text-white rounded-[12px] font-sans text-[15px] font-semibold tracking-[0.01em] transition-all duration-200 group cursor-pointer ${
                       isLaunched && tool.launch_module.return_note
                         ? "bg-[#3b7dd8] shadow-[0_4px_20px_rgba(14,92,60,0.3)] pointer-events-none"
                         : "shadow-[0_4px_20px_rgba(47,111,212,0.35)] hover:translate-y-[-2px] hover:shadow-[0_8px_32px_rgba(47,111,212,0.45)]"
@@ -763,7 +840,7 @@ export function StepView({ data, state, actions, onBack }: StepViewProps) {
                     ) : (
                       <>
                         <span>{tool.launch_module.button_label}</span>
-                        <div className="transition-transform duration-220 group-hover:translate-x-[2px]">
+                        <div className="transition-transform duration-200 group-hover:translate-x-[2px]">
                           <ArrowRight size={16} strokeWidth={2} />
                         </div>
                       </>
@@ -771,7 +848,7 @@ export function StepView({ data, state, actions, onBack }: StepViewProps) {
                   </button>
 
                   <div
-                    className={`flex items-center justify-center gap-[5px] text-[12px] text-center leading-[1.4] transition-colors duration-300 ${
+                    className={`flex items-center justify-center gap-[5px] text-[12px] text-center leading-[1.4] transition-colors duration-200 ${
                       isLaunched && tool.launch_module.return_note
                         ? "text-white/35"
                         : "text-white/35"
@@ -790,19 +867,185 @@ export function StepView({ data, state, actions, onBack }: StepViewProps) {
             </div>
           </div>
 
-          {/* SUPPORT CARDS (Step 4 & 5 only) */}
+          {/* PROGRESS BAR (Step 2.4 SPECIFIC — CIVIL DOCS) */}
+          {tool.doc_list && (
+            <div className="flex flex-col mb-[36px]">
+              <div className="flex items-center gap-[12px] mb-[8px]">
+                <div className="flex-1 h-[5px] bg-[#d0e4f7] rounded-[10px] overflow-hidden">
+                  <div
+                    className="h-full bg-gradient-to-r from-primary to-[#6aa8f0] rounded-[10px] transition-all duration-500"
+                    style={{
+                      width: `${Math.round(
+                        (Object.values(civilDocsStatus).filter(
+                          (s) => s === "reviewed",
+                        ).length /
+                          tool.doc_list.groups.reduce(
+                            (acc: number, g: any) => acc + g.items.length,
+                            0,
+                          )) *
+                          100,
+                      )}%`,
+                    }}
+                  />
+                </div>
+                <div className="text-[12px] font-medium text-[#6b8097] whitespace-nowrap shrink-0">
+                  {
+                    Object.values(civilDocsStatus).filter(
+                      (s) => s === "reviewed",
+                    ).length
+                  }{" "}
+                  of{" "}
+                  {tool.doc_list.groups.reduce(
+                    (acc: number, g: any) => acc + g.items.length,
+                    0,
+                  )}{" "}
+                  reviewed
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* DOCUMENT LIST (Step 2.4 SPECIFIC) */}
+          {tool.doc_list && (
+            <div className="flex flex-col gap-[32px]">
+              {tool.doc_list.groups.map((group: any) => (
+                <div key={group.id} className="flex flex-col">
+                  <div className="flex items-center gap-[10px] mb-[14px]">
+                    <span className="text-[11px] font-semibold uppercase tracking-[0.09em] text-[#6b8097]">
+                      {group.label}
+                    </span>
+                    <span
+                      className={`text-[10px] font-semibold px-[9px] py-[3px] rounded-full uppercase tracking-[0.06em] border ${
+                        group.badge === "req"
+                          ? "bg-[#ffeaea] text-[#a01c1c] border-[#f5bebe]"
+                          : group.badge === "cond"
+                            ? "bg-[#fef8e8] text-[#8a6200] border-[#f0d98a]"
+                            : "bg-[#e8f1fb] text-[#2d4a6e] border-[#d0e4f7]"
+                      }`}
+                    >
+                      {group.badge === "req"
+                        ? "Required"
+                        : group.badge === "cond"
+                          ? "Required if Applicable"
+                          : "Recommended"}
+                    </span>
+                    <div className="flex-1 h-[1px] bg-[#d0e4f7]" />
+                  </div>
+                  <div className="flex flex-col gap-[10px]">
+                    {group.items.map((item: any) => {
+                      const st = civilDocsStatus[item.id] || "not-started";
+                      return (
+                        <button
+                          key={item.id}
+                          onClick={() => {
+                            if (item.external_href) {
+                              window.open(
+                                item.external_href,
+                                "_blank",
+                                "noopener,noreferrer",
+                              );
+                              // If they click an external guide, maybe we should also count it as started?
+                              if (st === "not-started") {
+                                actions.updateMetadata({
+                                  civilDocsStatus: {
+                                    ...civilDocsStatus,
+                                    [item.id]: "in-progress",
+                                  },
+                                });
+                              }
+                            } else {
+                              setActiveCivilDoc(item);
+                              setIsCivilDocGuideOpen(true);
+                            }
+                          }}
+                          className={`bg-white border-[1.5px] rounded-[16px] p-[18px_20px] flex items-center gap-[16px] cursor-pointer transition-all hover:border-primary hover:shadow-[0_4px_20px_rgba(47,111,212,0.1)] hover:-translate-y-px active:translate-y-0 text-left w-full
+                            ${st === "reviewed" ? "border-[#a8d9be] bg-[#e8f5ef]" : st === "in-progress" ? "border-[#f0d98a] bg-[#fef8e8]" : "border-[#d0e4f7]"}
+                          `}
+                        >
+                          <div
+                            className={`w-[40px] h-[40px] rounded-[10px] border flex items-center justify-center shrink-0 text-[17px] transition-colors
+                            ${st === "reviewed" ? "bg-[#e8f5ef] border-[#a8d9be]" : "bg-[#e8f1fb] border-[#d0e4f7] group-hover:bg-[rgba(47,111,212,0.12)] group-hover:border-[rgba(47,111,212,0.3)]"}
+                          `}
+                          >
+                            {item.icon}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="text-[15px] font-semibold text-[#0c1b33] mb-[4px] leading-[1.3]">
+                              {item.title}
+                            </div>
+                            <div className="text-[13px] text-[#6b8097] leading-[1.4]">
+                              {item.sub}
+                            </div>
+                            <div className="flex gap-[6px] mt-[7px] flex-wrap">
+                              {item.tags.map((t: string) => {
+                                const map: any = {
+                                  bene: {
+                                    label: "Beneficiary",
+                                    cls: "bg-[#e8f5ef] text-[#15744f] border-[#a8d9be]",
+                                  },
+                                  pet: {
+                                    label: "Petitioner",
+                                    cls: "bg-[#e8f1fb] text-[#2d4a6e] border-[#d0e4f7]",
+                                  },
+                                  both: {
+                                    label: "Both",
+                                    cls: "bg-[#f3f0fb] text-[#4a2d8a] border-[#c9bef2]",
+                                  },
+                                  govt: {
+                                    label: "Govt Record",
+                                    cls: "bg-[#fff7ed] text-[#b45309] border-[#fed7aa]",
+                                  },
+                                  "3p": {
+                                    label: "Third Party",
+                                    cls: "bg-[#eef3fa] text-[#3a4f63] border-[#d0e4f7]",
+                                  },
+                                };
+                                const tag = map[t];
+                                if (!tag) return null;
+                                return (
+                                  <span
+                                    key={t}
+                                    className={`text-[11px] font-semibold px-[9px] py-[3px] rounded-full border tracking-[0.04em] ${tag.cls}`}
+                                  >
+                                    {tag.label}
+                                  </span>
+                                );
+                              })}
+                            </div>
+                          </div>
+                          <div
+                            className={`text-[12px] font-medium px-[11px] py-[5px] rounded-full shrink-0 border whitespace-nowrap
+                            ${st === "reviewed" ? "bg-[#e8f5ef] text-[#15744f] border-[#a8d9be]" : st === "in-progress" ? "bg-[#fef8e8] text-[#8a6200] border-[#f0d98a]" : "bg-[#f4f7fb] text-[#6b8097] border-[#d0e4f7]"}
+                          `}
+                          >
+                            {st === "reviewed"
+                              ? "✓ Reviewed"
+                              : st === "in-progress"
+                                ? "In progress"
+                                : "Open guide"}
+                          </div>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* SUPPORT CARDS */}
           {tool.support_cards && tool.support_cards.length > 0 && (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-[10px] mb-[32px]">
-              {tool.support_cards.map((card, i) => (
+              {tool.support_cards.map((card: any, i: number) => (
                 <div
                   key={i}
                   className="bg-[#fafcff] border-[1.5px] border-[#d0e4f7] rounded-[10px] p-[16px_18px]"
                 >
-                  <div className="text-[10px] font-bold uppercase tracking-[0.1em] text-[#6b8097] mb-[10px]">
+                  <div className="text-[10px] font-bold uppercase tracking-widest text-[#6b8097] mb-[10px]">
                     {card.label}
                   </div>
                   <div className="flex flex-col gap-[7px]">
-                    {card.items?.map((item, j) => (
+                    {card.items?.map((item: string, j: number) => (
                       <div key={j} className="flex items-start gap-[8px]">
                         <div className="w-[4px] h-[4px] rounded-full bg-[#b8d4f0] mt-[5px] shrink-0" />
                         <span className="text-[13px] text-[#3a4f63] leading-[1.4]">
@@ -816,42 +1059,6 @@ export function StepView({ data, state, actions, onBack }: StepViewProps) {
             </div>
           )}
 
-          {/* GUIDE CARD (Steps 7 & 8: tutorial trigger) */}
-          {tool.guide_card &&
-            tool.tutorial_steps &&
-            tool.tutorial_steps.length > 0 && (
-              <button
-                onClick={() => {
-                  setTutorialIdx(0);
-                  setIsTutorialOpen(true);
-                }}
-                className="w-full bg-[#fafcff] border-[1.5px] border-[#d0e4f7] rounded-[16px] p-[22px] cursor-pointer transition-all hover:border-[#2f6fd4] hover:shadow-[0_4px_20px_rgba(47,111,212,0.1)] hover:-translate-y-[1px] active:translate-y-0 text-left user-select-none flex items-center gap-[18px] mb-[28px]"
-              >
-                <div className="w-[44px] h-[44px] rounded-[11px] bg-[#f3f0fb] border border-[#c9bef2] flex items-center justify-center shrink-0">
-                  <Monitor
-                    size={20}
-                    className="text-[#4a2d8a]"
-                    strokeWidth={1.7}
-                  />
-                </div>
-                <div className="flex-1">
-                  <div className="text-[15px] font-semibold text-[#0c1b33] mb-[4px]">
-                    {tool.guide_card.title}
-                  </div>
-                  <div className="text-[13px] text-[#6b8097] leading-[1.5]">
-                    {tool.guide_card.subtitle}
-                  </div>
-                </div>
-                <div className="w-[32px] h-[32px] rounded-full bg-[#eef3fa] flex items-center justify-center shrink-0 transition-all group-hover:bg-[rgba(47,111,212,0.12)]">
-                  <ArrowRight
-                    size={14}
-                    className="text-[#6b8097]"
-                    strokeWidth={2}
-                  />
-                </div>
-              </button>
-            )}
-
           {/* SECONDARY ACTIONS ROW (Step 6 SPECIFIC) */}
           {sId === "step_1_6" && (
             <div className="flex flex-col mb-[28px]">
@@ -862,7 +1069,7 @@ export function StepView({ data, state, actions, onBack }: StepViewProps) {
                     setTutorialIdx(0);
                     setIsTutorialOpen(true);
                   }}
-                  className="bg-[#fafcff] border-[1.5px] border-[#d0e4f7] rounded-[16px] p-[20px] text-left group hover:border-[#2f6fd4] hover:shadow-[0_4px_20px_rgba(47,111,212,0.1)] hover:-translate-y-[1px] transition-all cursor-pointer select-none flex flex-col"
+                  className="bg-[#fafcff] border-[1.5px] border-[#d0e4f7] rounded-[16px] p-[20px] text-left group hover:border-primary hover:shadow-[0_4px_20px_rgba(47,111,212,0.1)] hover:-translate-y-px transition-all cursor-pointer select-none flex flex-col"
                 >
                   <div className="flex items-center gap-[10px] mb-[12px]">
                     <div className="w-[36px] h-[36px] rounded-[9px] bg-[#f3f0fb] border border-[#c9bef2] flex items-center justify-center shrink-0">
@@ -876,11 +1083,11 @@ export function StepView({ data, state, actions, onBack }: StepViewProps) {
                   <h3 className="text-[14px] font-semibold text-[#0c1b33] mb-1">
                     Step-by-Step Account Setup Guide
                   </h3>
-                  <p className="text-[12px] text-[#6b8097] leading-[1.5]">
+                  <p className="text-[12px] text-[#6b8097] leading-normal">
                     Walk through the USCIS account creation process screen by
                     screen.
                   </p>
-                  <div className="flex items-center gap-1 mt-3 text-[12px] font-semibold text-[#2f6fd4]">
+                  <div className="flex items-center gap-1 mt-3 text-[12px] font-semibold text-primary">
                     <span>View guide</span>
                     <ArrowRight size={11} strokeWidth={2} />
                   </div>
@@ -891,7 +1098,7 @@ export function StepView({ data, state, actions, onBack }: StepViewProps) {
                   /* Saved Card */
                   <button
                     onClick={() => setIsWalletViewOpen(true)}
-                    className="bg-[#e8f5ef] border-[1.5px] border-[#a8d9be] rounded-[16px] p-[20px] text-left group hover:border-[#15744f] hover:shadow-[0_4px_20px_rgba(21,116,79,0.1)] hover:-translate-y-[1px] transition-all cursor-pointer select-none flex flex-col"
+                    className="bg-[#e8f5ef] border-[1.5px] border-[#a8d9be] rounded-[16px] p-[20px] text-left group hover:border-[#15744f] hover:shadow-[0_4px_20px_rgba(21,116,79,0.1)] hover:-translate-y-px transition-all cursor-pointer select-none flex flex-col"
                   >
                     <div className="flex items-center gap-[10px] mb-[12px]">
                       <div className="w-[36px] h-[36px] rounded-[9px] bg-[#e8f5ef] border border-[#a8d9be] flex items-center justify-center shrink-0">
@@ -905,7 +1112,7 @@ export function StepView({ data, state, actions, onBack }: StepViewProps) {
                     <h3 className="text-[14px] font-semibold text-[#0c1b33] mb-1">
                       ✓ Credentials Saved
                     </h3>
-                    <p className="text-[12px] text-[#6b8097] leading-[1.5]">
+                    <p className="text-[12px] text-[#6b8097] leading-normal">
                       USCIS credentials are stored in your Portal Wallet.
                     </p>
                     <div className="flex items-center gap-1 mt-3 text-[12px] font-semibold text-[#15744f]">
@@ -917,7 +1124,7 @@ export function StepView({ data, state, actions, onBack }: StepViewProps) {
                   /* Unsaved Card */
                   <button
                     onClick={() => setIsWalletFormOpen(true)}
-                    className="bg-[#fafcff] border-[1.5px] border-[#d0e4f7] rounded-[16px] p-[20px] text-left group hover:border-[#2f6fd4] hover:shadow-[0_4px_20px_rgba(47,111,212,0.1)] hover:-translate-y-[1px] transition-all cursor-pointer select-none flex flex-col"
+                    className="bg-[#fafcff] border-[1.5px] border-[#d0e4f7] rounded-[16px] p-[20px] text-left group hover:border-primary hover:shadow-[0_4px_20px_rgba(47,111,212,0.1)] hover:-translate-y-px transition-all cursor-pointer select-none flex flex-col"
                   >
                     <div className="flex items-center gap-[10px] mb-[12px]">
                       <div className="w-[36px] h-[36px] rounded-[9px] bg-[#e8f5ef] border border-[#a8d9be] flex items-center justify-center shrink-0">
@@ -931,11 +1138,11 @@ export function StepView({ data, state, actions, onBack }: StepViewProps) {
                     <h3 className="text-[14px] font-semibold text-[#0c1b33] mb-1">
                       Save USCIS Credentials
                     </h3>
-                    <p className="text-[12px] text-[#6b8097] leading-[1.5]">
+                    <p className="text-[12px] text-[#6b8097] leading-normal">
                       Securely store your USCIS login details in Rahvana&apos;s
                       Portal Wallet.
                     </p>
-                    <div className="flex items-center gap-1 mt-3 text-[12px] font-semibold text-[#2f6fd4]">
+                    <div className="flex items-center gap-1 mt-3 text-[12px] font-semibold text-primary">
                       <span>Open credential vault</span>
                       <ArrowRight size={11} strokeWidth={2} />
                     </div>
@@ -946,7 +1153,7 @@ export function StepView({ data, state, actions, onBack }: StepViewProps) {
               {/* Detailed View (Below Row, Only when saved) */}
               {uscisCredentials && (
                 <div className="bg-[#e8f5ef] border-[1.5px] border-[#a8d9be] rounded-[16px] p-5 flex flex-col">
-                  <div className="text-[10px] font-bold uppercase tracking-[0.08em] text-[#15744f] mb-[10px]">
+                  <div className="text-[10px] font-bold uppercase tracking-widest text-[#15744f] mb-[10px]">
                     USCIS Credentials — Saved
                   </div>
                   <div className="flex-1 flex flex-col">
@@ -987,6 +1194,232 @@ export function StepView({ data, state, actions, onBack }: StepViewProps) {
             </div>
           )}
 
+          {/* Guide / Wallet Cards Row */}
+          {(tool.guide_card || tool.wallet_card) && (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-[12px] mb-[28px]">
+              {tool.guide_card && (
+                <button
+                  onClick={() => {
+                    setTutorialIdx(0);
+                    setIsTutorialOpen(true);
+                  }}
+                  className="bg-[#fafcff] border-[1.5px] border-[#d0e4f7] rounded-[16px] p-[20px] text-left group hover:border-primary hover:shadow-[0_4px_20px_rgba(47,111,212,0.1)] hover:-translate-y-px transition-all cursor-pointer select-none flex flex-col"
+                >
+                  <div className="flex items-center gap-[10px] mb-[12px]">
+                    <div className="w-[36px] h-[36px] rounded-[9px] bg-[#f3f0fb] border border-[#c9bef2] flex items-center justify-center shrink-0">
+                      <Monitor
+                        size={18}
+                        className="text-[#4a2d8a]"
+                        strokeWidth={1.7}
+                      />
+                    </div>
+                  </div>
+                  <h3 className="text-[14px] font-semibold text-[#0c1b33] mb-1">
+                    {tool.guide_card.title}
+                  </h3>
+                  <p className="text-[12px] text-[#6b8097] leading-normal">
+                    {tool.guide_card.subtitle}
+                  </p>
+                  <div className="flex items-center gap-1 mt-3 text-[12px] font-semibold text-primary">
+                    <span>View guide</span>
+                    <ArrowRight size={11} strokeWidth={2} />
+                  </div>
+                </button>
+              )}
+
+              {tool.wallet_card && (
+                <button
+                  onClick={() => {
+                    if (tool.wallet_card.type === "nvc_fee") {
+                      setIsNvcFeeModalOpen(true);
+                    } else if (tool.wallet_card.type === "ceac_creds") {
+                      setIsCeacModalOpen(true);
+                    }
+                  }}
+                  className={`bg-[#fafcff] border-[1.5px] rounded-[16px] p-[20px] text-left group hover:shadow-[0_4px_20px_rgba(47,111,212,0.1)] hover:-translate-y-px transition-all cursor-pointer select-none flex flex-col
+                    ${
+                      (tool.wallet_card.type === "ceac_creds" &&
+                        ceacCredentials) ||
+                      (tool.wallet_card.type === "nvc_fee" &&
+                        state.metadata.nvcFeeStatus)
+                        ? "border-[#a8d9be] bg-[#e8f5ef]"
+                        : "border-[#d0e4f7] hover:border-primary"
+                    }
+                  `}
+                >
+                  <div className="flex items-center gap-[10px] mb-[12px]">
+                    <div
+                      className={`w-[36px] h-[36px] rounded-[9px] border flex items-center justify-center shrink-0
+                      ${
+                        (tool.wallet_card.type === "ceac_creds" &&
+                          ceacCredentials) ||
+                        (tool.wallet_card.type === "nvc_fee" &&
+                          state.metadata.nvcFeeStatus)
+                          ? "bg-[#e8f5ef] border-[#a8d9be]"
+                          : tool.wallet_card.type === "ceac_creds"
+                            ? "bg-[#e8f5ef] border-[#a8d9be]"
+                            : "bg-[#e6f6f6] border-[#9fd8d8]"
+                      }
+                    `}
+                    >
+                      {tool.wallet_card.type === "ceac_creds" ? (
+                        <Lock
+                          size={18}
+                          className="text-[#15744f]"
+                          strokeWidth={1.7}
+                        />
+                      ) : (
+                        <CreditCard
+                          size={18}
+                          className="text-[#0f7373]"
+                          strokeWidth={1.7}
+                        />
+                      )}
+                    </div>
+                  </div>
+                  <h3
+                    className={`text-[14px] font-semibold mb-1 ${
+                      (tool.wallet_card.type === "ceac_creds" &&
+                        ceacCredentials) ||
+                      (tool.wallet_card.type === "nvc_fee" &&
+                        state.metadata.nvcFeeStatus)
+                        ? "text-[#15744f]"
+                        : "text-[#0c1b33]"
+                    }`}
+                  >
+                    {(tool.wallet_card.type === "ceac_creds" &&
+                      ceacCredentials) ||
+                    (tool.wallet_card.type === "nvc_fee" &&
+                      state.metadata.nvcFeeStatus)
+                      ? `✓ ${tool.wallet_card.title.replace("Save", "Details")}`
+                      : tool.wallet_card.title}
+                  </h3>
+                  <p className="text-[12px] text-[#6b8097] leading-normal">
+                    {tool.wallet_card.subtitle}
+                  </p>
+                  <div
+                    className={`flex items-center gap-1 mt-3 text-[12px] font-semibold ${
+                      (tool.wallet_card.type === "ceac_creds" &&
+                        ceacCredentials) ||
+                      (tool.wallet_card.type === "nvc_fee" &&
+                        state.metadata.nvcFeeStatus)
+                        ? "text-[#15744f]"
+                        : "text-primary"
+                    }`}
+                  >
+                    <span>
+                      {(tool.wallet_card.type === "ceac_creds" &&
+                        ceacCredentials) ||
+                      (tool.wallet_card.type === "nvc_fee" &&
+                        state.metadata.nvcFeeStatus)
+                        ? "View saved details"
+                        : tool.wallet_card.type === "ceac_creds"
+                          ? "Open credential vault"
+                          : "Update payment record"}
+                    </span>
+                    <ArrowRight size={11} strokeWidth={2} />
+                  </div>
+                </button>
+              )}
+            </div>
+          )}
+
+          {/* CEAC CREDENTIALS VIEW — SAVED (Chapter 2, Step 1 SPECIFIC) */}
+          {sId === "step_2_1" && ceacCredentials && (
+            <div className="bg-[#e8f5ef] border-[1.5px] border-[#a8d9be] rounded-[16px] p-5 mb-7 flex flex-col animate-in fade-in slide-in-from-top-2 duration-300">
+              <div className="text-[10px] font-bold uppercase tracking-widest text-[#15744f] mb-[10px]">
+                CEAC Access Details — Saved
+              </div>
+              <div className="flex flex-col gap-3">
+                <div className="flex justify-between items-center py-1.5 border-b border-[#a8d9be]/50">
+                  <span className="text-[12px] text-[#3a4f63] font-medium">
+                    NVC Case Number
+                  </span>
+                  <span className="text-[12px] text-[#0c1b33] font-semibold font-mono">
+                    {ceacCredentials.nvc_case_number || "—"}
+                  </span>
+                </div>
+                <div className="flex justify-between items-center py-1.5 border-b border-[#a8d9be]/50">
+                  <span className="text-[12px] text-[#3a4f63] font-medium">
+                    Invoice ID Number
+                  </span>
+                  <span className="text-[12px] text-[#0c1b33] font-semibold font-mono">
+                    {ceacCredentials.nvc_invoice_id ? "••••••••" : "—"}
+                  </span>
+                </div>
+                {ceacCredentials.username && (
+                  <div className="flex justify-between items-center py-1.5 border-b border-[#a8d9be]/50 last:border-0">
+                    <span className="text-[12px] text-[#3a4f63] font-medium">
+                      Notification Email
+                    </span>
+                    <span className="text-[12px] text-[#0c1b33] font-semibold font-mono">
+                      {ceacCredentials.username}
+                    </span>
+                  </div>
+                )}
+              </div>
+              <button
+                onClick={() => setIsCeacModalOpen(true)}
+                className="inline-flex items-center gap-1.5 mt-4 text-[12px] font-semibold text-primary hover:underline w-fit"
+              >
+                Edit or update in Portal Wallet
+                <ExternalLink size={12} strokeWidth={2} />
+              </button>
+            </div>
+          )}
+
+          {/* ACTION CARDS ROW (Step 3 SPECIFIC) */}
+          {tool.action_cards && (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-[12px] mb-[28px]">
+              {tool.action_cards.map((card: ActionCard) => (
+                <button
+                  key={card.id}
+                  onClick={() => {
+                    if (card.type === "tutorial") {
+                      setTutorialIdx(0);
+                      setIsTutorialOpen(true);
+                    } else if (card.href) {
+                      window.open(card.href, "_blank", "noopener,noreferrer");
+                    }
+                  }}
+                  className="bg-white border-[1.5px] border-[#d0e4f7] rounded-[16px] p-[20px] text-left group hover:border-primary hover:shadow-[0_4px_20px_rgba(47,111,212,0.1)] hover:-translate-y-px transition-all cursor-pointer select-none flex flex-col"
+                >
+                  <div className="flex items-center gap-[10px] mb-[12px]">
+                    <div
+                      className={`w-[36px] h-[36px] rounded-[9px] border flex items-center justify-center shrink-0
+                      ${card.id === "tutorial" ? "bg-[#f3f0fb] border-[#c9bef2]" : "bg-[#e6f6f6] border-[#9fd8d8]"}
+                    `}
+                    >
+                      {card.icon === "tutorial" ? (
+                        <Monitor
+                          size={18}
+                          className="text-[#4a2d8a]"
+                          strokeWidth={1.7}
+                        />
+                      ) : (
+                        <Globe
+                          size={18}
+                          className="text-[#0f7373]"
+                          strokeWidth={1.7}
+                        />
+                      )}
+                    </div>
+                  </div>
+                  <h3 className="text-[14px] font-semibold text-[#0c1b33] mb-1">
+                    {card.title}
+                  </h3>
+                  <p className="text-[12px] text-[#6b8097] leading-normal">
+                    {card.subtitle}
+                  </p>
+                  <div className="flex items-center gap-1 mt-3 text-[12px] font-semibold text-primary">
+                    <span>{card.cta_label}</span>
+                    <ArrowRight size={11} strokeWidth={2} />
+                  </div>
+                </button>
+              ))}
+            </div>
+          )}
+
           {/* Disclaimer */}
           <p className="text-[11.5px] text-[#6b8097] leading-[1.65] text-center pt-[8px]">
             {tool.disclaimer ||
@@ -1001,42 +1434,6 @@ export function StepView({ data, state, actions, onBack }: StepViewProps) {
 
   return (
     <div className="flex-1 flex flex-col h-full bg-slate-50 relative overflow-hidden font-sans">
-      {/* Top Header */}
-      <header className="h-[64px] border-b border-slate-200 bg-white/90 backdrop-blur-md flex items-center justify-between px-5 md:px-8 shrink-0 z-40 shadow-sm sticky top-0">
-        <div className="flex items-center gap-4">
-          <button
-            onClick={onBack}
-            className="w-9 h-9 rounded-full border border-slate-200 flex items-center justify-center text-slate-400 hover:bg-slate-50 hover:text-primary transition-all active:scale-95 shadow-sm"
-          >
-            <ArrowLeft size={18} />
-          </button>
-          <div>
-            <div className="text-[9px] font-semibold uppercase tracking-[0.12em] text-[#6b8097] leading-none mb-1 px-0.5">
-              Chapter {state.currentStage + 1} ·{" "}
-              {activeIdxInChapter !== -1
-                ? `Step ${activeIdxInChapter + 1}`
-                : sId}
-            </div>
-            <h1 className="text-[15px] md:text-[16px] font-bold text-[#0f1f38] leading-none truncate max-w-[180px] md:max-w-md tracking-tight">
-              {currentStep.step_name}
-            </h1>
-          </div>
-        </div>
-
-        <div className="flex items-center gap-3">
-          <button
-            onClick={handleToggleComplete}
-            className={`flex items-center gap-2 px-5 py-2 rounded-full border-[1.5px] transition-all font-bold text-[12px] shadow-sm animate-in fade-in duration-300
-              ${isCompleted ? "bg-[#eaf7f2] border-[#b5e0d0] text-[#1a7a5e]" : "bg-white border-[#d0e4f7] text-[#3a4f63] hover:bg-[#fafcff] hover:border-primary hover:text-primary"} 
-              ${completeFlash ? "scale-105 ring-6 ring-emerald-50 border-emerald-300 shadow-xl" : ""}`}
-          >
-            <Check size={15} strokeWidth={3} />
-            <span>{isCompleted ? "Completed" : "Complete Step"}</span>
-          </button>
-        </div>
-      </header>
-
-      {/* Main Content Area */}
       <div
         className={`flex-1 overflow-y-auto scrollbar-hide flex flex-col items-center relative ${
           currentStep.step_type === "quest" ? "" : "p-6 md:p-10 lg:p-12"
@@ -1083,7 +1480,7 @@ export function StepView({ data, state, actions, onBack }: StepViewProps) {
                     const selVal = quizAnswers[screen.id]?.value;
                     return (
                       <div className="animate-in fade-in slide-in-from-right-[10px] duration-[0.22s] ease-out w-full">
-                        <div className="text-[10px] font-black uppercase tracking-[0.15em] text-primary mb-[14px]">
+                        <div className="text-[10px] font-black uppercase tracking-widest text-primary mb-[14px]">
                           Step 3 · Decide Filing Method
                         </div>
                         <h2 className="text-[clamp(20px,3.5vw,26px)] font-serif text-[#0f1f38] mb-[10px] leading-[1.35]">
@@ -1094,7 +1491,7 @@ export function StepView({ data, state, actions, onBack }: StepViewProps) {
                         </p>
 
                         <div className="flex flex-col gap-[10px] mb-[24px]">
-                          {screen.options.map((opt) => (
+                          {screen.options.map((opt: any) => (
                             <button
                               key={opt.value}
                               onClick={() =>
@@ -1106,11 +1503,11 @@ export function StepView({ data, state, actions, onBack }: StepViewProps) {
                                   },
                                 })
                               }
-                              className={`w-full p-[16px_20px] rounded-[14px] border-[1.5px] text-left transition-all duration-[0.22s] flex items-start gap-[14px] select-none
+                              className={`w-full p-[16px_20px] rounded-[14px] border-[1.5px] text-left transition-all duration-200 flex items-start gap-[14px] select-none
                                       ${selVal === opt.value ? "border-primary bg-[rgba(59,125,216,0.15)] shadow-[0_0_0_3px_rgba(59,125,216,0.12)]" : "border-[#d0e4f7] bg-[#fafcff] hover:border-primary hover:bg-[rgba(59,125,216,0.15)]"}`}
                             >
                               <div
-                                className={`w-[20px] h-[20px] mt-[1px] rounded-full border-[2px] flex items-center justify-center shrink-0 transition-colors duration-[0.22s] ${selVal === opt.value ? "border-primary bg-primary" : "border-[#d0e4f7]"}`}
+                                className={`w-[20px] h-[20px] mt-px rounded-full border-2 flex items-center justify-center shrink-0 transition-colors duration-[0.22s] ${selVal === opt.value ? "border-primary bg-primary" : "border-[#d0e4f7]"}`}
                               >
                                 {selVal === opt.value && (
                                   <div className="w-[8px] h-[8px] rounded-full bg-white animate-in zoom-in duration-150" />
@@ -1204,7 +1601,7 @@ export function StepView({ data, state, actions, onBack }: StepViewProps) {
                               className={`flex items-start gap-[10px] py-[8px] ${i !== quizResult.factors.length - 1 ? "border-b border-[#d0e4f7]" : ""}`}
                             >
                               <div className="mt-[6px] w-[5px] h-[5px] shrink-0 rounded-full bg-[#3a4f63]" />
-                              <span className="text-[14px] text-[#3a4f63] leading-[1.5]">
+                              <span className="text-[14px] text-[#3a4f63] leading-normal">
                                 {f.text}
                               </span>
                             </div>
@@ -1224,7 +1621,7 @@ export function StepView({ data, state, actions, onBack }: StepViewProps) {
                             setShowQuiz(false);
                             handleConfirmation("online");
                           }}
-                          className={`flex flex-col relative w-full p-[18px_20px] text-left rounded-[14px] border-[2px] transition-all duration-[0.2s] group select-none hover:-translate-y-[1px]
+                          className={`flex flex-col relative w-full p-[18px_20px] text-left rounded-[14px] border-[2px] transition-all duration-[0.2s] group select-none hover:-translate-y-px
                           ${quizResult.emphasize === "online" || quizResult.type === "lean-online" ? "bg-[#f0faf6] border-[#8ecdb8] hover:bg-[#0e5c42] hover:border-[#0a4330]" : "bg-white border-[#d0e4f7] hover:border-primary"}`}
                         >
                           <div
@@ -1258,7 +1655,7 @@ export function StepView({ data, state, actions, onBack }: StepViewProps) {
                             setShowQuiz(false);
                             handleConfirmation("paper");
                           }}
-                          className={`flex flex-col relative w-full p-[18px_20px] text-left rounded-[14px] border-[2px] transition-all duration-[0.2s] group select-none hover:-translate-y-[1px]
+                          className={`flex flex-col relative w-full p-[18px_20px] text-left rounded-[14px] border-[2px] transition-all duration-[0.2s] group select-none hover:-translate-y-px
                           ${quizResult.emphasize === "paper" ? "bg-[#f2f0fb] border-[#b0a6e2] hover:bg-[#2e1f72] hover:border-[#1e1348]" : "bg-white border-[#d0e4f7] hover:border-primary"}`}
                         >
                           <div
@@ -1379,21 +1776,6 @@ export function StepView({ data, state, actions, onBack }: StepViewProps) {
                           <span className="text-[11px] font-semibold tracking-[0.09em] uppercase text-[#6b8097] whitespace-nowrap">
                             {groupName}
                           </span>
-                          {/* {groupName === "Required Now" && (
-                            <span className="text-[10px] font-semibold tracking-[0.06em] uppercase px-[9px] py-[3px] rounded-full bg-[#ffeaea] text-[#a01c1c] border border-[#f5bebe]">
-                              Required
-                            </span>
-                          )} */}
-                          {/* {groupName === "Required if Applicable" && (
-                            <span className="text-[10px] font-semibold tracking-[0.06em] uppercase px-[9px] py-[3px] rounded-full bg-[#fef8e8] text-[#8a6200] border border-[#f0d98a]">
-                              Conditional
-                            </span>
-                          )}
-                          {groupName === "Gather Now for Later" && (
-                            <span className="text-[10px] font-semibold tracking-[0.06em] uppercase px-[9px] py-[3px] rounded-full bg-[#e8f1fb] text-primary/80 border border-[#d0e4f7]">
-                              Gather
-                            </span>
-                          )} */}
                           <div className="h-px flex-1 bg-primary/30" />
                         </div>
 
@@ -1421,7 +1803,7 @@ export function StepView({ data, state, actions, onBack }: StepViewProps) {
                                     setSelectedGuideId(doc.id || null);
                                   }
                                 }}
-                                className={`group flex items-center gap-[16px] px-[20px] py-[18px] rounded-[14px] border-[1.5px] transition-all cursor-pointer relative shadow-[0_2px_12px_rgba(15,31,56,0.07),0_1px_3px_rgba(15,31,56,0.04)] hover:border-primary hover:shadow-[0_8px_32px_rgba(15,31,56,0.12),0_2px_8px_rgba(15,31,56,0.06)] hover:-translate-y-[1px] active:translate-y-0 active:shadow-[0_2px_12px_rgba(15,31,56,0.07),0_1px_3px_rgba(15,31,56,0.04)] mb-[10px]
+                                className={`group flex items-center gap-[16px] px-[20px] py-[18px] rounded-[14px] border-[1.5px] transition-all cursor-pointer relative shadow-[0_2px_12px_rgba(15,31,56,0.07),0_1px_3px_rgba(15,31,56,0.04)] hover:border-primary hover:shadow-[0_8px_32px_rgba(15,31,56,0.12),0_2px_8px_rgba(15,31,56,0.06)] hover:-translate-y-px active:translate-y-0 active:shadow-[0_2px_12px_rgba(15,31,56,0.07),0_1px_3px_rgba(15,31,56,0.04)] mb-[10px]
                                 ${
                                   isReviewed
                                     ? "bg-[#eaf7ff] border-[#b8daff]"
@@ -1652,11 +2034,11 @@ export function StepView({ data, state, actions, onBack }: StepViewProps) {
                                 filingMethod: method.id,
                               })
                             }
-                            className={`relative text-left p-[22px_20px_20px] rounded-[14px] border-[2px] transition-all duration-[0.24s] select-none
+                            className={`relative text-left p-[22px_20px_20px] rounded-[14px] border-2 transition-all duration-[0.24s] select-none
                                 ${
                                   isSelected
                                     ? `${pSelBg} border-transparent shadow-[0_0_0_3px_${shadowLight},0_8px_32px_rgba(15,31,56,0.13),0_2px_8px_rgba(15,31,56,0.06)] transform -translate-y-[2px]`
-                                    : `${pIdleBg} ${pIdleBorder} hover:-translate-y-[2px] hover:shadow-[0_8px_32px_rgba(15,31,56,0.13),0_2px_8px_rgba(15,31,56,0.06)]`
+                                    : `${pIdleBg} ${pIdleBorder} hover:-translate-y-px hover:shadow-[0_8px_32px_rgba(15,31,56,0.13),0_2px_8px_rgba(15,31,56,0.06)]`
                                 }`}
                           >
                             <div
@@ -1715,8 +2097,8 @@ export function StepView({ data, state, actions, onBack }: StepViewProps) {
                             ${!state.metadata.filingMethod ? "hidden" : "block"}
                             ${
                               state.metadata.filingMethod === "online"
-                                ? "bg-[#0e5c42] hover:bg-[#0a4330] hover:-translate-y-[1px] hover:shadow-[0_6px_24px_rgba(14,92,66,0.35)]"
-                                : "bg-[#2e1f72] hover:bg-[#1e1348] hover:-translate-y-[1px] hover:shadow-[0_6px_24px_rgba(46,31,114,0.35)]"
+                                ? "bg-[#0e5c42] hover:bg-[#0a4330] hover:-translate-y-px hover:shadow-[0_6px_24px_rgba(14,92,66,0.35)]"
+                                : "bg-[#2e1f72] hover:bg-[#1e1348] hover:-translate-y-px hover:shadow-[0_6px_24px_rgba(46,31,114,0.35)]"
                             }`}
                       >
                         Confirm:{" "}
@@ -1902,7 +2284,32 @@ export function StepView({ data, state, actions, onBack }: StepViewProps) {
         loading={isSubmittingCreds}
       />
 
+      <NvcFeeModal
+        isOpen={isNvcFeeModalOpen}
+        onClose={() => setIsNvcFeeModalOpen(false)}
+        data={nvcFeeData}
+        onSave={handleSaveNvcFee}
+      />
+
+      <CeacCredsModal
+        isOpen={isCeacModalOpen}
+        onClose={() => setIsCeacModalOpen(false)}
+        onSave={handleSaveCredentials}
+        initialData={ceacCredentials}
+        isSubmitting={isSubmittingCreds}
+      />
+
       {/* Guide Shell Overlay */}
+      {isCivilDocGuideOpen && activeCivilDoc && (
+        <CivilDocGuideOverlay
+          isOpen={isCivilDocGuideOpen}
+          onClose={() => setIsCivilDocGuideOpen(false)}
+          doc={activeCivilDoc}
+          status={civilDocsStatus[activeCivilDoc.id] || "not-started"}
+          onMarkReviewed={() => handleMarkDocReviewed(activeCivilDoc.id)}
+        />
+      )}
+
       {selectedGuideId && InlineGuideData[selectedGuideId] && (
         <div className="fixed inset-0 bg-white z-[100] flex flex-col overflow-hidden animate-in slide-in-from-bottom-4 duration-300 ease-out">
           {/* Guide Topbar */}
@@ -1977,7 +2384,7 @@ export function StepView({ data, state, actions, onBack }: StepViewProps) {
                   onClick={() => {
                     setSelectedGuideId(null);
                   }}
-                  className="p-[14px_24px] bg-[#eaf7f2] text-[#1a7a5e] border-[1.5px] border-[#b5e0d0] rounded-[14px] text-[14px] font-semibold cursor-pointer transition-all hover:bg-[#d2f0e4] hover:-translate-y-[1px] text-center"
+                  className="p-[14px_24px] bg-[#eaf7f2] text-[#1a7a5e] border-[1.5px] border-[#b5e0d0] rounded-[14px] text-[14px] font-semibold cursor-pointer transition-all hover:bg-[#d2f0e4] hover:-translate-y-px text-center"
                 >
                   ✓ Mark as reviewed
                 </button>
@@ -2034,7 +2441,7 @@ export function StepView({ data, state, actions, onBack }: StepViewProps) {
               {/* Tutorial Body */}
               <div className="flex-1 overflow-y-auto bg-[#fafcff] p-[48px_24px_40px] flex flex-col items-center">
                 <div className="w-full max-w-[580px] flex flex-col">
-                  <div className="text-[11px] font-semibold tracking-[0.1em] uppercase text-[#2f6fd4] mb-4">
+                  <div className="text-[11px] font-semibold tracking-[0.1em] uppercase text-primary mb-4">
                     {isDynamic
                       ? currentTutStep.label
                       : (currentTutStep as (typeof USCIS_TUTORIAL_STEPS)[0])
@@ -2094,7 +2501,7 @@ export function StepView({ data, state, actions, onBack }: StepViewProps) {
                             </div>
                             {(currentTutStep as TutorialStepData)
                               .ss_highlight && (
-                              <div className="px-[16px] py-[10px] bg-[rgba(47,111,212,0.12)] border-[1.5px] border-[rgba(47,111,212,0.22)] rounded-[10px] text-[13px] font-semibold text-[#2f6fd4]">
+                              <div className="px-[16px] py-[10px] bg-[rgba(47,111,212,0.12)] border-[1.5px] border-[rgba(47,111,212,0.22)] rounded-[10px] text-[13px] font-semibold text-primary">
                                 {
                                   (currentTutStep as TutorialStepData)
                                     .ss_highlight
@@ -2107,7 +2514,7 @@ export function StepView({ data, state, actions, onBack }: StepViewProps) {
 
                       {/* Caption Bar — always visible; green tint for "success" captionClass */}
                       <div
-                        className={`p-[8px_14px_10px] border-t text-[11px] leading-[1.5] ${
+                        className={`p-[8px_14px_10px] border-t text-[11px] leading-normal ${
                           (currentTutStep as TutorialStepData).caption_class ===
                           "success"
                             ? "bg-[#e8f5ef] border-[#a8d9be] text-[#15744f] font-medium"
@@ -2138,7 +2545,7 @@ export function StepView({ data, state, actions, onBack }: StepViewProps) {
                           }
                         </div>
                       </div>
-                      <div className="p-[8px_12px_10px] bg-[#f4f7fb] border-t border-[#d0e4f7] text-[11px] text-[#6b8097] leading-[1.5] text-left">
+                      <div className="p-[8px_12px_10px] bg-[#f4f7fb] border-t border-[#d0e4f7] text-[11px] text-[#6b8097] leading-normal text-left">
                         {
                           (currentTutStep as (typeof USCIS_TUTORIAL_STEPS)[0])
                             .caption
@@ -2181,14 +2588,14 @@ export function StepView({ data, state, actions, onBack }: StepViewProps) {
                     {tutorialIdx < steps.length - 1 ? (
                       <button
                         onClick={() => setTutorialIdx(tutorialIdx + 1)}
-                        className="flex-1 p-[13px_22px] bg-primary text-white border-none rounded-[10px] font-sans text-[14px] font-semibold cursor-pointer transition-all hover:bg-primary/80 hover:-translate-y-[1px] active:translate-y-0 text-center"
+                        className="flex-1 p-[13px_22px] bg-primary text-white border-none rounded-[10px] font-sans text-[14px] font-semibold cursor-pointer transition-all hover:bg-primary/80 hover:-translate-y-px active:translate-y-0 text-center"
                       >
                         Next →
                       </button>
                     ) : (
                       <button
                         onClick={() => setIsTutorialOpen(false)}
-                        className="flex-1 p-[13px_22px] bg-[#15744f] text-white border-none rounded-[10px] font-sans text-[14px] font-semibold cursor-pointer transition-all hover:bg-[#0e5c3c] hover:-translate-y-[1px] text-center"
+                        className="flex-1 p-[13px_22px] bg-[#15744f] text-white border-none rounded-[10px] font-sans text-[14px] font-semibold cursor-pointer transition-all hover:bg-[#0e5c3c] hover:-translate-y-px text-center"
                       >
                         Done — return to step
                       </button>
@@ -2199,6 +2606,434 @@ export function StepView({ data, state, actions, onBack }: StepViewProps) {
             </div>
           );
         })()}
+    </div>
+  );
+};
+
+function NvcFeeModal({
+  isOpen,
+  onClose,
+  data,
+  onSave,
+}: {
+  isOpen: boolean;
+  onClose: () => void;
+  data: any;
+  onSave: (newData: any) => void;
+}) {
+  const [localData, setLocalData] = useState(data);
+
+  useEffect(() => {
+    if (isOpen) {
+      setLocalData({
+        ...data,
+        aos:
+          data.aos === "Not Started"
+            ? "Not paid"
+            : data.aos === "Pending"
+              ? "In process"
+              : data.aos,
+        iv:
+          data.iv === "Not Started"
+            ? "Not paid"
+            : data.iv === "Pending"
+              ? "In process"
+              : data.iv,
+      });
+    }
+  }, [isOpen, data]);
+
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [isOpen]);
+
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 z-[300] flex items-center justify-center p-5">
+      {/* Overlay */}
+      <div
+        className="absolute inset-0 bg-[#0c1b33]/55 backdrop-blur-[4px] animate-in fade-in duration-200"
+        onClick={onClose}
+      />
+
+      {/* Modal Shell */}
+      <div className="relative bg-white w-full max-w-[460px] rounded-[16px] shadow-[0_24px_80px_rgba(12,27,51,0.32),0_4px_20px_rgba(12,27,51,0.16)] overflow-hidden animate-in zoom-in-95 slide-in-from-bottom-3 duration-240 ease-out">
+        {/* Scrollable Container */}
+        <div className="max-h-[88vh] overflow-y-auto">
+          {/* Header */}
+          <div className="flex items-start justify-between p-[24px_24px_0] mb-[18px]">
+            <div>
+              <h3 className="font-serif font-black text-[22px] text-[#0c1b33] leading-tight">
+                NVC Fee Payment Status
+              </h3>
+              {/* <p className="text-[13px] text-[#6b8097] mt-1 leading-normal">
+                Stored in your Rahvana Portal Wallet
+              </p> */}
+            </div>
+            <button
+              onClick={onClose}
+              className="w-8 h-8 rounded-full bg-[#eef3fa] flex items-center justify-center text-[#3a4f63] hover:bg-[#d0e4f7] transition-colors"
+            >
+              <X size={14} strokeWidth={2} />
+            </button>
+          </div>
+
+          {/* Body */}
+          <div className="p-[0_24px_24px]">
+            <div className="h-px bg-[#d0e4f7] mb-[20px]" />
+
+            <div className="flex flex-col gap-[14px]">
+              {/* AoS Fee */}
+              <div className="flex flex-col gap-[5px]">
+                <label className="text-[12px] font-semibold uppercase tracking-[0.04em] text-[#6b8097]">
+                  Affidavit of Support Fee
+                </label>
+                <select
+                  value={localData.aos}
+                  onChange={(e) =>
+                    setLocalData({ ...localData, aos: e.target.value })
+                  }
+                  className="p-[11px_14px] border-[1.5px] border-[#d0e4f7] rounded-[10px] text-[14px] text-[#1c2b3a] bg-white outline-none focus:border-primary focus:ring-4 focus:ring-primary/12 transition-all appearance-none bg-[url('data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2212%22 height=%2212%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22%236b8097%22 stroke-width=%222%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22%3E%3Cpolyline points=%226 9 12 15 18 9%22/%3E%3C/svg%3E')] bg-no-repeat bg-[position:right_12px_center]"
+                >
+                  <option value="">Select status…</option>
+                  <option value="Not paid">Not paid</option>
+                  <option value="In process">In process</option>
+                  <option value="Paid">Paid</option>
+                </select>
+              </div>
+
+              {/* IV Fee */}
+              <div className="flex flex-col gap-[5px]">
+                <label className="text-[12px] font-semibold uppercase tracking-[0.04em] text-[#6b8097]">
+                  Immigrant Visa Fee
+                </label>
+                <select
+                  value={localData.iv}
+                  onChange={(e) =>
+                    setLocalData({ ...localData, iv: e.target.value })
+                  }
+                  className="p-[11px_14px] border-[1.5px] border-[#d0e4f7] rounded-[10px] text-[14px] text-[#1c2b3a] bg-white outline-none focus:border-primary focus:ring-4 focus:ring-primary/12 transition-all appearance-none bg-[url('data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2212%22 height=%2212%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22%236b8097%22 stroke-width=%222%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22%3E%3Cpolyline points=%226 9 12 15 18 9%22/%3E%3C/svg%3E')] bg-no-repeat bg-[position:right_12px_center]"
+                >
+                  <option value="">Select status…</option>
+                  <option value="Not paid">Not paid</option>
+                  <option value="In process">In process</option>
+                  <option value="Paid">Paid</option>
+                </select>
+              </div>
+
+              {/* Date */}
+              <div className="flex flex-col gap-[5px]">
+                <label className="text-[12px] font-semibold uppercase tracking-[0.04em] text-[#6b8097]">
+                  Date Payment Submitted{" "}
+                  <span className="font-normal lowercase tracking-normal text-[11px] ml-1">
+                    (optional)
+                  </span>
+                </label>
+                <input
+                  type="date"
+                  value={localData.date}
+                  onChange={(e) =>
+                    setLocalData({ ...localData, date: e.target.value })
+                  }
+                  className="p-[11px_14px] border-[1.5px] border-[#d0e4f7] rounded-[10px] text-[14px] text-[#1c2b3a] bg-white outline-none focus:border-primary focus:ring-4 focus:ring-primary/12 transition-all"
+                />
+              </div>
+
+              {/* Note */}
+              <div className="flex flex-col gap-[5px]">
+                <label className="text-[12px] font-semibold uppercase tracking-[0.04em] text-[#6b8097]">
+                  Payment Note{" "}
+                  <span className="font-normal lowercase tracking-normal text-[11px] ml-1">
+                    (optional)
+                  </span>
+                </label>
+                <input
+                  type="text"
+                  placeholder="e.g. Paid via credit card"
+                  value={localData.note}
+                  onChange={(e) =>
+                    setLocalData({ ...localData, note: e.target.value })
+                  }
+                  className="p-[11px_14px] border-[1.5px] border-[#d0e4f7] rounded-[10px] text-[14px] text-[#1c2b3a] bg-white outline-none focus:border-primary focus:ring-4 focus:ring-primary/12 transition-all"
+                />
+              </div>
+            </div>
+
+            <div className="flex items-start gap-[13px] bg-[#fef8e8] border border-[#f0d98a] rounded-[10px] p-[11px_13px] mt-[18px] mb-[18px]">
+              <ShieldCheck size={13} className="text-[#8a6200] mt-1 shrink-0" />
+              <span className="text-[12px] text-[#8a6200] leading-normal">
+                Details are stored locally for this session. Manage or update
+                them in your Portal Wallet.
+              </span>
+            </div>
+
+            <button
+              onClick={() => onSave(localData)}
+              className="w-full p-[14px_24px] bg-primary text-white rounded-[10px] font-semibold text-[15px] hover:bg-[#2460bb] hover:-translate-y-px transition-all active:translate-y-0 shadow-[0_4px_20px_rgba(47,111,212,0.35)]"
+            >
+              Save Payment Status
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function CivilDocGuideOverlay({
+  isOpen,
+  onClose,
+  doc,
+  status,
+  onMarkReviewed,
+}: {
+  isOpen: boolean;
+  onClose: () => void;
+  doc: any;
+  status: string;
+  onMarkReviewed: () => void;
+}) {
+  const isReviewed = status === "reviewed";
+
+  return (
+    <div className="fixed inset-0 bg-[#fafcff] z-[120] flex flex-col overflow-hidden animate-in slide-in-from-bottom-[18px] duration-[0.28s] ease-in-out font-sans">
+      {/* Topbar */}
+      <div className="flex items-center h-[72px] border-b border-[#d0e4f7] px-6 gap-4 shrink-0 bg-[#fafcff]">
+        <button
+          onClick={onClose}
+          className="w-9 h-9 rounded-full bg-[#f4f7fb] border-none flex items-center justify-center text-[#3a4f63] hover:bg-primary/10 transition-all cursor-pointer"
+        >
+          <X size={16} strokeWidth={2} />
+        </button>
+
+        <div className="flex-1 h-[5px] bg-[#d0e4f7] rounded-[10px] overflow-hidden">
+          <div className="h-full bg-primary w-full" />
+        </div>
+
+        <div className="text-[12px] font-medium text-[#6b8097] whitespace-nowrap shrink-0">
+          Document Guide
+        </div>
+      </div>
+
+      {/* Body */}
+      <div className="flex-1 overflow-y-auto bg-[#fafcff] p-[48px_24px_40px] flex flex-col items-center">
+        <div className="w-full max-w-[620px] flex flex-col">
+          <div className="flex items-center gap-[6px] bg-[#e8f1fb] border border-[#d0e4f7] rounded-full px-[12px] py-[4px] w-fit mb-5">
+            <div className="w-[6px] h-[6px] rounded-full bg-primary" />
+            <span className="text-[11px] font-semibold text-[#2d4a6e] uppercase tracking-[0.05em]">
+              Roadmap Module · Civil Document
+            </span>
+          </div>
+
+          <h2 className="text-[clamp(24px,3.8vw,30px)] font-black text-[#0c1b33] mb-2 leading-tight">
+            {doc.title}
+          </h2>
+          <p className="text-[15px] text-[#3a4f63] leading-relaxed mb-10">
+            {doc.sub}
+          </p>
+
+          <div className="flex flex-col gap-5">
+            {doc.sections?.map((section: any, idx: number) => (
+              <div
+                key={idx}
+                className="bg-white border border-[#d0e4f7] rounded-[18px] p-7 shadow-sm"
+              >
+                <h3 className="text-[14px] font-bold text-[#0c1b33] uppercase tracking-[0.08em] mb-4 text-primary/80">
+                  {section.title}
+                </h3>
+                <div
+                  className="text-[14.5px] text-[#3a4f63] leading-[1.7] prose-sm prose-slate max-w-none"
+                  dangerouslySetInnerHTML={{ __html: section.htmlContent }}
+                />
+              </div>
+            ))}
+          </div>
+
+          {/* Footer Actions */}
+          <div className="flex flex-col gap-3 mt-12 mb-10">
+            <button
+              onClick={() => {
+                onMarkReviewed();
+                onClose();
+              }}
+              className={`w-full p-[16px_28px] rounded-[14px] font-bold text-[15px] transition-all flex items-center justify-center gap-2 shadow-sm
+                ${
+                  isReviewed
+                    ? "bg-[#e8f5ef] text-[#15744f] border border-[#a8d9be] opacity-80"
+                    : "bg-[#15744f] text-white hover:bg-[#0e5c3c] hover:-translate-y-px shadow-[0_4px_20px_rgba(21,116,79,0.25)]"
+                }
+              `}
+            >
+              {isReviewed ? <Check size={18} strokeWidth={3} /> : null}
+              {isReviewed ? "✓ Already Reviewed" : "Mark as reviewed →"}
+            </button>
+            <button
+              onClick={onClose}
+              className="w-full p-[15px_28px] border-[1.5px] border-[#d0e4f7] rounded-[14px] text-[#3a4f63] font-semibold text-[14px] hover:border-[#6b8097] hover:bg-slate-50 transition-all text-center"
+            >
+              Back to document list
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function CeacCredsModal({
+  isOpen,
+  onClose,
+  onSave,
+  initialData,
+  isSubmitting,
+}: {
+  isOpen: boolean;
+  onClose: () => void;
+  onSave: (data: any) => Promise<void>;
+  initialData: PortalCredential | null;
+  isSubmitting: boolean;
+}) {
+  const [caseNumber, setCaseNumber] = useState(
+    initialData?.nvc_case_number || "",
+  );
+  const [invoiceId, setInvoiceId] = useState(initialData?.nvc_invoice_id || "");
+  const [email, setEmail] = useState(initialData?.username || "");
+  const [errors, setErrors] = useState<Record<string, boolean>>({});
+
+  const handleSave = async () => {
+    const newErrors: Record<string, boolean> = {};
+    if (!caseNumber.trim()) newErrors.caseNumber = true;
+    if (!invoiceId.trim()) newErrors.invoiceId = true;
+
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      return;
+    }
+
+    await onSave({
+      portalType: "NVC",
+      nvcCaseNumber: caseNumber.trim(),
+      nvcInvoiceId: invoiceId.trim(),
+      username: email.trim(), // Storing email in username field
+    });
+    onClose();
+  };
+
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 z-[300] flex items-center justify-center p-5 font-sans animate-in fade-in duration-200">
+      <div
+        className="absolute inset-0 bg-[#0c1b33]/55 backdrop-blur-[4px]"
+        onClick={onClose}
+      />
+
+      <div className="relative w-full max-w-[460px] max-h-[88vh] bg-[#fafcff] rounded-[16px] shadow-[0_24px_80px_rgba(12,27,51,0.32),0_4px_20px_rgba(12,27,51,0.16)] overflow-y-auto animate-in zoom-in-95 slide-in-from-bottom-3 duration-240">
+        <div className="p-6 pb-4 flex items-start justify-between">
+          <div>
+            <h2 className="font-serif text-[22px] text-[#0c1b33] leading-tight">
+              CEAC Access Details
+            </h2>
+            <p className="text-[13px] text-[#6b8097] mt-1">
+              Stored in your Rahvana Portal Wallet
+            </p>
+          </div>
+          <button
+            onClick={onClose}
+            className="w-8 h-8 rounded-full bg-[#f4f7fb] border-none flex items-center justify-center text-[#3a4f63] hover:bg-[#d0e4f7] transition-all cursor-pointer"
+          >
+            <X size={14} strokeWidth={2} />
+          </button>
+        </div>
+
+        <div className="px-6 pb-6">
+          <div className="h-[1px] bg-[#d0e4f7] mb-5" />
+
+          <div className="flex flex-col gap-3.5 mb-5">
+            <div className="flex flex-col gap-1.5">
+              <label className="text-[12px] font-semibold text-[#6b8097] uppercase tracking-[0.04em]">
+                NVC Case Number
+              </label>
+              <input
+                type="text"
+                value={caseNumber}
+                onChange={(e) => {
+                  setCaseNumber(e.target.value);
+                  if (errors.caseNumber)
+                    setErrors({ ...errors, caseNumber: false });
+                }}
+                placeholder="e.g. ISL2026XXXXXX"
+                className={`p-[11px_14px] border-[1.5px] rounded-[10px] text-[14px] bg-white outline-none transition-all
+                  ${errors.caseNumber ? "border-[#f87171] bg-[#fff5f5]" : "border-[#d0e4f7] focus:border-primary focus:shadow-[0_0_0_3px_rgba(59,125,216,0.12)]"}
+                `}
+              />
+            </div>
+
+            <div className="flex flex-col gap-1.5">
+              <label className="text-[12px] font-semibold text-[#6b8097] uppercase tracking-[0.04em]">
+                Invoice ID Number
+              </label>
+              <input
+                type="text"
+                value={invoiceId}
+                onChange={(e) => {
+                  setInvoiceId(e.target.value);
+                  if (errors.invoiceId)
+                    setErrors({ ...errors, invoiceId: false });
+                }}
+                placeholder="Enter your Invoice ID"
+                className={`p-[11px_14px] border-[1.5px] rounded-[10px] text-[14px] bg-white outline-none transition-all
+                  ${errors.invoiceId ? "border-[#f87171] bg-[#fff5f5]" : "border-[#d0e4f7] focus:border-primary focus:shadow-[0_0_0_3px_rgba(59,125,216,0.12)]"}
+                `}
+              />
+            </div>
+
+            <div className="flex flex-col gap-1.5">
+              <label className="text-[12px] font-semibold text-[#6b8097] uppercase tracking-[0.04em]">
+                Notification Email{" "}
+                <span className="lowercase font-normal tracking-normal text-[11px] text-[#6b8097]">
+                  (optional)
+                </span>
+              </label>
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="email@example.com"
+                className="p-[11px_14px] border-[1.5px] border-[#d0e4f7] rounded-[10px] text-[14px] bg-white outline-none focus:border-primary focus:shadow-[0_0_0_3px_rgba(59,125,216,0.12)] transition-all"
+              />
+            </div>
+          </div>
+
+          <div className="bg-[#fef8e8] border border-[#f0d98a] rounded-[10px] p-3 mb-[18px] flex gap-2.5">
+            <ShieldCheck
+              size={14}
+              className="text-[#8a6200] shrink-0 mt-0.5"
+              strokeWidth={2}
+            />
+            <p className="text-[12px] text-[#8a6200] leading-normal font-sans">
+              Your details are stored locally on your device for this session.
+              To manage or update them permanently, use your full Portal Wallet.
+            </p>
+          </div>
+
+          <button
+            onClick={handleSave}
+            disabled={isSubmitting}
+            className="w-full p-[14px_24px] bg-primary text-white border-none rounded-[10px] text-[15px] font-semibold hover:bg-primary/70 hover:-translate-y-px active:translate-y-0 transition-all disabled:opacity-50 disabled:pointer-events-none"
+          >
+            {isSubmitting ? "Saving..." : "Save Details"}
+          </button>
+        </div>
+      </div>
     </div>
   );
 }

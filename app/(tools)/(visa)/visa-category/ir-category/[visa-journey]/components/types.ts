@@ -19,7 +19,7 @@ export interface RoadmapStep {
     | "filing";
   tool_integration?: string | null;
   dependencies: string[];
-  visible_when: Record<string, any>;
+  visible_when: Record<string, string | number | boolean | string[] | null>;
   estimated_duration_days: number;
   is_required: boolean;
   display_order: number;
@@ -158,6 +158,16 @@ export interface SecondaryAction {
   href?: string;
 }
 
+export interface ActionCard {
+  id: string;
+  type: string;
+  icon: string;
+  title: string;
+  subtitle: string;
+  cta_label?: string;
+  href?: string;
+}
+
 export interface TutorialStepData {
   label: string;
   heading: string;
@@ -221,9 +231,20 @@ export interface ToolData {
   /** Payment fee display block — shown inside the launch module for step 9 */
   fee_block?: FeeBlock;
   /** Pre-submission checklist — shown inside the launch module for step 10 */
+  alert_note?: string;
   review_checklist?: string[];
   guide_card?: { title: string; subtitle: string };
+  wallet_card?: { type: string; title: string; subtitle: string };
   tutorial_steps?: TutorialStepData[];
+  doc_list?: {
+    groups: {
+      id: string;
+      label: string;
+      badge?: string;
+      items: any[];
+    }[];
+  };
+  action_cards?: ActionCard[];
   upload_requirements?: string[];
   secondary_actions?: SecondaryAction[];
   wallet_integration?: {
