@@ -111,11 +111,11 @@ DECLARE
   _completed_steps INTEGER;
   _completion_pct DECIMAL(5,2);
 BEGIN
-  -- Variable names changed to avoid ambiguity
+  -- Get chapter_id
   _chapter_id := NEW.chapter_id;
   
-  -- Count steps specifically for this chapter
-  SELECT COUNT(), COUNT() FILTER (WHERE status = 'completed')
+  -- Count total and completed steps in this chapter
+  SELECT COUNT(*), COUNT(*) FILTER (WHERE status = 'completed')
   INTO _total_steps, _completed_steps
   FROM steps
   WHERE steps.chapter_id = _chapter_id;
@@ -162,8 +162,8 @@ BEGIN
   FROM chapters c
   WHERE c.id = NEW.chapter_id;
   
-  -- Count total steps in entire journey
-  SELECT COUNT(), COUNT() FILTER (WHERE s.status = 'completed')
+  -- Count total and completed steps in entire journey
+  SELECT COUNT(*), COUNT(*) FILTER (WHERE s.status = 'completed')
   INTO _total_steps, _completed_steps
   FROM steps s
   JOIN chapters c ON s.chapter_id = c.id
