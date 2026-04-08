@@ -288,10 +288,10 @@ export class ConfigLoader {
 
     // Extract tool integration name from step type or tool data
   private static extractToolIntegration(
-    stepType: string,
+    stepType?: string,
     toolData?: Record<string, unknown>
   ): string | undefined {
-    if (!stepType.includes("tool")) return undefined;
+    if (!stepType?.includes("tool")) return undefined;
 
     if (toolData?.id && typeof toolData.id === "string") {
       return toolData.id;
