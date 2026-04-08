@@ -119,9 +119,11 @@ export function useWizard(options: UseWizardOptions = {}) {
         let targetJourneyId: string | null = null;
         if (listData.success && listData.data && listData.data.length > 0) {
           // Look for exact or case-insensitive match
-          const found = listData.data.find(
-            (j: any) => j.journey.journey_type.toLowerCase() === journeyId.toLowerCase()
-          );
+          const found = listData.data.find((j: any) => {
+            const itemType = j.journey.journey_type.toLowerCase().replace(/-/g, "");
+            const queryType = journeyId.toLowerCase().replace(/-/g, "");
+            return itemType === queryType;
+          });
           if (found) targetJourneyId = found.journey.id;
         }
 
