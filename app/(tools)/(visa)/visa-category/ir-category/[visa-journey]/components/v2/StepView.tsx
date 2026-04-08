@@ -1209,7 +1209,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
 
           {/* FINANCIAL CHECKLIST (Step 2.6 SPECIFIC) */}
           {tool.type === "financial_checklist" && (
-            <div className="flex flex-col">
+            <div className="flex flex-col mt-3">
               {/* Scenario switcher (simulates prior-step output) */}
               <div className="flex items-center gap-[12px] bg-white border-[1.5px] border-[#d0e4f7] rounded-[10px] p-[14px_18px] mb-[20px] flex-wrap">
                 <span className="text-[12px] font-semibold text-[#6b8097] whitespace-nowrap">
@@ -1232,7 +1232,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
               {(() => {
                 const sc = SCENARIOS[selectedScenario] || SCENARIOS["pet-only"];
                 return (
-                  <div className="bg-[#e8f1fb] border border-[#d0e4f7] rounded-[10px] p-[18px_20px] mb-[24px]">
+                  <div className="bg-[#e8f1fb] border border-[#d0e4f7] rounded-[10px] p-[18px_20px] mb-[20px]">
                     <div className="text-[10px] font-bold uppercase tracking-widest text-[#2f6fd4] mb-[10px]">
                       Sponsorship Summary
                     </div>
@@ -1282,7 +1282,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                     : 0;
 
                 return (
-                  <div className="flex flex-col mb-[36px]">
+                  <div className="flex flex-col mb-[24px]">
                     <div className="flex items-center gap-[12px] mb-[8px]">
                       <div className="flex-1 h-[5px] bg-[#d0e4f7] rounded-[10px] overflow-hidden">
                         <div
@@ -1368,7 +1368,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                                   setActiveFinancialDoc(doc);
                                   setIsFinancialDocGuideOpen(true);
                                 }}
-                                className={`bg-white border-[1.5px] border-[#d0e4f7] rounded-[10px] p-[18px_20px] flex items-center gap-[16px] text-left transition-all hover:border-primary hover:shadow-[0_4px_20px_rgba(47,111,212,0.08)] hover:-translate-y-px ${
+                                className={`bg-white border-[1.5px] border-[#d0e4f7] rounded-[10px] p-[18px_20px] flex items-center gap-[16px] text-left transition-all hover:border-primary hover:shadow-[0_4px_20px_rgba(47,111,212,0.08)] hover:-translate-y-px cursor-pointer ${
                                   st === "reviewed"
                                     ? "bg-[#e8f5ef] border-[#a8d9be]"
                                     : st === "in-progress"
@@ -2208,7 +2208,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
 
           {/* Disclaimer */}
           <p
-            className={`${currentStep.step_key === "step_2_4" ? "mt-10" : "mt-0"} text-[11.5px] text-[#6b8097] leading-[1.65] text-center pt-[8px]`}
+            className={`${currentStep.step_key === "step_2_4" || currentStep.step_key === "step_2_6" ? "mt-10" : "mt-0"} text-[11.5px] text-[#6b8097] leading-[1.65] text-center pt-[8px]`}
           >
             {tool.disclaimer ||
               "Rahvana provides structured guidance only. This is not legal advice. Consult a licensed immigration attorney for case-specific decisions."}
@@ -3605,7 +3605,6 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
         isSubmitting={isSubmittingCreds}
       />
 
-      {/* Guide Shell Overlay */}
       {isCivilDocGuideOpen && activeCivilDoc && (
         <CivilDocGuideOverlay
           isOpen={isCivilDocGuideOpen}
@@ -3613,6 +3612,22 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
           doc={activeCivilDoc}
           status={civilDocsStatus[activeCivilDoc.id] || "not-started"}
           onMarkReviewed={() => handleMarkDocReviewed(activeCivilDoc.id)}
+        />
+      )}
+
+      {isFinancialDocGuideOpen && activeFinancialDoc && (
+        <FinancialDocGuideOverlay
+          isOpen={isFinancialDocGuideOpen}
+          onClose={() => setIsFinancialDocGuideOpen(false)}
+          doc={activeFinancialDoc}
+          status={financialDocsStatus[activeFinancialDoc.id] || "not-started"}
+          onMarkReviewed={() => {
+            const next = {
+              ...financialDocsStatus,
+              [activeFinancialDoc.id]: "reviewed",
+            };
+            actions.updateMetadata({ financialDocsStatus: next });
+          }}
         />
       )}
 
@@ -4112,41 +4127,44 @@ function FinancialDocGuideOverlay({
 }) {
   const isReviewed = status === "reviewed";
 
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [isOpen]);
+
+  if (!isOpen) return null;
+
   return (
-    <div className="fixed inset-0 bg-[#fafcff] z-[120] flex flex-col overflow-hidden animate-in slide-in-from-bottom-[18px] duration-[0.28s] ease-in-out font-sans">
+    <div className="fixed inset-0 bg-white z-[200] flex flex-col overflow-hidden animate-in slide-in-from-bottom-[18px] duration-[0.28s] ease-in-out font-sans">
       {/* Topbar */}
-      <div className="flex items-center h-[72px] border-b border-[#d0e4f7] px-6 gap-4 shrink-0 bg-[#fafcff]">
+      <div className="flex items-center h-[72px] border-b border-[#d0e4f7] px-6 gap-4 shrink-0 bg-white">
         <button
           onClick={onClose}
-          className="w-9 h-9 rounded-full bg-[#f4f7fb] border-none flex items-center justify-center text-[#3a4f63] hover:bg-primary/10 transition-all cursor-pointer"
+          className="w-9 h-9 rounded-full bg-[#f4f7fb] border-none flex items-center justify-center text-[#3a4f63] hover:bg-[#e8f1fb] transition-all cursor-pointer"
         >
           <X size={16} strokeWidth={2} />
         </button>
 
-        <div className="flex-1 h-[5px] bg-[#d0e4f7] rounded-[10px] overflow-hidden">
-          <div className="h-full bg-primary w-full" />
-        </div>
-
-        <div className="text-[12px] font-medium text-[#6b8097] whitespace-nowrap shrink-0">
-          Financial Document Guide
+        <div className="flex-1 text-[13px] font-semibold text-[#0c1b33]">
+          Step 6 · Gather Financial Support Documents
         </div>
       </div>
 
       {/* Body */}
-      <div className="flex-1 overflow-y-auto bg-[#fafcff] p-[48px_24px_40px] flex flex-col items-center">
+      <div className="flex-1 overflow-y-auto bg-white p-[48px_24px_40px] flex flex-col items-center">
         <div className="w-full max-w-[600px] flex flex-col">
-          <div className="text-[11px] font-semibold tracking-[0.1em] uppercase text-primary mb-4">
-            Step 6 · Gather Financial Support Documents
-          </div>
-          <div className="inline-flex items-center gap-[5px] bg-[#e8f1fb] border border-[#d0e4f7] rounded-full px-[12px] py-[4px] w-fit mb-6">
-            <div className="w-[6px] h-[6px] rounded-full bg-primary" />
-            <span className="text-[11px] font-medium text-[#3a4f63]">
-              Financial Evidence
-            </span>
+          <div className="text-[11px] font-semibold tracking-[0.1em] uppercase text-[#2f6fd4] mb-4">
+            Step 6 · Financial Support Documents
           </div>
 
           <h2
-            className="text-[clamp(22px,3.5vw,28px)] font-black text-[#0c1b33] mb-[6px] leading-[1.25]"
+            className="text-[clamp(22px,3.5vw,28px)] font-black text-[#0c1b33] mb-[6px] leading-[1.25] font-serif"
             style={{ fontFamily: "'DM Serif Display', serif" }}
           >
             {doc.title}
@@ -4166,21 +4184,10 @@ function FinancialDocGuideOverlay({
               .guide-content p:last-child {
                 margin-bottom: 0;
               }
-              .guide-content ul {
-                padding-left: 18px;
-                margin-top: 6px;
-                margin-bottom: 8px;
-              }
-              .guide-content li {
-                font-size: 14px;
-                color: #3a4f63;
-                line-height: 1.65;
-                margin-bottom: 5px;
-              }
             `}</style>
 
-            <div className="bg-[#f4f7fb] border border-[#d0e4f7] rounded-[16px] p-[20px_22px] mb-[14px]">
-              <h3 className="text-[13px] font-semibold text-[#6b8097] uppercase tracking-[0.05em] mb-[10px]">
+            <div className="bg-[#f4f7fb] border border-[#d0e4f7] rounded-[10px] p-[22px_24px] mb-[14px]">
+              <h3 className="text-[13px] font-semibold text-[#6b8097] uppercase tracking-[0.05em] mb-[12px]">
                 What this is
               </h3>
               <div className="guide-content">
@@ -4191,9 +4198,9 @@ function FinancialDocGuideOverlay({
             {doc.guide?.sections?.map((section: any, idx: number) => (
               <div
                 key={idx}
-                className="bg-[#f4f7fb] border border-[#d0e4f7] rounded-[16px] p-[20px_22px] mb-[14px]"
+                className="bg-[#f4f7fb] border border-[#d0e4f7] rounded-[10px] p-[22px_24px] mb-[14px]"
               >
-                <h3 className="text-[13px] font-semibold text-[#6b8097] uppercase tracking-[0.05em] mb-[10px]">
+                <h3 className="text-[13px] font-semibold text-[#6b8097] uppercase tracking-[0.05em] mb-[12px]">
                   {section.title}
                 </h3>
                 <div className="guide-content">
@@ -4204,27 +4211,20 @@ function FinancialDocGuideOverlay({
           </div>
 
           {/* Footer Actions */}
-          <div className="flex flex-col gap-[10px] mt-[28px] mb-[40px]">
+          <div className="flex flex-col gap-[10px] mt-[28px]">
             <button
               onClick={() => {
                 onMarkReviewed();
-                onClose();
+                // We stay in the overlay but update the disabled state, matching HTML behavior
               }}
-              className={`w-full p-[15px_24px] rounded-[16px] font-bold text-[15px] transition-all flex items-center justify-center gap-2
-                ${
-                  isReviewed
-                    ? "bg-[#d0e4f7] text-[#6b8097] cursor-not-allowed opacity-80"
-                    : "bg-[#15744f] text-white hover:bg-[#0e5c3c] hover:-translate-y-px"
-                }
-              `}
+              className={`w-full p-[15px_24px] bg-[#15744f] text-white rounded-[10px] font-semibold text-[15px] transition-all hover:bg-[#0e5c3c] hover:-translate-y-px active:translate-y-0 disabled:bg-[#d0e4f7] disabled:text-[#6b8097] disabled:cursor-not-allowed disabled:transform-none`}
               disabled={isReviewed}
             >
-              {isReviewed ? <Check size={18} strokeWidth={3} /> : null}
               {isReviewed ? "✓ Marked as reviewed" : "Mark as reviewed"}
             </button>
             <button
               onClick={onClose}
-              className="w-full p-[14px_24px] bg-transparent border-[1.5px] border-[#d0e4f7] rounded-[16px] text-[#3a4f63] font-medium text-[14px] hover:border-[#3a4f63] hover:text-[#0c1b33] transition-all text-center"
+              className="w-full p-[14px_24px] bg-transparent border-[1.5px] border-[#d0e4f7] rounded-[10px] text-[#3a4f63] font-medium text-[14px] hover:border-[#3a4f63] hover:text-[#0c1b33] transition-all text-center"
             >
               ← Back to document list
             </button>
