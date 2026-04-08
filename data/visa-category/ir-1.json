@@ -2608,26 +2608,34 @@
           }
         },
         {
-          "id": "II-11",
-          "name": "Wait for Interview Scheduling",
+          "step_key": "step_2_11",
+          "step_number": 11,
+          "step_name": "Waiting for Interview Scheduling",
+          "step_short_description": "Interview scheduling queue",
+          "step_description": "Your case is documentarily qualified and in the queue for interview scheduling at your post. This step tracks your position and monitors scheduling progress.",
+          "step_type": "tool",
           "who": "Embassy",
           "where": "Background",
-          "timeline": "2-6 months from DQ",
+          "estimated_duration_days": 120,
+          "is_required": true,
+          "display_order": 11,
           "actions": [
-            "Check CEAC weekly",
-            "Ensure passport valid",
-            "DO NOT obtain new police certificate yet",
-            "Research interview process"
+            "Monitor email for interview letter",
+            "Ensure passport stays valid",
+            "Keep civil documents organized",
+            "Review interview preparation checklist"
           ],
-          "notes": "Cannot speed up this process. Interview scheduled by embassy.",
-          "relevantTools": [
-            {
-              "label": "DQ Status Tracker",
-              "labelUr": "ڈی کیو سٹیٹس ٹریکر",
-              "href": "/iv-tool",
-              "type": "tool"
-            }
-          ]
+          "tool_data": {
+            "id": "step_2_11",
+            "type": "interview_scheduling",
+            "title": "Waiting for Interview Scheduling",
+            "chips": [
+              { "label": "DQ Received", "type": "green" },
+              { "label": "Queue Tracking", "type": "sky" },
+              { "label": "Awaiting Appointment", "type": "gold" }
+            ],
+            "disclaimer": "Official scheduling status is sourced from the U.S. State Department. Rahvana estimates are trend projections only and carry no guarantee of accuracy. Always verify at travel.state.gov."
+          }
         },
         {
           "id": "II-12",

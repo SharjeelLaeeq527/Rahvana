@@ -3,6 +3,7 @@
 import React, { useEffect, useMemo, useState, useCallback } from "react";
 import {
   ArrowLeft,
+  Zap,
   CheckCircle2,
   AlertTriangle,
   Clock,
@@ -77,6 +78,7 @@ import {
 } from "./SubmissionTutorialData";
 import { AWAITING_REVIEW_DATA } from "./AwaitingReviewData";
 import { DQ_RECORDING_DATA } from "./DqRecordingData";
+import { INTERVIEW_SCHEDULING_DATA } from "./InterviewSchedulingData";
 
 interface SecurityQuestion {
   id: string;
@@ -1934,13 +1936,17 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                         ? "bg-[#f3f0fb] text-[#4a2d8a] border-[#c9bef2]"
                         : chip.type === "pay"
                           ? "bg-[#fffbec] text-[#c49a0a] border-[#e8d47a]"
-                          : chip.type === "final"
+                          : chip.type === "final" || chip.type === "green"
                             ? "bg-[#e8f5ef] text-[#15744f] border-[#a8d9be]"
-                            : chip.type === "uscis" ||
-                                chip.uscis === "uscis" ||
-                                chip.type === "path"
-                              ? "bg-[#fff7ed] text-[#b45309] border-[#fed7aa]"
-                              : "bg-[#fafcff] text-[#6b8097] border-[#d0e4f7]"
+                            : chip.type === "sky"
+                              ? "bg-[#e8f1fb] text-[#2d4a6e] border-[#d0e4f7]"
+                              : chip.type === "gold"
+                                ? "bg-[#fef8e8] text-[#8a6200] border-[#f0d98a]"
+                                : chip.type === "uscis" ||
+                                    chip.uscis === "uscis" ||
+                                    chip.type === "path"
+                                  ? "bg-[#fff7ed] text-[#b45309] border-[#fed7aa]"
+                                  : "bg-[#fafcff] text-[#6b8097] border-[#d0e4f7]"
                   }`}
                 >
                   {chip.label}
@@ -1952,7 +1958,8 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
           {/* ALERT NOTE (Step 3 SPECIFIC) */}
           {tool.alert_note && (
             <div className="flex items-center gap-[10px] bg-[#fef8e8] border border-[#f0d98a] rounded-[10px] padding-12 px-[16px] py-[12px] mb-[28px]">
-              <div className="text-[14px] shrink-0">⚡</div>
+              <Zap className="h-4 w-4 text-amber-500" />
+              <div className="text-[14px] shrink-0"></div>
               <div className="text-[13px] text-[#8a6200] leading-normal">
                 {tool.alert_note}
               </div>
@@ -3030,6 +3037,226 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
 
               {/* <p className="text-[11.5px] text-[#6b8097] leading-[1.65] text-center pt-[4px] mt-[8px]">
                 {DQ_RECORDING_DATA.disclaimer}
+              </p> */}
+            </div>
+          )}
+
+          {/* INTERVIEW SCHEDULING (Step 2.11 SPECIFIC) */}
+          {tool.type === "interview_scheduling" && (
+            <div className="flex flex-col animate-in fade-in slide-in-from-bottom-2 duration-380">
+              {/* Queue status card */}
+              <div className="relative bg-[#0c1b33] rounded-[16px] p-[24px_26px] mb-[16px] overflow-hidden">
+                <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-[#b38600] via-[#f0d98a] to-transparent opacity-[0.85]" />
+                <div className="text-[10px] font-bold tracking-widest uppercase text-white/38 mb-[8px]">
+                  Post-DQ Queue Status
+                </div>
+                <div
+                  className="text-[20px] font-serif text-white/92 mb-[18px] flex items-center gap-[10px]"
+                  style={{ fontFamily: "'DM Serif Display', serif" }}
+                >
+                  <span className="inline-block w-[7px] h-[7px] rounded-full bg-[#6aa8f0] animate-pulse shadow-[0_0_8px_rgba(106,168,240,0.6)]" />
+                  In queue — awaiting interview letter
+                </div>
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-[14px]">
+                  <div>
+                    <div className="text-[10px] font-semibold tracking-widest uppercase text-white/36 mb-[3px]">
+                      DQ Date
+                    </div>
+                    <div className="text-[13px] font-semibold text-[#f0d98a]">
+                      {state.metadata.dqDate
+                        ? new Date(
+                            state.metadata.dqDate + "T00:00:00",
+                          ).toLocaleDateString("en-US", {
+                            year: "numeric",
+                            month: "long",
+                            day: "numeric",
+                          })
+                        : "—"}
+                    </div>
+                  </div>
+                  <div>
+                    <div className="text-[10px] font-semibold tracking-widest uppercase text-white/36 mb-[3px]">
+                      Post
+                    </div>
+                    <div className="text-[13px] font-semibold text-white/88">
+                      {state.metadata.post || "—"}
+                    </div>
+                  </div>
+                  <div className="col-span-2 md:col-span-1">
+                    <div className="text-[10px] font-semibold tracking-widest uppercase text-white/36 mb-[3px]">
+                      Current stage
+                    </div>
+                    <div className="text-[13px] font-semibold text-white/88">
+                      Awaiting interview letter
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Scheduling grid */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-[14px] mb-[14px]">
+                {/* Official Card */}
+                <div className="bg-[#fafcff] border-[1.5px] border-[#d0e4f7] rounded-[16px] p-[18px_20px] shadow-[0_4px_24px_rgba(12,27,51,0.08)]">
+                  <div className="text-[10px] font-bold tracking-widest uppercase text-[#2d4a6e] mb-[6px]">
+                    Official Scheduling Status
+                  </div>
+                  <div className="text-[13px] font-semibold text-[#0c1b33] mb-[6px]">
+                    Cases currently being scheduled from:
+                  </div>
+                  <div
+                    className="text-[20px] font-serif text-[#0c1b33] mb-[4px]"
+                    style={{ fontFamily: "'DM Serif Display', serif" }}
+                  >
+                    {INTERVIEW_SCHEDULING_DATA.schedulingData[
+                      (state.metadata
+                        .post as keyof typeof INTERVIEW_SCHEDULING_DATA.schedulingData) ||
+                        "Other"
+                    ]?.official || "—"}
+                  </div>
+                  <div className="text-[12px] text-[#6b8097] leading-[1.5]">
+                    From the State Department scheduling bulletin for this post
+                    and category. Verify current status at travel.state.gov.
+                  </div>
+                  <div className="inline-flex items-center gap-[4px] bg-[#e8f1fb] border border-[#d0e4f7] rounded-full px-[10px] py-[3px] text-[10px] font-semibold text-[#2d4a6e] mt-[8px]">
+                    <Info size={9} strokeWidth={2.5} />
+                    U.S. State Department · Official
+                  </div>
+                </div>
+
+                {/* Estimate Card */}
+                <div className="bg-[#fafcff] border-[1.5px] border-[#e8d47a] rounded-[16px] p-[18px_20px] shadow-[0_4px_24px_rgba(12,27,51,0.08)]">
+                  <div className="text-[10px] font-bold tracking-widest uppercase text-[#b38600] mb-[6px]">
+                    Rahvana Estimate
+                  </div>
+                  <div className="text-[13px] font-semibold text-[#0c1b33] mb-[6px]">
+                    Queue movement trend:
+                  </div>
+                  <div
+                    className="text-[20px] font-serif text-[#0c1b33] mb-[4px]"
+                    style={{ fontFamily: "'DM Serif Display', serif" }}
+                  >
+                    {INTERVIEW_SCHEDULING_DATA.schedulingData[
+                      (state.metadata
+                        .post as keyof typeof INTERVIEW_SCHEDULING_DATA.schedulingData) ||
+                        "Other"
+                    ]?.trend || "—"}
+                  </div>
+                  <div className="text-[12px] text-[#6b8097] leading-[1.5]">
+                    {state.metadata.dqDate
+                      ? INTERVIEW_SCHEDULING_DATA.schedulingData[
+                          (state.metadata
+                            .post as keyof typeof INTERVIEW_SCHEDULING_DATA.schedulingData) ||
+                            "Other"
+                        ]?.detail
+                      : "Save your DQ details in the previous step to see scheduling context here."}
+                  </div>
+                  <div className="inline-flex items-center gap-[4px] bg-[#fffbec] border border-[#e8d47a] rounded-full px-[10px] py-[3px] text-[10px] font-semibold text-[#b38600] mt-[8px]">
+                    <Activity size={9} strokeWidth={2.5} />
+                    Rahvana Estimate · Not guaranteed
+                  </div>
+                  <div className="text-[11px] text-[#6b8097] mt-[6px] italic leading-[1.5]">
+                    Estimates are trend-based projections. Actual scheduling
+                    depends on post capacity and priority.
+                  </div>
+                </div>
+              </div>
+
+              {/* While you wait + milestone line */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-[14px] mb-[14px]">
+                {/* While you wait */}
+                <div className="bg-[#fafcff] border-[1.5px] border-[#d0e4f7] rounded-[16px] p-[18px_20px] shadow-[0_4px_24px_rgba(12,27,51,0.08)]">
+                  <div className="flex items-center gap-[9px] mb-[12px]">
+                    <div className="w-[34px] h-[34px] rounded-[8px] bg-[#e8f5ef] border border-[#a8d9be] flex items-center justify-center shrink-0">
+                      <Clock
+                        size={16}
+                        className="text-[#15744f]"
+                        strokeWidth={1.8}
+                      />
+                    </div>
+                    <div className="text-[14px] font-semibold text-[#0c1b33]">
+                      While you wait
+                    </div>
+                  </div>
+                  <div className="flex flex-col gap-[7px]">
+                    {INTERVIEW_SCHEDULING_DATA.whileYouWait.map((item, i) => (
+                      <div
+                        key={i}
+                        className="flex items-start gap-[8px] text-[13px] color-[#3a4f63] leading-[1.5]"
+                      >
+                        <div className="w-[4px] h-[4px] rounded-full bg-[#b8d4f0] shrink-0 mt-[6px]" />
+                        <span>{item}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Milestone progress line */}
+                <div className="bg-[#fafcff] border-[1.5px] border-[#d0e4f7] rounded-[16px] p-[18px_20px] shadow-[0_4px_24px_rgba(12,27,51,0.08)]">
+                  <div className="text-[13px] font-semibold text-[#0c1b33] mb-[14px]">
+                    Your progress in Chapter 2
+                  </div>
+                  <div className="flex flex-col relative pl-[22px]">
+                    <div className="absolute left-[7px] top-[6px] bottom-[6px] w-[2px] bg-[#d0e4f7] rounded-[2px]" />
+                    {INTERVIEW_SCHEDULING_DATA.milestones.map((ms, i) => (
+                      <div
+                        key={i}
+                        className="flex items-center gap-[10px] mb-[12px] last:mb-0"
+                      >
+                        <div
+                          className={`w-[14px] h-[14px] rounded-full shrink-0 z-[1] ml-[-22px] ${
+                            ms.status === "done"
+                              ? "bg-[#15744f]"
+                              : ms.status === "active"
+                                ? "bg-[#2f6fd4] animate-pulse"
+                                : "bg-[#d0e4f7]"
+                          }`}
+                        />
+                        <span
+                          className={`text-[13px] ${
+                            ms.status === "done"
+                              ? "text-[#0e5c3c] font-medium"
+                              : ms.status === "active"
+                                ? "text-[#2f6fd4] font-bold"
+                                : "text-[#6b8097] font-medium"
+                          }`}
+                        >
+                          {ms.label} {ms.status === "active" && "← here"}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* How it works info card */}
+              <div className="bg-[#fafcff] border-[1.5px] border-[#d0e4f7] rounded-[16px] p-[18px_20px] mb-[14px] shadow-[0_4px_24px_rgba(12,27,51,0.08)]">
+                <div className="flex items-center gap-[9px] mb-[12px]">
+                  <div className="w-[34px] h-[34px] rounded-[8px] bg-[#e8f1fb] border border-[#d0e4f7] flex items-center justify-center shrink-0">
+                    <Info
+                      size={16}
+                      className="text-[#2f6fd4]"
+                      strokeWidth={1.8}
+                    />
+                  </div>
+                  <div className="text-[14px] font-semibold text-[#0c1b33]">
+                    How interview scheduling works at this stage
+                  </div>
+                </div>
+                <div className="flex flex-col gap-[7px]">
+                  {INTERVIEW_SCHEDULING_DATA.howItWorks.map((item, i) => (
+                    <div
+                      key={i}
+                      className="flex items-start gap-[8px] text-[13px] color-[#3a4f63] leading-[1.5]"
+                    >
+                      <div className="w-[4px] h-[4px] rounded-full bg-[#b8d4f0] shrink-0 mt-[6px]" />
+                      <span>{item}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* <p className="text-[11.5px] color-[#6b8097] leading-[1.65] text-center pt-[4px] mt-[8px]">
+                {INTERVIEW_SCHEDULING_DATA.disclaimer}
               </p> */}
             </div>
           )}
