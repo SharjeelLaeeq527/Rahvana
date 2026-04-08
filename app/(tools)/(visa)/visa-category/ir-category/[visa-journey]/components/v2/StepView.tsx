@@ -49,6 +49,7 @@ import {
   Calendar,
   Activity,
   Info,
+  PartyPopper,
 } from "lucide-react";
 
 import {
@@ -79,6 +80,7 @@ import {
 import { AWAITING_REVIEW_DATA } from "./AwaitingReviewData";
 import { DQ_RECORDING_DATA } from "./DqRecordingData";
 import { INTERVIEW_SCHEDULING_DATA } from "./InterviewSchedulingData";
+import { APPOINTMENT_RECEIVED_DATA } from "./AppointmentReceivedData";
 
 interface SecurityQuestion {
   id: string;
@@ -1938,15 +1940,17 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                           ? "bg-[#fffbec] text-[#c49a0a] border-[#e8d47a]"
                           : chip.type === "final" || chip.type === "green"
                             ? "bg-[#e8f5ef] text-[#15744f] border-[#a8d9be]"
-                            : chip.type === "sky"
-                              ? "bg-[#e8f1fb] text-[#2d4a6e] border-[#d0e4f7]"
-                              : chip.type === "gold"
-                                ? "bg-[#fef8e8] text-[#8a6200] border-[#f0d98a]"
-                                : chip.type === "uscis" ||
-                                    chip.uscis === "uscis" ||
-                                    chip.type === "path"
-                                  ? "bg-[#fff7ed] text-[#b45309] border-[#fed7aa]"
-                                  : "bg-[#fafcff] text-[#6b8097] border-[#d0e4f7]"
+                            : chip.type === "purple"
+                              ? "bg-[#f3f0fb] text-[#4a2d8a] border-[#c9bef2]"
+                              : chip.type === "sky"
+                                ? "bg-[#e8f1fb] text-[#2d4a6e] border-[#d0e4f7]"
+                                : chip.type === "gold"
+                                  ? "bg-[#fef8e8] text-[#8a6200] border-[#f0d98a]"
+                                  : chip.type === "uscis" ||
+                                      chip.uscis === "uscis" ||
+                                      chip.type === "path"
+                                    ? "bg-[#fff7ed] text-[#b45309] border-[#fed7aa]"
+                                    : "bg-[#fafcff] text-[#6b8097] border-[#d0e4f7]"
                   }`}
                 >
                   {chip.label}
@@ -3257,6 +3261,321 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
 
               {/* <p className="text-[11.5px] color-[#6b8097] leading-[1.65] text-center pt-[4px] mt-[8px]">
                 {INTERVIEW_SCHEDULING_DATA.disclaimer}
+              </p> */}
+            </div>
+          )}
+
+          {/* INTERVIEW APPOINTMENT (Step 2.12 SPECIFIC) */}
+          {tool.type === "appointment_received" && (
+            <div className="flex flex-col animate-in fade-in slide-in-from-bottom-2 duration-380">
+              {/* Hero banner */}
+              <div className="relative bg-gradient-to-br from-[#0a1a2e] to-[#163258] rounded-[16px] p-[26px_28px] mb-[18px] overflow-hidden">
+                <div className="absolute top-0 left-0 right-0 h-[2.5px] bg-gradient-to-r from-[#b38600] via-[#f0d98a] to-white/30 opacity-[0.95]" />
+                <div className="absolute top-[-40px] right-[-40px] w-[160px] h-[160px] bg-radial-gradient(circle,rgba(180,140,0,0.18)_0%,transparent_70%)" />
+
+                {/* Custom Colorful Celebratory Icon */}
+                <div className="absolute right-[28px] top-[50%] translate-y-[-50%] opacity-[0.45] rotate-[5deg] scale-[1.3]">
+                  <svg
+                    width="48"
+                    height="48"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      d="M4 22L11.5 14.5"
+                      stroke="#b38600"
+                      strokeWidth="2.5"
+                      strokeLinecap="round"
+                    />
+                    <path
+                      d="M12 11C14.7614 11 17 8.76142 17 6C17 3.23858 14.7614 1 12 1C9.23858 1 7 3.23858 7 6C7 8.76142 9.23858 11 12 11Z"
+                      fill="#b38600"
+                      fillOpacity="0.2"
+                    />
+                    <circle cx="17" cy="4" r="1.5" fill="#2f6fd4" />
+                    <circle cx="21" cy="9" r="1.2" fill="#15744f" />
+                    <circle cx="15" cy="10" r="1" fill="#f87171" />
+                    <path
+                      d="M19 14L20 15"
+                      stroke="#f0d98a"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                    />
+                    <path
+                      d="M15 16L16 17"
+                      stroke="#60a5fa"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                    />
+                    <path
+                      d="M12 19L12 21"
+                      stroke="#f87171"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                    />
+                    <path
+                      d="M7 6L5 4"
+                      stroke="#f0d98a"
+                      strokeWidth="1.5"
+                      strokeLinecap="round"
+                    />
+                    <path
+                      d="M11 6L9 3"
+                      stroke="#b38600"
+                      strokeWidth="1.5"
+                      strokeLinecap="round"
+                    />
+                  </svg>
+                </div>
+
+                <div className="text-[10px] font-bold tracking-[0.12em] uppercase text-white/40 mb-[7px]">
+                  {APPOINTMENT_RECEIVED_DATA.heroBanner.eyebrow}
+                </div>
+                <div
+                  className="text-[clamp(22px,3.5vw,28px)] font-serif text-white/95 leading-[1.2] mb-[8px]"
+                  style={{ fontFamily: "'DM Serif Display', serif" }}
+                >
+                  {APPOINTMENT_RECEIVED_DATA.heroBanner.title}
+                </div>
+                <div className="text-[13px] text-white/55 leading-[1.6] max-w-[460px]">
+                  {APPOINTMENT_RECEIVED_DATA.heroBanner.sub}
+                </div>
+              </div>
+
+              {!state.metadata.interviewSaved ? (
+                /* Input card */
+                <div className="bg-white border-[1.5px] border-[#d0e4f7] rounded-[16px] p-[22px_24px] mb-[14px] shadow-[0_4px_24px_rgba(12,27,51,0.08)]">
+                  <div className="flex items-center gap-[10px] mb-[18px]">
+                    <div className="w-[38px] h-[38px] rounded-[9px] bg-[#fffbec] border border-[#e8d47a] flex items-center justify-center shrink-0">
+                      <Calendar
+                        size={18}
+                        className="text-[#b38600]"
+                        strokeWidth={1.7}
+                      />
+                    </div>
+                    <div>
+                      <div className="text-[14px] font-semibold text-[#0c1b33]">
+                        {APPOINTMENT_RECEIVED_DATA.form.title}
+                      </div>
+                      <div className="text-[12px] text-[#6b8097] mt-[2px]">
+                        {APPOINTMENT_RECEIVED_DATA.form.sub}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-[12px] mb-[16px]">
+                    <div className="flex flex-col gap-[5px]">
+                      <label className="text-[11px] font-semibold tracking-widest uppercase text-[#6b8097]">
+                        {
+                          APPOINTMENT_RECEIVED_DATA.form.fields.interviewDate
+                            .label
+                        }
+                      </label>
+                      <input
+                        type="date"
+                        className="p-[10px_12px] border-[1.5px] border-[#d0e4f7] rounded-[10px] text-[14px] text-[#0c1b33] bg-white outline-none focus:border-[#2f6fd4] focus:ring-3 focus:ring-[#2f6fd4]/12 transition-all"
+                        value={state.metadata.interviewDate || ""}
+                        onChange={(e) =>
+                          actions.updateMetadata({
+                            interviewDate: e.target.value,
+                          })
+                        }
+                      />
+                    </div>
+                    <div className="flex flex-col gap-[5px]">
+                      <label className="text-[11px] font-semibold tracking-widest uppercase text-[#6b8097]">
+                        {APPOINTMENT_RECEIVED_DATA.form.fields.letterDate.label}
+                      </label>
+                      <input
+                        type="date"
+                        className="p-[10px_12px] border-[1.5px] border-[#d0e4f7] rounded-[10px] text-[14px] text-[#0c1b33] bg-white outline-none focus:border-[#2f6fd4] focus:ring-3 focus:ring-[#2f6fd4]/12 transition-all"
+                        value={state.metadata.letterDate || ""}
+                        onChange={(e) =>
+                          actions.updateMetadata({
+                            letterDate: e.target.value,
+                          })
+                        }
+                      />
+                    </div>
+                    <div className="flex flex-col gap-[5px] md:col-span-2">
+                      <label className="text-[11px] font-semibold tracking-widest uppercase text-[#6b8097]">
+                        {APPOINTMENT_RECEIVED_DATA.form.fields.embassy.label}
+                      </label>
+                      <input
+                        type="text"
+                        placeholder={
+                          APPOINTMENT_RECEIVED_DATA.form.fields.embassy
+                            .placeholder
+                        }
+                        className="p-[10px_12px] border-[1.5px] border-[#d0e4f7] rounded-[10px] text-[14px] text-[#0c1b33] bg-white outline-none focus:border-[#2f6fd4] focus:ring-3 focus:ring-[#2f6fd4]/12 transition-all w-full"
+                        value={state.metadata.consulateLocation || ""}
+                        onChange={(e) =>
+                          actions.updateMetadata({
+                            consulateLocation: e.target.value,
+                          })
+                        }
+                      />
+                    </div>
+                  </div>
+
+                  <div className="bg-[#e8f1fb] border border-[#d0e4f7] rounded-[10px] p-[11px_14px] text-[13px] text-[#3a4f63] leading-[1.5] mb-[16px] flex items-start gap-[8px]">
+                    <Upload
+                      size={14}
+                      className="text-[#2f6fd4] shrink-0 mt-[1px]"
+                      strokeWidth={1.8}
+                    />
+                    <span>
+                      <strong>Keep your interview letter accessible.</strong>{" "}
+                      You will need to bring the original to the consulate.
+                      Store a copy in Rahvana's Document Vault for easy
+                      reference during preparation.
+                    </span>
+                  </div>
+
+                  <button
+                    className="w-full p-[14px_24px] bg-[#15744f] text-white border-none rounded-[10px] text-[15px] font-semibold cursor-pointer transition-all shadow-[0_4px_20px_rgba(21,116,79,0.3)] hover:bg-[#0e5c3c] hover:translate-y-[-1px] hover:shadow-[0_8px_28px_rgba(21,116,79,0.4)] active:translate-y-0"
+                    onClick={() => {
+                      if (
+                        !state.metadata.interviewDate ||
+                        !state.metadata.consulateLocation
+                      ) {
+                        toast.error(
+                          "Please provide interview date and location",
+                        );
+                        return;
+                      }
+                      actions.updateMetadata({ interviewSaved: true });
+                    }}
+                  >
+                    {APPOINTMENT_RECEIVED_DATA.form.button}
+                  </button>
+                </div>
+              ) : (
+                /* Saved appointment card */
+                <div className="bg-white border-[1.5px] border-[#a8d9be] rounded-[16px] p-[22px_24px] mb-[14px] shadow-[0_4px_24px_rgba(12,27,51,0.08)] animate-in fade-in slide-in-from-top-2 duration-350 fill-mode-both">
+                  <div className="flex items-center justify-between mb-[14px]">
+                    <div className="text-[14px] font-semibold text-[#15744f]">
+                      {APPOINTMENT_RECEIVED_DATA.savedView.title}
+                    </div>
+                    <button
+                      className="text-[12px] font-semibold text-[#2f6fd4] bg-none border-none cursor-pointer hover:underline"
+                      onClick={() =>
+                        actions.updateMetadata({ interviewSaved: false })
+                      }
+                    >
+                      {APPOINTMENT_RECEIVED_DATA.savedView.button}
+                    </button>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-[12px]">
+                    <div className="flex flex-col gap-[2px]">
+                      <div className="text-[11px] text-[#0e5c3c] font-medium uppercase tracking-widest">
+                        Interview Date
+                      </div>
+                      <div className="text-[14px] font-bold text-[#0e5c3c]">
+                        {state.metadata.interviewDate
+                          ? new Date(
+                              state.metadata.interviewDate + "T00:00:00",
+                            ).toLocaleDateString("en-US", {
+                              year: "numeric",
+                              month: "long",
+                              day: "numeric",
+                            })
+                          : "—"}
+                      </div>
+                    </div>
+                    <div className="flex flex-col gap-[2px]">
+                      <div className="text-[11px] text-[#0e5c3c] font-medium uppercase tracking-widest">
+                        Embassy / Consulate
+                      </div>
+                      <div className="text-[14px] font-bold text-[#0e5c3c]">
+                        {state.metadata.consulateLocation || "—"}
+                      </div>
+                    </div>
+                    <div className="flex flex-col gap-[2px]">
+                      <div className="text-[11px] text-[#0e5c3c] font-medium uppercase tracking-widest">
+                        Letter Received
+                      </div>
+                      <div className="text-[14px] font-bold text-[#0e5c3c]">
+                        {state.metadata.letterDate
+                          ? new Date(
+                              state.metadata.letterDate + "T00:00:00",
+                            ).toLocaleDateString("en-US", {
+                              year: "numeric",
+                              month: "long",
+                              day: "numeric",
+                            })
+                          : "—"}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Dashboard update block */}
+              {state.metadata.interviewSaved && (
+                <div className="bg-[#e8f5ef] border-[1.5px] border-[#a8d9be] rounded-[16px] p-[18px_20px] mb-[14px] flex items-start gap-[14px] animate-in fade-in slide-in-from-top-2 duration-350 fill-mode-both">
+                  <div className="w-[38px] h-[38px] rounded-[9px] bg-[#15744f] flex items-center justify-center shrink-0">
+                    <Monitor size={18} className="text-white" strokeWidth={2} />
+                  </div>
+                  <div>
+                    <div className="text-[13px] font-semibold text-[#0e5c3c] mb-[3px]">
+                      {APPOINTMENT_RECEIVED_DATA.dashboardUpdate.title}
+                    </div>
+                    <div className="text-[12px] text-[#3a4f63] leading-[1.5]">
+                      {APPOINTMENT_RECEIVED_DATA.dashboardUpdate.sub}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Next chapter preview */}
+              {state.metadata.interviewSaved && (
+                <div className="bg-white border-[1.5px] border-[#d0e4f7] rounded-[16px] p-[20px_22px] mb-[14px] shadow-[0_4px_24px_rgba(12,27,51,0.08)] animate-in fade-in slide-in-from-top-2 duration-450 fill-mode-both">
+                  <div className="flex items-center gap-[10px] mb-[14px]">
+                    <div className="w-[36px] h-[36px] rounded-[9px] bg-[#f3f0fb] border border-[#c9bef2] flex items-center justify-center shrink-0">
+                      <Clock
+                        size={17}
+                        className="text-[#4a2d8a]"
+                        strokeWidth={1.7}
+                      />
+                    </div>
+                    <div>
+                      <div className="text-[14px] font-semibold text-[#0c1b33]">
+                        {APPOINTMENT_RECEIVED_DATA.nextChapter.title}
+                      </div>
+                      <div className="text-[12px] text-[#6b8097] mt-[2px]">
+                        {APPOINTMENT_RECEIVED_DATA.nextChapter.sub}
+                      </div>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-[9px]">
+                    {APPOINTMENT_RECEIVED_DATA.nextChapter.phases.map(
+                      (phase, i) => (
+                        <div
+                          key={i}
+                          className="bg-[#f4f7fb] border border-[#d0e4f7] rounded-[10px] p-[12px_14px] flex items-start gap-[9px]"
+                        >
+                          <div className="w-[22px] h-[22px] rounded-full bg-[#f3f0fb] border border-[#c9bef2] flex items-center justify-center text-[11px] font-bold text-[#4a2d8a] shrink-0">
+                            {phase.num}
+                          </div>
+                          <div>
+                            <div className="text-[13px] font-semibold text-[#0c1b33]">
+                              {phase.label}
+                            </div>
+                            <div className="text-[11px] text-[#6b8097] mt-[2px] leading-[1.4]">
+                              {phase.sub}
+                            </div>
+                          </div>
+                        </div>
+                      ),
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* <p className="text-[11.5px] text-[#6b8097] leading-[1.65] text-center pt-[4px] mt-[8px]">
+                {APPOINTMENT_RECEIVED_DATA.disclaimer}
               </p> */}
             </div>
           )}

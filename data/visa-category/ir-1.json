@@ -2581,7 +2581,6 @@
             "disclaimer": "Rahvana provides structured guidance only. NVC review timelines vary. Monitor your registered email and CEAC messages directly."
           }
         },
-
         {
           "step_key": "step_2_10",
           "step_number": 10,
@@ -2630,19 +2629,34 @@
             "type": "interview_scheduling",
             "title": "Waiting for Interview Scheduling",
             "chips": [
-              { "label": "DQ Received", "type": "green" },
-              { "label": "Queue Tracking", "type": "sky" },
-              { "label": "Awaiting Appointment", "type": "gold" }
+              {
+                "label": "DQ Received",
+                "type": "green"
+              },
+              {
+                "label": "Queue Tracking",
+                "type": "sky"
+              },
+              {
+                "label": "Awaiting Appointment",
+                "type": "gold"
+              }
             ],
             "disclaimer": "Official scheduling status is sourced from the U.S. State Department. Rahvana estimates are trend projections only and carry no guarantee of accuracy. Always verify at travel.state.gov."
           }
         },
         {
-          "id": "II-12",
-          "name": "Receive Interview Letter",
+          "step_key": "step_2_12",
+          "step_number": 12,
+          "step_name": "Interview Appointment Received",
+          "step_short_description": "Interview appointment received",
+          "step_description": "Your consular interview has been scheduled. Record your appointment details to update your dashboard and unlock interview preparation.",
+          "step_type": "tool",
           "who": "Beneficiary",
           "where": "Email + registered mail",
-          "timeline": "2-4 weeks before interview",
+          "estimated_duration_days": 1,
+          "is_required": true,
+          "display_order": 12,
           "actions": [
             "Receive interview appointment",
             "Note date and time",
@@ -2650,8 +2664,26 @@
             "Gather original documents",
             "Make travel arrangements if needed"
           ],
-          "output": "Interview date confirmed",
-          "nextTrigger": "Proceed to Stage III"
+          "tool_data": {
+            "id": "step_2_12",
+            "type": "appointment_received",
+            "title": "Interview Appointment Received",
+            "chips": [
+              {
+                "label": "Major Milestone",
+                "type": "gold"
+              },
+              {
+                "label": "Dashboard Updated",
+                "type": "green"
+              },
+              {
+                "label": "Chapter 3 Unlocked",
+                "type": "purple"
+              }
+            ],
+            "disclaimer": "Rahvana provides structured guidance only. Always confirm interview details directly from your appointment letter. Contact the embassy or NVC for any discrepancies."
+          }
         }
       ]
     },
