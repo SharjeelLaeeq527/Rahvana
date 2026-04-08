@@ -33,7 +33,11 @@ export async function GET(request: NextRequest) {
       filtered = filtered.filter((j) => j.journey.status === status);
     }
     if (journeyType) {
-      filtered = filtered.filter((j) => j.journey.journey_type === journeyType);
+      const normalizedQuery = journeyType.toLowerCase().replace(/-/g, "");
+      filtered = filtered.filter((j) => {
+        const normalizedItem = j.journey.journey_type.toLowerCase().replace(/-/g, "");
+        return normalizedItem === normalizedQuery;
+      });
     }
 
     // Apply pagination

@@ -127,10 +127,10 @@ export function useWizard(options: UseWizardOptions = {}) {
 
         // 2. Auto-Initialize if not found
         if (!targetJourneyId) {
-          console.log(`[useWizard] No existing journey found for ${journeyId}. Initializing...`);
+          const configType = journeyId.toLowerCase() === 'ir1' ? 'ir-1' : journeyId.toLowerCase();
           const initRes = await fetch('/api/journeys/create-from-config', {
             method: 'POST',
-            body: JSON.stringify({ visa_type: journeyId.toLowerCase() }),
+            body: JSON.stringify({ visa_type: configType }),
           });
           const initData = await initRes.json();
           if (initData.success) {
