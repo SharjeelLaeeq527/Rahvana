@@ -4162,34 +4162,69 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
 
           {/* Guide / Wallet Cards Row */}
           {(tool.guide_card || tool.wallet_card) && (
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-[12px] mb-[28px]">
+            <div
+              className={`grid grid-cols-1 ${
+                tool.guide_card && tool.wallet_card ? "sm:grid-cols-2" : ""
+              } gap-[12px] mb-[28px]`}
+            >
               {tool.guide_card && (
                 <button
                   onClick={() => {
                     setTutorialIdx(0);
                     setIsTutorialOpen(true);
                   }}
-                  className="bg-[#fafcff] border-[1.5px] border-[#d0e4f7] rounded-[16px] p-[20px] text-left group hover:border-primary hover:shadow-[0_4px_20px_rgba(47,111,212,0.1)] hover:-translate-y-px transition-all cursor-pointer select-none flex flex-col"
+                  className={`border-[1.5px] rounded-[16px] text-left group transition-all cursor-pointer select-none flex ${
+                    tool.wallet_card
+                      ? "p-[20px] flex-col bg-[#fafcff] border-[#d0e4f7] hover:border-primary hover:shadow-[0_4px_20px_rgba(47,111,212,0.1)] hover:-translate-y-px"
+                      : "p-[20px_24px] flex-row items-center gap-[16px] w-full bg-white border-[#d0e4f7] hover:border-primary/40 hover:shadow-[0_8px_30px_rgba(12,27,51,0.06)]"
+                  }`}
                 >
-                  <div className="flex items-center gap-[10px] mb-[12px]">
-                    <div className="w-[36px] h-[36px] rounded-[9px] bg-[#f3f0fb] border border-[#c9bef2] flex items-center justify-center shrink-0">
-                      <Monitor
-                        size={18}
-                        className="text-[#4a2d8a]"
-                        strokeWidth={1.7}
-                      />
-                    </div>
-                  </div>
-                  <h3 className="text-[14px] font-semibold text-[#0c1b33] mb-1">
-                    {tool.guide_card.title}
-                  </h3>
-                  <p className="text-[12px] text-[#6b8097] leading-normal">
-                    {tool.guide_card.subtitle}
-                  </p>
-                  <div className="flex items-center gap-1 mt-3 text-[12px] font-semibold text-primary">
-                    <span>View guide</span>
-                    <ArrowRight size={11} strokeWidth={2} />
-                  </div>
+                  {tool.wallet_card ? (
+                    /* Vertical Design (Original - Shared) */
+                    <>
+                      <div className="flex items-center gap-[10px] mb-[12px]">
+                        <div className="w-[36px] h-[36px] rounded-[9px] bg-[#f3f0fb] border border-[#c9bef2] flex items-center justify-center shrink-0">
+                          <Monitor
+                            size={18}
+                            className="text-[#4a2d8a]"
+                            strokeWidth={1.7}
+                          />
+                        </div>
+                      </div>
+                      <h3 className="text-[14px] font-semibold text-[#0c1b33] mb-1">
+                        {tool.guide_card.title}
+                      </h3>
+                      <p className="text-[12px] text-[#6b8097] leading-normal">
+                        {tool.guide_card.subtitle}
+                      </p>
+                      <div className="flex items-center gap-1 mt-3 text-[12px] font-semibold text-primary">
+                        <span>View guide</span>
+                        <ArrowRight size={11} strokeWidth={2} />
+                      </div>
+                    </>
+                  ) : (
+                    /* Horizontal Design (New Reference - Solo) */
+                    <>
+                      <div className="w-[52px] h-[52px] rounded-[14px] bg-[#f3f0fb] border border-[#c9bef2]/60 flex items-center justify-center shrink-0">
+                        <Monitor
+                          size={22}
+                          className="text-[#4a2d8a]"
+                          strokeWidth={1.7}
+                        />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <h3 className="text-[15px] font-bold text-[#0c1b33] mb-0.5 truncate">
+                          {tool.guide_card.title}
+                        </h3>
+                        <p className="text-[13px] text-[#6b8097] leading-normal line-clamp-2">
+                          {tool.guide_card.subtitle}
+                        </p>
+                      </div>
+                      <div className="w-[32px] h-[32px] rounded-full bg-[#f4f7fb] flex items-center justify-center text-[#6b8097] group-hover:bg-primary group-hover:text-white transition-colors shrink-0">
+                        <ArrowRight size={14} strokeWidth={2.5} />
+                      </div>
+                    </>
+                  )}
                 </button>
               )}
 
