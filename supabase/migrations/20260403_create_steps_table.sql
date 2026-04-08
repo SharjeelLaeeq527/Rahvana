@@ -106,35 +106,35 @@ CREATE TRIGGER trg_steps_updated_at
 CREATE OR REPLACE FUNCTION update_chapter_progress_on_step_change()
 RETURNS TRIGGER AS $$
 DECLARE
-  chapter_id UUID;
-  total_steps INTEGER;
-  completed_steps INTEGER;
-  completion_pct DECIMAL(5,2);
+  _chapter_id UUID;
+  _total_steps INTEGER;
+  _completed_steps INTEGER;
+  _completion_pct DECIMAL(5,2);
 BEGIN
   -- Get chapter_id
-  chapter_id := NEW.chapter_id;
+  _chapter_id := NEW.chapter_id;
   
   -- Count total and completed steps in this chapter
   SELECT COUNT(*), COUNT(*) FILTER (WHERE status = 'completed')
-  INTO total_steps, completed_steps
+  INTO _total_steps, _completed_steps
   FROM steps
-  WHERE steps.chapter_id = chapter_id;
+  WHERE steps.chapter_id = _chapter_id;
   
   -- Calculate percentage
-  completion_pct := CASE WHEN total_steps > 0 THEN (completed_steps::DECIMAL / total_steps) * 100 ELSE 0 END;
+  _completion_pct := CASE WHEN _total_steps > 0 THEN (_completed_steps::DECIMAL / _total_steps) * 100 ELSE 0 END;
   
   -- Update chapter
   UPDATE chapters
   SET 
-    completed_steps_count = completed_steps,
-    total_steps_count = total_steps,
-    completion_percentage = completion_pct,
+    completed_steps_count = _completed_steps,
+    total_steps_count = _total_steps,
+    completion_percentage = _completion_pct,
     status = CASE 
-      WHEN completed_steps = total_steps AND total_steps > 0 THEN 'completed'
-      WHEN completed_steps > 0 THEN 'in_progress'
+      WHEN _completed_steps = _total_steps AND _total_steps > 0 THEN 'completed'
+      WHEN _completed_steps > 0 THEN 'in_progress'
       ELSE 'not_started'
     END
-  WHERE id = chapter_id;
+  WHERE id = _chapter_id;
   
   RETURN NEW;
 END;
@@ -152,38 +152,38 @@ CREATE TRIGGER trg_update_chapter_progress
 CREATE OR REPLACE FUNCTION update_journey_progress_on_step_change()
 RETURNS TRIGGER AS $$
 DECLARE
-  journey_id UUID;
-  total_steps INTEGER;
-  completed_steps INTEGER;
-  completion_pct DECIMAL(5,2);
+  _journey_id UUID;
+  _total_steps INTEGER;
+  _completed_steps INTEGER;
+  _completion_pct DECIMAL(5,2);
 BEGIN
   -- Get journey_id through chapter
-  SELECT c.journey_id INTO journey_id
+  SELECT c.journey_id INTO _journey_id
   FROM chapters c
   WHERE c.id = NEW.chapter_id;
   
   -- Count total and completed steps in entire journey
   SELECT COUNT(*), COUNT(*) FILTER (WHERE s.status = 'completed')
-  INTO total_steps, completed_steps
+  INTO _total_steps, _completed_steps
   FROM steps s
   JOIN chapters c ON s.chapter_id = c.id
-  WHERE c.journey_id = journey_id;
+  WHERE c.journey_id = _journey_id;
   
   -- Calculate percentage
-  completion_pct := CASE WHEN total_steps > 0 THEN (completed_steps::DECIMAL / total_steps) * 100 ELSE 0 END;
+  _completion_pct := CASE WHEN _total_steps > 0 THEN (_completed_steps::DECIMAL / _total_steps) * 100 ELSE 0 END;
   
   -- Update journey
   UPDATE journeys
   SET 
-    completed_steps_count = completed_steps,
-    total_steps_count = total_steps,
-    completion_percentage = completion_pct,
+    completed_steps_count = _completed_steps,
+    total_steps_count = _total_steps,
+    completion_percentage = _completion_pct,
     status = CASE 
-      WHEN completed_steps = total_steps AND total_steps > 0 THEN 'completed'
-      WHEN completed_steps > 0 THEN 'in_progress'
+      WHEN _completed_steps = _total_steps AND _total_steps > 0 THEN 'completed'
+      WHEN _completed_steps > 0 THEN 'in_progress'
       ELSE 'not_started'
     END
-  WHERE id = journey_id;
+  WHERE id = _journey_id;
   
   RETURN NEW;
 END;

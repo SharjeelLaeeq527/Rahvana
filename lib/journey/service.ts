@@ -436,8 +436,7 @@ export class StepCompletionEngine {
       // 1. Get step and verify it exists, and is not completed already
       const step = await db.getStepDB(stepId);
       if (!step) throw new Error("Step not found");
-      if (step.status === "completed")
-        throw new Error("Step is already completed");
+      if (step.status === "completed") return step;
 
       // 2. Check dependencies
       const dependencyCheck = await this.checkDependencies(stepId, journeyId);
@@ -650,8 +649,7 @@ export class StepCompletionEngine {
       // Get step and verify it exists
       const step = await db.getStepDB(stepId);
       if (!step) throw new Error("Step not found");
-      if (step.status === "completed")
-        throw new Error("Step is already completed");
+      if (step.status === "completed") return step;
 
       // Check if step is skippable (not required)
       if (step.is_required) {

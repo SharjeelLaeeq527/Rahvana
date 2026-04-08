@@ -494,6 +494,7 @@ export async function createStepDB(
 export async function getStepDB(stepId: string): Promise<Step | null> {
   const { supabase, user } = await getSupabaseWithUser();
 
+  const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(stepId);
   const { data, error } = await supabase
     .from("steps")
     .select(
@@ -504,7 +505,7 @@ export async function getStepDB(stepId: string): Promise<Step | null> {
       journeys!inner(user_id)
     )`,
     )
-    .eq("id", stepId)
+    .eq(isUuid ? "id" : "step_key", stepId)
     .eq("chapters.journeys.user_id", user.id)
     .single();
 
@@ -591,7 +592,7 @@ export async function getStepsForJourneyDB(
       `
       *,
       chapters!inner(
-        journey_id,
+        journey_id
       )
     `,
     )
