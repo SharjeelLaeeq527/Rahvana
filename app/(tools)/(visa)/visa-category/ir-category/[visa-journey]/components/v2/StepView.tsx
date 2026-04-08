@@ -6,7 +6,6 @@ import {
   CheckCircle2,
   AlertTriangle,
   Clock,
-  Info,
   CheckCircle,
   CheckSquare,
   ArrowRight,
@@ -46,6 +45,9 @@ import {
   Users,
   ChevronLeft,
   ChevronRight,
+  Calendar,
+  Activity,
+  Info,
 } from "lucide-react";
 
 import {
@@ -74,6 +76,7 @@ import {
   SubmissionTutorialOverlay,
 } from "./SubmissionTutorialData";
 import { AWAITING_REVIEW_DATA } from "./AwaitingReviewData";
+import { DQ_RECORDING_DATA } from "./DqRecordingData";
 
 interface SecurityQuestion {
   id: string;
@@ -196,14 +199,37 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
   // Step 2.8 Review & Submit States
   const [isSubmissionGuideOpen, setIsSubmissionGuideOpen] = useState(false);
   const [submissionGuideIdx, setSubmissionGuideIdx] = useState(0);
-  const submissionChecklistStatus = (state.metadata
-    .submissionChecklistStatus as Record<string, boolean>) || {
+  const initialSubmissionChecklist = (state.metadata
+    .submissionChecklistStatusS10 as Record<string, boolean>) || {
     0: false,
     1: false,
     2: false,
     3: false,
     4: false,
     5: false,
+  };
+  const [submissionChecklistStatusS10, setSubmissionChecklistStatus] = useState<
+    Record<string, boolean>
+  >(initialSubmissionChecklist);
+
+  // Step 2.10 DQ Recording States
+  const [dqSaved, setDqSaved] = useState(state.metadata.dqSaved === true);
+  const [dqDate, setDqDate] = useState((state.metadata.dqDate as string) || "");
+  const [dqCategory, setDqCategory] = useState(
+    (state.metadata.dqCategory as string) || "",
+  );
+  const [dqPost, setDqPost] = useState((state.metadata.dqPost as string) || "");
+  const [dqCountry, setDqCountry] = useState(
+    (state.metadata.dqCountry as string) || "Pakistan",
+  );
+
+  const handleToggleSubmissionCheckS10 = (idx: number) => {
+    const next = {
+      ...submissionChecklistStatusS10,
+      [idx]: !submissionChecklistStatusS10[idx],
+    };
+    setSubmissionChecklistStatus(next);
+    actions.updateMetadata({ submissionChecklistStatusS10: next });
   };
 
   // Sync selectedScenario with sponsorshipResult once on load
@@ -1665,7 +1691,11 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
           <div className="bg-white border-[1.5px] border-[#d0e4f7] rounded-[16px] p-[20px_22px] mb-[14px] shadow-[0_4px_24px_rgba(12,27,51,0.08)] animate-in fade-in slide-in-from-top-2 duration-300 delay-[200ms]">
             <div className="flex items-center gap-[10px] mb-[14px]">
               <div className="w-[36px] h-[36px] rounded-[9px] bg-[#e8f1fb] border border-[#d0e4f7] flex items-center justify-center shrink-0">
-                <Search size={17} className="text-[#2f6fd4]" strokeWidth={1.7} />
+                <Search
+                  size={17}
+                  className="text-[#2f6fd4]"
+                  strokeWidth={1.7}
+                />
               </div>
               <h3 className="text-[14px] font-[600] text-[#0c1b33]">
                 {data.reviewItems.title}
@@ -1789,7 +1819,6 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
       </div>
     );
   };
-
 
   const renderToolStep = () => {
     const tool = currentStep.tool_data as any;
@@ -2400,27 +2429,27 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                     ].map((item, i) => (
                       <div
                         key={i}
-                        onClick={() => handleToggleSubmissionCheck(i)}
+                        onClick={() => handleToggleSubmissionCheckS10(i)}
                         className={`flex items-start gap-[10px] p-[9px_12px] rounded-[10px] cursor-pointer transition-all border-[1.5px] ${
-                          submissionChecklistStatus[i]
+                          submissionChecklistStatusS10[i]
                             ? "bg-[#e8f5ef] border-[#a8d9be]"
                             : "border-transparent hover:bg-[#eef3fa]"
                         }`}
                       >
                         <div
                           className={`w-[18px] h-[18px] rounded-[5px] border-[1.5px] flex items-center justify-center shrink-0 mt-[1px] ${
-                            submissionChecklistStatus[i]
+                            submissionChecklistStatusS10[i]
                               ? "bg-[#15744f] border-[#15744f]"
                               : "bg-white border-[#d0e4f7]"
                           }`}
                         >
-                          {submissionChecklistStatus[i] && (
+                          {submissionChecklistStatusS10[i] && (
                             <Check size={10} className="text-white" />
                           )}
                         </div>
                         <span
                           className={`text-[13px] leading-[1.45] ${
-                            submissionChecklistStatus[i]
+                            submissionChecklistStatusS10[i]
                               ? "text-[#0e5c3c]"
                               : "text-[#3a4f63]"
                           }`}
@@ -2462,6 +2491,546 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                   </div>
                 </div>
               </div>
+            </div>
+          )}
+
+          {/* AWAITING NVC REVIEW (Step 2.9 SPECIFIC) */}
+          {tool.type === "awaiting_review" && (
+            <div className="flex flex-col animate-in fade-in slide-in-from-bottom-2 duration-380">
+              {/* Eyebrow and Title */}
+              <div className="flex items-center gap-[8px] mb-[6px]">
+                <span className="text-[11px] font-semibold uppercase tracking-[0.12em] text-[#6b8097]">
+                  Chapter 2 · NVC / CEAC Processing
+                </span>
+                <span className="text-[11px] text-[#b8d4f0]">›</span>
+                <span className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#2f6fd4]">
+                  Step 10 — Awaiting NVC Document Review
+                </span>
+              </div>
+              <h1
+                className="text-[clamp(26px,4vw,34px)] font-serif text-[#0c1b33] leading-[1.2] mb-[10px]"
+                style={{ fontFamily: "'DM Serif Display', serif" }}
+              >
+                Awaiting NVC Document Review
+              </h1>
+              <p className="text-[15px] text-[#3a4f63] leading-[1.7] max-w-[500px] mb-[22px]">
+                Your documents have been submitted. NVC is now reviewing your
+                package for completeness and consistency before issuing a
+                documentary qualification decision.
+              </p>
+
+              {/* Meta Chips */}
+              <div className="flex gap-[7px] flex-wrap mb-[32px]">
+                <span className="text-[11px] font-semibold tracking-[0.06em] uppercase px-[12px] py-[5px] rounded-full bg-[#f3f0fb] text-[#4a2d8a] border border-[#c9bef2]">
+                  NVC Review
+                </span>
+                <span className="text-[11px] font-semibold tracking-[0.06em] uppercase px-[12px] py-[5px] rounded-full bg-[#e8f1fb] text-[#2d4a6e] border border-[#d0e4f7]">
+                  Status
+                </span>
+                <span className="text-[11px] font-semibold tracking-[0.06em] uppercase px-[12px] py-[5px] rounded-full bg-[#e8f6f6] text-[#0d6b6b] border border-[#9fd6d6]">
+                  Waiting Period
+                </span>
+              </div>
+
+              {/* Status card */}
+              <div className="relative bg-[#0c1b33] rounded-[16px] p-[24px_26px] mb-[16px] overflow-hidden shadow-[0_4px_24px_rgba(12,27,51,0.08)]">
+                <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-[#2f6fd4] via-[#6aa8f0] to-transparent opacity-80" />
+                <div className="text-[10px] font-bold tracking-widest uppercase text-white/40 mb-[8px]">
+                  Current Case Status
+                </div>
+                <div
+                  className="text-[20px] font-serif text-white/92 mb-[16px] flex items-center gap-[10px]"
+                  style={{ fontFamily: "'DM Serif Display', serif" }}
+                >
+                  <span className="inline-block w-[7px] h-[7px] rounded-full bg-[#6aa8f0] animate-pulse shadow-[0_0_8px_rgba(106,168,240,0.6)]" />
+                  Documents under NVC review
+                </div>
+                <div className="grid grid-cols-2 xs:grid-cols-3 gap-[12px]">
+                  <div className="flex flex-col gap-[3px]">
+                    <div className="text-[10px] font-semibold tracking-widest uppercase text-white/38">
+                      Documents submitted
+                    </div>
+                    <div className="text-[13px] font-semibold text-white/88">
+                      ✓ Confirmed
+                    </div>
+                  </div>
+                  <div className="flex flex-col gap-[3px]">
+                    <div className="text-[10px] font-semibold tracking-widest uppercase text-white/38">
+                      Current stage
+                    </div>
+                    <div className="text-[13px] font-semibold text-white/88">
+                      NVC document review
+                    </div>
+                  </div>
+                  <div className="flex flex-col gap-[3px]">
+                    <div className="text-[10px] font-semibold tracking-widest uppercase text-white/38">
+                      Next event
+                    </div>
+                    <div className="text-[13px] font-semibold text-white/88">
+                      DQ notification
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* What NVC is reviewing */}
+              <div className="bg-white border-[1.5px] border-[#d0e4f7] rounded-[16px] p-[20px_22px] mb-[14px] shadow-[0_4px_24px_rgba(12,27,51,0.08)]">
+                <div className="flex items-center gap-[10px] mb-[14px]">
+                  <div className="w-[36px] h-[36px] rounded-[9px] bg-[#e8f1fb] border border-[#d0e4f7] flex items-center justify-center shrink-0">
+                    <Search
+                      size={17}
+                      className="text-[#2f6fd4]"
+                      strokeWidth={1.7}
+                    />
+                  </div>
+                  <h3 className="text-[14px] font-semibold text-[#0c1b33]">
+                    What NVC is reviewing
+                  </h3>
+                </div>
+                <div className="flex flex-col gap-[7px]">
+                  {[
+                    "DS-260 — immigrant visa application accuracy and completeness",
+                    "Civil documents — passport, birth certificate, marriage records, police certificate",
+                    "Financial forms — Affidavit of Support and supporting evidence",
+                    "Translation pairing and document legibility across all files",
+                    "Overall package consistency with DS-260 answers and other filings",
+                  ].map((item, i) => (
+                    <div
+                      key={i}
+                      className="flex items-start gap-[9px] text-[13px] text-[#3a4f63] leading-[1.5]"
+                    >
+                      <div className="w-[4px] h-[4px] rounded-full bg-[#b8d4f0] shrink-0 mt-[6px]" />
+                      <span>{item}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-[14px] mb-[14px]">
+                {/* While you wait */}
+                <div className="bg-white border-[1.5px] border-[#d0e4f7] rounded-[16px] p-[20px_22px] shadow-[0_4px_24px_rgba(12,27,51,0.08)]">
+                  <div className="flex items-center gap-[10px] mb-[14px]">
+                    <div className="w-[36px] h-[36px] rounded-[9px] bg-[#e8f5ef] border border-[#a8d9be] flex items-center justify-center shrink-0">
+                      <Clock
+                        size={17}
+                        className="text-[#15744f]"
+                        strokeWidth={1.7}
+                      />
+                    </div>
+                    <h3 className="text-[14px] font-semibold text-[#0c1b33]">
+                      While you wait
+                    </h3>
+                  </div>
+                  <div className="flex flex-col gap-[7px]">
+                    {[
+                      "Monitor the email address registered with CEAC",
+                      "Check CEAC messages periodically for any NVC correspondence",
+                      "Keep organized copies of everything you uploaded",
+                      "Avoid re-uploading documents unless NVC specifically requests it",
+                    ].map((item, i) => (
+                      <div
+                        key={i}
+                        className="flex items-start gap-[9px] text-[13px] text-[#3a4f63] leading-[1.5]"
+                      >
+                        <div className="w-[4px] h-[4px] rounded-full bg-[#b8d4f0] shrink-0 mt-[6px]" />
+                        <span>{item}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Timeline */}
+                <div className="bg-white border-[1.5px] border-[#d0e4f7] rounded-[16px] p-[20px_22px] shadow-[0_4px_24px_rgba(12,27,51,0.08)]">
+                  <div className="flex items-center gap-[10px] mb-[14px]">
+                    <div className="w-[36px] h-[36px] rounded-[9px] bg-[#e8f1fb] border border-[#d0e4f7] flex items-center justify-center shrink-0">
+                      <Scale
+                        size={17}
+                        className="text-[#2f6fd4]"
+                        strokeWidth={1.7}
+                      />
+                    </div>
+                    <h3 className="text-[14px] font-semibold text-[#0c1b33]">
+                      Where you are in the process
+                    </h3>
+                  </div>
+                  <div className="relative pl-[18px]">
+                    <div className="absolute left-[6px] top-[10px] bottom-[10px] w-[2px] bg-[#d0e4f7] rounded-[2px]" />
+                    <div className="flex flex-col gap-[10px] relative">
+                      <div className="flex items-center gap-[8px]">
+                        <div className="w-[12px] h-[12px] rounded-full bg-[#15744f] shrink-0 z-1 -ml-[18px]" />
+                        <span className="text-[12px] text-[#0e5c3c] font-semibold">
+                          Documents uploaded to CEAC
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-[8px]">
+                        <div className="w-[12px] h-[12px] rounded-full bg-[#15744f] shrink-0 z-1 -ml-[18px]" />
+                        <span className="text-[12px] text-[#0e5c3c] font-semibold">
+                          Submitted to NVC
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-[8px]">
+                        <div className="w-[12px] h-[12px] rounded-full border-2 border-[#2f6fd4] bg-white shrink-0 z-1 -ml-[18px] animate-pulse" />
+                        <span className="text-[12px] text-[#2f6fd4] font-semibold">
+                          NVC document review ← you are here
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-[8px]">
+                        <div className="w-[12px] h-[12px] rounded-full bg-[#d0e4f7] shrink-0 z-1 -ml-[18px]" />
+                        <span className="text-[12px] text-[#6b8097]">
+                          Documentary Qualification (DQ)
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-[8px]">
+                        <div className="w-[12px] h-[12px] rounded-full bg-[#d0e4f7] shrink-0 z-1 -ml-[18px]" />
+                        <span className="text-[12px] text-[#6b8097]">
+                          Interview scheduling
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* If corrections requested */}
+              <div className="bg-[#fef8e8] border-[1.5px] border-[#f0d98a] rounded-[16px] p-[18px_20px] mb-[16px]">
+                <div className="flex items-center gap-[9px] mb-[10px]">
+                  <span className="text-[18px]">📋</span>
+                  <h3 className="text-[14px] font-semibold text-[#8a6200]">
+                    If NVC requests corrections or additional documents
+                  </h3>
+                </div>
+                <div className="flex flex-col gap-[7px]">
+                  {[
+                    "Read the checklist notice carefully — NVC will specify exactly what is missing or incorrect",
+                    "Replace only the specific document(s) flagged — do not re-upload your entire package",
+                    "Upload the corrected file under the same person and document type slot",
+                    "Resubmit promptly — delay in responding extends the overall timeline",
+                  ].map((item, i) => (
+                    <div
+                      key={i}
+                      className="flex items-start gap-[8px] text-[13px] text-[#8a6200] leading-[1.5]"
+                    >
+                      <div className="w-[4px] h-[4px] rounded-full bg-[#8a6200] shrink-0 mt-[6px]" />
+                      <span className="text-[#634b11]">{item}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <p className="text-[11.5px] color-[#6b8097] leading-[1.65] text-center pt-[4px] mt-[8px]">
+                Rahvana provides structured guidance only. NVC review timelines
+                vary. Monitor your registered email and CEAC messages directly.
+              </p>
+            </div>
+          )}
+
+          {/* DQ RECORDING (Step 2.10 SPECIFIC) */}
+          {tool.type === "dq_recording" && (
+            <div className="flex flex-col animate-in fade-in slide-in-from-bottom-2 duration-380">
+              {/* Eyebrow and Title */}
+              {/* <div className="flex items-center gap-[8px] mb-[6px]">
+                <span className="text-[11px] font-semibold uppercase tracking-[0.12em] text-[#6b8097]">
+                  Chapter 2 · NVC / CEAC Processing
+                </span>
+                <span className="text-[11px] text-[#b8d4f0]">›</span>
+                <span className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#2f6fd4]">
+                  Step 11 — Documentary Qualification
+                </span>
+              </div>
+              <h1
+                className="text-[clamp(26px,4vw,34px)] font-serif text-[#0c1b33] leading-[1.2] mb-[10px]"
+                style={{ fontFamily: "'DM Serif Display', serif" }}
+              >
+                Record Documentary Qualification
+              </h1>
+              <p className="text-[15px] text-[#3a4f63] leading-[1.7] max-w-[500px] mb-[22px]">
+                Your case has been documentarily qualified — NVC has accepted
+                your package. Record your DQ date to activate scheduling
+                tracking and sync your dashboard.
+              </p> */}
+
+              {/* Meta Chips */}
+              <div className="flex gap-[7px] flex-wrap mb-[32px]">
+                <span className="text-[11px] font-semibold tracking-wider uppercase px-[12px] py-[3px] rounded-full bg-[#fffbec] text-[#b38600] border border-[#e8d47a]">
+                  Major Milestone
+                </span>
+                <span className="text-[11px] font-semibold tracking-wider uppercase px-[12px] py-[3px] rounded-full bg-[#e8f1fb] text-[#2d4a6e] border border-[#d0e4f7]">
+                  Tracking Active
+                </span>
+                <span className="text-[11px] font-semibold tracking-wider uppercase px-[12px] py-[3px] rounded-full bg-[#f3f0fb] text-[#4a2d8a] border border-[#c9bef2]">
+                  Dashboard Update
+                </span>
+              </div>
+
+              {/* Milestone Banner */}
+              <div className="relative bg-gradient-to-br from-[#0c1b33] to-[#1a3054] rounded-[16px] p-[22px_26px] mb-[18px] overflow-hidden">
+                <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-[#b38600] via-[#f0d98a] to-transparent opacity-90" />
+                {/* <div className="absolute right-[22px] top-[50%] -translate-y-[50%] text-[32px] opacity-18 select-none pointer-events-none">
+                  🎉
+                </div> */}
+                <div className="text-[10px] font-bold tracking-widest uppercase text-white/40 mb-[5px]">
+                  NVC — Documentary Qualification Received
+                </div>
+                <div
+                  className="text-[22px] font-serif text-white/92 mb-[6px]"
+                  style={{ fontFamily: "'DM Serif Display', serif" }}
+                >
+                  Your documents have been accepted by NVC
+                </div>
+                <div className="text-[13px] text-white/55 leading-[1.55]">
+                  This is a significant milestone. Your case is now
+                  documentarily complete and eligible for interview scheduling
+                  at your designated post.
+                </div>
+              </div>
+
+              {/* DQ input card */}
+              {!dqSaved ? (
+                <div className="bg-white border-[1.5px] border-[#d0e4f7] rounded-[16px] p-[22px_24px] mb-[14px] shadow-[0_4px_24px_rgba(12,27,51,0.08)]">
+                  <div className="flex items-center gap-[10px] mb-[18px]">
+                    <div className="w-[38px] h-[38px] rounded-[9px] bg-[#fffbec] border border-[#e8d47a] flex items-center justify-center shrink-0">
+                      <Calendar size={18} className="text-[#b38600]" />
+                    </div>
+                    <div>
+                      <div className="text-[14px] font-semibold text-[#0c1b33]">
+                        Record your DQ details
+                      </div>
+                      <div className="text-[12px] text-[#6b8097] mt-[2px]">
+                        This activates scheduling tracking for your case
+                      </div>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-[12px] mb-[16px]">
+                    <div className="flex flex-col gap-[5px]">
+                      <label className="text-[11px] font-semibold tracking-[0.04em] uppercase text-[#6b8097]">
+                        DQ Date
+                      </label>
+                      <input
+                        type="date"
+                        value={dqDate}
+                        onChange={(e) => setDqDate(e.target.value)}
+                        className="p-[10px_12px] border-[1.5px] border-[#d0e4f7] rounded-[10px] text-[14px] text-[#1c2b3a] bg-white outline-none focus:border-[#2f6fd4] focus:shadow-[0_0_0_3px_rgba(47,111,212,0.12)] transition-all"
+                      />
+                    </div>
+                    <div className="flex flex-col gap-[5px]">
+                      <label className="text-[11px] font-semibold tracking-[0.04em] uppercase text-[#6b8097]">
+                        Visa Category
+                      </label>
+                      <select
+                        value={dqCategory}
+                        onChange={(e) => setDqCategory(e.target.value)}
+                        className="p-[10px_12px] border-[1.5px] border-[#d0e4f7] rounded-[10px] text-[14px] text-[#1c2b3a] bg-white outline-none focus:border-[#2f6fd4] focus:shadow-[0_0_0_3px_rgba(47,111,212,0.12)] transition-all"
+                      >
+                        <option value="">Select category…</option>
+                        <option value="IR-1">
+                          IR-1 (Spouse of U.S. Citizen)
+                        </option>
+                        <option value="IR-2">
+                          IR-2 (Child of U.S. Citizen)
+                        </option>
+                        <option value="F2A">F2A (Spouse of LPR)</option>
+                        <option value="CR-1">CR-1 (Conditional Spouse)</option>
+                      </select>
+                    </div>
+                    <div className="flex flex-col gap-[5px]">
+                      <label className="text-[11px] font-semibold tracking-[0.04em] uppercase text-[#6b8097]">
+                        Embassy / Consulate (Post)
+                      </label>
+                      <select
+                        value={dqPost}
+                        onChange={(e) => setDqPost(e.target.value)}
+                        className="p-[10px_12px] border-[1.5px] border-[#d0e4f7] rounded-[10px] text-[14px] text-[#1c2b3a] bg-white outline-none focus:border-[#2f6fd4] focus:shadow-[0_0_0_3px_rgba(47,111,212,0.12)] transition-all"
+                      >
+                        <option value="">Select post…</option>
+                        <option value="Islamabad">
+                          U.S. Embassy Islamabad, Pakistan
+                        </option>
+                        <option value="Karachi">
+                          U.S. Consulate Karachi, Pakistan
+                        </option>
+                        <option value="Lahore">
+                          U.S. Consulate Lahore, Pakistan
+                        </option>
+                        <option value="Other">Other post</option>
+                      </select>
+                    </div>
+                    <div className="flex flex-col gap-[5px]">
+                      <label className="text-[11px] font-semibold tracking-[0.04em] uppercase text-[#6b8097]">
+                        Country of Interview
+                      </label>
+                      <input
+                        type="text"
+                        value={dqCountry}
+                        onChange={(e) => setDqCountry(e.target.value)}
+                        placeholder="e.g. Pakistan"
+                        className="p-[10px_12px] border-[1.5px] border-[#d0e4f7] rounded-[10px] text-[14px] text-[#1c2b3a] bg-white outline-none focus:border-[#2f6fd4] focus:shadow-[0_0_0_3px_rgba(47,111,212,0.12)] transition-all"
+                      />
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => {
+                      if (!dqDate || !dqCategory || !dqPost) {
+                        toast.error("Please fill in all DQ details");
+                        return;
+                      }
+                      setDqSaved(true);
+                      actions.updateMetadata({
+                        dqSaved: true,
+                        dqDate,
+                        dqCategory,
+                        dqPost,
+                        dqCountry,
+                      });
+                      toast.success("DQ details recorded!");
+                    }}
+                    className="w-full py-[14px] bg-[#2f6fd4] text-white border-none rounded-[10px] text-[15px] font-semibold cursor-pointer transition-all hover:bg-[#2460bb] hover:-translate-y-px active:translate-y-0 shadow-[0_4px_20px_rgba(47,111,212,0.25)]"
+                  >
+                    Save DQ & Activate Tracking
+                  </button>
+                </div>
+              ) : (
+                <div className="bg-[#e8f5ef] border-[1.5px] border-[#a8d9be] rounded-[16px] p-[18px_22px] mb-[14px] animate-in fade-in slide-in-from-top-2 duration-350 shadow-[0_4px_16px_rgba(21,116,79,0.06)]">
+                  <div className="text-[10px] font-bold tracking-[0.08em] uppercase text-[#15744f] mb-[10px]">
+                    ✓ DQ Recorded — Tracking Active
+                  </div>
+                  <div className="grid grid-cols-2 xs:grid-cols-4 gap-[10px] mb-[12px]">
+                    <div className="flex flex-col gap-[2px]">
+                      <div className="text-[11px] text-[#0e5c3c] font-medium">
+                        DQ Date
+                      </div>
+                      <div className="text-[13px] font-bold text-[#0e5c3c]">
+                        {dqDate
+                          ? new Date(dqDate + "T00:00:00").toLocaleDateString(
+                              "en-US",
+                              {
+                                year: "numeric",
+                                month: "long",
+                                day: "numeric",
+                              },
+                            )
+                          : "—"}
+                      </div>
+                    </div>
+                    <div className="flex flex-col gap-[2px]">
+                      <div className="text-[11px] text-[#0e5c3c] font-medium">
+                        Visa Category
+                      </div>
+                      <div className="text-[13px] font-bold text-[#0e5c3c]">
+                        {dqCategory}
+                      </div>
+                    </div>
+                    <div className="flex flex-col gap-[2px]">
+                      <div className="text-[11px] text-[#0e5c3c] font-medium">
+                        Post
+                      </div>
+                      <div className="text-[13px] font-bold text-[#0e5c3c]">
+                        {dqPost}
+                      </div>
+                    </div>
+                    <div className="flex flex-col gap-[2px]">
+                      <div className="text-[11px] text-[#0e5c3c] font-medium">
+                        Country
+                      </div>
+                      <div className="text-[13px] font-bold text-[#0e5c3c]">
+                        {dqCountry}
+                      </div>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => setDqSaved(false)}
+                    className="text-[12px] font-semibold text-[#2f6fd4] bg-none border-none cursor-pointer p-0 hover:underline"
+                  >
+                    Edit details
+                  </button>
+                </div>
+              )}
+
+              {/* Scheduling cards */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-[14px] mb-[14px]">
+                <div className="bg-white border-[1.5px] border-[#d0e4f7] rounded-[16px] p-[18px_20px] shadow-[0_4px_24px_rgba(12,27,51,0.08)]">
+                  <div className="text-[10px] font-bold tracking-widest uppercase text-[#2d4a6e] mb-[6px]">
+                    Official Scheduling Status
+                  </div>
+                  <div className="text-[14px] font-semibold text-[#0c1b33] mb-[8px]">
+                    Currently scheduling DQ cases from:
+                  </div>
+                  <div
+                    className="text-[22px] font-serif text-[#0c1b33] mb-[6px]"
+                    style={{ fontFamily: "'DM Serif Display', serif" }}
+                  >
+                    {(dqPost &&
+                      DQ_RECORDING_DATA.postScheduling[
+                        dqPost as keyof typeof DQ_RECORDING_DATA.postScheduling
+                      ]?.official) ||
+                      "— / —"}
+                  </div>
+                  <div className="text-[12px] text-[#6b8097] leading-[1.5]">
+                    Based on the State Department immigrant visa scheduling
+                    bulletin for your post and category. Check the most recent
+                    bulletin for current status.
+                  </div>
+                  <div className="inline-flex items-center gap-[4px] bg-[#e8f1fb] border border-[#d0e4f7] rounded-full px-[10px] py-[3px] text-[10px] font-semibold text-[#2d4a6e] tracking-widest mt-[8px]">
+                    <Info size={9} strokeWidth={2.5} />
+                    U.S. State Department · Official
+                  </div>
+                </div>
+                <div className="bg-white border-[1.5px] border-[#e8d47a] rounded-[16px] p-[18px_20px] shadow-[0_4px_24px_rgba(12,27,51,0.08)]">
+                  <div className="text-[10px] font-bold tracking-widest uppercase text-[#b38600] mb-[6px]">
+                    Rahvana Estimate
+                  </div>
+                  <div className="text-[14px] font-semibold text-[#0c1b33] mb-[8px]">
+                    Queue position trend:
+                  </div>
+                  <div
+                    className="text-[22px] font-serif text-[#0c1b33] mb-[6px]"
+                    style={{ fontFamily: "'DM Serif Display', serif" }}
+                  >
+                    {(dqPost &&
+                      DQ_RECORDING_DATA.postScheduling[
+                        dqPost as keyof typeof DQ_RECORDING_DATA.postScheduling
+                      ]?.est) ||
+                      "Select a post above"}
+                  </div>
+                  <div className="text-[12px] text-[#6b8097] leading-[1.5]">
+                    {(dqPost &&
+                      DQ_RECORDING_DATA.postScheduling[
+                        dqPost as keyof typeof DQ_RECORDING_DATA.postScheduling
+                      ]?.estSub) ||
+                      "Save your DQ details to see scheduling context for your post."}
+                  </div>
+                  <div className="inline-flex items-center gap-[4px] bg-[#fffbec] border border-[#e8d47a] rounded-full px-[10px] py-[3px] text-[10px] font-semibold text-[#b38600] tracking-widest mt-[8px]">
+                    <Activity size={9} strokeWidth={2.5} />
+                    Rahvana Estimate · Not guaranteed
+                  </div>
+                  <div className="text-[11px] text-[#6b8097] mt-[8px] leading-[1.5] italic">
+                    Estimates reflect observed trends, not official scheduling
+                    commitments.
+                  </div>
+                </div>
+              </div>
+
+              {/* Dashboard sync */}
+              <div className="bg-[#e8f1fb] border-[1.5px] border-[#d0e4f7] rounded-[16px] p-[16px_20px] mb-[14px] flex items-start gap-[14px]">
+                <div className="w-[38px] h-[38px] rounded-[9px] bg-white border border-[#d0e4f7] flex items-center justify-center shrink-0">
+                  <Monitor size={18} className="text-[#2f6fd4]" />
+                </div>
+                <div>
+                  <div className="text-[13px] font-semibold text-[#0c1b33] mb-[3px]">
+                    {dqSaved
+                      ? "✓ DQ date added to your dashboard"
+                      : "Dashboard tracking will activate when DQ is recorded"}
+                  </div>
+                  <div className="text-[12px] text-[#3a4f63] leading-[1.5]">
+                    {dqSaved
+                      ? "Your DQ date is now pinned to your Rahvana dashboard and will remain visible until your interview letter is received."
+                      : "Once saved, your DQ date will appear as a persistent card on your Rahvana dashboard until your interview letter is received."}
+                  </div>
+                </div>
+              </div>
+
+              {/* <p className="text-[11.5px] text-[#6b8097] leading-[1.65] text-center pt-[4px] mt-[8px]">
+                {DQ_RECORDING_DATA.disclaimer}
+              </p> */}
             </div>
           )}
 

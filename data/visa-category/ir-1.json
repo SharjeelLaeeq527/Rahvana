@@ -2583,18 +2583,29 @@
         },
 
         {
-          "id": "II-10",
-          "name": "Receive DQ Status",
+          "step_key": "step_2_10",
+          "step_number": 10,
+          "step_name": "Record Documentary Qualification",
+          "step_short_description": "Record DQ date & activate tracking",
+          "step_description": "Your case has been documentarily qualified — NVC has accepted your package. Record your DQ date to activate scheduling tracking and sync your dashboard.",
+          "step_type": "tool",
           "who": "Both",
           "where": "Email + CEAC",
+          "estimated_duration_days": 1,
+          "is_required": true,
+          "display_order": 10,
           "actions": [
             "Receive DQ confirmation email",
             "Verify CEAC shows DQ status",
             "Note DQ date",
             "Begin interview preparation"
           ],
-          "output": "Documentarily Qualified",
-          "nextTrigger": "Case sent to Embassy Islamabad"
+          "tool_data": {
+            "id": "step_2_10",
+            "type": "dq_recording",
+            "title": "Record Documentary Qualification",
+            "disclaimer": "Official scheduling status reflects the State Department Visa Bulletin and NVC scheduling data — verify directly at travel.state.gov. Rahvana estimates are trend projections only."
+          }
         },
         {
           "id": "II-11",
