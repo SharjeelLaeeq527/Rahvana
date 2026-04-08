@@ -2481,6 +2481,31 @@
           "disclaimer": "Rahvana provides structured guidance only. This is not legal advice. Always verify NVC financial requirements at travel.state.gov."
         },
         {
+          "step_key": "step_2_7",
+          "step_number": 7,
+          "step_name": "Add Household Member or Joint Sponsor",
+          "step_short_description": "Add participants in CEAC",
+          "step_description": "Learn how to add sponsorship participants in CEAC, define your specific scenario, and generate the relationship-proof checklist for any household members involved.",
+          "step_type": "tool",
+          "who": "Petitioner",
+          "where": "CEAC Portal / Rahvana",
+          "estimated_duration_days": 2,
+          "is_required": true,
+          "display_order": 7,
+          "actions": [
+            "Login to CEAC portal",
+            "Add Joint Sponsor / Household Member",
+            "Define scenario in Rahvana",
+            "Review relationship proof items"
+          ],
+          "tool_data": {
+            "id": "step_2_7",
+            "type": "household_builder",
+            "title": "Sponsorship Management"
+          },
+          "disclaimer": "Rahvana provides structured guidance only. This is not legal advice. Relationship-proof requirements may vary — confirm with your attorney or NVC guidance."
+        },
+        {
           "id": "II-07",
           "name": "Upload Documents to CEAC",
           "who": "Either",

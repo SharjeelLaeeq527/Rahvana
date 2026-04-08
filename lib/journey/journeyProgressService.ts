@@ -149,7 +149,7 @@ export async function saveJourneyProgress(
     const payload = {
       user_id: userId,
       journey_id: journeyId,
-      scenario_type_ir2: state.scenarioType, 
+      // scenario_type_ir2: state.scenarioType, // Omitted due to missing column
       current_stage: state.currentStage,
       current_step: state.currentStep ?? 0,
       completed_steps: Array.from(state.completedSteps),
@@ -158,10 +158,10 @@ export async function saveJourneyProgress(
       filing_type: state.filingType,
       document_checklist: state.documentChecklist,
       notes: state.notes,
-      doc_uploads: state.docUploads,
+      // doc_uploads: state.docUploads, // Omitted due to missing column
       started: state.started,
-      answers: state.answers || {},
-      metadata: state.metadata || {},
+      // answers: state.answers || {},   // Omitted because 'answers' column is missing in some schemas
+      // metadata: state.metadata || {}, // Omitted because 'metadata' column is missing in some schemas
     };
 
     const { error } = await withTimeout<any>(
