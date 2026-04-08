@@ -1764,15 +1764,6 @@
               "href": "https://ceac.state.gov/IV/Login.aspx",
               "note": "Opens the official CEAC portal in a new tab"
             },
-            "guide_card": {
-              "title": "Step-by-Step CEAC Access Guide",
-              "subtitle": "Show where to find your case number and invoice ID, and how first-time CEAC login works."
-            },
-            "wallet_card": {
-              "type": "ceac_creds",
-              "title": "Save CEAC Credentials",
-              "subtitle": "Store your NVC Case Number, Invoice ID, and notification email in Rahvana's Portal Wallet."
-            },
             "tutorial_steps": [
               {
                 "label": "Step 1 of 5 — Find your NVC Welcome Letter",
@@ -2134,7 +2125,7 @@
                   "items": [
                     {
                       "id": "passport",
-                      "icon": "📘",
+                      "icon": "passport",
                       "title": "Beneficiary Passport Biographic Page",
                       "sub": "Current passport page showing photo and personal details",
                       "tags": [
@@ -2145,7 +2136,7 @@
                     },
                     {
                       "id": "birth",
-                      "icon": "📋",
+                      "icon": "birth",
                       "title": "Birth Certificate",
                       "sub": "Beneficiary's civil birth record",
                       "tags": [
@@ -2156,18 +2147,36 @@
                     },
                     {
                       "id": "marriage",
-                      "icon": "📜",
-                      "title": "Marriage Certificate / Record",
+                      "icon": "marriage",
+                      "title": "Marriage Certificate / Marriage Registration Record",
                       "sub": "Official civil proof of the marriage — Nikah Nama and NADRA MRC",
                       "tags": [
                         "both",
                         "govt"
                       ],
-                      "external_href": "/guides/nikah-nama-guide"
+                      "external_href": "/guides/nikah-nama-guide",
+                      "sections": [
+                        {
+                          "t": "What this is",
+                          "c": "<p>For Pakistan-origin cases, this typically means both the Nikah Nama (the Islamic marriage contract) and the NADRA Marriage Registration Certificate (MRC). Both together form the complete civil marriage record.</p>"
+                        },
+                        {
+                          "t": "Consistency",
+                          "c": "<p>The marriage record should align with what was submitted during the I-130 USCIS stage. Ensure names, dates, and spelling are consistent.</p>"
+                        },
+                        {
+                          "t": "Translation",
+                          "c": "<p>The Nikah Nama (in Urdu) requires a full certified English translation. The NADRA MRC is bilingual but may still require a certified translation for CEAC upload.</p>"
+                        },
+                        {
+                          "t": "Legibility",
+                          "c": "<div class=\"note-box\"><p>Older Nikah Namas may have faded or handwritten entries. Ensure scans are fully legible before upload.</p></div>"
+                        }
+                      ]
                     },
                     {
                       "id": "police",
-                      "icon": "🔒",
+                      "icon": "police",
                       "title": "Police Certificate",
                       "sub": "Pakistan Police Character Certificate (PCC) for the beneficiary",
                       "tags": [
@@ -2178,14 +2187,13 @@
                     },
                     {
                       "id": "translations",
-                      "icon": "🌐",
+                      "icon": "translations",
                       "title": "Certified English Translations",
                       "sub": "Required for all non-English civil documents",
                       "tags": [
                         "bene",
                         "3p"
                       ],
-                      "external_href": "/document-translation",
                       "sections": [
                         {
                           "t": "Requirement",
@@ -2214,7 +2222,7 @@
                   "items": [
                     {
                       "id": "prior-marriage",
-                      "icon": "⚖️",
+                      "icon": "prior-marriage",
                       "title": "Prior Marriage Termination Documents",
                       "sub": "Required if either spouse was previously married",
                       "tags": [
@@ -2242,7 +2250,7 @@
                     },
                     {
                       "id": "death-cert",
-                      "icon": "📄",
+                      "icon": "death-cert",
                       "title": "Death Certificate of Former Spouse",
                       "sub": "Only if prior marriage ended by death",
                       "tags": [
@@ -2262,7 +2270,7 @@
                     },
                     {
                       "id": "namechange",
-                      "icon": "📝",
+                      "icon": "name-change",
                       "title": "Name Change Documents",
                       "sub": "Legal proof of any name change used in the case",
                       "tags": [
@@ -2282,7 +2290,7 @@
                     },
                     {
                       "id": "missing",
-                      "icon": "❓",
+                      "icon": "help",
                       "title": "Missing Document / Record Unavailability Evidence",
                       "sub": "When a required record genuinely does not exist",
                       "tags": [
@@ -2313,7 +2321,7 @@
                   "items": [
                     {
                       "id": "transet",
-                      "icon": "🗂️",
+                      "icon": "folder",
                       "title": "Organized Translation Set",
                       "sub": "All translations paired and labeled with their originals",
                       "tags": [
@@ -2332,7 +2340,7 @@
                     },
                     {
                       "id": "upload-copies",
-                      "icon": "💾",
+                      "icon": "save",
                       "title": "Upload-Ready File Copies",
                       "sub": "Clean, legible, properly formatted scan set",
                       "tags": [
@@ -2355,7 +2363,7 @@
                     },
                     {
                       "id": "rel-evidence",
-                      "icon": "💬",
+                      "icon": "message",
                       "title": "Relationship Evidence Backup Set",
                       "sub": "Supporting bona fide marriage evidence for later use",
                       "tags": [
@@ -2375,45 +2383,102 @@
                   ]
                 }
               ]
-            }
+            },
+            "disclaimer": "Rahvana provides structured guidance only. This is not legal advice. Always verify NVC document requirements at travel.state.gov."
           }
         },
         {
-          "id": "II-06",
-          "name": "Complete I-864 Affidavit",
+          "step_key": "step_2_5",
+          "step_number": 5,
+          "step_name": "Affidavit of Support",
+          "step_short_description": "Determine and prepare sponsorship",
+          "step_description": "First determine the sponsorship setup using Rahvana's calculator — then the correct affidavit forms are generated for your case.",
+          "step_type": "tool",
           "who": "Petitioner",
-          "where": "Download, complete, scan",
+          "where": "Sponsorship Calculator",
+          "estimated_duration_days": 2,
+          "is_required": true,
+          "display_order": 5,
           "actions": [
-            "Download I-864 form",
-            "Complete all parts",
-            "Gather IRS tax transcripts (3 years)",
-            "Get employment letter",
-            "Collect pay stubs (6 months)",
-            "Sign form"
+            "Check petitioner qualification",
+            "Evaluate joint sponsor need",
+            "Generate I-864/I-864EZ forms",
+            "Review supporting financials"
           ],
-          "inputs": [
-            "Tax transcripts",
-            "Employment letter",
-            "Pay stubs",
-            "W-2 forms",
-            "Bank statements (if showing assets)"
-          ],
-          "notes": "Minimum income: $25,550 for household of 2 (2025). Use joint sponsor if needed.",
-          "officialSource": "https://www.uscis.gov/i-864",
+          "tool_data": {
+            "id": "step_2_5",
+            "type": "sponsorship_calculator",
+            "title": "Complete Affidavit of Support",
+            "subtitle": "Determine and prepare the required sponsorship forms.",
+            "launch_module": {
+              "label": "Affidavit Support Calculator",
+              "title": "Determine your sponsorship setup first",
+              "icon": "calculator",
+              "features": [
+                "Check whether the petitioner qualifies alone",
+                "See if household member income is needed",
+                "See if joint sponsor support is needed",
+                "Generate the exact affidavit forms required"
+              ],
+              "buttonText": "Start Sponsorship Calculator"
+            }
+          },
+          "disclaimer": "Rahvana provides structured guidance only. This is not legal advice. Consult a licensed immigration attorney for case-specific decisions.",
+          "url": "/affidavit-support/i-864",
           "relevantTools": [
             {
               "label": "Sponsorship Calculator",
-              "labelUr": "سپانسرشپ کیلکولیٹر",
               "href": "/affidavit-support-calculator",
               "type": "tool"
             },
             {
               "label": "Snap & Sign",
-              "labelUr": "سنیپ اینڈ سائن",
               "href": "/signature-image-processing",
               "type": "tool"
             }
           ]
+        },
+        {
+          "step_key": "step_2_6",
+          "step_number": 6,
+          "step_name": "Gather Financial Support Documents",
+          "step_short_description": "Build financial evidence checklist",
+          "step_description": "Based on your sponsorship structure, Rahvana builds a personalized financial evidence checklist for each person involved.",
+          "step_type": "tool",
+          "who": "Petitioner / Joint Sponsor",
+          "where": "Rahvana Checklist",
+          "estimated_duration_days": 4,
+          "is_required": true,
+          "display_order": 6,
+          "actions": [
+            "Review Petitioner financials",
+            "Review Joint Sponsor documents",
+            "Verify household member income",
+            "Organize for CEAC upload"
+          ],
+          "tool_data": {
+            "id": "step_2_6",
+            "type": "financial_checklist",
+            "title": "Document Checklist: Financial Support",
+            "groups": [
+              {
+                "id": "required",
+                "label": "Required",
+                "badge": "badge-req"
+              },
+              {
+                "id": "conditional",
+                "label": "Required if Applicable",
+                "badge": "badge-cond"
+              },
+              {
+                "id": "recommended",
+                "label": "Recommended to Strengthen Readiness",
+                "badge": "badge-rec"
+              }
+            ]
+          },
+          "disclaimer": "Rahvana provides structured guidance only. This is not legal advice. Always verify NVC financial requirements at travel.state.gov."
         },
         {
           "id": "II-07",
