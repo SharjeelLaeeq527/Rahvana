@@ -4,7 +4,11 @@ import React, { useEffect, useMemo, useState, useCallback } from "react";
 import {
   ArrowLeft,
   CheckCircle2,
+  AlertTriangle,
+  Clock,
+  Info,
   CheckCircle,
+  CheckSquare,
   ArrowRight,
   ShieldCheck,
   Search,
@@ -40,6 +44,8 @@ import {
   FileText,
   ClipboardList,
   Users,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 
 import {
@@ -63,6 +69,11 @@ import {
   HOUSEHOLD_TUTORIAL_STEPS,
   HOUSEHOLD_GUIDE_CONTENT,
 } from "./HouseholdTutorialData";
+import {
+  SUBMISSION_TUTORIAL_STEPS,
+  SubmissionTutorialOverlay,
+} from "./SubmissionTutorialData";
+import { AWAITING_REVIEW_DATA } from "./AwaitingReviewData";
 
 interface SecurityQuestion {
   id: string;
@@ -182,6 +193,19 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
   // Selected scenario for Step 6 (Gather Financial Documents)
   const [selectedScenario, setSelectedScenario] = useState<string>("pet-only");
 
+  // Step 2.8 Review & Submit States
+  const [isSubmissionGuideOpen, setIsSubmissionGuideOpen] = useState(false);
+  const [submissionGuideIdx, setSubmissionGuideIdx] = useState(0);
+  const submissionChecklistStatus = (state.metadata
+    .submissionChecklistStatus as Record<string, boolean>) || {
+    0: false,
+    1: false,
+    2: false,
+    3: false,
+    4: false,
+    5: false,
+  };
+
   // Sync selectedScenario with sponsorshipResult once on load
   useEffect(() => {
     if (sponsorshipResult) {
@@ -227,7 +251,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
       case "user":
         return <User size={18} />;
       case "link":
-        return <Link2 size={18} />;
+        return <ExternalLink size={18} />;
       case "id":
         return <User size={18} />;
       case "translations":
@@ -258,10 +282,6 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
         return <Landmark size={18} />;
       case "wallet":
         return <Wallet size={18} />;
-      case "user":
-        return <User size={18} />;
-      case "home":
-        return <Home size={18} />;
       case "hard-drive":
         return <HardDrive size={18} />;
       case "file-text":
@@ -269,7 +289,6 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
       case "clipboard":
         return <ClipboardList size={18} />;
       default:
-        // Fallback for cases where it might still be an emoji or unknown key
         return iconKey;
     }
   };
@@ -634,9 +653,9 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
           });
           items.push({
             id: `hh${i}-id`,
-            icon: "user",
+            icon: "id",
             title: `Identity Document — ${label}`,
-            sub: "Government-issued ID for household member",
+            sub: "Government-issued ID for the household member",
             tags: [
               { cls: "tag-hh", label: "Household Member" },
               { cls: "tag-id", label: "Identity" },
@@ -663,9 +682,9 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
           });
           items.push({
             id: `hh${i}-id`,
-            icon: "user",
+            icon: "id",
             title: `Identity Document — ${label}`,
-            sub: "Government-issued ID for household member",
+            sub: "Government-issued ID for the household member",
             tags: [
               { cls: "tag-hh", label: "Household Member" },
               { cls: "tag-id", label: "Identity" },
@@ -717,9 +736,9 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
           });
           items.push({
             id: `hh${i}-id`,
-            icon: "user",
+            icon: "id",
             title: `Identity Document — ${label}`,
-            sub: "Government-issued ID for household member",
+            sub: "Government-issued ID for the household member",
             tags: [
               { cls: "tag-hh", label: "Household Member" },
               { cls: "tag-id", label: "Identity" },
@@ -771,9 +790,9 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
           });
           items.push({
             id: `hh${i}-id`,
-            icon: "user",
+            icon: "id",
             title: `Identity Document — ${label}`,
-            sub: "Government-issued ID for household member",
+            sub: "Government-issued ID for the household member",
             tags: [
               { cls: "tag-hh", label: "Household Member" },
               { cls: "tag-id", label: "Identity" },
@@ -883,7 +902,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                 setTutorialIdx(0);
                 setIsTutorialOpen(true);
               }}
-              className="w-full py-4 px-7 bg-[#3b7dd8] text-white rounded-[12px] text-[15px] font-semibold cursor-pointer hover:bg-[#d0e4f7] transition-all shadow-[0_4px_20px_rgba(47,111,212,0.35)] hover:shadow-[0_8px_32px_rgba(47,111,212,0.45)] hover:-translate-y-0.5 active:translate-y-0"
+              className="w-full py-4 px-7 bg-[#3b7dd8] text-white rounded-[12px] text-[15px] font-semibold cursor-pointer hover:bg-[#3b7dd8] transition-all shadow-[0_4px_20px_rgba(47,111,212,0.35)] hover:shadow-[0_8px_32px_rgba(47,111,212,0.45)] hover:-translate-y-0.5 active:translate-y-0"
             >
               Start CEAC Guide
             </button>
@@ -1238,7 +1257,8 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
       showQuiz ||
       isCivilDocGuideOpen ||
       isNvcFeeModalOpen ||
-      isCeacModalOpen
+      isCeacModalOpen ||
+      isSubmissionGuideOpen
     ) {
       document.body.style.overflow = "hidden";
     } else {
@@ -1254,6 +1274,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
     isCeacModalOpen,
     isNvcFeeModalOpen,
     isCivilDocGuideOpen,
+    isSubmissionGuideOpen,
   ]);
 
   const handleSaveCredentials = async (data: {
@@ -1513,11 +1534,19 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
         const reviewedCount = Object.values(next).filter(
           (s) => s === "reviewed",
         ).length;
-        if (reviewedCount === total && !isCompleted) {
-          handleToggleComplete();
+        if (reviewedCount >= total) {
+          if (!isCompleted) handleToggleComplete();
         }
       }
     }
+  };
+
+  const handleToggleSubmissionCheck = (idx: number) => {
+    const next = {
+      ...submissionChecklistStatus,
+      [idx]: !submissionChecklistStatus[idx],
+    };
+    actions.updateMetadata({ submissionChecklistStatus: next });
   };
 
   const handleNavigate = (stepId: string) => {
@@ -1534,9 +1563,241 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
     }
   };
 
+  const renderAwaitingReviewStep = () => {
+    const data = AWAITING_REVIEW_DATA;
+
+    return (
+      <div className="flex flex-col items-center w-full min-h-screen">
+        <style jsx global>{`
+          @keyframes pulse-custom {
+            0%,
+            100% {
+              opacity: 0.4;
+              transform: scale(0.9);
+            }
+            50% {
+              opacity: 1;
+              transform: scale(1.15);
+            }
+          }
+          .animate-pulse-custom {
+            animation: pulse-custom 2.2s ease-in-out infinite;
+          }
+          .animate-pulse-delayed {
+            animation: pulse-custom 2.2s ease-in-out infinite;
+            animation-delay: 0.2s;
+          }
+        `}</style>
+
+        {/* Page Shell */}
+        <div className="w-full max-w-[720px] px-[24px] pt-[52px] pb-[96px] flex flex-col mx-auto">
+          {/* Eyebrow */}
+          <div className="flex items-center gap-[8px] mb-[6px] animate-in fade-in slide-in-from-top-2 duration-300">
+            <span className="text-[11px] font-[600] uppercase tracking-[0.12em] text-[#6b8097]">
+              {data.eyebrow.chapter}
+            </span>
+            <span className="text-[11px] text-[#b8d4f0]">›</span>
+            <span className="text-[11px] font-[600] uppercase tracking-[0.08em] text-[#2f6fd4]">
+              {data.eyebrow.step}
+            </span>
+          </div>
+
+          <h1
+            className="text-[clamp(26px,4vw,34px)] font-black text-[#0c1b33] leading-[1.2] mb-[10px] animate-in fade-in slide-in-from-top-2 duration-300 delay-[40ms]"
+            style={{ fontFamily: "'DM Serif Display', serif" }}
+          >
+            {data.title}
+          </h1>
+
+          <p className="text-[#3a4f63] text-[15px] leading-[1.7] mb-[22px] max-w-[500px] animate-in fade-in slide-in-from-top-2 duration-300 delay-[80ms]">
+            {data.description}
+          </p>
+
+          <div className="flex flex-wrap gap-[7px] mb-[32px] animate-in fade-in slide-in-from-top-2 duration-300 delay-[120ms]">
+            {data.chips.map((chip, i) => (
+              <span
+                key={i}
+                className={`text-[11px] font-semibold uppercase tracking-[0.06em] px-[12px] py-[5px] rounded-full border whitespace-nowrap ${
+                  chip.type === "nvc"
+                    ? "bg-[#f3f0fb] text-[#4a2d8a] border-[#c9bef2]"
+                    : chip.type === "status"
+                      ? "bg-[#e8f1fb] text-[#2d4a6e] border-[#d0e4f7]"
+                      : "bg-[#e8f6f6] text-[#0d6b6b] border-[#9fd6d6]"
+                }`}
+              >
+                {chip.label}
+              </span>
+            ))}
+          </div>
+
+          {/* Status Card (Navy) */}
+          <div className="relative bg-[#0c1b33] rounded-[16px] p-[24px_26px] mb-[16px] overflow-hidden shadow-[0_20px_60px_rgba(12,27,51,0.18),0_4px_16px_rgba(12,27,51,0.12)] animate-in fade-in slide-in-from-top-2 duration-300 delay-[160ms]">
+            {/* Top Accent Stripe */}
+            <div className="absolute top-0 left-0 right-0 h-[2px] bg-linear-to-r from-[#2f6fd4] via-[#6aa8f0] to-transparent opacity-80" />
+
+            <div className="text-[10px] font-[700] uppercase tracking-[0.12em] text-white/40 mb-[8px]">
+              {data.statusCard.label}
+            </div>
+
+            <h2
+              className="text-[20px] font-serif text-white/92 leading-tight mb-[16px] flex items-center gap-[8px]"
+              style={{ fontFamily: "'DM Serif Display', serif" }}
+            >
+              <span className="w-[7px] h-[7px] rounded-full bg-[#6aa8f0] animate-pulse-custom shrink-0" />
+              {data.statusCard.heading}
+            </h2>
+
+            <div className="grid grid-cols-2 min-[480px]:grid-cols-3 gap-[12px]">
+              {data.statusCard.grid.map((item, i) => (
+                <div key={i} className="flex flex-col gap-[3px]">
+                  <div className="text-[10px] font-semibold uppercase tracking-[0.08em] text-white/38">
+                    {item.label}
+                  </div>
+                  <div className="text-[13px] font-semibold text-white/88">
+                    {item.value}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Info Card: What NVC is reviewing */}
+          <div className="bg-white border-[1.5px] border-[#d0e4f7] rounded-[16px] p-[20px_22px] mb-[14px] shadow-[0_4px_24px_rgba(12,27,51,0.08)] animate-in fade-in slide-in-from-top-2 duration-300 delay-[200ms]">
+            <div className="flex items-center gap-[10px] mb-[14px]">
+              <div className="w-[36px] h-[36px] rounded-[9px] bg-[#e8f1fb] border border-[#d0e4f7] flex items-center justify-center shrink-0">
+                <Search size={17} className="text-[#2f6fd4]" strokeWidth={1.7} />
+              </div>
+              <h3 className="text-[14px] font-[600] text-[#0c1b33]">
+                {data.reviewItems.title}
+              </h3>
+            </div>
+            <div className="flex flex-col gap-[7px]">
+              {data.reviewItems.items.map((item, i) => (
+                <div
+                  key={i}
+                  className="flex items-start gap-[9px] text-[13px] text-[#3a4f63] leading-[1.5]"
+                >
+                  <div className="w-[4px] h-[4px] rounded-full bg-[#b8d4f0] mt-[5px] shrink-0" />
+                  <span>{item}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Two-Column Section */}
+          <div className="grid grid-cols-1 min-[520px]:grid-cols-2 gap-[14px] mb-[14px] animate-in fade-in slide-in-from-top-2 duration-300 delay-[240ms]">
+            {/* While You Wait */}
+            <div className="bg-white border-[1.5px] border-[#d0e4f7] rounded-[16px] p-[20px_22px] shadow-[0_4px_24px_rgba(12,27,51,0.08)]">
+              <div className="flex items-center gap-[10px] mb-[14px]">
+                <div className="w-[36px] h-[36px] rounded-[9px] bg-[#e8f5ef] border border-[#a8d9be] flex items-center justify-center shrink-0">
+                  <Clock
+                    size={17}
+                    className="text-[#15744f]"
+                    strokeWidth={1.7}
+                  />
+                </div>
+                <h3 className="text-[14px] font-[600] text-[#0c1b33]">
+                  {data.whileYouWait.title}
+                </h3>
+              </div>
+              <div className="flex flex-col gap-[7px]">
+                {data.whileYouWait.items.map((item, i) => (
+                  <div
+                    key={i}
+                    className="flex items-start gap-[9px] text-[13px] text-[#3a4f63] leading-[1.5]"
+                  >
+                    <div className="w-[4px] h-[4px] rounded-full bg-[#b8d4f0] mt-[5px] shrink-0" />
+                    <span>{item}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Timeline */}
+            <div className="bg-white border-[1.5px] border-[#d0e4f7] rounded-[16px] p-[20px_22px] shadow-[0_4px_24px_rgba(12,27,51,0.08)]">
+              <div className="flex items-center gap-[10px] mb-[14px]">
+                <div className="w-[36px] h-[36px] rounded-[9px] bg-[#e8f1fb] border border-[#d0e4f7] flex items-center justify-center shrink-0">
+                  <Scale
+                    size={17}
+                    className="text-[#2f6fd4]"
+                    strokeWidth={1.7}
+                  />
+                </div>
+                <h3 className="text-[14px] font-[600] text-[#0c1b33]">
+                  {data.timeline.title}
+                </h3>
+              </div>
+              <div className="flex flex-col gap-0 relative pl-[18px]">
+                {/* Vertical Line */}
+                <div className="absolute left-[6px] top-[10px] bottom-[10px] w-[2px] bg-[#d0e4f7] rounded-[2px]" />
+
+                <div className="flex flex-col gap-[10px]">
+                  {data.timeline.steps.map((step, i) => (
+                    <div key={i} className="flex items-center gap-[8px]">
+                      {step.status === "completed" ? (
+                        <div className="w-[12px] h-[12px] rounded-full bg-[#15744f] flex-shrink-0 z-10 ml-[-6px]" />
+                      ) : step.status === "current" ? (
+                        <div className="w-[12px] h-[12px] rounded-full border-2 border-[#2f6fd4] bg-white flex-shrink-0 z-10 ml-[-6px] animate-pulse-custom" />
+                      ) : (
+                        <div className="w-[12px] h-[12px] rounded-full bg-[#d0e4f7] flex-shrink-0 z-10 ml-[-6px]" />
+                      )}
+                      <span
+                        className={`text-[12px] ${
+                          step.status === "completed"
+                            ? "text-[#0e5c3c] font-semibold"
+                            : step.status === "current"
+                              ? "text-[#2f6fd4] font-semibold"
+                              : "text-[#6b8097]"
+                        }`}
+                      >
+                        {step.label}
+                        {step.status === "current" ? " ← you are here" : ""}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Alert Card: Corrections */}
+          <div className="bg-[#fef8e8] border-[1.5px] border-[#f0d98a] rounded-[16px] p-[18px_20px] mb-[16px] animate-in fade-in slide-in-from-top-2 duration-300 delay-[280ms]">
+            <div className="flex items-center gap-[9px] mb-[10px]">
+              <span className="text-[18px]">📋</span>
+              <h3 className="text-[14px] font-[600] text-[#8a6200]">
+                {data.correctionsAlert.title}
+              </h3>
+            </div>
+            <div className="flex flex-col gap-[7px]">
+              {data.correctionsAlert.items.map((item, i) => (
+                <div
+                  key={i}
+                  className="flex items-start gap-[8px] text-[13px] text-[#8a6200] leading-[1.5]"
+                >
+                  <div className="w-[4px] h-[4px] rounded-full bg-[#8a6200] mt-[5px] shrink-0" />
+                  <span>{item}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Disclaimer */}
+          <p className="text-[11.5px] text-[#6b8097] leading-[1.65] text-center pt-[4px] mt-[8px] animate-in fade-in slide-in-from-top-2 duration-300 delay-[320ms]">
+            {data.disclaimer}
+          </p>
+        </div>
+      </div>
+    );
+  };
+
+
   const renderToolStep = () => {
     const tool = currentStep.tool_data as any;
     if (!tool) return null;
+
+    if (tool.type === "awaiting_review") {
+      return renderAwaitingReviewStep();
+    }
 
     // Theme detection based on icon or ID
     const isBeneficiaryTheme =
@@ -1577,7 +1838,9 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                     ? Upload
                     : tool.launch_module?.icon === "payment"
                       ? CreditCard
-                      : CheckCircle;
+                      : tool.launch_module?.icon === "check"
+                        ? CheckSquare
+                        : CheckCircle;
 
     return (
       <div className="animate-in fade-in slide-in-from-bottom-4 duration-740 flex flex-col items-center w-full min-h-full">
@@ -1738,7 +2001,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                     setSponsorshipStepIdx(0);
                     setIsSponsorshipCalcOpen(true);
                   }}
-                  className="inline-flex items-center justify-center gap-[10px] w-full p-[16px_28px] bg-[#3b7dd8] text-white border-none rounded-[12px] font-sans text-[15px] font-semibold cursor-pointer transition-all hover:bg-[#d0e4f7] hover:-translate-y-0.5 active:translate-y-0 shadow-[0_4px_20px_rgba(47,111,212,0.35)]"
+                  className="inline-flex items-center justify-center gap-[10px] w-full p-[16px_28px] bg-[#3b7dd8] text-white border-none rounded-[12px] font-sans text-[15px] font-semibold cursor-pointer transition-all hover:bg-[#3b7dd8] hover:-translate-y-0.5 active:translate-y-0 shadow-[0_4px_20px_rgba(47,111,212,0.35)]"
                 >
                   {tool.launch_module.buttonText ||
                     "Start Sponsorship Calculator"}
@@ -1973,21 +2236,6 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                           <span className="text-[11px] font-semibold uppercase tracking-[0.09em] text-[#6b8097]">
                             {group.label}
                           </span>
-                          {/* <span
-                            className={`text-[10px] font-semibold px-[9px] py-[3px] rounded-full uppercase tracking-[0.06em] border ${
-                              group.id === "required"
-                                ? "bg-[#ffeaea] text-[#a01c1c] border-[#f5bebe]"
-                                : group.id === "conditional"
-                                  ? "bg-[#fef8e8] text-[#8a6200] border-[#f0d98a]"
-                                  : "bg-[#e8f1fb] text-[#2d4a6e] border-[#d0e4f7]"
-                            }`}
-                          >
-                            {group.id === "required"
-                              ? "Required"
-                              : group.id === "conditional"
-                                ? "Required if Applicable"
-                                : "Recommended"}
-                          </span> */}
                           <div className="flex-1 h-[1px] bg-[#d0e4f7]" />
                         </div>
 
@@ -2081,209 +2329,350 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
           {/* HOUSEHOLD MEMBER BUILDER (Step 2.7 SPECIFIC) */}
           {tool.type === "household_builder" && renderHouseholdBuilder()}
 
-          {/* PRIMARY LAUNCH MODULE */}
-          {tool.launch_module && tool.type !== "sponsorship_calculator" && (
-            <div
-              className="relative bg-[#0e1e38] rounded-[16px] border border-white/7 overflow-hidden mb-[20px]"
-              style={{ backgroundColor: launchBg }}
-            >
-              {/* Accent Stripe */}
-              <div
-                className="absolute top-0 left-0 right-0 h-[2px] opacity-70"
-                style={{ background: stripeGradient }}
-              />
-
-              <div className="p-[36px_36px_32px]">
-                {/* Module Header */}
-                <div className="flex items-start gap-[16px] mb-[26px]">
-                  <div className="w-[48px] h-[48px] rounded-[12px] bg-white/[0.055] border border-white/10 flex items-center justify-center shrink-0">
-                    <IconComponent
-                      size={22}
-                      className="text-white/75"
-                      strokeWidth={1.6}
-                    />
-                  </div>
-                  <div className="flex-1">
-                    <div className="text-[10px] font-bold uppercase tracking-widest text-white/35 mb-[5px]">
-                      {tool.launch_module.eyebrow}
+          {/* SUBMISSION REVIEW CONTENT (Step 2.8 SPECIFIC) */}
+          {tool.type === "submission_review" && (
+            <div className="flex flex-col mt-4">
+              {/* Launcher Card (Large) */}
+              <div className="relative bg-[#0e1e38] rounded-[16px] border border-white/7 overflow-hidden mb-[24px] shadow-[0_20px_60px_rgba(12,27,51,0.18),0_4px_16px_rgba(12,27,51,0.12)]">
+                <div className="absolute top-0 left-0 right-0 h-[2px] bg-linear-to-r from-primary via-[#6aa8f0] to-transparent opacity-70" />
+                <div className="p-[30px_32px_26px]">
+                  <div className="flex items-start gap-[16px] mb-[20px]">
+                    <div className="w-[44px] h-[44px] rounded-[10px] bg-white/5 border border-white/10 flex items-center justify-center shrink-0">
+                      <ExternalLink size={21} className="text-white/75" />
                     </div>
-                    <h2
-                      className="text-[clamp(20px,3vw,24px)] font-serif text-white/90 leading-[1.25]"
-                      style={{ fontFamily: "'DM Serif Display', serif" }}
-                    >
-                      {tool.launch_module.heading}
-                    </h2>
-                  </div>
-                </div>
-
-                <div className="h-[1px] bg-white/9 mb-[22px]" />
-
-                {/* Fee Block (Step 9 — Pay Filing Fee) */}
-                {tool.fee_block && (
-                  <div className="flex items-center gap-[16px] bg-white/[0.05] border border-white/[0.09] rounded-[10px] p-[16px_18px] mb-[16px] flex-wrap">
-                    <div className="flex flex-col gap-[2px] shrink-0">
-                      <div className="text-[10px] font-bold uppercase tracking-widest text-white/35">
-                        {tool.fee_block.label}
+                    <div>
+                      <div className="text-[10px] font-bold uppercase tracking-widest text-white/35 mb-[4px]">
+                        {tool.launch_module.label}
                       </div>
                       <div
-                        className="text-[32px] font text-white/90 tracking-[-0.02em] leading-none"
+                        className="text-[clamp(18px,2.6vw,22px)] font-serif text-white/92 leading-[1.25]"
                         style={{ fontFamily: "'DM Serif Display', serif" }}
                       >
-                        {tool.fee_block.amount}
+                        {tool.launch_module.title}
                       </div>
-                      <div className="text-[11px] text-white/35 mt-[2px]">
-                        {tool.fee_block.note}
-                      </div>
-                    </div>
-                    <div className="w-[1px] h-[48px] bg-white/12 shrink-0 hidden sm:block" />
-                    <div className="flex flex-col gap-[6px] flex-1">
-                      {tool.fee_block.details.map((d: string, i: number) => (
-                        <div
-                          key={i}
-                          className="flex items-start gap-[8px] text-[12px] text-white/55"
-                        >
-                          <div className="w-[4px] h-[4px] rounded-full bg-[rgba(200,170,100,0.7)] shrink-0 mt-[5px]" />
-                          <span>{d}</span>
-                        </div>
-                      ))}
                     </div>
                   </div>
-                )}
+                  <div className="h-px bg-white/9 mb-[18px]" />
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-[8px] mb-[22px]">
+                    {tool.launch_module.features.map(
+                      (feat: string, i: number) => (
+                        <div
+                          key={i}
+                          className="bg-white/5 border border-white/10 rounded-[10px] p-[10px_12px] flex items-start gap-[8px]"
+                        >
+                          <div className="w-[5px] h-[5px] rounded-full bg-[#6aa8f0]/70 shrink-0 mt-[5px]" />
+                          <div className="text-[13px] text-white/55 leading-[1.4]">
+                            {feat}
+                          </div>
+                        </div>
+                      ),
+                    )}
+                  </div>
+                  <button
+                    onClick={() => {
+                      setSubmissionGuideIdx(0);
+                      setIsSubmissionGuideOpen(true);
+                    }}
+                    className="w-full p-[15px_24px] bg-[#3b7dd8] text-white border-none rounded-[11px] text-[15px] font-semibold cursor-pointer transition-all hover:bg-[#3b7dd8] hover:-translate-y-0.5 shadow-[0_4px_20px_rgba(47,111,212,0.35)] flex items-center justify-center gap-[9px]"
+                  >
+                    <span>{tool.launch_module.buttonText}</span>
+                    <ChevronRight size={15} />
+                  </button>
+                </div>
+              </div>
 
-                {/* Review Checklist (Step 10 — Review & Submit) */}
-                {tool.review_checklist && tool.review_checklist.length > 0 && (
-                  <div className="flex flex-col gap-[8px] mb-[20px]">
-                    {tool.review_checklist.map((item: string, i: number) => (
+              {/* Checklist and Pitfalls Side-by-Side */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-[14px] mb-[18px]">
+                {/* Final Review Checklist */}
+                <div className="bg-white border-[1.5px] border-[#d0e4f7] rounded-[16px] p-[20px_22px]">
+                  <div className="text-[13px] font-bold tracking-wide uppercase text-[#6b8097] mb-[14px] flex items-center gap-[8px]">
+                    <span className="w-[8px] h-[8px] rounded-full bg-[#15744f]" />
+                    Final Review Checklist
+                  </div>
+                  <div className="flex flex-col gap-[8px]">
+                    {[
+                      "All required files uploaded to CEAC",
+                      "Correct person selected for each document",
+                      "Correct document type assigned to each file",
+                      "Certified English translations paired with originals",
+                      "No cropped, blurry, or unreadable scans",
+                      "Comments added only where genuinely needed",
+                    ].map((item, i) => (
                       <div
                         key={i}
-                        className="flex items-start gap-[12px] bg-white/[0.06] border border-white/10 rounded-[10px] p-[12px_14px]"
+                        onClick={() => handleToggleSubmissionCheck(i)}
+                        className={`flex items-start gap-[10px] p-[9px_12px] rounded-[10px] cursor-pointer transition-all border-[1.5px] ${
+                          submissionChecklistStatus[i]
+                            ? "bg-[#e8f5ef] border-[#a8d9be]"
+                            : "border-transparent hover:bg-[#eef3fa]"
+                        }`}
                       >
-                        <div className="w-[20px] h-[20px] rounded-full bg-[rgba(21,116,79,0.25)] border border-[rgba(21,116,79,0.4)] flex items-center justify-center shrink-0 mt-[1px]">
-                          <Check
-                            size={11}
-                            strokeWidth={2.5}
-                            className="text-[rgba(100,220,160,0.9)]"
-                          />
+                        <div
+                          className={`w-[18px] h-[18px] rounded-[5px] border-[1.5px] flex items-center justify-center shrink-0 mt-[1px] ${
+                            submissionChecklistStatus[i]
+                              ? "bg-[#15744f] border-[#15744f]"
+                              : "bg-white border-[#d0e4f7]"
+                          }`}
+                        >
+                          {submissionChecklistStatus[i] && (
+                            <Check size={10} className="text-white" />
+                          )}
                         </div>
-                        <div className="text-[13px] text-white/55 leading-[1.45]">
+                        <span
+                          className={`text-[13px] leading-[1.45] ${
+                            submissionChecklistStatus[i]
+                              ? "text-[#0e5c3c]"
+                              : "text-[#3a4f63]"
+                          }`}
+                        >
                           {item}
-                        </div>
+                        </span>
                       </div>
                     ))}
                   </div>
-                )}
-
-                {/* Feature Cues Grid */}
-                <div
-                  className={`grid grid-cols-1 sm:grid-cols-2 gap-[10px] ${tool.launch_module.button_label ? "mb-[26px]" : "mb-0"}`}
-                >
-                  {tool.launch_module.features.map(
-                    (feat: string, i: number) => (
-                      <div
-                        key={i}
-                        className="bg-white/6 border border-white/10 rounded-[10px] p-[12px_14px] flex items-start gap-[10px]"
-                      >
-                        <div
-                          className={`w-[5px] h-[5px] rounded-full mt-[6px] shrink-0 ${
-                            tool.launch_module.stripe_variant === "gold"
-                              ? "bg-[rgba(212,168,47,0.7)]"
-                              : tool.launch_module.stripe_variant === "green"
-                                ? "bg-[rgba(100,220,160,0.6)]"
-                                : isBeneficiaryTheme
-                                  ? "bg-[#20a8a8bf]"
-                                  : "bg-[#6aa8f0b3]"
-                          }`}
-                        />
-                        <div className="text-[13px] text-white/55 leading-[1.4]">
-                          {feat}
-                        </div>
-                      </div>
-                    ),
-                  )}
                 </div>
 
-                {/* Upload Requirements Info Block (Step 8 only) */}
-                {tool.upload_requirements &&
-                  tool.upload_requirements.length > 0 && (
-                    <div className="bg-white/5 border border-white/9 rounded-[10px] p-[14px_16px] mb-[26px]">
-                      <div className="text-[11px] font-bold uppercase tracking-widest text-white/35 mb-[10px]">
-                        USCIS upload requirements
+                {/* Common Pitfalls to Avoid */}
+                <div className="bg-white border-[1.5px] border-[#d0e4f7] rounded-[16px] p-[20px_22px]">
+                  <div className="text-[13px] font-bold tracking-wide uppercase text-[#6b8097] mb-[14px] flex items-center gap-[8px]">
+                    <span className="w-[8px] h-[8px] rounded-full bg-[#b91c1c]" />
+                    Common Pitfalls to Avoid
+                  </div>
+                  <div className="flex flex-col gap-[8px]">
+                    {[
+                      "Wrong person selected — file under beneficiary vs petitioner",
+                      "Wrong document category — civil doc filed as financial",
+                      "Missing translation — uploaded original without translation",
+                      "Incomplete scan — page cut off or text obscured",
+                      "Missing financial/civil pairings — both required",
+                      "Unnecessary comments — clutter without purpose",
+                    ].map((pitfall, i) => (
+                      <div
+                        key={i}
+                        className="flex items-start gap-[10px] p-[9px_12px] rounded-[10px] border-[1.5px] border-[#fecaca] bg-[#fef2f2]"
+                      >
+                        <span className="text-[14px] shrink-0 mt-[1px]">
+                          <AlertTriangle className="h-4 w-4 text-amber-500" />
+                        </span>
+                        <span className="text-[13px] leading-[1.45] text-[#3a4f63]">
+                          {pitfall}
+                        </span>
                       </div>
-                      <div className="flex flex-col gap-[7px]">
-                        {tool.upload_requirements.map(
-                          (req: string, i: number) => (
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* PRIMARY LAUNCH MODULE */}
+          {tool.launch_module &&
+            tool.type !== "sponsorship_calculator" &&
+            tool.type !== "submission_review" && (
+              <div
+                className="relative bg-[#0e1e38] rounded-[16px] border border-white/7 overflow-hidden mb-[20px]"
+                style={{ backgroundColor: launchBg }}
+              >
+                {/* Accent Stripe */}
+                <div
+                  className="absolute top-0 left-0 right-0 h-[2px] opacity-70"
+                  style={{ background: stripeGradient }}
+                />
+
+                <div className="p-[36px_36px_32px]">
+                  {/* Module Header */}
+                  <div className="flex items-start gap-[16px] mb-[26px]">
+                    <div className="w-[48px] h-[48px] rounded-[12px] bg-white/[0.055] border border-white/10 flex items-center justify-center shrink-0">
+                      <IconComponent
+                        size={22}
+                        className="text-white/75"
+                        strokeWidth={1.6}
+                      />
+                    </div>
+                    <div className="flex-1">
+                      <div className="text-[10px] font-bold uppercase tracking-widest text-white/35 mb-[5px]">
+                        {tool.launch_module.eyebrow}
+                      </div>
+                      <h2
+                        className="text-[clamp(20px,3vw,24px)] font-serif text-white/90 leading-[1.25]"
+                        style={{ fontFamily: "'DM Serif Display', serif" }}
+                      >
+                        {tool.launch_module.heading}
+                      </h2>
+                    </div>
+                  </div>
+
+                  <div className="h-[1px] bg-white/9 mb-[22px]" />
+
+                  {/* Fee Block (Step 9 — Pay Filing Fee) */}
+                  {tool.fee_block && (
+                    <div className="flex items-center gap-[16px] bg-white/[0.05] border border-white/[0.09] rounded-[10px] p-[16px_18px] mb-[16px] flex-wrap">
+                      <div className="flex flex-col gap-[2px] shrink-0">
+                        <div className="text-[10px] font-bold uppercase tracking-widest text-white/35">
+                          {tool.fee_block.label}
+                        </div>
+                        <div
+                          className="text-[32px] font text-white/90 tracking-[-0.02em] leading-none"
+                          style={{ fontFamily: "'DM Serif Display', serif" }}
+                        >
+                          {tool.fee_block.amount}
+                        </div>
+                        <div className="text-[11px] text-white/35 mt-[2px]">
+                          {tool.fee_block.note}
+                        </div>
+                      </div>
+                      <div className="w-[1px] h-[48px] bg-white/12 shrink-0 hidden sm:block" />
+                      <div className="flex flex-col gap-[6px] flex-1">
+                        {tool.fee_block.details.map((d: string, i: number) => (
+                          <div
+                            key={i}
+                            className="flex items-start gap-[8px] text-[12px] text-white/55"
+                          >
+                            <div className="w-[4px] h-[4px] rounded-full bg-[rgba(200,170,100,0.7)] shrink-0 mt-[5px]" />
+                            <span>{d}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Review Checklist (Step 10 — Review & Submit) */}
+                  {tool.review_checklist &&
+                    tool.review_checklist.length > 0 && (
+                      <div className="flex flex-col gap-[8px] mb-[20px]">
+                        {tool.review_checklist.map(
+                          (item: string, i: number) => (
                             <div
                               key={i}
-                              className="flex items-start gap-[10px] text-[13px] text-white/55 leading-[1.45]"
+                              className="flex items-start gap-[12px] bg-white/[0.06] border border-white/10 rounded-[10px] p-[12px_14px]"
                             >
-                              <div className="w-[4px] h-[4px] rounded-full bg-[#6aa8f0]/60 shrink-0 mt-[5px]" />
-                              <span>{req}</span>
+                              <div className="w-[20px] h-[20px] rounded-full bg-[rgba(21,116,79,0.25)] border border-[rgba(21,116,79,0.4)] flex items-center justify-center shrink-0 mt-[1px]">
+                                <Check
+                                  size={11}
+                                  strokeWidth={2.5}
+                                  className="text-[rgba(100,220,160,0.9)]"
+                                />
+                              </div>
+                              <div className="text-[13px] text-white/55 leading-[1.45]">
+                                {item}
+                              </div>
                             </div>
                           ),
                         )}
                       </div>
+                    )}
+
+                  {/* Feature Cues Grid */}
+                  <div
+                    className={`grid grid-cols-1 sm:grid-cols-2 gap-[10px] ${tool.launch_module.button_label ? "mb-[26px]" : "mb-0"}`}
+                  >
+                    {tool.launch_module.features.map(
+                      (feat: string, i: number) => (
+                        <div
+                          key={i}
+                          className="bg-white/6 border border-white/10 rounded-[10px] p-[12px_14px] flex items-start gap-[10px]"
+                        >
+                          <div
+                            className={`w-[5px] h-[5px] rounded-full mt-[6px] shrink-0 ${
+                              tool.launch_module.stripe_variant === "gold"
+                                ? "bg-[rgba(212,168,47,0.7)]"
+                                : tool.launch_module.stripe_variant === "green"
+                                  ? "bg-[rgba(100,220,160,0.6)]"
+                                  : isBeneficiaryTheme
+                                    ? "bg-[#20a8a8bf]"
+                                    : "bg-[#6aa8f0b3]"
+                            }`}
+                          />
+                          <div className="text-[13px] text-white/55 leading-[1.4]">
+                            {feat}
+                          </div>
+                        </div>
+                      ),
+                    )}
+                  </div>
+
+                  {/* Upload Requirements Info Block (Step 8 only) */}
+                  {tool.upload_requirements &&
+                    tool.upload_requirements.length > 0 && (
+                      <div className="bg-white/5 border border-white/9 rounded-[10px] p-[14px_16px] mb-[26px]">
+                        <div className="text-[11px] font-bold uppercase tracking-widest text-white/35 mb-[10px]">
+                          USCIS upload requirements
+                        </div>
+                        <div className="flex flex-col gap-[7px]">
+                          {tool.upload_requirements.map(
+                            (req: string, i: number) => (
+                              <div
+                                key={i}
+                                className="flex items-start gap-[10px] text-[13px] text-white/55 leading-[1.45]"
+                              >
+                                <div className="w-[4px] h-[4px] rounded-full bg-[#6aa8f0]/60 shrink-0 mt-[5px]" />
+                                <span>{req}</span>
+                              </div>
+                            ),
+                          )}
+                        </div>
+                      </div>
+                    )}
+
+                  {/* CTA Area — only rendered when a button_label is defined */}
+                  {tool.launch_module.button_label && (
+                    <div className="flex flex-col gap-[11px]">
+                      <button
+                        onClick={() => {
+                          if (tool.launch_module.href) {
+                            window.open(
+                              tool.launch_module.href,
+                              "_blank",
+                              "noopener,noreferrer",
+                            );
+                            setIsLaunched(true);
+                          }
+                        }}
+                        className={`inline-flex items-center justify-center gap-[10px] w-full p-[16px_28px] text-white rounded-[12px] font-sans text-[15px] font-semibold tracking-[0.01em] transition-all duration-200 group cursor-pointer ${
+                          isLaunched && tool.launch_module.return_note
+                            ? "bg-[#3b7dd8] shadow-[0_4px_20px_rgba(14,92,60,0.3)] pointer-events-none"
+                            : "shadow-[0_4px_20px_rgba(47,111,212,0.35)] hover:translate-y-[-2px] hover:shadow-[0_8px_32px_rgba(47,111,212,0.45)]"
+                        }`}
+                        style={
+                          isLaunched && tool.launch_module.return_note
+                            ? {}
+                            : { backgroundColor: accentColor }
+                        }
+                      >
+                        {isLaunched && tool.launch_module.return_note ? (
+                          <>
+                            <span>✓</span>
+                            <span>
+                              {tool.launch_module.button_launched_label ||
+                                "Opened"}
+                            </span>
+                          </>
+                        ) : (
+                          <>
+                            <span>{tool.launch_module.button_label}</span>
+                            <div className="transition-transform duration-200 group-hover:translate-x-[2px]">
+                              <ArrowRight size={16} strokeWidth={2} />
+                            </div>
+                          </>
+                        )}
+                      </button>
+
+                      <div
+                        className={`flex items-center justify-center gap-[5px] text-[12px] text-center leading-[1.4] transition-colors duration-200 text-white/35`}
+                      >
+                        <ExternalLink size={11} strokeWidth={1.8} />
+                        <span>
+                          {isLaunched && tool.launch_module.launched_note
+                            ? tool.launch_module.launched_note
+                            : tool.launch_module.note ||
+                              "Opens in a new browser tab — you can return to the roadmap anytime"}
+                        </span>
+                      </div>
                     </div>
                   )}
-
-                {/* CTA Area — only rendered when a button_label is defined */}
-                {tool.launch_module.button_label && (
-                  <div className="flex flex-col gap-[11px]">
-                    <button
-                      onClick={() => {
-                        if (tool.launch_module.href) {
-                          window.open(
-                            tool.launch_module.href,
-                            "_blank",
-                            "noopener,noreferrer",
-                          );
-                          setIsLaunched(true);
-                        }
-                      }}
-                      className={`inline-flex items-center justify-center gap-[10px] w-full p-[16px_28px] text-white rounded-[12px] font-sans text-[15px] font-semibold tracking-[0.01em] transition-all duration-200 group cursor-pointer ${
-                        isLaunched && tool.launch_module.return_note
-                          ? "bg-[#3b7dd8] shadow-[0_4px_20px_rgba(14,92,60,0.3)] pointer-events-none"
-                          : "shadow-[0_4px_20px_rgba(47,111,212,0.35)] hover:translate-y-[-2px] hover:shadow-[0_8px_32px_rgba(47,111,212,0.45)]"
-                      }`}
-                      style={
-                        isLaunched && tool.launch_module.return_note
-                          ? {}
-                          : { backgroundColor: accentColor }
-                      }
-                    >
-                      {isLaunched && tool.launch_module.return_note ? (
-                        <>
-                          <span>✓</span>
-                          <span>
-                            {tool.launch_module.button_launched_label ||
-                              "Opened"}
-                          </span>
-                        </>
-                      ) : (
-                        <>
-                          <span>{tool.launch_module.button_label}</span>
-                          <div className="transition-transform duration-200 group-hover:translate-x-[2px]">
-                            <ArrowRight size={16} strokeWidth={2} />
-                          </div>
-                        </>
-                      )}
-                    </button>
-
-                    <div
-                      className={`flex items-center justify-center gap-[5px] text-[12px] text-center leading-[1.4] transition-colors duration-200 text-white/35`}
-                    >
-                      <ExternalLink size={11} strokeWidth={1.8} />
-                      <span>
-                        {isLaunched && tool.launch_module.launched_note
-                          ? tool.launch_module.launched_note
-                          : tool.launch_module.note ||
-                            "Opens in a new browser tab — you can return to the roadmap anytime"}
-                      </span>
-                    </div>
-                  </div>
-                )}
+                </div>
               </div>
-            </div>
-          )}
+            )}
 
           {/* PROGRESS BAR (Step 2.4 SPECIFIC — CIVIL DOCS) */}
           {tool.doc_list && (
@@ -2626,7 +3015,6 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                             NVC Case Number
                           </span>
                           <span className="text-[12px] text-[#0c1b33] font-semibold font-mono">
-                            {/* {ceacCredentials?.nvc_case_number || "—"} */}
                             {ceacCredentials?.nvc_case_number
                               ? "••••••••"
                               : "—"}
@@ -2640,16 +3028,6 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                             {ceacCredentials?.nvc_invoice_id ? "••••••••" : "—"}
                           </span>
                         </div>
-                        {/* {ceacCredentials?.username && (
-                          <div className="flex justify-between items-center py-1.5 border-b border-[#a8d9be]/50 border-0">
-                            <span className="text-[12px] text-[#3a4f63] font-medium">
-                              Notification Email
-                            </span>
-                            <span className="text-[12px] text-[#0c1b33] font-semibold font-mono">
-                              {ceacCredentials.username}
-                            </span>
-                          </div>
-                        )} */}
                       </>
                     )}
                   </div>
@@ -2796,8 +3174,6 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
               )}
             </div>
           )}
-
-          {/* CEAC CREDENTIALS VIEW — REMOVED AS IT IS NOW INTEGRATED IN THE SECONDARY ACTIONS ROW */}
 
           {/* ACTION CARDS ROW (Step 3 SPECIFIC) */}
           {tool.action_cards && (
@@ -3570,7 +3946,6 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                 <div
                   className={`mt-8 p-[12px_16px] bg-[#e8f1fb] rounded-[9px] text-[12px] text-[#6b8097] leading-[1.6] m-0`}
                 >
-                  {/* {currentStep.disclaimer || ( */}
                   <>
                     Rahvana provides structured guidance only. This is not legal
                     advice.
@@ -3578,7 +3953,6 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                     Consult a licensed immigration attorney for case-specific
                     decisions.
                   </>
-                  {/* )} */}
                 </div>
               </div>
             </div>
@@ -4589,8 +4963,15 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
             </div>
           );
         })()}
+      {/* Submission Guide Overlay (Step 8) */}
+      <SubmissionTutorialOverlay
+        isOpen={isSubmissionGuideOpen}
+        onClose={() => setIsSubmissionGuideOpen(false)}
+        currentIdx={submissionGuideIdx}
+        steps={SUBMISSION_TUTORIAL_STEPS}
+        onSetIdx={setSubmissionGuideIdx}
+      />
     </div>
-    // </div>
   );
 };
 
@@ -5036,6 +5417,77 @@ function HouseholdDocGuideOverlay({
                 line-height: 1.6;
                 margin: 0;
               }
+              /* Mock Visual Components for Tutorials */
+              .mock-card {
+                background: white;
+                border: 2px solid #d0e4f7;
+                border-radius: 12px;
+                padding: 18px 20px;
+                box-shadow: 0 4px 16px rgba(12, 27, 51, 0.05);
+                margin-bottom: 12px;
+              }
+              .mock-title {
+                font-size: 14px;
+                font-weight: 700;
+                color: #0c1b33;
+                margin-bottom: 12px;
+                letter-spacing: -0.01em;
+              }
+              .mock-row {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding: 8px 0;
+                border-bottom: 1px solid #eef3fa;
+                font-size: 13px;
+                color: #3a4f63;
+              }
+              .mock-row:last-child {
+                border-bottom: none;
+              }
+              .mock-badge-green {
+                font-size: 11px;
+                font-weight: 700;
+                padding: 3px 10px;
+                border-radius: 100px;
+                background: #e8f5ef;
+                color: #15744f;
+                border: 1px solid #a8d9be;
+                text-transform: uppercase;
+                letter-spacing: 0.03em;
+              }
+              .mock-badge-amber {
+                font-size: 11px;
+                font-weight: 700;
+                padding: 3px 10px;
+                border-radius: 100px;
+                background: #fef8e8;
+                color: #8a6200;
+                border: 1px solid #f0d98a;
+                text-transform: uppercase;
+                letter-spacing: 0.03em;
+              }
+              .hl-box {
+                padding: 10px 14px;
+                background: rgba(47, 111, 212, 0.08);
+                border: 1.5px solid rgba(47, 111, 212, 0.2);
+                border-radius: 10px;
+                font-size: 13px;
+                font-weight: 600;
+                color: #2f6fd4;
+                margin-top: 10px;
+                line-height: 1.5;
+              }
+              .warn-box {
+                padding: 10px 14px;
+                background: #fef2f2;
+                border: 1.5px solid #fecaca;
+                border-radius: 10px;
+                font-size: 13px;
+                color: #b91c1c;
+                margin-top: 10px;
+                line-height: 1.5;
+              }
             `}</style>
 
             <div className="bg-[#f4f7fb] border border-[#d0e4f7] rounded-[10px] p-[22px_24px] mb-[14px]">
@@ -5313,7 +5765,7 @@ function CeacCredsModal({
         </div>
 
         <div className="px-6 pb-6">
-          <div className="h-[1px] bg-[#d0e4f7] mb-5" />
+          <div className="h-px bg-[#d0e4f7] mb-5" />
 
           <div className="flex flex-col gap-3.5 mb-5">
             <div className="flex flex-col gap-1.5">

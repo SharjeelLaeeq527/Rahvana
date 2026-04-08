@@ -2421,9 +2421,9 @@
                 "Generate the exact affidavit forms required"
               ],
               "buttonText": "Start Sponsorship Calculator"
-            }
+            },
+            "disclaimer": "Rahvana provides structured guidance only. This is not legal advice. Consult a licensed immigration attorney for case-specific decisions."
           },
-          "disclaimer": "Rahvana provides structured guidance only. This is not legal advice. Consult a licensed immigration attorney for case-specific decisions.",
           "url": "/affidavit-support/i-864",
           "relevantTools": [
             {
@@ -2476,9 +2476,9 @@
                 "label": "Recommended to Strengthen Readiness",
                 "badge": "badge-rec"
               }
-            ]
-          },
-          "disclaimer": "Rahvana provides structured guidance only. This is not legal advice. Always verify NVC financial requirements at travel.state.gov."
+            ],
+            "disclaimer": "Rahvana provides structured guidance only. This is not legal advice. Always verify NVC financial requirements at travel.state.gov."
+          }
         },
         {
           "step_key": "step_2_7",
@@ -2501,66 +2501,87 @@
           "tool_data": {
             "id": "step_2_7",
             "type": "household_builder",
-            "title": "Sponsorship Management"
-          },
-          "disclaimer": "Rahvana provides structured guidance only. This is not legal advice. Relationship-proof requirements may vary — confirm with your attorney or NVC guidance."
+            "title": "Sponsorship Management",
+            "disclaimer": "Rahvana provides structured guidance only. This is not legal advice. Relationship-proof requirements may vary — confirm with your attorney or NVC guidance."
+          }
         },
         {
-          "id": "II-07",
-          "name": "Upload Documents to CEAC",
+          "step_key": "step_2_8",
+          "step_number": 8,
+          "step_name": "Review & Submit to NVC",
+          "step_short_description": "Final quality check & submission",
+          "step_description": "Your final quality check before sending documents to NVC. Verify every file, every person assignment, and every document type before submitting.",
+          "step_type": "tool",
           "who": "Either",
-          "where": "CEAC portal",
+          "where": "CEAC Portal / Rahvana",
+          "estimated_duration_days": 1,
+          "is_required": true,
+          "display_order": 8,
           "actions": [
-            "Log into CEAC",
-            "Navigate to Documents section",
-            "Upload each document category",
-            "Verify upload success",
-            "Check for green checkmarks"
+            "Verify file assignments",
+            "Confirm doc types",
+            "Check translation pairing",
+            "Submit via CEAC"
           ],
-          "output": "All documents uploaded",
-          "notes": "Upload one at a time. Max 4 MB per file. PDF preferred.",
-          "relevantTools": [
-            {
-              "label": "PDF Toolkit",
-              "labelUr": "پی ڈی ایف ٹول کٹ",
-              "href": "/pdf-processing",
-              "type": "tool"
-            }
-          ]
+          "tool_data": {
+            "id": "step_2_8",
+            "type": "submission_review",
+            "title": "Final Review & Submission",
+            "chips": [
+              {
+                "label": "CEAC Portal",
+                "type": "tool"
+              },
+              {
+                "label": "Final QA",
+                "type": "uscis"
+              },
+              {
+                "label": "Submission",
+                "type": "final"
+              }
+            ],
+            "launch_module": {
+              "label": "CEAC Submission Walkthrough",
+              "title": "Review every file before sending to NVC",
+              "icon": "check",
+              "features": [
+                "Verify each file under the correct person",
+                "Confirm correct document type for each slot",
+                "Check readability and translation pairing",
+                "Submit and confirm receipt in CEAC"
+              ],
+              "buttonText": "Start Submission Guide"
+            },
+            "disclaimer": "Rahvana provides structured guidance only. Always confirm submission status directly in CEAC after submitting."
+          }
         },
         {
-          "id": "II-08",
-          "name": "Review and Submit Documents",
-          "who": "Either",
-          "where": "CEAC portal",
-          "actions": [
-            "Review all uploaded documents",
-            "Verify translations included",
-            "Check financial documents sufficient",
-            "Click Submit Documents",
-            "Save confirmation"
-          ],
-          "output": "Documents submitted to NVC",
-          "nextTrigger": "NVC reviews documents"
-        },
-        {
-          "id": "II-09",
-          "name": "NVC Document Review",
+          "step_key": "step_2_9",
+          "step_number": 9,
+          "step_name": "Awaiting NVC Document Review",
+          "step_short_description": "NVC processing & review",
+          "step_description": "Your documents have been submitted. NVC is now reviewing your package for completeness and consistency before issuing a documentary qualification decision.",
+          "step_type": "tool",
           "who": "NVC",
-          "where": "Background process",
-          "timeline": "2-8 weeks",
+          "where": "NVC Review",
+          "estimated_duration_days": 60,
+          "is_required": true,
+          "display_order": 9,
           "actions": [
             "Monitor CEAC status weekly",
             "Check email for updates",
-            "Respond to any document requests immediately"
+            "Note DQ date when received",
+            "Begin interview preparation"
           ],
-          "possibleOutcomes": [
-            "Documentarily Qualified (DQ)",
-            "Request for additional documents",
-            "Document rejection"
-          ],
-          "notes": "Common rejections: poor scan quality, missing translations, expired police certificate"
+          "tool_data": {
+            "id": "step_2_9",
+            "type": "awaiting_review",
+            "title": "Awaiting NVC Document Review",
+            "disclaimer": "Rahvana provides structured guidance only. NVC review timelines vary. Monitor your registered email and CEAC messages directly."
+          }
         },
+
         {
           "id": "II-10",
           "name": "Receive DQ Status",

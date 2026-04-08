@@ -186,10 +186,10 @@ export interface TutorialStepData {
 }
 
 export interface FeeBlock {
-  label: string;       // e.g. "Current online fee"
-  amount: string;      // e.g. "$625"
-  note: string;        // e.g. "Form I-130 · online filing"
-  details: string[];   // bullet points shown on the right side
+  label: string; // e.g. "Current online fee"
+  amount: string; // e.g. "$625"
+  note: string; // e.g. "Form I-130 · online filing"
+  details: string[]; // bullet points shown on the right side
 }
 
 export interface ToolData {
@@ -211,6 +211,7 @@ export interface ToolData {
       | "shield"
       | "portal"
       | "upload"
+      | "check"
       | "payment"
       | "submit";
     /** Controls the right-end colour of the top accent stripe.
