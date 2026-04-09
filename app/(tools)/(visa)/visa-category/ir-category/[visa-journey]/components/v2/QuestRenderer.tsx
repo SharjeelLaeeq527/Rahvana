@@ -148,16 +148,20 @@ export function QuestRenderer({
     setSuiteAnswers(finalAnswers);
     actions.updateAnswers({ [suite.id]: finalAnswers });
 
-    const logic = (activeQuest as any).result_logic || (activeQuest as any).resultLogic;
+    const logic =
+      (activeQuest as any).result_logic || (activeQuest as any).resultLogic;
     const result = evaluateLogic(logic, tempAnswers);
-    console.log(`[QuestRenderer] Result calculated for ${activeQuest.id}:`, result);
-    
+    console.log(
+      `[QuestRenderer] Result calculated for ${activeQuest.id}:`,
+      result,
+    );
+
     setQuestResults((prev) => {
       const next = { ...prev, [activeQuest.id]: result };
       console.log(`[QuestRenderer] Updating questResults local state:`, next);
       return next;
     });
-    
+
     setView("result");
   };
 
@@ -284,16 +288,17 @@ export function QuestRenderer({
             })}
           </div>
 
-          {completedCount === suite.quests.length && (
-            <div className="mt-12 text-center">
-              <button
-                onClick={onComplete}
-                className="px-12 py-5 bg-primary text-white rounded-[16px] font-bold text-[16px] shadow-lg shadow-primary/20 hover:bg-[#0f1f38] transition-all"
-              >
-                Continue to Document Prep →
-              </button>
-            </div>
-          )}
+          {/* {completedCount ===
+            suite.quests.length(
+              <div className="mt-12 text-center">
+                <button
+                  onClick={onComplete}
+                  className="px-12 py-5 bg-primary text-white rounded-[16px] font-bold text-[16px] shadow-lg shadow-primary/20 hover:bg-[#0f1f38] transition-all"
+                >
+                  Continue to Document Prep →
+                </button>
+              </div>,
+            )} */}
 
           <div className="mt-[48px] px-[20px] py-[16px] bg-[#e8f1fb] rounded-[9px] text-[12px] text-[#6b8097] leading-[1.65] text-center">
             Rahvana provides structured guidance only. This is not legal advice.
@@ -306,7 +311,9 @@ export function QuestRenderer({
   }
 
   if (view === "result" && activeQuest) {
-    const result = questResults[activeQuest.id] || (state.metadata?.questResults as any)?.[activeQuest.id];
+    const result =
+      questResults[activeQuest.id] ||
+      (state.metadata?.questResults as any)?.[activeQuest.id];
     const meta = getStatusMeta(activeQuest.id);
 
     return (
