@@ -120,7 +120,10 @@ interface StepViewProps {
     setStage: (idx: number) => void;
     updateAnswers: (answers: Record<string, unknown>) => void;
     updateMetadata: (data: Record<string, unknown>) => void;
-    updateDocumentStatus?: (docId: string, status: 'not-started' | 'in-progress' | 'reviewed') => Promise<void>;
+    updateDocumentStatus?: (
+      docId: string,
+      status: "not-started" | "in-progress" | "reviewed",
+    ) => Promise<void>;
   };
   onBack: () => void;
 }
@@ -6737,7 +6740,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
   return (
     <div className="flex-1 flex flex-col h-full bg-slate-50 relative overflow-hidden font-sans">
       <div
-        className={`flex-1 overflow-y-auto scrollbar-hide flex flex-col items-center relative ${
+        className={`flex-1 overflow-y-auto scrollbar-hide flex flex-col items-center relative pb-[100px] ${
           currentStep.step_type === "quest" ? "" : "p-6 md:p-10 lg:p-12"
         }`}
       >
@@ -7036,14 +7039,16 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                         <div
                           className="h-full bg-linear-to-r from-primary to-primary transition-all duration-1000 ease-out"
                           style={{
-                            width: `${(currentStep.document_items.filter((d: any) => (state.metadata?.docReviewStatus?.[d.id] || state.documentChecklist[d.name])).length / currentStep.document_items.length) * 100}%`,
+                            width: `${(currentStep.document_items.filter((d: any) => state.metadata?.docReviewStatus?.[d.id] || state.documentChecklist[d.name]).length / currentStep.document_items.length) * 100}%`,
                           }}
                         />
                       </div>
                       <span className="text-[12px] font-medium text-[#6b8097] whitespace-nowrap">
                         {
                           currentStep.document_items.filter(
-                            (d: any) => (state.metadata?.docReviewStatus?.[d.id] || state.documentChecklist[d.name]),
+                            (d: any) =>
+                              state.metadata?.docReviewStatus?.[d.id] ||
+                              state.documentChecklist[d.name],
                           ).length
                         }{" "}
                         of {currentStep.document_items.length} reviewed
@@ -7083,9 +7088,11 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
 
                         <div className="flex flex-col">
                           {groupItems.map((doc: any, idx: number) => {
-                            const docReviewStatus = state.metadata?.docReviewStatus?.[doc.id];
+                            const docReviewStatus =
+                              state.metadata?.docReviewStatus?.[doc.id];
                             const isReviewed =
-                              docReviewStatus === 'reviewed' || state.documentChecklist[doc.name];
+                              docReviewStatus === "reviewed" ||
+                              state.documentChecklist[doc.name];
                             const hasAttachment =
                               state.docUploads[doc.name] ||
                               state.notes[doc.name];
@@ -7110,7 +7117,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                                     ) {
                                       actions.updateDocumentStatus(
                                         doc.id,
-                                        "reviewed"
+                                        "reviewed",
                                       );
                                     }
                                   } else {
@@ -7501,44 +7508,41 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
         </div>
       </div>
 
-      {/* Bottom Navigation Footer */}
-      <footer className="h-20 border-t border-slate-200 bg-white flex items-center justify-between px-6 md:px-8 shrink-0 z-40 shadow-[0_-4px_30_rgba(0,0,0,0.02)]">
+      {/* Redesigned Bottom Navigation Footer */}
+      <footer className="absolute bottom-0 left-0 right-0 h-[58px] bg-[#fafcff] border-t border-[#d0e4f7] flex items-center gap-2 px-4 shrink-0 z-40 shadow-[0_-4px_20px_rgba(0,0,0,0.03)]">
         <button
           onClick={() =>
             prevStep &&
             handleNavigate((prevStep as any).step_key || (prevStep as any).id)
           }
-          className={`flex items-center gap-3 text-[13px] font-black text-slate-900 transition-colors hover:text-primary ${!prevStep ? "opacity-0 pointer-events-none" : "hover:translate-x-[-6px]"}`}
+          className={`px-4 py-[9px] bg-transparent border-[1.5px] border-[#d0e4f7] rounded-[10px] text-[13px] font-medium text-[#6b8097] flex items-center gap-[5px] transition-all hover:border-[#3a4f63] hover:text-[#1c2b3a] shrink-0 ${!prevStep ? "invisible pointer-events-none" : ""}`}
         >
-          <ArrowLeft size={16} strokeWidth={3} />
+          <ArrowLeft size={12} strokeWidth={2.5} />
           Previous
         </button>
 
-        <div className="flex-1 max-w-xs md:max-w-sm px-6 flex flex-col items-center">
-          <div className="w-full h-1 bg-slate-100 rounded-full overflow-hidden mb-1.5">
+        <div className="flex-1 flex items-center gap-2 mx-auto px-4">
+          <div className="flex-1 h-1 bg-[#d0e4f7] rounded-[10px] overflow-hidden">
             <div
-              className="h-full bg-primary transition-all duration-700 ease-out shadow-[0_0_10px_rgba(13,115,119,0.2)]"
+              className="h-full bg-linear-to-r from-primary to-primary/70 transition-all duration-500 ease-out"
               style={{ width: `${progressPct}%` }}
             />
           </div>
-          <div className="text-[9px] font-black text-slate-400 uppercase tracking-[0.15em] flex items-center gap-2">
-            Progress <span className="text-slate-900">{progressPct}%</span>
+          <div className="text-[11px] font-semibold text-[#6b8097] whitespace-nowrap">
+            Step {globalIdx + 1} of {allActiveSteps.length}
           </div>
         </div>
 
-        <div className="min-w-[120px] flex justify-end">
-          <button
-            onClick={() =>
-              nextStep &&
-              handleNavigate((nextStep as any).step_key || (nextStep as any).id)
-            }
-            className={`flex items-center gap-3 px-6 py-3 rounded-md bg-primary text-white text-[13px] font-black shadow-xl shadow-primary/25 transition-all
-              ${!nextStep || !isCompleted ? "opacity-0 pointer-events-none" : "hover:translate-x-2 hover:bg-primary/90 active:scale-95"}`}
-          >
-            Next
-            <ArrowRight size={16} strokeWidth={3} />
-          </button>
-        </div>
+        <button
+          onClick={() =>
+            nextStep &&
+            handleNavigate((nextStep as any).step_key || (nextStep as any).id)
+          }
+          className={`px-[18px] py-[9px] bg-primary rounded-[10px] text-[13px] font-semibold text-white flex items-center gap-[5px] transition-all hover:brightness-110 active:scale-95 shrink-0 shadow-sm shadow-primary/20 ${!nextStep || !isCompleted ? "invisible pointer-events-none" : ""}`}
+        >
+          Next
+          <ArrowRight size={12} strokeWidth={2.5} />
+        </button>
       </footer>
 
       {/* Sponsorship Calculator Overlay (Step 5 Specific) */}
@@ -8258,7 +8262,10 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                 <button
                   onClick={async () => {
                     if (actions.updateDocumentStatus && selectedGuideId) {
-                      await actions.updateDocumentStatus(selectedGuideId, 'reviewed');
+                      await actions.updateDocumentStatus(
+                        selectedGuideId,
+                        "reviewed",
+                      );
                     }
                     setSelectedGuideId(null);
                   }}
