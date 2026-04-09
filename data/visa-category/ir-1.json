@@ -686,7 +686,9 @@
               "tag": "petitioner",
               "guideUrl": "/guides",
               "icon": "ShieldCheck",
-              "group": "Required Now"
+              "group": "Required Now",
+              "status": "not-started",
+              "required": true
             },
             {
               "id": "doc_passport_ben",
@@ -695,7 +697,9 @@
               "tag": "beneficiary",
               "guideUrl": "/guides/passport-guide",
               "icon": "User",
-              "group": "Required Now"
+              "group": "Required Now",
+              "status": "not-started",
+              "required": true
             },
             {
               "id": "doc_nikah_nama",
@@ -704,7 +708,9 @@
               "tag": "beneficiary",
               "guideUrl": "/guides/nikah-nama-guide",
               "icon": "FileText",
-              "group": "Required Now"
+              "group": "Required Now",
+              "status": "not-started",
+              "required": true
             },
             {
               "id": "doc_mrc",
@@ -713,7 +719,9 @@
               "tag": "beneficiary",
               "guideUrl": "/guides/nikah-nama-guide",
               "icon": "FileCheck",
-              "group": "Required Now"
+              "group": "Required Now",
+              "status": "not-started",
+              "required": true
             },
             {
               "id": "doc_relationship",
@@ -722,7 +730,9 @@
               "tag": "both",
               "guideUrl": "/guides",
               "icon": "MessageSquare",
-              "group": "Required Now"
+              "group": "Required Now",
+              "status": "not-started",
+              "required": true
             },
             {
               "id": "doc_prior_marriage",
@@ -731,7 +741,9 @@
               "tag": "both",
               "guideUrl": "/guides",
               "icon": "Scale",
-              "group": "Required if Applicable"
+              "group": "Required if Applicable",
+              "status": "not-started",
+              "required": false
             },
             {
               "id": "doc_translations",
@@ -740,7 +752,9 @@
               "tag": "third party",
               "guideUrl": "/guides",
               "icon": "Globe",
-              "group": "Required if Applicable"
+              "group": "Required if Applicable",
+              "status": "not-started",
+              "required": false
             },
             {
               "id": "doc_birth_cert",
@@ -749,7 +763,9 @@
               "tag": "beneficiary",
               "guideUrl": "/guides/birth-certificate-guide",
               "icon": "ClipboardList",
-              "group": "Gather Now for Later"
+              "group": "Gather Now for Later",
+              "status": "not-started",
+              "required": false
             },
             {
               "id": "doc_police_cert",
@@ -758,7 +774,9 @@
               "tag": "beneficiary",
               "guideUrl": "/guides/police-verification-guide",
               "icon": "Lock",
-              "group": "Gather Now for Later"
+              "group": "Gather Now for Later",
+              "status": "not-started",
+              "required": false
             },
             {
               "id": "doc_passport_photos",
@@ -767,7 +785,9 @@
               "tag": "beneficiary",
               "guideUrl": "/guides",
               "icon": "Camera",
-              "group": "Gather Now for Later"
+              "group": "Gather Now for Later",
+              "status": "not-started",
+              "required": false
             }
           ],
           "pakistanSpecific": "Union Council registration increasingly required by Islamabad Embassy. Police certificate: 3-7 days processing for Punjab/Islamabad.",
@@ -2268,7 +2288,9 @@
                         "bene",
                         "govt"
                       ],
-                      "external_href": "/guides/passport-guide"
+                      "external_href": "/guides/passport-guide",
+                      "status": "not-started",
+                      "required": true
                     },
                     {
                       "id": "birth",
@@ -2279,7 +2301,9 @@
                         "bene",
                         "govt"
                       ],
-                      "external_href": "/guides/birth-certificate-guide"
+                      "external_href": "/guides/birth-certificate-guide",
+                      "status": "not-started",
+                      "required": true
                     },
                     {
                       "id": "marriage",
@@ -2291,6 +2315,8 @@
                         "govt"
                       ],
                       "external_href": "/guides/nikah-nama-guide",
+                      "status": "not-started",
+                      "required": true,
                       "sections": [
                         {
                           "t": "What this is",
@@ -2319,7 +2345,9 @@
                         "bene",
                         "govt"
                       ],
-                      "external_href": "/guides/police-verification-guide"
+                      "external_href": "/guides/police-verification-guide",
+                      "status": "not-started",
+                      "required": true
                     },
                     {
                       "id": "translations",
@@ -2330,6 +2358,8 @@
                         "bene",
                         "3p"
                       ],
+                      "status": "not-started",
+                      "required": true,
                       "sections": [
                         {
                           "t": "Requirement",
@@ -2365,6 +2395,8 @@
                         "both",
                         "govt"
                       ],
+                      "status": "not-started",
+                      "required": false,
                       "sections": [
                         {
                           "t": "When needed",
@@ -2393,6 +2425,8 @@
                         "both",
                         "govt"
                       ],
+                      "status": "not-started",
+                      "required": false,
                       "sections": [
                         {
                           "t": "When needed",
@@ -2413,6 +2447,8 @@
                         "bene",
                         "govt"
                       ],
+                      "status": "not-started",
+                      "required": false,
                       "sections": [
                         {
                           "t": "When needed",
@@ -2433,6 +2469,8 @@
                         "bene",
                         "3p"
                       ],
+                      "status": "not-started",
+                      "required": false,
                       "sections": [
                         {
                           "t": "When this applies",
@@ -2463,6 +2501,8 @@
                       "tags": [
                         "bene"
                       ],
+                      "status": "not-started",
+                      "required": false,
                       "sections": [
                         {
                           "t": "Why this helps",
@@ -2482,6 +2522,8 @@
                       "tags": [
                         "both"
                       ],
+                      "status": "not-started",
+                      "required": false,
                       "sections": [
                         {
                           "t": "Standards",
@@ -2505,6 +2547,8 @@
                       "tags": [
                         "both"
                       ],
+                      "status": "not-started",
+                      "required": false,
                       "sections": [
                         {
                           "t": "Why keep this ready",
