@@ -66,6 +66,7 @@ export function useWizard(options: UseWizardOptions = {}) {
   const [isLoaded, setIsLoaded] = useState(false);
   const [hasExistingProgress, setHasExistingProgress] = useState(false);
   const [isSyncing, setIsSyncing] = useState(false);
+  const isInitialLoadRef = useRef(true);
 
   // ─── Normalize State (Moved up for use in useEffect and Memoized actions) ───────────
   const normalizeState = useCallback(() => {
@@ -74,21 +75,64 @@ export function useWizard(options: UseWizardOptions = {}) {
     setState((prev) => {
       let { currentStage, currentStep } = prev;
       const chapters = activeRoadmap.chapters || activeRoadmap.stages;
+      const filingMethod = prev.metadata?.filingMethod || prev.filingType || 'online';
 
+      // Helper: Get active steps for a chapter based on filing method
+      const getActiveStepsForChapter = (chapterIdx: number) => {
+        const chapter = chapters[chapterIdx];
+        if (!chapter) return [];
+        return chapter.steps.filter((s: any) => {
+          const visibleWhen = s.visible_when;
+          if (visibleWhen && Object.keys(visibleWhen).length > 0) {
+            if (visibleWhen.filingMethod) {
+              return visibleWhen.filingMethod === filingMethod;
+            }
+          }
+          const branch = s.branch;
+          if (!branch || branch === 'both') return true;
+          return branch === filingMethod;
+        });
+      };
+
+      // Validate and adjust currentStage
       if (currentStage < 0) currentStage = 0;
       if (currentStage >= chapters.length) {
         currentStage = Math.max(0, chapters.length - 1);
       }
 
-      const stage = chapters[currentStage];
-      if (!stage) return { ...prev, currentStage, currentStep: null };
+      // Get active steps for current chapter
+      let activeSteps = getActiveStepsForChapter(currentStage);
 
+      // If current chapter has no active steps, find next chapter with active steps
+      while (activeSteps.length === 0 && currentStage < chapters.length - 1) {
+        currentStage++;
+        activeSteps = getActiveStepsForChapter(currentStage);
+      }
+
+      // Determine current step within the chapter
       let narrowedStep: number;
-      if (currentStep === null || currentStep < 0 || currentStep >= stage.steps.length) {
-        const firstIncomplete = stage.steps.findIndex(
-          (s: any) => !prev.completedSteps.has(s.step_key || s.id),
-        );
-        narrowedStep = firstIncomplete === -1 ? 0 : firstIncomplete;
+      const stepsInChapter = chapters[currentStage]?.steps || [];
+      const activeStepsInChapter = getActiveStepsForChapter(currentStage);
+
+      if (currentStep === null || currentStep < 0 || currentStep >= stepsInChapter.length) {
+        // Find first incomplete active step
+        const firstIncomplete = stepsInChapter.findIndex((s: any) => {
+          const sId = s.step_key || s.id;
+          // Check if this step is active (visible)
+          const isActive = activeStepsInChapter.some((as: any) => 
+            (as.step_key || as.id) === sId
+          );
+          return isActive && !prev.completedSteps.has(sId);
+        });
+        
+        // If all active steps complete, stay on first active step (don't auto-advance chapter)
+        if (firstIncomplete === -1) {
+          narrowedStep = activeStepsInChapter.length > 0 ? stepsInChapter.findIndex((s: any) =>
+            activeStepsInChapter.some((as: any) => (as.step_key || as.id) === (s.step_key || s.id))
+          ) : 0;
+        } else {
+          narrowedStep = firstIncomplete;
+        }
       } else {
         narrowedStep = currentStep;
       }
@@ -158,15 +202,22 @@ export function useWizard(options: UseWizardOptions = {}) {
         const detailData = await detailRes.json();
 
         if (detailData.success && !cancelled) {
-          const { journey, steps, case_data, progress_summary } = detailData.data;
+          const { journey, chapters, steps, case_data, progress_summary } = detailData.data;
 
           const stepMap: Record<string, string> = {};
           const completedSet = new Set<string>();
+          
+          // Group steps by chapter for easier lookup
+          const stepsByChapter: Record<string, any[]> = {};
           steps.forEach((s: any) => {
             stepMap[s.step_key] = s.id;
             if (s.status === 'completed') {
               completedSet.add(s.step_key);
             }
+            if (!stepsByChapter[s.chapter_id]) {
+              stepsByChapter[s.chapter_id] = [];
+            }
+            stepsByChapter[s.chapter_id].push(s);
           });
 
           const metadata: Record<string, any> = {};
@@ -174,14 +225,34 @@ export function useWizard(options: UseWizardOptions = {}) {
             metadata[cd.data_key] = cd.data_value;
           });
 
+          // Calculate current chapter and step indices from journey's current_chapter_id and current_step_id
+          let currentStageIdx = 0;
+          let currentStepIdx: number | null = null;
+          
+          if (journey.current_chapter_id && chapters) {
+            const chapterIdx = chapters.findIndex((ch: any) => ch.id === journey.current_chapter_id);
+            if (chapterIdx !== -1) {
+              currentStageIdx = chapterIdx;
+            }
+          }
+          
+          if (journey.current_step_id && chapters && currentStageIdx < chapters.length) {
+            const currentChapter = chapters[currentStageIdx];
+            if (currentChapter && stepsByChapter[currentChapter.id]) {
+              // Find the index of current_step_id within the chapter's steps
+              currentStepIdx = stepsByChapter[currentChapter.id].findIndex((s: any) => s.id === journey.current_step_id);
+              if (currentStepIdx === -1) currentStepIdx = null;
+            }
+          }
+
           setState((prev) => ({
             ...prev,
             backendId: targetJourneyId!,
             stepMap,
             completedSteps: completedSet,
             metadata,
-            currentStage: progress_summary?.current_chapter_index ?? prev.currentStage,
-            currentStep: progress_summary?.current_step_index ?? prev.currentStep,
+            currentStage: currentStageIdx,
+            currentStep: currentStepIdx,
             started: journey.status !== 'not_started',
           }));
 
@@ -199,15 +270,42 @@ export function useWizard(options: UseWizardOptions = {}) {
     return () => { cancelled = true; };
   }, [userId, journeyId]);
 
+  // Only normalize state when filing method changes (NOT on initial load)
+  // The initial load from backend already has the correct position
   useEffect(() => {
-    if (isLoaded) normalizeState();
-  }, [isLoaded, normalizeState]);
+    // Skip on first load
+    if (isInitialLoadRef.current && isLoaded) {
+      isInitialLoadRef.current = false;
+      return;
+    }
+    
+    // Call normalizeState() on subsequent changes (filing method, etc)
+    if (isLoaded && state.metadata?.filingMethod) {
+      normalizeState();
+    }
+  }, [state.metadata?.filingMethod, normalizeState, isLoaded]);
 
   // ─── Actions (Memoized to prevent infinite update loops) ───────────────────
   const actions = useMemo(() => ({
     setStage: (idx: number) => {
-      setState((prev) => ({ ...prev, currentStage: idx, currentStep: null }));
-      setTimeout(normalizeState, 0);
+      setState((prev) => {
+        const chapters = activeRoadmap.chapters || activeRoadmap.stages;
+        const chapter = chapters[idx];
+        
+        // Persist the current chapter to the backend
+        if (state.backendId && chapter?.id) {
+          fetch(`/api/journeys/${state.backendId}`, {
+            method: "PATCH",
+            body: JSON.stringify({ 
+              current_chapter_id: chapter.id,
+            }),
+          }).catch((err) => console.error("[useWizard] Failed to save chapter position:", err));
+        }
+        
+        return { ...prev, currentStage: idx, currentStep: null };
+      });
+      // Don't auto-normalize here - user is manually selecting chapter
+      // They should see chapter view, not auto-jump to a step
     },
 
     setCurrentStep: (idx: number) => {
@@ -216,6 +314,19 @@ export function useWizard(options: UseWizardOptions = {}) {
         const stage = chapters[prev.currentStage];
         if (!stage) return prev;
         const stepId = stage.steps[idx]?.step_key || stage.steps[idx]?.id;
+        
+        // Persist the current step to the backend
+        if (state.backendId && stepId && prev.stepMap[stepId]) {
+          const stepUuid = prev.stepMap[stepId];
+          fetch(`/api/journeys/${state.backendId}`, {
+            method: "PATCH",
+            body: JSON.stringify({ 
+              current_step_id: stepUuid,
+              current_chapter_id: stage?.id,
+            }),
+          }).catch((err) => console.error("[useWizard] Failed to save step position:", err));
+        }
+        
         return { 
           ...prev, 
           currentStep: idx, 
@@ -233,6 +344,45 @@ export function useWizard(options: UseWizardOptions = {}) {
         const newCompleted = new Set(prev.completedSteps);
         if (newCompleted.has(stepKey)) newCompleted.delete(stepKey);
         else newCompleted.add(stepKey);
+        
+        // Auto-advance to next chapter if completing last step
+        if (!isCompleted) { // Only when marking as complete, not uncompleting
+          const chapters = activeRoadmap.chapters || activeRoadmap.stages;
+          const filingMethod = prev.metadata?.filingMethod || prev.filingType || 'online';
+          
+          // Helper to get active steps for a chapter
+          const getActiveStepsForChapter = (chapterIdx: number) => {
+            const chapter = chapters[chapterIdx];
+            if (!chapter) return [];
+            return chapter.steps.filter((s: any) => {
+              const visibleWhen = s.visible_when;
+              if (visibleWhen && Object.keys(visibleWhen).length > 0) {
+                if (visibleWhen.filingMethod) {
+                  return visibleWhen.filingMethod === filingMethod;
+                }
+              }
+              const branch = s.branch;
+              if (!branch || branch === 'both') return true;
+              return branch === filingMethod;
+            });
+          };
+          
+          // Check if all active steps in current chapter are now complete
+          const currentChapterActive = getActiveStepsForChapter(prev.currentStage);
+          const allCurrentChapterComplete = currentChapterActive.length > 0 && 
+            currentChapterActive.every((s: any) => newCompleted.has(s.step_key || s.id));
+          
+          // If current chapter is now complete and there's a next chapter, move to it
+          if (allCurrentChapterComplete && prev.currentStage < chapters.length - 1) {
+            return {
+              ...prev,
+              completedSteps: newCompleted,
+              currentStage: prev.currentStage + 1,
+              currentStep: null, // Will be normalized to first incomplete step
+            };
+          }
+        }
+        
         return { ...prev, completedSteps: newCompleted };
       });
 

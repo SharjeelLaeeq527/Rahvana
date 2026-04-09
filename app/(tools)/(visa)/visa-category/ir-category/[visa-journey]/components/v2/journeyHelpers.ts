@@ -2,7 +2,21 @@ import { RoadmapData, RoadmapStep, RoadmapChapter } from "../types";
 import { WizardState } from "@/app/(main)/dashboard/hooks/useWizard";
 
 /**
+ * Get the display number for a step, considering display_number_override.
+ */
+export function getDisplayStepNumber(step: RoadmapStep): number {
+  const stepAny = step as any;
+  // If display_number_override exists, use it (for paper path steps showing as 4-6 instead of 11-13)
+  if (stepAny.display_number_override !== undefined) {
+    return stepAny.display_number_override;
+  }
+  // Otherwise use the step_number
+  return stepAny.step_number || 1;
+}
+
+/**
  * Returns all steps for a given stage/chapter index that are applicable based on the filing method.
+ * Filters by visible_when conditions.
  */
 export function getActiveStepsForStage(data: RoadmapData, index: number, filingMethod: string | null): RoadmapStep[] {
   const chapters = data.chapters || (data as any).stages;
@@ -11,8 +25,19 @@ export function getActiveStepsForStage(data: RoadmapData, index: number, filingM
   
   const method = filingMethod || 'online'; // Default to online if not set
   return chapter.steps.filter((step: RoadmapStep) => {
-    // Check both legacy 'branch' and any new logic
-    const branch = (step as any).branch;
+    const stepAny = step as any;
+    
+    // Check visible_when conditions (new priority system)
+    const visibleWhen = stepAny.visible_when;
+    if (visibleWhen && Object.keys(visibleWhen).length > 0) {
+      // If filingMethod condition exists, check it
+      if (visibleWhen.filingMethod) {
+        return visibleWhen.filingMethod === method;
+      }
+    }
+    
+    // Fallback to legacy 'branch' field
+    const branch = stepAny.branch;
     if (!branch || branch === 'both') return true;
     return branch === method;
   });
