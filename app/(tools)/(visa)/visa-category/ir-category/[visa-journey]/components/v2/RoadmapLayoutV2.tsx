@@ -32,15 +32,12 @@ export default function RoadmapLayoutV2({
   const [view, setView] = useState<ViewType>("dashboard");
   const [selectedChapterIdx, setSelectedChapterIdx] = useState<number>(0);
 
-  // Sync view and selected chapter from state
+  // Sync selected chapter from state, but keep view as 'dashboard' by default on load
   useEffect(() => {
-    if (state.currentStep !== null && state.currentStep !== -1) {
-      setView("step");
-    }
     if (state.currentStage !== undefined && state.currentStage !== -1) {
       setSelectedChapterIdx(state.currentStage);
     }
-  }, [state.currentStep, state.currentStage]);
+  }, [state.currentStage]);
 
   const handleSelectChapter = (idx: number) => {
     setSelectedChapterIdx(idx);
