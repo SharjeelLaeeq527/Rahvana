@@ -13,6 +13,8 @@ import {
   ShieldCheck,
   Search,
   MessageSquare,
+  XCircle,
+  Clipboard,
   Scale,
   Globe,
   Lock,
@@ -50,6 +52,13 @@ import {
   Activity,
   Info,
   PartyPopper,
+  Briefcase,
+  Syringe,
+  Hospital,
+  Copy,
+  Paperclip,
+  Heart,
+  Truck,
 } from "lucide-react";
 
 import {
@@ -57,6 +66,7 @@ import {
   QuestSuite,
   TutorialStepData,
   ActionCard,
+  DocumentGatheringItem,
 } from "../types";
 import { WizardState } from "@/app/(main)/dashboard/hooks/useWizard";
 import { QuestRenderer } from "./QuestRenderer";
@@ -81,6 +91,9 @@ import { AWAITING_REVIEW_DATA } from "./AwaitingReviewData";
 import { DQ_RECORDING_DATA } from "./DqRecordingData";
 import { INTERVIEW_SCHEDULING_DATA } from "./InterviewSchedulingData";
 import { APPOINTMENT_RECEIVED_DATA } from "./AppointmentReceivedData";
+import { MEDICAL_EXAM_DATA } from "./MedicalExamData";
+import { POLIO_CERTIFICATE_DATA } from "./PolioCertificateData";
+import { POLICE_CLEARANCE_DATA } from "./PoliceClearanceData";
 
 interface SecurityQuestion {
   id: string;
@@ -140,6 +153,10 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
     useState<PortalCredential | null>(null);
   const [isWalletFormOpen, setIsWalletFormOpen] = useState(false);
   const [isWalletViewOpen, setIsWalletViewOpen] = useState(false);
+  const [walletPortalType, setWalletPortalType] = useState<
+    "USCIS" | "NVC" | "COURIER"
+  >("USCIS");
+  const [walletMode, setWalletMode] = useState<"add" | "edit">("add");
   const [isSubmittingCreds, setIsSubmittingCreds] = useState(false);
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
 
@@ -156,6 +173,10 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
   const [ceacCredentials, setCeacCredentials] =
     useState<PortalCredential | null>(null);
   const [isCeacModalOpen, setIsCeacModalOpen] = useState(false);
+
+  // Courier Credentials State
+  const [courierCredentials, setCourierCredentials] =
+    useState<PortalCredential | null>(null);
 
   // Civil Documents States
   const [activeCivilDoc, setActiveCivilDoc] = useState<any>(null);
@@ -205,15 +226,16 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
   const [isSubmissionGuideOpen, setIsSubmissionGuideOpen] = useState(false);
   const [submissionGuideIdx, setSubmissionGuideIdx] = useState(0);
   const initialSubmissionChecklist = (state.metadata
-    .submissionChecklistStatusS10 as Record<string, boolean>) || {
+    .submissionChecklistStatus as Record<string, boolean>) || {
     0: false,
     1: false,
     2: false,
     3: false,
     4: false,
     5: false,
+    6: false,
   };
-  const [submissionChecklistStatusS10, setSubmissionChecklistStatus] = useState<
+  const [submissionChecklistStatus, setSubmissionChecklistStatus] = useState<
     Record<string, boolean>
   >(initialSubmissionChecklist);
 
@@ -228,13 +250,117 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
     (state.metadata.dqCountry as string) || "Pakistan",
   );
 
-  const handleToggleSubmissionCheckS10 = (idx: number) => {
+  // Step 3.1 Medical Exam States
+  const [medSaved, setMedSaved] = useState(
+    state.metadata.med_appt_saved === "true",
+  );
+  const [medDate, setMedDate] = useState(
+    (state.metadata.med_date as string) || "",
+  );
+  const [medTime, setMedTime] = useState(
+    (state.metadata.med_time as string) || "",
+  );
+  const [medClinic, setMedClinic] = useState(
+    (state.metadata.med_clinic as string) || "",
+  );
+  const [isMedWizardOpen, setIsMedWizardOpen] = useState(false);
+  const [medWizardMode, setMedWizardMode] = useState<"service" | "guide" | "">(
+    "",
+  );
+  const [medWizardStep, setMedWizardStep] = useState(0);
+
+  // Step 3.2 Polio Certificate States
+  const [polioLaunched, setPolioLaunched] = useState(
+    state.metadata.polio_launched === "true",
+  );
+  const [polioChecks, setPolioChecks] = useState<boolean[]>(
+    (state.metadata.polio_checks as boolean[]) || [false, false, false],
+  );
+  const [isPolioGuideOpen, setIsPolioGuideOpen] = useState(false);
+  const [polioGuideStep, setPolioGuideStep] = useState(0);
+
+  // Step 3.3 Police Clearance Certificate States
+  const [pccSaved, setPccSaved] = useState(state.metadata.pcc_saved === "true");
+
+  // Step 3.7 Interview Prep States
+  const [isPrepLaunched, setIsPrepLaunched] = useState(
+    state.metadata.isPrepLaunched === "true",
+  );
+  const [pccReceived, setPccReceived] = useState(
+    state.metadata?.pcc_received === "true",
+  );
+
+  // Step 3.8 Interview Day States
+  const [isInterviewDayTutOpen, setIsInterviewDayTutOpen] = useState(false);
+  const [interviewDayTutIdx, setInterviewDayTutIdx] = useState(0);
+
+  // Step 3.9 Administrative Processing States
+  const [apDetails, setApDetails] = useState(() => {
+    return (
+      state.metadata.apDetails || {
+        interviewDate: "",
+        received: null,
+        ceacStatus: "",
+        lastCheck: "",
+        docsRequested: "",
+        notes: "",
+      }
+    );
+  });
+  const [apUpdateLog, setApUpdateLog] = useState<any[]>(
+    state.metadata.apUpdateLog || [],
+  );
+  const [isApSaved, setIsApSaved] = useState(state.metadata.apSaved === "true");
+  const [isApUpdateModalOpen, setIsApUpdateModalOpen] = useState(false);
+
+  const handleSaveApUpdate = (entry: any) => {
+    const nextLog = [entry, ...apUpdateLog];
+    setApUpdateLog(nextLog);
+    actions.updateMetadata({ apUpdateLog: nextLog });
+  };
+
+  // --- STEP 3.4 (DOCUMENT GATHERING) STATE ---
+  const [gatheringStatus, setGatheringStatus] = useState<
+    Record<string, "not-started" | "in-progress" | "reviewed">
+  >(() => {
+    try {
+      return JSON.parse(state.metadata?.gathering_status || "{}");
+    } catch {
+      return {};
+    }
+  });
+
+  const [isGatheringGuideOpen, setIsGatheringGuideOpen] = useState(false);
+  const [selectedGatheringItem, setSelectedGatheringItem] =
+    useState<DocumentGatheringItem | null>(null);
+
+  // --- UTILS & DERIVED ---
+  const [pccData, setPccData] = useState({
+    receipt: (state.metadata.pcc_receipt as string) || "",
+    track: (state.metadata.pcc_track as string) || "",
+    date: (state.metadata.pcc_date as string) || "",
+  });
+  const [isPccOverlayOpen, setIsPccOverlayOpen] = useState(false);
+  const [pccOverlayMode, setPccOverlayMode] = useState<
+    "service" | "guide" | ""
+  >("");
+  const [pccOverlayStep, setPccOverlayStep] = useState(0);
+
+  // Step 3.5 Medical Guide States
+  const [isMedicalGuideOpen, setIsMedicalGuideOpen] = useState(false);
+  const [medicalGuideIdx, setMedicalGuideIdx] = useState(0);
+
+  // Step 3.6 Courier Registration Guide States
+  const [isCourierGuideOpen, setIsCourierGuideOpen] = useState(false);
+  const [courierGuideIdx, setCourierGuideIdx] = useState(0);
+
+  const handleToggleSubmissionCheck = (idx: number) => {
     const next = {
-      ...submissionChecklistStatusS10,
-      [idx]: !submissionChecklistStatusS10[idx],
+      ...submissionChecklistStatus,
+      [idx]: !submissionChecklistStatus[idx],
     };
     setSubmissionChecklistStatus(next);
-    actions.updateMetadata({ submissionChecklistStatusS10: next });
+    actions.updateMetadata({ submissionChecklistStatus: next });
   };
 
   // Sync selectedScenario with sponsorshipResult once on load
@@ -260,6 +386,26 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
   const chapters = data.chapters || (data as any).stages;
   const currentChapter = chapters?.[state.currentStage];
 
+  // Retrieve Medical tool data for Step 3.5 overlay
+  const medicalToolData = useMemo(() => {
+    if (!chapters) return null;
+    for (const ch of chapters) {
+      const step = ch.steps?.find((s: any) => s.step_key === "step_3_5");
+      if (step?.tool_data) return step.tool_data;
+    }
+    return null;
+  }, [chapters]);
+
+  // Retrieve Courier tool data for Step 3.6 overlay
+  const courierToolData = useMemo(() => {
+    if (!chapters) return null;
+    for (const ch of chapters) {
+      const step = ch.steps?.find((s: any) => s.step_key === "step_3_6");
+      if (step?.tool_data) return step.tool_data;
+    }
+    return null;
+  }, [chapters]);
+
   const filingMethod =
     state.metadata?.filingMethod || state.filingType || "online";
 
@@ -273,6 +419,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
         return <Scroll size={18} />;
       case "divorce":
         return <Scroll size={18} />;
+      case "pcc":
       case "police":
         return <ShieldCheck size={18} />;
       case "military":
@@ -319,6 +466,24 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
         return <FileText size={18} />;
       case "clipboard":
         return <ClipboardList size={18} />;
+      case "mail":
+        return <Mail size={18} />;
+      case "briefcase":
+        return <Briefcase size={18} />;
+      case "camera":
+      case "photos":
+        return <Camera size={18} />;
+      case "medical":
+      case "pulse":
+        return <Activity size={18} />;
+      case "syringe":
+      case "polio":
+        return <Syringe size={18} />;
+      case "hospital":
+      case "medical":
+        return <Hospital size={18} />;
+      case "copy":
+        return <Copy size={18} />;
       default:
         return iconKey;
     }
@@ -884,8 +1049,8 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
               Added in CEAC + relationship proof required
             </div>
             <div className="text-[13px] text-[#3a4f63] leading-relaxed">
-              A household member's income is used alongside the petitioner's.
-              Added through CEAC — and also requires{" "}
+              A household member&apos;s income is used alongside the
+              petitioner&apos;s. Added through CEAC — and also requires{" "}
               <strong>relationship-proof documentation</strong> showing their
               connection to the sponsoring household.
             </div>
@@ -1268,8 +1433,12 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
         const ceac = data.credentials.find(
           (c: PortalCredential) => c.portal_type.toUpperCase() === "NVC",
         );
+        const courier = data.credentials.find(
+          (c: PortalCredential) => c.portal_type.toUpperCase() === "COURIER",
+        );
         setUscisCredentials(uscis || null);
         setCeacCredentials(ceac || null);
+        setCourierCredentials(courier || null);
       }
     } catch (err) {
       console.error("Failed to fetch credentials:", err);
@@ -1349,7 +1518,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         credentialId,
-        portalType: "USCIS",
+        portalType: walletPortalType,
         type: "password",
       }),
     });
@@ -1366,7 +1535,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         credentialId,
-        portalType: "USCIS",
+        portalType: walletPortalType,
         type: "answer",
         questionId,
       }),
@@ -1383,7 +1552,9 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
       });
       if (!res.ok) throw new Error("Failed to delete");
       toast.success("Credentials deleted successfully!");
-      setUscisCredentials(null);
+      if (portalType === "USCIS") setUscisCredentials(null);
+      if (portalType === "NVC") setCeacCredentials(null);
+      if (portalType === "COURIER") setCourierCredentials(null);
       setIsWalletViewOpen(false);
     } catch {
       toast.error("Failed to delete credentials.");
@@ -1573,7 +1744,6 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
     }
   };
 
-
   const handleNavigate = (stepId: string) => {
     const activeChapters = data.chapters || (data as any).stages;
     for (let sIdx = 0; sIdx < activeChapters.length; sIdx++) {
@@ -1618,11 +1788,11 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
         <div className="w-full max-w-[720px] px-[24px] pt-[52px] pb-[96px] flex flex-col mx-auto">
           {/* Eyebrow */}
           <div className="flex items-center gap-[8px] mb-[6px] animate-in fade-in slide-in-from-top-2 duration-300">
-            <span className="text-[11px] font-[600] uppercase tracking-[0.12em] text-[#6b8097]">
+            <span className="text-[11px] font-semibold uppercase tracking-[0.12em] text-[#6b8097]">
               {data.eyebrow.chapter}
             </span>
             <span className="text-[11px] text-[#b8d4f0]">›</span>
-            <span className="text-[11px] font-[600] uppercase tracking-[0.08em] text-[#2f6fd4]">
+            <span className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#2f6fd4]">
               {data.eyebrow.step}
             </span>
           </div>
@@ -1696,7 +1866,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                   strokeWidth={1.7}
                 />
               </div>
-              <h3 className="text-[14px] font-[600] text-[#0c1b33]">
+              <h3 className="text-[14px] font-semibold text-[#0c1b33]">
                 {data.reviewItems.title}
               </h3>
             </div>
@@ -1725,7 +1895,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                     strokeWidth={1.7}
                   />
                 </div>
-                <h3 className="text-[14px] font-[600] text-[#0c1b33]">
+                <h3 className="text-[14px] font-semibold text-[#0c1b33]">
                   {data.whileYouWait.title}
                 </h3>
               </div>
@@ -1752,7 +1922,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                     strokeWidth={1.7}
                   />
                 </div>
-                <h3 className="text-[14px] font-[600] text-[#0c1b33]">
+                <h3 className="text-[14px] font-semibold text-[#0c1b33]">
                   {data.timeline.title}
                 </h3>
               </div>
@@ -1764,11 +1934,11 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                   {data.timeline.steps.map((step, i) => (
                     <div key={i} className="flex items-center gap-[8px]">
                       {step.status === "completed" ? (
-                        <div className="w-[12px] h-[12px] rounded-full bg-[#15744f] flex-shrink-0 z-10 ml-[-6px]" />
+                        <div className="w-[12px] h-[12px] rounded-full bg-[#15744f] shrink-0 z-10 ml-[-6px]" />
                       ) : step.status === "current" ? (
-                        <div className="w-[12px] h-[12px] rounded-full border-2 border-[#2f6fd4] bg-white flex-shrink-0 z-10 ml-[-6px] animate-pulse-custom" />
+                        <div className="w-[12px] h-[12px] rounded-full border-2 border-[#2f6fd4] bg-white shrink-0 z-10 ml-[-6px] animate-pulse-custom" />
                       ) : (
-                        <div className="w-[12px] h-[12px] rounded-full bg-[#d0e4f7] flex-shrink-0 z-10 ml-[-6px]" />
+                        <div className="w-[12px] h-[12px] rounded-full bg-[#d0e4f7] shrink-0 z-10 ml-[-6px]" />
                       )}
                       <span
                         className={`text-[12px] ${
@@ -1793,7 +1963,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
           <div className="bg-[#fef8e8] border-[1.5px] border-[#f0d98a] rounded-[16px] p-[18px_20px] mb-[16px] animate-in fade-in slide-in-from-top-2 duration-300 delay-[280ms]">
             <div className="flex items-center gap-[9px] mb-[10px]">
               <span className="text-[18px]">📋</span>
-              <h3 className="text-[14px] font-[600] text-[#8a6200]">
+              <h3 className="text-[14px] font-semibold text-[#8a6200]">
                 {data.correctionsAlert.title}
               </h3>
             </div>
@@ -1880,13 +2050,13 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
         <div className="w-full max-w-[680px] px-[24px] pb-[96px] flex flex-col">
           {/* Eyebrow / Breadcrumb Row */}
           <div className="flex items-center gap-[8px]">
-            <span className="text-[11px] font-[600] uppercase tracking-widest text-[#636b97]">
+            <span className="text-[11px] font-semibold uppercase tracking-widest text-[#636b97]">
               Chapter {currentChapter?.chapter_number || state.currentStage + 1}{" "}
               · {currentChapter?.chapter_name || currentChapter?.name}
             </span>
             <span className="text-[11px] text-[#b8d4f0]">›</span>
             <span
-              className={`text-[11px] font-[600] uppercase tracking-[0.08em] ${
+              className={`text-[11px] font-semibold uppercase tracking-[0.08em] ${
                 isBeneficiaryTheme ? "text-primary" : "text-primary"
               }`}
             >
@@ -1914,7 +2084,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
               <div className="flex-1 h-[1px] bg-linear-to-r from-[#d0e4f7] to-transparent" />
               <div className="inline-flex items-center gap-[6px] bg-[#e6f6f6] border border-[#9fd8d8] rounded-full px-[13px] py-[5px]">
                 <span className="w-[5px] h-[5px] rounded-full bg-[#0f7373]" />
-                <span className="text-[11px] font-[600] text-[#0f7373] tracking-[0.04em] whitespace-nowrap">
+                <span className="text-[11px] font-semibold text-[#0f7373] tracking-[0.04em] whitespace-nowrap">
                   Companion form to I-130 · Beneficiary spouse focus
                 </span>
               </div>
@@ -1928,7 +2098,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
               {tool.chips.map((chip: any, i: number) => (
                 <span
                   key={i}
-                  className={`text-[11px] font-[600] uppercase tracking-[0.06em] px-[12px] py-[5px] rounded-full border ${
+                  className={`text-[11px] font-semibold uppercase tracking-[0.06em] px-[12px] py-[5px] rounded-full border ${
                     chip.type === "role" || chip.role === "role"
                       ? isBeneficiaryTheme
                         ? "bg-[#e9f4ee] text-[#1a5f3f] border-[#b0dcc0]"
@@ -2442,27 +2612,27 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                     ].map((item, i) => (
                       <div
                         key={i}
-                        onClick={() => handleToggleSubmissionCheckS10(i)}
+                        onClick={() => handleToggleSubmissionCheck(i)}
                         className={`flex items-start gap-[10px] p-[9px_12px] rounded-[10px] cursor-pointer transition-all border-[1.5px] ${
-                          submissionChecklistStatusS10[i]
+                          submissionChecklistStatus[i]
                             ? "bg-[#e8f5ef] border-[#a8d9be]"
                             : "border-transparent hover:bg-[#eef3fa]"
                         }`}
                       >
                         <div
                           className={`w-[18px] h-[18px] rounded-[5px] border-[1.5px] flex items-center justify-center shrink-0 mt-[1px] ${
-                            submissionChecklistStatusS10[i]
+                            submissionChecklistStatus[i]
                               ? "bg-[#15744f] border-[#15744f]"
                               : "bg-white border-[#d0e4f7]"
                           }`}
                         >
-                          {submissionChecklistStatusS10[i] && (
+                          {submissionChecklistStatus[i] && (
                             <Check size={10} className="text-white" />
                           )}
                         </div>
                         <span
                           className={`text-[13px] leading-[1.45] ${
-                            submissionChecklistStatusS10[i]
+                            submissionChecklistStatus[i]
                               ? "text-[#0e5c3c]"
                               : "text-[#3a4f63]"
                           }`}
@@ -3430,7 +3600,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                     <span>
                       <strong>Keep your interview letter accessible.</strong>{" "}
                       You will need to bring the original to the consulate.
-                      Store a copy in Rahvana's Document Vault for easy
+                      Store a copy in Rahvana&apos;s Document Vault for easy
                       reference during preparation.
                     </span>
                   </div>
@@ -3575,17 +3745,2186 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                   </div>
                 </div>
               )}
+            </div>
+          )}
 
-              {/* <p className="text-[11.5px] text-[#6b8097] leading-[1.65] text-center pt-[4px] mt-[8px]">
-                {APPOINTMENT_RECEIVED_DATA.disclaimer}
-              </p> */}
+          {/* MEDICAL EXAMINATION (Step 3.1 SPECIFIC) */}
+          {tool.type === "medical_exam" && (
+            <div className="flex flex-col animate-in fade-in slide-in-from-bottom-2 duration-380 font-sans">
+              <div className="flex gap-1.5 flex-wrap mb-8">
+                {MEDICAL_EXAM_DATA.chips.map((chip, i) => (
+                  <span
+                    key={i}
+                    className={`text-[11px] font-semibold tracking-[0.06em] uppercase px-3 py-1.5 rounded-full whitespace-nowrap border ${
+                      chip.type === "med"
+                        ? "bg-[#e8f6f6] text-[#0d6b6b] border-[#9fd6d6]"
+                        : chip.type === "book"
+                          ? "bg-[#e8f1fb] text-[#2d4a6e] border-[#d0e4f7]"
+                          : "bg-[#f3f0fb] text-[#4a2d8a] border-[#c9bef2]"
+                    }`}
+                  >
+                    {chip.label}
+                  </span>
+                ))}
+              </div>
+
+              {!medSaved ? (
+                /* Decision module */
+                <div className="relative bg-[#0e1e38] rounded-[16px] border border-white/5 shadow-[0_20px_60px_rgba(12,27,51,0.18),0_4px_16px_rgba(12,27,51,0.12)] overflow-hidden mb-4">
+                  <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-[#0d6b6b] via-[#6aa8f0] to-transparent opacity-75" />
+                  <div className="p-[30px_32px_26px]">
+                    <div className="text-[10px] font-bold tracking-[0.12em] uppercase text-white/35 mb-1">
+                      {MEDICAL_EXAM_DATA.decisionModule.eyebrow}
+                    </div>
+                    <div
+                      className="text-[clamp(18px,2.6vw,22px)] text-white/92 leading-tight mb-5"
+                      style={{ fontFamily: "'DM Serif Display', serif" }}
+                    >
+                      {MEDICAL_EXAM_DATA.decisionModule.heading}
+                    </div>
+                    <div className="h-px bg-white/10 mb-5" />
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                      {MEDICAL_EXAM_DATA.decisionModule.paths.map((path) => (
+                        <div
+                          key={path.id}
+                          onClick={() => {
+                            setMedWizardMode(path.id as "service" | "guide");
+                            setMedWizardStep(0);
+                            setIsMedWizardOpen(true);
+                          }}
+                          className="bg-white/5 border border-white/10 rounded-[10px] p-[16px_16px_14px] cursor-pointer transition-all hover:bg-white/10 hover:border-white/20 hover:-translate-y-px active:translate-y-0"
+                        >
+                          <div className="text-[22px] mb-2">{path.icon}</div>
+                          <div className="text-[14px] font-semibold text-white/92 mb-1">
+                            {path.title}
+                          </div>
+                          <div className="text-[12px] text-white/55 leading-relaxed">
+                            {path.sub}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                /* Saved appointment card */
+                <div className="bg-[#e8f5ef] border-[1.5px] border-[#a8d9be] rounded-[16px] p-[20px_22px] mb-3.5 shadow-sm animate-in fade-in slide-in-from-top-2 duration-350">
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="text-[14px] font-semibold text-[#15744f]">
+                      {MEDICAL_EXAM_DATA.savedView.title}
+                    </div>
+                    <button
+                      onClick={() => {
+                        setMedSaved(false);
+                        setMedWizardMode("guide");
+                        setMedWizardStep(3); // Start at the form step
+                        setIsMedWizardOpen(true);
+                      }}
+                      className="text-[12px] font-semibold text-[#2f6fd4] bg-none border-none cursor-pointer p-0 hover:underline"
+                    >
+                      {MEDICAL_EXAM_DATA.savedView.button}
+                    </button>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 mb-2.5">
+                    <div>
+                      <div className="text-[11px] text-[#0e5c3c] font-medium mb-0.5">
+                        Appointment Date
+                      </div>
+                      <div className="text-[13px] font-bold text-[#0e5c3c]">
+                        {medDate
+                          ? new Date(medDate + "T00:00:00").toLocaleDateString(
+                              "en-US",
+                              {
+                                year: "numeric",
+                                month: "long",
+                                day: "numeric",
+                              },
+                            )
+                          : "—"}
+                      </div>
+                    </div>
+                    <div>
+                      <div className="text-[11px] text-[#0e5c3c] font-medium mb-0.5">
+                        Appointment Time
+                      </div>
+                      <div className="text-[13px] font-bold text-[#0e5c3c]">
+                        {medTime || "—"}
+                      </div>
+                    </div>
+                    <div className="sm:col-span-2">
+                      <div className="text-[11px] text-[#0e5c3c] font-medium mb-0.5">
+                        Clinic / Physician
+                      </div>
+                      <div className="text-[13px] font-bold text-[#0e5c3c]">
+                        {medClinic || "—"}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {medSaved && (
+                /* Reminder sync */
+                <div className="bg-[#e8f1fb] border-[1.5px] border-[#d0e4f7] rounded-[16px] p-[16px_20px] mb-3.5 flex items-start gap-3 shadow-sm">
+                  <div className="w-9 h-9 rounded-[9px] bg-white border border-[#d0e4f7] flex items-center justify-center shrink-0">
+                    <CheckCircle2 size={16} className="text-[#2f6fd4]" />
+                  </div>
+                  <div>
+                    <div className="text-[13px] font-semibold text-[#0c1b33] mb-0.5">
+                      {MEDICAL_EXAM_DATA.reminderSync.title}
+                    </div>
+                    <div className="text-[12px] text-[#3a4f63] leading-relaxed">
+                      {MEDICAL_EXAM_DATA.reminderSync.sub}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Selector Overlay Modal */}
+              {isMedWizardOpen && (
+                <div className="fixed inset-0 z-[200] bg-white flex flex-col overflow-hidden animate-in slide-in-from-bottom-[18px] duration-[0.28s] ease-in-out font-sans">
+                  {/* Topbar */}
+                  <div className="flex items-center p-[18px_24px] border-b border-[#d0e4f7] gap-4 shrink-0">
+                    <button
+                      onClick={() => setIsMedWizardOpen(false)}
+                      className="w-9 h-9 rounded-full border-none bg-[#f4f7fb] cursor-pointer flex items-center justify-center hover:bg-[#e8f1fb] transition-colors shrink-0"
+                    >
+                      <X size={16} strokeWidth={2} className="text-[#3a4f63]" />
+                    </button>
+                    <div className="flex-1 h-[5px] bg-[#d0e4f7] rounded-[10px] overflow-hidden">
+                      <div
+                        className="h-full bg-gradient-to-r from-primary to-primary/70 transition-all duration-400 ease-in-out"
+                        style={{
+                          width: `${((medWizardStep + 1) / (medWizardMode === "service" ? MEDICAL_EXAM_DATA.serviceSteps.length : MEDICAL_EXAM_DATA.guideSteps.length)) * 100}%`,
+                        }}
+                      />
+                    </div>
+                    <div className="text-[12px] font-medium text-[#6b8097] whitespace-nowrap shrink-0">
+                      {medWizardStep + 1} /{" "}
+                      {medWizardMode === "service"
+                        ? MEDICAL_EXAM_DATA.serviceSteps.length
+                        : MEDICAL_EXAM_DATA.guideSteps.length}
+                    </div>
+                  </div>
+
+                  {/* Body */}
+                  <div className="flex-1 overflow-y-auto flex flex-col items-center p-[48px_24px_40px]">
+                    <div className="w-full max-w-[540px]">
+                      {(() => {
+                        const steps =
+                          medWizardMode === "service"
+                            ? MEDICAL_EXAM_DATA.serviceSteps
+                            : MEDICAL_EXAM_DATA.guideSteps;
+                        const s = steps[medWizardStep];
+                        return (
+                          <>
+                            <div className="text-[11px] font-semibold tracking-[0.1em] uppercase text-[#2f6fd4] mb-3.5">
+                              {s.label}
+                            </div>
+                            <h2
+                              className="text-[clamp(20px,3.2vw,26px)] text-[#0c1b33] leading-tight mb-2"
+                              style={{
+                                fontFamily: "'DM Serif Display', serif",
+                              }}
+                            >
+                              {s.heading}
+                            </h2>
+                            <p className="text-[14px] text-[#3a4f63] leading-relaxed mb-6">
+                              {s.sub}
+                            </p>
+
+                            {/* Path-specific content */}
+                            {medWizardMode === "service" &&
+                              medWizardStep === 0 && (
+                                <div className="bg-white border-[1.5px] border-[#d0e4f7] rounded-[16px] p-5 mb-3.5 shadow-sm">
+                                  <div className="text-[12px] font-semibold tracking-[0.05em] uppercase text-[#6b8097] mb-2.5">
+                                    {s.card?.title}
+                                  </div>
+                                  <p className="text-[13px] text-[#3a4f63] leading-relaxed mb-3.5">
+                                    {s.card?.description}
+                                  </p>
+                                  <Link
+                                    href={
+                                      s.card?.buttonLabel ===
+                                      "Open Booking Service"
+                                        ? "/book-appointment"
+                                        : "#"
+                                    }
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="w-full p-3.5 bg-primary text-white border-none rounded-[10px] text-[15px] font-semibold cursor-pointer transition-all flex items-center justify-center gap-2 shadow-[0_4px_20px_rgba(47,111,212,0.35)] hover:bg-primary/70 hover:-translate-y-px hover:shadow-[0_8px_32px_rgba(47,111,212,0.45)] no-underline"
+                                  >
+                                    <ExternalLink size={15} strokeWidth={2} />
+                                    {s.card?.buttonLabel}
+                                  </Link>
+                                </div>
+                              )}
+
+                            {"info" in s && s.info && (
+                              <div className="bg-[#e8f1fb] border border-[#d0e4f7] rounded-[10px] p-[14px_16px] font-size-[13px] text-[#3a4f63] leading-relaxed mb-3.5">
+                                {s.info as string}
+                              </div>
+                            )}
+
+                            {"alert" in s && s.alert && (
+                              <div className="bg-[#fef8e8] border border-[#f0d98a] rounded-[10px] p-[14px_16px] text-[13px] color-[#8a6200] leading-relaxed mb-3.5">
+                                <span
+                                  dangerouslySetInnerHTML={{
+                                    __html: (s.alert as string).replace(
+                                      /\*\*(.*?)\*\*/g,
+                                      "<strong>$1</strong>",
+                                    ),
+                                  }}
+                                />
+                              </div>
+                            )}
+
+                            {"form" in s && s.form && (
+                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3.5">
+                                <div className="flex flex-col gap-1.5">
+                                  <label className="text-[11px] font-semibold tracking-[0.04em] uppercase text-[#6b8097]">
+                                    Appointment Date
+                                  </label>
+                                  <input
+                                    type="date"
+                                    value={medDate}
+                                    onChange={(e) => setMedDate(e.target.value)}
+                                    className="p-[10px_12px] border-[1.5px] border-[#d0e4f7] rounded-[10px] text-[14px] text-[#1c2b3a] bg-white outline-none focus:border-[#2f6fd4] focus:shadow-[0_0_0_3px_rgba(47,111,212,0.12)] transition-all"
+                                  />
+                                </div>
+                                <div className="flex flex-col gap-1.5">
+                                  <label className="text-[11px] font-semibold tracking-[0.04em] uppercase text-[#6b8097]">
+                                    Appointment Time
+                                  </label>
+                                  <input
+                                    type="time"
+                                    value={medTime}
+                                    onChange={(e) => setMedTime(e.target.value)}
+                                    className="p-[10px_12px] border-[1.5px] border-[#d0e4f7] rounded-[10px] text-[14px] text-[#1c2b3a] bg-white outline-none focus:border-[#2f6fd4] focus:shadow-[0_0_0_3px_rgba(47,111,212,0.12)] transition-all"
+                                  />
+                                </div>
+                                <div className="sm:col-span-2 flex flex-col gap-1.5">
+                                  <label className="text-[11px] font-semibold tracking-[0.04em] uppercase text-[#6b8097]">
+                                    Clinic / Physician Name
+                                  </label>
+                                  <input
+                                    type="text"
+                                    placeholder="e.g. Dr. Ahmed Khan — Islamabad Medical Center"
+                                    value={medClinic}
+                                    onChange={(e) =>
+                                      setMedClinic(e.target.value)
+                                    }
+                                    className="p-[10px_12px] border-[1.5px] border-[#d0e4f7] rounded-[10px] text-[14px] text-[#1c2b3a] bg-white outline-none focus:border-[#2f6fd4] focus:shadow-[0_0_0_3px_rgba(47,111,212,0.12)] transition-all"
+                                  />
+                                </div>
+                              </div>
+                            )}
+
+                            {/* Nav */}
+                            <div className="flex gap-2.5">
+                              {s.nav.back && (
+                                <button
+                                  onClick={() => setMedWizardStep((v) => v - 1)}
+                                  className="p-[12px_20px] bg-transparent border-[1.5px] border-[#d0e4f7] rounded-[10px] text-[14px] font-medium text-[#3a4f63] cursor-pointer transition-all hover:border-[#3a4f63] hover:text-[#0c1b33]"
+                                >
+                                  ← Back
+                                </button>
+                              )}
+                              {s.nav.save ? (
+                                <button
+                                  onClick={() => {
+                                    if (!medDate) {
+                                      toast.error(
+                                        "Please provide appointment date",
+                                      );
+                                      return;
+                                    }
+                                    setMedSaved(true);
+                                    actions.updateMetadata({
+                                      med_appt_saved: "true",
+                                      med_date: medDate,
+                                      med_time: medTime,
+                                      med_clinic: medClinic,
+                                    });
+                                    setIsMedWizardOpen(false);
+                                    toast.success("Medical appointment saved!");
+                                  }}
+                                  className="flex-1 p-[12px_20px] bg-[#15744f] text-white border-none rounded-[10px] text-[14px] font-semibold cursor-pointer transition-all hover:bg-[#0e5c3c] hover:-translate-y-px active:translate-y-0"
+                                >
+                                  Save & Activate Reminder
+                                </button>
+                              ) : (
+                                <button
+                                  onClick={() => setMedWizardStep((v) => v + 1)}
+                                  className="flex-1 p-[12px_20px] bg-primary text-white border-none rounded-[10px] text-[14px] font-semibold cursor-pointer transition-all hover:bg-primary/70 hover:-translate-y-px active:translate-y-0"
+                                >
+                                  {s.nav.next}
+                                </button>
+                              )}
+                            </div>
+                          </>
+                        );
+                      })()}
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* POLIO VACCINATION CERTIFICATE (Step 3.2 SPECIFIC) */}
+          {tool.type === "polio_certificate" && (
+            <div className="flex flex-col animate-in fade-in slide-in-from-bottom-2 duration-380 font-sans">
+              <div className="flex gap-1.5 flex-wrap mb-8">
+                {POLIO_CERTIFICATE_DATA.chips.map((chip, i) => (
+                  <span
+                    key={i}
+                    className={`text-[11px] font-semibold tracking-[0.06em] uppercase px-3 py-1.5 rounded-full whitespace-nowrap border ${
+                      chip.type === "med"
+                        ? "bg-[#e8f6f6] text-[#0d6b6b] border-[#9fd6d6]"
+                        : chip.type === "req"
+                          ? "bg-[#fef8e8] text-[#8a6200] border-[#f0d98a]"
+                          : "bg-[#e8f1fb] text-[#2d4a6e] border-[#d0e4f7]"
+                    }`}
+                  >
+                    {chip.label}
+                  </span>
+                ))}
+              </div>
+
+              {/* Launch module */}
+              <div className="relative bg-[#0e1e38] rounded-[16px] border border-white/5 shadow-[0_20px_60px_rgba(12,27,51,0.18),0_4px_16px_rgba(12,27,51,0.12)] overflow-hidden mb-4">
+                <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-[#15744f] via-[#6aa8f0] to-transparent opacity-75" />
+                <div className="p-7.5 sm:p-[30px_32px_26px]">
+                  <div className="text-[10px] font-bold tracking-[0.12em] uppercase text-white/35 mb-1">
+                    {POLIO_CERTIFICATE_DATA.launchModule.eyebrow}
+                  </div>
+                  <div
+                    className="text-[clamp(18px,2.6vw,22px)] text-white/92 leading-tight mb-5"
+                    style={{ fontFamily: "'DM Serif Display', serif" }}
+                  >
+                    {POLIO_CERTIFICATE_DATA.launchModule.heading}
+                  </div>
+                  <div className="h-px bg-white/10 mb-5" />
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-5.5">
+                    {POLIO_CERTIFICATE_DATA.launchModule.cues.map((cue, i) => (
+                      <div
+                        key={i}
+                        className="bg-white/5 border border-white/10 rounded-[10px] p-[10px_12px] flex items-start gap-2"
+                      >
+                        <div className="w-[5px] h-[5px] rounded-full bg-[#6aa8f0]/70 shrink-0 mt-1.5" />
+                        <div className="text-[13px] text-white/55 leading-relaxed">
+                          {cue}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  <button
+                    onClick={() => {
+                      if (!polioLaunched) {
+                        setPolioGuideStep(0);
+                        setIsPolioGuideOpen(true);
+                      }
+                    }}
+                    className={`w-full p-[15px_24px] rounded-[11px] text-[15px] font-semibold cursor-pointer transition-all flex items-center justify-center gap-2.5 ${
+                      polioLaunched
+                        ? "bg-[#3b7dd8] text-white/90 shadow-[0_4px_20px_rgba(14,92,60,0.3)] pointer-events-none"
+                        : "bg-[#3b7dd8] text-white shadow-[0_4px_20px_rgba(47,111,212,0.35)] hover:bg-[#3b7dd8] hover:-translate-y-px hover:shadow-[0_8px_32px_rgba(47,111,212,0.45)] active:translate-y-0"
+                    }`}
+                  >
+                    <span>
+                      {polioLaunched
+                        ? POLIO_CERTIFICATE_DATA.launchModule.buttonLabels
+                            .completed
+                        : POLIO_CERTIFICATE_DATA.launchModule.buttonLabels
+                            .initial}
+                    </span>
+                    {polioLaunched ? (
+                      <CheckCircle2 size={16} />
+                    ) : (
+                      <ArrowRight size={16} />
+                    )}
+                  </button>
+                  <div
+                    className={`flex items-center justify-center gap-1.5 text-[12px] text-center mt-2.5 transition-all duration-380 ${
+                      polioLaunched ? "text-[#a8d9be]/80" : "text-white/35"
+                    }`}
+                  >
+                    <Info size={11} />
+                    <span>
+                      {polioLaunched
+                        ? POLIO_CERTIFICATE_DATA.launchModule.note.completed
+                        : POLIO_CERTIFICATE_DATA.launchModule.note.initial}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Return note */}
+              {polioLaunched && (
+                <div className="bg-[#e8f5ef] border-[1.5px] border-[#a8d9be] rounded-[10px] p-[14px_18px] flex items-start gap-3 mb-3.5 animate-in fade-in slide-in-from-top-2 duration-380">
+                  <div className="shrink-0 mt-0.5">
+                    <CheckCircle2 size={18} className="text-[#15744f]" />
+                  </div>
+                  <div>
+                    <div className="text-[13px] font-semibold text-[#15744f]">
+                      {POLIO_CERTIFICATE_DATA.returnNote.title}
+                    </div>
+                    <div className="text-[12px] text-[#3a4f63] leading-relaxed">
+                      {POLIO_CERTIFICATE_DATA.returnNote.sub}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Completion card */}
+              <div className="bg-white border-[1.5px] border-[#d0e4f7] rounded-[16px] p-[20px_22px] mb-3.5 shadow-sm">
+                <div className="text-[14px] font-semibold text-[#0c1b33] mb-3.5">
+                  {POLIO_CERTIFICATE_DATA.completionCard.title}
+                </div>
+                <div className="flex flex-col gap-2">
+                  {POLIO_CERTIFICATE_DATA.completionCard.items.map(
+                    (item, i) => (
+                      <div
+                        key={i}
+                        onClick={() => {
+                          const next = [...polioChecks];
+                          next[i] = !next[i];
+                          setPolioChecks(next);
+                          actions.updateMetadata({ polio_checks: next });
+                        }}
+                        className={`flex items-center gap-3 p-[10px_12px] rounded-[10px] cursor-pointer transition-all border-[1.5px] select-none ${
+                          polioChecks[i]
+                            ? "bg-[#e8f5ef] border-[#a8d9be]"
+                            : "bg-transparent border-transparent hover:bg-[#eef3fa]"
+                        }`}
+                      >
+                        <div
+                          className={`w-[18px] h-[18px] rounded-[5px] border-[1.5px] flex items-center justify-center transition-all ${
+                            polioChecks[i]
+                              ? "bg-[#15744f] border-[#15744f]"
+                              : "bg-white border-[#d0e4f7]"
+                          }`}
+                        >
+                          {polioChecks[i] && (
+                            <Check size={10} strokeWidth={3.5} color="white" />
+                          )}
+                        </div>
+                        <span
+                          className={`text-[13px] leading-relaxed ${
+                            polioChecks[i]
+                              ? "text-[#0e5c3c] font-medium"
+                              : "text-[#3a4f63]"
+                          }`}
+                        >
+                          {item}
+                        </span>
+                      </div>
+                    ),
+                  )}
+                </div>
+              </div>
+
+              {/* Guide Overlay Modal */}
+              {isPolioGuideOpen && (
+                <div className="fixed inset-0 z-[200] bg-white flex flex-col overflow-hidden animate-in slide-in-from-bottom-[18px] duration-[0.28s] ease-in-out font-sans">
+                  {/* Topbar */}
+                  <div className="flex items-center p-[18px_24px] border-b border-[#d0e4f7] gap-4 shrink-0">
+                    <button
+                      onClick={() => setIsPolioGuideOpen(false)}
+                      className="w-9 h-9 rounded-full border-none bg-[#f4f7fb] cursor-pointer flex items-center justify-center hover:bg-[#e8f1fb] transition-colors shrink-0"
+                    >
+                      <X size={16} strokeWidth={2} className="text-[#3a4f63]" />
+                    </button>
+                    <div className="flex-1 h-[5px] bg-[#d0e4f7] rounded-[10px] overflow-hidden">
+                      <div
+                        className="h-full bg-linear-to-r from-primary to-primary/70 transition-all duration-400 ease-in-out"
+                        style={{
+                          width: `${((polioGuideStep + 1) / POLIO_CERTIFICATE_DATA.guideSteps.length) * 100}%`,
+                        }}
+                      />
+                    </div>
+                    <div className="text-[12px] font-medium text-[#6b8097] whitespace-nowrap shrink-0">
+                      {polioGuideStep + 1} /{" "}
+                      {POLIO_CERTIFICATE_DATA.guideSteps.length}
+                    </div>
+                  </div>
+
+                  {/* Body */}
+                  <div className="flex-1 overflow-y-auto flex flex-col items-center p-[48px_24px_40px]">
+                    <div className="w-full max-w-[560px]">
+                      {(() => {
+                        const s =
+                          POLIO_CERTIFICATE_DATA.guideSteps[polioGuideStep];
+                        const isFirst = polioGuideStep === 0;
+                        const isLast =
+                          polioGuideStep ===
+                          POLIO_CERTIFICATE_DATA.guideSteps.length - 1;
+                        return (
+                          <>
+                            <div className="text-[11px] font-semibold tracking-[0.1em] uppercase text-primary mb-3.5">
+                              Polio Vaccination Guide · {s.label}
+                            </div>
+                            <h2
+                              className="text-[clamp(20px,3.2vw,26px)] text-[#0c1b33] leading-tight mb-2"
+                              style={{
+                                fontFamily: "'DM Serif Display', serif",
+                              }}
+                            >
+                              {s.heading}
+                            </h2>
+                            <p className="text-[14px] text-[#3a4f63] leading-relaxed mb-4.5">
+                              {s.instruction}
+                            </p>
+
+                            <div className="bg-white border-[1.5px] border-[#d0e4f7] rounded-[10px] overflow-hidden mb-4.5 shadow-[0_2px_12px_rgba(12,27,51,0.06)]">
+                              <div className="bg-[#eef3fa] border-b border-[#d0e4f7] p-[10px_14px] flex items-center gap-1.5">
+                                <div className="w-[9px] h-[9px] rounded-full bg-[#f87171]" />
+                                <div className="w-[9px] h-[9px] rounded-full bg-[#fbbf24]" />
+                                <div className="w-[9px] h-[9px] rounded-full bg-[#34d399]" />
+                                <div className="text-[10px] font-semibold tracking-[0.07em] uppercase text-[#6b8097] ml-auto">
+                                  {s.vLabel}
+                                </div>
+                              </div>
+                              <div className="p-4.5">
+                                {s.visual.completed ? (
+                                  <div className="bg-[#e8f5ef] border border-[#a8d9be] rounded-[10px] p-4 flex items-start gap-3">
+                                    <div className="w-7 h-7 rounded-full bg-[#15744f] flex items-center justify-center shrink-0">
+                                      <Check
+                                        size={13}
+                                        strokeWidth={3}
+                                        color="white"
+                                      />
+                                    </div>
+                                    <div>
+                                      <div className="text-[13px] font-semibold text-[#15744f] mb-1">
+                                        {s.visual.title}
+                                      </div>
+                                      <div className="text-[12px] text-[#3a4f63] leading-relaxed">
+                                        {s.visual.sub}
+                                      </div>
+                                    </div>
+                                  </div>
+                                ) : (
+                                  <div className="bg-[#f4f7fb] border border-[#d0e4f7] rounded-[10px] p-[14px_16px]">
+                                    <div className="text-[14px] font-semibold text-[#0c1b33] mb-2">
+                                      {s.visual.title}
+                                    </div>
+                                    {s.visual.sub ? (
+                                      <div className="text-[13px] text-[#3a4f63] leading-relaxed">
+                                        {s.visual.sub}
+                                      </div>
+                                    ) : (
+                                      <div className="flex flex-col gap-2 mt-2">
+                                        {s.visual.items?.map((item, i) => (
+                                          <div
+                                            key={i}
+                                            className="flex gap-2 text-[13px] text-[#3a4f63]"
+                                          >
+                                            <span className="text-primary">
+                                              ✓
+                                            </span>
+                                            <span>{item}</span>
+                                          </div>
+                                        ))}
+                                      </div>
+                                    )}
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+
+                            {s.note && (
+                              <div className="bg-[#fef8e8] border border-[#f0d98a] rounded-[10px] p-[11px_14px] text-[13px] color-[#8a6200] leading-relaxed mb-5">
+                                {s.note}
+                              </div>
+                            )}
+
+                            <div className="flex gap-2.5">
+                              {!isFirst && (
+                                <button
+                                  onClick={() =>
+                                    setPolioGuideStep((v) => v - 1)
+                                  }
+                                  className="p-[12px_20px] bg-transparent border-[1.5px] border-[#d0e4f7] rounded-[10px] text-[14px] font-medium text-[#3a4f63] cursor-pointer transition-all hover:border-[#3a4f63] hover:text-[#0c1b33]"
+                                >
+                                  ← Back
+                                </button>
+                              )}
+                              <button
+                                onClick={() => {
+                                  if (isLast) {
+                                    setPolioLaunched(true);
+                                    actions.updateMetadata({
+                                      polio_launched: "true",
+                                    });
+                                    setIsPolioGuideOpen(false);
+                                  } else {
+                                    setPolioGuideStep((v) => v + 1);
+                                  }
+                                }}
+                                className={`flex-1 p-[12px_20px] rounded-[10px] text-[14px] font-semibold cursor-pointer transition-all hover:-translate-y-px active:translate-y-0 ${
+                                  isLast
+                                    ? "bg-[#15744f] text-white hover:bg-[#0e5c3c]"
+                                    : "bg-primary text-white hover:bg-primary/70"
+                                }`}
+                              >
+                                {isLast ? "Done — return to step" : "Next →"}
+                              </button>
+                            </div>
+                          </>
+                        );
+                      })()}
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* POLICE CLEARANCE CERTIFICATE (Step 3.3 SPECIFIC) */}
+          {tool.type === "police_clearance" && (
+            <div className="flex flex-col animate-in fade-in slide-in-from-bottom-2 duration-380 font-sans">
+              <div className="flex items-center gap-1.5 flex-wrap mb-8">
+                {POLICE_CLEARANCE_DATA.chips.map((chip, i) => (
+                  <span
+                    key={i}
+                    className={`text-[11px] font-semibold tracking-[0.06em] uppercase px-3 py-1.5 rounded-full whitespace-nowrap border ${
+                      chip.type === "pcc"
+                        ? "bg-[#e8f1fb] text-[#2d4a6e] border-[#d0e4f7]"
+                        : chip.type === "track"
+                          ? "bg-[#f3f0fb] text-[#4a2d8a] border-[#c9bef2]"
+                          : "bg-[#fef8e8] text-[#8a6200] border-[#f0d98a]"
+                    }`}
+                  >
+                    {chip.label}
+                  </span>
+                ))}
+              </div>
+
+              {/* Decision Module */}
+              <div className="relative bg-[#0e1e38] rounded-[16px] border border-white/5 shadow-[0_20px_60px_rgba(12,27,51,0.18),0_4px_16px_rgba(12,27,51,0.12)] overflow-hidden mb-4">
+                <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-[#2f6fd4] via-[#6aa8f0] to-transparent opacity-75" />
+                <div className="p-7.5 sm:p-[30px_32px_26px]">
+                  <div className="text-[10px] font-bold tracking-[0.12em] uppercase text-white/35 mb-1">
+                    {POLICE_CLEARANCE_DATA.decisionModule.eyebrow}
+                  </div>
+                  <div
+                    className="text-[clamp(18px,2.6vw,22px)] text-white/92 leading-tight mb-5"
+                    style={{ fontFamily: "'DM Serif Display', serif" }}
+                  >
+                    {POLICE_CLEARANCE_DATA.decisionModule.heading}
+                  </div>
+                  <div className="h-px bg-white/10 mb-5" />
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                    {POLICE_CLEARANCE_DATA.decisionModule.paths.map(
+                      (path, i) => (
+                        <div
+                          key={i}
+                          onClick={() => {
+                            setPccOverlayMode(path.id as any);
+                            setPccOverlayStep(0);
+                            setIsPccOverlayOpen(true);
+                          }}
+                          className="bg-white/5 border border-white/10 rounded-[10px] p-4 cursor-pointer transition-all hover:bg-white/[0.1] hover:border-white/[0.18] hover:-translate-y-px active:translate-y-0 group"
+                        >
+                          <div className="text-2xl mb-2">{path.icon}</div>
+                          <div className="text-[14px] font-semibold text-white/95 mb-1 group-hover:text-white">
+                            {path.title}
+                          </div>
+                          <div className="text-[12px] text-white/55 leading-relaxed">
+                            {path.sub}
+                          </div>
+                          {path.note && (
+                            <div className="text-[11px] text-[#ffc864]/75 mt-1.5 italic">
+                              {path.note}
+                            </div>
+                          )}
+                        </div>
+                      ),
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Tracking Card */}
+              <div className="bg-white border-[1.5px] border-[#d0e4f7] rounded-[16px] p-[20px_22px] mb-3.5 shadow-sm">
+                <div className="flex items-center gap-2.5 mb-3.5">
+                  <div className="w-9 h-9 rounded-[9px] bg-[#e8f1fb] border border-[#d0e4f7] flex items-center justify-center shrink-0">
+                    <Search size={17} className="text-primary" />
+                  </div>
+                  <div className="text-[14px] font-semibold text-[#0c1b33]">
+                    {POLICE_CLEARANCE_DATA.trackingCard.title}
+                  </div>
+                </div>
+
+                {pccSaved && (
+                  <div className="bg-[#e8f1fb] border-[1.5px] border-[#d0e4f7] rounded-[10px] p-3.5 mb-3 animate-in fade-in slide-in-from-top-2 duration-300">
+                    <div className="text-[10px] font-bold tracking-[0.08em] uppercase text-[#2d4a6e] mb-2">
+                      Application Recorded
+                    </div>
+                    <div className="flex flex-col gap-1.5">
+                      <div className="flex justify-between items-center text-[13px]">
+                        <span className="text-[#6b8097]">
+                          Receipt / Reference
+                        </span>
+                        <span className="font-semibold font-mono text-[#0c1b33]">
+                          {pccData.receipt}
+                        </span>
+                      </div>
+                      {pccData.track && (
+                        <div className="flex justify-between items-center text-[13px]">
+                          <span className="text-[#6b8097]">
+                            Tracking Number
+                          </span>
+                          <span className="font-semibold font-mono text-[#0c1b33]">
+                            {pccData.track}
+                          </span>
+                        </div>
+                      )}
+                      <div className="flex justify-between items-center text-[13px]">
+                        <span className="text-[#6b8097]">Application Date</span>
+                        <span className="font-semibold font-mono text-[#0c1b33]">
+                          {pccData.date || "—"}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3.5">
+                  {POLICE_CLEARANCE_DATA.trackingCard.fields.map((f, i) => (
+                    <div
+                      key={f.id}
+                      className={`flex flex-col gap-1.5 ${f.id === "receipt" ? "sm:col-span-1" : ""}`}
+                    >
+                      <label className="text-[11px] font-semibold tracking-[0.04em] uppercase text-[#6b8097]">
+                        {f.label}
+                      </label>
+                      <input
+                        type={f.id === "date" ? "date" : "text"}
+                        placeholder={
+                          f.id === "receipt"
+                            ? "e.g. 2024-PKN-XXXXX"
+                            : f.id === "track"
+                              ? "Optional"
+                              : ""
+                        }
+                        value={(pccData as any)[f.id]}
+                        onChange={(e) => {
+                          const next = { ...pccData, [f.id]: e.target.value };
+                          setPccData(next);
+                        }}
+                        className="p-[10px_12px] border-[1.5px] border-[#d0e4f7] rounded-[10px] text-[14px] outline-none focus:border-primary focus:shadow-[0_0_0_3px_rgba(47,111,212,0.12)] transition-all"
+                      />
+                    </div>
+                  ))}
+                </div>
+
+                <button
+                  onClick={() => {
+                    if (!pccData.receipt) {
+                      toast.error("Receipt number is required");
+                      return;
+                    }
+                    setPccSaved(true);
+                    actions.updateMetadata({
+                      pcc_saved: "true",
+                      pcc_receipt: pccData.receipt,
+                      pcc_track: pccData.track,
+                      pcc_date: pccData.date,
+                    });
+                    toast.success("Application details saved!");
+                  }}
+                  className="w-full p-[13px_24px] bg-primary text-white border-none rounded-[10px] text-[14px] font-semibold cursor-pointer transition-all hover:bg-primary/70 hover:-translate-y-px active:translate-y-0"
+                >
+                  {POLICE_CLEARANCE_DATA.trackingCard.buttonLabel}
+                </button>
+              </div>
+
+              {/* Pending Reminder Card */}
+              {pccSaved && !pccReceived && (
+                <div className="bg-[#fef8e8] border-[1.5px] border-[#f0d98a] rounded-[16px] p-4.5 sm:p-5 mb-3.5 animate-in fade-in slide-in-from-top-2 duration-380 shadow-sm">
+                  <div className="flex items-center gap-2.5 mb-2.5">
+                    <span className="text-[18px]">📌</span>
+                    <div className="text-[14px] font-semibold text-[#8a6200]">
+                      {POLICE_CLEARANCE_DATA.pendingCard.title}
+                    </div>
+                  </div>
+                  <div className="text-[13px] text-[#8a6200] leading-relaxed mb-4">
+                    {POLICE_CLEARANCE_DATA.pendingCard.body}
+                  </div>
+                  <button
+                    onClick={() => {
+                      setPccReceived(true);
+                      actions.updateMetadata({ pcc_received: "true" });
+                      toast.success("Police certificate marked as received!");
+                    }}
+                    className="w-full p-[11px_18px] bg-[#15744f] text-white border-none rounded-[10px] text-[13px] font-semibold cursor-pointer transition-all hover:bg-[#0e5c3c]"
+                  >
+                    {POLICE_CLEARANCE_DATA.pendingCard.buttonLabel}
+                  </button>
+                </div>
+              )}
+
+              {/* Received Card */}
+              {pccReceived && (
+                <div className="bg-[#e8f5ef] border-[1.5px] border-[#a8d9be] rounded-[16px] p-4.5 sm:p-5 mb-3.5 animate-in fade-in slide-in-from-top-2 duration-380 shadow-sm">
+                  <div className="flex items-center gap-2.5 mb-3">
+                    <span className="text-[18px]">✅</span>
+                    <div className="text-[14px] font-semibold text-[#15744f]">
+                      {POLICE_CLEARANCE_DATA.receivedCard.title}
+                    </div>
+                  </div>
+                  <div className="text-[13px] text-[#0e5c3c] leading-relaxed mb-4">
+                    {POLICE_CLEARANCE_DATA.receivedCard.body}
+                  </div>
+                  <Link
+                    href={POLICE_CLEARANCE_DATA.receivedCard.vaultUrl}
+                    target="_blank"
+                    className="inline-flex items-center gap-2.5 p-[11px_18px] bg-[#15744f] text-white border-none rounded-[10px] text-[13px] font-semibold cursor-pointer transition-all hover:bg-[#0e5c3c] no-underline"
+                  >
+                    <Upload size={14} color="white" strokeWidth={2.5} />
+                    {POLICE_CLEARANCE_DATA.receivedCard.buttonLabel}
+                  </Link>
+                </div>
+              )}
+
+              {/* PCC Path Overlay Modal */}
+              {isPccOverlayOpen && (
+                <div className="fixed inset-0 z-[200] bg-white flex flex-col overflow-hidden animate-in slide-in-from-bottom-[18px] duration-[0.28s] ease-in-out font-sans">
+                  {/* Topbar */}
+                  <div className="flex items-center p-[18px_24px] border-b border-[#d0e4f7] gap-4 shrink-0">
+                    <button
+                      onClick={() => setIsPccOverlayOpen(false)}
+                      className="w-9 h-9 rounded-full border-none bg-[#f4f7fb] cursor-pointer flex items-center justify-center hover:bg-[#e8f1fb] transition-colors shrink-0"
+                    >
+                      <X size={16} strokeWidth={2} className="text-[#3a4f63]" />
+                    </button>
+                    <div className="flex-1 h-[5px] bg-[#d0e4f7] rounded-[10px] overflow-hidden">
+                      <div
+                        className="h-full bg-linear-to-r from-primary to-primary/70 transition-all duration-400 ease-in-out"
+                        style={{
+                          width: `${
+                            ((pccOverlayStep + 1) /
+                              (pccOverlayMode === "service"
+                                ? POLICE_CLEARANCE_DATA.serviceSteps.length
+                                : POLICE_CLEARANCE_DATA.guideSteps.length)) *
+                            100
+                          }%`,
+                        }}
+                      />
+                    </div>
+                    <div className="text-[12px] font-medium text-[#6b8097] whitespace-nowrap shrink-0">
+                      {pccOverlayStep + 1} /{" "}
+                      {pccOverlayMode === "service"
+                        ? POLICE_CLEARANCE_DATA.serviceSteps.length
+                        : POLICE_CLEARANCE_DATA.guideSteps.length}
+                    </div>
+                  </div>
+
+                  {/* Body */}
+                  <div className="flex-1 overflow-y-auto flex flex-col items-center p-[48px_24px_40px]">
+                    <div className="w-full max-w-[540px]">
+                      {(() => {
+                        const steps =
+                          pccOverlayMode === "service"
+                            ? POLICE_CLEARANCE_DATA.serviceSteps
+                            : POLICE_CLEARANCE_DATA.guideSteps;
+                        const s = steps[pccOverlayStep];
+                        const isFirst = pccOverlayStep === 0;
+                        const isLast = pccOverlayStep === steps.length - 1;
+
+                        return (
+                          <>
+                            <div className="text-[11px] font-semibold tracking-[0.1em] uppercase text-primary mb-3.5">
+                              {s.label}
+                            </div>
+                            <h2
+                              className="text-[clamp(20px,3.2vw,26px)] text-[#0c1b33] leading-tight mb-2"
+                              style={{
+                                fontFamily: "'DM Serif Display', serif",
+                              }}
+                            >
+                              {s.heading}
+                            </h2>
+                            <p className="text-[14px] text-[#3a4f63] leading-relaxed mb-5">
+                              {s.instruction}
+                            </p>
+
+                            {s.info && (
+                              <div className="bg-[#e8f1fb] border border-[#d0e4f7] rounded-[10px] p-[14px_16px] text-[13px] text-[#3a4f63] leading-relaxed mb-4 whitespace-pre-line">
+                                {s.info}
+                              </div>
+                            )}
+
+                            {s.warn && (
+                              <div className="bg-[#fef8e8] border border-[#f0d98a] rounded-[10px] p-[13px_15px] text-[13px] text-[#8a6200] leading-relaxed mb-4">
+                                {s.warn}
+                              </div>
+                            )}
+
+                            {(s as any).guideUrl && (
+                              <Link
+                                href={(s as any).guideUrl}
+                                target="_blank"
+                                className="block text-[14px] font-semibold text-primary mb-5 no-underline hover:underline"
+                              >
+                                Open Full PCC Guide →
+                              </Link>
+                            )}
+
+                            <div className="flex gap-2.5 mt-2">
+                              {s.nav.back && (
+                                <button
+                                  onClick={() =>
+                                    setPccOverlayStep((v) => v - 1)
+                                  }
+                                  className="p-[12px_20px] bg-transparent border-[1.5px] border-[#d0e4f7] rounded-[10px] text-[14px] font-medium text-[#3a4f63] cursor-pointer transition-all hover:border-[#3a4f63] hover:text-[#0c1b33]"
+                                >
+                                  ← Back
+                                </button>
+                              )}
+                              <button
+                                onClick={() => {
+                                  if (isLast) {
+                                    setIsPccOverlayOpen(false);
+                                  } else {
+                                    setPccOverlayStep((v) => v + 1);
+                                  }
+                                }}
+                                className={`flex-1 p-[12px_20px] rounded-[10px] text-[14px] font-semibold cursor-pointer transition-all hover:-translate-y-px active:translate-y-0 ${
+                                  isLast
+                                    ? "bg-[#15744f] text-white hover:bg-[#0e5c3c]"
+                                    : "bg-primary text-white hover:bg-primary/70"
+                                }`}
+                              >
+                                {isLast
+                                  ? "Return to tracking →"
+                                  : (s.nav.next ?? "Next →")}
+                              </button>
+                            </div>
+                          </>
+                        );
+                      })()}
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* GATHER ORIGINAL DOCUMENTS (Step 3.4 SPECIFIC) */}
+          {tool.type === "gathering_checklist" && (
+            <div className="flex flex-col animate-in fade-in slide-in-from-bottom-2 duration-380 font-sans">
+              {/* Progress Row */}
+              {(() => {
+                const groups = tool.doc_gathering?.groups || [];
+                const allItems = groups.flatMap((g) => g.items);
+                const total = allItems.length;
+                const rev = allItems.filter(
+                  (it) => gatheringStatus[it.id] === "reviewed",
+                ).length;
+                const pct = total > 0 ? (rev / total) * 100 : 0;
+
+                return (
+                  <div className="flex items-center gap-[12px] mb-[36px]">
+                    <div className="flex-1 h-[5px] bg-[#d0e4f7] rounded-[10px] overflow-hidden">
+                      <div
+                        className="h-full bg-linear-to-r from-primary to-primary/70 rounded-[10px] transition-all duration-500 ease-in-out"
+                        style={{ width: `${pct}%` }}
+                      />
+                    </div>
+                    <div className="text-[12px] font-[500] text-[#6b8097] whitespace-nowrap shrink-0">
+                      {rev} of {total} packed
+                    </div>
+                  </div>
+                );
+              })()}
+
+              <div id="doc-groups">
+                {tool.doc_gathering?.groups.map((group) => (
+                  <div key={group.id} className="mb-[28px] last:mb-0">
+                    <div className="flex items-center gap-[10px] mb-[12px]">
+                      <span className="text-[11px] font-semibold tracking-[0.09em] uppercase text-[#6b8097]">
+                        {group.label}
+                      </span>
+                      <span
+                        className={`text-[9px] font-semibold px-[9px] py-[2px] rounded-full border tracking-[0.06em] whitespace-nowrap ${
+                          group.badge === "Required"
+                            ? "bg-[#ffeaea] text-[#a01c1c] border-[#f5bebe]"
+                            : group.badge === "Recommended"
+                              ? "bg-[#e8f1fb] text-[#2d4a6e] border-[#d0e4f7]"
+                              : "bg-[#fef8e8] text-[#8a6200] border-[#f0d98a]"
+                        }`}
+                      >
+                        {group.badge === "Required"
+                          ? "Required"
+                          : group.badge === "Recommended"
+                            ? "Recommended"
+                            : "Required if applicable"}
+                      </span>
+                      <div className="flex-1 h-[1px] bg-[#d0e4f7]" />
+                    </div>
+
+                    <div className="flex flex-col gap-[9px]">
+                      {group.items.map((item) => {
+                        const status =
+                          gatheringStatus[item.id] || "not-started";
+                        const isRev = status === "reviewed";
+                        const isIP = status === "in-progress";
+
+                        return (
+                          <div
+                            key={item.id}
+                            onClick={() => {
+                              setSelectedGatheringItem(item);
+                              setIsGatheringGuideOpen(true);
+                              if (status === "not-started") {
+                                setGatheringStatus((prev) => ({
+                                  ...prev,
+                                  [item.id]: "in-progress",
+                                }));
+                              }
+                            }}
+                            className={`group border-[1.5px] rounded-[16px] px-[20px] py-[16px] flex items-center gap-[14px] cursor-pointer transition-all hover:-translate-y-[1px] ${
+                              isRev
+                                ? "bg-[#e8f5ef] border-[#a8d9be]"
+                                : isIP
+                                  ? "bg-[#fef8e8] border-[#f0d98a]"
+                                  : "bg-white border-[#d0e4f7] hover:border-[#2f6fd4] hover:shadow-[0_4px_20px_rgba(47,111,212,0.1)]"
+                            }`}
+                          >
+                            <div
+                              className={`w-[38px] h-[38px] rounded-[9px] border flex items-center justify-center shrink-0 transition-all ${
+                                isRev
+                                  ? "bg-[#e8f5ef] border-[#a8d9be] text-[#15744f]"
+                                  : "bg-[#e8f1fb] border-[#d0e4f7] text-[#2d4a6e] group-hover:bg-[#2f6fd4]/10 group-hover:border-[#2f6fd4]/30"
+                              }`}
+                            >
+                              {getIcon(item.icon)}
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <div className="text-[14px] font-semibold text-[#0c1b33] mb-[3px] leading-[1.3]">
+                                {item.title}
+                              </div>
+                              <div className="text-[12px] text-[#6b8097] leading-[1.4] truncate px-0.5">
+                                {item.sub}
+                              </div>
+                            </div>
+                            <div
+                              className={`text-[11px] font-[500] px-[10px] py-[4px] border rounded-full whitespace-nowrap shrink-0 transition-all ${
+                                isRev
+                                  ? "bg-[#e8f5ef] text-[#15744f] border-[#a8d9be]"
+                                  : isIP
+                                    ? "bg-[#fef8e8] text-[#8a6200] border-[#f0d98a]"
+                                    : "bg-[#f4f7fb] text-[#6b8097] border-[#d0e4f7]"
+                              }`}
+                            >
+                              {isRev ? (
+                                <span className="flex items-center gap-1">
+                                  <Check size={12} strokeWidth={3} /> Packed
+                                </span>
+                              ) : isIP ? (
+                                "In progress"
+                              ) : (
+                                "Open guide"
+                              )}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Organization visual (Navy Card) */}
+              <div className="bg-[#0c1b33] rounded-[16px] p-[20px_22px] mt-[32px] mb-[14px] relative overflow-hidden shadow-[0_24px_80px_rgba(12,27,51,0.12)]">
+                {/* Subtle Glow Overlay */}
+                <div className="absolute inset-0 bg-linear-to-br from-white/5 to-transparent pointer-events-none" />
+
+                <div className="relative z-10 text-[10px] font-[700] tracking-[0.1em] uppercase text-white/40 mb-[16px]">
+                  Suggested Physical Packet Structure
+                </div>
+                <div className="relative z-10 grid grid-cols-2 min-[460px]:grid-cols-4 gap-[10px]">
+                  {[
+                    { icon: BookOpen, name: "Tab 1 — Identity & Passport" },
+                    { icon: FileText, name: "Tab 2 — Civil Documents" },
+                    { icon: Banknote, name: "Tab 3 — Financial / Sponsor" },
+                    { icon: Paperclip, name: "Tab 4 — Supporting Extras" },
+                  ].map((tab, i) => (
+                    <div
+                      key={i}
+                      className="bg-white/5 border border-white/10 rounded-[10px] p-[12px_10px] text-center flex flex-col items-center"
+                    >
+                      <tab.icon size={22} className="text-white/70 mb-[5px]" />
+                      <div className="text-[11px] font-semibold text-white/75 leading-[1.3]">
+                        {tab.name}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                <div className="relative z-10 text-[11px] text-white/40 mt-[16px] leading-[1.5]">
+                  Keep originals and photocopies in separate labeled sections —
+                  using dividers helps avoid fumbling at the interview window.
+                </div>
+              </div>
+
+              {/* Organization Tips (White Card) */}
+              <div className="bg-white border-[1.5px] border-[#d0e4f7] rounded-[16px] p-[20px_22px] mb-[14px] shadow-[0_4px_24px_rgba(12,27,51,0.08)]">
+                <div className="flex items-center gap-[9px] mb-[12px]">
+                  <div className="w-[34px] h-[34px] rounded-[8px] bg-[#f3f0fb] border border-[#c9bef2] flex items-center justify-center shrink-0">
+                    <Zap
+                      size={16}
+                      className="text-[#4a2d8a] fill-none stroke-[1.7]"
+                    />
+                  </div>
+                  <h3 className="text-[14px] font-semibold text-[#0c1b33]">
+                    Organization tips for interview day
+                  </h3>
+                </div>
+                <div className="flex flex-col gap-[7px]">
+                  {[
+                    "Use labeled folder tabs or dividers to separate document groups clearly",
+                    "Keep originals and photocopies in completely separate sections — never mix them",
+                    "Place the interview letter and passport at the very top for easy access at the security checkpoint",
+                    "Bring multiple passport-style photos even if only some are required — extras are always useful",
+                    "Do not fold or crease originals — use a rigid folder or envelope to protect them",
+                  ].map((tip, i) => (
+                    <div
+                      key={i}
+                      className="flex items-start gap-[8px] font-sans text-[13px] text-[#3a4f63] leading-[1.5]"
+                    >
+                      <div className="w-[4px] h-[4px] rounded-full bg-[#4a2d8a] shrink-0 mt-[7px]" />
+                      <span>{tip}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* ATTEND MEDICAL EXAM (Step 3.5 SPECIFIC) */}
+          {tool.type === "medical_exam_guide" && (
+            <div className="flex flex-col animate-in fade-in slide-in-from-bottom-2 duration-380 font-sans">
+              {/* Header Chips */}
+              <div className="flex items-center gap-[7px] flex-wrap mb-8">
+                {["Medical Exam", "What to Expect", "Preparation Guide"].map(
+                  (label, i) => (
+                    <span
+                      key={i}
+                      className={`text-[11px] font-semibold tracking-[0.06em] uppercase px-3 py-1.5 rounded-full border ${
+                        i === 0
+                          ? "bg-[#e8f1fb] text-[#2d4a6e] border-[#d0e4f7]"
+                          : i === 1
+                            ? "bg-[#fef8e8] text-[#8a6200] border-[#f0d98a]"
+                            : "bg-[#e8f5ef] text-[#15744f] border-[#a8d9be]"
+                      }`}
+                    >
+                      {label}
+                    </span>
+                  ),
+                )}
+              </div>
+
+              {/* Launch Module */}
+              <div className="relative bg-[#0e1e38] rounded-[16px] border border-white/7 overflow-hidden mb-[16px] shadow-[0_20px_60px_rgba(12,27,51,0.18),0_4px_16px_rgba(12,27,51,0.12)]">
+                <div className="absolute top-0 left-0 right-0 h-[2px] bg-linear-to-r from-[#2f6fd4] via-[#6aa8f0] to-transparent opacity-70" />
+                <div className="p-[30px_32px_26px]">
+                  <div className="flex items-start gap-4 mb-5">
+                    <div className="w-11 h-11 rounded-xl bg-white/6 border border-white/10 flex items-center justify-center shrink-0 text-white/75">
+                      <Activity size={21} strokeWidth={1.6} />
+                    </div>
+                    <div>
+                      <div className="text-[10px] font-bold uppercase tracking-[0.12em] text-white/35 mb-1">
+                        Medical Exam Guide
+                      </div>
+                      <h2 className="text-[clamp(18px,2.6vw,22px)] font-serif text-white/90 leading-[1.25]">
+                        Walkthrough of the medical exam appointment
+                      </h2>
+                    </div>
+                  </div>
+                  <div className="h-px bg-white/9 mb-[18px]" />
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-[22px]">
+                    {[
+                      "What to bring to the exam",
+                      "How the exam typically proceeds",
+                      "Vaccination and paperwork requirements",
+                      "Common mistakes to avoid",
+                    ].map((cue, i) => (
+                      <div
+                        key={i}
+                        className="bg-white/6 border border-white/10 rounded-lg p-[10px_12px] flex items-start gap-2"
+                      >
+                        <div className="w-[5px] h-[5px] rounded-full bg-[#6aa8f0]/70 shrink-0 mt-[5.5px]" />
+                        <span className="text-[13px] text-white/55 leading-[1.4]">
+                          {cue}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                  <button
+                    onClick={() => {
+                      setMedicalGuideIdx(0);
+                      setIsMedicalGuideOpen(true);
+                    }}
+                    className="w-full p-4 bg-[#3b7dd8] text-white rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-[#3b7dd8] transition-all shadow-[0_4px_20px_rgba(47,111,212,0.35)] hover:-translate-y-0.5 active:translate-y-0"
+                  >
+                    <span>View Medical Exam Guide</span>
+                    <ArrowRight size={16} />
+                  </button>
+                </div>
+              </div>
+
+              {/* Two-col lists */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-[14px] mb-[16px]">
+                {/* What to bring */}
+                <div className="bg-white border-[1.5px] border-[#d0e4f7] rounded-[16px] p-[18px_20px] shadow-sm">
+                  <div className="flex items-center gap-2 mb-3">
+                    <div className="w-2 h-2 rounded-full bg-[#2f6fd4]" />
+                    <span className="text-[12px] font-bold tracking-[0.06em] uppercase text-[#6b8097]">
+                      What to bring
+                    </span>
+                  </div>
+                  <div className="flex flex-col gap-[7px]">
+                    {tool.bring?.map((it: string, i: number) => (
+                      <div key={i} className="flex items-start gap-2">
+                        <div className="w-1 h-1 rounded-full bg-[#2f6fd4] shrink-0 mt-[7px]" />
+                        <span className="text-[13px] text-[#3a4f63] leading-[1.45]">
+                          {it}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Common pitfalls */}
+                <div className="bg-white border-[1.5px] border-[#d0e4f7] rounded-[16px] p-[18px_20px] shadow-sm">
+                  <div className="flex items-center gap-2 mb-3">
+                    <div className="w-2 h-2 rounded-full bg-[#b91c1c]" />
+                    <span className="text-[12px] font-bold tracking-[0.06em] uppercase text-[#6b8097]">
+                      Common pitfalls
+                    </span>
+                  </div>
+                  <div className="flex flex-col gap-[7px]">
+                    {tool.pitfalls?.map((it: string, i: number) => (
+                      <div
+                        key={i}
+                        className="flex items-start gap-2 p-[7px_10px] bg-[#fef2f2] rounded-[10px] border border-[#fecaca]/30"
+                      >
+                        <AlertTriangle
+                          size={13}
+                          className="text-[#b91c1c] shrink-0 mt-[1.5px]"
+                        />
+                        <span className="text-[13px] text-[#b91c1c] leading-[1.45]">
+                          {it}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* Helpful tips card */}
+              <div className="bg-white border-[1.5px] border-[#d0e4f7] rounded-[16px] p-[18px_20px] mb-[16px] shadow-sm">
+                <div className="flex items-center gap-2 mb-3">
+                  <div className="w-2 h-2 rounded-full bg-[#15744f]" />
+                  <span className="text-[12px] font-bold tracking-[0.06em] uppercase text-[#6b8097]">
+                    Helpful tips
+                  </span>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-[7px]">
+                  {tool.tips?.map((it: string, i: number) => (
+                    <div key={i} className="flex items-start gap-2">
+                      <div className="w-1 h-1 rounded-full bg-[#15744f] shrink-0 mt-[7px]" />
+                      <span className="text-[13px] text-[#3a4f63] leading-[1.45]">
+                        {it}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {tool.disclaimer && (
+                <p className="text-[11.5px] text-[#6b8097] leading-[1.65] text-center pt-[4px] mt-[8px]">
+                  {tool.disclaimer}
+                </p>
+              )}
+            </div>
+          )}
+
+          {/* COURIER REGISTRATION (Step 3.6 SPECIFIC) */}
+          {tool.type === "courier_registration" && (
+            <div className="flex flex-col animate-in fade-in slide-in-from-bottom-2 duration-380 font-sans">
+              {/* Header Chips */}
+              <div className="flex items-center gap-[7px] flex-wrap mb-8">
+                {["Courier Service", "Account Setup", "Portal Wallet"].map(
+                  (label, i) => (
+                    <span
+                      key={i}
+                      className={`text-[11px] font-semibold tracking-[0.06em] uppercase px-3 py-1.5 rounded-full border ${
+                        i === 0
+                          ? "bg-[#e8f1fb] text-[#2d4a6e] border-[#d0e4f7]"
+                          : i === 1
+                            ? "bg-[#f3f0fb] text-[#4a2d8a] border-[#c9bef2]"
+                            : "bg-[#e8f5ef] text-[#15744f] border-[#a8d9be]"
+                      }`}
+                    >
+                      {label}
+                    </span>
+                  ),
+                )}
+              </div>
+
+              {/* Launch Module */}
+              <div className="relative bg-[#0e1e38] rounded-[16px] border border-white/7 overflow-hidden mb-[16px] shadow-[0_20px_60px_rgba(12,27,51,0.18),0_4px_16px_rgba(12,27,51,0.12)]">
+                <div className="absolute top-0 left-0 right-0 h-[2px] bg-linear-to-r from-[#2f6fd4] via-[#6aa8f0] to-transparent opacity-70" />
+                <div className="p-[30px_32px_26px]">
+                  <div className="flex items-start gap-4 mb-5">
+                    <div className="w-11 h-11 rounded-xl bg-white/6 border border-white/10 flex items-center justify-center shrink-0 text-white/75">
+                      <Truck size={21} strokeWidth={1.6} />
+                    </div>
+                    <div>
+                      <div className="text-[10px] font-bold uppercase tracking-[0.12em] text-white/35 mb-1">
+                        USVisaScheduling · Courier Registration
+                      </div>
+                      <h2 className="text-[clamp(18px,2.6vw,22px)] font-serif text-white/90 leading-[1.25]">
+                        Create your courier delivery account
+                      </h2>
+                    </div>
+                  </div>
+                  <div className="h-px bg-white/9 mb-[18px]" />
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-[22px]">
+                    {[
+                      "Register at usvisascheduling.com",
+                      "Select courier delivery for Pakistan",
+                      "Save your login credentials securely",
+                      "Save confirmation page to Document Vault",
+                    ].map((cue, i) => (
+                      <div
+                        key={i}
+                        className="bg-white/6 border border-white/10 rounded-lg p-[10px_12px] flex items-start gap-2"
+                      >
+                        <div className="w-[5px] h-[5px] rounded-full bg-[#6aa8f0]/70 shrink-0 mt-[5.5px]" />
+                        <span className="text-[13px] text-white/55 leading-[1.4]">
+                          {cue}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                  <button
+                    onClick={() => {
+                      window.open(
+                        "https://www.usvisascheduling.com/",
+                        "_blank",
+                        "noopener,noreferrer",
+                      );
+                    }}
+                    className="w-full p-4 bg-[#3b7dd8] text-white rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-[#3b7dd8] transition-all shadow-[0_4px_20px_rgba(47,111,212,0.35)] hover:-translate-y-0.5 active:translate-y-0"
+                  >
+                    <span>Open Courier Registration</span>
+                    <ArrowRight size={16} />
+                  </button>
+                  <div
+                    className={`flex items-center justify-center gap-[5px] mt-3 text-[12px] text-center leading-[1.4] transition-colors duration-200 text-white/35`}
+                  >
+                    <ExternalLink size={11} strokeWidth={1.8} />
+                    <span>
+                      Opens the courier registration portal in a new tab
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Secondary cards row */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-[12px] mb-[18px]">
+                <button
+                  onClick={() => {
+                    setCourierGuideIdx(0);
+                    setIsCourierGuideOpen(true);
+                  }}
+                  className="bg-white border-[1.5px] border-[#d0e4f7] rounded-[16px] p-5 cursor-pointer transition-all hover:border-primary hover:shadow-[0_4px_20px_rgba(47,111,212,0.1)] hover:-translate-y-px text-left flex flex-col group"
+                >
+                  <div className="mb-3">
+                    <div className="w-[36px] h-[36px] rounded-[9px] bg-[#f3f0fb] border border-[#c9bef2] flex items-center justify-center text-[#4a2d8a]">
+                      <Monitor size={17} />
+                    </div>
+                  </div>
+                  <div className="text-[14px] font-bold text-[#0c1b33] mb-1">
+                    Step-by-Step Sign-Up Guide
+                  </div>
+                  <div className="text-[12px] text-[#6b8097] leading-[1.5] mb-3">
+                    Walkthrough of the courier registration sign-up process —
+                    account creation, selection, and confirmation.
+                  </div>
+                  <div className="mt-auto text-[12px] font-bold text-primary flex items-center gap-1 group-hover:gap-2 transition-all">
+                    <span>View guide</span>
+                    <ArrowRight size={11} strokeWidth={2.5} />
+                  </div>
+                </button>
+
+                <button
+                  onClick={() => {
+                    if (courierCredentials) {
+                      setWalletPortalType("COURIER");
+                      setIsWalletViewOpen(true);
+                    } else {
+                      setWalletPortalType("COURIER");
+                      setWalletMode("add");
+                      setIsWalletFormOpen(true);
+                    }
+                  }}
+                  className={`bg-white border-[1.5px] border-[#d0e4f7] rounded-[16px] p-5 cursor-pointer transition-all hover:border-primary hover:shadow-[0_4px_20px_rgba(47,111,212,0.1)] hover:-translate-y-px text-left flex flex-col group ${courierCredentials ? "border-[#a8d9be] bg-[#e8f5ef]/30" : ""}`}
+                >
+                  <div className="mb-3">
+                    <div
+                      className={`w-[36px] h-[36px] rounded-[9px] ${courierCredentials ? "bg-[#e8f5ef] border-[#a8d9be] text-[#15744f]" : "bg-[#e8f5ef] border-[#a8d9be] text-[#15744f]"} flex items-center justify-center`}
+                    >
+                      <Lock size={17} />
+                    </div>
+                  </div>
+                  <div
+                    className={`text-[14px] font-bold ${courierCredentials ? "text-[#15744f]" : "text-[#0c1b33]"} mb-1`}
+                  >
+                    {courierCredentials
+                      ? "✓ Credentials Saved"
+                      : "Save Courier Credentials"}
+                  </div>
+                  <div className="text-[12px] text-[#6b8097] leading-[1.5] mb-3">
+                    {courierCredentials
+                      ? "Courier account details stored in Portal Wallet."
+                      : "Store your courier account login securely in Rahvana's Portal Wallet."}
+                  </div>
+                  <div
+                    className={`mt-auto text-[12px] font-bold ${courierCredentials ? "text-[#15744f]" : "text-primary"} flex items-center gap-1 group-hover:gap-2 transition-all`}
+                  >
+                    <span>
+                      {courierCredentials
+                        ? "View saved credentials"
+                        : "Open credential vault"}
+                    </span>
+                    <ArrowRight size={11} strokeWidth={2.5} />
+                  </div>
+                </button>
+              </div>
+
+              {/* Saved Credentials View (Specific) */}
+              {courierCredentials && (
+                <div className="bg-[#e8f5ef] border-[1.5px] border-[#a8d9be] rounded-[10px] p-[16px_18px] mb-5 animate-in fade-in slide-in-from-top-1">
+                  <div className="text-[10px] font-bold uppercase tracking-[0.08em] text-[#15744f] mb-[10px]">
+                    ✓ Credentials Saved — Courier Account
+                  </div>
+                  <div className="flex justify-between items-center py-1.5 border-b border-[#a8d9be]/50">
+                    <span className="text-[12px] text-[#3a4f63] font-medium">
+                      Email
+                    </span>
+                    <span className="text-[12px] text-[#0c1b33] font-bold font-mono">
+                      {courierCredentials.username}
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center py-1.5 border-b border-[#a8d9be]/50 last:border-none">
+                    <span className="text-[12px] text-[#3a4f63] font-medium">
+                      Password
+                    </span>
+                    <span className="text-[12px] text-[#0c1b33] font-bold font-mono">
+                      ••••••••
+                    </span>
+                  </div>
+                  <div className="flex flex-col gap-2.5 mt-3">
+                    <button
+                      onClick={() => {
+                        setWalletPortalType("COURIER");
+                        setWalletMode("edit");
+                        setIsWalletFormOpen(true);
+                      }}
+                      className="inline-flex items-center gap-1 text-[12px] font-bold text-primary hover:underline"
+                    >
+                      Edit or update in Portal Wallet{" "}
+                      <ExternalLink size={11} strokeWidth={2.5} />
+                    </button>
+                    <a
+                      href="https://www.rahvana.com/document-vault"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1.5 text-[12px] font-bold text-[#15744f] hover:underline"
+                    >
+                      <Upload size={12} strokeWidth={2.5} />
+                      Save confirmation page to Document Vault →
+                    </a>
+                  </div>
+                </div>
+              )}
+
+              {tool.disclaimer && (
+                <p className="text-[11.5px] text-[#6b8097] leading-[1.65] text-center pt-[4px] mt-[8px]">
+                  {tool.disclaimer}
+                </p>
+              )}
+            </div>
+          )}
+
+          {/* INTERVIEW PREP CONTENT (Step 3.7 SPECIFIC) */}
+          {tool.type === "interview_prep" && (
+            <div className="flex flex-col mt-4">
+              {/* Launcher Card (Large) */}
+              <div className="relative bg-[#0e1e38] rounded-[16px] border border-white/10 overflow-hidden mb-[16px] shadow-[0_20px_60px_rgba(12,27,51,0.18),0_4px_16px_rgba(12,27,51,0.12)]">
+                <div className="absolute top-0 left-0 right-0 h-[2.5px] bg-linear-to-r from-[#4a2d8a] via-[#6aa8f0] to-transparent opacity-80" />
+
+                <div className="p-7 sm:p-8">
+                  <div className="flex items-start gap-4 mb-5">
+                    <div className="w-[44px] h-[44px] rounded-xl bg-white/5 border border-white/10 flex items-center justify-center shrink-0">
+                      <MessageSquare
+                        className="text-white/75"
+                        size={21}
+                        strokeWidth={1.6}
+                      />
+                    </div>
+                    <div>
+                      <div className="text-[10px] font-bold uppercase tracking-[0.12em] text-white/35 mb-1">
+                        {tool.launch_module.title}
+                      </div>
+                      <h3 className="font-serif text-[20px] sm:text-[22px] text-white/95 leading-tight">
+                        {tool.launch_module.heading}
+                      </h3>
+                    </div>
+                  </div>
+
+                  <div className="h-[1px] bg-white/10 mb-[18px]" />
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-6">
+                    {tool.launch_module?.cues?.map((cue: string, i: number) => (
+                      <div
+                        key={i}
+                        className="bg-white/5 border border-white/10 rounded-[10px] p-2.5 flex items-start gap-2"
+                      >
+                        <div className="w-1.5 h-1.5 rounded-full bg-[#6aa8f0]/60 mt-[5.5px] shrink-0" />
+                        <span className="text-[13px] text-white/55 leading-tight">
+                          {cue}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+
+                  <button
+                    onClick={() => {
+                      setIsPrepLaunched(true);
+                      window.open(
+                        "https://www.rahvana.com/interview-prep",
+                        "_blank",
+                        "noopener,noreferrer",
+                      );
+                    }}
+                    className="w-full p-4 bg-[#3b7dd8] text-white rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-[#3b7dd8] transition-all shadow-[0_4px_20px_rgba(47,111,212,0.35)] hover:-translate-y-0.5 active:translate-y-0"
+                  >
+                    <span>Launch Interview Prep Tool</span>
+                    <ExternalLink size={15} strokeWidth={2.5} />
+                  </button>
+                </div>
+              </div>
+              {isPrepLaunched && (
+                <div className="bg-[#e8f5ef] border-[1.5px] border-[#a8d9be] rounded-[10px] p-[16px_18px] mb-5 animate-in fade-in slide-in-from-top-1">
+                  <div className="text-[13px] font-bold text-[#15744f] mb-1">
+                    ✓ Prep tool opened
+                  </div>
+                  <div className="text-[12px] text-[#3a4f63] leading-relaxed">
+                    Return here after your prep session. Review the readiness
+                    checklist below regularly before interview day.
+                  </div>
+                </div>
+              )}
+
+              {/* Readiness Grid */}
+              {tool.readiness_grid && (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-[22px]">
+                  {tool.readiness_grid.map((card: any, idx: number) => (
+                    <div
+                      key={idx}
+                      className="bg-white border-[1.5px] border-[#d0e4f7] rounded-[16px] p-4.5"
+                    >
+                      <div className="text-[10px] font-bold uppercase tracking-[0.08em] text-[#6b8097] mb-2.5 border-b border-[#f1f5f9] pb-2">
+                        {card.title}
+                      </div>
+                      <div className="flex flex-col gap-2">
+                        {card.items.map((item: string, i: number) => (
+                          <div key={i} className="flex items-start gap-2.5">
+                            <div className="w-[5px] h-[5px] rounded-full bg-purple-600 mt-[6.5px] shrink-0 opacity-70" />
+                            <span className="text-[13px] text-[#3a4f63] leading-snug">
+                              {item}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {tool.disclaimer && (
+                <p className="text-[11.5px] text-[#6b8097] leading-[1.65] text-center mb-6">
+                  {tool.disclaimer}
+                </p>
+              )}
+            </div>
+          )}
+
+          {/* INTERVIEW DAY CONTENT (Step 3.8 SPECIFIC) */}
+          {tool.type === "interview_day" && (
+            <div className="flex flex-col">
+              {/* Launcher Card (Dark) */}
+              <div className="relative bg-[#0e1e38] rounded-[16px] border border-white/10 overflow-hidden mb-4 shadow-[0_20px_60px_rgba(12,27,51,0.18),0_4px_16px_rgba(12,27,51,0.12)]">
+                <div className="absolute top-0 left-0 right-0 h-[2.5px] bg-linear-to-r from-[#4a2d8a] via-[#6aa8f0] to-transparent opacity-80" />
+
+                <div className="p-7 sm:p-8">
+                  <div className="flex items-start gap-4 mb-5">
+                    <div className="w-[44px] h-[44px] rounded-xl bg-white/5 border border-white/10 flex items-center justify-center shrink-0">
+                      <Briefcase
+                        className="text-white/75"
+                        size={21}
+                        strokeWidth={1.6}
+                      />
+                    </div>
+                    <div>
+                      <div className="text-[10px] font-bold uppercase tracking-[0.12em] text-white/35 mb-1">
+                        {tool.launch_module.title}
+                      </div>
+                      <h3 className="font-serif text-[20px] sm:text-[22px] text-white/95 leading-tight">
+                        {tool.launch_module.heading}
+                      </h3>
+                    </div>
+                  </div>
+
+                  <div className="h-[1px] bg-white/10 mb-[18px]" />
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-6">
+                    {tool.launch_module.cues.map((cue: string, i: number) => (
+                      <div
+                        key={i}
+                        className="bg-white/5 border border-white/10 rounded-[10px] p-2.5 flex items-start gap-2"
+                      >
+                        <div className="w-1.5 h-1.5 rounded-full bg-purple-400/50 mt-[5.5px] shrink-0" />
+                        <span className="text-[13px] text-white/55 leading-tight">
+                          {cue}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+
+                  <button
+                    onClick={() => {
+                      setInterviewDayTutIdx(0);
+                      setIsInterviewDayTutOpen(true);
+                    }}
+                    className="w-full p-4 bg-[#3b7dd8] text-white rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-[#3b7dd8] transition-all shadow-[0_4px_20px_rgba(47,111,212,0.35)] hover:-translate-y-0.5 active:translate-y-0"
+                  >
+                    <span>Open Interview Day Guide</span>
+                    <ArrowRight size={15} strokeWidth={2.5} />
+                  </button>
+                </div>
+              </div>
+
+              {/* Two-column Bringing + Pitfalls */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-[14px] mb-4">
+                {tool.checklists?.map((list: any, idx: number) => (
+                  <div
+                    key={idx}
+                    className="bg-white border-[1.5px] border-[#d0e4f7] rounded-[16px] p-[18px_20px] shadow-[0_4px_24px_rgba(12,27,51,0.08)]"
+                  >
+                    <div className="flex items-center gap-2 mb-3">
+                      <div
+                        className={`w-2 h-2 rounded-full shrink-0 ${list.type === "bring" ? "bg-primary" : "bg-red-600"}`}
+                      />
+                      <div className="text-[12px] font-bold uppercase tracking-wider text-[#6b8097]">
+                        {list.title}
+                      </div>
+                    </div>
+                    <div className="flex flex-col gap-[7px]">
+                      {list.items.map((item: string, i: number) =>
+                        list.type === "bring" ? (
+                          <div key={i} className="flex items-start gap-2">
+                            <div className="w-1 h-1 rounded-full bg-primary mt-[6px] shrink-0" />
+                            <span className="text-[13px] text-[#3a4f63] leading-tight">
+                              {item}
+                            </span>
+                          </div>
+                        ) : (
+                          <div
+                            key={i}
+                            className="flex items-start gap-2 p-2 bg-red-50 rounded-lg text-red-700 text-[13px] leading-tight"
+                          >
+                            <AlertTriangle
+                              size={14}
+                              className="mt-0.5 shrink-0"
+                            />
+                            <span>{item}</span>
+                          </div>
+                        ),
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Helpful Tips Card */}
+              <div className="bg-white border-[1.5px] border-[#d0e4f7] rounded-[16px] p-[18px_20px] shadow-[0_4px_24px_rgba(12,27,51,0.08)] mb-4">
+                <div className="flex items-center gap-2 mb-3">
+                  <div className="w-2 h-2 rounded-full bg-[#15744f] shrink-0" />
+                  <div className="text-[12px] font-bold uppercase tracking-wider text-[#6b8097]">
+                    Helpful tips
+                  </div>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-2">
+                  {tool.tips?.map((tip: string, i: number) => (
+                    <div key={i} className="flex items-start gap-2">
+                      <div className="w-1 h-1 rounded-full bg-[#15744f] mt-[6px] shrink-0" />
+                      <span className="text-[13px] text-[#3a4f63] leading-tight">
+                        {tip}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Outcomes Card */}
+              <div className="bg-white border-[1.5px] border-[#d0e4f7] rounded-[16px] p-[18px_20px] shadow-[0_4px_24px_rgba(12,27,51,0.08)] mb-4">
+                <div className="text-[13px] font-bold uppercase tracking-wider text-[#6b8097] mb-3">
+                  Possible outcomes after the interview
+                </div>
+                <div className="flex flex-col gap-2">
+                  {tool.outcomes?.map((outcome: any, i: number) => (
+                    <div
+                      key={i}
+                      className={`flex items-start gap-2.5 p-2.5 rounded-lg border ${
+                        outcome.type === "approved"
+                          ? "bg-[#e8f5ef] border-[#a8d9be]"
+                          : outcome.type === "ap"
+                            ? "bg-[#fef8e8] border-[#f0d98a]"
+                            : "bg-red-50 border-red-200"
+                      }`}
+                    >
+                      <div className="shrink-0 mt-1">
+                        {outcome.icon === "check-circle" && (
+                          <CheckCircle2 size={18} className="text-[#15744f]" />
+                        )}
+                        {outcome.icon === "clipboard" && (
+                          <Clipboard size={18} className="text-[#8a6200]" />
+                        )}
+                        {outcome.icon === "x-circle" && (
+                          <XCircle size={18} className="text-red-600" />
+                        )}
+                      </div>
+                      <div>
+                        <div className="text-[13px] font-bold text-[#0c1b33]">
+                          {outcome.label}
+                        </div>
+                        <div className="text-[12px] text-[#6b8097] leading-relaxed">
+                          {outcome.sub}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {tool.disclaimer && (
+                <p className="text-[11.5px] text-[#6b8097] leading-[1.65] text-center mb-6">
+                  {tool.disclaimer}
+                </p>
+              )}
+            </div>
+          )}
+
+          {/* ADMINISTRATIVE PROCESSING CONTENT (Step 3.9 SPECIFIC) */}
+          {tool.type === "adm_processing" && (
+            <div className="flex flex-col mt-4">
+              {/* Explainer Banner */}
+              <div className="relative bg-[#0e1e38] rounded-[16px] p-6 mb-4 overflow-hidden border border-white/10 shadow-[0_4px_24px_rgba(12,27,51,0.08)]">
+                <div className="absolute top-0 left-0 right-0 h-[2px] bg-linear-to-r from-[#8a6200] via-[#f0d98a] to-transparent opacity-85" />
+                <div className="text-[10px] font-bold uppercase tracking-widest text-white/35 mb-2">
+                  {tool.explainer.eyebrow}
+                </div>
+                <div
+                  className="text-[20px] font-serif text-white/95 mb-2.5 leading-tight"
+                  style={{ fontFamily: "'DM Serif Display', serif" }}
+                >
+                  {tool.explainer.title}
+                </div>
+                <div className="text-[13px] text-white/55 leading-relaxed max-w-[560px]">
+                  {tool.explainer.body}
+                </div>
+              </div>
+
+              {/* AP Status Recorder Card */}
+              {!isApSaved ? (
+                <div className="bg-white border-[1.5px] border-[#d0e4f7] rounded-[16px] p-6 mb-4 shadow-[0_4px_24px_rgba(12,27,51,0.08)] transition-all">
+                  <div className="flex items-center gap-2.5 mb-5">
+                    <div className="w-10 h-10 rounded-xl bg-[#fef8e8] border border-[#f0d98a] flex items-center justify-center shrink-0">
+                      <Calendar
+                        size={18}
+                        className="text-[#8a6200]"
+                        strokeWidth={1.8}
+                      />
+                    </div>
+                    <div>
+                      <div className="text-[14px] font-bold text-[#0c1b33]">
+                        {tool.recorder.title}
+                      </div>
+                      <div className="text-[12px] text-[#6b8097]">
+                        {tool.recorder.subtitle}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex flex-col gap-4">
+                    <div className="flex flex-col gap-1.5">
+                      <div className="text-[11px] font-bold uppercase tracking-wide text-[#6b8097]">
+                        Did you receive a 221(g) or AP notice?
+                      </div>
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() =>
+                            setApDetails({ ...apDetails, received: true })
+                          }
+                          className={`flex-1 p-2.5 rounded-lg border-[1.5px] text-[13px] font-bold transition-all ${
+                            apDetails.received === true
+                              ? "bg-[#fef8e8] border-[#8a6200] text-[#8a6200]"
+                              : "bg-white border-[#d0e4f7] text-[#3a4f63] hover:border-[#3a4f63]"
+                          }`}
+                        >
+                          Yes — AP received
+                        </button>
+                        <button
+                          onClick={() =>
+                            setApDetails({ ...apDetails, received: false })
+                          }
+                          className={`flex-1 p-2.5 rounded-lg border-[1.5px] text-[13px] font-bold transition-all ${
+                            apDetails.received === false
+                              ? "bg-[#e8f5ef] border-[#a8d9be] text-[#15744f]"
+                              : "bg-white border-[#d0e4f7] text-[#3a4f63] hover:border-[#3a4f63]"
+                          }`}
+                        >
+                          No — awaiting outcome
+                        </button>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div className="flex flex-col gap-1.5">
+                        <label className="text-[11px] font-bold uppercase tracking-wide text-[#6b8097]">
+                          Interview Date
+                        </label>
+                        <input
+                          type="date"
+                          value={apDetails.interviewDate}
+                          onChange={(e) =>
+                            setApDetails({
+                              ...apDetails,
+                              interviewDate: e.target.value,
+                            })
+                          }
+                          className="p-2.5 border-[1.5px] border-[#d0e4f7] rounded-lg text-[14px] outline-none focus:border-primary transition-all"
+                        />
+                      </div>
+                      <div className="flex flex-col gap-1.5">
+                        <label className="text-[11px] font-bold uppercase tracking-wide text-[#6b8097]">
+                          CEAC Status
+                        </label>
+                        <select
+                          value={apDetails.ceacStatus}
+                          onChange={(e) =>
+                            setApDetails({
+                              ...apDetails,
+                              ceacStatus: e.target.value,
+                            })
+                          }
+                          className="p-2.5 border-[1.5px] border-[#d0e4f7] rounded-lg text-[14px] outline-none focus:border-primary transition-all"
+                        >
+                          <option value="">Select current status...</option>
+                          {tool.recorder.ceac_options.map((opt: string) => (
+                            <option key={opt} value={opt}>
+                              {opt}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                      <div className="flex flex-col gap-1.5">
+                        <label className="text-[11px] font-bold uppercase tracking-wide text-[#6b8097]">
+                          Date of Last Check
+                        </label>
+                        <input
+                          type="date"
+                          value={apDetails.lastCheck}
+                          onChange={(e) =>
+                            setApDetails({
+                              ...apDetails,
+                              lastCheck: e.target.value,
+                            })
+                          }
+                          className="p-2.5 border-[1.5px] border-[#d0e4f7] rounded-lg text-[14px] outline-none focus:border-primary transition-all"
+                        />
+                      </div>
+                      <div className="flex flex-col gap-1.5">
+                        <label className="text-[11px] font-bold uppercase tracking-wide text-[#6b8097]">
+                          Additional Docs Requested?
+                        </label>
+                        <select
+                          value={apDetails.docsRequested}
+                          onChange={(e) =>
+                            setApDetails({
+                              ...apDetails,
+                              docsRequested: e.target.value,
+                            })
+                          }
+                          className="p-2.5 border-[1.5px] border-[#d0e4f7] rounded-lg text-[14px] outline-none focus:border-primary transition-all"
+                        >
+                          {tool.recorder.docs_requested_options.map(
+                            (opt: any) => (
+                              <option key={opt.value} value={opt.value}>
+                                {opt.label}
+                              </option>
+                            ),
+                          )}
+                        </select>
+                      </div>
+                    </div>
+
+                    <div className="flex flex-col gap-1.5">
+                      <label className="text-[11px] font-bold uppercase tracking-wide text-[#6b8097]">
+                        Notes (optional)
+                      </label>
+                      <textarea
+                        value={apDetails.notes}
+                        onChange={(e) =>
+                          setApDetails({ ...apDetails, notes: e.target.value })
+                        }
+                        placeholder="e.g. 221(g) sheet received..."
+                        className="p-2.5 border-[1.5px] border-[#d0e4f7] rounded-lg text-[14px] outline-none focus:border-primary transition-all min-height-[80px]"
+                      />
+                    </div>
+
+                    <button
+                      onClick={() => {
+                        setIsApSaved(true);
+                        actions.updateMetadata({
+                          apDetails: apDetails,
+                          apSaved: "true",
+                        });
+                      }}
+                      disabled={!apDetails.interviewDate}
+                      className="w-full p-4 bg-primary text-white rounded-xl font-bold transition-all shadow-[0_4px_16px_rgba(47,111,212,0.3)] hover:-translate-y-0.5 active:translate-y-0 disabled:opacity-50 disabled:translate-y-0"
+                    >
+                      Save AP Status & Activate Tracking
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <div className="bg-white border-[1.5px] border-[#f0d98a] rounded-[16px] p-6 mb-4 shadow-[0_4px_24px_rgba(12,27,51,0.08)] animate-in fade-in duration-300">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="text-[10px] font-bold uppercase tracking-widest text-[#8a6200]">
+                      AP Details Recorded — Tracking Active
+                    </div>
+                    <button
+                      onClick={() => setIsApSaved(false)}
+                      className="text-[12px] font-bold text-primary hover:underline"
+                    >
+                      Edit
+                    </button>
+                  </div>
+                  <div className="grid grid-cols-2 gap-y-4 gap-x-6">
+                    <div>
+                      <div className="text-[11px] text-[#6b8097] font-medium mb-0.5">
+                        Interview Date
+                      </div>
+                      <div className="text-[13px] font-bold text-[#0c1b33]">
+                        {apDetails.interviewDate
+                          ? new Date(
+                              apDetails.interviewDate + "T00:00:00",
+                            ).toLocaleDateString("en-US", {
+                              year: "numeric",
+                              month: "long",
+                              day: "numeric",
+                            })
+                          : "—"}
+                      </div>
+                    </div>
+                    <div>
+                      <div className="text-[11px] text-[#6b8097] font-medium mb-0.5">
+                        221(g) / AP Received
+                      </div>
+                      <div className="text-[13px] font-bold text-[#0c1b33]">
+                        {apDetails.received === true
+                          ? "Yes — 221(g) received"
+                          : apDetails.received === false
+                            ? "No — awaiting outcome"
+                            : "—"}
+                      </div>
+                    </div>
+                    <div>
+                      <div className="text-[11px] text-[#6b8097] font-medium mb-0.5">
+                        CEAC Status
+                      </div>
+                      <div className="text-[13px] font-bold text-[#0c1b33]">
+                        {apDetails.ceacStatus || "—"}
+                      </div>
+                    </div>
+                    <div>
+                      <div className="text-[11px] text-[#6b8097] font-medium mb-0.5">
+                        Last CEAC Check
+                      </div>
+                      <div className="text-[13px] font-bold text-[#0c1b33]">
+                        {apDetails.lastCheck
+                          ? new Date(
+                              apDetails.lastCheck + "T00:00:00",
+                            ).toLocaleDateString("en-US", {
+                              year: "numeric",
+                              month: "long",
+                              day: "numeric",
+                            })
+                          : "—"}
+                      </div>
+                    </div>
+                  </div>
+                  {apDetails.notes && (
+                    <div className="mt-4 pt-4 border-t border-[#f0d98a]">
+                      <div className="text-[11px] text-[#6b8097] font-medium mb-1">
+                        Notes
+                      </div>
+                      <div className="text-[13px] text-[#3a4f63] leading-relaxed">
+                        {apDetails.notes}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Docs Requested Alert */}
+              {apDetails.docsRequested === "yes" && isApSaved && (
+                <div className="bg-[#fef8e8] border-[1.5px] border-[#f0d98a] rounded-[16px] p-5 mb-4 shadow-[0_4px_12px_rgba(12,27,51,0.04)] animate-in slide-in-from-top-2 duration-300">
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="text-[18px]">📎</span>
+                    <div className="text-[14px] font-bold text-[#8a6200]">
+                      Additional documents were requested
+                    </div>
+                  </div>
+                  <div className="text-[13px] text-[#8a6200] leading-relaxed mb-4">
+                    The consulate has requested additional documents as part of
+                    your 221(g) or AP process. Review the request carefully,
+                    provide exactly what was asked, and submit via the method
+                    specified.
+                  </div>
+                  <a
+                    href="https://www.rahvana.com/document-vault"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-2 px-4 py-2.5 bg-[#8a6200] text-white rounded-lg text-[13px] font-bold transition-all hover:opacity-90"
+                  >
+                    <Upload size={14} />
+                    <span>Save documents to Document Vault</span>
+                  </a>
+                </div>
+              )}
+
+              {/* Update Log Card */}
+              <div className="bg-white border-[1.5px] border-[#d0e4f7] rounded-[16px] p-6 mb-4 shadow-[0_4px_24px_rgba(12,27,51,0.08)]">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="text-[14px] font-bold text-[#0c1b33]">
+                    Case Update Log
+                  </div>
+                  <button
+                    onClick={() => setIsApUpdateModalOpen(true)}
+                    className="text-[12px] font-bold text-primary hover:underline cursor-pointer"
+                  >
+                    + Add update
+                  </button>
+                </div>
+                <div className="flex flex-col gap-2">
+                  {apUpdateLog.length === 0 ? (
+                    <div className="text-[13px] text-[#6b8097] italic py-2">
+                      No updates logged yet. Add updates each time you check
+                      CEAC or receive new information.
+                    </div>
+                  ) : (
+                    apUpdateLog.map((entry: any, i: number) => (
+                      <div
+                        key={i}
+                        className="bg-[#f4f7fb] border border-[#d0e4f7] rounded-xl p-3"
+                      >
+                        <div className="text-[11px] font-bold text-[#6b8097] mb-1">
+                          {new Date(
+                            entry.date + "T00:00:00",
+                          ).toLocaleDateString("en-US", {
+                            year: "numeric",
+                            month: "long",
+                            day: "numeric",
+                          })}
+                          {entry.ceac && ` · CEAC: ${entry.ceac}`}
+                        </div>
+                        <div className="text-[13px] text-[#3a4f63] leading-relaxed">
+                          {entry.note || "Status checked — no change noted."}
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </div>
+
+              {/* Info Sections */}
+              <div className="flex flex-col gap-3.5 mb-2">
+                {tool.info_sections.map((section: any, idx: number) => (
+                  <div
+                    key={idx}
+                    className="bg-white border-[1.5px] border-[#d0e4f7] rounded-[16px] p-5 shadow-[0_4px_20px_rgba(12,27,51,0.06)]"
+                  >
+                    <div className="flex items-center gap-2.5 mb-4">
+                      <div
+                        className={`w-9 h-9 rounded-lg flex items-center justify-center shrink-0 border ${
+                          section.type === "sky"
+                            ? "bg-[#e8f1fb] border-[#d0e4f7]"
+                            : "bg-[#e8f6f6] border-[#9fd6d6]"
+                        }`}
+                      >
+                        {section.icon === "info" ? (
+                          <Info
+                            size={16}
+                            className="text-[#2f6fd4]"
+                            strokeWidth={2}
+                          />
+                        ) : (
+                          <Check
+                            size={16}
+                            className="text-[#0d6b6b]"
+                            strokeWidth={2.5}
+                          />
+                        )}
+                      </div>
+                      <div className="text-[14px] font-bold text-[#0c1b33]">
+                        {section.title}
+                      </div>
+                    </div>
+                    <div className="flex flex-col gap-2.5">
+                      {section.items.map((item: string, i: number) => (
+                        <div key={i} className="flex items-start gap-3">
+                          <div className="w-1 h-1 rounded-full bg-[#d0e4f7] mt-[7.5px] shrink-0" />
+                          <span className="text-[13px] text-[#3a4f63] leading-relaxed">
+                            {item}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
           )}
 
           {/* PRIMARY LAUNCH MODULE */}
           {tool.launch_module &&
             tool.type !== "sponsorship_calculator" &&
-            tool.type !== "submission_review" && (
+            tool.type !== "submission_review" &&
+            tool.type !== "interview_prep" &&
+            tool.type !== "interview_day" &&
+            tool.type !== "adm_processing" &&
+            tool.type !== "courier_registration" && (
               <div
                 className="relative bg-[#0e1e38] rounded-[16px] border border-white/7 overflow-hidden mb-[20px]"
                 style={{ backgroundColor: launchBg }}
@@ -3683,7 +6022,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                   <div
                     className={`grid grid-cols-1 sm:grid-cols-2 gap-[10px] ${tool.launch_module.button_label ? "mb-[26px]" : "mb-0"}`}
                   >
-                    {tool.launch_module.features.map(
+                    {tool.launch_module.features?.map(
                       (feat: string, i: number) => (
                         <div
                           key={i}
@@ -3716,7 +6055,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                           USCIS upload requirements
                         </div>
                         <div className="flex flex-col gap-[7px]">
-                          {tool.upload_requirements.map(
+                          {tool.upload_requirements?.map(
                             (req: string, i: number) => (
                               <div
                                 key={i}
@@ -4025,11 +6364,15 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                 {(sId === "step_1_6" ? uscisCredentials : ceacCredentials) ? (
                   /* Saved Card */
                   <button
-                    onClick={() =>
-                      sId === "step_1_6"
-                        ? setIsWalletViewOpen(true)
-                        : setIsCeacModalOpen(true)
-                    }
+                    onClick={() => {
+                      const portal = sId === "step_1_6" ? "USCIS" : "NVC";
+                      setWalletPortalType(portal);
+                      if (portal === "USCIS") {
+                        setIsWalletViewOpen(true);
+                      } else {
+                        setIsCeacModalOpen(true);
+                      }
+                    }}
                     className="bg-[#e8f5ef] border-[1.5px] border-[#a8d9be] rounded-[16px] p-[20px] text-left group hover:border-[#15744f] hover:shadow-[0_4px_20px_rgba(21,116,79,0.1)] hover:-translate-y-px transition-all cursor-pointer select-none flex flex-col"
                   >
                     <div className="flex items-center gap-[10px] mb-[12px]">
@@ -4056,11 +6399,15 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                 ) : (
                   /* Unsaved Card */
                   <button
-                    onClick={() =>
-                      sId === "step_1_6"
-                        ? setIsWalletFormOpen(true)
-                        : setIsCeacModalOpen(true)
-                    }
+                    onClick={() => {
+                      const portal = sId === "step_1_6" ? "USCIS" : "NVC";
+                      setWalletPortalType(portal);
+                      if (portal === "USCIS") {
+                        setIsWalletFormOpen(true);
+                      } else {
+                        setIsCeacModalOpen(true);
+                      }
+                    }}
                     className="bg-[#fafcff] border-[1.5px] border-[#d0e4f7] rounded-[16px] p-[20px] text-left group hover:border-primary hover:shadow-[0_4px_20px_rgba(47,111,212,0.1)] hover:-translate-y-px transition-all cursor-pointer select-none flex flex-col"
                   >
                     <div className="flex items-center gap-[10px] mb-[12px]">
@@ -5722,24 +8069,36 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
       <CredentialFormModal
         isOpen={isWalletFormOpen}
         onClose={() => setIsWalletFormOpen(false)}
-        portalType="USCIS"
-        mode={uscisCredentials ? "edit" : "add"}
-        icon={<ShieldCheck className="text-teal-600" />}
-        initialData={
-          uscisCredentials
-            ? {
-                username: uscisCredentials.username,
-                password: "",
-                securityQuestions: uscisCredentials.security_questions.map(
-                  (sq) => ({
-                    id: sq.id,
-                    question: sq.question,
-                    answer: "",
-                  }),
-                ),
-              }
-            : undefined
+        portalType={walletPortalType}
+        mode={walletMode}
+        icon={
+          walletPortalType === "USCIS" ? (
+            <ShieldCheck className="text-teal-600" />
+          ) : walletPortalType === "COURIER" ? (
+            <Truck className="text-primary" />
+          ) : (
+            <Zap className="text-amber-500" />
+          )
         }
+        initialData={(() => {
+          const creds =
+            walletPortalType === "USCIS"
+              ? uscisCredentials
+              : walletPortalType === "COURIER"
+                ? courierCredentials
+                : ceacCredentials;
+          return creds
+            ? {
+                username: creds.username,
+                password: "",
+                securityQuestions: creds.security_questions.map((sq) => ({
+                  id: sq.id,
+                  question: sq.question,
+                  answer: "",
+                })),
+              }
+            : undefined;
+        })()}
         onSubmit={handleSaveCredentials}
         isSubmitting={isSubmittingCreds}
       />
@@ -5747,14 +8106,29 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
       <ViewCredentialModal
         isOpen={isWalletViewOpen}
         onClose={() => setIsWalletViewOpen(false)}
-        portalType="USCIS"
-        credential={uscisCredentials}
-        icon={<ShieldCheck className="text-primary" />}
+        portalType={walletPortalType}
+        credential={
+          walletPortalType === "USCIS"
+            ? uscisCredentials
+            : walletPortalType === "COURIER"
+              ? courierCredentials
+              : ceacCredentials
+        }
+        icon={
+          <ShieldCheck
+            className={
+              walletPortalType === "COURIER"
+                ? "text-indigo-600"
+                : "text-primary"
+            }
+          />
+        }
         onRevealPassword={handleRevealPassword}
         onRevealAnswer={handleRevealAnswer}
         onRevealCaseNumber={async () => ""}
         onRevealInvoiceId={async () => ""}
         onEdit={() => {
+          setWalletMode("edit");
           setIsWalletViewOpen(false);
           setIsWalletFormOpen(true);
         }}
@@ -5773,7 +8147,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
         confirmText="Delete"
         confirmVariant="danger"
         onConfirm={async () => {
-          await handleDeleteCredentials("USCIS");
+          await handleDeleteCredentials(walletPortalType);
           setShowDeleteConfirmation(false);
         }}
         loading={isSubmittingCreds}
@@ -5924,9 +8298,54 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
           doc={activeHhDoc}
           status={hhDocsStatus[activeHhDoc.id]}
           onMarkReviewed={() => {
-            const next = { ...hhDocsStatus, [activeHhDoc.id]: "reviewed" };
+            const next = {
+              ...hhDocsStatus,
+              [activeHhDoc.id]: "reviewed",
+            };
             setHhDocsStatus(next);
+            actions.updateMetadata({ hhDocsStatus: next });
           }}
+        />
+      )}
+
+      {isMedicalGuideOpen && medicalToolData?.type === "medical_exam_guide" && (
+        <MedicalTutOverlay
+          isOpen={isMedicalGuideOpen}
+          onClose={() => setIsMedicalGuideOpen(false)}
+          tutorial={medicalToolData.tutorial}
+          index={medicalGuideIdx}
+          setIndex={setMedicalGuideIdx}
+        />
+      )}
+
+      {isInterviewDayTutOpen &&
+        currentStep?.tool_data?.type === "interview_day" && (
+          <InterviewDayTutOverlay
+            isOpen={isInterviewDayTutOpen}
+            onClose={() => setIsInterviewDayTutOpen(false)}
+            tutorial={currentStep.tool_data.tutorial}
+            index={interviewDayTutIdx}
+            setIndex={setInterviewDayTutIdx}
+          />
+        )}
+
+      {isCourierGuideOpen &&
+        courierToolData?.type === "courier_registration" && (
+          <CourierTutOverlay
+            isOpen={isCourierGuideOpen}
+            onClose={() => setIsCourierGuideOpen(false)}
+            tutorial={courierToolData.tutorial}
+            index={courierGuideIdx}
+            setIndex={setCourierGuideIdx}
+          />
+        )}
+
+      {isApUpdateModalOpen && currentStep?.tool_data?.recorder && (
+        <ApUpdateModal
+          isOpen={isApUpdateModalOpen}
+          onClose={() => setIsApUpdateModalOpen(false)}
+          onSave={handleSaveApUpdate}
+          ceacOptions={currentStep.tool_data.recorder.ceac_options}
         />
       )}
       {/* Tutorial Overlay */}
@@ -6144,6 +8563,226 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
         steps={SUBMISSION_TUTORIAL_STEPS}
         onSetIdx={setSubmissionGuideIdx}
       />
+
+      {/* Gathering Guide Overlay (Step 3.4) */}
+      {isGatheringGuideOpen && selectedGatheringItem && (
+        <div className="fixed inset-0 z-[100] bg-white flex flex-col overflow-hidden animate-in slide-in-from-bottom duration-260 ease-[cubic-bezier(0.4,0,0.2,1)] font-sans">
+          {/* Guide Topbar */}
+          <div className="flex items-center p-[18px_24px] border-b border-[#d0e4f7] gap-[16px] shrink-0">
+            <button
+              onClick={() => setIsGatheringGuideOpen(false)}
+              className="w-[36px] h-[36px] rounded-full bg-[#f4f7fb] flex items-center justify-center transition-colors hover:bg-[#d0e4f7] group"
+            >
+              <X
+                size={16}
+                strokeWidth={2}
+                className="text-[#3a4f63] group-hover:text-[#1c2b3a]"
+              />
+            </button>
+            <div className="flex-1 h-1.25 bg-[#d0e4f7] rounded-full overflow-hidden">
+              <div
+                className="h-full bg-linear-to-r from-primary to-primary/70 rounded-full"
+                style={{ width: "100%" }}
+              />
+            </div>
+          </div>
+
+          {/* Guide Body */}
+          <div className="flex-1 overflow-y-auto flex flex-col items-center p-[48px_24px_40px]">
+            <div className="w-full max-w-[600px]">
+              <div className="text-[11px] font-semibold tracking-[0.1em] uppercase text-[#2f6fd4] mb-[16px]">
+                Step 4 · Original Documents Checklist
+              </div>
+              <h2
+                className="text-[clamp(20px,3vw,26px)] font-serif text-[#0c1b33] mb-[8px] leading-[1.25]"
+                style={{ fontFamily: "'DM Serif Display', serif" }}
+              >
+                {selectedGatheringItem.title}
+              </h2>
+              <p className="text-[14px] text-[#3a4f63] mb-[22px] leading-[1.6]">
+                {selectedGatheringItem.sub}
+              </p>
+
+              {/* Document Sections */}
+              <div className="flex flex-col gap-[12px] mb-[24px]">
+                {selectedGatheringItem.sections.map((sec, i) => (
+                  <div
+                    key={i}
+                    className="bg-[#f4f7fb] border border-[#d0e4f7] rounded-[16px] p-[18px_20px]"
+                  >
+                    <div className="text-[12px] font-[700] tracking-[0.06em] uppercase text-[#6b8097] mb-[8px]">
+                      {sec.t}
+                    </div>
+                    <div
+                      className="text-[14px] text-[#3a4f63] leading-[1.7] prose-sm"
+                      dangerouslySetInnerHTML={{ __html: sec.c }}
+                    />
+                  </div>
+                ))}
+              </div>
+
+              {/* Actions */}
+              <div className="flex flex-col gap-[10px] mt-[24px]">
+                <button
+                  onClick={() => {
+                    const isRev =
+                      gatheringStatus[selectedGatheringItem.id] === "reviewed";
+                    if (isRev) return;
+                    const next = {
+                      ...gatheringStatus,
+                      [selectedGatheringItem.id]: "reviewed",
+                    };
+                    setGatheringStatus(next);
+                    actions.updateMetadata({
+                      gathering_status: JSON.stringify(next),
+                    });
+                    setIsGatheringGuideOpen(false);
+                    toast.success("Document marked as packed!");
+                  }}
+                  disabled={
+                    gatheringStatus[selectedGatheringItem.id] === "reviewed"
+                  }
+                  className="p-[14px_24px] bg-[#15744f] text-white border-none rounded-[16px] text-[15px] font-semibold transition-all hover:bg-[#0e5c3c] hover:-translate-y-[1px] active:translate-y-0 disabled:bg-[#d0e4f7] disabled:text-[#6b8097] disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center gap-2"
+                >
+                  {gatheringStatus[selectedGatheringItem.id] === "reviewed" ? (
+                    <>
+                      <Check size={18} strokeWidth={2.5} /> Marked as packed
+                    </>
+                  ) : (
+                    "Mark as packed"
+                  )}
+                </button>
+                <button
+                  onClick={() => setIsGatheringGuideOpen(false)}
+                  className="p-[13px_24px] bg-transparent text-[#3a4f63] border-[1.5px] border-[#d0e4f7] rounded-[16px] text-[14px] font-[500] transition-all hover:border-[#3a4f63] hover:text-[#1c2b3a] flex items-center justify-center gap-2"
+                >
+                  <ChevronLeft size={16} /> Back to checklist
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Medical Exam Guide Overlay (Step 3.5) */}
+      {isMedicalGuideOpen &&
+        currentStep?.tool_data?.type === "medical_exam_guide" && (
+          <div className="fixed inset-0 z-[200] bg-white flex flex-col overflow-hidden animate-in slide-in-from-bottom duration-280 font-sans">
+            {/* Topbar */}
+            <div className="flex items-center p-[18px_24px] border-b border-[#d0e4f7] gap-[16px] shrink-0">
+              <button
+                onClick={() => setIsMedicalGuideOpen(false)}
+                className="w-[36px] h-[36px] rounded-full bg-[#f4f7fb] flex items-center justify-center transition-colors hover:bg-sky-100 group"
+              >
+                <X
+                  size={16}
+                  strokeWidth={2}
+                  className="text-[#3a4f63] group-hover:text-[#1c2b3a]"
+                />
+              </button>
+              <div className="flex-1 h-1.25 bg-[#d0e4f7] rounded-full overflow-hidden">
+                <div
+                  className="h-full bg-linear-to-r from-primary to-[#6aa8f0] transition-all duration-400"
+                  style={{
+                    width: `${((medicalGuideIdx + 1) / currentStep.tool_data.tutorial.length) * 100}%`,
+                  }}
+                />
+              </div>
+              <div className="text-[12px] font-medium text-[#6b8097] shrink-0">
+                {medicalGuideIdx + 1} / {currentStep.tool_data.tutorial.length}
+              </div>
+            </div>
+
+            {/* Body */}
+            <div className="flex-1 overflow-y-auto flex flex-col items-center p-[48px_24px_40px]">
+              {(() => {
+                const s = currentStep.tool_data.tutorial[medicalGuideIdx];
+                const isFirst = medicalGuideIdx === 0;
+                const isLast =
+                  medicalGuideIdx === currentStep.tool_data.tutorial.length - 1;
+
+                return (
+                  <div className="w-full max-w-[580px] flex flex-col">
+                    <div className="text-[11px] font-bold tracking-[0.1em] uppercase text-primary mb-[14px]">
+                      Medical Exam Guide · {s.label}
+                    </div>
+                    <h2
+                      className="text-[clamp(20px,3.2vw,26px)] font-serif text-[#0c1b33] mb-[8px] leading-[1.3]"
+                      style={{ fontFamily: "'DM Serif Display', serif" }}
+                    >
+                      {s.heading}
+                    </h2>
+                    <p className="text-[14px] text-[#3a4f63] leading-[1.7] mb-[22px]">
+                      {s.instruction}
+                    </p>
+
+                    <div className="w-full border-[1.5px] border-[#d0e4f7] rounded-xl overflow-hidden mb-[18px] bg-[#f4f7fb] shadow-sm">
+                      <div className="bg-[#eef3fa] border-b border-[#d0e4f7] p-[10px_14px] flex items-center gap-[6px]">
+                        <div className="w-[9px] h-[9px] rounded-full bg-red-400" />
+                        <div className="w-[9px] h-[9px] rounded-full bg-amber-400" />
+                        <div className="w-[9px] h-[9px] rounded-full bg-emerald-400" />
+                        <div className="ml-auto text-[10px] font-bold uppercase tracking-[0.07em] text-[#6b8097]">
+                          {s.vlabel}
+                        </div>
+                      </div>
+                      <div
+                        className="p-[18px] medical-mock-visual"
+                        dangerouslySetInnerHTML={{ __html: s.visual }}
+                      />
+                    </div>
+
+                    {s.note && (
+                      <div className="bg-[#fef8e8] border border-[#f0d98a] rounded-lg p-[11px_14px] flex gap-2.5 mb-[18px]">
+                        <Info
+                          size={16}
+                          className="text-[#8a6200] shrink-0 mt-[2px]"
+                        />
+                        <span className="text-[13px] text-[#8a6200] leading-[1.55]">
+                          {s.note}
+                        </span>
+                      </div>
+                    )}
+
+                    <div className="flex gap-[10px]">
+                      {!isFirst && (
+                        <button
+                          onClick={() =>
+                            setMedicalGuideIdx(medicalGuideIdx - 1)
+                          }
+                          className="p-[12px_20px] bg-white border-[1.5px] border-[#d0e4f7] rounded-lg text-[14px] font-medium text-[#3a4f63] hover:border-[#3a4f63] transition-all flex items-center gap-2"
+                        >
+                          <ChevronLeft size={16} /> Back
+                        </button>
+                      )}
+                      <button
+                        onClick={() => {
+                          if (isLast) {
+                            setIsMedicalGuideOpen(false);
+                          } else {
+                            setMedicalGuideIdx(medicalGuideIdx + 1);
+                          }
+                        }}
+                        className={`flex-1 p-[12px_20px] text-white border-none rounded-lg text-[14px] font-bold transition-all flex items-center justify-center gap-2 ${
+                          isLast
+                            ? "bg-[#15744f] hover:bg-[#0e5c3c]"
+                            : "bg-primary hover:bg-primary/90"
+                        }`}
+                      >
+                        {isLast ? (
+                          "Done — return to step"
+                        ) : (
+                          <>
+                            Next <ArrowRight size={16} />
+                          </>
+                        )}
+                      </button>
+                    </div>
+                  </div>
+                );
+              })()}
+            </div>
+          </div>
+        )}
     </div>
   );
 };
@@ -7020,3 +9659,460 @@ function CeacCredsModal({
     </div>
   );
 }
+
+function MedicalTutOverlay({
+  isOpen,
+  onClose,
+  tutorial,
+  index,
+  setIndex,
+}: {
+  isOpen: boolean;
+  onClose: () => void;
+  tutorial: any[];
+  index: number;
+  setIndex: (idx: number) => void;
+}) {
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [isOpen]);
+
+  if (!isOpen || !tutorial) return null;
+
+  const s = tutorial[index];
+  const total = tutorial.length;
+  const progress = ((index + 1) / total) * 100;
+  const isFirst = index === 0;
+  const isLast = index === total - 1;
+
+  return (
+    <div className="fixed inset-0 z-[500] bg-white flex flex-col overflow-hidden animate-in slide-in-from-bottom-[18px] duration-[0.28s] ease-in-out font-sans">
+      {/* Topbar */}
+      <div className="flex items-center p-[18px_24px] border-b border-[#d0e4f7] gap-4 shrink-0 bg-white">
+        <button
+          onClick={onClose}
+          className="w-9 h-9 rounded-full border-none bg-[#f4f7fb] cursor-pointer flex items-center justify-center hover:bg-[#e8f1fb] transition-colors shrink-0"
+        >
+          <X size={16} strokeWidth={2} className="text-[#3a4f63]" />
+        </button>
+        <div className="flex-1 h-[5px] bg-[#d0e4f7] rounded-[10px] overflow-hidden">
+          <div
+            className="h-full bg-linear-to-r from-primary to-primary/70 transition-all duration-400 ease-in-out"
+            style={{ width: `${progress}%` }}
+          />
+        </div>
+        <div className="text-[12px] font-medium text-[#6b8097] whitespace-nowrap shrink-0">
+          {index + 1} / {total}
+        </div>
+      </div>
+
+      {/* Body */}
+      <div className="flex-1 overflow-y-auto flex flex-col items-center p-[48px_24px_40px] bg-white">
+        <div className="w-full max-w-[580px] flex flex-col min-h-full">
+          <div className="text-[11px] font-semibold tracking-[0.1em] uppercase text-primary mb-3.5">
+            Medical Exam Guide · {s.label}
+          </div>
+          <h2
+            className="text-[clamp(20px,3.2vw,26px)] text-[#0c1b33] leading-tight mb-2"
+            style={{ fontFamily: "'DM Serif Display', serif" }}
+          >
+            {s.heading}
+          </h2>
+          <p className="text-[14px] text-[#3a4f63] leading-relaxed mb-[18px]">
+            {s.instruction}
+          </p>
+
+          <div className="bg-white border-[1.5px] border-[#d0e4f7] rounded-[10px] overflow-hidden mb-[18px] shadow-[0_2px_12px_rgba(12,27,51,0.06)]">
+            <div className="bg-[#eef3fa] border-b border-[#d0e4f7] p-[10px_14px] flex items-center gap-1.5">
+              <div className="w-[9px] h-[9px] rounded-full bg-[#f87171]" />
+              <div className="w-[9px] h-[9px] rounded-full bg-[#fbbf24]" />
+              <div className="w-[9px] h-[9px] rounded-full bg-[#34d399]" />
+              <div className="text-[10px] font-semibold tracking-[0.07em] uppercase text-[#6b8097] ml-auto">
+                {s.vlabel}
+              </div>
+            </div>
+            <div
+              className="p-[18px] leading-relaxed"
+              dangerouslySetInnerHTML={{ __html: s.visual }}
+            />
+          </div>
+
+          {s.note && (
+            <div className="bg-[#fef8e8] border border-[#f0d98a] rounded-[10px] p-[11px_14px] text-[13px] text-[#8a6200] leading-relaxed mb-[24px]">
+              {s.note}
+            </div>
+          )}
+
+          <div className="mt-auto pt-6 flex gap-2.5">
+            {!isFirst && (
+              <button
+                onClick={() => setIndex(index - 1)}
+                className="p-[12px_20px] bg-transparent border-[1.5px] border-[#d0e4f7] rounded-[10px] text-[14px] font-medium text-[#3a4f63] cursor-pointer transition-all hover:border-[#3a4f63] hover:text-[#0c1b33]"
+              >
+                ← Back
+              </button>
+            )}
+            <button
+              onClick={() => {
+                if (isLast) {
+                  onClose();
+                } else {
+                  setIndex(index + 1);
+                }
+              }}
+              className={`flex-1 p-[12px_20px] rounded-[10px] text-[14px] font-semibold cursor-pointer transition-all hover:-translate-y-px active:translate-y-0
+                ${isLast ? "bg-[#15744f] text-white hover:bg-[#0e5c3c]" : "bg-primary text-white hover:bg-primary/80 shadow-[0_4px_12px_rgba(47,111,212,0.2)]"}
+              `}
+            >
+              {isLast ? "Done — return to step" : "Next →"}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function CourierTutOverlay({
+  isOpen,
+  onClose,
+  tutorial,
+  index,
+  setIndex,
+}: {
+  isOpen: boolean;
+  onClose: () => void;
+  tutorial: any[];
+  index: number;
+  setIndex: (idx: number) => void;
+}) {
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [isOpen]);
+
+  if (!isOpen || !tutorial) return null;
+
+  const s = tutorial[index];
+  const total = tutorial.length;
+  const progress = ((index + 1) / total) * 100;
+  const isFirst = index === 0;
+  const isLast = index === total - 1;
+
+  return (
+    <div className="fixed inset-0 z-[500] bg-white flex flex-col overflow-hidden animate-in slide-in-from-bottom-[18px] duration-[0.28s] ease-in-out font-sans">
+      {/* Topbar */}
+      <div className="flex items-center p-[18px_24px] border-b border-[#d0e4f7] gap-4 shrink-0 bg-white">
+        <button
+          onClick={onClose}
+          className="w-9 h-9 rounded-full border-none bg-[#f4f7fb] cursor-pointer flex items-center justify-center hover:bg-[#e8f1fb] transition-colors shrink-0"
+        >
+          <X size={16} strokeWidth={2} className="text-[#3a4f63]" />
+        </button>
+        <div className="flex-1 h-[5px] bg-[#d0e4f7] rounded-[10px] overflow-hidden">
+          <div
+            className="h-full bg-linear-to-r from-primary to-primary/70 transition-all duration-400 ease-in-out"
+            style={{ width: `${progress}%` }}
+          />
+        </div>
+        <div className="text-[12px] font-medium text-[#6b8097] whitespace-nowrap shrink-0">
+          {index + 1} / {total}
+        </div>
+      </div>
+
+      {/* Body */}
+      <div className="flex-1 overflow-y-auto flex flex-col items-center p-[48px_24px_40px] bg-white">
+        <div className="w-full max-w-[580px] flex flex-col min-h-full">
+          <div className="text-[11px] font-semibold tracking-[0.1em] uppercase text-primary mb-3.5">
+            Courier Registration Guide · {s.label}
+          </div>
+          <h2
+            className="text-[clamp(20px,3.2vw,26px)] text-[#0c1b33] leading-tight mb-2"
+            style={{ fontFamily: "'DM Serif Display', serif" }}
+          >
+            {s.heading}
+          </h2>
+          <p className="text-[14px] text-[#3a4f63] leading-relaxed mb-[18px]">
+            {s.instruction}
+          </p>
+
+          <div className="bg-white border-[1.5px] border-[#d0e4f7] rounded-[10px] overflow-hidden mb-[18px] shadow-[0_2px_12px_rgba(12,27,51,0.06)]">
+            <div className="bg-[#eef3fa] border-b border-[#d0e4f7] p-[10px_14px] flex items-center gap-1.5">
+              <div className="w-[9px] h-[9px] rounded-full bg-[#f87171]" />
+              <div className="w-[9px] h-[9px] rounded-full bg-[#fbbf24]" />
+              <div className="w-[9px] h-[9px] rounded-full bg-[#34d399]" />
+              <div className="text-[10px] font-semibold tracking-[0.07em] uppercase text-[#6b8097] ml-auto">
+                {s.vlabel}
+              </div>
+            </div>
+            <div
+              className="p-[18px] leading-relaxed courier-mock-visual"
+              dangerouslySetInnerHTML={{ __html: s.visual }}
+            />
+          </div>
+
+          {s.note && (
+            <div className="bg-[#fef8e8] border border-[#f0d98a] rounded-[10px] p-[11px_14px] text-[13px] text-[#8a6200] leading-relaxed mb-[24px]">
+              {s.note}
+            </div>
+          )}
+
+          <div className="mt-auto pt-6 flex gap-2.5">
+            {!isFirst && (
+              <button
+                onClick={() => setIndex(index - 1)}
+                className="p-[12px_20px] bg-transparent border-[1.5px] border-[#d0e4f7] rounded-[10px] text-[14px] font-medium text-[#3a4f63] cursor-pointer transition-all hover:border-[#3a4f63] hover:text-[#0c1b33]"
+              >
+                ← Back
+              </button>
+            )}
+            <button
+              onClick={() => {
+                if (isLast) {
+                  onClose();
+                } else {
+                  setIndex(index + 1);
+                }
+              }}
+              className={`flex-1 p-[12px_20px] rounded-[10px] text-[14px] font-semibold cursor-pointer transition-all hover:-translate-y-px active:translate-y-0
+                ${isLast ? "bg-[#15744f] text-white hover:bg-[#0e5c3c]" : "bg-primary text-white hover:bg-primary/80 shadow-[0_4px_12px_rgba(47,111,212,0.2)]"}
+              `}
+            >
+              {isLast ? "Done — return to step" : "Next →"}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function InterviewDayTutOverlay({
+  isOpen,
+  onClose,
+  tutorial,
+  index,
+  setIndex,
+}: {
+  isOpen: boolean;
+  onClose: () => void;
+  tutorial: any[];
+  index: number;
+  setIndex: (i: number) => void;
+}) {
+  if (!isOpen) return null;
+
+  const s = tutorial[index];
+  const total = tutorial.length;
+  const progress = ((index + 1) / total) * 100;
+  const isFirst = index === 0;
+  const isLast = index === total - 1;
+
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [isOpen]);
+
+  return (
+    <div className="fixed inset-0 z-[200] bg-white flex flex-col overflow-hidden animate-in slide-in-from-bottom-5 duration-300">
+      <div className="flex items-center p-[18px_24px] border-bottom border-[#d0e4f7] gap-4 shrink-0">
+        <button
+          onClick={onClose}
+          className="w-9 h-9 rounded-full bg-[#f4f7fb] flex items-center justify-center transition-all hover:bg-[#e8f1fb]"
+        >
+          <X size={16} className="text-[#3a4f63]" />
+        </button>
+        <div className="flex-1 h-[5px] bg-[#d0e4f7] rounded-full overflow-hidden">
+          <div
+            className="h-full bg-linear-to-r from-primary to-[#6aa8f0] transition-all duration-500"
+            style={{ width: `${progress}%` }}
+          />
+        </div>
+        <div className="text-[12px] font-medium text-[#6b8097]">
+          {index + 1} / {total}
+        </div>
+      </div>
+
+      <div className="flex-1 overflow-y-auto px-6 py-12 sm:px-12">
+        <div className="max-w-[580px] mx-auto w-full flex flex-col">
+          <div className="text-[11px] font-bold tracking-widest uppercase text-primary mb-3.5">
+            Interview Day Guide · {s.label}
+          </div>
+          <h2
+            className="text-[clamp(20px,3.2vw,26px)] text-[#0c1b33] leading-tight mb-2"
+            style={{ fontFamily: "'DM Serif Display', serif" }}
+          >
+            {s.heading}
+          </h2>
+          <p className="text-[14px] text-[#3a4f63] leading-relaxed mb-[18px]">
+            {s.instruction}
+          </p>
+
+          <div className="bg-white border-[1.5px] border-[#d0e4f7] rounded-[10px] overflow-hidden mb-[18px] shadow-[0_2px_12px_rgba(12,27,51,0.06)]">
+            <div className="bg-[#eef3fa] border-b border-[#d0e4f7] p-[10px_14px] flex items-center gap-1.5">
+              <div className="w-[9px] h-[9px] rounded-full bg-[#f87171]" />
+              <div className="w-[9px] h-[9px] rounded-full bg-[#fbbf24]" />
+              <div className="w-[9px] h-[9px] rounded-full bg-[#34d399]" />
+              <div className="text-[10px] font-semibold tracking-[0.07em] uppercase text-[#6b8097] ml-auto">
+                {s.vlabel}
+              </div>
+            </div>
+            <div
+              className="p-[18px] leading-relaxed courier-mock-visual"
+              dangerouslySetInnerHTML={{ __html: s.visual }}
+            />
+          </div>
+
+          {s.note && (
+            <div className="bg-[#fef8e8] border border-[#f0d98a] rounded-[10px] p-[11px_14px] text-[13px] text-[#8a6200] leading-relaxed mb-[24px]">
+              {s.note}
+            </div>
+          )}
+
+          <div className="mt-auto pt-6 flex gap-2.5">
+            {!isFirst && (
+              <button
+                onClick={() => setIndex(index - 1)}
+                className="p-[12px_20px] bg-transparent border-[1.5px] border-[#d0e4f7] rounded-[10px] text-[14px] font-medium text-[#3a4f63] cursor-pointer transition-all hover:border-[#3a4f63] hover:text-[#0c1b33]"
+              >
+                ← Back
+              </button>
+            )}
+            <button
+              onClick={() => {
+                if (isLast) {
+                  onClose();
+                } else {
+                  setIndex(index + 1);
+                }
+              }}
+              className={`flex-1 p-[12px_20px] rounded-[10px] text-[14px] font-semibold cursor-pointer transition-all hover:-translate-y-px active:translate-y-0
+                ${isLast ? "bg-[#15744f] text-white hover:bg-[#0e5c3c]" : "bg-primary text-white hover:bg-primary/80 shadow-[0_4px_12px_rgba(47,111,212,0.2)]"}
+              `}
+            >
+              {isLast ? "Done — return to step" : "Next →"}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ApUpdateModal({
+  isOpen,
+  onClose,
+  onSave,
+  ceacOptions,
+}: {
+  isOpen: boolean;
+  onClose: () => void;
+  onSave: (entry: any) => void;
+  ceacOptions: string[];
+}) {
+  const [date, setDate] = useState(new Date().toISOString().split("T")[0]);
+  const [ceac, setCeac] = useState("");
+  const [note, setNote] = useState("");
+
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 z-[300] bg-black/40 backdrop-blur-[4px] flex items-center justify-center p-5 animate-in fade-in duration-200">
+      <div className="bg-white rounded-[16px] shadow-[0_24px_80px_rgba(12,27,51,0.32),0_4px_20px_rgba(12,27,51,0.16)] w-full max-w-[440px] animate-in slide-in-from-bottom-4 duration-300">
+        <div className="flex items-start justify-between p-6 pb-0 mb-4">
+          <h2
+            className="text-[20px] text-[#0c1b33]"
+            style={{ fontFamily: "'DM Serif Display', serif" }}
+          >
+            Log a Case Update
+          </h2>
+          <button
+            onClick={onClose}
+            className="w-[30px] h-[30px] rounded-full bg-[#f4f7fb] flex items-center justify-center hover:bg-[#e8f1fb] transition-all"
+          >
+            <X size={13} className="text-[#3a4f63]" />
+          </button>
+        </div>
+
+        <div className="p-6 pt-0">
+          <div className="h-[1px] bg-[#d0e4f7] mb-4" />
+
+          <div className="flex flex-col gap-4">
+            <div className="flex flex-col gap-1.5">
+              <label className="text-[11px] font-bold uppercase tracking-wide text-[#6b8097]">
+                Update Date
+              </label>
+              <input
+                type="date"
+                value={date}
+                onChange={(e) => setDate(e.target.value)}
+                className="p-2.5 border-[1.5px] border-[#d0e4f7] rounded-lg text-[14px] outline-none focus:border-primary transition-all"
+              />
+            </div>
+
+            <div className="flex flex-col gap-1.5">
+              <label className="text-[11px] font-bold uppercase tracking-wide text-[#6b8097]">
+                CEAC Status Observed
+              </label>
+              <select
+                value={ceac}
+                onChange={(e) => setCeac(e.target.value)}
+                className="p-2.5 border-[1.5px] border-[#d0e4f7] rounded-lg text-[14px] outline-none focus:border-primary transition-all"
+              >
+                <option value="">Select...</option>
+                {ceacOptions.map((opt) => (
+                  <option key={opt} value={opt}>
+                    {opt}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="flex flex-col gap-1.5">
+              <label className="text-[11px] font-bold uppercase tracking-wide text-[#6b8097]">
+                Notes
+              </label>
+              <textarea
+                value={note}
+                onChange={(e) => setNote(e.target.value)}
+                placeholder="e.g. CEAC still shows AP..."
+                className="p-2.5 border-[1.5px] border-[#d0e4f7] rounded-lg text-[14px] outline-none focus:border-primary transition-all min-height-[70px]"
+              />
+            </div>
+
+            <button
+              onClick={() => {
+                onSave({ date, ceac, note, id: Date.now().toString() });
+                onClose();
+              }}
+              className="w-full p-3.5 bg-primary text-white rounded-lg font-bold transition-all hover:bg-primary/90"
+            >
+              Save Update
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export default StepView;

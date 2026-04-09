@@ -138,6 +138,24 @@ export interface DocumentItem {
   group?: string;
 }
 
+export interface DocumentGatheringItem {
+  id: string;
+  icon: string;
+  title: string;
+  sub: string;
+  sections: {
+    t: string;
+    c: string;
+  }[];
+}
+
+export interface DocumentGatheringGroup {
+  id: string;
+  label: string;
+  badge: "Required" | "Required if applicable" | "Recommended";
+  items: DocumentGatheringItem[];
+}
+
 export interface ToolChip {
   label: string;
   type: "role" | "tool" | "newtab" | "uscis" | "path";
@@ -229,6 +247,7 @@ export interface ToolData {
     href?: string;
     note?: string;
     launched_note?: string;
+    type?: string;
     return_note?: { title: string; body: string };
   };
   /** Payment fee display block — shown inside the launch module for step 9 */
@@ -249,6 +268,9 @@ export interface ToolData {
   };
   action_cards?: ActionCard[];
   upload_requirements?: string[];
+  doc_gathering?: {
+    groups: DocumentGatheringGroup[];
+  };
   secondary_actions?: SecondaryAction[];
   wallet_integration?: {
     portal_type: "USCIS" | "NVC" | "COURIER";
@@ -257,6 +279,12 @@ export interface ToolData {
     label: string;
     items: string[];
   }[];
+  tutorial?: any[];
+  checklists?: any[];
+  tips?: string[];
+  outcomes?: any[];
+  readiness_grid?: any[];
+  type?: string;
   disclaimer?: string;
 }
 

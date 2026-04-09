@@ -2882,6 +2882,7 @@
       "chapter_number": 3,
       "chapter_name": "Stage III: Medical + Interview",
       "chapter_description": "Complete medical exam → Attend consular interview → Visa decision",
+      "timeline": "Interview within 2-4 weeks of letter",
       "estimated_duration_months": 1,
       "display_order": 3,
       "steps": [
@@ -2889,78 +2890,299 @@
           "step_key": "step_3_1",
           "step_number": 1,
           "step_name": "Schedule Medical Examination",
-          "step_description": "Contact the IOM clinic to book your mandatory medical exam. This must take place 1-5 days before your actual interview.",
+          "step_short_description": "Official medical clearance",
+          "step_description": "Every immigrant visa applicant must complete a medical examination with an embassy-approved physician before their interview.",
+          "step_type": "tool",
           "who": "Beneficiary",
-          "where": "IOM Pakistan",
+          "where": "Approved Panel Physicians",
+          "estimated_duration_days": 1,
+          "is_required": true,
+          "display_order": 1,
           "actions": [
-            "Contact IOM clinic",
-            "Book appointment 1-5 days before interview",
-            "Note documents needed",
-            "Save confirmation"
+            "Select booking method",
+            "Find approved physician",
+            "Schedule appointment",
+            "Record appointment details"
           ],
-          "pakistanSpecific": "IOM Islamabad: +92-51-111-466-789. IOM Karachi: +92-21-111-466-789. IOM Lahore: +92-42-111-466-789",
-          "fee": "$200-300 USD equivalent",
-          "notes": "Medical results valid 6 months. Schedule 2-3 days before interview ideally.",
-          "relevantTools": [
-            {
-              "label": "Polio Vaccination Guide",
-              "labelUr": "پولیو ویکسینیشن گائیڈ",
-              "href": "/guides/polio-vaccination-guide",
-              "type": "guide"
-            }
-          ]
+          "tool_data": {
+            "id": "step_3_1",
+            "type": "medical_exam",
+            "title": "Schedule Medical Examination",
+            "subtitle": "Every immigrant visa applicant must complete a medical exam with an embassy-approved physician before their interview."
+          }
         },
         {
           "step_key": "step_3_2",
           "step_number": 2,
-          "step_name": "Obtain Fresh Police Certificate",
+          "step_name": "Obtain Polio Vaccination Certificate",
+          "step_short_description": "Required for Pakistan applicants",
+          "step_description": "Pakistan-origin applicants must obtain a polio vaccination certificate before the consular interview. This is a required compliance step for all immigrant visa applicants.",
           "who": "Beneficiary",
-          "where": "Pakistan police authorities",
-          "timeline": "3-7 days (Punjab/Islamabad)",
+          "where": "Government vaccination post / WHO site",
+          "timeline": "1-2 days",
+          "step_type": "tool",
+          "tool_data": {
+            "type": "polio_certificate",
+            "disclaimer": "Rahvana provides structured guidance only. Confirm current polio documentation requirements directly with your embassy before attending the medical exam."
+          }
+        },
+        {
+          "step_key": "step_3_3",
+          "step_number": 3,
+          "step_name": "Obtain Fresh Police Clearance Certificate",
+          "step_short_description": "Required for interview",
+          "step_description": "A fresh police clearance certificate (PCC) is required for the consular interview. Apply now — this can take several weeks and must be tracked until received.",
+          "step_type": "tool",
+          "who": "Beneficiary",
+          "where": "Pakistan police authorities / Rahvana Sindh Service",
+          "timeline": "3-14 days",
           "actions": [
             "Apply at Police Khidmat Markaz or online",
             "Provide CNIC, passport, affidavit if needed",
             "Collect certificate",
             "Keep original for interview"
           ],
-          "notes": "Get new if previous one is 6+ months old. Need ORIGINAL for interview.",
-          "pakistanSpecific": "Punjab Police Portal: pkm.punjab.gov.pk or islamabadpolice.gov.pk"
+          "tool_data": {
+            "type": "police_clearance",
+            "disclaimer": "Rahvana's application submission service is available for Sindh only. Rahvana submits the application but the user must collect the certificate. Always verify PCC requirements with your consulate."
+          }
         },
         {
-          "step_key": "step_3_3",
-          "step_number": 3,
+          "step_key": "step_3_4",
+          "step_number": 4,
           "step_name": "Gather Original Documents",
+          "step_short_description": "Official document compilation",
+          "step_description": "Assemble the original hard-copy documents needed for your consular interview. Review each item and organize your packet carefully before interview day.",
+          "step_type": "tool",
           "who": "Beneficiary",
           "where": "Document compilation",
-          "documents": [
-            "Valid passport",
-            "CNIC",
-            "Interview letter",
-            "DS-260 confirmation",
-            "Birth certificate (original)",
-            "Nikah Nama (original)",
-            "Translation (original)",
-            "Union Council certificate",
-            "Police certificate (original)",
-            "Sealed medical envelope",
-            "Photos (2)",
-            "I-864 package",
-            "Tax transcripts",
-            "Employment letter",
-            "Pay stubs"
-          ],
+          "timeline": "2-3 days",
           "actions": [
             "Collect all original documents",
             "Make 2 sets of copies",
             "Organize in folders",
             "Label clearly"
           ],
-          "notes": "Bring originals + copies. Organize petitioner and beneficiary documents separately."
+          "tool_data": {
+            "type": "gathering_checklist",
+            "doc_gathering": {
+              "groups": [
+                {
+                  "id": "civil",
+                  "label": "Bring — Original Civil Documents",
+                  "badge": "Required",
+                  "items": [
+                    {
+                      "id": "passport",
+                      "icon": "passport",
+                      "title": "Passport (current + any prior passports)",
+                      "sub": "Bring originals of all passports — current and expired — that contain U.S. visa history",
+                      "sections": [
+                        {
+                          "t": "What to bring",
+                          "c": "<p>Bring the original current passport with at least 6 months validity beyond the interview date. Also bring any prior passports that may contain relevant U.S. visa history.</p>"
+                        },
+                        {
+                          "t": "Photocopies",
+                          "c": "<p>Bring one photocopy of the biographic page of each passport in a separate section from the originals.</p>"
+                        }
+                      ]
+                    },
+                    {
+                      "id": "birth-cert",
+                      "icon": "birth",
+                      "title": "Original Birth Certificate",
+                      "sub": "Beneficiary's official civil birth record",
+                      "sections": [
+                        {
+                          "t": "What to bring",
+                          "c": "<p>The original NADRA-issued CBRC or other official birth certificate. If you have an older Union Council record, bring both the original and the NADRA CBRC if available.</p>"
+                        },
+                        {
+                          "t": "Translation",
+                          "c": "<p>Bring the original Urdu certificate and the certified English translation together in the same tab.</p>"
+                        }
+                      ]
+                    },
+                    {
+                      "id": "marriage-cert",
+                      "icon": "marriage",
+                      "title": "Original Marriage Certificate / Nikah Nama",
+                      "sub": "Original Nikah Nama and NADRA MRC, plus translations",
+                      "sections": [
+                        {
+                          "t": "What to bring",
+                          "c": "<p>Bring the original Nikah Nama and the NADRA Marriage Registration Certificate. Both should be accompanied by their certified English translations.</p>"
+                        },
+                        {
+                          "t": "Important",
+                          "c": "<p>Do not submit photocopies at the window unless asked. Bring originals first and let the consular officer direct you.</p>"
+                        }
+                      ]
+                    },
+                    {
+                      "id": "pcc",
+                      "icon": "pcc",
+                      "title": "Original Police Clearance Certificate (Fresh)",
+                      "sub": "The fresh PCC obtained for this interview cycle",
+                      "sections": [
+                        {
+                          "t": "What to bring",
+                          "c": "<p>Bring the original fresh PCC obtained during Chapter 3 Step 3. Do not bring the older PCC submitted during NVC processing — this must be the fresh one.</p>"
+                        },
+                        {
+                          "t": "Validity",
+                          "c": "<p>Confirm the PCC is still within the validity window for your embassy. Some posts specify a maximum age for the PCC at interview.</p>"
+                        }
+                      ]
+                    },
+                    {
+                      "id": "interview-letter",
+                      "icon": "mail",
+                      "title": "Interview Appointment Letter",
+                      "sub": "The original printed NVC interview appointment letter",
+                      "sections": [
+                        {
+                          "t": "What to bring",
+                          "c": "<p>Print and bring the original interview appointment letter received from NVC. This is your primary identification for entry into the embassy grounds.</p>"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "id": "financial",
+                  "label": "Bring — Financial & Sponsor Documents",
+                  "badge": "Required",
+                  "items": [
+                    {
+                      "id": "i864-original",
+                      "icon": "banknote",
+                      "title": "Original Affidavit of Support — Petitioner",
+                      "sub": "Original signed I-864 or I-864EZ from the petitioner",
+                      "sections": [
+                        {
+                          "t": "What to bring",
+                          "c": "<p>Bring the original signed Affidavit of Support. This must be the wet-ink signed original, not a photocopy.</p>"
+                        }
+                      ]
+                    },
+                    {
+                      "id": "tax-docs",
+                      "icon": "calculator",
+                      "title": "Most Recent Tax Evidence — Petitioner",
+                      "sub": "Federal tax return or IRS transcript copies",
+                      "sections": [
+                        {
+                          "t": "What to bring",
+                          "c": "<p>Bring copies of the most recent year's tax return or IRS transcript. Originals are not always required — copies are generally acceptable, but bring them organized.</p>"
+                        }
+                      ]
+                    },
+                    {
+                      "id": "employment-letter",
+                      "icon": "briefcase",
+                      "title": "Employment Letter — Petitioner",
+                      "sub": "Current employment confirmation letter if available",
+                      "sections": [
+                        {
+                          "t": "What to bring",
+                          "c": "<p>If the petitioner's current employer can provide an employment letter, bring it as supporting evidence of current income. Not always required but useful to have.</p>"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "id": "interview-day",
+                  "label": "Bring — Interview Day Items",
+                  "badge": "Required if applicable",
+                  "items": [
+                    {
+                      "id": "photos",
+                      "icon": "camera",
+                      "title": "Passport-Style Photos",
+                      "sub": "2–4 recent passport-style photos meeting embassy specifications",
+                      "sections": [
+                        {
+                          "t": "What to bring",
+                          "c": "<p>Bring 2–4 recent passport-style photos. Check your specific embassy's photo requirements for size and background specifications. US Embassy Pakistan typically requires standard 2x2 inch photos.</p>"
+                        }
+                      ]
+                    },
+                    {
+                      "id": "polio-cert",
+                      "icon": "polio",
+                      "title": "Polio Vaccination Certificate (Original)",
+                      "sub": "The original polio vaccination certificate from an approved site",
+                      "sections": [
+                        {
+                          "t": "What to bring",
+                          "c": "<p>Bring the original polio vaccination certificate obtained in Step 2. The panel physician should have already reviewed it, but bring the original in case it is requested at the window.</p>"
+                        }
+                      ]
+                    },
+                    {
+                      "id": "medical-packet",
+                      "icon": "medical",
+                      "title": "Medical Examination Results Packet Reference",
+                      "sub": "Not brought by you — sealed by physician — but confirm it was sent",
+                      "sections": [
+                        {
+                          "t": "How this works",
+                          "c": "<p>The medical examination results are sealed by the panel physician and sent directly to the embassy. You do not carry the medical packet yourself. Confirm with your physician that the results were submitted before your interview date.</p>"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "id": "organization",
+                  "label": "Recommended — Organization Items",
+                  "badge": "Recommended",
+                  "items": [
+                    {
+                      "id": "folders",
+                      "icon": "folder",
+                      "title": "Labeled Folder System or Document Binder",
+                      "sub": "Organized tabs separating each document group",
+                      "sections": [
+                        {
+                          "t": "Why this matters",
+                          "c": "<p>A well-organized packet makes it easier to quickly produce any document the officer requests. Disorganized packets slow down the interview and create unnecessary stress.</p>"
+                        },
+                        {
+                          "t": "Suggested approach",
+                          "c": "<ul><li>Use a clear-pocket binder or labeled folder tabs</li><li>Label each section clearly: Passport / Civil / Financial / Extras</li><li>Keep originals in one section, copies in another</li></ul>"
+                        }
+                      ]
+                    },
+                    {
+                      "id": "copies-set",
+                      "icon": "copy",
+                      "title": "Full Photocopy Set of All Documents",
+                      "sub": "One complete photocopy set kept separate from originals",
+                      "sections": [
+                        {
+                          "t": "Why bring copies",
+                          "c": "<p>Consular officers may retain copies of certain documents. Having a pre-prepared copy set means you don't risk giving away originals unnecessarily.</p>"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            "disclaimer": "Rahvana provides structured guidance only. Always verify required documents with your specific embassy's interview instructions."
+          }
         },
         {
-          "step_key": "step_3_4",
-          "step_number": 4,
+          "step_key": "step_3_5",
+          "step_number": 5,
+          "step_type": "tool",
           "step_name": "Attend Medical Exam",
+          "step_short_description": "Medical screening and vaccinations",
+          "step_description": "Attend your scheduled medical examination with an embassy-approved panel physician. This is a mandatory health screening and vaccination review for all immigrants.",
           "who": "Beneficiary",
           "where": "IOM clinic",
           "timeline": "2-4 hours at clinic",
@@ -2983,12 +3205,149 @@
               "href": "/book-appointment",
               "type": "service"
             }
-          ]
+          ],
+          "tool_data": {
+            "type": "medical_exam_guide",
+            "bring": [
+              "Passport (original)",
+              "NVC interview appointment letter",
+              "Polio vaccination certificate (original)",
+              "Passport-style photos (2–4)",
+              "Medical exam fee (confirm with physician)",
+              "Any prior vaccination records if available"
+            ],
+            "pitfalls": [
+              "Forgetting the polio vaccination certificate",
+              "Arriving late — exams may not accommodate latecomers",
+              "Not having the exam fee ready in the accepted form",
+              "Using an unapproved or removed panel physician",
+              "Not confirming medical results were sent to the embassy"
+            ],
+            "tips": [
+              "Arrive 15–20 minutes early to handle registration",
+              "Bring a snack and water — exams can take several hours",
+              "Wear comfortable, easy-to-remove clothing for physical examination",
+              "After the exam, confirm the physician will send results before your interview date"
+            ],
+            "tutorial": [
+              {
+                "label": "Step 1 of 6",
+                "heading": "What to bring to the exam",
+                "instruction": "Gather all required items the day before. Arriving without required documents may mean rescheduling.",
+                "vlabel": "Required Items",
+                "visual": "<div class=\"mock-card\"><div class=\"mock-title\">Bring checklist</div><div class=\"mock-row\">Passport (original) <span class=\"mock-badge-green\">Required</span></div><div class=\"mock-row\">NVC appointment letter <span class=\"mock-badge-green\">Required</span></div><div class=\"mock-row\">Polio vaccination certificate <span class=\"mock-badge-green\">Required</span></div><div class=\"mock-row\">Passport photos (2–4) <span class=\"mock-badge-green\">Required</span></div><div class=\"mock-row\">Exam fee (cash/form per physician) <span class=\"mock-badge-green\">Required</span></div></div>"
+              },
+              {
+                "label": "Step 2 of 6",
+                "heading": "Arrive on time — allow extra time",
+                "instruction": "Arrive at least 15–20 minutes before your scheduled time. Security checks and registration take time. Latecomers may not be accommodated.",
+                "vlabel": "Arrival Timing",
+                "note": "If your appointment is in the morning, account for morning traffic — especially in major cities like Islamabad or Karachi.",
+                "visual": "<div class=\"mock-card\"><div class=\"mock-title\">Timing guidance</div><div style=\"font-size:13px;color:var(--ink-soft);line-height:1.6;margin-top:4px\">Arrive 15–20 minutes early. Registration and waiting can take time before the exam begins. Bring something to read — exams often involve waiting periods.</div></div>"
+              },
+              {
+                "label": "Step 3 of 6",
+                "heading": "How the exam typically proceeds",
+                "instruction": "The panel physician will conduct a physical exam, review vaccination records, check medical history, and may order blood or other tests as required by the embassy.",
+                "vlabel": "Exam Flow",
+                "visual": "<div class=\"mock-card\"><div class=\"mock-title\">Typical exam sequence</div><div class=\"mock-row\">Registration and document review</div><div class=\"mock-row\">Physical examination</div><div class=\"mock-row\">Vaccination review and administration if needed</div><div class=\"mock-row\">Blood / lab tests if required</div><div class=\"mock-row\">Results sealed and sent to embassy</div></div>"
+              },
+              {
+                "label": "Step 4 of 6",
+                "heading": "Vaccinations at the exam",
+                "instruction": "The physician may administer required vaccinations during the exam. Required vaccines vary by immigration category and age. The polio certificate you bring will be reviewed here.",
+                "vlabel": "Vaccinations",
+                "note": "Bring your polio vaccination certificate — the physician needs to confirm and document it as part of the medical packet.",
+                "visual": "<div class=\"mock-card\"><div class=\"mock-title\">Vaccination at the exam</div><div style=\"font-size:13px;color:var(--ink-soft);line-height:1.6;margin-top:4px\">Required vaccinations are administered by the physician if not already received. The physician documents all vaccinations as part of the sealed medical packet sent to the embassy.</div></div>"
+              },
+              {
+                "label": "Step 5 of 6",
+                "heading": "The fee — confirm in advance",
+                "instruction": "The medical exam fee is paid directly to the physician. It is not part of the visa fee. Confirm the amount and accepted payment methods with your physician before the exam day.",
+                "vlabel": "Fee Payment",
+                "visual": "<div class=\"mock-card\"><div class=\"mock-title\">Fee guidance</div><div style=\"font-size:13px;color:var(--ink-soft);line-height:1.6;margin-top:4px\">Fees vary by physician and exam complexity. Confirm the current fee and payment method (cash vs card) directly with the physician's office before your appointment.</div></div>"
+              },
+              {
+                "label": "Step 6 of 6",
+                "heading": "After the exam — confirm results will be sent",
+                "instruction": "Before leaving, confirm with the physician's office that the sealed medical results will be forwarded to the embassy before your interview date. Do not assume this happens automatically.",
+                "vlabel": "Post-Exam",
+                "visual": "<div style=\"background:var(--green-bg);border:1px solid var(--green-border);border-radius:var(--radius-sm);padding:14px 16px\"><div style=\"font-size:13px;font-weight:600;color:var(--green);margin-bottom:4px\">Exam complete</div><div style=\"font-size:12px;color:var(--ink-soft);line-height:1.5\">Confirm the physician's office will transmit the sealed results to the embassy before your interview date. Follow up if you have not received confirmation.</div></div>"
+              }
+            ]
+          }
         },
         {
-          "step_key": "step_3_5",
-          "step_number": 5,
+          "step_key": "step_3_6",
+          "step_number": 6,
+          "step_type": "tool",
+          "step_name": "Courier Registration",
+          "step_description": "Register your courier account to receive your visa packet after the interview is approved. Complete the sign-up, follow the guide, and save your credentials and confirmation.",
+          "step_short_description": "Register for visa packet delivery",
+          "who": "Beneficiary",
+          "where": "Home preparation",
+          "actions": [
+            "Register at usvisascheduling.com",
+            "Select courier delivery for Pakistan",
+            "Save your login credentials securely",
+            "Save confirmation page to Document Vault"
+          ],
+          "relevantTools": [
+            {
+              "label": "Courier Portal",
+              "href": "https://www.usvisascheduling.com/",
+              "type": "tool"
+            }
+          ],
+          "tool_data": {
+            "type": "courier_registration",
+            "tutorial": [
+              {
+                "label": "Step 1 of 5",
+                "heading": "Open the courier registration portal",
+                "instruction": "Click 'Open Courier Registration' on the main page to open the USVisaScheduling sign-up portal. This is the official courier service for U.S. visa delivery in Pakistan.",
+                "vlabel": "Courier Portal",
+                "visual": "<div class=\"mock-card\"><div class=\"mock-title\">usvisascheduling.com</div><div style=\"font-size:13px;color:var(--ink-soft);line-height:1.6;margin-top:4px\">Create a new account or sign in to register your courier delivery preferences for your visa packet.</div></div>"
+              },
+              {
+                "label": "Step 2 of 5",
+                "heading": "Create your account",
+                "instruction": "Select 'Create Account' or 'Sign Up'. Enter your email address and create a secure password. Verify your email address when prompted.",
+                "vlabel": "Account Creation",
+                "note": "Use an email address you actively monitor — all courier notifications will be sent there.",
+                "visual": "<div class=\"mock-card\"><div class=\"mock-title\">Create Account</div><div class=\"mock-field\"><div class=\"mock-field-label\">Email Address</div><div class=\"mock-field-input\">your@email.com</div></div><div class=\"mock-field\"><div class=\"mock-field-label\">Password</div><div class=\"mock-field-input\">••••••••••</div></div><div class=\"mock-btn\">Create Account</div></div>"
+              },
+              {
+                "label": "Step 3 of 5",
+                "heading": "Select Pakistan courier delivery",
+                "instruction": "After creating your account, select your country and configure courier delivery preferences for Pakistan. Choose the city or region matching your preferred delivery address.",
+                "vlabel": "Courier Configuration",
+                "visual": "<div class=\"mock-card\"><div class=\"mock-title\">Delivery Preferences</div><div class=\"hl-box\">Pakistan · Select delivery region</div><div style=\"margin-top:10px;font-size:13px;color:var(--ink-soft)\">Choose the city / region closest to your preferred delivery address for the visa packet.</div></div>"
+              },
+              {
+                "label": "Step 4 of 5",
+                "heading": "Complete registration and save confirmation",
+                "instruction": "Complete the registration flow and save or print the confirmation page. This confirmation record should be stored in your Document Vault.",
+                "vlabel": "Registration Confirmed",
+                "visual": "<div style=\"background:var(--green-bg);border:1px solid var(--green-border);border-radius:var(--radius-sm);padding:14px 16px\"><div style=\"font-size:13px;font-weight:600;color:var(--green);margin-bottom:4px\">Registration complete</div><div style=\"font-size:12px;color:var(--ink-soft);line-height:1.5\">Save the confirmation page or email to your Document Vault.</div></div>"
+              },
+              {
+                "label": "Step 5 of 5",
+                "heading": "Return here and save your credentials",
+                "instruction": "Return to this step and use the credential vault card to save your courier account email and password in the Portal Wallet.",
+                "vlabel": "Save Credentials",
+                "visual": "<div class=\"mock-card\"><div class=\"mock-title\">Save to Portal Wallet</div><div style=\"font-size:13px;color:var(--ink-soft);line-height:1.5;margin-top:4px\">Save your courier account email and password so you can access it later when your visa is ready for delivery.</div></div>"
+              }
+            ]
+          }
+        },
+        {
+          "step_key": "step_3_7",
+          "step_number": 7,
+          "step_type": "tool",
           "step_name": "Prepare for Interview",
+          "step_description": "Use Rahvana's interview prep tool to practice questions, review your case history, and build confidence before interview day.",
+          "step_short_description": "Practice questions and build confidence",
           "who": "Beneficiary",
           "where": "Home preparation",
           "actions": [
@@ -2999,20 +3358,65 @@
             "Plan outfit (professional)",
             "Arrange travel to Islamabad if needed"
           ],
-          "notes": "Be truthful, consistent. Know spouse details well. Dress professionally - no jeans/t-shirts.",
-          "relevantTools": [
-            {
-              "label": "Interview Prep Tool",
-              "labelUr": "انٹرویو پریپ ٹول",
-              "href": "/interview-prep",
-              "type": "tool"
-            }
-          ]
+          "tool_data": {
+            "type": "interview_prep",
+            "chips": [
+              {
+                "label": "Interview Prep",
+                "type": "purple"
+              },
+              {
+                "label": "Practice Tool",
+                "type": "sky"
+              },
+              {
+                "label": "Build Confidence",
+                "type": "green"
+              }
+            ],
+            "launch_module": {
+              "title": "Rahvana Interview Prep Tool",
+              "heading": "Practice questions, review facts, build confidence",
+              "icon": "message",
+              "cues": [
+                "Review likely interview questions and ideal answers",
+                "Review your DS-260 responses for consistency",
+                "Strengthen recall of your relationship timeline",
+                "Practice concise, truthful, confident answers"
+              ]
+            },
+            "readiness_grid": [
+              {
+                "title": "Review before your interview",
+                "items": [
+                  "DS-260 answers — know every section you completed",
+                  "Relationship timeline — dates, meetings, visits",
+                  "Sponsor income and financial details",
+                  "Civil document details — names, dates, record history",
+                  "Travel history and prior U.S. visa history if any"
+                ]
+              },
+              {
+                "title": "Mindset and approach",
+                "items": [
+                  "Answer only what is asked — do not volunteer extra information",
+                  "Answer truthfully and consistently with your filed documents",
+                  "Stay calm — the officer is doing their job, not targeting you",
+                  "If unsure, say so calmly — do not guess",
+                  "Practice out loud, not just in your head"
+                ]
+              }
+            ]
+          },
+          "disclaimer": "Rahvana provides structured guidance only. Interview preparation does not guarantee any outcome. Always answer consular questions truthfully."
         },
         {
-          "step_key": "step_3_6",
-          "step_number": 6,
+          "step_key": "step_3_8",
+          "step_number": 8,
+          "step_type": "tool",
           "step_name": "Attend Visa Interview",
+          "step_description": "Your interview day has arrived. Know exactly what to bring, how to prepare at the door, and what to expect inside the consular window.",
+          "step_short_description": "What to expect on interview day",
           "who": "Beneficiary",
           "where": "U.S. Embassy Islamabad",
           "timeline": "5-20 minutes interview",
@@ -3026,26 +3430,159 @@
             "Answer questions honestly",
             "Receive decision"
           ],
+          "tool_data": {
+            "type": "interview_day",
+            "chips": [
+              {
+                "label": "Consular Interview",
+                "type": "purple"
+              },
+              {
+                "label": "What to Expect",
+                "type": "sky"
+              },
+              {
+                "label": "Interview Day",
+                "type": "gold"
+              }
+            ],
+            "launch_module": {
+              "title": "Interview Day Walkthrough",
+              "heading": "Step-by-step guide from arrival to outcome",
+              "icon": "building",
+              "cues": [
+                "Arrival timing and embassy entry",
+                "Security, biometrics, and document intake",
+                "Consular interview flow and common questions",
+                "Possible outcomes and what happens next"
+              ]
+            },
+            "tutorial": [
+              {
+                "label": "Step 1 of 8",
+                "heading": "Prepare the night before",
+                "instruction": "The night before your interview, lay out your complete document packet, confirm your appointment letter is printed, and ensure your transport to the embassy is planned. Do not leave anything to the morning.",
+                "vlabel": "Pre-Interview Checklist",
+                "visual": "<div class=\"mock-card\">\n      <div class=\"mock-title\">Night-before checklist</div>\n      <div class=\"mock-row\">Appointment letter printed <span class=\"mock-badge-green\">Ready</span></div>\n      <div class=\"mock-row\">Document packet organized <span class=\"mock-badge-green\">Ready</span></div>\n      <div class=\"mock-row\">Transport arranged <span class=\"mock-badge-green\">Confirmed</span></div>\n      <div class=\"mock-row\">Passport photos packed <span class=\"mock-badge-green\">Ready</span></div>\n      <div class=\"mock-row\">Originals and copies separated <span class=\"mock-badge-green\">Done</span></div>\n    </div>"
+              },
+              {
+                "label": "Step 2 of 8",
+                "heading": "Arrive early — embassy entry is strict",
+                "instruction": "Arrive at the embassy at least 20–30 minutes before your scheduled appointment time. Embassy security queues can be slow. Latecomers may not be admitted for their scheduled slot.",
+                "vlabel": "Arrival Timing",
+                "note": "Do not carry electronics beyond what is permitted by the embassy. Check the specific embassy's guidelines on phones and devices before arrival.",
+                "visual": "<div class=\"mock-card\">\n      <div class=\"mock-title\">Arrival guidance</div>\n      <div style=\"font-size:13px;color:var(--ink-soft);line-height:1.6;margin-top:4px\">\n        Plan for 20–30 minutes of buffer time. Factor in traffic, parking, and security queue length — especially at high-volume posts like Islamabad or Karachi.\n      </div>\n      <div class=\"hl-box\" style=\"margin-top:12px\">Earlier is always safer than exactly on time</div>\n    </div>"
+              },
+              {
+                "label": "Step 3 of 8",
+                "heading": "Security screening and document intake",
+                "instruction": "At entry, your appointment letter and passport will be checked. You will pass through security screening. Some items — including certain electronics — may need to be left outside or checked in.",
+                "vlabel": "Security & Entry",
+                "visual": "<div class=\"mock-card\">\n      <div class=\"mock-title\">Entry sequence</div>\n      <div class=\"mock-row\">Appointment letter check at gate</div>\n      <div class=\"mock-row\">Security screening (bag + personal)</div>\n      <div class=\"mock-row\">Document receipt / number assignment</div>\n      <div class=\"mock-row\">Wait in designated area</div>\n    </div>"
+              },
+              {
+                "label": "Step 4 of 8",
+                "heading": "Biometrics — fingerprints and photo",
+                "instruction": "Before your consular interview, you will be called to provide biometrics — fingerprints and a digital photograph. This is routine and applies to almost all immigrant visa applicants.",
+                "vlabel": "Biometrics",
+                "visual": "<div class=\"mock-card\">\n      <div class=\"mock-title\">Biometric collection</div>\n      <div style=\"font-size:13px;color:var(--ink-soft);line-height:1.6;margin-top:4px\">\n        Fingerprints are scanned digitally. You will also be photographed. This takes only a few minutes. Follow the staff instructions exactly.\n      </div>\n    </div>"
+              },
+              {
+                "label": "Step 5 of 8",
+                "heading": "The consular interview window",
+                "instruction": "You will be called to a consular window. The officer will review your documents, ask questions about your relationship, background, and immigration history. Answer concisely and truthfully. Do not volunteer information beyond what is asked.",
+                "vlabel": "Interview at the Window",
+                "note": "Consistency is critical. Your answers must align with your DS-260 responses and the documents you submitted during NVC processing.",
+                "visual": "<div class=\"mock-card\">\n      <div class=\"mock-title\">Common interview questions</div>\n      <div class=\"mock-row\">How did you meet your spouse?</div>\n      <div class=\"mock-row\">When and where was your marriage?</div>\n      <div class=\"mock-row\">What does your petitioner do for work?</div>\n      <div class=\"mock-row\">Have you visited the United States before?</div>\n      <div class=\"mock-row\">Where will you live in the United States?</div>\n    </div>"
+              },
+              {
+                "label": "Step 6 of 8",
+                "heading": "Document review at the window",
+                "instruction": "The officer may ask you to produce specific original documents. Present them calmly and in the order requested. Having a well-organized packet makes this faster and smoother.",
+                "vlabel": "Document Review",
+                "visual": "<div class=\"mock-card\">\n      <div class=\"mock-title\">Be ready to produce</div>\n      <div class=\"mock-row\">Original passport(s)</div>\n      <div class=\"mock-row\">Marriage certificate / Nikah Nama</div>\n      <div class=\"mock-row\">Birth certificate</div>\n      <div class=\"mock-row\">Police clearance certificate</div>\n      <div class=\"mock-row\">Affidavit of Support</div>\n      <div class=\"mock-row\">Passport photos</div>\n    </div>"
+              },
+              {
+                "label": "Step 7 of 8",
+                "heading": "Stay calm — the officer is doing their job",
+                "instruction": "Consular officers ask direct questions. Their tone is professional, not personal. Nervousness is expected and normal. Answer clearly and calmly. If you do not understand a question, politely ask for clarification.",
+                "vlabel": "Interview Mindset",
+                "visual": "<div class=\"calm-box\">\n      Answer only what is asked. Be honest. Be calm. Be concise. You have prepared for this — trust your preparation.\n    </div>"
+              },
+              {
+                "label": "Step 8 of 8",
+                "heading": "Possible outcomes after the interview",
+                "instruction": "The officer will indicate the outcome at the window or shortly after. The three main outcomes are approval, Administrative Processing (AP), or refusal. If AP applies, proceed to Step 9 to track your case.",
+                "vlabel": "Interview Outcomes",
+                "visual": "<div class=\"mock-card\">\n      <div class=\"mock-title\">What you may hear</div>\n      <div class=\"mock-row\">Approved — passport retained, visa to be delivered <span class=\"mock-badge-green\">Best</span></div>\n      <div class=\"mock-row\">Administrative Processing — more time needed <span class=\"mock-badge-amber\">Step 9</span></div>\n      <div class=\"mock-row\">Refused — written reason provided <span class=\"mock-badge-blue\">Consult attorney</span></div>\n    </div>"
+              }
+            ],
+            "checklists": [
+              {
+                "type": "bring",
+                "title": "What to bring",
+                "items": [
+                  "Interview appointment letter (printed original)",
+                  "Current passport (original)",
+                  "All prior passports",
+                  "Original civil documents (organized packet)",
+                  "Passport-style photos (2–4)",
+                  "Petitioner's original Affidavit of Support",
+                  "Tax evidence and employment letter if applicable"
+                ]
+              },
+              {
+                "type": "pitfalls",
+                "title": "Common pitfalls",
+                "items": [
+                  "Arriving without the printed appointment letter",
+                  "Bringing electronic devices that are prohibited beyond security",
+                  "Disorganized packet — makes document retrieval slow and stressful",
+                  "Inconsistent answers — not matching DS-260 responses",
+                  "Volunteering extra information that was not asked",
+                  "Arriving late — embassy entry is strictly time-controlled"
+                ]
+              }
+            ],
+            "tips": [
+              "Arrive 20–30 minutes before your appointment time",
+              "Keep your document packet organized with labeled tabs",
+              "Answer only what is asked — concisely and truthfully",
+              "Stay calm — nervousness is normal and expected",
+              "Have originals on top and copies in a separate section",
+              "If unsure of an answer, say so calmly — do not guess"
+            ],
+            "outcomes": [
+              {
+                "label": "Visa approved",
+                "type": "approved",
+                "icon": "check-circle",
+                "sub": "The officer approves the visa. Your passport will be held and the visa will be delivered via the courier service you registered."
+              },
+              {
+                "label": "Administrative Processing (AP / 221g)",
+                "type": "ap",
+                "icon": "clipboard",
+                "sub": "The officer needs more time or additional documents. This is not a refusal. Proceed to Step 9 to track and manage the AP process."
+              },
+              {
+                "label": "Visa refused",
+                "type": "refused",
+                "icon": "x-circle",
+                "sub": "The officer denies the visa under a specific ground. A refusal typically comes with a written reason. Consult an immigration attorney if this occurs."
+              }
+            ]
+          },
           "pakistanSpecific": "Address: Diplomatic Enclave, Ramna 5, Islamabad. NO mobile phones allowed.",
-          "possibleOutcomes": [
-            "Approved \u2705",
-            "Administrative Processing 221(g) \u26a0\ufe0f",
-            "Denied \u274c"
-          ],
-          "notes": "Common questions: How did you meet? Tell me about your wedding. Where will you live?",
-          "relevantTools": [
-            {
-              "label": "221(g) Action Planner",
-              "labelUr": "221(g) ایکشن پلانر",
-              "href": "/221g-action-planner",
-              "type": "tool"
-            }
-          ]
+          "disclaimer": "Rahvana provides structured guidance only. All interview outcomes depend entirely on the consular officer's determination. Nothing here constitutes legal advice."
         },
         {
-          "step_key": "step_3_7",
-          "step_number": 7,
-          "step_name": "Track Status (If AP)",
+          "step_key": "step_3_9",
+          "step_number": 9,
+          "step_type": "tool",
+          "step_name": "Track Administrative Processing",
+          "step_description": "If your case was placed in Administrative Processing (AP) after the interview, use this step to record status details, track updates, and stay organized while you wait.",
+          "step_short_description": "AP tracker + update log + 221(g)",
           "who": "Beneficiary",
           "where": "ceac.state.gov",
           "actions": [
@@ -3054,7 +3591,85 @@
             "Respond immediately if contacted",
             "Be patient - no way to expedite"
           ],
-          "notes": "AP duration: 2 weeks to 12+ months (unpredictable). Common for security clearances."
+          "tool_data": {
+            "type": "adm_processing",
+            "chips": [
+              {
+                "label": "Administrative Processing",
+                "type": "gold"
+              },
+              {
+                "label": "Case Tracking",
+                "type": "sky"
+              },
+              {
+                "label": "Post-Interview",
+                "type": "green"
+              }
+            ],
+            "explainer": {
+              "eyebrow": "What Administrative Processing means",
+              "title": "AP is not a refusal — it means more review is needed",
+              "body": "Administrative Processing (AP) occurs when the consulate needs additional time to review your case background, security checks, or has requested additional documents. Most AP cases resolve and result in visa issuance. Timelines vary significantly and are outside Rahvana's or the applicant's control."
+            },
+            "recorder": {
+              "title": "Record your AP details",
+              "subtitle": "Save this now so Rahvana can track and remind you",
+              "ceac_options": [
+                "Administrative Processing",
+                "Ready",
+                "Issued",
+                "Refused",
+                "Pending",
+                "Not Available"
+              ],
+              "docs_requested_options": [
+                {
+                  "label": "Select...",
+                  "value": ""
+                },
+                {
+                  "label": "Yes — documents requested",
+                  "value": "yes"
+                },
+                {
+                  "label": "No — no additional docs requested",
+                  "value": "no"
+                },
+                {
+                  "label": "Unknown / not confirmed",
+                  "value": "unknown"
+                }
+              ]
+            },
+            "info_sections": [
+              {
+                "title": "What to do during Administrative Processing",
+                "type": "sky",
+                "icon": "info",
+                "items": [
+                  "Check CEAC status regularly — aim for weekly checks without obsessing over it daily",
+                  "If additional documents were requested, submit them promptly and exactly as specified",
+                  "Monitor the email address you registered with the consulate for any correspondence",
+                  "Log each CEAC status check in the update log above to track any changes over time",
+                  "Ensure your passport remains valid — if AP extends significantly, verify validity",
+                  "If AP extends beyond 180 days, consider consulting an immigration attorney about options"
+                ]
+              },
+              {
+                "title": "What Administrative Processing does not mean",
+                "type": "teal",
+                "icon": "check",
+                "items": [
+                  "AP is not a visa refusal — your case is still being reviewed",
+                  "AP does not mean there is a problem with your relationship or documents",
+                  "Most AP cases eventually result in visa issuance — though no timeline can be guaranteed",
+                  "Contacting the embassy frequently typically does not speed up the process and may not receive a useful response"
+                ]
+              }
+            ],
+            "disclaimer": "Rahvana provides structured tracking guidance only. Administrative Processing timelines are entirely within the U.S. government's control. Nothing here constitutes legal advice. Consult a licensed immigration attorney if needed."
+          }
         }
       ]
     }
