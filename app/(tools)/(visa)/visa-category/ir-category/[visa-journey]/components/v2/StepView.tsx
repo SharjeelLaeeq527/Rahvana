@@ -83,6 +83,7 @@ import { INTERVIEW_SCHEDULING_DATA } from "./InterviewSchedulingData";
 import { APPOINTMENT_RECEIVED_DATA } from "./AppointmentReceivedData";
 import { MEDICAL_EXAM_DATA } from "./MedicalExamData";
 import { POLIO_CERTIFICATE_DATA } from "./PolioCertificateData";
+import { POLICE_CLEARANCE_DATA } from "./PoliceClearanceData";
 
 interface SecurityQuestion {
   id: string;
@@ -257,6 +258,22 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
   );
   const [isPolioGuideOpen, setIsPolioGuideOpen] = useState(false);
   const [polioGuideStep, setPolioGuideStep] = useState(0);
+
+  // Step 3.3 Police Clearance Certificate States
+  const [pccSaved, setPccSaved] = useState(state.metadata.pcc_saved === "true");
+  const [pccReceived, setPccReceived] = useState(
+    state.metadata.pcc_received === "true",
+  );
+  const [pccData, setPccData] = useState({
+    receipt: (state.metadata.pcc_receipt as string) || "",
+    track: (state.metadata.pcc_track as string) || "",
+    date: (state.metadata.pcc_date as string) || "",
+  });
+  const [isPccOverlayOpen, setIsPccOverlayOpen] = useState(false);
+  const [pccOverlayMode, setPccOverlayMode] = useState<
+    "service" | "guide" | ""
+  >("");
+  const [pccOverlayStep, setPccOverlayStep] = useState(0);
 
   const handleToggleSubmissionCheckS10 = (idx: number) => {
     const next = {
@@ -3930,6 +3947,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
               )}
             </div>
           )}
+
           {/* POLIO VACCINATION CERTIFICATE (Step 3.2 SPECIFIC) */}
           {tool.type === "polio_certificate" && (
             <div className="flex flex-col animate-in fade-in slide-in-from-bottom-2 duration-380 font-sans">
@@ -3986,8 +4004,8 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                     }}
                     className={`w-full p-[15px_24px] rounded-[11px] text-[15px] font-semibold cursor-pointer transition-all flex items-center justify-center gap-2.5 ${
                       polioLaunched
-                        ? "bg-[#0e5c3c] text-white/90 shadow-[0_4px_20px_rgba(14,92,60,0.3)] pointer-events-none"
-                        : "bg-primary text-white shadow-[0_4px_20px_rgba(47,111,212,0.35)] hover:bg-primary/70 hover:-translate-y-px hover:shadow-[0_8px_32px_rgba(47,111,212,0.45)] active:translate-y-0"
+                        ? "bg-[#3b7dd8] text-white/90 shadow-[0_4px_20px_rgba(14,92,60,0.3)] pointer-events-none"
+                        : "bg-[#3b7dd8] text-white shadow-[0_4px_20px_rgba(47,111,212,0.35)] hover:bg-[#3b7dd8] hover:-translate-y-px hover:shadow-[0_8px_32px_rgba(47,111,212,0.45)] active:translate-y-0"
                     }`}
                   >
                     <span>
@@ -4083,8 +4101,6 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                 </div>
               </div>
 
-              
-
               {/* Guide Overlay Modal */}
               {isPolioGuideOpen && (
                 <div className="fixed inset-0 z-[200] bg-white flex flex-col overflow-hidden animate-in slide-in-from-bottom-[18px] duration-[0.28s] ease-in-out font-sans">
@@ -4098,7 +4114,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                     </button>
                     <div className="flex-1 h-[5px] bg-[#d0e4f7] rounded-[10px] overflow-hidden">
                       <div
-                        className="h-full bg-gradient-to-r from-primary to-primary/70 transition-all duration-400 ease-in-out"
+                        className="h-full bg-linear-to-r from-primary to-primary/70 transition-all duration-400 ease-in-out"
                         style={{
                           width: `${((polioGuideStep + 1) / POLIO_CERTIFICATE_DATA.guideSteps.length) * 100}%`,
                         }}
@@ -4230,6 +4246,338 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                                 }`}
                               >
                                 {isLast ? "Done — return to step" : "Next →"}
+                              </button>
+                            </div>
+                          </>
+                        );
+                      })()}
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* POLICE CLEARANCE CERTIFICATE (Step 3.3 SPECIFIC) */}
+          {tool.type === "police_clearance" && (
+            <div className="flex flex-col animate-in fade-in slide-in-from-bottom-2 duration-380 font-sans">
+              <div className="flex items-center gap-1.5 flex-wrap mb-8">
+                {POLICE_CLEARANCE_DATA.chips.map((chip, i) => (
+                  <span
+                    key={i}
+                    className={`text-[11px] font-semibold tracking-[0.06em] uppercase px-3 py-1.5 rounded-full whitespace-nowrap border ${
+                      chip.type === "pcc"
+                        ? "bg-[#e8f1fb] text-[#2d4a6e] border-[#d0e4f7]"
+                        : chip.type === "track"
+                          ? "bg-[#f3f0fb] text-[#4a2d8a] border-[#c9bef2]"
+                          : "bg-[#fef8e8] text-[#8a6200] border-[#f0d98a]"
+                    }`}
+                  >
+                    {chip.label}
+                  </span>
+                ))}
+              </div>
+
+              {/* Decision Module */}
+              <div className="relative bg-[#0e1e38] rounded-[16px] border border-white/5 shadow-[0_20px_60px_rgba(12,27,51,0.18),0_4px_16px_rgba(12,27,51,0.12)] overflow-hidden mb-4">
+                <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-[#2f6fd4] via-[#6aa8f0] to-transparent opacity-75" />
+                <div className="p-7.5 sm:p-[30px_32px_26px]">
+                  <div className="text-[10px] font-bold tracking-[0.12em] uppercase text-white/35 mb-1">
+                    {POLICE_CLEARANCE_DATA.decisionModule.eyebrow}
+                  </div>
+                  <div
+                    className="text-[clamp(18px,2.6vw,22px)] text-white/92 leading-tight mb-5"
+                    style={{ fontFamily: "'DM Serif Display', serif" }}
+                  >
+                    {POLICE_CLEARANCE_DATA.decisionModule.heading}
+                  </div>
+                  <div className="h-px bg-white/10 mb-5" />
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                    {POLICE_CLEARANCE_DATA.decisionModule.paths.map(
+                      (path, i) => (
+                        <div
+                          key={i}
+                          onClick={() => {
+                            setPccOverlayMode(path.id as any);
+                            setPccOverlayStep(0);
+                            setIsPccOverlayOpen(true);
+                          }}
+                          className="bg-white/5 border border-white/10 rounded-[10px] p-4 cursor-pointer transition-all hover:bg-white/[0.1] hover:border-white/[0.18] hover:-translate-y-px active:translate-y-0 group"
+                        >
+                          <div className="text-2xl mb-2">{path.icon}</div>
+                          <div className="text-[14px] font-semibold text-white/95 mb-1 group-hover:text-white">
+                            {path.title}
+                          </div>
+                          <div className="text-[12px] text-white/55 leading-relaxed">
+                            {path.sub}
+                          </div>
+                          {path.note && (
+                            <div className="text-[11px] text-[#ffc864]/75 mt-1.5 italic">
+                              {path.note}
+                            </div>
+                          )}
+                        </div>
+                      ),
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Tracking Card */}
+              <div className="bg-white border-[1.5px] border-[#d0e4f7] rounded-[16px] p-[20px_22px] mb-3.5 shadow-sm">
+                <div className="flex items-center gap-2.5 mb-3.5">
+                  <div className="w-9 h-9 rounded-[9px] bg-[#e8f1fb] border border-[#d0e4f7] flex items-center justify-center shrink-0">
+                    <Search size={17} className="text-primary" />
+                  </div>
+                  <div className="text-[14px] font-semibold text-[#0c1b33]">
+                    {POLICE_CLEARANCE_DATA.trackingCard.title}
+                  </div>
+                </div>
+
+                {pccSaved && (
+                  <div className="bg-[#e8f1fb] border-[1.5px] border-[#d0e4f7] rounded-[10px] p-3.5 mb-3 animate-in fade-in slide-in-from-top-2 duration-300">
+                    <div className="text-[10px] font-bold tracking-[0.08em] uppercase text-[#2d4a6e] mb-2">
+                      Application Recorded
+                    </div>
+                    <div className="flex flex-col gap-1.5">
+                      <div className="flex justify-between items-center text-[13px]">
+                        <span className="text-[#6b8097]">
+                          Receipt / Reference
+                        </span>
+                        <span className="font-semibold font-mono text-[#0c1b33]">
+                          {pccData.receipt}
+                        </span>
+                      </div>
+                      {pccData.track && (
+                        <div className="flex justify-between items-center text-[13px]">
+                          <span className="text-[#6b8097]">
+                            Tracking Number
+                          </span>
+                          <span className="font-semibold font-mono text-[#0c1b33]">
+                            {pccData.track}
+                          </span>
+                        </div>
+                      )}
+                      <div className="flex justify-between items-center text-[13px]">
+                        <span className="text-[#6b8097]">Application Date</span>
+                        <span className="font-semibold font-mono text-[#0c1b33]">
+                          {pccData.date || "—"}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3.5">
+                  {POLICE_CLEARANCE_DATA.trackingCard.fields.map((f, i) => (
+                    <div
+                      key={f.id}
+                      className={`flex flex-col gap-1.5 ${f.id === "receipt" ? "sm:col-span-1" : ""}`}
+                    >
+                      <label className="text-[11px] font-semibold tracking-[0.04em] uppercase text-[#6b8097]">
+                        {f.label}
+                      </label>
+                      <input
+                        type={f.id === "date" ? "date" : "text"}
+                        placeholder={
+                          f.id === "receipt"
+                            ? "e.g. 2024-PKN-XXXXX"
+                            : f.id === "track"
+                              ? "Optional"
+                              : ""
+                        }
+                        value={(pccData as any)[f.id]}
+                        onChange={(e) => {
+                          const next = { ...pccData, [f.id]: e.target.value };
+                          setPccData(next);
+                        }}
+                        className="p-[10px_12px] border-[1.5px] border-[#d0e4f7] rounded-[10px] text-[14px] outline-none focus:border-primary focus:shadow-[0_0_0_3px_rgba(47,111,212,0.12)] transition-all"
+                      />
+                    </div>
+                  ))}
+                </div>
+
+                <button
+                  onClick={() => {
+                    if (!pccData.receipt) {
+                      toast.error("Receipt number is required");
+                      return;
+                    }
+                    setPccSaved(true);
+                    actions.updateMetadata({
+                      pcc_saved: "true",
+                      pcc_receipt: pccData.receipt,
+                      pcc_track: pccData.track,
+                      pcc_date: pccData.date,
+                    });
+                    toast.success("Application details saved!");
+                  }}
+                  className="w-full p-[13px_24px] bg-primary text-white border-none rounded-[10px] text-[14px] font-semibold cursor-pointer transition-all hover:bg-primary/70 hover:-translate-y-px active:translate-y-0"
+                >
+                  {POLICE_CLEARANCE_DATA.trackingCard.buttonLabel}
+                </button>
+              </div>
+
+              {/* Pending Reminder Card */}
+              {pccSaved && !pccReceived && (
+                <div className="bg-[#fef8e8] border-[1.5px] border-[#f0d98a] rounded-[16px] p-4.5 sm:p-5 mb-3.5 animate-in fade-in slide-in-from-top-2 duration-380 shadow-sm">
+                  <div className="flex items-center gap-2.5 mb-2.5">
+                    <span className="text-[18px]">📌</span>
+                    <div className="text-[14px] font-semibold text-[#8a6200]">
+                      {POLICE_CLEARANCE_DATA.pendingCard.title}
+                    </div>
+                  </div>
+                  <div className="text-[13px] text-[#8a6200] leading-relaxed mb-4">
+                    {POLICE_CLEARANCE_DATA.pendingCard.body}
+                  </div>
+                  <button
+                    onClick={() => {
+                      setPccReceived(true);
+                      actions.updateMetadata({ pcc_received: "true" });
+                      toast.success("Police certificate marked as received!");
+                    }}
+                    className="w-full p-[11px_18px] bg-[#15744f] text-white border-none rounded-[10px] text-[13px] font-semibold cursor-pointer transition-all hover:bg-[#0e5c3c]"
+                  >
+                    {POLICE_CLEARANCE_DATA.pendingCard.buttonLabel}
+                  </button>
+                </div>
+              )}
+
+              {/* Received Card */}
+              {pccReceived && (
+                <div className="bg-[#e8f5ef] border-[1.5px] border-[#a8d9be] rounded-[16px] p-4.5 sm:p-5 mb-3.5 animate-in fade-in slide-in-from-top-2 duration-380 shadow-sm">
+                  <div className="flex items-center gap-2.5 mb-3">
+                    <span className="text-[18px]">✅</span>
+                    <div className="text-[14px] font-semibold text-[#15744f]">
+                      {POLICE_CLEARANCE_DATA.receivedCard.title}
+                    </div>
+                  </div>
+                  <div className="text-[13px] text-[#0e5c3c] leading-relaxed mb-4">
+                    {POLICE_CLEARANCE_DATA.receivedCard.body}
+                  </div>
+                  <Link
+                    href={POLICE_CLEARANCE_DATA.receivedCard.vaultUrl}
+                    target="_blank"
+                    className="inline-flex items-center gap-2.5 p-[11px_18px] bg-[#15744f] text-white border-none rounded-[10px] text-[13px] font-semibold cursor-pointer transition-all hover:bg-[#0e5c3c] no-underline"
+                  >
+                    <Upload size={14} color="white" strokeWidth={2.5} />
+                    {POLICE_CLEARANCE_DATA.receivedCard.buttonLabel}
+                  </Link>
+                </div>
+              )}
+
+              {/* PCC Path Overlay Modal */}
+              {isPccOverlayOpen && (
+                <div className="fixed inset-0 z-[200] bg-white flex flex-col overflow-hidden animate-in slide-in-from-bottom-[18px] duration-[0.28s] ease-in-out font-sans">
+                  {/* Topbar */}
+                  <div className="flex items-center p-[18px_24px] border-b border-[#d0e4f7] gap-4 shrink-0">
+                    <button
+                      onClick={() => setIsPccOverlayOpen(false)}
+                      className="w-9 h-9 rounded-full border-none bg-[#f4f7fb] cursor-pointer flex items-center justify-center hover:bg-[#e8f1fb] transition-colors shrink-0"
+                    >
+                      <X size={16} strokeWidth={2} className="text-[#3a4f63]" />
+                    </button>
+                    <div className="flex-1 h-[5px] bg-[#d0e4f7] rounded-[10px] overflow-hidden">
+                      <div
+                        className="h-full bg-linear-to-r from-primary to-primary/70 transition-all duration-400 ease-in-out"
+                        style={{
+                          width: `${
+                            ((pccOverlayStep + 1) /
+                              (pccOverlayMode === "service"
+                                ? POLICE_CLEARANCE_DATA.serviceSteps.length
+                                : POLICE_CLEARANCE_DATA.guideSteps.length)) *
+                            100
+                          }%`,
+                        }}
+                      />
+                    </div>
+                    <div className="text-[12px] font-medium text-[#6b8097] whitespace-nowrap shrink-0">
+                      {pccOverlayStep + 1} /{" "}
+                      {pccOverlayMode === "service"
+                        ? POLICE_CLEARANCE_DATA.serviceSteps.length
+                        : POLICE_CLEARANCE_DATA.guideSteps.length}
+                    </div>
+                  </div>
+
+                  {/* Body */}
+                  <div className="flex-1 overflow-y-auto flex flex-col items-center p-[48px_24px_40px]">
+                    <div className="w-full max-w-[540px]">
+                      {(() => {
+                        const steps =
+                          pccOverlayMode === "service"
+                            ? POLICE_CLEARANCE_DATA.serviceSteps
+                            : POLICE_CLEARANCE_DATA.guideSteps;
+                        const s = steps[pccOverlayStep];
+                        const isFirst = pccOverlayStep === 0;
+                        const isLast = pccOverlayStep === steps.length - 1;
+
+                        return (
+                          <>
+                            <div className="text-[11px] font-semibold tracking-[0.1em] uppercase text-primary mb-3.5">
+                              {s.label}
+                            </div>
+                            <h2
+                              className="text-[clamp(20px,3.2vw,26px)] text-[#0c1b33] leading-tight mb-2"
+                              style={{
+                                fontFamily: "'DM Serif Display', serif",
+                              }}
+                            >
+                              {s.heading}
+                            </h2>
+                            <p className="text-[14px] text-[#3a4f63] leading-relaxed mb-5">
+                              {s.instruction}
+                            </p>
+
+                            {s.info && (
+                              <div className="bg-[#e8f1fb] border border-[#d0e4f7] rounded-[10px] p-[14px_16px] text-[13px] text-[#3a4f63] leading-relaxed mb-4 whitespace-pre-line">
+                                {s.info}
+                              </div>
+                            )}
+
+                            {s.warn && (
+                              <div className="bg-[#fef8e8] border border-[#f0d98a] rounded-[10px] p-[13px_15px] text-[13px] text-[#8a6200] leading-relaxed mb-4">
+                                {s.warn}
+                              </div>
+                            )}
+
+                            {(s as any).guideUrl && (
+                              <Link
+                                href={(s as any).guideUrl}
+                                target="_blank"
+                                className="block text-[14px] font-semibold text-primary mb-5 no-underline hover:underline"
+                              >
+                                Open Full PCC Guide →
+                              </Link>
+                            )}
+
+                            <div className="flex gap-2.5 mt-2">
+                              {s.nav.back && (
+                                <button
+                                  onClick={() =>
+                                    setPccOverlayStep((v) => v - 1)
+                                  }
+                                  className="p-[12px_20px] bg-transparent border-[1.5px] border-[#d0e4f7] rounded-[10px] text-[14px] font-medium text-[#3a4f63] cursor-pointer transition-all hover:border-[#3a4f63] hover:text-[#0c1b33]"
+                                >
+                                  ← Back
+                                </button>
+                              )}
+                              <button
+                                onClick={() => {
+                                  if (isLast) {
+                                    setIsPccOverlayOpen(false);
+                                  } else {
+                                    setPccOverlayStep((v) => v + 1);
+                                  }
+                                }}
+                                className={`flex-1 p-[12px_20px] rounded-[10px] text-[14px] font-semibold cursor-pointer transition-all hover:-translate-y-px active:translate-y-0 ${
+                                  isLast
+                                    ? "bg-[#15744f] text-white hover:bg-[#0e5c3c]"
+                                    : "bg-primary text-white hover:bg-primary/70"
+                                }`}
+                              >
+                                {isLast
+                                  ? "Return to tracking →"
+                                  : (s.nav.next ?? "Next →")}
                               </button>
                             </div>
                           </>

@@ -2736,19 +2736,25 @@
           }
         },
         {
-          "id": "III-03",
-          "name": "Obtain Fresh Police Certificate",
+          "step_key": "step_3_3",
+          "step_number": 3,
+          "step_name": "Obtain Fresh Police Clearance Certificate",
+          "step_short_description": "Required for interview",
+          "step_description": "A fresh police clearance certificate (PCC) is required for the consular interview. Apply now — this can take several weeks and must be tracked until received.",
+          "step_type": "tool",
           "who": "Beneficiary",
-          "where": "Pakistan police authorities",
-          "timeline": "3-7 days (Punjab/Islamabad)",
+          "where": "Pakistan police authorities / Rahvana Sindh Service",
+          "timeline": "3-14 days",
           "actions": [
             "Apply at Police Khidmat Markaz or online",
             "Provide CNIC, passport, affidavit if needed",
             "Collect certificate",
             "Keep original for interview"
           ],
-          "notes": "Get new if previous one is 6+ months old. Need ORIGINAL for interview.",
-          "pakistanSpecific": "Punjab Police Portal: pkm.punjab.gov.pk or islamabadpolice.gov.pk"
+          "tool_data": {
+            "type": "police_clearance",
+            "disclaimer":"Rahvana's application submission service is available for Sindh only. Rahvana submits the application but the user must collect the certificate. Always verify PCC requirements with your consulate."
+          }
         },
         {
           "id": "III-04",
