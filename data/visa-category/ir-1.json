@@ -1787,35 +1787,45 @@
               "name": "Filing Fee ($675)",
               "subtitle": "Personal check, money order, or Form G-1450 (Credit Card)",
               "tag": "petitioner",
-              "group": "USCIS Intake Order"
+              "group": "USCIS Intake Order",
+              "status": "not-started",
+              "required": true
             },
             {
               "id": "p_g1145",
               "name": "Form G-1145",
               "subtitle": "e-Notification of Application/Petition Acceptance",
               "tag": "petitioner",
-              "group": "USCIS Intake Order"
+              "group": "USCIS Intake Order",
+              "status": "not-started",
+              "required": true
             },
             {
               "id": "p_i130",
               "name": "Form I-130 (Signed)",
               "subtitle": "Ensure all 12 pages are included and original signature is in black ink",
               "tag": "petitioner",
-              "group": "USCIS Intake Order"
+              "group": "USCIS Intake Order",
+              "status": "not-started",
+              "required": true
             },
             {
               "id": "p_i130a",
               "name": "Form I-130A (Signed)",
               "subtitle": "Spouse beneficiary info — must be filed with the I-130",
               "tag": "beneficiary",
-              "group": "USCIS Intake Order"
+              "group": "USCIS Intake Order",
+              "status": "not-started",
+              "required": true
             },
             {
               "id": "p_evidence",
               "name": "Supporting Evidence Binder",
               "subtitle": "Chronological evidence of genuine relationship",
               "tag": "both",
-              "group": "Supporting Evidence"
+              "group": "Supporting Evidence",
+              "status": "not-started",
+              "required": true
             }
           ]
         },

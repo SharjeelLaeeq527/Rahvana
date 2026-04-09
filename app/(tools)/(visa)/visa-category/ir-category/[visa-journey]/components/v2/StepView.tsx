@@ -1229,7 +1229,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
     );
   }, [currentChapter, filingMethod]);
 
-  const currentStep = activeStepsInChapter[state.currentStep || 0];
+  const currentStep = currentChapter?.steps?.[state.currentStep || 0];
   const sId = currentStep?.step_key || (currentStep as any)?.id || "";
   const isCompleted = state.completedSteps.has(sId);
 
@@ -1991,6 +1991,9 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
               </div>
             </div>
           )}
+
+
+
 
           {/* SPONSORSHIP CALCULATOR LAUNCH MODULE (Step 5 Specific) */}
           {tool.type === "sponsorship_calculator" && (
@@ -4708,11 +4711,20 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
               {/* Document Cards */}
               <div className="w-full max-w-[740px]">
                 <div className="w-full">
-                  {[
-                    "Required Now",
-                    "Required if Applicable",
-                    "Gather Now for Later",
-                  ].map((groupName) => {
+                  {(() => {
+                    const docItems = (currentStep as any).document_items || currentStep.document_items;
+                    if (!docItems) return [];
+                    const uniqueGroups = Array.from(new Set(docItems.map((d: any) => d.group || "Required Now")));
+                    const defaultOrder = ["Required Now", "Required if Applicable", "USCIS Intake Order", "Supporting Evidence", "Gather Now for Later"];
+                    return (uniqueGroups as string[]).sort((a, b) => {
+                      const idxA = defaultOrder.indexOf(a);
+                      const idxB = defaultOrder.indexOf(b);
+                      if (idxA !== -1 && idxB !== -1) return idxA - idxB;
+                      if (idxA !== -1) return -1;
+                      if (idxB !== -1) return 1;
+                      return a.localeCompare(b);
+                    });
+                  })().map((groupName) => {
                     const docItems =
                       (currentStep as any).document_items ||
                       currentStep.document_items;
