@@ -50,6 +50,11 @@ import {
   Activity,
   Info,
   PartyPopper,
+  Briefcase,
+  Syringe,
+  Hospital,
+  Copy,
+  Paperclip,
 } from "lucide-react";
 
 import {
@@ -57,6 +62,7 @@ import {
   QuestSuite,
   TutorialStepData,
   ActionCard,
+  DocumentGatheringItem,
 } from "../types";
 import { WizardState } from "@/app/(main)/dashboard/hooks/useWizard";
 import { QuestRenderer } from "./QuestRenderer";
@@ -207,15 +213,16 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
   const [isSubmissionGuideOpen, setIsSubmissionGuideOpen] = useState(false);
   const [submissionGuideIdx, setSubmissionGuideIdx] = useState(0);
   const initialSubmissionChecklist = (state.metadata
-    .submissionChecklistStatusS10 as Record<string, boolean>) || {
+    .submissionChecklistStatus as Record<string, boolean>) || {
     0: false,
     1: false,
     2: false,
     3: false,
     4: false,
     5: false,
+    6: false,
   };
-  const [submissionChecklistStatusS10, setSubmissionChecklistStatus] = useState<
+  const [submissionChecklistStatus, setSubmissionChecklistStatus] = useState<
     Record<string, boolean>
   >(initialSubmissionChecklist);
 
@@ -262,8 +269,25 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
   // Step 3.3 Police Clearance Certificate States
   const [pccSaved, setPccSaved] = useState(state.metadata.pcc_saved === "true");
   const [pccReceived, setPccReceived] = useState(
-    state.metadata.pcc_received === "true",
+    state.metadata?.pcc_received === "true",
   );
+
+  // --- STEP 3.4 (DOCUMENT GATHERING) STATE ---
+  const [gatheringStatus, setGatheringStatus] = useState<
+    Record<string, "not-started" | "in-progress" | "reviewed">
+  >(() => {
+    try {
+      return JSON.parse(state.metadata?.gathering_status || "{}");
+    } catch {
+      return {};
+    }
+  });
+
+  const [isGatheringGuideOpen, setIsGatheringGuideOpen] = useState(false);
+  const [selectedGatheringItem, setSelectedGatheringItem] =
+    useState<DocumentGatheringItem | null>(null);
+
+  // --- UTILS & DERIVED ---
   const [pccData, setPccData] = useState({
     receipt: (state.metadata.pcc_receipt as string) || "",
     track: (state.metadata.pcc_track as string) || "",
@@ -275,13 +299,13 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
   >("");
   const [pccOverlayStep, setPccOverlayStep] = useState(0);
 
-  const handleToggleSubmissionCheckS10 = (idx: number) => {
+  const handleToggleSubmissionCheck = (idx: number) => {
     const next = {
-      ...submissionChecklistStatusS10,
-      [idx]: !submissionChecklistStatusS10[idx],
+      ...submissionChecklistStatus,
+      [idx]: !submissionChecklistStatus[idx],
     };
     setSubmissionChecklistStatus(next);
-    actions.updateMetadata({ submissionChecklistStatusS10: next });
+    actions.updateMetadata({ submissionChecklistStatus: next });
   };
 
   // Sync selectedScenario with sponsorshipResult once on load
@@ -320,6 +344,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
         return <Scroll size={18} />;
       case "divorce":
         return <Scroll size={18} />;
+      case "pcc":
       case "police":
         return <ShieldCheck size={18} />;
       case "military":
@@ -366,6 +391,21 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
         return <FileText size={18} />;
       case "clipboard":
         return <ClipboardList size={18} />;
+      case "mail":
+        return <Mail size={18} />;
+      case "briefcase":
+        return <Briefcase size={18} />;
+      case "camera":
+      case "photos":
+        return <Camera size={18} />;
+      case "syringe":
+      case "polio":
+        return <Syringe size={18} />;
+      case "hospital":
+      case "medical":
+        return <Hospital size={18} />;
+      case "copy":
+        return <Copy size={18} />;
       default:
         return iconKey;
     }
@@ -1619,13 +1659,13 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
     }
   };
 
-  const handleToggleSubmissionCheck = (idx: number) => {
-    const next = {
-      ...submissionChecklistStatus,
-      [idx]: !submissionChecklistStatus[idx],
-    };
-    actions.updateMetadata({ submissionChecklistStatus: next });
-  };
+  // const handleToggleSubmissionCheck = (idx: number) => {
+  //   const next = {
+  //     ...submissionChecklistStatus,
+  //     [idx]: !submissionChecklistStatus[idx],
+  //   };
+  //   actions.updateMetadata({ submissionChecklistStatus: next });
+  // };
 
   const handleNavigate = (stepId: string) => {
     const activeChapters = data.chapters || (data as any).stages;
@@ -2488,27 +2528,27 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                     ].map((item, i) => (
                       <div
                         key={i}
-                        onClick={() => handleToggleSubmissionCheckS10(i)}
+                        onClick={() => handleToggleSubmissionCheck(i)}
                         className={`flex items-start gap-[10px] p-[9px_12px] rounded-[10px] cursor-pointer transition-all border-[1.5px] ${
-                          submissionChecklistStatusS10[i]
+                          submissionChecklistStatus[i]
                             ? "bg-[#e8f5ef] border-[#a8d9be]"
                             : "border-transparent hover:bg-[#eef3fa]"
                         }`}
                       >
                         <div
                           className={`w-[18px] h-[18px] rounded-[5px] border-[1.5px] flex items-center justify-center shrink-0 mt-[1px] ${
-                            submissionChecklistStatusS10[i]
+                            submissionChecklistStatus[i]
                               ? "bg-[#15744f] border-[#15744f]"
                               : "bg-white border-[#d0e4f7]"
                           }`}
                         >
-                          {submissionChecklistStatusS10[i] && (
+                          {submissionChecklistStatus[i] && (
                             <Check size={10} className="text-white" />
                           )}
                         </div>
                         <span
                           className={`text-[13px] leading-[1.45] ${
-                            submissionChecklistStatusS10[i]
+                            submissionChecklistStatus[i]
                               ? "text-[#0e5c3c]"
                               : "text-[#3a4f63]"
                           }`}
@@ -4587,6 +4627,193 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                   </div>
                 </div>
               )}
+            </div>
+          )}
+
+          {/* GATHER ORIGINAL DOCUMENTS (Step 3.4 SPECIFIC) */}
+          {tool.type === "gathering_checklist" && (
+            <div className="flex flex-col animate-in fade-in slide-in-from-bottom-2 duration-380 font-sans">
+              {/* Progress Row */}
+              {(() => {
+                const groups = tool.doc_gathering?.groups || [];
+                const allItems = groups.flatMap((g) => g.items);
+                const total = allItems.length;
+                const rev = allItems.filter(
+                  (it) => gatheringStatus[it.id] === "reviewed",
+                ).length;
+                const pct = total > 0 ? (rev / total) * 100 : 0;
+
+                return (
+                  <div className="flex items-center gap-[12px] mb-[36px]">
+                    <div className="flex-1 h-[5px] bg-[#d0e4f7] rounded-[10px] overflow-hidden">
+                      <div
+                        className="h-full bg-linear-to-r from-primary to-primary/70 rounded-[10px] transition-all duration-500 ease-in-out"
+                        style={{ width: `${pct}%` }}
+                      />
+                    </div>
+                    <div className="text-[12px] font-[500] text-[#6b8097] whitespace-nowrap flex-shrink-0">
+                      {rev} of {total} packed
+                    </div>
+                  </div>
+                );
+              })()}
+
+              <div id="doc-groups">
+                {tool.doc_gathering?.groups.map((group) => (
+                  <div key={group.id} className="mb-[28px] last:mb-0">
+                    <div className="flex items-center gap-[10px] mb-[12px]">
+                      <span className="text-[11px] font-[600] tracking-[0.09em] uppercase text-[#6b8097]">
+                        {group.label}
+                      </span>
+                      <span
+                        className={`text-[9px] font-[600] px-[9px] py-[2px] rounded-full border tracking-[0.06em] whitespace-nowrap ${
+                          group.badge === "Required"
+                            ? "bg-[#ffeaea] text-[#a01c1c] border-[#f5bebe]"
+                            : group.badge === "Recommended"
+                              ? "bg-[#e8f1fb] text-[#2d4a6e] border-[#d0e4f7]"
+                              : "bg-[#fef8e8] text-[#8a6200] border-[#f0d98a]"
+                        }`}
+                      >
+                        {group.badge === "Required"
+                          ? "Required"
+                          : group.badge === "Recommended"
+                            ? "Recommended"
+                            : "Required if applicable"}
+                      </span>
+                      <div className="flex-1 h-[1px] bg-[#d0e4f7]" />
+                    </div>
+
+                    <div className="flex flex-col gap-[9px]">
+                      {group.items.map((item) => {
+                        const status =
+                          gatheringStatus[item.id] || "not-started";
+                        const isRev = status === "reviewed";
+                        const isIP = status === "in-progress";
+
+                        return (
+                          <div
+                            key={item.id}
+                            onClick={() => {
+                              setSelectedGatheringItem(item);
+                              setIsGatheringGuideOpen(true);
+                              if (status === "not-started") {
+                                setGatheringStatus((prev) => ({
+                                  ...prev,
+                                  [item.id]: "in-progress",
+                                }));
+                              }
+                            }}
+                            className={`group border-[1.5px] rounded-[16px] px-[20px] py-[16px] flex items-center gap-[14px] cursor-pointer transition-all hover:-translate-y-[1px] ${
+                              isRev
+                                ? "bg-[#e8f5ef] border-[#a8d9be]"
+                                : isIP
+                                  ? "bg-[#fef8e8] border-[#f0d98a]"
+                                  : "bg-white border-[#d0e4f7] hover:border-[#2f6fd4] hover:shadow-[0_4px_20px_rgba(47,111,212,0.1)]"
+                            }`}
+                          >
+                            <div
+                              className={`w-[38px] h-[38px] rounded-[9px] border flex items-center justify-center shrink-0 transition-all ${
+                                isRev
+                                  ? "bg-[#e8f5ef] border-[#a8d9be] text-[#15744f]"
+                                  : "bg-[#e8f1fb] border-[#d0e4f7] text-[#2d4a6e] group-hover:bg-[#2f6fd4]/10 group-hover:border-[#2f6fd4]/30"
+                              }`}
+                            >
+                              {getIcon(item.icon)}
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <div className="text-[14px] font-[600] text-[#0c1b33] mb-[3px] leading-[1.3]">
+                                {item.title}
+                              </div>
+                              <div className="text-[12px] text-[#6b8097] leading-[1.4] truncate px-0.5">
+                                {item.sub}
+                              </div>
+                            </div>
+                            <div
+                              className={`text-[11px] font-[500] px-[10px] py-[4px] border rounded-full whitespace-nowrap shrink-0 transition-all ${
+                                isRev
+                                  ? "bg-[#e8f5ef] text-[#15744f] border-[#a8d9be]"
+                                  : isIP
+                                    ? "bg-[#fef8e8] text-[#8a6200] border-[#f0d98a]"
+                                    : "bg-[#f4f7fb] text-[#6b8097] border-[#d0e4f7]"
+                              }`}
+                            >
+                              {isRev
+                                ? "✓ Packed"
+                                : isIP
+                                  ? "In progress"
+                                  : "Open guide"}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Organization visual (Navy Card) */}
+              <div className="bg-[#0c1b33] rounded-[16px] p-[20px_22px] mt-[32px] mb-[14px] relative overflow-hidden shadow-[0_24px_80px_rgba(12,27,51,0.12)]">
+                {/* Subtle Glow Overlay */}
+                <div className="absolute inset-0 bg-linear-to-br from-white/5 to-transparent pointer-events-none" />
+
+                <div className="relative z-10 text-[10px] font-[700] tracking-[0.1em] uppercase text-white/40 mb-[16px]">
+                  Suggested Physical Packet Structure
+                </div>
+                <div className="relative z-10 grid grid-cols-2 min-[460px]:grid-cols-4 gap-[10px]">
+                  {[
+                    { icon: BookOpen, name: "Tab 1 — Identity & Passport" },
+                    { icon: FileText, name: "Tab 2 — Civil Documents" },
+                    { icon: Banknote, name: "Tab 3 — Financial / Sponsor" },
+                    { icon: Paperclip, name: "Tab 4 — Supporting Extras" },
+                  ].map((tab, i) => (
+                    <div
+                      key={i}
+                      className="bg-white/5 border border-white/10 rounded-[10px] p-[12px_10px] text-center flex flex-col items-center"
+                    >
+                      <tab.icon size={22} className="text-white/70 mb-[5px]" />
+                      <div className="text-[11px] font-[600] text-white/75 leading-[1.3]">
+                        {tab.name}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                <div className="relative z-10 text-[11px] text-white/40 mt-[16px] leading-[1.5]">
+                  Keep originals and photocopies in separate labeled sections —
+                  using dividers helps avoid fumbling at the interview window.
+                </div>
+              </div>
+
+              {/* Organization Tips (White Card) */}
+              <div className="bg-white border-[1.5px] border-[#d0e4f7] rounded-[16px] p-[20px_22px] mb-[14px] shadow-[0_4px_24px_rgba(12,27,51,0.08)]">
+                <div className="flex items-center gap-[9px] mb-[12px]">
+                  <div className="w-[34px] h-[34px] rounded-[8px] bg-[#f3f0fb] border border-[#c9bef2] flex items-center justify-center shrink-0">
+                    <Zap
+                      size={16}
+                      className="text-[#4a2d8a] fill-none stroke-[1.7]"
+                    />
+                  </div>
+                  <h3 className="text-[14px] font-[600] text-[#0c1b33]">
+                    Organization tips for interview day
+                  </h3>
+                </div>
+                <div className="flex flex-col gap-[7px]">
+                  {[
+                    "Use labeled folder tabs or dividers to separate document groups clearly",
+                    "Keep originals and photocopies in completely separate sections — never mix them",
+                    "Place the interview letter and passport at the very top for easy access at the security checkpoint",
+                    "Bring multiple passport-style photos even if only some are required — extras are always useful",
+                    "Do not fold or crease originals — use a rigid folder or envelope to protect them",
+                  ].map((tip, i) => (
+                    <div
+                      key={i}
+                      className="flex items-start gap-[8px] font-sans text-[13px] text-[#3a4f63] leading-[1.5]"
+                    >
+                      <div className="w-[4px] h-[4px] rounded-full bg-[#4a2d8a] flex-shrink-0 mt-[7px]" />
+                      <span>{tip}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
             </div>
           )}
 
@@ -7131,6 +7358,96 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
         steps={SUBMISSION_TUTORIAL_STEPS}
         onSetIdx={setSubmissionGuideIdx}
       />
+
+      {/* Gathering Guide Overlay (Step 3.4) */}
+      {isGatheringGuideOpen && selectedGatheringItem && (
+        <div className="fixed inset-0 z-[100] bg-white flex flex-col overflow-hidden animate-in slide-in-from-bottom duration-260 ease-[cubic-bezier(0.4,0,0.2,1)] font-sans">
+          {/* Guide Topbar */}
+          <div className="flex items-center p-[18px_24px] border-b border-[#d0e4f7] gap-[16px] shrink-0">
+            <button
+              onClick={() => setIsGatheringGuideOpen(false)}
+              className="w-[36px] h-[36px] rounded-full bg-[#f4f7fb] flex items-center justify-center transition-colors hover:bg-[#d0e4f7] group"
+            >
+              <X
+                size={16}
+                strokeWidth={2}
+                className="text-[#3a4f63] group-hover:text-[#1c2b3a]"
+              />
+            </button>
+          </div>
+
+          {/* Guide Body */}
+          <div className="flex-1 overflow-y-auto flex flex-col items-center p-[48px_24px_40px]">
+            <div className="w-full max-w-[600px]">
+              <div className="text-[11px] font-[600] tracking-[0.1em] uppercase text-[#2f6fd4] mb-[16px]">
+                Step 4 · Original Documents Checklist
+              </div>
+              <h2
+                className="text-[clamp(20px,3vw,26px)] font-serif text-[#0c1b33] mb-[8px] leading-[1.25]"
+                style={{ fontFamily: "'DM Serif Display', serif" }}
+              >
+                {selectedGatheringItem.title}
+              </h2>
+              <p className="text-[14px] text-[#3a4f63] mb-[22px] leading-[1.6]">
+                {selectedGatheringItem.sub}
+              </p>
+
+              {/* Document Sections */}
+              <div className="flex flex-col gap-[12px] mb-[24px]">
+                {selectedGatheringItem.sections.map((sec, i) => (
+                  <div
+                    key={i}
+                    className="bg-[#f4f7fb] border border-[#d0e4f7] rounded-[16px] p-[18px_20px]"
+                  >
+                    <div className="text-[12px] font-[700] tracking-[0.06em] uppercase text-[#6b8097] mb-[8px]">
+                      {sec.t}
+                    </div>
+                    <div
+                      className="text-[14px] text-[#3a4f63] leading-[1.7] prose-sm"
+                      dangerouslySetInnerHTML={{ __html: sec.c }}
+                    />
+                  </div>
+                ))}
+              </div>
+
+              {/* Actions */}
+              <div className="flex flex-col gap-[10px] mt-[24px]">
+                <button
+                  onClick={() => {
+                    const isRev =
+                      gatheringStatus[selectedGatheringItem.id] === "reviewed";
+                    if (isRev) return;
+                    const next = {
+                      ...gatheringStatus,
+                      [selectedGatheringItem.id]: "reviewed",
+                    };
+                    setGatheringStatus(next);
+                    actions.updateMetadata({
+                      gathering_status: JSON.stringify(next),
+                    });
+                    setIsGatheringGuideOpen(false);
+                    toast.success("Document marked as packed!");
+                  }}
+                  disabled={
+                    gatheringStatus[selectedGatheringItem.id] === "reviewed"
+                  }
+                  className="p-[14px_24px] bg-[#15744f] text-white border-none rounded-[16px] text-[15px] font-[600] transition-all hover:bg-[#0e5c3c] hover:-translate-y-[1px] active:translate-y-0 disabled:bg-[#d0e4f7] disabled:text-[#6b8097] disabled:cursor-not-allowed disabled:transform-none"
+                >
+                  {gatheringStatus[selectedGatheringItem.id] === "reviewed"
+                    ? "✓ Marked as packed"
+                    : "Mark as packed"}
+                </button>
+                <button
+                  onClick={() => setIsGatheringGuideOpen(false)}
+                  className="p-[13px_24px] bg-transparent text-[#3a4f63] border-[1.5px] border-[#d0e4f7] rounded-[16px] text-[14px] font-[500] transition-all hover:border-[#3a4f63] hover:text-[#1c2b3a]"
+                >
+                  ← Back to checklist
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
@@ -8007,3 +8324,5 @@ function CeacCredsModal({
     </div>
   );
 }
+
+export default StepView;
