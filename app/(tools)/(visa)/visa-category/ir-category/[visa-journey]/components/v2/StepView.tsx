@@ -13,6 +13,8 @@ import {
   ShieldCheck,
   Search,
   MessageSquare,
+  XCircle,
+  Clipboard,
   Scale,
   Globe,
   Lock,
@@ -278,9 +280,43 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
 
   // Step 3.3 Police Clearance Certificate States
   const [pccSaved, setPccSaved] = useState(state.metadata.pcc_saved === "true");
+
+  // Step 3.7 Interview Prep States
+  const [isPrepLaunched, setIsPrepLaunched] = useState(
+    state.metadata.isPrepLaunched === "true",
+  );
   const [pccReceived, setPccReceived] = useState(
     state.metadata?.pcc_received === "true",
   );
+
+  // Step 3.8 Interview Day States
+  const [isInterviewDayTutOpen, setIsInterviewDayTutOpen] = useState(false);
+  const [interviewDayTutIdx, setInterviewDayTutIdx] = useState(0);
+
+  // Step 3.9 Administrative Processing States
+  const [apDetails, setApDetails] = useState(() => {
+    return (
+      state.metadata.apDetails || {
+        interviewDate: "",
+        received: null,
+        ceacStatus: "",
+        lastCheck: "",
+        docsRequested: "",
+        notes: "",
+      }
+    );
+  });
+  const [apUpdateLog, setApUpdateLog] = useState<any[]>(
+    state.metadata.apUpdateLog || [],
+  );
+  const [isApSaved, setIsApSaved] = useState(state.metadata.apSaved === "true");
+  const [isApUpdateModalOpen, setIsApUpdateModalOpen] = useState(false);
+
+  const handleSaveApUpdate = (entry: any) => {
+    const nextLog = [entry, ...apUpdateLog];
+    setApUpdateLog(nextLog);
+    actions.updateMetadata({ apUpdateLog: nextLog });
+  };
 
   // --- STEP 3.4 (DOCUMENT GATHERING) STATE ---
   const [gatheringStatus, setGatheringStatus] = useState<
@@ -1012,8 +1048,8 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
               Added in CEAC + relationship proof required
             </div>
             <div className="text-[13px] text-[#3a4f63] leading-relaxed">
-              A household member's income is used alongside the petitioner's.
-              Added through CEAC — and also requires{" "}
+              A household member&apos;s income is used alongside the
+              petitioner&apos;s. Added through CEAC — and also requires{" "}
               <strong>relationship-proof documentation</strong> showing their
               connection to the sponsoring household.
             </div>
@@ -1758,11 +1794,11 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
         <div className="w-full max-w-[720px] px-[24px] pt-[52px] pb-[96px] flex flex-col mx-auto">
           {/* Eyebrow */}
           <div className="flex items-center gap-[8px] mb-[6px] animate-in fade-in slide-in-from-top-2 duration-300">
-            <span className="text-[11px] font-[600] uppercase tracking-[0.12em] text-[#6b8097]">
+            <span className="text-[11px] font-semibold uppercase tracking-[0.12em] text-[#6b8097]">
               {data.eyebrow.chapter}
             </span>
             <span className="text-[11px] text-[#b8d4f0]">›</span>
-            <span className="text-[11px] font-[600] uppercase tracking-[0.08em] text-[#2f6fd4]">
+            <span className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#2f6fd4]">
               {data.eyebrow.step}
             </span>
           </div>
@@ -1836,7 +1872,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                   strokeWidth={1.7}
                 />
               </div>
-              <h3 className="text-[14px] font-[600] text-[#0c1b33]">
+              <h3 className="text-[14px] font-semibold text-[#0c1b33]">
                 {data.reviewItems.title}
               </h3>
             </div>
@@ -1865,7 +1901,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                     strokeWidth={1.7}
                   />
                 </div>
-                <h3 className="text-[14px] font-[600] text-[#0c1b33]">
+                <h3 className="text-[14px] font-semibold text-[#0c1b33]">
                   {data.whileYouWait.title}
                 </h3>
               </div>
@@ -1892,7 +1928,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                     strokeWidth={1.7}
                   />
                 </div>
-                <h3 className="text-[14px] font-[600] text-[#0c1b33]">
+                <h3 className="text-[14px] font-semibold text-[#0c1b33]">
                   {data.timeline.title}
                 </h3>
               </div>
@@ -1904,11 +1940,11 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                   {data.timeline.steps.map((step, i) => (
                     <div key={i} className="flex items-center gap-[8px]">
                       {step.status === "completed" ? (
-                        <div className="w-[12px] h-[12px] rounded-full bg-[#15744f] flex-shrink-0 z-10 ml-[-6px]" />
+                        <div className="w-[12px] h-[12px] rounded-full bg-[#15744f] shrink-0 z-10 ml-[-6px]" />
                       ) : step.status === "current" ? (
-                        <div className="w-[12px] h-[12px] rounded-full border-2 border-[#2f6fd4] bg-white flex-shrink-0 z-10 ml-[-6px] animate-pulse-custom" />
+                        <div className="w-[12px] h-[12px] rounded-full border-2 border-[#2f6fd4] bg-white shrink-0 z-10 ml-[-6px] animate-pulse-custom" />
                       ) : (
-                        <div className="w-[12px] h-[12px] rounded-full bg-[#d0e4f7] flex-shrink-0 z-10 ml-[-6px]" />
+                        <div className="w-[12px] h-[12px] rounded-full bg-[#d0e4f7] shrink-0 z-10 ml-[-6px]" />
                       )}
                       <span
                         className={`text-[12px] ${
@@ -1933,7 +1969,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
           <div className="bg-[#fef8e8] border-[1.5px] border-[#f0d98a] rounded-[16px] p-[18px_20px] mb-[16px] animate-in fade-in slide-in-from-top-2 duration-300 delay-[280ms]">
             <div className="flex items-center gap-[9px] mb-[10px]">
               <span className="text-[18px]">📋</span>
-              <h3 className="text-[14px] font-[600] text-[#8a6200]">
+              <h3 className="text-[14px] font-semibold text-[#8a6200]">
                 {data.correctionsAlert.title}
               </h3>
             </div>
@@ -2016,13 +2052,13 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
         <div className="w-full max-w-[680px] px-[24px] pb-[96px] flex flex-col">
           {/* Eyebrow / Breadcrumb Row */}
           <div className="flex items-center gap-[8px]">
-            <span className="text-[11px] font-[600] uppercase tracking-widest text-[#636b97]">
+            <span className="text-[11px] font-semibold uppercase tracking-widest text-[#636b97]">
               Chapter {currentChapter?.chapter_number || state.currentStage + 1}{" "}
               · {currentChapter?.chapter_name || currentChapter?.name}
             </span>
             <span className="text-[11px] text-[#b8d4f0]">›</span>
             <span
-              className={`text-[11px] font-[600] uppercase tracking-[0.08em] ${
+              className={`text-[11px] font-semibold uppercase tracking-[0.08em] ${
                 isBeneficiaryTheme ? "text-primary" : "text-primary"
               }`}
             >
@@ -2050,7 +2086,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
               <div className="flex-1 h-[1px] bg-linear-to-r from-[#d0e4f7] to-transparent" />
               <div className="inline-flex items-center gap-[6px] bg-[#e6f6f6] border border-[#9fd8d8] rounded-full px-[13px] py-[5px]">
                 <span className="w-[5px] h-[5px] rounded-full bg-[#0f7373]" />
-                <span className="text-[11px] font-[600] text-[#0f7373] tracking-[0.04em] whitespace-nowrap">
+                <span className="text-[11px] font-semibold text-[#0f7373] tracking-[0.04em] whitespace-nowrap">
                   Companion form to I-130 · Beneficiary spouse focus
                 </span>
               </div>
@@ -2064,7 +2100,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
               {tool.chips.map((chip: any, i: number) => (
                 <span
                   key={i}
-                  className={`text-[11px] font-[600] uppercase tracking-[0.06em] px-[12px] py-[5px] rounded-full border ${
+                  className={`text-[11px] font-semibold uppercase tracking-[0.06em] px-[12px] py-[5px] rounded-full border ${
                     chip.type === "role" || chip.role === "role"
                       ? isBeneficiaryTheme
                         ? "bg-[#e9f4ee] text-[#1a5f3f] border-[#b0dcc0]"
@@ -3563,7 +3599,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                     <span>
                       <strong>Keep your interview letter accessible.</strong>{" "}
                       You will need to bring the original to the consulate.
-                      Store a copy in Rahvana's Document Vault for easy
+                      Store a copy in Rahvana&apos;s Document Vault for easy
                       reference during preparation.
                     </span>
                   </div>
@@ -4698,7 +4734,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                         style={{ width: `${pct}%` }}
                       />
                     </div>
-                    <div className="text-[12px] font-[500] text-[#6b8097] whitespace-nowrap flex-shrink-0">
+                    <div className="text-[12px] font-[500] text-[#6b8097] whitespace-nowrap shrink-0">
                       {rev} of {total} packed
                     </div>
                   </div>
@@ -4709,11 +4745,11 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                 {tool.doc_gathering?.groups.map((group) => (
                   <div key={group.id} className="mb-[28px] last:mb-0">
                     <div className="flex items-center gap-[10px] mb-[12px]">
-                      <span className="text-[11px] font-[600] tracking-[0.09em] uppercase text-[#6b8097]">
+                      <span className="text-[11px] font-semibold tracking-[0.09em] uppercase text-[#6b8097]">
                         {group.label}
                       </span>
                       <span
-                        className={`text-[9px] font-[600] px-[9px] py-[2px] rounded-full border tracking-[0.06em] whitespace-nowrap ${
+                        className={`text-[9px] font-semibold px-[9px] py-[2px] rounded-full border tracking-[0.06em] whitespace-nowrap ${
                           group.badge === "Required"
                             ? "bg-[#ffeaea] text-[#a01c1c] border-[#f5bebe]"
                             : group.badge === "Recommended"
@@ -4768,7 +4804,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                               {getIcon(item.icon)}
                             </div>
                             <div className="flex-1 min-w-0">
-                              <div className="text-[14px] font-[600] text-[#0c1b33] mb-[3px] leading-[1.3]">
+                              <div className="text-[14px] font-semibold text-[#0c1b33] mb-[3px] leading-[1.3]">
                                 {item.title}
                               </div>
                               <div className="text-[12px] text-[#6b8097] leading-[1.4] truncate px-0.5">
@@ -4822,7 +4858,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                       className="bg-white/5 border border-white/10 rounded-[10px] p-[12px_10px] text-center flex flex-col items-center"
                     >
                       <tab.icon size={22} className="text-white/70 mb-[5px]" />
-                      <div className="text-[11px] font-[600] text-white/75 leading-[1.3]">
+                      <div className="text-[11px] font-semibold text-white/75 leading-[1.3]">
                         {tab.name}
                       </div>
                     </div>
@@ -4843,7 +4879,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                       className="text-[#4a2d8a] fill-none stroke-[1.7]"
                     />
                   </div>
-                  <h3 className="text-[14px] font-[600] text-[#0c1b33]">
+                  <h3 className="text-[14px] font-semibold text-[#0c1b33]">
                     Organization tips for interview day
                   </h3>
                 </div>
@@ -4859,7 +4895,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                       key={i}
                       className="flex items-start gap-[8px] font-sans text-[13px] text-[#3a4f63] leading-[1.5]"
                     >
-                      <div className="w-[4px] h-[4px] rounded-full bg-[#4a2d8a] flex-shrink-0 mt-[7px]" />
+                      <div className="w-[4px] h-[4px] rounded-full bg-[#4a2d8a] shrink-0 mt-[7px]" />
                       <span>{tip}</span>
                     </div>
                   ))}
@@ -5227,10 +5263,667 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
             </div>
           )}
 
+          {/* INTERVIEW PREP CONTENT (Step 3.7 SPECIFIC) */}
+          {tool.type === "interview_prep" && (
+            <div className="flex flex-col mt-4">
+              {/* Launcher Card (Large) */}
+              <div className="relative bg-[#0e1e38] rounded-[16px] border border-white/10 overflow-hidden mb-[16px] shadow-[0_20px_60px_rgba(12,27,51,0.18),0_4px_16px_rgba(12,27,51,0.12)]">
+                <div className="absolute top-0 left-0 right-0 h-[2.5px] bg-linear-to-r from-[#4a2d8a] via-[#6aa8f0] to-transparent opacity-80" />
+
+                <div className="p-7 sm:p-8">
+                  <div className="flex items-start gap-4 mb-5">
+                    <div className="w-[44px] h-[44px] rounded-xl bg-white/5 border border-white/10 flex items-center justify-center shrink-0">
+                      <MessageSquare
+                        className="text-white/75"
+                        size={21}
+                        strokeWidth={1.6}
+                      />
+                    </div>
+                    <div>
+                      <div className="text-[10px] font-bold uppercase tracking-[0.12em] text-white/35 mb-1">
+                        {tool.launch_module.title}
+                      </div>
+                      <h3 className="font-serif text-[20px] sm:text-[22px] text-white/95 leading-tight">
+                        {tool.launch_module.heading}
+                      </h3>
+                    </div>
+                  </div>
+
+                  <div className="h-[1px] bg-white/10 mb-[18px]" />
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-6">
+                    {tool.launch_module?.cues?.map((cue: string, i: number) => (
+                      <div
+                        key={i}
+                        className="bg-white/5 border border-white/10 rounded-[10px] p-2.5 flex items-start gap-2"
+                      >
+                        <div className="w-1.5 h-1.5 rounded-full bg-[#6aa8f0]/60 mt-[5.5px] shrink-0" />
+                        <span className="text-[13px] text-white/55 leading-tight">
+                          {cue}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+
+                  <button
+                    onClick={() => {
+                      setIsPrepLaunched(true);
+                      window.open(
+                        "https://www.rahvana.com/interview-prep",
+                        "_blank",
+                        "noopener,noreferrer",
+                      );
+                    }}
+                    className="w-full p-4 bg-[#3b7dd8] text-white rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-[#3b7dd8] transition-all shadow-[0_4px_20px_rgba(47,111,212,0.35)] hover:-translate-y-0.5 active:translate-y-0"
+                  >
+                    <span>Launch Interview Prep Tool</span>
+                    <ExternalLink size={15} strokeWidth={2.5} />
+                  </button>
+                </div>
+              </div>
+              {isPrepLaunched && (
+                <div className="bg-[#e8f5ef] border-[1.5px] border-[#a8d9be] rounded-[10px] p-[16px_18px] mb-5 animate-in fade-in slide-in-from-top-1">
+                  <div className="text-[13px] font-bold text-[#15744f] mb-1">
+                    ✓ Prep tool opened
+                  </div>
+                  <div className="text-[12px] text-[#3a4f63] leading-relaxed">
+                    Return here after your prep session. Review the readiness
+                    checklist below regularly before interview day.
+                  </div>
+                </div>
+              )}
+
+              {/* Readiness Grid */}
+              {tool.readiness_grid && (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-[22px]">
+                  {tool.readiness_grid.map((card: any, idx: number) => (
+                    <div
+                      key={idx}
+                      className="bg-white border-[1.5px] border-[#d0e4f7] rounded-[16px] p-4.5"
+                    >
+                      <div className="text-[10px] font-bold uppercase tracking-[0.08em] text-[#6b8097] mb-2.5 border-b border-[#f1f5f9] pb-2">
+                        {card.title}
+                      </div>
+                      <div className="flex flex-col gap-2">
+                        {card.items.map((item: string, i: number) => (
+                          <div key={i} className="flex items-start gap-2.5">
+                            <div className="w-[5px] h-[5px] rounded-full bg-purple-600 mt-[6.5px] shrink-0 opacity-70" />
+                            <span className="text-[13px] text-[#3a4f63] leading-snug">
+                              {item}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {tool.disclaimer && (
+                <p className="text-[11.5px] text-[#6b8097] leading-[1.65] text-center mb-6">
+                  {tool.disclaimer}
+                </p>
+              )}
+            </div>
+          )}
+
+          {/* INTERVIEW DAY CONTENT (Step 3.8 SPECIFIC) */}
+          {tool.type === "interview_day" && (
+            <div className="flex flex-col">
+              {/* Launcher Card (Dark) */}
+              <div className="relative bg-[#0e1e38] rounded-[16px] border border-white/10 overflow-hidden mb-4 shadow-[0_20px_60px_rgba(12,27,51,0.18),0_4px_16px_rgba(12,27,51,0.12)]">
+                <div className="absolute top-0 left-0 right-0 h-[2.5px] bg-linear-to-r from-[#4a2d8a] via-[#6aa8f0] to-transparent opacity-80" />
+
+                <div className="p-7 sm:p-8">
+                  <div className="flex items-start gap-4 mb-5">
+                    <div className="w-[44px] h-[44px] rounded-xl bg-white/5 border border-white/10 flex items-center justify-center shrink-0">
+                      <Briefcase
+                        className="text-white/75"
+                        size={21}
+                        strokeWidth={1.6}
+                      />
+                    </div>
+                    <div>
+                      <div className="text-[10px] font-bold uppercase tracking-[0.12em] text-white/35 mb-1">
+                        {tool.launch_module.title}
+                      </div>
+                      <h3 className="font-serif text-[20px] sm:text-[22px] text-white/95 leading-tight">
+                        {tool.launch_module.heading}
+                      </h3>
+                    </div>
+                  </div>
+
+                  <div className="h-[1px] bg-white/10 mb-[18px]" />
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-6">
+                    {tool.launch_module.cues.map((cue: string, i: number) => (
+                      <div
+                        key={i}
+                        className="bg-white/5 border border-white/10 rounded-[10px] p-2.5 flex items-start gap-2"
+                      >
+                        <div className="w-1.5 h-1.5 rounded-full bg-purple-400/50 mt-[5.5px] shrink-0" />
+                        <span className="text-[13px] text-white/55 leading-tight">
+                          {cue}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+
+                  <button
+                    onClick={() => {
+                      setInterviewDayTutIdx(0);
+                      setIsInterviewDayTutOpen(true);
+                    }}
+                    className="w-full p-4 bg-[#3b7dd8] text-white rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-[#3b7dd8] transition-all shadow-[0_4px_20px_rgba(47,111,212,0.35)] hover:-translate-y-0.5 active:translate-y-0"
+                  >
+                    <span>Open Interview Day Guide</span>
+                    <ArrowRight size={15} strokeWidth={2.5} />
+                  </button>
+                </div>
+              </div>
+
+              {/* Two-column Bringing + Pitfalls */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-[14px] mb-4">
+                {tool.checklists?.map((list: any, idx: number) => (
+                  <div
+                    key={idx}
+                    className="bg-white border-[1.5px] border-[#d0e4f7] rounded-[16px] p-[18px_20px] shadow-[0_4px_24px_rgba(12,27,51,0.08)]"
+                  >
+                    <div className="flex items-center gap-2 mb-3">
+                      <div
+                        className={`w-2 h-2 rounded-full shrink-0 ${list.type === "bring" ? "bg-primary" : "bg-red-600"}`}
+                      />
+                      <div className="text-[12px] font-bold uppercase tracking-wider text-[#6b8097]">
+                        {list.title}
+                      </div>
+                    </div>
+                    <div className="flex flex-col gap-[7px]">
+                      {list.items.map((item: string, i: number) =>
+                        list.type === "bring" ? (
+                          <div key={i} className="flex items-start gap-2">
+                            <div className="w-1 h-1 rounded-full bg-primary mt-[6px] shrink-0" />
+                            <span className="text-[13px] text-[#3a4f63] leading-tight">
+                              {item}
+                            </span>
+                          </div>
+                        ) : (
+                          <div
+                            key={i}
+                            className="flex items-start gap-2 p-2 bg-red-50 rounded-lg text-red-700 text-[13px] leading-tight"
+                          >
+                            <AlertTriangle
+                              size={14}
+                              className="mt-0.5 shrink-0"
+                            />
+                            <span>{item}</span>
+                          </div>
+                        ),
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Helpful Tips Card */}
+              <div className="bg-white border-[1.5px] border-[#d0e4f7] rounded-[16px] p-[18px_20px] shadow-[0_4px_24px_rgba(12,27,51,0.08)] mb-4">
+                <div className="flex items-center gap-2 mb-3">
+                  <div className="w-2 h-2 rounded-full bg-[#15744f] shrink-0" />
+                  <div className="text-[12px] font-bold uppercase tracking-wider text-[#6b8097]">
+                    Helpful tips
+                  </div>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-2">
+                  {tool.tips?.map((tip: string, i: number) => (
+                    <div key={i} className="flex items-start gap-2">
+                      <div className="w-1 h-1 rounded-full bg-[#15744f] mt-[6px] shrink-0" />
+                      <span className="text-[13px] text-[#3a4f63] leading-tight">
+                        {tip}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Outcomes Card */}
+              <div className="bg-white border-[1.5px] border-[#d0e4f7] rounded-[16px] p-[18px_20px] shadow-[0_4px_24px_rgba(12,27,51,0.08)] mb-4">
+                <div className="text-[13px] font-bold uppercase tracking-wider text-[#6b8097] mb-3">
+                  Possible outcomes after the interview
+                </div>
+                <div className="flex flex-col gap-2">
+                  {tool.outcomes?.map((outcome: any, i: number) => (
+                    <div
+                      key={i}
+                      className={`flex items-start gap-2.5 p-2.5 rounded-lg border ${
+                        outcome.type === "approved"
+                          ? "bg-[#e8f5ef] border-[#a8d9be]"
+                          : outcome.type === "ap"
+                            ? "bg-[#fef8e8] border-[#f0d98a]"
+                            : "bg-red-50 border-red-200"
+                      }`}
+                    >
+                      <div className="shrink-0 mt-1">
+                        {outcome.icon === "check-circle" && (
+                          <CheckCircle2 size={18} className="text-[#15744f]" />
+                        )}
+                        {outcome.icon === "clipboard" && (
+                          <Clipboard size={18} className="text-[#8a6200]" />
+                        )}
+                        {outcome.icon === "x-circle" && (
+                          <XCircle size={18} className="text-red-600" />
+                        )}
+                      </div>
+                      <div>
+                        <div className="text-[13px] font-bold text-[#0c1b33]">
+                          {outcome.label}
+                        </div>
+                        <div className="text-[12px] text-[#6b8097] leading-relaxed">
+                          {outcome.sub}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {tool.disclaimer && (
+                <p className="text-[11.5px] text-[#6b8097] leading-[1.65] text-center mb-6">
+                  {tool.disclaimer}
+                </p>
+              )}
+            </div>
+          )}
+
+          {/* ADMINISTRATIVE PROCESSING CONTENT (Step 3.9 SPECIFIC) */}
+          {tool.type === "adm_processing" && (
+            <div className="flex flex-col mt-4">
+              {/* Explainer Banner */}
+              <div className="relative bg-[#0e1e38] rounded-[16px] p-6 mb-4 overflow-hidden border border-white/10 shadow-[0_4px_24px_rgba(12,27,51,0.08)]">
+                <div className="absolute top-0 left-0 right-0 h-[2px] bg-linear-to-r from-[#8a6200] via-[#f0d98a] to-transparent opacity-85" />
+                <div className="text-[10px] font-bold uppercase tracking-widest text-white/35 mb-2">
+                  {tool.explainer.eyebrow}
+                </div>
+                <div
+                  className="text-[20px] font-serif text-white/95 mb-2.5 leading-tight"
+                  style={{ fontFamily: "'DM Serif Display', serif" }}
+                >
+                  {tool.explainer.title}
+                </div>
+                <div className="text-[13px] text-white/55 leading-relaxed max-w-[560px]">
+                  {tool.explainer.body}
+                </div>
+              </div>
+
+              {/* AP Status Recorder Card */}
+              {!isApSaved ? (
+                <div className="bg-white border-[1.5px] border-[#d0e4f7] rounded-[16px] p-6 mb-4 shadow-[0_4px_24px_rgba(12,27,51,0.08)] transition-all">
+                  <div className="flex items-center gap-2.5 mb-5">
+                    <div className="w-10 h-10 rounded-xl bg-[#fef8e8] border border-[#f0d98a] flex items-center justify-center shrink-0">
+                      <Calendar
+                        size={18}
+                        className="text-[#8a6200]"
+                        strokeWidth={1.8}
+                      />
+                    </div>
+                    <div>
+                      <div className="text-[14px] font-bold text-[#0c1b33]">
+                        {tool.recorder.title}
+                      </div>
+                      <div className="text-[12px] text-[#6b8097]">
+                        {tool.recorder.subtitle}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex flex-col gap-4">
+                    <div className="flex flex-col gap-1.5">
+                      <div className="text-[11px] font-bold uppercase tracking-wide text-[#6b8097]">
+                        Did you receive a 221(g) or AP notice?
+                      </div>
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() =>
+                            setApDetails({ ...apDetails, received: true })
+                          }
+                          className={`flex-1 p-2.5 rounded-lg border-[1.5px] text-[13px] font-bold transition-all ${
+                            apDetails.received === true
+                              ? "bg-[#fef8e8] border-[#8a6200] text-[#8a6200]"
+                              : "bg-white border-[#d0e4f7] text-[#3a4f63] hover:border-[#3a4f63]"
+                          }`}
+                        >
+                          Yes — AP received
+                        </button>
+                        <button
+                          onClick={() =>
+                            setApDetails({ ...apDetails, received: false })
+                          }
+                          className={`flex-1 p-2.5 rounded-lg border-[1.5px] text-[13px] font-bold transition-all ${
+                            apDetails.received === false
+                              ? "bg-[#e8f5ef] border-[#a8d9be] text-[#15744f]"
+                              : "bg-white border-[#d0e4f7] text-[#3a4f63] hover:border-[#3a4f63]"
+                          }`}
+                        >
+                          No — awaiting outcome
+                        </button>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div className="flex flex-col gap-1.5">
+                        <label className="text-[11px] font-bold uppercase tracking-wide text-[#6b8097]">
+                          Interview Date
+                        </label>
+                        <input
+                          type="date"
+                          value={apDetails.interviewDate}
+                          onChange={(e) =>
+                            setApDetails({
+                              ...apDetails,
+                              interviewDate: e.target.value,
+                            })
+                          }
+                          className="p-2.5 border-[1.5px] border-[#d0e4f7] rounded-lg text-[14px] outline-none focus:border-primary transition-all"
+                        />
+                      </div>
+                      <div className="flex flex-col gap-1.5">
+                        <label className="text-[11px] font-bold uppercase tracking-wide text-[#6b8097]">
+                          CEAC Status
+                        </label>
+                        <select
+                          value={apDetails.ceacStatus}
+                          onChange={(e) =>
+                            setApDetails({
+                              ...apDetails,
+                              ceacStatus: e.target.value,
+                            })
+                          }
+                          className="p-2.5 border-[1.5px] border-[#d0e4f7] rounded-lg text-[14px] outline-none focus:border-primary transition-all"
+                        >
+                          <option value="">Select current status...</option>
+                          {tool.recorder.ceac_options.map((opt: string) => (
+                            <option key={opt} value={opt}>
+                              {opt}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                      <div className="flex flex-col gap-1.5">
+                        <label className="text-[11px] font-bold uppercase tracking-wide text-[#6b8097]">
+                          Date of Last Check
+                        </label>
+                        <input
+                          type="date"
+                          value={apDetails.lastCheck}
+                          onChange={(e) =>
+                            setApDetails({
+                              ...apDetails,
+                              lastCheck: e.target.value,
+                            })
+                          }
+                          className="p-2.5 border-[1.5px] border-[#d0e4f7] rounded-lg text-[14px] outline-none focus:border-primary transition-all"
+                        />
+                      </div>
+                      <div className="flex flex-col gap-1.5">
+                        <label className="text-[11px] font-bold uppercase tracking-wide text-[#6b8097]">
+                          Additional Docs Requested?
+                        </label>
+                        <select
+                          value={apDetails.docsRequested}
+                          onChange={(e) =>
+                            setApDetails({
+                              ...apDetails,
+                              docsRequested: e.target.value,
+                            })
+                          }
+                          className="p-2.5 border-[1.5px] border-[#d0e4f7] rounded-lg text-[14px] outline-none focus:border-primary transition-all"
+                        >
+                          {tool.recorder.docs_requested_options.map(
+                            (opt: any) => (
+                              <option key={opt.value} value={opt.value}>
+                                {opt.label}
+                              </option>
+                            ),
+                          )}
+                        </select>
+                      </div>
+                    </div>
+
+                    <div className="flex flex-col gap-1.5">
+                      <label className="text-[11px] font-bold uppercase tracking-wide text-[#6b8097]">
+                        Notes (optional)
+                      </label>
+                      <textarea
+                        value={apDetails.notes}
+                        onChange={(e) =>
+                          setApDetails({ ...apDetails, notes: e.target.value })
+                        }
+                        placeholder="e.g. 221(g) sheet received..."
+                        className="p-2.5 border-[1.5px] border-[#d0e4f7] rounded-lg text-[14px] outline-none focus:border-primary transition-all min-height-[80px]"
+                      />
+                    </div>
+
+                    <button
+                      onClick={() => {
+                        setIsApSaved(true);
+                        actions.updateMetadata({
+                          apDetails: apDetails,
+                          apSaved: "true",
+                        });
+                      }}
+                      disabled={!apDetails.interviewDate}
+                      className="w-full p-4 bg-primary text-white rounded-xl font-bold transition-all shadow-[0_4px_16px_rgba(47,111,212,0.3)] hover:-translate-y-0.5 active:translate-y-0 disabled:opacity-50 disabled:translate-y-0"
+                    >
+                      Save AP Status & Activate Tracking
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <div className="bg-white border-[1.5px] border-[#f0d98a] rounded-[16px] p-6 mb-4 shadow-[0_4px_24px_rgba(12,27,51,0.08)] animate-in fade-in duration-300">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="text-[10px] font-bold uppercase tracking-widest text-[#8a6200]">
+                      AP Details Recorded — Tracking Active
+                    </div>
+                    <button
+                      onClick={() => setIsApSaved(false)}
+                      className="text-[12px] font-bold text-primary hover:underline"
+                    >
+                      Edit
+                    </button>
+                  </div>
+                  <div className="grid grid-cols-2 gap-y-4 gap-x-6">
+                    <div>
+                      <div className="text-[11px] text-[#6b8097] font-medium mb-0.5">
+                        Interview Date
+                      </div>
+                      <div className="text-[13px] font-bold text-[#0c1b33]">
+                        {apDetails.interviewDate
+                          ? new Date(
+                              apDetails.interviewDate + "T00:00:00",
+                            ).toLocaleDateString("en-US", {
+                              year: "numeric",
+                              month: "long",
+                              day: "numeric",
+                            })
+                          : "—"}
+                      </div>
+                    </div>
+                    <div>
+                      <div className="text-[11px] text-[#6b8097] font-medium mb-0.5">
+                        221(g) / AP Received
+                      </div>
+                      <div className="text-[13px] font-bold text-[#0c1b33]">
+                        {apDetails.received === true
+                          ? "Yes — 221(g) received"
+                          : apDetails.received === false
+                            ? "No — awaiting outcome"
+                            : "—"}
+                      </div>
+                    </div>
+                    <div>
+                      <div className="text-[11px] text-[#6b8097] font-medium mb-0.5">
+                        CEAC Status
+                      </div>
+                      <div className="text-[13px] font-bold text-[#0c1b33]">
+                        {apDetails.ceacStatus || "—"}
+                      </div>
+                    </div>
+                    <div>
+                      <div className="text-[11px] text-[#6b8097] font-medium mb-0.5">
+                        Last CEAC Check
+                      </div>
+                      <div className="text-[13px] font-bold text-[#0c1b33]">
+                        {apDetails.lastCheck
+                          ? new Date(
+                              apDetails.lastCheck + "T00:00:00",
+                            ).toLocaleDateString("en-US", {
+                              year: "numeric",
+                              month: "long",
+                              day: "numeric",
+                            })
+                          : "—"}
+                      </div>
+                    </div>
+                  </div>
+                  {apDetails.notes && (
+                    <div className="mt-4 pt-4 border-t border-[#f0d98a]">
+                      <div className="text-[11px] text-[#6b8097] font-medium mb-1">
+                        Notes
+                      </div>
+                      <div className="text-[13px] text-[#3a4f63] leading-relaxed">
+                        {apDetails.notes}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Docs Requested Alert */}
+              {apDetails.docsRequested === "yes" && isApSaved && (
+                <div className="bg-[#fef8e8] border-[1.5px] border-[#f0d98a] rounded-[16px] p-5 mb-4 shadow-[0_4px_12px_rgba(12,27,51,0.04)] animate-in slide-in-from-top-2 duration-300">
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="text-[18px]">📎</span>
+                    <div className="text-[14px] font-bold text-[#8a6200]">
+                      Additional documents were requested
+                    </div>
+                  </div>
+                  <div className="text-[13px] text-[#8a6200] leading-relaxed mb-4">
+                    The consulate has requested additional documents as part of
+                    your 221(g) or AP process. Review the request carefully,
+                    provide exactly what was asked, and submit via the method
+                    specified.
+                  </div>
+                  <a
+                    href="https://www.rahvana.com/document-vault"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-2 px-4 py-2.5 bg-[#8a6200] text-white rounded-lg text-[13px] font-bold transition-all hover:opacity-90"
+                  >
+                    <Upload size={14} />
+                    <span>Save documents to Document Vault</span>
+                  </a>
+                </div>
+              )}
+
+              {/* Update Log Card */}
+              <div className="bg-white border-[1.5px] border-[#d0e4f7] rounded-[16px] p-6 mb-4 shadow-[0_4px_24px_rgba(12,27,51,0.08)]">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="text-[14px] font-bold text-[#0c1b33]">
+                    Case Update Log
+                  </div>
+                  <button
+                    onClick={() => setIsApUpdateModalOpen(true)}
+                    className="text-[12px] font-bold text-primary hover:underline cursor-pointer"
+                  >
+                    + Add update
+                  </button>
+                </div>
+                <div className="flex flex-col gap-2">
+                  {apUpdateLog.length === 0 ? (
+                    <div className="text-[13px] text-[#6b8097] italic py-2">
+                      No updates logged yet. Add updates each time you check
+                      CEAC or receive new information.
+                    </div>
+                  ) : (
+                    apUpdateLog.map((entry: any, i: number) => (
+                      <div
+                        key={i}
+                        className="bg-[#f4f7fb] border border-[#d0e4f7] rounded-xl p-3"
+                      >
+                        <div className="text-[11px] font-bold text-[#6b8097] mb-1">
+                          {new Date(
+                            entry.date + "T00:00:00",
+                          ).toLocaleDateString("en-US", {
+                            year: "numeric",
+                            month: "long",
+                            day: "numeric",
+                          })}
+                          {entry.ceac && ` · CEAC: ${entry.ceac}`}
+                        </div>
+                        <div className="text-[13px] text-[#3a4f63] leading-relaxed">
+                          {entry.note || "Status checked — no change noted."}
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </div>
+
+              {/* Info Sections */}
+              <div className="flex flex-col gap-3.5 mb-2">
+                {tool.info_sections.map((section: any, idx: number) => (
+                  <div
+                    key={idx}
+                    className="bg-white border-[1.5px] border-[#d0e4f7] rounded-[16px] p-5 shadow-[0_4px_20px_rgba(12,27,51,0.06)]"
+                  >
+                    <div className="flex items-center gap-2.5 mb-4">
+                      <div
+                        className={`w-9 h-9 rounded-lg flex items-center justify-center shrink-0 border ${
+                          section.type === "sky"
+                            ? "bg-[#e8f1fb] border-[#d0e4f7]"
+                            : "bg-[#e8f6f6] border-[#9fd6d6]"
+                        }`}
+                      >
+                        {section.icon === "info" ? (
+                          <Info
+                            size={16}
+                            className="text-[#2f6fd4]"
+                            strokeWidth={2}
+                          />
+                        ) : (
+                          <Check
+                            size={16}
+                            className="text-[#0d6b6b]"
+                            strokeWidth={2.5}
+                          />
+                        )}
+                      </div>
+                      <div className="text-[14px] font-bold text-[#0c1b33]">
+                        {section.title}
+                      </div>
+                    </div>
+                    <div className="flex flex-col gap-2.5">
+                      {section.items.map((item: string, i: number) => (
+                        <div key={i} className="flex items-start gap-3">
+                          <div className="w-1 h-1 rounded-full bg-[#d0e4f7] mt-[7.5px] shrink-0" />
+                          <span className="text-[13px] text-[#3a4f63] leading-relaxed">
+                            {item}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
           {/* PRIMARY LAUNCH MODULE */}
           {tool.launch_module &&
             tool.type !== "sponsorship_calculator" &&
-            tool.type !== "submission_review" && (
+            tool.type !== "submission_review" &&
+            tool.type !== "interview_prep" &&
+            tool.type !== "interview_day" &&
+            tool.type !== "adm_processing" &&
+            tool.type !== "courier_registration" && (
               <div
                 className="relative bg-[#0e1e38] rounded-[16px] border border-white/7 overflow-hidden mb-[20px]"
                 style={{ backgroundColor: launchBg }}
@@ -5328,7 +6021,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                   <div
                     className={`grid grid-cols-1 sm:grid-cols-2 gap-[10px] ${tool.launch_module.button_label ? "mb-[26px]" : "mb-0"}`}
                   >
-                    {tool.launch_module.features.map(
+                    {tool.launch_module.features?.map(
                       (feat: string, i: number) => (
                         <div
                           key={i}
@@ -5361,7 +6054,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                           USCIS upload requirements
                         </div>
                         <div className="flex flex-col gap-[7px]">
-                          {tool.upload_requirements.map(
+                          {tool.upload_requirements?.map(
                             (req: string, i: number) => (
                               <div
                                 key={i}
@@ -7368,27 +8061,25 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
             <Zap className="text-amber-500" />
           )
         }
-        initialData={
-          (() => {
-            const creds =
-              walletPortalType === "USCIS"
-                ? uscisCredentials
-                : walletPortalType === "COURIER"
-                  ? courierCredentials
-                  : ceacCredentials;
-            return creds
-              ? {
-                  username: creds.username,
-                  password: "",
-                  securityQuestions: creds.security_questions.map((sq) => ({
-                    id: sq.id,
-                    question: sq.question,
-                    answer: "",
-                  })),
-                }
-              : undefined;
-          })()
-        }
+        initialData={(() => {
+          const creds =
+            walletPortalType === "USCIS"
+              ? uscisCredentials
+              : walletPortalType === "COURIER"
+                ? courierCredentials
+                : ceacCredentials;
+          return creds
+            ? {
+                username: creds.username,
+                password: "",
+                securityQuestions: creds.security_questions.map((sq) => ({
+                  id: sq.id,
+                  question: sq.question,
+                  answer: "",
+                })),
+              }
+            : undefined;
+        })()}
         onSubmit={handleSaveCredentials}
         isSubmitting={isSubmittingCreds}
       />
@@ -7407,7 +8098,9 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
         icon={
           <ShieldCheck
             className={
-              walletPortalType === "COURIER" ? "text-indigo-600" : "text-primary"
+              walletPortalType === "COURIER"
+                ? "text-indigo-600"
+                : "text-primary"
             }
           />
         }
@@ -7603,6 +8296,17 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
         />
       )}
 
+      {isInterviewDayTutOpen &&
+        currentStep?.tool_data?.type === "interview_day" && (
+          <InterviewDayTutOverlay
+            isOpen={isInterviewDayTutOpen}
+            onClose={() => setIsInterviewDayTutOpen(false)}
+            tutorial={currentStep.tool_data.tutorial}
+            index={interviewDayTutIdx}
+            setIndex={setInterviewDayTutIdx}
+          />
+        )}
+
       {isCourierGuideOpen &&
         courierToolData?.type === "courier_registration" && (
           <CourierTutOverlay
@@ -7613,6 +8317,15 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
             setIndex={setCourierGuideIdx}
           />
         )}
+
+      {isApUpdateModalOpen && currentStep?.tool_data?.recorder && (
+        <ApUpdateModal
+          isOpen={isApUpdateModalOpen}
+          onClose={() => setIsApUpdateModalOpen(false)}
+          onSave={handleSaveApUpdate}
+          ceacOptions={currentStep.tool_data.recorder.ceac_options}
+        />
+      )}
       {/* Tutorial Overlay */}
       {isTutorialOpen &&
         (() => {
@@ -7855,7 +8568,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
           {/* Guide Body */}
           <div className="flex-1 overflow-y-auto flex flex-col items-center p-[48px_24px_40px]">
             <div className="w-full max-w-[600px]">
-              <div className="text-[11px] font-[600] tracking-[0.1em] uppercase text-[#2f6fd4] mb-[16px]">
+              <div className="text-[11px] font-semibold tracking-[0.1em] uppercase text-[#2f6fd4] mb-[16px]">
                 Step 4 · Original Documents Checklist
               </div>
               <h2
@@ -7907,7 +8620,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                   disabled={
                     gatheringStatus[selectedGatheringItem.id] === "reviewed"
                   }
-                  className="p-[14px_24px] bg-[#15744f] text-white border-none rounded-[16px] text-[15px] font-[600] transition-all hover:bg-[#0e5c3c] hover:-translate-y-[1px] active:translate-y-0 disabled:bg-[#d0e4f7] disabled:text-[#6b8097] disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center gap-2"
+                  className="p-[14px_24px] bg-[#15744f] text-white border-none rounded-[16px] text-[15px] font-semibold transition-all hover:bg-[#0e5c3c] hover:-translate-y-[1px] active:translate-y-0 disabled:bg-[#d0e4f7] disabled:text-[#6b8097] disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center gap-2"
                 >
                   {gatheringStatus[selectedGatheringItem.id] === "reviewed" ? (
                     <>
@@ -9157,6 +9870,221 @@ function CourierTutOverlay({
               `}
             >
               {isLast ? "Done — return to step" : "Next →"}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function InterviewDayTutOverlay({
+  isOpen,
+  onClose,
+  tutorial,
+  index,
+  setIndex,
+}: {
+  isOpen: boolean;
+  onClose: () => void;
+  tutorial: any[];
+  index: number;
+  setIndex: (i: number) => void;
+}) {
+  if (!isOpen) return null;
+
+  const s = tutorial[index];
+  const total = tutorial.length;
+  const progress = ((index + 1) / total) * 100;
+  const isFirst = index === 0;
+  const isLast = index === total - 1;
+
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [isOpen]);
+
+  return (
+    <div className="fixed inset-0 z-[200] bg-white flex flex-col overflow-hidden animate-in slide-in-from-bottom-5 duration-300">
+      <div className="flex items-center p-[18px_24px] border-bottom border-[#d0e4f7] gap-4 shrink-0">
+        <button
+          onClick={onClose}
+          className="w-9 h-9 rounded-full bg-[#f4f7fb] flex items-center justify-center transition-all hover:bg-[#e8f1fb]"
+        >
+          <X size={16} className="text-[#3a4f63]" />
+        </button>
+        <div className="flex-1 h-[5px] bg-[#d0e4f7] rounded-full overflow-hidden">
+          <div
+            className="h-full bg-linear-to-r from-primary to-[#6aa8f0] transition-all duration-500"
+            style={{ width: `${progress}%` }}
+          />
+        </div>
+        <div className="text-[12px] font-medium text-[#6b8097]">
+          {index + 1} / {total}
+        </div>
+      </div>
+
+      <div className="flex-1 overflow-y-auto px-6 py-12 sm:px-12">
+        <div className="max-w-[580px] mx-auto w-full flex flex-col">
+          <div className="text-[11px] font-bold tracking-widest uppercase text-primary mb-3.5">
+            Interview Day Guide · {s.label}
+          </div>
+          <h2
+            className="text-[clamp(20px,3.2vw,26px)] text-[#0c1b33] leading-tight mb-2"
+            style={{ fontFamily: "'DM Serif Display', serif" }}
+          >
+            {s.heading}
+          </h2>
+          <p className="text-[14px] text-[#3a4f63] leading-relaxed mb-[18px]">
+            {s.instruction}
+          </p>
+
+          <div className="bg-white border-[1.5px] border-[#d0e4f7] rounded-[10px] overflow-hidden mb-[18px] shadow-[0_2px_12px_rgba(12,27,51,0.06)]">
+            <div className="bg-[#eef3fa] border-b border-[#d0e4f7] p-[10px_14px] flex items-center gap-1.5">
+              <div className="w-[9px] h-[9px] rounded-full bg-[#f87171]" />
+              <div className="w-[9px] h-[9px] rounded-full bg-[#fbbf24]" />
+              <div className="w-[9px] h-[9px] rounded-full bg-[#34d399]" />
+              <div className="text-[10px] font-semibold tracking-[0.07em] uppercase text-[#6b8097] ml-auto">
+                {s.vlabel}
+              </div>
+            </div>
+            <div
+              className="p-[18px] leading-relaxed courier-mock-visual"
+              dangerouslySetInnerHTML={{ __html: s.visual }}
+            />
+          </div>
+
+          {s.note && (
+            <div className="bg-[#fef8e8] border border-[#f0d98a] rounded-[10px] p-[11px_14px] text-[13px] text-[#8a6200] leading-relaxed mb-[24px]">
+              {s.note}
+            </div>
+          )}
+
+          <div className="mt-auto pt-6 flex gap-2.5">
+            {!isFirst && (
+              <button
+                onClick={() => setIndex(index - 1)}
+                className="p-[12px_20px] bg-transparent border-[1.5px] border-[#d0e4f7] rounded-[10px] text-[14px] font-medium text-[#3a4f63] cursor-pointer transition-all hover:border-[#3a4f63] hover:text-[#0c1b33]"
+              >
+                ← Back
+              </button>
+            )}
+            <button
+              onClick={() => {
+                if (isLast) {
+                  onClose();
+                } else {
+                  setIndex(index + 1);
+                }
+              }}
+              className={`flex-1 p-[12px_20px] rounded-[10px] text-[14px] font-semibold cursor-pointer transition-all hover:-translate-y-px active:translate-y-0
+                ${isLast ? "bg-[#15744f] text-white hover:bg-[#0e5c3c]" : "bg-primary text-white hover:bg-primary/80 shadow-[0_4px_12px_rgba(47,111,212,0.2)]"}
+              `}
+            >
+              {isLast ? "Done — return to step" : "Next →"}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ApUpdateModal({
+  isOpen,
+  onClose,
+  onSave,
+  ceacOptions,
+}: {
+  isOpen: boolean;
+  onClose: () => void;
+  onSave: (entry: any) => void;
+  ceacOptions: string[];
+}) {
+  const [date, setDate] = useState(new Date().toISOString().split("T")[0]);
+  const [ceac, setCeac] = useState("");
+  const [note, setNote] = useState("");
+
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 z-[300] bg-black/40 backdrop-blur-[4px] flex items-center justify-center p-5 animate-in fade-in duration-200">
+      <div className="bg-white rounded-[16px] shadow-[0_24px_80px_rgba(12,27,51,0.32),0_4px_20px_rgba(12,27,51,0.16)] w-full max-w-[440px] animate-in slide-in-from-bottom-4 duration-300">
+        <div className="flex items-start justify-between p-6 pb-0 mb-4">
+          <h2
+            className="text-[20px] text-[#0c1b33]"
+            style={{ fontFamily: "'DM Serif Display', serif" }}
+          >
+            Log a Case Update
+          </h2>
+          <button
+            onClick={onClose}
+            className="w-[30px] h-[30px] rounded-full bg-[#f4f7fb] flex items-center justify-center hover:bg-[#e8f1fb] transition-all"
+          >
+            <X size={13} className="text-[#3a4f63]" />
+          </button>
+        </div>
+
+        <div className="p-6 pt-0">
+          <div className="h-[1px] bg-[#d0e4f7] mb-4" />
+
+          <div className="flex flex-col gap-4">
+            <div className="flex flex-col gap-1.5">
+              <label className="text-[11px] font-bold uppercase tracking-wide text-[#6b8097]">
+                Update Date
+              </label>
+              <input
+                type="date"
+                value={date}
+                onChange={(e) => setDate(e.target.value)}
+                className="p-2.5 border-[1.5px] border-[#d0e4f7] rounded-lg text-[14px] outline-none focus:border-primary transition-all"
+              />
+            </div>
+
+            <div className="flex flex-col gap-1.5">
+              <label className="text-[11px] font-bold uppercase tracking-wide text-[#6b8097]">
+                CEAC Status Observed
+              </label>
+              <select
+                value={ceac}
+                onChange={(e) => setCeac(e.target.value)}
+                className="p-2.5 border-[1.5px] border-[#d0e4f7] rounded-lg text-[14px] outline-none focus:border-primary transition-all"
+              >
+                <option value="">Select...</option>
+                {ceacOptions.map((opt) => (
+                  <option key={opt} value={opt}>
+                    {opt}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="flex flex-col gap-1.5">
+              <label className="text-[11px] font-bold uppercase tracking-wide text-[#6b8097]">
+                Notes
+              </label>
+              <textarea
+                value={note}
+                onChange={(e) => setNote(e.target.value)}
+                placeholder="e.g. CEAC still shows AP..."
+                className="p-2.5 border-[1.5px] border-[#d0e4f7] rounded-lg text-[14px] outline-none focus:border-primary transition-all min-height-[70px]"
+              />
+            </div>
+
+            <button
+              onClick={() => {
+                onSave({ date, ceac, note, id: Date.now().toString() });
+                onClose();
+              }}
+              className="w-full p-3.5 bg-primary text-white rounded-lg font-bold transition-all hover:bg-primary/90"
+            >
+              Save Update
             </button>
           </div>
         </div>

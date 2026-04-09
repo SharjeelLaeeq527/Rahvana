@@ -3153,8 +3153,10 @@
         {
           "step_key": "step_3_7",
           "step_number": 7,
-          "id": "III-07",
-          "name": "Prepare for Interview",
+          "step_type": "tool",
+          "step_name": "Prepare for Interview",
+          "step_description": "Use Rahvana's interview prep tool to practice questions, review your case history, and build confidence before interview day.",
+          "step_short_description": "Practice questions and build confidence",
           "who": "Beneficiary",
           "where": "Home preparation",
           "actions": [
@@ -3165,21 +3167,65 @@
             "Plan outfit (professional)",
             "Arrange travel to Islamabad if needed"
           ],
-          "notes": "Be truthful, consistent. Know spouse details well. Dress professionally - no jeans/t-shirts.",
-          "relevantTools": [
-            {
-              "label": "Interview Prep Tool",
-              "labelUr": "انٹرویو پریپ ٹول",
-              "href": "/interview-prep",
-              "type": "tool"
-            }
-          ]
+          "tool_data": {
+            "type": "interview_prep",
+            "chips": [
+              {
+                "label": "Interview Prep",
+                "type": "purple"
+              },
+              {
+                "label": "Practice Tool",
+                "type": "sky"
+              },
+              {
+                "label": "Build Confidence",
+                "type": "green"
+              }
+            ],
+            "launch_module": {
+              "title": "Rahvana Interview Prep Tool",
+              "heading": "Practice questions, review facts, build confidence",
+              "icon": "message",
+              "cues": [
+                "Review likely interview questions and ideal answers",
+                "Review your DS-260 responses for consistency",
+                "Strengthen recall of your relationship timeline",
+                "Practice concise, truthful, confident answers"
+              ]
+            },
+            "readiness_grid": [
+              {
+                "title": "Review before your interview",
+                "items": [
+                  "DS-260 answers — know every section you completed",
+                  "Relationship timeline — dates, meetings, visits",
+                  "Sponsor income and financial details",
+                  "Civil document details — names, dates, record history",
+                  "Travel history and prior U.S. visa history if any"
+                ]
+              },
+              {
+                "title": "Mindset and approach",
+                "items": [
+                  "Answer only what is asked — do not volunteer extra information",
+                  "Answer truthfully and consistently with your filed documents",
+                  "Stay calm — the officer is doing their job, not targeting you",
+                  "If unsure, say so calmly — do not guess",
+                  "Practice out loud, not just in your head"
+                ]
+              }
+            ]
+          },
+          "disclaimer": "Rahvana provides structured guidance only. Interview preparation does not guarantee any outcome. Always answer consular questions truthfully."
         },
         {
           "step_key": "step_3_8",
           "step_number": 8,
-          "id": "III-08",
-          "name": "Attend Visa Interview",
+          "step_type": "tool",
+          "step_name": "Attend Visa Interview",
+          "step_description": "Your interview day has arrived. Know exactly what to bring, how to prepare at the door, and what to expect inside the consular window.",
+          "step_short_description": "What to expect on interview day",
           "who": "Beneficiary",
           "where": "U.S. Embassy Islamabad",
           "timeline": "5-20 minutes interview",
@@ -3193,27 +3239,159 @@
             "Answer questions honestly",
             "Receive decision"
           ],
+          "tool_data": {
+            "type": "interview_day",
+            "chips": [
+              {
+                "label": "Consular Interview",
+                "type": "purple"
+              },
+              {
+                "label": "What to Expect",
+                "type": "sky"
+              },
+              {
+                "label": "Interview Day",
+                "type": "gold"
+              }
+            ],
+            "launch_module": {
+              "title": "Interview Day Walkthrough",
+              "heading": "Step-by-step guide from arrival to outcome",
+              "icon": "building",
+              "cues": [
+                "Arrival timing and embassy entry",
+                "Security, biometrics, and document intake",
+                "Consular interview flow and common questions",
+                "Possible outcomes and what happens next"
+              ]
+            },
+            "tutorial": [
+              {
+                "label": "Step 1 of 8",
+                "heading": "Prepare the night before",
+                "instruction": "The night before your interview, lay out your complete document packet, confirm your appointment letter is printed, and ensure your transport to the embassy is planned. Do not leave anything to the morning.",
+                "vlabel": "Pre-Interview Checklist",
+                "visual": "<div class=\"mock-card\">\n      <div class=\"mock-title\">Night-before checklist</div>\n      <div class=\"mock-row\">Appointment letter printed <span class=\"mock-badge-green\">Ready</span></div>\n      <div class=\"mock-row\">Document packet organized <span class=\"mock-badge-green\">Ready</span></div>\n      <div class=\"mock-row\">Transport arranged <span class=\"mock-badge-green\">Confirmed</span></div>\n      <div class=\"mock-row\">Passport photos packed <span class=\"mock-badge-green\">Ready</span></div>\n      <div class=\"mock-row\">Originals and copies separated <span class=\"mock-badge-green\">Done</span></div>\n    </div>"
+              },
+              {
+                "label": "Step 2 of 8",
+                "heading": "Arrive early — embassy entry is strict",
+                "instruction": "Arrive at the embassy at least 20–30 minutes before your scheduled appointment time. Embassy security queues can be slow. Latecomers may not be admitted for their scheduled slot.",
+                "vlabel": "Arrival Timing",
+                "note": "Do not carry electronics beyond what is permitted by the embassy. Check the specific embassy's guidelines on phones and devices before arrival.",
+                "visual": "<div class=\"mock-card\">\n      <div class=\"mock-title\">Arrival guidance</div>\n      <div style=\"font-size:13px;color:var(--ink-soft);line-height:1.6;margin-top:4px\">\n        Plan for 20–30 minutes of buffer time. Factor in traffic, parking, and security queue length — especially at high-volume posts like Islamabad or Karachi.\n      </div>\n      <div class=\"hl-box\" style=\"margin-top:12px\">Earlier is always safer than exactly on time</div>\n    </div>"
+              },
+              {
+                "label": "Step 3 of 8",
+                "heading": "Security screening and document intake",
+                "instruction": "At entry, your appointment letter and passport will be checked. You will pass through security screening. Some items — including certain electronics — may need to be left outside or checked in.",
+                "vlabel": "Security & Entry",
+                "visual": "<div class=\"mock-card\">\n      <div class=\"mock-title\">Entry sequence</div>\n      <div class=\"mock-row\">Appointment letter check at gate</div>\n      <div class=\"mock-row\">Security screening (bag + personal)</div>\n      <div class=\"mock-row\">Document receipt / number assignment</div>\n      <div class=\"mock-row\">Wait in designated area</div>\n    </div>"
+              },
+              {
+                "label": "Step 4 of 8",
+                "heading": "Biometrics — fingerprints and photo",
+                "instruction": "Before your consular interview, you will be called to provide biometrics — fingerprints and a digital photograph. This is routine and applies to almost all immigrant visa applicants.",
+                "vlabel": "Biometrics",
+                "visual": "<div class=\"mock-card\">\n      <div class=\"mock-title\">Biometric collection</div>\n      <div style=\"font-size:13px;color:var(--ink-soft);line-height:1.6;margin-top:4px\">\n        Fingerprints are scanned digitally. You will also be photographed. This takes only a few minutes. Follow the staff instructions exactly.\n      </div>\n    </div>"
+              },
+              {
+                "label": "Step 5 of 8",
+                "heading": "The consular interview window",
+                "instruction": "You will be called to a consular window. The officer will review your documents, ask questions about your relationship, background, and immigration history. Answer concisely and truthfully. Do not volunteer information beyond what is asked.",
+                "vlabel": "Interview at the Window",
+                "note": "Consistency is critical. Your answers must align with your DS-260 responses and the documents you submitted during NVC processing.",
+                "visual": "<div class=\"mock-card\">\n      <div class=\"mock-title\">Common interview questions</div>\n      <div class=\"mock-row\">How did you meet your spouse?</div>\n      <div class=\"mock-row\">When and where was your marriage?</div>\n      <div class=\"mock-row\">What does your petitioner do for work?</div>\n      <div class=\"mock-row\">Have you visited the United States before?</div>\n      <div class=\"mock-row\">Where will you live in the United States?</div>\n    </div>"
+              },
+              {
+                "label": "Step 6 of 8",
+                "heading": "Document review at the window",
+                "instruction": "The officer may ask you to produce specific original documents. Present them calmly and in the order requested. Having a well-organized packet makes this faster and smoother.",
+                "vlabel": "Document Review",
+                "visual": "<div class=\"mock-card\">\n      <div class=\"mock-title\">Be ready to produce</div>\n      <div class=\"mock-row\">Original passport(s)</div>\n      <div class=\"mock-row\">Marriage certificate / Nikah Nama</div>\n      <div class=\"mock-row\">Birth certificate</div>\n      <div class=\"mock-row\">Police clearance certificate</div>\n      <div class=\"mock-row\">Affidavit of Support</div>\n      <div class=\"mock-row\">Passport photos</div>\n    </div>"
+              },
+              {
+                "label": "Step 7 of 8",
+                "heading": "Stay calm — the officer is doing their job",
+                "instruction": "Consular officers ask direct questions. Their tone is professional, not personal. Nervousness is expected and normal. Answer clearly and calmly. If you do not understand a question, politely ask for clarification.",
+                "vlabel": "Interview Mindset",
+                "visual": "<div class=\"calm-box\">\n      Answer only what is asked. Be honest. Be calm. Be concise. You have prepared for this — trust your preparation.\n    </div>"
+              },
+              {
+                "label": "Step 8 of 8",
+                "heading": "Possible outcomes after the interview",
+                "instruction": "The officer will indicate the outcome at the window or shortly after. The three main outcomes are approval, Administrative Processing (AP), or refusal. If AP applies, proceed to Step 9 to track your case.",
+                "vlabel": "Interview Outcomes",
+                "visual": "<div class=\"mock-card\">\n      <div class=\"mock-title\">What you may hear</div>\n      <div class=\"mock-row\">Approved — passport retained, visa to be delivered <span class=\"mock-badge-green\">Best</span></div>\n      <div class=\"mock-row\">Administrative Processing — more time needed <span class=\"mock-badge-amber\">Step 9</span></div>\n      <div class=\"mock-row\">Refused — written reason provided <span class=\"mock-badge-blue\">Consult attorney</span></div>\n    </div>"
+              }
+            ],
+            "checklists": [
+              {
+                "type": "bring",
+                "title": "What to bring",
+                "items": [
+                  "Interview appointment letter (printed original)",
+                  "Current passport (original)",
+                  "All prior passports",
+                  "Original civil documents (organized packet)",
+                  "Passport-style photos (2–4)",
+                  "Petitioner's original Affidavit of Support",
+                  "Tax evidence and employment letter if applicable"
+                ]
+              },
+              {
+                "type": "pitfalls",
+                "title": "Common pitfalls",
+                "items": [
+                  "Arriving without the printed appointment letter",
+                  "Bringing electronic devices that are prohibited beyond security",
+                  "Disorganized packet — makes document retrieval slow and stressful",
+                  "Inconsistent answers — not matching DS-260 responses",
+                  "Volunteering extra information that was not asked",
+                  "Arriving late — embassy entry is strictly time-controlled"
+                ]
+              }
+            ],
+            "tips": [
+              "Arrive 20–30 minutes before your appointment time",
+              "Keep your document packet organized with labeled tabs",
+              "Answer only what is asked — concisely and truthfully",
+              "Stay calm — nervousness is normal and expected",
+              "Have originals on top and copies in a separate section",
+              "If unsure of an answer, say so calmly — do not guess"
+            ],
+            "outcomes": [
+              {
+                "label": "Visa approved",
+                "type": "approved",
+                "icon": "check-circle",
+                "sub": "The officer approves the visa. Your passport will be held and the visa will be delivered via the courier service you registered."
+              },
+              {
+                "label": "Administrative Processing (AP / 221g)",
+                "type": "ap",
+                "icon": "clipboard",
+                "sub": "The officer needs more time or additional documents. This is not a refusal. Proceed to Step 9 to track and manage the AP process."
+              },
+              {
+                "label": "Visa refused",
+                "type": "refused",
+                "icon": "x-circle",
+                "sub": "The officer denies the visa under a specific ground. A refusal typically comes with a written reason. Consult an immigration attorney if this occurs."
+              }
+            ]
+          },
           "pakistanSpecific": "Address: Diplomatic Enclave, Ramna 5, Islamabad. NO mobile phones allowed.",
-          "possibleOutcomes": [
-            "Approved \u2705",
-            "Administrative Processing 221(g) \u26a0\ufe0f",
-            "Denied \u274c"
-          ],
-          "notes": "Common questions: How did you meet? Tell me about your wedding. Where will you live?",
-          "relevantTools": [
-            {
-              "label": "221(g) Action Planner",
-              "labelUr": "221(g) ایکشن پلانر",
-              "href": "/221g-action-planner",
-              "type": "tool"
-            }
-          ]
+          "disclaimer": "Rahvana provides structured guidance only. All interview outcomes depend entirely on the consular officer's determination. Nothing here constitutes legal advice."
         },
         {
           "step_key": "step_3_9",
           "step_number": 9,
-          "id": "III-09",
-          "name": "Track Status (If AP)",
+          "step_type": "tool",
+          "step_name": "Track Administrative Processing",
+          "step_description": "If your case was placed in Administrative Processing (AP) after the interview, use this step to record status details, track updates, and stay organized while you wait.",
+          "step_short_description": "AP tracker + update log + 221(g)",
           "who": "Beneficiary",
           "where": "ceac.state.gov",
           "actions": [
@@ -3222,7 +3400,85 @@
             "Respond immediately if contacted",
             "Be patient - no way to expedite"
           ],
-          "notes": "AP duration: 2 weeks to 12+ months (unpredictable). Common for security clearances."
+          "tool_data": {
+            "type": "adm_processing",
+            "chips": [
+              {
+                "label": "Administrative Processing",
+                "type": "gold"
+              },
+              {
+                "label": "Case Tracking",
+                "type": "sky"
+              },
+              {
+                "label": "Post-Interview",
+                "type": "green"
+              }
+            ],
+            "explainer": {
+              "eyebrow": "What Administrative Processing means",
+              "title": "AP is not a refusal — it means more review is needed",
+              "body": "Administrative Processing (AP) occurs when the consulate needs additional time to review your case background, security checks, or has requested additional documents. Most AP cases resolve and result in visa issuance. Timelines vary significantly and are outside Rahvana's or the applicant's control."
+            },
+            "recorder": {
+              "title": "Record your AP details",
+              "subtitle": "Save this now so Rahvana can track and remind you",
+              "ceac_options": [
+                "Administrative Processing",
+                "Ready",
+                "Issued",
+                "Refused",
+                "Pending",
+                "Not Available"
+              ],
+              "docs_requested_options": [
+                {
+                  "label": "Select...",
+                  "value": ""
+                },
+                {
+                  "label": "Yes — documents requested",
+                  "value": "yes"
+                },
+                {
+                  "label": "No — no additional docs requested",
+                  "value": "no"
+                },
+                {
+                  "label": "Unknown / not confirmed",
+                  "value": "unknown"
+                }
+              ]
+            },
+            "info_sections": [
+              {
+                "title": "What to do during Administrative Processing",
+                "type": "sky",
+                "icon": "info",
+                "items": [
+                  "Check CEAC status regularly — aim for weekly checks without obsessing over it daily",
+                  "If additional documents were requested, submit them promptly and exactly as specified",
+                  "Monitor the email address you registered with the consulate for any correspondence",
+                  "Log each CEAC status check in the update log above to track any changes over time",
+                  "Ensure your passport remains valid — if AP extends significantly, verify validity",
+                  "If AP extends beyond 180 days, consider consulting an immigration attorney about options"
+                ]
+              },
+              {
+                "title": "What Administrative Processing does not mean",
+                "type": "teal",
+                "icon": "check",
+                "items": [
+                  "AP is not a visa refusal — your case is still being reviewed",
+                  "AP does not mean there is a problem with your relationship or documents",
+                  "Most AP cases eventually result in visa issuance — though no timeline can be guaranteed",
+                  "Contacting the embassy frequently typically does not speed up the process and may not receive a useful response"
+                ]
+              }
+            ],
+            "disclaimer": "Rahvana provides structured tracking guidance only. Administrative Processing timelines are entirely within the U.S. government's control. Nothing here constitutes legal advice. Consult a licensed immigration attorney if needed."
+          }
         }
       ]
     }

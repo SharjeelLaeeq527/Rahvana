@@ -277,6 +277,12 @@ export interface ToolData {
     label: string;
     items: string[];
   }[];
+  tutorial?: any[];
+  checklists?: any[];
+  tips?: string[];
+  outcomes?: any[];
+  readiness_grid?: any[];
+  type?: string;
   disclaimer?: string;
 }
 

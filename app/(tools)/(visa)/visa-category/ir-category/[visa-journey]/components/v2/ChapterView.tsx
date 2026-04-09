@@ -83,7 +83,7 @@ export function ChapterView({
           <div className="flex items-center gap-2.5">
             <div className="flex-1 h-[5px] bg-primary/30 rounded-[10px] overflow-hidden">
               <div
-                className="h-full bg-linear-to-r from-primary to-primary/30 rounded-[10px] transition-all duration-500"
+                className="h-full bg-linear-to-r from-primary to-primary/50 rounded-[10px] transition-all duration-500"
                 style={{ width: `${prog.pct}%` }}
               />
             </div>
