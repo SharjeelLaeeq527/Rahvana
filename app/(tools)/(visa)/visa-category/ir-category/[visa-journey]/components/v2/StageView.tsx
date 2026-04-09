@@ -26,7 +26,7 @@ export function StageView({
   onBack,
   onSelectStep,
 }: StageViewProps) {
-  const stage = data.stages[stageIdx];
+  const stage = data.chapters[stageIdx];
   const activeSteps = useMemo(
     () => getActiveStepsForStage(data, stageIdx, state.metadata.filingMethod),
     [data, stageIdx, state.metadata.filingMethod],
@@ -73,10 +73,10 @@ export function StageView({
             {badgeText}
           </div>
           <h1 className="text-3xl md:text-4xl font-black text-slate-900 tracking-tight leading-tight">
-            {stage.name}
+            {stage.chapter_name}
           </h1>
           <p className="text-slate-500 text-[14px] md:text-[15px] leading-relaxed mb-8 max-w-2xl font-medium">
-            {stage.description}
+            {stage.chapter_description}
           </p>
 
           <div className="flex items-center gap-6 bg-slate-50 p-4 rounded-2xl border border-slate-100">
@@ -124,17 +124,17 @@ export function StageView({
           </div>
 
           {activeSteps.map((step, idx) => {
-            const isCompleted = state.completedSteps.has(step.id);
+            const isCompleted = state.completedSteps.has(step.step_key);
             const isNext =
               !isCompleted &&
               activeSteps
                 .slice(0, idx)
-                .every((s) => state.completedSteps.has(s.id));
-            const fullStepIdx = stage.steps.findIndex((s) => s.id === step.id);
+                .every((s) => state.completedSteps.has(s.step_key));
+            const fullStepIdx = stage.steps.findIndex((s: any) => (s.step_key || s.id) === step.step_key);
 
             return (
               <div
-                key={step.id}
+                key={step.step_key}
                 onClick={() => onSelectStep(stageIdx, fullStepIdx)}
                 className={`group flex items-center gap-5 p-5 rounded-2xl border-2 transition-all cursor-pointer bg-white relative overflow-hidden animate-in fade-in slide-in-from-right-4 duration-500 delay-${idx * 50}
                   ${isCompleted ? "border-emerald-100 bg-emerald-50/20" : isNext ? "border-primary shadow-xl shadow-primary/5 ring-4 ring-primary/5 scale-[1.01]" : "border-slate-100 hover:border-slate-200 hover:shadow-md active:scale-[0.99]"}`}
@@ -164,11 +164,11 @@ export function StageView({
                   <div
                     className={`text-[16px] font-bold truncate transition-colors ${isCompleted ? "text-slate-400" : "text-slate-900 group-hover:text-primary"}`}
                   >
-                    {step.name}
+                    {step.step_name}
                   </div>
-                  {step.description && (
+                  {step.step_description && (
                     <div className="text-[12px] text-slate-500 truncate font-medium mt-0.5">
-                      {step.description}
+                      {step.step_description}
                     </div>
                   )}
                 </div>
