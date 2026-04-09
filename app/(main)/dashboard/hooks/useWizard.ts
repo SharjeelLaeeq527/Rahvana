@@ -493,6 +493,20 @@ export function useWizard(options: UseWizardOptions = {}) {
       }
       setState((prev) => ({ ...prev, started: true }));
       setHasExistingProgress(true);
+    },
+
+    updateDocumentStatus: async (documentId: string, status: 'not-started' | 'in-progress' | 'reviewed') => {
+      // Get or initialize document review status from metadata
+      const currentDocReviewStatus = state.metadata?.docReviewStatus || {};
+      const updatedDocReviewStatus = {
+        ...currentDocReviewStatus,
+        [documentId]: status
+      };
+
+      // Update metadata with new document status
+      await actions.updateMetadata({
+        docReviewStatus: updatedDocReviewStatus
+      });
     }
   }), [state.backendId, state.metadata, state.completedSteps, state.stepMap, state.role, journeyId, userId, activeRoadmap, normalizeState]);
 

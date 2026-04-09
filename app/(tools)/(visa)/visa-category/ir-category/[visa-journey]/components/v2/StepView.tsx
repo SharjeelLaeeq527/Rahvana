@@ -107,6 +107,7 @@ interface StepViewProps {
     setStage: (idx: number) => void;
     updateAnswers: (answers: Record<string, unknown>) => void;
     updateMetadata: (data: Record<string, unknown>) => void;
+    updateDocumentStatus?: (docId: string, status: 'not-started' | 'in-progress' | 'reviewed') => Promise<void>;
   };
   onBack: () => void;
 }
@@ -3867,15 +3868,12 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                                 "_blank",
                                 "noopener,noreferrer",
                               );
-                              // If they click an external guide, maybe we should also count it as started?
-                              if (st === "not-started") {
-                                actions.updateMetadata({
-                                  civilDocsStatus: {
-                                    ...civilDocsStatus,
-                                    [item.id]: "in-progress",
-                                  },
-                                });
-                              }
+                              actions.updateMetadata({
+                                civilDocsStatus: {
+                                  ...civilDocsStatus,
+                                  [item.id]: "reviewed",
+                                },
+                              });
                             } else {
                               setActiveCivilDoc(item);
                               setIsCivilDocGuideOpen(true);
@@ -4694,14 +4692,14 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                         <div
                           className="h-full bg-linear-to-r from-primary to-primary transition-all duration-1000 ease-out"
                           style={{
-                            width: `${(currentStep.document_items.filter((d) => state.documentChecklist[d.name]).length / currentStep.document_items.length) * 100}%`,
+                            width: `${(currentStep.document_items.filter((d: any) => (state.metadata?.docReviewStatus?.[d.id] || state.documentChecklist[d.name])).length / currentStep.document_items.length) * 100}%`,
                           }}
                         />
                       </div>
                       <span className="text-[12px] font-medium text-[#6b8097] whitespace-nowrap">
                         {
                           currentStep.document_items.filter(
-                            (d) => state.documentChecklist[d.name],
+                            (d: any) => (state.metadata?.docReviewStatus?.[d.id] || state.documentChecklist[d.name]),
                           ).length
                         }{" "}
                         of {currentStep.document_items.length} reviewed
@@ -4741,8 +4739,9 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
 
                         <div className="flex flex-col">
                           {groupItems.map((doc: any, idx: number) => {
+                            const docReviewStatus = state.metadata?.docReviewStatus?.[doc.id];
                             const isReviewed =
-                              state.documentChecklist[doc.name];
+                              docReviewStatus === 'reviewed' || state.documentChecklist[doc.name];
                             const hasAttachment =
                               state.docUploads[doc.name] ||
                               state.notes[doc.name];
@@ -4758,7 +4757,18 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                                     doc.guideUrl &&
                                     doc.guideUrl !== "/guides"
                                   ) {
+                                    // Open guide immediately in new tab
                                     window.open(doc.guideUrl, "_blank");
+                                    // Auto-mark as reviewed in background (fire and forget)
+                                    if (
+                                      actions.updateDocumentStatus &&
+                                      doc.id
+                                    ) {
+                                      actions.updateDocumentStatus(
+                                        doc.id,
+                                        "reviewed"
+                                      );
+                                    }
                                   } else {
                                     setSelectedGuideId(doc.id || null);
                                   }
@@ -5875,7 +5885,10 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
               {/* Actions */}
               <div className="flex flex-col gap-[10px] mt-[28px] mb-[40px]">
                 <button
-                  onClick={() => {
+                  onClick={async () => {
+                    if (actions.updateDocumentStatus && selectedGuideId) {
+                      await actions.updateDocumentStatus(selectedGuideId, 'reviewed');
+                    }
                     setSelectedGuideId(null);
                   }}
                   className="w-full p-[15px_24px] bg-[#15744f] text-white border-none rounded-[16px] font-bold text-[15px] transition-all hover:bg-[#0e5c3c] hover:-translate-y-px text-center"

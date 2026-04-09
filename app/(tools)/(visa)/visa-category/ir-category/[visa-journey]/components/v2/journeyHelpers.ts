@@ -110,3 +110,57 @@ export function isStageUnlocked(data: RoadmapData, chapterIdx: number, state: Wi
   const prevChapterProgress = getStageProgress(data, chapterIdx - 1, state);
   return prevChapterProgress.done === prevChapterProgress.total && prevChapterProgress.total > 0;
 }
+
+/**
+ * Calculates document review progress for a step with document_items.
+ * Returns { reviewed, total, requiredReviewed, requiredTotal, percentage, isComplete }
+ */
+export function getDocumentReviewProgress(step: RoadmapStep, metadata: any) {
+  const stepAny = step as any;
+  const documentItems = stepAny.document_items || [];
+  
+  if (documentItems.length === 0) {
+    return { reviewed: 0, total: 0, requiredReviewed: 0, requiredTotal: 0, percentage: 0, isComplete: false };
+  }
+  
+  // Get document review status from metadata
+  const docReviewStatus = metadata?.docReviewStatus || {};
+  
+  // Count total and reviewed documents
+  const total = documentItems.length;
+  let reviewed = 0;
+  
+  // Count required documents
+  let requiredTotal = 0;
+  let requiredReviewed = 0;
+  
+  documentItems.forEach((doc: any) => {
+    const docId = doc.id;
+    const isReviewed = docReviewStatus[docId] === 'reviewed';
+    const isRequired = doc.required !== false; // Default to true if not specified
+    
+    if (isReviewed) {
+      reviewed++;
+    }
+    
+    if (isRequired) {
+      requiredTotal++;
+      if (isReviewed) {
+        requiredReviewed++;
+      }
+    }
+  });
+  
+  // Step is complete only when all required documents are reviewed
+  const isComplete = requiredTotal > 0 && requiredReviewed === requiredTotal;
+  const percentage = requiredTotal > 0 ? Math.round((requiredReviewed / requiredTotal) * 100) : 0;
+  
+  return {
+    reviewed,
+    total,
+    requiredReviewed,
+    requiredTotal,
+    percentage,
+    isComplete
+  };
+}
