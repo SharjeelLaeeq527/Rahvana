@@ -43,6 +43,32 @@ export default function RootLayout({
             gtag('config', 'G-TNW3YZDTCR');
           `}
         </Script>
+        <Script id="apply-saved-color-preset" strategy="beforeInteractive">
+          {`
+            (function () {
+              try {
+                var raw = localStorage.getItem('rahvana-color-lab');
+                if (!raw) return;
+                var saved = JSON.parse(raw);
+                var root = document.documentElement;
+
+                var setVar = function (name, value) {
+                  if (typeof value === 'string' && value.trim()) {
+                    root.style.setProperty(name, value);
+                  }
+                };
+
+                setVar('--button-solid-bg', saved.primary);
+                setVar('--button-outline-border', saved.secondary);
+                setVar('--button-outline-text', saved.background);
+                setVar('--feedback-button-bg', saved.feedback);
+                setVar('--feedback-button-hero', saved.feedbackHero);
+              } catch (e) {
+                // Fall back to CSS defaults.
+              }
+            })();
+          `}
+        </Script>
         <ToastProvider>
           <AuthProvider>
             <LanguageProvider>

@@ -60,13 +60,22 @@ export function QuestRenderer({
   >({});
   const [view, setView] = useState<"landing" | "quest" | "result">("landing");
 
+  // Sync state from prop if prop updates (e.g. after cloud load)
+  useEffect(() => {
+    if (state.metadata?.questResults) {
+      setQuestResults((prev) => ({ ...state.metadata.questResults, ...prev }));
+    }
+  }, [state.metadata?.questResults]);
+
   const activeQuest: QuestData | undefined = suite.quests.find(
     (q) => q.id === activeQuestId,
   );
 
   // Sync results to metadata
   useEffect(() => {
-    actions.updateMetadata({ questResults });
+    if (Object.keys(questResults).length > 0) {
+      actions.updateMetadata({ questResults });
+    }
   }, [questResults, actions]);
 
   const handleStartQuest = (id: string) => {
@@ -139,13 +148,21 @@ export function QuestRenderer({
     setSuiteAnswers(finalAnswers);
     actions.updateAnswers({ [suite.id]: finalAnswers });
 
-    const result = evaluateLogic(activeQuest.result_logic, tempAnswers);
-    setQuestResults((prev) => ({ ...prev, [activeQuest.id]: result }));
+    const logic = (activeQuest as any).result_logic || (activeQuest as any).resultLogic;
+    const result = evaluateLogic(logic, tempAnswers);
+    console.log(`[QuestRenderer] Result calculated for ${activeQuest.id}:`, result);
+    
+    setQuestResults((prev) => {
+      const next = { ...prev, [activeQuest.id]: result };
+      console.log(`[QuestRenderer] Updating questResults local state:`, next);
+      return next;
+    });
+    
     setView("result");
   };
 
   const getStatusMeta = (id: string) => {
-    const res = questResults[id];
+    const res = questResults[id] || (state.metadata?.questResults as any)?.[id];
     if (!res)
       return {
         label: "Not started",
@@ -289,7 +306,7 @@ export function QuestRenderer({
   }
 
   if (view === "result" && activeQuest) {
-    const result = questResults[activeQuest.id];
+    const result = questResults[activeQuest.id] || (state.metadata?.questResults as any)?.[activeQuest.id];
     const meta = getStatusMeta(activeQuest.id);
 
     return (
@@ -306,10 +323,10 @@ export function QuestRenderer({
             {meta.label}
           </div>
           <h2 className="text-3xl md:text-4xl font-serif text-[#0f1f38] mb-4 tracking-tight italic">
-            {result.title}
+            {result?.title || "Evaluating Result..."}
           </h2>
           <p className="text-[#3a4f63] text-[16px] mb-10 leading-relaxed max-w-[400px] mx-auto opacity-90">
-            {result.body}
+            {result?.body || "Please wait while we calculate your status."}
           </p>
           <div className="flex flex-col gap-3 max-w-[280px] mx-auto">
             <button

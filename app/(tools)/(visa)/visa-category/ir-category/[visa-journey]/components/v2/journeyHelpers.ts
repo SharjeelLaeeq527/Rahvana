@@ -2,7 +2,21 @@ import { RoadmapData, RoadmapStep, RoadmapChapter } from "../types";
 import { WizardState } from "@/app/(main)/dashboard/hooks/useWizard";
 
 /**
+ * Get the display number for a step, considering display_number_override.
+ */
+export function getDisplayStepNumber(step: RoadmapStep): number {
+  const stepAny = step as any;
+  // If display_number_override exists, use it (for paper path steps showing as 4-6 instead of 11-13)
+  if (stepAny.display_number_override !== undefined) {
+    return stepAny.display_number_override;
+  }
+  // Otherwise use the step_number
+  return stepAny.step_number || 1;
+}
+
+/**
  * Returns all steps for a given stage/chapter index that are applicable based on the filing method.
+ * Filters by visible_when conditions.
  */
 export function getActiveStepsForStage(data: RoadmapData, index: number, filingMethod: string | null): RoadmapStep[] {
   const chapters = data.chapters || (data as any).stages;
@@ -11,8 +25,19 @@ export function getActiveStepsForStage(data: RoadmapData, index: number, filingM
   
   const method = filingMethod || 'online'; // Default to online if not set
   return chapter.steps.filter((step: RoadmapStep) => {
-    // Check both legacy 'branch' and any new logic
-    const branch = (step as any).branch;
+    const stepAny = step as any;
+    
+    // Check visible_when conditions (new priority system)
+    const visibleWhen = stepAny.visible_when;
+    if (visibleWhen && Object.keys(visibleWhen).length > 0) {
+      // If filingMethod condition exists, check it
+      if (visibleWhen.filingMethod) {
+        return visibleWhen.filingMethod === method;
+      }
+    }
+    
+    // Fallback to legacy 'branch' field
+    const branch = stepAny.branch;
     if (!branch || branch === 'both') return true;
     return branch === method;
   });
@@ -45,11 +70,12 @@ export function getNextBestAction(data: RoadmapData, state: WizardState): { step
   
   const chapters = data.chapters || (data as any).stages;
   for (let cIdx = 0; cIdx < chapters.length; cIdx++) {
-    const stepInChapterIdx = chapters[cIdx].steps.findIndex((s: any) => 
+    const activeSteps = getActiveStepsForStage(data, cIdx, filingMethod);
+    const stepInActiveIdx = activeSteps.findIndex((s: any) => 
       (s.step_key || s.id) === (nextStep.step_key || (nextStep as any).id)
     );
-    if (stepInChapterIdx !== -1) {
-      return { step: nextStep, chapterIdx: cIdx, stepIdxInChapter: stepInChapterIdx };
+    if (stepInActiveIdx !== -1) {
+      return { step: nextStep, chapterIdx: cIdx, stepIdxInChapter: stepInActiveIdx };
     }
   }
   
@@ -84,4 +110,58 @@ export function isStageUnlocked(data: RoadmapData, chapterIdx: number, state: Wi
   
   const prevChapterProgress = getStageProgress(data, chapterIdx - 1, state);
   return prevChapterProgress.done === prevChapterProgress.total && prevChapterProgress.total > 0;
+}
+
+/**
+ * Calculates document review progress for a step with document_items.
+ * Returns { reviewed, total, requiredReviewed, requiredTotal, percentage, isComplete }
+ */
+export function getDocumentReviewProgress(step: RoadmapStep, metadata: any) {
+  const stepAny = step as any;
+  const documentItems = stepAny.document_items || [];
+  
+  if (documentItems.length === 0) {
+    return { reviewed: 0, total: 0, requiredReviewed: 0, requiredTotal: 0, percentage: 0, isComplete: false };
+  }
+  
+  // Get document review status from metadata
+  const docReviewStatus = metadata?.docReviewStatus || {};
+  
+  // Count total and reviewed documents
+  const total = documentItems.length;
+  let reviewed = 0;
+  
+  // Count required documents
+  let requiredTotal = 0;
+  let requiredReviewed = 0;
+  
+  documentItems.forEach((doc: any) => {
+    const docId = doc.id;
+    const isReviewed = docReviewStatus[docId] === 'reviewed';
+    const isRequired = doc.required !== false; // Default to true if not specified
+    
+    if (isReviewed) {
+      reviewed++;
+    }
+    
+    if (isRequired) {
+      requiredTotal++;
+      if (isReviewed) {
+        requiredReviewed++;
+      }
+    }
+  });
+  
+  // Step is complete only when all required documents are reviewed
+  const isComplete = requiredTotal > 0 && requiredReviewed === requiredTotal;
+  const percentage = requiredTotal > 0 ? Math.round((requiredReviewed / requiredTotal) * 100) : 0;
+  
+  return {
+    reviewed,
+    total,
+    requiredReviewed,
+    requiredTotal,
+    percentage,
+    isComplete
+  };
 }

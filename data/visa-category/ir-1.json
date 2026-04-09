@@ -171,7 +171,7 @@
                     ]
                   }
                 ],
-                "resultLogic": "(function() { if (answers['q1s1'] === 'lpr') return { state: 'stop', title: 'IR-1 requires a U.S. citizen petitioner', body: 'The IR-1 spouse visa is only available when the petitioner is a U.S. citizen. Lawful Permanent Residents may be eligible to petition under a different category (F2A preference visa). Consider speaking with an attorney about your options.' }; if (answers['q1s1'] === 'unsure' || answers['q1s1'] === 'other' || answers['q1s2'] === 'unsure') return { state: 'review', title: 'Petitioner\\'s citizenship status needs clarification', body: 'The petitioner\\'s status or citizenship path was marked as unclear. Confirm the petitioner\\'s status before moving forward — this is the foundational requirement for the IR-1 petition.' }; if (answers['q1s3'] === 'no' || answers['q1s3'] === 'unsure' || (answers['q1s4'] && (answers['q1s4'] === 'diff_no_proof' || answers['q1s4'] === 'unsure'))) return { state: 'caution', title: 'Citizenship appears likely — but proof needs attention', body: 'The petitioner appears to be a U.S. citizen, but proof of citizenship or name-match documentation may need to be gathered or organized before filing. Address this early to avoid delays.' }; return { state: 'pass', title: 'Petitioner eligibility looks solid', body: 'The petitioner appears to be a U.S. citizen with identifiable proof. This core requirement is on track. Continue to the next section.' }; })()"
+                "result_logic": "(function() { if (answers['q1s1'] === 'lpr') return { state: 'stop', title: 'IR-1 requires a U.S. citizen petitioner', body: 'The IR-1 spouse visa is only available when the petitioner is a U.S. citizen. Lawful Permanent Residents may be eligible to petition under a different category (F2A preference visa). Consider speaking with an attorney about your options.' }; if (answers['q1s1'] === 'unsure' || answers['q1s1'] === 'other' || answers['q1s2'] === 'unsure') return { state: 'review', title: 'Petitioner\\'s citizenship status needs clarification', body: 'The petitioner\\'s status or citizenship path was marked as unclear. Confirm the petitioner\\'s status before moving forward — this is the foundational requirement for the IR-1 petition.' }; if (answers['q1s3'] === 'no' || answers['q1s3'] === 'unsure' || (answers['q1s4'] && (answers['q1s4'] === 'diff_no_proof' || answers['q1s4'] === 'unsure'))) return { state: 'caution', title: 'Citizenship appears likely — but proof needs attention', body: 'The petitioner appears to be a U.S. citizen, but proof of citizenship or name-match documentation may need to be gathered or organized before filing. Address this early to avoid delays.' }; return { state: 'pass', title: 'Petitioner eligibility looks solid', body: 'The petitioner appears to be a U.S. citizen with identifiable proof. This core requirement is on track. Continue to the next section.' }; })()"
               },
               {
                 "id": "q2",
@@ -275,7 +275,7 @@
                     ]
                   }
                 ],
-                "resultLogic": "(function() { if (answers['q2s1'] === 'engaged' || answers['q2s1'] === 'ceremony_only' || answers['q2s1'] === 'separated' || answers['q2s2'] === 'no') return { state: 'stop', title: 'A legally valid marriage is required for the IR-1', body: 'USCIS requires an existing, legally recognized civil marriage. Engagements, religious-only ceremonies, and ongoing separations or divorces do not qualify at the time of filing. Review the couple\\'s current legal status.' }; if (answers['q2s1'] === 'unsure' || answers['q2s2'] === 'unsure') return { state: 'review', title: 'Marriage validity needs confirmation', body: 'The legal recognition of the marriage is unclear. This is a foundational requirement — confirm the marriage was properly registered under the applicable local law before proceeding.' }; if (answers['q2s3'] === 'can_get' || answers['q2s3'] === 'no' || answers['q2s3'] === 'unsure') return { state: 'caution', title: 'Marriage appears valid — certificate still needed', body: 'The marriage appears legally valid, but obtaining the official marriage certificate is an important early task. Start that process now — certified copies can take time, especially for international records.' }; return { state: 'pass', title: 'Marriage eligibility looks solid', body: 'A legally recognized civil marriage with official documentation appears to be in place. This requirement is on track.' }; })()"
+                "result_logic": "(function() { if (answers['q2s1'] === 'engaged' || answers['q2s1'] === 'ceremony_only' || answers['q2s1'] === 'separated' || answers['q2s2'] === 'no') return { state: 'stop', title: 'A legally valid marriage is required for the IR-1', body: 'USCIS requires an existing, legally recognized civil marriage. Engagements, religious-only ceremonies, and ongoing separations or divorces do not qualify at the time of filing. Review the couple\\'s current legal status.' }; if (answers['q2s1'] === 'unsure' || answers['q2s2'] === 'unsure') return { state: 'review', title: 'Marriage validity needs confirmation', body: 'The legal recognition of the marriage is unclear. This is a foundational requirement — confirm the marriage was properly registered under the applicable local law before proceeding.' }; if (answers['q2s3'] === 'can_get' || answers['q2s3'] === 'no' || answers['q2s3'] === 'unsure') return { state: 'caution', title: 'Marriage appears valid — certificate still needed', body: 'The marriage appears legally valid, but obtaining the official marriage certificate is an important early task. Start that process now — certified copies can take time, especially for international records.' }; return { state: 'pass', title: 'Marriage eligibility looks solid', body: 'A legally recognized civil marriage with official documentation appears to be in place. This requirement is on track.' }; })()"
               },
               {
                 "id": "q3",
@@ -378,7 +378,7 @@
                     ]
                   }
                 ],
-                "resultLogic": "(function() { if (answers['q3s1'] === 'none') return { state: 'pass', title: 'No prior marriages to verify', body: 'Neither spouse had a prior legally registered marriage, so this section is not an issue for your case. Well done — move on to the next section.' }; if (answers['q3s1'] === 'unsure') return { state: 'review', title: 'Prior marriage history needs clarification', body: 'It\\'s unclear whether either spouse had a prior marriage. This should be confirmed — USCIS will require documentation if any prior marriages existed.' }; if (answers['q3s2'] === 'no') return { state: 'stop', title: 'Potential bigamy issue — legal review needed', body: 'If a prior marriage had not ended before the current marriage occurred, the current marriage may not be legally valid for immigration purposes. This is a serious issue that requires legal review before proceeding.' }; if (answers['q3s2'] === 'unsure') return { state: 'review', title: 'Termination timing is unclear', body: 'The timing of when prior marriages ended relative to the current marriage start date needs to be confirmed. This is a critical fact — consult an attorney if uncertain.' }; if (answers['q3s3'] === 'partial' || answers['q3s3'] === 'no' || answers['q3s3'] === 'unsure') return { state: 'caution', title: 'Prior marriages appear terminated — documents needed', body: 'The prior marriage(s) appear to have ended before the current marriage, but documentation is missing or incomplete. Gathering divorce decrees, annulment orders, or death certificates is an important early task.' }; return { state: 'pass', title: 'Prior marriage termination looks clear', body: 'All prior marriages appear to have legally ended before the current marriage, and documentation is available. This requirement is on track.' }; })()"
+                "result_logic": "(function() { if (answers['q3s1'] === 'none') return { state: 'pass', title: 'No prior marriages to verify', body: 'Neither spouse had a prior legally registered marriage, so this section is not an issue for your case. Well done — move on to the next section.' }; if (answers['q3s1'] === 'unsure') return { state: 'review', title: 'Prior marriage history needs clarification', body: 'It\\'s unclear whether either spouse had a prior marriage. This should be confirmed — USCIS will require documentation if any prior marriages existed.' }; if (answers['q3s2'] === 'no') return { state: 'stop', title: 'Potential bigamy issue — legal review needed', body: 'If a prior marriage had not ended before the current marriage occurred, the current marriage may not be legally valid for immigration purposes. This is a serious issue that requires legal review before proceeding.' }; if (answers['q3s2'] === 'unsure') return { state: 'review', title: 'Termination timing is unclear', body: 'The timing of when prior marriages ended relative to the current marriage start date needs to be confirmed. This is a critical fact — consult an attorney if uncertain.' }; if (answers['q3s3'] === 'partial' || answers['q3s3'] === 'no' || answers['q3s3'] === 'unsure') return { state: 'caution', title: 'Prior marriages appear terminated — documents needed', body: 'The prior marriage(s) appear to have ended before the current marriage, but documentation is missing or incomplete. Gathering divorce decrees, annulment orders, or death certificates is an important early task.' }; return { state: 'pass', title: 'Prior marriage termination looks clear', body: 'All prior marriages appear to have legally ended before the current marriage, and documentation is available. This requirement is on track.' }; })()"
               },
               {
                 "id": "q4",
@@ -507,7 +507,7 @@
                     ]
                   }
                 ],
-                "resultLogic": "(function() { if (answers['q4s1'] === 'no') return { state: 'stop', title: 'Good-faith intent is required', body: 'USCIS requires that the marriage was entered in good faith — not primarily to obtain immigration benefits. A marriage entered primarily for immigration is considered fraudulent. This is a serious issue that should be discussed with an attorney.' }; if (answers['q4s1'] === 'unsure' || answers['q4s4'] === 'yes' || answers['q4s4'] === 'unsure' || answers['q4s3'] === 'no') return { state: 'review', title: 'Potential bona fide marriage concerns', body: 'Some answers suggest this case may face closer scrutiny on bona fide marriage. This does not mean the marriage is invalid — but it means gathering strong, varied evidence early is important, and an attorney review is recommended.' }; const q4s2vals = answers['q4s2'] || []; if (q4s2vals.includes('none') || answers['q4s3'] === 'mostly' || answers['q4s3'] === 'unsure') return { state: 'caution', title: 'Marriage appears genuine — strengthen evidence early', body: 'The marriage appears to be in good faith, but the current evidence is thin or there are minor consistency concerns. Start building your evidence package now — across multiple categories.' }; return { state: 'pass', title: 'Bona fide marriage looks solid', body: 'Good-faith intent is affirmed, relationship evidence exists across multiple categories, and no major fraud-risk flags were identified. This section looks strong.' }; })()"
+                "result_logic": "(function() { if (answers['q4s1'] === 'no') return { state: 'stop', title: 'Good-faith intent is required', body: 'USCIS requires that the marriage was entered in good faith — not primarily to obtain immigration benefits. A marriage entered primarily for immigration is considered fraudulent. This is a serious issue that should be discussed with an attorney.' }; if (answers['q4s1'] === 'unsure' || answers['q4s4'] === 'yes' || answers['q4s4'] === 'unsure' || answers['q4s3'] === 'no') return { state: 'review', title: 'Potential bona fide marriage concerns', body: 'Some answers suggest this case may face closer scrutiny on bona fide marriage. This does not mean the marriage is invalid — but it means gathering strong, varied evidence early is important, and an attorney review is recommended.' }; const q4s2vals = answers['q4s2'] || []; if (q4s2vals.includes('none') || answers['q4s3'] === 'mostly' || answers['q4s3'] === 'unsure') return { state: 'caution', title: 'Marriage appears genuine — strengthen evidence early', body: 'The marriage appears to be in good faith, but the current evidence is thin or there are minor consistency concerns. Start building your evidence package now — across multiple categories.' }; return { state: 'pass', title: 'Bona fide marriage looks solid', body: 'Good-faith intent is affirmed, relationship evidence exists across multiple categories, and no major fraud-risk flags were identified. This section looks strong.' }; })()"
               },
               {
                 "id": "q5",
@@ -686,7 +686,9 @@
               "tag": "petitioner",
               "guideUrl": "/guides",
               "icon": "ShieldCheck",
-              "group": "Required Now"
+              "group": "Required Now",
+              "status": "not-started",
+              "required": true
             },
             {
               "id": "doc_passport_ben",
@@ -695,7 +697,9 @@
               "tag": "beneficiary",
               "guideUrl": "/guides/passport-guide",
               "icon": "User",
-              "group": "Required Now"
+              "group": "Required Now",
+              "status": "not-started",
+              "required": true
             },
             {
               "id": "doc_nikah_nama",
@@ -704,7 +708,9 @@
               "tag": "beneficiary",
               "guideUrl": "/guides/nikah-nama-guide",
               "icon": "FileText",
-              "group": "Required Now"
+              "group": "Required Now",
+              "status": "not-started",
+              "required": true
             },
             {
               "id": "doc_mrc",
@@ -713,7 +719,9 @@
               "tag": "beneficiary",
               "guideUrl": "/guides/nikah-nama-guide",
               "icon": "FileCheck",
-              "group": "Required Now"
+              "group": "Required Now",
+              "status": "not-started",
+              "required": true
             },
             {
               "id": "doc_relationship",
@@ -722,7 +730,9 @@
               "tag": "both",
               "guideUrl": "/guides",
               "icon": "MessageSquare",
-              "group": "Required Now"
+              "group": "Required Now",
+              "status": "not-started",
+              "required": true
             },
             {
               "id": "doc_prior_marriage",
@@ -731,7 +741,9 @@
               "tag": "both",
               "guideUrl": "/guides",
               "icon": "Scale",
-              "group": "Required if Applicable"
+              "group": "Required if Applicable",
+              "status": "not-started",
+              "required": false
             },
             {
               "id": "doc_translations",
@@ -740,7 +752,9 @@
               "tag": "third party",
               "guideUrl": "/guides",
               "icon": "Globe",
-              "group": "Required if Applicable"
+              "group": "Required if Applicable",
+              "status": "not-started",
+              "required": false
             },
             {
               "id": "doc_birth_cert",
@@ -749,7 +763,9 @@
               "tag": "beneficiary",
               "guideUrl": "/guides/birth-certificate-guide",
               "icon": "ClipboardList",
-              "group": "Gather Now for Later"
+              "group": "Gather Now for Later",
+              "status": "not-started",
+              "required": false
             },
             {
               "id": "doc_police_cert",
@@ -758,7 +774,9 @@
               "tag": "beneficiary",
               "guideUrl": "/guides/police-verification-guide",
               "icon": "Lock",
-              "group": "Gather Now for Later"
+              "group": "Gather Now for Later",
+              "status": "not-started",
+              "required": false
             },
             {
               "id": "doc_passport_photos",
@@ -767,7 +785,9 @@
               "tag": "beneficiary",
               "guideUrl": "/guides",
               "icon": "Camera",
-              "group": "Gather Now for Later"
+              "group": "Gather Now for Later",
+              "status": "not-started",
+              "required": false
             }
           ],
           "pakistanSpecific": "Union Council registration increasingly required by Islamabad Embassy. Police certificate: 3-7 days processing for Punjab/Islamabad.",
@@ -984,7 +1004,8 @@
           "step_short_description": "via Rahvana wizard",
           "step_description": "Use Rahvana's guided Autoform Filler to complete the I-130 Petition for Alien Relative — with structured step-by-step support, clear prompts, and a built-in review flow.",
           "step_type": "tool",
-          "logic": "filingMethod === 'online'",
+          "branch": "online",
+          "visible_when": { "filingMethodConfirmed": true, "filingMethod": "online" },
           "tool_data": {
             "id": "i130-filler-online",
             "eyebrow": "Fill Form I-130",
@@ -1046,7 +1067,6 @@
           "dependencies": [
             "step_1_3"
           ],
-          "visible_when": {},
           "estimated_duration_days": 2,
           "is_required": true,
           "display_order": 4,
@@ -1075,11 +1095,12 @@
           "step_short_description": "via Rahvana wizard",
           "step_description": "Complete the beneficiary spouse information form using Rahvana's guided Autoform Filler — structured prompts, field-by-field clarity, and a built-in review before you finalize.",
           "step_type": "tool",
+          "branch": "online",
+          "visible_when": { "filingMethodConfirmed": true, "filingMethod": "online" },
           "who": "via Rahvana wizard",
           "dependencies": [
             "step_1_4"
           ],
-          "visible_when": {},
           "estimated_duration_days": 1,
           "is_required": true,
           "display_order": 5,
@@ -1142,12 +1163,13 @@
           "step_name": "Create USCIS Account",
           "step_short_description": "myaccount.uscis.gov",
           "step_type": "tool",
+          "branch": "online",
+          "visible_when": { "filingMethodConfirmed": true, "filingMethod": "online" },
           "step_description": "Set up the petitioner's USCIS online account — the gateway for filing Form I-130 digitally, tracking the case, and responding to any USCIS requests.",
           "who": "myaccount.uscis.gov",
           "dependencies": [
             "step_1_3"
           ],
-          "visible_when": {},
           "estimated_duration_days": 1,
           "is_required": true,
           "display_order": 6,
@@ -1213,13 +1235,14 @@
           "step_name": "Start Form I-130 on USCIS",
           "step_short_description": "Begin petition online",
           "step_type": "tool",
+          "branch": "online",
+          "visible_when": { "filingMethodConfirmed": true, "filingMethod": "online" },
           "step_description": "Sign in to your USCIS account and begin the online I-130 petition. From your account dashboard, click \"File a Form Online\" to start the form and enter your prepared information.",
           "who": "Petitioner",
           "where": "myaccount.uscis.gov",
           "dependencies": [
             "step_1_6"
           ],
-          "visible_when": {},
           "estimated_duration_days": 1,
           "is_required": true,
           "display_order": 7,
@@ -1336,6 +1359,7 @@
           "step_name": "Upload Forms & Evidence",
           "step_short_description": "PDF/JPG, 12 MB max",
           "step_type": "tool",
+          "branch": "online",
           "step_description": "Attach your supporting documents inside the USCIS online portal. This is the evidence-upload phase \u2014 your documents become part of the official I-130 filing record.",
           "who": "Petitioner",
           "where": "myaccount.uscis.gov",
@@ -1459,6 +1483,8 @@
           "step_name": "Pay Filing Fee",
           "step_short_description": "$625 online · non-refundable",
           "step_type": "tool",
+          "branch": "online",
+          "visible_when": { "filingMethodConfirmed": true, "filingMethod": "online" },
           "step_description": "After completing your form review and digital signature inside the USCIS portal, you will reach the payment step. Pay securely online to complete the I-130 submission.",
           "who": "Petitioner",
           "where": "my.uscis.gov / pay.gov",
@@ -1466,7 +1492,6 @@
           "dependencies": [
             "step_1_8"
           ],
-          "visible_when": {},
           "estimated_duration_days": 1,
           "is_required": true,
           "display_order": 9,
@@ -1578,6 +1603,8 @@
           "step_name": "Review & Submit",
           "step_short_description": "Final submission · receipt issued",
           "step_type": "tool",
+          "branch": "online",
+          "visible_when": { "filingMethodConfirmed": true, "filingMethod": "online" },
           "step_description": "This is the final step before your I-130 petition is officially submitted to USCIS. Review everything carefully, sign electronically, pay the filing fee, and submit.",
           "who": "Petitioner",
           "where": "my.uscis.gov",
@@ -1585,7 +1612,6 @@
           "dependencies": [
             "step_1_9"
           ],
-          "visible_when": {},
           "estimated_duration_days": 1,
           "is_required": true,
           "display_order": 10,
@@ -1699,6 +1725,136 @@
               }
             ],
             "disclaimer": "Rahvana provides structured guidance only. This is not legal advice.\nReview your filing carefully before submitting — USCIS fees are non-refundable once a case is accepted."
+          }
+        },
+        {
+          "step_key": "step_1_11",
+          "step_number": 11,
+          "step_name": "Download & Print Forms",
+          "step_short_description": "I-130, I-130A, G-1145",
+          "step_type": "tool",
+          "branch": "paper",
+          "visible_when": { "filingMethodConfirmed": true, "filingMethod": "paper" },
+          "display_number_override": 4,
+          "step_description": "Download the latest versions of Form I-130 and I-130A from USCIS. Fill them out on your computer or by hand (black ink), print them, and prepare for signing.",
+          "who": "Petitioner",
+          "where": "uscis.gov/i-130",
+          "timeline": "1-2 days",
+          "dependencies": ["step_1_3"],
+          "is_required": true,
+          "display_order": 11,
+          "tool_data": {
+            "id": "paper-forms-download",
+            "title": "Download & Print Forms",
+            "subtitle": "Get the official USCIS paper forms and instructions. Ensure you are using the most current version to avoid rejection.",
+            "chips": [
+              { "label": "Paper Path", "type": "path" },
+              { "label": "USCIS Forms", "type": "uscis" }
+            ],
+            "launch_module": {
+              "icon": "file",
+              "heading": "Download official I-130 forms",
+              "features": [
+                "Form I-130 (Petition for Alien Relative)",
+                "Form I-130A (Spouse Beneficiary Info)",
+                "Form G-1145 (e-Notification)",
+                "Official I-130 Instructions PDF"
+              ],
+              "button_label": "Go to USCIS I-130 Page",
+              "href": "https://www.uscis.gov/i-130"
+            }
+          }
+        },
+        {
+          "step_key": "step_1_12",
+          "step_number": 12,
+          "step_name": "Assemble Paper Packet",
+          "step_short_description": "Order: Fee → G-1145 → Forms → Evidence",
+          "step_type": "docs",
+          "branch": "paper",
+          "visible_when": { "filingMethodConfirmed": true, "filingMethod": "paper" },
+          "display_number_override": 5,
+          "step_description": "Organize your I-130 filing in the exact order USCIS prefers. A well-organized packet prevents missing documents and speeds up intake processing.",
+          "who": "Petitioner",
+          "where": "Physical assembly",
+          "timeline": "2-4 hours",
+          "dependencies": ["step_1_11"],
+          "is_required": true,
+          "display_order": 12,
+          "document_items": [
+            {
+              "id": "p_fee",
+              "name": "Filing Fee ($675)",
+              "subtitle": "Personal check, money order, or Form G-1450 (Credit Card)",
+              "tag": "petitioner",
+              "group": "USCIS Intake Order"
+            },
+            {
+              "id": "p_g1145",
+              "name": "Form G-1145",
+              "subtitle": "e-Notification of Application/Petition Acceptance",
+              "tag": "petitioner",
+              "group": "USCIS Intake Order"
+            },
+            {
+              "id": "p_i130",
+              "name": "Form I-130 (Signed)",
+              "subtitle": "Ensure all 12 pages are included and original signature is in black ink",
+              "tag": "petitioner",
+              "group": "USCIS Intake Order"
+            },
+            {
+              "id": "p_i130a",
+              "name": "Form I-130A (Signed)",
+              "subtitle": "Spouse beneficiary info — must be filed with the I-130",
+              "tag": "beneficiary",
+              "group": "USCIS Intake Order"
+            },
+            {
+              "id": "p_evidence",
+              "name": "Supporting Evidence Binder",
+              "subtitle": "Chronological evidence of genuine relationship",
+              "tag": "both",
+              "group": "Supporting Evidence"
+            }
+          ]
+        },
+        {
+          "step_key": "step_1_13",
+          "step_number": 13,
+          "step_name": "Mail to USCIS Lockbox",
+          "step_short_description": "Use UPS/FedEx/DHL for tracking",
+          "step_type": "tool",
+          "branch": "paper",
+          "visible_when": { "filingMethodConfirmed": true, "filingMethod": "paper" },
+          "display_number_override": 6,
+          "step_description": "Send your completed, signed, and organized I-130 packet to the correct USCIS Lockbox based on your state of residence. Use a reliable courier with tracking.",
+          "who": "Petitioner",
+          "where": "Courier service (UPS/FedEx)",
+          "timeline": "1-3 days shipping",
+          "dependencies": ["step_1_12"],
+          "is_required": true,
+          "display_order": 13,
+          "tool_data": {
+            "id": "mailing-lockbox",
+            "title": "Mail to USCIS Lockbox",
+            "subtitle": "Final step for paper filing. Ensure you use the correct address to avoid processing delays or lost mail.",
+            "chips": [
+              { "label": "Final Step", "type": "final" },
+              { "label": "Courier Tracking", "type": "path" }
+            ],
+            "launch_module": {
+              "icon": "mail",
+              "heading": "Find your USCIS Lockbox address",
+              "features": [
+                "Address depends on your state of residence",
+                "Different address for UPS/FedEx vs. US Postal Service",
+                "Always check the latest 'Where to File' list",
+                "Keep your tracking number securely"
+              ],
+              "button_label": "View Filing Addresses",
+              "href": "https://www.uscis.gov/i-130-addresses"
+            }
           }
         }
       ]
@@ -2132,7 +2288,9 @@
                         "bene",
                         "govt"
                       ],
-                      "external_href": "/guides/passport-guide"
+                      "external_href": "/guides/passport-guide",
+                      "status": "not-started",
+                      "required": true
                     },
                     {
                       "id": "birth",
@@ -2143,7 +2301,9 @@
                         "bene",
                         "govt"
                       ],
-                      "external_href": "/guides/birth-certificate-guide"
+                      "external_href": "/guides/birth-certificate-guide",
+                      "status": "not-started",
+                      "required": true
                     },
                     {
                       "id": "marriage",
@@ -2155,6 +2315,8 @@
                         "govt"
                       ],
                       "external_href": "/guides/nikah-nama-guide",
+                      "status": "not-started",
+                      "required": true,
                       "sections": [
                         {
                           "t": "What this is",
@@ -2183,7 +2345,9 @@
                         "bene",
                         "govt"
                       ],
-                      "external_href": "/guides/police-verification-guide"
+                      "external_href": "/guides/police-verification-guide",
+                      "status": "not-started",
+                      "required": true
                     },
                     {
                       "id": "translations",
@@ -2194,6 +2358,8 @@
                         "bene",
                         "3p"
                       ],
+                      "status": "not-started",
+                      "required": true,
                       "sections": [
                         {
                           "t": "Requirement",
@@ -2229,6 +2395,8 @@
                         "both",
                         "govt"
                       ],
+                      "status": "not-started",
+                      "required": false,
                       "sections": [
                         {
                           "t": "When needed",
@@ -2257,6 +2425,8 @@
                         "both",
                         "govt"
                       ],
+                      "status": "not-started",
+                      "required": false,
                       "sections": [
                         {
                           "t": "When needed",
@@ -2277,6 +2447,8 @@
                         "bene",
                         "govt"
                       ],
+                      "status": "not-started",
+                      "required": false,
                       "sections": [
                         {
                           "t": "When needed",
@@ -2297,6 +2469,8 @@
                         "bene",
                         "3p"
                       ],
+                      "status": "not-started",
+                      "required": false,
                       "sections": [
                         {
                           "t": "When this applies",
@@ -2327,6 +2501,8 @@
                       "tags": [
                         "bene"
                       ],
+                      "status": "not-started",
+                      "required": false,
                       "sections": [
                         {
                           "t": "Why this helps",
@@ -2346,6 +2522,8 @@
                       "tags": [
                         "both"
                       ],
+                      "status": "not-started",
+                      "required": false,
                       "sections": [
                         {
                           "t": "Standards",
@@ -2369,6 +2547,8 @@
                       "tags": [
                         "both"
                       ],
+                      "status": "not-started",
+                      "required": false,
                       "sections": [
                         {
                           "t": "Why keep this ready",
@@ -2693,6 +2873,7 @@
       "chapter_name": "Stage III: Medical + Interview",
       "chapter_description": "Complete medical exam → Attend consular interview → Visa decision",
       "timeline": "Interview within 2-4 weeks of letter",
+      "estimated_duration_months": 1,
       "display_order": 3,
       "steps": [
         {

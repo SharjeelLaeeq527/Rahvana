@@ -16,6 +16,7 @@ interface DashboardViewProps {
   onSelectChapter: (idx: number) => void;
   actions: {
     setCurrentStep: (idx: number) => void;
+    setStage: (idx: number) => void;
   };
 }
 
@@ -147,10 +148,12 @@ export function DashboardView({
                 "You have reached the end of the roadmap. All major verification steps are fulfilled."}
             </p>
             <button
-              onClick={() =>
-                nextActionData &&
-                actions.setCurrentStep(nextActionData.stepIdxInChapter)
-              }
+              onClick={() => {
+                if (nextActionData) {
+                  actions.setStage(nextActionData.chapterIdx);
+                  actions.setCurrentStep(nextActionData.stepIdxInChapter);
+                }
+              }}
               disabled={!nextActionData}
               className="inline-flex items-center gap-2 px-4 py-2.5 bg-primary hover:bg-primary/90 disabled:opacity-50 text-white rounded-[10px] font-bold text-[13px] shadow-lg shadow-primary/40 transition-all active:scale-95 group"
             >

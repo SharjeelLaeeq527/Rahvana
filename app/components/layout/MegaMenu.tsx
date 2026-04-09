@@ -104,15 +104,15 @@ const MegaMenu: React.FC<MegaMenuProps> = ({
                 onClick={() => setActiveTab(tab.id)}
                 className={`shrink-0 pb-3 text-sm font-semibold transition-all relative ${
                   activeTab === tab.id
-                    ? "text-primary"
-                    : "text-slate-500 hover:text-primary/70"
+                    ? "text-[#0d7377]"
+                    : "text-slate-500 hover:text-[#0d7377]"
                 }`}
               >
                 {tab.label}
                 {activeTab === tab.id && (
                   <motion.div
                     layoutId="activeTab"
-                    className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary rounded-full"
+                    className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#0d7377] rounded-full"
                   />
                 )}
               </button>
@@ -229,7 +229,7 @@ const MegaMenu: React.FC<MegaMenuProps> = ({
       <div className="border-t border-slate-100 bg-slate-50/50 p-5 flex justify-between shrink-0">
         <Link
           href={footerLink?.href || "#"}
-          className="flex items-center gap-2 text-sm font-bold text-primary hover:gap-3 transition-all"
+          className="flex items-center gap-2 text-sm font-bold text-[#0d7377] hover:gap-3 transition-all"
         >
           {footerLink?.label || "Explore all journeys"}
           <ArrowRight className="h-4 w-4" />
@@ -237,7 +237,7 @@ const MegaMenu: React.FC<MegaMenuProps> = ({
         {!user && (
           <button
             onClick={() => setShowComingSoon(true)}
-            className="flex items-center cursor-pointer gap-2 text-sm font-bold text-primary hover:gap-3 transition-all"
+            className="flex items-center cursor-pointer gap-2 text-sm font-bold text-[#0d7377] hover:gap-3 transition-all"
           >
             Get Early Access
           </button>

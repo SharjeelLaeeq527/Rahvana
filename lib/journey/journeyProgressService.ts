@@ -9,6 +9,8 @@ export interface JourneyProgressRecord {
   current_step: number;
   scenario_type_ir2?: 'bio' | 'step' | 'adopted';
   completed_steps: string[];
+  completed_steps_count?: number;
+  total_steps_count?: number;
   collapsed_steps: Record<string, boolean>;
   role: 'both' | 'petitioner' | 'beneficiary';
   filing_type: 'online' | 'paper' | 'both';
@@ -17,6 +19,7 @@ export interface JourneyProgressRecord {
   started: boolean;
   started_at: string;
   last_updated_at: string;
+  updated_at?: string;
   doc_uploads: Record<string, { name: string; size: number; lastModified: number }>;
   // New Journey Engine fields
   answers?: Record<string, any>;
@@ -59,10 +62,10 @@ export async function loadJourneyProgress(
     const supabase = createClient();
     const { data, error } = await withTimeout<any>(
       supabase
-        .from('user_journey_progress')
+        .from('journeys')
         .select('*')
         .eq('user_id', userId)
-        .eq('journey_id', journeyId)
+        .eq('journey_type', journeyId)
         .maybeSingle()
     );
 
@@ -71,7 +74,31 @@ export async function loadJourneyProgress(
       return null;
     }
 
-    return data as JourneyProgressRecord | null;
+    if (!data) return null;
+
+    // Map new table structure to JourneyProgressRecord interface
+    const mapped: JourneyProgressRecord = {
+      id: data.id,
+      user_id: data.user_id,
+      journey_id: data.journey_type, // Map journey_type to journey_id
+      current_stage: 0,
+      current_step: 0,
+      completed_steps: Array(data.completed_steps_count || 0).fill(''),
+      completed_steps_count: data.completed_steps_count || 0,
+      total_steps_count: data.total_steps_count || 42,
+      collapsed_steps: {},
+      role: 'both',
+      filing_type: data.filing_method || 'online',
+      document_checklist: {},
+      notes: {},
+      started: data.status !== 'not_started',
+      started_at: data.started_at || new Date().toISOString(),
+      last_updated_at: data.updated_at,
+      updated_at: data.updated_at,
+      doc_uploads: {},
+    };
+
+    return mapped;
   } catch (error) {
     console.error('[Journey] loadJourneyProgress timed out or failed:', error);
     return null;
@@ -88,10 +115,10 @@ export async function listUserJourneys(userId: string): Promise<JourneyProgressR
     const supabase = createClient();
     const { data, error } = await withTimeout<any>(
       supabase
-        .from('user_journey_progress')
-        .select('id, journey_id, completed_steps, last_updated_at')
+        .from('journeys')
+        .select('id, journey_type, completed_steps_count, total_steps_count, updated_at')
         .eq('user_id', userId)
-        .order('last_updated_at', { ascending: false })
+        .order('updated_at', { ascending: false })
     );
 
     if (error) {
@@ -99,7 +126,29 @@ export async function listUserJourneys(userId: string): Promise<JourneyProgressR
       return [];
     }
 
-    return (data || []) as JourneyProgressRecord[];
+    // Map new table structure to JourneyProgressRecord interface
+    const mappedData = (data || []).map((record: any) => ({
+      id: record.id,
+      user_id: userId,
+      journey_id: record.journey_type, // Map journey_type to journey_id for backward compatibility
+      current_stage: 0,
+      current_step: 0,
+      completed_steps: Array(record.completed_steps_count).fill(''), // Create array of appropriate length
+      completed_steps_count: record.completed_steps_count, // Include actual count
+      total_steps_count: record.total_steps_count,
+      collapsed_steps: {},
+      role: 'both' as const,
+      filing_type: 'online' as const,
+      document_checklist: {},
+      notes: {},
+      started: true,
+      started_at: new Date().toISOString(),
+      last_updated_at: record.updated_at, // Map updated_at to last_updated_at for compatibility
+      updated_at: record.updated_at,
+      doc_uploads: {},
+    }));
+
+    return mappedData as JourneyProgressRecord[];
   } catch (error) {
     console.error('[Journey] listUserJourneys timed out or failed:', error);
     return [];
@@ -116,7 +165,7 @@ export async function deleteAllUserJourneys(userId: string): Promise<boolean> {
     const supabase = createClient();
     const { error } = await withTimeout<any>(
       supabase
-        .from('user_journey_progress')
+        .from('journeys')
         .delete()
         .eq('user_id', userId)
     );
@@ -135,7 +184,8 @@ export async function deleteAllUserJourneys(userId: string): Promise<boolean> {
 
 /**
  * Save (upsert) journey progress to Supabase.
- * Uses ON CONFLICT (user_id, journey_id) to update existing record.
+ * Uses ON CONFLICT (user_id, journey_type) to update existing record.
+ * The new journeys table only tracks core progress fields.
  */
 export async function saveJourneyProgress(
   userId: string,
@@ -146,29 +196,30 @@ export async function saveJourneyProgress(
 
   try {
     const supabase = createClient();
+    
+    // Calculate progress metrics
+    const completedCount = state.completedSteps.size || 0;
+    // Note: For now using a default of 42 total steps, update if different
+    const totalCount = 42;
+    const completionPercentage = totalCount > 0 ? (completedCount / totalCount) * 100 : 0;
+    
     const payload = {
       user_id: userId,
-      journey_id: journeyId,
-      // scenario_type_ir2: state.scenarioType, // Omitted due to missing column
-      current_stage: state.currentStage,
-      current_step: state.currentStep ?? 0,
-      completed_steps: Array.from(state.completedSteps),
-      collapsed_steps: state.collapsed_steps,
-      role: state.role,
-      filing_type: state.filingType,
-      document_checklist: state.documentChecklist,
-      notes: state.notes,
-      // doc_uploads: state.docUploads, // Omitted due to missing column
-      started: state.started,
-      // answers: state.answers || {},   // Omitted because 'answers' column is missing in some schemas
-      // metadata: state.metadata || {}, // Omitted because 'metadata' column is missing in some schemas
+      journey_type: journeyId,
+      filing_method: state.filingType || 'online',
+      sponsor_structure: 'individual', // Default, can be updated based on state if needed
+      status: state.started ? 'in_progress' : 'not_started',
+      completed_steps_count: completedCount,
+      total_steps_count: totalCount,
+      completion_percentage: completionPercentage,
+      updated_at: new Date().toISOString(),
     };
 
     const { error } = await withTimeout<any>(
       supabase
-        .from('user_journey_progress')
+        .from('journeys')
         .upsert(payload, {
-          onConflict: 'user_id,journey_id',
+          onConflict: 'user_id,journey_type',
         })
     );
 
@@ -186,6 +237,7 @@ export async function saveJourneyProgress(
 
 /**
  * Delete journey progress (for "Start Fresh" functionality).
+ * The journeyId can be either the UUID id or the journey_type (e.g., 'IR1', 'F1').
  */
 export async function deleteJourneyProgress(
   userId: string,
@@ -195,13 +247,23 @@ export async function deleteJourneyProgress(
 
   try {
     const supabase = createClient();
-    const { error } = await withTimeout<any>(
-      supabase
-        .from('user_journey_progress')
-        .delete()
-        .eq('user_id', userId)
-        .eq('journey_id', journeyId)
-    );
+    
+    // Check if journeyId is a UUID (36 chars with dashes) or a journey type string
+    const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(journeyId);
+    
+    let query = supabase
+      .from('journeys')
+      .delete()
+      .eq('user_id', userId);
+    
+    if (isUUID) {
+      query = query.eq('id', journeyId);
+    } else {
+      // Assume it's a journey_type (e.g., 'IR1', 'F1', etc.)
+      query = query.eq('journey_type', journeyId);
+    }
+
+    const { error } = await withTimeout<any>(query);
 
     if (error) {
       console.error('[Journey] Failed to delete progress:', error.message);

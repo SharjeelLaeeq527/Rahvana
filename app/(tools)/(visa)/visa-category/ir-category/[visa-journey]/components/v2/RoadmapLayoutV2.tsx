@@ -7,6 +7,7 @@ import { ChapterView } from "./ChapterView";
 import { StepView } from "./StepView";
 import { WizardState } from "@/app/(main)/dashboard/hooks/useWizard";
 import { ChevronRight, ArrowLeft, Check, LayoutDashboard } from "lucide-react";
+import { getDisplayStepNumber } from "./journeyHelpers";
 
 interface RoadmapLayoutV2Props {
   data: RoadmapData;
@@ -31,18 +32,16 @@ export default function RoadmapLayoutV2({
   const [view, setView] = useState<ViewType>("dashboard");
   const [selectedChapterIdx, setSelectedChapterIdx] = useState<number>(0);
 
-  // Sync view and selected chapter from state
+  // Sync selected chapter from state, but keep view as 'dashboard' by default on load
   useEffect(() => {
-    if (state.currentStep !== null && state.currentStep !== -1) {
-      setView("step");
-    }
     if (state.currentStage !== undefined && state.currentStage !== -1) {
       setSelectedChapterIdx(state.currentStage);
     }
-  }, [state.currentStep, state.currentStage]);
+  }, [state.currentStage]);
 
   const handleSelectChapter = (idx: number) => {
     setSelectedChapterIdx(idx);
+    actions.setStage(idx); // Update backend state with new chapter
     setView("chapter");
     actions.setCurrentStep(-1); // Reset step in case one was open
   };
@@ -76,14 +75,21 @@ export default function RoadmapLayoutV2({
     (() => {
       const chapter = data.chapters?.[state.currentStage];
       const step = chapter?.steps[state.currentStep];
-      const sId = step?.step_key || step?.id;
+      const sId = step?.step_key;
+      // console.log("[RoadmapLayoutV2] isStepDone:", { stage: state.currentStage, step: state.currentStep, sId, completed: state.completedSteps.has(sId) });
       return state.completedSteps.has(sId);
     })();
 
   const handleToggleComplete = () => {
     const chapter = data.chapters?.[state.currentStage];
     const step = chapter?.steps[state.currentStep || 0];
-    const sKey = step?.step_key || step?.id;
+    const sKey = step?.step_key;
+    console.log("[RoadmapLayoutV2] handleToggleComplete attempt:", { 
+      currentStage: state.currentStage, 
+      currentStep: state.currentStep, 
+      chapterKey: chapter?.chapter_key,
+      sKey 
+    });
     if (sKey) actions.toggleComplete(sKey);
   };
 
@@ -132,18 +138,23 @@ export default function RoadmapLayoutV2({
 
           {view === "step" &&
             state.currentStep !== null &&
-            state.currentStep !== -1 && (
-              <>
-                <ChevronRight
-                  size={12}
-                  className="opacity-30"
-                  strokeWidth={3}
-                />
-                <div className="text-[#3a4f63] px-1 py-0.5 rounded cursor-default">
-                  Step {state.currentStep + 1}
-                </div>
-              </>
-            )}
+            state.currentStep !== -1 && (() => {
+              const chapter = data.chapters?.[state.currentStage];
+              const step = chapter?.steps[state.currentStep];
+              const displayNum = step ? getDisplayStepNumber(step) : (state.currentStep + 1);
+              return (
+                <>
+                  <ChevronRight
+                    size={12}
+                    className="opacity-30"
+                    strokeWidth={3}
+                  />
+                  <div className="text-[#3a4f63] px-1 py-0.5 rounded cursor-default">
+                    Step {displayNum}
+                  </div>
+                </>
+              );
+            })()}
         </div>
 
         {/* Global Toolbar / Context Actions */}
@@ -186,7 +197,10 @@ export default function RoadmapLayoutV2({
             data={data}
             state={state}
             onSelectChapter={handleSelectChapter}
-            actions={actions}
+            actions={{
+              setCurrentStep: actions.setCurrentStep,
+              setStage: actions.setStage,
+            }}
           />
         )}
 

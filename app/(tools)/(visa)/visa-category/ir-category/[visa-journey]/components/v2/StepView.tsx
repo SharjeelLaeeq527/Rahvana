@@ -120,6 +120,7 @@ interface StepViewProps {
     setStage: (idx: number) => void;
     updateAnswers: (answers: Record<string, unknown>) => void;
     updateMetadata: (data: Record<string, unknown>) => void;
+    updateDocumentStatus?: (docId: string, status: 'not-started' | 'in-progress' | 'reviewed') => Promise<void>;
   };
   onBack: () => void;
 }
@@ -1393,7 +1394,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
     );
   }, [currentChapter, filingMethod]);
 
-  const currentStep = currentChapter?.steps[state.currentStep || 0];
+  const currentStep = activeStepsInChapter[state.currentStep || 0];
   const sId = currentStep?.step_key || (currentStep as any)?.id || "";
   const isCompleted = state.completedSteps.has(sId);
 
@@ -1711,6 +1712,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
       filingMethod: methodId,
       filingMethodConfirmed: true,
     });
+
     setIsLocked(true);
     if (!isCompleted) handleToggleComplete();
     setShowQuiz(false);
@@ -1741,14 +1743,6 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
       }
     }
   };
-
-  // const handleToggleSubmissionCheck = (idx: number) => {
-  //   const next = {
-  //     ...submissionChecklistStatus,
-  //     [idx]: !submissionChecklistStatus[idx],
-  //   };
-  //   actions.updateMetadata({ submissionChecklistStatus: next });
-  // };
 
   const handleNavigate = (stepId: string) => {
     const activeChapters = data.chapters || (data as any).stages;
@@ -2042,9 +2036,13 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                     ? Upload
                     : tool.launch_module?.icon === "payment"
                       ? CreditCard
-                      : tool.launch_module?.icon === "check"
-                        ? CheckSquare
-                        : CheckCircle;
+                      : tool.launch_module?.icon === "mail"
+                        ? Mail
+                        : tool.launch_module?.icon === "file"
+                          ? FileText
+                          : tool.launch_module?.icon === "check"
+                            ? CheckSquare
+                            : CheckCircle;
 
     return (
       <div className="animate-in fade-in slide-in-from-bottom-4 duration-740 flex flex-col items-center w-full min-h-full">
@@ -6206,15 +6204,12 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                                 "_blank",
                                 "noopener,noreferrer",
                               );
-                              // If they click an external guide, maybe we should also count it as started?
-                              if (st === "not-started") {
-                                actions.updateMetadata({
-                                  civilDocsStatus: {
-                                    ...civilDocsStatus,
-                                    [item.id]: "in-progress",
-                                  },
-                                });
-                              }
+                              actions.updateMetadata({
+                                civilDocsStatus: {
+                                  ...civilDocsStatus,
+                                  [item.id]: "reviewed",
+                                },
+                              });
                             } else {
                               setActiveCivilDoc(item);
                               setIsCivilDocGuideOpen(true);
@@ -6500,7 +6495,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                     rel="noopener noreferrer"
                     className="inline-flex items-center gap-[5px] mt-[12px] text-[12px] font-semibold text-[#15744f] hover:underline cursor-pointer w-fit"
                   >
-                    <span>Edit or update in Portal Wallet</span>
+                    <span>Update in Portal Wallet</span>
                     <ExternalLink size={11} strokeWidth={2} />
                   </Link>
                 </div>
@@ -6579,15 +6574,15 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
               {tool.wallet_card && (
                 <button
                   onClick={() => {
-                    if (tool.wallet_card.type === "nvc_fee") {
+                    if (tool.wallet_card?.type === "nvc_fee") {
                       setIsNvcFeeModalOpen(true);
-                    } else if (tool.wallet_card.type === "ceac_creds") {
+                    } else if (tool.wallet_card?.type === "ceac_creds") {
                       setIsCeacModalOpen(true);
                     }
                   }}
                   className={`bg-[#fafcff] border-[1.5px] rounded-[16px] p-[20px] text-left group hover:shadow-[0_4px_20px_rgba(47,111,212,0.1)] hover:-translate-y-px transition-all cursor-pointer select-none flex flex-col
                     ${
-                      (tool.wallet_card.type === "ceac_creds" &&
+                      (tool.wallet_card?.type === "ceac_creds" &&
                         ceacCredentials) ||
                       (tool.wallet_card?.type === "nvc_fee" &&
                         state.metadata.nvcFeeStatus)
@@ -6628,41 +6623,41 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                   </div>
                   <h3
                     className={`text-[14px] font-semibold mb-1 ${
-                      (tool.wallet_card.type === "ceac_creds" &&
+                      (tool.wallet_card?.type === "ceac_creds" &&
                         ceacCredentials) ||
-                      (tool.wallet_card.type === "nvc_fee" &&
+                      (tool.wallet_card?.type === "nvc_fee" &&
                         state.metadata.nvcFeeStatus)
                         ? "text-[#15744f]"
                         : "text-[#0c1b33]"
                     }`}
                   >
-                    {(tool.wallet_card.type === "ceac_creds" &&
+                    {(tool.wallet_card?.type === "ceac_creds" &&
                       ceacCredentials) ||
-                    (tool.wallet_card.type === "nvc_fee" &&
+                    (tool.wallet_card?.type === "nvc_fee" &&
                       state.metadata.nvcFeeStatus)
-                      ? `✓ ${tool.wallet_card.title.replace("Save", "Details")}`
-                      : tool.wallet_card.title}
+                      ? `✓ ${tool.wallet_card?.title.replace("Save", "Details")}`
+                      : tool.wallet_card?.title}
                   </h3>
                   <p className="text-[12px] text-[#6b8097] leading-normal">
-                    {tool.wallet_card.subtitle}
+                    {tool.wallet_card?.subtitle}
                   </p>
                   <div
                     className={`flex items-center gap-1 mt-3 text-[12px] font-semibold ${
-                      (tool.wallet_card.type === "ceac_creds" &&
+                      (tool.wallet_card?.type === "ceac_creds" &&
                         ceacCredentials) ||
-                      (tool.wallet_card.type === "nvc_fee" &&
+                      (tool.wallet_card?.type === "nvc_fee" &&
                         state.metadata.nvcFeeStatus)
                         ? "text-[#15744f]"
                         : "text-primary"
                     }`}
                   >
                     <span>
-                      {(tool.wallet_card.type === "ceac_creds" &&
+                      {(tool.wallet_card?.type === "ceac_creds" &&
                         ceacCredentials) ||
-                      (tool.wallet_card.type === "nvc_fee" &&
+                      (tool.wallet_card?.type === "nvc_fee" &&
                         state.metadata.nvcFeeStatus)
                         ? "View saved details"
-                        : tool.wallet_card.type === "ceac_creds"
+                        : tool.wallet_card?.type === "ceac_creds"
                           ? "Open credential vault"
                           : "Update payment record"}
                     </span>
@@ -7041,14 +7036,14 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                         <div
                           className="h-full bg-linear-to-r from-primary to-primary transition-all duration-1000 ease-out"
                           style={{
-                            width: `${(currentStep.document_items.filter((d) => state.documentChecklist[d.name]).length / currentStep.document_items.length) * 100}%`,
+                            width: `${(currentStep.document_items.filter((d: any) => (state.metadata?.docReviewStatus?.[d.id] || state.documentChecklist[d.name])).length / currentStep.document_items.length) * 100}%`,
                           }}
                         />
                       </div>
                       <span className="text-[12px] font-medium text-[#6b8097] whitespace-nowrap">
                         {
                           currentStep.document_items.filter(
-                            (d) => state.documentChecklist[d.name],
+                            (d: any) => (state.metadata?.docReviewStatus?.[d.id] || state.documentChecklist[d.name]),
                           ).length
                         }{" "}
                         of {currentStep.document_items.length} reviewed
@@ -7087,9 +7082,10 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                         </div>
 
                         <div className="flex flex-col">
-                          {groupItems.map((doc, idx) => {
+                          {groupItems.map((doc: any, idx: number) => {
+                            const docReviewStatus = state.metadata?.docReviewStatus?.[doc.id];
                             const isReviewed =
-                              state.documentChecklist[doc.name];
+                              docReviewStatus === 'reviewed' || state.documentChecklist[doc.name];
                             const hasAttachment =
                               state.docUploads[doc.name] ||
                               state.notes[doc.name];
@@ -7105,7 +7101,18 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                                     doc.guideUrl &&
                                     doc.guideUrl !== "/guides"
                                   ) {
+                                    // Open guide immediately in new tab
                                     window.open(doc.guideUrl, "_blank");
+                                    // Auto-mark as reviewed in background (fire and forget)
+                                    if (
+                                      actions.updateDocumentStatus &&
+                                      doc.id
+                                    ) {
+                                      actions.updateDocumentStatus(
+                                        doc.id,
+                                        "reviewed"
+                                      );
+                                    }
                                   } else {
                                     setSelectedGuideId(doc.id || null);
                                   }
@@ -8233,12 +8240,12 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                       className="bg-[#f4f7fb] border border-[#d0e4f7] rounded-[16px] p-[20px_22px] mb-[14px]"
                     >
                       <div className="text-[13px] font-semibold tracking-[0.05em] uppercase text-[#6b8097] mb-[10px]">
-                        {section.t || section.title}
+                        {section.title}
                       </div>
                       <div
                         className="guide-content"
                         dangerouslySetInnerHTML={{
-                          __html: section.c || section.htmlContent,
+                          __html: section.htmlContent,
                         }}
                       />
                     </div>
@@ -8249,7 +8256,10 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
               {/* Actions */}
               <div className="flex flex-col gap-[10px] mt-[28px] mb-[40px]">
                 <button
-                  onClick={() => {
+                  onClick={async () => {
+                    if (actions.updateDocumentStatus && selectedGuideId) {
+                      await actions.updateDocumentStatus(selectedGuideId, 'reviewed');
+                    }
                     setSelectedGuideId(null);
                   }}
                   className="w-full p-[15px_24px] bg-[#15744f] text-white border-none rounded-[16px] font-bold text-[15px] transition-all hover:bg-[#0e5c3c] hover:-translate-y-px text-center"
