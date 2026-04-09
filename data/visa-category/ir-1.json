@@ -2688,36 +2688,55 @@
       ]
     },
     {
-      "id": 3,
-      "name": "Stage III: Medical + Interview",
-      "description": "Complete medical exam → Attend consular interview → Visa decision",
+      "chapter_key": "chapter_3",
+      "chapter_number": 3,
+      "chapter_name": "Stage III: Medical + Interview",
+      "chapter_description": "Complete medical exam → Attend consular interview → Visa decision",
       "timeline": "Interview within 2-4 weeks of letter",
+      "display_order": 3,
       "steps": [
         {
-          "id": "III-01",
-          "name": "Schedule Medical Examination",
+          "step_key": "step_3_1",
+          "step_number": 1,
+          "step_name": "Schedule Medical Examination",
+          "step_short_description": "Official medical clearance",
+          "step_description": "Every immigrant visa applicant must complete a medical examination with an embassy-approved physician before their interview.",
+          "step_type": "tool",
           "who": "Beneficiary",
-          "where": "IOM Pakistan",
+          "where": "Approved Panel Physicians",
+          "estimated_duration_days": 1,
+          "is_required": true,
+          "display_order": 1,
           "actions": [
-            "Contact IOM clinic",
-            "Book appointment 1-5 days before interview",
-            "Note documents needed",
-            "Save confirmation"
+            "Select booking method",
+            "Find approved physician",
+            "Schedule appointment",
+            "Record appointment details"
           ],
-          "pakistanSpecific": "IOM Islamabad: +92-51-111-466-789. IOM Karachi: +92-21-111-466-789. IOM Lahore: +92-42-111-466-789",
-          "fee": "$200-300 USD equivalent",
-          "notes": "Medical results valid 6 months. Schedule 2-3 days before interview ideally.",
-          "relevantTools": [
-            {
-              "label": "Polio Vaccination Guide",
-              "labelUr": "پولیو ویکسینیشن گائیڈ",
-              "href": "/guides/polio-vaccination-guide",
-              "type": "guide"
-            }
-          ]
+          "tool_data": {
+            "id": "step_3_1",
+            "type": "medical_exam",
+            "title": "Schedule Medical Examination",
+            "subtitle": "Every immigrant visa applicant must complete a medical exam with an embassy-approved physician before their interview."
+          }
         },
         {
-          "id": "III-02",
+          "step_key": "step_3_2",
+          "step_number": 2,
+          "step_name": "Obtain Polio Vaccination Certificate",
+          "step_short_description": "Required for Pakistan applicants",
+          "step_description": "Pakistan-origin applicants must obtain a polio vaccination certificate before the consular interview. This is a required compliance step for all immigrant visa applicants.",
+          "who": "Beneficiary",
+          "where": "Government vaccination post / WHO site",
+          "timeline": "1-2 days",
+          "step_type": "tool",
+          "tool_data": {
+            "type": "polio_certificate",
+            "disclaimer": "Rahvana provides structured guidance only. Confirm current polio documentation requirements directly with your embassy before attending the medical exam."
+          }
+        },
+        {
+          "id": "III-03",
           "name": "Obtain Fresh Police Certificate",
           "who": "Beneficiary",
           "where": "Pakistan police authorities",
@@ -2732,7 +2751,7 @@
           "pakistanSpecific": "Punjab Police Portal: pkm.punjab.gov.pk or islamabadpolice.gov.pk"
         },
         {
-          "id": "III-03",
+          "id": "III-04",
           "name": "Gather Original Documents",
           "who": "Beneficiary",
           "where": "Document compilation",
@@ -2746,6 +2765,7 @@
             "Translation (original)",
             "Union Council certificate",
             "Police certificate (original)",
+            "Polio certificate (original)",
             "Sealed medical envelope",
             "Photos (2)",
             "I-864 package",
@@ -2762,7 +2782,7 @@
           "notes": "Bring originals + copies. Organize petitioner and beneficiary documents separately."
         },
         {
-          "id": "III-04",
+          "id": "III-05",
           "name": "Attend Medical Exam",
           "who": "Beneficiary",
           "where": "IOM clinic",
@@ -2789,7 +2809,7 @@
           ]
         },
         {
-          "id": "III-05",
+          "id": "III-06",
           "name": "Prepare for Interview",
           "who": "Beneficiary",
           "where": "Home preparation",
@@ -2812,7 +2832,7 @@
           ]
         },
         {
-          "id": "III-06",
+          "id": "III-07",
           "name": "Attend Visa Interview",
           "who": "Beneficiary",
           "where": "U.S. Embassy Islamabad",
@@ -2844,7 +2864,7 @@
           ]
         },
         {
-          "id": "III-07",
+          "id": "III-08",
           "name": "Track Status (If AP)",
           "who": "Beneficiary",
           "where": "ceac.state.gov",

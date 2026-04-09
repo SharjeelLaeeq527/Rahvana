@@ -81,6 +81,8 @@ import { AWAITING_REVIEW_DATA } from "./AwaitingReviewData";
 import { DQ_RECORDING_DATA } from "./DqRecordingData";
 import { INTERVIEW_SCHEDULING_DATA } from "./InterviewSchedulingData";
 import { APPOINTMENT_RECEIVED_DATA } from "./AppointmentReceivedData";
+import { MEDICAL_EXAM_DATA } from "./MedicalExamData";
+import { POLIO_CERTIFICATE_DATA } from "./PolioCertificateData";
 
 interface SecurityQuestion {
   id: string;
@@ -226,6 +228,35 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
   const [dqCountry, setDqCountry] = useState(
     (state.metadata.dqCountry as string) || "Pakistan",
   );
+
+  // Step 3.1 Medical Exam States
+  const [medSaved, setMedSaved] = useState(
+    state.metadata.med_appt_saved === "true",
+  );
+  const [medDate, setMedDate] = useState(
+    (state.metadata.med_date as string) || "",
+  );
+  const [medTime, setMedTime] = useState(
+    (state.metadata.med_time as string) || "",
+  );
+  const [medClinic, setMedClinic] = useState(
+    (state.metadata.med_clinic as string) || "",
+  );
+  const [isMedWizardOpen, setIsMedWizardOpen] = useState(false);
+  const [medWizardMode, setMedWizardMode] = useState<"service" | "guide" | "">(
+    "",
+  );
+  const [medWizardStep, setMedWizardStep] = useState(0);
+
+  // Step 3.2 Polio Certificate States
+  const [polioLaunched, setPolioLaunched] = useState(
+    state.metadata.polio_launched === "true",
+  );
+  const [polioChecks, setPolioChecks] = useState<boolean[]>(
+    (state.metadata.polio_checks as boolean[]) || [false, false, false],
+  );
+  const [isPolioGuideOpen, setIsPolioGuideOpen] = useState(false);
+  const [polioGuideStep, setPolioGuideStep] = useState(0);
 
   const handleToggleSubmissionCheckS10 = (idx: number) => {
     const next = {
@@ -3573,10 +3604,641 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                   </div>
                 </div>
               )}
+            </div>
+          )}
 
-              {/* <p className="text-[11.5px] text-[#6b8097] leading-[1.65] text-center pt-[4px] mt-[8px]">
-                {APPOINTMENT_RECEIVED_DATA.disclaimer}
-              </p> */}
+          {/* MEDICAL EXAMINATION (Step 3.1 SPECIFIC) */}
+          {tool.type === "medical_exam" && (
+            <div className="flex flex-col animate-in fade-in slide-in-from-bottom-2 duration-380 font-sans">
+              <div className="flex gap-1.5 flex-wrap mb-8">
+                {MEDICAL_EXAM_DATA.chips.map((chip, i) => (
+                  <span
+                    key={i}
+                    className={`text-[11px] font-semibold tracking-[0.06em] uppercase px-3 py-1.5 rounded-full whitespace-nowrap border ${
+                      chip.type === "med"
+                        ? "bg-[#e8f6f6] text-[#0d6b6b] border-[#9fd6d6]"
+                        : chip.type === "book"
+                          ? "bg-[#e8f1fb] text-[#2d4a6e] border-[#d0e4f7]"
+                          : "bg-[#f3f0fb] text-[#4a2d8a] border-[#c9bef2]"
+                    }`}
+                  >
+                    {chip.label}
+                  </span>
+                ))}
+              </div>
+
+              {!medSaved ? (
+                /* Decision module */
+                <div className="relative bg-[#0e1e38] rounded-[16px] border border-white/5 shadow-[0_20px_60px_rgba(12,27,51,0.18),0_4px_16px_rgba(12,27,51,0.12)] overflow-hidden mb-4">
+                  <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-[#0d6b6b] via-[#6aa8f0] to-transparent opacity-75" />
+                  <div className="p-[30px_32px_26px]">
+                    <div className="text-[10px] font-bold tracking-[0.12em] uppercase text-white/35 mb-1">
+                      {MEDICAL_EXAM_DATA.decisionModule.eyebrow}
+                    </div>
+                    <div
+                      className="text-[clamp(18px,2.6vw,22px)] text-white/92 leading-tight mb-5"
+                      style={{ fontFamily: "'DM Serif Display', serif" }}
+                    >
+                      {MEDICAL_EXAM_DATA.decisionModule.heading}
+                    </div>
+                    <div className="h-px bg-white/10 mb-5" />
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                      {MEDICAL_EXAM_DATA.decisionModule.paths.map((path) => (
+                        <div
+                          key={path.id}
+                          onClick={() => {
+                            setMedWizardMode(path.id as "service" | "guide");
+                            setMedWizardStep(0);
+                            setIsMedWizardOpen(true);
+                          }}
+                          className="bg-white/5 border border-white/10 rounded-[10px] p-[16px_16px_14px] cursor-pointer transition-all hover:bg-white/10 hover:border-white/20 hover:-translate-y-px active:translate-y-0"
+                        >
+                          <div className="text-[22px] mb-2">{path.icon}</div>
+                          <div className="text-[14px] font-semibold text-white/92 mb-1">
+                            {path.title}
+                          </div>
+                          <div className="text-[12px] text-white/55 leading-relaxed">
+                            {path.sub}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                /* Saved appointment card */
+                <div className="bg-[#e8f5ef] border-[1.5px] border-[#a8d9be] rounded-[16px] p-[20px_22px] mb-3.5 shadow-sm animate-in fade-in slide-in-from-top-2 duration-350">
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="text-[14px] font-semibold text-[#15744f]">
+                      {MEDICAL_EXAM_DATA.savedView.title}
+                    </div>
+                    <button
+                      onClick={() => {
+                        setMedSaved(false);
+                        setMedWizardMode("guide");
+                        setMedWizardStep(3); // Start at the form step
+                        setIsMedWizardOpen(true);
+                      }}
+                      className="text-[12px] font-semibold text-[#2f6fd4] bg-none border-none cursor-pointer p-0 hover:underline"
+                    >
+                      {MEDICAL_EXAM_DATA.savedView.button}
+                    </button>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 mb-2.5">
+                    <div>
+                      <div className="text-[11px] text-[#0e5c3c] font-medium mb-0.5">
+                        Appointment Date
+                      </div>
+                      <div className="text-[13px] font-bold text-[#0e5c3c]">
+                        {medDate
+                          ? new Date(medDate + "T00:00:00").toLocaleDateString(
+                              "en-US",
+                              {
+                                year: "numeric",
+                                month: "long",
+                                day: "numeric",
+                              },
+                            )
+                          : "—"}
+                      </div>
+                    </div>
+                    <div>
+                      <div className="text-[11px] text-[#0e5c3c] font-medium mb-0.5">
+                        Appointment Time
+                      </div>
+                      <div className="text-[13px] font-bold text-[#0e5c3c]">
+                        {medTime || "—"}
+                      </div>
+                    </div>
+                    <div className="sm:col-span-2">
+                      <div className="text-[11px] text-[#0e5c3c] font-medium mb-0.5">
+                        Clinic / Physician
+                      </div>
+                      <div className="text-[13px] font-bold text-[#0e5c3c]">
+                        {medClinic || "—"}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {medSaved && (
+                /* Reminder sync */
+                <div className="bg-[#e8f1fb] border-[1.5px] border-[#d0e4f7] rounded-[16px] p-[16px_20px] mb-3.5 flex items-start gap-3 shadow-sm">
+                  <div className="w-9 h-9 rounded-[9px] bg-white border border-[#d0e4f7] flex items-center justify-center shrink-0">
+                    <CheckCircle2 size={16} className="text-[#2f6fd4]" />
+                  </div>
+                  <div>
+                    <div className="text-[13px] font-semibold text-[#0c1b33] mb-0.5">
+                      {MEDICAL_EXAM_DATA.reminderSync.title}
+                    </div>
+                    <div className="text-[12px] text-[#3a4f63] leading-relaxed">
+                      {MEDICAL_EXAM_DATA.reminderSync.sub}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Selector Overlay Modal */}
+              {isMedWizardOpen && (
+                <div className="fixed inset-0 z-[200] bg-white flex flex-col overflow-hidden animate-in slide-in-from-bottom-[18px] duration-[0.28s] ease-in-out font-sans">
+                  {/* Topbar */}
+                  <div className="flex items-center p-[18px_24px] border-b border-[#d0e4f7] gap-4 shrink-0">
+                    <button
+                      onClick={() => setIsMedWizardOpen(false)}
+                      className="w-9 h-9 rounded-full border-none bg-[#f4f7fb] cursor-pointer flex items-center justify-center hover:bg-[#e8f1fb] transition-colors shrink-0"
+                    >
+                      <X size={16} strokeWidth={2} className="text-[#3a4f63]" />
+                    </button>
+                    <div className="flex-1 h-[5px] bg-[#d0e4f7] rounded-[10px] overflow-hidden">
+                      <div
+                        className="h-full bg-gradient-to-r from-primary to-primary/70 transition-all duration-400 ease-in-out"
+                        style={{
+                          width: `${((medWizardStep + 1) / (medWizardMode === "service" ? MEDICAL_EXAM_DATA.serviceSteps.length : MEDICAL_EXAM_DATA.guideSteps.length)) * 100}%`,
+                        }}
+                      />
+                    </div>
+                    <div className="text-[12px] font-medium text-[#6b8097] whitespace-nowrap shrink-0">
+                      {medWizardStep + 1} /{" "}
+                      {medWizardMode === "service"
+                        ? MEDICAL_EXAM_DATA.serviceSteps.length
+                        : MEDICAL_EXAM_DATA.guideSteps.length}
+                    </div>
+                  </div>
+
+                  {/* Body */}
+                  <div className="flex-1 overflow-y-auto flex flex-col items-center p-[48px_24px_40px]">
+                    <div className="w-full max-w-[540px]">
+                      {(() => {
+                        const steps =
+                          medWizardMode === "service"
+                            ? MEDICAL_EXAM_DATA.serviceSteps
+                            : MEDICAL_EXAM_DATA.guideSteps;
+                        const s = steps[medWizardStep];
+                        return (
+                          <>
+                            <div className="text-[11px] font-semibold tracking-[0.1em] uppercase text-[#2f6fd4] mb-3.5">
+                              {s.label}
+                            </div>
+                            <h2
+                              className="text-[clamp(20px,3.2vw,26px)] text-[#0c1b33] leading-tight mb-2"
+                              style={{
+                                fontFamily: "'DM Serif Display', serif",
+                              }}
+                            >
+                              {s.heading}
+                            </h2>
+                            <p className="text-[14px] text-[#3a4f63] leading-relaxed mb-6">
+                              {s.sub}
+                            </p>
+
+                            {/* Path-specific content */}
+                            {medWizardMode === "service" &&
+                              medWizardStep === 0 && (
+                                <div className="bg-white border-[1.5px] border-[#d0e4f7] rounded-[16px] p-5 mb-3.5 shadow-sm">
+                                  <div className="text-[12px] font-semibold tracking-[0.05em] uppercase text-[#6b8097] mb-2.5">
+                                    {s.card?.title}
+                                  </div>
+                                  <p className="text-[13px] text-[#3a4f63] leading-relaxed mb-3.5">
+                                    {s.card?.description}
+                                  </p>
+                                  <Link
+                                    href={
+                                      s.card?.buttonLabel ===
+                                      "Open Booking Service"
+                                        ? "/book-appointment"
+                                        : "#"
+                                    }
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="w-full p-3.5 bg-primary text-white border-none rounded-[10px] text-[15px] font-semibold cursor-pointer transition-all flex items-center justify-center gap-2 shadow-[0_4px_20px_rgba(47,111,212,0.35)] hover:bg-primary/70 hover:-translate-y-px hover:shadow-[0_8px_32px_rgba(47,111,212,0.45)] no-underline"
+                                  >
+                                    <ExternalLink size={15} strokeWidth={2} />
+                                    {s.card?.buttonLabel}
+                                  </Link>
+                                </div>
+                              )}
+
+                            {"info" in s && s.info && (
+                              <div className="bg-[#e8f1fb] border border-[#d0e4f7] rounded-[10px] p-[14px_16px] font-size-[13px] text-[#3a4f63] leading-relaxed mb-3.5">
+                                {s.info as string}
+                              </div>
+                            )}
+
+                            {"alert" in s && s.alert && (
+                              <div className="bg-[#fef8e8] border border-[#f0d98a] rounded-[10px] p-[14px_16px] text-[13px] color-[#8a6200] leading-relaxed mb-3.5">
+                                <span
+                                  dangerouslySetInnerHTML={{
+                                    __html: (s.alert as string).replace(
+                                      /\*\*(.*?)\*\*/g,
+                                      "<strong>$1</strong>",
+                                    ),
+                                  }}
+                                />
+                              </div>
+                            )}
+
+                            {"form" in s && s.form && (
+                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3.5">
+                                <div className="flex flex-col gap-1.5">
+                                  <label className="text-[11px] font-semibold tracking-[0.04em] uppercase text-[#6b8097]">
+                                    Appointment Date
+                                  </label>
+                                  <input
+                                    type="date"
+                                    value={medDate}
+                                    onChange={(e) => setMedDate(e.target.value)}
+                                    className="p-[10px_12px] border-[1.5px] border-[#d0e4f7] rounded-[10px] text-[14px] text-[#1c2b3a] bg-white outline-none focus:border-[#2f6fd4] focus:shadow-[0_0_0_3px_rgba(47,111,212,0.12)] transition-all"
+                                  />
+                                </div>
+                                <div className="flex flex-col gap-1.5">
+                                  <label className="text-[11px] font-semibold tracking-[0.04em] uppercase text-[#6b8097]">
+                                    Appointment Time
+                                  </label>
+                                  <input
+                                    type="time"
+                                    value={medTime}
+                                    onChange={(e) => setMedTime(e.target.value)}
+                                    className="p-[10px_12px] border-[1.5px] border-[#d0e4f7] rounded-[10px] text-[14px] text-[#1c2b3a] bg-white outline-none focus:border-[#2f6fd4] focus:shadow-[0_0_0_3px_rgba(47,111,212,0.12)] transition-all"
+                                  />
+                                </div>
+                                <div className="sm:col-span-2 flex flex-col gap-1.5">
+                                  <label className="text-[11px] font-semibold tracking-[0.04em] uppercase text-[#6b8097]">
+                                    Clinic / Physician Name
+                                  </label>
+                                  <input
+                                    type="text"
+                                    placeholder="e.g. Dr. Ahmed Khan — Islamabad Medical Center"
+                                    value={medClinic}
+                                    onChange={(e) =>
+                                      setMedClinic(e.target.value)
+                                    }
+                                    className="p-[10px_12px] border-[1.5px] border-[#d0e4f7] rounded-[10px] text-[14px] text-[#1c2b3a] bg-white outline-none focus:border-[#2f6fd4] focus:shadow-[0_0_0_3px_rgba(47,111,212,0.12)] transition-all"
+                                  />
+                                </div>
+                              </div>
+                            )}
+
+                            {/* Nav */}
+                            <div className="flex gap-2.5">
+                              {s.nav.back && (
+                                <button
+                                  onClick={() => setMedWizardStep((v) => v - 1)}
+                                  className="p-[12px_20px] bg-transparent border-[1.5px] border-[#d0e4f7] rounded-[10px] text-[14px] font-medium text-[#3a4f63] cursor-pointer transition-all hover:border-[#3a4f63] hover:text-[#0c1b33]"
+                                >
+                                  ← Back
+                                </button>
+                              )}
+                              {s.nav.save ? (
+                                <button
+                                  onClick={() => {
+                                    if (!medDate) {
+                                      toast.error(
+                                        "Please provide appointment date",
+                                      );
+                                      return;
+                                    }
+                                    setMedSaved(true);
+                                    actions.updateMetadata({
+                                      med_appt_saved: "true",
+                                      med_date: medDate,
+                                      med_time: medTime,
+                                      med_clinic: medClinic,
+                                    });
+                                    setIsMedWizardOpen(false);
+                                    toast.success("Medical appointment saved!");
+                                  }}
+                                  className="flex-1 p-[12px_20px] bg-[#15744f] text-white border-none rounded-[10px] text-[14px] font-semibold cursor-pointer transition-all hover:bg-[#0e5c3c] hover:-translate-y-px active:translate-y-0"
+                                >
+                                  Save & Activate Reminder
+                                </button>
+                              ) : (
+                                <button
+                                  onClick={() => setMedWizardStep((v) => v + 1)}
+                                  className="flex-1 p-[12px_20px] bg-primary text-white border-none rounded-[10px] text-[14px] font-semibold cursor-pointer transition-all hover:bg-primary/70 hover:-translate-y-px active:translate-y-0"
+                                >
+                                  {s.nav.next}
+                                </button>
+                              )}
+                            </div>
+                          </>
+                        );
+                      })()}
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+          {/* POLIO VACCINATION CERTIFICATE (Step 3.2 SPECIFIC) */}
+          {tool.type === "polio_certificate" && (
+            <div className="flex flex-col animate-in fade-in slide-in-from-bottom-2 duration-380 font-sans">
+              <div className="flex gap-1.5 flex-wrap mb-8">
+                {POLIO_CERTIFICATE_DATA.chips.map((chip, i) => (
+                  <span
+                    key={i}
+                    className={`text-[11px] font-semibold tracking-[0.06em] uppercase px-3 py-1.5 rounded-full whitespace-nowrap border ${
+                      chip.type === "med"
+                        ? "bg-[#e8f6f6] text-[#0d6b6b] border-[#9fd6d6]"
+                        : chip.type === "req"
+                          ? "bg-[#fef8e8] text-[#8a6200] border-[#f0d98a]"
+                          : "bg-[#e8f1fb] text-[#2d4a6e] border-[#d0e4f7]"
+                    }`}
+                  >
+                    {chip.label}
+                  </span>
+                ))}
+              </div>
+
+              {/* Launch module */}
+              <div className="relative bg-[#0e1e38] rounded-[16px] border border-white/5 shadow-[0_20px_60px_rgba(12,27,51,0.18),0_4px_16px_rgba(12,27,51,0.12)] overflow-hidden mb-4">
+                <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-[#15744f] via-[#6aa8f0] to-transparent opacity-75" />
+                <div className="p-7.5 sm:p-[30px_32px_26px]">
+                  <div className="text-[10px] font-bold tracking-[0.12em] uppercase text-white/35 mb-1">
+                    {POLIO_CERTIFICATE_DATA.launchModule.eyebrow}
+                  </div>
+                  <div
+                    className="text-[clamp(18px,2.6vw,22px)] text-white/92 leading-tight mb-5"
+                    style={{ fontFamily: "'DM Serif Display', serif" }}
+                  >
+                    {POLIO_CERTIFICATE_DATA.launchModule.heading}
+                  </div>
+                  <div className="h-px bg-white/10 mb-5" />
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-5.5">
+                    {POLIO_CERTIFICATE_DATA.launchModule.cues.map((cue, i) => (
+                      <div
+                        key={i}
+                        className="bg-white/5 border border-white/10 rounded-[10px] p-[10px_12px] flex items-start gap-2"
+                      >
+                        <div className="w-[5px] h-[5px] rounded-full bg-[#6aa8f0]/70 shrink-0 mt-1.5" />
+                        <div className="text-[13px] text-white/55 leading-relaxed">
+                          {cue}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  <button
+                    onClick={() => {
+                      if (!polioLaunched) {
+                        setPolioGuideStep(0);
+                        setIsPolioGuideOpen(true);
+                      }
+                    }}
+                    className={`w-full p-[15px_24px] rounded-[11px] text-[15px] font-semibold cursor-pointer transition-all flex items-center justify-center gap-2.5 ${
+                      polioLaunched
+                        ? "bg-[#0e5c3c] text-white/90 shadow-[0_4px_20px_rgba(14,92,60,0.3)] pointer-events-none"
+                        : "bg-primary text-white shadow-[0_4px_20px_rgba(47,111,212,0.35)] hover:bg-primary/70 hover:-translate-y-px hover:shadow-[0_8px_32px_rgba(47,111,212,0.45)] active:translate-y-0"
+                    }`}
+                  >
+                    <span>
+                      {polioLaunched
+                        ? POLIO_CERTIFICATE_DATA.launchModule.buttonLabels
+                            .completed
+                        : POLIO_CERTIFICATE_DATA.launchModule.buttonLabels
+                            .initial}
+                    </span>
+                    {polioLaunched ? (
+                      <CheckCircle2 size={16} />
+                    ) : (
+                      <ArrowRight size={16} />
+                    )}
+                  </button>
+                  <div
+                    className={`flex items-center justify-center gap-1.5 text-[12px] text-center mt-2.5 transition-all duration-380 ${
+                      polioLaunched ? "text-[#a8d9be]/80" : "text-white/35"
+                    }`}
+                  >
+                    <Info size={11} />
+                    <span>
+                      {polioLaunched
+                        ? POLIO_CERTIFICATE_DATA.launchModule.note.completed
+                        : POLIO_CERTIFICATE_DATA.launchModule.note.initial}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Return note */}
+              {polioLaunched && (
+                <div className="bg-[#e8f5ef] border-[1.5px] border-[#a8d9be] rounded-[10px] p-[14px_18px] flex items-start gap-3 mb-3.5 animate-in fade-in slide-in-from-top-2 duration-380">
+                  <div className="shrink-0 mt-0.5">
+                    <CheckCircle2 size={18} className="text-[#15744f]" />
+                  </div>
+                  <div>
+                    <div className="text-[13px] font-semibold text-[#15744f]">
+                      {POLIO_CERTIFICATE_DATA.returnNote.title}
+                    </div>
+                    <div className="text-[12px] text-[#3a4f63] leading-relaxed">
+                      {POLIO_CERTIFICATE_DATA.returnNote.sub}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Completion card */}
+              <div className="bg-white border-[1.5px] border-[#d0e4f7] rounded-[16px] p-[20px_22px] mb-3.5 shadow-sm">
+                <div className="text-[14px] font-semibold text-[#0c1b33] mb-3.5">
+                  {POLIO_CERTIFICATE_DATA.completionCard.title}
+                </div>
+                <div className="flex flex-col gap-2">
+                  {POLIO_CERTIFICATE_DATA.completionCard.items.map(
+                    (item, i) => (
+                      <div
+                        key={i}
+                        onClick={() => {
+                          const next = [...polioChecks];
+                          next[i] = !next[i];
+                          setPolioChecks(next);
+                          actions.updateMetadata({ polio_checks: next });
+                        }}
+                        className={`flex items-center gap-3 p-[10px_12px] rounded-[10px] cursor-pointer transition-all border-[1.5px] select-none ${
+                          polioChecks[i]
+                            ? "bg-[#e8f5ef] border-[#a8d9be]"
+                            : "bg-transparent border-transparent hover:bg-[#eef3fa]"
+                        }`}
+                      >
+                        <div
+                          className={`w-[18px] h-[18px] rounded-[5px] border-[1.5px] flex items-center justify-center transition-all ${
+                            polioChecks[i]
+                              ? "bg-[#15744f] border-[#15744f]"
+                              : "bg-white border-[#d0e4f7]"
+                          }`}
+                        >
+                          {polioChecks[i] && (
+                            <Check size={10} strokeWidth={3.5} color="white" />
+                          )}
+                        </div>
+                        <span
+                          className={`text-[13px] leading-relaxed ${
+                            polioChecks[i]
+                              ? "text-[#0e5c3c] font-medium"
+                              : "text-[#3a4f63]"
+                          }`}
+                        >
+                          {item}
+                        </span>
+                      </div>
+                    ),
+                  )}
+                </div>
+              </div>
+
+              
+
+              {/* Guide Overlay Modal */}
+              {isPolioGuideOpen && (
+                <div className="fixed inset-0 z-[200] bg-white flex flex-col overflow-hidden animate-in slide-in-from-bottom-[18px] duration-[0.28s] ease-in-out font-sans">
+                  {/* Topbar */}
+                  <div className="flex items-center p-[18px_24px] border-b border-[#d0e4f7] gap-4 shrink-0">
+                    <button
+                      onClick={() => setIsPolioGuideOpen(false)}
+                      className="w-9 h-9 rounded-full border-none bg-[#f4f7fb] cursor-pointer flex items-center justify-center hover:bg-[#e8f1fb] transition-colors shrink-0"
+                    >
+                      <X size={16} strokeWidth={2} className="text-[#3a4f63]" />
+                    </button>
+                    <div className="flex-1 h-[5px] bg-[#d0e4f7] rounded-[10px] overflow-hidden">
+                      <div
+                        className="h-full bg-gradient-to-r from-primary to-primary/70 transition-all duration-400 ease-in-out"
+                        style={{
+                          width: `${((polioGuideStep + 1) / POLIO_CERTIFICATE_DATA.guideSteps.length) * 100}%`,
+                        }}
+                      />
+                    </div>
+                    <div className="text-[12px] font-medium text-[#6b8097] whitespace-nowrap shrink-0">
+                      {polioGuideStep + 1} /{" "}
+                      {POLIO_CERTIFICATE_DATA.guideSteps.length}
+                    </div>
+                  </div>
+
+                  {/* Body */}
+                  <div className="flex-1 overflow-y-auto flex flex-col items-center p-[48px_24px_40px]">
+                    <div className="w-full max-w-[560px]">
+                      {(() => {
+                        const s =
+                          POLIO_CERTIFICATE_DATA.guideSteps[polioGuideStep];
+                        const isFirst = polioGuideStep === 0;
+                        const isLast =
+                          polioGuideStep ===
+                          POLIO_CERTIFICATE_DATA.guideSteps.length - 1;
+                        return (
+                          <>
+                            <div className="text-[11px] font-semibold tracking-[0.1em] uppercase text-primary mb-3.5">
+                              Polio Vaccination Guide · {s.label}
+                            </div>
+                            <h2
+                              className="text-[clamp(20px,3.2vw,26px)] text-[#0c1b33] leading-tight mb-2"
+                              style={{
+                                fontFamily: "'DM Serif Display', serif",
+                              }}
+                            >
+                              {s.heading}
+                            </h2>
+                            <p className="text-[14px] text-[#3a4f63] leading-relaxed mb-4.5">
+                              {s.instruction}
+                            </p>
+
+                            <div className="bg-white border-[1.5px] border-[#d0e4f7] rounded-[10px] overflow-hidden mb-4.5 shadow-[0_2px_12px_rgba(12,27,51,0.06)]">
+                              <div className="bg-[#eef3fa] border-b border-[#d0e4f7] p-[10px_14px] flex items-center gap-1.5">
+                                <div className="w-[9px] h-[9px] rounded-full bg-[#f87171]" />
+                                <div className="w-[9px] h-[9px] rounded-full bg-[#fbbf24]" />
+                                <div className="w-[9px] h-[9px] rounded-full bg-[#34d399]" />
+                                <div className="text-[10px] font-semibold tracking-[0.07em] uppercase text-[#6b8097] ml-auto">
+                                  {s.vLabel}
+                                </div>
+                              </div>
+                              <div className="p-4.5">
+                                {s.visual.completed ? (
+                                  <div className="bg-[#e8f5ef] border border-[#a8d9be] rounded-[10px] p-4 flex items-start gap-3">
+                                    <div className="w-7 h-7 rounded-full bg-[#15744f] flex items-center justify-center shrink-0">
+                                      <Check
+                                        size={13}
+                                        strokeWidth={3}
+                                        color="white"
+                                      />
+                                    </div>
+                                    <div>
+                                      <div className="text-[13px] font-semibold text-[#15744f] mb-1">
+                                        {s.visual.title}
+                                      </div>
+                                      <div className="text-[12px] text-[#3a4f63] leading-relaxed">
+                                        {s.visual.sub}
+                                      </div>
+                                    </div>
+                                  </div>
+                                ) : (
+                                  <div className="bg-[#f4f7fb] border border-[#d0e4f7] rounded-[10px] p-[14px_16px]">
+                                    <div className="text-[14px] font-semibold text-[#0c1b33] mb-2">
+                                      {s.visual.title}
+                                    </div>
+                                    {s.visual.sub ? (
+                                      <div className="text-[13px] text-[#3a4f63] leading-relaxed">
+                                        {s.visual.sub}
+                                      </div>
+                                    ) : (
+                                      <div className="flex flex-col gap-2 mt-2">
+                                        {s.visual.items?.map((item, i) => (
+                                          <div
+                                            key={i}
+                                            className="flex gap-2 text-[13px] text-[#3a4f63]"
+                                          >
+                                            <span className="text-primary">
+                                              ✓
+                                            </span>
+                                            <span>{item}</span>
+                                          </div>
+                                        ))}
+                                      </div>
+                                    )}
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+
+                            {s.note && (
+                              <div className="bg-[#fef8e8] border border-[#f0d98a] rounded-[10px] p-[11px_14px] text-[13px] color-[#8a6200] leading-relaxed mb-5">
+                                {s.note}
+                              </div>
+                            )}
+
+                            <div className="flex gap-2.5">
+                              {!isFirst && (
+                                <button
+                                  onClick={() =>
+                                    setPolioGuideStep((v) => v - 1)
+                                  }
+                                  className="p-[12px_20px] bg-transparent border-[1.5px] border-[#d0e4f7] rounded-[10px] text-[14px] font-medium text-[#3a4f63] cursor-pointer transition-all hover:border-[#3a4f63] hover:text-[#0c1b33]"
+                                >
+                                  ← Back
+                                </button>
+                              )}
+                              <button
+                                onClick={() => {
+                                  if (isLast) {
+                                    setPolioLaunched(true);
+                                    actions.updateMetadata({
+                                      polio_launched: "true",
+                                    });
+                                    setIsPolioGuideOpen(false);
+                                  } else {
+                                    setPolioGuideStep((v) => v + 1);
+                                  }
+                                }}
+                                className={`flex-1 p-[12px_20px] rounded-[10px] text-[14px] font-semibold cursor-pointer transition-all hover:-translate-y-px active:translate-y-0 ${
+                                  isLast
+                                    ? "bg-[#15744f] text-white hover:bg-[#0e5c3c]"
+                                    : "bg-primary text-white hover:bg-primary/70"
+                                }`}
+                              >
+                                {isLast ? "Done — return to step" : "Next →"}
+                              </button>
+                            </div>
+                          </>
+                        );
+                      })()}
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           )}
 
