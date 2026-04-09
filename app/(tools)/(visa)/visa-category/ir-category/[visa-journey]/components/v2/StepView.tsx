@@ -1228,7 +1228,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
     );
   }, [currentChapter, filingMethod]);
 
-  const currentStep = currentChapter?.steps[state.currentStep || 0];
+  const currentStep = activeStepsInChapter[state.currentStep || 0];
   const sId = currentStep?.step_key || (currentStep as any)?.id || "";
   const isCompleted = state.completedSteps.has(sId);
 

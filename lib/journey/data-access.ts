@@ -627,10 +627,6 @@ export async function getCurrentStepForJourneyDB(
 ): Promise<Step | null> {
   const { supabase, user } = await getSupabaseWithUser();
 
-  // Check if journey exists
-  const existingJourney = await getJourneyDB(journeyId);
-  if (!existingJourney) throw new Error("Journey not found or not owned");
-
   const { data, error } = await supabase
     .from("steps")
     .select(`*, chapters!inner(journey_id)`)
@@ -709,10 +705,6 @@ export async function updateStepDB(
 // Complete a step (mark as completed)
 export async function completeStepDB(stepId: string): Promise<Step> {
   const { supabase, user } = await getSupabaseWithUser();
-
-  // Check if step exists
-  const existing = await getStepDB(stepId);
-  if (!existing) throw new Error("Step not found or not owned");
 
   const now = new Date().toISOString();
 
@@ -1015,6 +1007,30 @@ export async function getStepsForJourneyByStepKeyDB(
     .select(`*, chapters!inner(journey_id)`)
     .eq("chapters.journey_id", journeyId)
     .eq("step_key", stepKey);
+
+  if (error) throw new Error(error.message);
+
+  const steps = (data as any[]) || [];
+  return steps.map((s) => {
+    delete s.chapters;
+    return s as Step;
+  });
+}
+
+// Get multiple steps for a journey by their step_keys
+export async function getStepsForJourneyByStepKeysDB(
+  journeyId: string,
+  stepKeys: string[],
+): Promise<Step[]> {
+  if (!stepKeys || stepKeys.length === 0) return [];
+  
+  const { supabase, user } = await getSupabaseWithUser();
+
+  const { data, error } = await supabase
+    .from("steps")
+    .select(`*, chapters!inner(journey_id)`)
+    .eq("chapters.journey_id", journeyId)
+    .in("step_key", stepKeys);
 
   if (error) throw new Error(error.message);
 

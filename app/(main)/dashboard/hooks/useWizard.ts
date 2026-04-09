@@ -66,6 +66,9 @@ export function useWizard(options: UseWizardOptions = {}) {
   const [isLoaded, setIsLoaded] = useState(false);
   const [hasExistingProgress, setHasExistingProgress] = useState(false);
   const [isSyncing, setIsSyncing] = useState(false);
+  // Queue for serializing step toggle API calls
+  const syncQueueRef = useRef<Array<() => Promise<void>>>([]);
+  const isSyncingRef = useRef(false);
 
   // ─── Normalize State (Moved up for use in useEffect and Memoized actions) ───────────
   const normalizeState = useCallback(() => {
@@ -158,7 +161,7 @@ export function useWizard(options: UseWizardOptions = {}) {
         const detailData = await detailRes.json();
 
         if (detailData.success && !cancelled) {
-          const { journey, steps, case_data, progress_summary } = detailData.data;
+          const { journey, steps, case_data } = detailData.data;
 
           const stepMap: Record<string, string> = {};
           const completedSet = new Set<string>();
@@ -174,14 +177,47 @@ export function useWizard(options: UseWizardOptions = {}) {
             metadata[cd.data_key] = cd.data_value;
           });
 
+          // Derive currentStage & currentStep from the actual completedSteps (source of truth)
+          // This avoids stale DB cached progress percentages misleading the UI position.
+          const filingMethod = journey.filing_method || 'online';
+          const roadmapChapters = activeRoadmap?.chapters || activeRoadmap?.stages || [];
+          
+          let derivedStage = 0;
+          let derivedStep = 0;
+
+          for (let ci = 0; ci < roadmapChapters.length; ci++) {
+            const chapterSteps = (roadmapChapters[ci].steps || []).filter((s: any) => {
+              const branch = s.branch;
+              return !branch || branch === 'both' || branch === filingMethod;
+            });
+            const allDone = chapterSteps.length > 0 && chapterSteps.every(
+              (s: any) => completedSet.has(s.step_key || s.id)
+            );
+            if (!allDone) {
+              derivedStage = ci;
+              const firstIncomplete = chapterSteps.findIndex(
+                (s: any) => !completedSet.has(s.step_key || s.id)
+              );
+              derivedStep = firstIncomplete === -1 ? 0 : firstIncomplete;
+              break;
+            }
+            // If this chapter is fully done, keep looking
+            if (ci === roadmapChapters.length - 1) {
+              // All chapters complete
+              derivedStage = ci;
+              derivedStep = chapterSteps.length > 0 ? chapterSteps.length - 1 : 0;
+            }
+          }
+
           setState((prev) => ({
             ...prev,
             backendId: targetJourneyId!,
             stepMap,
             completedSteps: completedSet,
             metadata,
-            currentStage: progress_summary?.current_chapter_index ?? prev.currentStage,
-            currentStep: progress_summary?.current_step_index ?? prev.currentStep,
+            filingType: (journey.filing_method as any) || prev.filingType,
+            currentStage: derivedStage,
+            currentStep: derivedStep,
             started: journey.status !== 'not_started',
           }));
 
@@ -199,9 +235,8 @@ export function useWizard(options: UseWizardOptions = {}) {
     return () => { cancelled = true; };
   }, [userId, journeyId]);
 
-  useEffect(() => {
-    if (isLoaded) normalizeState();
-  }, [isLoaded, normalizeState]);
+  // normalizeState is only needed for manual navigation (setStage), not on load.
+  // Position is now correctly derived from completedSteps in loadProgress.
 
   // ─── Actions (Memoized to prevent infinite update loops) ───────────────────
   const actions = useMemo(() => ({
@@ -225,10 +260,26 @@ export function useWizard(options: UseWizardOptions = {}) {
     },
 
     toggleComplete: async (stepKey: string) => {
-      if (!state.backendId || !state.stepMap[stepKey]) return;
+      console.log("[useWizard] toggleComplete called for:", stepKey);
+
+      if (!state.backendId) {
+        console.warn("[useWizard] toggleComplete: No backendId found");
+        return;
+      }
+
+      if (!state.stepMap[stepKey]) {
+        console.warn("[useWizard] toggleComplete: stepKey not found in stepMap", {
+          stepKey,
+          availableKeys: Object.keys(state.stepMap).slice(0, 10),
+        });
+        toast.error(`Sync Error: Step missing from journey. Please reset your journey.`);
+        return;
+      }
+
       const stepUuid = state.stepMap[stepKey];
       const isCompleted = state.completedSteps.has(stepKey);
 
+      // Optimistic update — instant UI feedback regardless of queue state
       setState((prev) => {
         const newCompleted = new Set(prev.completedSteps);
         if (newCompleted.has(stepKey)) newCompleted.delete(stepKey);
@@ -236,18 +287,48 @@ export function useWizard(options: UseWizardOptions = {}) {
         return { ...prev, completedSteps: newCompleted };
       });
 
-      try {
-        const url = isCompleted 
-          ? `/api/steps/${stepUuid}` 
+      // Enqueue the API call
+      const job = async () => {
+        const url = isCompleted
+          ? `/api/steps/${stepUuid}`
           : `/api/steps/${stepUuid}?action=complete`;
-        
-        await fetch(url, {
-          method: isCompleted ? "PATCH" : "POST",
-          body: JSON.stringify(isCompleted ? { status: "not_started" } : {}),
-        });
-      } catch (err) {
-        console.error("[useWizard] Step sync failed:", err);
-        toast.error("Failed to update step.");
+
+        try {
+          const res = await fetch(url, {
+            method: isCompleted ? "PATCH" : "POST",
+            body: JSON.stringify(isCompleted ? { status: "not_started" } : {}),
+          });
+
+          if (!res.ok) {
+            const errorData = await res.json().catch(() => ({}));
+            throw new Error(errorData.error || `HTTP ${res.status}`);
+          }
+          console.log("[useWizard] sync success:", stepKey);
+        } catch (err) {
+          console.error("[useWizard] sync failed:", stepKey, err);
+          toast.error("Failed to save step. Please check your connection.");
+          // Rollback this specific step
+          setState((prev) => {
+            const newCompleted = new Set(prev.completedSteps);
+            if (isCompleted) newCompleted.add(stepKey);
+            else newCompleted.delete(stepKey);
+            return { ...prev, completedSteps: newCompleted };
+          });
+        }
+      };
+
+      syncQueueRef.current.push(job);
+
+      // If not already processing the queue, start draining it
+      if (!isSyncingRef.current) {
+        isSyncingRef.current = true;
+        setIsSyncing(true);
+        while (syncQueueRef.current.length > 0) {
+          const next = syncQueueRef.current.shift()!;
+          await next();
+        }
+        isSyncingRef.current = false;
+        setIsSyncing(false);
       }
     },
 

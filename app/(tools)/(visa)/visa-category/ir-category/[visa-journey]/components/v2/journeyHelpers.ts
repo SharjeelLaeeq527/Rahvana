@@ -45,11 +45,12 @@ export function getNextBestAction(data: RoadmapData, state: WizardState): { step
   
   const chapters = data.chapters || (data as any).stages;
   for (let cIdx = 0; cIdx < chapters.length; cIdx++) {
-    const stepInChapterIdx = chapters[cIdx].steps.findIndex((s: any) => 
+    const activeSteps = getActiveStepsForStage(data, cIdx, filingMethod);
+    const stepInActiveIdx = activeSteps.findIndex((s: any) => 
       (s.step_key || s.id) === (nextStep.step_key || (nextStep as any).id)
     );
-    if (stepInChapterIdx !== -1) {
-      return { step: nextStep, chapterIdx: cIdx, stepIdxInChapter: stepInChapterIdx };
+    if (stepInActiveIdx !== -1) {
+      return { step: nextStep, chapterIdx: cIdx, stepIdxInChapter: stepInActiveIdx };
     }
   }
   

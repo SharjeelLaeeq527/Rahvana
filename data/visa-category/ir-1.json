@@ -2818,14 +2818,18 @@
       ]
     },
     {
-      "id": 3,
-      "name": "Stage III: Medical + Interview",
-      "description": "Complete medical exam → Attend consular interview → Visa decision",
-      "timeline": "Interview within 2-4 weeks of letter",
+      "chapter_key": "chapter_3",
+      "chapter_number": 3,
+      "chapter_name": "Stage III: Medical + Interview",
+      "chapter_description": "Complete medical exam → Attend consular interview → Visa decision",
+      "estimated_duration_months": 1,
+      "display_order": 3,
       "steps": [
         {
-          "id": "III-01",
-          "name": "Schedule Medical Examination",
+          "step_key": "step_3_1",
+          "step_number": 1,
+          "step_name": "Schedule Medical Examination",
+          "step_description": "Contact the IOM clinic to book your mandatory medical exam. This must take place 1-5 days before your actual interview.",
           "who": "Beneficiary",
           "where": "IOM Pakistan",
           "actions": [
@@ -2847,8 +2851,9 @@
           ]
         },
         {
-          "id": "III-02",
-          "name": "Obtain Fresh Police Certificate",
+          "step_key": "step_3_2",
+          "step_number": 2,
+          "step_name": "Obtain Fresh Police Certificate",
           "who": "Beneficiary",
           "where": "Pakistan police authorities",
           "timeline": "3-7 days (Punjab/Islamabad)",
@@ -2862,8 +2867,9 @@
           "pakistanSpecific": "Punjab Police Portal: pkm.punjab.gov.pk or islamabadpolice.gov.pk"
         },
         {
-          "id": "III-03",
-          "name": "Gather Original Documents",
+          "step_key": "step_3_3",
+          "step_number": 3,
+          "step_name": "Gather Original Documents",
           "who": "Beneficiary",
           "where": "Document compilation",
           "documents": [
@@ -2892,8 +2898,9 @@
           "notes": "Bring originals + copies. Organize petitioner and beneficiary documents separately."
         },
         {
-          "id": "III-04",
-          "name": "Attend Medical Exam",
+          "step_key": "step_3_4",
+          "step_number": 4,
+          "step_name": "Attend Medical Exam",
           "who": "Beneficiary",
           "where": "IOM clinic",
           "timeline": "2-4 hours at clinic",
@@ -2919,8 +2926,9 @@
           ]
         },
         {
-          "id": "III-05",
-          "name": "Prepare for Interview",
+          "step_key": "step_3_5",
+          "step_number": 5,
+          "step_name": "Prepare for Interview",
           "who": "Beneficiary",
           "where": "Home preparation",
           "actions": [
@@ -2942,8 +2950,9 @@
           ]
         },
         {
-          "id": "III-06",
-          "name": "Attend Visa Interview",
+          "step_key": "step_3_6",
+          "step_number": 6,
+          "step_name": "Attend Visa Interview",
           "who": "Beneficiary",
           "where": "U.S. Embassy Islamabad",
           "timeline": "5-20 minutes interview",
@@ -2974,8 +2983,9 @@
           ]
         },
         {
-          "id": "III-07",
-          "name": "Track Status (If AP)",
+          "step_key": "step_3_7",
+          "step_number": 7,
+          "step_name": "Track Status (If AP)",
           "who": "Beneficiary",
           "where": "ceac.state.gov",
           "actions": [

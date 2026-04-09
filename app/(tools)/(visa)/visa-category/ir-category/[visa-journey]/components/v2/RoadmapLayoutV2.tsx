@@ -77,6 +77,7 @@ export default function RoadmapLayoutV2({
       const chapter = data.chapters?.[state.currentStage];
       const step = chapter?.steps[state.currentStep];
       const sId = step?.step_key;
+      // console.log("[RoadmapLayoutV2] isStepDone:", { stage: state.currentStage, step: state.currentStep, sId, completed: state.completedSteps.has(sId) });
       return state.completedSteps.has(sId);
     })();
 
@@ -84,6 +85,12 @@ export default function RoadmapLayoutV2({
     const chapter = data.chapters?.[state.currentStage];
     const step = chapter?.steps[state.currentStep || 0];
     const sKey = step?.step_key;
+    console.log("[RoadmapLayoutV2] handleToggleComplete attempt:", { 
+      currentStage: state.currentStage, 
+      currentStep: state.currentStep, 
+      chapterKey: chapter?.chapter_key,
+      sKey 
+    });
     if (sKey) actions.toggleComplete(sKey);
   };
 
@@ -186,7 +193,10 @@ export default function RoadmapLayoutV2({
             data={data}
             state={state}
             onSelectChapter={handleSelectChapter}
-            actions={actions}
+            actions={{
+              setCurrentStep: actions.setCurrentStep,
+              setStage: actions.setStage,
+            }}
           />
         )}
 

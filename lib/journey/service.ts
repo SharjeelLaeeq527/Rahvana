@@ -92,9 +92,19 @@ export class ProgressCalculationService {
       // Get all steps in this chapter
       const steps = await db.getStepsForChapterDB(chapterId);
 
+      // Get journey to check filing method for filtering
+      const journey = await db.getJourneyDB(chapter.journey_id);
+      const filingMethod = journey?.filing_method || 'online';
+
+      // Filter steps based on branch/filing method
+      const activeSteps = steps.filter(step => {
+        const branch = (step.metadata as any)?.branch;
+        return !branch || branch === 'both' || branch === filingMethod;
+      });
+
       // Count completed steps
-      const totalSteps = steps.length;
-      const completedSteps = steps.filter(
+      const totalSteps = activeSteps.length;
+      const completedSteps = activeSteps.filter(
         (step) => step.status === "completed",
       ).length;
 
@@ -138,14 +148,38 @@ export class ProgressCalculationService {
       if (!journey) throw new Error("Journey not found");
 
       const chapters = await db.getChaptersForJourneyDB(journeyId);
-      const completedChapters = chapters.filter(
-        (chap) => chap.completion_percentage === 100,
-      ).length;
+      const filingMethod = journey.filing_method || 'online';
 
-      // Find current chapter (first not completed)
-      const currentChapter = chapters.filter(
-        (chap) => chap.completion_percentage < 100,
+      // Build per-chapter progress from LIVE step statuses (not stale DB percentages)
+      const chapterProgress = await Promise.all(
+        chapters.map(async (ch) => {
+          const steps = await db.getStepsForChapterDB(ch.id);
+          const activeSteps = steps.filter((s) => {
+            const branch = (s.metadata as any)?.branch;
+            return !branch || branch === 'both' || branch === filingMethod;
+          });
+          const completedCount = activeSteps.filter(s => s.status === 'completed').length;
+          const total = activeSteps.length;
+          const pct = total === 0 ? 0 : Math.round((completedCount / total) * 100);
+          return { ch, activeSteps, completedCount, total, pct };
+        })
       );
+
+      const completedChapters = chapterProgress.filter(c => c.pct === 100).length;
+
+      // Current chapter = first chapter that is NOT 100% complete (by live calculation)
+      let currentChapterIdx = chapterProgress.findIndex(c => c.pct < 100);
+      if (currentChapterIdx === -1) currentChapterIdx = chapters.length - 1;
+
+      // Current step = first incomplete active step in that chapter
+      let activeStepIdx = 0;
+      const currentChapterData = chapterProgress[currentChapterIdx];
+      if (currentChapterData) {
+        const firstIncompleteIdx = currentChapterData.activeSteps.findIndex(
+          s => s.status !== 'completed'
+        );
+        activeStepIdx = firstIncompleteIdx === -1 ? 0 : firstIncompleteIdx;
+      }
 
       return {
         journey_id: journeyId,
@@ -154,13 +188,14 @@ export class ProgressCalculationService {
         total_chapters: chapters.length,
         completed_chapters: completedChapters,
         chapters_remaining: chapters.length - completedChapters,
-        current_chapter: currentChapter || null,
-        all_chapters: chapters.map((ch) => ({
+        current_chapter_index: currentChapterIdx,
+        current_step_index: activeStepIdx,
+        all_chapters: chapterProgress.map(({ ch, pct }) => ({
           id: ch.id,
           chapter_key: ch.chapter_key,
           chapter_name: ch.chapter_name,
-          completion_percentage: ch.completion_percentage,
-          status: ch.status,
+          completion_percentage: pct,
+          status: pct === 100 ? 'completed' : pct > 0 ? 'in_progress' : 'not_started',
         })),
       };
     } catch (error) {
@@ -172,8 +207,21 @@ export class ProgressCalculationService {
   // Get current step in a chapter (first not completed)
   async getCurrentStepInChapter(chapterId: string): Promise<Step | null> {
     try {
+      const chapter = await db.getChapterDB(chapterId);
+      if (!chapter) return null;
+      
+      const journey = await db.getJourneyDB(chapter.journey_id);
+      const filingMethod = journey?.filing_method || 'online';
+
       const steps = await db.getStepsForChapterDB(chapterId);
-      const currentStep = steps.find((step) => step.status !== "completed");
+      
+      // Filter by branch
+      const activeSteps = steps.filter(s => {
+        const branch = (s.metadata as any)?.branch;
+        return !branch || branch === 'both' || branch === filingMethod;
+      });
+
+      const currentStep = activeSteps.find((step) => step.status !== "completed");
       return currentStep || null;
     } catch (error) {
       console.error(
@@ -426,82 +474,50 @@ export class ConditionalLogicEngine {
  * - Tracking step dependencies
  */
 export class StepCompletionEngine {
-  // Mark a step as completed, check dependencies, unlock next steps, and update progress
+  // Mark a step as completed — optimized for speed: 1 direct write + background recalc
   async completeStep(
     stepId: string,
     journeyId: string,
     completionData?: Record<string, unknown>,
   ) {
     try {
-      // 1. Get step and verify it exists, and is not completed already
-      const step = await db.getStepDB(stepId);
-      if (!step) throw new Error("Step not found");
-      if (step.status === "completed") {
-        return {
-          step_id: stepId,
-          was_completed: true,
-          newly_unlocked_steps: [],
-          chapter_completion_percentage: 0,
-          journey_completion_percentage: 0,
-        };
+      const now = new Date().toISOString();
+      const { createClient } = await import('@/lib/supabase/server');
+      const client = await createClient();
+
+      // 1. Mark step completed — single direct UPDATE, no pre-read
+      const { data: updatedStep, error: updateError } = await client
+        .from('steps')
+        .update({ status: 'completed', completion_percentage: 100, completed_at: now })
+        .eq('id', stepId)
+        .select('id, step_key, chapter_id, status')
+        .single();
+
+      if (updateError) {
+        throw new Error(updateError.message);
       }
 
-      // 2. Check dependencies
-      const dependencyCheck = await this.checkDependencies(stepId, journeyId);
-      if (!dependencyCheck.all_dependencies_met) {
-        throw new Error(
-          `Cannot complete step: ${dependencyCheck.reason}. Pending: ${dependencyCheck.pending_dependencies.join(", ")}`,
-        );
-      }
+      // 2. Fire-and-forget: mark journey in_progress
+      client.from('journeys')
+        .update({ status: 'in_progress', updated_at: now })
+        .eq('id', journeyId)
+        .neq('status', 'in_progress')
+        .then(() => {});
 
-      // 3. Validate completion data
-      const validationResult = await this.validateStepCompletion(
-        step,
-        completionData,
-      );
-      if (!validationResult.valid) {
-        throw new Error(
-          `Validation failed: ${validationResult.errors?.join("; ")}`,
-        );
-      }
-
-      // 4. Mark step as completed
-      const completedStep = await db.completeStepDB(stepId);
-
-      // 5. Unlock dependent steps
-      const unlockedSteps = await this.unlockDependentSteps(stepId, journeyId);
-
-      // 6. Recalculate chapter progress
-      const chapter = await db.getChapterDB(step.chapter_id);
-      if (chapter) {
-        const chapterProgress =
-          await new ProgressCalculationService().calculateChapterProgress(
-            step.chapter_id,
-          );
-
-        // 7. Recalculate journey progress
-        const journeyProgress =
-          await new ProgressCalculationService().calculateJourneyProgress(
-            journeyId,
-          );
-
-        // Get next step
-        const nextStep = await db.getCurrentStepForJourneyDB(journeyId);
-
-        return {
-          step_id: stepId,
-          was_completed: true,
-          newly_unlocked_steps: unlockedSteps,
-          chapter_completion_percentage: chapterProgress.completion_percentage,
-          journey_completion_percentage: journeyProgress.completion_percentage,
-          next_step: nextStep || undefined,
-        };
-      }
+      // 3. Background: recalculate chapter & journey progress (non-blocking)
+      setImmediate(async () => {
+        try {
+          await new ProgressCalculationService().calculateChapterProgress(updatedStep.chapter_id);
+          await new ProgressCalculationService().calculateJourneyProgress(journeyId);
+        } catch (e) {
+          console.warn('[completeStep] Background progress recalc failed:', e);
+        }
+      });
 
       return {
         step_id: stepId,
         was_completed: true,
-        newly_unlocked_steps: unlockedSteps,
+        newly_unlocked_steps: [],
         chapter_completion_percentage: 0,
         journey_completion_percentage: 0,
       };
@@ -517,10 +533,10 @@ export class StepCompletionEngine {
     journeyId: string,
   ): Promise<DependencyCheckResult> {
     try {
+      // Get the step first to check its dependencies
       const step = await db.getStepDB(stepId);
       if (!step) throw new Error("Step not found");
 
-      // If no dependencies found, return met
       if (!step.dependencies || step.dependencies.length === 0) {
         return {
           all_dependencies_met: true,
@@ -529,20 +545,21 @@ export class StepCompletionEngine {
         };
       }
 
-      // Check each dependency step status
-      const dependencyStatuses = await Promise.all(
-        step.dependencies.map(async (depId) => {
-          const depStep = await db.getStepDB(depId);
-          return {
-            id: depId,
-            status: depStep ? depStep.status : "not_found",
-          };
-        }),
+      // Fetch all dependency steps for this journey in one go
+      const dependencySteps = await db.getStepsForJourneyByStepKeysDB(
+        journeyId,
+        step.dependencies,
       );
 
-      const pendingDependencies = dependencyStatuses
-        .filter((dep) => dep.status !== "completed")
-        .map((dep) => dep.id);
+      const pendingDependencies: string[] = [];
+      
+      // Check if all needed keys were found and are completed
+      for (const depKey of step.dependencies) {
+        const depStep = dependencySteps.find((s: Step) => s.step_key === depKey);
+        if (!depStep || depStep.status !== "completed") {
+          pendingDependencies.push(depKey);
+        }
+      }
 
       if (pendingDependencies.length > 0) {
         return {
@@ -558,7 +575,7 @@ export class StepCompletionEngine {
         reason: "All dependencies met",
       };
     } catch (error) {
-      console.error(`Error checking dependencies for step ${stepId}:`, error);
+      console.error(`Error checking dependencies for ${stepId}:`, error);
       throw error;
     }
   }

@@ -76,6 +76,7 @@ interface RawStep {
   id?: string;
   name?: string;
   type?: string;
+  branch?: string;
   toolData?: Record<string, unknown>;
   tool_data?: Record<string, unknown>;
   tool_integration?: string;
@@ -143,16 +144,16 @@ export class ConfigLoader {
 
     // Transform chapters from JSON
    static transformChaptersInput(rawChapters: RawChapter[]): ChapterInput[] {
-    return rawChapters.map((ch) => ({
-      chapter_key: ch.chapter_key,
-      chapter_number: ch.chapter_number,
-      chapter_name: ch.chapter_name,
-      chapter_description: ch.chapter_description || ch.description || "",
-      estimated_duration_months: ch.estimated_duration_months,
-      display_order: ch.display_order,
+    return rawChapters.map((ch, index) => ({
+      chapter_key: ch.chapter_key || (ch.id ? `chapter_${ch.id}` : `chapter_${index + 1}`),
+      chapter_number: ch.chapter_number || (typeof ch.id === 'number' ? ch.id : index + 1),
+      chapter_name: ch.chapter_name || ch.name || `Chapter ${index + 1}`,
+      chapter_description: ch.chapter_description || ch.description || ch.timeline || "",
+      estimated_duration_months: ch.estimated_duration_months || 0,
+      display_order: ch.display_order || index + 1,
       status: "not_started",
       completed_steps_count: 0,
-      total_steps_count: ch.steps.length,
+      total_steps_count: ch.steps ? ch.steps.length : 0,
       completion_percentage: 0,
     }));
   }
@@ -164,10 +165,12 @@ export class ConfigLoader {
   ): StepInput[] {
     return rawSteps.map((step, index) => {
       // Normalize step properties (handle different JSON formats)
+      const stepKey = step.step_key || step.id || `${chapterKey}_step_${index + 1}`;
+      const stepNumber = step.step_number || index + 1;
       const stepName = step.step_name || step.name || "";
       const stepDescription =
-        step.step_description;
-      const stepType = step.step_type;
+        step.step_description || step.timeline || "";
+      const stepType = step.step_type || step.type || "manual";
       const dependencies = step.dependencies || [];
       const visibleWhen = step.visible_when || {};
       const estimatedDays = step.estimated_duration_days || 1;
@@ -204,11 +207,12 @@ export class ConfigLoader {
         relevant_tools: step.relevantTools,
         possible_outcomes: step.possibleOutcomes,
         next_trigger: step.nextTrigger,
+        branch: step.branch,
       };
 
       return {
-        step_key: step.step_key,
-        step_number: step.step_number,
+        step_key: stepKey,
+        step_number: stepNumber,
         step_name: stepName,
         step_description: stepDescription,
         step_type: stepType,
