@@ -2986,8 +2986,12 @@
           }
         },
         {
-          "id": "III-05",
-          "name": "Attend Medical Exam",
+          "step_key": "step_3_5",
+          "step_number": 5,
+          "step_type": "tool",
+          "step_name": "Attend Medical Exam",
+          "step_short_description": "Medical screening and vaccinations",
+          "step_description": "Attend your scheduled medical examination with an embassy-approved panel physician. This is a mandatory health screening and vaccination review for all immigrants.",
           "who": "Beneficiary",
           "where": "IOM clinic",
           "timeline": "2-4 hours at clinic",
@@ -3010,7 +3014,77 @@
               "href": "/book-appointment",
               "type": "service"
             }
-          ]
+          ],
+          "tool_data": {
+            "type": "medical_exam_guide",
+            "bring": [
+              "Passport (original)",
+              "NVC interview appointment letter",
+              "Polio vaccination certificate (original)",
+              "Passport-style photos (2–4)",
+              "Medical exam fee (confirm with physician)",
+              "Any prior vaccination records if available"
+            ],
+            "pitfalls": [
+              "Forgetting the polio vaccination certificate",
+              "Arriving late — exams may not accommodate latecomers",
+              "Not having the exam fee ready in the accepted form",
+              "Using an unapproved or removed panel physician",
+              "Not confirming medical results were sent to the embassy"
+            ],
+            "tips": [
+              "Arrive 15–20 minutes early to handle registration",
+              "Bring a snack and water — exams can take several hours",
+              "Wear comfortable, easy-to-remove clothing for physical examination",
+              "After the exam, confirm the physician will send results before your interview date"
+            ],
+            "tutorial": [
+              {
+                "label": "Step 1 of 6",
+                "heading": "What to bring to the exam",
+                "instruction": "Gather all required items the day before. Arriving without required documents may mean rescheduling.",
+                "vlabel": "Required Items",
+                "visual": "<div class=\"mock-card\"><div class=\"mock-title\">Bring checklist</div><div class=\"mock-row\">Passport (original) <span class=\"mock-badge-green\">Required</span></div><div class=\"mock-row\">NVC appointment letter <span class=\"mock-badge-green\">Required</span></div><div class=\"mock-row\">Polio vaccination certificate <span class=\"mock-badge-green\">Required</span></div><div class=\"mock-row\">Passport photos (2–4) <span class=\"mock-badge-green\">Required</span></div><div class=\"mock-row\">Exam fee (cash/form per physician) <span class=\"mock-badge-green\">Required</span></div></div>"
+              },
+              {
+                "label": "Step 2 of 6",
+                "heading": "Arrive on time — allow extra time",
+                "instruction": "Arrive at least 15–20 minutes before your scheduled time. Security checks and registration take time. Latecomers may not be accommodated.",
+                "vlabel": "Arrival Timing",
+                "note": "If your appointment is in the morning, account for morning traffic — especially in major cities like Islamabad or Karachi.",
+                "visual": "<div class=\"mock-card\"><div class=\"mock-title\">Timing guidance</div><div style=\"font-size:13px;color:var(--ink-soft);line-height:1.6;margin-top:4px\">Arrive 15–20 minutes early. Registration and waiting can take time before the exam begins. Bring something to read — exams often involve waiting periods.</div></div>"
+              },
+              {
+                "label": "Step 3 of 6",
+                "heading": "How the exam typically proceeds",
+                "instruction": "The panel physician will conduct a physical exam, review vaccination records, check medical history, and may order blood or other tests as required by the embassy.",
+                "vlabel": "Exam Flow",
+                "visual": "<div class=\"mock-card\"><div class=\"mock-title\">Typical exam sequence</div><div class=\"mock-row\">Registration and document review</div><div class=\"mock-row\">Physical examination</div><div class=\"mock-row\">Vaccination review and administration if needed</div><div class=\"mock-row\">Blood / lab tests if required</div><div class=\"mock-row\">Results sealed and sent to embassy</div></div>"
+              },
+              {
+                "label": "Step 4 of 6",
+                "heading": "Vaccinations at the exam",
+                "instruction": "The physician may administer required vaccinations during the exam. Required vaccines vary by immigration category and age. The polio certificate you bring will be reviewed here.",
+                "vlabel": "Vaccinations",
+                "note": "Bring your polio vaccination certificate — the physician needs to confirm and document it as part of the medical packet.",
+                "visual": "<div class=\"mock-card\"><div class=\"mock-title\">Vaccination at the exam</div><div style=\"font-size:13px;color:var(--ink-soft);line-height:1.6;margin-top:4px\">Required vaccinations are administered by the physician if not already received. The physician documents all vaccinations as part of the sealed medical packet sent to the embassy.</div></div>"
+              },
+              {
+                "label": "Step 5 of 6",
+                "heading": "The fee — confirm in advance",
+                "instruction": "The medical exam fee is paid directly to the physician. It is not part of the visa fee. Confirm the amount and accepted payment methods with your physician before the exam day.",
+                "vlabel": "Fee Payment",
+                "visual": "<div class=\"mock-card\"><div class=\"mock-title\">Fee guidance</div><div style=\"font-size:13px;color:var(--ink-soft);line-height:1.6;margin-top:4px\">Fees vary by physician and exam complexity. Confirm the current fee and payment method (cash vs card) directly with the physician's office before your appointment.</div></div>"
+              },
+              {
+                "label": "Step 6 of 6",
+                "heading": "After the exam — confirm results will be sent",
+                "instruction": "Before leaving, confirm with the physician's office that the sealed medical results will be forwarded to the embassy before your interview date. Do not assume this happens automatically.",
+                "vlabel": "Post-Exam",
+                "visual": "<div style=\"background:var(--green-bg);border:1px solid var(--green-border);border-radius:var(--radius-sm);padding:14px 16px\"><div style=\"font-size:13px;font-weight:600;color:var(--green);margin-bottom:4px\">Exam complete</div><div style=\"font-size:12px;color:var(--ink-soft);line-height:1.5\">Confirm the physician's office will transmit the sealed results to the embassy before your interview date. Follow up if you have not received confirmation.</div></div>"
+              }
+            ]
+          }
         },
         {
           "id": "III-06",

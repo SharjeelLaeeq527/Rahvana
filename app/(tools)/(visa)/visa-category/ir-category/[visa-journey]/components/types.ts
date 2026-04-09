@@ -245,6 +245,7 @@ export interface ToolData {
     href?: string;
     note?: string;
     launched_note?: string;
+    type?: string;
     return_note?: { title: string; body: string };
   };
   /** Payment fee display block — shown inside the launch module for step 9 */

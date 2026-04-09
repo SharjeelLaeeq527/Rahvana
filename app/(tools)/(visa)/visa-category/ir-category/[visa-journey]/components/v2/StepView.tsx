@@ -55,6 +55,7 @@ import {
   Hospital,
   Copy,
   Paperclip,
+  Heart,
 } from "lucide-react";
 
 import {
@@ -299,6 +300,10 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
   >("");
   const [pccOverlayStep, setPccOverlayStep] = useState(0);
 
+  // Step 3.5 Medical Guide States
+  const [isMedicalGuideOpen, setIsMedicalGuideOpen] = useState(false);
+  const [medicalGuideIdx, setMedicalGuideIdx] = useState(0);
+
   const handleToggleSubmissionCheck = (idx: number) => {
     const next = {
       ...submissionChecklistStatus,
@@ -330,6 +335,16 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
 
   const chapters = data.chapters || (data as any).stages;
   const currentChapter = chapters?.[state.currentStage];
+
+  // Retrieve Medical tool data for Step 3.5 overlay
+  const medicalToolData = useMemo(() => {
+    if (!chapters) return null;
+    for (const ch of chapters) {
+      const step = ch.steps?.find((s: any) => s.step_key === "step_3_5");
+      if (step?.tool_data) return step.tool_data;
+    }
+    return null;
+  }, [chapters]);
 
   const filingMethod =
     state.metadata?.filingMethod || state.filingType || "online";
@@ -398,6 +413,9 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
       case "camera":
       case "photos":
         return <Camera size={18} />;
+      case "medical":
+      case "pulse":
+        return <Activity size={18} />;
       case "syringe":
       case "polio":
         return <Syringe size={18} />;
@@ -4737,11 +4755,15 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                                     : "bg-[#f4f7fb] text-[#6b8097] border-[#d0e4f7]"
                               }`}
                             >
-                              {isRev
-                                ? "✓ Packed"
-                                : isIP
-                                  ? "In progress"
-                                  : "Open guide"}
+                              {isRev ? (
+                                <span className="flex items-center gap-1">
+                                  <Check size={12} strokeWidth={3} /> Packed
+                                </span>
+                              ) : isIP ? (
+                                "In progress"
+                              ) : (
+                                "Open guide"
+                              )}
                             </div>
                           </div>
                         );
@@ -4814,6 +4836,155 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                   ))}
                 </div>
               </div>
+            </div>
+          )}
+
+          {/* ATTEND MEDICAL EXAM (Step 3.5 SPECIFIC) */}
+          {tool.type === "medical_exam_guide" && (
+            <div className="flex flex-col animate-in fade-in slide-in-from-bottom-2 duration-380 font-sans">
+              {/* Header Chips */}
+              <div className="flex items-center gap-[7px] flex-wrap mb-8">
+                {["Medical Exam", "What to Expect", "Preparation Guide"].map(
+                  (label, i) => (
+                    <span
+                      key={i}
+                      className={`text-[11px] font-semibold tracking-[0.06em] uppercase px-3 py-1.5 rounded-full border ${
+                        i === 0
+                          ? "bg-[#e8f1fb] text-[#2d4a6e] border-[#d0e4f7]"
+                          : i === 1
+                            ? "bg-[#fef8e8] text-[#8a6200] border-[#f0d98a]"
+                            : "bg-[#e8f5ef] text-[#15744f] border-[#a8d9be]"
+                      }`}
+                    >
+                      {label}
+                    </span>
+                  ),
+                )}
+              </div>
+
+              {/* Launch Module */}
+              <div className="relative bg-[#0e1e38] rounded-[16px] border border-white/7 overflow-hidden mb-[16px] shadow-[0_20px_60px_rgba(12,27,51,0.18),0_4px_16px_rgba(12,27,51,0.12)]">
+                <div className="absolute top-0 left-0 right-0 h-[2px] bg-linear-to-r from-[#2f6fd4] via-[#6aa8f0] to-transparent opacity-70" />
+                <div className="p-[30px_32px_26px]">
+                  <div className="flex items-start gap-4 mb-5">
+                    <div className="w-11 h-11 rounded-xl bg-white/6 border border-white/10 flex items-center justify-center shrink-0 text-white/75">
+                      <Activity size={21} strokeWidth={1.6} />
+                    </div>
+                    <div>
+                      <div className="text-[10px] font-bold uppercase tracking-[0.12em] text-white/35 mb-1">
+                        Medical Exam Guide
+                      </div>
+                      <h2 className="text-[clamp(18px,2.6vw,22px)] font-serif text-white/90 leading-[1.25]">
+                        Walkthrough of the medical exam appointment
+                      </h2>
+                    </div>
+                  </div>
+                  <div className="h-px bg-white/9 mb-[18px]" />
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-[22px]">
+                    {[
+                      "What to bring to the exam",
+                      "How the exam typically proceeds",
+                      "Vaccination and paperwork requirements",
+                      "Common mistakes to avoid",
+                    ].map((cue, i) => (
+                      <div
+                        key={i}
+                        className="bg-white/6 border border-white/10 rounded-lg p-[10px_12px] flex items-start gap-2"
+                      >
+                        <div className="w-[5px] h-[5px] rounded-full bg-[#6aa8f0]/70 shrink-0 mt-[5.5px]" />
+                        <span className="text-[13px] text-white/55 leading-[1.4]">
+                          {cue}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                  <button
+                    onClick={() => {
+                      setMedicalGuideIdx(0);
+                      setIsMedicalGuideOpen(true);
+                    }}
+                    className="w-full p-4 bg-[#3b7dd8] text-white rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-[#3b7dd8] transition-all shadow-[0_4px_20px_rgba(47,111,212,0.35)] hover:-translate-y-0.5 active:translate-y-0"
+                  >
+                    <span>View Medical Exam Guide</span>
+                    <ArrowRight size={16} />
+                  </button>
+                </div>
+              </div>
+
+              {/* Two-col lists */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-[14px] mb-[16px]">
+                {/* What to bring */}
+                <div className="bg-white border-[1.5px] border-[#d0e4f7] rounded-[16px] p-[18px_20px] shadow-sm">
+                  <div className="flex items-center gap-2 mb-3">
+                    <div className="w-2 h-2 rounded-full bg-[#2f6fd4]" />
+                    <span className="text-[12px] font-bold tracking-[0.06em] uppercase text-[#6b8097]">
+                      What to bring
+                    </span>
+                  </div>
+                  <div className="flex flex-col gap-[7px]">
+                    {tool.bring?.map((it: string, i: number) => (
+                      <div key={i} className="flex items-start gap-2">
+                        <div className="w-1 h-1 rounded-full bg-[#2f6fd4] shrink-0 mt-[7px]" />
+                        <span className="text-[13px] text-[#3a4f63] leading-[1.45]">
+                          {it}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Common pitfalls */}
+                <div className="bg-white border-[1.5px] border-[#d0e4f7] rounded-[16px] p-[18px_20px] shadow-sm">
+                  <div className="flex items-center gap-2 mb-3">
+                    <div className="w-2 h-2 rounded-full bg-[#b91c1c]" />
+                    <span className="text-[12px] font-bold tracking-[0.06em] uppercase text-[#6b8097]">
+                      Common pitfalls
+                    </span>
+                  </div>
+                  <div className="flex flex-col gap-[7px]">
+                    {tool.pitfalls?.map((it: string, i: number) => (
+                      <div
+                        key={i}
+                        className="flex items-start gap-2 p-[7px_10px] bg-[#fef2f2] rounded-[10px] border border-[#fecaca]/30"
+                      >
+                        <AlertTriangle
+                          size={13}
+                          className="text-[#b91c1c] shrink-0 mt-[1.5px]"
+                        />
+                        <span className="text-[13px] text-[#b91c1c] leading-[1.45]">
+                          {it}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* Helpful tips card */}
+              <div className="bg-white border-[1.5px] border-[#d0e4f7] rounded-[16px] p-[18px_20px] mb-[16px] shadow-sm">
+                <div className="flex items-center gap-2 mb-3">
+                  <div className="w-2 h-2 rounded-full bg-[#15744f]" />
+                  <span className="text-[12px] font-bold tracking-[0.06em] uppercase text-[#6b8097]">
+                    Helpful tips
+                  </span>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-[7px]">
+                  {tool.tips?.map((it: string, i: number) => (
+                    <div key={i} className="flex items-start gap-2">
+                      <div className="w-1 h-1 rounded-full bg-[#15744f] shrink-0 mt-[7px]" />
+                      <span className="text-[13px] text-[#3a4f63] leading-[1.45]">
+                        {it}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {tool.disclaimer && (
+                <p className="text-[11.5px] text-[#6b8097] leading-[1.65] text-center pt-[4px] mt-[8px]">
+                  {tool.disclaimer}
+                </p>
+              )}
             </div>
           )}
 
@@ -7138,9 +7309,23 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
           doc={activeHhDoc}
           status={hhDocsStatus[activeHhDoc.id]}
           onMarkReviewed={() => {
-            const next = { ...hhDocsStatus, [activeHhDoc.id]: "reviewed" };
+            const next = {
+              ...hhDocsStatus,
+              [activeHhDoc.id]: "reviewed",
+            };
             setHhDocsStatus(next);
+            actions.updateMetadata({ hhDocsStatus: next });
           }}
+        />
+      )}
+
+      {isMedicalGuideOpen && medicalToolData?.type === "medical_exam_guide" && (
+        <MedicalTutOverlay
+          isOpen={isMedicalGuideOpen}
+          onClose={() => setIsMedicalGuideOpen(false)}
+          tutorial={medicalToolData.tutorial}
+          index={medicalGuideIdx}
+          setIndex={setMedicalGuideIdx}
         />
       )}
       {/* Tutorial Overlay */}
@@ -7374,6 +7559,12 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                 className="text-[#3a4f63] group-hover:text-[#1c2b3a]"
               />
             </button>
+            <div className="flex-1 h-1.25 bg-[#d0e4f7] rounded-full overflow-hidden">
+              <div
+                className="h-full bg-linear-to-r from-primary to-primary/70 rounded-full"
+                style={{ width: "100%" }}
+              />
+            </div>
           </div>
 
           {/* Guide Body */}
@@ -7431,23 +7622,147 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                   disabled={
                     gatheringStatus[selectedGatheringItem.id] === "reviewed"
                   }
-                  className="p-[14px_24px] bg-[#15744f] text-white border-none rounded-[16px] text-[15px] font-[600] transition-all hover:bg-[#0e5c3c] hover:-translate-y-[1px] active:translate-y-0 disabled:bg-[#d0e4f7] disabled:text-[#6b8097] disabled:cursor-not-allowed disabled:transform-none"
+                  className="p-[14px_24px] bg-[#15744f] text-white border-none rounded-[16px] text-[15px] font-[600] transition-all hover:bg-[#0e5c3c] hover:-translate-y-[1px] active:translate-y-0 disabled:bg-[#d0e4f7] disabled:text-[#6b8097] disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center gap-2"
                 >
-                  {gatheringStatus[selectedGatheringItem.id] === "reviewed"
-                    ? "✓ Marked as packed"
-                    : "Mark as packed"}
+                  {gatheringStatus[selectedGatheringItem.id] === "reviewed" ? (
+                    <>
+                      <Check size={18} strokeWidth={2.5} /> Marked as packed
+                    </>
+                  ) : (
+                    "Mark as packed"
+                  )}
                 </button>
                 <button
                   onClick={() => setIsGatheringGuideOpen(false)}
-                  className="p-[13px_24px] bg-transparent text-[#3a4f63] border-[1.5px] border-[#d0e4f7] rounded-[16px] text-[14px] font-[500] transition-all hover:border-[#3a4f63] hover:text-[#1c2b3a]"
+                  className="p-[13px_24px] bg-transparent text-[#3a4f63] border-[1.5px] border-[#d0e4f7] rounded-[16px] text-[14px] font-[500] transition-all hover:border-[#3a4f63] hover:text-[#1c2b3a] flex items-center justify-center gap-2"
                 >
-                  ← Back to checklist
+                  <ChevronLeft size={16} /> Back to checklist
                 </button>
               </div>
             </div>
           </div>
         </div>
       )}
+
+      {/* Medical Exam Guide Overlay (Step 3.5) */}
+      {isMedicalGuideOpen &&
+        currentStep?.tool_data?.type === "medical_exam_guide" && (
+          <div className="fixed inset-0 z-[200] bg-white flex flex-col overflow-hidden animate-in slide-in-from-bottom duration-280 font-sans">
+            {/* Topbar */}
+            <div className="flex items-center p-[18px_24px] border-b border-[#d0e4f7] gap-[16px] shrink-0">
+              <button
+                onClick={() => setIsMedicalGuideOpen(false)}
+                className="w-[36px] h-[36px] rounded-full bg-[#f4f7fb] flex items-center justify-center transition-colors hover:bg-sky-100 group"
+              >
+                <X
+                  size={16}
+                  strokeWidth={2}
+                  className="text-[#3a4f63] group-hover:text-[#1c2b3a]"
+                />
+              </button>
+              <div className="flex-1 h-1.25 bg-[#d0e4f7] rounded-full overflow-hidden">
+                <div
+                  className="h-full bg-linear-to-r from-primary to-[#6aa8f0] transition-all duration-400"
+                  style={{
+                    width: `${((medicalGuideIdx + 1) / currentStep.tool_data.tutorial.length) * 100}%`,
+                  }}
+                />
+              </div>
+              <div className="text-[12px] font-medium text-[#6b8097] shrink-0">
+                {medicalGuideIdx + 1} / {currentStep.tool_data.tutorial.length}
+              </div>
+            </div>
+
+            {/* Body */}
+            <div className="flex-1 overflow-y-auto flex flex-col items-center p-[48px_24px_40px]">
+              {(() => {
+                const s = currentStep.tool_data.tutorial[medicalGuideIdx];
+                const isFirst = medicalGuideIdx === 0;
+                const isLast =
+                  medicalGuideIdx === currentStep.tool_data.tutorial.length - 1;
+
+                return (
+                  <div className="w-full max-w-[580px] flex flex-col">
+                    <div className="text-[11px] font-bold tracking-[0.1em] uppercase text-primary mb-[14px]">
+                      Medical Exam Guide · {s.label}
+                    </div>
+                    <h2
+                      className="text-[clamp(20px,3.2vw,26px)] font-serif text-[#0c1b33] mb-[8px] leading-[1.3]"
+                      style={{ fontFamily: "'DM Serif Display', serif" }}
+                    >
+                      {s.heading}
+                    </h2>
+                    <p className="text-[14px] text-[#3a4f63] leading-[1.7] mb-[22px]">
+                      {s.instruction}
+                    </p>
+
+                    <div className="w-full border-[1.5px] border-[#d0e4f7] rounded-xl overflow-hidden mb-[18px] bg-[#f4f7fb] shadow-sm">
+                      <div className="bg-[#eef3fa] border-b border-[#d0e4f7] p-[10px_14px] flex items-center gap-[6px]">
+                        <div className="w-[9px] h-[9px] rounded-full bg-red-400" />
+                        <div className="w-[9px] h-[9px] rounded-full bg-amber-400" />
+                        <div className="w-[9px] h-[9px] rounded-full bg-emerald-400" />
+                        <div className="ml-auto text-[10px] font-bold uppercase tracking-[0.07em] text-[#6b8097]">
+                          {s.vlabel}
+                        </div>
+                      </div>
+                      <div
+                        className="p-[18px] medical-mock-visual"
+                        dangerouslySetInnerHTML={{ __html: s.visual }}
+                      />
+                    </div>
+
+                    {s.note && (
+                      <div className="bg-[#fef8e8] border border-[#f0d98a] rounded-lg p-[11px_14px] flex gap-2.5 mb-[18px]">
+                        <Info
+                          size={16}
+                          className="text-[#8a6200] shrink-0 mt-[2px]"
+                        />
+                        <span className="text-[13px] text-[#8a6200] leading-[1.55]">
+                          {s.note}
+                        </span>
+                      </div>
+                    )}
+
+                    <div className="flex gap-[10px]">
+                      {!isFirst && (
+                        <button
+                          onClick={() =>
+                            setMedicalGuideIdx(medicalGuideIdx - 1)
+                          }
+                          className="p-[12px_20px] bg-white border-[1.5px] border-[#d0e4f7] rounded-lg text-[14px] font-medium text-[#3a4f63] hover:border-[#3a4f63] transition-all flex items-center gap-2"
+                        >
+                          <ChevronLeft size={16} /> Back
+                        </button>
+                      )}
+                      <button
+                        onClick={() => {
+                          if (isLast) {
+                            setIsMedicalGuideOpen(false);
+                          } else {
+                            setMedicalGuideIdx(medicalGuideIdx + 1);
+                          }
+                        }}
+                        className={`flex-1 p-[12px_20px] text-white border-none rounded-lg text-[14px] font-bold transition-all flex items-center justify-center gap-2 ${
+                          isLast
+                            ? "bg-[#15744f] hover:bg-[#0e5c3c]"
+                            : "bg-primary hover:bg-primary/90"
+                        }`}
+                      >
+                        {isLast ? (
+                          "Done — return to step"
+                        ) : (
+                          <>
+                            Next <ArrowRight size={16} />
+                          </>
+                        )}
+                      </button>
+                    </div>
+                  </div>
+                );
+              })()}
+            </div>
+          </div>
+        )}
     </div>
   );
 };
@@ -8319,6 +8634,126 @@ function CeacCredsModal({
           >
             {isSubmitting ? "Saving..." : "Save Details"}
           </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function MedicalTutOverlay({
+  isOpen,
+  onClose,
+  tutorial,
+  index,
+  setIndex,
+}: {
+  isOpen: boolean;
+  onClose: () => void;
+  tutorial: any[];
+  index: number;
+  setIndex: (idx: number) => void;
+}) {
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [isOpen]);
+
+  if (!isOpen || !tutorial) return null;
+
+  const s = tutorial[index];
+  const total = tutorial.length;
+  const progress = ((index + 1) / total) * 100;
+  const isFirst = index === 0;
+  const isLast = index === total - 1;
+
+  return (
+    <div className="fixed inset-0 z-[500] bg-white flex flex-col overflow-hidden animate-in slide-in-from-bottom-[18px] duration-[0.28s] ease-in-out font-sans">
+      {/* Topbar */}
+      <div className="flex items-center p-[18px_24px] border-b border-[#d0e4f7] gap-4 shrink-0 bg-white">
+        <button
+          onClick={onClose}
+          className="w-9 h-9 rounded-full border-none bg-[#f4f7fb] cursor-pointer flex items-center justify-center hover:bg-[#e8f1fb] transition-colors shrink-0"
+        >
+          <X size={16} strokeWidth={2} className="text-[#3a4f63]" />
+        </button>
+        <div className="flex-1 h-[5px] bg-[#d0e4f7] rounded-[10px] overflow-hidden">
+          <div
+            className="h-full bg-linear-to-r from-primary to-primary/70 transition-all duration-400 ease-in-out"
+            style={{ width: `${progress}%` }}
+          />
+        </div>
+        <div className="text-[12px] font-medium text-[#6b8097] whitespace-nowrap shrink-0">
+          {index + 1} / {total}
+        </div>
+      </div>
+
+      {/* Body */}
+      <div className="flex-1 overflow-y-auto flex flex-col items-center p-[48px_24px_40px] bg-white">
+        <div className="w-full max-w-[580px] flex flex-col min-h-full">
+          <div className="text-[11px] font-semibold tracking-[0.1em] uppercase text-primary mb-3.5">
+            Medical Exam Guide · {s.label}
+          </div>
+          <h2
+            className="text-[clamp(20px,3.2vw,26px)] text-[#0c1b33] leading-tight mb-2"
+            style={{ fontFamily: "'DM Serif Display', serif" }}
+          >
+            {s.heading}
+          </h2>
+          <p className="text-[14px] text-[#3a4f63] leading-relaxed mb-[18px]">
+            {s.instruction}
+          </p>
+
+          <div className="bg-white border-[1.5px] border-[#d0e4f7] rounded-[10px] overflow-hidden mb-[18px] shadow-[0_2px_12px_rgba(12,27,51,0.06)]">
+            <div className="bg-[#eef3fa] border-b border-[#d0e4f7] p-[10px_14px] flex items-center gap-1.5">
+              <div className="w-[9px] h-[9px] rounded-full bg-[#f87171]" />
+              <div className="w-[9px] h-[9px] rounded-full bg-[#fbbf24]" />
+              <div className="w-[9px] h-[9px] rounded-full bg-[#34d399]" />
+              <div className="text-[10px] font-semibold tracking-[0.07em] uppercase text-[#6b8097] ml-auto">
+                {s.vlabel}
+              </div>
+            </div>
+            <div
+              className="p-[18px] leading-relaxed"
+              dangerouslySetInnerHTML={{ __html: s.visual }}
+            />
+          </div>
+
+          {s.note && (
+            <div className="bg-[#fef8e8] border border-[#f0d98a] rounded-[10px] p-[11px_14px] text-[13px] text-[#8a6200] leading-relaxed mb-[24px]">
+              {s.note}
+            </div>
+          )}
+
+          <div className="mt-auto pt-6 flex gap-2.5">
+            {!isFirst && (
+              <button
+                onClick={() => setIndex(index - 1)}
+                className="p-[12px_20px] bg-transparent border-[1.5px] border-[#d0e4f7] rounded-[10px] text-[14px] font-medium text-[#3a4f63] cursor-pointer transition-all hover:border-[#3a4f63] hover:text-[#0c1b33]"
+              >
+                ← Back
+              </button>
+            )}
+            <button
+              onClick={() => {
+                if (isLast) {
+                  onClose();
+                } else {
+                  setIndex(index + 1);
+                }
+              }}
+              className={`flex-1 p-[12px_20px] rounded-[10px] text-[14px] font-semibold cursor-pointer transition-all hover:-translate-y-px active:translate-y-0
+                ${isLast ? "bg-[#15744f] text-white hover:bg-[#0e5c3c]" : "bg-primary text-white hover:bg-primary/80 shadow-[0_4px_12px_rgba(47,111,212,0.2)]"}
+              `}
+            >
+              {isLast ? "Done — return to step" : "Next →"}
+            </button>
+          </div>
         </div>
       </div>
     </div>
