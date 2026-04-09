@@ -14,6 +14,7 @@ interface DashboardViewProps {
   data: RoadmapData;
   state: WizardState;
   onSelectChapter: (idx: number) => void;
+  onSelectStep?: (cIdx: number, sIdx: number) => void;
   actions: {
     setCurrentStep: (idx: number) => void;
     setStage: (idx: number) => void;
@@ -24,6 +25,7 @@ export function DashboardView({
   data,
   state,
   onSelectChapter,
+  onSelectStep,
   actions,
 }: DashboardViewProps) {
   const nextActionData = useMemo(
@@ -150,8 +152,12 @@ export function DashboardView({
             <button
               onClick={() => {
                 if (nextActionData) {
-                  actions.setStage(nextActionData.chapterIdx);
-                  actions.setCurrentStep(nextActionData.stepIdxInChapter);
+                  if (onSelectStep) {
+                    onSelectStep(nextActionData.chapterIdx, nextActionData.stepIdxInChapter);
+                  } else {
+                    actions.setStage(nextActionData.chapterIdx);
+                    actions.setCurrentStep(nextActionData.stepIdxInChapter);
+                  }
                 }
               }}
               disabled={!nextActionData}

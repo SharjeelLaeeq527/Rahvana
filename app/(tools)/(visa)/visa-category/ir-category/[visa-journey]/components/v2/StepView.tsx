@@ -1322,10 +1322,17 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
       <button
         key={item.id}
         onClick={() => {
+          // All household docs are inline guides - mark as in-progress and open modal
           if (hhDocsStatus[item.id] === "not-started") {
             const next = { ...hhDocsStatus, [item.id]: "in-progress" };
             setHhDocsStatus(next);
           }
+          actions.updateMetadata({
+            hhDocsStatus: {
+              ...hhDocsStatus,
+              [item.id]: "in-progress",
+            },
+          });
           setActiveHhDoc(item);
           setIsHhDocGuideOpen(true);
         }}
@@ -2453,18 +2460,18 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
 
                         <div className="flex flex-col gap-[10px]">
                           {group.items.map((doc: any) => {
-                            const st = financialDocsStatus[doc.id] || "open";
+                            const st = financialDocsStatus[doc.id] || "not-started";
                             return (
                               <button
                                 key={doc.id}
                                 onClick={() => {
-                                  if (financialDocsStatus[doc.id] === "open") {
-                                    const next = {
-                                      ...financialDocsStatus,
-                                      [doc.id]: "in-progress",
-                                    };
+                                  // Mark as in-progress when opened (unless already reviewed)
+                                  if (financialDocsStatus[doc.id] !== "reviewed") {
                                     actions.updateMetadata({
-                                      financialDocsStatus: next,
+                                      financialDocsStatus: {
+                                        ...financialDocsStatus,
+                                        [doc.id]: "in-progress",
+                                      },
                                     });
                                   }
                                   setActiveFinancialDoc(doc);
@@ -6214,6 +6221,13 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                                 },
                               });
                             } else {
+                              // Mark inline guides as in-progress when opened
+                              actions.updateMetadata({
+                                civilDocsStatus: {
+                                  ...civilDocsStatus,
+                                  [item.id]: "in-progress",
+                                },
+                              });
                               setActiveCivilDoc(item);
                               setIsCivilDocGuideOpen(true);
                             }
@@ -7096,7 +7110,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                             const hasAttachment =
                               state.docUploads[doc.name] ||
                               state.notes[doc.name];
-                            const isInProgress = hasAttachment && !isReviewed;
+                            const isInProgress = (hasAttachment && !isReviewed) || docReviewStatus === "in-progress";
                             const isPetitioner = doc.tag === "petitioner";
                             const isBeneficiary = doc.tag === "beneficiary";
 
@@ -7108,9 +7122,9 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                                     doc.guideUrl &&
                                     doc.guideUrl !== "/guides"
                                   ) {
-                                    // Open guide immediately in new tab
+                                    // For external guides, open in new tab and mark as reviewed
                                     window.open(doc.guideUrl, "_blank");
-                                    // Auto-mark as reviewed in background (fire and forget)
+                                    // Mark as reviewed (external guides don't have a mark button)
                                     if (
                                       actions.updateDocumentStatus &&
                                       doc.id
@@ -7121,7 +7135,18 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                                       );
                                     }
                                   } else {
+                                    // For inline guides, open modal and mark as in-progress
                                     setSelectedGuideId(doc.id || null);
+                                    // Mark as in-progress immediately when opened
+                                    if (
+                                      actions.updateDocumentStatus &&
+                                      doc.id
+                                    ) {
+                                      actions.updateDocumentStatus(
+                                        doc.id,
+                                        "in-progress",
+                                      );
+                                    }
                                   }
                                 }}
                                 className={`group flex items-center gap-[16px] px-[20px] py-[18px] rounded-[14px] border-[1.5px] transition-all cursor-pointer relative shadow-[0_2px_12px_rgba(15,31,56,0.07),0_1px_3px_rgba(15,31,56,0.04)] hover:border-primary hover:shadow-[0_8px_32px_rgba(15,31,56,0.12),0_2px_8px_rgba(15,31,56,0.06)] hover:-translate-y-px active:translate-y-0 active:shadow-[0_2px_12px_rgba(15,31,56,0.07),0_1px_3px_rgba(15,31,56,0.04)] mb-[10px]
@@ -8262,10 +8287,27 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                 <button
                   onClick={async () => {
                     if (actions.updateDocumentStatus && selectedGuideId) {
+                      // Mark as reviewed
                       await actions.updateDocumentStatus(
                         selectedGuideId,
                         "reviewed",
                       );
+                      
+                      // Check if all documents are now reviewed for auto-complete
+                      const sId = currentStep.step_key || (currentStep as any)?.id;
+                      if (sId === "step_1_2") {
+                        const docItems = currentStep.document_items || [];
+                        const allReviewed = docItems.every((doc: any) => {
+                          if (doc.id === selectedGuideId) return true; // This one will be reviewed
+                          return state.metadata?.docReviewStatus?.[doc.id] === "reviewed" ||
+                                 state.documentChecklist[doc.name];
+                        });
+                        
+                        // Auto-complete step if all documents are reviewed
+                        if (allReviewed && !isCompleted) {
+                          handleToggleComplete();
+                        }
+                      }
                     }
                     setSelectedGuideId(null);
                   }}
