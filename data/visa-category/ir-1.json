@@ -3087,7 +3087,73 @@
           }
         },
         {
-          "id": "III-06",
+          "step_key": "step_3_6",
+          "step_number": 6,
+          "step_type": "tool",
+          "step_name": "Courier Registration",
+          "step_description": "Register your courier account to receive your visa packet after the interview is approved. Complete the sign-up, follow the guide, and save your credentials and confirmation.",
+          "step_short_description": "Register for visa packet delivery",
+          "who": "Beneficiary",
+          "where": "Home preparation",
+          "actions": [
+            "Register at usvisascheduling.com",
+            "Select courier delivery for Pakistan",
+            "Save your login credentials securely",
+            "Save confirmation page to Document Vault"
+          ],
+          "relevantTools": [
+            {
+              "label": "Courier Portal",
+              "href": "https://www.usvisascheduling.com/",
+              "type": "tool"
+            }
+          ],
+          "tool_data": {
+            "type": "courier_registration",
+            "tutorial": [
+              {
+                "label": "Step 1 of 5",
+                "heading": "Open the courier registration portal",
+                "instruction": "Click 'Open Courier Registration' on the main page to open the USVisaScheduling sign-up portal. This is the official courier service for U.S. visa delivery in Pakistan.",
+                "vlabel": "Courier Portal",
+                "visual": "<div class=\"mock-card\"><div class=\"mock-title\">usvisascheduling.com</div><div style=\"font-size:13px;color:var(--ink-soft);line-height:1.6;margin-top:4px\">Create a new account or sign in to register your courier delivery preferences for your visa packet.</div></div>"
+              },
+              {
+                "label": "Step 2 of 5",
+                "heading": "Create your account",
+                "instruction": "Select 'Create Account' or 'Sign Up'. Enter your email address and create a secure password. Verify your email address when prompted.",
+                "vlabel": "Account Creation",
+                "note": "Use an email address you actively monitor — all courier notifications will be sent there.",
+                "visual": "<div class=\"mock-card\"><div class=\"mock-title\">Create Account</div><div class=\"mock-field\"><div class=\"mock-field-label\">Email Address</div><div class=\"mock-field-input\">your@email.com</div></div><div class=\"mock-field\"><div class=\"mock-field-label\">Password</div><div class=\"mock-field-input\">••••••••••</div></div><div class=\"mock-btn\">Create Account</div></div>"
+              },
+              {
+                "label": "Step 3 of 5",
+                "heading": "Select Pakistan courier delivery",
+                "instruction": "After creating your account, select your country and configure courier delivery preferences for Pakistan. Choose the city or region matching your preferred delivery address.",
+                "vlabel": "Courier Configuration",
+                "visual": "<div class=\"mock-card\"><div class=\"mock-title\">Delivery Preferences</div><div class=\"hl-box\">Pakistan · Select delivery region</div><div style=\"margin-top:10px;font-size:13px;color:var(--ink-soft)\">Choose the city / region closest to your preferred delivery address for the visa packet.</div></div>"
+              },
+              {
+                "label": "Step 4 of 5",
+                "heading": "Complete registration and save confirmation",
+                "instruction": "Complete the registration flow and save or print the confirmation page. This confirmation record should be stored in your Document Vault.",
+                "vlabel": "Registration Confirmed",
+                "visual": "<div style=\"background:var(--green-bg);border:1px solid var(--green-border);border-radius:var(--radius-sm);padding:14px 16px\"><div style=\"font-size:13px;font-weight:600;color:var(--green);margin-bottom:4px\">Registration complete</div><div style=\"font-size:12px;color:var(--ink-soft);line-height:1.5\">Save the confirmation page or email to your Document Vault.</div></div>"
+              },
+              {
+                "label": "Step 5 of 5",
+                "heading": "Return here and save your credentials",
+                "instruction": "Return to this step and use the credential vault card to save your courier account email and password in the Portal Wallet.",
+                "vlabel": "Save Credentials",
+                "visual": "<div class=\"mock-card\"><div class=\"mock-title\">Save to Portal Wallet</div><div style=\"font-size:13px;color:var(--ink-soft);line-height:1.5;margin-top:4px\">Save your courier account email and password so you can access it later when your visa is ready for delivery.</div></div>"
+              }
+            ]
+          }
+        },
+        {
+          "step_key": "step_3_7",
+          "step_number": 7,
+          "id": "III-07",
           "name": "Prepare for Interview",
           "who": "Beneficiary",
           "where": "Home preparation",
@@ -3110,7 +3176,9 @@
           ]
         },
         {
-          "id": "III-07",
+          "step_key": "step_3_8",
+          "step_number": 8,
+          "id": "III-08",
           "name": "Attend Visa Interview",
           "who": "Beneficiary",
           "where": "U.S. Embassy Islamabad",
@@ -3142,7 +3210,9 @@
           ]
         },
         {
-          "id": "III-08",
+          "step_key": "step_3_9",
+          "step_number": 9,
+          "id": "III-09",
           "name": "Track Status (If AP)",
           "who": "Beneficiary",
           "where": "ceac.state.gov",

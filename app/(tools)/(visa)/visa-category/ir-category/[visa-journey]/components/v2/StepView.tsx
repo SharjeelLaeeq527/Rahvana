@@ -56,6 +56,7 @@ import {
   Copy,
   Paperclip,
   Heart,
+  Truck,
 } from "lucide-react";
 
 import {
@@ -149,6 +150,10 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
     useState<PortalCredential | null>(null);
   const [isWalletFormOpen, setIsWalletFormOpen] = useState(false);
   const [isWalletViewOpen, setIsWalletViewOpen] = useState(false);
+  const [walletPortalType, setWalletPortalType] = useState<
+    "USCIS" | "NVC" | "COURIER"
+  >("USCIS");
+  const [walletMode, setWalletMode] = useState<"add" | "edit">("add");
   const [isSubmittingCreds, setIsSubmittingCreds] = useState(false);
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
 
@@ -165,6 +170,10 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
   const [ceacCredentials, setCeacCredentials] =
     useState<PortalCredential | null>(null);
   const [isCeacModalOpen, setIsCeacModalOpen] = useState(false);
+
+  // Courier Credentials State
+  const [courierCredentials, setCourierCredentials] =
+    useState<PortalCredential | null>(null);
 
   // Civil Documents States
   const [activeCivilDoc, setActiveCivilDoc] = useState<any>(null);
@@ -304,6 +313,10 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
   const [isMedicalGuideOpen, setIsMedicalGuideOpen] = useState(false);
   const [medicalGuideIdx, setMedicalGuideIdx] = useState(0);
 
+  // Step 3.6 Courier Registration Guide States
+  const [isCourierGuideOpen, setIsCourierGuideOpen] = useState(false);
+  const [courierGuideIdx, setCourierGuideIdx] = useState(0);
+
   const handleToggleSubmissionCheck = (idx: number) => {
     const next = {
       ...submissionChecklistStatus,
@@ -341,6 +354,16 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
     if (!chapters) return null;
     for (const ch of chapters) {
       const step = ch.steps?.find((s: any) => s.step_key === "step_3_5");
+      if (step?.tool_data) return step.tool_data;
+    }
+    return null;
+  }, [chapters]);
+
+  // Retrieve Courier tool data for Step 3.6 overlay
+  const courierToolData = useMemo(() => {
+    if (!chapters) return null;
+    for (const ch of chapters) {
+      const step = ch.steps?.find((s: any) => s.step_key === "step_3_6");
       if (step?.tool_data) return step.tool_data;
     }
     return null;
@@ -1373,8 +1396,12 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
         const ceac = data.credentials.find(
           (c: PortalCredential) => c.portal_type.toUpperCase() === "NVC",
         );
+        const courier = data.credentials.find(
+          (c: PortalCredential) => c.portal_type.toUpperCase() === "COURIER",
+        );
         setUscisCredentials(uscis || null);
         setCeacCredentials(ceac || null);
+        setCourierCredentials(courier || null);
       }
     } catch (err) {
       console.error("Failed to fetch credentials:", err);
@@ -1454,7 +1481,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         credentialId,
-        portalType: "USCIS",
+        portalType: walletPortalType,
         type: "password",
       }),
     });
@@ -1471,7 +1498,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         credentialId,
-        portalType: "USCIS",
+        portalType: walletPortalType,
         type: "answer",
         questionId,
       }),
@@ -1488,7 +1515,9 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
       });
       if (!res.ok) throw new Error("Failed to delete");
       toast.success("Credentials deleted successfully!");
-      setUscisCredentials(null);
+      if (portalType === "USCIS") setUscisCredentials(null);
+      if (portalType === "NVC") setCeacCredentials(null);
+      if (portalType === "COURIER") setCourierCredentials(null);
       setIsWalletViewOpen(false);
     } catch {
       toast.error("Failed to delete credentials.");
@@ -4988,6 +5017,216 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
             </div>
           )}
 
+          {/* COURIER REGISTRATION (Step 3.6 SPECIFIC) */}
+          {tool.type === "courier_registration" && (
+            <div className="flex flex-col animate-in fade-in slide-in-from-bottom-2 duration-380 font-sans">
+              {/* Header Chips */}
+              <div className="flex items-center gap-[7px] flex-wrap mb-8">
+                {["Courier Service", "Account Setup", "Portal Wallet"].map(
+                  (label, i) => (
+                    <span
+                      key={i}
+                      className={`text-[11px] font-semibold tracking-[0.06em] uppercase px-3 py-1.5 rounded-full border ${
+                        i === 0
+                          ? "bg-[#e8f1fb] text-[#2d4a6e] border-[#d0e4f7]"
+                          : i === 1
+                            ? "bg-[#f3f0fb] text-[#4a2d8a] border-[#c9bef2]"
+                            : "bg-[#e8f5ef] text-[#15744f] border-[#a8d9be]"
+                      }`}
+                    >
+                      {label}
+                    </span>
+                  ),
+                )}
+              </div>
+
+              {/* Launch Module */}
+              <div className="relative bg-[#0e1e38] rounded-[16px] border border-white/7 overflow-hidden mb-[16px] shadow-[0_20px_60px_rgba(12,27,51,0.18),0_4px_16px_rgba(12,27,51,0.12)]">
+                <div className="absolute top-0 left-0 right-0 h-[2px] bg-linear-to-r from-[#2f6fd4] via-[#6aa8f0] to-transparent opacity-70" />
+                <div className="p-[30px_32px_26px]">
+                  <div className="flex items-start gap-4 mb-5">
+                    <div className="w-11 h-11 rounded-xl bg-white/6 border border-white/10 flex items-center justify-center shrink-0 text-white/75">
+                      <Truck size={21} strokeWidth={1.6} />
+                    </div>
+                    <div>
+                      <div className="text-[10px] font-bold uppercase tracking-[0.12em] text-white/35 mb-1">
+                        USVisaScheduling · Courier Registration
+                      </div>
+                      <h2 className="text-[clamp(18px,2.6vw,22px)] font-serif text-white/90 leading-[1.25]">
+                        Create your courier delivery account
+                      </h2>
+                    </div>
+                  </div>
+                  <div className="h-px bg-white/9 mb-[18px]" />
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-[22px]">
+                    {[
+                      "Register at usvisascheduling.com",
+                      "Select courier delivery for Pakistan",
+                      "Save your login credentials securely",
+                      "Save confirmation page to Document Vault",
+                    ].map((cue, i) => (
+                      <div
+                        key={i}
+                        className="bg-white/6 border border-white/10 rounded-lg p-[10px_12px] flex items-start gap-2"
+                      >
+                        <div className="w-[5px] h-[5px] rounded-full bg-[#6aa8f0]/70 shrink-0 mt-[5.5px]" />
+                        <span className="text-[13px] text-white/55 leading-[1.4]">
+                          {cue}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                  <button
+                    onClick={() => {
+                      window.open(
+                        "https://www.usvisascheduling.com/",
+                        "_blank",
+                        "noopener,noreferrer",
+                      );
+                    }}
+                    className="w-full p-4 bg-[#3b7dd8] text-white rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-[#3b7dd8] transition-all shadow-[0_4px_20px_rgba(47,111,212,0.35)] hover:-translate-y-0.5 active:translate-y-0"
+                  >
+                    <span>Open Courier Registration</span>
+                    <ArrowRight size={16} />
+                  </button>
+                  <div
+                    className={`flex items-center justify-center gap-[5px] mt-3 text-[12px] text-center leading-[1.4] transition-colors duration-200 text-white/35`}
+                  >
+                    <ExternalLink size={11} strokeWidth={1.8} />
+                    <span>
+                      Opens the courier registration portal in a new tab
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Secondary cards row */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-[12px] mb-[18px]">
+                <button
+                  onClick={() => {
+                    setCourierGuideIdx(0);
+                    setIsCourierGuideOpen(true);
+                  }}
+                  className="bg-white border-[1.5px] border-[#d0e4f7] rounded-[16px] p-5 cursor-pointer transition-all hover:border-primary hover:shadow-[0_4px_20px_rgba(47,111,212,0.1)] hover:-translate-y-px text-left flex flex-col group"
+                >
+                  <div className="mb-3">
+                    <div className="w-[36px] h-[36px] rounded-[9px] bg-[#f3f0fb] border border-[#c9bef2] flex items-center justify-center text-[#4a2d8a]">
+                      <Monitor size={17} />
+                    </div>
+                  </div>
+                  <div className="text-[14px] font-bold text-[#0c1b33] mb-1">
+                    Step-by-Step Sign-Up Guide
+                  </div>
+                  <div className="text-[12px] text-[#6b8097] leading-[1.5] mb-3">
+                    Walkthrough of the courier registration sign-up process —
+                    account creation, selection, and confirmation.
+                  </div>
+                  <div className="mt-auto text-[12px] font-bold text-primary flex items-center gap-1 group-hover:gap-2 transition-all">
+                    <span>View guide</span>
+                    <ArrowRight size={11} strokeWidth={2.5} />
+                  </div>
+                </button>
+
+                <button
+                  onClick={() => {
+                    if (courierCredentials) {
+                      setWalletPortalType("COURIER");
+                      setIsWalletViewOpen(true);
+                    } else {
+                      setWalletPortalType("COURIER");
+                      setWalletMode("add");
+                      setIsWalletFormOpen(true);
+                    }
+                  }}
+                  className={`bg-white border-[1.5px] border-[#d0e4f7] rounded-[16px] p-5 cursor-pointer transition-all hover:border-primary hover:shadow-[0_4px_20px_rgba(47,111,212,0.1)] hover:-translate-y-px text-left flex flex-col group ${courierCredentials ? "border-[#a8d9be] bg-[#e8f5ef]/30" : ""}`}
+                >
+                  <div className="mb-3">
+                    <div
+                      className={`w-[36px] h-[36px] rounded-[9px] ${courierCredentials ? "bg-[#e8f5ef] border-[#a8d9be] text-[#15744f]" : "bg-[#e8f5ef] border-[#a8d9be] text-[#15744f]"} flex items-center justify-center`}
+                    >
+                      <Lock size={17} />
+                    </div>
+                  </div>
+                  <div
+                    className={`text-[14px] font-bold ${courierCredentials ? "text-[#15744f]" : "text-[#0c1b33]"} mb-1`}
+                  >
+                    {courierCredentials
+                      ? "✓ Credentials Saved"
+                      : "Save Courier Credentials"}
+                  </div>
+                  <div className="text-[12px] text-[#6b8097] leading-[1.5] mb-3">
+                    {courierCredentials
+                      ? "Courier account details stored in Portal Wallet."
+                      : "Store your courier account login securely in Rahvana's Portal Wallet."}
+                  </div>
+                  <div
+                    className={`mt-auto text-[12px] font-bold ${courierCredentials ? "text-[#15744f]" : "text-primary"} flex items-center gap-1 group-hover:gap-2 transition-all`}
+                  >
+                    <span>
+                      {courierCredentials
+                        ? "View saved credentials"
+                        : "Open credential vault"}
+                    </span>
+                    <ArrowRight size={11} strokeWidth={2.5} />
+                  </div>
+                </button>
+              </div>
+
+              {/* Saved Credentials View (Specific) */}
+              {courierCredentials && (
+                <div className="bg-[#e8f5ef] border-[1.5px] border-[#a8d9be] rounded-[10px] p-[16px_18px] mb-5 animate-in fade-in slide-in-from-top-1">
+                  <div className="text-[10px] font-bold uppercase tracking-[0.08em] text-[#15744f] mb-[10px]">
+                    ✓ Credentials Saved — Courier Account
+                  </div>
+                  <div className="flex justify-between items-center py-1.5 border-b border-[#a8d9be]/50">
+                    <span className="text-[12px] text-[#3a4f63] font-medium">
+                      Email
+                    </span>
+                    <span className="text-[12px] text-[#0c1b33] font-bold font-mono">
+                      {courierCredentials.username}
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center py-1.5 border-b border-[#a8d9be]/50 last:border-none">
+                    <span className="text-[12px] text-[#3a4f63] font-medium">
+                      Password
+                    </span>
+                    <span className="text-[12px] text-[#0c1b33] font-bold font-mono">
+                      ••••••••
+                    </span>
+                  </div>
+                  <div className="flex flex-col gap-2.5 mt-3">
+                    <button
+                      onClick={() => {
+                        setWalletPortalType("COURIER");
+                        setWalletMode("edit");
+                        setIsWalletFormOpen(true);
+                      }}
+                      className="inline-flex items-center gap-1 text-[12px] font-bold text-primary hover:underline"
+                    >
+                      Edit or update in Portal Wallet{" "}
+                      <ExternalLink size={11} strokeWidth={2.5} />
+                    </button>
+                    <a
+                      href="https://www.rahvana.com/document-vault"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1.5 text-[12px] font-bold text-[#15744f] hover:underline"
+                    >
+                      <Upload size={12} strokeWidth={2.5} />
+                      Save confirmation page to Document Vault →
+                    </a>
+                  </div>
+                </div>
+              )}
+
+              {tool.disclaimer && (
+                <p className="text-[11.5px] text-[#6b8097] leading-[1.65] text-center pt-[4px] mt-[8px]">
+                  {tool.disclaimer}
+                </p>
+              )}
+            </div>
+          )}
+
           {/* PRIMARY LAUNCH MODULE */}
           {tool.launch_module &&
             tool.type !== "sponsorship_calculator" &&
@@ -5434,11 +5673,15 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                 {(sId === "step_1_6" ? uscisCredentials : ceacCredentials) ? (
                   /* Saved Card */
                   <button
-                    onClick={() =>
-                      sId === "step_1_6"
-                        ? setIsWalletViewOpen(true)
-                        : setIsCeacModalOpen(true)
-                    }
+                    onClick={() => {
+                      const portal = sId === "step_1_6" ? "USCIS" : "NVC";
+                      setWalletPortalType(portal);
+                      if (portal === "USCIS") {
+                        setIsWalletViewOpen(true);
+                      } else {
+                        setIsCeacModalOpen(true);
+                      }
+                    }}
                     className="bg-[#e8f5ef] border-[1.5px] border-[#a8d9be] rounded-[16px] p-[20px] text-left group hover:border-[#15744f] hover:shadow-[0_4px_20px_rgba(21,116,79,0.1)] hover:-translate-y-px transition-all cursor-pointer select-none flex flex-col"
                   >
                     <div className="flex items-center gap-[10px] mb-[12px]">
@@ -5465,11 +5708,15 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                 ) : (
                   /* Unsaved Card */
                   <button
-                    onClick={() =>
-                      sId === "step_1_6"
-                        ? setIsWalletFormOpen(true)
-                        : setIsCeacModalOpen(true)
-                    }
+                    onClick={() => {
+                      const portal = sId === "step_1_6" ? "USCIS" : "NVC";
+                      setWalletPortalType(portal);
+                      if (portal === "USCIS") {
+                        setIsWalletFormOpen(true);
+                      } else {
+                        setIsCeacModalOpen(true);
+                      }
+                    }}
                     className="bg-[#fafcff] border-[1.5px] border-[#d0e4f7] rounded-[16px] p-[20px] text-left group hover:border-primary hover:shadow-[0_4px_20px_rgba(47,111,212,0.1)] hover:-translate-y-px transition-all cursor-pointer select-none flex flex-col"
                   >
                     <div className="flex items-center gap-[10px] mb-[12px]">
@@ -7110,23 +7357,37 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
       <CredentialFormModal
         isOpen={isWalletFormOpen}
         onClose={() => setIsWalletFormOpen(false)}
-        portalType="USCIS"
-        mode={uscisCredentials ? "edit" : "add"}
-        icon={<ShieldCheck className="text-teal-600" />}
+        portalType={walletPortalType}
+        mode={walletMode}
+        icon={
+          walletPortalType === "USCIS" ? (
+            <ShieldCheck className="text-teal-600" />
+          ) : walletPortalType === "COURIER" ? (
+            <Truck className="text-primary" />
+          ) : (
+            <Zap className="text-amber-500" />
+          )
+        }
         initialData={
-          uscisCredentials
-            ? {
-                username: uscisCredentials.username,
-                password: "",
-                securityQuestions: uscisCredentials.security_questions.map(
-                  (sq) => ({
+          (() => {
+            const creds =
+              walletPortalType === "USCIS"
+                ? uscisCredentials
+                : walletPortalType === "COURIER"
+                  ? courierCredentials
+                  : ceacCredentials;
+            return creds
+              ? {
+                  username: creds.username,
+                  password: "",
+                  securityQuestions: creds.security_questions.map((sq) => ({
                     id: sq.id,
                     question: sq.question,
                     answer: "",
-                  }),
-                ),
-              }
-            : undefined
+                  })),
+                }
+              : undefined;
+          })()
         }
         onSubmit={handleSaveCredentials}
         isSubmitting={isSubmittingCreds}
@@ -7135,14 +7396,27 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
       <ViewCredentialModal
         isOpen={isWalletViewOpen}
         onClose={() => setIsWalletViewOpen(false)}
-        portalType="USCIS"
-        credential={uscisCredentials}
-        icon={<ShieldCheck className="text-primary" />}
+        portalType={walletPortalType}
+        credential={
+          walletPortalType === "USCIS"
+            ? uscisCredentials
+            : walletPortalType === "COURIER"
+              ? courierCredentials
+              : ceacCredentials
+        }
+        icon={
+          <ShieldCheck
+            className={
+              walletPortalType === "COURIER" ? "text-indigo-600" : "text-primary"
+            }
+          />
+        }
         onRevealPassword={handleRevealPassword}
         onRevealAnswer={handleRevealAnswer}
         onRevealCaseNumber={async () => ""}
         onRevealInvoiceId={async () => ""}
         onEdit={() => {
+          setWalletMode("edit");
           setIsWalletViewOpen(false);
           setIsWalletFormOpen(true);
         }}
@@ -7161,7 +7435,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
         confirmText="Delete"
         confirmVariant="danger"
         onConfirm={async () => {
-          await handleDeleteCredentials("USCIS");
+          await handleDeleteCredentials(walletPortalType);
           setShowDeleteConfirmation(false);
         }}
         loading={isSubmittingCreds}
@@ -7328,6 +7602,17 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
           setIndex={setMedicalGuideIdx}
         />
       )}
+
+      {isCourierGuideOpen &&
+        courierToolData?.type === "courier_registration" && (
+          <CourierTutOverlay
+            isOpen={isCourierGuideOpen}
+            onClose={() => setIsCourierGuideOpen(false)}
+            tutorial={courierToolData.tutorial}
+            index={courierGuideIdx}
+            setIndex={setCourierGuideIdx}
+          />
+        )}
       {/* Tutorial Overlay */}
       {isTutorialOpen &&
         (() => {
@@ -8720,6 +9005,126 @@ function MedicalTutOverlay({
             </div>
             <div
               className="p-[18px] leading-relaxed"
+              dangerouslySetInnerHTML={{ __html: s.visual }}
+            />
+          </div>
+
+          {s.note && (
+            <div className="bg-[#fef8e8] border border-[#f0d98a] rounded-[10px] p-[11px_14px] text-[13px] text-[#8a6200] leading-relaxed mb-[24px]">
+              {s.note}
+            </div>
+          )}
+
+          <div className="mt-auto pt-6 flex gap-2.5">
+            {!isFirst && (
+              <button
+                onClick={() => setIndex(index - 1)}
+                className="p-[12px_20px] bg-transparent border-[1.5px] border-[#d0e4f7] rounded-[10px] text-[14px] font-medium text-[#3a4f63] cursor-pointer transition-all hover:border-[#3a4f63] hover:text-[#0c1b33]"
+              >
+                ← Back
+              </button>
+            )}
+            <button
+              onClick={() => {
+                if (isLast) {
+                  onClose();
+                } else {
+                  setIndex(index + 1);
+                }
+              }}
+              className={`flex-1 p-[12px_20px] rounded-[10px] text-[14px] font-semibold cursor-pointer transition-all hover:-translate-y-px active:translate-y-0
+                ${isLast ? "bg-[#15744f] text-white hover:bg-[#0e5c3c]" : "bg-primary text-white hover:bg-primary/80 shadow-[0_4px_12px_rgba(47,111,212,0.2)]"}
+              `}
+            >
+              {isLast ? "Done — return to step" : "Next →"}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function CourierTutOverlay({
+  isOpen,
+  onClose,
+  tutorial,
+  index,
+  setIndex,
+}: {
+  isOpen: boolean;
+  onClose: () => void;
+  tutorial: any[];
+  index: number;
+  setIndex: (idx: number) => void;
+}) {
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [isOpen]);
+
+  if (!isOpen || !tutorial) return null;
+
+  const s = tutorial[index];
+  const total = tutorial.length;
+  const progress = ((index + 1) / total) * 100;
+  const isFirst = index === 0;
+  const isLast = index === total - 1;
+
+  return (
+    <div className="fixed inset-0 z-[500] bg-white flex flex-col overflow-hidden animate-in slide-in-from-bottom-[18px] duration-[0.28s] ease-in-out font-sans">
+      {/* Topbar */}
+      <div className="flex items-center p-[18px_24px] border-b border-[#d0e4f7] gap-4 shrink-0 bg-white">
+        <button
+          onClick={onClose}
+          className="w-9 h-9 rounded-full border-none bg-[#f4f7fb] cursor-pointer flex items-center justify-center hover:bg-[#e8f1fb] transition-colors shrink-0"
+        >
+          <X size={16} strokeWidth={2} className="text-[#3a4f63]" />
+        </button>
+        <div className="flex-1 h-[5px] bg-[#d0e4f7] rounded-[10px] overflow-hidden">
+          <div
+            className="h-full bg-linear-to-r from-primary to-primary/70 transition-all duration-400 ease-in-out"
+            style={{ width: `${progress}%` }}
+          />
+        </div>
+        <div className="text-[12px] font-medium text-[#6b8097] whitespace-nowrap shrink-0">
+          {index + 1} / {total}
+        </div>
+      </div>
+
+      {/* Body */}
+      <div className="flex-1 overflow-y-auto flex flex-col items-center p-[48px_24px_40px] bg-white">
+        <div className="w-full max-w-[580px] flex flex-col min-h-full">
+          <div className="text-[11px] font-semibold tracking-[0.1em] uppercase text-primary mb-3.5">
+            Courier Registration Guide · {s.label}
+          </div>
+          <h2
+            className="text-[clamp(20px,3.2vw,26px)] text-[#0c1b33] leading-tight mb-2"
+            style={{ fontFamily: "'DM Serif Display', serif" }}
+          >
+            {s.heading}
+          </h2>
+          <p className="text-[14px] text-[#3a4f63] leading-relaxed mb-[18px]">
+            {s.instruction}
+          </p>
+
+          <div className="bg-white border-[1.5px] border-[#d0e4f7] rounded-[10px] overflow-hidden mb-[18px] shadow-[0_2px_12px_rgba(12,27,51,0.06)]">
+            <div className="bg-[#eef3fa] border-b border-[#d0e4f7] p-[10px_14px] flex items-center gap-1.5">
+              <div className="w-[9px] h-[9px] rounded-full bg-[#f87171]" />
+              <div className="w-[9px] h-[9px] rounded-full bg-[#fbbf24]" />
+              <div className="w-[9px] h-[9px] rounded-full bg-[#34d399]" />
+              <div className="text-[10px] font-semibold tracking-[0.07em] uppercase text-[#6b8097] ml-auto">
+                {s.vlabel}
+              </div>
+            </div>
+            <div
+              className="p-[18px] leading-relaxed courier-mock-visual"
               dangerouslySetInnerHTML={{ __html: s.visual }}
             />
           </div>
