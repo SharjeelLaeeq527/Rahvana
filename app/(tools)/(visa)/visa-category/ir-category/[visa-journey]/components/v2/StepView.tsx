@@ -3,21 +3,22 @@
 import React, { useEffect, useMemo, useState, useCallback } from "react";
 import {
   ArrowLeft,
+  Zap,
   CheckCircle2,
+  AlertTriangle,
+  Clock,
   CheckCircle,
+  CheckSquare,
   ArrowRight,
-  FileText,
   ShieldCheck,
-  User,
   Search,
   MessageSquare,
   Scale,
   Globe,
-  ClipboardList,
   Lock,
   Check,
   Book,
-  Wallet,
+  BookOpen,
   Camera,
   FileCheck,
   X,
@@ -26,9 +27,37 @@ import {
   Monitor,
   Upload,
   CreditCard,
+  Scroll,
+  HelpCircle,
+  FolderOpen,
+  Save,
+  Edit3,
+  Calculator,
+  Receipt,
+  Banknote,
+  Building,
+  Landmark,
+  Wallet,
+  User,
+  Home,
+  HardDrive,
+  FileText,
+  ClipboardList,
+  Users,
+  ChevronLeft,
+  ChevronRight,
+  Calendar,
+  Activity,
+  Info,
+  PartyPopper,
 } from "lucide-react";
 
-import { RoadmapData, QuestSuite, TutorialStepData, ActionCard } from "../types";
+import {
+  RoadmapData,
+  QuestSuite,
+  TutorialStepData,
+  ActionCard,
+} from "../types";
 import { WizardState } from "@/app/(main)/dashboard/hooks/useWizard";
 import { QuestRenderer } from "./QuestRenderer";
 import { getAllActiveSteps } from "./journeyHelpers";
@@ -39,6 +68,19 @@ import { ConfirmationModal } from "@/app/components/shared/ConfirmationModal";
 import { InlineGuideData } from "./InlineGuideData";
 import { USCIS_TUTORIAL_STEPS } from "./UscisTutorialData";
 import Image from "next/image";
+import Link from "next/link";
+import {
+  HOUSEHOLD_TUTORIAL_STEPS,
+  HOUSEHOLD_GUIDE_CONTENT,
+} from "./HouseholdTutorialData";
+import {
+  SUBMISSION_TUTORIAL_STEPS,
+  SubmissionTutorialOverlay,
+} from "./SubmissionTutorialData";
+import { AWAITING_REVIEW_DATA } from "./AwaitingReviewData";
+import { DQ_RECORDING_DATA } from "./DqRecordingData";
+import { INTERVIEW_SCHEDULING_DATA } from "./InterviewSchedulingData";
+import { APPOINTMENT_RECEIVED_DATA } from "./AppointmentReceivedData";
 
 interface SecurityQuestion {
   id: string;
@@ -120,15 +162,1063 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
   const civilDocsStatus =
     (state.metadata.civilDocsStatus as Record<string, string>) || {};
 
+  // Financial Documents States (Step 6)
+  const [activeFinancialDoc, setActiveFinancialDoc] = useState<any>(null);
+  const [isFinancialDocGuideOpen, setIsFinancialDocGuideOpen] = useState(false);
+  const financialDocsStatus =
+    (state.metadata.financialDocsStatus as Record<string, string>) || {};
+
   // Tutorial State
   const [isTutorialOpen, setIsTutorialOpen] = useState(false);
   const [tutorialIdx, setTutorialIdx] = useState(0);
+
+  // Household Member Builder States (Step 7)
+  const [jsCount, setJsCount] = useState(0);
+  const [hhCount, setHhCount] = useState(0);
+  const [hhRelationships, setHhRelationships] = useState<
+    Record<number, string>
+  >({});
+  const [activeHhDoc, setActiveHhDoc] = useState<any>(null);
+  const [isHhDocGuideOpen, setIsHhDocGuideOpen] = useState(false);
+  const [hhDocsStatus, setHhDocsStatus] = useState<Record<string, string>>(
+    (state.metadata.hhDocsStatus as Record<string, string>) || {},
+  );
+
+  // Sponsorship Calculator State
+  const [isSponsorshipCalcOpen, setIsSponsorshipCalcOpen] = useState(false);
+  const [sponsorshipStepIdx, setSponsorshipStepIdx] = useState(0);
+  const [sponsorshipData, setSponsorshipData] = useState<any>({
+    agi: 0,
+    householdSize: 2,
+    needsHouseholdMember: false,
+    householdMemberCount: 0,
+    needsJointSponsor: false,
+    jointSponsorCount: 0,
+  });
+  const sponsorshipResult = (state.metadata.sponsorshipResult as any) || null;
+
+  // Selected scenario for Step 6 (Gather Financial Documents)
+  const [selectedScenario, setSelectedScenario] = useState<string>("pet-only");
+
+  // Step 2.8 Review & Submit States
+  const [isSubmissionGuideOpen, setIsSubmissionGuideOpen] = useState(false);
+  const [submissionGuideIdx, setSubmissionGuideIdx] = useState(0);
+  const initialSubmissionChecklist = (state.metadata
+    .submissionChecklistStatusS10 as Record<string, boolean>) || {
+    0: false,
+    1: false,
+    2: false,
+    3: false,
+    4: false,
+    5: false,
+  };
+  const [submissionChecklistStatusS10, setSubmissionChecklistStatus] = useState<
+    Record<string, boolean>
+  >(initialSubmissionChecklist);
+
+  // Step 2.10 DQ Recording States
+  const [dqSaved, setDqSaved] = useState(state.metadata.dqSaved === true);
+  const [dqDate, setDqDate] = useState((state.metadata.dqDate as string) || "");
+  const [dqCategory, setDqCategory] = useState(
+    (state.metadata.dqCategory as string) || "",
+  );
+  const [dqPost, setDqPost] = useState((state.metadata.dqPost as string) || "");
+  const [dqCountry, setDqCountry] = useState(
+    (state.metadata.dqCountry as string) || "Pakistan",
+  );
+
+  const handleToggleSubmissionCheckS10 = (idx: number) => {
+    const next = {
+      ...submissionChecklistStatusS10,
+      [idx]: !submissionChecklistStatusS10[idx],
+    };
+    setSubmissionChecklistStatus(next);
+    actions.updateMetadata({ submissionChecklistStatusS10: next });
+  };
+
+  // Sync selectedScenario with sponsorshipResult once on load
+  useEffect(() => {
+    if (sponsorshipResult) {
+      if (
+        sponsorshipResult.needsHouseholdMember &&
+        sponsorshipResult.needsJointSponsor
+      ) {
+        setSelectedScenario("pet-hm-js");
+      } else if (sponsorshipResult.jointSponsorCount === 2) {
+        setSelectedScenario("pet-js2");
+      } else if (sponsorshipResult.jointSponsorCount === 1) {
+        setSelectedScenario("pet-js1");
+      } else if (sponsorshipResult.needsHouseholdMember) {
+        setSelectedScenario("pet-hm");
+      } else {
+        setSelectedScenario("pet-only");
+      }
+    }
+  }, [sponsorshipResult]);
 
   const chapters = data.chapters || (data as any).stages;
   const currentChapter = chapters?.[state.currentStage];
 
   const filingMethod =
     state.metadata?.filingMethod || state.filingType || "online";
+
+  const getIcon = (iconKey: string) => {
+    switch (iconKey) {
+      case "passport":
+        return <BookOpen size={18} />;
+      case "birth":
+        return <FileText size={18} />;
+      case "marriage":
+        return <Scroll size={18} />;
+      case "divorce":
+        return <Scroll size={18} />;
+      case "police":
+        return <ShieldCheck size={18} />;
+      case "military":
+        return <ShieldCheck size={18} />;
+      case "home":
+        return <Home size={18} />;
+      case "user":
+        return <User size={18} />;
+      case "link":
+        return <ExternalLink size={18} />;
+      case "id":
+        return <User size={18} />;
+      case "translations":
+        return <Globe size={18} />;
+      case "prior-marriage":
+        return <Scale size={18} />;
+      case "death-cert":
+        return <FileText size={18} />;
+      case "name-change":
+        return <Edit3 size={18} />;
+      case "help":
+        return <HelpCircle size={18} />;
+      case "folder":
+        return <FolderOpen size={18} />;
+      case "save":
+        return <Save size={18} />;
+      case "message":
+        return <MessageSquare size={18} />;
+      case "calculator":
+        return <Calculator size={18} />;
+      case "receipt":
+        return <Receipt size={18} />;
+      case "banknote":
+        return <Banknote size={18} />;
+      case "building":
+        return <Building size={18} />;
+      case "landmark":
+        return <Landmark size={18} />;
+      case "wallet":
+        return <Wallet size={18} />;
+      case "hard-drive":
+        return <HardDrive size={18} />;
+      case "file-text":
+        return <FileText size={18} />;
+      case "clipboard":
+        return <ClipboardList size={18} />;
+      default:
+        return iconKey;
+    }
+  };
+
+  const POVERTY_125_BASE = 25550;
+  const POVERTY_PER_EXTRA = 8225;
+  const getThreshold = (size: number) =>
+    POVERTY_125_BASE + Math.max(0, size - 2) * POVERTY_PER_EXTRA;
+
+  const I864_URL = "https://www.rahvana.com/visa-forms/i864/wizard";
+  const I864EZ_URL = "https://www.rahvana.com/visa-forms/i864ez/wizard";
+  const I864A_URL = "https://www.rahvana.com/visa-forms/i864a/wizard";
+
+  const SCENARIOS: Record<string, any> = {
+    "pet-only": {
+      label: "Petitioner only (qualifies alone)",
+      sponsors: ["Petitioner"],
+      householdMembers: [],
+      jointSponsors: [],
+      forms: "I-864EZ",
+      taxYears: 3,
+    },
+    "pet-hm": {
+      label: "Petitioner + Household Member",
+      sponsors: ["Petitioner"],
+      householdMembers: ["Household Member 1"],
+      jointSponsors: [],
+      forms: "I-864, I-864A",
+      taxYears: 3,
+    },
+    "pet-js1": {
+      label: "Petitioner + 1 Joint Sponsor",
+      sponsors: ["Petitioner"],
+      householdMembers: [],
+      jointSponsors: ["Joint Sponsor 1"],
+      forms: "I-864 (×2)",
+      taxYears: 3,
+    },
+    "pet-js2": {
+      label: "Petitioner + 2 Joint Sponsors",
+      sponsors: ["Petitioner"],
+      householdMembers: [],
+      jointSponsors: ["Joint Sponsor 1", "Joint Sponsor 2"],
+      forms: "I-864 (×3)",
+      taxYears: 3,
+    },
+    "pet-hm-js": {
+      label: "Petitioner + HM + Joint Sponsor",
+      sponsors: ["Petitioner"],
+      householdMembers: ["Household Member 1"],
+      jointSponsors: ["Joint Sponsor 1"],
+      forms: "I-864, I-864A, I-864",
+      taxYears: 3,
+    },
+  };
+
+  const getFinancialDocs = (scKey: string) => {
+    const sc = SCENARIOS[scKey] || SCENARIOS["pet-only"];
+    const docs: any = { required: [], conditional: [], recommended: [] };
+
+    const taxNote = `${sc.taxYears} most recent years`;
+    const allSponsors = [...sc.sponsors, ...sc.jointSponsors];
+
+    allSponsors.forEach((sp) => {
+      const isPet = sp === "Petitioner";
+      const tagClass = isPet ? "tag-pet" : "tag-js";
+      docs.required.push({
+        id: `tax-${sp}`,
+        icon: "receipt",
+        title: `Federal Tax Return — ${sp}`,
+        sub: `${taxNote} · Aligns with affidavit income statement`,
+        tags: [
+          { cls: tagClass, label: sp },
+          { cls: "tag-tax", label: "3 Years" },
+        ],
+        guide: {
+          intro: `The federal tax return (Form 1040) is the primary income evidence for ${sp}. It must align with the income figure reported in the affidavit of support.`,
+          sections: [
+            {
+              title: "What is needed",
+              body: `Most recent ${taxNote} of federal tax returns. Ensure the income figures are consistent with what was stated in the affidavit form.`,
+            },
+            {
+              title: "Organization",
+              body: `Group ${sp}'s tax documents together in one clearly labeled packet.`,
+            },
+          ],
+        },
+      });
+      docs.required.push({
+        id: `w2-${sp}`,
+        icon: "file-text",
+        title: `W-2 Forms — ${sp}`,
+        sub: `${taxNote} · Wage and salary income documentation`,
+        tags: [
+          { cls: tagClass, label: sp },
+          { cls: "tag-tax", label: "3 Years" },
+        ],
+        guide: {
+          intro: `W-2 forms report annual wages and are issued by employers. They support the income figures shown on the tax return.`,
+          sections: [
+            {
+              title: "What is needed",
+              body: `W-2 forms for each year of tax evidence gathered. Group with the matching tax year materials.`,
+            },
+          ],
+        },
+      });
+      docs.required.push({
+        id: `transcript-${sp}`,
+        icon: "landmark",
+        title: `IRS Tax Transcripts — ${sp}`,
+        sub: "Official IRS verification of filed tax information",
+        tags: [
+          { cls: tagClass, label: sp },
+          { cls: "tag-tax", label: "3 Years" },
+        ],
+        guide: {
+          intro: `IRS Tax Transcripts are official IRS-issued records confirming what was filed for a given tax year. They are a strong verification tool.`,
+          sections: [
+            {
+              title: "How to obtain",
+              body: "Request transcripts at IRS.gov (Get Transcript tool) or via mail using Form 4506-T. Processing time varies.",
+            },
+            {
+              title: "Why it matters",
+              body: "Transcripts confirm the authenticity of the tax filing and are particularly useful if the original return is unavailable.",
+            },
+          ],
+        },
+      });
+      docs.conditional.push({
+        id: `paystubs-${sp}`,
+        icon: "banknote",
+        title: `Pay Stubs — ${sp}`,
+        sub: "Current income evidence — most recent 2–3 months",
+        tags: [
+          { cls: tagClass, label: sp },
+          { cls: "tag-cur", label: "Current Income" },
+        ],
+        guide: {
+          intro: `Recent pay stubs support current employment status and ongoing income. They are especially valuable when showing present income is important.`,
+          sections: [
+            {
+              title: "What to include",
+              body: "Most recent 2–3 months of pay stubs. Must show gross pay, employer name, and pay period.",
+            },
+          ],
+        },
+      });
+      docs.conditional.push({
+        id: `employment-${sp}`,
+        icon: "building",
+        title: `Employment Letter — ${sp}`,
+        sub: "Confirms current employment and compensation",
+        tags: [
+          { cls: tagClass, label: sp },
+          { cls: "tag-cur", label: "Current Income" },
+        ],
+        guide: {
+          intro: `An employment verification letter supports consistent employment and current salary information.`,
+          sections: [
+            {
+              title: "What it should include",
+              body: "Employer letterhead, current position, start date, employment type (full-time/part-time), and current annual salary.",
+            },
+          ],
+        },
+      });
+
+      docs.conditional.push({
+        id: `assets-${sp}`,
+        icon: "wallet",
+        title: `Asset Evidence — ${sp}`,
+        sub: "Bank statements, property, or investment documentation",
+        tags: [
+          { cls: tagClass, label: sp },
+          { cls: "tag-cur", label: "Assets" },
+        ],
+        guide: {
+          intro: `Asset documentation is relevant when assets are being used to supplement income. Assets must be available to the sponsor and convertible to cash within 12 months.`,
+          sections: [
+            {
+              title: "What to include",
+              body: "Recent bank statements, investment account statements, real estate ownership documents, or other liquid asset evidence.",
+            },
+          ],
+        },
+      });
+    });
+
+    sc.householdMembers.forEach((hm: string, i: number) => {
+      docs.conditional.push({
+        id: `hm-income-${i}`,
+        icon: "user",
+        title: `Proof of Household Member Income — ${hm}`,
+        sub: "Income evidence for household member contributing to sponsorship",
+        tags: [{ cls: "tag-hm", label: hm }],
+        guide: {
+          intro: `If a household member's income is being included in the sponsorship, that person's income evidence must match their I-864A filing.`,
+          sections: [
+            {
+              title: "What is needed",
+              body: "Tax returns, W-2s, and current pay stubs for the household member. Must be consistent with the I-864A form answers.",
+            },
+            {
+              title: "Consistency",
+              body: "Household member income evidence must align with what was stated in Form I-864A.",
+            },
+          ],
+        },
+      });
+      docs.conditional.push({
+        id: `hm-residence-${i}`,
+        icon: "home",
+        title: `Proof of Shared Residence — ${hm}`,
+        sub: "Evidence of household connection between sponsor and household member",
+        tags: [{ cls: "tag-hm", label: hm }],
+        guide: {
+          intro: `Household member sponsorship support may require evidence that the household member and the petitioner share the same household or have a qualifying relationship.`,
+          sections: [
+            {
+              title: "What to include",
+              body: "Lease agreement or property ownership document showing shared address, utility bills in both names, or other evidence of shared household.",
+            },
+          ],
+        },
+      });
+    });
+
+    allSponsors.forEach((sp) => {
+      const isPet = sp === "Petitioner";
+      docs.recommended.push({
+        id: `packet-${sp}`,
+        icon: "folder",
+        title: `Organized Income Packet — ${sp}`,
+        sub: "All documents grouped cleanly by sponsor for upload readiness",
+        tags: [{ cls: isPet ? "tag-pet" : "tag-js", label: sp }],
+        guide: {
+          intro: `Each sponsor's financial documents should be grouped clearly and separately. This improves upload readiness and makes review cleaner.`,
+          sections: [
+            {
+              title: "How to organize",
+              body: `Group tax returns, W-2s, transcripts, pay stubs, and any asset evidence for ${sp} into a single clearly labeled folder or file set.`,
+            },
+          ],
+        },
+      });
+    });
+
+    docs.recommended.push({
+      id: `prior-year-backup`,
+      icon: "clipboard",
+      title: "Backup Prior-Year Tax Evidence",
+      sub: "Additional years of tax evidence for extra reassurance",
+      tags: [{ cls: "tag-tax", label: "Tax Evidence" }],
+      guide: {
+        intro:
+          "Having an extra year of tax evidence beyond the required amount can provide additional reassurance during processing.",
+        sections: [
+          {
+            title: "Why it helps",
+            body: "An extra year of consistent income history strengthens the overall financial picture and can smooth over any single year anomalies.",
+          },
+        ],
+      },
+    });
+    docs.recommended.push({
+      id: `upload-packet`,
+      icon: "hard-drive",
+      title: "Upload-Ready Financial Packet",
+      sub: "Clean, compressed, properly named files ready for CEAC upload",
+      tags: [{ cls: "tag-cur", label: "Upload Ready" }],
+      guide: {
+        intro:
+          "Preparing an upload-ready financial packet reduces errors and delays during the CEAC document upload phase.",
+        sections: [
+          {
+            title: "File preparation",
+            body: "Ensure all files are clearly scanned, under 4 MB each, in PDF or JPG format, properly named, and organized by sponsor.",
+          },
+        ],
+      },
+    });
+
+    return docs;
+  };
+
+  const getHhDocItems = (count: number, rels: Record<number, string>) => {
+    const items: any[] = [];
+    for (let i = 1; i <= count; i++) {
+      const relationship = rels[i] || "spouse";
+      const label = `Household Member ${i}`;
+
+      switch (relationship) {
+        case "spouse":
+          items.push({
+            id: `hh${i}-marriage`,
+            icon: "marriage",
+            title: `Marriage Certificate — ${label}`,
+            sub: "Proves the spousal relationship to the petitioner",
+            tags: [
+              { cls: "tag-hh", label: "Household Member" },
+              { cls: "tag-rel", label: "Relationship Proof" },
+              { cls: "tag-gov", label: "Govt Record" },
+            ],
+            guideKey: "marriage-cert-hh",
+            group: "required",
+          });
+          items.push({
+            id: `hh${i}-residence`,
+            icon: "home",
+            title: `Proof of Shared Residence — ${label}`,
+            sub: "Confirms both spouses share the same household address",
+            tags: [
+              { cls: "tag-hh", label: "Household Member" },
+              { cls: "tag-res", label: "Shared Residence" },
+            ],
+            guideKey: "shared-residence",
+            group: "required",
+          });
+          items.push({
+            id: `hh${i}-id`,
+            icon: "id",
+            title: `Identity Document — ${label}`,
+            sub: "Government-issued ID confirming the household member's identity",
+            tags: [
+              { cls: "tag-hh", label: "Household Member" },
+              { cls: "tag-id", label: "Identity" },
+              { cls: "tag-gov", label: "Govt Record" },
+            ],
+            guideKey: "id-doc-hh",
+            group: "required",
+          });
+          break;
+
+        case "child":
+          items.push({
+            id: `hh${i}-birth-hh`,
+            icon: "birth",
+            title: `Birth Certificate — ${label}`,
+            sub: "Proves the parent–child relationship to the petitioner",
+            tags: [
+              { cls: "tag-hh", label: "Household Member" },
+              { cls: "tag-rel", label: "Relationship Proof" },
+              { cls: "tag-gov", label: "Govt Record" },
+            ],
+            guideKey: "birth-cert-hh",
+            group: "required",
+          });
+          items.push({
+            id: `hh${i}-residence`,
+            icon: "home",
+            title: `Proof of Shared Residence — ${label}`,
+            sub: "Confirms child lives in the same household",
+            tags: [
+              { cls: "tag-hh", label: "Household Member" },
+              { cls: "tag-res", label: "Shared Residence" },
+            ],
+            guideKey: "shared-residence",
+            group: "required",
+          });
+          items.push({
+            id: `hh${i}-id`,
+            icon: "id",
+            title: `Identity Document — ${label}`,
+            sub: "Government-issued ID for the household member",
+            tags: [
+              { cls: "tag-hh", label: "Household Member" },
+              { cls: "tag-id", label: "Identity" },
+              { cls: "tag-gov", label: "Govt Record" },
+            ],
+            guideKey: "id-doc-hh",
+            group: "conditional",
+          });
+          break;
+
+        case "parent":
+          items.push({
+            id: `hh${i}-birth-sponsor`,
+            icon: "birth",
+            title: `Birth Certificate of Petitioner`,
+            sub: `Shows ${label} (parent) is listed — establishes the parent–child link`,
+            tags: [
+              { cls: "tag-hh", label: "Household Member" },
+              { cls: "tag-rel", label: "Relationship Proof" },
+              { cls: "tag-gov", label: "Govt Record" },
+            ],
+            guideKey: "birth-cert-sponsor",
+            group: "required",
+          });
+          items.push({
+            id: `hh${i}-id`,
+            icon: "id",
+            title: `Identity Document — ${label}`,
+            sub: "Government-issued ID for the household member",
+            tags: [
+              { cls: "tag-hh", label: "Household Member" },
+              { cls: "tag-id", label: "Identity" },
+              { cls: "tag-gov", label: "Govt Record" },
+            ],
+            guideKey: "id-doc-hh",
+            group: "required",
+          });
+          items.push({
+            id: `hh${i}-residence`,
+            icon: "home",
+            title: `Proof of Shared Residence — ${label}`,
+            sub: "Confirms parent and petitioner share the same household",
+            tags: [
+              { cls: "tag-hh", label: "Household Member" },
+              { cls: "tag-res", label: "Shared Residence" },
+            ],
+            guideKey: "shared-residence",
+            group: "conditional",
+          });
+          break;
+
+        case "sibling":
+          items.push({
+            id: `hh${i}-birth-sponsor`,
+            icon: "birth",
+            title: "Birth Certificate of Petitioner",
+            sub: "Shows shared parentage with the sibling household member",
+            tags: [
+              { cls: "tag-hh", label: "Household Member" },
+              { cls: "tag-rel", label: "Relationship Proof" },
+              { cls: "tag-gov", label: "Govt Record" },
+            ],
+            guideKey: "birth-cert-sponsor",
+            group: "required",
+          });
+          items.push({
+            id: `hh${i}-birth-hh`,
+            icon: "birth",
+            title: `Birth Certificate — ${label}`,
+            sub: "Combined with petitioner's birth cert to show shared parentage",
+            tags: [
+              { cls: "tag-hh", label: "Household Member" },
+              { cls: "tag-rel", label: "Relationship Proof" },
+              { cls: "tag-gov", label: "Govt Record" },
+            ],
+            guideKey: "birth-cert-hh",
+            group: "required",
+          });
+          items.push({
+            id: `hh${i}-id`,
+            icon: "id",
+            title: `Identity Document — ${label}`,
+            sub: "Government-issued ID for the household member",
+            tags: [
+              { cls: "tag-hh", label: "Household Member" },
+              { cls: "tag-id", label: "Identity" },
+              { cls: "tag-gov", label: "Govt Record" },
+            ],
+            guideKey: "id-doc-hh",
+            group: "required",
+          });
+          items.push({
+            id: `hh${i}-residence`,
+            icon: "home",
+            title: `Proof of Shared Residence — ${label}`,
+            sub: "Confirms sibling and petitioner share the same household",
+            tags: [
+              { cls: "tag-hh", label: "Household Member" },
+              { cls: "tag-res", label: "Shared Residence" },
+            ],
+            guideKey: "shared-residence",
+            group: "conditional",
+          });
+          break;
+
+        case "other-relative":
+        case "other-hh":
+        default:
+          items.push({
+            id: `hh${i}-residence`,
+            icon: "home",
+            title: `Proof of Shared Residence — ${label}`,
+            sub: "Demonstrates the shared-household basis for including their income",
+            tags: [
+              { cls: "tag-hh", label: "Household Member" },
+              { cls: "tag-res", label: "Shared Residence" },
+            ],
+            guideKey: "shared-residence",
+            group: "required",
+          });
+          items.push({
+            id: `hh${i}-family-link`,
+            icon: "link",
+            title: `Supporting Family-Link Evidence — ${label}`,
+            sub: "Civil records or affidavit establishing the household connection",
+            tags: [
+              { cls: "tag-hh", label: "Household Member" },
+              { cls: "tag-rel", label: "Relationship Proof" },
+            ],
+            guideKey: "family-link",
+            group: "required",
+          });
+          items.push({
+            id: `hh${i}-id`,
+            icon: "id",
+            title: `Identity Document — ${label}`,
+            sub: "Government-issued ID for the household member",
+            tags: [
+              { cls: "tag-hh", label: "Household Member" },
+              { cls: "tag-id", label: "Identity" },
+              { cls: "tag-gov", label: "Govt Record" },
+            ],
+            guideKey: "id-doc-hh",
+            group: "conditional",
+          });
+          break;
+      }
+    }
+    return items;
+  };
+
+  const renderHouseholdBuilder = () => {
+    const allItems = getHhDocItems(hhCount, hhRelationships);
+    const total = allItems.length;
+    const reviewed = allItems.filter(
+      (item) => hhDocsStatus[item.id] === "reviewed",
+    ).length;
+    const progressPct = total > 0 ? Math.round((reviewed / total) * 100) : 0;
+
+    return (
+      <div className="flex flex-col mt-4">
+        <div className="flex gap-[7px] flex-wrap mb-7">
+          <span className="text-[11px] font-semibold tracking-wider uppercase px-3 py-[2px] rounded-full bg-[#f3f0fb] text-[#4a2d8a] border border-[#c9bef2]">
+            CEAC Portal
+          </span>
+          <span className="text-[11px] font-semibold tracking-wider uppercase px-3 py-[2px] rounded-full bg-[#fff7ed] text-[#b45309] border border-[#fed7aa]">
+            Financial Sponsorship
+          </span>
+          <span className="text-[11px] font-semibold tracking-wider uppercase px-3 py-[2px] rounded-full bg-[#e8f5ef] text-[#15744f] border border-[#a8d9be]">
+            Interactive Checklist
+          </span>
+        </div>
+
+        {/* DISTINCTION CARDS */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-7">
+          <div className="bg-[#e8f1fb] border-[1.5px] border-[#d0e4f7] rounded-[16px] p-4.5">
+            <div className="text-[10px] font-bold tracking-widest uppercase text-[#2d4a6e] mb-1.5">
+              Joint Sponsor
+            </div>
+            <div className="text-[15px] font-semibold text-[#0c1b33] mb-1.5 leading-tight">
+              Added in CEAC, no proof checklist
+            </div>
+            <div className="text-[13px] text-[#3a4f63] leading-relaxed">
+              A joint sponsor is an independent U.S. citizen or LPR who sponsors
+              separately. Added through the CEAC sponsorship flow —{" "}
+              <strong>no relationship-proof documents</strong> are typically
+              required from them.
+            </div>
+          </div>
+          <div className="bg-[#e8f5ef] border-[1.5px] border-[#a8d9be] rounded-[16px] p-4.5">
+            <div className="text-[10px] font-bold tracking-widest uppercase text-[#15744f] mb-1.5">
+              Household Member
+            </div>
+            <div className="text-[15px] font-semibold text-[#0e5c3c] mb-1.5 leading-tight">
+              Added in CEAC + relationship proof required
+            </div>
+            <div className="text-[13px] text-[#3a4f63] leading-relaxed">
+              A household member's income is used alongside the petitioner's.
+              Added through CEAC — and also requires{" "}
+              <strong>relationship-proof documentation</strong> showing their
+              connection to the sponsoring household.
+            </div>
+          </div>
+        </div>
+
+        {/* PRIMARY LAUNCH MODULE */}
+        <div className="bg-[#0e1e38] rounded-[16px] border border-white/7 shadow-[0_20px_60px_rgba(12,27,51,0.18)] overflow-hidden mb-6 relative">
+          <div className="absolute top-0 left-0 right-0 h-[2px] bg-linear-to-r from-primary via-[#6aa8f0] to-transparent opacity-70" />
+          <div className="p-8 md:p-[32px_34px_28px]">
+            <div className="flex items-start gap-4 mb-[22px]">
+              <div className="w-[46px] h-[46px] rounded-[11px] bg-white/6 border border-white/10 flex items-center justify-center shrink-0">
+                <Users className="text-white/75" size={22} />
+              </div>
+              <div>
+                <div className="text-[10px] font-bold tracking-widest uppercase text-white/35 mb-1">
+                  CEAC Guidance
+                </div>
+                <div className="text-[clamp(19px,2.8vw,23px)] font-serif text-white/92 leading-tight">
+                  Add sponsorship participants in CEAC
+                </div>
+              </div>
+            </div>
+            <div className="h-px bg-white/10 mb-5" />
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-[9px] mb-[26px]">
+              {[
+                "Access the affidavit support section",
+                "Add a household member or joint sponsor",
+                "Review what information CEAC needs",
+                "Return here to prepare relationship proof",
+              ].map((cue, idx) => (
+                <div
+                  key={idx}
+                  className="bg-white/6 border border-white/10 rounded-[10px] p-[11px_13px] flex items-start gap-[9px]"
+                >
+                  <div className="w-[5px] h-[5px] rounded-full bg-[#6aa8f0]/70 shrink-0 mt-[5px]" />
+                  <div className="text-[13px] text-white/55 leading-tight">
+                    {cue}
+                  </div>
+                </div>
+              ))}
+            </div>
+            <button
+              onClick={() => {
+                setTutorialIdx(0);
+                setIsTutorialOpen(true);
+              }}
+              className="w-full py-4 px-7 bg-[#3b7dd8] text-white rounded-[12px] text-[15px] font-semibold cursor-pointer hover:bg-[#3b7dd8] transition-all shadow-[0_4px_20px_rgba(47,111,212,0.35)] hover:shadow-[0_8px_32px_rgba(47,111,212,0.45)] hover:-translate-y-0.5 active:translate-y-0"
+            >
+              Start CEAC Guide
+            </button>
+          </div>
+        </div>
+
+        {/* SCENARIO BUILDER */}
+        <div className="bg-white border-[1.5px] border-[#d0e4f7] rounded-[16px] p-[22px] mb-[18px]">
+          <div className="text-[14px] font-semibold text-[#0c1b33] mb-4">
+            Define your scenario — who is involved in the sponsorship?
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <div className="flex flex-col">
+              <label className="text-[11px] font-semibold text-[#6b8097] uppercase tracking-wider mb-1.5 ml-0.5">
+                Number of joint sponsors
+              </label>
+              <select
+                value={jsCount}
+                onChange={(e) => setJsCount(parseInt(e.target.value))}
+                className="w-full p-[9px_12px] border-[1.5px] border-[#d0e4f7] rounded-[10px] text-[14px] bg-white outline-none focus:border-primary appearance-none bg-[position:right_10px_center] bg-no-repeat pr-[30px]"
+                style={{
+                  backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236b8097' stroke-width='2' stroke-linecap='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E")`,
+                }}
+              >
+                <option value="0">0 — not using a joint sponsor</option>
+                <option value="1">1 joint sponsor</option>
+                <option value="2">2 joint sponsors</option>
+              </select>
+            </div>
+            <div className="flex flex-col">
+              <label className="text-[11px] font-semibold text-[#6b8097] uppercase tracking-wider mb-1.5 ml-0.5">
+                Number of household members
+              </label>
+              <select
+                value={hhCount}
+                onChange={(e) => setHhCount(parseInt(e.target.value))}
+                className="w-full p-[9px_12px] border-[1.5px] border-[#d0e4f7] rounded-[10px] text-[14px] bg-white outline-none focus:border-primary appearance-none bg-[position:right_10px_center] bg-no-repeat pr-[30px]"
+                style={{
+                  backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236b8097' stroke-width='2' stroke-linecap='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E")`,
+                }}
+              >
+                <option value="0">0 — no household members</option>
+                <option value="1">1 household member</option>
+                <option value="2">2 household members</option>
+                <option value="3">3 household members</option>
+              </select>
+            </div>
+          </div>
+
+          {hhCount > 0 && (
+            <div className="mt-4 pt-4 border-t border-[#d0e4f7]">
+              <div className="text-[11px] font-bold text-[#6b8097] uppercase tracking-widest mb-3 ml-0.5">
+                Household member relationship to the petitioner
+              </div>
+              <div className="flex flex-col gap-2">
+                {Array.from({ length: hhCount }).map((_, idx) => {
+                  const num = idx + 1;
+                  return (
+                    <div
+                      key={num}
+                      className="flex flex-col sm:flex-row sm:items-center gap-2"
+                    >
+                      <span className="text-[13px] font-medium text-[#3a4f63] min-w-[140px]">
+                        Household Member {num}
+                      </span>
+                      <select
+                        value={hhRelationships[num] || "other-hh"}
+                        onChange={(e) =>
+                          setHhRelationships((prev) => ({
+                            ...prev,
+                            [num]: e.target.value,
+                          }))
+                        }
+                        className="flex-1 p-[8px_10px] border-[1.5px] border-[#d0e4f7] rounded-[10px] text-[13px] bg-white outline-none focus:border-primary appearance-none bg-[position:right_8px_center] bg-no-repeat pr-[26px]"
+                        style={{
+                          backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='11' height='11' viewBox='0 0 24 24' fill='none' stroke='%236b8097' stroke-width='2' stroke-linecap='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E")`,
+                        }}
+                      >
+                        <option value="spouse">Spouse of petitioner</option>
+                        <option value="child">Child of petitioner</option>
+                        <option value="parent">Parent of petitioner</option>
+                        <option value="sibling">Sibling of petitioner</option>
+                        <option value="other-relative">Other relative</option>
+                        <option value="other-hh">Other household member</option>
+                      </select>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* SUMMARY BANNER */}
+        {(jsCount > 0 || hhCount > 0) && (
+          <div className="bg-[#0c1b33] rounded-[16px] p-[16px_20px] mb-5 flex flex-wrap gap-x-8 gap-y-4">
+            <div className="flex flex-col">
+              <div className="text-[10px] font-semibold tracking-widest uppercase text-white/40 mb-0.5">
+                Joint Sponsors
+              </div>
+              <div className="text-[14px] font-semibold text-white/90">
+                {jsCount === 0
+                  ? "None"
+                  : `${jsCount} joint sponsor${jsCount > 1 ? "s" : ""}`}
+              </div>
+              {jsCount > 0 && (
+                <div className="text-[11px] text-white/50 mt-0.5">
+                  No relationship-proof checklist required
+                </div>
+              )}
+            </div>
+            <div className="flex flex-col">
+              <div className="text-[10px] font-semibold tracking-widest uppercase text-white/40 mb-0.5">
+                Household Members
+              </div>
+              <div className="text-[14px] font-semibold text-white/90">
+                {hhCount === 0
+                  ? "None"
+                  : `${hhCount} household member${hhCount > 1 ? "s" : ""}`}
+              </div>
+              {hhCount > 0 && (
+                <div className="text-[11px] text-white/50 mt-0.5">
+                  Relationship-proof checklist generated below
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* PROGRESS AND CHECKLIST */}
+        {hhCount > 0 ? (
+          <div className="flex flex-col">
+            <div className="flex items-center gap-3 mb-7">
+              <div className="flex-1 h-[5px] bg-[#d0e4f7] rounded-[10px] overflow-hidden">
+                <div
+                  className="h-full bg-linear-to-r from-primary to-[#6aa8f0] transition-all duration-500 rounded-[10px]"
+                  style={{ width: `${progressPct}%` }}
+                />
+              </div>
+              <div className="text-[12px] font-medium text-[#6b8097] whitespace-nowrap">
+                {reviewed} of {total} reviewed
+              </div>
+            </div>
+
+            {(() => {
+              const req = allItems.filter((i) => i.group === "required");
+              const cond = allItems.filter((i) => i.group === "conditional");
+
+              return (
+                <div className="flex flex-col gap-7">
+                  {req.length > 0 && (
+                    <div className="flex flex-col gap-3">
+                      <div className="flex items-center gap-[10px]">
+                        <span className="text-[11px] font-semibold tracking-widest uppercase text-[#6b8097]">
+                          Required
+                        </span>
+                        <span className="text-[10px] font-semibold tracking-widest uppercase px-[9px] py-[3px] rounded-full bg-[#ffeaea] text-[#a01c1c] border border-[#f5bebe]">
+                          Required
+                        </span>
+                        <div className="flex-1 h-px bg-[#d0e4f7]" />
+                      </div>
+                      {req.map((item) => renderHhDocCard(item))}
+                    </div>
+                  )}
+                  {cond.length > 0 && (
+                    <div className="flex flex-col gap-3">
+                      <div className="flex items-center gap-[10px]">
+                        <span className="text-[11px] font-semibold tracking-widest uppercase text-[#6b8097]">
+                          Required if Applicable
+                        </span>
+                        <span className="text-[10px] font-semibold tracking-widest uppercase px-[9px] py-[3px] rounded-full bg-[#fef8e8] text-[#8a6200] border border-[#f0d98a]">
+                          Required if Applicable
+                        </span>
+                        <div className="flex-1 h-px bg-[#d0e4f7]" />
+                      </div>
+                      {cond.map((item) => renderHhDocCard(item))}
+                    </div>
+                  )}
+                </div>
+              );
+            })()}
+          </div>
+        ) : jsCount > 0 ? (
+          <div className="bg-white border-[1.5px] border-dashed border-[#d0e4f7] rounded-[16px] p-[32px_24px] text-center mb-5">
+            <div className="text-[14px] font-semibold text-[#6b8097] mb-1.5">
+              No relationship-proof checklist needed
+            </div>
+            <div className="text-[13px] text-[#6b8097]">
+              Joint sponsors do not require relationship documentation. Your
+              I-864 forms are the primary requirement — see Step 5 for those.
+            </div>
+          </div>
+        ) : (
+          <div className="bg-white border-[1.5px] border-dashed border-[#d0e4f7] rounded-[16px] p-[32px_24px] text-center mb-5">
+            <div className="text-[14px] font-semibold text-[#6b8097] mb-1.5">
+              Set your scenario above
+            </div>
+            <div className="text-[13px] text-[#6b8097]">
+              Select the number of joint sponsors and household members to see
+              the relevant checklist.
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  const renderHhDocCard = (item: any) => {
+    const st = hhDocsStatus[item.id] || "not-started";
+    const stLabel =
+      st === "reviewed"
+        ? "✓ Reviewed"
+        : st === "in-progress"
+          ? "In progress"
+          : "Open guide";
+
+    return (
+      <button
+        key={item.id}
+        onClick={() => {
+          if (hhDocsStatus[item.id] === "not-started") {
+            const next = { ...hhDocsStatus, [item.id]: "in-progress" };
+            setHhDocsStatus(next);
+          }
+          setActiveHhDoc(item);
+          setIsHhDocGuideOpen(true);
+        }}
+        className={`w-full group bg-white border-[1.5px] border-[#d0e4f7] rounded-[16px] p-[17px_20px] flex items-center gap-[15px] text-left transition-all hover:border-primary hover:shadow-[0_4px_20px_rgba(47,111,212,0.1)] hover:-translate-y-px active:translate-y-0 ${
+          st === "reviewed"
+            ? "bg-[#e8f5ef] border-[#a8d9be]"
+            : st === "in-progress"
+              ? "bg-[#fef8e8] border-[#f0d98a]"
+              : ""
+        }`}
+      >
+        <div
+          className={`w-[38px] h-[38px] rounded-[9px] bg-[#e8f1fb] border border-[#d0e4f7] flex items-center justify-center shrink-0 text-[16px] transition-all group-hover:bg-primary/10 group-hover:border-primary/30 ${
+            st === "reviewed" ? "bg-[#e8f5ef] border-[#a8d9be]" : ""
+          }`}
+        >
+          {getIcon(item.icon)}
+        </div>
+        <div className="flex-1 min-w-0">
+          <div className="text-[14px] font-semibold text-[#0c1b33] mb-0.5 leading-tight">
+            {item.title}
+          </div>
+          <div className="text-[12px] text-[#6b8097] leading-tight">
+            {item.sub}
+          </div>
+          <div className="flex gap-[5px] mt-[6px] flex-wrap">
+            {item.tags.map((tag: any, idx: number) => {
+              const tagMap: Record<string, string> = {
+                "tag-hh": "bg-[#fff7ed] text-[#b45309] border-[#fed7aa]",
+                "tag-js": "bg-[#f3f0fb] text-[#4a2d8a] border-[#c9bef2]",
+                "tag-rel": "bg-[#e8f1fb] text-[#2d4a6e] border-[#d0e4f7]",
+                "tag-res": "bg-[#e8f5ef] text-[#15744f] border-[#a8d9be]",
+                "tag-id": "bg-[#eef3fa] text-[#3a4f63] border-[#d0e4f7]",
+                "tag-gov": "bg-[#fff7ed] text-[#b45309] border-[#fed7aa]",
+              };
+              return (
+                <span
+                  key={idx}
+                  className={`text-[10px] font-semibold px-2 py-[2px] rounded-full tracking-wider border ${
+                    tagMap[tag.cls] || "bg-[#f4f7fb] text-[#6b8097]"
+                  }`}
+                >
+                  {tag.label}
+                </span>
+              );
+            })}
+          </div>
+        </div>
+        <div
+          className={`text-[11px] font-semibold px-2.5 py-1 rounded-full whitespace-nowrap shrink-0 transition-all border ${
+            st === "reviewed"
+              ? "bg-[#e8f5ef] text-[#15744f] border-[#a8d9be]"
+              : st === "in-progress"
+                ? "bg-[#fef8e8] text-[#8a6200] border-[#f0d98a]"
+                : "bg-[#f4f7fb] text-[#6b8097] border-[#d0e4f7]"
+          }`}
+        >
+          {stLabel}
+        </div>
+      </button>
+    );
+  };
 
   const activeStepsInChapter = useMemo(() => {
     if (!currentChapter) return [];
@@ -197,7 +1287,8 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
       showQuiz ||
       isCivilDocGuideOpen ||
       isNvcFeeModalOpen ||
-      isCeacModalOpen
+      isCeacModalOpen ||
+      isSubmissionGuideOpen
     ) {
       document.body.style.overflow = "hidden";
     } else {
@@ -213,6 +1304,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
     isCeacModalOpen,
     isNvcFeeModalOpen,
     isCivilDocGuideOpen,
+    isSubmissionGuideOpen,
   ]);
 
   const handleSaveCredentials = async (data: {
@@ -237,6 +1329,9 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
 
       if (data.portalType === "USCIS" && sId === "step_1_6") {
         if (!isCompleted) actions.toggleComplete("step_1_6");
+      }
+      if (data.portalType === "NVC" && sId === "step_2_1") {
+        if (!isCompleted) actions.toggleComplete("step_2_1");
       }
     } catch {
       toast.error("Failed to save credentials. Please try again.");
@@ -470,11 +1565,19 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
         const reviewedCount = Object.values(next).filter(
           (s) => s === "reviewed",
         ).length;
-        if (reviewedCount === total && !isCompleted) {
-          handleToggleComplete();
+        if (reviewedCount >= total) {
+          if (!isCompleted) handleToggleComplete();
         }
       }
     }
+  };
+
+  const handleToggleSubmissionCheck = (idx: number) => {
+    const next = {
+      ...submissionChecklistStatus,
+      [idx]: !submissionChecklistStatus[idx],
+    };
+    actions.updateMetadata({ submissionChecklistStatus: next });
   };
 
   const handleNavigate = (stepId: string) => {
@@ -491,61 +1594,294 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
     }
   };
 
+  const renderAwaitingReviewStep = () => {
+    const data = AWAITING_REVIEW_DATA;
+
+    return (
+      <div className="flex flex-col items-center w-full min-h-screen">
+        <style jsx global>{`
+          @keyframes pulse-custom {
+            0%,
+            100% {
+              opacity: 0.4;
+              transform: scale(0.9);
+            }
+            50% {
+              opacity: 1;
+              transform: scale(1.15);
+            }
+          }
+          .animate-pulse-custom {
+            animation: pulse-custom 2.2s ease-in-out infinite;
+          }
+          .animate-pulse-delayed {
+            animation: pulse-custom 2.2s ease-in-out infinite;
+            animation-delay: 0.2s;
+          }
+        `}</style>
+
+        {/* Page Shell */}
+        <div className="w-full max-w-[720px] px-[24px] pt-[52px] pb-[96px] flex flex-col mx-auto">
+          {/* Eyebrow */}
+          <div className="flex items-center gap-[8px] mb-[6px] animate-in fade-in slide-in-from-top-2 duration-300">
+            <span className="text-[11px] font-[600] uppercase tracking-[0.12em] text-[#6b8097]">
+              {data.eyebrow.chapter}
+            </span>
+            <span className="text-[11px] text-[#b8d4f0]">›</span>
+            <span className="text-[11px] font-[600] uppercase tracking-[0.08em] text-[#2f6fd4]">
+              {data.eyebrow.step}
+            </span>
+          </div>
+
+          <h1
+            className="text-[clamp(26px,4vw,34px)] font-black text-[#0c1b33] leading-[1.2] mb-[10px] animate-in fade-in slide-in-from-top-2 duration-300 delay-[40ms]"
+            style={{ fontFamily: "'DM Serif Display', serif" }}
+          >
+            {data.title}
+          </h1>
+
+          <p className="text-[#3a4f63] text-[15px] leading-[1.7] mb-[22px] max-w-[500px] animate-in fade-in slide-in-from-top-2 duration-300 delay-[80ms]">
+            {data.description}
+          </p>
+
+          <div className="flex flex-wrap gap-[7px] mb-[32px] animate-in fade-in slide-in-from-top-2 duration-300 delay-[120ms]">
+            {data.chips.map((chip, i) => (
+              <span
+                key={i}
+                className={`text-[11px] font-semibold uppercase tracking-[0.06em] px-[12px] py-[5px] rounded-full border whitespace-nowrap ${
+                  chip.type === "nvc"
+                    ? "bg-[#f3f0fb] text-[#4a2d8a] border-[#c9bef2]"
+                    : chip.type === "status"
+                      ? "bg-[#e8f1fb] text-[#2d4a6e] border-[#d0e4f7]"
+                      : "bg-[#e8f6f6] text-[#0d6b6b] border-[#9fd6d6]"
+                }`}
+              >
+                {chip.label}
+              </span>
+            ))}
+          </div>
+
+          {/* Status Card (Navy) */}
+          <div className="relative bg-[#0c1b33] rounded-[16px] p-[24px_26px] mb-[16px] overflow-hidden shadow-[0_20px_60px_rgba(12,27,51,0.18),0_4px_16px_rgba(12,27,51,0.12)] animate-in fade-in slide-in-from-top-2 duration-300 delay-[160ms]">
+            {/* Top Accent Stripe */}
+            <div className="absolute top-0 left-0 right-0 h-[2px] bg-linear-to-r from-[#2f6fd4] via-[#6aa8f0] to-transparent opacity-80" />
+
+            <div className="text-[10px] font-[700] uppercase tracking-[0.12em] text-white/40 mb-[8px]">
+              {data.statusCard.label}
+            </div>
+
+            <h2
+              className="text-[20px] font-serif text-white/92 leading-tight mb-[16px] flex items-center gap-[8px]"
+              style={{ fontFamily: "'DM Serif Display', serif" }}
+            >
+              <span className="w-[7px] h-[7px] rounded-full bg-[#6aa8f0] animate-pulse-custom shrink-0" />
+              {data.statusCard.heading}
+            </h2>
+
+            <div className="grid grid-cols-2 min-[480px]:grid-cols-3 gap-[12px]">
+              {data.statusCard.grid.map((item, i) => (
+                <div key={i} className="flex flex-col gap-[3px]">
+                  <div className="text-[10px] font-semibold uppercase tracking-[0.08em] text-white/38">
+                    {item.label}
+                  </div>
+                  <div className="text-[13px] font-semibold text-white/88">
+                    {item.value}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Info Card: What NVC is reviewing */}
+          <div className="bg-white border-[1.5px] border-[#d0e4f7] rounded-[16px] p-[20px_22px] mb-[14px] shadow-[0_4px_24px_rgba(12,27,51,0.08)] animate-in fade-in slide-in-from-top-2 duration-300 delay-[200ms]">
+            <div className="flex items-center gap-[10px] mb-[14px]">
+              <div className="w-[36px] h-[36px] rounded-[9px] bg-[#e8f1fb] border border-[#d0e4f7] flex items-center justify-center shrink-0">
+                <Search
+                  size={17}
+                  className="text-[#2f6fd4]"
+                  strokeWidth={1.7}
+                />
+              </div>
+              <h3 className="text-[14px] font-[600] text-[#0c1b33]">
+                {data.reviewItems.title}
+              </h3>
+            </div>
+            <div className="flex flex-col gap-[7px]">
+              {data.reviewItems.items.map((item, i) => (
+                <div
+                  key={i}
+                  className="flex items-start gap-[9px] text-[13px] text-[#3a4f63] leading-[1.5]"
+                >
+                  <div className="w-[4px] h-[4px] rounded-full bg-[#b8d4f0] mt-[5px] shrink-0" />
+                  <span>{item}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Two-Column Section */}
+          <div className="grid grid-cols-1 min-[520px]:grid-cols-2 gap-[14px] mb-[14px] animate-in fade-in slide-in-from-top-2 duration-300 delay-[240ms]">
+            {/* While You Wait */}
+            <div className="bg-white border-[1.5px] border-[#d0e4f7] rounded-[16px] p-[20px_22px] shadow-[0_4px_24px_rgba(12,27,51,0.08)]">
+              <div className="flex items-center gap-[10px] mb-[14px]">
+                <div className="w-[36px] h-[36px] rounded-[9px] bg-[#e8f5ef] border border-[#a8d9be] flex items-center justify-center shrink-0">
+                  <Clock
+                    size={17}
+                    className="text-[#15744f]"
+                    strokeWidth={1.7}
+                  />
+                </div>
+                <h3 className="text-[14px] font-[600] text-[#0c1b33]">
+                  {data.whileYouWait.title}
+                </h3>
+              </div>
+              <div className="flex flex-col gap-[7px]">
+                {data.whileYouWait.items.map((item, i) => (
+                  <div
+                    key={i}
+                    className="flex items-start gap-[9px] text-[13px] text-[#3a4f63] leading-[1.5]"
+                  >
+                    <div className="w-[4px] h-[4px] rounded-full bg-[#b8d4f0] mt-[5px] shrink-0" />
+                    <span>{item}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Timeline */}
+            <div className="bg-white border-[1.5px] border-[#d0e4f7] rounded-[16px] p-[20px_22px] shadow-[0_4px_24px_rgba(12,27,51,0.08)]">
+              <div className="flex items-center gap-[10px] mb-[14px]">
+                <div className="w-[36px] h-[36px] rounded-[9px] bg-[#e8f1fb] border border-[#d0e4f7] flex items-center justify-center shrink-0">
+                  <Scale
+                    size={17}
+                    className="text-[#2f6fd4]"
+                    strokeWidth={1.7}
+                  />
+                </div>
+                <h3 className="text-[14px] font-[600] text-[#0c1b33]">
+                  {data.timeline.title}
+                </h3>
+              </div>
+              <div className="flex flex-col gap-0 relative pl-[18px]">
+                {/* Vertical Line */}
+                <div className="absolute left-[6px] top-[10px] bottom-[10px] w-[2px] bg-[#d0e4f7] rounded-[2px]" />
+
+                <div className="flex flex-col gap-[10px]">
+                  {data.timeline.steps.map((step, i) => (
+                    <div key={i} className="flex items-center gap-[8px]">
+                      {step.status === "completed" ? (
+                        <div className="w-[12px] h-[12px] rounded-full bg-[#15744f] flex-shrink-0 z-10 ml-[-6px]" />
+                      ) : step.status === "current" ? (
+                        <div className="w-[12px] h-[12px] rounded-full border-2 border-[#2f6fd4] bg-white flex-shrink-0 z-10 ml-[-6px] animate-pulse-custom" />
+                      ) : (
+                        <div className="w-[12px] h-[12px] rounded-full bg-[#d0e4f7] flex-shrink-0 z-10 ml-[-6px]" />
+                      )}
+                      <span
+                        className={`text-[12px] ${
+                          step.status === "completed"
+                            ? "text-[#0e5c3c] font-semibold"
+                            : step.status === "current"
+                              ? "text-[#2f6fd4] font-semibold"
+                              : "text-[#6b8097]"
+                        }`}
+                      >
+                        {step.label}
+                        {step.status === "current" ? " ← you are here" : ""}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Alert Card: Corrections */}
+          <div className="bg-[#fef8e8] border-[1.5px] border-[#f0d98a] rounded-[16px] p-[18px_20px] mb-[16px] animate-in fade-in slide-in-from-top-2 duration-300 delay-[280ms]">
+            <div className="flex items-center gap-[9px] mb-[10px]">
+              <span className="text-[18px]">📋</span>
+              <h3 className="text-[14px] font-[600] text-[#8a6200]">
+                {data.correctionsAlert.title}
+              </h3>
+            </div>
+            <div className="flex flex-col gap-[7px]">
+              {data.correctionsAlert.items.map((item, i) => (
+                <div
+                  key={i}
+                  className="flex items-start gap-[8px] text-[13px] text-[#8a6200] leading-[1.5]"
+                >
+                  <div className="w-[4px] h-[4px] rounded-full bg-[#8a6200] mt-[5px] shrink-0" />
+                  <span>{item}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Disclaimer */}
+          <p className="text-[11.5px] text-[#6b8097] leading-[1.65] text-center pt-[4px] mt-[8px] animate-in fade-in slide-in-from-top-2 duration-300 delay-[320ms]">
+            {data.disclaimer}
+          </p>
+        </div>
+      </div>
+    );
+  };
+
   const renderToolStep = () => {
-    const tool = currentStep.tool_data;
+    const tool = currentStep.tool_data as any;
     if (!tool) return null;
+
+    if (tool.type === "awaiting_review") {
+      return renderAwaitingReviewStep();
+    }
 
     // Theme detection based on icon or ID
     const isBeneficiaryTheme =
-      tool.launch_module.icon === "user" ||
+      tool.launch_module?.icon === "user" ||
       sId === "step_1_5" ||
       sId === "step_1_2_b";
     const accentColor = "#2f6fd4";
     // const accentColor = isBeneficiaryTheme ? "#0f7373" : "#2f6fd4";
     // Background colour: explicit bg_color wins, then beneficiary/default theme
     const launchBg =
-      tool.launch_module.bg_color ??
+      tool.launch_module?.bg_color ??
       (isBeneficiaryTheme ? "#12192e" : "#0e1e38");
 
     // Accent stripe: data-driven via stripe_variant
     const stripeGradient =
-      tool.launch_module.stripe_variant === "gold"
+      tool.launch_module?.stripe_variant === "gold"
         ? "linear-gradient(90deg, #2f6fd4 0%, #d4a82f 55%, transparent 100%)"
-        : tool.launch_module.stripe_variant === "green"
+        : tool.launch_module?.stripe_variant === "green"
           ? "linear-gradient(90deg, #2f6fd4 0%, #15744f 60%, transparent 100%)"
           : isBeneficiaryTheme
             ? "linear-gradient(90deg, #2f6fd4 0%, #20a8a8 55%, transparent 100%)"
             : "linear-gradient(90deg, #2f6fd4 0%, #6aa8f0 60%, transparent 100%)";
 
     const IconComponent =
-      tool.launch_module.icon === "form"
+      tool.launch_module?.icon === "form"
         ? FileText
-        : tool.launch_module.icon === "calc"
+        : tool.launch_module?.icon === "calc"
           ? Scale
-          : tool.launch_module.icon === "search"
+          : tool.launch_module?.icon === "search"
             ? Search
-            : tool.launch_module.icon === "user"
+            : tool.launch_module?.icon === "user"
               ? User
-              : tool.launch_module.icon === "shield"
+              : tool.launch_module?.icon === "shield"
                 ? ShieldCheck
-                : tool.launch_module.icon === "portal"
+                : tool.launch_module?.icon === "portal"
                   ? ExternalLink
-                  : tool.launch_module.icon === "upload"
+                  : tool.launch_module?.icon === "upload"
                     ? Upload
-                    : tool.launch_module.icon === "payment"
+                    : tool.launch_module?.icon === "payment"
                       ? CreditCard
-                      : tool.launch_module.icon === "mail"
-                        ? Mail
-                        : tool.launch_module.icon === "file"
-                          ? FileText
-                          : CheckCircle;
+                      : tool.launch_module?.icon === "check"
+                        ? CheckSquare
+                        : CheckCircle;
 
     return (
       <div className="animate-in fade-in slide-in-from-bottom-4 duration-740 flex flex-col items-center w-full min-h-full">
         {/* Page Shell */}
         <div className="w-full max-w-[680px] px-[24px] pb-[96px] flex flex-col">
           {/* Eyebrow / Breadcrumb Row */}
-          <div className="flex items-center gap-[8px] mb-[6px]">
+          <div className="flex items-center gap-[8px]">
             <span className="text-[11px] font-[600] uppercase tracking-widest text-[#636b97]">
               Chapter {currentChapter?.chapter_number || state.currentStage + 1}{" "}
               · {currentChapter?.chapter_name || currentChapter?.name}
@@ -562,14 +1898,14 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
 
           {/* Title + Description */}
           <h1
-            className="text-[clamp(28px,4.5vw,38px)] font-black text-[#0c1b33] leading-normal tracking-[-0.01em] mb-[12px]"
+            className="text-[clamp(28px,4.5vw,38px)] font-black text-[#0c1b33] leading-normal tracking-[-0.01em] mb-[6px]"
             style={{ fontFamily: "'DM Serif Display', serif" }}
           >
             {currentStep.step_name}
           </h1>
 
           {currentStep.step_description && (
-            <p className="text-[#3a4f63] text-[15px] leading-[1.7] mb-[24px] max-w-[480px]">
+            <p className="text-[#3a4f63] text-[15px] leading-[1.7] mb-[10px] max-w-[480px]">
               {currentStep.step_description}
             </p>
           )}
@@ -589,9 +1925,9 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
           )}
 
           {/* Meta Chips */}
-          <div className="flex flex-wrap gap-[7px] mb-[32px]">
-            {tool.chips ? (
-              tool.chips.map((chip: any, i: number) => (
+          {tool.chips && (
+            <div className="flex flex-wrap gap-[7px] mb-[32px]">
+              {tool.chips.map((chip: any, i: number) => (
                 <span
                   key={i}
                   className={`text-[11px] font-[600] uppercase tracking-[0.06em] px-[12px] py-[5px] rounded-full border ${
@@ -603,43 +1939,32 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                         ? "bg-[#f3f0fb] text-[#4a2d8a] border-[#c9bef2]"
                         : chip.type === "pay"
                           ? "bg-[#fffbec] text-[#c49a0a] border-[#e8d47a]"
-                          : chip.type === "final"
+                          : chip.type === "final" || chip.type === "green"
                             ? "bg-[#e8f5ef] text-[#15744f] border-[#a8d9be]"
-                            : chip.type === "uscis" ||
-                                chip.uscis === "uscis" ||
-                                chip.type === "path"
-                              ? "bg-[#fff7ed] text-[#b45309] border-[#fed7aa]"
-                              : "bg-[#fafcff] text-[#6b8097] border-[#d0e4f7]"
+                            : chip.type === "purple"
+                              ? "bg-[#f3f0fb] text-[#4a2d8a] border-[#c9bef2]"
+                              : chip.type === "sky"
+                                ? "bg-[#e8f1fb] text-[#2d4a6e] border-[#d0e4f7]"
+                                : chip.type === "gold"
+                                  ? "bg-[#fef8e8] text-[#8a6200] border-[#f0d98a]"
+                                  : chip.type === "uscis" ||
+                                      chip.uscis === "uscis" ||
+                                      chip.type === "path"
+                                    ? "bg-[#fff7ed] text-[#b45309] border-[#fed7aa]"
+                                    : "bg-[#fafcff] text-[#6b8097] border-[#d0e4f7]"
                   }`}
                 >
                   {chip.label}
                 </span>
-              ))
-            ) : (
-              <>
-                <span
-                  className={`text-[11px] font-[600] uppercase tracking-[0.06em] px-[12px] py-[5px] rounded-full border ${
-                    isBeneficiaryTheme
-                      ? "bg-[#e9f4ee] text-[#1a5f3f] border-[#b0dcc0]"
-                      : "bg-[#e8f1fb] text-primary/80 border-[#d0e4f7]"
-                  }`}
-                >
-                  {isBeneficiaryTheme ? "Beneficiary" : "Petitioner"}
-                </span>
-                <span className="text-[11px] font-[600] uppercase tracking-[0.06em] px-[12px] py-[5px] rounded-full border bg-[#f3f0fb] text-[#4a2d8a] border-[#c9bef2]">
-                  Rahvana Tool
-                </span>
-                <span className="text-[11px] font-[600] uppercase tracking-[0.06em] px-[12px] py-[5px] rounded-full border bg-[#fafcff] text-[#6b8097] border-[#d0e4f7]">
-                  Opens in new tab
-                </span>
-              </>
-            )}
-          </div>
+              ))}
+            </div>
+          )}
 
           {/* ALERT NOTE (Step 3 SPECIFIC) */}
           {tool.alert_note && (
             <div className="flex items-center gap-[10px] bg-[#fef8e8] border border-[#f0d98a] rounded-[10px] padding-12 px-[16px] py-[12px] mb-[28px]">
-              <div className="text-[14px] shrink-0">⚡</div>
+              <Zap className="h-4 w-4 text-amber-500" />
+              <div className="text-[14px] shrink-0"></div>
               <div className="text-[13px] text-[#8a6200] leading-normal">
                 {tool.alert_note}
               </div>
@@ -660,7 +1985,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                       : "Tool launched in a new tab")}
                 </div>
                 <div className="text-[12px] text-[#3a4f63] leading-normal">
-                  {tool.launch_module.return_note?.body ||
+                  {tool.launch_module?.return_note?.body ||
                     (sId === "step_1_6"
                       ? "Complete the sign-up there, then return here to save your credentials."
                       : "Complete the form at your own pace. Return here when you're done to continue the roadmap.")}
@@ -669,216 +1994,1809 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
             </div>
           )}
 
-          {/* PRIMARY LAUNCH MODULE */}
-          <div
-            className="relative bg-[#0e1e38] rounded-[16px] border border-white/7 overflow-hidden mb-[20px]"
-            style={{ backgroundColor: launchBg }}
-          >
-            {/* Accent Stripe */}
-            <div
-              className="absolute top-0 left-0 right-0 h-[2px] opacity-70"
-              style={{ background: stripeGradient }}
-            />
-
-            <div className="p-[36px_36px_32px]">
-              {/* Module Header */}
-              <div className="flex items-start gap-[16px] mb-[26px]">
-                <div className="w-[48px] h-[48px] rounded-[12px] bg-white/[0.055] border border-white/10 flex items-center justify-center shrink-0">
-                  <IconComponent
-                    size={22}
-                    className="text-white/75"
-                    strokeWidth={1.6}
-                  />
-                </div>
-                <div className="flex-1">
-                  <div className="text-[10px] font-bold uppercase tracking-widest text-white/35 mb-[5px]">
-                    {tool.launch_module.eyebrow}
+          {/* SPONSORSHIP CALCULATOR LAUNCH MODULE (Step 5 Specific) */}
+          {tool.type === "sponsorship_calculator" && (
+            <div className="relative bg-[#0e1e38] rounded-[16px] border border-white/7 overflow-hidden mb-[28px] shadow-[0_20px_60px_rgba(12,27,51,0.18),0_4px_16px_rgba(12,27,51,0.12)]">
+              <div className="absolute top-0 left-0 right-0 h-[2px] bg-linear-to-r from-primary to-[#6aa8f0] opacity-70" />
+              <div className="p-[32px_34px_28px]">
+                <div className="flex items-start gap-[16px] mb-[22px]">
+                  <div className="w-[46px] h-[46px] rounded-[11px] bg-white/5 border border-white/10 flex items-center justify-center shrink-0">
+                    <Calculator
+                      size={22}
+                      className="text-white/75"
+                      strokeWidth={1.6}
+                    />
                   </div>
-                  <h2
-                    className="text-[clamp(20px,3vw,24px)] font-serif text-white/90 leading-[1.25]"
-                    style={{ fontFamily: "'DM Serif Display', serif" }}
-                  >
-                    {tool.launch_module.heading}
-                  </h2>
-                </div>
-              </div>
-
-              <div className="h-[1px] bg-white/9 mb-[22px]" />
-
-              {/* Fee Block (Step 9 — Pay Filing Fee) */}
-              {tool.fee_block && (
-                <div className="flex items-center gap-[16px] bg-white/[0.05] border border-white/[0.09] rounded-[10px] p-[16px_18px] mb-[16px] flex-wrap">
-                  <div className="flex flex-col gap-[2px] shrink-0">
-                    <div className="text-[10px] font-bold uppercase tracking-widest text-white/35">
-                      {tool.fee_block.label}
+                  <div>
+                    <div className="text-[10px] font-bold uppercase tracking-widest text-white/35 mb-[4px]">
+                      {tool.launch_module.label ||
+                        "Affidavit Support Calculator"}
                     </div>
                     <div
-                      className="text-[32px] font text-white/90 tracking-[-0.02em] leading-none"
+                      className="text-[clamp(19px,2.8vw,23px)] font-serif text-white/90 leading-[1.25]"
                       style={{ fontFamily: "'DM Serif Display', serif" }}
                     >
-                      {tool.fee_block.amount}
-                    </div>
-                    <div className="text-[11px] text-white/35 mt-[2px]">
-                      {tool.fee_block.note}
+                      {tool.launch_module.title ||
+                        "Determine your sponsorship setup first"}
                     </div>
                   </div>
-                  <div className="w-[1px] h-[48px] bg-white/12 shrink-0 hidden sm:block" />
-                  <div className="flex flex-col gap-[6px] flex-1">
-                    {tool.fee_block.details.map((d: string, i: number) => (
+                </div>
+                <div className="h-px bg-white/9 mb-[20px]" />
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-[9px] mb-[26px]">
+                  {tool.launch_module.features.map(
+                    (feat: string, i: number) => (
                       <div
                         key={i}
-                        className="flex items-start gap-[8px] text-[12px] text-white/55"
+                        className="bg-white/5 border border-white/10 rounded-[10px] padding-11 px-[13px] py-[11px] flex items-start gap-[9px]"
                       >
-                        <div className="w-[4px] h-[4px] rounded-full bg-[rgba(200,170,100,0.7)] shrink-0 mt-[5px]" />
-                        <span>{d}</span>
+                        <div className="w-[5px] h-[5px] rounded-full bg-[#6aa8f0]/70 shrink-0 mt-[5px]" />
+                        <div className="text-[13px] text-white/55 leading-[1.4]">
+                          {feat}
+                        </div>
+                      </div>
+                    ),
+                  )}
+                </div>
+                <button
+                  onClick={() => {
+                    setSponsorshipStepIdx(0);
+                    setIsSponsorshipCalcOpen(true);
+                  }}
+                  className="inline-flex items-center justify-center gap-[10px] w-full p-[16px_28px] bg-[#3b7dd8] text-white border-none rounded-[12px] font-sans text-[15px] font-semibold cursor-pointer transition-all hover:bg-[#3b7dd8] hover:-translate-y-0.5 active:translate-y-0 shadow-[0_4px_20px_rgba(47,111,212,0.35)]"
+                >
+                  {tool.launch_module.buttonText ||
+                    "Start Sponsorship Calculator"}
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* SPONSORSHIP RESULTS SECTION (Step 5 Specific) */}
+          {tool.type === "sponsorship_calculator" && (
+            <div className="mb-[28px] w-full">
+              <div className="text-[12px] font-semibold tracking-wide uppercase text-[#6b8097] mb-[12px]">
+                Your Affidavit of Support Plan
+              </div>
+              {!sponsorshipResult ? (
+                <div className="bg-[#fafcff] border-[1.5px] border-dashed border-[#d0e4f7] rounded-[10px] p-[24px] text-center">
+                  <div className="text-[14px] text-[#6b8097] leading-[1.6]">
+                    Complete the sponsorship calculator to generate the correct
+                    affidavit forms for your case.
+                  </div>
+                </div>
+              ) : (
+                <div className="flex flex-col gap-[28px]">
+                  <div className="bg-[#fafcff] border-[1.5px] border-[#d0e4f7] rounded-[10px] p-[20px] animate-in fade-in duration-300">
+                    <div className="text-[10px] font-bold uppercase tracking-widest text-primary mb-[10px]">
+                      Sponsorship Plan Generated
+                    </div>
+                    <div className="flex flex-col gap-[6px]">
+                      {[
+                        [
+                          "Petitioner qualifies alone",
+                          sponsorshipResult.qualifies ? "Yes" : "No",
+                        ],
+                        [
+                          "Household members contributing income",
+                          sponsorshipResult.householdMemberCount || "None",
+                        ],
+                        [
+                          "Joint sponsors",
+                          sponsorshipResult.jointSponsorCount || "None",
+                        ],
+                        [
+                          "Forms required",
+                          sponsorshipResult.forms
+                            .map((f: any) => f.name.split("—")[0].trim())
+                            .join(", "),
+                        ],
+                      ].map(([k, v], i) => (
+                        <div
+                          key={i}
+                          className="flex justify-between items-center py-[5px] border-b border-[#d0e4f7] last:border-b-0 text-[13px]"
+                        >
+                          <span className="text-[#3a4f63]">{k}</span>
+                          <span className="text-[#0c1b33] font-semibold">
+                            {v}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="flex flex-col gap-[10px]">
+                    {sponsorshipResult.forms.map((f: any, i: number) => (
+                      <div
+                        key={i}
+                        onClick={() =>
+                          window.open(f.url, "_blank", "noopener,noreferrer")
+                        }
+                        className="bg-[#fafcff] border-[1.5px] border-[#d0e4f7] rounded-[10px] p-[18px_20px] flex items-center gap-[14px] cursor-pointer transition-all hover:border-primary hover:shadow-[0_4px_16px_rgba(47,111,212,0.1)] hover:-translate-y-px"
+                      >
+                        <div className="w-[36px] h-[36px] rounded-[9px] bg-primary/10 border border-primary/20 flex items-center justify-center shrink-0">
+                          <FileText
+                            size={18}
+                            className="text-primary"
+                            strokeWidth={1.7}
+                          />
+                        </div>
+                        <div className="flex-1">
+                          <div className="text-[14px] font-semibold text-[#0c1b33] mb-[2px]">
+                            {f.name}
+                          </div>
+                          <div className="text-[12px] text-[#6b8097] leading-[1.4]">
+                            {f.sub}
+                          </div>
+                        </div>
+                        <button className="p-[8px_16px] bg-primary text-white border-none rounded-[8px] text-[12px] font-semibold shrink-0 transition-colors hover:bg-primary/80">
+                          Launch →
+                        </button>
                       </div>
                     ))}
                   </div>
-                </div>
-              )}
 
-              {/* Review Checklist (Step 10 — Review & Submit) */}
-              {tool.review_checklist && tool.review_checklist.length > 0 && (
-                <div className="flex flex-col gap-[8px] mb-[20px]">
-                  {tool.review_checklist.map((item: string, i: number) => (
-                    <div
-                      key={i}
-                      className="flex items-start gap-[12px] bg-white/[0.06] border border-white/10 rounded-[10px] p-[12px_14px]"
+                  <div className="text-[12px] text-[#6b8097] text-center">
+                    Form actions are based on your calculator result.{" "}
+                    <button
+                      onClick={() => {
+                        setSponsorshipStepIdx(0);
+                        setIsSponsorshipCalcOpen(true);
+                      }}
+                      className="text-primary font-semibold hover:underline bg-transparent border-none p-0 cursor-pointer"
                     >
-                      <div className="w-[20px] h-[20px] rounded-full bg-[rgba(21,116,79,0.25)] border border-[rgba(21,116,79,0.4)] flex items-center justify-center shrink-0 mt-[1px]">
-                        <Check
-                          size={11}
-                          strokeWidth={2.5}
-                          className="text-[rgba(100,220,160,0.9)]"
-                        />
-                      </div>
-                      <div className="text-[13px] text-white/55 leading-[1.45]">
-                        {item}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-
-              {/* Feature Cues Grid */}
-              <div
-                className={`grid grid-cols-1 sm:grid-cols-2 gap-[10px] ${tool.launch_module.button_label ? "mb-[26px]" : "mb-0"}`}
-              >
-                {tool.launch_module.features.map((feat: string, i: number) => (
-                  <div
-                    key={i}
-                    className="bg-white/6 border border-white/10 rounded-[10px] p-[12px_14px] flex items-start gap-[10px]"
-                  >
-                    <div
-                      className={`w-[5px] h-[5px] rounded-full mt-[6px] shrink-0 ${
-                        tool.launch_module.stripe_variant === "gold"
-                          ? "bg-[rgba(212,168,47,0.7)]"
-                          : tool.launch_module.stripe_variant === "green"
-                            ? "bg-[rgba(100,220,160,0.6)]"
-                            : isBeneficiaryTheme
-                              ? "bg-[#20a8a8bf]"
-                              : "bg-[#6aa8f0b3]"
-                      }`}
-                    />
-                    <div className="text-[13px] text-white/55 leading-[1.4]">
-                      {feat}
-                    </div>
-                  </div>
-                ))}
-              </div>
-
-              {/* Upload Requirements Info Block (Step 8 only) */}
-              {tool.upload_requirements &&
-                tool.upload_requirements.length > 0 && (
-                  <div className="bg-white/5 border border-white/9 rounded-[10px] p-[14px_16px] mb-[26px]">
-                    <div className="text-[11px] font-bold uppercase tracking-widest text-white/35 mb-[10px]">
-                      USCIS upload requirements
-                    </div>
-                    <div className="flex flex-col gap-[7px]">
-                      {tool.upload_requirements.map(
-                        (req: string, i: number) => (
-                          <div
-                            key={i}
-                            className="flex items-start gap-[10px] text-[13px] text-white/55 leading-[1.45]"
-                          >
-                            <div className="w-[4px] h-[4px] rounded-full bg-[#6aa8f0]/60 shrink-0 mt-[5px]" />
-                            <span>{req}</span>
-                          </div>
-                        ),
-                      )}
-                    </div>
-                  </div>
-                )}
-
-              {/* CTA Area — only rendered when a button_label is defined */}
-              {tool.launch_module.button_label && (
-                <div className="flex flex-col gap-[11px]">
-                  <button
-                    onClick={() => {
-                      if (tool.launch_module.href) {
-                        window.open(
-                          tool.launch_module.href,
-                          "_blank",
-                          "noopener,noreferrer",
-                        );
-                        setIsLaunched(true);
-                      }
-                    }}
-                    className={`inline-flex items-center justify-center gap-[10px] w-full p-[16px_28px] text-white rounded-[12px] font-sans text-[15px] font-semibold tracking-[0.01em] transition-all duration-200 group cursor-pointer ${
-                      isLaunched && tool.launch_module.return_note
-                        ? "bg-[#3b7dd8] shadow-[0_4px_20px_rgba(14,92,60,0.3)] pointer-events-none"
-                        : "shadow-[0_4px_20px_rgba(47,111,212,0.35)] hover:translate-y-[-2px] hover:shadow-[0_8px_32px_rgba(47,111,212,0.45)]"
-                    }`}
-                    style={
-                      isLaunched && tool.launch_module.return_note
-                        ? {}
-                        : { backgroundColor: accentColor }
-                    }
-                  >
-                    {isLaunched && tool.launch_module.return_note ? (
-                      <>
-                        <span>✓</span>
-                        <span>
-                          {tool.launch_module.button_launched_label || "Opened"}
-                        </span>
-                      </>
-                    ) : (
-                      <>
-                        <span>{tool.launch_module.button_label}</span>
-                        <div className="transition-transform duration-200 group-hover:translate-x-[2px]">
-                          <ArrowRight size={16} strokeWidth={2} />
-                        </div>
-                      </>
-                    )}
-                  </button>
-
-                  <div
-                    className={`flex items-center justify-center gap-[5px] text-[12px] text-center leading-[1.4] transition-colors duration-200 ${
-                      isLaunched && tool.launch_module.return_note
-                        ? "text-white/35"
-                        : "text-white/35"
-                    }`}
-                  >
-                    <ExternalLink size={11} strokeWidth={1.8} />
-                    <span>
-                      {isLaunched && tool.launch_module.launched_note
-                        ? tool.launch_module.launched_note
-                        : tool.launch_module.note ||
-                          "Opens in a new browser tab — you can return to the roadmap anytime"}
-                    </span>
+                      Rerun calculator
+                    </button>{" "}
+                    if the sponsorship structure changes.
                   </div>
                 </div>
               )}
             </div>
-          </div>
+          )}
+
+          {/* FINANCIAL CHECKLIST (Step 2.6 SPECIFIC) */}
+          {tool.type === "financial_checklist" && (
+            <div className="flex flex-col mt-3">
+              {/* Scenario switcher (simulates prior-step output) */}
+              <div className="flex items-center gap-[12px] bg-white border-[1.5px] border-[#d0e4f7] rounded-[10px] p-[14px_18px] mb-[20px] flex-wrap">
+                <span className="text-[12px] font-semibold text-[#6b8097] whitespace-nowrap">
+                  Sponsorship structure:
+                </span>
+                <select
+                  className="flex-1 min-w-[180px] p-[8px_12px] border-[1.5px] border-[#d0e4f7] rounded-[8px] font-sans text-[13px] text-[#1c2b3a] bg-[#f4f7fb] outline-none cursor-pointer focus:border-primary"
+                  value={selectedScenario}
+                  onChange={(e) => setSelectedScenario(e.target.value)}
+                >
+                  {Object.entries(SCENARIOS).map(([key, sc]) => (
+                    <option key={key} value={key}>
+                      {sc.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Sponsorship Summary Card */}
+              {(() => {
+                const sc = SCENARIOS[selectedScenario] || SCENARIOS["pet-only"];
+                return (
+                  <div className="bg-[#e8f1fb] border border-[#d0e4f7] rounded-[10px] p-[18px_20px] mb-[20px]">
+                    <div className="text-[10px] font-bold uppercase tracking-widest text-[#2f6fd4] mb-[10px]">
+                      Sponsorship Summary
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-[8px]">
+                      {[
+                        ["Sponsorship setup", sc.label],
+                        ["Affidavit forms", sc.forms],
+                        ["Joint sponsors", sc.jointSponsors.length || "None"],
+                        [
+                          "Household members",
+                          sc.householdMembers.length || "None",
+                        ],
+                        ["Tax evidence needed", "3 most recent years"],
+                      ].map(([k, v], i) => (
+                        <div
+                          key={i}
+                          className="bg-white border border-[#d0e4f7] rounded-[10px] p-[10px_12px]"
+                        >
+                          <div className="text-[10px] font-bold uppercase tracking-[0.06em] text-[#6b8097] mb-[3px]">
+                            {k}
+                          </div>
+                          <div className="text-[13px] font-semibold text-[#0c1b33]">
+                            {v}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                );
+              })()}
+
+              {/* Progress Bar */}
+              {(() => {
+                const docs = getFinancialDocs(selectedScenario);
+                const allItems = [
+                  ...docs.required,
+                  ...docs.conditional,
+                  ...docs.recommended,
+                ];
+                const reviewedCount = allItems.filter(
+                  (d) => financialDocsStatus[d.id] === "reviewed",
+                ).length;
+                const totalCount = allItems.length;
+                const pct =
+                  totalCount > 0
+                    ? Math.round((reviewedCount / totalCount) * 100)
+                    : 0;
+
+                return (
+                  <div className="flex flex-col mb-[24px]">
+                    <div className="flex items-center gap-[12px] mb-[8px]">
+                      <div className="flex-1 h-[5px] bg-[#d0e4f7] rounded-[10px] overflow-hidden">
+                        <div
+                          className="h-full bg-linear-to-r from-primary to-[#6aa8f0] transition-all duration-500"
+                          style={{ width: `${pct}%` }}
+                        />
+                      </div>
+                      <div className="text-[12px] font-medium text-[#6b8097] whitespace-nowrap shrink-0">
+                        {reviewedCount} of {totalCount} reviewed
+                      </div>
+                    </div>
+                  </div>
+                );
+              })()}
+
+              {/* Document Groups */}
+              <div className="flex flex-col gap-[36px]">
+                {(() => {
+                  const docs = getFinancialDocs(selectedScenario);
+                  const groups = [
+                    {
+                      id: "required",
+                      label: "Required",
+                      badge: "badge-req",
+                      items: docs.required,
+                    },
+                    {
+                      id: "conditional",
+                      label: "Required if Applicable",
+                      badge: "badge-cond",
+                      items: docs.conditional,
+                    },
+                    {
+                      id: "recommended",
+                      label: "Recommended to Strengthen Readiness",
+                      badge: "badge-rec",
+                      items: docs.recommended,
+                    },
+                  ];
+
+                  return groups.map((group) => {
+                    if (group.items.length === 0) return null;
+                    return (
+                      <div key={group.id} className="flex flex-col">
+                        <div className="flex items-center gap-[10px] mb-[14px]">
+                          <span className="text-[11px] font-semibold uppercase tracking-[0.09em] text-[#6b8097]">
+                            {group.label}
+                          </span>
+                          <div className="flex-1 h-[1px] bg-[#d0e4f7]" />
+                        </div>
+
+                        <div className="flex flex-col gap-[10px]">
+                          {group.items.map((doc: any) => {
+                            const st = financialDocsStatus[doc.id] || "open";
+                            return (
+                              <button
+                                key={doc.id}
+                                onClick={() => {
+                                  if (financialDocsStatus[doc.id] === "open") {
+                                    const next = {
+                                      ...financialDocsStatus,
+                                      [doc.id]: "in-progress",
+                                    };
+                                    actions.updateMetadata({
+                                      financialDocsStatus: next,
+                                    });
+                                  }
+                                  setActiveFinancialDoc(doc);
+                                  setIsFinancialDocGuideOpen(true);
+                                }}
+                                className={`bg-white border-[1.5px] border-[#d0e4f7] rounded-[10px] p-[18px_20px] flex items-center gap-[16px] text-left transition-all hover:border-primary hover:shadow-[0_4px_20px_rgba(47,111,212,0.08)] hover:-translate-y-px cursor-pointer ${
+                                  st === "reviewed"
+                                    ? "bg-[#e8f5ef] border-[#a8d9be]"
+                                    : st === "in-progress"
+                                      ? "bg-[#fef8e8] border-[#f0d98a]"
+                                      : ""
+                                }`}
+                              >
+                                <div className="w-[40px] h-[40px] rounded-[10px] bg-[#eef3fa] border border-[#d0e4f7] flex items-center justify-center shrink-0 text-[18px]">
+                                  {getIcon(doc.icon)}
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                  <div className="text-[15px] font-semibold text-[#0c1b33] mb-[4px]">
+                                    {doc.title}
+                                  </div>
+                                  <div className="text-[13px] text-[#3a4f63] leading-[1.4]">
+                                    {doc.sub}
+                                  </div>
+                                  <div className="flex gap-[6px] mt-[7px] flex-wrap">
+                                    {doc.tags.map((tag: any, idx: number) => (
+                                      <span
+                                        key={idx}
+                                        className={`text-[11px] font-semibold px-[9px] py-[3px] rounded-full tracking-[0.04em] ${
+                                          tag.cls === "tag-pet"
+                                            ? "bg-[#e8f1fb] text-[#2d4a6e]"
+                                            : tag.cls === "tag-js"
+                                              ? "bg-[#f3f0fb] text-[#4a2d8a]"
+                                              : tag.cls === "tag-hm"
+                                                ? "bg-[#e8f5ef] text-[#15744f]"
+                                                : tag.cls === "tag-tax"
+                                                  ? "bg-[#fff7ed] text-[#b45309]"
+                                                  : tag.cls === "tag-cur"
+                                                    ? "bg-[#eef3fa] text-[#3a4f63]"
+                                                    : "bg-[#f4f7fb] text-[#6b8097]"
+                                        }`}
+                                      >
+                                        {tag.label}
+                                      </span>
+                                    ))}
+                                  </div>
+                                </div>
+                                <div
+                                  className={`text-[12px] font-medium px-[11px] py-[5px] rounded-full shrink-0 border whitespace-nowrap ${
+                                    st === "reviewed"
+                                      ? "bg-[#e8f5ef] text-[#15744f] border-[#a8d9be]"
+                                      : st === "in-progress"
+                                        ? "bg-[#fef8e8] text-[#8a6200] border-[#f0d98a]"
+                                        : "bg-[#f4f7fb] text-[#6b8097] border-[#d0e4f7]"
+                                  }`}
+                                >
+                                  {st === "reviewed"
+                                    ? "✓ Reviewed"
+                                    : st === "in-progress"
+                                      ? "In progress"
+                                      : "Open guide"}
+                                </div>
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    );
+                  });
+                })()}
+              </div>
+            </div>
+          )}
+
+          {/* HOUSEHOLD MEMBER BUILDER (Step 2.7 SPECIFIC) */}
+          {tool.type === "household_builder" && renderHouseholdBuilder()}
+
+          {/* SUBMISSION REVIEW CONTENT (Step 2.8 SPECIFIC) */}
+          {tool.type === "submission_review" && (
+            <div className="flex flex-col mt-4">
+              {/* Launcher Card (Large) */}
+              <div className="relative bg-[#0e1e38] rounded-[16px] border border-white/7 overflow-hidden mb-[24px] shadow-[0_20px_60px_rgba(12,27,51,0.18),0_4px_16px_rgba(12,27,51,0.12)]">
+                <div className="absolute top-0 left-0 right-0 h-[2px] bg-linear-to-r from-primary via-[#6aa8f0] to-transparent opacity-70" />
+                <div className="p-[30px_32px_26px]">
+                  <div className="flex items-start gap-[16px] mb-[20px]">
+                    <div className="w-[44px] h-[44px] rounded-[10px] bg-white/5 border border-white/10 flex items-center justify-center shrink-0">
+                      <ExternalLink size={21} className="text-white/75" />
+                    </div>
+                    <div>
+                      <div className="text-[10px] font-bold uppercase tracking-widest text-white/35 mb-[4px]">
+                        {tool.launch_module.label}
+                      </div>
+                      <div
+                        className="text-[clamp(18px,2.6vw,22px)] font-serif text-white/92 leading-[1.25]"
+                        style={{ fontFamily: "'DM Serif Display', serif" }}
+                      >
+                        {tool.launch_module.title}
+                      </div>
+                    </div>
+                  </div>
+                  <div className="h-px bg-white/9 mb-[18px]" />
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-[8px] mb-[22px]">
+                    {tool.launch_module.features.map(
+                      (feat: string, i: number) => (
+                        <div
+                          key={i}
+                          className="bg-white/5 border border-white/10 rounded-[10px] p-[10px_12px] flex items-start gap-[8px]"
+                        >
+                          <div className="w-[5px] h-[5px] rounded-full bg-[#6aa8f0]/70 shrink-0 mt-[5px]" />
+                          <div className="text-[13px] text-white/55 leading-[1.4]">
+                            {feat}
+                          </div>
+                        </div>
+                      ),
+                    )}
+                  </div>
+                  <button
+                    onClick={() => {
+                      setSubmissionGuideIdx(0);
+                      setIsSubmissionGuideOpen(true);
+                    }}
+                    className="w-full p-[15px_24px] bg-[#3b7dd8] text-white border-none rounded-[11px] text-[15px] font-semibold cursor-pointer transition-all hover:bg-[#3b7dd8] hover:-translate-y-0.5 shadow-[0_4px_20px_rgba(47,111,212,0.35)] flex items-center justify-center gap-[9px]"
+                  >
+                    <span>{tool.launch_module.buttonText}</span>
+                    <ChevronRight size={15} />
+                  </button>
+                </div>
+              </div>
+
+              {/* Checklist and Pitfalls Side-by-Side */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-[14px] mb-[18px]">
+                {/* Final Review Checklist */}
+                <div className="bg-white border-[1.5px] border-[#d0e4f7] rounded-[16px] p-[20px_22px]">
+                  <div className="text-[13px] font-bold tracking-wide uppercase text-[#6b8097] mb-[14px] flex items-center gap-[8px]">
+                    <span className="w-[8px] h-[8px] rounded-full bg-[#15744f]" />
+                    Final Review Checklist
+                  </div>
+                  <div className="flex flex-col gap-[8px]">
+                    {[
+                      "All required files uploaded to CEAC",
+                      "Correct person selected for each document",
+                      "Correct document type assigned to each file",
+                      "Certified English translations paired with originals",
+                      "No cropped, blurry, or unreadable scans",
+                      "Comments added only where genuinely needed",
+                    ].map((item, i) => (
+                      <div
+                        key={i}
+                        onClick={() => handleToggleSubmissionCheckS10(i)}
+                        className={`flex items-start gap-[10px] p-[9px_12px] rounded-[10px] cursor-pointer transition-all border-[1.5px] ${
+                          submissionChecklistStatusS10[i]
+                            ? "bg-[#e8f5ef] border-[#a8d9be]"
+                            : "border-transparent hover:bg-[#eef3fa]"
+                        }`}
+                      >
+                        <div
+                          className={`w-[18px] h-[18px] rounded-[5px] border-[1.5px] flex items-center justify-center shrink-0 mt-[1px] ${
+                            submissionChecklistStatusS10[i]
+                              ? "bg-[#15744f] border-[#15744f]"
+                              : "bg-white border-[#d0e4f7]"
+                          }`}
+                        >
+                          {submissionChecklistStatusS10[i] && (
+                            <Check size={10} className="text-white" />
+                          )}
+                        </div>
+                        <span
+                          className={`text-[13px] leading-[1.45] ${
+                            submissionChecklistStatusS10[i]
+                              ? "text-[#0e5c3c]"
+                              : "text-[#3a4f63]"
+                          }`}
+                        >
+                          {item}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Common Pitfalls to Avoid */}
+                <div className="bg-white border-[1.5px] border-[#d0e4f7] rounded-[16px] p-[20px_22px]">
+                  <div className="text-[13px] font-bold tracking-wide uppercase text-[#6b8097] mb-[14px] flex items-center gap-[8px]">
+                    <span className="w-[8px] h-[8px] rounded-full bg-[#b91c1c]" />
+                    Common Pitfalls to Avoid
+                  </div>
+                  <div className="flex flex-col gap-[8px]">
+                    {[
+                      "Wrong person selected — file under beneficiary vs petitioner",
+                      "Wrong document category — civil doc filed as financial",
+                      "Missing translation — uploaded original without translation",
+                      "Incomplete scan — page cut off or text obscured",
+                      "Missing financial/civil pairings — both required",
+                      "Unnecessary comments — clutter without purpose",
+                    ].map((pitfall, i) => (
+                      <div
+                        key={i}
+                        className="flex items-start gap-[10px] p-[9px_12px] rounded-[10px] border-[1.5px] border-[#fecaca] bg-[#fef2f2]"
+                      >
+                        <span className="text-[14px] shrink-0 mt-[1px]">
+                          <AlertTriangle className="h-4 w-4 text-amber-500" />
+                        </span>
+                        <span className="text-[13px] leading-[1.45] text-[#3a4f63]">
+                          {pitfall}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* AWAITING NVC REVIEW (Step 2.9 SPECIFIC) */}
+          {tool.type === "awaiting_review" && (
+            <div className="flex flex-col animate-in fade-in slide-in-from-bottom-2 duration-380">
+              {/* Eyebrow and Title */}
+              <div className="flex items-center gap-[8px] mb-[6px]">
+                <span className="text-[11px] font-semibold uppercase tracking-[0.12em] text-[#6b8097]">
+                  Chapter 2 · NVC / CEAC Processing
+                </span>
+                <span className="text-[11px] text-[#b8d4f0]">›</span>
+                <span className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#2f6fd4]">
+                  Step 10 — Awaiting NVC Document Review
+                </span>
+              </div>
+              <h1
+                className="text-[clamp(26px,4vw,34px)] font-serif text-[#0c1b33] leading-[1.2] mb-[10px]"
+                style={{ fontFamily: "'DM Serif Display', serif" }}
+              >
+                Awaiting NVC Document Review
+              </h1>
+              <p className="text-[15px] text-[#3a4f63] leading-[1.7] max-w-[500px] mb-[22px]">
+                Your documents have been submitted. NVC is now reviewing your
+                package for completeness and consistency before issuing a
+                documentary qualification decision.
+              </p>
+
+              {/* Meta Chips */}
+              <div className="flex gap-[7px] flex-wrap mb-[32px]">
+                <span className="text-[11px] font-semibold tracking-[0.06em] uppercase px-[12px] py-[5px] rounded-full bg-[#f3f0fb] text-[#4a2d8a] border border-[#c9bef2]">
+                  NVC Review
+                </span>
+                <span className="text-[11px] font-semibold tracking-[0.06em] uppercase px-[12px] py-[5px] rounded-full bg-[#e8f1fb] text-[#2d4a6e] border border-[#d0e4f7]">
+                  Status
+                </span>
+                <span className="text-[11px] font-semibold tracking-[0.06em] uppercase px-[12px] py-[5px] rounded-full bg-[#e8f6f6] text-[#0d6b6b] border border-[#9fd6d6]">
+                  Waiting Period
+                </span>
+              </div>
+
+              {/* Status card */}
+              <div className="relative bg-[#0c1b33] rounded-[16px] p-[24px_26px] mb-[16px] overflow-hidden shadow-[0_4px_24px_rgba(12,27,51,0.08)]">
+                <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-[#2f6fd4] via-[#6aa8f0] to-transparent opacity-80" />
+                <div className="text-[10px] font-bold tracking-widest uppercase text-white/40 mb-[8px]">
+                  Current Case Status
+                </div>
+                <div
+                  className="text-[20px] font-serif text-white/92 mb-[16px] flex items-center gap-[10px]"
+                  style={{ fontFamily: "'DM Serif Display', serif" }}
+                >
+                  <span className="inline-block w-[7px] h-[7px] rounded-full bg-[#6aa8f0] animate-pulse shadow-[0_0_8px_rgba(106,168,240,0.6)]" />
+                  Documents under NVC review
+                </div>
+                <div className="grid grid-cols-2 xs:grid-cols-3 gap-[12px]">
+                  <div className="flex flex-col gap-[3px]">
+                    <div className="text-[10px] font-semibold tracking-widest uppercase text-white/38">
+                      Documents submitted
+                    </div>
+                    <div className="text-[13px] font-semibold text-white/88">
+                      ✓ Confirmed
+                    </div>
+                  </div>
+                  <div className="flex flex-col gap-[3px]">
+                    <div className="text-[10px] font-semibold tracking-widest uppercase text-white/38">
+                      Current stage
+                    </div>
+                    <div className="text-[13px] font-semibold text-white/88">
+                      NVC document review
+                    </div>
+                  </div>
+                  <div className="flex flex-col gap-[3px]">
+                    <div className="text-[10px] font-semibold tracking-widest uppercase text-white/38">
+                      Next event
+                    </div>
+                    <div className="text-[13px] font-semibold text-white/88">
+                      DQ notification
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* What NVC is reviewing */}
+              <div className="bg-white border-[1.5px] border-[#d0e4f7] rounded-[16px] p-[20px_22px] mb-[14px] shadow-[0_4px_24px_rgba(12,27,51,0.08)]">
+                <div className="flex items-center gap-[10px] mb-[14px]">
+                  <div className="w-[36px] h-[36px] rounded-[9px] bg-[#e8f1fb] border border-[#d0e4f7] flex items-center justify-center shrink-0">
+                    <Search
+                      size={17}
+                      className="text-[#2f6fd4]"
+                      strokeWidth={1.7}
+                    />
+                  </div>
+                  <h3 className="text-[14px] font-semibold text-[#0c1b33]">
+                    What NVC is reviewing
+                  </h3>
+                </div>
+                <div className="flex flex-col gap-[7px]">
+                  {[
+                    "DS-260 — immigrant visa application accuracy and completeness",
+                    "Civil documents — passport, birth certificate, marriage records, police certificate",
+                    "Financial forms — Affidavit of Support and supporting evidence",
+                    "Translation pairing and document legibility across all files",
+                    "Overall package consistency with DS-260 answers and other filings",
+                  ].map((item, i) => (
+                    <div
+                      key={i}
+                      className="flex items-start gap-[9px] text-[13px] text-[#3a4f63] leading-[1.5]"
+                    >
+                      <div className="w-[4px] h-[4px] rounded-full bg-[#b8d4f0] shrink-0 mt-[6px]" />
+                      <span>{item}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-[14px] mb-[14px]">
+                {/* While you wait */}
+                <div className="bg-white border-[1.5px] border-[#d0e4f7] rounded-[16px] p-[20px_22px] shadow-[0_4px_24px_rgba(12,27,51,0.08)]">
+                  <div className="flex items-center gap-[10px] mb-[14px]">
+                    <div className="w-[36px] h-[36px] rounded-[9px] bg-[#e8f5ef] border border-[#a8d9be] flex items-center justify-center shrink-0">
+                      <Clock
+                        size={17}
+                        className="text-[#15744f]"
+                        strokeWidth={1.7}
+                      />
+                    </div>
+                    <h3 className="text-[14px] font-semibold text-[#0c1b33]">
+                      While you wait
+                    </h3>
+                  </div>
+                  <div className="flex flex-col gap-[7px]">
+                    {[
+                      "Monitor the email address registered with CEAC",
+                      "Check CEAC messages periodically for any NVC correspondence",
+                      "Keep organized copies of everything you uploaded",
+                      "Avoid re-uploading documents unless NVC specifically requests it",
+                    ].map((item, i) => (
+                      <div
+                        key={i}
+                        className="flex items-start gap-[9px] text-[13px] text-[#3a4f63] leading-[1.5]"
+                      >
+                        <div className="w-[4px] h-[4px] rounded-full bg-[#b8d4f0] shrink-0 mt-[6px]" />
+                        <span>{item}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Timeline */}
+                <div className="bg-white border-[1.5px] border-[#d0e4f7] rounded-[16px] p-[20px_22px] shadow-[0_4px_24px_rgba(12,27,51,0.08)]">
+                  <div className="flex items-center gap-[10px] mb-[14px]">
+                    <div className="w-[36px] h-[36px] rounded-[9px] bg-[#e8f1fb] border border-[#d0e4f7] flex items-center justify-center shrink-0">
+                      <Scale
+                        size={17}
+                        className="text-[#2f6fd4]"
+                        strokeWidth={1.7}
+                      />
+                    </div>
+                    <h3 className="text-[14px] font-semibold text-[#0c1b33]">
+                      Where you are in the process
+                    </h3>
+                  </div>
+                  <div className="relative pl-[18px]">
+                    <div className="absolute left-[6px] top-[10px] bottom-[10px] w-[2px] bg-[#d0e4f7] rounded-[2px]" />
+                    <div className="flex flex-col gap-[10px] relative">
+                      <div className="flex items-center gap-[8px]">
+                        <div className="w-[12px] h-[12px] rounded-full bg-[#15744f] shrink-0 z-1 -ml-[18px]" />
+                        <span className="text-[12px] text-[#0e5c3c] font-semibold">
+                          Documents uploaded to CEAC
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-[8px]">
+                        <div className="w-[12px] h-[12px] rounded-full bg-[#15744f] shrink-0 z-1 -ml-[18px]" />
+                        <span className="text-[12px] text-[#0e5c3c] font-semibold">
+                          Submitted to NVC
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-[8px]">
+                        <div className="w-[12px] h-[12px] rounded-full border-2 border-[#2f6fd4] bg-white shrink-0 z-1 -ml-[18px] animate-pulse" />
+                        <span className="text-[12px] text-[#2f6fd4] font-semibold">
+                          NVC document review ← you are here
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-[8px]">
+                        <div className="w-[12px] h-[12px] rounded-full bg-[#d0e4f7] shrink-0 z-1 -ml-[18px]" />
+                        <span className="text-[12px] text-[#6b8097]">
+                          Documentary Qualification (DQ)
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-[8px]">
+                        <div className="w-[12px] h-[12px] rounded-full bg-[#d0e4f7] shrink-0 z-1 -ml-[18px]" />
+                        <span className="text-[12px] text-[#6b8097]">
+                          Interview scheduling
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* If corrections requested */}
+              <div className="bg-[#fef8e8] border-[1.5px] border-[#f0d98a] rounded-[16px] p-[18px_20px] mb-[16px]">
+                <div className="flex items-center gap-[9px] mb-[10px]">
+                  <span className="text-[18px]">📋</span>
+                  <h3 className="text-[14px] font-semibold text-[#8a6200]">
+                    If NVC requests corrections or additional documents
+                  </h3>
+                </div>
+                <div className="flex flex-col gap-[7px]">
+                  {[
+                    "Read the checklist notice carefully — NVC will specify exactly what is missing or incorrect",
+                    "Replace only the specific document(s) flagged — do not re-upload your entire package",
+                    "Upload the corrected file under the same person and document type slot",
+                    "Resubmit promptly — delay in responding extends the overall timeline",
+                  ].map((item, i) => (
+                    <div
+                      key={i}
+                      className="flex items-start gap-[8px] text-[13px] text-[#8a6200] leading-[1.5]"
+                    >
+                      <div className="w-[4px] h-[4px] rounded-full bg-[#8a6200] shrink-0 mt-[6px]" />
+                      <span className="text-[#634b11]">{item}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <p className="text-[11.5px] color-[#6b8097] leading-[1.65] text-center pt-[4px] mt-[8px]">
+                Rahvana provides structured guidance only. NVC review timelines
+                vary. Monitor your registered email and CEAC messages directly.
+              </p>
+            </div>
+          )}
+
+          {/* DQ RECORDING (Step 2.10 SPECIFIC) */}
+          {tool.type === "dq_recording" && (
+            <div className="flex flex-col animate-in fade-in slide-in-from-bottom-2 duration-380">
+              {/* Eyebrow and Title */}
+              {/* <div className="flex items-center gap-[8px] mb-[6px]">
+                <span className="text-[11px] font-semibold uppercase tracking-[0.12em] text-[#6b8097]">
+                  Chapter 2 · NVC / CEAC Processing
+                </span>
+                <span className="text-[11px] text-[#b8d4f0]">›</span>
+                <span className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#2f6fd4]">
+                  Step 11 — Documentary Qualification
+                </span>
+              </div>
+              <h1
+                className="text-[clamp(26px,4vw,34px)] font-serif text-[#0c1b33] leading-[1.2] mb-[10px]"
+                style={{ fontFamily: "'DM Serif Display', serif" }}
+              >
+                Record Documentary Qualification
+              </h1>
+              <p className="text-[15px] text-[#3a4f63] leading-[1.7] max-w-[500px] mb-[22px]">
+                Your case has been documentarily qualified — NVC has accepted
+                your package. Record your DQ date to activate scheduling
+                tracking and sync your dashboard.
+              </p> */}
+
+              {/* Meta Chips */}
+              <div className="flex gap-[7px] flex-wrap mb-[32px]">
+                <span className="text-[11px] font-semibold tracking-wider uppercase px-[12px] py-[3px] rounded-full bg-[#fffbec] text-[#b38600] border border-[#e8d47a]">
+                  Major Milestone
+                </span>
+                <span className="text-[11px] font-semibold tracking-wider uppercase px-[12px] py-[3px] rounded-full bg-[#e8f1fb] text-[#2d4a6e] border border-[#d0e4f7]">
+                  Tracking Active
+                </span>
+                <span className="text-[11px] font-semibold tracking-wider uppercase px-[12px] py-[3px] rounded-full bg-[#f3f0fb] text-[#4a2d8a] border border-[#c9bef2]">
+                  Dashboard Update
+                </span>
+              </div>
+
+              {/* Milestone Banner */}
+              <div className="relative bg-gradient-to-br from-[#0c1b33] to-[#1a3054] rounded-[16px] p-[22px_26px] mb-[18px] overflow-hidden">
+                <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-[#b38600] via-[#f0d98a] to-transparent opacity-90" />
+                {/* <div className="absolute right-[22px] top-[50%] -translate-y-[50%] text-[32px] opacity-18 select-none pointer-events-none">
+                  🎉
+                </div> */}
+                <div className="text-[10px] font-bold tracking-widest uppercase text-white/40 mb-[5px]">
+                  NVC — Documentary Qualification Received
+                </div>
+                <div
+                  className="text-[22px] font-serif text-white/92 mb-[6px]"
+                  style={{ fontFamily: "'DM Serif Display', serif" }}
+                >
+                  Your documents have been accepted by NVC
+                </div>
+                <div className="text-[13px] text-white/55 leading-[1.55]">
+                  This is a significant milestone. Your case is now
+                  documentarily complete and eligible for interview scheduling
+                  at your designated post.
+                </div>
+              </div>
+
+              {/* DQ input card */}
+              {!dqSaved ? (
+                <div className="bg-white border-[1.5px] border-[#d0e4f7] rounded-[16px] p-[22px_24px] mb-[14px] shadow-[0_4px_24px_rgba(12,27,51,0.08)]">
+                  <div className="flex items-center gap-[10px] mb-[18px]">
+                    <div className="w-[38px] h-[38px] rounded-[9px] bg-[#fffbec] border border-[#e8d47a] flex items-center justify-center shrink-0">
+                      <Calendar size={18} className="text-[#b38600]" />
+                    </div>
+                    <div>
+                      <div className="text-[14px] font-semibold text-[#0c1b33]">
+                        Record your DQ details
+                      </div>
+                      <div className="text-[12px] text-[#6b8097] mt-[2px]">
+                        This activates scheduling tracking for your case
+                      </div>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-[12px] mb-[16px]">
+                    <div className="flex flex-col gap-[5px]">
+                      <label className="text-[11px] font-semibold tracking-[0.04em] uppercase text-[#6b8097]">
+                        DQ Date
+                      </label>
+                      <input
+                        type="date"
+                        value={dqDate}
+                        onChange={(e) => setDqDate(e.target.value)}
+                        className="p-[10px_12px] border-[1.5px] border-[#d0e4f7] rounded-[10px] text-[14px] text-[#1c2b3a] bg-white outline-none focus:border-[#2f6fd4] focus:shadow-[0_0_0_3px_rgba(47,111,212,0.12)] transition-all"
+                      />
+                    </div>
+                    <div className="flex flex-col gap-[5px]">
+                      <label className="text-[11px] font-semibold tracking-[0.04em] uppercase text-[#6b8097]">
+                        Visa Category
+                      </label>
+                      <select
+                        value={dqCategory}
+                        onChange={(e) => setDqCategory(e.target.value)}
+                        className="p-[10px_12px] border-[1.5px] border-[#d0e4f7] rounded-[10px] text-[14px] text-[#1c2b3a] bg-white outline-none focus:border-[#2f6fd4] focus:shadow-[0_0_0_3px_rgba(47,111,212,0.12)] transition-all"
+                      >
+                        <option value="">Select category…</option>
+                        <option value="IR-1">
+                          IR-1 (Spouse of U.S. Citizen)
+                        </option>
+                        <option value="IR-2">
+                          IR-2 (Child of U.S. Citizen)
+                        </option>
+                        <option value="F2A">F2A (Spouse of LPR)</option>
+                        <option value="CR-1">CR-1 (Conditional Spouse)</option>
+                      </select>
+                    </div>
+                    <div className="flex flex-col gap-[5px]">
+                      <label className="text-[11px] font-semibold tracking-[0.04em] uppercase text-[#6b8097]">
+                        Embassy / Consulate (Post)
+                      </label>
+                      <select
+                        value={dqPost}
+                        onChange={(e) => setDqPost(e.target.value)}
+                        className="p-[10px_12px] border-[1.5px] border-[#d0e4f7] rounded-[10px] text-[14px] text-[#1c2b3a] bg-white outline-none focus:border-[#2f6fd4] focus:shadow-[0_0_0_3px_rgba(47,111,212,0.12)] transition-all"
+                      >
+                        <option value="">Select post…</option>
+                        <option value="Islamabad">
+                          U.S. Embassy Islamabad, Pakistan
+                        </option>
+                        <option value="Karachi">
+                          U.S. Consulate Karachi, Pakistan
+                        </option>
+                        <option value="Lahore">
+                          U.S. Consulate Lahore, Pakistan
+                        </option>
+                        <option value="Other">Other post</option>
+                      </select>
+                    </div>
+                    <div className="flex flex-col gap-[5px]">
+                      <label className="text-[11px] font-semibold tracking-[0.04em] uppercase text-[#6b8097]">
+                        Country of Interview
+                      </label>
+                      <input
+                        type="text"
+                        value={dqCountry}
+                        onChange={(e) => setDqCountry(e.target.value)}
+                        placeholder="e.g. Pakistan"
+                        className="p-[10px_12px] border-[1.5px] border-[#d0e4f7] rounded-[10px] text-[14px] text-[#1c2b3a] bg-white outline-none focus:border-[#2f6fd4] focus:shadow-[0_0_0_3px_rgba(47,111,212,0.12)] transition-all"
+                      />
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => {
+                      if (!dqDate || !dqCategory || !dqPost) {
+                        toast.error("Please fill in all DQ details");
+                        return;
+                      }
+                      setDqSaved(true);
+                      actions.updateMetadata({
+                        dqSaved: true,
+                        dqDate,
+                        dqCategory,
+                        dqPost,
+                        dqCountry,
+                      });
+                      toast.success("DQ details recorded!");
+                    }}
+                    className="w-full py-[14px] bg-[#2f6fd4] text-white border-none rounded-[10px] text-[15px] font-semibold cursor-pointer transition-all hover:bg-[#2460bb] hover:-translate-y-px active:translate-y-0 shadow-[0_4px_20px_rgba(47,111,212,0.25)]"
+                  >
+                    Save DQ & Activate Tracking
+                  </button>
+                </div>
+              ) : (
+                <div className="bg-[#e8f5ef] border-[1.5px] border-[#a8d9be] rounded-[16px] p-[18px_22px] mb-[14px] animate-in fade-in slide-in-from-top-2 duration-350 shadow-[0_4px_16px_rgba(21,116,79,0.06)]">
+                  <div className="text-[10px] font-bold tracking-[0.08em] uppercase text-[#15744f] mb-[10px]">
+                    ✓ DQ Recorded — Tracking Active
+                  </div>
+                  <div className="grid grid-cols-2 xs:grid-cols-4 gap-[10px] mb-[12px]">
+                    <div className="flex flex-col gap-[2px]">
+                      <div className="text-[11px] text-[#0e5c3c] font-medium">
+                        DQ Date
+                      </div>
+                      <div className="text-[13px] font-bold text-[#0e5c3c]">
+                        {dqDate
+                          ? new Date(dqDate + "T00:00:00").toLocaleDateString(
+                              "en-US",
+                              {
+                                year: "numeric",
+                                month: "long",
+                                day: "numeric",
+                              },
+                            )
+                          : "—"}
+                      </div>
+                    </div>
+                    <div className="flex flex-col gap-[2px]">
+                      <div className="text-[11px] text-[#0e5c3c] font-medium">
+                        Visa Category
+                      </div>
+                      <div className="text-[13px] font-bold text-[#0e5c3c]">
+                        {dqCategory}
+                      </div>
+                    </div>
+                    <div className="flex flex-col gap-[2px]">
+                      <div className="text-[11px] text-[#0e5c3c] font-medium">
+                        Post
+                      </div>
+                      <div className="text-[13px] font-bold text-[#0e5c3c]">
+                        {dqPost}
+                      </div>
+                    </div>
+                    <div className="flex flex-col gap-[2px]">
+                      <div className="text-[11px] text-[#0e5c3c] font-medium">
+                        Country
+                      </div>
+                      <div className="text-[13px] font-bold text-[#0e5c3c]">
+                        {dqCountry}
+                      </div>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => setDqSaved(false)}
+                    className="text-[12px] font-semibold text-[#2f6fd4] bg-none border-none cursor-pointer p-0 hover:underline"
+                  >
+                    Edit details
+                  </button>
+                </div>
+              )}
+
+              {/* Scheduling cards */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-[14px] mb-[14px]">
+                <div className="bg-white border-[1.5px] border-[#d0e4f7] rounded-[16px] p-[18px_20px] shadow-[0_4px_24px_rgba(12,27,51,0.08)]">
+                  <div className="text-[10px] font-bold tracking-widest uppercase text-[#2d4a6e] mb-[6px]">
+                    Official Scheduling Status
+                  </div>
+                  <div className="text-[14px] font-semibold text-[#0c1b33] mb-[8px]">
+                    Currently scheduling DQ cases from:
+                  </div>
+                  <div
+                    className="text-[22px] font-serif text-[#0c1b33] mb-[6px]"
+                    style={{ fontFamily: "'DM Serif Display', serif" }}
+                  >
+                    {(dqPost &&
+                      DQ_RECORDING_DATA.postScheduling[
+                        dqPost as keyof typeof DQ_RECORDING_DATA.postScheduling
+                      ]?.official) ||
+                      "— / —"}
+                  </div>
+                  <div className="text-[12px] text-[#6b8097] leading-[1.5]">
+                    Based on the State Department immigrant visa scheduling
+                    bulletin for your post and category. Check the most recent
+                    bulletin for current status.
+                  </div>
+                  <div className="inline-flex items-center gap-[4px] bg-[#e8f1fb] border border-[#d0e4f7] rounded-full px-[10px] py-[3px] text-[10px] font-semibold text-[#2d4a6e] tracking-widest mt-[8px]">
+                    <Info size={9} strokeWidth={2.5} />
+                    U.S. State Department · Official
+                  </div>
+                </div>
+                <div className="bg-white border-[1.5px] border-[#e8d47a] rounded-[16px] p-[18px_20px] shadow-[0_4px_24px_rgba(12,27,51,0.08)]">
+                  <div className="text-[10px] font-bold tracking-widest uppercase text-[#b38600] mb-[6px]">
+                    Rahvana Estimate
+                  </div>
+                  <div className="text-[14px] font-semibold text-[#0c1b33] mb-[8px]">
+                    Queue position trend:
+                  </div>
+                  <div
+                    className="text-[22px] font-serif text-[#0c1b33] mb-[6px]"
+                    style={{ fontFamily: "'DM Serif Display', serif" }}
+                  >
+                    {(dqPost &&
+                      DQ_RECORDING_DATA.postScheduling[
+                        dqPost as keyof typeof DQ_RECORDING_DATA.postScheduling
+                      ]?.est) ||
+                      "Select a post above"}
+                  </div>
+                  <div className="text-[12px] text-[#6b8097] leading-[1.5]">
+                    {(dqPost &&
+                      DQ_RECORDING_DATA.postScheduling[
+                        dqPost as keyof typeof DQ_RECORDING_DATA.postScheduling
+                      ]?.estSub) ||
+                      "Save your DQ details to see scheduling context for your post."}
+                  </div>
+                  <div className="inline-flex items-center gap-[4px] bg-[#fffbec] border border-[#e8d47a] rounded-full px-[10px] py-[3px] text-[10px] font-semibold text-[#b38600] tracking-widest mt-[8px]">
+                    <Activity size={9} strokeWidth={2.5} />
+                    Rahvana Estimate · Not guaranteed
+                  </div>
+                  <div className="text-[11px] text-[#6b8097] mt-[8px] leading-[1.5] italic">
+                    Estimates reflect observed trends, not official scheduling
+                    commitments.
+                  </div>
+                </div>
+              </div>
+
+              {/* Dashboard sync */}
+              <div className="bg-[#e8f1fb] border-[1.5px] border-[#d0e4f7] rounded-[16px] p-[16px_20px] mb-[14px] flex items-start gap-[14px]">
+                <div className="w-[38px] h-[38px] rounded-[9px] bg-white border border-[#d0e4f7] flex items-center justify-center shrink-0">
+                  <Monitor size={18} className="text-[#2f6fd4]" />
+                </div>
+                <div>
+                  <div className="text-[13px] font-semibold text-[#0c1b33] mb-[3px]">
+                    {dqSaved
+                      ? "✓ DQ date added to your dashboard"
+                      : "Dashboard tracking will activate when DQ is recorded"}
+                  </div>
+                  <div className="text-[12px] text-[#3a4f63] leading-[1.5]">
+                    {dqSaved
+                      ? "Your DQ date is now pinned to your Rahvana dashboard and will remain visible until your interview letter is received."
+                      : "Once saved, your DQ date will appear as a persistent card on your Rahvana dashboard until your interview letter is received."}
+                  </div>
+                </div>
+              </div>
+
+              {/* <p className="text-[11.5px] text-[#6b8097] leading-[1.65] text-center pt-[4px] mt-[8px]">
+                {DQ_RECORDING_DATA.disclaimer}
+              </p> */}
+            </div>
+          )}
+
+          {/* INTERVIEW SCHEDULING (Step 2.11 SPECIFIC) */}
+          {tool.type === "interview_scheduling" && (
+            <div className="flex flex-col animate-in fade-in slide-in-from-bottom-2 duration-380">
+              {/* Queue status card */}
+              <div className="relative bg-[#0c1b33] rounded-[16px] p-[24px_26px] mb-[16px] overflow-hidden">
+                <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-[#b38600] via-[#f0d98a] to-transparent opacity-[0.85]" />
+                <div className="text-[10px] font-bold tracking-widest uppercase text-white/38 mb-[8px]">
+                  Post-DQ Queue Status
+                </div>
+                <div
+                  className="text-[20px] font-serif text-white/92 mb-[18px] flex items-center gap-[10px]"
+                  style={{ fontFamily: "'DM Serif Display', serif" }}
+                >
+                  <span className="inline-block w-[7px] h-[7px] rounded-full bg-[#6aa8f0] animate-pulse shadow-[0_0_8px_rgba(106,168,240,0.6)]" />
+                  In queue — awaiting interview letter
+                </div>
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-[14px]">
+                  <div>
+                    <div className="text-[10px] font-semibold tracking-widest uppercase text-white/36 mb-[3px]">
+                      DQ Date
+                    </div>
+                    <div className="text-[13px] font-semibold text-[#f0d98a]">
+                      {state.metadata.dqDate
+                        ? new Date(
+                            state.metadata.dqDate + "T00:00:00",
+                          ).toLocaleDateString("en-US", {
+                            year: "numeric",
+                            month: "long",
+                            day: "numeric",
+                          })
+                        : "—"}
+                    </div>
+                  </div>
+                  <div>
+                    <div className="text-[10px] font-semibold tracking-widest uppercase text-white/36 mb-[3px]">
+                      Post
+                    </div>
+                    <div className="text-[13px] font-semibold text-white/88">
+                      {state.metadata.post || "—"}
+                    </div>
+                  </div>
+                  <div className="col-span-2 md:col-span-1">
+                    <div className="text-[10px] font-semibold tracking-widest uppercase text-white/36 mb-[3px]">
+                      Current stage
+                    </div>
+                    <div className="text-[13px] font-semibold text-white/88">
+                      Awaiting interview letter
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Scheduling grid */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-[14px] mb-[14px]">
+                {/* Official Card */}
+                <div className="bg-[#fafcff] border-[1.5px] border-[#d0e4f7] rounded-[16px] p-[18px_20px] shadow-[0_4px_24px_rgba(12,27,51,0.08)]">
+                  <div className="text-[10px] font-bold tracking-widest uppercase text-[#2d4a6e] mb-[6px]">
+                    Official Scheduling Status
+                  </div>
+                  <div className="text-[13px] font-semibold text-[#0c1b33] mb-[6px]">
+                    Cases currently being scheduled from:
+                  </div>
+                  <div
+                    className="text-[20px] font-serif text-[#0c1b33] mb-[4px]"
+                    style={{ fontFamily: "'DM Serif Display', serif" }}
+                  >
+                    {INTERVIEW_SCHEDULING_DATA.schedulingData[
+                      (state.metadata
+                        .post as keyof typeof INTERVIEW_SCHEDULING_DATA.schedulingData) ||
+                        "Other"
+                    ]?.official || "—"}
+                  </div>
+                  <div className="text-[12px] text-[#6b8097] leading-[1.5]">
+                    From the State Department scheduling bulletin for this post
+                    and category. Verify current status at travel.state.gov.
+                  </div>
+                  <div className="inline-flex items-center gap-[4px] bg-[#e8f1fb] border border-[#d0e4f7] rounded-full px-[10px] py-[3px] text-[10px] font-semibold text-[#2d4a6e] mt-[8px]">
+                    <Info size={9} strokeWidth={2.5} />
+                    U.S. State Department · Official
+                  </div>
+                </div>
+
+                {/* Estimate Card */}
+                <div className="bg-[#fafcff] border-[1.5px] border-[#e8d47a] rounded-[16px] p-[18px_20px] shadow-[0_4px_24px_rgba(12,27,51,0.08)]">
+                  <div className="text-[10px] font-bold tracking-widest uppercase text-[#b38600] mb-[6px]">
+                    Rahvana Estimate
+                  </div>
+                  <div className="text-[13px] font-semibold text-[#0c1b33] mb-[6px]">
+                    Queue movement trend:
+                  </div>
+                  <div
+                    className="text-[20px] font-serif text-[#0c1b33] mb-[4px]"
+                    style={{ fontFamily: "'DM Serif Display', serif" }}
+                  >
+                    {INTERVIEW_SCHEDULING_DATA.schedulingData[
+                      (state.metadata
+                        .post as keyof typeof INTERVIEW_SCHEDULING_DATA.schedulingData) ||
+                        "Other"
+                    ]?.trend || "—"}
+                  </div>
+                  <div className="text-[12px] text-[#6b8097] leading-[1.5]">
+                    {state.metadata.dqDate
+                      ? INTERVIEW_SCHEDULING_DATA.schedulingData[
+                          (state.metadata
+                            .post as keyof typeof INTERVIEW_SCHEDULING_DATA.schedulingData) ||
+                            "Other"
+                        ]?.detail
+                      : "Save your DQ details in the previous step to see scheduling context here."}
+                  </div>
+                  <div className="inline-flex items-center gap-[4px] bg-[#fffbec] border border-[#e8d47a] rounded-full px-[10px] py-[3px] text-[10px] font-semibold text-[#b38600] mt-[8px]">
+                    <Activity size={9} strokeWidth={2.5} />
+                    Rahvana Estimate · Not guaranteed
+                  </div>
+                  <div className="text-[11px] text-[#6b8097] mt-[6px] italic leading-[1.5]">
+                    Estimates are trend-based projections. Actual scheduling
+                    depends on post capacity and priority.
+                  </div>
+                </div>
+              </div>
+
+              {/* While you wait + milestone line */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-[14px] mb-[14px]">
+                {/* While you wait */}
+                <div className="bg-[#fafcff] border-[1.5px] border-[#d0e4f7] rounded-[16px] p-[18px_20px] shadow-[0_4px_24px_rgba(12,27,51,0.08)]">
+                  <div className="flex items-center gap-[9px] mb-[12px]">
+                    <div className="w-[34px] h-[34px] rounded-[8px] bg-[#e8f5ef] border border-[#a8d9be] flex items-center justify-center shrink-0">
+                      <Clock
+                        size={16}
+                        className="text-[#15744f]"
+                        strokeWidth={1.8}
+                      />
+                    </div>
+                    <div className="text-[14px] font-semibold text-[#0c1b33]">
+                      While you wait
+                    </div>
+                  </div>
+                  <div className="flex flex-col gap-[7px]">
+                    {INTERVIEW_SCHEDULING_DATA.whileYouWait.map((item, i) => (
+                      <div
+                        key={i}
+                        className="flex items-start gap-[8px] text-[13px] color-[#3a4f63] leading-[1.5]"
+                      >
+                        <div className="w-[4px] h-[4px] rounded-full bg-[#b8d4f0] shrink-0 mt-[6px]" />
+                        <span>{item}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Milestone progress line */}
+                <div className="bg-[#fafcff] border-[1.5px] border-[#d0e4f7] rounded-[16px] p-[18px_20px] shadow-[0_4px_24px_rgba(12,27,51,0.08)]">
+                  <div className="text-[13px] font-semibold text-[#0c1b33] mb-[14px]">
+                    Your progress in Chapter 2
+                  </div>
+                  <div className="flex flex-col relative pl-[22px]">
+                    <div className="absolute left-[7px] top-[6px] bottom-[6px] w-[2px] bg-[#d0e4f7] rounded-[2px]" />
+                    {INTERVIEW_SCHEDULING_DATA.milestones.map((ms, i) => (
+                      <div
+                        key={i}
+                        className="flex items-center gap-[10px] mb-[12px] last:mb-0"
+                      >
+                        <div
+                          className={`w-[14px] h-[14px] rounded-full shrink-0 z-[1] ml-[-22px] ${
+                            ms.status === "done"
+                              ? "bg-[#15744f]"
+                              : ms.status === "active"
+                                ? "bg-[#2f6fd4] animate-pulse"
+                                : "bg-[#d0e4f7]"
+                          }`}
+                        />
+                        <span
+                          className={`text-[13px] ${
+                            ms.status === "done"
+                              ? "text-[#0e5c3c] font-medium"
+                              : ms.status === "active"
+                                ? "text-[#2f6fd4] font-bold"
+                                : "text-[#6b8097] font-medium"
+                          }`}
+                        >
+                          {ms.label} {ms.status === "active" && "← here"}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* How it works info card */}
+              <div className="bg-[#fafcff] border-[1.5px] border-[#d0e4f7] rounded-[16px] p-[18px_20px] mb-[14px] shadow-[0_4px_24px_rgba(12,27,51,0.08)]">
+                <div className="flex items-center gap-[9px] mb-[12px]">
+                  <div className="w-[34px] h-[34px] rounded-[8px] bg-[#e8f1fb] border border-[#d0e4f7] flex items-center justify-center shrink-0">
+                    <Info
+                      size={16}
+                      className="text-[#2f6fd4]"
+                      strokeWidth={1.8}
+                    />
+                  </div>
+                  <div className="text-[14px] font-semibold text-[#0c1b33]">
+                    How interview scheduling works at this stage
+                  </div>
+                </div>
+                <div className="flex flex-col gap-[7px]">
+                  {INTERVIEW_SCHEDULING_DATA.howItWorks.map((item, i) => (
+                    <div
+                      key={i}
+                      className="flex items-start gap-[8px] text-[13px] color-[#3a4f63] leading-[1.5]"
+                    >
+                      <div className="w-[4px] h-[4px] rounded-full bg-[#b8d4f0] shrink-0 mt-[6px]" />
+                      <span>{item}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* <p className="text-[11.5px] color-[#6b8097] leading-[1.65] text-center pt-[4px] mt-[8px]">
+                {INTERVIEW_SCHEDULING_DATA.disclaimer}
+              </p> */}
+            </div>
+          )}
+
+          {/* INTERVIEW APPOINTMENT (Step 2.12 SPECIFIC) */}
+          {tool.type === "appointment_received" && (
+            <div className="flex flex-col animate-in fade-in slide-in-from-bottom-2 duration-380">
+              {/* Hero banner */}
+              <div className="relative bg-gradient-to-br from-[#0a1a2e] to-[#163258] rounded-[16px] p-[26px_28px] mb-[18px] overflow-hidden">
+                <div className="absolute top-0 left-0 right-0 h-[2.5px] bg-gradient-to-r from-[#b38600] via-[#f0d98a] to-white/30 opacity-[0.95]" />
+                <div className="absolute top-[-40px] right-[-40px] w-[160px] h-[160px] bg-radial-gradient(circle,rgba(180,140,0,0.18)_0%,transparent_70%)" />
+
+                {/* Custom Colorful Celebratory Icon */}
+                <div className="absolute right-[28px] top-[50%] translate-y-[-50%] opacity-[0.45] rotate-[5deg] scale-[1.3]">
+                  <svg
+                    width="48"
+                    height="48"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      d="M4 22L11.5 14.5"
+                      stroke="#b38600"
+                      strokeWidth="2.5"
+                      strokeLinecap="round"
+                    />
+                    <path
+                      d="M12 11C14.7614 11 17 8.76142 17 6C17 3.23858 14.7614 1 12 1C9.23858 1 7 3.23858 7 6C7 8.76142 9.23858 11 12 11Z"
+                      fill="#b38600"
+                      fillOpacity="0.2"
+                    />
+                    <circle cx="17" cy="4" r="1.5" fill="#2f6fd4" />
+                    <circle cx="21" cy="9" r="1.2" fill="#15744f" />
+                    <circle cx="15" cy="10" r="1" fill="#f87171" />
+                    <path
+                      d="M19 14L20 15"
+                      stroke="#f0d98a"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                    />
+                    <path
+                      d="M15 16L16 17"
+                      stroke="#60a5fa"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                    />
+                    <path
+                      d="M12 19L12 21"
+                      stroke="#f87171"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                    />
+                    <path
+                      d="M7 6L5 4"
+                      stroke="#f0d98a"
+                      strokeWidth="1.5"
+                      strokeLinecap="round"
+                    />
+                    <path
+                      d="M11 6L9 3"
+                      stroke="#b38600"
+                      strokeWidth="1.5"
+                      strokeLinecap="round"
+                    />
+                  </svg>
+                </div>
+
+                <div className="text-[10px] font-bold tracking-[0.12em] uppercase text-white/40 mb-[7px]">
+                  {APPOINTMENT_RECEIVED_DATA.heroBanner.eyebrow}
+                </div>
+                <div
+                  className="text-[clamp(22px,3.5vw,28px)] font-serif text-white/95 leading-[1.2] mb-[8px]"
+                  style={{ fontFamily: "'DM Serif Display', serif" }}
+                >
+                  {APPOINTMENT_RECEIVED_DATA.heroBanner.title}
+                </div>
+                <div className="text-[13px] text-white/55 leading-[1.6] max-w-[460px]">
+                  {APPOINTMENT_RECEIVED_DATA.heroBanner.sub}
+                </div>
+              </div>
+
+              {!state.metadata.interviewSaved ? (
+                /* Input card */
+                <div className="bg-white border-[1.5px] border-[#d0e4f7] rounded-[16px] p-[22px_24px] mb-[14px] shadow-[0_4px_24px_rgba(12,27,51,0.08)]">
+                  <div className="flex items-center gap-[10px] mb-[18px]">
+                    <div className="w-[38px] h-[38px] rounded-[9px] bg-[#fffbec] border border-[#e8d47a] flex items-center justify-center shrink-0">
+                      <Calendar
+                        size={18}
+                        className="text-[#b38600]"
+                        strokeWidth={1.7}
+                      />
+                    </div>
+                    <div>
+                      <div className="text-[14px] font-semibold text-[#0c1b33]">
+                        {APPOINTMENT_RECEIVED_DATA.form.title}
+                      </div>
+                      <div className="text-[12px] text-[#6b8097] mt-[2px]">
+                        {APPOINTMENT_RECEIVED_DATA.form.sub}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-[12px] mb-[16px]">
+                    <div className="flex flex-col gap-[5px]">
+                      <label className="text-[11px] font-semibold tracking-widest uppercase text-[#6b8097]">
+                        {
+                          APPOINTMENT_RECEIVED_DATA.form.fields.interviewDate
+                            .label
+                        }
+                      </label>
+                      <input
+                        type="date"
+                        className="p-[10px_12px] border-[1.5px] border-[#d0e4f7] rounded-[10px] text-[14px] text-[#0c1b33] bg-white outline-none focus:border-[#2f6fd4] focus:ring-3 focus:ring-[#2f6fd4]/12 transition-all"
+                        value={state.metadata.interviewDate || ""}
+                        onChange={(e) =>
+                          actions.updateMetadata({
+                            interviewDate: e.target.value,
+                          })
+                        }
+                      />
+                    </div>
+                    <div className="flex flex-col gap-[5px]">
+                      <label className="text-[11px] font-semibold tracking-widest uppercase text-[#6b8097]">
+                        {APPOINTMENT_RECEIVED_DATA.form.fields.letterDate.label}
+                      </label>
+                      <input
+                        type="date"
+                        className="p-[10px_12px] border-[1.5px] border-[#d0e4f7] rounded-[10px] text-[14px] text-[#0c1b33] bg-white outline-none focus:border-[#2f6fd4] focus:ring-3 focus:ring-[#2f6fd4]/12 transition-all"
+                        value={state.metadata.letterDate || ""}
+                        onChange={(e) =>
+                          actions.updateMetadata({
+                            letterDate: e.target.value,
+                          })
+                        }
+                      />
+                    </div>
+                    <div className="flex flex-col gap-[5px] md:col-span-2">
+                      <label className="text-[11px] font-semibold tracking-widest uppercase text-[#6b8097]">
+                        {APPOINTMENT_RECEIVED_DATA.form.fields.embassy.label}
+                      </label>
+                      <input
+                        type="text"
+                        placeholder={
+                          APPOINTMENT_RECEIVED_DATA.form.fields.embassy
+                            .placeholder
+                        }
+                        className="p-[10px_12px] border-[1.5px] border-[#d0e4f7] rounded-[10px] text-[14px] text-[#0c1b33] bg-white outline-none focus:border-[#2f6fd4] focus:ring-3 focus:ring-[#2f6fd4]/12 transition-all w-full"
+                        value={state.metadata.consulateLocation || ""}
+                        onChange={(e) =>
+                          actions.updateMetadata({
+                            consulateLocation: e.target.value,
+                          })
+                        }
+                      />
+                    </div>
+                  </div>
+
+                  <div className="bg-[#e8f1fb] border border-[#d0e4f7] rounded-[10px] p-[11px_14px] text-[13px] text-[#3a4f63] leading-[1.5] mb-[16px] flex items-start gap-[8px]">
+                    <Upload
+                      size={14}
+                      className="text-[#2f6fd4] shrink-0 mt-[1px]"
+                      strokeWidth={1.8}
+                    />
+                    <span>
+                      <strong>Keep your interview letter accessible.</strong>{" "}
+                      You will need to bring the original to the consulate.
+                      Store a copy in Rahvana's Document Vault for easy
+                      reference during preparation.
+                    </span>
+                  </div>
+
+                  <button
+                    className="w-full p-[14px_24px] bg-[#15744f] text-white border-none rounded-[10px] text-[15px] font-semibold cursor-pointer transition-all shadow-[0_4px_20px_rgba(21,116,79,0.3)] hover:bg-[#0e5c3c] hover:translate-y-[-1px] hover:shadow-[0_8px_28px_rgba(21,116,79,0.4)] active:translate-y-0"
+                    onClick={() => {
+                      if (
+                        !state.metadata.interviewDate ||
+                        !state.metadata.consulateLocation
+                      ) {
+                        toast.error(
+                          "Please provide interview date and location",
+                        );
+                        return;
+                      }
+                      actions.updateMetadata({ interviewSaved: true });
+                    }}
+                  >
+                    {APPOINTMENT_RECEIVED_DATA.form.button}
+                  </button>
+                </div>
+              ) : (
+                /* Saved appointment card */
+                <div className="bg-white border-[1.5px] border-[#a8d9be] rounded-[16px] p-[22px_24px] mb-[14px] shadow-[0_4px_24px_rgba(12,27,51,0.08)] animate-in fade-in slide-in-from-top-2 duration-350 fill-mode-both">
+                  <div className="flex items-center justify-between mb-[14px]">
+                    <div className="text-[14px] font-semibold text-[#15744f]">
+                      {APPOINTMENT_RECEIVED_DATA.savedView.title}
+                    </div>
+                    <button
+                      className="text-[12px] font-semibold text-[#2f6fd4] bg-none border-none cursor-pointer hover:underline"
+                      onClick={() =>
+                        actions.updateMetadata({ interviewSaved: false })
+                      }
+                    >
+                      {APPOINTMENT_RECEIVED_DATA.savedView.button}
+                    </button>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-[12px]">
+                    <div className="flex flex-col gap-[2px]">
+                      <div className="text-[11px] text-[#0e5c3c] font-medium uppercase tracking-widest">
+                        Interview Date
+                      </div>
+                      <div className="text-[14px] font-bold text-[#0e5c3c]">
+                        {state.metadata.interviewDate
+                          ? new Date(
+                              state.metadata.interviewDate + "T00:00:00",
+                            ).toLocaleDateString("en-US", {
+                              year: "numeric",
+                              month: "long",
+                              day: "numeric",
+                            })
+                          : "—"}
+                      </div>
+                    </div>
+                    <div className="flex flex-col gap-[2px]">
+                      <div className="text-[11px] text-[#0e5c3c] font-medium uppercase tracking-widest">
+                        Embassy / Consulate
+                      </div>
+                      <div className="text-[14px] font-bold text-[#0e5c3c]">
+                        {state.metadata.consulateLocation || "—"}
+                      </div>
+                    </div>
+                    <div className="flex flex-col gap-[2px]">
+                      <div className="text-[11px] text-[#0e5c3c] font-medium uppercase tracking-widest">
+                        Letter Received
+                      </div>
+                      <div className="text-[14px] font-bold text-[#0e5c3c]">
+                        {state.metadata.letterDate
+                          ? new Date(
+                              state.metadata.letterDate + "T00:00:00",
+                            ).toLocaleDateString("en-US", {
+                              year: "numeric",
+                              month: "long",
+                              day: "numeric",
+                            })
+                          : "—"}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Dashboard update block */}
+              {state.metadata.interviewSaved && (
+                <div className="bg-[#e8f5ef] border-[1.5px] border-[#a8d9be] rounded-[16px] p-[18px_20px] mb-[14px] flex items-start gap-[14px] animate-in fade-in slide-in-from-top-2 duration-350 fill-mode-both">
+                  <div className="w-[38px] h-[38px] rounded-[9px] bg-[#15744f] flex items-center justify-center shrink-0">
+                    <Monitor size={18} className="text-white" strokeWidth={2} />
+                  </div>
+                  <div>
+                    <div className="text-[13px] font-semibold text-[#0e5c3c] mb-[3px]">
+                      {APPOINTMENT_RECEIVED_DATA.dashboardUpdate.title}
+                    </div>
+                    <div className="text-[12px] text-[#3a4f63] leading-[1.5]">
+                      {APPOINTMENT_RECEIVED_DATA.dashboardUpdate.sub}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Next chapter preview */}
+              {state.metadata.interviewSaved && (
+                <div className="bg-white border-[1.5px] border-[#d0e4f7] rounded-[16px] p-[20px_22px] mb-[14px] shadow-[0_4px_24px_rgba(12,27,51,0.08)] animate-in fade-in slide-in-from-top-2 duration-450 fill-mode-both">
+                  <div className="flex items-center gap-[10px] mb-[14px]">
+                    <div className="w-[36px] h-[36px] rounded-[9px] bg-[#f3f0fb] border border-[#c9bef2] flex items-center justify-center shrink-0">
+                      <Clock
+                        size={17}
+                        className="text-[#4a2d8a]"
+                        strokeWidth={1.7}
+                      />
+                    </div>
+                    <div>
+                      <div className="text-[14px] font-semibold text-[#0c1b33]">
+                        {APPOINTMENT_RECEIVED_DATA.nextChapter.title}
+                      </div>
+                      <div className="text-[12px] text-[#6b8097] mt-[2px]">
+                        {APPOINTMENT_RECEIVED_DATA.nextChapter.sub}
+                      </div>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-[9px]">
+                    {APPOINTMENT_RECEIVED_DATA.nextChapter.phases.map(
+                      (phase, i) => (
+                        <div
+                          key={i}
+                          className="bg-[#f4f7fb] border border-[#d0e4f7] rounded-[10px] p-[12px_14px] flex items-start gap-[9px]"
+                        >
+                          <div className="w-[22px] h-[22px] rounded-full bg-[#f3f0fb] border border-[#c9bef2] flex items-center justify-center text-[11px] font-bold text-[#4a2d8a] shrink-0">
+                            {phase.num}
+                          </div>
+                          <div>
+                            <div className="text-[13px] font-semibold text-[#0c1b33]">
+                              {phase.label}
+                            </div>
+                            <div className="text-[11px] text-[#6b8097] mt-[2px] leading-[1.4]">
+                              {phase.sub}
+                            </div>
+                          </div>
+                        </div>
+                      ),
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* <p className="text-[11.5px] text-[#6b8097] leading-[1.65] text-center pt-[4px] mt-[8px]">
+                {APPOINTMENT_RECEIVED_DATA.disclaimer}
+              </p> */}
+            </div>
+          )}
+
+          {/* PRIMARY LAUNCH MODULE */}
+          {tool.launch_module &&
+            tool.type !== "sponsorship_calculator" &&
+            tool.type !== "submission_review" && (
+              <div
+                className="relative bg-[#0e1e38] rounded-[16px] border border-white/7 overflow-hidden mb-[20px]"
+                style={{ backgroundColor: launchBg }}
+              >
+                {/* Accent Stripe */}
+                <div
+                  className="absolute top-0 left-0 right-0 h-[2px] opacity-70"
+                  style={{ background: stripeGradient }}
+                />
+
+                <div className="p-[36px_36px_32px]">
+                  {/* Module Header */}
+                  <div className="flex items-start gap-[16px] mb-[26px]">
+                    <div className="w-[48px] h-[48px] rounded-[12px] bg-white/[0.055] border border-white/10 flex items-center justify-center shrink-0">
+                      <IconComponent
+                        size={22}
+                        className="text-white/75"
+                        strokeWidth={1.6}
+                      />
+                    </div>
+                    <div className="flex-1">
+                      <div className="text-[10px] font-bold uppercase tracking-widest text-white/35 mb-[5px]">
+                        {tool.launch_module.eyebrow}
+                      </div>
+                      <h2
+                        className="text-[clamp(20px,3vw,24px)] font-serif text-white/90 leading-[1.25]"
+                        style={{ fontFamily: "'DM Serif Display', serif" }}
+                      >
+                        {tool.launch_module.heading}
+                      </h2>
+                    </div>
+                  </div>
+
+                  <div className="h-[1px] bg-white/9 mb-[22px]" />
+
+                  {/* Fee Block (Step 9 — Pay Filing Fee) */}
+                  {tool.fee_block && (
+                    <div className="flex items-center gap-[16px] bg-white/[0.05] border border-white/[0.09] rounded-[10px] p-[16px_18px] mb-[16px] flex-wrap">
+                      <div className="flex flex-col gap-[2px] shrink-0">
+                        <div className="text-[10px] font-bold uppercase tracking-widest text-white/35">
+                          {tool.fee_block.label}
+                        </div>
+                        <div
+                          className="text-[32px] font text-white/90 tracking-[-0.02em] leading-none"
+                          style={{ fontFamily: "'DM Serif Display', serif" }}
+                        >
+                          {tool.fee_block.amount}
+                        </div>
+                        <div className="text-[11px] text-white/35 mt-[2px]">
+                          {tool.fee_block.note}
+                        </div>
+                      </div>
+                      <div className="w-[1px] h-[48px] bg-white/12 shrink-0 hidden sm:block" />
+                      <div className="flex flex-col gap-[6px] flex-1">
+                        {tool.fee_block.details.map((d: string, i: number) => (
+                          <div
+                            key={i}
+                            className="flex items-start gap-[8px] text-[12px] text-white/55"
+                          >
+                            <div className="w-[4px] h-[4px] rounded-full bg-[rgba(200,170,100,0.7)] shrink-0 mt-[5px]" />
+                            <span>{d}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Review Checklist (Step 10 — Review & Submit) */}
+                  {tool.review_checklist &&
+                    tool.review_checklist.length > 0 && (
+                      <div className="flex flex-col gap-[8px] mb-[20px]">
+                        {tool.review_checklist.map(
+                          (item: string, i: number) => (
+                            <div
+                              key={i}
+                              className="flex items-start gap-[12px] bg-white/[0.06] border border-white/10 rounded-[10px] p-[12px_14px]"
+                            >
+                              <div className="w-[20px] h-[20px] rounded-full bg-[rgba(21,116,79,0.25)] border border-[rgba(21,116,79,0.4)] flex items-center justify-center shrink-0 mt-[1px]">
+                                <Check
+                                  size={11}
+                                  strokeWidth={2.5}
+                                  className="text-[rgba(100,220,160,0.9)]"
+                                />
+                              </div>
+                              <div className="text-[13px] text-white/55 leading-[1.45]">
+                                {item}
+                              </div>
+                            </div>
+                          ),
+                        )}
+                      </div>
+                    )}
+
+                  {/* Feature Cues Grid */}
+                  <div
+                    className={`grid grid-cols-1 sm:grid-cols-2 gap-[10px] ${tool.launch_module.button_label ? "mb-[26px]" : "mb-0"}`}
+                  >
+                    {tool.launch_module.features.map(
+                      (feat: string, i: number) => (
+                        <div
+                          key={i}
+                          className="bg-white/6 border border-white/10 rounded-[10px] p-[12px_14px] flex items-start gap-[10px]"
+                        >
+                          <div
+                            className={`w-[5px] h-[5px] rounded-full mt-[6px] shrink-0 ${
+                              tool.launch_module.stripe_variant === "gold"
+                                ? "bg-[rgba(212,168,47,0.7)]"
+                                : tool.launch_module.stripe_variant === "green"
+                                  ? "bg-[rgba(100,220,160,0.6)]"
+                                  : isBeneficiaryTheme
+                                    ? "bg-[#20a8a8bf]"
+                                    : "bg-[#6aa8f0b3]"
+                            }`}
+                          />
+                          <div className="text-[13px] text-white/55 leading-[1.4]">
+                            {feat}
+                          </div>
+                        </div>
+                      ),
+                    )}
+                  </div>
+
+                  {/* Upload Requirements Info Block (Step 8 only) */}
+                  {tool.upload_requirements &&
+                    tool.upload_requirements.length > 0 && (
+                      <div className="bg-white/5 border border-white/9 rounded-[10px] p-[14px_16px] mb-[26px]">
+                        <div className="text-[11px] font-bold uppercase tracking-widest text-white/35 mb-[10px]">
+                          USCIS upload requirements
+                        </div>
+                        <div className="flex flex-col gap-[7px]">
+                          {tool.upload_requirements.map(
+                            (req: string, i: number) => (
+                              <div
+                                key={i}
+                                className="flex items-start gap-[10px] text-[13px] text-white/55 leading-[1.45]"
+                              >
+                                <div className="w-[4px] h-[4px] rounded-full bg-[#6aa8f0]/60 shrink-0 mt-[5px]" />
+                                <span>{req}</span>
+                              </div>
+                            ),
+                          )}
+                        </div>
+                      </div>
+                    )}
+
+                  {/* CTA Area — only rendered when a button_label is defined */}
+                  {tool.launch_module.button_label && (
+                    <div className="flex flex-col gap-[11px]">
+                      <button
+                        onClick={() => {
+                          if (tool.launch_module.href) {
+                            window.open(
+                              tool.launch_module.href,
+                              "_blank",
+                              "noopener,noreferrer",
+                            );
+                            setIsLaunched(true);
+                          }
+                        }}
+                        className={`inline-flex items-center justify-center gap-[10px] w-full p-[16px_28px] text-white rounded-[12px] font-sans text-[15px] font-semibold tracking-[0.01em] transition-all duration-200 group cursor-pointer ${
+                          isLaunched && tool.launch_module.return_note
+                            ? "bg-[#3b7dd8] shadow-[0_4px_20px_rgba(14,92,60,0.3)] pointer-events-none"
+                            : "shadow-[0_4px_20px_rgba(47,111,212,0.35)] hover:translate-y-[-2px] hover:shadow-[0_8px_32px_rgba(47,111,212,0.45)]"
+                        }`}
+                        style={
+                          isLaunched && tool.launch_module.return_note
+                            ? {}
+                            : { backgroundColor: accentColor }
+                        }
+                      >
+                        {isLaunched && tool.launch_module.return_note ? (
+                          <>
+                            <span>✓</span>
+                            <span>
+                              {tool.launch_module.button_launched_label ||
+                                "Opened"}
+                            </span>
+                          </>
+                        ) : (
+                          <>
+                            <span>{tool.launch_module.button_label}</span>
+                            <div className="transition-transform duration-200 group-hover:translate-x-[2px]">
+                              <ArrowRight size={16} strokeWidth={2} />
+                            </div>
+                          </>
+                        )}
+                      </button>
+
+                      <div
+                        className={`flex items-center justify-center gap-[5px] text-[12px] text-center leading-[1.4] transition-colors duration-200 text-white/35`}
+                      >
+                        <ExternalLink size={11} strokeWidth={1.8} />
+                        <span>
+                          {isLaunched && tool.launch_module.launched_note
+                            ? tool.launch_module.launched_note
+                            : tool.launch_module.note ||
+                              "Opens in a new browser tab — you can return to the roadmap anytime"}
+                        </span>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
 
           {/* PROGRESS BAR (Step 2.4 SPECIFIC — CIVIL DOCS) */}
           {tool.doc_list && (
-            <div className="flex flex-col mb-[36px]">
+            <div className="flex flex-col mb-[24px]">
               <div className="flex items-center gap-[12px] mb-[8px]">
                 <div className="flex-1 h-[5px] bg-[#d0e4f7] rounded-[10px] overflow-hidden">
                   <div
-                    className="h-full bg-gradient-to-r from-primary to-[#6aa8f0] rounded-[10px] transition-all duration-500"
+                    className="h-full bg-linear-to-r from-primary to-primary/70 rounded-[10px] transition-all duration-500"
                     style={{
                       width: `${Math.round(
                         (Object.values(civilDocsStatus).filter(
@@ -932,7 +3850,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                         ? "Required"
                         : group.badge === "cond"
                           ? "Required if Applicable"
-                          : "Recommended"}
+                          : "Recommended to Improve Case Strength"}
                     </span>
                     <div className="flex-1 h-[1px] bg-[#d0e4f7]" />
                   </div>
@@ -972,7 +3890,9 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                             ${st === "reviewed" ? "bg-[#e8f5ef] border-[#a8d9be]" : "bg-[#e8f1fb] border-[#d0e4f7] group-hover:bg-[rgba(47,111,212,0.12)] group-hover:border-[rgba(47,111,212,0.3)]"}
                           `}
                           >
-                            {item.icon}
+                            <div className="text-primary/70">
+                              {getIcon(item.icon)}
+                            </div>
                           </div>
                           <div className="flex-1 min-w-0">
                             <div className="text-[15px] font-semibold text-[#0c1b33] mb-[4px] leading-[1.3]">
@@ -1039,36 +3959,38 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
           )}
 
           {/* SUPPORT CARDS */}
-          {tool.support_cards && tool.support_cards.length > 0 && (
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-[10px] mb-[32px]">
-              {tool.support_cards.map((card: any, i: number) => (
-                <div
-                  key={i}
-                  className="bg-[#fafcff] border-[1.5px] border-[#d0e4f7] rounded-[10px] p-[16px_18px]"
-                >
-                  <div className="text-[10px] font-bold uppercase tracking-widest text-[#6b8097] mb-[10px]">
-                    {card.label}
+          {tool.support_cards &&
+            tool.support_cards.length > 0 &&
+            sId !== "step_2_1" && (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-[10px] mb-[32px]">
+                {tool.support_cards.map((card: any, i: number) => (
+                  <div
+                    key={i}
+                    className="bg-[#fafcff] border-[1.5px] border-[#d0e4f7] rounded-[10px] p-[16px_18px]"
+                  >
+                    <div className="text-[10px] font-bold uppercase tracking-widest text-[#6b8097] mb-[10px]">
+                      {card.label}
+                    </div>
+                    <div className="flex flex-col gap-[7px]">
+                      {card.items?.map((item: string, j: number) => (
+                        <div key={j} className="flex items-start gap-[8px]">
+                          <div className="w-[4px] h-[4px] rounded-full bg-[#b8d4f0] mt-[5px] shrink-0" />
+                          <span className="text-[13px] text-[#3a4f63] leading-[1.4]">
+                            {item}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
                   </div>
-                  <div className="flex flex-col gap-[7px]">
-                    {card.items?.map((item: string, j: number) => (
-                      <div key={j} className="flex items-start gap-[8px]">
-                        <div className="w-[4px] h-[4px] rounded-full bg-[#b8d4f0] mt-[5px] shrink-0" />
-                        <span className="text-[13px] text-[#3a4f63] leading-[1.4]">
-                          {item}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
+                ))}
+              </div>
+            )}
 
           {/* SECONDARY ACTIONS ROW (Step 6 SPECIFIC) */}
-          {sId === "step_1_6" && (
+          {(sId === "step_1_6" || sId === "step_2_1") && (
             <div className="flex flex-col mb-[28px]">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-[12px] mb-[12px]">
-                {/* Tutorial Card — uses USCIS_TUTORIAL_STEPS for step 6 */}
+                {/* Tutorial / Guide Card */}
                 <button
                   onClick={() => {
                     setTutorialIdx(0);
@@ -1086,11 +4008,14 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                     </div>
                   </div>
                   <h3 className="text-[14px] font-semibold text-[#0c1b33] mb-1">
-                    Step-by-Step Account Setup Guide
+                    {sId === "step_1_6"
+                      ? "Step-by-Step Account Setup Guide"
+                      : "Step-by-Step CEAC Access Guide"}
                   </h3>
                   <p className="text-[12px] text-[#6b8097] leading-normal">
-                    Walk through the USCIS account creation process screen by
-                    screen.
+                    {sId === "step_1_6"
+                      ? "Walk through the USCIS account creation process screen by screen."
+                      : "Show where to find your case number and invoice ID, and how first-time CEAC login works."}
                   </p>
                   <div className="flex items-center gap-1 mt-3 text-[12px] font-semibold text-primary">
                     <span>View guide</span>
@@ -1099,10 +4024,14 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                 </button>
 
                 {/* Credentials Card (Toggle Unsaved/Saved) */}
-                {uscisCredentials ? (
+                {(sId === "step_1_6" ? uscisCredentials : ceacCredentials) ? (
                   /* Saved Card */
                   <button
-                    onClick={() => setIsWalletViewOpen(true)}
+                    onClick={() =>
+                      sId === "step_1_6"
+                        ? setIsWalletViewOpen(true)
+                        : setIsCeacModalOpen(true)
+                    }
                     className="bg-[#e8f5ef] border-[1.5px] border-[#a8d9be] rounded-[16px] p-[20px] text-left group hover:border-[#15744f] hover:shadow-[0_4px_20px_rgba(21,116,79,0.1)] hover:-translate-y-px transition-all cursor-pointer select-none flex flex-col"
                   >
                     <div className="flex items-center gap-[10px] mb-[12px]">
@@ -1118,7 +4047,8 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                       ✓ Credentials Saved
                     </h3>
                     <p className="text-[12px] text-[#6b8097] leading-normal">
-                      USCIS credentials are stored in your Portal Wallet.
+                      {sId === "step_1_6" ? "USCIS" : "CEAC"} credentials are
+                      stored in your Portal Wallet.
                     </p>
                     <div className="flex items-center gap-1 mt-3 text-[12px] font-semibold text-[#15744f]">
                       <span>View saved credentials</span>
@@ -1128,7 +4058,11 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                 ) : (
                   /* Unsaved Card */
                   <button
-                    onClick={() => setIsWalletFormOpen(true)}
+                    onClick={() =>
+                      sId === "step_1_6"
+                        ? setIsWalletFormOpen(true)
+                        : setIsCeacModalOpen(true)
+                    }
                     className="bg-[#fafcff] border-[1.5px] border-[#d0e4f7] rounded-[16px] p-[20px] text-left group hover:border-primary hover:shadow-[0_4px_20px_rgba(47,111,212,0.1)] hover:-translate-y-px transition-all cursor-pointer select-none flex flex-col"
                   >
                     <div className="flex items-center gap-[10px] mb-[12px]">
@@ -1141,11 +4075,12 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                       </div>
                     </div>
                     <h3 className="text-[14px] font-semibold text-[#0c1b33] mb-1">
-                      Save USCIS Credentials
+                      Save {sId === "step_1_6" ? "USCIS" : "CEAC"} Credentials
                     </h3>
                     <p className="text-[12px] text-[#6b8097] leading-normal">
-                      Securely store your USCIS login details in Rahvana&apos;s
-                      Portal Wallet.
+                      Securely store your{" "}
+                      {sId === "step_1_6" ? "USCIS" : "CEAC"} login details in
+                      Rahvana&apos;s Portal Wallet.
                     </p>
                     <div className="flex items-center gap-1 mt-3 text-[12px] font-semibold text-primary">
                       <span>Open credential vault</span>
@@ -1156,36 +4091,71 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
               </div>
 
               {/* Detailed View (Below Row, Only when saved) */}
-              {uscisCredentials && (
-                <div className="bg-[#e8f5ef] border-[1.5px] border-[#a8d9be] rounded-[16px] p-5 flex flex-col">
+              {(sId === "step_1_6" ? uscisCredentials : ceacCredentials) && (
+                <div className="bg-[#e8f5ef] border-[1.5px] border-[#a8d9be] rounded-[16px] p-5 flex flex-col animate-in fade-in slide-in-from-top-2 duration-300">
                   <div className="text-[10px] font-bold uppercase tracking-widest text-[#15744f] mb-[10px]">
-                    USCIS Credentials — Saved
+                    {sId === "step_1_6" ? "USCIS" : "CEAC"} Credentials — Saved
                   </div>
                   <div className="flex-1 flex flex-col">
-                    <div className="flex justify-between items-center py-1.5 border-b border-[#b5e0d0]/50">
-                      <span className="text-[12px] text-[#3a4f63] font-medium">
-                        Username / Email
-                      </span>
-                      <span className="text-[12px] text-[#1c2b3a] font-semibold font-mono">
-                        {uscisCredentials.username}
-                      </span>
-                    </div>
-                    <div className="flex justify-between items-center py-1.5 border-b border-[#b5e0d0]/50">
-                      <span className="text-[12px] text-[#3a4f63] font-medium">
-                        Password
-                      </span>
-                      <span className="text-[12px] text-[#1c2b3a] font-semibold font-mono tracking-widest">
-                        ••••••••
-                      </span>
-                    </div>
+                    {sId === "step_1_6" ? (
+                      <>
+                        <div className="flex justify-between items-center py-1.5 border-b border-[#a8d9be]">
+                          <span className="text-[12px] text-[#3a4f63] font-medium">
+                            Username / Email
+                          </span>
+                          <span className="text-[12px] text-[#1c2b3a] font-semibold font-mono">
+                            {uscisCredentials?.username}
+                          </span>
+                        </div>
+                        <div className="flex justify-between items-center py-1.5 border-b border-[#a8d9be]">
+                          <span className="text-[12px] text-[#3a4f63] font-medium">
+                            Password
+                          </span>
+                          <span className="text-[12px] text-[#1c2b3a] font-semibold font-mono tracking-widest">
+                            ••••••••
+                          </span>
+                        </div>
+                        <div className="flex justify-between items-center py-1.5 border-b border-[#a8d9be]">
+                          <span className="text-[12px] text-[#3a4f63] font-medium">
+                            Security Questions
+                          </span>
+                          <span className="text-[12px] text-[#1c2b3a] font-semibold">
+                            {uscisCredentials?.security_questions.length} saved
+                          </span>
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        <div className="flex justify-between items-center py-1.5 border-b border-[#a8d9be]/50">
+                          <span className="text-[12px] text-[#3a4f63] font-medium">
+                            NVC Case Number
+                          </span>
+                          <span className="text-[12px] text-[#0c1b33] font-semibold font-mono">
+                            {ceacCredentials?.nvc_case_number
+                              ? "••••••••"
+                              : "—"}
+                          </span>
+                        </div>
+                        <div className="flex justify-between items-center py-1.5 border-b border-[#a8d9be]/50">
+                          <span className="text-[12px] text-[#3a4f63] font-medium">
+                            Invoice ID Number
+                          </span>
+                          <span className="text-[12px] text-[#0c1b33] font-semibold font-mono">
+                            {ceacCredentials?.nvc_invoice_id ? "••••••••" : "—"}
+                          </span>
+                        </div>
+                      </>
+                    )}
                   </div>
-                  <button
-                    onClick={() => setIsWalletFormOpen(true)}
-                    className="inline-flex items-center gap-[5px] mt-[12px] text-[12px] font-semibold text-[#1a7a5e] hover:underline cursor-pointer w-fit"
+                  <Link
+                    href="/portal-wallet"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-[5px] mt-[12px] text-[12px] font-semibold text-[#15744f] hover:underline cursor-pointer w-fit"
                   >
                     <span>Update in Portal Wallet</span>
                     <ExternalLink size={11} strokeWidth={2} />
-                  </button>
+                  </Link>
                 </div>
               )}
             </div>
@@ -1193,34 +4163,69 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
 
           {/* Guide / Wallet Cards Row */}
           {(tool.guide_card || tool.wallet_card) && (
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-[12px] mb-[28px]">
+            <div
+              className={`grid grid-cols-1 ${
+                tool.guide_card && tool.wallet_card ? "sm:grid-cols-2" : ""
+              } gap-[12px] mb-[28px]`}
+            >
               {tool.guide_card && (
                 <button
                   onClick={() => {
                     setTutorialIdx(0);
                     setIsTutorialOpen(true);
                   }}
-                  className="bg-[#fafcff] border-[1.5px] border-[#d0e4f7] rounded-[16px] p-[20px] text-left group hover:border-primary hover:shadow-[0_4px_20px_rgba(47,111,212,0.1)] hover:-translate-y-px transition-all cursor-pointer select-none flex flex-col"
+                  className={`border-[1.5px] rounded-[16px] text-left group transition-all cursor-pointer select-none flex ${
+                    tool.wallet_card
+                      ? "p-[20px] flex-col bg-[#fafcff] border-[#d0e4f7] hover:border-primary hover:shadow-[0_4px_20px_rgba(47,111,212,0.1)] hover:-translate-y-px"
+                      : "p-[20px_24px] flex-row items-center gap-[16px] w-full bg-white border-[#d0e4f7] hover:border-primary/40 hover:shadow-[0_8px_30px_rgba(12,27,51,0.06)]"
+                  }`}
                 >
-                  <div className="flex items-center gap-[10px] mb-[12px]">
-                    <div className="w-[36px] h-[36px] rounded-[9px] bg-[#f3f0fb] border border-[#c9bef2] flex items-center justify-center shrink-0">
-                      <Monitor
-                        size={18}
-                        className="text-[#4a2d8a]"
-                        strokeWidth={1.7}
-                      />
-                    </div>
-                  </div>
-                  <h3 className="text-[14px] font-semibold text-[#0c1b33] mb-1">
-                    {tool.guide_card.title}
-                  </h3>
-                  <p className="text-[12px] text-[#6b8097] leading-normal">
-                    {tool.guide_card.subtitle}
-                  </p>
-                  <div className="flex items-center gap-1 mt-3 text-[12px] font-semibold text-primary">
-                    <span>View guide</span>
-                    <ArrowRight size={11} strokeWidth={2} />
-                  </div>
+                  {tool.wallet_card ? (
+                    /* Vertical Design (Original - Shared) */
+                    <>
+                      <div className="flex items-center gap-[10px] mb-[12px]">
+                        <div className="w-[36px] h-[36px] rounded-[9px] bg-[#f3f0fb] border border-[#c9bef2] flex items-center justify-center shrink-0">
+                          <Monitor
+                            size={18}
+                            className="text-[#4a2d8a]"
+                            strokeWidth={1.7}
+                          />
+                        </div>
+                      </div>
+                      <h3 className="text-[14px] font-semibold text-[#0c1b33] mb-1">
+                        {tool.guide_card.title}
+                      </h3>
+                      <p className="text-[12px] text-[#6b8097] leading-normal">
+                        {tool.guide_card.subtitle}
+                      </p>
+                      <div className="flex items-center gap-1 mt-3 text-[12px] font-semibold text-primary">
+                        <span>View guide</span>
+                        <ArrowRight size={11} strokeWidth={2} />
+                      </div>
+                    </>
+                  ) : (
+                    /* Horizontal Design (New Reference - Solo) */
+                    <>
+                      <div className="w-[52px] h-[52px] rounded-[14px] bg-[#f3f0fb] border border-[#c9bef2]/60 flex items-center justify-center shrink-0">
+                        <Monitor
+                          size={22}
+                          className="text-[#4a2d8a]"
+                          strokeWidth={1.7}
+                        />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <h3 className="text-[15px] font-bold text-[#0c1b33] mb-0.5 truncate">
+                          {tool.guide_card.title}
+                        </h3>
+                        <p className="text-[13px] text-[#6b8097] leading-normal line-clamp-2">
+                          {tool.guide_card.subtitle}
+                        </p>
+                      </div>
+                      <div className="w-[32px] h-[32px] rounded-full bg-[#f4f7fb] flex items-center justify-center text-[#6b8097] group-hover:bg-primary group-hover:text-white transition-colors shrink-0">
+                        <ArrowRight size={14} strokeWidth={2.5} />
+                      </div>
+                    </>
+                  )}
                 </button>
               )}
 
@@ -1321,50 +4326,6 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
             </div>
           )}
 
-          {/* CEAC CREDENTIALS VIEW — SAVED (Chapter 2, Step 1 SPECIFIC) */}
-          {sId === "step_2_1" && ceacCredentials && (
-            <div className="bg-[#e8f5ef] border-[1.5px] border-[#a8d9be] rounded-[16px] p-5 mb-7 flex flex-col animate-in fade-in slide-in-from-top-2 duration-300">
-              <div className="text-[10px] font-bold uppercase tracking-widest text-[#15744f] mb-[10px]">
-                CEAC Access Details — Saved
-              </div>
-              <div className="flex flex-col gap-3">
-                <div className="flex justify-between items-center py-1.5 border-b border-[#a8d9be]/50">
-                  <span className="text-[12px] text-[#3a4f63] font-medium">
-                    NVC Case Number
-                  </span>
-                  <span className="text-[12px] text-[#0c1b33] font-semibold font-mono">
-                    {ceacCredentials.nvc_case_number || "—"}
-                  </span>
-                </div>
-                <div className="flex justify-between items-center py-1.5 border-b border-[#a8d9be]/50">
-                  <span className="text-[12px] text-[#3a4f63] font-medium">
-                    Invoice ID Number
-                  </span>
-                  <span className="text-[12px] text-[#0c1b33] font-semibold font-mono">
-                    {ceacCredentials.nvc_invoice_id ? "••••••••" : "—"}
-                  </span>
-                </div>
-                {ceacCredentials.username && (
-                  <div className="flex justify-between items-center py-1.5 border-b border-[#a8d9be]/50 last:border-0">
-                    <span className="text-[12px] text-[#3a4f63] font-medium">
-                      Notification Email
-                    </span>
-                    <span className="text-[12px] text-[#0c1b33] font-semibold font-mono">
-                      {ceacCredentials.username}
-                    </span>
-                  </div>
-                )}
-              </div>
-              <button
-                onClick={() => setIsCeacModalOpen(true)}
-                className="inline-flex items-center gap-1.5 mt-4 text-[12px] font-semibold text-primary hover:underline w-fit"
-              >
-                Edit or update in Portal Wallet
-                <ExternalLink size={12} strokeWidth={2} />
-              </button>
-            </div>
-          )}
-
           {/* ACTION CARDS ROW (Step 3 SPECIFIC) */}
           {tool.action_cards && (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-[12px] mb-[28px]">
@@ -1418,7 +4379,9 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
           )}
 
           {/* Disclaimer */}
-          <p className="text-[11.5px] text-[#6b8097] leading-[1.65] text-center pt-[8px]">
+          <p
+            className={`${currentStep.step_key === "step_2_4" || currentStep.step_key === "step_2_6" || currentStep.step_key === "step_2_7" ? "mt-10" : "mt-0"} text-[11.5px] text-[#6b8097] leading-[1.65] text-center pt-[8px]`}
+          >
             {tool.disclaimer ||
               "Rahvana provides structured guidance only. This is not legal advice. Consult a licensed immigration attorney for case-specific decisions."}
           </p>
@@ -2131,12 +5094,16 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                   </div>
                 )}
 
-                <div className="mt-8 p-[12px_16px] bg-[#e8f1fb] rounded-[9px] text-[12px] text-[#6b8097] leading-[1.6] m-0">
-                  Rahvana provides structured guidance only. This is not legal
-                  advice.
-                  <br />
-                  Consult a licensed immigration attorney for case-specific
-                  decisions.
+                <div
+                  className={`mt-8 p-[12px_16px] bg-[#e8f1fb] rounded-[9px] text-[12px] text-[#6b8097] leading-[1.6] m-0`}
+                >
+                  <>
+                    Rahvana provides structured guidance only. This is not legal
+                    advice.
+                    <br />
+                    Consult a licensed immigration attorney for case-specific
+                    decisions.
+                  </>
                 </div>
               </div>
             </div>
@@ -2220,6 +5187,518 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
         </div>
       </footer>
 
+      {/* Sponsorship Calculator Overlay (Step 5 Specific) */}
+      {isSponsorshipCalcOpen && (
+        <div className="fixed inset-0 bg-white z-[150] flex flex-col overflow-hidden animate-in slide-in-from-bottom-[18px] duration-[0.28s] ease-in-out font-sans">
+          {/* Topbar */}
+          <div className="flex items-center h-[64px] border-b border-[#d0e4f7] px-6 gap-4 shrink-0 bg-white">
+            <button
+              onClick={() => setIsSponsorshipCalcOpen(false)}
+              className="w-9 h-9 rounded-full bg-[#f4f7fb] border-none flex items-center justify-center text-[#3a4f63] hover:bg-primary/10 transition-all cursor-pointer outline-none focus:ring-2 focus:ring-primary"
+            >
+              <X size={16} strokeWidth={2} />
+            </button>
+            <div className="flex-1 h-[5px] bg-[#d0e4f7] rounded-[10px] overflow-hidden">
+              <div
+                className="h-full bg-linear-to-r from-primary to-[#6aa8f0] transition-all duration-500"
+                style={{
+                  width: `${Math.round(((sponsorshipStepIdx + 1) / 7) * 100)}%`,
+                }}
+              />
+            </div>
+            <div className="text-[12px] font-medium text-[#6b8097] whitespace-nowrap shrink-0">
+              {sponsorshipStepIdx + 1} / 7
+            </div>
+          </div>
+
+          {/* Body */}
+          <div className="flex-1 overflow-y-auto bg-white p-[48px_24px_40px] flex flex-col items-center">
+            <div className="w-full max-w-[560px] flex flex-col">
+              {(() => {
+                const step = sponsorshipStepIdx;
+                const req = getThreshold(sponsorshipData.householdSize);
+                const qualifies = sponsorshipData.agi >= req;
+                const pct =
+                  sponsorshipData.agi > 0
+                    ? Math.round((sponsorshipData.agi / req) * 100)
+                    : 0;
+
+                if (step === 0) {
+                  return (
+                    <div className="animate-in fade-in slide-in-from-right-4 duration-300">
+                      <div className="text-[11px] font-semibold tracking-[0.1em] uppercase text-primary mb-4">
+                        Sponsorship Calculator · Step 1 of 7
+                      </div>
+                      <h2
+                        className="text-[clamp(22px,3.5vw,28px)] font-serif font-black text-[#0c1b33] mb-2 leading-[1.3]"
+                        style={{ fontFamily: "'DM Serif Display', serif" }}
+                      >
+                        Welcome to the Sponsorship Calculator
+                      </h2>
+                      <p className="text-[14px] text-[#3a4f63] leading-[1.7] mb-6">
+                        This tool determines whether the petitioner qualifies as
+                        the sole sponsor or whether additional sponsorship —
+                        through household members or joint sponsors — is needed.
+                        Your result generates the exact affidavit forms
+                        required.
+                      </p>
+                      <div className="bg-[#e8f1fb] border border-[#d0e4f7] rounded-[10px] p-[14px_16px] mb-6">
+                        <p className="text-[13px] text-[#3a4f63] leading-[1.6]">
+                          You will need your most recent federal tax return
+                          (Form 1040) to find your Adjusted Gross Income (AGI).
+                        </p>
+                      </div>
+                      <div className="flex gap-[10px]">
+                        <button
+                          onClick={() => setSponsorshipStepIdx(1)}
+                          className="flex-1 p-[14px_22px] bg-primary text-white border-none rounded-[10px] text-[15px] font-semibold cursor-pointer transition-all hover:bg-primary/80 hover:-translate-y-px"
+                        >
+                          Get Started →
+                        </button>
+                      </div>
+                    </div>
+                  );
+                }
+
+                if (step === 1) {
+                  return (
+                    <div className="animate-in fade-in slide-in-from-right-4 duration-300">
+                      <div className="text-[11px] font-semibold tracking-[0.1em] uppercase text-primary mb-4">
+                        Sponsorship Calculator · Step 2 of 7
+                      </div>
+                      <h2
+                        className="text-[clamp(22px,3.5vw,28px)] font-serif font-black text-[#0c1b33] mb-2 leading-[1.3]"
+                        style={{ fontFamily: "'DM Serif Display', serif" }}
+                      >
+                        Find your Adjusted Gross Income (AGI)
+                      </h2>
+                      <div className="bg-[#e8f1fb] border border-[#d0e4f7] rounded-[10px] p-[14px_16px] mb-6">
+                        <p className="text-[13px] text-[#3a4f63] leading-[1.6]">
+                          <strong>What is AGI?</strong> Adjusted Gross Income is
+                          your total income minus specific deductions. You can
+                          find it on Line 11 of IRS Form 1040.
+                        </p>
+                      </div>
+                      <div className="bg-white border-[1.5px] border-[#d0e4f7] rounded-[10px] p-[20px] mb-6">
+                        <label className="text-[12px] font-semibold uppercase tracking-[0.04em] text-[#6b8097] mb-2 block">
+                          Petitioner&apos;s Most Recent AGI
+                        </label>
+                        <input
+                          type="number"
+                          value={sponsorshipData.agi || ""}
+                          onChange={(e) =>
+                            setSponsorshipData({
+                              ...sponsorshipData,
+                              agi: parseInt(e.target.value) || 0,
+                            })
+                          }
+                          className="w-full p-[12px_14px] border-[1.5px] border-[#d0e4f7] rounded-[10px] text-[15px] text-[#0c1b33] outline-none focus:border-primary focus:ring-4 focus:ring-primary/12 transition-all"
+                          placeholder="e.g. 45000"
+                        />
+                        <p className="text-[12px] text-[#6b8097] mt-2 leading-[1.5]">
+                          Enter the dollar amount from your most recent federal
+                          tax return.
+                        </p>
+                      </div>
+                      <div className="flex gap-[10px]">
+                        <button
+                          onClick={() => setSponsorshipStepIdx(0)}
+                          className="p-[13px_22px] bg-transparent text-[#3a4f63] border-[1.5px] border-[#d0e4f7] rounded-[10px] font-medium transition-all hover:border-[#3a4f63]"
+                        >
+                          ← Back
+                        </button>
+                        <button
+                          onClick={() => setSponsorshipStepIdx(2)}
+                          className="flex-1 p-[14px_22px] bg-primary text-white border-none rounded-[10px] text-[15px] font-semibold transition-all hover:bg-primary/80 hover:-translate-y-px"
+                        >
+                          Continue →
+                        </button>
+                      </div>
+                    </div>
+                  );
+                }
+
+                if (step === 2) {
+                  return (
+                    <div className="animate-in fade-in slide-in-from-right-4 duration-300">
+                      <div className="text-[11px] font-semibold tracking-[0.1em] uppercase text-primary mb-4">
+                        Sponsorship Calculator · Step 3 of 7
+                      </div>
+                      <h2
+                        className="text-[clamp(22px,3.5vw,28px)] font-serif font-black text-[#0c1b33] mb-2 leading-[1.3]"
+                        style={{ fontFamily: "'DM Serif Display', serif" }}
+                      >
+                        What is your household size?
+                      </h2>
+                      <div className="bg-[#e8f1fb] border border-[#d0e4f7] rounded-[10px] p-[14px_16px] mb-6">
+                        <p className="text-[13px] text-[#3a4f63] leading-[1.6]">
+                          Include the petitioner, the beneficiary, and any
+                          dependents.
+                        </p>
+                      </div>
+                      <div className="bg-white border-[1.5px] border-[#d0e4f7] rounded-[10px] p-[20px] mb-6">
+                        <label className="text-[12px] font-semibold uppercase tracking-[0.04em] text-[#6b8097] mb-2 block">
+                          Total Household Size
+                        </label>
+                        <input
+                          type="number"
+                          min="2"
+                          value={sponsorshipData.householdSize || 2}
+                          onChange={(e) =>
+                            setSponsorshipData({
+                              ...sponsorshipData,
+                              householdSize: Math.max(
+                                2,
+                                parseInt(e.target.value) || 2,
+                              ),
+                            })
+                          }
+                          className="w-full p-[12px_14px] border-[1.5px] border-[#d0e4f7] rounded-[10px] text-[15px] text-[#0c1b33] outline-none focus:border-primary focus:ring-4 focus:ring-primary/12 transition-all"
+                        />
+                      </div>
+                      <div className="flex gap-[10px]">
+                        <button
+                          onClick={() => setSponsorshipStepIdx(1)}
+                          className="p-[13px_22px] bg-transparent text-[#3a4f63] border-[1.5px] border-[#d0e4f7] rounded-[10px] font-medium transition-all hover:border-[#3a4f63]"
+                        >
+                          ← Back
+                        </button>
+                        <button
+                          onClick={() => setSponsorshipStepIdx(3)}
+                          className="flex-1 p-[14px_22px] bg-primary text-white border-none rounded-[10px] text-[15px] font-semibold transition-all hover:bg-primary/80 hover:-translate-y-px"
+                        >
+                          Continue →
+                        </button>
+                      </div>
+                    </div>
+                  );
+                }
+
+                if (step === 3) {
+                  return (
+                    <div className="animate-in fade-in slide-in-from-right-4 duration-300">
+                      <div className="text-[11px] font-semibold tracking-[0.1em] uppercase text-primary mb-4">
+                        Sponsorship Calculator · Step 4 of 7
+                      </div>
+                      <h2
+                        className="text-[clamp(22px,3.5vw,28px)] font-serif font-black text-[#0c1b33] mb-4 leading-[1.3]"
+                        style={{ fontFamily: "'DM Serif Display', serif" }}
+                      >
+                        Sponsorship qualification check
+                      </h2>
+                      <div
+                        className={`bg-[#e8f5ef] border border-[#a8d9be] rounded-[10px] p-[18px_20px] mb-6 ${qualifies ? "bg-[#e8f5ef] border-[#a8d9be]" : "bg-[#fef8e8] border-[#f0d98a]"}`}
+                      >
+                        <div
+                          className={`text-[10px] font-bold uppercase tracking-widest mb-2 ${qualifies ? "text-[#15744f]" : "text-[#8a6200]"}`}
+                        >
+                          {qualifies
+                            ? "Petitioner qualifies alone"
+                            : "Additional sponsorship may be needed"}
+                        </div>
+                        <div
+                          className="text-[20px] font-serif text-[#0c1b33] mb-1.5"
+                          style={{ fontFamily: "'DM Serif Display', serif" }}
+                        >
+                          AGI: ${sponsorshipData.agi.toLocaleString()}{" "}
+                          &nbsp;·&nbsp; Threshold: ${req.toLocaleString()}
+                        </div>
+                        <div className="text-[13px] text-[#3a4f63] leading-[1.55]">
+                          {qualifies
+                            ? `AGI is ${pct}% of the threshold — petitioner qualifies as sole sponsor.`
+                            : `AGI is ${pct}% of the ${req.toLocaleString()} threshold. Household member income or a joint sponsor may be needed.`}
+                        </div>
+                      </div>
+                      <div className="flex gap-[10px]">
+                        <button
+                          onClick={() => setSponsorshipStepIdx(2)}
+                          className="p-[13px_22px] bg-transparent text-[#3a4f63] border-[1.5px] border-[#d0e4f7] rounded-[10px] font-medium transition-all hover:border-[#3a4f63]"
+                        >
+                          ← Back
+                        </button>
+                        <button
+                          onClick={() => setSponsorshipStepIdx(4)}
+                          className="flex-1 p-[14px_22px] bg-primary text-white border-none rounded-[10px] text-[15px] font-semibold transition-all hover:bg-primary/80 hover:-translate-y-px"
+                        >
+                          Continue →
+                        </button>
+                      </div>
+                    </div>
+                  );
+                }
+
+                if (step === 4) {
+                  return (
+                    <div className="animate-in fade-in slide-in-from-right-4 duration-300">
+                      <div className="text-[11px] font-semibold tracking-[0.1em] uppercase text-primary mb-4">
+                        Sponsorship Calculator · Step 5 of 7
+                      </div>
+                      <h2
+                        className="text-[clamp(22px,3.5vw,28px)] font-serif font-black text-[#0c1b33] mb-2 leading-[1.3]"
+                        style={{ fontFamily: "'DM Serif Display', serif" }}
+                      >
+                        Is household member income being used?
+                      </h2>
+                      <p className="text-[14px] text-[#3a4f63] leading-[1.7] mb-6">
+                        A household member can contribute income to help meet
+                        the threshold. This requires Form I-864A.
+                      </p>
+                      <div className="bg-white border-[1.5px] border-[#d0e4f7] rounded-[10px] p-[20px] mb-6">
+                        <label className="text-[12px] font-semibold uppercase tracking-[0.04em] text-[#6b8097] mb-2 block">
+                          Using Household Member Income?
+                        </label>
+                        <select
+                          value={
+                            sponsorshipData.needsHouseholdMember ? "yes" : "no"
+                          }
+                          onChange={(e) =>
+                            setSponsorshipData({
+                              ...sponsorshipData,
+                              needsHouseholdMember: e.target.value === "yes",
+                            })
+                          }
+                          className="w-full p-[12px_14px] border-[1.5px] border-[#d0e4f7] rounded-[10px] text-[15px] bg-white text-[#0c1b33] outline-none transition-all"
+                        >
+                          <option value="no">
+                            No — petitioner income only
+                          </option>
+                          <option value="yes">
+                            Yes — including household member income
+                          </option>
+                        </select>
+                        {sponsorshipData.needsHouseholdMember && (
+                          <div className="mt-4 animate-in fade-in zoom-in-95 duration-200">
+                            <label className="text-[12px] font-semibold uppercase tracking-[0.04em] text-[#6b8097] mb-2 block">
+                              Number of household members
+                            </label>
+                            <input
+                              type="number"
+                              min="1"
+                              value={sponsorshipData.householdMemberCount || 1}
+                              onChange={(e) =>
+                                setSponsorshipData({
+                                  ...sponsorshipData,
+                                  householdMemberCount: Math.max(
+                                    1,
+                                    parseInt(e.target.value) || 1,
+                                  ),
+                                })
+                              }
+                              className="w-full p-[12px_14px] border-[1.5px] border-[#d0e4f7] rounded-[10px] text-[15px] text-[#0c1b33] outline-none transition-all"
+                            />
+                          </div>
+                        )}
+                      </div>
+                      <div className="flex gap-[10px]">
+                        <button
+                          onClick={() => setSponsorshipStepIdx(3)}
+                          className="p-[13px_22px] bg-transparent text-[#3a4f63] border-[1.5px] border-[#d0e4f7] rounded-[10px] font-medium transition-all hover:border-[#3a4f63]"
+                        >
+                          ← Back
+                        </button>
+                        <button
+                          onClick={() => setSponsorshipStepIdx(5)}
+                          className="flex-1 p-[14px_22px] bg-primary text-white border-none rounded-[10px] text-[15px] font-semibold transition-all hover:bg-primary/80 hover:-translate-y-px"
+                        >
+                          Continue →
+                        </button>
+                      </div>
+                    </div>
+                  );
+                }
+
+                if (step === 5) {
+                  return (
+                    <div className="animate-in fade-in slide-in-from-right-4 duration-300">
+                      <div className="text-[11px] font-semibold tracking-[0.1em] uppercase text-primary mb-4">
+                        Sponsorship Calculator · Step 6 of 7
+                      </div>
+                      <h2
+                        className="text-[clamp(22px,3.5vw,28px)] font-serif font-black text-[#0c1b33] mb-2 leading-[1.3]"
+                        style={{ fontFamily: "'DM Serif Display', serif" }}
+                      >
+                        Is a joint sponsor needed?
+                      </h2>
+                      <p className="text-[14px] text-[#3a4f63] leading-[1.7] mb-6">
+                        A joint sponsor independently meets the income threshold
+                        and files their own I-864.
+                      </p>
+                      <div className="bg-white border-[1.5px] border-[#d0e4f7] rounded-[10px] p-[20px] mb-6">
+                        <label className="text-[12px] font-semibold uppercase tracking-[0.04em] text-[#6b8097] mb-2 block">
+                          Using a joint sponsor?
+                        </label>
+                        <select
+                          value={
+                            sponsorshipData.needsJointSponsor ? "yes" : "no"
+                          }
+                          onChange={(e) =>
+                            setSponsorshipData({
+                              ...sponsorshipData,
+                              needsJointSponsor: e.target.value === "yes",
+                            })
+                          }
+                          className="w-full p-[12px_14px] border-[1.5px] border-[#d0e4f7] rounded-[10px] text-[15px] bg-white text-[#0c1b33] outline-none transition-all"
+                        >
+                          <option value="no">No</option>
+                          <option value="yes">Yes</option>
+                        </select>
+                        {sponsorshipData.needsJointSponsor && (
+                          <div className="mt-4 animate-in fade-in zoom-in-95 duration-200">
+                            <label className="text-[12px] font-semibold uppercase tracking-[0.04em] text-[#6b8097] mb-2 block">
+                              Number of joint sponsors
+                            </label>
+                            <select
+                              value={sponsorshipData.jointSponsorCount || 1}
+                              onChange={(e) =>
+                                setSponsorshipData({
+                                  ...sponsorshipData,
+                                  jointSponsorCount:
+                                    parseInt(e.target.value) || 1,
+                                })
+                              }
+                              className="w-full p-[12px_14px] border-[1.5px] border-[#d0e4f7] rounded-[10px] text-[15px] bg-white text-[#0c1b33] outline-none transition-all"
+                            >
+                              <option value="1">1 joint sponsor</option>
+                              <option value="2">2 joint sponsors</option>
+                            </select>
+                          </div>
+                        )}
+                      </div>
+                      <div className="flex gap-[10px]">
+                        <button
+                          onClick={() => setSponsorshipStepIdx(4)}
+                          className="p-[13px_22px] bg-transparent text-[#3a4f63] border-[1.5px] border-[#d0e4f7] rounded-[10px] font-medium transition-all hover:border-[#3a4f63]"
+                        >
+                          ← Back
+                        </button>
+                        <button
+                          onClick={() => setSponsorshipStepIdx(6)}
+                          className="flex-1 p-[14px_22px] bg-primary text-white border-none rounded-[10px] text-[15px] font-semibold transition-all hover:bg-primary/80 hover:-translate-y-px"
+                        >
+                          Continue →
+                        </button>
+                      </div>
+                    </div>
+                  );
+                }
+
+                if (step === 6) {
+                  const forms: any[] = [];
+                  const formNames: string[] = [];
+                  if (
+                    !sponsorshipData.needsHouseholdMember &&
+                    !sponsorshipData.needsJointSponsor &&
+                    sponsorshipData.agi >= req
+                  ) {
+                    forms.push({
+                      name: "Form I-864EZ — Petitioner",
+                      sub: "Simplified affidavit — petitioner qualifies alone with wage/salary income",
+                      url: I864EZ_URL,
+                    });
+                    formNames.push("I-864EZ (Petitioner)");
+                  } else {
+                    forms.push({
+                      name: "Form I-864 — Petitioner",
+                      sub: "Full affidavit of support for the petitioner",
+                      url: I864_URL,
+                    });
+                    formNames.push("I-864 (Petitioner)");
+                  }
+                  for (
+                    let i = 1;
+                    i <= (sponsorshipData.jointSponsorCount || 0);
+                    i++
+                  ) {
+                    forms.push({
+                      name: `Form I-864 — Joint Sponsor ${i}`,
+                      sub: `Joint sponsor ${i} files an independent full affidavit`,
+                      url: I864_URL,
+                    });
+                    formNames.push(`I-864 (Joint Sponsor ${i})`);
+                  }
+                  for (
+                    let i = 1;
+                    i <= (sponsorshipData.householdMemberCount || 0);
+                    i++
+                  ) {
+                    forms.push({
+                      name: `Form I-864A — Household Member ${i}`,
+                      sub: `Household member ${i} contributes income to the petitioner&apos;s sponsorship`,
+                      url: I864A_URL,
+                    });
+                    formNames.push(`I-864A (Household Member ${i})`);
+                  }
+
+                  return (
+                    <div className="animate-in fade-in slide-in-from-right-4 duration-300">
+                      <div className="text-[11px] font-semibold tracking-[0.1em] uppercase text-primary mb-4">
+                        Sponsorship Calculator · Step 7 of 7
+                      </div>
+                      <h2
+                        className="text-[clamp(22px,3.5vw,28px)] font-serif font-black text-[#0c1b33] mb-4 leading-[1.3]"
+                        style={{ fontFamily: "'DM Serif Display', serif" }}
+                      >
+                        Your sponsorship plan
+                      </h2>
+                      <div className="bg-[#e8f5ef] border border-[#a8d9be] rounded-[10px] p-[18px_20px] mb-6">
+                        <div className="text-[10px] font-bold uppercase tracking-widest text-[#15744f] mb-2">
+                          Sponsorship Plan
+                        </div>
+                        <div
+                          className="text-[20px] font-serif text-[#0c1b33] mb-1.5"
+                          style={{ fontFamily: "'DM Serif Display', serif" }}
+                        >
+                          {forms.length} form{forms.length > 1 ? "s" : ""}{" "}
+                          required
+                        </div>
+                        <div className="text-[13px] text-[#3a4f63] leading-[1.55]">
+                          {formNames.join(" · ")}
+                        </div>
+                      </div>
+                      <div className="flex gap-[10px]">
+                        <button
+                          onClick={() => setSponsorshipStepIdx(5)}
+                          className="p-[13px_22px] bg-transparent text-[#3a4f63] border-[1.5px] border-[#d0e4f7] rounded-[10px] font-medium transition-all hover:border-[#3a4f63]"
+                        >
+                          ← Back
+                        </button>
+                        <button
+                          onClick={() => {
+                            const result = {
+                              agi: sponsorshipData.agi,
+                              householdSize: sponsorshipData.householdSize,
+                              qualifies: sponsorshipData.agi >= req,
+                              needsHouseholdMember:
+                                sponsorshipData.needsHouseholdMember,
+                              householdMemberCount:
+                                sponsorshipData.householdMemberCount,
+                              needsJointSponsor:
+                                sponsorshipData.needsJointSponsor,
+                              jointSponsorCount:
+                                sponsorshipData.jointSponsorCount,
+                              forms,
+                            };
+                            actions.updateMetadata({
+                              sponsorshipResult: result,
+                            });
+                            setIsSponsorshipCalcOpen(false);
+                            if (!isCompleted)
+                              actions.toggleComplete("step_2_5");
+                          }}
+                          className="flex-1 p-[14px_22px] bg-[#15744f] text-white border-none rounded-[10px] text-[15px] font-semibold transition-all hover:bg-[#0e5c3c] hover:-translate-y-px"
+                        >
+                          Return to Affidavit Step →
+                        </button>
+                      </div>
+                    </div>
+                  );
+                }
+              })()}
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Global Modals */}
       <CredentialFormModal
         isOpen={isWalletFormOpen}
@@ -2296,7 +5775,6 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
         isSubmitting={isSubmittingCreds}
       />
 
-      {/* Guide Shell Overlay */}
       {isCivilDocGuideOpen && activeCivilDoc && (
         <CivilDocGuideOverlay
           isOpen={isCivilDocGuideOpen}
@@ -2304,6 +5782,22 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
           doc={activeCivilDoc}
           status={civilDocsStatus[activeCivilDoc.id] || "not-started"}
           onMarkReviewed={() => handleMarkDocReviewed(activeCivilDoc.id)}
+        />
+      )}
+
+      {isFinancialDocGuideOpen && activeFinancialDoc && (
+        <FinancialDocGuideOverlay
+          isOpen={isFinancialDocGuideOpen}
+          onClose={() => setIsFinancialDocGuideOpen(false)}
+          doc={activeFinancialDoc}
+          status={financialDocsStatus[activeFinancialDoc.id] || "not-started"}
+          onMarkReviewed={() => {
+            const next = {
+              ...financialDocsStatus,
+              [activeFinancialDoc.id]: "reviewed",
+            };
+            actions.updateMetadata({ financialDocsStatus: next });
+          }}
         />
       )}
 
@@ -2336,16 +5830,18 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
           {/* Guide Body */}
           <div className="flex-1 overflow-y-auto flex flex-col items-center p-[48px_24px_40px] bg-white">
             <div className="w-full max-w-[600px] flex flex-col">
-              {/* <div className="text-[11px] font-semibold tracking-[0.1em] uppercase text-primary mb-[16px]">
+              <div className="text-[11px] font-semibold tracking-[0.1em] uppercase text-primary mb-4">
                 Step 2 · Gather Required Documents
-              </div> */}
-              <div className="inline-flex items-center gap-[5px] bg-[#e8f1fb] border border-[#d0e4f7] rounded-full p-[4px_12px] text-[11px] font-medium text-[#3a4f63] mb-[24px] w-fit">
+              </div>
+              <div className="inline-flex items-center gap-[5px] bg-[#e8f1fb] border border-[#d0e4f7] rounded-full px-[12px] py-[4px] w-fit mb-6">
                 <div
-                  className={`w-[6px] h-[6px] rounded-full shrink-0 ${InlineGuideData[selectedGuideId].sourceType === "internal" ? "bg-[#6b8097]" : "bg-primary"}`}
+                  className={`w-[6px] h-[6px] rounded-full shrink-0 ${InlineGuideData[selectedGuideId].sourceType === "internal" ? "bg-[#3a4f63]" : "bg-primary"}`}
                 />
-                {InlineGuideData[selectedGuideId].sourceType === "internal"
-                  ? "Roadmap Module"
-                  : `Rahvana Guide — ${InlineGuideData[selectedGuideId].title}`}
+                <span className="text-[11px] font-medium text-[#3a4f63]">
+                  {InlineGuideData[selectedGuideId].sourceType === "internal"
+                    ? "Roadmap Module"
+                    : `Rahvana Guide — ${InlineGuideData[selectedGuideId].title}`}
+                </span>
               </div>
               <h2 className="font-black font-serif text-[clamp(22px,3.5vw,28px)] text-[#0f1f38] mb-[6px] leading-[1.25]">
                 {InlineGuideData[selectedGuideId].title}
@@ -2360,14 +5856,15 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                   (section, idx) => (
                     <div
                       key={idx}
-                      className="bg-[#f5f7fa] border border-[#d0e4f7] rounded-[14px] p-[22px_24px] mb-[14px]"
+                      className="bg-[#f4f7fb] border border-[#d0e4f7] rounded-[16px] p-[20px_22px] mb-[14px]"
                     >
-                      <div className="text-[13px] font-semibold tracking-[0.05em] uppercase text-[#6b8097] mb-[12px]">
-                        {section.title}
+                      <div className="text-[13px] font-semibold tracking-[0.05em] uppercase text-[#6b8097] mb-[10px]">
+                        {section.t || section.title}
                       </div>
                       <div
+                        className="guide-content"
                         dangerouslySetInnerHTML={{
-                          __html: section.htmlContent,
+                          __html: section.c || section.htmlContent,
                         }}
                       />
                     </div>
@@ -2376,18 +5873,18 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
               </div>
 
               {/* Actions */}
-              <div className="flex flex-col gap-[10px] mt-[28px] max-w-[600px] w-full">
+              <div className="flex flex-col gap-[10px] mt-[28px] mb-[40px]">
                 <button
                   onClick={() => {
                     setSelectedGuideId(null);
                   }}
-                  className="p-[14px_24px] bg-[#eaf7f2] text-[#1a7a5e] border-[1.5px] border-[#b5e0d0] rounded-[14px] text-[14px] font-semibold cursor-pointer transition-all hover:bg-[#d2f0e4] hover:-translate-y-px text-center"
+                  className="w-full p-[15px_24px] bg-[#15744f] text-white border-none rounded-[16px] font-bold text-[15px] transition-all hover:bg-[#0e5c3c] hover:-translate-y-px text-center"
                 >
-                  ✓ Mark as reviewed
+                  Mark as reviewed
                 </button>
                 <button
                   onClick={() => setSelectedGuideId(null)}
-                  className="p-[14px_24px] bg-transparent text-[#3a4f63] border-[1.5px] border-[#d0e4f7] rounded-[14px] text-[14px] font-medium cursor-pointer transition-colors hover:border-[#3a4f63] hover:text-[#1c2b3a] text-center"
+                  className="w-full p-[14px_24px] bg-transparent border-[1.5px] border-[#d0e4f7] rounded-[16px] text-[#3a4f63] font-medium text-[14px] hover:border-[#3a4f63] hover:text-[#0c1b33] transition-all text-center"
                 >
                   ← Back to document list
                 </button>
@@ -2395,6 +5892,20 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Household Doc Guide Overlay */}
+      {isHhDocGuideOpen && activeHhDoc && (
+        <HouseholdDocGuideOverlay
+          isOpen={isHhDocGuideOpen}
+          onClose={() => setIsHhDocGuideOpen(false)}
+          doc={activeHhDoc}
+          status={hhDocsStatus[activeHhDoc.id]}
+          onMarkReviewed={() => {
+            const next = { ...hhDocsStatus, [activeHhDoc.id]: "reviewed" };
+            setHhDocsStatus(next);
+          }}
+        />
       )}
       {/* Tutorial Overlay */}
       {isTutorialOpen &&
@@ -2603,6 +6114,14 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
             </div>
           );
         })()}
+      {/* Submission Guide Overlay (Step 8) */}
+      <SubmissionTutorialOverlay
+        isOpen={isSubmissionGuideOpen}
+        onClose={() => setIsSubmissionGuideOpen(false)}
+        currentIdx={submissionGuideIdx}
+        steps={SUBMISSION_TUTORIAL_STEPS}
+        onSetIdx={setSubmissionGuideIdx}
+      />
     </div>
   );
 };
@@ -2785,6 +6304,392 @@ function NvcFeeModal({
   );
 }
 
+function FinancialDocGuideOverlay({
+  isOpen,
+  onClose,
+  doc,
+  status,
+  onMarkReviewed,
+}: {
+  isOpen: boolean;
+  onClose: () => void;
+  doc: any;
+  status: string;
+  onMarkReviewed: () => void;
+}) {
+  const isReviewed = status === "reviewed";
+
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [isOpen]);
+
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 bg-white z-[200] flex flex-col overflow-hidden animate-in slide-in-from-bottom-[18px] duration-[0.28s] ease-in-out font-sans">
+      {/* Topbar */}
+      <div className="flex items-center h-[72px] border-b border-[#d0e4f7] px-6 gap-4 shrink-0 bg-white">
+        <button
+          onClick={onClose}
+          className="w-9 h-9 rounded-full bg-[#f4f7fb] border-none flex items-center justify-center text-[#3a4f63] hover:bg-[#e8f1fb] transition-all cursor-pointer"
+        >
+          <X size={16} strokeWidth={2} />
+        </button>
+
+        <div className="flex-1 text-[13px] font-semibold text-[#0c1b33]">
+          Step 6 · Gather Financial Support Documents
+        </div>
+      </div>
+
+      {/* Body */}
+      <div className="flex-1 overflow-y-auto bg-white p-[48px_24px_40px] flex flex-col items-center">
+        <div className="w-full max-w-[600px] flex flex-col">
+          <div className="text-[11px] font-semibold tracking-[0.1em] uppercase text-[#2f6fd4] mb-4">
+            Step 6 · Financial Support Documents
+          </div>
+
+          <h2
+            className="text-[clamp(22px,3.5vw,28px)] font-black text-[#0c1b33] mb-[6px] leading-[1.25] font-serif"
+            style={{ fontFamily: "'DM Serif Display', serif" }}
+          >
+            {doc.title}
+          </h2>
+          <p className="text-[14px] text-[#3a4f63] leading-[1.6] mb-[28px]">
+            {doc.sub}
+          </p>
+
+          <div className="flex flex-col">
+            <style jsx global>{`
+              .guide-content p {
+                font-size: 14px;
+                color: #3a4f63;
+                line-height: 1.7;
+                margin-bottom: 8px;
+              }
+              .guide-content p:last-child {
+                margin-bottom: 0;
+              }
+            `}</style>
+
+            <div className="bg-[#f4f7fb] border border-[#d0e4f7] rounded-[10px] p-[22px_24px] mb-[14px]">
+              <h3 className="text-[13px] font-semibold text-[#6b8097] uppercase tracking-[0.05em] mb-[12px]">
+                What this is
+              </h3>
+              <div className="guide-content">
+                <p>{doc.guide?.intro}</p>
+              </div>
+            </div>
+
+            {doc.guide?.sections?.map((section: any, idx: number) => (
+              <div
+                key={idx}
+                className="bg-[#f4f7fb] border border-[#d0e4f7] rounded-[10px] p-[22px_24px] mb-[14px]"
+              >
+                <h3 className="text-[13px] font-semibold text-[#6b8097] uppercase tracking-[0.05em] mb-[12px]">
+                  {section.title}
+                </h3>
+                <div className="guide-content">
+                  <p>{section.body}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Footer Actions */}
+          <div className="flex flex-col gap-[10px] mt-[28px]">
+            <button
+              onClick={() => {
+                onMarkReviewed();
+                // We stay in the overlay but update the disabled state, matching HTML behavior
+              }}
+              className={`w-full p-[15px_24px] bg-[#15744f] text-white rounded-[10px] font-semibold text-[15px] transition-all hover:bg-[#0e5c3c] hover:-translate-y-px active:translate-y-0 disabled:bg-[#d0e4f7] disabled:text-[#6b8097] disabled:cursor-not-allowed disabled:transform-none`}
+              disabled={isReviewed}
+            >
+              {isReviewed ? "✓ Marked as reviewed" : "Mark as reviewed"}
+            </button>
+            <button
+              onClick={onClose}
+              className="w-full p-[14px_24px] bg-transparent border-[1.5px] border-[#d0e4f7] rounded-[10px] text-[#3a4f63] font-medium text-[14px] hover:border-[#3a4f63] hover:text-[#0c1b33] transition-all text-center"
+            >
+              ← Back to document list
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function HouseholdDocGuideOverlay({
+  isOpen,
+  onClose,
+  doc,
+  status,
+  onMarkReviewed,
+}: {
+  isOpen: boolean;
+  onClose: () => void;
+  doc: any;
+  status: string;
+  onMarkReviewed: () => void;
+}) {
+  const isReviewed = status === "reviewed";
+
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [isOpen]);
+
+  if (!isOpen) return null;
+
+  // Get guide content from the structured data if available
+  const guide = HOUSEHOLD_GUIDE_CONTENT[doc.guideKey] || {
+    intro:
+      "Preparing proper relationship proof is essential for CEAC acceptance.",
+    sections: [
+      {
+        title: "Requirement Summary",
+        body: "Ensure the document is a clear scan of the original, not a photocopied print-out. If not in English, a certified translation is required.",
+      },
+    ],
+  };
+
+  return (
+    <div className="fixed inset-0 bg-white z-[200] flex flex-col overflow-hidden animate-in slide-in-from-bottom-[18px] duration-[0.28s] ease-in-out font-sans">
+      {/* Topbar */}
+      <div className="flex items-center h-[72px] border-b border-[#d0e4f7] px-6 gap-4 shrink-0 bg-white">
+        <button
+          onClick={onClose}
+          className="w-9 h-9 rounded-full bg-[#f4f7fb] border-none flex items-center justify-center text-[#3a4f63] hover:bg-[#e8f1fb] transition-all cursor-pointer"
+        >
+          <X size={16} strokeWidth={2} />
+        </button>
+
+        <div className="flex-1 text-[13px] font-semibold text-[#0c1b33]">
+          Step 7 · Household Member Relationship Proof
+        </div>
+      </div>
+
+      {/* Body */}
+      <div className="flex-1 overflow-y-auto bg-white p-[48px_24px_40px] flex flex-col items-center">
+        <div className="w-full max-w-[600px] flex flex-col">
+          <div className="text-[11px] font-semibold tracking-[0.1em] uppercase text-[#4a2d8a] mb-4">
+            Step 7 · Relationship Documentation
+          </div>
+
+          <h2
+            className="text-[clamp(22px,3.5vw,28px)] font-black text-[#0c1b33] mb-[6px] leading-[1.25] font-serif"
+            style={{ fontFamily: "'DM Serif Display', serif" }}
+          >
+            {doc.title}
+          </h2>
+          <p className="text-[14px] text-[#3a4f63] leading-[1.6] mb-[28px]">
+            {doc.sub}
+          </p>
+
+          <div className="flex flex-col">
+            <style jsx global>{`
+              .guide-content p {
+                font-size: 14px;
+                color: #3a4f63;
+                line-height: 1.7;
+                margin-bottom: 8px;
+              }
+              .guide-content p:last-child {
+                margin-bottom: 0;
+              }
+              .guide-content ul {
+                padding-left: 18px;
+                margin-top: 6px;
+                margin-bottom: 8px;
+              }
+              .guide-content li {
+                font-size: 14px;
+                color: #3a4f63;
+                line-height: 1.65;
+                margin-bottom: 5px;
+              }
+              .info-box {
+                background: #e8f1fb;
+                border: 1px solid #d0e4f7;
+                border-radius: 8px;
+                padding: 12px 14px;
+                margin-top: 10px;
+              }
+              .info-box p {
+                font-size: 13px;
+                color: #3a4f63;
+                line-height: 1.6;
+                margin: 0;
+              }
+              .guide-content ul {
+                margin: 12px 0;
+                padding-left: 18px;
+                list-style-type: none;
+              }
+              .guide-content li {
+                position: relative;
+                font-size: 14px;
+                color: #3a4f63;
+                line-height: 1.6;
+                margin-bottom: 8px;
+                padding-left: 20px;
+              }
+              .guide-content li::before {
+                content: "•";
+                position: absolute;
+                left: 0;
+                color: #cbd5e1;
+                font-weight: bold;
+              }
+              .note-box {
+                background: #fef8e8;
+                border: 1px solid #f0d98a;
+                border-radius: 8px;
+                padding: 12px 14px;
+                margin-top: 10px;
+              }
+              .note-box p {
+                font-size: 13px;
+                color: #8a6200;
+                line-height: 1.6;
+                margin: 0;
+              }
+              /* Mock Visual Components for Tutorials */
+              .mock-card {
+                background: white;
+                border: 2px solid #d0e4f7;
+                border-radius: 12px;
+                padding: 18px 20px;
+                box-shadow: 0 4px 16px rgba(12, 27, 51, 0.05);
+                margin-bottom: 12px;
+              }
+              .mock-title {
+                font-size: 14px;
+                font-weight: 700;
+                color: #0c1b33;
+                margin-bottom: 12px;
+                letter-spacing: -0.01em;
+              }
+              .mock-row {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding: 8px 0;
+                border-bottom: 1px solid #eef3fa;
+                font-size: 13px;
+                color: #3a4f63;
+              }
+              .mock-row:last-child {
+                border-bottom: none;
+              }
+              .mock-badge-green {
+                font-size: 11px;
+                font-weight: 700;
+                padding: 3px 10px;
+                border-radius: 100px;
+                background: #e8f5ef;
+                color: #15744f;
+                border: 1px solid #a8d9be;
+                text-transform: uppercase;
+                letter-spacing: 0.03em;
+              }
+              .mock-badge-amber {
+                font-size: 11px;
+                font-weight: 700;
+                padding: 3px 10px;
+                border-radius: 100px;
+                background: #fef8e8;
+                color: #8a6200;
+                border: 1px solid #f0d98a;
+                text-transform: uppercase;
+                letter-spacing: 0.03em;
+              }
+              .hl-box {
+                padding: 10px 14px;
+                background: rgba(47, 111, 212, 0.08);
+                border: 1.5px solid rgba(47, 111, 212, 0.2);
+                border-radius: 10px;
+                font-size: 13px;
+                font-weight: 600;
+                color: #2f6fd4;
+                margin-top: 10px;
+                line-height: 1.5;
+              }
+              .warn-box {
+                padding: 10px 14px;
+                background: #fef2f2;
+                border: 1.5px solid #fecaca;
+                border-radius: 10px;
+                font-size: 13px;
+                color: #b91c1c;
+                margin-top: 10px;
+                line-height: 1.5;
+              }
+            `}</style>
+
+            <div className="bg-[#f4f7fb] border border-[#d0e4f7] rounded-[10px] p-[22px_24px] mb-[14px]">
+              <h3 className="text-[13px] font-semibold text-[#6b8097] uppercase tracking-[0.05em] mb-[12px]">
+                What this is
+              </h3>
+              <div className="guide-content">
+                <p>{guide.intro}</p>
+              </div>
+            </div>
+
+            {guide.sections?.map((section: any, idx: number) => (
+              <div
+                key={idx}
+                className="bg-[#f4f7fb] border border-[#d0e4f7] rounded-[10px] p-[22px_24px] mb-[14px]"
+              >
+                <h3 className="text-[13px] font-semibold text-[#6b8097] uppercase tracking-[0.05em] mb-[12px]">
+                  {section.title}
+                </h3>
+                <div
+                  className="guide-content"
+                  dangerouslySetInnerHTML={{ __html: section.body }}
+                />
+              </div>
+            ))}
+          </div>
+
+          {/* Footer Actions */}
+          <div className="flex flex-col gap-[10px] mt-[28px]">
+            <button
+              onClick={() => {
+                onMarkReviewed();
+              }}
+              className={`w-full p-[15px_24px] bg-[#15744f] text-white rounded-[10px] font-semibold text-[15px] transition-all hover:bg-[#0e5c3c] hover:-translate-y-px active:translate-y-0 disabled:bg-[#d0e4f7] disabled:text-[#6b8097] disabled:cursor-not-allowed disabled:transform-none`}
+              disabled={isReviewed}
+            >
+              {isReviewed ? "✓ Marked as reviewed" : "Mark as reviewed"}
+            </button>
+            <button
+              onClick={onClose}
+              className="w-full p-[14px_24px] bg-transparent border-[1.5px] border-[#d0e4f7] rounded-[10px] text-[#3a4f63] font-medium text-[14px] hover:border-[#3a4f63] hover:text-[#0c1b33] transition-all text-center"
+            >
+              ← Back to document list
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function CivilDocGuideOverlay({
   isOpen,
   onClose,
@@ -2822,61 +6727,120 @@ function CivilDocGuideOverlay({
 
       {/* Body */}
       <div className="flex-1 overflow-y-auto bg-[#fafcff] p-[48px_24px_40px] flex flex-col items-center">
-        <div className="w-full max-w-[620px] flex flex-col">
-          <div className="flex items-center gap-[6px] bg-[#e8f1fb] border border-[#d0e4f7] rounded-full px-[12px] py-[4px] w-fit mb-5">
+        <div className="w-full max-w-[600px] flex flex-col">
+          <div className="text-[11px] font-semibold tracking-[0.1em] uppercase text-primary mb-4">
+            Step 4 · Prepare Civil Documents
+          </div>
+          <div className="inline-flex items-center gap-[5px] bg-[#e8f1fb] border border-[#d0e4f7] rounded-full px-[12px] py-[4px] w-fit mb-6">
             <div className="w-[6px] h-[6px] rounded-full bg-primary" />
-            <span className="text-[11px] font-semibold text-[#2d4a6e] uppercase tracking-[0.05em]">
-              Roadmap Module · Civil Document
+            <span className="text-[11px] font-medium text-[#3a4f63]">
+              NVC / CEAC Civil Document
             </span>
           </div>
 
-          <h2 className="text-[clamp(24px,3.8vw,30px)] font-black text-[#0c1b33] mb-2 leading-tight">
+          <h2
+            className="text-[clamp(22px,3.5vw,28px)] font-black text-[#0c1b33] mb-[6px] leading-[1.25]"
+            style={{ fontFamily: "'DM Serif Display', serif" }}
+          >
             {doc.title}
           </h2>
-          <p className="text-[15px] text-[#3a4f63] leading-relaxed mb-10">
+          <p className="text-[14px] text-[#3a4f63] leading-[1.6] mb-[28px]">
             {doc.sub}
           </p>
 
-          <div className="flex flex-col gap-5">
+          <div className="flex flex-col">
+            <style jsx global>{`
+              .guide-content p {
+                font-size: 14px;
+                color: #3a4f63;
+                line-height: 1.7;
+                margin-bottom: 8px;
+              }
+              .guide-content p:last-child {
+                margin-bottom: 0;
+              }
+              .guide-content ul {
+                padding-left: 18px;
+                margin-top: 6px;
+                margin-bottom: 8px;
+              }
+              .guide-content li {
+                font-size: 14px;
+                color: #3a4f63;
+                line-height: 1.65;
+                margin-bottom: 5px;
+              }
+              .note-box {
+                background: #fef8e8;
+                border: 1px solid #f0d98a;
+                border-radius: 10px;
+                padding: 13px 16px;
+                margin-top: 12px;
+                margin-bottom: 12px;
+              }
+              .note-box p {
+                font-size: 13px;
+                color: #8a6200;
+                line-height: 1.6;
+                margin: 0;
+              }
+              .info-box {
+                background: #e8f1fb;
+                border: 1px solid #d0e4f7;
+                border-radius: 10px;
+                padding: 13px 16px;
+                margin-top: 12px;
+                margin-bottom: 12px;
+              }
+              .info-box p {
+                font-size: 13px;
+                color: #3a4f63;
+                line-height: 1.6;
+                margin: 0;
+              }
+            `}</style>
             {doc.sections?.map((section: any, idx: number) => (
               <div
                 key={idx}
-                className="bg-white border border-[#d0e4f7] rounded-[18px] p-7 shadow-sm"
+                className="bg-[#f4f7fb] border border-[#d0e4f7] rounded-[16px] p-[20px_22px] mb-[14px]"
               >
-                <h3 className="text-[14px] font-bold text-[#0c1b33] uppercase tracking-[0.08em] mb-4 text-primary/80">
-                  {section.title}
+                <h3 className="text-[13px] font-semibold text-[#6b8097] uppercase tracking-[0.05em] mb-[10px]">
+                  {section.t || section.title}
                 </h3>
                 <div
-                  className="text-[14.5px] text-[#3a4f63] leading-[1.7] prose-sm prose-slate max-w-none"
-                  dangerouslySetInnerHTML={{ __html: section.htmlContent }}
+                  className="guide-content"
+                  dangerouslySetInnerHTML={{
+                    __html: section.c || section.htmlContent,
+                  }}
                 />
               </div>
             ))}
           </div>
 
           {/* Footer Actions */}
-          <div className="flex flex-col gap-3 mt-12 mb-10">
+          <div className="flex flex-col gap-[10px] mt-[28px] mb-[40px]">
             <button
               onClick={() => {
                 onMarkReviewed();
                 onClose();
               }}
-              className={`w-full p-[16px_28px] rounded-[14px] font-bold text-[15px] transition-all flex items-center justify-center gap-2 shadow-sm
+              className={`w-full p-[15px_24px] rounded-[16px] font-bold text-[15px] transition-all flex items-center justify-center gap-2
                 ${
                   isReviewed
-                    ? "bg-[#e8f5ef] text-[#15744f] border border-[#a8d9be] opacity-80"
-                    : "bg-[#15744f] text-white hover:bg-[#0e5c3c] hover:-translate-y-px shadow-[0_4px_20px_rgba(21,116,79,0.25)]"
+                    ? "bg-[#d0e4f7] text-[#6b8097] cursor-not-allowed opacity-80"
+                    : "bg-[#15744f] text-white hover:bg-[#0e5c3c] hover:-translate-y-px"
                 }
               `}
+              disabled={isReviewed}
             >
               {isReviewed ? <Check size={18} strokeWidth={3} /> : null}
-              {isReviewed ? "✓ Already Reviewed" : "Mark as reviewed →"}
+              {isReviewed ? "✓ Marked as reviewed" : "Mark as reviewed"}
             </button>
             <button
               onClick={onClose}
-              className="w-full p-[15px_28px] border-[1.5px] border-[#d0e4f7] rounded-[14px] text-[#3a4f63] font-semibold text-[14px] hover:border-[#6b8097] hover:bg-slate-50 transition-all text-center"
+              className="w-full p-[14px_24px] bg-transparent border-[1.5px] border-[#d0e4f7] rounded-[16px] text-[#3a4f63] font-medium text-[14px] hover:border-[#3a4f63] hover:text-[#0c1b33] transition-all text-center"
             >
-              Back to document list
+              ← Back to document list
             </button>
           </div>
         </div>
@@ -2952,7 +6916,7 @@ function CeacCredsModal({
         </div>
 
         <div className="px-6 pb-6">
-          <div className="h-[1px] bg-[#d0e4f7] mb-5" />
+          <div className="h-px bg-[#d0e4f7] mb-5" />
 
           <div className="flex flex-col gap-3.5 mb-5">
             <div className="flex flex-col gap-1.5">
