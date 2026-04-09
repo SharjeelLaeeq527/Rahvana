@@ -7,6 +7,7 @@ import { ChapterView } from "./ChapterView";
 import { StepView } from "./StepView";
 import { WizardState } from "@/app/(main)/dashboard/hooks/useWizard";
 import { ChevronRight, ArrowLeft, Check, LayoutDashboard } from "lucide-react";
+import { getDisplayStepNumber } from "./journeyHelpers";
 
 interface RoadmapLayoutV2Props {
   data: RoadmapData;
@@ -43,6 +44,7 @@ export default function RoadmapLayoutV2({
 
   const handleSelectChapter = (idx: number) => {
     setSelectedChapterIdx(idx);
+    actions.setStage(idx); // Update backend state with new chapter
     setView("chapter");
     actions.setCurrentStep(-1); // Reset step in case one was open
   };
@@ -139,18 +141,23 @@ export default function RoadmapLayoutV2({
 
           {view === "step" &&
             state.currentStep !== null &&
-            state.currentStep !== -1 && (
-              <>
-                <ChevronRight
-                  size={12}
-                  className="opacity-30"
-                  strokeWidth={3}
-                />
-                <div className="text-[#3a4f63] px-1 py-0.5 rounded cursor-default">
-                  Step {state.currentStep + 1}
-                </div>
-              </>
-            )}
+            state.currentStep !== -1 && (() => {
+              const chapter = data.chapters?.[state.currentStage];
+              const step = chapter?.steps[state.currentStep];
+              const displayNum = step ? getDisplayStepNumber(step) : (state.currentStep + 1);
+              return (
+                <>
+                  <ChevronRight
+                    size={12}
+                    className="opacity-30"
+                    strokeWidth={3}
+                  />
+                  <div className="text-[#3a4f63] px-1 py-0.5 rounded cursor-default">
+                    Step {displayNum}
+                  </div>
+                </>
+              );
+            })()}
         </div>
 
         {/* Global Toolbar / Context Actions */}

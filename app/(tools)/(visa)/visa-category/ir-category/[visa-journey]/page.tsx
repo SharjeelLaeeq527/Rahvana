@@ -101,7 +101,14 @@ export default function IR1JourneyPage() {
   }, [isLoaded, isSignedIn, hasExistingProgress, journeyDecisionMade, actions]);
 
   if (!isLoaded || !dataLoaded) {
-    return <Loader fullScreen text={t("visaJourney.loading")} />;
+    return (
+          <div className="flex flex-col items-center justify-center h-screen gap-4">
+            <Loader size="lg" />
+            <p className="text-[#0d7377] text-sm font-medium mt-2">
+              Loading your Journey...
+            </p>
+          </div>
+        );
   }
 
   if (!roadmapData) {

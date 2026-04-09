@@ -985,6 +985,7 @@
           "step_description": "Use Rahvana's guided Autoform Filler to complete the I-130 Petition for Alien Relative — with structured step-by-step support, clear prompts, and a built-in review flow.",
           "step_type": "tool",
           "branch": "online",
+          "visible_when": { "filingMethodConfirmed": true, "filingMethod": "online" },
           "tool_data": {
             "id": "i130-filler-online",
             "eyebrow": "Fill Form I-130",
@@ -1046,7 +1047,6 @@
           "dependencies": [
             "step_1_3"
           ],
-          "visible_when": {},
           "estimated_duration_days": 2,
           "is_required": true,
           "display_order": 4,
@@ -1076,11 +1076,11 @@
           "step_description": "Complete the beneficiary spouse information form using Rahvana's guided Autoform Filler — structured prompts, field-by-field clarity, and a built-in review before you finalize.",
           "step_type": "tool",
           "branch": "online",
+          "visible_when": { "filingMethodConfirmed": true, "filingMethod": "online" },
           "who": "via Rahvana wizard",
           "dependencies": [
             "step_1_4"
           ],
-          "visible_when": {},
           "estimated_duration_days": 1,
           "is_required": true,
           "display_order": 5,
@@ -1144,12 +1144,12 @@
           "step_short_description": "myaccount.uscis.gov",
           "step_type": "tool",
           "branch": "online",
+          "visible_when": { "filingMethodConfirmed": true, "filingMethod": "online" },
           "step_description": "Set up the petitioner's USCIS online account — the gateway for filing Form I-130 digitally, tracking the case, and responding to any USCIS requests.",
           "who": "myaccount.uscis.gov",
           "dependencies": [
             "step_1_3"
           ],
-          "visible_when": {},
           "estimated_duration_days": 1,
           "is_required": true,
           "display_order": 6,
@@ -1216,13 +1216,13 @@
           "step_short_description": "Begin petition online",
           "step_type": "tool",
           "branch": "online",
+          "visible_when": { "filingMethodConfirmed": true, "filingMethod": "online" },
           "step_description": "Sign in to your USCIS account and begin the online I-130 petition. From your account dashboard, click \"File a Form Online\" to start the form and enter your prepared information.",
           "who": "Petitioner",
           "where": "myaccount.uscis.gov",
           "dependencies": [
             "step_1_6"
           ],
-          "visible_when": {},
           "estimated_duration_days": 1,
           "is_required": true,
           "display_order": 7,
@@ -1464,6 +1464,7 @@
           "step_short_description": "$625 online · non-refundable",
           "step_type": "tool",
           "branch": "online",
+          "visible_when": { "filingMethodConfirmed": true, "filingMethod": "online" },
           "step_description": "After completing your form review and digital signature inside the USCIS portal, you will reach the payment step. Pay securely online to complete the I-130 submission.",
           "who": "Petitioner",
           "where": "my.uscis.gov / pay.gov",
@@ -1471,7 +1472,6 @@
           "dependencies": [
             "step_1_8"
           ],
-          "visible_when": {},
           "estimated_duration_days": 1,
           "is_required": true,
           "display_order": 9,
@@ -1584,6 +1584,7 @@
           "step_short_description": "Final submission · receipt issued",
           "step_type": "tool",
           "branch": "online",
+          "visible_when": { "filingMethodConfirmed": true, "filingMethod": "online" },
           "step_description": "This is the final step before your I-130 petition is officially submitted to USCIS. Review everything carefully, sign electronically, pay the filing fee, and submit.",
           "who": "Petitioner",
           "where": "my.uscis.gov",
@@ -1591,7 +1592,6 @@
           "dependencies": [
             "step_1_9"
           ],
-          "visible_when": {},
           "estimated_duration_days": 1,
           "is_required": true,
           "display_order": 10,
@@ -1714,6 +1714,8 @@
           "step_short_description": "I-130, I-130A, G-1145",
           "step_type": "tool",
           "branch": "paper",
+          "visible_when": { "filingMethodConfirmed": true, "filingMethod": "paper" },
+          "display_number_override": 4,
           "step_description": "Download the latest versions of Form I-130 and I-130A from USCIS. Fill them out on your computer or by hand (black ink), print them, and prepare for signing.",
           "who": "Petitioner",
           "where": "uscis.gov/i-130",
@@ -1750,6 +1752,8 @@
           "step_short_description": "Order: Fee → G-1145 → Forms → Evidence",
           "step_type": "docs",
           "branch": "paper",
+          "visible_when": { "filingMethodConfirmed": true, "filingMethod": "paper" },
+          "display_number_override": 5,
           "step_description": "Organize your I-130 filing in the exact order USCIS prefers. A well-organized packet prevents missing documents and speeds up intake processing.",
           "who": "Petitioner",
           "where": "Physical assembly",
@@ -1802,6 +1806,8 @@
           "step_short_description": "Use UPS/FedEx/DHL for tracking",
           "step_type": "tool",
           "branch": "paper",
+          "visible_when": { "filingMethodConfirmed": true, "filingMethod": "paper" },
+          "display_number_override": 6,
           "step_description": "Send your completed, signed, and organized I-130 packet to the correct USCIS Lockbox based on your state of residence. Use a reliable courier with tracking.",
           "who": "Petitioner",
           "where": "Courier service (UPS/FedEx)",
