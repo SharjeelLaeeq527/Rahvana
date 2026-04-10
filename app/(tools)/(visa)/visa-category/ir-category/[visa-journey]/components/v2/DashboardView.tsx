@@ -252,7 +252,7 @@ export function DashboardView({
                   <div className="flex items-center gap-1.5 mt-auto">
                     <div className="flex-1 h-1 bg-[#d0e4f7] rounded-[10px] overflow-hidden">
                       <div
-                        className="h-full rounded-[10px] transition-all duration-500 bg-gradient-to-r from-primary to-[#6aa8f0]"
+                        className="h-full rounded-[10px] transition-all duration-500 bg-gradient-to-r from-primary to-primary/70"
                         style={{ width: `${prog.pct}%` }}
                       />
                     </div>

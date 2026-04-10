@@ -3156,7 +3156,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                       });
                       toast.success("DQ details recorded!");
                     }}
-                    className="w-full py-[14px] bg-[#2f6fd4] text-white border-none rounded-[10px] text-[15px] font-semibold cursor-pointer transition-all hover:bg-[#2460bb] hover:-translate-y-px active:translate-y-0 shadow-[0_4px_20px_rgba(47,111,212,0.25)]"
+                    className="w-full py-[14px] bg-primary text-white border-none rounded-[10px] text-[15px] font-semibold cursor-pointer transition-all hover:bg-primary/70 hover:-translate-y-px active:translate-y-0 shadow-[0_4px_20px_rgba(47,111,212,0.25)]"
                   >
                     Save DQ & Activate Tracking
                   </button>
@@ -4860,24 +4860,114 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                                 {item.sub}
                               </div>
                             </div>
-                            <div
-                              className={`text-[11px] font-[500] px-[10px] py-[4px] border rounded-full whitespace-nowrap shrink-0 transition-all ${
-                                isRev
-                                  ? "bg-[#e8f5ef] text-[#15744f] border-[#a8d9be]"
-                                  : isIP
-                                    ? "bg-[#fef8e8] text-[#8a6200] border-[#f0d98a]"
-                                    : "bg-[#f4f7fb] text-[#6b8097] border-[#d0e4f7]"
-                              }`}
-                            >
-                              {isRev ? (
-                                <span className="flex items-center gap-1">
-                                  <Check size={12} strokeWidth={3} /> Packed
-                                </span>
-                              ) : isIP ? (
-                                "In progress"
-                              ) : (
-                                "Open guide"
-                              )}
+
+                            <div className="shrink-0 flex flex-col items-center gap-2">
+                              {(() => {
+                                const defId = mapDocumentNameToId(item.title);
+                                const uploadedDoc = uploadedDocuments.find(ud => ud.documentDefId === defId);
+                                
+                                if (isReloadingDocs && !uploadedDoc) {
+                                  return (
+                                    <div className="flex items-center gap-1.5 px-[11px] py-[5px] text-[12px] text-muted-foreground font-medium animate-pulse">
+                                      <div className="h-3 w-3 rounded-full border-2 border-muted-foreground/30 border-t-muted-foreground animate-spin" />
+                                      Checking...
+                                    </div>
+                                  );
+                                }
+
+                                if (uploadedDoc) {
+                                  return (
+                                    <DropdownMenu>
+                                      <DropdownMenuTrigger asChild>
+                                        <button
+                                          onClick={(e) => e.stopPropagation()}
+                                          className="h-8 w-8 rounded-full hover:bg-muted flex items-center justify-center transition-colors text-muted-foreground hover:text-foreground border border-transparent hover:border-muted-foreground/20"
+                                        >
+                                          <MoreVertical size={18} />
+                                        </button>
+                                      </DropdownMenuTrigger>
+                                      <DropdownMenuContent align="end" className="w-[140px] rounded-xl shadow-xl border-muted/20">
+                                        <DropdownMenuItem 
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            window.open(`/api/documents/${uploadedDoc.id}/download`, '_blank');
+                                          }}
+                                          className="flex items-center gap-2 cursor-pointer font-medium text-[13px] py-2.5"
+                                        >
+                                          <Eye size={16} className="text-primary" />
+                                          Preview
+                                        </DropdownMenuItem>
+                                        <DropdownMenuItem 
+                                          onClick={async (e) => {
+                                            e.stopPropagation();
+                                            if (window.confirm("Are you sure you want to delete this document?")) {
+                                              try {
+                                                await deleteDocument(uploadedDoc.id);
+                                                toast.success("Document deleted successfully");
+                                              } catch (err) {
+                                                toast.error("Failed to delete document");
+                                              }
+                                            }
+                                          }}
+                                          className="flex items-center gap-2 cursor-pointer font-medium text-[13px] py-2.5 text-red-600 focus:text-red-700 focus:bg-red-50"
+                                        >
+                                          <Trash2 size={16} />
+                                          Delete
+                                        </DropdownMenuItem>
+                                      </DropdownMenuContent>
+                                    </DropdownMenu>
+                                  );
+                                }
+
+                                return (
+                                  <button
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      const defId = mapDocumentNameToId(item.title);
+                                      setActiveUploadId(item.id);
+                                      setActiveUploadType("doc");
+                                      openUploadModal(defId);
+                                    }}
+                                    className="rounded-full bg-white px-[11px] py-[5px] border border-[#d0e4f7] text-[12px] font-medium flex items-center justify-center gap-1 text-[#6b8097] hover:border-primary hover:text-primary transition-all shadow-[0_2px_8px_rgba(0,0,0,0.04)]"
+                                    title="Upload document"
+                                  >
+                                    <Upload size={15} strokeWidth={2.5} /> Upload
+                                  </button>
+                                );
+                              })()}
+
+                              {(() => {
+                                const defId = mapDocumentNameToId(item.title);
+                                const isUploadedInVault = uploadedDocuments.some(ud => ud.documentDefId === defId);
+                                
+                                const displayStatus = isUploadedInVault 
+                                  ? "Uploaded" 
+                                  : (isReloadingDocs 
+                                    ? "Checking..." 
+                                    : (isRev ? "Packed" : (isIP ? "In progress" : "Open guide")));
+
+                                const statusClasses = isUploadedInVault 
+                                  ? "bg-[#eaf7f2] text-[#1a7a5e] border-[#b5e0d0] font-bold shadow-sm"
+                                  : (isReloadingDocs
+                                    ? "bg-muted/30 text-muted-foreground border-muted-foreground/20 animate-pulse"
+                                    : (isRev 
+                                      ? "bg-[#e8f5ef] text-[#15744f] border-[#a8d9be]"
+                                      : (isIP 
+                                        ? "bg-[#fef8e8] text-[#8a6200] border-[#f0d98a]"
+                                        : "bg-white text-[#6b8097] border-[#d0e4f7] hover:border-primary hover:text-primary")));
+
+                                return (
+                                  <div className={`px-[11px] py-[5px] rounded-full border text-[12px] font-medium tracking-normal transition-all ${statusClasses}`}>
+                                    {isUploadedInVault || isRev ? (
+                                      <span className="flex items-center gap-1">
+                                        <Check size={12} strokeWidth={3} /> {displayStatus}
+                                      </span>
+                                    ) : (
+                                      displayStatus
+                                    )}
+                                  </div>
+                                );
+                              })()}
                             </div>
                           </div>
                         );
@@ -6321,16 +6411,107 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                               })}
                             </div>
                           </div>
-                          <div
-                            className={`text-[12px] font-medium px-[11px] py-[5px] rounded-full shrink-0 border whitespace-nowrap
-                            ${st === "reviewed" ? "bg-[#e8f5ef] text-[#15744f] border-[#a8d9be]" : st === "in-progress" ? "bg-[#fef8e8] text-[#8a6200] border-[#f0d98a]" : "bg-[#f4f7fb] text-[#6b8097] border-[#d0e4f7]"}
-                          `}
-                          >
-                            {st === "reviewed"
-                              ? "✓ Reviewed"
-                              : st === "in-progress"
-                                ? "In progress"
-                                : "Open guide"}
+                          <div className="shrink-0 flex flex-col items-center gap-2">
+                            {(() => {
+                              const defId = mapDocumentNameToId(item.title);
+                              const uploadedDoc = uploadedDocuments.find(ud => ud.documentDefId === defId);
+                              
+                              if (isReloadingDocs && !uploadedDoc) {
+                                return (
+                                  <div className="flex items-center gap-1.5 px-[11px] py-[5px] text-[12px] text-muted-foreground font-medium animate-pulse">
+                                    <div className="h-3 w-3 rounded-full border-2 border-muted-foreground/30 border-t-muted-foreground animate-spin" />
+                                    Checking...
+                                  </div>
+                                );
+                              }
+
+                              if (uploadedDoc) {
+                                return (
+                                  <DropdownMenu>
+                                    <DropdownMenuTrigger asChild>
+                                      <button
+                                        onClick={(e) => e.stopPropagation()}
+                                        className="h-8 w-8 rounded-full hover:bg-muted flex items-center justify-center transition-colors text-muted-foreground hover:text-foreground border border-transparent hover:border-muted-foreground/20"
+                                      >
+                                        <MoreVertical size={18} />
+                                      </button>
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent align="end" className="w-[140px] rounded-xl shadow-xl border-muted/20">
+                                      <DropdownMenuItem 
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          window.open(`/api/documents/${uploadedDoc.id}/download`, '_blank');
+                                        }}
+                                        className="flex items-center gap-2 cursor-pointer font-medium text-[13px] py-2.5"
+                                      >
+                                        <Eye size={16} className="text-primary" />
+                                        Preview
+                                      </DropdownMenuItem>
+                                      <DropdownMenuItem 
+                                        onClick={async (e) => {
+                                          e.stopPropagation();
+                                          if (window.confirm("Are you sure you want to delete this document?")) {
+                                            try {
+                                              await deleteDocument(uploadedDoc.id);
+                                              toast.success("Document deleted successfully");
+                                            } catch (err) {
+                                              toast.error("Failed to delete document");
+                                            }
+                                          }
+                                        }}
+                                        className="flex items-center gap-2 cursor-pointer font-medium text-[13px] py-2.5 text-red-600 focus:text-red-700 focus:bg-red-50"
+                                      >
+                                        <Trash2 size={16} />
+                                        Delete
+                                      </DropdownMenuItem>
+                                    </DropdownMenuContent>
+                                  </DropdownMenu>
+                                );
+                              }
+
+                              return (
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    const defId = mapDocumentNameToId(item.title);
+                                    setActiveUploadId(item.id);
+                                    setActiveUploadType("doc");
+                                    openUploadModal(defId);
+                                  }}
+                                  className="rounded-full bg-white px-[11px] py-[5px] border border-[#d0e4f7] text-[12px] font-medium flex items-center justify-center gap-1 text-[#6b8097] hover:border-primary hover:text-primary transition-all shadow-[0_2px_8px_rgba(0,0,0,0.04)]"
+                                  title="Upload document"
+                                >
+                                  <Upload size={15} strokeWidth={2.5} /> Upload
+                                </button>
+                              );
+                            })()}
+
+                            {(() => {
+                              const defId = mapDocumentNameToId(item.title);
+                              const isUploadedInVault = uploadedDocuments.some(ud => ud.documentDefId === defId);
+                              
+                              const displayStatus = isUploadedInVault 
+                                ? "Uploaded" 
+                                : (isReloadingDocs 
+                                  ? "Checking..." 
+                                  : (st === "reviewed" ? "✓ Reviewed" : (st === "in-progress" ? "In progress" : "Open guide")));
+
+                              const statusClasses = isUploadedInVault 
+                                ? "bg-[#eaf7f2] text-[#1a7a5e] border-[#b5e0d0] font-bold shadow-sm"
+                                : (isReloadingDocs
+                                  ? "bg-muted/30 text-muted-foreground border-muted-foreground/20 animate-pulse"
+                                  : (st === "reviewed" 
+                                    ? "bg-[#e8f5ef] text-[#15744f] border-[#a8d9be]"
+                                    : (st === "in-progress" 
+                                      ? "bg-[#fef8e8] text-[#8a6200] border-[#f0d98a]"
+                                      : "bg-white text-[#6b8097] border-[#d0e4f7] hover:border-primary hover:text-primary")));
+
+                              return (
+                                <div className={`px-[11px] py-[5px] rounded-full border text-[12px] font-medium tracking-normal transition-all ${statusClasses}`}>
+                                  {displayStatus}
+                                </div>
+                              );
+                            })()}
                           </div>
                         </button>
                       );
@@ -9141,7 +9322,7 @@ function NvcFeeModal({
 
             <button
               onClick={() => onSave(localData)}
-              className="w-full p-[14px_24px] bg-primary text-white rounded-[10px] font-semibold text-[15px] hover:bg-[#2460bb] hover:-translate-y-px transition-all active:translate-y-0 shadow-[0_4px_20px_rgba(47,111,212,0.35)]"
+              className="w-full p-[14px_24px] bg-primary text-white rounded-[10px] font-semibold text-[15px] hover:bg-primary/70 hover:-translate-y-px transition-all active:translate-y-0 shadow-[0_4px_20px_rgba(47,111,212,0.35)]"
             >
               Save Payment Status
             </button>
