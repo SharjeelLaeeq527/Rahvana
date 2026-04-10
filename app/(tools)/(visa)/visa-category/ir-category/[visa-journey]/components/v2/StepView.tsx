@@ -151,6 +151,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
     reloadDocuments,
     setConfig: setConfigVault,
     uploadedDocuments,
+    isReloadingDocs,
   } = useDocumentVaultStore();
   const [activeUploadId, setActiveUploadId] = useState<string | null>(null);
   const [activeUploadType, setActiveUploadType] = useState<
@@ -1521,17 +1522,19 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
   // The API uses the session cookie to get real user_id, so userId here is just a local label
   useEffect(() => {
     const initVault = async () => {
-      await setConfigVault({
-        userId: user?.id || "session",  // API ignores this, uses session auth
-        visaCategory: "IR-1",
-        caseId: (state.metadata.caseId as string) || "ARACHNIE-IR1",
-        petitionerName: (state.metadata.petitionerName as string) || "Petitioner",
-        beneficiaryName: (state.metadata.beneficiaryName as string) || "Beneficiary",
-        jointSponsorName: (state.metadata.jointSponsorName as string) || "",
-        scenarioFlags: {},
-      });
-      // Load any previously uploaded documents into the store
-      await reloadDocuments();
+      // Run these in parallel to speed up initialization
+      Promise.all([
+        setConfigVault({
+          userId: user?.id || "session",
+          visaCategory: "IR-1",
+          caseId: (state.metadata.caseId as string) || "ARACHNIE-IR1",
+          petitionerName: (state.metadata.petitionerName as string) || "Petitioner",
+          beneficiaryName: (state.metadata.beneficiaryName as string) || "Beneficiary",
+          jointSponsorName: (state.metadata.jointSponsorName as string) || "",
+          scenarioFlags: {},
+        }),
+        reloadDocuments()
+      ]);
     };
     initVault();
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -7302,6 +7305,15 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                                     const defId = mapDocumentNameToId(doc.name);
                                     const uploadedDoc = uploadedDocuments.find(ud => ud.documentDefId === defId);
                                     
+                                    if (isReloadingDocs && !uploadedDoc) {
+                                      return (
+                                        <div className="flex items-center gap-1.5 px-[11px] py-[5px] text-[12px] text-muted-foreground font-medium animate-pulse">
+                                          <div className="h-3 w-3 rounded-full border-2 border-muted-foreground/30 border-t-muted-foreground animate-spin" />
+                                          Checking...
+                                        </div>
+                                      );
+                                    }
+
                                     if (uploadedDoc) {
                                       return (
                                         <button
@@ -7340,14 +7352,21 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                                     const defId = mapDocumentNameToId(doc.name);
                                     const isUploadedInVault = uploadedDocuments.some(ud => ud.documentDefId === defId);
                                     
-                                    const displayStatus = isUploadedInVault ? "Uploaded" : (isReviewed ? "Reviewed" : (isInProgress ? "In progress" : "Not started"));
+                                    const displayStatus = isUploadedInVault 
+                                      ? "Uploaded" 
+                                      : (isReloadingDocs 
+                                        ? "Checking..." 
+                                        : (isReviewed ? "Reviewed" : (isInProgress ? "In progress" : "Not started")));
+
                                     const statusClasses = isUploadedInVault 
-                                      ? "bg-[#eaf7f2] text-[#1a7a5e] border-[#b5e0d0] font-bold"
-                                      : (isReviewed 
-                                        ? "bg-[#eaf7f2] text-[#1a7a5e] border-[#b5e0d0]"
-                                        : (isInProgress 
-                                          ? "bg-[#fff9e6] text-[#d97706] border-[#fde68a]"
-                                          : "bg-white text-[#6b8097] border-[#d0e4f7] hover:border-primary hover:text-primary"));
+                                      ? "bg-[#eaf7f2] text-[#1a7a5e] border-[#b5e0d0] font-bold shadow-sm"
+                                      : (isReloadingDocs
+                                        ? "bg-muted/30 text-muted-foreground border-muted-foreground/20 animate-pulse"
+                                        : (isReviewed 
+                                          ? "bg-[#eaf7f2] text-[#1a7a5e] border-[#b5e0d0]"
+                                          : (isInProgress 
+                                            ? "bg-[#fff9e6] text-[#d97706] border-[#fde68a]"
+                                            : "bg-white text-[#6b8097] border-[#d0e4f7] hover:border-primary hover:text-primary")));
 
                                     return (
                                       <div className={`px-[11px] py-[5px] rounded-full border text-[12px] font-medium tracking-normal transition-all ${statusClasses}`}>

@@ -39,6 +39,7 @@ interface DocumentVaultStore {
 
   // UI State
   isLoading: boolean;
+  isReloadingDocs: boolean;
   selectedDocumentDefId: string | null;
   wizardOpen: boolean;
   uploadModalOpen: boolean;
@@ -119,6 +120,7 @@ const initialState = {
   completedSteps: {},
   notifications: [],
   isLoading: false,
+  isReloadingDocs: false,
   selectedDocumentDefId: null,
   wizardOpen: false,
   uploadModalOpen: false,
@@ -323,6 +325,7 @@ export const useDocumentVaultStore = create<DocumentVaultStore>()(
     },
 
     reloadDocuments: async () => {
+      set({ isReloadingDocs: true });
       try {
         // Fetch documents from API
         const response = await fetch("/api/documents/list");
@@ -344,12 +347,20 @@ export const useDocumentVaultStore = create<DocumentVaultStore>()(
         const { config } = get();
         if (config) {
           const requiredDocs = generateRequiredDocuments(config, true);
-          set({ uploadedDocuments: updatedDocs, requiredDocuments: requiredDocs });
+          set({ 
+            uploadedDocuments: updatedDocs, 
+            requiredDocuments: requiredDocs,
+            isReloadingDocs: false 
+          });
         } else {
-          set({ uploadedDocuments: updatedDocs });
+          set({ 
+            uploadedDocuments: updatedDocs,
+            isReloadingDocs: false 
+          });
         }
       } catch (error) {
         console.error("Failed to reload documents:", error);
+        set({ isReloadingDocs: false });
       }
     },
 
