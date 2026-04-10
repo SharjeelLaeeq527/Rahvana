@@ -70,7 +70,19 @@ export function DocumentUploadModal({
   };
 
   const handleUpload = async () => {
-    if (!selectedFile || !config) return;
+    if (!selectedFile) return;
+    if (!config) {
+      toast.error("Document Vault is not configured. Please refresh the page and try again.");
+      console.error("[DocumentUploadModal] Upload blocked: config is null");
+      return;
+    }
+
+    console.log("[DocumentUploadModal] Starting upload:", {
+      file: selectedFile.name,
+      documentDefId: documentDef.id,
+      caseId: config.caseId,
+      role,
+    });
 
     setUploading(true);
     toast.loading(t("documentVaultPage.components.uploadModal.uploading"), {
@@ -177,6 +189,14 @@ export function DocumentUploadModal({
             </span>
           </Button>
         </DialogHeader>
+
+        {/* Config not ready warning */}
+        {!config && (
+          <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 mb-2 flex items-center gap-2 text-sm text-amber-800">
+            <span className="text-lg">⏳</span>
+            <span>Document Vault is initializing&hellip; please wait a moment before uploading.</span>
+          </div>
+        )}
 
         <div className="space-y-4 sm:space-y-6">
           {/* File upload area */}
@@ -388,6 +408,7 @@ export function DocumentUploadModal({
               disabled={
                 !selectedFile ||
                 uploading ||
+                !config ||
                 (needsExpirationDate &&
                   documentDef.validityType === "user_set" &&
                   !expirationDate)
@@ -396,7 +417,9 @@ export function DocumentUploadModal({
             >
               {uploading
                 ? t("documentVaultPage.components.uploadModal.uploadBtnLoading")
-                : t("documentVaultPage.components.uploadModal.uploadBtn")}
+                : !config
+                  ? "Initializing..."
+                  : t("documentVaultPage.components.uploadModal.uploadBtn")}
             </Button>
           </div>
         </div>

@@ -205,7 +205,11 @@ export const useDocumentVaultStore = create<DocumentVaultStore>()(
           // Generate initial notifications
           get().refreshNotifications(t);
         } else {
+          // No config yet — but still store any documents that already exist
+          const defsMap = new Map(ALL_DOCUMENTS.map((d) => [d.id, d]));
+          const updatedDocs = updateDocumentStatuses(documents, defsMap);
           set({
+            uploadedDocuments: updatedDocs,
             isLoading: false,
             completedSteps,
             notificationConfig,
@@ -221,22 +225,25 @@ export const useDocumentVaultStore = create<DocumentVaultStore>()(
     setConfig: async (config: DocumentVaultConfig) => {
       const requiredDocs = generateRequiredDocuments(config, true); // Include optional documents
 
+      // Set config in store IMMEDIATELY — don't wait for DB
+      // This ensures the upload modal always has a non-null config
+      set({
+        config,
+        requiredDocuments: requiredDocs,
+      });
+
       try {
-        // Save to database via API
+        // Try to persist to DB (best effort — store is already updated above)
         await fetch("/api/documents/config", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(config),
         });
-
-        set({
-          config,
-          requiredDocuments: requiredDocs,
-        });
       } catch (error) {
-        console.error("Failed to save config:", error);
+        console.error("Failed to persist config to DB (config still active for session):", error);
       }
     },
+
 
     updateScenarioFlags: (flags: Partial<ScenarioFlags>) => {
       const { config } = get();
@@ -332,7 +339,15 @@ export const useDocumentVaultStore = create<DocumentVaultStore>()(
 
         const defsMap = new Map(ALL_DOCUMENTS.map((d) => [d.id, d]));
         const updatedDocs = updateDocumentStatuses(documents, defsMap);
-        set({ uploadedDocuments: updatedDocs });
+
+        // Also regenerate requiredDocuments if config is available
+        const { config } = get();
+        if (config) {
+          const requiredDocs = generateRequiredDocuments(config, true);
+          set({ uploadedDocuments: updatedDocs, requiredDocuments: requiredDocs });
+        } else {
+          set({ uploadedDocuments: updatedDocs });
+        }
       } catch (error) {
         console.error("Failed to reload documents:", error);
       }

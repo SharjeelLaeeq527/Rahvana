@@ -9,13 +9,18 @@ export function mapDocumentNameToId(name: string): string {
   // Simple hardcoded mapping for common ones
   const mapping: Record<string, string> = {
     'pakistani passport': 'passport-beneficiary',
-    'nadra birth certificate': 'birth-cert-beneficiary',
-    'nikah nama': 'nikah-nama',
-    'union council marriage registration': 'nikah-nama', // Closest match
     'u.s. passport': 'passport-petitioner',
+    'passport biographic page': 'passport-beneficiary',
+    'nadra birth certificate': 'birth-cert-beneficiary',
+    'birth certificate': 'birth-cert-beneficiary',
+    'nikah nama': 'nikah-nama',
+    'union council marriage registration': 'nikah-nama',
+    'marriage certificate': 'nikah-nama',
     'police certificate': 'police-certificate-pakistan',
+    'police character certificate': 'police-certificate-pakistan',
     'passport photos': 'passport-photos',
     'irs tax transcripts': 'tax-returns-petitioner',
+    'tax returns': 'tax-returns-petitioner',
     'employment letter': 'employment-letter',
     'pay stubs': 'pay-stubs',
     'w-2 forms': 'w2-forms',
@@ -24,6 +29,9 @@ export function mapDocumentNameToId(name: string): string {
     'marriage photos': 'wedding-photos',
     'communication records': 'communication-evidence',
     'cnic': 'cnic-beneficiary',
+    'divorce decree': 'divorce-decree-beneficiary',
+    'talaq nama': 'divorce-decree-beneficiary',
+    'certified english translations': 'misc-document', // Often multiple
   };
 
   // Try direct mapping
