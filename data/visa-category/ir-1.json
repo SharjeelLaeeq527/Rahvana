@@ -7,7 +7,7 @@
     {
       "chapter_key": "chapter_1",
       "chapter_number": 1,
-      "chapter_name": "Stage I: USCIS Petition Filing",
+      "chapter_name": "Chapter 1: USCIS Petition Filing",
       "chapter_description": "File Form I-130 with USCIS to begin the IR-1 spouse visa process for your Pakistani spouse.",
       "estimated_duration_months": 15,
       "display_order": 1,
@@ -1914,8 +1914,8 @@
     {
       "chapter_key": "chapter_2",
       "chapter_number": 2,
-      "chapter_name": "Stage II: NVC / CEAC Processing",
-      "chapter_description": "Pay fees → Submit DS-260 → Upload documents → Documentarily Qualified",
+      "chapter_name": "Chapter 2: NVC / CEAC Processing",
+      "chapter_description": "Pay NVC fees, complete DS-260, submit civil documents, and receive your interview appointment.",
       "estimated_duration_months": 7,
       "display_order": 2,
       "steps": [
@@ -2922,8 +2922,8 @@
     {
       "chapter_key": "chapter_3",
       "chapter_number": 3,
-      "chapter_name": "Stage III: Medical + Interview",
-      "chapter_description": "Complete medical exam → Attend consular interview → Visa decision",
+      "chapter_name": "Chapter 3: Medical + Interview",
+      "chapter_description": "Medical examination, document gathering, courier setup, interview preparation, and attendance.",
       "timeline": "Interview within 2-4 weeks of letter",
       "estimated_duration_months": 1,
       "display_order": 3,

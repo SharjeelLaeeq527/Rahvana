@@ -329,7 +329,7 @@ export function QuestRenderer({
           >
             {meta.label}
           </div>
-          <h2 className="text-3xl md:text-4xl font-serif text-[#0f1f38] mb-4 tracking-tight italic">
+          <h2 className="text-3xl md:text-4xl text-[#0f1f38] mb-4 tracking-tight italic">
             {result?.title || "Evaluating Result..."}
           </h2>
           <p className="text-[#3a4f63] text-[16px] mb-10 leading-relaxed max-w-[400px] mx-auto opacity-90">
@@ -401,7 +401,7 @@ export function QuestRenderer({
             <div className="text-[11px] font-semibold uppercase tracking-widest text-primary mb-[18px]">
               {activeQuest.title}
             </div>
-            <h2 className="text-[clamp(20px,3.5vw,26px)] font-serif text-[#0f1f38] mb-2.5 leading-[1.35]">
+            <h2 className="text-[clamp(20px,3.5vw,26px)] text-[#0f1f38] mb-2.5 leading-[1.35]">
               {screen.question}
             </h2>
             {screen.helper && (

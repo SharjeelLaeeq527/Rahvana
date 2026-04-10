@@ -152,7 +152,7 @@ export function SubmissionTutorialOverlay({
           <div className="text-[11px] font-bold tracking-[0.1em] uppercase text-primary mb-3.5">
             Submission Guide · {currentStep.label}
           </div>
-          <h2 className="text-[clamp(20px,3.2vw,26px)] font-black text-[#0c1b33] mb-2 leading-[1.3] font-serif">
+          <h2 className="text-[clamp(20px,3.2vw,26px)] font-black text-[#0c1b33] mb-2 leading-[1.3]">
             {currentStep.heading}
           </h2>
           <div
