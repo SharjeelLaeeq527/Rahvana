@@ -130,7 +130,7 @@ export function DashboardView({
         <div className="text-[10px] font-bold uppercase tracking-[0.12em] text-slate-400 mb-2">
           IR-1 Spouse Visa · Pakistan
         </div>
-        <h1 className="font-serif font-black text-[clamp(22px,3vw,28px)] text-[#0c1b33] mb-6">
+        <h1 className="font-black text-[clamp(22px,3vw,28px)] text-[#0c1b33] mb-6">
           Case Dashboard
         </h1>
 
@@ -140,7 +140,7 @@ export function DashboardView({
             <div className="text-[10px] font-bold uppercase tracking-[0.12em] text-white/40 mb-1.5">
               Next best action
             </div>
-            <h2 className="text-white/95 text-xl font-serif font-black leading-tight mb-1">
+            <h2 className="text-white/95 text-xl font-black leading-tight mb-1">
               {nextActionData?.step.step_name || "Journey Complete!"}
             </h2>
             <p className="text-white/45 text-[12.5px] leading-relaxed mb-4 max-w-md">

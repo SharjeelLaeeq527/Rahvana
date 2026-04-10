@@ -197,7 +197,7 @@ const CredentialFormModal: React.FC<CredentialFormModalProps> = ({
             <div>
               <h2
                 className="text-[16px] font-bold text-[#0a1128]"
-                style={{ fontFamily: "Inter, sans-serif" }}
+                // style={{ fontFamily: "Inter, sans-serif" }}
               >
                 {mode === "add" ? "Add" : "Edit"} {portalType} Credentials
               </h2>

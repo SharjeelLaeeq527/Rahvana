@@ -1072,7 +1072,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                 <div className="text-[10px] font-bold tracking-widest uppercase text-white/35 mb-1">
                   CEAC Guidance
                 </div>
-                <div className="text-[clamp(19px,2.8vw,23px)] font-serif text-white/92 leading-tight">
+                <div className="text-[clamp(19px,2.8vw,23px)]  text-white/92 leading-tight">
                   Add sponsorship participants in CEAC
                 </div>
               </div>
@@ -1802,7 +1802,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
 
           <h1
             className="text-[clamp(26px,4vw,34px)] font-black text-[#0c1b33] leading-[1.2] mb-[10px] animate-in fade-in slide-in-from-top-2 duration-300 delay-[40ms]"
-            style={{ fontFamily: "'DM Serif Display', serif" }}
+      
           >
             {data.title}
           </h1>
@@ -1838,8 +1838,8 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
             </div>
 
             <h2
-              className="text-[20px] font-serif text-white/92 leading-tight mb-[16px] flex items-center gap-[8px]"
-              style={{ fontFamily: "'DM Serif Display', serif" }}
+              className="text-[20px]  text-white/92 leading-tight mb-[16px] flex items-center gap-[8px]"
+              
             >
               <span className="w-[7px] h-[7px] rounded-full bg-[#6aa8f0] animate-pulse-custom shrink-0" />
               {data.statusCard.heading}
@@ -2052,7 +2052,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
         {/* Page Shell */}
         <div className="w-full max-w-[680px] px-[24px] pb-[96px] flex flex-col">
           {/* Eyebrow / Breadcrumb Row */}
-          <div className="flex items-center gap-[8px]">
+          {/* <div className="flex items-center gap-[8px]">
             <span className="text-[11px] font-semibold uppercase tracking-widest text-[#636b97]">
               Chapter {currentChapter?.chapter_number || state.currentStage + 1}{" "}
               · {currentChapter?.chapter_name || currentChapter?.name}
@@ -2065,12 +2065,12 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
             >
               {currentStep.step_name}
             </span>
-          </div>
+          </div> */}
 
           {/* Title + Description */}
           <h1
             className="text-[clamp(28px,4.5vw,38px)] font-black text-[#0c1b33] leading-normal tracking-[-0.01em] mb-[6px]"
-            style={{ fontFamily: "'DM Serif Display', serif" }}
+            
           >
             {currentStep.step_name}
           </h1>
@@ -2184,8 +2184,8 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                         "Affidavit Support Calculator"}
                     </div>
                     <div
-                      className="text-[clamp(19px,2.8vw,23px)] font-serif text-white/90 leading-[1.25]"
-                      style={{ fontFamily: "'DM Serif Display', serif" }}
+                      className="text-[clamp(19px,2.8vw,23px)]  text-white/90 leading-[1.25]"
+                      
                     >
                       {tool.launch_module.title ||
                         "Determine your sponsorship setup first"}
@@ -2557,8 +2557,8 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                         {tool.launch_module.label}
                       </div>
                       <div
-                        className="text-[clamp(18px,2.6vw,22px)] font-serif text-white/92 leading-[1.25]"
-                        style={{ fontFamily: "'DM Serif Display', serif" }}
+                        className="text-[clamp(18px,2.6vw,22px)]  text-white/92 leading-[1.25]"
+                        
                       >
                         {tool.launch_module.title}
                       </div>
@@ -2691,8 +2691,8 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                 </span>
               </div>
               <h1
-                className="text-[clamp(26px,4vw,34px)] font-serif text-[#0c1b33] leading-[1.2] mb-[10px]"
-                style={{ fontFamily: "'DM Serif Display', serif" }}
+                className="text-[clamp(26px,4vw,34px)]  text-[#0c1b33] leading-[1.2] mb-[10px]"
+                
               >
                 Awaiting NVC Document Review
               </h1>
@@ -2722,8 +2722,8 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                   Current Case Status
                 </div>
                 <div
-                  className="text-[20px] font-serif text-white/92 mb-[16px] flex items-center gap-[10px]"
-                  style={{ fontFamily: "'DM Serif Display', serif" }}
+                  className="text-[20px]  text-white/92 mb-[16px] flex items-center gap-[10px]"
+                  
                 >
                   <span className="inline-block w-[7px] h-[7px] rounded-full bg-[#6aa8f0] animate-pulse shadow-[0_0_8px_rgba(106,168,240,0.6)]" />
                   Documents under NVC review
@@ -2921,8 +2921,8 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                 </span>
               </div>
               <h1
-                className="text-[clamp(26px,4vw,34px)] font-serif text-[#0c1b33] leading-[1.2] mb-[10px]"
-                style={{ fontFamily: "'DM Serif Display', serif" }}
+                className="text-[clamp(26px,4vw,34px)]  text-[#0c1b33] leading-[1.2] mb-[10px]"
+                
               >
                 Record Documentary Qualification
               </h1>
@@ -2955,8 +2955,8 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                   NVC — Documentary Qualification Received
                 </div>
                 <div
-                  className="text-[22px] font-serif text-white/92 mb-[6px]"
-                  style={{ fontFamily: "'DM Serif Display', serif" }}
+                  className="text-[22px]  text-white/92 mb-[6px]"
+                  
                 >
                   Your documents have been accepted by NVC
                 </div>
@@ -3138,8 +3138,8 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                     Currently scheduling DQ cases from:
                   </div>
                   <div
-                    className="text-[22px] font-serif text-[#0c1b33] mb-[6px]"
-                    style={{ fontFamily: "'DM Serif Display', serif" }}
+                    className="text-[22px]  text-[#0c1b33] mb-[6px]"
+                    
                   >
                     {(dqPost &&
                       DQ_RECORDING_DATA.postScheduling[
@@ -3165,8 +3165,8 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                     Queue position trend:
                   </div>
                   <div
-                    className="text-[22px] font-serif text-[#0c1b33] mb-[6px]"
-                    style={{ fontFamily: "'DM Serif Display', serif" }}
+                    className="text-[22px]  text-[#0c1b33] mb-[6px]"
+                    
                   >
                     {(dqPost &&
                       DQ_RECORDING_DATA.postScheduling[
@@ -3227,8 +3227,8 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                   Post-DQ Queue Status
                 </div>
                 <div
-                  className="text-[20px] font-serif text-white/92 mb-[18px] flex items-center gap-[10px]"
-                  style={{ fontFamily: "'DM Serif Display', serif" }}
+                  className="text-[20px]  text-white/92 mb-[18px] flex items-center gap-[10px]"
+                  
                 >
                   <span className="inline-block w-[7px] h-[7px] rounded-full bg-[#6aa8f0] animate-pulse shadow-[0_0_8px_rgba(106,168,240,0.6)]" />
                   In queue — awaiting interview letter
@@ -3280,8 +3280,8 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                     Cases currently being scheduled from:
                   </div>
                   <div
-                    className="text-[20px] font-serif text-[#0c1b33] mb-[4px]"
-                    style={{ fontFamily: "'DM Serif Display', serif" }}
+                    className="text-[20px]  text-[#0c1b33] mb-[4px]"
+                    
                   >
                     {INTERVIEW_SCHEDULING_DATA.schedulingData[
                       (state.metadata
@@ -3308,8 +3308,8 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                     Queue movement trend:
                   </div>
                   <div
-                    className="text-[20px] font-serif text-[#0c1b33] mb-[4px]"
-                    style={{ fontFamily: "'DM Serif Display', serif" }}
+                    className="text-[20px]  text-[#0c1b33] mb-[4px]"
+                    
                   >
                     {INTERVIEW_SCHEDULING_DATA.schedulingData[
                       (state.metadata
@@ -3505,8 +3505,8 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                   {APPOINTMENT_RECEIVED_DATA.heroBanner.eyebrow}
                 </div>
                 <div
-                  className="text-[clamp(22px,3.5vw,28px)] font-serif text-white/95 leading-[1.2] mb-[8px]"
-                  style={{ fontFamily: "'DM Serif Display', serif" }}
+                  className="text-[clamp(22px,3.5vw,28px)]  text-white/95 leading-[1.2] mb-[8px]"
+                  
                 >
                   {APPOINTMENT_RECEIVED_DATA.heroBanner.title}
                 </div>
@@ -3778,7 +3778,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                     </div>
                     <div
                       className="text-[clamp(18px,2.6vw,22px)] text-white/92 leading-tight mb-5"
-                      style={{ fontFamily: "'DM Serif Display', serif" }}
+                      
                     >
                       {MEDICAL_EXAM_DATA.decisionModule.heading}
                     </div>
@@ -3923,9 +3923,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                             </div>
                             <h2
                               className="text-[clamp(20px,3.2vw,26px)] text-[#0c1b33] leading-tight mb-2"
-                              style={{
-                                fontFamily: "'DM Serif Display', serif",
-                              }}
+                              
                             >
                               {s.heading}
                             </h2>
@@ -4101,7 +4099,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                   </div>
                   <div
                     className="text-[clamp(18px,2.6vw,22px)] text-white/92 leading-tight mb-5"
-                    style={{ fontFamily: "'DM Serif Display', serif" }}
+                    
                   >
                     {POLIO_CERTIFICATE_DATA.launchModule.heading}
                   </div>
@@ -4267,9 +4265,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                             </div>
                             <h2
                               className="text-[clamp(20px,3.2vw,26px)] text-[#0c1b33] leading-tight mb-2"
-                              style={{
-                                fontFamily: "'DM Serif Display', serif",
-                              }}
+                              
                             >
                               {s.heading}
                             </h2>
@@ -4411,7 +4407,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                   </div>
                   <div
                     className="text-[clamp(18px,2.6vw,22px)] text-white/92 leading-tight mb-5"
-                    style={{ fontFamily: "'DM Serif Display', serif" }}
+                    
                   >
                     {POLICE_CLEARANCE_DATA.decisionModule.heading}
                   </div>
@@ -4642,9 +4638,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                             </div>
                             <h2
                               className="text-[clamp(20px,3.2vw,26px)] text-[#0c1b33] leading-tight mb-2"
-                              style={{
-                                fontFamily: "'DM Serif Display', serif",
-                              }}
+                              
                             >
                               {s.heading}
                             </h2>
@@ -4940,7 +4934,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                       <div className="text-[10px] font-bold uppercase tracking-[0.12em] text-white/35 mb-1">
                         Medical Exam Guide
                       </div>
-                      <h2 className="text-[clamp(18px,2.6vw,22px)] font-serif text-white/90 leading-[1.25]">
+                      <h2 className="text-[clamp(18px,2.6vw,22px)]  text-white/90 leading-[1.25]">
                         Walkthrough of the medical exam appointment
                       </h2>
                     </div>
@@ -5089,7 +5083,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                       <div className="text-[10px] font-bold uppercase tracking-[0.12em] text-white/35 mb-1">
                         USVisaScheduling · Courier Registration
                       </div>
-                      <h2 className="text-[clamp(18px,2.6vw,22px)] font-serif text-white/90 leading-[1.25]">
+                      <h2 className="text-[clamp(18px,2.6vw,22px)]  text-white/90 leading-[1.25]">
                         Create your courier delivery account
                       </h2>
                     </div>
@@ -5284,7 +5278,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                       <div className="text-[10px] font-bold uppercase tracking-[0.12em] text-white/35 mb-1">
                         {tool.launch_module.title}
                       </div>
-                      <h3 className="font-serif text-[20px] sm:text-[22px] text-white/95 leading-tight">
+                      <h3 className=" text-[20px] sm:text-[22px] text-white/95 leading-tight">
                         {tool.launch_module.heading}
                       </h3>
                     </div>
@@ -5388,7 +5382,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                       <div className="text-[10px] font-bold uppercase tracking-[0.12em] text-white/35 mb-1">
                         {tool.launch_module.title}
                       </div>
-                      <h3 className="font-serif text-[20px] sm:text-[22px] text-white/95 leading-tight">
+                      <h3 className=" text-[20px] sm:text-[22px] text-white/95 leading-tight">
                         {tool.launch_module.heading}
                       </h3>
                     </div>
@@ -5544,8 +5538,8 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                   {tool.explainer.eyebrow}
                 </div>
                 <div
-                  className="text-[20px] font-serif text-white/95 mb-2.5 leading-tight"
-                  style={{ fontFamily: "'DM Serif Display', serif" }}
+                  className="text-[20px]  text-white/95 mb-2.5 leading-tight"
+                  
                 >
                   {tool.explainer.title}
                 </div>
@@ -5950,8 +5944,8 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                         {tool.launch_module.eyebrow}
                       </div>
                       <h2
-                        className="text-[clamp(20px,3vw,24px)] font-serif text-white/90 leading-[1.25]"
-                        style={{ fontFamily: "'DM Serif Display', serif" }}
+                        className="text-[clamp(20px,3vw,24px)]  text-white/90 leading-[1.25]"
+                        
                       >
                         {tool.launch_module.heading}
                       </h2>
@@ -5969,7 +5963,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                         </div>
                         <div
                           className="text-[32px] font text-white/90 tracking-[-0.02em] leading-none"
-                          style={{ fontFamily: "'DM Serif Display', serif" }}
+                          
                         >
                           {tool.fee_block.amount}
                         </div>
@@ -6788,7 +6782,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                         <div className="text-[10px] font-black uppercase tracking-widest text-primary mb-[14px]">
                           Step 3 · Decide Filing Method
                         </div>
-                        <h2 className="text-[clamp(20px,3.5vw,26px)] font-serif text-[#0f1f38] mb-[10px] leading-[1.35]">
+                        <h2 className="text-[clamp(20px,3.5vw,26px)]  text-[#0f1f38] mb-[10px] leading-[1.35]">
                           {screen.question}
                         </h2>
                         <p className="text-[#3a4f63] text-[14px] leading-[1.6] mb-[28px]">
@@ -6882,7 +6876,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                       </div>
                     </div>
 
-                    <h2 className="text-[clamp(22px,3.5vw,28px)] font-serif text-[#0f1f38] mb-[10px] leading-[1.3] text-center w-full">
+                    <h2 className="text-[clamp(22px,3.5vw,28px)]  text-[#0f1f38] mb-[10px] leading-[1.3] text-center w-full">
                       {quizResult.headline === "Check with your representative"
                         ? "Verify with your Attorney"
                         : quizResult.type === "online"
@@ -7284,7 +7278,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                       >
                         Filing method selected
                       </div>
-                      <h3 className="text-[19px] font-serif font-medium text-white mb-[2px] leading-[1.2]">
+                      <h3 className="text-[19px]  font-medium text-white mb-[2px] leading-[1.2]">
                         {state.metadata.filingMethod === "online"
                           ? "File Online"
                           : "File by Mail"}
@@ -7375,7 +7369,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                               {isOnline ? "Online Filing" : "Paper Filing"}
                             </div>
                             <h3
-                              className={`text-[20px] font-serif leading-[1.2] mb-[8px] transition-colors duration-[0.24s] ${isSelected ? "text-white" : pIdleText}`}
+                              className={`text-[20px]  leading-[1.2] mb-[8px] transition-colors duration-[0.24s] ${isSelected ? "text-white" : pIdleText}`}
                             >
                               {method.name}
                             </h3>
@@ -7588,8 +7582,8 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                         Sponsorship Calculator · Step 1 of 7
                       </div>
                       <h2
-                        className="text-[clamp(22px,3.5vw,28px)] font-serif font-black text-[#0c1b33] mb-2 leading-[1.3]"
-                        style={{ fontFamily: "'DM Serif Display', serif" }}
+                        className="text-[clamp(22px,3.5vw,28px)]  font-black text-[#0c1b33] mb-2 leading-[1.3]"
+                        
                       >
                         Welcome to the Sponsorship Calculator
                       </h2>
@@ -7625,8 +7619,8 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                         Sponsorship Calculator · Step 2 of 7
                       </div>
                       <h2
-                        className="text-[clamp(22px,3.5vw,28px)] font-serif font-black text-[#0c1b33] mb-2 leading-[1.3]"
-                        style={{ fontFamily: "'DM Serif Display', serif" }}
+                        className="text-[clamp(22px,3.5vw,28px)]  font-black text-[#0c1b33] mb-2 leading-[1.3]"
+                        
                       >
                         Find your Adjusted Gross Income (AGI)
                       </h2>
@@ -7683,8 +7677,8 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                         Sponsorship Calculator · Step 3 of 7
                       </div>
                       <h2
-                        className="text-[clamp(22px,3.5vw,28px)] font-serif font-black text-[#0c1b33] mb-2 leading-[1.3]"
-                        style={{ fontFamily: "'DM Serif Display', serif" }}
+                        className="text-[clamp(22px,3.5vw,28px)]  font-black text-[#0c1b33] mb-2 leading-[1.3]"
+                        
                       >
                         What is your household size?
                       </h2>
@@ -7739,8 +7733,8 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                         Sponsorship Calculator · Step 4 of 7
                       </div>
                       <h2
-                        className="text-[clamp(22px,3.5vw,28px)] font-serif font-black text-[#0c1b33] mb-4 leading-[1.3]"
-                        style={{ fontFamily: "'DM Serif Display', serif" }}
+                        className="text-[clamp(22px,3.5vw,28px)]  font-black text-[#0c1b33] mb-4 leading-[1.3]"
+                        
                       >
                         Sponsorship qualification check
                       </h2>
@@ -7755,8 +7749,8 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                             : "Additional sponsorship may be needed"}
                         </div>
                         <div
-                          className="text-[20px] font-serif text-[#0c1b33] mb-1.5"
-                          style={{ fontFamily: "'DM Serif Display', serif" }}
+                          className="text-[20px]  text-[#0c1b33] mb-1.5"
+                          
                         >
                           AGI: ${sponsorshipData.agi.toLocaleString()}{" "}
                           &nbsp;·&nbsp; Threshold: ${req.toLocaleString()}
@@ -7792,8 +7786,8 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                         Sponsorship Calculator · Step 5 of 7
                       </div>
                       <h2
-                        className="text-[clamp(22px,3.5vw,28px)] font-serif font-black text-[#0c1b33] mb-2 leading-[1.3]"
-                        style={{ fontFamily: "'DM Serif Display', serif" }}
+                        className="text-[clamp(22px,3.5vw,28px)]  font-black text-[#0c1b33] mb-2 leading-[1.3]"
+                        
                       >
                         Is household member income being used?
                       </h2>
@@ -7872,8 +7866,8 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                         Sponsorship Calculator · Step 6 of 7
                       </div>
                       <h2
-                        className="text-[clamp(22px,3.5vw,28px)] font-serif font-black text-[#0c1b33] mb-2 leading-[1.3]"
-                        style={{ fontFamily: "'DM Serif Display', serif" }}
+                        className="text-[clamp(22px,3.5vw,28px)]  font-black text-[#0c1b33] mb-2 leading-[1.3]"
+                        
                       >
                         Is a joint sponsor needed?
                       </h2>
@@ -7993,8 +7987,8 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                         Sponsorship Calculator · Step 7 of 7
                       </div>
                       <h2
-                        className="text-[clamp(22px,3.5vw,28px)] font-serif font-black text-[#0c1b33] mb-4 leading-[1.3]"
-                        style={{ fontFamily: "'DM Serif Display', serif" }}
+                        className="text-[clamp(22px,3.5vw,28px)]  font-black text-[#0c1b33] mb-4 leading-[1.3]"
+                        
                       >
                         Your sponsorship plan
                       </h2>
@@ -8003,8 +7997,8 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                           Sponsorship Plan
                         </div>
                         <div
-                          className="text-[20px] font-serif text-[#0c1b33] mb-1.5"
-                          style={{ fontFamily: "'DM Serif Display', serif" }}
+                          className="text-[20px]  text-[#0c1b33] mb-1.5"
+                          
                         >
                           {forms.length} form{forms.length > 1 ? "s" : ""}{" "}
                           required
@@ -8228,7 +8222,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                     : `Rahvana Guide — ${InlineGuideData[selectedGuideId].title}`}
                 </span>
               </div>
-              <h2 className="font-black font-serif text-[clamp(22px,3.5vw,28px)] text-[#0f1f38] mb-[6px] leading-[1.25]">
+              <h2 className="font-black  text-[clamp(22px,3.5vw,28px)] text-[#0f1f38] mb-[6px] leading-[1.25]">
                 {InlineGuideData[selectedGuideId].title}
               </h2>
               <p className="text-[14px] text-[#3a4f63] mb-[28px] leading-[1.6]">
@@ -8589,8 +8583,8 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                 Step 4 · Original Documents Checklist
               </div>
               <h2
-                className="text-[clamp(20px,3vw,26px)] font-serif text-[#0c1b33] mb-[8px] leading-[1.25]"
-                style={{ fontFamily: "'DM Serif Display', serif" }}
+                className="text-[clamp(20px,3vw,26px)]  text-[#0c1b33] mb-[8px] leading-[1.25]"
+                
               >
                 {selectedGatheringItem.title}
               </h2>
@@ -8702,8 +8696,8 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                       Medical Exam Guide · {s.label}
                     </div>
                     <h2
-                      className="text-[clamp(20px,3.2vw,26px)] font-serif text-[#0c1b33] mb-[8px] leading-[1.3]"
-                      style={{ fontFamily: "'DM Serif Display', serif" }}
+                      className="text-[clamp(20px,3.2vw,26px)]  text-[#0c1b33] mb-[8px] leading-[1.3]"
+                      
                     >
                       {s.heading}
                     </h2>
@@ -8843,7 +8837,7 @@ function NvcFeeModal({
           {/* Header */}
           <div className="flex items-start justify-between p-[24px_24px_0] mb-[18px]">
             <div>
-              <h3 className="font-serif font-black text-[22px] text-[#0c1b33] leading-tight">
+              <h3 className=" font-black text-[22px] text-[#0c1b33] leading-tight">
                 NVC Fee Payment Status
               </h3>
               {/* <p className="text-[13px] text-[#6b8097] mt-1 leading-normal">
@@ -9012,8 +9006,8 @@ function FinancialDocGuideOverlay({
           </div>
 
           <h2
-            className="text-[clamp(22px,3.5vw,28px)] font-black text-[#0c1b33] mb-[6px] leading-[1.25] font-serif"
-            style={{ fontFamily: "'DM Serif Display', serif" }}
+            className="text-[clamp(22px,3.5vw,28px)] font-black text-[#0c1b33] mb-[6px] leading-[1.25] "
+            
           >
             {doc.title}
           </h2>
@@ -9147,8 +9141,8 @@ function HouseholdDocGuideOverlay({
           </div>
 
           <h2
-            className="text-[clamp(22px,3.5vw,28px)] font-black text-[#0c1b33] mb-[6px] leading-[1.25] font-serif"
-            style={{ fontFamily: "'DM Serif Display', serif" }}
+            className="text-[clamp(22px,3.5vw,28px)] font-black text-[#0c1b33] mb-[6px] leading-[1.25] "
+            
           >
             {doc.title}
           </h2>
@@ -9396,7 +9390,7 @@ function CivilDocGuideOverlay({
 
           <h2
             className="text-[clamp(22px,3.5vw,28px)] font-black text-[#0c1b33] mb-[6px] leading-[1.25]"
-            style={{ fontFamily: "'DM Serif Display', serif" }}
+            
           >
             {doc.title}
           </h2>
@@ -9556,7 +9550,7 @@ function CeacCredsModal({
       <div className="relative w-full max-w-[460px] max-h-[88vh] bg-[#fafcff] rounded-[16px] shadow-[0_24px_80px_rgba(12,27,51,0.32),0_4px_20px_rgba(12,27,51,0.16)] overflow-y-auto animate-in zoom-in-95 slide-in-from-bottom-3 duration-240">
         <div className="p-6 pb-4 flex items-start justify-between">
           <div>
-            <h2 className="font-serif text-[22px] text-[#0c1b33] leading-tight">
+            <h2 className=" text-[22px] text-[#0c1b33] leading-tight">
               CEAC Access Details
             </h2>
             <p className="text-[13px] text-[#6b8097] mt-1">
@@ -9716,7 +9710,7 @@ function MedicalTutOverlay({
           </div>
           <h2
             className="text-[clamp(20px,3.2vw,26px)] text-[#0c1b33] leading-tight mb-2"
-            style={{ fontFamily: "'DM Serif Display', serif" }}
+            
           >
             {s.heading}
           </h2>
@@ -9836,7 +9830,7 @@ function CourierTutOverlay({
           </div>
           <h2
             className="text-[clamp(20px,3.2vw,26px)] text-[#0c1b33] leading-tight mb-2"
-            style={{ fontFamily: "'DM Serif Display', serif" }}
+            
           >
             {s.heading}
           </h2>
@@ -9954,7 +9948,7 @@ function InterviewDayTutOverlay({
           </div>
           <h2
             className="text-[clamp(20px,3.2vw,26px)] text-[#0c1b33] leading-tight mb-2"
-            style={{ fontFamily: "'DM Serif Display', serif" }}
+            
           >
             {s.heading}
           </h2>
@@ -10036,7 +10030,7 @@ function ApUpdateModal({
         <div className="flex items-start justify-between p-6 pb-0 mb-4">
           <h2
             className="text-[20px] text-[#0c1b33]"
-            style={{ fontFamily: "'DM Serif Display', serif" }}
+            
           >
             Log a Case Update
           </h2>
