@@ -8,12 +8,28 @@ export function mapDocumentNameToId(name: string): string {
 
   // Simple hardcoded mapping for common ones
   const mapping: Record<string, string> = {
+    // Exact matches from IR-1 journey JSON
+    'Proof of U.S. Citizenship': 'passport-petitioner',
+    'Beneficiary Passport': 'passport-beneficiary',
+    'Nikah Nama (Original)': 'nikah-nama',
+    'NADRA Marriage Certificate': 'nikah-nama',
+    'Relationship Evidence': 'misc-document',
+    'Prior Marriage Termination Proof': 'divorce-decree-beneficiary',
+    'Translations': 'misc-document',
+    'Birth Certificate': 'birth-cert-beneficiary',
+    'Police Character Certificate': 'police-certificate-pakistan',
+    'Passport Photos': 'passport-photos',
+
     'pakistani passport': 'passport-beneficiary',
     'u.s. passport': 'passport-petitioner',
     'passport biographic page': 'passport-beneficiary',
+    'beneficiary passport': 'passport-beneficiary',
+    'petitioner passport': 'passport-petitioner',
+    'proof of u.s. citizenship': 'passport-petitioner',
     'nadra birth certificate': 'birth-cert-beneficiary',
     'birth certificate': 'birth-cert-beneficiary',
     'nikah nama': 'nikah-nama',
+    'nadra marriage certificate': 'nikah-nama',
     'union council marriage registration': 'nikah-nama',
     'marriage certificate': 'nikah-nama',
     'police certificate': 'police-certificate-pakistan',
@@ -31,7 +47,8 @@ export function mapDocumentNameToId(name: string): string {
     'cnic': 'cnic-beneficiary',
     'divorce decree': 'divorce-decree-beneficiary',
     'talaq nama': 'divorce-decree-beneficiary',
-    'certified english translations': 'misc-document', // Often multiple
+    'certified english translations': 'misc-document',
+
   };
 
   // Try direct mapping

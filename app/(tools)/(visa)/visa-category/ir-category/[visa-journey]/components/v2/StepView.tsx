@@ -58,7 +58,7 @@ import {
   Copy,
   Paperclip,
   Heart,
-  Truck,
+  Eye,
 } from "lucide-react";
 
 import {
@@ -150,6 +150,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
     selectedDocumentDefId,
     reloadDocuments,
     setConfig: setConfigVault,
+    uploadedDocuments,
   } = useDocumentVaultStore();
   const [activeUploadId, setActiveUploadId] = useState<string | null>(null);
   const [activeUploadType, setActiveUploadType] = useState<
@@ -7270,38 +7271,66 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                                   </div>
                                 </div>
 
-                                <div className="shrink-0 flex flex-col items-center gap-3">
-                                  <button
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      const defId = mapDocumentNameToId(doc.name);
-                                      setActiveUploadId(doc.id);
-                                      setActiveUploadType("doc");
-                                      openUploadModal(defId);
-                                    }}
-                                    className="rounded-full bg-white px-[11px] py-[5px] border border-[#d0e4f7] text-[12px] font-medium flex items-center justify-center gap-1 text-[#6b8097] hover:border-primary hover:text-primary transition-all shadow-[0_2px_8px_rgba(0,0,0,0.04)]"
-                                    title="Upload document"
-                                  >
-                                    <Upload size={15} strokeWidth={2.5} />{" "}
-                                    Upload
-                                  </button>
-                                  <div
-                                    className={`px-[11px] py-[5px] rounded-full border text-[12px] font-medium tracking-normal transition-all
-                                    ${
-                                      isReviewed
+                                <div className="shrink-0 flex flex-col items-center gap-2">
+                                  {(() => {
+                                    const defId = mapDocumentNameToId(doc.name);
+                                    const uploadedDoc = uploadedDocuments.find(ud => ud.documentDefId === defId);
+                                    
+                                    if (uploadedDoc) {
+                                      return (
+                                        <button
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            window.open(`/api/documents/${uploadedDoc.id}/download`, '_blank');
+                                          }}
+                                          className="rounded-full bg-primary/10 px-[11px] py-[5px] border border-primary/20 text-[12px] font-bold flex items-center justify-center gap-1.5 text-primary hover:bg-primary/20 transition-all shadow-sm"
+                                          title="View uploaded document"
+                                        >
+                                          <Eye size={15} strokeWidth={2.5} />{" "}
+                                          View File
+                                        </button>
+                                      );
+                                    }
+
+                                    return (
+                                      <button
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          const defId = mapDocumentNameToId(doc.name);
+                                          setActiveUploadId(doc.id);
+                                          setActiveUploadType("doc");
+                                          openUploadModal(defId);
+                                        }}
+                                        className="rounded-full bg-white px-[11px] py-[5px] border border-[#d0e4f7] text-[12px] font-medium flex items-center justify-center gap-1 text-[#6b8097] hover:border-primary hover:text-primary transition-all shadow-[0_2px_8px_rgba(0,0,0,0.04)]"
+                                        title="Upload document"
+                                      >
+                                        <Upload size={15} strokeWidth={2.5} />{" "}
+                                        Upload
+                                      </button>
+                                    );
+                                  })()}
+                                  
+                                  {(() => {
+                                    const defId = mapDocumentNameToId(doc.name);
+                                    const isUploadedInVault = uploadedDocuments.some(ud => ud.documentDefId === defId);
+                                    
+                                    const displayStatus = isUploadedInVault ? "Uploaded" : (isReviewed ? "Reviewed" : (isInProgress ? "In progress" : "Not started"));
+                                    const statusClasses = isUploadedInVault 
+                                      ? "bg-[#eaf7f2] text-[#1a7a5e] border-[#b5e0d0] font-bold"
+                                      : (isReviewed 
                                         ? "bg-[#eaf7f2] text-[#1a7a5e] border-[#b5e0d0]"
-                                        : isInProgress
+                                        : (isInProgress 
                                           ? "bg-[#fff9e6] text-[#d97706] border-[#fde68a]"
-                                          : "bg-white text-[#6b8097] border-[#d0e4f7] hover:border-primary hover:text-primary"
-                                    }`}
-                                  >
-                                    {isReviewed
-                                      ? "Reviewed"
-                                      : isInProgress
-                                        ? "In progress"
-                                        : "Not started"}
-                                  </div>
+                                          : "bg-white text-[#6b8097] border-[#d0e4f7] hover:border-primary hover:text-primary"));
+
+                                    return (
+                                      <div className={`px-[11px] py-[5px] rounded-full border text-[12px] font-medium tracking-normal transition-all ${statusClasses}`}>
+                                        {displayStatus}
+                                      </div>
+                                    );
+                                  })()}
                                 </div>
+
                               </div>
                             );
                           })}
