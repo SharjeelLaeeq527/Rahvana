@@ -305,14 +305,30 @@ export const useDocumentVaultStore = create<DocumentVaultStore>()(
       get().refreshNotifications();
     },
 
-    deleteDocument: (documentId: string) => {
-      const { uploadedDocuments } = get();
+    deleteDocument: async (documentId: string) => {
+      try {
+        const response = await fetch(`/api/documents/${documentId}`, {
+          method: "DELETE",
+        });
 
-      set({
-        uploadedDocuments: uploadedDocuments.filter(
-          (doc) => doc.id !== documentId,
-        ),
-      });
+        if (!response.ok) {
+          throw new Error("Failed to delete document from server");
+        }
+
+        const { uploadedDocuments } = get();
+        set({
+          uploadedDocuments: uploadedDocuments.filter(
+            (doc) => doc.id !== documentId,
+          ),
+        });
+
+        // Refresh statuses and notifications
+        get().refreshDocumentStatuses();
+        get().refreshNotifications();
+      } catch (error) {
+        console.error("Failed to delete document:", error);
+        throw error; // Re-throw so UI can handle it (e.g. toast)
+      }
     },
 
     refreshDocumentStatuses: () => {

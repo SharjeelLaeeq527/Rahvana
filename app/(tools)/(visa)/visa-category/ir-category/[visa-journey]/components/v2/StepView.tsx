@@ -59,8 +59,17 @@ import {
   Paperclip,
   Heart,
   Eye,
-} from "lucide-react";
+  MoreVertical,
+  Trash2,
+  Truck,
+  } from "lucide-react";
 
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import {
   RoadmapData,
   QuestSuite,
@@ -152,6 +161,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
     setConfig: setConfigVault,
     uploadedDocuments,
     isReloadingDocs,
+    deleteDocument,
   } = useDocumentVaultStore();
   const [activeUploadId, setActiveUploadId] = useState<string | null>(null);
   const [activeUploadType, setActiveUploadType] = useState<
@@ -7290,17 +7300,45 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
 
                                     if (uploadedDoc) {
                                       return (
-                                        <button
-                                          onClick={(e) => {
-                                            e.stopPropagation();
-                                            window.open(`/api/documents/${uploadedDoc.id}/download`, '_blank');
-                                          }}
-                                          className="rounded-full bg-primary/10 px-[11px] py-[5px] border border-primary/20 text-[12px] font-bold flex items-center justify-center gap-1.5 text-primary hover:bg-primary/20 transition-all shadow-sm"
-                                          title="View uploaded document"
-                                        >
-                                          <Eye size={15} strokeWidth={2.5} />{" "}
-                                          View File
-                                        </button>
+                                        <DropdownMenu>
+                                          <DropdownMenuTrigger asChild>
+                                            <button
+                                              onClick={(e) => e.stopPropagation()}
+                                              className="h-8 w-8 rounded-full hover:bg-muted flex items-center justify-center transition-colors text-muted-foreground hover:text-foreground border border-transparent hover:border-muted-foreground/20"
+                                            >
+                                              <MoreVertical size={18} />
+                                            </button>
+                                          </DropdownMenuTrigger>
+                                          <DropdownMenuContent align="end" className="w-[140px] rounded-xl shadow-xl border-muted/20">
+                                            <DropdownMenuItem 
+                                              onClick={(e) => {
+                                                e.stopPropagation();
+                                                window.open(`/api/documents/${uploadedDoc.id}/download`, '_blank');
+                                              }}
+                                              className="flex items-center gap-2 cursor-pointer font-medium text-[13px] py-2.5"
+                                            >
+                                              <Eye size={16} className="text-primary" />
+                                              Preview
+                                            </DropdownMenuItem>
+                                            <DropdownMenuItem 
+                                              onClick={async (e) => {
+                                                e.stopPropagation();
+                                                if (window.confirm("Are you sure you want to delete this document?")) {
+                                                  try {
+                                                    await deleteDocument(uploadedDoc.id);
+                                                    toast.success("Document deleted successfully");
+                                                  } catch (err) {
+                                                    toast.error("Failed to delete document");
+                                                  }
+                                                }
+                                              }}
+                                              className="flex items-center gap-2 cursor-pointer font-medium text-[13px] py-2.5 text-red-600 focus:text-red-700 focus:bg-red-50"
+                                            >
+                                              <Trash2 size={16} />
+                                              Delete
+                                            </DropdownMenuItem>
+                                          </DropdownMenuContent>
+                                        </DropdownMenu>
                                       );
                                     }
 
