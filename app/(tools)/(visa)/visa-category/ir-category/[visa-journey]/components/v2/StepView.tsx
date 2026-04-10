@@ -161,6 +161,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
     setConfig: setConfigVault,
     uploadedDocuments,
     isReloadingDocs,
+    isDeletingIds,
     deleteDocument,
   } = useDocumentVaultStore();
   const [activeUploadId, setActiveUploadId] = useState<string | null>(null);
@@ -168,6 +169,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
     "doc" | "hh" | "financial" | null
   >(null);
   const [selectedGuideId, setSelectedGuideId] = useState<string | null>(null);
+  const [documentToDelete, setDocumentToDelete] = useState<{ id: string; name: string } | null>(null);
 
   // Filing Quiz States
   const [showQuiz, setShowQuiz] = useState(false);
@@ -1104,7 +1106,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
 
         {/* PRIMARY LAUNCH MODULE */}
         <div className="bg-[#0e1e38] rounded-[16px] border border-white/7 shadow-[0_20px_60px_rgba(12,27,51,0.18)] overflow-hidden mb-6 relative">
-          <div className="absolute top-0 left-0 right-0 h-[2px] bg-linear-to-r from-primary via-[#6aa8f0] to-transparent opacity-70" />
+          <div className="absolute top-0 left-0 right-0 h-[2px] bg-linear-to-r from-primary via-primary/70 to-transparent opacity-70" />
           <div className="p-8 md:p-[32px_34px_28px]">
             <div className="flex items-start gap-4 mb-[22px]">
               <div className="w-[46px] h-[46px] rounded-[11px] bg-white/6 border border-white/10 flex items-center justify-center shrink-0">
@@ -1279,7 +1281,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
             <div className="flex items-center gap-3 mb-7">
               <div className="flex-1 h-[5px] bg-[#d0e4f7] rounded-[10px] overflow-hidden">
                 <div
-                  className="h-full bg-linear-to-r from-primary to-[#6aa8f0] transition-all duration-500 rounded-[10px]"
+                  className="h-full bg-linear-to-r from-primary to-primary/70 transition-all duration-500 rounded-[10px]"
                   style={{ width: `${progressPct}%` }}
                 />
               </div>
@@ -2258,7 +2260,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
           {/* SPONSORSHIP CALCULATOR LAUNCH MODULE (Step 5 Specific) */}
           {tool.type === "sponsorship_calculator" && (
             <div className="relative bg-[#0e1e38] rounded-[16px] border border-white/7 overflow-hidden mb-[28px] shadow-[0_20px_60px_rgba(12,27,51,0.18),0_4px_16px_rgba(12,27,51,0.12)]">
-              <div className="absolute top-0 left-0 right-0 h-[2px] bg-linear-to-r from-primary to-[#6aa8f0] opacity-70" />
+              <div className="absolute top-0 left-0 right-0 h-[2px] bg-linear-to-r from-primary to-primary/70 opacity-70" />
               <div className="p-[32px_34px_28px]">
                 <div className="flex items-start gap-[16px] mb-[22px]">
                   <div className="w-[46px] h-[46px] rounded-[11px] bg-white/5 border border-white/10 flex items-center justify-center shrink-0">
@@ -2639,16 +2641,11 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
               </div>
             </div>
           )}
-
-          {/* HOUSEHOLD MEMBER BUILDER (Step 2.7 SPECIFIC) */}
-          {tool.type === "household_builder" && renderHouseholdBuilder()}
-
-          {/* SUBMISSION REVIEW CONTENT (Step 2.8 SPECIFIC) */}
           {tool.type === "submission_review" && (
             <div className="flex flex-col mt-4">
               {/* Launcher Card (Large) */}
               <div className="relative bg-[#0e1e38] rounded-[16px] border border-white/7 overflow-hidden mb-[24px] shadow-[0_20px_60px_rgba(12,27,51,0.18),0_4px_16px_rgba(12,27,51,0.12)]">
-                <div className="absolute top-0 left-0 right-0 h-[2px] bg-linear-to-r from-primary via-[#6aa8f0] to-transparent opacity-70" />
+                <div className="absolute top-0 left-0 right-0 h-[2px] bg-linear-to-r from-primary via-primary/70 to-transparent opacity-70" />
                 <div className="p-[30px_32px_26px]">
                   <div className="flex items-start gap-[16px] mb-[20px]">
                     <div className="w-[44px] h-[44px] rounded-[10px] bg-white/5 border border-white/10 flex items-center justify-center shrink-0">
@@ -4861,84 +4858,14 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                               </div>
                             </div>
 
-                            <div className="shrink-0 flex flex-col items-center gap-2">
-                              {(() => {
-                                const defId = mapDocumentNameToId(item.title);
-                                const uploadedDoc = uploadedDocuments.find(ud => ud.documentDefId === defId);
-                                
-                                if (isReloadingDocs && !uploadedDoc) {
-                                  return (
-                                    <div className="flex items-center gap-1.5 px-[11px] py-[5px] text-[12px] text-muted-foreground font-medium animate-pulse">
-                                      <div className="h-3 w-3 rounded-full border-2 border-muted-foreground/30 border-t-muted-foreground animate-spin" />
-                                      Checking...
-                                    </div>
-                                  );
-                                }
-
-                                if (uploadedDoc) {
-                                  return (
-                                    <DropdownMenu>
-                                      <DropdownMenuTrigger asChild>
-                                        <button
-                                          onClick={(e) => e.stopPropagation()}
-                                          className="h-8 w-8 rounded-full hover:bg-muted flex items-center justify-center transition-colors text-muted-foreground hover:text-foreground border border-transparent hover:border-muted-foreground/20"
-                                        >
-                                          <MoreVertical size={18} />
-                                        </button>
-                                      </DropdownMenuTrigger>
-                                      <DropdownMenuContent align="end" className="w-[140px] rounded-xl shadow-xl border-muted/20">
-                                        <DropdownMenuItem 
-                                          onClick={(e) => {
-                                            e.stopPropagation();
-                                            window.open(`/api/documents/${uploadedDoc.id}/download`, '_blank');
-                                          }}
-                                          className="flex items-center gap-2 cursor-pointer font-medium text-[13px] py-2.5"
-                                        >
-                                          <Eye size={16} className="text-primary" />
-                                          Preview
-                                        </DropdownMenuItem>
-                                        <DropdownMenuItem 
-                                          onClick={async (e) => {
-                                            e.stopPropagation();
-                                            if (window.confirm("Are you sure you want to delete this document?")) {
-                                              try {
-                                                await deleteDocument(uploadedDoc.id);
-                                                toast.success("Document deleted successfully");
-                                              } catch (err) {
-                                                toast.error("Failed to delete document");
-                                              }
-                                            }
-                                          }}
-                                          className="flex items-center gap-2 cursor-pointer font-medium text-[13px] py-2.5 text-red-600 focus:text-red-700 focus:bg-red-50"
-                                        >
-                                          <Trash2 size={16} />
-                                          Delete
-                                        </DropdownMenuItem>
-                                      </DropdownMenuContent>
-                                    </DropdownMenu>
-                                  );
-                                }
-
-                                return (
-                                  <button
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      const defId = mapDocumentNameToId(item.title);
-                                      setActiveUploadId(item.id);
-                                      setActiveUploadType("doc");
-                                      openUploadModal(defId);
-                                    }}
-                                    className="rounded-full bg-white px-[11px] py-[5px] border border-[#d0e4f7] text-[12px] font-medium flex items-center justify-center gap-1 text-[#6b8097] hover:border-primary hover:text-primary transition-all shadow-[0_2px_8px_rgba(0,0,0,0.04)]"
-                                    title="Upload document"
-                                  >
-                                    <Upload size={15} strokeWidth={2.5} /> Upload
-                                  </button>
-                                );
-                              })()}
-
+                            <div className="shrink-0 flex items-center gap-2">
                               {(() => {
                                 const defId = mapDocumentNameToId(item.title);
                                 const isUploadedInVault = uploadedDocuments.some(ud => ud.documentDefId === defId);
+                                const uploadedDoc = uploadedDocuments.find(ud => ud.documentDefId === defId);
+                                const isDeleting = uploadedDoc ? isDeletingIds.includes(uploadedDoc.id) : false;
+                                
+                                if (isDeleting) return null; // Badge hidden while deleting
                                 
                                 const displayStatus = isUploadedInVault 
                                   ? "Uploaded" 
@@ -4966,6 +4893,83 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                                       displayStatus
                                     )}
                                   </div>
+                                );
+                              })()}
+
+                              {(() => {
+                                const defId = mapDocumentNameToId(item.title);
+                                const uploadedDoc = uploadedDocuments.find(ud => ud.documentDefId === defId);
+                                const isDeleting = uploadedDoc ? isDeletingIds.includes(uploadedDoc.id) : false;
+                                
+                                if (isReloadingDocs && !uploadedDoc) {
+                                  return (
+                                    <div className="flex items-center gap-1.5 px-[11px] py-[5px] text-[12px] text-muted-foreground font-medium animate-pulse">
+                                      <div className="h-3 w-3 rounded-full border-2 border-muted-foreground/30 border-t-muted-foreground animate-spin" />
+                                      Checking...
+                                    </div>
+                                  );
+                                }
+
+                                if (isDeleting) {
+                                  return (
+                                    <div className="flex items-center gap-1.5 px-[11px] py-[5px] text-[12px] text-red-500 font-medium animate-pulse">
+                                      <div className="h-3 w-3 rounded-full border-2 border-red-500/30 border-t-red-500 animate-spin" />
+                                      Deleting...
+                                    </div>
+                                  );
+                                }
+
+                                if (uploadedDoc) {
+                                  return (
+                                    <DropdownMenu>
+                                      <DropdownMenuTrigger asChild>
+                                        <button
+                                          onClick={(e) => e.stopPropagation()}
+                                          className="h-8 w-8 rounded-full hover:bg-muted flex items-center justify-center transition-colors text-muted-foreground hover:text-foreground border border-transparent hover:border-muted-foreground/20"
+                                        >
+                                          <MoreVertical size={18} />
+                                        </button>
+                                      </DropdownMenuTrigger>
+                                      <DropdownMenuContent side="top" align="end" className="w-[140px] rounded-xl shadow-xl border-muted/20">
+                                        <DropdownMenuItem 
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            window.open(`/api/documents/${uploadedDoc.id}/download`, '_blank');
+                                          }}
+                                          className="flex items-center gap-2 cursor-pointer font-medium text-[13px] py-2.5"
+                                        >
+                                          <Eye size={16} className="text-primary" />
+                                          Preview
+                                        </DropdownMenuItem>
+                                        <DropdownMenuItem 
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            setDocumentToDelete({ id: uploadedDoc.id, name: item.title });
+                                          }}
+                                          className="flex items-center gap-2 cursor-pointer font-medium text-[13px] py-2.5 text-red-600 focus:text-red-700 focus:bg-red-50"
+                                        >
+                                          <Trash2 size={16} />
+                                          Delete
+                                        </DropdownMenuItem>
+                                      </DropdownMenuContent>
+                                    </DropdownMenu>
+                                  );
+                                }
+
+                                return (
+                                  <button
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      const defId = mapDocumentNameToId(item.title);
+                                      setActiveUploadId(item.id);
+                                      setActiveUploadType("doc");
+                                      openUploadModal(defId);
+                                    }}
+                                    className="rounded-full bg-white px-[11px] py-[5px] border border-[#d0e4f7] text-[12px] font-medium flex items-center justify-center gap-1 text-[#6b8097] hover:border-primary hover:text-primary transition-all shadow-[0_2px_8px_rgba(0,0,0,0.04)]"
+                                    title="Upload document"
+                                  >
+                                    <Upload size={15} strokeWidth={2.5} /> Upload
+                                  </button>
                                 );
                               })()}
                             </div>
@@ -6327,8 +6331,10 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                     {group.items.map((item: any) => {
                       const st = civilDocsStatus[item.id] || "not-started";
                       return (
-                        <button
+                        <div
                           key={item.id}
+                          role="button"
+                          tabIndex={0}
                           onClick={() => {
                             if (item.external_href) {
                               window.open(
@@ -6411,16 +6417,57 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                               })}
                             </div>
                           </div>
-                          <div className="shrink-0 flex flex-col items-center gap-2">
+                          <div className="shrink-0 flex items-center gap-2">
+                            {(() => {
+                              const defId = mapDocumentNameToId(item.title);
+                              const isUploadedInVault = uploadedDocuments.some(ud => ud.documentDefId === defId);
+                              const uploadedDoc = uploadedDocuments.find(ud => ud.documentDefId === defId);
+                              const isDeleting = uploadedDoc ? isDeletingIds.includes(uploadedDoc.id) : false;
+                              
+                              if (isDeleting) return null; // Badge hidden while deleting
+                              
+                              const displayStatus = isUploadedInVault 
+                                ? "Uploaded" 
+                                : (isReloadingDocs 
+                                  ? "Checking..." 
+                                  : (st === "reviewed" ? "✓ Reviewed" : (st === "in-progress" ? "In progress" : "Open guide")));
+
+                              const statusClasses = isUploadedInVault 
+                                ? "bg-[#eaf7f2] text-[#1a7a5e] border-[#b5e0d0] font-bold shadow-sm"
+                                : (isReloadingDocs
+                                  ? "bg-muted/30 text-muted-foreground border-muted-foreground/20 animate-pulse"
+                                  : (st === "reviewed" 
+                                    ? "bg-[#e8f5ef] text-[#15744f] border-[#a8d9be]"
+                                    : (st === "in-progress" 
+                                      ? "bg-[#fef8e8] text-[#8a6200] border-[#f0d98a]"
+                                      : "bg-white text-[#6b8097] border-[#d0e4f7] hover:border-primary hover:text-primary")));
+
+                              return (
+                                <div className={`px-[11px] py-[5px] rounded-full border text-[12px] font-medium tracking-normal transition-all ${statusClasses}`}>
+                                  {displayStatus}
+                                </div>
+                              );
+                            })()}
+
                             {(() => {
                               const defId = mapDocumentNameToId(item.title);
                               const uploadedDoc = uploadedDocuments.find(ud => ud.documentDefId === defId);
+                              const isDeleting = uploadedDoc ? isDeletingIds.includes(uploadedDoc.id) : false;
                               
                               if (isReloadingDocs && !uploadedDoc) {
                                 return (
                                   <div className="flex items-center gap-1.5 px-[11px] py-[5px] text-[12px] text-muted-foreground font-medium animate-pulse">
                                     <div className="h-3 w-3 rounded-full border-2 border-muted-foreground/30 border-t-muted-foreground animate-spin" />
                                     Checking...
+                                  </div>
+                                );
+                              }
+
+                              if (isDeleting) {
+                                return (
+                                  <div className="flex items-center gap-1.5 px-[11px] py-[5px] text-[12px] text-red-500 font-medium animate-pulse">
+                                    <div className="h-3 w-3 rounded-full border-2 border-red-500/30 border-t-red-500 animate-spin" />
+                                    Deleting...
                                   </div>
                                 );
                               }
@@ -6436,7 +6483,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                                         <MoreVertical size={18} />
                                       </button>
                                     </DropdownMenuTrigger>
-                                    <DropdownMenuContent align="end" className="w-[140px] rounded-xl shadow-xl border-muted/20">
+                                    <DropdownMenuContent side="top" align="end" className="w-[140px] rounded-xl shadow-xl border-muted/20">
                                       <DropdownMenuItem 
                                         onClick={(e) => {
                                           e.stopPropagation();
@@ -6448,16 +6495,9 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                                         Preview
                                       </DropdownMenuItem>
                                       <DropdownMenuItem 
-                                        onClick={async (e) => {
+                                        onClick={(e) => {
                                           e.stopPropagation();
-                                          if (window.confirm("Are you sure you want to delete this document?")) {
-                                            try {
-                                              await deleteDocument(uploadedDoc.id);
-                                              toast.success("Document deleted successfully");
-                                            } catch (err) {
-                                              toast.error("Failed to delete document");
-                                            }
-                                          }
+                                          setDocumentToDelete({ id: uploadedDoc.id, name: item.title });
                                         }}
                                         className="flex items-center gap-2 cursor-pointer font-medium text-[13px] py-2.5 text-red-600 focus:text-red-700 focus:bg-red-50"
                                       >
@@ -6485,35 +6525,8 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                                 </button>
                               );
                             })()}
-
-                            {(() => {
-                              const defId = mapDocumentNameToId(item.title);
-                              const isUploadedInVault = uploadedDocuments.some(ud => ud.documentDefId === defId);
-                              
-                              const displayStatus = isUploadedInVault 
-                                ? "Uploaded" 
-                                : (isReloadingDocs 
-                                  ? "Checking..." 
-                                  : (st === "reviewed" ? "✓ Reviewed" : (st === "in-progress" ? "In progress" : "Open guide")));
-
-                              const statusClasses = isUploadedInVault 
-                                ? "bg-[#eaf7f2] text-[#1a7a5e] border-[#b5e0d0] font-bold shadow-sm"
-                                : (isReloadingDocs
-                                  ? "bg-muted/30 text-muted-foreground border-muted-foreground/20 animate-pulse"
-                                  : (st === "reviewed" 
-                                    ? "bg-[#e8f5ef] text-[#15744f] border-[#a8d9be]"
-                                    : (st === "in-progress" 
-                                      ? "bg-[#fef8e8] text-[#8a6200] border-[#f0d98a]"
-                                      : "bg-white text-[#6b8097] border-[#d0e4f7] hover:border-primary hover:text-primary")));
-
-                              return (
-                                <div className={`px-[11px] py-[5px] rounded-full border text-[12px] font-medium tracking-normal transition-all ${statusClasses}`}>
-                                  {displayStatus}
-                                </div>
-                              );
-                            })()}
                           </div>
-                        </button>
+                        </div>
                       );
                     })}
                   </div>
@@ -7465,16 +7478,57 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                                   </div>
                                 </div>
 
-                                <div className="shrink-0 flex flex-col items-center gap-2">
+                                <div className="shrink-0 flex items-center gap-2">
+                                  {(() => {
+                                    const defId = mapDocumentNameToId(doc.name);
+                                    const isUploadedInVault = uploadedDocuments.some(ud => ud.documentDefId === defId);
+                                    const uploadedDoc = uploadedDocuments.find(ud => ud.documentDefId === defId);
+                                    const isDeleting = uploadedDoc ? isDeletingIds.includes(uploadedDoc.id) : false;
+                                    
+                                    if (isDeleting) return null; // Badge hidden while deleting
+                                    
+                                    const displayStatus = isUploadedInVault 
+                                      ? "Uploaded" 
+                                      : (isReloadingDocs 
+                                        ? "Checking..." 
+                                        : (isReviewed ? "Reviewed" : (isInProgress ? "In progress" : "Not started")));
+
+                                    const statusClasses = isUploadedInVault 
+                                      ? "bg-[#eaf7f2] text-[#1a7a5e] border-[#b5e0d0] font-bold shadow-sm"
+                                      : (isReloadingDocs
+                                        ? "bg-muted/30 text-muted-foreground border-muted-foreground/20 animate-pulse"
+                                        : (isReviewed 
+                                          ? "bg-[#eaf7f2] text-[#1a7a5e] border-[#b5e0d0]"
+                                          : (isInProgress 
+                                            ? "bg-[#fff9e6] text-[#d97706] border-[#fde68a]"
+                                            : "bg-white text-[#6b8097] border-[#d0e4f7] hover:border-primary hover:text-primary")));
+
+                                    return (
+                                      <div className={`px-[11px] py-[5px] rounded-full border text-[12px] font-medium tracking-normal transition-all ${statusClasses}`}>
+                                        {displayStatus}
+                                      </div>
+                                    );
+                                  })()}
+
                                   {(() => {
                                     const defId = mapDocumentNameToId(doc.name);
                                     const uploadedDoc = uploadedDocuments.find(ud => ud.documentDefId === defId);
+                                    const isDeleting = uploadedDoc ? isDeletingIds.includes(uploadedDoc.id) : false;
                                     
                                     if (isReloadingDocs && !uploadedDoc) {
                                       return (
                                         <div className="flex items-center gap-1.5 px-[11px] py-[5px] text-[12px] text-muted-foreground font-medium animate-pulse">
                                           <div className="h-3 w-3 rounded-full border-2 border-muted-foreground/30 border-t-muted-foreground animate-spin" />
                                           Checking...
+                                        </div>
+                                      );
+                                    }
+
+                                    if (isDeleting) {
+                                      return (
+                                        <div className="flex items-center gap-1.5 px-[11px] py-[5px] text-[12px] text-red-500 font-medium animate-pulse">
+                                          <div className="h-3 w-3 rounded-full border-2 border-red-500/30 border-t-red-500 animate-spin" />
+                                          Deleting...
                                         </div>
                                       );
                                     }
@@ -7490,7 +7544,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                                               <MoreVertical size={18} />
                                             </button>
                                           </DropdownMenuTrigger>
-                                          <DropdownMenuContent align="end" className="w-[140px] rounded-xl shadow-xl border-muted/20">
+                                          <DropdownMenuContent side="top" align="end" className="w-[140px] rounded-xl shadow-xl border-muted/20">
                                             <DropdownMenuItem 
                                               onClick={(e) => {
                                                 e.stopPropagation();
@@ -7502,16 +7556,9 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                                               Preview
                                             </DropdownMenuItem>
                                             <DropdownMenuItem 
-                                              onClick={async (e) => {
+                                              onClick={(e) => {
                                                 e.stopPropagation();
-                                                if (window.confirm("Are you sure you want to delete this document?")) {
-                                                  try {
-                                                    await deleteDocument(uploadedDoc.id);
-                                                    toast.success("Document deleted successfully");
-                                                  } catch (err) {
-                                                    toast.error("Failed to delete document");
-                                                  }
-                                                }
+                                                setDocumentToDelete({ id: uploadedDoc.id, name: doc.name });
                                               }}
                                               className="flex items-center gap-2 cursor-pointer font-medium text-[13px] py-2.5 text-red-600 focus:text-red-700 focus:bg-red-50"
                                             >
@@ -7538,33 +7585,6 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                                         <Upload size={15} strokeWidth={2.5} />{" "}
                                         Upload
                                       </button>
-                                    );
-                                  })()}
-                                  
-                                  {(() => {
-                                    const defId = mapDocumentNameToId(doc.name);
-                                    const isUploadedInVault = uploadedDocuments.some(ud => ud.documentDefId === defId);
-                                    
-                                    const displayStatus = isUploadedInVault 
-                                      ? "Uploaded" 
-                                      : (isReloadingDocs 
-                                        ? "Checking..." 
-                                        : (isReviewed ? "Reviewed" : (isInProgress ? "In progress" : "Not started")));
-
-                                    const statusClasses = isUploadedInVault 
-                                      ? "bg-[#eaf7f2] text-[#1a7a5e] border-[#b5e0d0] font-bold shadow-sm"
-                                      : (isReloadingDocs
-                                        ? "bg-muted/30 text-muted-foreground border-muted-foreground/20 animate-pulse"
-                                        : (isReviewed 
-                                          ? "bg-[#eaf7f2] text-[#1a7a5e] border-[#b5e0d0]"
-                                          : (isInProgress 
-                                            ? "bg-[#fff9e6] text-[#d97706] border-[#fde68a]"
-                                            : "bg-white text-[#6b8097] border-[#d0e4f7] hover:border-primary hover:text-primary")));
-
-                                    return (
-                                      <div className={`px-[11px] py-[5px] rounded-full border text-[12px] font-medium tracking-normal transition-all ${statusClasses}`}>
-                                        {displayStatus}
-                                      </div>
                                     );
                                   })()}
                                 </div>
@@ -7903,7 +7923,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
             </button>
             <div className="flex-1 h-[5px] bg-[#d0e4f7] rounded-[10px] overflow-hidden">
               <div
-                className="h-full bg-linear-to-r from-primary to-[#6aa8f0] transition-all duration-500"
+                className="h-full bg-linear-to-r from-primary to-primary/70 transition-all duration-500"
                 style={{
                   width: `${Math.round(((sponsorshipStepIdx + 1) / 7) * 100)}%`,
                 }}
@@ -8463,6 +8483,29 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
         loading={isSubmittingCreds}
       />
 
+      {/* Global Document Delete Confirmation Modal */}
+      <ConfirmationModal
+        open={!!documentToDelete}
+        onOpenChange={(open) => !open && setDocumentToDelete(null)}
+        title="Delete Document"
+        description={`Are you sure you want to permanently delete "${documentToDelete?.name}"? This action cannot be undone.`}
+        confirmText="Delete"
+        confirmVariant="danger"
+        onConfirm={async () => {
+          if (!documentToDelete) return;
+          const docId = documentToDelete.id;
+          // Close modal immediately so UI drops back to "Deleting..." spinner inline
+          setDocumentToDelete(null);
+          
+          try {
+            await deleteDocument(docId);
+            toast.success("Document deleted successfully");
+          } catch (err) {
+            toast.error("Failed to delete document");
+          }
+        }}
+      />
+
       <NvcFeeModal
         isOpen={isNvcFeeModalOpen}
         onClose={() => setIsNvcFeeModalOpen(false)}
@@ -9009,7 +9052,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
               </button>
               <div className="flex-1 h-1.25 bg-[#d0e4f7] rounded-full overflow-hidden">
                 <div
-                  className="h-full bg-linear-to-r from-primary to-[#6aa8f0] transition-all duration-400"
+                  className="h-full bg-linear-to-r from-primary to-primary/70 transition-all duration-400"
                   style={{
                     width: `${((medicalGuideIdx + 1) / (currentStep.tool_data as any).tutorial.length) * 100}%`,
                   }}
@@ -10296,7 +10339,7 @@ function InterviewDayTutOverlay({
         </button>
         <div className="flex-1 h-[5px] bg-[#d0e4f7] rounded-full overflow-hidden">
           <div
-            className="h-full bg-linear-to-r from-primary to-[#6aa8f0] transition-all duration-500"
+            className="h-full bg-linear-to-r from-primary to-primary/70 transition-all duration-500"
             style={{ width: `${progress}%` }}
           />
         </div>
