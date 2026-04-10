@@ -39,6 +39,7 @@ interface DocumentVaultStore {
 
   // UI State
   isLoading: boolean;
+  isReloadingDocs: boolean;
   selectedDocumentDefId: string | null;
   wizardOpen: boolean;
   uploadModalOpen: boolean;
@@ -119,6 +120,7 @@ const initialState = {
   completedSteps: {},
   notifications: [],
   isLoading: false,
+  isReloadingDocs: false,
   selectedDocumentDefId: null,
   wizardOpen: false,
   uploadModalOpen: false,
@@ -205,7 +207,11 @@ export const useDocumentVaultStore = create<DocumentVaultStore>()(
           // Generate initial notifications
           get().refreshNotifications(t);
         } else {
+          // No config yet — but still store any documents that already exist
+          const defsMap = new Map(ALL_DOCUMENTS.map((d) => [d.id, d]));
+          const updatedDocs = updateDocumentStatuses(documents, defsMap);
           set({
+            uploadedDocuments: updatedDocs,
             isLoading: false,
             completedSteps,
             notificationConfig,
@@ -221,22 +227,25 @@ export const useDocumentVaultStore = create<DocumentVaultStore>()(
     setConfig: async (config: DocumentVaultConfig) => {
       const requiredDocs = generateRequiredDocuments(config, true); // Include optional documents
 
+      // Set config in store IMMEDIATELY — don't wait for DB
+      // This ensures the upload modal always has a non-null config
+      set({
+        config,
+        requiredDocuments: requiredDocs,
+      });
+
       try {
-        // Save to database via API
+        // Try to persist to DB (best effort — store is already updated above)
         await fetch("/api/documents/config", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(config),
         });
-
-        set({
-          config,
-          requiredDocuments: requiredDocs,
-        });
       } catch (error) {
-        console.error("Failed to save config:", error);
+        console.error("Failed to persist config to DB (config still active for session):", error);
       }
     },
+
 
     updateScenarioFlags: (flags: Partial<ScenarioFlags>) => {
       const { config } = get();
@@ -296,14 +305,30 @@ export const useDocumentVaultStore = create<DocumentVaultStore>()(
       get().refreshNotifications();
     },
 
-    deleteDocument: (documentId: string) => {
-      const { uploadedDocuments } = get();
+    deleteDocument: async (documentId: string) => {
+      try {
+        const response = await fetch(`/api/documents/${documentId}`, {
+          method: "DELETE",
+        });
 
-      set({
-        uploadedDocuments: uploadedDocuments.filter(
-          (doc) => doc.id !== documentId,
-        ),
-      });
+        if (!response.ok) {
+          throw new Error("Failed to delete document from server");
+        }
+
+        const { uploadedDocuments } = get();
+        set({
+          uploadedDocuments: uploadedDocuments.filter(
+            (doc) => doc.id !== documentId,
+          ),
+        });
+
+        // Refresh statuses and notifications
+        get().refreshDocumentStatuses();
+        get().refreshNotifications();
+      } catch (error) {
+        console.error("Failed to delete document:", error);
+        throw error; // Re-throw so UI can handle it (e.g. toast)
+      }
     },
 
     refreshDocumentStatuses: () => {
@@ -316,6 +341,7 @@ export const useDocumentVaultStore = create<DocumentVaultStore>()(
     },
 
     reloadDocuments: async () => {
+      set({ isReloadingDocs: true });
       try {
         // Fetch documents from API
         const response = await fetch("/api/documents/list");
@@ -332,9 +358,25 @@ export const useDocumentVaultStore = create<DocumentVaultStore>()(
 
         const defsMap = new Map(ALL_DOCUMENTS.map((d) => [d.id, d]));
         const updatedDocs = updateDocumentStatuses(documents, defsMap);
-        set({ uploadedDocuments: updatedDocs });
+
+        // Also regenerate requiredDocuments if config is available
+        const { config } = get();
+        if (config) {
+          const requiredDocs = generateRequiredDocuments(config, true);
+          set({ 
+            uploadedDocuments: updatedDocs, 
+            requiredDocuments: requiredDocs,
+            isReloadingDocs: false 
+          });
+        } else {
+          set({ 
+            uploadedDocuments: updatedDocs,
+            isReloadingDocs: false 
+          });
+        }
       } catch (error) {
         console.error("Failed to reload documents:", error);
+        set({ isReloadingDocs: false });
       }
     },
 

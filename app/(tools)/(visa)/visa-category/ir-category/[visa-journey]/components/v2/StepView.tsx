@@ -58,9 +58,18 @@ import {
   Copy,
   Paperclip,
   Heart,
+  Eye,
+  MoreVertical,
+  Trash2,
   Truck,
-} from "lucide-react";
+  } from "lucide-react";
 
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import {
   RoadmapData,
   QuestSuite,
@@ -94,6 +103,11 @@ import { APPOINTMENT_RECEIVED_DATA } from "./AppointmentReceivedData";
 import { MEDICAL_EXAM_DATA } from "./MedicalExamData";
 import { POLIO_CERTIFICATE_DATA } from "./PolioCertificateData";
 import { POLICE_CLEARANCE_DATA } from "./PoliceClearanceData";
+import { mapDocumentNameToId } from "@/lib/document-vault/journey-mapping";
+import { useDocumentVaultStore } from "@/lib/document-vault/store";
+import { DocumentUploadModal } from "@/app/components/document-vault/DocumentUploadModal";
+import { ALL_DOCUMENTS } from "@/lib/document-vault/document-definitions";
+import { useAuth } from "@/app/context/AuthContext";
 
 interface SecurityQuestion {
   id: string;
@@ -137,6 +151,22 @@ interface FilingQuizResult {
 }
 
 export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
+  const { user } = useAuth();
+  const {
+    openUploadModal,
+    uploadModalOpen,
+    closeUploadModal,
+    selectedDocumentDefId,
+    reloadDocuments,
+    setConfig: setConfigVault,
+    uploadedDocuments,
+    isReloadingDocs,
+    deleteDocument,
+  } = useDocumentVaultStore();
+  const [activeUploadId, setActiveUploadId] = useState<string | null>(null);
+  const [activeUploadType, setActiveUploadType] = useState<
+    "doc" | "hh" | "financial" | null
+  >(null);
   const [selectedGuideId, setSelectedGuideId] = useState<string | null>(null);
 
   // Filing Quiz States
@@ -385,6 +415,13 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
       }
     }
   }, [sponsorshipResult]);
+  
+  // Sync household document status with metadata
+  useEffect(() => {
+    if (state.metadata.hhDocsStatus) {
+      setHhDocsStatus(state.metadata.hhDocsStatus as Record<string, string>);
+    }
+  }, [state.metadata.hhDocsStatus]);
 
   const chapters = data.chapters || (data as any).stages;
   const currentChapter = chapters?.[state.currentStage];
@@ -1007,7 +1044,12 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
   };
 
   const renderHouseholdBuilder = () => {
-    const allItems = getHhDocItems(hhCount, hhRelationships);
+    const rawItems = getHhDocItems(hhCount, hhRelationships);
+    // Deduplicate items based on title to avoid duplicate cards (e.g. Petitioner Birth Cert for multiple members)
+    const allItems = rawItems.filter(
+      (item, index, self) =>
+        index === self.findIndex((t) => t.title === item.title),
+    );
     const total = allItems.length;
     const reviewed = allItems.filter(
       (item) => hhDocsStatus[item.id] === "reviewed",
@@ -1319,17 +1361,9 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
           : "Open guide";
 
     return (
-      <button
+      <div
         key={item.id}
-        onClick={() => {
-          if (hhDocsStatus[item.id] === "not-started") {
-            const next = { ...hhDocsStatus, [item.id]: "in-progress" };
-            setHhDocsStatus(next);
-          }
-          setActiveHhDoc(item);
-          setIsHhDocGuideOpen(true);
-        }}
-        className={`w-full group bg-white border-[1.5px] border-[#d0e4f7] rounded-[16px] p-[17px_20px] flex items-center gap-[15px] text-left transition-all hover:border-primary hover:shadow-[0_4px_20px_rgba(47,111,212,0.1)] hover:-translate-y-px active:translate-y-0 ${
+        className={`w-full group bg-white border-[1.5px] border-[#d0e4f7] rounded-[16px] p-[17px_20px] flex items-center gap-[15px] text-left transition-all hover:border-primary hover:shadow-[0_4px_20px_rgba(47,111,212,0.1)] ${
           st === "reviewed"
             ? "bg-[#e8f5ef] border-[#a8d9be]"
             : st === "in-progress"
@@ -1374,18 +1408,49 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
             })}
           </div>
         </div>
-        <div
-          className={`text-[11px] font-semibold px-2.5 py-1 rounded-full whitespace-nowrap shrink-0 transition-all border ${
-            st === "reviewed"
-              ? "bg-[#e8f5ef] text-[#15744f] border-[#a8d9be]"
-              : st === "in-progress"
-                ? "bg-[#fef8e8] text-[#8a6200] border-[#f0d98a]"
-                : "bg-[#f4f7fb] text-[#6b8097] border-[#d0e4f7]"
-          }`}
-        >
-          {stLabel}
+
+        <div className="flex flex-col items-center gap-2">
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              const defId = mapDocumentNameToId(item.title);
+              setActiveUploadId(item.id);
+              setActiveUploadType("hh");
+              openUploadModal(defId);
+            }}
+            className="rounded-full bg-white px-[11px] py-[5px] border border-[#d0e4f7] text-[12px] font-medium flex items-center justify-center gap-1 text-[#6b8097] hover:border-primary hover:text-primary transition-all shadow-[0_2px_8px_rgba(0,0,0,0.04)]"
+          >
+            <Upload size={14} strokeWidth={2.5} />
+            <span>Vault</span>
+          </button>
+          <button
+            onClick={() => {
+              // All household docs are inline guides - mark as in-progress and open modal
+              if (hhDocsStatus[item.id] === "not-started") {
+                const next = { ...hhDocsStatus, [item.id]: "in-progress" };
+                setHhDocsStatus(next);
+              }
+              actions.updateMetadata({
+                hhDocsStatus: {
+                  ...hhDocsStatus,
+                  [item.id]: "in-progress",
+                },
+              });
+              setActiveHhDoc(item);
+              setIsHhDocGuideOpen(true);
+            }}
+            className={`text-[11px] font-semibold px-2.5 py-1 rounded-full whitespace-nowrap shrink-0 transition-all border ${
+              st === "reviewed"
+                ? "bg-[#e8f5ef] text-[#15744f] border-[#a8d9be]"
+                : st === "in-progress"
+                  ? "bg-[#fef8e8] text-[#8a6200] border-[#f0d98a]"
+                  : "bg-[#f4f7fb] text-[#6b8097] border-[#d0e4f7]"
+            }`}
+          >
+            {stLabel}
+          </button>
         </div>
-      </button>
+      </div>
     );
   };
 
@@ -1462,6 +1527,29 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
   useEffect(() => {
     fetchCredentials();
   }, [fetchCredentials, sId]);
+
+  // Initialize Document Vault Config — runs on mount, no user.id dependency
+  // The API uses the session cookie to get real user_id, so userId here is just a local label
+  useEffect(() => {
+    const initVault = async () => {
+      // Run these in parallel to speed up initialization
+      Promise.all([
+        setConfigVault({
+          userId: user?.id || "session",
+          visaCategory: "IR-1",
+          caseId: (state.metadata.caseId as string) || "ARACHNIE-IR1",
+          petitionerName: (state.metadata.petitionerName as string) || "Petitioner",
+          beneficiaryName: (state.metadata.beneficiaryName as string) || "Beneficiary",
+          jointSponsorName: (state.metadata.jointSponsorName as string) || "",
+          scenarioFlags: {},
+        }),
+        reloadDocuments()
+      ]);
+    };
+    initVault();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Run once on mount — config is set immediately, no race condition
+
 
   // Disable body scroll when overlays are open
   useEffect(() => {
@@ -2452,24 +2540,11 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
 
                         <div className="flex flex-col gap-[10px]">
                           {group.items.map((doc: any) => {
-                            const st = financialDocsStatus[doc.id] || "open";
+                            const st = financialDocsStatus[doc.id] || "not-started";
                             return (
-                              <button
+                              <div
                                 key={doc.id}
-                                onClick={() => {
-                                  if (financialDocsStatus[doc.id] === "open") {
-                                    const next = {
-                                      ...financialDocsStatus,
-                                      [doc.id]: "in-progress",
-                                    };
-                                    actions.updateMetadata({
-                                      financialDocsStatus: next,
-                                    });
-                                  }
-                                  setActiveFinancialDoc(doc);
-                                  setIsFinancialDocGuideOpen(true);
-                                }}
-                                className={`bg-white border-[1.5px] border-[#d0e4f7] rounded-[10px] p-[18px_20px] flex items-center gap-[16px] text-left transition-all hover:border-primary hover:shadow-[0_4px_20px_rgba(47,111,212,0.08)] hover:-translate-y-px cursor-pointer ${
+                                className={`bg-white border-[1.5px] border-[#d0e4f7] rounded-[10px] p-[18px_20px] flex items-center gap-[16px] text-left transition-all hover:border-primary hover:shadow-[0_4px_20px_rgba(47,111,212,0.08)] ${
                                   st === "reviewed"
                                     ? "bg-[#e8f5ef] border-[#a8d9be]"
                                     : st === "in-progress"
@@ -2510,20 +2585,34 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                                     ))}
                                   </div>
                                 </div>
-
-                                <div className="shrink-0 flex flex-col items-center gap-3">
+                                <div className="flex flex-col items-center gap-2">
                                   <button
                                     onClick={(e) => {
                                       e.stopPropagation();
-                                      // Navigation logic or file picker trigger would go here
+                                      const defId = mapDocumentNameToId(doc.title);
+                                      setActiveUploadId(doc.id);
+                                      setActiveUploadType("financial");
+                                      openUploadModal(defId);
                                     }}
                                     className="rounded-full bg-white px-[11px] py-[5px] border border-[#d0e4f7] text-[12px] font-medium flex items-center justify-center gap-1 text-[#6b8097] hover:border-primary hover:text-primary transition-all shadow-[0_2px_8px_rgba(0,0,0,0.04)]"
-                                    title="Upload document"
                                   >
-                                    <Upload size={15} strokeWidth={2.5} />{" "}
-                                    Upload
+                                    <Upload size={14} strokeWidth={2.5} />
+                                    <span>Vault</span>
                                   </button>
-                                  <div
+                                  <button
+                                    onClick={() => {
+                                      // Mark as in-progress when opened (unless already reviewed)
+                                      if (financialDocsStatus[doc.id] !== "reviewed") {
+                                        actions.updateMetadata({
+                                          financialDocsStatus: {
+                                            ...financialDocsStatus,
+                                            [doc.id]: "in-progress",
+                                          },
+                                        });
+                                      }
+                                      setActiveFinancialDoc(doc);
+                                      setIsFinancialDocGuideOpen(true);
+                                    }}
                                     className={`text-[12px] font-medium px-[11px] py-[5px] rounded-full shrink-0 border whitespace-nowrap ${
                                       st === "reviewed"
                                         ? "bg-[#e8f5ef] text-[#15744f] border-[#a8d9be]"
@@ -2537,9 +2626,9 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                                       : st === "in-progress"
                                         ? "In progress"
                                         : "Open guide"}
-                                  </div>
+                                  </button>
                                 </div>
-                              </button>
+                              </div>
                             );
                           })}
                         </div>
@@ -2550,11 +2639,6 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
               </div>
             </div>
           )}
-
-          {/* HOUSEHOLD MEMBER BUILDER (Step 2.7 SPECIFIC) */}
-          {tool.type === "household_builder" && renderHouseholdBuilder()}
-
-          {/* SUBMISSION REVIEW CONTENT (Step 2.8 SPECIFIC) */}
           {tool.type === "submission_review" && (
             <div className="flex flex-col mt-4">
               {/* Launcher Card (Large) */}
@@ -3913,14 +3997,14 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                               medWizardStep === 0 && (
                                 <div className="bg-white border-[1.5px] border-[#d0e4f7] rounded-[16px] p-5 mb-3.5 shadow-sm">
                                   <div className="text-[12px] font-semibold tracking-[0.05em] uppercase text-[#6b8097] mb-2.5">
-                                    {s.card?.title}
+                                    {(s as any).card?.title}
                                   </div>
                                   <p className="text-[13px] text-[#3a4f63] leading-relaxed mb-3.5">
-                                    {s.card?.description}
+                                    {(s as any).card?.description}
                                   </p>
                                   <Link
                                     href={
-                                      s.card?.buttonLabel ===
+                                      (s as any).card?.buttonLabel ===
                                       "Open Booking Service"
                                         ? "/book-appointment"
                                         : "#"
@@ -3930,7 +4014,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                                     className="w-full p-3.5 bg-primary text-white border-none rounded-[10px] text-[15px] font-semibold cursor-pointer transition-all flex items-center justify-center gap-2 shadow-[0_4px_20px_rgba(47,111,212,0.35)] hover:bg-primary/70 hover:-translate-y-px hover:shadow-[0_8px_32px_rgba(47,111,212,0.45)] no-underline"
                                   >
                                     <ExternalLink size={15} strokeWidth={2} />
-                                    {s.card?.buttonLabel}
+                                    {(s as any).card?.buttonLabel}
                                   </Link>
                                 </div>
                               )}
@@ -4679,10 +4763,10 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
               {/* Progress Row */}
               {(() => {
                 const groups = tool.doc_gathering?.groups || [];
-                const allItems = groups.flatMap((g) => g.items);
+                const allItems = groups.flatMap((g: any) => g.items);
                 const total = allItems.length;
                 const rev = allItems.filter(
-                  (it) => gatheringStatus[it.id] === "reviewed",
+                  (it: any) => gatheringStatus[it.id] === "reviewed",
                 ).length;
                 const pct = total > 0 ? (rev / total) * 100 : 0;
 
@@ -4702,7 +4786,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
               })()}
 
               <div id="doc-groups">
-                {tool.doc_gathering?.groups.map((group) => (
+                {tool.doc_gathering?.groups.map((group: any) => (
                   <div key={group.id} className="mb-[28px] last:mb-0">
                     <div className="flex items-center gap-[10px] mb-[12px]">
                       <span className="text-[11px] font-semibold tracking-[0.09em] uppercase text-[#6b8097]">
@@ -4727,7 +4811,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                     </div>
 
                     <div className="flex flex-col gap-[9px]">
-                      {group.items.map((item) => {
+                      {group.items.map((item: any) => {
                         const status =
                           gatheringStatus[item.id] || "not-started";
                         const isRev = status === "reviewed";
@@ -6177,6 +6261,13 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                                 },
                               });
                             } else {
+                              // Mark inline guides as in-progress when opened
+                              actions.updateMetadata({
+                                civilDocsStatus: {
+                                  ...civilDocsStatus,
+                                  [item.id]: "in-progress",
+                                },
+                              });
                               setActiveCivilDoc(item);
                               setIsCivilDocGuideOpen(true);
                             }
@@ -7093,7 +7184,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                             const hasAttachment =
                               state.docUploads[doc.name] ||
                               state.notes[doc.name];
-                            const isInProgress = hasAttachment && !isReviewed;
+                            const isInProgress = (hasAttachment && !isReviewed) || docReviewStatus === "in-progress";
                             const isPetitioner = doc.tag === "petitioner";
                             const isBeneficiary = doc.tag === "beneficiary";
 
@@ -7105,9 +7196,9 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                                     doc.guideUrl &&
                                     doc.guideUrl !== "/guides"
                                   ) {
-                                    // Open guide immediately in new tab
+                                    // For external guides, open in new tab and mark as reviewed
                                     window.open(doc.guideUrl, "_blank");
-                                    // Auto-mark as reviewed in background (fire and forget)
+                                    // Mark as reviewed (external guides don't have a mark button)
                                     if (
                                       actions.updateDocumentStatus &&
                                       doc.id
@@ -7118,7 +7209,18 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                                       );
                                     }
                                   } else {
+                                    // For inline guides, open modal and mark as in-progress
                                     setSelectedGuideId(doc.id || null);
+                                    // Mark as in-progress immediately when opened
+                                    if (
+                                      actions.updateDocumentStatus &&
+                                      doc.id
+                                    ) {
+                                      actions.updateDocumentStatus(
+                                        doc.id,
+                                        "in-progress",
+                                      );
+                                    }
                                   }
                                 }}
                                 className={`group flex items-center gap-[16px] px-[20px] py-[18px] rounded-[14px] border-[1.5px] transition-all cursor-pointer relative shadow-[0_2px_12px_rgba(15,31,56,0.07),0_1px_3px_rgba(15,31,56,0.04)] hover:border-primary hover:shadow-[0_8px_32px_rgba(15,31,56,0.12),0_2px_8px_rgba(15,31,56,0.06)] hover:-translate-y-px active:translate-y-0 active:shadow-[0_2px_12px_rgba(15,31,56,0.07),0_1px_3px_rgba(15,31,56,0.04)] mb-[10px]
@@ -7203,35 +7305,110 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                                   </div>
                                 </div>
 
-                                <div className="shrink-0 flex flex-col items-center gap-3">
-                                  <button
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      // Navigation logic or file picker trigger would go here
-                                    }}
-                                    className="rounded-full bg-white px-[11px] py-[5px] border border-[#d0e4f7] text-[12px] font-medium flex items-center justify-center gap-1 text-[#6b8097] hover:border-primary hover:text-primary transition-all shadow-[0_2px_8px_rgba(0,0,0,0.04)]"
-                                    title="Upload document"
-                                  >
-                                    <Upload size={15} strokeWidth={2.5} />{" "}
-                                    Upload
-                                  </button>
-                                  <div
-                                    className={`px-[11px] py-[5px] rounded-full border text-[12px] font-medium tracking-normal transition-all
-                                    ${
-                                      isReviewed
-                                        ? "bg-[#eaf7f2] text-[#1a7a5e] border-[#b5e0d0]"
-                                        : isInProgress
-                                          ? "bg-[#fff9e6] text-[#d97706] border-[#fde68a]"
-                                          : "bg-white text-[#6b8097] border-[#d0e4f7] hover:border-primary hover:text-primary"
-                                    }`}
-                                  >
-                                    {isReviewed
-                                      ? "Reviewed"
-                                      : isInProgress
-                                        ? "In progress"
-                                        : "Not started"}
-                                  </div>
+                                <div className="shrink-0 flex flex-col items-center gap-2">
+                                  {(() => {
+                                    const defId = mapDocumentNameToId(doc.name);
+                                    const uploadedDoc = uploadedDocuments.find(ud => ud.documentDefId === defId);
+                                    
+                                    if (isReloadingDocs && !uploadedDoc) {
+                                      return (
+                                        <div className="flex items-center gap-1.5 px-[11px] py-[5px] text-[12px] text-muted-foreground font-medium animate-pulse">
+                                          <div className="h-3 w-3 rounded-full border-2 border-muted-foreground/30 border-t-muted-foreground animate-spin" />
+                                          Checking...
+                                        </div>
+                                      );
+                                    }
+
+                                    if (uploadedDoc) {
+                                      return (
+                                        <DropdownMenu>
+                                          <DropdownMenuTrigger asChild>
+                                            <button
+                                              onClick={(e) => e.stopPropagation()}
+                                              className="h-8 w-8 rounded-full hover:bg-muted flex items-center justify-center transition-colors text-muted-foreground hover:text-foreground border border-transparent hover:border-muted-foreground/20"
+                                            >
+                                              <MoreVertical size={18} />
+                                            </button>
+                                          </DropdownMenuTrigger>
+                                          <DropdownMenuContent align="end" className="w-[140px] rounded-xl shadow-xl border-muted/20">
+                                            <DropdownMenuItem 
+                                              onClick={(e) => {
+                                                e.stopPropagation();
+                                                window.open(`/api/documents/${uploadedDoc.id}/download`, '_blank');
+                                              }}
+                                              className="flex items-center gap-2 cursor-pointer font-medium text-[13px] py-2.5"
+                                            >
+                                              <Eye size={16} className="text-primary" />
+                                              Preview
+                                            </DropdownMenuItem>
+                                            <DropdownMenuItem 
+                                              onClick={async (e) => {
+                                                e.stopPropagation();
+                                                if (window.confirm("Are you sure you want to delete this document?")) {
+                                                  try {
+                                                    await deleteDocument(uploadedDoc.id);
+                                                    toast.success("Document deleted successfully");
+                                                  } catch (err) {
+                                                    toast.error("Failed to delete document");
+                                                  }
+                                                }
+                                              }}
+                                              className="flex items-center gap-2 cursor-pointer font-medium text-[13px] py-2.5 text-red-600 focus:text-red-700 focus:bg-red-50"
+                                            >
+                                              <Trash2 size={16} />
+                                              Delete
+                                            </DropdownMenuItem>
+                                          </DropdownMenuContent>
+                                        </DropdownMenu>
+                                      );
+                                    }
+
+                                    return (
+                                      <button
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          const defId = mapDocumentNameToId(doc.name);
+                                          setActiveUploadId(doc.id);
+                                          setActiveUploadType("doc");
+                                          openUploadModal(defId);
+                                        }}
+                                        className="rounded-full bg-white px-[11px] py-[5px] border border-[#d0e4f7] text-[12px] font-medium flex items-center justify-center gap-1 text-[#6b8097] hover:border-primary hover:text-primary transition-all shadow-[0_2px_8px_rgba(0,0,0,0.04)]"
+                                        title="Upload document"
+                                      >
+                                        <Upload size={15} strokeWidth={2.5} />{" "}
+                                        Upload
+                                      </button>
+                                    );
+                                  })()}
+                                  
+                                  {(() => {
+                                    const defId = mapDocumentNameToId(doc.name);
+                                    const isUploadedInVault = uploadedDocuments.some(ud => ud.documentDefId === defId);
+                                    
+                                    const displayStatus = isUploadedInVault 
+                                      ? "Uploaded" 
+                                      : (isReloadingDocs 
+                                        ? "Checking..." 
+                                        : (isReviewed ? "Reviewed" : (isInProgress ? "In progress" : "Not started")));
+
+                                    const statusClasses = isUploadedInVault 
+                                      ? "bg-[#eaf7f2] text-[#1a7a5e] border-[#b5e0d0] font-bold shadow-sm"
+                                      : (isReloadingDocs
+                                        ? "bg-muted/30 text-muted-foreground border-muted-foreground/20 animate-pulse"
+                                        : (isReviewed 
+                                          ? "bg-[#eaf7f2] text-[#1a7a5e] border-[#b5e0d0]"
+                                          : (isInProgress 
+                                            ? "bg-[#fff9e6] text-[#d97706] border-[#fde68a]"
+                                            : "bg-white text-[#6b8097] border-[#d0e4f7] hover:border-primary hover:text-primary")));
+
+                                    return (
+                                      <div className={`px-[11px] py-[5px] rounded-full border text-[12px] font-medium tracking-normal transition-all ${statusClasses}`}>
+                                        {displayStatus}
+                                      </div>
+                                    );
+                                  })()}
                                 </div>
+
                               </div>
                             );
                           })}
@@ -8243,10 +8420,27 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                 <button
                   onClick={async () => {
                     if (actions.updateDocumentStatus && selectedGuideId) {
+                      // Mark as reviewed
                       await actions.updateDocumentStatus(
                         selectedGuideId,
                         "reviewed",
                       );
+                      
+                      // Check if all documents are now reviewed for auto-complete
+                      const sId = currentStep.step_key || (currentStep as any)?.id;
+                      if (sId === "step_1_2") {
+                        const docItems = currentStep.document_items || [];
+                        const allReviewed = docItems.every((doc: any) => {
+                          if (doc.id === selectedGuideId) return true; // This one will be reviewed
+                          return state.metadata?.docReviewStatus?.[doc.id] === "reviewed" ||
+                                 state.documentChecklist[doc.name];
+                        });
+                        
+                        // Auto-complete step if all documents are reviewed
+                        if (allReviewed && !isCompleted) {
+                          handleToggleComplete();
+                        }
+                      }
                     }
                     setSelectedGuideId(null);
                   }}
@@ -8288,7 +8482,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
         <MedicalTutOverlay
           isOpen={isMedicalGuideOpen}
           onClose={() => setIsMedicalGuideOpen(false)}
-          tutorial={medicalToolData.tutorial}
+          tutorial={medicalToolData.tutorial || []}
           index={medicalGuideIdx}
           setIndex={setMedicalGuideIdx}
         />
@@ -8299,7 +8493,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
           <InterviewDayTutOverlay
             isOpen={isInterviewDayTutOpen}
             onClose={() => setIsInterviewDayTutOpen(false)}
-            tutorial={currentStep.tool_data.tutorial}
+            tutorial={(currentStep.tool_data as any).tutorial || []}
             index={interviewDayTutIdx}
             setIndex={setInterviewDayTutIdx}
           />
@@ -8310,18 +8504,18 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
           <CourierTutOverlay
             isOpen={isCourierGuideOpen}
             onClose={() => setIsCourierGuideOpen(false)}
-            tutorial={courierToolData.tutorial}
+            tutorial={courierToolData.tutorial || []}
             index={courierGuideIdx}
             setIndex={setCourierGuideIdx}
           />
         )}
 
-      {isApUpdateModalOpen && currentStep?.tool_data?.recorder && (
+      {isApUpdateModalOpen && (currentStep?.tool_data as any)?.recorder && (
         <ApUpdateModal
           isOpen={isApUpdateModalOpen}
           onClose={() => setIsApUpdateModalOpen(false)}
           onSave={handleSaveApUpdate}
-          ceacOptions={currentStep.tool_data.recorder.ceac_options}
+          ceacOptions={(currentStep.tool_data as any).recorder.ceac_options}
         />
       )}
       {/* Tutorial Overlay */}
@@ -8605,7 +8799,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                       ...gatheringStatus,
                       [selectedGatheringItem.id]: "reviewed",
                     };
-                    setGatheringStatus(next);
+                    setGatheringStatus(next as any);
                     actions.updateMetadata({
                       gathering_status: JSON.stringify(next),
                     });
@@ -8657,22 +8851,22 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                 <div
                   className="h-full bg-linear-to-r from-primary to-primary/70 transition-all duration-400"
                   style={{
-                    width: `${((medicalGuideIdx + 1) / currentStep.tool_data.tutorial.length) * 100}%`,
+                    width: `${((medicalGuideIdx + 1) / (currentStep.tool_data as any).tutorial.length) * 100}%`,
                   }}
                 />
               </div>
               <div className="text-[12px] font-medium text-[#6b8097] shrink-0">
-                {medicalGuideIdx + 1} / {currentStep.tool_data.tutorial.length}
+                {medicalGuideIdx + 1} / {(currentStep.tool_data as any).tutorial.length}
               </div>
             </div>
 
             {/* Body */}
             <div className="flex-1 overflow-y-auto flex flex-col items-center p-[48px_24px_40px]">
               {(() => {
-                const s = currentStep.tool_data.tutorial[medicalGuideIdx];
+                const s = (currentStep.tool_data as any).tutorial[medicalGuideIdx];
                 const isFirst = medicalGuideIdx === 0;
                 const isLast =
-                  medicalGuideIdx === currentStep.tool_data.tutorial.length - 1;
+                  medicalGuideIdx === (currentStep.tool_data as any).tutorial.length - 1;
 
                 return (
                   <div className="w-full max-w-[580px] flex flex-col">
@@ -8753,6 +8947,50 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
             </div>
           </div>
         )}
+
+      {/* Document Vault Integration */}
+      {uploadModalOpen && selectedDocumentDefId && (
+        <DocumentUploadModal
+          open={uploadModalOpen}
+          onClose={closeUploadModal}
+          documentDef={
+            ALL_DOCUMENTS.find((d) => d.id === selectedDocumentDefId)!
+          }
+          onUploadComplete={async () => {
+            // Refresh the vault store to include the newly uploaded document
+            await reloadDocuments();
+
+            // Update journey status based on what was being uploaded
+            if (activeUploadId && activeUploadType) {
+              const currentHhStatus = (state.metadata.hhDocsStatus as any) || {};
+              const currentFinStatus =
+                (state.metadata.financialDocsStatus as any) || {};
+
+              if (activeUploadType === "doc") {
+                actions.updateDocumentStatus?.(activeUploadId, "reviewed");
+              } else if (activeUploadType === "hh") {
+                const nextHhStatus = {
+                  ...currentHhStatus,
+                  [activeUploadId]: "reviewed",
+                };
+                // Update local state for immediate feedback
+                setHhDocsStatus(nextHhStatus);
+                // Update persistent metadata
+                actions.updateMetadata({
+                  hhDocsStatus: nextHhStatus,
+                });
+              } else if (activeUploadType === "financial") {
+                actions.updateMetadata({
+                  financialDocsStatus: {
+                    ...currentFinStatus,
+                    [activeUploadId]: "reviewed",
+                  },
+                });
+              }
+            }
+          }}
+        />
+      )}
     </div>
   );
 };

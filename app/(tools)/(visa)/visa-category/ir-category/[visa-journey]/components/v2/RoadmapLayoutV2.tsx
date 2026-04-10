@@ -197,6 +197,7 @@ export default function RoadmapLayoutV2({
             data={data}
             state={state}
             onSelectChapter={handleSelectChapter}
+            onSelectStep={handleSelectStep}
             actions={{
               setCurrentStep: actions.setCurrentStep,
               setStage: actions.setStage,

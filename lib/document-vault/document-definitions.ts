@@ -883,6 +883,33 @@ const TRANSLATION_DOCS: DocumentDefinition[] = [
 
 const MISC_DOCS: DocumentDefinition[] = [
   {
+    id: "passport-petitioner",
+    key: "PASSPORT_PETITIONER",
+    name: "Petitioner Passport / Proof of Citizenship",
+    description:
+      "Proof of U.S. citizenship (Passport, Birth Certificate, or Naturalization Certificate)",
+    category: "IDENTITY",
+    applicableVisas: FAMILY_VISAS,
+    roles: ["PETITIONER"],
+    stages: ["USCIS", "NVC", "INTERVIEW"],
+    required: true,
+    multipleFilesAllowed: false,
+    validityType: "none",
+  },
+  {
+    id: "misc-document",
+    key: "MISC_DOCUMENT",
+    name: "Miscellaneous Document",
+    description: "Any other relevant document for the case",
+    category: "MISC",
+    applicableVisas: UNIVERSAL_VISAS,
+    roles: ["PETITIONER", "BENEFICIARY"],
+    stages: ["USCIS", "NVC", "INTERVIEW"],
+    required: false,
+    multipleFilesAllowed: true,
+    validityType: "none",
+  },
+  {
     id: "ds-260",
     key: "DS260",
     name: "Form DS-260 Confirmation",
