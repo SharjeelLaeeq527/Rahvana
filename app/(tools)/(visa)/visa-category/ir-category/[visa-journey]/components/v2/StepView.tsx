@@ -2510,20 +2510,34 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                                     ))}
                                   </div>
                                 </div>
-                                <div
-                                  className={`text-[12px] font-medium px-[11px] py-[5px] rounded-full shrink-0 border whitespace-nowrap ${
-                                    st === "reviewed"
-                                      ? "bg-[#e8f5ef] text-[#15744f] border-[#a8d9be]"
+
+                                <div className="shrink-0 flex flex-col items-center gap-3">
+                                  <button
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      // Navigation logic or file picker trigger would go here
+                                    }}
+                                    className="rounded-full bg-white px-[11px] py-[5px] border border-[#d0e4f7] text-[12px] font-medium flex items-center justify-center gap-1 text-[#6b8097] hover:border-primary hover:text-primary transition-all shadow-[0_2px_8px_rgba(0,0,0,0.04)]"
+                                    title="Upload document"
+                                  >
+                                    <Upload size={15} strokeWidth={2.5} />{" "}
+                                    Upload
+                                  </button>
+                                  <div
+                                    className={`text-[12px] font-medium px-[11px] py-[5px] rounded-full shrink-0 border whitespace-nowrap ${
+                                      st === "reviewed"
+                                        ? "bg-[#e8f5ef] text-[#15744f] border-[#a8d9be]"
+                                        : st === "in-progress"
+                                          ? "bg-[#fef8e8] text-[#8a6200] border-[#f0d98a]"
+                                          : "bg-[#f4f7fb] text-[#6b8097] border-[#d0e4f7]"
+                                    }`}
+                                  >
+                                    {st === "reviewed"
+                                      ? "✓ Reviewed"
                                       : st === "in-progress"
-                                        ? "bg-[#fef8e8] text-[#8a6200] border-[#f0d98a]"
-                                        : "bg-[#f4f7fb] text-[#6b8097] border-[#d0e4f7]"
-                                  }`}
-                                >
-                                  {st === "reviewed"
-                                    ? "✓ Reviewed"
-                                    : st === "in-progress"
-                                      ? "In progress"
-                                      : "Open guide"}
+                                        ? "In progress"
+                                        : "Open guide"}
+                                  </div>
                                 </div>
                               </button>
                             );
@@ -3053,7 +3067,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                       });
                       toast.success("DQ details recorded!");
                     }}
-                    className="w-full py-[14px] bg-[#2f6fd4] text-white border-none rounded-[10px] text-[15px] font-semibold cursor-pointer transition-all hover:bg-[#2460bb] hover:-translate-y-px active:translate-y-0 shadow-[0_4px_20px_rgba(47,111,212,0.25)]"
+                    className="w-full py-[14px] bg-primary text-white border-none rounded-[10px] text-[15px] font-semibold cursor-pointer transition-all hover:bg-primary/70 hover:-translate-y-px active:translate-y-0 shadow-[0_4px_20px_rgba(47,111,212,0.25)]"
                   >
                     Save DQ & Activate Tracking
                   </button>
@@ -4757,24 +4771,37 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                                 {item.sub}
                               </div>
                             </div>
-                            <div
-                              className={`text-[11px] font-[500] px-[10px] py-[4px] border rounded-full whitespace-nowrap shrink-0 transition-all ${
-                                isRev
-                                  ? "bg-[#e8f5ef] text-[#15744f] border-[#a8d9be]"
-                                  : isIP
-                                    ? "bg-[#fef8e8] text-[#8a6200] border-[#f0d98a]"
-                                    : "bg-[#f4f7fb] text-[#6b8097] border-[#d0e4f7]"
-                              }`}
-                            >
-                              {isRev ? (
-                                <span className="flex items-center gap-1">
-                                  <Check size={12} strokeWidth={3} /> Packed
-                                </span>
-                              ) : isIP ? (
-                                "In progress"
-                              ) : (
-                                "Open guide"
-                              )}
+
+                            <div className="shrink-0 flex flex-col items-center gap-3">
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  // Navigation logic or file picker trigger would go here
+                                }}
+                                className="rounded-full bg-white px-[10px] py-[4px] border border-[#d0e4f7] text-[12px] font-medium flex items-center justify-center gap-1 text-[#6b8097] hover:border-primary hover:text-primary transition-all shadow-[0_2px_8px_rgba(0,0,0,0.04)]"
+                                title="Upload document"
+                              >
+                                <Upload size={12} strokeWidth={2.5} /> Upload
+                              </button>
+                              <div
+                                className={`text-[11px] font-[500] px-[10px] py-[4px] border rounded-full whitespace-nowrap shrink-0 transition-all ${
+                                  isRev
+                                    ? "bg-[#e8f5ef] text-[#15744f] border-[#a8d9be]"
+                                    : isIP
+                                      ? "bg-[#fef8e8] text-[#8a6200] border-[#f0d98a]"
+                                      : "bg-[#f4f7fb] text-[#6b8097] border-[#d0e4f7]"
+                                }`}
+                              >
+                                {isRev ? (
+                                  <span className="flex items-center gap-1">
+                                    <Check size={12} strokeWidth={3} /> Packed
+                                  </span>
+                                ) : isIP ? (
+                                  "In progress"
+                                ) : (
+                                  "Open guide"
+                                )}
+                              </div>
                             </div>
                           </div>
                         );
@@ -6211,16 +6238,29 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                               })}
                             </div>
                           </div>
-                          <div
-                            className={`text-[12px] font-medium px-[11px] py-[5px] rounded-full shrink-0 border whitespace-nowrap
+                          <div className="shrink-0 flex flex-col items-center gap-3">
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                // Navigation logic or file picker trigger would go here
+                              }}
+                              className="rounded-full bg-white px-[11px] py-[5px] border border-[#d0e4f7] text-[12px] font-medium flex items-center justify-center gap-1 text-[#6b8097] hover:border-primary hover:text-primary transition-all shadow-[0_2px_8px_rgba(0,0,0,0.04)]"
+                              title="Upload document"
+                            >
+                              <Upload size={15} strokeWidth={2.5} /> Upload
+                            </button>
+
+                            <div
+                              className={`text-[12px] font-medium px-[11px] py-[5px] rounded-full shrink-0 border whitespace-nowrap
                             ${st === "reviewed" ? "bg-[#e8f5ef] text-[#15744f] border-[#a8d9be]" : st === "in-progress" ? "bg-[#fef8e8] text-[#8a6200] border-[#f0d98a]" : "bg-[#f4f7fb] text-[#6b8097] border-[#d0e4f7]"}
                           `}
-                          >
-                            {st === "reviewed"
-                              ? "✓ Reviewed"
-                              : st === "in-progress"
-                                ? "In progress"
-                                : "Open guide"}
+                            >
+                              {st === "reviewed"
+                                ? "✓ Reviewed"
+                                : st === "in-progress"
+                                  ? "In progress"
+                                  : "Open guide"}
+                            </div>
                           </div>
                         </button>
                       );
@@ -8884,7 +8924,7 @@ function NvcFeeModal({
 
             <button
               onClick={() => onSave(localData)}
-              className="w-full p-[14px_24px] bg-primary text-white rounded-[10px] font-semibold text-[15px] hover:bg-[#2460bb] hover:-translate-y-px transition-all active:translate-y-0 shadow-[0_4px_20px_rgba(47,111,212,0.35)]"
+              className="w-full p-[14px_24px] bg-primary text-white rounded-[10px] font-semibold text-[15px] hover:bg-primary/70 hover:-translate-y-px transition-all active:translate-y-0 shadow-[0_4px_20px_rgba(47,111,212,0.35)]"
             >
               Save Payment Status
             </button>
