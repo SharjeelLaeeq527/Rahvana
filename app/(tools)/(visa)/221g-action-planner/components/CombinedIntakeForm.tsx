@@ -18,12 +18,6 @@ import {
   CopyIcon,
   FileText,
   Mail,
-  ShieldCheck,
-  Sparkles,
-  CheckCircle2,
-  FolderCheck,
-  ClipboardCheck,
-  X,
   ListChecks,
   Info,
   MapPin,
@@ -31,9 +25,9 @@ import {
   Search,
   FileDown,
 } from "lucide-react";
-import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 // import { Checkbox } from "@/components/ui/checkbox";
 import Actual221GFormChecker from "./Actual221GFormChecker";
+import { NarrativeModal } from "./NarrativeModal";
 import { FormData, FormSelections } from "../types/221g";
 import { classifySituation } from "../utils/classifier";
 import { ConfirmationModal } from "@/app/components/shared/ConfirmationModal";
@@ -375,9 +369,6 @@ export default function CombinedIntakeForm({
   const [showWelcome, setShowWelcome] = useState(false);
   const [showResetModal, setShowResetModal] = useState(false);
   const [dobError, setDobError] = useState<string | null>(null);
-  const [openWhatIs, setOpenWhatIs] = useState(false);
-  const [openFlow, setOpenFlow] = useState(false);
-  const [openNeed, setOpenNeed] = useState(false);
   const [dontShowAgain, setDontShowAgain] = useState(false);
   // Embassy combobox state
   const [embassySearchText, setEmbassySearchText] = useState(
@@ -468,11 +459,11 @@ export default function CombinedIntakeForm({
     setShowWelcome(false);
   };
 
-  const handleWelcomeOpenChange = (open: boolean) => {
-    if (!open && dontShowAgain && typeof window !== "undefined") {
+  const handleCloseWelcome = () => {
+    if (dontShowAgain && typeof window !== "undefined") {
       localStorage.setItem("hide221gWelcome", "true");
     }
-    setShowWelcome(open);
+    setShowWelcome(false);
   };
 
   const handleField = (field: keyof FormData, value: string) => {
@@ -2882,359 +2873,14 @@ export default function CombinedIntakeForm({
         </div>
       </div>
 
-      <Dialog open={showWelcome} onOpenChange={handleWelcomeOpenChange}>
-        <DialogContent className="max-w-5xl max-h-[92vh] flex flex-col overflow-hidden border-white/5 p-0 shadow-2xl bg-[#042f2e] bg-linear-to-br from-[#042f2e] via-[#0d6b6b] to-[#115e5e] text-white rounded-3xl">
-          <DialogTitle className="sr-only">
-            Welcome to the 221(g) Action Planner
-          </DialogTitle>
-          <div className="absolute top-5 right-5 z-20">
-            <button
-              onClick={() => handleWelcomeOpenChange(false)}
-              className="p-2 rounded-2xl bg-white/10 border border-white/10 hover:bg-white/15 transition-colors focus:outline-none focus:ring-2 focus:ring-white/50 backdrop-blur-md shadow-sm"
-              aria-label="Close modal"
-              type="button"
-            >
-              <X className="w-5 h-5 text-white/85" />
-            </button>
-          </div>
-
-          <div className="flex-1 overflow-y-auto custom-scrollbar w-full">
-            <div className="px-6 pt-12 pb-4 bg-linear-to-b from-black/15 to-transparent backdrop-blur-sm">
-              <div className="text-center">
-                <p className="inline-flex items-center gap-1 rounded-full border border-white/20 bg-white/10 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide text-white/90 mb-3">
-                  <Sparkles className="h-3.5 w-3.5 text-emerald-400" />
-                  Guided Setup
-                </p>
-                <h2 className="text-3xl md:text-4xl font-black tracking-tight text-white mb-3">
-                  Welcome to the 221(g) Action Planner
-                </h2>
-                <p className="mt-2 text-sm md:text-base text-white/75 max-w-3xl mx-auto leading-relaxed flex items-center justify-center gap-2">
-                  Follow a step-by-step workflow to build a cleaner,
-                  embassy-ready response packet{" "}
-                  <CheckCircle2 className="w-5 h-5 text-teal-400" />
-                </p>
-
-                {/* Feature boxes */}
-                <div className="mt-6 grid grid-cols-1 sm:grid-cols-3 gap-3 md:gap-4 max-w-5xl mx-auto px-4 text-left">
-                  <div className="rounded-2xl border border-teal-500/40 bg-teal-600/20 backdrop-blur-md p-4 flex gap-3 shadow-[0_16px_34px_rgba(0,0,0,0.15)]">
-                    <span className="h-11 w-11 rounded-2xl grid place-items-center shrink-0 border border-white/10 bg-white/10 text-teal-400 shadow-sm">
-                      <ShieldCheck className="w-5 h-5" />
-                    </span>
-                    <div className="min-w-0 flex-1">
-                      <div className="text-sm font-extrabold text-white leading-snug">
-                        Avoid Pitfalls
-                      </div>
-                      <div className="mt-1 text-xs text-white/70 leading-relaxed">
-                        Common mistakes that cause rejections.
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="rounded-2xl border border-sky-500/40 bg-sky-600/20 backdrop-blur-md p-4 flex gap-3 shadow-[0_16px_34px_rgba(0,0,0,0.15)]">
-                    <span className="h-11 w-11 rounded-2xl grid place-items-center shrink-0 border border-white/10 bg-white/10 text-sky-400 shadow-sm">
-                      <ClipboardCheck className="w-5 h-5" />
-                    </span>
-                    <div className="min-w-0 flex-1">
-                      <div className="text-sm font-extrabold text-white leading-snug">
-                        Guided Workflow
-                      </div>
-                      <div className="mt-1 text-xs text-white/70 leading-relaxed">
-                        Step-by-step situation replication.
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="rounded-2xl border border-amber-500/40 bg-amber-600/20 backdrop-blur-md p-4 flex gap-3 shadow-[0_16px_34px_rgba(0,0,0,0.15)]">
-                    <span className="h-11 w-11 rounded-2xl grid place-items-center shrink-0 border border-white/10 bg-white/10 text-amber-400 shadow-sm">
-                      <FolderCheck className="w-5 h-5" />
-                    </span>
-                    <div className="min-w-0 flex-1">
-                      <div className="text-sm font-extrabold text-white leading-snug">
-                        Clean Output
-                      </div>
-                      <div className="mt-1 text-xs text-white/70 leading-relaxed">
-                        Embassy-ready Packet & Checklist.
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Body content */}
-            <div className="px-6 pb-6 mt-4">
-              <div className="space-y-4 max-w-4xl mx-auto">
-                {/* Collapsible Section 1 */}
-                <div className="rounded-2xl border border-white/10 bg-white/10 backdrop-blur-sm overflow-hidden">
-                  <button
-                    type="button"
-                    onClick={() => setOpenWhatIs(!openWhatIs)}
-                    className="w-full flex items-center justify-between gap-4 px-5 py-4 text-left hover:bg-white/5 transition-colors"
-                  >
-                    <div>
-                      <div className="text-sm font-extrabold tracking-wide text-white/95 uppercase">
-                        What is a 221(g)?
-                      </div>
-                      {!openWhatIs && (
-                        <div className="mt-1 text-sm text-white/70">
-                          Expand for description.
-                        </div>
-                      )}
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm font-semibold text-white/80">
-                        {openWhatIs ? "Hide" : "Learn more"}
-                      </span>
-                      <span
-                        className={`inline-flex h-9 w-9 items-center justify-center rounded-xl bg-white/10 border border-white/10 text-white/85 transition-transform ${openWhatIs ? "rotate-180" : ""}`}
-                      >
-                        <svg
-                          width="18"
-                          height="18"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                        >
-                          <path
-                            d="M6 9l6 6 6-6"
-                            stroke="currentColor"
-                            strokeWidth="2.2"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                          />
-                        </svg>
-                      </span>
-                    </div>
-                  </button>
-                  <div
-                    className={`grid transition-[grid-template-rows] duration-300 ease-out ${openWhatIs ? "grid-rows-[1fr]" : "grid-rows-[0fr]"}`}
-                  >
-                    <div className="overflow-hidden">
-                      <div className="px-5 pb-5 pt-0 text-[14px] md:text-[15px] leading-relaxed text-white/85 space-y-3">
-                        <p>
-                          Section 221(g) of the Immigration and Nationality Act
-                          allows consular officers to temporarily refuse a visa
-                          application when additional documents or
-                          administrative processing is required. This is not a
-                          permanent denial; it is a hold pending resolution.
-                        </p>
-                        <p className="text-xs italic text-white/50">
-                          Source: U.S. Department of State
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Collapsible Section 2 */}
-                <div className="rounded-2xl border border-white/10 bg-white/10 backdrop-blur-sm overflow-hidden">
-                  <button
-                    type="button"
-                    onClick={() => setOpenFlow(!openFlow)}
-                    className="w-full flex items-center justify-between gap-4 px-5 py-4 text-left hover:bg-white/5 transition-colors"
-                  >
-                    <div>
-                      <div className="text-sm font-extrabold tracking-wide text-white/95 uppercase">
-                        How this wizard works
-                      </div>
-                      {!openFlow && (
-                        <div className="mt-1 text-sm text-white/70">
-                          Fast, step-by-step flow.
-                        </div>
-                      )}
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm font-semibold text-white/80">
-                        {openFlow ? "Hide" : "Learn more"}
-                      </span>
-                      <span
-                        className={`inline-flex h-9 w-9 items-center justify-center rounded-xl bg-white/10 border border-white/10 text-white/85 transition-transform ${openFlow ? "rotate-180" : ""}`}
-                      >
-                        <svg
-                          width="18"
-                          height="18"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                        >
-                          <path
-                            d="M6 9l6 6 6-6"
-                            stroke="currentColor"
-                            strokeWidth="2.2"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                          />
-                        </svg>
-                      </span>
-                    </div>
-                  </button>
-                  <div
-                    className={`grid transition-[grid-template-rows] duration-300 ease-out ${openFlow ? "grid-rows-[1fr]" : "grid-rows-[0fr]"}`}
-                  >
-                    <div className="overflow-hidden">
-                      <div className="px-5 pb-5 pt-0">
-                        <ol className="space-y-3 pt-2">
-                          {[
-                            "Replicate your 221(g) checklist letter using the guided form.",
-                            "Review and confirm your case details before generation.",
-                            "Generate an action plan, packet checklist, and cover letter.",
-                            "Export documents and submit exactly per embassy instructions.",
-                          ].map((text, idx) => (
-                            <li
-                              key={idx}
-                              className="flex items-start gap-4 p-4 rounded-2xl bg-white/5 border border-white/10 group hover:bg-white/10 transition-colors"
-                            >
-                              <span className="flex h-9 w-9 items-center justify-center rounded-2xl font-extrabold text-sm text-teal-900 bg-white shadow-sm shrink-0 mt-0.5">
-                                {idx + 1}
-                              </span>
-                              <p className="text-[14px] md:text-[15px] leading-snug text-white/90 font-medium pt-1.5">
-                                {text}
-                              </p>
-                            </li>
-                          ))}
-                        </ol>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Collapsible Section 3 - What You'll Need */}
-                <div className="rounded-2xl border border-white/10 bg-white/10 backdrop-blur-sm overflow-hidden">
-                  <button
-                    type="button"
-                    onClick={() => setOpenNeed(!openNeed)}
-                    className="w-full flex items-center justify-between gap-4 px-5 py-4 text-left hover:bg-white/5 transition-colors"
-                  >
-                    <div>
-                      <div className="text-sm font-extrabold tracking-wide text-white/95 uppercase">
-                        What You&apos;ll Need
-                      </div>
-                      {!openNeed && (
-                        <div className="mt-1 text-sm text-white/70">
-                          Gather these before starting.
-                        </div>
-                      )}
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm font-semibold text-white/80">
-                        {openNeed ? "Hide" : "Expand list"}
-                      </span>
-                      <span
-                        className={`inline-flex h-9 w-9 items-center justify-center rounded-xl bg-white/10 border border-white/10 text-white/85 transition-transform ${openNeed ? "rotate-180" : ""}`}
-                      >
-                        <svg
-                          width="18"
-                          height="18"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                        >
-                          <path
-                            d="M6 9l6 6 6-6"
-                            stroke="currentColor"
-                            strokeWidth="2.2"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                          />
-                        </svg>
-                      </span>
-                    </div>
-                  </button>
-                  <div
-                    className={`grid transition-[grid-template-rows] duration-300 ease-out ${openNeed ? "grid-rows-[1fr]" : "grid-rows-[0fr]"}`}
-                  >
-                    <div className="overflow-hidden">
-                      <div className="px-5 pb-5 pt-0">
-                        <ul className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-2">
-                          {[
-                            {
-                              icon: <FileText className="w-4 h-4" />,
-                              text: "Your 221(g) refusal letter",
-                            },
-                            {
-                              icon: <ClipboardCheck className="w-4 h-4" />,
-                              text: "Case Number (e.g. ISL...)",
-                            },
-                            {
-                              icon: <ShieldCheck className="w-4 h-4" />,
-                              text: "Passport details",
-                            },
-                            {
-                              icon: <Mail className="w-4 h-4" />,
-                              text: "Beneficiary email & phone",
-                            },
-                          ].map((item, idx) => (
-                            <li
-                              key={idx}
-                              className="flex items-center gap-3 p-3 rounded-xl bg-white/5 border border-white/5 text-white/90 text-sm font-medium"
-                            >
-                              <span className="text-teal-400">{item.icon}</span>
-                              {item.text}
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Disclaimer card */}
-                <div className="rounded-2xl border border-yellow-300/30 bg-yellow-400/10 backdrop-blur-md p-5 mt-6 border-dashed">
-                  <div className="flex items-start gap-4">
-                    <span className="h-10 w-10 rounded-full bg-yellow-400/20 flex items-center justify-center shrink-0">
-                      <Info className="w-6 h-6 text-yellow-400" />
-                    </span>
-                    <div>
-                      <p className="text-[15px] font-extrabold text-yellow-400 text-left">
-                        Important Note
-                      </p>
-                      <p className="mt-1.5 text-[14px] leading-relaxed text-white/80 font-medium text-left">
-                        This tool provides general guidance for Pakistan-based
-                        cases (Islamabad/Karachi) and is not legal advice.
-                        Always prioritize your official letter&apos;s
-                        instructions.
-                      </p>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Footer */}
-                <div className="pt-8 mt-6 border-t border-white/10 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6 pb-6 text-left">
-                  <label className="flex items-center gap-3 cursor-pointer select-none group">
-                    <div className="relative flex items-center justify-center">
-                      <input
-                        type="checkbox"
-                        checked={dontShowAgain}
-                        onChange={(e) => setDontShowAgain(e.target.checked)}
-                        className="peer w-5 h-5 appearance-none rounded border-2 border-white/30 bg-white/10 checked:bg-teal-500 checked:border-teal-500 transition-all focus:outline-none"
-                      />
-                      <svg
-                        className="absolute w-3 h-3 text-white opacity-0 peer-checked:opacity-100 pointer-events-none transition-opacity"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="3"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      >
-                        <polyline points="20 6 9 17 4 12"></polyline>
-                      </svg>
-                    </div>
-                    <span className="text-sm font-medium text-white/70 group-hover:text-white transition-colors">
-                      Don&apos;t show this again
-                    </span>
-                  </label>
-
-                  <button
-                    onClick={handleStartWizard}
-                    className="px-10 py-3.5 rounded-2xl font-bold bg-white text-[#042f2e] hover:bg-teal-50 hover:scale-[1.02] active:scale-[0.98] transition-all shadow-[0_20px_40px_rgba(0,0,0,0.3)] flex items-center gap-2"
-                  >
-                    Start Planner
-                    <ArrowRight className="w-5 h-5" />
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
+      <NarrativeModal
+        isOpen={showWelcome}
+        onClose={handleCloseWelcome}
+        onComplete={handleStartWizard}
+        dontShowAgain={dontShowAgain}
+        onDontShowAgainChange={setDontShowAgain}
+        variant="221g"
+      />
 
       <ConfirmationModal
         open={showResetModal}
