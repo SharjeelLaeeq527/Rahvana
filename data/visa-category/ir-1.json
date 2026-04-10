@@ -665,7 +665,7 @@
           "step_name": "Gather Required Documents",
           "step_short_description": "Pakistan-specific full checklist",
           "step_type": "docs",
-          "description": "Prepare the documents needed for your IR-1 spouse petition. Open each item to see exactly what is needed, where to get it, and what to watch out for.",
+          "step_description": "Prepare the documents needed for your IR-1 spouse petition. Open each item to see exactly what is needed, where to get it, and what to watch out for.",
           "who": "Pakistan-specific full checklist",
           "where": "Various sources",
           "timeline": "4-8 weeks",

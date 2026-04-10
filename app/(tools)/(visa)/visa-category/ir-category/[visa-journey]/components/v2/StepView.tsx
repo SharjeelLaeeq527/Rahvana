@@ -70,7 +70,7 @@ import {
 } from "../types";
 import { WizardState } from "@/app/(main)/dashboard/hooks/useWizard";
 import { QuestRenderer } from "./QuestRenderer";
-import { getAllActiveSteps } from "./journeyHelpers";
+import { getAllActiveSteps, getStageProgress } from "./journeyHelpers";
 import CredentialFormModal from "@/app/(main)/portal-wallet/components/CredentialFormModal";
 import ViewCredentialModal from "@/app/(main)/portal-wallet/components/ViewCredentialModal";
 import { toast } from "sonner";
@@ -1409,12 +1409,23 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
   const globalIdx = allActiveSteps.findIndex(
     (s) => (s.step_key || (s as any).id) === sId,
   );
+  const localIdx = activeStepsInChapter.findIndex(
+    (s: any) => (s.step_key || s.id) === sId,
+  );
+
+  const chapterProg = useMemo(
+    () => getStageProgress(data, state.currentStage, state),
+    [data, state.currentStage, state],
+  );
+
   const prevStep = globalIdx > 0 ? allActiveSteps[globalIdx - 1] : null;
   const nextStep =
     globalIdx < allActiveSteps.length - 1
       ? allActiveSteps[globalIdx + 1]
       : null;
-  const progressPct = Math.round((globalIdx / allActiveSteps.length) * 100);
+
+  // Use the percentage from journeyHelpers to match ChapterView
+  const progressPct = chapterProg.pct;
 
   useEffect(() => {
     const scrollContainer = document.querySelector(".scrollbar-hide");
@@ -1800,10 +1811,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
             </span>
           </div>
 
-          <h1
-            className="text-[clamp(26px,4vw,34px)] font-black text-[#0c1b33] leading-[1.2] mb-[10px] animate-in fade-in slide-in-from-top-2 duration-300 delay-[40ms]"
-      
-          >
+          <h1 className="text-[clamp(26px,4vw,34px)] font-black text-[#0c1b33] leading-[1.2] mb-[10px] animate-in fade-in slide-in-from-top-2 duration-300 delay-[40ms]">
             {data.title}
           </h1>
 
@@ -1837,10 +1845,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
               {data.statusCard.label}
             </div>
 
-            <h2
-              className="text-[20px]  text-white/92 leading-tight mb-[16px] flex items-center gap-[8px]"
-              
-            >
+            <h2 className="text-[20px]  text-white/92 leading-tight mb-[16px] flex items-center gap-[8px]">
               <span className="w-[7px] h-[7px] rounded-full bg-[#6aa8f0] animate-pulse-custom shrink-0" />
               {data.statusCard.heading}
             </h2>
@@ -2068,10 +2073,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
           </div> */}
 
           {/* Title + Description */}
-          <h1
-            className="text-[clamp(28px,4.5vw,38px)] font-black text-[#0c1b33] leading-normal tracking-[-0.01em] mb-[6px]"
-            
-          >
+          <h1 className="text-[clamp(28px,4.5vw,38px)] font-black text-[#0c1b33] leading-normal tracking-[-0.01em] mb-[6px]">
             {currentStep.step_name}
           </h1>
 
@@ -2165,9 +2167,6 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
             </div>
           )}
 
-
-
-
           {/* SPONSORSHIP CALCULATOR LAUNCH MODULE (Step 5 Specific) */}
           {tool.type === "sponsorship_calculator" && (
             <div className="relative bg-[#0e1e38] rounded-[16px] border border-white/7 overflow-hidden mb-[28px] shadow-[0_20px_60px_rgba(12,27,51,0.18),0_4px_16px_rgba(12,27,51,0.12)]">
@@ -2186,10 +2185,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                       {tool.launch_module.label ||
                         "Affidavit Support Calculator"}
                     </div>
-                    <div
-                      className="text-[clamp(19px,2.8vw,23px)]  text-white/90 leading-[1.25]"
-                      
-                    >
+                    <div className="text-[clamp(19px,2.8vw,23px)]  text-white/90 leading-[1.25]">
                       {tool.launch_module.title ||
                         "Determine your sponsorship setup first"}
                     </div>
@@ -2406,7 +2402,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                     <div className="flex items-center gap-[12px] mb-[8px]">
                       <div className="flex-1 h-[5px] bg-[#d0e4f7] rounded-[10px] overflow-hidden">
                         <div
-                          className="h-full bg-linear-to-r from-primary to-[#6aa8f0] transition-all duration-500"
+                          className="h-full bg-linear-to-r from-primary to-primary/70 transition-all duration-500"
                           style={{ width: `${pct}%` }}
                         />
                       </div>
@@ -2559,10 +2555,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                       <div className="text-[10px] font-bold uppercase tracking-widest text-white/35 mb-[4px]">
                         {tool.launch_module.label}
                       </div>
-                      <div
-                        className="text-[clamp(18px,2.6vw,22px)]  text-white/92 leading-[1.25]"
-                        
-                      >
+                      <div className="text-[clamp(18px,2.6vw,22px)]  text-white/92 leading-[1.25]">
                         {tool.launch_module.title}
                       </div>
                     </div>
@@ -2693,10 +2686,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                   Step 10 — Awaiting NVC Document Review
                 </span>
               </div>
-              <h1
-                className="text-[clamp(26px,4vw,34px)]  text-[#0c1b33] leading-[1.2] mb-[10px]"
-                
-              >
+              <h1 className="text-[clamp(26px,4vw,34px)]  text-[#0c1b33] leading-[1.2] mb-[10px]">
                 Awaiting NVC Document Review
               </h1>
               <p className="text-[15px] text-[#3a4f63] leading-[1.7] max-w-[500px] mb-[22px]">
@@ -2724,10 +2714,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                 <div className="text-[10px] font-bold tracking-widest uppercase text-white/40 mb-[8px]">
                   Current Case Status
                 </div>
-                <div
-                  className="text-[20px]  text-white/92 mb-[16px] flex items-center gap-[10px]"
-                  
-                >
+                <div className="text-[20px]  text-white/92 mb-[16px] flex items-center gap-[10px]">
                   <span className="inline-block w-[7px] h-[7px] rounded-full bg-[#6aa8f0] animate-pulse shadow-[0_0_8px_rgba(106,168,240,0.6)]" />
                   Documents under NVC review
                 </div>
@@ -2957,10 +2944,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                 <div className="text-[10px] font-bold tracking-widest uppercase text-white/40 mb-[5px]">
                   NVC — Documentary Qualification Received
                 </div>
-                <div
-                  className="text-[22px]  text-white/92 mb-[6px]"
-                  
-                >
+                <div className="text-[22px]  text-white/92 mb-[6px]">
                   Your documents have been accepted by NVC
                 </div>
                 <div className="text-[13px] text-white/55 leading-[1.55]">
@@ -3140,10 +3124,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                   <div className="text-[14px] font-semibold text-[#0c1b33] mb-[8px]">
                     Currently scheduling DQ cases from:
                   </div>
-                  <div
-                    className="text-[22px]  text-[#0c1b33] mb-[6px]"
-                    
-                  >
+                  <div className="text-[22px]  text-[#0c1b33] mb-[6px]">
                     {(dqPost &&
                       DQ_RECORDING_DATA.postScheduling[
                         dqPost as keyof typeof DQ_RECORDING_DATA.postScheduling
@@ -3167,10 +3148,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                   <div className="text-[14px] font-semibold text-[#0c1b33] mb-[8px]">
                     Queue position trend:
                   </div>
-                  <div
-                    className="text-[22px]  text-[#0c1b33] mb-[6px]"
-                    
-                  >
+                  <div className="text-[22px]  text-[#0c1b33] mb-[6px]">
                     {(dqPost &&
                       DQ_RECORDING_DATA.postScheduling[
                         dqPost as keyof typeof DQ_RECORDING_DATA.postScheduling
@@ -3229,10 +3207,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                 <div className="text-[10px] font-bold tracking-widest uppercase text-white/38 mb-[8px]">
                   Post-DQ Queue Status
                 </div>
-                <div
-                  className="text-[20px]  text-white/92 mb-[18px] flex items-center gap-[10px]"
-                  
-                >
+                <div className="text-[20px]  text-white/92 mb-[18px] flex items-center gap-[10px]">
                   <span className="inline-block w-[7px] h-[7px] rounded-full bg-[#6aa8f0] animate-pulse shadow-[0_0_8px_rgba(106,168,240,0.6)]" />
                   In queue — awaiting interview letter
                 </div>
@@ -3282,10 +3257,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                   <div className="text-[13px] font-semibold text-[#0c1b33] mb-[6px]">
                     Cases currently being scheduled from:
                   </div>
-                  <div
-                    className="text-[20px]  text-[#0c1b33] mb-[4px]"
-                    
-                  >
+                  <div className="text-[20px]  text-[#0c1b33] mb-[4px]">
                     {INTERVIEW_SCHEDULING_DATA.schedulingData[
                       (state.metadata
                         .post as keyof typeof INTERVIEW_SCHEDULING_DATA.schedulingData) ||
@@ -3310,10 +3282,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                   <div className="text-[13px] font-semibold text-[#0c1b33] mb-[6px]">
                     Queue movement trend:
                   </div>
-                  <div
-                    className="text-[20px]  text-[#0c1b33] mb-[4px]"
-                    
-                  >
+                  <div className="text-[20px]  text-[#0c1b33] mb-[4px]">
                     {INTERVIEW_SCHEDULING_DATA.schedulingData[
                       (state.metadata
                         .post as keyof typeof INTERVIEW_SCHEDULING_DATA.schedulingData) ||
@@ -3507,10 +3476,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                 <div className="text-[10px] font-bold tracking-[0.12em] uppercase text-white/40 mb-[7px]">
                   {APPOINTMENT_RECEIVED_DATA.heroBanner.eyebrow}
                 </div>
-                <div
-                  className="text-[clamp(22px,3.5vw,28px)]  text-white/95 leading-[1.2] mb-[8px]"
-                  
-                >
+                <div className="text-[clamp(22px,3.5vw,28px)]  text-white/95 leading-[1.2] mb-[8px]">
                   {APPOINTMENT_RECEIVED_DATA.heroBanner.title}
                 </div>
                 <div className="text-[13px] text-white/55 leading-[1.6] max-w-[460px]">
@@ -3779,10 +3745,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                     <div className="text-[10px] font-bold tracking-[0.12em] uppercase text-white/35 mb-1">
                       {MEDICAL_EXAM_DATA.decisionModule.eyebrow}
                     </div>
-                    <div
-                      className="text-[clamp(18px,2.6vw,22px)] text-white/92 leading-tight mb-5"
-                      
-                    >
+                    <div className="text-[clamp(18px,2.6vw,22px)] text-white/92 leading-tight mb-5">
                       {MEDICAL_EXAM_DATA.decisionModule.heading}
                     </div>
                     <div className="h-px bg-white/10 mb-5" />
@@ -3924,10 +3887,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                             <div className="text-[11px] font-semibold tracking-[0.1em] uppercase text-[#2f6fd4] mb-3.5">
                               {s.label}
                             </div>
-                            <h2
-                              className="text-[clamp(20px,3.2vw,26px)] text-[#0c1b33] leading-tight mb-2"
-                              
-                            >
+                            <h2 className="text-[clamp(20px,3.2vw,26px)] text-[#0c1b33] leading-tight mb-2">
                               {s.heading}
                             </h2>
                             <p className="text-[14px] text-[#3a4f63] leading-relaxed mb-6">
@@ -4100,10 +4060,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                   <div className="text-[10px] font-bold tracking-[0.12em] uppercase text-white/35 mb-1">
                     {POLIO_CERTIFICATE_DATA.launchModule.eyebrow}
                   </div>
-                  <div
-                    className="text-[clamp(18px,2.6vw,22px)] text-white/92 leading-tight mb-5"
-                    
-                  >
+                  <div className="text-[clamp(18px,2.6vw,22px)] text-white/92 leading-tight mb-5">
                     {POLIO_CERTIFICATE_DATA.launchModule.heading}
                   </div>
                   <div className="h-px bg-white/10 mb-5" />
@@ -4266,10 +4223,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                             <div className="text-[11px] font-semibold tracking-[0.1em] uppercase text-primary mb-3.5">
                               Polio Vaccination Guide · {s.label}
                             </div>
-                            <h2
-                              className="text-[clamp(20px,3.2vw,26px)] text-[#0c1b33] leading-tight mb-2"
-                              
-                            >
+                            <h2 className="text-[clamp(20px,3.2vw,26px)] text-[#0c1b33] leading-tight mb-2">
                               {s.heading}
                             </h2>
                             <p className="text-[14px] text-[#3a4f63] leading-relaxed mb-4.5">
@@ -4408,10 +4362,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                   <div className="text-[10px] font-bold tracking-[0.12em] uppercase text-white/35 mb-1">
                     {POLICE_CLEARANCE_DATA.decisionModule.eyebrow}
                   </div>
-                  <div
-                    className="text-[clamp(18px,2.6vw,22px)] text-white/92 leading-tight mb-5"
-                    
-                  >
+                  <div className="text-[clamp(18px,2.6vw,22px)] text-white/92 leading-tight mb-5">
                     {POLICE_CLEARANCE_DATA.decisionModule.heading}
                   </div>
                   <div className="h-px bg-white/10 mb-5" />
@@ -4639,10 +4590,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                             <div className="text-[11px] font-semibold tracking-[0.1em] uppercase text-primary mb-3.5">
                               {s.label}
                             </div>
-                            <h2
-                              className="text-[clamp(20px,3.2vw,26px)] text-[#0c1b33] leading-tight mb-2"
-                              
-                            >
+                            <h2 className="text-[clamp(20px,3.2vw,26px)] text-[#0c1b33] leading-tight mb-2">
                               {s.heading}
                             </h2>
                             <p className="text-[14px] text-[#3a4f63] leading-relaxed mb-5">
@@ -5540,10 +5488,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                 <div className="text-[10px] font-bold uppercase tracking-widest text-white/35 mb-2">
                   {tool.explainer.eyebrow}
                 </div>
-                <div
-                  className="text-[20px]  text-white/95 mb-2.5 leading-tight"
-                  
-                >
+                <div className="text-[20px]  text-white/95 mb-2.5 leading-tight">
                   {tool.explainer.title}
                 </div>
                 <div className="text-[13px] text-white/55 leading-relaxed max-w-[560px]">
@@ -5946,10 +5891,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                       <div className="text-[10px] font-bold uppercase tracking-widest text-white/35 mb-[5px]">
                         {tool.launch_module.eyebrow}
                       </div>
-                      <h2
-                        className="text-[clamp(20px,3vw,24px)]  text-white/90 leading-[1.25]"
-                        
-                      >
+                      <h2 className="text-[clamp(20px,3vw,24px)]  text-white/90 leading-[1.25]">
                         {tool.launch_module.heading}
                       </h2>
                     </div>
@@ -5964,10 +5906,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                         <div className="text-[10px] font-bold uppercase tracking-widest text-white/35">
                           {tool.fee_block.label}
                         </div>
-                        <div
-                          className="text-[32px] font text-white/90 tracking-[-0.02em] leading-none"
-                          
-                        >
+                        <div className="text-[32px] font text-white/90 tracking-[-0.02em] leading-none">
                           {tool.fee_block.amount}
                         </div>
                         <div className="text-[11px] text-white/35 mt-[2px]">
@@ -7020,11 +6959,11 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
           ) : currentStep.step_type === "docs" ? (
             <div className="w-full flex flex-col items-center animate-in fade-in slide-in-from-bottom-6 duration-1000">
               {/* Header for Docs */}
-              <div className="text-left w-full max-w-[740px] mb-[36px]">
+              <div className="text-left w-full max-w-[740px] mb-[24px]">
                 <h1 className="text-[clamp(26px,4vw,34px)] font-black text-[#0f1f38] leading-[1.2]">
                   {currentStep.step_name}
                 </h1>
-                <p className="text-[#3a4f63] text-[15px] leading-[1.65] mb-[28px] max-w-[500px]">
+                <p className="text-[#3a4f63] text-[15px] leading-[1.65] mb-[12px] max-w-[550px]">
                   {currentStep.step_description}
                 </p>
 
@@ -7058,10 +6997,22 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
               <div className="w-full max-w-[740px]">
                 <div className="w-full">
                   {(() => {
-                    const docItems = (currentStep as any).document_items || currentStep.document_items;
+                    const docItems =
+                      (currentStep as any).document_items ||
+                      currentStep.document_items;
                     if (!docItems) return [];
-                    const uniqueGroups = Array.from(new Set(docItems.map((d: any) => d.group || "Required Now")));
-                    const defaultOrder = ["Required Now", "Required if Applicable", "USCIS Intake Order", "Supporting Evidence", "Gather Now for Later"];
+                    const uniqueGroups = Array.from(
+                      new Set(
+                        docItems.map((d: any) => d.group || "Required Now"),
+                      ),
+                    );
+                    const defaultOrder = [
+                      "Required Now",
+                      "Required if Applicable",
+                      "USCIS Intake Order",
+                      "Supporting Evidence",
+                      "Gather Now for Later",
+                    ];
                     return (uniqueGroups as string[]).sort((a, b) => {
                       const idxA = defaultOrder.indexOf(a);
                       const idxB = defaultOrder.indexOf(b);
@@ -7212,7 +7163,18 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                                   </div>
                                 </div>
 
-                                <div className="shrink-0 flex items-center justify-center">
+                                <div className="shrink-0 flex flex-col items-center gap-3">
+                                  <button
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      // Navigation logic or file picker trigger would go here
+                                    }}
+                                    className="rounded-full bg-white px-[11px] py-[5px] border border-[#d0e4f7] text-[12px] font-medium flex items-center justify-center gap-1 text-[#6b8097] hover:border-primary hover:text-primary transition-all shadow-[0_2px_8px_rgba(0,0,0,0.04)]"
+                                    title="Upload document"
+                                  >
+                                    <Upload size={15} strokeWidth={2.5} />{" "}
+                                    Upload
+                                  </button>
                                   <div
                                     className={`px-[11px] py-[5px] rounded-full border text-[12px] font-medium tracking-normal transition-all
                                     ${
@@ -7535,7 +7497,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
             />
           </div>
           <div className="text-[11px] font-semibold text-[#6b8097] whitespace-nowrap">
-            Step {globalIdx + 1} of {allActiveSteps.length}
+            Step {localIdx + 1} of {activeStepsInChapter.length}
           </div>
         </div>
 
@@ -7593,10 +7555,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                       <div className="text-[11px] font-semibold tracking-[0.1em] uppercase text-primary mb-4">
                         Sponsorship Calculator · Step 1 of 7
                       </div>
-                      <h2
-                        className="text-[clamp(22px,3.5vw,28px)]  font-black text-[#0c1b33] mb-2 leading-[1.3]"
-                        
-                      >
+                      <h2 className="text-[clamp(22px,3.5vw,28px)]  font-black text-[#0c1b33] mb-2 leading-[1.3]">
                         Welcome to the Sponsorship Calculator
                       </h2>
                       <p className="text-[14px] text-[#3a4f63] leading-[1.7] mb-6">
@@ -7630,10 +7589,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                       <div className="text-[11px] font-semibold tracking-[0.1em] uppercase text-primary mb-4">
                         Sponsorship Calculator · Step 2 of 7
                       </div>
-                      <h2
-                        className="text-[clamp(22px,3.5vw,28px)]  font-black text-[#0c1b33] mb-2 leading-[1.3]"
-                        
-                      >
+                      <h2 className="text-[clamp(22px,3.5vw,28px)]  font-black text-[#0c1b33] mb-2 leading-[1.3]">
                         Find your Adjusted Gross Income (AGI)
                       </h2>
                       <div className="bg-[#e8f1fb] border border-[#d0e4f7] rounded-[10px] p-[14px_16px] mb-6">
@@ -7688,10 +7644,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                       <div className="text-[11px] font-semibold tracking-[0.1em] uppercase text-primary mb-4">
                         Sponsorship Calculator · Step 3 of 7
                       </div>
-                      <h2
-                        className="text-[clamp(22px,3.5vw,28px)]  font-black text-[#0c1b33] mb-2 leading-[1.3]"
-                        
-                      >
+                      <h2 className="text-[clamp(22px,3.5vw,28px)]  font-black text-[#0c1b33] mb-2 leading-[1.3]">
                         What is your household size?
                       </h2>
                       <div className="bg-[#e8f1fb] border border-[#d0e4f7] rounded-[10px] p-[14px_16px] mb-6">
@@ -7744,10 +7697,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                       <div className="text-[11px] font-semibold tracking-[0.1em] uppercase text-primary mb-4">
                         Sponsorship Calculator · Step 4 of 7
                       </div>
-                      <h2
-                        className="text-[clamp(22px,3.5vw,28px)]  font-black text-[#0c1b33] mb-4 leading-[1.3]"
-                        
-                      >
+                      <h2 className="text-[clamp(22px,3.5vw,28px)]  font-black text-[#0c1b33] mb-4 leading-[1.3]">
                         Sponsorship qualification check
                       </h2>
                       <div
@@ -7760,10 +7710,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                             ? "Petitioner qualifies alone"
                             : "Additional sponsorship may be needed"}
                         </div>
-                        <div
-                          className="text-[20px]  text-[#0c1b33] mb-1.5"
-                          
-                        >
+                        <div className="text-[20px]  text-[#0c1b33] mb-1.5">
                           AGI: ${sponsorshipData.agi.toLocaleString()}{" "}
                           &nbsp;·&nbsp; Threshold: ${req.toLocaleString()}
                         </div>
@@ -7797,10 +7744,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                       <div className="text-[11px] font-semibold tracking-[0.1em] uppercase text-primary mb-4">
                         Sponsorship Calculator · Step 5 of 7
                       </div>
-                      <h2
-                        className="text-[clamp(22px,3.5vw,28px)]  font-black text-[#0c1b33] mb-2 leading-[1.3]"
-                        
-                      >
+                      <h2 className="text-[clamp(22px,3.5vw,28px)]  font-black text-[#0c1b33] mb-2 leading-[1.3]">
                         Is household member income being used?
                       </h2>
                       <p className="text-[14px] text-[#3a4f63] leading-[1.7] mb-6">
@@ -7877,10 +7821,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                       <div className="text-[11px] font-semibold tracking-[0.1em] uppercase text-primary mb-4">
                         Sponsorship Calculator · Step 6 of 7
                       </div>
-                      <h2
-                        className="text-[clamp(22px,3.5vw,28px)]  font-black text-[#0c1b33] mb-2 leading-[1.3]"
-                        
-                      >
+                      <h2 className="text-[clamp(22px,3.5vw,28px)]  font-black text-[#0c1b33] mb-2 leading-[1.3]">
                         Is a joint sponsor needed?
                       </h2>
                       <p className="text-[14px] text-[#3a4f63] leading-[1.7] mb-6">
@@ -7998,20 +7939,14 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                       <div className="text-[11px] font-semibold tracking-[0.1em] uppercase text-primary mb-4">
                         Sponsorship Calculator · Step 7 of 7
                       </div>
-                      <h2
-                        className="text-[clamp(22px,3.5vw,28px)]  font-black text-[#0c1b33] mb-4 leading-[1.3]"
-                        
-                      >
+                      <h2 className="text-[clamp(22px,3.5vw,28px)]  font-black text-[#0c1b33] mb-4 leading-[1.3]">
                         Your sponsorship plan
                       </h2>
                       <div className="bg-[#e8f5ef] border border-[#a8d9be] rounded-[10px] p-[18px_20px] mb-6">
                         <div className="text-[10px] font-bold uppercase tracking-widest text-[#15744f] mb-2">
                           Sponsorship Plan
                         </div>
-                        <div
-                          className="text-[20px]  text-[#0c1b33] mb-1.5"
-                          
-                        >
+                        <div className="text-[20px]  text-[#0c1b33] mb-1.5">
                           {forms.length} form{forms.length > 1 ? "s" : ""}{" "}
                           required
                         </div>
@@ -8594,10 +8529,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
               <div className="text-[11px] font-semibold tracking-[0.1em] uppercase text-[#2f6fd4] mb-[16px]">
                 Step 4 · Original Documents Checklist
               </div>
-              <h2
-                className="text-[clamp(20px,3vw,26px)]  text-[#0c1b33] mb-[8px] leading-[1.25]"
-                
-              >
+              <h2 className="text-[clamp(20px,3vw,26px)]  text-[#0c1b33] mb-[8px] leading-[1.25]">
                 {selectedGatheringItem.title}
               </h2>
               <p className="text-[14px] text-[#3a4f63] mb-[22px] leading-[1.6]">
@@ -8707,10 +8639,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                     <div className="text-[11px] font-bold tracking-[0.1em] uppercase text-primary mb-[14px]">
                       Medical Exam Guide · {s.label}
                     </div>
-                    <h2
-                      className="text-[clamp(20px,3.2vw,26px)]  text-[#0c1b33] mb-[8px] leading-[1.3]"
-                      
-                    >
+                    <h2 className="text-[clamp(20px,3.2vw,26px)]  text-[#0c1b33] mb-[8px] leading-[1.3]">
                       {s.heading}
                     </h2>
                     <p className="text-[14px] text-[#3a4f63] leading-[1.7] mb-[22px]">
@@ -9017,10 +8946,7 @@ function FinancialDocGuideOverlay({
             Step 6 · Financial Support Documents
           </div>
 
-          <h2
-            className="text-[clamp(22px,3.5vw,28px)] font-black text-[#0c1b33] mb-[6px] leading-[1.25] "
-            
-          >
+          <h2 className="text-[clamp(22px,3.5vw,28px)] font-black text-[#0c1b33] mb-[6px] leading-[1.25] ">
             {doc.title}
           </h2>
           <p className="text-[14px] text-[#3a4f63] leading-[1.6] mb-[28px]">
@@ -9152,10 +9078,7 @@ function HouseholdDocGuideOverlay({
             Step 7 · Relationship Documentation
           </div>
 
-          <h2
-            className="text-[clamp(22px,3.5vw,28px)] font-black text-[#0c1b33] mb-[6px] leading-[1.25] "
-            
-          >
+          <h2 className="text-[clamp(22px,3.5vw,28px)] font-black text-[#0c1b33] mb-[6px] leading-[1.25] ">
             {doc.title}
           </h2>
           <p className="text-[14px] text-[#3a4f63] leading-[1.6] mb-[28px]">
@@ -9400,10 +9323,7 @@ function CivilDocGuideOverlay({
             </span>
           </div>
 
-          <h2
-            className="text-[clamp(22px,3.5vw,28px)] font-black text-[#0c1b33] mb-[6px] leading-[1.25]"
-            
-          >
+          <h2 className="text-[clamp(22px,3.5vw,28px)] font-black text-[#0c1b33] mb-[6px] leading-[1.25]">
             {doc.title}
           </h2>
           <p className="text-[14px] text-[#3a4f63] leading-[1.6] mb-[28px]">
@@ -9720,10 +9640,7 @@ function MedicalTutOverlay({
           <div className="text-[11px] font-semibold tracking-[0.1em] uppercase text-primary mb-3.5">
             Medical Exam Guide · {s.label}
           </div>
-          <h2
-            className="text-[clamp(20px,3.2vw,26px)] text-[#0c1b33] leading-tight mb-2"
-            
-          >
+          <h2 className="text-[clamp(20px,3.2vw,26px)] text-[#0c1b33] leading-tight mb-2">
             {s.heading}
           </h2>
           <p className="text-[14px] text-[#3a4f63] leading-relaxed mb-[18px]">
@@ -9840,10 +9757,7 @@ function CourierTutOverlay({
           <div className="text-[11px] font-semibold tracking-[0.1em] uppercase text-primary mb-3.5">
             Courier Registration Guide · {s.label}
           </div>
-          <h2
-            className="text-[clamp(20px,3.2vw,26px)] text-[#0c1b33] leading-tight mb-2"
-            
-          >
+          <h2 className="text-[clamp(20px,3.2vw,26px)] text-[#0c1b33] leading-tight mb-2">
             {s.heading}
           </h2>
           <p className="text-[14px] text-[#3a4f63] leading-relaxed mb-[18px]">
@@ -9958,10 +9872,7 @@ function InterviewDayTutOverlay({
           <div className="text-[11px] font-bold tracking-widest uppercase text-primary mb-3.5">
             Interview Day Guide · {s.label}
           </div>
-          <h2
-            className="text-[clamp(20px,3.2vw,26px)] text-[#0c1b33] leading-tight mb-2"
-            
-          >
+          <h2 className="text-[clamp(20px,3.2vw,26px)] text-[#0c1b33] leading-tight mb-2">
             {s.heading}
           </h2>
           <p className="text-[14px] text-[#3a4f63] leading-relaxed mb-[18px]">
@@ -10040,12 +9951,7 @@ function ApUpdateModal({
     <div className="fixed inset-0 z-[300] bg-black/40 backdrop-blur-[4px] flex items-center justify-center p-5 animate-in fade-in duration-200">
       <div className="bg-white rounded-[16px] shadow-[0_24px_80px_rgba(12,27,51,0.32),0_4px_20px_rgba(12,27,51,0.16)] w-full max-w-[440px] animate-in slide-in-from-bottom-4 duration-300">
         <div className="flex items-start justify-between p-6 pb-0 mb-4">
-          <h2
-            className="text-[20px] text-[#0c1b33]"
-            
-          >
-            Log a Case Update
-          </h2>
+          <h2 className="text-[20px] text-[#0c1b33]">Log a Case Update</h2>
           <button
             onClick={onClose}
             className="w-[30px] h-[30px] rounded-full bg-[#f4f7fb] flex items-center justify-center hover:bg-[#e8f1fb] transition-all"
