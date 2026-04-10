@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { roadmapData } from "../../../../data/roadmap";
 import { toast } from "sonner";
 import { mapDocumentNameToId } from "@/lib/document-vault/journey-mapping";
+import { useDocumentVaultStore } from "@/lib/document-vault/store";
 
 export interface WizardState {
   currentStage: number;
@@ -519,6 +520,10 @@ export function useWizard(options: UseWizardOptions = {}) {
 
           const res = await fetch("/api/documents/upload", { method: "POST", body: formData });
           if (!res.ok) throw new Error();
+          
+          // Refresh the global document vault store
+          useDocumentVaultStore.getState().reloadDocuments();
+          
           toast.success("Saved to vault", { id: "vault-upload" });
         } catch {
           toast.error("Vault save failed", { id: "vault-upload" });

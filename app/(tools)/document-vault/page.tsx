@@ -72,6 +72,7 @@ export default function DocumentVaultPage() {
     closeWizard,
     refreshDocumentStatuses,
     refreshNotifications,
+    reloadDocuments,
     notifications,
   } = useDocumentVaultStore();
 
@@ -1011,9 +1012,9 @@ export default function DocumentVaultPage() {
             onClose={closeUploadModal}
             documentDef={selectedDoc}
             onUploadComplete={async () => {
-              if (user) {
-                await initialize(user.id, t);
-              }
+              // Reload documents in the store instantly — no full re-init needed
+              await reloadDocuments();
+              refreshNotifications(t);
             }}
           />
 
