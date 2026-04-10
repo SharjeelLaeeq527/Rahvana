@@ -7,7 +7,7 @@
     {
       "chapter_key": "chapter_1",
       "chapter_number": 1,
-      "chapter_name": "Stage I: USCIS Petition Filing",
+      "chapter_name": "Chapter 1: USCIS Petition Filing",
       "chapter_description": "File Form I-130 with USCIS to begin the IR-1 spouse visa process for your Pakistani spouse.",
       "estimated_duration_months": 15,
       "display_order": 1,
@@ -665,7 +665,7 @@
           "step_name": "Gather Required Documents",
           "step_short_description": "Pakistan-specific full checklist",
           "step_type": "docs",
-          "description": "Prepare the documents needed for your IR-1 spouse petition. Open each item to see exactly what is needed, where to get it, and what to watch out for.",
+          "step_description": "Prepare the documents needed for your IR-1 spouse petition. Open each item to see exactly what is needed, where to get it, and what to watch out for.",
           "who": "Pakistan-specific full checklist",
           "where": "Various sources",
           "timeline": "4-8 weeks",
@@ -1818,35 +1818,45 @@
               "name": "Filing Fee ($675)",
               "subtitle": "Personal check, money order, or Form G-1450 (Credit Card)",
               "tag": "petitioner",
-              "group": "USCIS Intake Order"
+              "group": "USCIS Intake Order",
+              "status": "not-started",
+              "required": true
             },
             {
               "id": "p_g1145",
               "name": "Form G-1145",
               "subtitle": "e-Notification of Application/Petition Acceptance",
               "tag": "petitioner",
-              "group": "USCIS Intake Order"
+              "group": "USCIS Intake Order",
+              "status": "not-started",
+              "required": true
             },
             {
               "id": "p_i130",
               "name": "Form I-130 (Signed)",
               "subtitle": "Ensure all 12 pages are included and original signature is in black ink",
               "tag": "petitioner",
-              "group": "USCIS Intake Order"
+              "group": "USCIS Intake Order",
+              "status": "not-started",
+              "required": true
             },
             {
               "id": "p_i130a",
               "name": "Form I-130A (Signed)",
               "subtitle": "Spouse beneficiary info — must be filed with the I-130",
               "tag": "beneficiary",
-              "group": "USCIS Intake Order"
+              "group": "USCIS Intake Order",
+              "status": "not-started",
+              "required": true
             },
             {
               "id": "p_evidence",
               "name": "Supporting Evidence Binder",
               "subtitle": "Chronological evidence of genuine relationship",
               "tag": "both",
-              "group": "Supporting Evidence"
+              "group": "Supporting Evidence",
+              "status": "not-started",
+              "required": true
             }
           ]
         },
@@ -1904,8 +1914,8 @@
     {
       "chapter_key": "chapter_2",
       "chapter_number": 2,
-      "chapter_name": "Stage II: NVC / CEAC Processing",
-      "chapter_description": "Pay fees → Submit DS-260 → Upload documents → Documentarily Qualified",
+      "chapter_name": "Chapter 2: NVC / CEAC Processing",
+      "chapter_description": "Pay NVC fees, complete DS-260, submit civil documents, and receive your interview appointment.",
       "estimated_duration_months": 7,
       "display_order": 2,
       "steps": [
@@ -2912,8 +2922,8 @@
     {
       "chapter_key": "chapter_3",
       "chapter_number": 3,
-      "chapter_name": "Stage III: Medical + Interview",
-      "chapter_description": "Complete medical exam → Attend consular interview → Visa decision",
+      "chapter_name": "Chapter 3: Medical + Interview",
+      "chapter_description": "Medical examination, document gathering, courier setup, interview preparation, and attendance.",
       "timeline": "Interview within 2-4 weeks of letter",
       "estimated_duration_months": 1,
       "display_order": 3,

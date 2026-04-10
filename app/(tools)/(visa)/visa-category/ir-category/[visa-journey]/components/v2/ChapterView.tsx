@@ -42,7 +42,7 @@ export function ChapterView({
   return (
     <div className="flex-1 overflow-y-auto py-8 px-6 pb-20 scrollbar-hide bg-[#f4f7fb]">
       <div className="w-full max-w-[680px] mx-auto animate-in fade-in duration-700">
-        <button
+        {/* <button
           onClick={onBack}
           className="flex items-center gap-2 text-[12.5px] font-bold text-primary hover:text-primary/80 transition-colors mb-6 group"
         >
@@ -52,7 +52,7 @@ export function ChapterView({
             strokeWidth={2.5}
           />
           Back to Dashboard
-        </button>
+        </button> */}
 
         <div className="bg-white border-[1.5px] border-[#d0e4f7] rounded-2xl p-[22px_24px] mb-3.5 shadow-sm">
           <div
@@ -70,7 +70,7 @@ export function ChapterView({
                 ? "In Progress"
                 : "Not Started"}
           </div>
-          <h1 className="font-serif text-[clamp(20px,3vw,26px)] text-[#0c1b33] mb-1.5">
+          <h1 className="text-[clamp(20px,3vw,26px)] font-black text-[#0c1b33] mb-1">
             {(chapter.chapter_name || (chapter as any).name).replace(
               /^Stage\s[IVX]+:\s/,
               "",
