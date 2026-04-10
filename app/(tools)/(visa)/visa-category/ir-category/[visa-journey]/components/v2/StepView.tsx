@@ -1062,7 +1062,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
 
         {/* PRIMARY LAUNCH MODULE */}
         <div className="bg-[#0e1e38] rounded-[16px] border border-white/7 shadow-[0_20px_60px_rgba(12,27,51,0.18)] overflow-hidden mb-6 relative">
-          <div className="absolute top-0 left-0 right-0 h-[2px] bg-linear-to-r from-primary via-[#6aa8f0] to-transparent opacity-70" />
+          <div className="absolute top-0 left-0 right-0 h-[2px] bg-linear-to-r from-primary via-primary/70 to-transparent opacity-70" />
           <div className="p-8 md:p-[32px_34px_28px]">
             <div className="flex items-start gap-4 mb-[22px]">
               <div className="w-[46px] h-[46px] rounded-[11px] bg-white/6 border border-white/10 flex items-center justify-center shrink-0">
@@ -1237,7 +1237,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
             <div className="flex items-center gap-3 mb-7">
               <div className="flex-1 h-[5px] bg-[#d0e4f7] rounded-[10px] overflow-hidden">
                 <div
-                  className="h-full bg-linear-to-r from-primary to-[#6aa8f0] transition-all duration-500 rounded-[10px]"
+                  className="h-full bg-linear-to-r from-primary to-primary/70 transition-all duration-500 rounded-[10px]"
                   style={{ width: `${progressPct}%` }}
                 />
               </div>
@@ -2170,7 +2170,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
           {/* SPONSORSHIP CALCULATOR LAUNCH MODULE (Step 5 Specific) */}
           {tool.type === "sponsorship_calculator" && (
             <div className="relative bg-[#0e1e38] rounded-[16px] border border-white/7 overflow-hidden mb-[28px] shadow-[0_20px_60px_rgba(12,27,51,0.18),0_4px_16px_rgba(12,27,51,0.12)]">
-              <div className="absolute top-0 left-0 right-0 h-[2px] bg-linear-to-r from-primary to-[#6aa8f0] opacity-70" />
+              <div className="absolute top-0 left-0 right-0 h-[2px] bg-linear-to-r from-primary to-primary/70 opacity-70" />
               <div className="p-[32px_34px_28px]">
                 <div className="flex items-start gap-[16px] mb-[22px]">
                   <div className="w-[46px] h-[46px] rounded-[11px] bg-white/5 border border-white/10 flex items-center justify-center shrink-0">
@@ -2559,7 +2559,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
             <div className="flex flex-col mt-4">
               {/* Launcher Card (Large) */}
               <div className="relative bg-[#0e1e38] rounded-[16px] border border-white/7 overflow-hidden mb-[24px] shadow-[0_20px_60px_rgba(12,27,51,0.18),0_4px_16px_rgba(12,27,51,0.12)]">
-                <div className="absolute top-0 left-0 right-0 h-[2px] bg-linear-to-r from-primary via-[#6aa8f0] to-transparent opacity-70" />
+                <div className="absolute top-0 left-0 right-0 h-[2px] bg-linear-to-r from-primary via-primary/70 to-transparent opacity-70" />
                 <div className="p-[30px_32px_26px]">
                   <div className="flex items-start gap-[16px] mb-[20px]">
                     <div className="w-[44px] h-[44px] rounded-[10px] bg-white/5 border border-white/10 flex items-center justify-center shrink-0">
@@ -7566,7 +7566,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
             </button>
             <div className="flex-1 h-[5px] bg-[#d0e4f7] rounded-[10px] overflow-hidden">
               <div
-                className="h-full bg-linear-to-r from-primary to-[#6aa8f0] transition-all duration-500"
+                className="h-full bg-linear-to-r from-primary to-primary/70 transition-all duration-500"
                 style={{
                   width: `${Math.round(((sponsorshipStepIdx + 1) / 7) * 100)}%`,
                 }}
@@ -8655,7 +8655,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
               </button>
               <div className="flex-1 h-1.25 bg-[#d0e4f7] rounded-full overflow-hidden">
                 <div
-                  className="h-full bg-linear-to-r from-primary to-[#6aa8f0] transition-all duration-400"
+                  className="h-full bg-linear-to-r from-primary to-primary/70 transition-all duration-400"
                   style={{
                     width: `${((medicalGuideIdx + 1) / currentStep.tool_data.tutorial.length) * 100}%`,
                   }}
@@ -9898,7 +9898,7 @@ function InterviewDayTutOverlay({
         </button>
         <div className="flex-1 h-[5px] bg-[#d0e4f7] rounded-full overflow-hidden">
           <div
-            className="h-full bg-linear-to-r from-primary to-[#6aa8f0] transition-all duration-500"
+            className="h-full bg-linear-to-r from-primary to-primary/70 transition-all duration-500"
             style={{ width: `${progress}%` }}
           />
         </div>
