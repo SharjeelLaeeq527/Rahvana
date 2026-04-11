@@ -62,7 +62,7 @@ import {
   MoreVertical,
   Trash2,
   Truck,
-  } from "lucide-react";
+} from "lucide-react";
 
 import {
   DropdownMenu,
@@ -415,7 +415,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
       }
     }
   }, [sponsorshipResult]);
-  
+
   // Sync household document status with metadata
   useEffect(() => {
     if (state.metadata.hhDocsStatus) {
@@ -1538,18 +1538,19 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
           userId: user?.id || "session",
           visaCategory: "IR-1",
           caseId: (state.metadata.caseId as string) || "ARACHNIE-IR1",
-          petitionerName: (state.metadata.petitionerName as string) || "Petitioner",
-          beneficiaryName: (state.metadata.beneficiaryName as string) || "Beneficiary",
+          petitionerName:
+            (state.metadata.petitionerName as string) || "Petitioner",
+          beneficiaryName:
+            (state.metadata.beneficiaryName as string) || "Beneficiary",
           jointSponsorName: (state.metadata.jointSponsorName as string) || "",
           scenarioFlags: {},
         }),
-        reloadDocuments()
+        reloadDocuments(),
       ]);
     };
     initVault();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // Run once on mount — config is set immediately, no race condition
-
 
   // Disable body scroll when overlays are open
   useEffect(() => {
@@ -2174,14 +2175,14 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
           {/* Companion Context Badge (Step 5 Specific) */}
           {(sId === "step_1_5" || sId === "step_1_2_b") && (
             <div className="flex items-center gap-[9px] mb-[22px]">
-              <div className="flex-1 h-[1px] bg-linear-to-r from-[#d0e4f7] to-transparent" />
+              <div className="flex-1 h-px bg-linear-to-r from-[#d0e4f7] to-transparent" />
               <div className="inline-flex items-center gap-[6px] bg-[#e6f6f6] border border-[#9fd8d8] rounded-full px-[13px] py-[5px]">
                 <span className="w-[5px] h-[5px] rounded-full bg-[#0f7373]" />
                 <span className="text-[11px] font-semibold text-[#0f7373] tracking-[0.04em] whitespace-nowrap">
                   Companion form to I-130 · Beneficiary spouse focus
                 </span>
               </div>
-              <div className="flex-1 h-[1px] bg-linear-to-l from-[#d0e4f7] to-transparent" />
+              <div className="flex-1 h-px bg-linear-to-l from-[#d0e4f7] to-transparent" />
             </div>
           )}
 
@@ -2535,12 +2536,13 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                           <span className="text-[11px] font-semibold uppercase tracking-[0.09em] text-[#6b8097]">
                             {group.label}
                           </span>
-                          <div className="flex-1 h-[1px] bg-[#d0e4f7]" />
+                          <div className="flex-1 h-px bg-[#d0e4f7]" />
                         </div>
 
                         <div className="flex flex-col gap-[10px]">
                           {group.items.map((doc: any) => {
-                            const st = financialDocsStatus[doc.id] || "not-started";
+                            const st =
+                              financialDocsStatus[doc.id] || "not-started";
                             return (
                               <div
                                 key={doc.id}
@@ -2589,7 +2591,9 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                                   <button
                                     onClick={(e) => {
                                       e.stopPropagation();
-                                      const defId = mapDocumentNameToId(doc.title);
+                                      const defId = mapDocumentNameToId(
+                                        doc.title,
+                                      );
                                       setActiveUploadId(doc.id);
                                       setActiveUploadType("financial");
                                       openUploadModal(defId);
@@ -2602,7 +2606,10 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                                   <button
                                     onClick={() => {
                                       // Mark as in-progress when opened (unless already reviewed)
-                                      if (financialDocsStatus[doc.id] !== "reviewed") {
+                                      if (
+                                        financialDocsStatus[doc.id] !==
+                                        "reviewed"
+                                      ) {
                                         actions.updateMetadata({
                                           financialDocsStatus: {
                                             ...financialDocsStatus,
@@ -3946,7 +3953,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
 
               {/* Selector Overlay Modal */}
               {isMedWizardOpen && (
-                <div className="fixed inset-0 z-[200] bg-white flex flex-col overflow-hidden animate-in slide-in-from-bottom-[18px] duration-[0.28s] ease-in-out font-sans">
+                <div className="fixed inset-0 z-200 bg-white flex flex-col overflow-hidden animate-in slide-in-from-bottom-[18px] duration-[0.28s] ease-in-out font-sans">
                   {/* Topbar */}
                   <div className="flex items-center p-[18px_24px] border-b border-[#d0e4f7] gap-4 shrink-0">
                     <button
@@ -3982,7 +3989,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                         const s = steps[medWizardStep];
                         return (
                           <>
-                            <div className="text-[11px] font-semibold tracking-[0.1em] uppercase text-[#2f6fd4] mb-3.5">
+                            <div className="text-[11px] font-semibold tracking-widest uppercase text-[#2f6fd4] mb-3.5">
                               {s.label}
                             </div>
                             <h2 className="text-[clamp(20px,3.2vw,26px)] text-[#0c1b33] leading-tight mb-2">
@@ -4283,7 +4290,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
 
               {/* Guide Overlay Modal */}
               {isPolioGuideOpen && (
-                <div className="fixed inset-0 z-[200] bg-white flex flex-col overflow-hidden animate-in slide-in-from-bottom-[18px] duration-[0.28s] ease-in-out font-sans">
+                <div className="fixed inset-0 z-200 bg-white flex flex-col overflow-hidden animate-in slide-in-from-bottom-[18px] duration-[0.28s] ease-in-out font-sans">
                   {/* Topbar */}
                   <div className="flex items-center p-[18px_24px] border-b border-[#d0e4f7] gap-4 shrink-0">
                     <button
@@ -4318,7 +4325,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                           POLIO_CERTIFICATE_DATA.guideSteps.length - 1;
                         return (
                           <>
-                            <div className="text-[11px] font-semibold tracking-[0.1em] uppercase text-primary mb-3.5">
+                            <div className="text-[11px] font-semibold tracking-widest uppercase text-primary mb-3.5">
                               Polio Vaccination Guide · {s.label}
                             </div>
                             <h2 className="text-[clamp(20px,3.2vw,26px)] text-[#0c1b33] leading-tight mb-2">
@@ -4640,7 +4647,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
 
               {/* PCC Path Overlay Modal */}
               {isPccOverlayOpen && (
-                <div className="fixed inset-0 z-[200] bg-white flex flex-col overflow-hidden animate-in slide-in-from-bottom-[18px] duration-[0.28s] ease-in-out font-sans">
+                <div className="fixed inset-0 z-200 bg-white flex flex-col overflow-hidden animate-in slide-in-from-bottom-[18px] duration-[0.28s] ease-in-out font-sans">
                   {/* Topbar */}
                   <div className="flex items-center p-[18px_24px] border-b border-[#d0e4f7] gap-4 shrink-0">
                     <button
@@ -4685,7 +4692,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
 
                         return (
                           <>
-                            <div className="text-[11px] font-semibold tracking-[0.1em] uppercase text-primary mb-3.5">
+                            <div className="text-[11px] font-semibold tracking-widest uppercase text-primary mb-3.5">
                               {s.label}
                             </div>
                             <h2 className="text-[clamp(20px,3.2vw,26px)] text-[#0c1b33] leading-tight mb-2">
@@ -4807,7 +4814,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                             ? "Recommended"
                             : "Required if applicable"}
                       </span>
-                      <div className="flex-1 h-[1px] bg-[#d0e4f7]" />
+                      <div className="flex-1 h-px bg-[#d0e4f7]" />
                     </div>
 
                     <div className="flex flex-col gap-[9px]">
@@ -4900,7 +4907,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                 {/* Subtle Glow Overlay */}
                 <div className="absolute inset-0 bg-linear-to-br from-white/5 to-transparent pointer-events-none" />
 
-                <div className="relative z-10 text-[10px] font-[700] tracking-[0.1em] uppercase text-white/40 mb-[16px]">
+                <div className="relative z-10 text-[10px] font-[700] tracking-widest uppercase text-white/40 mb-[16px]">
                   Suggested Physical Packet Structure
                 </div>
                 <div className="relative z-10 grid grid-cols-2 min-[460px]:grid-cols-4 gap-[10px]">
@@ -5346,7 +5353,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                     </div>
                   </div>
 
-                  <div className="h-[1px] bg-white/10 mb-[18px]" />
+                  <div className="h-px bg-white/10 mb-[18px]" />
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-6">
                     {tool.launch_module?.cues?.map((cue: string, i: number) => (
@@ -5450,7 +5457,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                     </div>
                   </div>
 
-                  <div className="h-[1px] bg-white/10 mb-[18px]" />
+                  <div className="h-px bg-white/10 mb-[18px]" />
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-6">
                     {tool.launch_module.cues.map((cue: string, i: number) => (
@@ -6008,7 +6015,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                     </div>
                   </div>
 
-                  <div className="h-[1px] bg-white/9 mb-[22px]" />
+                  <div className="h-px bg-white/9 mb-[22px]" />
 
                   {/* Fee Block (Step 9 — Pay Filing Fee) */}
                   {tool.fee_block && (
@@ -6239,7 +6246,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                           ? "Required if Applicable"
                           : "Recommended to Improve Case Strength"}
                     </span>
-                    <div className="flex-1 h-[1px] bg-[#d0e4f7]" />
+                    <div className="flex-1 h-px bg-[#d0e4f7]" />
                   </div>
                   <div className="flex flex-col gap-[10px]">
                     {group.items.map((item: any) => {
@@ -7184,7 +7191,9 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                             const hasAttachment =
                               state.docUploads[doc.name] ||
                               state.notes[doc.name];
-                            const isInProgress = (hasAttachment && !isReviewed) || docReviewStatus === "in-progress";
+                            const isInProgress =
+                              (hasAttachment && !isReviewed) ||
+                              docReviewStatus === "in-progress";
                             const isPetitioner = doc.tag === "petitioner";
                             const isBeneficiary = doc.tag === "beneficiary";
 
@@ -7308,8 +7317,10 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                                 <div className="shrink-0 flex flex-col items-center gap-2">
                                   {(() => {
                                     const defId = mapDocumentNameToId(doc.name);
-                                    const uploadedDoc = uploadedDocuments.find(ud => ud.documentDefId === defId);
-                                    
+                                    const uploadedDoc = uploadedDocuments.find(
+                                      (ud) => ud.documentDefId === defId,
+                                    );
+
                                     if (isReloadingDocs && !uploadedDoc) {
                                       return (
                                         <div className="flex items-center gap-1.5 px-[11px] py-[5px] text-[12px] text-muted-foreground font-medium animate-pulse">
@@ -7324,32 +7335,53 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                                         <DropdownMenu>
                                           <DropdownMenuTrigger asChild>
                                             <button
-                                              onClick={(e) => e.stopPropagation()}
+                                              onClick={(e) =>
+                                                e.stopPropagation()
+                                              }
                                               className="h-8 w-8 rounded-full hover:bg-muted flex items-center justify-center transition-colors text-muted-foreground hover:text-foreground border border-transparent hover:border-muted-foreground/20"
                                             >
                                               <MoreVertical size={18} />
                                             </button>
                                           </DropdownMenuTrigger>
-                                          <DropdownMenuContent align="end" className="w-[140px] rounded-xl shadow-xl border-muted/20">
-                                            <DropdownMenuItem 
+                                          <DropdownMenuContent
+                                            align="end"
+                                            className="w-[140px] rounded-xl shadow-xl border-muted/20"
+                                          >
+                                            <DropdownMenuItem
                                               onClick={(e) => {
                                                 e.stopPropagation();
-                                                window.open(`/api/documents/${uploadedDoc.id}/download`, '_blank');
+                                                window.open(
+                                                  `/api/documents/${uploadedDoc.id}/download`,
+                                                  "_blank",
+                                                );
                                               }}
                                               className="flex items-center gap-2 cursor-pointer font-medium text-[13px] py-2.5"
                                             >
-                                              <Eye size={16} className="text-primary" />
+                                              <Eye
+                                                size={16}
+                                                className="text-primary"
+                                              />
                                               Preview
                                             </DropdownMenuItem>
-                                            <DropdownMenuItem 
+                                            <DropdownMenuItem
                                               onClick={async (e) => {
                                                 e.stopPropagation();
-                                                if (window.confirm("Are you sure you want to delete this document?")) {
+                                                if (
+                                                  window.confirm(
+                                                    "Are you sure you want to delete this document?",
+                                                  )
+                                                ) {
                                                   try {
-                                                    await deleteDocument(uploadedDoc.id);
-                                                    toast.success("Document deleted successfully");
+                                                    await deleteDocument(
+                                                      uploadedDoc.id,
+                                                    );
+                                                    toast.success(
+                                                      "Document deleted successfully",
+                                                    );
                                                   } catch (err) {
-                                                    toast.error("Failed to delete document");
+                                                    toast.error(
+                                                      "Failed to delete document",
+                                                    );
                                                   }
                                                 }
                                               }}
@@ -7367,7 +7399,9 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                                       <button
                                         onClick={(e) => {
                                           e.stopPropagation();
-                                          const defId = mapDocumentNameToId(doc.name);
+                                          const defId = mapDocumentNameToId(
+                                            doc.name,
+                                          );
                                           setActiveUploadId(doc.id);
                                           setActiveUploadType("doc");
                                           openUploadModal(defId);
@@ -7380,35 +7414,43 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                                       </button>
                                     );
                                   })()}
-                                  
+
                                   {(() => {
                                     const defId = mapDocumentNameToId(doc.name);
-                                    const isUploadedInVault = uploadedDocuments.some(ud => ud.documentDefId === defId);
-                                    
-                                    const displayStatus = isUploadedInVault 
-                                      ? "Uploaded" 
-                                      : (isReloadingDocs 
-                                        ? "Checking..." 
-                                        : (isReviewed ? "Reviewed" : (isInProgress ? "In progress" : "Not started")));
+                                    const isUploadedInVault =
+                                      uploadedDocuments.some(
+                                        (ud) => ud.documentDefId === defId,
+                                      );
 
-                                    const statusClasses = isUploadedInVault 
+                                    const displayStatus = isUploadedInVault
+                                      ? "Uploaded"
+                                      : isReloadingDocs
+                                        ? "Checking..."
+                                        : isReviewed
+                                          ? "Reviewed"
+                                          : isInProgress
+                                            ? "In progress"
+                                            : "Not started";
+
+                                    const statusClasses = isUploadedInVault
                                       ? "bg-[#eaf7f2] text-[#1a7a5e] border-[#b5e0d0] font-bold shadow-sm"
-                                      : (isReloadingDocs
+                                      : isReloadingDocs
                                         ? "bg-muted/30 text-muted-foreground border-muted-foreground/20 animate-pulse"
-                                        : (isReviewed 
+                                        : isReviewed
                                           ? "bg-[#eaf7f2] text-[#1a7a5e] border-[#b5e0d0]"
-                                          : (isInProgress 
+                                          : isInProgress
                                             ? "bg-[#fff9e6] text-[#d97706] border-[#fde68a]"
-                                            : "bg-white text-[#6b8097] border-[#d0e4f7] hover:border-primary hover:text-primary")));
+                                            : "bg-white text-[#6b8097] border-[#d0e4f7] hover:border-primary hover:text-primary";
 
                                     return (
-                                      <div className={`px-[11px] py-[5px] rounded-full border text-[12px] font-medium tracking-normal transition-all ${statusClasses}`}>
+                                      <div
+                                        className={`px-[11px] py-[5px] rounded-full border text-[12px] font-medium tracking-normal transition-all ${statusClasses}`}
+                                      >
                                         {displayStatus}
                                       </div>
                                     );
                                   })()}
                                 </div>
-
                               </div>
                             );
                           })}
@@ -7555,7 +7597,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                             </div>
 
                             <div
-                              className={`text-[10px] font-bold uppercase tracking-[0.1em] mb-[10px] transition-colors duration-[0.24s] ${isSelected ? pSelText : pIdleText}`}
+                              className={`text-[10px] font-bold uppercase tracking-widest mb-[10px] transition-colors duration-[0.24s] ${isSelected ? pSelText : pIdleText}`}
                             >
                               {isOnline ? "Online Filing" : "Paper Filing"}
                             </div>
@@ -7769,7 +7811,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                 if (step === 0) {
                   return (
                     <div className="animate-in fade-in slide-in-from-right-4 duration-300">
-                      <div className="text-[11px] font-semibold tracking-[0.1em] uppercase text-primary mb-4">
+                      <div className="text-[11px] font-semibold tracking-widest uppercase text-primary mb-4">
                         Sponsorship Calculator · Step 1 of 7
                       </div>
                       <h2 className="text-[clamp(22px,3.5vw,28px)]  font-black text-[#0c1b33] mb-2 leading-[1.3]">
@@ -7803,7 +7845,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                 if (step === 1) {
                   return (
                     <div className="animate-in fade-in slide-in-from-right-4 duration-300">
-                      <div className="text-[11px] font-semibold tracking-[0.1em] uppercase text-primary mb-4">
+                      <div className="text-[11px] font-semibold tracking-widest uppercase text-primary mb-4">
                         Sponsorship Calculator · Step 2 of 7
                       </div>
                       <h2 className="text-[clamp(22px,3.5vw,28px)]  font-black text-[#0c1b33] mb-2 leading-[1.3]">
@@ -7858,7 +7900,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                 if (step === 2) {
                   return (
                     <div className="animate-in fade-in slide-in-from-right-4 duration-300">
-                      <div className="text-[11px] font-semibold tracking-[0.1em] uppercase text-primary mb-4">
+                      <div className="text-[11px] font-semibold tracking-widest uppercase text-primary mb-4">
                         Sponsorship Calculator · Step 3 of 7
                       </div>
                       <h2 className="text-[clamp(22px,3.5vw,28px)]  font-black text-[#0c1b33] mb-2 leading-[1.3]">
@@ -7911,7 +7953,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                 if (step === 3) {
                   return (
                     <div className="animate-in fade-in slide-in-from-right-4 duration-300">
-                      <div className="text-[11px] font-semibold tracking-[0.1em] uppercase text-primary mb-4">
+                      <div className="text-[11px] font-semibold tracking-widest uppercase text-primary mb-4">
                         Sponsorship Calculator · Step 4 of 7
                       </div>
                       <h2 className="text-[clamp(22px,3.5vw,28px)]  font-black text-[#0c1b33] mb-4 leading-[1.3]">
@@ -7958,7 +8000,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                 if (step === 4) {
                   return (
                     <div className="animate-in fade-in slide-in-from-right-4 duration-300">
-                      <div className="text-[11px] font-semibold tracking-[0.1em] uppercase text-primary mb-4">
+                      <div className="text-[11px] font-semibold tracking-widest uppercase text-primary mb-4">
                         Sponsorship Calculator · Step 5 of 7
                       </div>
                       <h2 className="text-[clamp(22px,3.5vw,28px)]  font-black text-[#0c1b33] mb-2 leading-[1.3]">
@@ -8035,7 +8077,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                 if (step === 5) {
                   return (
                     <div className="animate-in fade-in slide-in-from-right-4 duration-300">
-                      <div className="text-[11px] font-semibold tracking-[0.1em] uppercase text-primary mb-4">
+                      <div className="text-[11px] font-semibold tracking-widest uppercase text-primary mb-4">
                         Sponsorship Calculator · Step 6 of 7
                       </div>
                       <h2 className="text-[clamp(22px,3.5vw,28px)]  font-black text-[#0c1b33] mb-2 leading-[1.3]">
@@ -8153,7 +8195,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
 
                   return (
                     <div className="animate-in fade-in slide-in-from-right-4 duration-300">
-                      <div className="text-[11px] font-semibold tracking-[0.1em] uppercase text-primary mb-4">
+                      <div className="text-[11px] font-semibold tracking-widest uppercase text-primary mb-4">
                         Sponsorship Calculator · Step 7 of 7
                       </div>
                       <h2 className="text-[clamp(22px,3.5vw,28px)]  font-black text-[#0c1b33] mb-4 leading-[1.3]">
@@ -8373,7 +8415,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
           {/* Guide Body */}
           <div className="flex-1 overflow-y-auto flex flex-col items-center p-[48px_24px_40px] bg-white">
             <div className="w-full max-w-[600px] flex flex-col">
-              <div className="text-[11px] font-semibold tracking-[0.1em] uppercase text-primary mb-4">
+              <div className="text-[11px] font-semibold tracking-widest uppercase text-primary mb-4">
                 Step 2 · Gather Required Documents
               </div>
               <div className="inline-flex items-center gap-[5px] bg-[#e8f1fb] border border-[#d0e4f7] rounded-full px-[12px] py-[4px] w-fit mb-6">
@@ -8425,17 +8467,20 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                         selectedGuideId,
                         "reviewed",
                       );
-                      
+
                       // Check if all documents are now reviewed for auto-complete
-                      const sId = currentStep.step_key || (currentStep as any)?.id;
+                      const sId =
+                        currentStep.step_key || (currentStep as any)?.id;
                       if (sId === "step_1_2") {
                         const docItems = currentStep.document_items || [];
                         const allReviewed = docItems.every((doc: any) => {
                           if (doc.id === selectedGuideId) return true; // This one will be reviewed
-                          return state.metadata?.docReviewStatus?.[doc.id] === "reviewed" ||
-                                 state.documentChecklist[doc.name];
+                          return (
+                            state.metadata?.docReviewStatus?.[doc.id] ===
+                              "reviewed" || state.documentChecklist[doc.name]
+                          );
                         });
-                        
+
                         // Auto-complete step if all documents are reviewed
                         if (allReviewed && !isCompleted) {
                           handleToggleComplete();
@@ -8560,7 +8605,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
               {/* Tutorial Body */}
               <div className="flex-1 overflow-y-auto bg-[#fafcff] p-[48px_24px_40px] flex flex-col items-center">
                 <div className="w-full max-w-[580px] flex flex-col">
-                  <div className="text-[11px] font-semibold tracking-[0.1em] uppercase text-primary mb-4">
+                  <div className="text-[11px] font-semibold tracking-widest uppercase text-primary mb-4">
                     {isDynamic
                       ? currentTutStep.label
                       : (currentTutStep as (typeof USCIS_TUTORIAL_STEPS)[0])
@@ -8760,7 +8805,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
           {/* Guide Body */}
           <div className="flex-1 overflow-y-auto flex flex-col items-center p-[48px_24px_40px]">
             <div className="w-full max-w-[600px]">
-              <div className="text-[11px] font-semibold tracking-[0.1em] uppercase text-[#2f6fd4] mb-[16px]">
+              <div className="text-[11px] font-semibold tracking-widest uppercase text-[#2f6fd4] mb-[16px]">
                 Step 4 · Original Documents Checklist
               </div>
               <h2 className="text-[clamp(20px,3vw,26px)]  text-[#0c1b33] mb-[8px] leading-[1.25]">
@@ -8834,7 +8879,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
       {/* Medical Exam Guide Overlay (Step 3.5) */}
       {isMedicalGuideOpen &&
         currentStep?.tool_data?.type === "medical_exam_guide" && (
-          <div className="fixed inset-0 z-[200] bg-white flex flex-col overflow-hidden animate-in slide-in-from-bottom duration-280 font-sans">
+          <div className="fixed inset-0 z-200 bg-white flex flex-col overflow-hidden animate-in slide-in-from-bottom duration-280 font-sans">
             {/* Topbar */}
             <div className="flex items-center p-[18px_24px] border-b border-[#d0e4f7] gap-[16px] shrink-0">
               <button
@@ -8856,21 +8901,25 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                 />
               </div>
               <div className="text-[12px] font-medium text-[#6b8097] shrink-0">
-                {medicalGuideIdx + 1} / {(currentStep.tool_data as any).tutorial.length}
+                {medicalGuideIdx + 1} /{" "}
+                {(currentStep.tool_data as any).tutorial.length}
               </div>
             </div>
 
             {/* Body */}
             <div className="flex-1 overflow-y-auto flex flex-col items-center p-[48px_24px_40px]">
               {(() => {
-                const s = (currentStep.tool_data as any).tutorial[medicalGuideIdx];
+                const s = (currentStep.tool_data as any).tutorial[
+                  medicalGuideIdx
+                ];
                 const isFirst = medicalGuideIdx === 0;
                 const isLast =
-                  medicalGuideIdx === (currentStep.tool_data as any).tutorial.length - 1;
+                  medicalGuideIdx ===
+                  (currentStep.tool_data as any).tutorial.length - 1;
 
                 return (
                   <div className="w-full max-w-[580px] flex flex-col">
-                    <div className="text-[11px] font-bold tracking-[0.1em] uppercase text-primary mb-[14px]">
+                    <div className="text-[11px] font-bold tracking-widest uppercase text-primary mb-[14px]">
                       Medical Exam Guide · {s.label}
                     </div>
                     <h2 className="text-[clamp(20px,3.2vw,26px)]  text-[#0c1b33] mb-[8px] leading-[1.3]">
@@ -8962,7 +9011,8 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
 
             // Update journey status based on what was being uploaded
             if (activeUploadId && activeUploadType) {
-              const currentHhStatus = (state.metadata.hhDocsStatus as any) || {};
+              const currentHhStatus =
+                (state.metadata.hhDocsStatus as any) || {};
               const currentFinStatus =
                 (state.metadata.financialDocsStatus as any) || {};
 
@@ -9042,10 +9092,10 @@ function NvcFeeModal({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-[300] flex items-center justify-center p-5">
+    <div className="fixed inset-0 z-300 flex items-center justify-center p-5">
       {/* Overlay */}
       <div
-        className="absolute inset-0 bg-[#0c1b33]/55 backdrop-blur-[4px] animate-in fade-in duration-200"
+        className="absolute inset-0 bg-[#0c1b33]/55 backdrop-blur-xs animate-in fade-in duration-200"
         onClick={onClose}
       />
 
@@ -9202,7 +9252,7 @@ function FinancialDocGuideOverlay({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-white z-[200] flex flex-col overflow-hidden animate-in slide-in-from-bottom-[18px] duration-[0.28s] ease-in-out font-sans">
+    <div className="fixed inset-0 bg-white z-200 flex flex-col overflow-hidden animate-in slide-in-from-bottom-[18px] duration-[0.28s] ease-in-out font-sans">
       {/* Topbar */}
       <div className="flex items-center h-[72px] border-b border-[#d0e4f7] px-6 gap-4 shrink-0 bg-white">
         <button
@@ -9220,7 +9270,7 @@ function FinancialDocGuideOverlay({
       {/* Body */}
       <div className="flex-1 overflow-y-auto bg-white p-[48px_24px_40px] flex flex-col items-center">
         <div className="w-full max-w-[600px] flex flex-col">
-          <div className="text-[11px] font-semibold tracking-[0.1em] uppercase text-[#2f6fd4] mb-4">
+          <div className="text-[11px] font-semibold tracking-widest uppercase text-[#2f6fd4] mb-4">
             Step 6 · Financial Support Documents
           </div>
 
@@ -9334,7 +9384,7 @@ function HouseholdDocGuideOverlay({
   };
 
   return (
-    <div className="fixed inset-0 bg-white z-[200] flex flex-col overflow-hidden animate-in slide-in-from-bottom-[18px] duration-[0.28s] ease-in-out font-sans">
+    <div className="fixed inset-0 bg-white z-200 flex flex-col overflow-hidden animate-in slide-in-from-bottom-[18px] duration-[0.28s] ease-in-out font-sans">
       {/* Topbar */}
       <div className="flex items-center h-[72px] border-b border-[#d0e4f7] px-6 gap-4 shrink-0 bg-white">
         <button
@@ -9352,7 +9402,7 @@ function HouseholdDocGuideOverlay({
       {/* Body */}
       <div className="flex-1 overflow-y-auto bg-white p-[48px_24px_40px] flex flex-col items-center">
         <div className="w-full max-w-[600px] flex flex-col">
-          <div className="text-[11px] font-semibold tracking-[0.1em] uppercase text-[#4a2d8a] mb-4">
+          <div className="text-[11px] font-semibold tracking-widest uppercase text-[#4a2d8a] mb-4">
             Step 7 · Relationship Documentation
           </div>
 
@@ -9591,7 +9641,7 @@ function CivilDocGuideOverlay({
       {/* Body */}
       <div className="flex-1 overflow-y-auto bg-[#fafcff] p-[48px_24px_40px] flex flex-col items-center">
         <div className="w-full max-w-[600px] flex flex-col">
-          <div className="text-[11px] font-semibold tracking-[0.1em] uppercase text-primary mb-4">
+          <div className="text-[11px] font-semibold tracking-widest uppercase text-primary mb-4">
             Step 4 · Prepare Civil Documents
           </div>
           <div className="inline-flex items-center gap-[5px] bg-[#e8f1fb] border border-[#d0e4f7] rounded-full px-[12px] py-[4px] w-fit mb-6">
@@ -9751,9 +9801,9 @@ function CeacCredsModal({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-[300] flex items-center justify-center p-5 font-sans animate-in fade-in duration-200">
+    <div className="fixed inset-0 z-300 flex items-center justify-center p-5 font-sans animate-in fade-in duration-200">
       <div
-        className="absolute inset-0 bg-[#0c1b33]/55 backdrop-blur-[4px]"
+        className="absolute inset-0 bg-[#0c1b33]/55 backdrop-blur-xs"
         onClick={onClose}
       />
 
@@ -9892,7 +9942,7 @@ function MedicalTutOverlay({
   const isLast = index === total - 1;
 
   return (
-    <div className="fixed inset-0 z-[500] bg-white flex flex-col overflow-hidden animate-in slide-in-from-bottom-[18px] duration-[0.28s] ease-in-out font-sans">
+    <div className="fixed inset-0 z-500 bg-white flex flex-col overflow-hidden animate-in slide-in-from-bottom-[18px] duration-[0.28s] ease-in-out font-sans">
       {/* Topbar */}
       <div className="flex items-center p-[18px_24px] border-b border-[#d0e4f7] gap-4 shrink-0 bg-white">
         <button
@@ -9915,7 +9965,7 @@ function MedicalTutOverlay({
       {/* Body */}
       <div className="flex-1 overflow-y-auto flex flex-col items-center p-[48px_24px_40px] bg-white">
         <div className="w-full max-w-[580px] flex flex-col min-h-full">
-          <div className="text-[11px] font-semibold tracking-[0.1em] uppercase text-primary mb-3.5">
+          <div className="text-[11px] font-semibold tracking-widest uppercase text-primary mb-3.5">
             Medical Exam Guide · {s.label}
           </div>
           <h2 className="text-[clamp(20px,3.2vw,26px)] text-[#0c1b33] leading-tight mb-2">
@@ -10009,7 +10059,7 @@ function CourierTutOverlay({
   const isLast = index === total - 1;
 
   return (
-    <div className="fixed inset-0 z-[500] bg-white flex flex-col overflow-hidden animate-in slide-in-from-bottom-[18px] duration-[0.28s] ease-in-out font-sans">
+    <div className="fixed inset-0 z-500 bg-white flex flex-col overflow-hidden animate-in slide-in-from-bottom-[18px] duration-[0.28s] ease-in-out font-sans">
       {/* Topbar */}
       <div className="flex items-center p-[18px_24px] border-b border-[#d0e4f7] gap-4 shrink-0 bg-white">
         <button
@@ -10032,7 +10082,7 @@ function CourierTutOverlay({
       {/* Body */}
       <div className="flex-1 overflow-y-auto flex flex-col items-center p-[48px_24px_40px] bg-white">
         <div className="w-full max-w-[580px] flex flex-col min-h-full">
-          <div className="text-[11px] font-semibold tracking-[0.1em] uppercase text-primary mb-3.5">
+          <div className="text-[11px] font-semibold tracking-widest uppercase text-primary mb-3.5">
             Courier Registration Guide · {s.label}
           </div>
           <h2 className="text-[clamp(20px,3.2vw,26px)] text-[#0c1b33] leading-tight mb-2">
@@ -10126,7 +10176,7 @@ function InterviewDayTutOverlay({
   }, [isOpen]);
 
   return (
-    <div className="fixed inset-0 z-[200] bg-white flex flex-col overflow-hidden animate-in slide-in-from-bottom-5 duration-300">
+    <div className="fixed inset-0 z-200 bg-white flex flex-col overflow-hidden animate-in slide-in-from-bottom-5 duration-300">
       <div className="flex items-center p-[18px_24px] border-bottom border-[#d0e4f7] gap-4 shrink-0">
         <button
           onClick={onClose}
@@ -10226,7 +10276,7 @@ function ApUpdateModal({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-[300] bg-black/40 backdrop-blur-[4px] flex items-center justify-center p-5 animate-in fade-in duration-200">
+    <div className="fixed inset-0 z-300 bg-black/40 backdrop-blur-xs flex items-center justify-center p-5 animate-in fade-in duration-200">
       <div className="bg-white rounded-[16px] shadow-[0_24px_80px_rgba(12,27,51,0.32),0_4px_20px_rgba(12,27,51,0.16)] w-full max-w-[440px] animate-in slide-in-from-bottom-4 duration-300">
         <div className="flex items-start justify-between p-6 pb-0 mb-4">
           <h2 className="text-[20px] text-[#0c1b33]">Log a Case Update</h2>
@@ -10239,7 +10289,7 @@ function ApUpdateModal({
         </div>
 
         <div className="p-6 pt-0">
-          <div className="h-[1px] bg-[#d0e4f7] mb-4" />
+          <div className="h-px bg-[#d0e4f7] mb-4" />
 
           <div className="flex flex-col gap-4">
             <div className="flex flex-col gap-1.5">
