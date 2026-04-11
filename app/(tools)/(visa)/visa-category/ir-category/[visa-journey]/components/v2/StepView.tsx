@@ -108,6 +108,8 @@ import { useDocumentVaultStore } from "@/lib/document-vault/store";
 import { DocumentUploadModal } from "@/app/components/document-vault/DocumentUploadModal";
 import { ALL_DOCUMENTS } from "@/lib/document-vault/document-definitions";
 import { useAuth } from "@/app/context/AuthContext";
+import PassportPhotoTool from "@/components/tools/PassportPhotoTool";
+import DocumentTranslationTool from "@/components/tools/DocumentTranslationTool";
 
 interface SecurityQuestion {
   id: string;
@@ -8437,23 +8439,40 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
 
               {/* Sections */}
               <div className="w-full flex flex-col">
-                {InlineGuideData[selectedGuideId].sections.map(
-                  (section, idx) => (
-                    <div
-                      key={idx}
-                      className="bg-[#f4f7fb] border border-[#d0e4f7] rounded-[16px] p-[20px_22px] mb-[14px]"
-                    >
-                      <div className="text-[13px] font-semibold tracking-[0.05em] uppercase text-[#6b8097] mb-[10px]">
-                        {section.title}
-                      </div>
+                {selectedGuideId === "doc_passport_photos" ? (
+                  <div className="mb-4">
+                    <PassportPhotoTool
+                      showHeader={false}
+                      showRequirements={true}
+                    />
+                  </div>
+                ) : selectedGuideId === "doc_translations" ? (
+                  <div className="mb-4">
+                    <DocumentTranslationTool
+                      showHeader={false}
+                      showRequirements={true}
+                      showRequestsLink={false}
+                    />
+                  </div>
+                ) : (
+                  InlineGuideData[selectedGuideId].sections.map(
+                    (section, idx) => (
                       <div
-                        className="guide-content"
-                        dangerouslySetInnerHTML={{
-                          __html: section.htmlContent,
-                        }}
-                      />
-                    </div>
-                  ),
+                        key={idx}
+                        className="bg-[#f4f7fb] border border-[#d0e4f7] rounded-[16px] p-[20px_22px] mb-[14px]"
+                      >
+                        <div className="text-[13px] font-semibold tracking-[0.05em] uppercase text-[#6b8097] mb-[10px]">
+                          {section.title}
+                        </div>
+                        <div
+                          className="guide-content"
+                          dangerouslySetInnerHTML={{
+                            __html: section.htmlContent,
+                          }}
+                        />
+                      </div>
+                    ),
+                  )
                 )}
               </div>
 
