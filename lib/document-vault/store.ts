@@ -40,6 +40,8 @@ interface DocumentVaultStore {
   // UI State
   isLoading: boolean;
   isReloadingDocs: boolean;
+  hasLoadedDocsInitial: boolean;
+  isDeletingIds: string[];
   selectedDocumentDefId: string | null;
   wizardOpen: boolean;
   uploadModalOpen: boolean;
@@ -121,6 +123,8 @@ const initialState = {
   notifications: [],
   isLoading: false,
   isReloadingDocs: false,
+  hasLoadedDocsInitial: false,
+  isDeletingIds: [],
   selectedDocumentDefId: null,
   wizardOpen: false,
   uploadModalOpen: false,
@@ -306,6 +310,7 @@ export const useDocumentVaultStore = create<DocumentVaultStore>()(
     },
 
     deleteDocument: async (documentId: string) => {
+      set({ isDeletingIds: [...get().isDeletingIds, documentId] });
       try {
         const response = await fetch(`/api/documents/${documentId}`, {
           method: "DELETE",
@@ -315,11 +320,12 @@ export const useDocumentVaultStore = create<DocumentVaultStore>()(
           throw new Error("Failed to delete document from server");
         }
 
-        const { uploadedDocuments } = get();
+        const { uploadedDocuments, isDeletingIds } = get();
         set({
           uploadedDocuments: uploadedDocuments.filter(
             (doc) => doc.id !== documentId,
           ),
+          isDeletingIds: isDeletingIds.filter((id) => id !== documentId),
         });
 
         // Refresh statuses and notifications
@@ -327,6 +333,9 @@ export const useDocumentVaultStore = create<DocumentVaultStore>()(
         get().refreshNotifications();
       } catch (error) {
         console.error("Failed to delete document:", error);
+        set({
+          isDeletingIds: get().isDeletingIds.filter((id) => id !== documentId),
+        });
         throw error; // Re-throw so UI can handle it (e.g. toast)
       }
     },
@@ -341,7 +350,10 @@ export const useDocumentVaultStore = create<DocumentVaultStore>()(
     },
 
     reloadDocuments: async () => {
-      set({ isReloadingDocs: true });
+      const { hasLoadedDocsInitial } = get();
+      if (!hasLoadedDocsInitial) {
+        set({ isReloadingDocs: true });
+      }
       try {
         // Fetch documents from API
         const response = await fetch("/api/documents/list");
@@ -366,12 +378,14 @@ export const useDocumentVaultStore = create<DocumentVaultStore>()(
           set({ 
             uploadedDocuments: updatedDocs, 
             requiredDocuments: requiredDocs,
-            isReloadingDocs: false 
+            isReloadingDocs: false,
+            hasLoadedDocsInitial: true
           });
         } else {
           set({ 
             uploadedDocuments: updatedDocs,
-            isReloadingDocs: false 
+            isReloadingDocs: false,
+            hasLoadedDocsInitial: true
           });
         }
       } catch (error) {
