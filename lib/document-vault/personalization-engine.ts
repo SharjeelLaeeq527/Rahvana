@@ -62,6 +62,7 @@ function isDocumentRequired(
 export function generateRequiredDocuments(
   config: DocumentVaultConfig,
   includeOptional: boolean = true,
+  uploadedDocIds: string[] = [],
 ): DocumentDefinition[] {
   const { visaCategory, scenarioFlags } = config;
 
@@ -119,6 +120,14 @@ export function generateRequiredDocuments(
     finalDocs = [...requiredDocs, ...optionalDocs];
   }
 
+  // Ensure documents that have been uploaded are ALWAYS present, even if their scenario flag wasn't set!
+  if (uploadedDocIds.length > 0) {
+    const forcedUploadDocs = ALL_DOCUMENTS.filter(
+      (doc) => uploadedDocIds.includes(doc.id) && !finalDocs.includes(doc)
+    );
+    finalDocs = [...finalDocs, ...forcedUploadDocs];
+  }
+
   // Sort by category and then by name
   return finalDocs.sort((a, b) => {
     if (a.category !== b.category) {
@@ -134,8 +143,9 @@ export function generateRequiredDocuments(
 export function getDocumentsByCategory(
   config: DocumentVaultConfig,
   includeOptional: boolean = true,
+  uploadedDocIds: string[] = [],
 ) {
-  const requiredDocs = generateRequiredDocuments(config, includeOptional);
+  const requiredDocs = generateRequiredDocuments(config, includeOptional, uploadedDocIds);
 
   const byCategory: Record<string, DocumentDefinition[]> = {};
 
