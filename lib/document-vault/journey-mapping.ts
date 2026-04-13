@@ -8,33 +8,41 @@ export function mapDocumentNameToId(name: string): string {
 
   // Simple hardcoded mapping for common ones
   const mapping: Record<string, string> = {
-    // Exact matches from IR-1 journey JSON
-    'Proof of U.S. Citizenship': 'passport-petitioner',
-    'Beneficiary Passport': 'passport-beneficiary',
-    'Nikah Nama (Original)': 'nikah-nama',
-    'NADRA Marriage Certificate': 'nikah-nama',
-    'Relationship Evidence': 'misc-document',
-    'Prior Marriage Termination Proof': 'divorce-decree-beneficiary',
-    'Translations': 'misc-document',
-    'Birth Certificate': 'birth-cert-beneficiary',
-    'Police Character Certificate': 'police-certificate-pakistan',
-    'Passport Photos': 'passport-photos',
+    // Stage II (NVC) Specific Mappings
+    'beneficiary passport biographic page': 'passport-beneficiary',
+    'marriage certificate / marriage registration record': 'nadra-mrc',
+    'pakistan police character certificate (pcc)': 'police-certificate-pakistan',
+    'death certificate of former spouse': 'death-cert-prior-spouse',
+    'name change documents': 'name-change-proof',
+    'missing document / record unavailability evidence': 'missing-document-evidence',
+    'organized translation set': 'organized-translation-set',
+    'upload-ready file copies': 'upload-ready-copies',
+    'relationship evidence backup set': 'relationship-evidence-backup',
+    'prior marriage termination documents': 'divorce-decree-beneficiary',
+    'interview letter': 'interview-letter',
+    'sealed medical envelope': 'medical-results-envelope',
 
+    // Exact matches from IR-1 journey JSON (lowercased for matching)
+    'proof of u.s. citizenship': 'passport-petitioner',
+    'beneficiary passport': 'passport-beneficiary',
+    'nikah nama (original)': 'nikah-nama',
+    'nadra marriage certificate': 'nadra-mrc',
+    'relationship evidence': 'relationship-evidence-general',
+    'prior marriage termination proof': 'divorce-decree-beneficiary',
+    'translations': 'certified-translations',
+    'birth certificate': 'birth-cert-beneficiary',
+    'police character certificate': 'police-certificate-pakistan',
+    'passport photos': 'passport-photos',
+
+    // Supporting fallbacks
     'pakistani passport': 'passport-beneficiary',
     'u.s. passport': 'passport-petitioner',
     'passport biographic page': 'passport-beneficiary',
-    'beneficiary passport': 'passport-beneficiary',
-    'petitioner passport': 'passport-petitioner',
-    'proof of u.s. citizenship': 'passport-petitioner',
     'nadra birth certificate': 'birth-cert-beneficiary',
-    'birth certificate': 'birth-cert-beneficiary',
     'nikah nama': 'nikah-nama',
-    'nadra marriage certificate': 'nikah-nama',
-    'union council marriage registration': 'nikah-nama',
-    'marriage certificate': 'nikah-nama',
+    'union council marriage registration': 'nadra-mrc',
+    'marriage certificate': 'nadra-mrc',
     'police certificate': 'police-certificate-pakistan',
-    'police character certificate': 'police-certificate-pakistan',
-    'passport photos': 'passport-photos',
     'irs tax transcripts': 'tax-returns-petitioner',
     'tax returns': 'tax-returns-petitioner',
     'employment letter': 'employment-letter',
@@ -47,8 +55,7 @@ export function mapDocumentNameToId(name: string): string {
     'cnic': 'cnic-beneficiary',
     'divorce decree': 'divorce-decree-beneficiary',
     'talaq nama': 'divorce-decree-beneficiary',
-    'certified english translations': 'misc-document',
-
+    'certified english translations': 'certified-translations',
   };
 
   // Try direct mapping

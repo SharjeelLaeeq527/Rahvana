@@ -190,7 +190,8 @@ export const useDocumentVaultStore = create<DocumentVaultStore>()(
         const documents = docsData.documents || [];
 
         if (config) {
-          const requiredDocs = generateRequiredDocuments(config, true); // Include optional documents
+          const uploadedDocIds = documents.map((d: any) => d.documentDefId);
+          const requiredDocs = generateRequiredDocuments(config, true, uploadedDocIds); // Include optional documents
 
           // Create document definitions map
           const defsMap = new Map(ALL_DOCUMENTS.map((d) => [d.id, d]));
@@ -229,7 +230,9 @@ export const useDocumentVaultStore = create<DocumentVaultStore>()(
     },
 
     setConfig: async (config: DocumentVaultConfig) => {
-      const requiredDocs = generateRequiredDocuments(config, true); // Include optional documents
+      const { uploadedDocuments } = get();
+      const uploadedDocIds = uploadedDocuments.map(d => d.documentDefId);
+      const requiredDocs = generateRequiredDocuments(config, true, uploadedDocIds); // Include optional documents
 
       // Set config in store IMMEDIATELY — don't wait for DB
       // This ensures the upload modal always has a non-null config
@@ -374,7 +377,8 @@ export const useDocumentVaultStore = create<DocumentVaultStore>()(
         // Also regenerate requiredDocuments if config is available
         const { config } = get();
         if (config) {
-          const requiredDocs = generateRequiredDocuments(config, true);
+          const uploadedIds = updatedDocs.map(d => d.documentDefId);
+          const requiredDocs = generateRequiredDocuments(config, true, uploadedIds);
           set({ 
             uploadedDocuments: updatedDocs, 
             requiredDocuments: requiredDocs,

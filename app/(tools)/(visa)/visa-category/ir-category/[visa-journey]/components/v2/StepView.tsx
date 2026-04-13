@@ -56,7 +56,12 @@ import {
   Copy,
   Paperclip,
   Eye,
+  Shield,
+  Flag,
   MoreVertical,
+  MoreHorizontal,
+  Users,
+  Plus,
   Trash2,
   Truck,
 } from "lucide-react";
@@ -106,6 +111,7 @@ import { ALL_DOCUMENTS } from "@/lib/document-vault/document-definitions";
 import { useAuth } from "@/app/context/AuthContext";
 import PassportPhotoTool from "@/components/tools/PassportPhotoTool";
 import DocumentTranslationTool from "@/components/tools/DocumentTranslationTool";
+import SponsorshipCalculatorTool from "@/components/tools/SponsorshipCalculatorTool";
 
 interface SecurityQuestion {
   id: string;
@@ -244,15 +250,6 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
 
   // Sponsorship Calculator State
   const [isSponsorshipCalcOpen, setIsSponsorshipCalcOpen] = useState(false);
-  const [sponsorshipStepIdx, setSponsorshipStepIdx] = useState(0);
-  const [sponsorshipData, setSponsorshipData] = useState<any>({
-    agi: 0,
-    householdSize: 2,
-    needsHouseholdMember: false,
-    householdMemberCount: 0,
-    needsJointSponsor: false,
-    jointSponsorCount: 0,
-  });
   const sponsorshipResult = (state.metadata.sponsorshipResult as any) || null;
 
   // Selected scenario for Step 6 (Gather Financial Documents)
@@ -532,14 +529,6 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
     }
   };
 
-  const POVERTY_125_BASE = 25550;
-  const POVERTY_PER_EXTRA = 8225;
-  const getThreshold = (size: number) =>
-    POVERTY_125_BASE + Math.max(0, size - 2) * POVERTY_PER_EXTRA;
-
-  const I864_URL = "https://www.rahvana.com/visa-forms/i864/wizard";
-  const I864EZ_URL = "https://www.rahvana.com/visa-forms/i864ez/wizard";
-  const I864A_URL = "https://www.rahvana.com/visa-forms/i864a/wizard";
 
   const SCENARIOS: Record<string, any> = {
     "pet-only": {
@@ -2301,7 +2290,6 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                 </div>
                 <button
                   onClick={() => {
-                    setSponsorshipStepIdx(0);
                     setIsSponsorshipCalcOpen(true);
                   }}
                   className="inline-flex items-center justify-center gap-[10px] w-full p-[16px_28px] bg-[#3b7dd8] text-white border-none rounded-[12px] font-sans text-[15px] font-semibold cursor-pointer transition-all hover:bg-[#3b7dd8] hover:-translate-y-0.5 active:translate-y-0 shadow-[0_4px_20px_rgba(47,111,212,0.35)]"
@@ -2319,7 +2307,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
               <div className="text-[12px] font-semibold tracking-wide uppercase text-[#6b8097] mb-[12px]">
                 Your Affidavit of Support Plan
               </div>
-              {!sponsorshipResult ? (
+              {(!sponsorshipResult || Object.keys(sponsorshipResult).length === 0) ? (
                 <div className="bg-[#fafcff] border-[1.5px] border-dashed border-[#d0e4f7] rounded-[10px] p-[24px] text-center">
                   <div className="text-[14px] text-[#6b8097] leading-[1.6]">
                     Complete the sponsorship calculator to generate the correct
@@ -2329,36 +2317,39 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
               ) : (
                 <div className="flex flex-col gap-[28px]">
                   <div className="bg-[#fafcff] border-[1.5px] border-[#d0e4f7] rounded-[10px] p-[20px] animate-in fade-in duration-300">
-                    <div className="text-[10px] font-bold uppercase tracking-widest text-primary mb-[10px]">
-                      Sponsorship Plan Generated
+                    <div className="flex items-center justify-between mb-[14px]">
+                      <div className="text-[10px] font-bold uppercase tracking-widest text-primary">
+                        Sponsorship Plan Summary
+                      </div>
+                      <div className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase ${sponsorshipResult.isEligible ? "bg-emerald-100 text-emerald-700" : "bg-rose-100 text-rose-700"}`}>
+                        {sponsorshipResult.isEligible ? "Met" : "Shortfall"}
+                      </div>
                     </div>
                     <div className="flex flex-col gap-[6px]">
                       {[
                         [
-                          "Petitioner qualifies alone",
-                          sponsorshipResult.qualifies ? "Yes" : "No",
+                          "Household Size",
+                          `${sponsorshipResult?.householdSize || 0} persons`,
                         ],
                         [
-                          "Household members contributing income",
-                          sponsorshipResult.householdMemberCount || "None",
+                          "Required Income",
+                          `$${(sponsorshipResult?.requiredIncome || 0).toLocaleString()}`,
                         ],
                         [
-                          "Joint sponsors",
-                          sponsorshipResult.jointSponsorCount || "None",
+                          "Total Provided Income",
+                          `$${(sponsorshipResult?.totalIncome || 0).toLocaleString()}`,
                         ],
                         [
-                          "Forms required",
-                          sponsorshipResult.forms
-                            .map((f: any) => f.name.split("—")[0].trim())
-                            .join(", "),
+                          "Sponsorship Breakdown",
+                          `Primary ($${(sponsorshipResult?.primaryIncome || 0).toLocaleString()})${sponsorshipResult?.hmIncome ? ` + HM ($${sponsorshipResult.hmIncome.toLocaleString()})` : ""}${sponsorshipResult?.jsIncome ? ` + JS ($${sponsorshipResult.jsIncome.toLocaleString()})` : ""}`,
                         ],
                       ].map(([k, v], i) => (
                         <div
                           key={i}
-                          className="flex justify-between items-center py-[5px] border-b border-[#d0e4f7] last:border-b-0 text-[13px]"
+                          className="flex justify-between items-start py-[6px] border-b border-[#d0e4f7]/50 last:border-b-0 text-[13px]"
                         >
-                          <span className="text-[#3a4f63]">{k}</span>
-                          <span className="text-[#0c1b33] font-semibold">
+                          <span className="text-[#6b8097]">{k}</span>
+                          <span className="text-[#0c1b33] font-semibold text-right max-w-[60%]">
                             {v}
                           </span>
                         </div>
@@ -2367,48 +2358,52 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                   </div>
 
                   <div className="flex flex-col gap-[10px]">
-                    {sponsorshipResult.forms.map((f: any, i: number) => (
+                    <div className="text-[11px] font-bold text-[#6b8097] uppercase tracking-wider px-1">Required Forms</div>
+                    {sponsorshipResult?.forms?.map((f: any, i: number) => (
                       <div
                         key={i}
                         onClick={() =>
                           window.open(f.url, "_blank", "noopener,noreferrer")
                         }
-                        className="bg-[#fafcff] border-[1.5px] border-[#d0e4f7] rounded-[10px] p-[18px_20px] flex items-center gap-[14px] cursor-pointer transition-all hover:border-primary hover:shadow-[0_4px_16px_rgba(47,111,212,0.1)] hover:-translate-y-px"
+                        className="bg-white border-[1.5px] border-[#d0e4f7] rounded-[12px] p-[16px_18px] flex items-center gap-[14px] cursor-pointer transition-all hover:border-primary hover:shadow-[0_4px_16px_rgba(47,111,212,0.1)] hover:-translate-y-px"
                       >
-                        <div className="w-[36px] h-[36px] rounded-[9px] bg-primary/10 border border-primary/20 flex items-center justify-center shrink-0">
+                        <div className="w-[36px] h-[36px] rounded-[10px] bg-primary/10 border border-primary/20 flex items-center justify-center shrink-0">
                           <FileText
                             size={18}
                             className="text-primary"
-                            strokeWidth={1.7}
+                            strokeWidth={1.8}
                           />
                         </div>
                         <div className="flex-1">
-                          <div className="text-[14px] font-semibold text-[#0c1b33] mb-[2px]">
+                          <div className="text-[14px] font-bold text-[#0c1b33] mb-[1px]">
                             {f.name}
                           </div>
-                          <div className="text-[12px] text-[#6b8097] leading-[1.4]">
+                          <div className="text-[11px] text-[#6b8097] leading-[1.4]">
                             {f.sub}
                           </div>
                         </div>
-                        <button className="p-[8px_16px] bg-primary text-white border-none rounded-[8px] text-[12px] font-semibold shrink-0 transition-colors hover:bg-primary/80">
-                          Launch →
-                        </button>
+                        <div className="text-primary opacity-0 group-hover:opacity-100 transition-opacity">
+                           <ArrowRight size={14} />
+                        </div>
                       </div>
                     ))}
                   </div>
 
+                  <div className="bg-[#fef8e8]/50 border border-[#f0d98a]/30 rounded-lg p-3 text-[12px] text-[#8a6200] leading-relaxed">
+                    <strong>Note:</strong> You must include the most recent federal tax return for EVERY person listed above who is contributing income.
+                  </div>
+
                   <div className="text-[12px] text-[#6b8097] text-center">
-                    Form actions are based on your calculator result.{" "}
+                    Plan was generated on your response.{" "}
                     <button
                       onClick={() => {
-                        setSponsorshipStepIdx(0);
                         setIsSponsorshipCalcOpen(true);
                       }}
                       className="text-primary font-semibold hover:underline bg-transparent border-none p-0 cursor-pointer"
                     >
                       Rerun calculator
                     </button>{" "}
-                    if the sponsorship structure changes.
+                    if your circumstances change.
                   </div>
                 </div>
               )}
@@ -8018,490 +8013,17 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
         </button>
       </footer>
 
-      {/* Sponsorship Calculator Overlay (Step 5 Specific) */}
-      {isSponsorshipCalcOpen && (
-        <div className="fixed inset-0 bg-white z-[150] flex flex-col overflow-hidden animate-in slide-in-from-bottom-[18px] duration-[0.28s] ease-in-out font-sans">
-          {/* Topbar */}
-          <div className="flex items-center h-[64px] border-b border-[#d0e4f7] px-6 gap-4 shrink-0 bg-white">
-            <button
-              onClick={() => setIsSponsorshipCalcOpen(false)}
-              className="w-9 h-9 rounded-full bg-[#f4f7fb] border-none flex items-center justify-center text-[#3a4f63] hover:bg-primary/10 transition-all cursor-pointer outline-none focus:ring-2 focus:ring-primary"
-            >
-              <X size={16} strokeWidth={2} />
-            </button>
-            <div className="flex-1 h-[5px] bg-[#d0e4f7] rounded-[10px] overflow-hidden">
-              <div
-                className="h-full bg-linear-to-r from-primary to-primary/70 transition-all duration-500"
-                style={{
-                  width: `${Math.round(((sponsorshipStepIdx + 1) / 7) * 100)}%`,
-                }}
-              />
-            </div>
-            <div className="text-[12px] font-medium text-[#6b8097] whitespace-nowrap shrink-0">
-              {sponsorshipStepIdx + 1} / 7
-            </div>
-          </div>
-
-          {/* Body */}
-          <div className="flex-1 overflow-y-auto bg-white p-[48px_24px_40px] flex flex-col items-center">
-            <div className="w-full max-w-[560px] flex flex-col">
-              {(() => {
-                const step = sponsorshipStepIdx;
-                const req = getThreshold(sponsorshipData.householdSize);
-                const qualifies = sponsorshipData.agi >= req;
-                const pct =
-                  sponsorshipData.agi > 0
-                    ? Math.round((sponsorshipData.agi / req) * 100)
-                    : 0;
-
-                if (step === 0) {
-                  return (
-                    <div className="animate-in fade-in slide-in-from-right-4 duration-300">
-                      <div className="text-[11px] font-semibold tracking-widest uppercase text-primary mb-4">
-                        Sponsorship Calculator · Step 1 of 7
-                      </div>
-                      <h2 className="text-[clamp(22px,3.5vw,28px)]  font-black text-[#0c1b33] mb-2 leading-[1.3]">
-                        Welcome to the Sponsorship Calculator
-                      </h2>
-                      <p className="text-[14px] text-[#3a4f63] leading-[1.7] mb-6">
-                        This tool determines whether the petitioner qualifies as
-                        the sole sponsor or whether additional sponsorship —
-                        through household members or joint sponsors — is needed.
-                        Your result generates the exact affidavit forms
-                        required.
-                      </p>
-                      <div className="bg-[#e8f1fb] border border-[#d0e4f7] rounded-[10px] p-[14px_16px] mb-6">
-                        <p className="text-[13px] text-[#3a4f63] leading-[1.6]">
-                          You will need your most recent federal tax return
-                          (Form 1040) to find your Adjusted Gross Income (AGI).
-                        </p>
-                      </div>
-                      <div className="flex gap-[10px]">
-                        <button
-                          onClick={() => setSponsorshipStepIdx(1)}
-                          className="flex-1 p-[14px_22px] bg-primary text-white border-none rounded-[10px] text-[15px] font-semibold cursor-pointer transition-all hover:bg-primary/80 hover:-translate-y-px"
-                        >
-                          Get Started →
-                        </button>
-                      </div>
-                    </div>
-                  );
-                }
-
-                if (step === 1) {
-                  return (
-                    <div className="animate-in fade-in slide-in-from-right-4 duration-300">
-                      <div className="text-[11px] font-semibold tracking-widest uppercase text-primary mb-4">
-                        Sponsorship Calculator · Step 2 of 7
-                      </div>
-                      <h2 className="text-[clamp(22px,3.5vw,28px)]  font-black text-[#0c1b33] mb-2 leading-[1.3]">
-                        Find your Adjusted Gross Income (AGI)
-                      </h2>
-                      <div className="bg-[#e8f1fb] border border-[#d0e4f7] rounded-[10px] p-[14px_16px] mb-6">
-                        <p className="text-[13px] text-[#3a4f63] leading-[1.6]">
-                          <strong>What is AGI?</strong> Adjusted Gross Income is
-                          your total income minus specific deductions. You can
-                          find it on Line 11 of IRS Form 1040.
-                        </p>
-                      </div>
-                      <div className="bg-white border-[1.5px] border-[#d0e4f7] rounded-[10px] p-[20px] mb-6">
-                        <label className="text-[12px] font-semibold uppercase tracking-[0.04em] text-[#6b8097] mb-2 block">
-                          Petitioner&apos;s Most Recent AGI
-                        </label>
-                        <input
-                          type="number"
-                          value={sponsorshipData.agi || ""}
-                          onChange={(e) =>
-                            setSponsorshipData({
-                              ...sponsorshipData,
-                              agi: parseInt(e.target.value) || 0,
-                            })
-                          }
-                          className="w-full p-[12px_14px] border-[1.5px] border-[#d0e4f7] rounded-[10px] text-[15px] text-[#0c1b33] outline-none focus:border-primary focus:ring-4 focus:ring-primary/12 transition-all"
-                          placeholder="e.g. 45000"
-                        />
-                        <p className="text-[12px] text-[#6b8097] mt-2 leading-[1.5]">
-                          Enter the dollar amount from your most recent federal
-                          tax return.
-                        </p>
-                      </div>
-                      <div className="flex gap-[10px]">
-                        <button
-                          onClick={() => setSponsorshipStepIdx(0)}
-                          className="p-[13px_22px] bg-transparent text-[#3a4f63] border-[1.5px] border-[#d0e4f7] rounded-[10px] font-medium transition-all hover:border-[#3a4f63]"
-                        >
-                          ← Back
-                        </button>
-                        <button
-                          onClick={() => setSponsorshipStepIdx(2)}
-                          className="flex-1 p-[14px_22px] bg-primary text-white border-none rounded-[10px] text-[15px] font-semibold transition-all hover:bg-primary/80 hover:-translate-y-px"
-                        >
-                          Continue →
-                        </button>
-                      </div>
-                    </div>
-                  );
-                }
-
-                if (step === 2) {
-                  return (
-                    <div className="animate-in fade-in slide-in-from-right-4 duration-300">
-                      <div className="text-[11px] font-semibold tracking-widest uppercase text-primary mb-4">
-                        Sponsorship Calculator · Step 3 of 7
-                      </div>
-                      <h2 className="text-[clamp(22px,3.5vw,28px)]  font-black text-[#0c1b33] mb-2 leading-[1.3]">
-                        What is your household size?
-                      </h2>
-                      <div className="bg-[#e8f1fb] border border-[#d0e4f7] rounded-[10px] p-[14px_16px] mb-6">
-                        <p className="text-[13px] text-[#3a4f63] leading-[1.6]">
-                          Include the petitioner, the beneficiary, and any
-                          dependents.
-                        </p>
-                      </div>
-                      <div className="bg-white border-[1.5px] border-[#d0e4f7] rounded-[10px] p-[20px] mb-6">
-                        <label className="text-[12px] font-semibold uppercase tracking-[0.04em] text-[#6b8097] mb-2 block">
-                          Total Household Size
-                        </label>
-                        <input
-                          type="number"
-                          min="2"
-                          value={sponsorshipData.householdSize || 2}
-                          onChange={(e) =>
-                            setSponsorshipData({
-                              ...sponsorshipData,
-                              householdSize: Math.max(
-                                2,
-                                parseInt(e.target.value) || 2,
-                              ),
-                            })
-                          }
-                          className="w-full p-[12px_14px] border-[1.5px] border-[#d0e4f7] rounded-[10px] text-[15px] text-[#0c1b33] outline-none focus:border-primary focus:ring-4 focus:ring-primary/12 transition-all"
-                        />
-                      </div>
-                      <div className="flex gap-[10px]">
-                        <button
-                          onClick={() => setSponsorshipStepIdx(1)}
-                          className="p-[13px_22px] bg-transparent text-[#3a4f63] border-[1.5px] border-[#d0e4f7] rounded-[10px] font-medium transition-all hover:border-[#3a4f63]"
-                        >
-                          ← Back
-                        </button>
-                        <button
-                          onClick={() => setSponsorshipStepIdx(3)}
-                          className="flex-1 p-[14px_22px] bg-primary text-white border-none rounded-[10px] text-[15px] font-semibold transition-all hover:bg-primary/80 hover:-translate-y-px"
-                        >
-                          Continue →
-                        </button>
-                      </div>
-                    </div>
-                  );
-                }
-
-                if (step === 3) {
-                  return (
-                    <div className="animate-in fade-in slide-in-from-right-4 duration-300">
-                      <div className="text-[11px] font-semibold tracking-widest uppercase text-primary mb-4">
-                        Sponsorship Calculator · Step 4 of 7
-                      </div>
-                      <h2 className="text-[clamp(22px,3.5vw,28px)]  font-black text-[#0c1b33] mb-4 leading-[1.3]">
-                        Sponsorship qualification check
-                      </h2>
-                      <div
-                        className={`bg-[#e8f5ef] border border-[#a8d9be] rounded-[10px] p-[18px_20px] mb-6 ${qualifies ? "bg-[#e8f5ef] border-[#a8d9be]" : "bg-[#fef8e8] border-[#f0d98a]"}`}
-                      >
-                        <div
-                          className={`text-[10px] font-bold uppercase tracking-widest mb-2 ${qualifies ? "text-[#15744f]" : "text-[#8a6200]"}`}
-                        >
-                          {qualifies
-                            ? "Petitioner qualifies alone"
-                            : "Additional sponsorship may be needed"}
-                        </div>
-                        <div className="text-[20px]  text-[#0c1b33] mb-1.5">
-                          AGI: ${sponsorshipData.agi.toLocaleString()}{" "}
-                          &nbsp;·&nbsp; Threshold: ${req.toLocaleString()}
-                        </div>
-                        <div className="text-[13px] text-[#3a4f63] leading-[1.55]">
-                          {qualifies
-                            ? `AGI is ${pct}% of the threshold — petitioner qualifies as sole sponsor.`
-                            : `AGI is ${pct}% of the ${req.toLocaleString()} threshold. Household member income or a joint sponsor may be needed.`}
-                        </div>
-                      </div>
-                      <div className="flex gap-[10px]">
-                        <button
-                          onClick={() => setSponsorshipStepIdx(2)}
-                          className="p-[13px_22px] bg-transparent text-[#3a4f63] border-[1.5px] border-[#d0e4f7] rounded-[10px] font-medium transition-all hover:border-[#3a4f63]"
-                        >
-                          ← Back
-                        </button>
-                        <button
-                          onClick={() => setSponsorshipStepIdx(4)}
-                          className="flex-1 p-[14px_22px] bg-primary text-white border-none rounded-[10px] text-[15px] font-semibold transition-all hover:bg-primary/80 hover:-translate-y-px"
-                        >
-                          Continue →
-                        </button>
-                      </div>
-                    </div>
-                  );
-                }
-
-                if (step === 4) {
-                  return (
-                    <div className="animate-in fade-in slide-in-from-right-4 duration-300">
-                      <div className="text-[11px] font-semibold tracking-widest uppercase text-primary mb-4">
-                        Sponsorship Calculator · Step 5 of 7
-                      </div>
-                      <h2 className="text-[clamp(22px,3.5vw,28px)]  font-black text-[#0c1b33] mb-2 leading-[1.3]">
-                        Is household member income being used?
-                      </h2>
-                      <p className="text-[14px] text-[#3a4f63] leading-[1.7] mb-6">
-                        A household member can contribute income to help meet
-                        the threshold. This requires Form I-864A.
-                      </p>
-                      <div className="bg-white border-[1.5px] border-[#d0e4f7] rounded-[10px] p-[20px] mb-6">
-                        <label className="text-[12px] font-semibold uppercase tracking-[0.04em] text-[#6b8097] mb-2 block">
-                          Using Household Member Income?
-                        </label>
-                        <select
-                          value={
-                            sponsorshipData.needsHouseholdMember ? "yes" : "no"
-                          }
-                          onChange={(e) =>
-                            setSponsorshipData({
-                              ...sponsorshipData,
-                              needsHouseholdMember: e.target.value === "yes",
-                            })
-                          }
-                          className="w-full p-[12px_14px] border-[1.5px] border-[#d0e4f7] rounded-[10px] text-[15px] bg-white text-[#0c1b33] outline-none transition-all"
-                        >
-                          <option value="no">
-                            No — petitioner income only
-                          </option>
-                          <option value="yes">
-                            Yes — including household member income
-                          </option>
-                        </select>
-                        {sponsorshipData.needsHouseholdMember && (
-                          <div className="mt-4 animate-in fade-in zoom-in-95 duration-200">
-                            <label className="text-[12px] font-semibold uppercase tracking-[0.04em] text-[#6b8097] mb-2 block">
-                              Number of household members
-                            </label>
-                            <input
-                              type="number"
-                              min="1"
-                              value={sponsorshipData.householdMemberCount || 1}
-                              onChange={(e) =>
-                                setSponsorshipData({
-                                  ...sponsorshipData,
-                                  householdMemberCount: Math.max(
-                                    1,
-                                    parseInt(e.target.value) || 1,
-                                  ),
-                                })
-                              }
-                              className="w-full p-[12px_14px] border-[1.5px] border-[#d0e4f7] rounded-[10px] text-[15px] text-[#0c1b33] outline-none transition-all"
-                            />
-                          </div>
-                        )}
-                      </div>
-                      <div className="flex gap-[10px]">
-                        <button
-                          onClick={() => setSponsorshipStepIdx(3)}
-                          className="p-[13px_22px] bg-transparent text-[#3a4f63] border-[1.5px] border-[#d0e4f7] rounded-[10px] font-medium transition-all hover:border-[#3a4f63]"
-                        >
-                          ← Back
-                        </button>
-                        <button
-                          onClick={() => setSponsorshipStepIdx(5)}
-                          className="flex-1 p-[14px_22px] bg-primary text-white border-none rounded-[10px] text-[15px] font-semibold transition-all hover:bg-primary/80 hover:-translate-y-px"
-                        >
-                          Continue →
-                        </button>
-                      </div>
-                    </div>
-                  );
-                }
-
-                if (step === 5) {
-                  return (
-                    <div className="animate-in fade-in slide-in-from-right-4 duration-300">
-                      <div className="text-[11px] font-semibold tracking-widest uppercase text-primary mb-4">
-                        Sponsorship Calculator · Step 6 of 7
-                      </div>
-                      <h2 className="text-[clamp(22px,3.5vw,28px)]  font-black text-[#0c1b33] mb-2 leading-[1.3]">
-                        Is a joint sponsor needed?
-                      </h2>
-                      <p className="text-[14px] text-[#3a4f63] leading-[1.7] mb-6">
-                        A joint sponsor independently meets the income threshold
-                        and files their own I-864.
-                      </p>
-                      <div className="bg-white border-[1.5px] border-[#d0e4f7] rounded-[10px] p-[20px] mb-6">
-                        <label className="text-[12px] font-semibold uppercase tracking-[0.04em] text-[#6b8097] mb-2 block">
-                          Using a joint sponsor?
-                        </label>
-                        <select
-                          value={
-                            sponsorshipData.needsJointSponsor ? "yes" : "no"
-                          }
-                          onChange={(e) =>
-                            setSponsorshipData({
-                              ...sponsorshipData,
-                              needsJointSponsor: e.target.value === "yes",
-                            })
-                          }
-                          className="w-full p-[12px_14px] border-[1.5px] border-[#d0e4f7] rounded-[10px] text-[15px] bg-white text-[#0c1b33] outline-none transition-all"
-                        >
-                          <option value="no">No</option>
-                          <option value="yes">Yes</option>
-                        </select>
-                        {sponsorshipData.needsJointSponsor && (
-                          <div className="mt-4 animate-in fade-in zoom-in-95 duration-200">
-                            <label className="text-[12px] font-semibold uppercase tracking-[0.04em] text-[#6b8097] mb-2 block">
-                              Number of joint sponsors
-                            </label>
-                            <select
-                              value={sponsorshipData.jointSponsorCount || 1}
-                              onChange={(e) =>
-                                setSponsorshipData({
-                                  ...sponsorshipData,
-                                  jointSponsorCount:
-                                    parseInt(e.target.value) || 1,
-                                })
-                              }
-                              className="w-full p-[12px_14px] border-[1.5px] border-[#d0e4f7] rounded-[10px] text-[15px] bg-white text-[#0c1b33] outline-none transition-all"
-                            >
-                              <option value="1">1 joint sponsor</option>
-                              <option value="2">2 joint sponsors</option>
-                            </select>
-                          </div>
-                        )}
-                      </div>
-                      <div className="flex gap-[10px]">
-                        <button
-                          onClick={() => setSponsorshipStepIdx(4)}
-                          className="p-[13px_22px] bg-transparent text-[#3a4f63] border-[1.5px] border-[#d0e4f7] rounded-[10px] font-medium transition-all hover:border-[#3a4f63]"
-                        >
-                          ← Back
-                        </button>
-                        <button
-                          onClick={() => setSponsorshipStepIdx(6)}
-                          className="flex-1 p-[14px_22px] bg-primary text-white border-none rounded-[10px] text-[15px] font-semibold transition-all hover:bg-primary/80 hover:-translate-y-px"
-                        >
-                          Continue →
-                        </button>
-                      </div>
-                    </div>
-                  );
-                }
-
-                if (step === 6) {
-                  const forms: any[] = [];
-                  const formNames: string[] = [];
-                  if (
-                    !sponsorshipData.needsHouseholdMember &&
-                    !sponsorshipData.needsJointSponsor &&
-                    sponsorshipData.agi >= req
-                  ) {
-                    forms.push({
-                      name: "Form I-864EZ — Petitioner",
-                      sub: "Simplified affidavit — petitioner qualifies alone with wage/salary income",
-                      url: I864EZ_URL,
-                    });
-                    formNames.push("I-864EZ (Petitioner)");
-                  } else {
-                    forms.push({
-                      name: "Form I-864 — Petitioner",
-                      sub: "Full affidavit of support for the petitioner",
-                      url: I864_URL,
-                    });
-                    formNames.push("I-864 (Petitioner)");
-                  }
-                  for (
-                    let i = 1;
-                    i <= (sponsorshipData.jointSponsorCount || 0);
-                    i++
-                  ) {
-                    forms.push({
-                      name: `Form I-864 — Joint Sponsor ${i}`,
-                      sub: `Joint sponsor ${i} files an independent full affidavit`,
-                      url: I864_URL,
-                    });
-                    formNames.push(`I-864 (Joint Sponsor ${i})`);
-                  }
-                  for (
-                    let i = 1;
-                    i <= (sponsorshipData.householdMemberCount || 0);
-                    i++
-                  ) {
-                    forms.push({
-                      name: `Form I-864A — Household Member ${i}`,
-                      sub: `Household member ${i} contributes income to the petitioner&apos;s sponsorship`,
-                      url: I864A_URL,
-                    });
-                    formNames.push(`I-864A (Household Member ${i})`);
-                  }
-
-                  return (
-                    <div className="animate-in fade-in slide-in-from-right-4 duration-300">
-                      <div className="text-[11px] font-semibold tracking-widest uppercase text-primary mb-4">
-                        Sponsorship Calculator · Step 7 of 7
-                      </div>
-                      <h2 className="text-[clamp(22px,3.5vw,28px)]  font-black text-[#0c1b33] mb-4 leading-[1.3]">
-                        Your sponsorship plan
-                      </h2>
-                      <div className="bg-[#e8f5ef] border border-[#a8d9be] rounded-[10px] p-[18px_20px] mb-6">
-                        <div className="text-[10px] font-bold uppercase tracking-widest text-[#15744f] mb-2">
-                          Sponsorship Plan
-                        </div>
-                        <div className="text-[20px]  text-[#0c1b33] mb-1.5">
-                          {forms.length} form{forms.length > 1 ? "s" : ""}{" "}
-                          required
-                        </div>
-                        <div className="text-[13px] text-[#3a4f63] leading-[1.55]">
-                          {formNames.join(" · ")}
-                        </div>
-                      </div>
-                      <div className="flex gap-[10px]">
-                        <button
-                          onClick={() => setSponsorshipStepIdx(5)}
-                          className="p-[13px_22px] bg-transparent text-[#3a4f63] border-[1.5px] border-[#d0e4f7] rounded-[10px] font-medium transition-all hover:border-[#3a4f63]"
-                        >
-                          ← Back
-                        </button>
-                        <button
-                          onClick={() => {
-                            const result = {
-                              agi: sponsorshipData.agi,
-                              householdSize: sponsorshipData.householdSize,
-                              qualifies: sponsorshipData.agi >= req,
-                              needsHouseholdMember:
-                                sponsorshipData.needsHouseholdMember,
-                              householdMemberCount:
-                                sponsorshipData.householdMemberCount,
-                              needsJointSponsor:
-                                sponsorshipData.needsJointSponsor,
-                              jointSponsorCount:
-                                sponsorshipData.jointSponsorCount,
-                              forms,
-                            };
-                            actions.updateMetadata({
-                              sponsorshipResult: result,
-                            });
-                            setIsSponsorshipCalcOpen(false);
-                            if (!isCompleted)
-                              actions.toggleComplete("step_2_5");
-                          }}
-                          className="flex-1 p-[14px_22px] bg-[#15744f] text-white border-none rounded-[10px] text-[15px] font-semibold transition-all hover:bg-[#0e5c3c] hover:-translate-y-px"
-                        >
-                          Return to Affidavit Step →
-                        </button>
-                      </div>
-                    </div>
-                  );
-                }
-              })()}
-            </div>
-          </div>
-        </div>
-      )}
+      {/* Sponsorship Calculator Tool Overlay */}
+      <SponsorshipCalculatorTool
+        isOpen={isSponsorshipCalcOpen}
+        onClose={() => setIsSponsorshipCalcOpen(false)}
+        initialData={sponsorshipResult?.raw}
+        onSave={(result) => {
+          actions.updateMetadata({ sponsorshipResult: result });
+          setIsSponsorshipCalcOpen(false);
+          if (!isCompleted) actions.toggleComplete("step_2_5");
+        }}
+      />
 
       {/* Global Modals */}
       <CredentialFormModal
