@@ -348,6 +348,42 @@ export function useWizard(options: UseWizardOptions = {}) {
         return;
       }
 
+      const isCompleted = state.completedSteps.has(stepKey);
+
+      // ENFORCE SEQUENTIAL COMPLETION (ONLY when marking as completed)
+      if (!isCompleted) {
+        const chapters = activeRoadmap.chapters || activeRoadmap.stages || [];
+        const filingMethod = state.metadata?.filingMethod || state.filingType || 'online';
+        
+        // 1. Get ALL active steps in the correct chronological order
+        const allActiveSteps: any[] = [];
+        chapters.forEach((chapter: any) => {
+          const activeSteps = (chapter.steps || []).filter((s: any) => {
+            const branch = s.branch;
+            if (!branch || branch === 'both') return true;
+            return branch === filingMethod;
+          });
+          allActiveSteps.push(...activeSteps);
+        });
+
+        // 2. Find target step index
+        const targetIdx = allActiveSteps.findIndex(s => (s.step_key || s.id) === stepKey);
+
+        // 3. If found, check all preceding steps
+        if (targetIdx > 0) {
+          const previousSteps = allActiveSteps.slice(0, targetIdx);
+          const firstIncomplete = previousSteps.find(s => !state.completedSteps.has(s.step_key || s.id));
+          
+          if (firstIncomplete) {
+            toast.error(`Previous step pending: "${firstIncomplete.step_name}"`, {
+              description: "Steps must be completed in order. Please finish the preceding tasks first.",
+              duration: 4000
+            });
+            return; // HARD BLOCK
+          }
+        }
+      }
+
       if (!state.stepMap[stepKey]) {
         console.warn("[useWizard] toggleComplete: stepKey not found in stepMap", {
           stepKey,
@@ -358,7 +394,6 @@ export function useWizard(options: UseWizardOptions = {}) {
       }
 
       const stepUuid = state.stepMap[stepKey];
-      const isCompleted = state.completedSteps.has(stepKey);
 
       // Optimistic update — instant UI feedback regardless of queue state
       setState((prev) => {

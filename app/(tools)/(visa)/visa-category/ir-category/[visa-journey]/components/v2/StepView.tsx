@@ -1482,6 +1482,12 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
   const globalIdx = allActiveSteps.findIndex(
     (s) => (s.step_key || (s as any).id) === sId,
   );
+
+  const prevStep = globalIdx > 0 ? allActiveSteps[globalIdx - 1] : null;
+  const nextStep =
+    globalIdx < allActiveSteps.length - 1
+      ? allActiveSteps[globalIdx + 1]
+      : null;
   const localIdx = activeStepsInChapter.findIndex(
     (s: any) => (s.step_key || s.id) === sId,
   );
@@ -1491,11 +1497,57 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
     [data, state.currentStage, state],
   );
 
-  const prevStep = globalIdx > 0 ? allActiveSteps[globalIdx - 1] : null;
-  const nextStep =
-    globalIdx < allActiveSteps.length - 1
-      ? allActiveSteps[globalIdx + 1]
-      : null;
+  const handleToggleComplete = (stepKey?: string) => {
+    const filingMethod = state.metadata?.filingMethod || state.filingType || 'online';
+    const allActive = getAllActiveSteps(data, filingMethod);
+    const targetSKey = stepKey || sId || currentStep?.step_key;
+
+    if (!targetSKey) return;
+
+    const targetIdx = allActive.findIndex(
+      (s) => (s.step_key || (s as any).id) === targetSKey,
+    );
+
+    // If step is found in active sequence, enforce chronological order
+    if (targetIdx !== -1) {
+      const previousSteps = allActive.slice(0, targetIdx);
+      const incompleteStep = previousSteps.find(
+        (s) => !state.completedSteps.has(s.step_key || (s as any).id),
+      );
+
+      if (incompleteStep) {
+        toast.error(
+          `Action restricted: Complete previous steps first: "${incompleteStep.step_name}"`,
+          {
+            description: "You cannot mark this step as read until all preceding steps are finished in order.",
+            duration: 5000,
+          }
+        );
+        return; // HARD BLOCK
+      }
+    } else {
+      // Fallback for steps not in the active list (e.g. branch-specific)
+      const allPossibleSteps = (data.chapters || (data as any).stages).flatMap((c: any) => c.steps);
+      const fallbackIdx = allPossibleSteps.findIndex((s: any) => (s.step_key || s.id) === targetSKey);
+      
+      if (fallbackIdx > 0) {
+        const previousSteps = allPossibleSteps.slice(0, fallbackIdx);
+        const incompleteStep = previousSteps.find(s => !state.completedSteps.has(s.step_key || s.id));
+        if (incompleteStep) {
+           toast.error(`Sequence Error: Please finish previous steps first.`);
+           return;
+        }
+      }
+    }
+
+    actions.toggleComplete(targetSKey);
+  };
+
+  // Create a safe wrapper for actions to enforce sequence globally
+  const safeActions = useMemo(() => ({
+    ...actions,
+    toggleComplete: (stepKey: string) => handleToggleComplete(stepKey),
+  }), [actions, handleToggleComplete]);
 
   // Use the percentage from journeyHelpers to match ChapterView
   const progressPct = chapterProg.pct;
@@ -1609,10 +1661,10 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
       await fetchCredentials();
 
       if (data.portalType === "USCIS" && sId === "step_1_6") {
-        if (!isCompleted) actions.toggleComplete("step_1_6");
+        if (!isCompleted) handleToggleComplete("step_1_6");
       }
       if (data.portalType === "NVC" && sId === "step_2_1") {
-        if (!isCompleted) actions.toggleComplete("step_2_1");
+        if (!isCompleted) handleToggleComplete("step_2_1");
       }
     } catch {
       toast.error("Failed to save credentials. Please try again.");
@@ -1829,9 +1881,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
     setShowQuiz(false);
   };
 
-  const handleToggleComplete = () => {
-    actions.toggleComplete(currentStep.step_key || sId);
-  };
+  // handleToggleComplete logic moved up and wrapped in safeActions for global access
 
   const handleMarkDocReviewed = (docId: string) => {
     const next = { ...civilDocsStatus, [docId]: "reviewed" };
@@ -1849,7 +1899,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
           (s) => s === "reviewed",
         ).length;
         if (reviewedCount >= total) {
-          if (!isCompleted) handleToggleComplete();
+          if (!isCompleted) handleToggleComplete("step_2_4");
         }
       }
     }
@@ -7572,7 +7622,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                 quest={currentStep.quest_data as unknown as QuestSuite}
                 onComplete={handleToggleComplete}
                 state={state}
-                actions={actions}
+                actions={safeActions}
               />
             </div>
           ) : currentStep.step_type === "tool" ? (
@@ -8265,7 +8315,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
         onSave={(result) => {
           actions.updateMetadata({ sponsorshipResult: result });
           setIsSponsorshipCalcOpen(false);
-          if (!isCompleted) actions.toggleComplete("step_2_5");
+          if (!isCompleted) handleToggleComplete("step_2_5");
         }}
       />
 
