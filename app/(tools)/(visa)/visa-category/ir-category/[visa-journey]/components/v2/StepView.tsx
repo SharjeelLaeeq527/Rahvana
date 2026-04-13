@@ -45,24 +45,26 @@ import {
   HardDrive,
   FileText,
   ClipboardList,
-  Users,
   ChevronLeft,
   ChevronRight,
   Calendar,
   Activity,
   Info,
-  PartyPopper,
   Briefcase,
   Syringe,
   Hospital,
   Copy,
   Paperclip,
-  Heart,
   Eye,
+  Shield,
+  Flag,
   MoreVertical,
+  MoreHorizontal,
+  Users,
+  Plus,
   Trash2,
   Truck,
-  } from "lucide-react";
+} from "lucide-react";
 
 import {
   DropdownMenu,
@@ -89,7 +91,6 @@ import { USCIS_TUTORIAL_STEPS } from "./UscisTutorialData";
 import Image from "next/image";
 import Link from "next/link";
 import {
-  HOUSEHOLD_TUTORIAL_STEPS,
   HOUSEHOLD_GUIDE_CONTENT,
 } from "./HouseholdTutorialData";
 import {
@@ -108,6 +109,9 @@ import { useDocumentVaultStore } from "@/lib/document-vault/store";
 import { DocumentUploadModal } from "@/app/components/document-vault/DocumentUploadModal";
 import { ALL_DOCUMENTS } from "@/lib/document-vault/document-definitions";
 import { useAuth } from "@/app/context/AuthContext";
+import PassportPhotoTool from "@/components/tools/PassportPhotoTool";
+import DocumentTranslationTool from "@/components/tools/DocumentTranslationTool";
+import SponsorshipCalculatorTool from "@/components/tools/SponsorshipCalculatorTool";
 
 interface SecurityQuestion {
   id: string;
@@ -169,7 +173,10 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
     "doc" | "hh" | "financial" | null
   >(null);
   const [selectedGuideId, setSelectedGuideId] = useState<string | null>(null);
-  const [documentToDelete, setDocumentToDelete] = useState<{ id: string; name: string } | null>(null);
+  const [documentToDelete, setDocumentToDelete] = useState<{
+    id: string;
+    name: string;
+  } | null>(null);
 
   // Filing Quiz States
   const [showQuiz, setShowQuiz] = useState(false);
@@ -243,15 +250,6 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
 
   // Sponsorship Calculator State
   const [isSponsorshipCalcOpen, setIsSponsorshipCalcOpen] = useState(false);
-  const [sponsorshipStepIdx, setSponsorshipStepIdx] = useState(0);
-  const [sponsorshipData, setSponsorshipData] = useState<any>({
-    agi: 0,
-    householdSize: 2,
-    needsHouseholdMember: false,
-    householdMemberCount: 0,
-    needsJointSponsor: false,
-    jointSponsorCount: 0,
-  });
   const sponsorshipResult = (state.metadata.sponsorshipResult as any) || null;
 
   // Selected scenario for Step 6 (Gather Financial Documents)
@@ -417,7 +415,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
       }
     }
   }, [sponsorshipResult]);
-  
+
   // Sync household document status with metadata
   useEffect(() => {
     if (state.metadata.hhDocsStatus) {
@@ -531,14 +529,6 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
     }
   };
 
-  const POVERTY_125_BASE = 25550;
-  const POVERTY_PER_EXTRA = 8225;
-  const getThreshold = (size: number) =>
-    POVERTY_125_BASE + Math.max(0, size - 2) * POVERTY_PER_EXTRA;
-
-  const I864_URL = "https://www.rahvana.com/visa-forms/i864/wizard";
-  const I864EZ_URL = "https://www.rahvana.com/visa-forms/i864ez/wizard";
-  const I864A_URL = "https://www.rahvana.com/visa-forms/i864a/wizard";
 
   const SCENARIOS: Record<string, any> = {
     "pet-only": {
@@ -1045,313 +1035,313 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
     return items;
   };
 
-  const renderHouseholdBuilder = () => {
-    const rawItems = getHhDocItems(hhCount, hhRelationships);
-    // Deduplicate items based on title to avoid duplicate cards (e.g. Petitioner Birth Cert for multiple members)
-    const allItems = rawItems.filter(
-      (item, index, self) =>
-        index === self.findIndex((t) => t.title === item.title),
-    );
-    const total = allItems.length;
-    const reviewed = allItems.filter(
-      (item) => hhDocsStatus[item.id] === "reviewed",
-    ).length;
-    const progressPct = total > 0 ? Math.round((reviewed / total) * 100) : 0;
+  // const renderHouseholdBuilder = () => {
+  //   const rawItems = getHhDocItems(hhCount, hhRelationships);
+  //   // Deduplicate items based on title to avoid duplicate cards (e.g. Petitioner Birth Cert for multiple members)
+  //   const allItems = rawItems.filter(
+  //     (item, index, self) =>
+  //       index === self.findIndex((t) => t.title === item.title),
+  //   );
+  //   const total = allItems.length;
+  //   const reviewed = allItems.filter(
+  //     (item) => hhDocsStatus[item.id] === "reviewed",
+  //   ).length;
+  //   const progressPct = total > 0 ? Math.round((reviewed / total) * 100) : 0;
 
-    return (
-      <div className="flex flex-col mt-4">
-        <div className="flex gap-[7px] flex-wrap mb-7">
-          <span className="text-[11px] font-semibold tracking-wider uppercase px-3 py-[2px] rounded-full bg-[#f3f0fb] text-[#4a2d8a] border border-[#c9bef2]">
-            CEAC Portal
-          </span>
-          <span className="text-[11px] font-semibold tracking-wider uppercase px-3 py-[2px] rounded-full bg-[#fff7ed] text-[#b45309] border border-[#fed7aa]">
-            Financial Sponsorship
-          </span>
-          <span className="text-[11px] font-semibold tracking-wider uppercase px-3 py-[2px] rounded-full bg-[#e8f5ef] text-[#15744f] border border-[#a8d9be]">
-            Interactive Checklist
-          </span>
-        </div>
+  //   return (
+  //     <div className="flex flex-col mt-4">
+  //       <div className="flex gap-[7px] flex-wrap mb-7">
+  //         <span className="text-[11px] font-semibold tracking-wider uppercase px-3 py-[2px] rounded-full bg-[#f3f0fb] text-[#4a2d8a] border border-[#c9bef2]">
+  //           CEAC Portal
+  //         </span>
+  //         <span className="text-[11px] font-semibold tracking-wider uppercase px-3 py-[2px] rounded-full bg-[#fff7ed] text-[#b45309] border border-[#fed7aa]">
+  //           Financial Sponsorship
+  //         </span>
+  //         <span className="text-[11px] font-semibold tracking-wider uppercase px-3 py-[2px] rounded-full bg-[#e8f5ef] text-[#15744f] border border-[#a8d9be]">
+  //           Interactive Checklist
+  //         </span>
+  //       </div>
 
-        {/* DISTINCTION CARDS */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-7">
-          <div className="bg-[#e8f1fb] border-[1.5px] border-[#d0e4f7] rounded-[16px] p-4.5">
-            <div className="text-[10px] font-bold tracking-widest uppercase text-[#2d4a6e] mb-1.5">
-              Joint Sponsor
-            </div>
-            <div className="text-[15px] font-semibold text-[#0c1b33] mb-1.5 leading-tight">
-              Added in CEAC, no proof checklist
-            </div>
-            <div className="text-[13px] text-[#3a4f63] leading-relaxed">
-              A joint sponsor is an independent U.S. citizen or LPR who sponsors
-              separately. Added through the CEAC sponsorship flow —{" "}
-              <strong>no relationship-proof documents</strong> are typically
-              required from them.
-            </div>
-          </div>
-          <div className="bg-[#e8f5ef] border-[1.5px] border-[#a8d9be] rounded-[16px] p-4.5">
-            <div className="text-[10px] font-bold tracking-widest uppercase text-[#15744f] mb-1.5">
-              Household Member
-            </div>
-            <div className="text-[15px] font-semibold text-[#0e5c3c] mb-1.5 leading-tight">
-              Added in CEAC + relationship proof required
-            </div>
-            <div className="text-[13px] text-[#3a4f63] leading-relaxed">
-              A household member&apos;s income is used alongside the
-              petitioner&apos;s. Added through CEAC — and also requires{" "}
-              <strong>relationship-proof documentation</strong> showing their
-              connection to the sponsoring household.
-            </div>
-          </div>
-        </div>
+  //       {/* DISTINCTION CARDS */}
+  //       <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-7">
+  //         <div className="bg-[#e8f1fb] border-[1.5px] border-[#d0e4f7] rounded-[16px] p-4.5">
+  //           <div className="text-[10px] font-bold tracking-widest uppercase text-[#2d4a6e] mb-1.5">
+  //             Joint Sponsor
+  //           </div>
+  //           <div className="text-[15px] font-semibold text-[#0c1b33] mb-1.5 leading-tight">
+  //             Added in CEAC, no proof checklist
+  //           </div>
+  //           <div className="text-[13px] text-[#3a4f63] leading-relaxed">
+  //             A joint sponsor is an independent U.S. citizen or LPR who sponsors
+  //             separately. Added through the CEAC sponsorship flow —{" "}
+  //             <strong>no relationship-proof documents</strong> are typically
+  //             required from them.
+  //           </div>
+  //         </div>
+  //         <div className="bg-[#e8f5ef] border-[1.5px] border-[#a8d9be] rounded-[16px] p-4.5">
+  //           <div className="text-[10px] font-bold tracking-widest uppercase text-[#15744f] mb-1.5">
+  //             Household Member
+  //           </div>
+  //           <div className="text-[15px] font-semibold text-[#0e5c3c] mb-1.5 leading-tight">
+  //             Added in CEAC + relationship proof required
+  //           </div>
+  //           <div className="text-[13px] text-[#3a4f63] leading-relaxed">
+  //             A household member&apos;s income is used alongside the
+  //             petitioner&apos;s. Added through CEAC — and also requires{" "}
+  //             <strong>relationship-proof documentation</strong> showing their
+  //             connection to the sponsoring household.
+  //           </div>
+  //         </div>
+  //       </div>
 
-        {/* PRIMARY LAUNCH MODULE */}
-        <div className="bg-[#0e1e38] rounded-[16px] border border-white/7 shadow-[0_20px_60px_rgba(12,27,51,0.18)] overflow-hidden mb-6 relative">
-          <div className="absolute top-0 left-0 right-0 h-[2px] bg-linear-to-r from-primary via-primary/70 to-transparent opacity-70" />
-          <div className="p-8 md:p-[32px_34px_28px]">
-            <div className="flex items-start gap-4 mb-[22px]">
-              <div className="w-[46px] h-[46px] rounded-[11px] bg-white/6 border border-white/10 flex items-center justify-center shrink-0">
-                <Users className="text-white/75" size={22} />
-              </div>
-              <div>
-                <div className="text-[10px] font-bold tracking-widest uppercase text-white/35 mb-1">
-                  CEAC Guidance
-                </div>
-                <div className="text-[clamp(19px,2.8vw,23px)]  text-white/92 leading-tight">
-                  Add sponsorship participants in CEAC
-                </div>
-              </div>
-            </div>
-            <div className="h-px bg-white/10 mb-5" />
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-[9px] mb-[26px]">
-              {[
-                "Access the affidavit support section",
-                "Add a household member or joint sponsor",
-                "Review what information CEAC needs",
-                "Return here to prepare relationship proof",
-              ].map((cue, idx) => (
-                <div
-                  key={idx}
-                  className="bg-white/6 border border-white/10 rounded-[10px] p-[11px_13px] flex items-start gap-[9px]"
-                >
-                  <div className="w-[5px] h-[5px] rounded-full bg-[#6aa8f0]/70 shrink-0 mt-[5px]" />
-                  <div className="text-[13px] text-white/55 leading-tight">
-                    {cue}
-                  </div>
-                </div>
-              ))}
-            </div>
-            <button
-              onClick={() => {
-                setTutorialIdx(0);
-                setIsTutorialOpen(true);
-              }}
-              className="w-full py-4 px-7 bg-[#3b7dd8] text-white rounded-[12px] text-[15px] font-semibold cursor-pointer hover:bg-[#3b7dd8] transition-all shadow-[0_4px_20px_rgba(47,111,212,0.35)] hover:shadow-[0_8px_32px_rgba(47,111,212,0.45)] hover:-translate-y-0.5 active:translate-y-0"
-            >
-              Start CEAC Guide
-            </button>
-          </div>
-        </div>
+  //       {/* PRIMARY LAUNCH MODULE */}
+  //       <div className="bg-[#0e1e38] rounded-[16px] border border-white/7 shadow-[0_20px_60px_rgba(12,27,51,0.18)] overflow-hidden mb-6 relative">
+  //         <div className="absolute top-0 left-0 right-0 h-[2px] bg-linear-to-r from-primary via-primary/70 to-transparent opacity-70" />
+  //         <div className="p-8 md:p-[32px_34px_28px]">
+  //           <div className="flex items-start gap-4 mb-[22px]">
+  //             <div className="w-[46px] h-[46px] rounded-[11px] bg-white/6 border border-white/10 flex items-center justify-center shrink-0">
+  //               <Users className="text-white/75" size={22} />
+  //             </div>
+  //             <div>
+  //               <div className="text-[10px] font-bold tracking-widest uppercase text-white/35 mb-1">
+  //                 CEAC Guidance
+  //               </div>
+  //               <div className="text-[clamp(19px,2.8vw,23px)]  text-white/92 leading-tight">
+  //                 Add sponsorship participants in CEAC
+  //               </div>
+  //             </div>
+  //           </div>
+  //           <div className="h-px bg-white/10 mb-5" />
+  //           <div className="grid grid-cols-1 sm:grid-cols-2 gap-[9px] mb-[26px]">
+  //             {[
+  //               "Access the affidavit support section",
+  //               "Add a household member or joint sponsor",
+  //               "Review what information CEAC needs",
+  //               "Return here to prepare relationship proof",
+  //             ].map((cue, idx) => (
+  //               <div
+  //                 key={idx}
+  //                 className="bg-white/6 border border-white/10 rounded-[10px] p-[11px_13px] flex items-start gap-[9px]"
+  //               >
+  //                 <div className="w-[5px] h-[5px] rounded-full bg-[#6aa8f0]/70 shrink-0 mt-[5px]" />
+  //                 <div className="text-[13px] text-white/55 leading-tight">
+  //                   {cue}
+  //                 </div>
+  //               </div>
+  //             ))}
+  //           </div>
+  //           <button
+  //             onClick={() => {
+  //               setTutorialIdx(0);
+  //               setIsTutorialOpen(true);
+  //             }}
+  //             className="w-full py-4 px-7 bg-[#3b7dd8] text-white rounded-[12px] text-[15px] font-semibold cursor-pointer hover:bg-[#3b7dd8] transition-all shadow-[0_4px_20px_rgba(47,111,212,0.35)] hover:shadow-[0_8px_32px_rgba(47,111,212,0.45)] hover:-translate-y-0.5 active:translate-y-0"
+  //           >
+  //             Start CEAC Guide
+  //           </button>
+  //         </div>
+  //       </div>
 
-        {/* SCENARIO BUILDER */}
-        <div className="bg-white border-[1.5px] border-[#d0e4f7] rounded-[16px] p-[22px] mb-[18px]">
-          <div className="text-[14px] font-semibold text-[#0c1b33] mb-4">
-            Define your scenario — who is involved in the sponsorship?
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-            <div className="flex flex-col">
-              <label className="text-[11px] font-semibold text-[#6b8097] uppercase tracking-wider mb-1.5 ml-0.5">
-                Number of joint sponsors
-              </label>
-              <select
-                value={jsCount}
-                onChange={(e) => setJsCount(parseInt(e.target.value))}
-                className="w-full p-[9px_12px] border-[1.5px] border-[#d0e4f7] rounded-[10px] text-[14px] bg-white outline-none focus:border-primary appearance-none bg-[position:right_10px_center] bg-no-repeat pr-[30px]"
-                style={{
-                  backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236b8097' stroke-width='2' stroke-linecap='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E")`,
-                }}
-              >
-                <option value="0">0 — not using a joint sponsor</option>
-                <option value="1">1 joint sponsor</option>
-                <option value="2">2 joint sponsors</option>
-              </select>
-            </div>
-            <div className="flex flex-col">
-              <label className="text-[11px] font-semibold text-[#6b8097] uppercase tracking-wider mb-1.5 ml-0.5">
-                Number of household members
-              </label>
-              <select
-                value={hhCount}
-                onChange={(e) => setHhCount(parseInt(e.target.value))}
-                className="w-full p-[9px_12px] border-[1.5px] border-[#d0e4f7] rounded-[10px] text-[14px] bg-white outline-none focus:border-primary appearance-none bg-[position:right_10px_center] bg-no-repeat pr-[30px]"
-                style={{
-                  backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236b8097' stroke-width='2' stroke-linecap='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E")`,
-                }}
-              >
-                <option value="0">0 — no household members</option>
-                <option value="1">1 household member</option>
-                <option value="2">2 household members</option>
-                <option value="3">3 household members</option>
-              </select>
-            </div>
-          </div>
+  //       {/* SCENARIO BUILDER */}
+  //       <div className="bg-white border-[1.5px] border-[#d0e4f7] rounded-[16px] p-[22px] mb-[18px]">
+  //         <div className="text-[14px] font-semibold text-[#0c1b33] mb-4">
+  //           Define your scenario — who is involved in the sponsorship?
+  //         </div>
+  //         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+  //           <div className="flex flex-col">
+  //             <label className="text-[11px] font-semibold text-[#6b8097] uppercase tracking-wider mb-1.5 ml-0.5">
+  //               Number of joint sponsors
+  //             </label>
+  //             <select
+  //               value={jsCount}
+  //               onChange={(e) => setJsCount(parseInt(e.target.value))}
+  //               className="w-full p-[9px_12px] border-[1.5px] border-[#d0e4f7] rounded-[10px] text-[14px] bg-white outline-none focus:border-primary appearance-none bg-[position:right_10px_center] bg-no-repeat pr-[30px]"
+  //               style={{
+  //                 backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236b8097' stroke-width='2' stroke-linecap='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E")`,
+  //               }}
+  //             >
+  //               <option value="0">0 — not using a joint sponsor</option>
+  //               <option value="1">1 joint sponsor</option>
+  //               <option value="2">2 joint sponsors</option>
+  //             </select>
+  //           </div>
+  //           <div className="flex flex-col">
+  //             <label className="text-[11px] font-semibold text-[#6b8097] uppercase tracking-wider mb-1.5 ml-0.5">
+  //               Number of household members
+  //             </label>
+  //             <select
+  //               value={hhCount}
+  //               onChange={(e) => setHhCount(parseInt(e.target.value))}
+  //               className="w-full p-[9px_12px] border-[1.5px] border-[#d0e4f7] rounded-[10px] text-[14px] bg-white outline-none focus:border-primary appearance-none bg-[position:right_10px_center] bg-no-repeat pr-[30px]"
+  //               style={{
+  //                 backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236b8097' stroke-width='2' stroke-linecap='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E")`,
+  //               }}
+  //             >
+  //               <option value="0">0 — no household members</option>
+  //               <option value="1">1 household member</option>
+  //               <option value="2">2 household members</option>
+  //               <option value="3">3 household members</option>
+  //             </select>
+  //           </div>
+  //         </div>
 
-          {hhCount > 0 && (
-            <div className="mt-4 pt-4 border-t border-[#d0e4f7]">
-              <div className="text-[11px] font-bold text-[#6b8097] uppercase tracking-widest mb-3 ml-0.5">
-                Household member relationship to the petitioner
-              </div>
-              <div className="flex flex-col gap-2">
-                {Array.from({ length: hhCount }).map((_, idx) => {
-                  const num = idx + 1;
-                  return (
-                    <div
-                      key={num}
-                      className="flex flex-col sm:flex-row sm:items-center gap-2"
-                    >
-                      <span className="text-[13px] font-medium text-[#3a4f63] min-w-[140px]">
-                        Household Member {num}
-                      </span>
-                      <select
-                        value={hhRelationships[num] || "other-hh"}
-                        onChange={(e) =>
-                          setHhRelationships((prev) => ({
-                            ...prev,
-                            [num]: e.target.value,
-                          }))
-                        }
-                        className="flex-1 p-[8px_10px] border-[1.5px] border-[#d0e4f7] rounded-[10px] text-[13px] bg-white outline-none focus:border-primary appearance-none bg-[position:right_8px_center] bg-no-repeat pr-[26px]"
-                        style={{
-                          backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='11' height='11' viewBox='0 0 24 24' fill='none' stroke='%236b8097' stroke-width='2' stroke-linecap='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E")`,
-                        }}
-                      >
-                        <option value="spouse">Spouse of petitioner</option>
-                        <option value="child">Child of petitioner</option>
-                        <option value="parent">Parent of petitioner</option>
-                        <option value="sibling">Sibling of petitioner</option>
-                        <option value="other-relative">Other relative</option>
-                        <option value="other-hh">Other household member</option>
-                      </select>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          )}
-        </div>
+  //         {hhCount > 0 && (
+  //           <div className="mt-4 pt-4 border-t border-[#d0e4f7]">
+  //             <div className="text-[11px] font-bold text-[#6b8097] uppercase tracking-widest mb-3 ml-0.5">
+  //               Household member relationship to the petitioner
+  //             </div>
+  //             <div className="flex flex-col gap-2">
+  //               {Array.from({ length: hhCount }).map((_, idx) => {
+  //                 const num = idx + 1;
+  //                 return (
+  //                   <div
+  //                     key={num}
+  //                     className="flex flex-col sm:flex-row sm:items-center gap-2"
+  //                   >
+  //                     <span className="text-[13px] font-medium text-[#3a4f63] min-w-[140px]">
+  //                       Household Member {num}
+  //                     </span>
+  //                     <select
+  //                       value={hhRelationships[num] || "other-hh"}
+  //                       onChange={(e) =>
+  //                         setHhRelationships((prev) => ({
+  //                           ...prev,
+  //                           [num]: e.target.value,
+  //                         }))
+  //                       }
+  //                       className="flex-1 p-[8px_10px] border-[1.5px] border-[#d0e4f7] rounded-[10px] text-[13px] bg-white outline-none focus:border-primary appearance-none bg-[position:right_8px_center] bg-no-repeat pr-[26px]"
+  //                       style={{
+  //                         backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='11' height='11' viewBox='0 0 24 24' fill='none' stroke='%236b8097' stroke-width='2' stroke-linecap='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E")`,
+  //                       }}
+  //                     >
+  //                       <option value="spouse">Spouse of petitioner</option>
+  //                       <option value="child">Child of petitioner</option>
+  //                       <option value="parent">Parent of petitioner</option>
+  //                       <option value="sibling">Sibling of petitioner</option>
+  //                       <option value="other-relative">Other relative</option>
+  //                       <option value="other-hh">Other household member</option>
+  //                     </select>
+  //                   </div>
+  //                 );
+  //               })}
+  //             </div>
+  //           </div>
+  //         )}
+  //       </div>
 
-        {/* SUMMARY BANNER */}
-        {(jsCount > 0 || hhCount > 0) && (
-          <div className="bg-[#0c1b33] rounded-[16px] p-[16px_20px] mb-5 flex flex-wrap gap-x-8 gap-y-4">
-            <div className="flex flex-col">
-              <div className="text-[10px] font-semibold tracking-widest uppercase text-white/40 mb-0.5">
-                Joint Sponsors
-              </div>
-              <div className="text-[14px] font-semibold text-white/90">
-                {jsCount === 0
-                  ? "None"
-                  : `${jsCount} joint sponsor${jsCount > 1 ? "s" : ""}`}
-              </div>
-              {jsCount > 0 && (
-                <div className="text-[11px] text-white/50 mt-0.5">
-                  No relationship-proof checklist required
-                </div>
-              )}
-            </div>
-            <div className="flex flex-col">
-              <div className="text-[10px] font-semibold tracking-widest uppercase text-white/40 mb-0.5">
-                Household Members
-              </div>
-              <div className="text-[14px] font-semibold text-white/90">
-                {hhCount === 0
-                  ? "None"
-                  : `${hhCount} household member${hhCount > 1 ? "s" : ""}`}
-              </div>
-              {hhCount > 0 && (
-                <div className="text-[11px] text-white/50 mt-0.5">
-                  Relationship-proof checklist generated below
-                </div>
-              )}
-            </div>
-          </div>
-        )}
+  //       {/* SUMMARY BANNER */}
+  //       {(jsCount > 0 || hhCount > 0) && (
+  //         <div className="bg-[#0c1b33] rounded-[16px] p-[16px_20px] mb-5 flex flex-wrap gap-x-8 gap-y-4">
+  //           <div className="flex flex-col">
+  //             <div className="text-[10px] font-semibold tracking-widest uppercase text-white/40 mb-0.5">
+  //               Joint Sponsors
+  //             </div>
+  //             <div className="text-[14px] font-semibold text-white/90">
+  //               {jsCount === 0
+  //                 ? "None"
+  //                 : `${jsCount} joint sponsor${jsCount > 1 ? "s" : ""}`}
+  //             </div>
+  //             {jsCount > 0 && (
+  //               <div className="text-[11px] text-white/50 mt-0.5">
+  //                 No relationship-proof checklist required
+  //               </div>
+  //             )}
+  //           </div>
+  //           <div className="flex flex-col">
+  //             <div className="text-[10px] font-semibold tracking-widest uppercase text-white/40 mb-0.5">
+  //               Household Members
+  //             </div>
+  //             <div className="text-[14px] font-semibold text-white/90">
+  //               {hhCount === 0
+  //                 ? "None"
+  //                 : `${hhCount} household member${hhCount > 1 ? "s" : ""}`}
+  //             </div>
+  //             {hhCount > 0 && (
+  //               <div className="text-[11px] text-white/50 mt-0.5">
+  //                 Relationship-proof checklist generated below
+  //               </div>
+  //             )}
+  //           </div>
+  //         </div>
+  //       )}
 
-        {/* PROGRESS AND CHECKLIST */}
-        {hhCount > 0 ? (
-          <div className="flex flex-col">
-            <div className="flex items-center gap-3 mb-7">
-              <div className="flex-1 h-[5px] bg-[#d0e4f7] rounded-[10px] overflow-hidden">
-                <div
-                  className="h-full bg-linear-to-r from-primary to-primary/70 transition-all duration-500 rounded-[10px]"
-                  style={{ width: `${progressPct}%` }}
-                />
-              </div>
-              <div className="text-[12px] font-medium text-[#6b8097] whitespace-nowrap">
-                {reviewed} of {total} reviewed
-              </div>
-            </div>
+  //       {/* PROGRESS AND CHECKLIST */}
+  //       {hhCount > 0 ? (
+  //         <div className="flex flex-col">
+  //           <div className="flex items-center gap-3 mb-7">
+  //             <div className="flex-1 h-[5px] bg-[#d0e4f7] rounded-[10px] overflow-hidden">
+  //               <div
+  //                 className="h-full bg-linear-to-r from-primary to-primary/70 transition-all duration-500 rounded-[10px]"
+  //                 style={{ width: `${progressPct}%` }}
+  //               />
+  //             </div>
+  //             <div className="text-[12px] font-medium text-[#6b8097] whitespace-nowrap">
+  //               {reviewed} of {total} reviewed
+  //             </div>
+  //           </div>
 
-            {(() => {
-              const req = allItems.filter((i) => i.group === "required");
-              const cond = allItems.filter((i) => i.group === "conditional");
+  //           {(() => {
+  //             const req = allItems.filter((i) => i.group === "required");
+  //             const cond = allItems.filter((i) => i.group === "conditional");
 
-              return (
-                <div className="flex flex-col gap-7">
-                  {req.length > 0 && (
-                    <div className="flex flex-col gap-3">
-                      <div className="flex items-center gap-[10px]">
-                        <span className="text-[11px] font-semibold tracking-widest uppercase text-[#6b8097]">
-                          Required
-                        </span>
-                        <span className="text-[10px] font-semibold tracking-widest uppercase px-[9px] py-[3px] rounded-full bg-[#ffeaea] text-[#a01c1c] border border-[#f5bebe]">
-                          Required
-                        </span>
-                        <div className="flex-1 h-px bg-[#d0e4f7]" />
-                      </div>
-                      {req.map((item) => renderHhDocCard(item))}
-                    </div>
-                  )}
-                  {cond.length > 0 && (
-                    <div className="flex flex-col gap-3">
-                      <div className="flex items-center gap-[10px]">
-                        <span className="text-[11px] font-semibold tracking-widest uppercase text-[#6b8097]">
-                          Required if Applicable
-                        </span>
-                        <span className="text-[10px] font-semibold tracking-widest uppercase px-[9px] py-[3px] rounded-full bg-[#fef8e8] text-[#8a6200] border border-[#f0d98a]">
-                          Required if Applicable
-                        </span>
-                        <div className="flex-1 h-px bg-[#d0e4f7]" />
-                      </div>
-                      {cond.map((item) => renderHhDocCard(item))}
-                    </div>
-                  )}
-                </div>
-              );
-            })()}
-          </div>
-        ) : jsCount > 0 ? (
-          <div className="bg-white border-[1.5px] border-dashed border-[#d0e4f7] rounded-[16px] p-[32px_24px] text-center mb-5">
-            <div className="text-[14px] font-semibold text-[#6b8097] mb-1.5">
-              No relationship-proof checklist needed
-            </div>
-            <div className="text-[13px] text-[#6b8097]">
-              Joint sponsors do not require relationship documentation. Your
-              I-864 forms are the primary requirement — see Step 5 for those.
-            </div>
-          </div>
-        ) : (
-          <div className="bg-white border-[1.5px] border-dashed border-[#d0e4f7] rounded-[16px] p-[32px_24px] text-center mb-5">
-            <div className="text-[14px] font-semibold text-[#6b8097] mb-1.5">
-              Set your scenario above
-            </div>
-            <div className="text-[13px] text-[#6b8097]">
-              Select the number of joint sponsors and household members to see
-              the relevant checklist.
-            </div>
-          </div>
-        )}
-      </div>
-    );
-  };
+  //             return (
+  //               <div className="flex flex-col gap-7">
+  //                 {req.length > 0 && (
+  //                   <div className="flex flex-col gap-3">
+  //                     <div className="flex items-center gap-[10px]">
+  //                       <span className="text-[11px] font-semibold tracking-widest uppercase text-[#6b8097]">
+  //                         Required
+  //                       </span>
+  //                       <span className="text-[10px] font-semibold tracking-widest uppercase px-[9px] py-[3px] rounded-full bg-[#ffeaea] text-[#a01c1c] border border-[#f5bebe]">
+  //                         Required
+  //                       </span>
+  //                       <div className="flex-1 h-px bg-[#d0e4f7]" />
+  //                     </div>
+  //                     {req.map((item) => renderHhDocCard(item))}
+  //                   </div>
+  //                 )}
+  //                 {cond.length > 0 && (
+  //                   <div className="flex flex-col gap-3">
+  //                     <div className="flex items-center gap-[10px]">
+  //                       <span className="text-[11px] font-semibold tracking-widest uppercase text-[#6b8097]">
+  //                         Required if Applicable
+  //                       </span>
+  //                       <span className="text-[10px] font-semibold tracking-widest uppercase px-[9px] py-[3px] rounded-full bg-[#fef8e8] text-[#8a6200] border border-[#f0d98a]">
+  //                         Required if Applicable
+  //                       </span>
+  //                       <div className="flex-1 h-px bg-[#d0e4f7]" />
+  //                     </div>
+  //                     {cond.map((item) => renderHhDocCard(item))}
+  //                   </div>
+  //                 )}
+  //               </div>
+  //             );
+  //           })()}
+  //         </div>
+  //       ) : jsCount > 0 ? (
+  //         <div className="bg-white border-[1.5px] border-dashed border-[#d0e4f7] rounded-[16px] p-[32px_24px] text-center mb-5">
+  //           <div className="text-[14px] font-semibold text-[#6b8097] mb-1.5">
+  //             No relationship-proof checklist needed
+  //           </div>
+  //           <div className="text-[13px] text-[#6b8097]">
+  //             Joint sponsors do not require relationship documentation. Your
+  //             I-864 forms are the primary requirement — see Step 5 for those.
+  //           </div>
+  //         </div>
+  //       ) : (
+  //         <div className="bg-white border-[1.5px] border-dashed border-[#d0e4f7] rounded-[16px] p-[32px_24px] text-center mb-5">
+  //           <div className="text-[14px] font-semibold text-[#6b8097] mb-1.5">
+  //             Set your scenario above
+  //           </div>
+  //           <div className="text-[13px] text-[#6b8097]">
+  //             Select the number of joint sponsors and household members to see
+  //             the relevant checklist.
+  //           </div>
+  //         </div>
+  //       )}
+  //     </div>
+  //   );
+  // };
 
   const renderHhDocCard = (item: any) => {
     const st = hhDocsStatus[item.id] || "not-started";
@@ -1540,18 +1530,19 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
           userId: user?.id || "session",
           visaCategory: "IR-1",
           caseId: (state.metadata.caseId as string) || "ARACHNIE-IR1",
-          petitionerName: (state.metadata.petitionerName as string) || "Petitioner",
-          beneficiaryName: (state.metadata.beneficiaryName as string) || "Beneficiary",
+          petitionerName:
+            (state.metadata.petitionerName as string) || "Petitioner",
+          beneficiaryName:
+            (state.metadata.beneficiaryName as string) || "Beneficiary",
           jointSponsorName: (state.metadata.jointSponsorName as string) || "",
           scenarioFlags: {},
         }),
-        reloadDocuments()
+        reloadDocuments(),
       ]);
     };
     initVault();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // Run once on mount — config is set immediately, no race condition
-
 
   // Disable body scroll when overlays are open
   useEffect(() => {
@@ -1909,7 +1900,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
             {data.description}
           </p>
 
-          <div className="flex flex-wrap gap-[7px] mb-[32px] animate-in fade-in slide-in-from-top-2 duration-300 delay-[120ms]">
+          <div className="flex flex-wrap gap-[7px] mb-[32px] animate-in fade-in slide-in-from-top-2 duration-300 delay-120">
             {data.chips.map((chip, i) => (
               <span
                 key={i}
@@ -2176,14 +2167,14 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
           {/* Companion Context Badge (Step 5 Specific) */}
           {(sId === "step_1_5" || sId === "step_1_2_b") && (
             <div className="flex items-center gap-[9px] mb-[22px]">
-              <div className="flex-1 h-[1px] bg-linear-to-r from-[#d0e4f7] to-transparent" />
+              <div className="flex-1 h-px bg-linear-to-r from-[#d0e4f7] to-transparent" />
               <div className="inline-flex items-center gap-[6px] bg-[#e6f6f6] border border-[#9fd8d8] rounded-full px-[13px] py-[5px]">
                 <span className="w-[5px] h-[5px] rounded-full bg-[#0f7373]" />
                 <span className="text-[11px] font-semibold text-[#0f7373] tracking-[0.04em] whitespace-nowrap">
                   Companion form to I-130 · Beneficiary spouse focus
                 </span>
               </div>
-              <div className="flex-1 h-[1px] bg-linear-to-l from-[#d0e4f7] to-transparent" />
+              <div className="flex-1 h-px bg-linear-to-l from-[#d0e4f7] to-transparent" />
             </div>
           )}
 
@@ -2299,7 +2290,6 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                 </div>
                 <button
                   onClick={() => {
-                    setSponsorshipStepIdx(0);
                     setIsSponsorshipCalcOpen(true);
                   }}
                   className="inline-flex items-center justify-center gap-[10px] w-full p-[16px_28px] bg-[#3b7dd8] text-white border-none rounded-[12px] font-sans text-[15px] font-semibold cursor-pointer transition-all hover:bg-[#3b7dd8] hover:-translate-y-0.5 active:translate-y-0 shadow-[0_4px_20px_rgba(47,111,212,0.35)]"
@@ -2317,7 +2307,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
               <div className="text-[12px] font-semibold tracking-wide uppercase text-[#6b8097] mb-[12px]">
                 Your Affidavit of Support Plan
               </div>
-              {!sponsorshipResult ? (
+              {(!sponsorshipResult || Object.keys(sponsorshipResult).length === 0) ? (
                 <div className="bg-[#fafcff] border-[1.5px] border-dashed border-[#d0e4f7] rounded-[10px] p-[24px] text-center">
                   <div className="text-[14px] text-[#6b8097] leading-[1.6]">
                     Complete the sponsorship calculator to generate the correct
@@ -2327,36 +2317,39 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
               ) : (
                 <div className="flex flex-col gap-[28px]">
                   <div className="bg-[#fafcff] border-[1.5px] border-[#d0e4f7] rounded-[10px] p-[20px] animate-in fade-in duration-300">
-                    <div className="text-[10px] font-bold uppercase tracking-widest text-primary mb-[10px]">
-                      Sponsorship Plan Generated
+                    <div className="flex items-center justify-between mb-[14px]">
+                      <div className="text-[10px] font-bold uppercase tracking-widest text-primary">
+                        Sponsorship Plan Summary
+                      </div>
+                      <div className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase ${sponsorshipResult.isEligible ? "bg-emerald-100 text-emerald-700" : "bg-rose-100 text-rose-700"}`}>
+                        {sponsorshipResult.isEligible ? "Met" : "Shortfall"}
+                      </div>
                     </div>
                     <div className="flex flex-col gap-[6px]">
                       {[
                         [
-                          "Petitioner qualifies alone",
-                          sponsorshipResult.qualifies ? "Yes" : "No",
+                          "Household Size",
+                          `${sponsorshipResult?.householdSize || 0} persons`,
                         ],
                         [
-                          "Household members contributing income",
-                          sponsorshipResult.householdMemberCount || "None",
+                          "Required Income",
+                          `$${(sponsorshipResult?.requiredIncome || 0).toLocaleString()}`,
                         ],
                         [
-                          "Joint sponsors",
-                          sponsorshipResult.jointSponsorCount || "None",
+                          "Total Provided Income",
+                          `$${(sponsorshipResult?.totalIncome || 0).toLocaleString()}`,
                         ],
                         [
-                          "Forms required",
-                          sponsorshipResult.forms
-                            .map((f: any) => f.name.split("—")[0].trim())
-                            .join(", "),
+                          "Sponsorship Breakdown",
+                          `Primary ($${(sponsorshipResult?.primaryIncome || 0).toLocaleString()})${sponsorshipResult?.hmIncome ? ` + HM ($${sponsorshipResult.hmIncome.toLocaleString()})` : ""}${sponsorshipResult?.jsIncome ? ` + JS ($${sponsorshipResult.jsIncome.toLocaleString()})` : ""}`,
                         ],
                       ].map(([k, v], i) => (
                         <div
                           key={i}
-                          className="flex justify-between items-center py-[5px] border-b border-[#d0e4f7] last:border-b-0 text-[13px]"
+                          className="flex justify-between items-start py-[6px] border-b border-[#d0e4f7]/50 last:border-b-0 text-[13px]"
                         >
-                          <span className="text-[#3a4f63]">{k}</span>
-                          <span className="text-[#0c1b33] font-semibold">
+                          <span className="text-[#6b8097]">{k}</span>
+                          <span className="text-[#0c1b33] font-semibold text-right max-w-[60%]">
                             {v}
                           </span>
                         </div>
@@ -2365,48 +2358,52 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                   </div>
 
                   <div className="flex flex-col gap-[10px]">
-                    {sponsorshipResult.forms.map((f: any, i: number) => (
+                    <div className="text-[11px] font-bold text-[#6b8097] uppercase tracking-wider px-1">Required Forms</div>
+                    {sponsorshipResult?.forms?.map((f: any, i: number) => (
                       <div
                         key={i}
                         onClick={() =>
                           window.open(f.url, "_blank", "noopener,noreferrer")
                         }
-                        className="bg-[#fafcff] border-[1.5px] border-[#d0e4f7] rounded-[10px] p-[18px_20px] flex items-center gap-[14px] cursor-pointer transition-all hover:border-primary hover:shadow-[0_4px_16px_rgba(47,111,212,0.1)] hover:-translate-y-px"
+                        className="bg-white border-[1.5px] border-[#d0e4f7] rounded-[12px] p-[16px_18px] flex items-center gap-[14px] cursor-pointer transition-all hover:border-primary hover:shadow-[0_4px_16px_rgba(47,111,212,0.1)] hover:-translate-y-px"
                       >
-                        <div className="w-[36px] h-[36px] rounded-[9px] bg-primary/10 border border-primary/20 flex items-center justify-center shrink-0">
+                        <div className="w-[36px] h-[36px] rounded-[10px] bg-primary/10 border border-primary/20 flex items-center justify-center shrink-0">
                           <FileText
                             size={18}
                             className="text-primary"
-                            strokeWidth={1.7}
+                            strokeWidth={1.8}
                           />
                         </div>
                         <div className="flex-1">
-                          <div className="text-[14px] font-semibold text-[#0c1b33] mb-[2px]">
+                          <div className="text-[14px] font-bold text-[#0c1b33] mb-[1px]">
                             {f.name}
                           </div>
-                          <div className="text-[12px] text-[#6b8097] leading-[1.4]">
+                          <div className="text-[11px] text-[#6b8097] leading-[1.4]">
                             {f.sub}
                           </div>
                         </div>
-                        <button className="p-[8px_16px] bg-primary text-white border-none rounded-[8px] text-[12px] font-semibold shrink-0 transition-colors hover:bg-primary/80">
-                          Launch →
-                        </button>
+                        <div className="text-primary opacity-0 group-hover:opacity-100 transition-opacity">
+                           <ArrowRight size={14} />
+                        </div>
                       </div>
                     ))}
                   </div>
 
+                  <div className="bg-[#fef8e8]/50 border border-[#f0d98a]/30 rounded-lg p-3 text-[12px] text-[#8a6200] leading-relaxed">
+                    <strong>Note:</strong> You must include the most recent federal tax return for EVERY person listed above who is contributing income.
+                  </div>
+
                   <div className="text-[12px] text-[#6b8097] text-center">
-                    Form actions are based on your calculator result.{" "}
+                    Plan was generated on your response.{" "}
                     <button
                       onClick={() => {
-                        setSponsorshipStepIdx(0);
                         setIsSponsorshipCalcOpen(true);
                       }}
                       className="text-primary font-semibold hover:underline bg-transparent border-none p-0 cursor-pointer"
                     >
                       Rerun calculator
                     </button>{" "}
-                    if the sponsorship structure changes.
+                    if your circumstances change.
                   </div>
                 </div>
               )}
@@ -2537,12 +2534,13 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                           <span className="text-[11px] font-semibold uppercase tracking-[0.09em] text-[#6b8097]">
                             {group.label}
                           </span>
-                          <div className="flex-1 h-[1px] bg-[#d0e4f7]" />
+                          <div className="flex-1 h-px bg-[#d0e4f7]" />
                         </div>
 
                         <div className="flex flex-col gap-[10px]">
                           {group.items.map((doc: any) => {
-                            const st = financialDocsStatus[doc.id] || "not-started";
+                            const st =
+                              financialDocsStatus[doc.id] || "not-started";
                             return (
                               <div
                                 key={doc.id}
@@ -2591,7 +2589,9 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                                   <button
                                     onClick={(e) => {
                                       e.stopPropagation();
-                                      const defId = mapDocumentNameToId(doc.title);
+                                      const defId = mapDocumentNameToId(
+                                        doc.title,
+                                      );
                                       setActiveUploadId(doc.id);
                                       setActiveUploadType("financial");
                                       openUploadModal(defId);
@@ -2604,7 +2604,10 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                                   <button
                                     onClick={() => {
                                       // Mark as in-progress when opened (unless already reviewed)
-                                      if (financialDocsStatus[doc.id] !== "reviewed") {
+                                      if (
+                                        financialDocsStatus[doc.id] !==
+                                        "reviewed"
+                                      ) {
                                         actions.updateMetadata({
                                           financialDocsStatus: {
                                             ...financialDocsStatus,
@@ -3948,7 +3951,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
 
               {/* Selector Overlay Modal */}
               {isMedWizardOpen && (
-                <div className="fixed inset-0 z-[200] bg-white flex flex-col overflow-hidden animate-in slide-in-from-bottom-[18px] duration-[0.28s] ease-in-out font-sans">
+                <div className="fixed inset-0 z-200 bg-white flex flex-col overflow-hidden animate-in slide-in-from-bottom-[18px] duration-[0.28s] ease-in-out font-sans">
                   {/* Topbar */}
                   <div className="flex items-center p-[18px_24px] border-b border-[#d0e4f7] gap-4 shrink-0">
                     <button
@@ -3984,7 +3987,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                         const s = steps[medWizardStep];
                         return (
                           <>
-                            <div className="text-[11px] font-semibold tracking-[0.1em] uppercase text-[#2f6fd4] mb-3.5">
+                            <div className="text-[11px] font-semibold tracking-widest uppercase text-[#2f6fd4] mb-3.5">
                               {s.label}
                             </div>
                             <h2 className="text-[clamp(20px,3.2vw,26px)] text-[#0c1b33] leading-tight mb-2">
@@ -4285,7 +4288,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
 
               {/* Guide Overlay Modal */}
               {isPolioGuideOpen && (
-                <div className="fixed inset-0 z-[200] bg-white flex flex-col overflow-hidden animate-in slide-in-from-bottom-[18px] duration-[0.28s] ease-in-out font-sans">
+                <div className="fixed inset-0 z-200 bg-white flex flex-col overflow-hidden animate-in slide-in-from-bottom-[18px] duration-[0.28s] ease-in-out font-sans">
                   {/* Topbar */}
                   <div className="flex items-center p-[18px_24px] border-b border-[#d0e4f7] gap-4 shrink-0">
                     <button
@@ -4320,7 +4323,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                           POLIO_CERTIFICATE_DATA.guideSteps.length - 1;
                         return (
                           <>
-                            <div className="text-[11px] font-semibold tracking-[0.1em] uppercase text-primary mb-3.5">
+                            <div className="text-[11px] font-semibold tracking-widest uppercase text-primary mb-3.5">
                               Polio Vaccination Guide · {s.label}
                             </div>
                             <h2 className="text-[clamp(20px,3.2vw,26px)] text-[#0c1b33] leading-tight mb-2">
@@ -4642,7 +4645,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
 
               {/* PCC Path Overlay Modal */}
               {isPccOverlayOpen && (
-                <div className="fixed inset-0 z-[200] bg-white flex flex-col overflow-hidden animate-in slide-in-from-bottom-[18px] duration-[0.28s] ease-in-out font-sans">
+                <div className="fixed inset-0 z-200 bg-white flex flex-col overflow-hidden animate-in slide-in-from-bottom-[18px] duration-[0.28s] ease-in-out font-sans">
                   {/* Topbar */}
                   <div className="flex items-center p-[18px_24px] border-b border-[#d0e4f7] gap-4 shrink-0">
                     <button
@@ -4687,7 +4690,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
 
                         return (
                           <>
-                            <div className="text-[11px] font-semibold tracking-[0.1em] uppercase text-primary mb-3.5">
+                            <div className="text-[11px] font-semibold tracking-widest uppercase text-primary mb-3.5">
                               {s.label}
                             </div>
                             <h2 className="text-[clamp(20px,3.2vw,26px)] text-[#0c1b33] leading-tight mb-2">
@@ -4809,7 +4812,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                             ? "Recommended"
                             : "Required if applicable"}
                       </span>
-                      <div className="flex-1 h-[1px] bg-[#d0e4f7]" />
+                      <div className="flex-1 h-px bg-[#d0e4f7]" />
                     </div>
 
                     <div className="flex flex-col gap-[9px]">
@@ -4861,33 +4864,47 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                             <div className="shrink-0 flex items-center gap-2">
                               {(() => {
                                 const defId = mapDocumentNameToId(item.title);
-                                const isUploadedInVault = uploadedDocuments.some(ud => ud.documentDefId === defId);
-                                const uploadedDoc = uploadedDocuments.find(ud => ud.documentDefId === defId);
-                                const isDeleting = uploadedDoc ? isDeletingIds.includes(uploadedDoc.id) : false;
-                                
-                                if (isDeleting) return null; // Badge hidden while deleting
-                                
-                                const displayStatus = isUploadedInVault 
-                                  ? "Uploaded" 
-                                  : (isReloadingDocs 
-                                    ? "Checking..." 
-                                    : (isRev ? "Packed" : (isIP ? "In progress" : "Open guide")));
+                                const isUploadedInVault =
+                                  uploadedDocuments.some(
+                                    (ud) => ud.documentDefId === defId,
+                                  );
+                                const uploadedDoc = uploadedDocuments.find(
+                                  (ud) => ud.documentDefId === defId,
+                                );
+                                const isDeleting = uploadedDoc
+                                  ? isDeletingIds.includes(uploadedDoc.id)
+                                  : false;
 
-                                const statusClasses = isUploadedInVault 
+                                if (isDeleting) return null; // Badge hidden while deleting
+
+                                const displayStatus = isUploadedInVault
+                                  ? "Uploaded"
+                                  : isReloadingDocs
+                                    ? "Checking..."
+                                    : isRev
+                                      ? "Packed"
+                                      : isIP
+                                        ? "In progress"
+                                        : "Open guide";
+
+                                const statusClasses = isUploadedInVault
                                   ? "bg-[#eaf7f2] text-[#1a7a5e] border-[#b5e0d0] font-bold shadow-sm"
-                                  : (isReloadingDocs
+                                  : isReloadingDocs
                                     ? "bg-muted/30 text-muted-foreground border-muted-foreground/20 animate-pulse"
-                                    : (isRev 
+                                    : isRev
                                       ? "bg-[#e8f5ef] text-[#15744f] border-[#a8d9be]"
-                                      : (isIP 
+                                      : isIP
                                         ? "bg-[#fef8e8] text-[#8a6200] border-[#f0d98a]"
-                                        : "bg-white text-[#6b8097] border-[#d0e4f7] hover:border-primary hover:text-primary")));
+                                        : "bg-white text-[#6b8097] border-[#d0e4f7] hover:border-primary hover:text-primary";
 
                                 return (
-                                  <div className={`px-[11px] py-[5px] rounded-full border text-[12px] font-medium tracking-normal transition-all ${statusClasses}`}>
+                                  <div
+                                    className={`px-[11px] py-[5px] rounded-full border text-[12px] font-medium tracking-normal transition-all ${statusClasses}`}
+                                  >
                                     {isUploadedInVault || isRev ? (
                                       <span className="flex items-center gap-1">
-                                        <Check size={12} strokeWidth={3} /> {displayStatus}
+                                        <Check size={12} strokeWidth={3} />{" "}
+                                        {displayStatus}
                                       </span>
                                     ) : (
                                       displayStatus
@@ -4898,9 +4915,13 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
 
                               {(() => {
                                 const defId = mapDocumentNameToId(item.title);
-                                const uploadedDoc = uploadedDocuments.find(ud => ud.documentDefId === defId);
-                                const isDeleting = uploadedDoc ? isDeletingIds.includes(uploadedDoc.id) : false;
-                                
+                                const uploadedDoc = uploadedDocuments.find(
+                                  (ud) => ud.documentDefId === defId,
+                                );
+                                const isDeleting = uploadedDoc
+                                  ? isDeletingIds.includes(uploadedDoc.id)
+                                  : false;
+
                                 if (isReloadingDocs && !uploadedDoc) {
                                   return (
                                     <div className="flex items-center gap-1.5 px-[11px] py-[5px] text-[12px] text-muted-foreground font-medium animate-pulse">
@@ -4930,21 +4951,34 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                                           <MoreVertical size={18} />
                                         </button>
                                       </DropdownMenuTrigger>
-                                      <DropdownMenuContent side="top" align="end" className="w-[140px] rounded-xl shadow-xl border-muted/20">
-                                        <DropdownMenuItem 
+                                      <DropdownMenuContent
+                                        side="top"
+                                        align="end"
+                                        className="w-[140px] rounded-xl shadow-xl border-muted/20"
+                                      >
+                                        <DropdownMenuItem
                                           onClick={(e) => {
                                             e.stopPropagation();
-                                            window.open(`/api/documents/${uploadedDoc.id}/download`, '_blank');
+                                            window.open(
+                                              `/api/documents/${uploadedDoc.id}/download`,
+                                              "_blank",
+                                            );
                                           }}
                                           className="flex items-center gap-2 cursor-pointer font-medium text-[13px] py-2.5"
                                         >
-                                          <Eye size={16} className="text-primary" />
+                                          <Eye
+                                            size={16}
+                                            className="text-primary"
+                                          />
                                           Preview
                                         </DropdownMenuItem>
-                                        <DropdownMenuItem 
+                                        <DropdownMenuItem
                                           onClick={(e) => {
                                             e.stopPropagation();
-                                            setDocumentToDelete({ id: uploadedDoc.id, name: item.title });
+                                            setDocumentToDelete({
+                                              id: uploadedDoc.id,
+                                              name: item.title,
+                                            });
                                           }}
                                           className="flex items-center gap-2 cursor-pointer font-medium text-[13px] py-2.5 text-red-600 focus:text-red-700 focus:bg-red-50"
                                         >
@@ -4960,7 +4994,9 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                                   <button
                                     onClick={(e) => {
                                       e.stopPropagation();
-                                      const defId = mapDocumentNameToId(item.title);
+                                      const defId = mapDocumentNameToId(
+                                        item.title,
+                                      );
                                       setActiveUploadId(item.id);
                                       setActiveUploadType("doc");
                                       openUploadModal(defId);
@@ -4968,7 +5004,8 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                                     className="rounded-full bg-white px-[11px] py-[5px] border border-[#d0e4f7] text-[12px] font-medium flex items-center justify-center gap-1 text-[#6b8097] hover:border-primary hover:text-primary transition-all shadow-[0_2px_8px_rgba(0,0,0,0.04)]"
                                     title="Upload document"
                                   >
-                                    <Upload size={15} strokeWidth={2.5} /> Upload
+                                    <Upload size={15} strokeWidth={2.5} />{" "}
+                                    Upload
                                   </button>
                                 );
                               })()}
@@ -4986,7 +5023,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                 {/* Subtle Glow Overlay */}
                 <div className="absolute inset-0 bg-linear-to-br from-white/5 to-transparent pointer-events-none" />
 
-                <div className="relative z-10 text-[10px] font-[700] tracking-[0.1em] uppercase text-white/40 mb-[16px]">
+                <div className="relative z-10 text-[10px] font-[700] tracking-widest uppercase text-white/40 mb-[16px]">
                   Suggested Physical Packet Structure
                 </div>
                 <div className="relative z-10 grid grid-cols-2 min-[460px]:grid-cols-4 gap-[10px]">
@@ -5432,7 +5469,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                     </div>
                   </div>
 
-                  <div className="h-[1px] bg-white/10 mb-[18px]" />
+                  <div className="h-px bg-white/10 mb-[18px]" />
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-6">
                     {tool.launch_module?.cues?.map((cue: string, i: number) => (
@@ -5536,7 +5573,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                     </div>
                   </div>
 
-                  <div className="h-[1px] bg-white/10 mb-[18px]" />
+                  <div className="h-px bg-white/10 mb-[18px]" />
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-6">
                     {tool.launch_module.cues.map((cue: string, i: number) => (
@@ -6094,7 +6131,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                     </div>
                   </div>
 
-                  <div className="h-[1px] bg-white/9 mb-[22px]" />
+                  <div className="h-px bg-white/9 mb-[22px]" />
 
                   {/* Fee Block (Step 9 — Pay Filing Fee) */}
                   {tool.fee_block && (
@@ -6325,7 +6362,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                           ? "Required if Applicable"
                           : "Recommended to Improve Case Strength"}
                     </span>
-                    <div className="flex-1 h-[1px] bg-[#d0e4f7]" />
+                    <div className="flex-1 h-px bg-[#d0e4f7]" />
                   </div>
                   <div className="flex flex-col gap-[10px]">
                     {group.items.map((item: any) => {
@@ -6420,30 +6457,42 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                           <div className="shrink-0 flex items-center gap-2">
                             {(() => {
                               const defId = mapDocumentNameToId(item.title);
-                              const isUploadedInVault = uploadedDocuments.some(ud => ud.documentDefId === defId);
-                              const uploadedDoc = uploadedDocuments.find(ud => ud.documentDefId === defId);
-                              const isDeleting = uploadedDoc ? isDeletingIds.includes(uploadedDoc.id) : false;
-                              
-                              if (isDeleting) return null; // Badge hidden while deleting
-                              
-                              const displayStatus = isUploadedInVault 
-                                ? "Uploaded" 
-                                : (isReloadingDocs 
-                                  ? "Checking..." 
-                                  : (st === "reviewed" ? "✓ Reviewed" : (st === "in-progress" ? "In progress" : "Open guide")));
+                              const isUploadedInVault = uploadedDocuments.some(
+                                (ud) => ud.documentDefId === defId,
+                              );
+                              const uploadedDoc = uploadedDocuments.find(
+                                (ud) => ud.documentDefId === defId,
+                              );
+                              const isDeleting = uploadedDoc
+                                ? isDeletingIds.includes(uploadedDoc.id)
+                                : false;
 
-                              const statusClasses = isUploadedInVault 
+                              if (isDeleting) return null; // Badge hidden while deleting
+
+                              const displayStatus = isUploadedInVault
+                                ? "Uploaded"
+                                : isReloadingDocs
+                                  ? "Checking..."
+                                  : st === "reviewed"
+                                    ? "✓ Reviewed"
+                                    : st === "in-progress"
+                                      ? "In progress"
+                                      : "Open guide";
+
+                              const statusClasses = isUploadedInVault
                                 ? "bg-[#eaf7f2] text-[#1a7a5e] border-[#b5e0d0] font-bold shadow-sm"
-                                : (isReloadingDocs
+                                : isReloadingDocs
                                   ? "bg-muted/30 text-muted-foreground border-muted-foreground/20 animate-pulse"
-                                  : (st === "reviewed" 
+                                  : st === "reviewed"
                                     ? "bg-[#e8f5ef] text-[#15744f] border-[#a8d9be]"
-                                    : (st === "in-progress" 
+                                    : st === "in-progress"
                                       ? "bg-[#fef8e8] text-[#8a6200] border-[#f0d98a]"
-                                      : "bg-white text-[#6b8097] border-[#d0e4f7] hover:border-primary hover:text-primary")));
+                                      : "bg-white text-[#6b8097] border-[#d0e4f7] hover:border-primary hover:text-primary";
 
                               return (
-                                <div className={`px-[11px] py-[5px] rounded-full border text-[12px] font-medium tracking-normal transition-all ${statusClasses}`}>
+                                <div
+                                  className={`px-[11px] py-[5px] rounded-full border text-[12px] font-medium tracking-normal transition-all ${statusClasses}`}
+                                >
                                   {displayStatus}
                                 </div>
                               );
@@ -6451,9 +6500,13 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
 
                             {(() => {
                               const defId = mapDocumentNameToId(item.title);
-                              const uploadedDoc = uploadedDocuments.find(ud => ud.documentDefId === defId);
-                              const isDeleting = uploadedDoc ? isDeletingIds.includes(uploadedDoc.id) : false;
-                              
+                              const uploadedDoc = uploadedDocuments.find(
+                                (ud) => ud.documentDefId === defId,
+                              );
+                              const isDeleting = uploadedDoc
+                                ? isDeletingIds.includes(uploadedDoc.id)
+                                : false;
+
                               if (isReloadingDocs && !uploadedDoc) {
                                 return (
                                   <div className="flex items-center gap-1.5 px-[11px] py-[5px] text-[12px] text-muted-foreground font-medium animate-pulse">
@@ -6483,21 +6536,34 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                                         <MoreVertical size={18} />
                                       </button>
                                     </DropdownMenuTrigger>
-                                    <DropdownMenuContent side="top" align="end" className="w-[140px] rounded-xl shadow-xl border-muted/20">
-                                      <DropdownMenuItem 
+                                    <DropdownMenuContent
+                                      side="top"
+                                      align="end"
+                                      className="w-[140px] rounded-xl shadow-xl border-muted/20"
+                                    >
+                                      <DropdownMenuItem
                                         onClick={(e) => {
                                           e.stopPropagation();
-                                          window.open(`/api/documents/${uploadedDoc.id}/download`, '_blank');
+                                          window.open(
+                                            `/api/documents/${uploadedDoc.id}/download`,
+                                            "_blank",
+                                          );
                                         }}
                                         className="flex items-center gap-2 cursor-pointer font-medium text-[13px] py-2.5"
                                       >
-                                        <Eye size={16} className="text-primary" />
+                                        <Eye
+                                          size={16}
+                                          className="text-primary"
+                                        />
                                         Preview
                                       </DropdownMenuItem>
-                                      <DropdownMenuItem 
+                                      <DropdownMenuItem
                                         onClick={(e) => {
                                           e.stopPropagation();
-                                          setDocumentToDelete({ id: uploadedDoc.id, name: item.title });
+                                          setDocumentToDelete({
+                                            id: uploadedDoc.id,
+                                            name: item.title,
+                                          });
                                         }}
                                         className="flex items-center gap-2 cursor-pointer font-medium text-[13px] py-2.5 text-red-600 focus:text-red-700 focus:bg-red-50"
                                       >
@@ -6513,7 +6579,9 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                                 <button
                                   onClick={(e) => {
                                     e.stopPropagation();
-                                    const defId = mapDocumentNameToId(item.title);
+                                    const defId = mapDocumentNameToId(
+                                      item.title,
+                                    );
                                     setActiveUploadId(item.id);
                                     setActiveUploadType("doc");
                                     openUploadModal(defId);
@@ -7357,7 +7425,9 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                             const hasAttachment =
                               state.docUploads[doc.name] ||
                               state.notes[doc.name];
-                            const isInProgress = (hasAttachment && !isReviewed) || docReviewStatus === "in-progress";
+                            const isInProgress =
+                              (hasAttachment && !isReviewed) ||
+                              docReviewStatus === "in-progress";
                             const isPetitioner = doc.tag === "petitioner";
                             const isBeneficiary = doc.tag === "beneficiary";
 
@@ -7481,30 +7551,43 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                                 <div className="shrink-0 flex items-center gap-2">
                                   {(() => {
                                     const defId = mapDocumentNameToId(doc.name);
-                                    const isUploadedInVault = uploadedDocuments.some(ud => ud.documentDefId === defId);
-                                    const uploadedDoc = uploadedDocuments.find(ud => ud.documentDefId === defId);
-                                    const isDeleting = uploadedDoc ? isDeletingIds.includes(uploadedDoc.id) : false;
-                                    
-                                    if (isDeleting) return null; // Badge hidden while deleting
-                                    
-                                    const displayStatus = isUploadedInVault 
-                                      ? "Uploaded" 
-                                      : (isReloadingDocs 
-                                        ? "Checking..." 
-                                        : (isReviewed ? "Reviewed" : (isInProgress ? "In progress" : "Not started")));
+                                    const isUploadedInVault =
+                                      uploadedDocuments.some(
+                                        (ud) => ud.documentDefId === defId,
+                                      );
+                                    const uploadedDoc = uploadedDocuments.find(
+                                      (ud) => ud.documentDefId === defId,
+                                    );
+                                    const isDeleting = uploadedDoc
+                                      ? isDeletingIds.includes(uploadedDoc.id)
+                                      : false;
 
-                                    const statusClasses = isUploadedInVault 
+                                    if (isDeleting) return null; // Badge hidden while deleting
+
+                                    const displayStatus = isUploadedInVault
+                                      ? "Uploaded"
+                                      : isReloadingDocs
+                                        ? "Checking..."
+                                        : isReviewed
+                                          ? "Reviewed"
+                                          : isInProgress
+                                            ? "In progress"
+                                            : "Not started";
+
+                                    const statusClasses = isUploadedInVault
                                       ? "bg-[#eaf7f2] text-[#1a7a5e] border-[#b5e0d0] font-bold shadow-sm"
-                                      : (isReloadingDocs
+                                      : isReloadingDocs
                                         ? "bg-muted/30 text-muted-foreground border-muted-foreground/20 animate-pulse"
-                                        : (isReviewed 
+                                        : isReviewed
                                           ? "bg-[#eaf7f2] text-[#1a7a5e] border-[#b5e0d0]"
-                                          : (isInProgress 
+                                          : isInProgress
                                             ? "bg-[#fff9e6] text-[#d97706] border-[#fde68a]"
-                                            : "bg-white text-[#6b8097] border-[#d0e4f7] hover:border-primary hover:text-primary")));
+                                            : "bg-white text-[#6b8097] border-[#d0e4f7] hover:border-primary hover:text-primary";
 
                                     return (
-                                      <div className={`px-[11px] py-[5px] rounded-full border text-[12px] font-medium tracking-normal transition-all ${statusClasses}`}>
+                                      <div
+                                        className={`px-[11px] py-[5px] rounded-full border text-[12px] font-medium tracking-normal transition-all ${statusClasses}`}
+                                      >
                                         {displayStatus}
                                       </div>
                                     );
@@ -7512,9 +7595,13 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
 
                                   {(() => {
                                     const defId = mapDocumentNameToId(doc.name);
-                                    const uploadedDoc = uploadedDocuments.find(ud => ud.documentDefId === defId);
-                                    const isDeleting = uploadedDoc ? isDeletingIds.includes(uploadedDoc.id) : false;
-                                    
+                                    const uploadedDoc = uploadedDocuments.find(
+                                      (ud) => ud.documentDefId === defId,
+                                    );
+                                    const isDeleting = uploadedDoc
+                                      ? isDeletingIds.includes(uploadedDoc.id)
+                                      : false;
+
                                     if (isReloadingDocs && !uploadedDoc) {
                                       return (
                                         <div className="flex items-center gap-1.5 px-[11px] py-[5px] text-[12px] text-muted-foreground font-medium animate-pulse">
@@ -7538,27 +7625,42 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                                         <DropdownMenu>
                                           <DropdownMenuTrigger asChild>
                                             <button
-                                              onClick={(e) => e.stopPropagation()}
+                                              onClick={(e) =>
+                                                e.stopPropagation()
+                                              }
                                               className="h-8 w-8 rounded-full hover:bg-muted flex items-center justify-center transition-colors text-muted-foreground hover:text-foreground border border-transparent hover:border-muted-foreground/20"
                                             >
                                               <MoreVertical size={18} />
                                             </button>
                                           </DropdownMenuTrigger>
-                                          <DropdownMenuContent side="top" align="end" className="w-[140px] rounded-xl shadow-xl border-muted/20">
-                                            <DropdownMenuItem 
+                                          <DropdownMenuContent
+                                            side="top"
+                                            align="end"
+                                            className="w-[140px] rounded-xl shadow-xl border-muted/20"
+                                          >
+                                            <DropdownMenuItem
                                               onClick={(e) => {
                                                 e.stopPropagation();
-                                                window.open(`/api/documents/${uploadedDoc.id}/download`, '_blank');
+                                                window.open(
+                                                  `/api/documents/${uploadedDoc.id}/download`,
+                                                  "_blank",
+                                                );
                                               }}
                                               className="flex items-center gap-2 cursor-pointer font-medium text-[13px] py-2.5"
                                             >
-                                              <Eye size={16} className="text-primary" />
+                                              <Eye
+                                                size={16}
+                                                className="text-primary"
+                                              />
                                               Preview
                                             </DropdownMenuItem>
-                                            <DropdownMenuItem 
+                                            <DropdownMenuItem
                                               onClick={(e) => {
                                                 e.stopPropagation();
-                                                setDocumentToDelete({ id: uploadedDoc.id, name: doc.name });
+                                                setDocumentToDelete({
+                                                  id: uploadedDoc.id,
+                                                  name: doc.name,
+                                                });
                                               }}
                                               className="flex items-center gap-2 cursor-pointer font-medium text-[13px] py-2.5 text-red-600 focus:text-red-700 focus:bg-red-50"
                                             >
@@ -7574,7 +7676,9 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                                       <button
                                         onClick={(e) => {
                                           e.stopPropagation();
-                                          const defId = mapDocumentNameToId(doc.name);
+                                          const defId = mapDocumentNameToId(
+                                            doc.name,
+                                          );
                                           setActiveUploadId(doc.id);
                                           setActiveUploadType("doc");
                                           openUploadModal(defId);
@@ -7588,7 +7692,6 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                                     );
                                   })()}
                                 </div>
-
                               </div>
                             );
                           })}
@@ -7735,7 +7838,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                             </div>
 
                             <div
-                              className={`text-[10px] font-bold uppercase tracking-[0.1em] mb-[10px] transition-colors duration-[0.24s] ${isSelected ? pSelText : pIdleText}`}
+                              className={`text-[10px] font-bold uppercase tracking-widest mb-[10px] transition-colors duration-[0.24s] ${isSelected ? pSelText : pIdleText}`}
                             >
                               {isOnline ? "Online Filing" : "Paper Filing"}
                             </div>
@@ -7910,490 +8013,17 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
         </button>
       </footer>
 
-      {/* Sponsorship Calculator Overlay (Step 5 Specific) */}
-      {isSponsorshipCalcOpen && (
-        <div className="fixed inset-0 bg-white z-[150] flex flex-col overflow-hidden animate-in slide-in-from-bottom-[18px] duration-[0.28s] ease-in-out font-sans">
-          {/* Topbar */}
-          <div className="flex items-center h-[64px] border-b border-[#d0e4f7] px-6 gap-4 shrink-0 bg-white">
-            <button
-              onClick={() => setIsSponsorshipCalcOpen(false)}
-              className="w-9 h-9 rounded-full bg-[#f4f7fb] border-none flex items-center justify-center text-[#3a4f63] hover:bg-primary/10 transition-all cursor-pointer outline-none focus:ring-2 focus:ring-primary"
-            >
-              <X size={16} strokeWidth={2} />
-            </button>
-            <div className="flex-1 h-[5px] bg-[#d0e4f7] rounded-[10px] overflow-hidden">
-              <div
-                className="h-full bg-linear-to-r from-primary to-primary/70 transition-all duration-500"
-                style={{
-                  width: `${Math.round(((sponsorshipStepIdx + 1) / 7) * 100)}%`,
-                }}
-              />
-            </div>
-            <div className="text-[12px] font-medium text-[#6b8097] whitespace-nowrap shrink-0">
-              {sponsorshipStepIdx + 1} / 7
-            </div>
-          </div>
-
-          {/* Body */}
-          <div className="flex-1 overflow-y-auto bg-white p-[48px_24px_40px] flex flex-col items-center">
-            <div className="w-full max-w-[560px] flex flex-col">
-              {(() => {
-                const step = sponsorshipStepIdx;
-                const req = getThreshold(sponsorshipData.householdSize);
-                const qualifies = sponsorshipData.agi >= req;
-                const pct =
-                  sponsorshipData.agi > 0
-                    ? Math.round((sponsorshipData.agi / req) * 100)
-                    : 0;
-
-                if (step === 0) {
-                  return (
-                    <div className="animate-in fade-in slide-in-from-right-4 duration-300">
-                      <div className="text-[11px] font-semibold tracking-[0.1em] uppercase text-primary mb-4">
-                        Sponsorship Calculator · Step 1 of 7
-                      </div>
-                      <h2 className="text-[clamp(22px,3.5vw,28px)]  font-black text-[#0c1b33] mb-2 leading-[1.3]">
-                        Welcome to the Sponsorship Calculator
-                      </h2>
-                      <p className="text-[14px] text-[#3a4f63] leading-[1.7] mb-6">
-                        This tool determines whether the petitioner qualifies as
-                        the sole sponsor or whether additional sponsorship —
-                        through household members or joint sponsors — is needed.
-                        Your result generates the exact affidavit forms
-                        required.
-                      </p>
-                      <div className="bg-[#e8f1fb] border border-[#d0e4f7] rounded-[10px] p-[14px_16px] mb-6">
-                        <p className="text-[13px] text-[#3a4f63] leading-[1.6]">
-                          You will need your most recent federal tax return
-                          (Form 1040) to find your Adjusted Gross Income (AGI).
-                        </p>
-                      </div>
-                      <div className="flex gap-[10px]">
-                        <button
-                          onClick={() => setSponsorshipStepIdx(1)}
-                          className="flex-1 p-[14px_22px] bg-primary text-white border-none rounded-[10px] text-[15px] font-semibold cursor-pointer transition-all hover:bg-primary/80 hover:-translate-y-px"
-                        >
-                          Get Started →
-                        </button>
-                      </div>
-                    </div>
-                  );
-                }
-
-                if (step === 1) {
-                  return (
-                    <div className="animate-in fade-in slide-in-from-right-4 duration-300">
-                      <div className="text-[11px] font-semibold tracking-[0.1em] uppercase text-primary mb-4">
-                        Sponsorship Calculator · Step 2 of 7
-                      </div>
-                      <h2 className="text-[clamp(22px,3.5vw,28px)]  font-black text-[#0c1b33] mb-2 leading-[1.3]">
-                        Find your Adjusted Gross Income (AGI)
-                      </h2>
-                      <div className="bg-[#e8f1fb] border border-[#d0e4f7] rounded-[10px] p-[14px_16px] mb-6">
-                        <p className="text-[13px] text-[#3a4f63] leading-[1.6]">
-                          <strong>What is AGI?</strong> Adjusted Gross Income is
-                          your total income minus specific deductions. You can
-                          find it on Line 11 of IRS Form 1040.
-                        </p>
-                      </div>
-                      <div className="bg-white border-[1.5px] border-[#d0e4f7] rounded-[10px] p-[20px] mb-6">
-                        <label className="text-[12px] font-semibold uppercase tracking-[0.04em] text-[#6b8097] mb-2 block">
-                          Petitioner&apos;s Most Recent AGI
-                        </label>
-                        <input
-                          type="number"
-                          value={sponsorshipData.agi || ""}
-                          onChange={(e) =>
-                            setSponsorshipData({
-                              ...sponsorshipData,
-                              agi: parseInt(e.target.value) || 0,
-                            })
-                          }
-                          className="w-full p-[12px_14px] border-[1.5px] border-[#d0e4f7] rounded-[10px] text-[15px] text-[#0c1b33] outline-none focus:border-primary focus:ring-4 focus:ring-primary/12 transition-all"
-                          placeholder="e.g. 45000"
-                        />
-                        <p className="text-[12px] text-[#6b8097] mt-2 leading-[1.5]">
-                          Enter the dollar amount from your most recent federal
-                          tax return.
-                        </p>
-                      </div>
-                      <div className="flex gap-[10px]">
-                        <button
-                          onClick={() => setSponsorshipStepIdx(0)}
-                          className="p-[13px_22px] bg-transparent text-[#3a4f63] border-[1.5px] border-[#d0e4f7] rounded-[10px] font-medium transition-all hover:border-[#3a4f63]"
-                        >
-                          ← Back
-                        </button>
-                        <button
-                          onClick={() => setSponsorshipStepIdx(2)}
-                          className="flex-1 p-[14px_22px] bg-primary text-white border-none rounded-[10px] text-[15px] font-semibold transition-all hover:bg-primary/80 hover:-translate-y-px"
-                        >
-                          Continue →
-                        </button>
-                      </div>
-                    </div>
-                  );
-                }
-
-                if (step === 2) {
-                  return (
-                    <div className="animate-in fade-in slide-in-from-right-4 duration-300">
-                      <div className="text-[11px] font-semibold tracking-[0.1em] uppercase text-primary mb-4">
-                        Sponsorship Calculator · Step 3 of 7
-                      </div>
-                      <h2 className="text-[clamp(22px,3.5vw,28px)]  font-black text-[#0c1b33] mb-2 leading-[1.3]">
-                        What is your household size?
-                      </h2>
-                      <div className="bg-[#e8f1fb] border border-[#d0e4f7] rounded-[10px] p-[14px_16px] mb-6">
-                        <p className="text-[13px] text-[#3a4f63] leading-[1.6]">
-                          Include the petitioner, the beneficiary, and any
-                          dependents.
-                        </p>
-                      </div>
-                      <div className="bg-white border-[1.5px] border-[#d0e4f7] rounded-[10px] p-[20px] mb-6">
-                        <label className="text-[12px] font-semibold uppercase tracking-[0.04em] text-[#6b8097] mb-2 block">
-                          Total Household Size
-                        </label>
-                        <input
-                          type="number"
-                          min="2"
-                          value={sponsorshipData.householdSize || 2}
-                          onChange={(e) =>
-                            setSponsorshipData({
-                              ...sponsorshipData,
-                              householdSize: Math.max(
-                                2,
-                                parseInt(e.target.value) || 2,
-                              ),
-                            })
-                          }
-                          className="w-full p-[12px_14px] border-[1.5px] border-[#d0e4f7] rounded-[10px] text-[15px] text-[#0c1b33] outline-none focus:border-primary focus:ring-4 focus:ring-primary/12 transition-all"
-                        />
-                      </div>
-                      <div className="flex gap-[10px]">
-                        <button
-                          onClick={() => setSponsorshipStepIdx(1)}
-                          className="p-[13px_22px] bg-transparent text-[#3a4f63] border-[1.5px] border-[#d0e4f7] rounded-[10px] font-medium transition-all hover:border-[#3a4f63]"
-                        >
-                          ← Back
-                        </button>
-                        <button
-                          onClick={() => setSponsorshipStepIdx(3)}
-                          className="flex-1 p-[14px_22px] bg-primary text-white border-none rounded-[10px] text-[15px] font-semibold transition-all hover:bg-primary/80 hover:-translate-y-px"
-                        >
-                          Continue →
-                        </button>
-                      </div>
-                    </div>
-                  );
-                }
-
-                if (step === 3) {
-                  return (
-                    <div className="animate-in fade-in slide-in-from-right-4 duration-300">
-                      <div className="text-[11px] font-semibold tracking-[0.1em] uppercase text-primary mb-4">
-                        Sponsorship Calculator · Step 4 of 7
-                      </div>
-                      <h2 className="text-[clamp(22px,3.5vw,28px)]  font-black text-[#0c1b33] mb-4 leading-[1.3]">
-                        Sponsorship qualification check
-                      </h2>
-                      <div
-                        className={`bg-[#e8f5ef] border border-[#a8d9be] rounded-[10px] p-[18px_20px] mb-6 ${qualifies ? "bg-[#e8f5ef] border-[#a8d9be]" : "bg-[#fef8e8] border-[#f0d98a]"}`}
-                      >
-                        <div
-                          className={`text-[10px] font-bold uppercase tracking-widest mb-2 ${qualifies ? "text-[#15744f]" : "text-[#8a6200]"}`}
-                        >
-                          {qualifies
-                            ? "Petitioner qualifies alone"
-                            : "Additional sponsorship may be needed"}
-                        </div>
-                        <div className="text-[20px]  text-[#0c1b33] mb-1.5">
-                          AGI: ${sponsorshipData.agi.toLocaleString()}{" "}
-                          &nbsp;·&nbsp; Threshold: ${req.toLocaleString()}
-                        </div>
-                        <div className="text-[13px] text-[#3a4f63] leading-[1.55]">
-                          {qualifies
-                            ? `AGI is ${pct}% of the threshold — petitioner qualifies as sole sponsor.`
-                            : `AGI is ${pct}% of the ${req.toLocaleString()} threshold. Household member income or a joint sponsor may be needed.`}
-                        </div>
-                      </div>
-                      <div className="flex gap-[10px]">
-                        <button
-                          onClick={() => setSponsorshipStepIdx(2)}
-                          className="p-[13px_22px] bg-transparent text-[#3a4f63] border-[1.5px] border-[#d0e4f7] rounded-[10px] font-medium transition-all hover:border-[#3a4f63]"
-                        >
-                          ← Back
-                        </button>
-                        <button
-                          onClick={() => setSponsorshipStepIdx(4)}
-                          className="flex-1 p-[14px_22px] bg-primary text-white border-none rounded-[10px] text-[15px] font-semibold transition-all hover:bg-primary/80 hover:-translate-y-px"
-                        >
-                          Continue →
-                        </button>
-                      </div>
-                    </div>
-                  );
-                }
-
-                if (step === 4) {
-                  return (
-                    <div className="animate-in fade-in slide-in-from-right-4 duration-300">
-                      <div className="text-[11px] font-semibold tracking-[0.1em] uppercase text-primary mb-4">
-                        Sponsorship Calculator · Step 5 of 7
-                      </div>
-                      <h2 className="text-[clamp(22px,3.5vw,28px)]  font-black text-[#0c1b33] mb-2 leading-[1.3]">
-                        Is household member income being used?
-                      </h2>
-                      <p className="text-[14px] text-[#3a4f63] leading-[1.7] mb-6">
-                        A household member can contribute income to help meet
-                        the threshold. This requires Form I-864A.
-                      </p>
-                      <div className="bg-white border-[1.5px] border-[#d0e4f7] rounded-[10px] p-[20px] mb-6">
-                        <label className="text-[12px] font-semibold uppercase tracking-[0.04em] text-[#6b8097] mb-2 block">
-                          Using Household Member Income?
-                        </label>
-                        <select
-                          value={
-                            sponsorshipData.needsHouseholdMember ? "yes" : "no"
-                          }
-                          onChange={(e) =>
-                            setSponsorshipData({
-                              ...sponsorshipData,
-                              needsHouseholdMember: e.target.value === "yes",
-                            })
-                          }
-                          className="w-full p-[12px_14px] border-[1.5px] border-[#d0e4f7] rounded-[10px] text-[15px] bg-white text-[#0c1b33] outline-none transition-all"
-                        >
-                          <option value="no">
-                            No — petitioner income only
-                          </option>
-                          <option value="yes">
-                            Yes — including household member income
-                          </option>
-                        </select>
-                        {sponsorshipData.needsHouseholdMember && (
-                          <div className="mt-4 animate-in fade-in zoom-in-95 duration-200">
-                            <label className="text-[12px] font-semibold uppercase tracking-[0.04em] text-[#6b8097] mb-2 block">
-                              Number of household members
-                            </label>
-                            <input
-                              type="number"
-                              min="1"
-                              value={sponsorshipData.householdMemberCount || 1}
-                              onChange={(e) =>
-                                setSponsorshipData({
-                                  ...sponsorshipData,
-                                  householdMemberCount: Math.max(
-                                    1,
-                                    parseInt(e.target.value) || 1,
-                                  ),
-                                })
-                              }
-                              className="w-full p-[12px_14px] border-[1.5px] border-[#d0e4f7] rounded-[10px] text-[15px] text-[#0c1b33] outline-none transition-all"
-                            />
-                          </div>
-                        )}
-                      </div>
-                      <div className="flex gap-[10px]">
-                        <button
-                          onClick={() => setSponsorshipStepIdx(3)}
-                          className="p-[13px_22px] bg-transparent text-[#3a4f63] border-[1.5px] border-[#d0e4f7] rounded-[10px] font-medium transition-all hover:border-[#3a4f63]"
-                        >
-                          ← Back
-                        </button>
-                        <button
-                          onClick={() => setSponsorshipStepIdx(5)}
-                          className="flex-1 p-[14px_22px] bg-primary text-white border-none rounded-[10px] text-[15px] font-semibold transition-all hover:bg-primary/80 hover:-translate-y-px"
-                        >
-                          Continue →
-                        </button>
-                      </div>
-                    </div>
-                  );
-                }
-
-                if (step === 5) {
-                  return (
-                    <div className="animate-in fade-in slide-in-from-right-4 duration-300">
-                      <div className="text-[11px] font-semibold tracking-[0.1em] uppercase text-primary mb-4">
-                        Sponsorship Calculator · Step 6 of 7
-                      </div>
-                      <h2 className="text-[clamp(22px,3.5vw,28px)]  font-black text-[#0c1b33] mb-2 leading-[1.3]">
-                        Is a joint sponsor needed?
-                      </h2>
-                      <p className="text-[14px] text-[#3a4f63] leading-[1.7] mb-6">
-                        A joint sponsor independently meets the income threshold
-                        and files their own I-864.
-                      </p>
-                      <div className="bg-white border-[1.5px] border-[#d0e4f7] rounded-[10px] p-[20px] mb-6">
-                        <label className="text-[12px] font-semibold uppercase tracking-[0.04em] text-[#6b8097] mb-2 block">
-                          Using a joint sponsor?
-                        </label>
-                        <select
-                          value={
-                            sponsorshipData.needsJointSponsor ? "yes" : "no"
-                          }
-                          onChange={(e) =>
-                            setSponsorshipData({
-                              ...sponsorshipData,
-                              needsJointSponsor: e.target.value === "yes",
-                            })
-                          }
-                          className="w-full p-[12px_14px] border-[1.5px] border-[#d0e4f7] rounded-[10px] text-[15px] bg-white text-[#0c1b33] outline-none transition-all"
-                        >
-                          <option value="no">No</option>
-                          <option value="yes">Yes</option>
-                        </select>
-                        {sponsorshipData.needsJointSponsor && (
-                          <div className="mt-4 animate-in fade-in zoom-in-95 duration-200">
-                            <label className="text-[12px] font-semibold uppercase tracking-[0.04em] text-[#6b8097] mb-2 block">
-                              Number of joint sponsors
-                            </label>
-                            <select
-                              value={sponsorshipData.jointSponsorCount || 1}
-                              onChange={(e) =>
-                                setSponsorshipData({
-                                  ...sponsorshipData,
-                                  jointSponsorCount:
-                                    parseInt(e.target.value) || 1,
-                                })
-                              }
-                              className="w-full p-[12px_14px] border-[1.5px] border-[#d0e4f7] rounded-[10px] text-[15px] bg-white text-[#0c1b33] outline-none transition-all"
-                            >
-                              <option value="1">1 joint sponsor</option>
-                              <option value="2">2 joint sponsors</option>
-                            </select>
-                          </div>
-                        )}
-                      </div>
-                      <div className="flex gap-[10px]">
-                        <button
-                          onClick={() => setSponsorshipStepIdx(4)}
-                          className="p-[13px_22px] bg-transparent text-[#3a4f63] border-[1.5px] border-[#d0e4f7] rounded-[10px] font-medium transition-all hover:border-[#3a4f63]"
-                        >
-                          ← Back
-                        </button>
-                        <button
-                          onClick={() => setSponsorshipStepIdx(6)}
-                          className="flex-1 p-[14px_22px] bg-primary text-white border-none rounded-[10px] text-[15px] font-semibold transition-all hover:bg-primary/80 hover:-translate-y-px"
-                        >
-                          Continue →
-                        </button>
-                      </div>
-                    </div>
-                  );
-                }
-
-                if (step === 6) {
-                  const forms: any[] = [];
-                  const formNames: string[] = [];
-                  if (
-                    !sponsorshipData.needsHouseholdMember &&
-                    !sponsorshipData.needsJointSponsor &&
-                    sponsorshipData.agi >= req
-                  ) {
-                    forms.push({
-                      name: "Form I-864EZ — Petitioner",
-                      sub: "Simplified affidavit — petitioner qualifies alone with wage/salary income",
-                      url: I864EZ_URL,
-                    });
-                    formNames.push("I-864EZ (Petitioner)");
-                  } else {
-                    forms.push({
-                      name: "Form I-864 — Petitioner",
-                      sub: "Full affidavit of support for the petitioner",
-                      url: I864_URL,
-                    });
-                    formNames.push("I-864 (Petitioner)");
-                  }
-                  for (
-                    let i = 1;
-                    i <= (sponsorshipData.jointSponsorCount || 0);
-                    i++
-                  ) {
-                    forms.push({
-                      name: `Form I-864 — Joint Sponsor ${i}`,
-                      sub: `Joint sponsor ${i} files an independent full affidavit`,
-                      url: I864_URL,
-                    });
-                    formNames.push(`I-864 (Joint Sponsor ${i})`);
-                  }
-                  for (
-                    let i = 1;
-                    i <= (sponsorshipData.householdMemberCount || 0);
-                    i++
-                  ) {
-                    forms.push({
-                      name: `Form I-864A — Household Member ${i}`,
-                      sub: `Household member ${i} contributes income to the petitioner&apos;s sponsorship`,
-                      url: I864A_URL,
-                    });
-                    formNames.push(`I-864A (Household Member ${i})`);
-                  }
-
-                  return (
-                    <div className="animate-in fade-in slide-in-from-right-4 duration-300">
-                      <div className="text-[11px] font-semibold tracking-[0.1em] uppercase text-primary mb-4">
-                        Sponsorship Calculator · Step 7 of 7
-                      </div>
-                      <h2 className="text-[clamp(22px,3.5vw,28px)]  font-black text-[#0c1b33] mb-4 leading-[1.3]">
-                        Your sponsorship plan
-                      </h2>
-                      <div className="bg-[#e8f5ef] border border-[#a8d9be] rounded-[10px] p-[18px_20px] mb-6">
-                        <div className="text-[10px] font-bold uppercase tracking-widest text-[#15744f] mb-2">
-                          Sponsorship Plan
-                        </div>
-                        <div className="text-[20px]  text-[#0c1b33] mb-1.5">
-                          {forms.length} form{forms.length > 1 ? "s" : ""}{" "}
-                          required
-                        </div>
-                        <div className="text-[13px] text-[#3a4f63] leading-[1.55]">
-                          {formNames.join(" · ")}
-                        </div>
-                      </div>
-                      <div className="flex gap-[10px]">
-                        <button
-                          onClick={() => setSponsorshipStepIdx(5)}
-                          className="p-[13px_22px] bg-transparent text-[#3a4f63] border-[1.5px] border-[#d0e4f7] rounded-[10px] font-medium transition-all hover:border-[#3a4f63]"
-                        >
-                          ← Back
-                        </button>
-                        <button
-                          onClick={() => {
-                            const result = {
-                              agi: sponsorshipData.agi,
-                              householdSize: sponsorshipData.householdSize,
-                              qualifies: sponsorshipData.agi >= req,
-                              needsHouseholdMember:
-                                sponsorshipData.needsHouseholdMember,
-                              householdMemberCount:
-                                sponsorshipData.householdMemberCount,
-                              needsJointSponsor:
-                                sponsorshipData.needsJointSponsor,
-                              jointSponsorCount:
-                                sponsorshipData.jointSponsorCount,
-                              forms,
-                            };
-                            actions.updateMetadata({
-                              sponsorshipResult: result,
-                            });
-                            setIsSponsorshipCalcOpen(false);
-                            if (!isCompleted)
-                              actions.toggleComplete("step_2_5");
-                          }}
-                          className="flex-1 p-[14px_22px] bg-[#15744f] text-white border-none rounded-[10px] text-[15px] font-semibold transition-all hover:bg-[#0e5c3c] hover:-translate-y-px"
-                        >
-                          Return to Affidavit Step →
-                        </button>
-                      </div>
-                    </div>
-                  );
-                }
-              })()}
-            </div>
-          </div>
-        </div>
-      )}
+      {/* Sponsorship Calculator Tool Overlay */}
+      <SponsorshipCalculatorTool
+        isOpen={isSponsorshipCalcOpen}
+        onClose={() => setIsSponsorshipCalcOpen(false)}
+        initialData={sponsorshipResult?.raw}
+        onSave={(result) => {
+          actions.updateMetadata({ sponsorshipResult: result });
+          setIsSponsorshipCalcOpen(false);
+          if (!isCompleted) actions.toggleComplete("step_2_5");
+        }}
+      />
 
       {/* Global Modals */}
       <CredentialFormModal
@@ -8496,7 +8126,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
           const docId = documentToDelete.id;
           // Close modal immediately so UI drops back to "Deleting..." spinner inline
           setDocumentToDelete(null);
-          
+
           try {
             await deleteDocument(docId);
             toast.success("Document deleted successfully");
@@ -8576,7 +8206,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
           {/* Guide Body */}
           <div className="flex-1 overflow-y-auto flex flex-col items-center p-[48px_24px_40px] bg-white">
             <div className="w-full max-w-[600px] flex flex-col">
-              <div className="text-[11px] font-semibold tracking-[0.1em] uppercase text-primary mb-4">
+              <div className="text-[11px] font-semibold tracking-widest uppercase text-primary mb-4">
                 Step 2 · Gather Required Documents
               </div>
               <div className="inline-flex items-center gap-[5px] bg-[#e8f1fb] border border-[#d0e4f7] rounded-full px-[12px] py-[4px] w-fit mb-6">
@@ -8598,23 +8228,40 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
 
               {/* Sections */}
               <div className="w-full flex flex-col">
-                {InlineGuideData[selectedGuideId].sections.map(
-                  (section, idx) => (
-                    <div
-                      key={idx}
-                      className="bg-[#f4f7fb] border border-[#d0e4f7] rounded-[16px] p-[20px_22px] mb-[14px]"
-                    >
-                      <div className="text-[13px] font-semibold tracking-[0.05em] uppercase text-[#6b8097] mb-[10px]">
-                        {section.title}
-                      </div>
+                {selectedGuideId === "doc_passport_photos" ? (
+                  <div className="mb-4">
+                    <PassportPhotoTool
+                      showHeader={false}
+                      showRequirements={true}
+                    />
+                  </div>
+                ) : selectedGuideId === "doc_translations" ? (
+                  <div className="mb-4">
+                    <DocumentTranslationTool
+                      showHeader={false}
+                      showRequirements={true}
+                      showRequestsLink={false}
+                    />
+                  </div>
+                ) : (
+                  InlineGuideData[selectedGuideId].sections.map(
+                    (section, idx) => (
                       <div
-                        className="guide-content"
-                        dangerouslySetInnerHTML={{
-                          __html: section.htmlContent,
-                        }}
-                      />
-                    </div>
-                  ),
+                        key={idx}
+                        className="bg-[#f4f7fb] border border-[#d0e4f7] rounded-[16px] p-[20px_22px] mb-[14px]"
+                      >
+                        <div className="text-[13px] font-semibold tracking-[0.05em] uppercase text-[#6b8097] mb-[10px]">
+                          {section.title}
+                        </div>
+                        <div
+                          className="guide-content"
+                          dangerouslySetInnerHTML={{
+                            __html: section.htmlContent,
+                          }}
+                        />
+                      </div>
+                    ),
+                  )
                 )}
               </div>
 
@@ -8628,17 +8275,20 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                         selectedGuideId,
                         "reviewed",
                       );
-                      
+
                       // Check if all documents are now reviewed for auto-complete
-                      const sId = currentStep.step_key || (currentStep as any)?.id;
+                      const sId =
+                        currentStep.step_key || (currentStep as any)?.id;
                       if (sId === "step_1_2") {
                         const docItems = currentStep.document_items || [];
                         const allReviewed = docItems.every((doc: any) => {
                           if (doc.id === selectedGuideId) return true; // This one will be reviewed
-                          return state.metadata?.docReviewStatus?.[doc.id] === "reviewed" ||
-                                 state.documentChecklist[doc.name];
+                          return (
+                            state.metadata?.docReviewStatus?.[doc.id] ===
+                              "reviewed" || state.documentChecklist[doc.name]
+                          );
                         });
-                        
+
                         // Auto-complete step if all documents are reviewed
                         if (allReviewed && !isCompleted) {
                           handleToggleComplete();
@@ -8763,7 +8413,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
               {/* Tutorial Body */}
               <div className="flex-1 overflow-y-auto bg-[#fafcff] p-[48px_24px_40px] flex flex-col items-center">
                 <div className="w-full max-w-[580px] flex flex-col">
-                  <div className="text-[11px] font-semibold tracking-[0.1em] uppercase text-primary mb-4">
+                  <div className="text-[11px] font-semibold tracking-widest uppercase text-primary mb-4">
                     {isDynamic
                       ? currentTutStep.label
                       : (currentTutStep as (typeof USCIS_TUTORIAL_STEPS)[0])
@@ -8963,7 +8613,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
           {/* Guide Body */}
           <div className="flex-1 overflow-y-auto flex flex-col items-center p-[48px_24px_40px]">
             <div className="w-full max-w-[600px]">
-              <div className="text-[11px] font-semibold tracking-[0.1em] uppercase text-[#2f6fd4] mb-[16px]">
+              <div className="text-[11px] font-semibold tracking-widest uppercase text-[#2f6fd4] mb-[16px]">
                 Step 4 · Original Documents Checklist
               </div>
               <h2 className="text-[clamp(20px,3vw,26px)]  text-[#0c1b33] mb-[8px] leading-[1.25]">
@@ -9037,7 +8687,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
       {/* Medical Exam Guide Overlay (Step 3.5) */}
       {isMedicalGuideOpen &&
         currentStep?.tool_data?.type === "medical_exam_guide" && (
-          <div className="fixed inset-0 z-[200] bg-white flex flex-col overflow-hidden animate-in slide-in-from-bottom duration-280 font-sans">
+          <div className="fixed inset-0 z-200 bg-white flex flex-col overflow-hidden animate-in slide-in-from-bottom duration-280 font-sans">
             {/* Topbar */}
             <div className="flex items-center p-[18px_24px] border-b border-[#d0e4f7] gap-[16px] shrink-0">
               <button
@@ -9059,21 +8709,25 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                 />
               </div>
               <div className="text-[12px] font-medium text-[#6b8097] shrink-0">
-                {medicalGuideIdx + 1} / {(currentStep.tool_data as any).tutorial.length}
+                {medicalGuideIdx + 1} /{" "}
+                {(currentStep.tool_data as any).tutorial.length}
               </div>
             </div>
 
             {/* Body */}
             <div className="flex-1 overflow-y-auto flex flex-col items-center p-[48px_24px_40px]">
               {(() => {
-                const s = (currentStep.tool_data as any).tutorial[medicalGuideIdx];
+                const s = (currentStep.tool_data as any).tutorial[
+                  medicalGuideIdx
+                ];
                 const isFirst = medicalGuideIdx === 0;
                 const isLast =
-                  medicalGuideIdx === (currentStep.tool_data as any).tutorial.length - 1;
+                  medicalGuideIdx ===
+                  (currentStep.tool_data as any).tutorial.length - 1;
 
                 return (
                   <div className="w-full max-w-[580px] flex flex-col">
-                    <div className="text-[11px] font-bold tracking-[0.1em] uppercase text-primary mb-[14px]">
+                    <div className="text-[11px] font-bold tracking-widest uppercase text-primary mb-[14px]">
                       Medical Exam Guide · {s.label}
                     </div>
                     <h2 className="text-[clamp(20px,3.2vw,26px)]  text-[#0c1b33] mb-[8px] leading-[1.3]">
@@ -9165,7 +8819,8 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
 
             // Update journey status based on what was being uploaded
             if (activeUploadId && activeUploadType) {
-              const currentHhStatus = (state.metadata.hhDocsStatus as any) || {};
+              const currentHhStatus =
+                (state.metadata.hhDocsStatus as any) || {};
               const currentFinStatus =
                 (state.metadata.financialDocsStatus as any) || {};
 
@@ -9245,10 +8900,10 @@ function NvcFeeModal({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-[300] flex items-center justify-center p-5">
+    <div className="fixed inset-0 z-300 flex items-center justify-center p-5">
       {/* Overlay */}
       <div
-        className="absolute inset-0 bg-[#0c1b33]/55 backdrop-blur-[4px] animate-in fade-in duration-200"
+        className="absolute inset-0 bg-[#0c1b33]/55 backdrop-blur-xs animate-in fade-in duration-200"
         onClick={onClose}
       />
 
@@ -9405,7 +9060,7 @@ function FinancialDocGuideOverlay({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-white z-[200] flex flex-col overflow-hidden animate-in slide-in-from-bottom-[18px] duration-[0.28s] ease-in-out font-sans">
+    <div className="fixed inset-0 bg-white z-200 flex flex-col overflow-hidden animate-in slide-in-from-bottom-[18px] duration-[0.28s] ease-in-out font-sans">
       {/* Topbar */}
       <div className="flex items-center h-[72px] border-b border-[#d0e4f7] px-6 gap-4 shrink-0 bg-white">
         <button
@@ -9423,7 +9078,7 @@ function FinancialDocGuideOverlay({
       {/* Body */}
       <div className="flex-1 overflow-y-auto bg-white p-[48px_24px_40px] flex flex-col items-center">
         <div className="w-full max-w-[600px] flex flex-col">
-          <div className="text-[11px] font-semibold tracking-[0.1em] uppercase text-[#2f6fd4] mb-4">
+          <div className="text-[11px] font-semibold tracking-widest uppercase text-[#2f6fd4] mb-4">
             Step 6 · Financial Support Documents
           </div>
 
@@ -9537,7 +9192,7 @@ function HouseholdDocGuideOverlay({
   };
 
   return (
-    <div className="fixed inset-0 bg-white z-[200] flex flex-col overflow-hidden animate-in slide-in-from-bottom-[18px] duration-[0.28s] ease-in-out font-sans">
+    <div className="fixed inset-0 bg-white z-200 flex flex-col overflow-hidden animate-in slide-in-from-bottom-[18px] duration-[0.28s] ease-in-out font-sans">
       {/* Topbar */}
       <div className="flex items-center h-[72px] border-b border-[#d0e4f7] px-6 gap-4 shrink-0 bg-white">
         <button
@@ -9555,7 +9210,7 @@ function HouseholdDocGuideOverlay({
       {/* Body */}
       <div className="flex-1 overflow-y-auto bg-white p-[48px_24px_40px] flex flex-col items-center">
         <div className="w-full max-w-[600px] flex flex-col">
-          <div className="text-[11px] font-semibold tracking-[0.1em] uppercase text-[#4a2d8a] mb-4">
+          <div className="text-[11px] font-semibold tracking-widest uppercase text-[#4a2d8a] mb-4">
             Step 7 · Relationship Documentation
           </div>
 
@@ -9794,7 +9449,7 @@ function CivilDocGuideOverlay({
       {/* Body */}
       <div className="flex-1 overflow-y-auto bg-[#fafcff] p-[48px_24px_40px] flex flex-col items-center">
         <div className="w-full max-w-[600px] flex flex-col">
-          <div className="text-[11px] font-semibold tracking-[0.1em] uppercase text-primary mb-4">
+          <div className="text-[11px] font-semibold tracking-widest uppercase text-primary mb-4">
             Step 4 · Prepare Civil Documents
           </div>
           <div className="inline-flex items-center gap-[5px] bg-[#e8f1fb] border border-[#d0e4f7] rounded-full px-[12px] py-[4px] w-fit mb-6">
@@ -9954,9 +9609,9 @@ function CeacCredsModal({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-[300] flex items-center justify-center p-5 font-sans animate-in fade-in duration-200">
+    <div className="fixed inset-0 z-300 flex items-center justify-center p-5 font-sans animate-in fade-in duration-200">
       <div
-        className="absolute inset-0 bg-[#0c1b33]/55 backdrop-blur-[4px]"
+        className="absolute inset-0 bg-[#0c1b33]/55 backdrop-blur-xs"
         onClick={onClose}
       />
 
@@ -10095,7 +9750,7 @@ function MedicalTutOverlay({
   const isLast = index === total - 1;
 
   return (
-    <div className="fixed inset-0 z-[500] bg-white flex flex-col overflow-hidden animate-in slide-in-from-bottom-[18px] duration-[0.28s] ease-in-out font-sans">
+    <div className="fixed inset-0 z-500 bg-white flex flex-col overflow-hidden animate-in slide-in-from-bottom-[18px] duration-[0.28s] ease-in-out font-sans">
       {/* Topbar */}
       <div className="flex items-center p-[18px_24px] border-b border-[#d0e4f7] gap-4 shrink-0 bg-white">
         <button
@@ -10118,7 +9773,7 @@ function MedicalTutOverlay({
       {/* Body */}
       <div className="flex-1 overflow-y-auto flex flex-col items-center p-[48px_24px_40px] bg-white">
         <div className="w-full max-w-[580px] flex flex-col min-h-full">
-          <div className="text-[11px] font-semibold tracking-[0.1em] uppercase text-primary mb-3.5">
+          <div className="text-[11px] font-semibold tracking-widest uppercase text-primary mb-3.5">
             Medical Exam Guide · {s.label}
           </div>
           <h2 className="text-[clamp(20px,3.2vw,26px)] text-[#0c1b33] leading-tight mb-2">
@@ -10212,7 +9867,7 @@ function CourierTutOverlay({
   const isLast = index === total - 1;
 
   return (
-    <div className="fixed inset-0 z-[500] bg-white flex flex-col overflow-hidden animate-in slide-in-from-bottom-[18px] duration-[0.28s] ease-in-out font-sans">
+    <div className="fixed inset-0 z-500 bg-white flex flex-col overflow-hidden animate-in slide-in-from-bottom-[18px] duration-[0.28s] ease-in-out font-sans">
       {/* Topbar */}
       <div className="flex items-center p-[18px_24px] border-b border-[#d0e4f7] gap-4 shrink-0 bg-white">
         <button
@@ -10235,7 +9890,7 @@ function CourierTutOverlay({
       {/* Body */}
       <div className="flex-1 overflow-y-auto flex flex-col items-center p-[48px_24px_40px] bg-white">
         <div className="w-full max-w-[580px] flex flex-col min-h-full">
-          <div className="text-[11px] font-semibold tracking-[0.1em] uppercase text-primary mb-3.5">
+          <div className="text-[11px] font-semibold tracking-widest uppercase text-primary mb-3.5">
             Courier Registration Guide · {s.label}
           </div>
           <h2 className="text-[clamp(20px,3.2vw,26px)] text-[#0c1b33] leading-tight mb-2">
@@ -10329,7 +9984,7 @@ function InterviewDayTutOverlay({
   }, [isOpen]);
 
   return (
-    <div className="fixed inset-0 z-[200] bg-white flex flex-col overflow-hidden animate-in slide-in-from-bottom-5 duration-300">
+    <div className="fixed inset-0 z-200 bg-white flex flex-col overflow-hidden animate-in slide-in-from-bottom-5 duration-300">
       <div className="flex items-center p-[18px_24px] border-bottom border-[#d0e4f7] gap-4 shrink-0">
         <button
           onClick={onClose}
@@ -10429,7 +10084,7 @@ function ApUpdateModal({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-[300] bg-black/40 backdrop-blur-[4px] flex items-center justify-center p-5 animate-in fade-in duration-200">
+    <div className="fixed inset-0 z-300 bg-black/40 backdrop-blur-xs flex items-center justify-center p-5 animate-in fade-in duration-200">
       <div className="bg-white rounded-[16px] shadow-[0_24px_80px_rgba(12,27,51,0.32),0_4px_20px_rgba(12,27,51,0.16)] w-full max-w-[440px] animate-in slide-in-from-bottom-4 duration-300">
         <div className="flex items-start justify-between p-6 pb-0 mb-4">
           <h2 className="text-[20px] text-[#0c1b33]">Log a Case Update</h2>
@@ -10442,7 +10097,7 @@ function ApUpdateModal({
         </div>
 
         <div className="p-6 pt-0">
-          <div className="h-[1px] bg-[#d0e4f7] mb-4" />
+          <div className="h-px bg-[#d0e4f7] mb-4" />
 
           <div className="flex flex-col gap-4">
             <div className="flex flex-col gap-1.5">
