@@ -1343,6 +1343,18 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
   //   );
   // };
 
+  // Mapping from document title keywords to guide hrefs (from guides/page.tsx)
+  const GUIDE_LINKS: Record<string, string> = {
+    passport: "/guides/passport-guide",
+    "police": "/guides/police-verification-guide",
+    cnic: "/guides/cnic-guide",
+    "birth certificate": "/guides/birth-certificate-guide",
+    "frc": "/guides/frc-guide",
+    marriage: "/guides/nikah-nama-guide",
+    "polio": "/guides/polio-vaccination-guide",
+    // Add more mappings as needed
+  };
+
   const renderHhDocCard = (item: any) => {
     const st = hhDocsStatus[item.id] || "not-started";
     const stLabel =
@@ -1351,6 +1363,17 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
         : st === "in-progress"
           ? "In progress"
           : "Open guide";
+
+
+    // Try to match the document title to a guide link
+    let guideHref: string | undefined = undefined;
+    const titleLower = item.title?.toLowerCase() || "";
+    for (const [key, href] of Object.entries(GUIDE_LINKS)) {
+      if (titleLower.includes(key)) {
+        guideHref = href;
+        break;
+      }
+    }
 
     return (
       <div
@@ -1399,6 +1422,20 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
               );
             })}
           </div>
+          {/* Contextual guide link for any matching document */}
+          {guideHref && (
+            <div className="mt-2">
+              <a
+                href={guideHref}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1 text-[12px] text-primary font-semibold underline hover:text-primary/80"
+              >
+                Not sure how to obtain/create this document? We've got you covered, have a look at this guide
+                <ExternalLink size={13} className="ml-1" />
+              </a>
+            </div>
+          )}
         </div>
 
         <div className="flex flex-col items-center gap-2">
@@ -2539,8 +2576,18 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
 
                         <div className="flex flex-col gap-[10px]">
                           {group.items.map((doc: any) => {
-                            const st =
-                              financialDocsStatus[doc.id] || "not-started";
+                            const st = financialDocsStatus[doc.id] || "not-started";
+
+                            // Guide link logic (same as household cards)
+                            let guideHref: string | undefined = undefined;
+                            const titleLower = doc.title?.toLowerCase() || "";
+                            for (const [key, href] of Object.entries(GUIDE_LINKS)) {
+                              if (titleLower.includes(key)) {
+                                guideHref = href;
+                                break;
+                              }
+                            }
+
                             return (
                               <div
                                 key={doc.id}
@@ -2584,14 +2631,26 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                                       </span>
                                     ))}
                                   </div>
+                                  {/* Contextual guide link for any matching document */}
+                                  {guideHref && (
+                                    <div className="mt-2">
+                                      <a
+                                        href={guideHref}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="inline-flex items-center gap-1 text-[12px] text-primary font-semibold underline hover:text-primary/80"
+                                      >
+                                        Not sure how to obtain/create this document? We've got you covered, have a look at this guide
+                                        <ExternalLink size={13} className="ml-1" />
+                                      </a>
+                                    </div>
+                                  )}
                                 </div>
                                 <div className="flex flex-col items-center gap-2">
                                   <button
                                     onClick={(e) => {
                                       e.stopPropagation();
-                                      const defId = mapDocumentNameToId(
-                                        doc.title,
-                                      );
+                                      const defId = mapDocumentNameToId(doc.title);
                                       setActiveUploadId(doc.id);
                                       setActiveUploadType("financial");
                                       openUploadModal(defId);
@@ -2604,10 +2663,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                                   <button
                                     onClick={() => {
                                       // Mark as in-progress when opened (unless already reviewed)
-                                      if (
-                                        financialDocsStatus[doc.id] !==
-                                        "reviewed"
-                                      ) {
+                                      if (financialDocsStatus[doc.id] !== "reviewed") {
                                         actions.updateMetadata({
                                           financialDocsStatus: {
                                             ...financialDocsStatus,
@@ -3224,15 +3280,13 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                   <div className="text-[10px] font-bold tracking-widest uppercase text-[#2d4a6e] mb-[6px]">
                     Official Scheduling Status
                   </div>
-                  <div className="text-[14px] font-semibold text-[#0c1b33] mb-[8px]">
-                    Currently scheduling DQ cases from:
-                  </div>
-                  <div className="text-[22px]  text-[#0c1b33] mb-[6px]">
-                    {(dqPost &&
+                  <div className="text-[15px] font-semibold text-[#0c1b33] mb-[4px]">
+                    {
                       DQ_RECORDING_DATA.postScheduling[
                         dqPost as keyof typeof DQ_RECORDING_DATA.postScheduling
-                      ]?.official) ||
-                      "— / —"}
+                      ]?.official ||
+                      "— / —"
+                    }
                   </div>
                   <div className="text-[12px] text-[#6b8097] leading-[1.5]">
                     Based on the State Department immigrant visa scheduling

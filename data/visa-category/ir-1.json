@@ -1060,6 +1060,13 @@
                   "USCIS account setup is a separate step",
                   "Complete this before uploading to USCIS"
                 ]
+              },
+              {
+                "label": "Need more help?",
+                "items": [
+                  "Not sure how to fill a section? See the official I-130 instructions for detailed guidance.",
+                  "[Official I-130 Instructions (uscis.gov)](https://www.uscis.gov/sites/default/files/document/forms/i-130instr.pdf)"
+                ]
               }
             ],
             "disclaimer": "Rahvana provides structured guidance only. This is not legal advice. Consult a licensed immigration attorney for case-specific decisions."
@@ -1418,7 +1425,7 @@
               "Foreign-language documents require a certified English translation uploaded alongside the original"
             ],
             "guide_card": {
-              "title": "View Step-by-Step Upload Guide",
+              "title": "View",
               "subtitle": "A focused walkthrough showing how to locate and complete the evidence upload section inside the USCIS portal."
             },
             "tutorial_steps": [
@@ -1603,6 +1610,7 @@
                 "ss_desc": "Case number issued immediately — save it now.",
                 "ss_highlight": "Download Receipt Notice",
                 "caption": "The receipt number lets you track your I-130 case status. It also begins the official USCIS processing clock.",
+                "caption_class": "success",
                 "note": null
               }
             ],
@@ -1734,7 +1742,7 @@
                 "ss_headline": "Receipt Notice Issued",
                 "ss_desc": "Your case number begins with \"IOE\" — save it immediately.",
                 "ss_highlight": "Download Receipt Notice",
-                "caption": "Case submitted successfully. Your I-130 petition is now in USCIS processing.",
+                "caption": "The receipt number lets you track your I-130 case status. It also begins the official USCIS processing clock.",
                 "caption_class": "success",
                 "note": null
               }
@@ -2066,6 +2074,7 @@
             "launch_module": {
               "icon": "payment",
               "stripe_variant": "blue",
+              "bg_color": "#121c2e",
               "eyebrow": "Official NVC / CEAC Portal",
               "heading": "Open CEAC to pay your required fees",
               "features": [
@@ -3006,6 +3015,7 @@
             "Label clearly"
           ],
           "tool_data": {
+            "id": "step_3_4",
             "type": "gathering_checklist",
             "doc_gathering": {
               "groups": [
@@ -3019,10 +3029,11 @@
                       "icon": "passport",
                       "title": "Passport (current + any prior passports)",
                       "sub": "Bring originals of all passports — current and expired — that contain U.S. visa history",
+                      "guideUrl": "/guides/passport-guide",
                       "sections": [
                         {
                           "t": "What to bring",
-                          "c": "<p>Bring the original current passport with at least 6 months validity beyond the interview date. Also bring any prior passports that may contain relevant U.S. visa history.</p>"
+                          "c": "<p>Bring the original current passport with at least 6 months validity beyond the interview date. Also bring any prior passports that may contain relevant U.S. visa history.</p><div class=\"guide-link\"><a href=\"/guides/passport-guide\" target=\"_blank\" style=\"color:#be185d;text-decoration:underline;font-weight:500;\">Not sure how to obtain or renew a passport? Read the Passport Guide.</a></div>"
                         },
                         {
                           "t": "Photocopies",
@@ -3035,10 +3046,11 @@
                       "icon": "birth",
                       "title": "Original Birth Certificate",
                       "sub": "Beneficiary's official civil birth record",
+                      "guideUrl": "/guides/birth-certificate-guide",
                       "sections": [
                         {
                           "t": "What to bring",
-                          "c": "<p>The original NADRA-issued CBRC or other official birth certificate. If you have an older Union Council record, bring both the original and the NADRA CBRC if available.</p>"
+                          "c": "<p>The original NADRA-issued CBRC or other official birth certificate. If you have an older Union Council record, bring both the original and the NADRA CBRC if available.</p><div class=\"guide-link\"><a href=\"/guides/birth-certificate-guide\" target=\"_blank\" style=\"color:#be185d;text-decoration:underline;font-weight:500;\">Not sure how to obtain a birth certificate? Read the Birth Certificate Guide.</a></div>"
                         },
                         {
                           "t": "Translation",
@@ -3051,10 +3063,11 @@
                       "icon": "marriage",
                       "title": "Original Marriage Certificate / Nikah Nama",
                       "sub": "Original Nikah Nama and NADRA MRC, plus translations",
+                      "guideUrl": "/guides/nikah-nama-guide",
                       "sections": [
                         {
                           "t": "What to bring",
-                          "c": "<p>Bring the original Nikah Nama and the NADRA Marriage Registration Certificate. Both should be accompanied by their certified English translations.</p>"
+                          "c": "<p>Bring the original Nikah Nama and the NADRA Marriage Registration Certificate. Both should be accompanied by their certified English translations.</p><div class=\"guide-link\"><a href=\"/guides/nikah-nama-guide\" target=\"_blank\" style=\"color:#be185d;text-decoration:underline;font-weight:500;\">Not sure how to obtain a Nikah Nama or MRC? Read the Marriage Registration Guide.</a></div>"
                         },
                         {
                           "t": "Important",
@@ -3067,10 +3080,11 @@
                       "icon": "pcc",
                       "title": "Original Police Clearance Certificate (Fresh)",
                       "sub": "The fresh PCC obtained for this interview cycle",
+                      "guideUrl": "/guides/police-verification-guide",
                       "sections": [
                         {
                           "t": "What to bring",
-                          "c": "<p>Bring the original fresh PCC obtained during Chapter 3 Step 3. Do not bring the older PCC submitted during NVC processing — this must be the fresh one.</p>"
+                          "c": "<p>Bring the original fresh PCC obtained during Chapter 3 Step 3. Do not bring the older PCC submitted during NVC processing — this must be the fresh one.</p><div class=\"guide-link\"><a href=\"/guides/police-verification-guide\" target=\"_blank\" style=\"color:#be185d;text-decoration:underline;font-weight:500;\">Not sure how to get a Police Clearance Certificate? Read the Police Verification Guide.</a></div>"
                         },
                         {
                           "t": "Validity",
@@ -3114,6 +3128,7 @@
                       "icon": "calculator",
                       "title": "Most Recent Tax Evidence — Petitioner",
                       "sub": "Federal tax return or IRS transcript copies",
+                      
                       "sections": [
                         {
                           "t": "What to bring",
@@ -3126,6 +3141,7 @@
                       "icon": "briefcase",
                       "title": "Employment Letter — Petitioner",
                       "sub": "Current employment confirmation letter if available",
+                      
                       "sections": [
                         {
                           "t": "What to bring",
@@ -3145,6 +3161,7 @@
                       "icon": "camera",
                       "title": "Passport-Style Photos",
                       "sub": "2–4 recent passport-style photos meeting embassy specifications",
+                      
                       "sections": [
                         {
                           "t": "What to bring",
@@ -3157,10 +3174,11 @@
                       "icon": "polio",
                       "title": "Polio Vaccination Certificate (Original)",
                       "sub": "The original polio vaccination certificate from an approved site",
+                      "guideUrl": "/guides/polio-guide",
                       "sections": [
                         {
                           "t": "What to bring",
-                          "c": "<p>Bring the original polio vaccination certificate obtained in Step 2. The panel physician should have already reviewed it, but bring the original in case it is requested at the window.</p>"
+                          "c": "<p>Bring the original polio vaccination certificate obtained in Step 2. The panel physician should have already reviewed it, but bring the original in case it is requested at the window.</p><div class=\"guide-link\"><a href=\"/guides/polio-guide\" target=\"_blank\" style=\"color:#be185d;text-decoration:underline;font-weight:500;\">Not sure how to get a Polio Vaccination Certificate? Read the Polio Certificate Guide.</a></div><div class=\"guide-link\"><a href=\"/guides/polio-vaccination-guide\" target=\"_blank\" style=\"color:#be185d;text-decoration:underline;font-weight:500;\">Step-by-step Polio Vaccination Process Guide</a></div>"
                         }
                       ]
                     },
@@ -3169,6 +3187,7 @@
                       "icon": "medical",
                       "title": "Medical Examination Results Packet Reference",
                       "sub": "Not brought by you — sealed by physician — but confirm it was sent",
+                      
                       "sections": [
                         {
                           "t": "How this works",
@@ -3188,6 +3207,7 @@
                       "icon": "folder",
                       "title": "Labeled Folder System or Document Binder",
                       "sub": "Organized tabs separating each document group",
+                      
                       "sections": [
                         {
                           "t": "Why this matters",
@@ -3204,6 +3224,7 @@
                       "icon": "copy",
                       "title": "Full Photocopy Set of All Documents",
                       "sub": "One complete photocopy set kept separate from originals",
+                      
                       "sections": [
                         {
                           "t": "Why bring copies",
@@ -3493,7 +3514,7 @@
               "heading": "Step-by-step guide from arrival to outcome",
               "icon": "building",
               "cues": [
-                "Arrival timing and embassy entry",
+                "Arrival timing and embassy entry is strict",
                 "Security, biometrics, and document intake",
                 "Consular interview flow and common questions",
                 "Possible outcomes and what happens next"
@@ -3554,7 +3575,7 @@
               {
                 "label": "Step 8 of 8",
                 "heading": "Possible outcomes after the interview",
-                "instruction": "The officer will indicate the outcome at the window or shortly after. The three main outcomes are approval, Administrative Processing (AP), or refusal. If AP applies, proceed to Step 9 to track your case.",
+                "instruction": "The officer will indicate the outcome at the window or shortly after. The three main outcomes are approval, Administrative Processing (AP), or refusal. If AP applies, proceed to Step 9 to track and manage the AP process.",
                 "vlabel": "Interview Outcomes",
                 "visual": "<div class=\"mock-card\">\n      <div class=\"mock-title\">What you may hear</div>\n      <div class=\"mock-row\">Approved — passport retained, visa to be delivered <span class=\"mock-badge-green\">Best</span></div>\n      <div class=\"mock-row\">Administrative Processing — more time needed <span class=\"mock-badge-amber\">Step 9</span></div>\n      <div class=\"mock-row\">Refused — written reason provided <span class=\"mock-badge-blue\">Consult attorney</span></div>\n    </div>"
               }
