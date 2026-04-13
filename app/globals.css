@@ -1,3 +1,31 @@
+/* Thick, classic-style scrollbar for welcome modals */
+.welcome-thick-scrollbar::-webkit-scrollbar {
+  width: 16px;
+  background: #f8f8f8;
+}
+
+ .welcome-thick-scrollbar::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 8px;
+  min-height: 16px;
+  border: 3px solid #f8f8f8;
+}
+
+.welcome-thick-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #666;
+}
+
+.welcome-thick-scrollbar::-webkit-scrollbar-button:single-button {
+  display: block;
+  background: #f8f8f8;
+  border-radius: 8px;
+  height: 16px;
+}
+
+.welcome-thick-scrollbar {
+  scrollbar-width: thick;
+  scrollbar-color: #888 #f8f8f8;
+}
 @import "tailwindcss";
 
 @custom-variant dark (&:is(.dark *));
@@ -428,39 +456,27 @@
 }
 
 /* Custom Scrollbar Theme Colors and Corners */
-.custom-scrollbar::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+
+.compact-scrollbar::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
 }
 
-.custom-scrollbar::-webkit-scrollbar-track {
+.compact-scrollbar::-webkit-scrollbar-track {
   background: transparent;
-  border-radius: 8px;
 }
 
-.custom-scrollbar::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.25);
-  border-radius: 8px;
+.compact-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(13, 115, 119, 0.28);
+  border-radius: 999px;
 }
 
-.custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.4);
-}
-
-/* Adjust scrollbar for light backgrounds to match theme */
-.bg-slate-50\/30.custom-scrollbar::-webkit-scrollbar-thumb,
-.bg-slate-50 .custom-scrollbar::-webkit-scrollbar-thumb {
-  background: rgba(13, 115, 119, 0.25);
-}
-
-.bg-slate-50\/30.custom-scrollbar::-webkit-scrollbar-thumb:hover,
-.bg-slate-50 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+.compact-scrollbar::-webkit-scrollbar-thumb:hover {
   background: rgba(13, 115, 119, 0.45);
 }
 
-.custom-scrollbar {
+.compact-scrollbar {
   scrollbar-width: thin;
-  scrollbar-color: rgba(255, 255, 255, 0.25) transparent;
 }
 
 /* Premium Scrollbar - Teal Theme */

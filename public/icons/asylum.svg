@@ -1,0 +1,7 @@
+﻿<svg xmlns='http://www.w3.org/2000/svg' width='64' height='64' viewBox='0 0 64 64' role='img' aria-label='Asylum'>
+        <circle cx='32' cy='32' r='14' fill='#E48D5B' opacity='0.16'/>
+        <circle cx='21' cy='42' r='1.5' fill='#55718B' opacity='0.3'/><circle cx='43' cy='22' r='1.5' fill='#E48D5B' opacity='0.3'/>
+  <g fill='none' stroke-linecap='round' stroke-linejoin='round'>
+<path d='M32 15l12 4v9c0 8-5.5 14.3-12 17-6.5-2.7-12-9-12-17v-9l12-4z' fill='none' stroke='#55718B' stroke-width='2.2' stroke-linejoin='round'/>
+<path d='M27 34v-6.5a5 5 0 0 1 10 0V34M25 34h14' fill='none' stroke='#E48D5B' stroke-width='2.1' stroke-linecap='round' stroke-linejoin='round'/>  </g>
+</svg>

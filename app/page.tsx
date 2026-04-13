@@ -698,7 +698,7 @@ function HomePageContent() {
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                   {[
                     {
-                      icon: <Icons.Brain className="w-7 h-7 " />,
+                      iconSrc: "/icons/case-strength-analyser.svg",
                       title:
                         t("homePage.toolsItems.0.title") ||
                         "Case Strength Analyzer",
@@ -708,7 +708,7 @@ function HomePageContent() {
                       url: "/visa-case-strength-checker",
                     },
                     {
-                      icon: <Icons.LifeBuoy className="w-7 h-7 " />,
+                      iconSrc: "/icons/221g-action-plan.svg",
                       title:
                         t("homePage.toolsItems.1.title") ||
                         "221(g) Action Planner",
@@ -718,7 +718,7 @@ function HomePageContent() {
                       url: "/221g-action-planner",
                     },
                     {
-                      icon: <Icons.Compass className="w-7 h-7" />,
+                      iconSrc: "/icons/visa-path-finder.svg",
                       title:
                         t("homePage.toolsItems.2.title") || "Visa Path Finder",
                       desc:
@@ -727,7 +727,7 @@ function HomePageContent() {
                       url: "/visa-eligibility",
                     },
                     {
-                      icon: <Icons.Calculator className="w-7 h-7" />,
+                      iconSrc: "/icons/sponsorship-calculator.svg",
                       title:
                         t("homePage.toolsItems.3.title") ||
                         "Sponsorship Calculator",
@@ -737,7 +737,7 @@ function HomePageContent() {
                       url: "/affidavit-support-calculator",
                     },
                     {
-                      icon: <Icons.Files className="w-7 h-7 " />,
+                      iconSrc: "/icons/pdf-toolbox.svg",
                       title: t("homePage.toolsItems.4.title") || "PDF Tool Kit",
                       desc:
                         t("homePage.toolsItems.4.desc") ||
@@ -745,7 +745,7 @@ function HomePageContent() {
                       url: "/pdf-processing",
                     },
                     {
-                      icon: <Icons.Wand2 className="w-7 h-7" />,
+                      iconSrc: "/icons/smart-form-filler.svg",
                       title:
                         t("homePage.toolsItems.5.title") || "Smart Form Filler",
                       desc:
@@ -764,8 +764,14 @@ function HomePageContent() {
                       className="group relative bg-muted/30 rounded-2xl p-8 border border-border transition-all hover:border-rahvana-primary/30 hover:shadow-xl cursor-pointer overflow-hidden"
                     >
                       <div className="absolute inset-0 bg-linear-to-tr from-rahvana-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                      <div className="w-14 h-14 rounded-xl bg-linear-to-br from-rahvana-primary to-rahvana-primary-light flex items-center justify-center text-white mb-6 transform group-hover:scale-110 transition-transform [&>svg]:text-white!">
-                        {tool.icon}
+                      <div className="w-14 h-14 rounded-xl bg-linear-to-br from-rahvana-primary to-rahvana-primary-light flex items-center justify-center text-white mb-6 transform group-hover:scale-110 transition-transform">
+                        <Image
+                          src={tool.iconSrc}
+                          alt={`${tool.title} icon`}
+                          width={38}
+                          height={38}
+                          className="w-[38px] h-[38px]"
+                        />
                       </div>
                       <h3 className="text-xl font-bold text-foreground mb-2">
                         {tool.title}

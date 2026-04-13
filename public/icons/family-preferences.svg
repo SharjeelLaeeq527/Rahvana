@@ -1,0 +1,10 @@
+﻿<svg xmlns='http://www.w3.org/2000/svg' width='64' height='64' viewBox='0 0 64 64' role='img' aria-label='Family Preferences'>
+        <circle cx='32' cy='32' r='14' fill='#6AB2A2' opacity='0.16'/>
+        <path d='M21 24h3M22.5 22.5v3M42 40h3M43.5 38.5v3' stroke='#4E7A93' stroke-width='1.2' opacity='0.35'/>
+  <g fill='none' stroke-linecap='round' stroke-linejoin='round'>
+<circle cx='22' cy='28' r='3.8' fill='#FFFFFF' stroke='#4E7A93' stroke-width='1.8'/>
+<circle cx='32' cy='24' r='3.8' fill='#FFEAF2' stroke='#6AB2A2' stroke-width='1.8'/>
+<circle cx='42' cy='28' r='3.8' fill='#FFFFFF' stroke='#4E7A93' stroke-width='1.8'/>
+<path d='M20 40c2.4-3.8 21.6-3.8 24 0' fill='#EEF3FF' stroke='#4E7A93' stroke-width='1.8' stroke-linecap='round'/>
+<path d='M29.5 32h5' fill='none' stroke='#6AB2A2' stroke-width='1.4' stroke-linecap='round'/>  </g>
+</svg>

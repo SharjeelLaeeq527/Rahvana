@@ -2,21 +2,9 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import {
   Search,
-  Brain,
-  LifeBuoy,
-  Compass,
-  MessageSquare,
-  Calculator,
-  Clock,
-  Calendar,
-  Camera,
-  Files,
-  PenTool,
-  Wand2,
-  FolderLock,
-  FileSearch,
   ArrowRight,
   ChevronDown,
 } from "lucide-react";
@@ -46,7 +34,7 @@ interface Tool {
   description: string;
   category: ToolCategory;
   href: string;
-  icon: React.ElementType;
+  iconSrc: string;
   badge?: "Live" | "Soon" | "Beta";
   disabled?: boolean;
   comingSoon?: boolean;
@@ -61,7 +49,7 @@ const TOOLS: Tool[] = [
       "Instant AI case strength score + gaps to fix before NVC/Interview.",
     category: "AI & Planning",
     href: "/visa-case-strength-checker",
-    icon: Brain,
+    iconSrc: "/icons/case-strength-analyser.svg",
     badge: "Live",
   },
   {
@@ -71,7 +59,7 @@ const TOOLS: Tool[] = [
       "Step-by-step next moves after 221(g) or Administrative Processing.",
     category: "AI & Planning",
     href: "/221g-action-planner",
-    icon: LifeBuoy,
+    iconSrc: "/icons/221g-action-plan.svg",
     badge: "Live",
   },
   {
@@ -81,7 +69,7 @@ const TOOLS: Tool[] = [
       "Quick quiz that points you to the right visa path + next steps.",
     category: "AI & Planning",
     href: "/visa-eligibility",
-    icon: Compass,
+    iconSrc: "/icons/visa-path-finder.svg",
     badge: "Live",
   },
   {
@@ -91,7 +79,7 @@ const TOOLS: Tool[] = [
       "Prepare smarter and deliver confident answers when it matters most.",
     category: "AI & Planning",
     href: "/interview-prep",
-    icon: MessageSquare,
+    iconSrc: "/icons/interview-prep.svg",
     badge: "Live",
   },
 
@@ -102,7 +90,7 @@ const TOOLS: Tool[] = [
     description: "Auto-check income/assets and tell you what you still need.",
     category: "Money & Sponsorship",
     href: "/affidavit-support-calculator",
-    icon: Calculator,
+    iconSrc: "/icons/sponsorship-calculator.svg",
     badge: "Live",
   },
 
@@ -113,7 +101,7 @@ const TOOLS: Tool[] = [
     description: "Track interview scheduling movement and trends by category.",
     category: "Tracking",
     href: "/iv-tool",
-    icon: Clock,
+    iconSrc: "/icons/dq-case-tracker.svg",
     badge: "Live",
   },
   {
@@ -122,7 +110,7 @@ const TOOLS: Tool[] = [
     description: "Check your priority date progress against the Visa Bulletin.",
     category: "Tracking",
     href: "/visa-checker",
-    icon: Calendar,
+    iconSrc: "/icons/visa-bulletin-monitor.svg",
     badge: "Live",
     disabled: false,
     comingSoon: false,
@@ -134,7 +122,7 @@ const TOOLS: Tool[] = [
       "Real-time USCIS case status lookup via the official Torch API. Enter your receipt number for an instant update.",
     category: "Tracking",
     href: "/case-status",
-    icon: FileSearch,
+    iconSrc: "/icons/checklist.svg",
     badge: "Live",
   },
 
@@ -145,7 +133,7 @@ const TOOLS: Tool[] = [
     description: "Make a compliant passport/visa photo in minutes.",
     category: "Docs & PDFs",
     href: "/passport",
-    icon: Camera,
+    iconSrc: "/icons/photo-booth.svg",
     badge: "Live",
   },
   {
@@ -154,7 +142,7 @@ const TOOLS: Tool[] = [
     description: "Merge • compress • convert • edit — all in one toolkit.",
     category: "Docs & PDFs",
     href: "/pdf-processing",
-    icon: Files,
+    iconSrc: "/icons/pdf-toolbox.svg",
     badge: "Live",
   },
   {
@@ -163,7 +151,7 @@ const TOOLS: Tool[] = [
     description: "Create a clean digital signature for your forms.",
     category: "Docs & PDFs",
     href: "/signature-image-processing",
-    icon: PenTool,
+    iconSrc: "/icons/snap-and-sign.svg",
     badge: "Live",
   },
 
@@ -175,7 +163,7 @@ const TOOLS: Tool[] = [
       "Auto-fills your official form and generates a ready-to-upload PDF.",
     category: "Forms & Automation",
     href: "/visa-forms",
-    icon: Wand2,
+    iconSrc: "/icons/smart-form-filler.svg",
     badge: "Live",
   },
 
@@ -482,7 +470,6 @@ const CATEGORY_STYLES: Record<
 };
 
 function ToolCard({ tool, index }: { tool: Tool; index: number }) {
-  const Icon = tool.icon;
   const isClickable = !tool.disabled;
   const CardWrapper = isClickable ? Link : "div";
   const styles = CATEGORY_STYLES[tool.category];
@@ -511,7 +498,13 @@ function ToolCard({ tool, index }: { tool: Tool; index: number }) {
         <div
           className={`absolute inset-1 rounded-[10px] -z-10 transition-colors duration-300 ${styles.innerBox}`}
         />
-        <Icon className="w-6 h-6 stroke-2" />
+        <Image
+          src={tool.iconSrc}
+          alt={`${tool.title} icon`}
+          width={34}
+          height={34}
+          className="w-[34px] h-[34px]"
+        />
       </div>
 
       {/* Floating Border Gradient (Pseudo-element emulation) */}

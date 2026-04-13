@@ -1,0 +1,11 @@
+﻿<svg xmlns='http://www.w3.org/2000/svg' width='64' height='64' viewBox='0 0 64 64' role='img' aria-label='Visa Journeys'>
+        <path d='M23 20h18l9 12-9 12H23l-9-12z' fill='#E48D5B' opacity='0.14'/>
+        <circle cx='21' cy='42' r='1.5' fill='#586B7B' opacity='0.3'/><circle cx='43' cy='22' r='1.5' fill='#E48D5B' opacity='0.3'/>
+  <g fill='none' stroke-linecap='round' stroke-linejoin='round'>
+<rect x='16' y='22' width='32' height='20' rx='4' fill='#EAF5FF' stroke='#586B7B' stroke-width='1.7'/>
+<path d='M22 22v20M32 22v20M42 22v20' stroke='#586B7B' stroke-width='1' stroke-dasharray='2 2'/>
+<circle cx='22' cy='32' r='3.5' fill='#FFFFFF' stroke='#E48D5B' stroke-width='1.5'/>
+<circle cx='32' cy='32' r='3.5' fill='#FFEAF2' stroke='#E48D5B' stroke-width='1.5'/>
+<circle cx='42' cy='32' r='3.5' fill='#FFFFFF' stroke='#E48D5B' stroke-width='1.5'/>
+<path d='M25.5 32h3M35.5 32h3' stroke='#586B7B' stroke-width='1.7' stroke-linecap='round'/>  </g>
+</svg>
