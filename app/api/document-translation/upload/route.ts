@@ -79,7 +79,7 @@ export async function POST(request: NextRequest) {
     const baseFileName = fileName.replace(/\.pdf$/i, "");
     const storageFileName = `${baseFileName}_${safeUserName}.pdf`;
 
-    const storagePath = `translation-originals/${user.id}/${docId}/${timestamp}_${storageFileName}`;
+    const storagePath = `${user.id}/translation-originals/${docId}/${timestamp}_${storageFileName}`;
 
     // Upload to Supabase Storage
     const buffer = Buffer.from(await file.arrayBuffer());

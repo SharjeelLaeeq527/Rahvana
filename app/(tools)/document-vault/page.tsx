@@ -91,7 +91,8 @@ export default function DocumentVaultPage() {
   // Filter documents based on search query
   const filteredDocumentsByCategory = useMemo(() => {
     if (!config) return {};
-    const baseDocs = getDocumentsByCategory(config, true);
+    const uploadedIds = uploadedDocuments.map(d => d.documentDefId);
+    const baseDocs = getDocumentsByCategory(config, true, uploadedIds);
     if (!searchQuery.trim()) return baseDocs;
 
     const query = searchQuery.toLowerCase();
@@ -149,8 +150,11 @@ export default function DocumentVaultPage() {
     };
   }, [uploadedDocuments, requiredDocuments]);
   const documentsByCategory = useMemo(
-    () => (config ? getDocumentsByCategory(config, true) : {}),
-    [config],
+    () => {
+      const uploadedIds = uploadedDocuments.map(d => d.documentDefId);
+      return config ? getDocumentsByCategory(config, true, uploadedIds) : {};
+    },
+    [config, uploadedDocuments],
   );
 
   // Get documents for special filters (required/optional)

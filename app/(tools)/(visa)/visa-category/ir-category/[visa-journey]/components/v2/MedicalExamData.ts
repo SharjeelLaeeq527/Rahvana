@@ -75,7 +75,7 @@ export const MEDICAL_EXAM_DATA = {
       label: "Step 3 of 4 — Confirm your appointment",
       heading: "Confirm the appointment date and location",
       sub: "Verify the appointment date and location directly with the physician's office before proceeding.",
-      alert: "Ensure the physician is **currently active** on the approved list — lists are updated periodically. A medical exam from a removed physician will not be accepted.",
+      alert: "Ensure the physician is currently active on the approved list — lists are updated periodically. A medical exam from a removed physician will not be accepted.",
       nav: { back: true, next: "Save my appointment details →" }
     },
     {
