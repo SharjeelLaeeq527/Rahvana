@@ -48,6 +48,12 @@ async function withTimeout<T>(promiseLike: Promise<T> | PromiseLike<T>, timeoutM
   }
 }
 
+function getTotalSteps(filingMethod?: string) {
+  if (filingMethod === 'online') return 31;
+  if (filingMethod === 'paper') return 27;
+  return 34;
+}
+
 /**
  * Load journey progress from Supabase for a logged-in user.
  * Returns null if no progress exists yet.
@@ -85,7 +91,7 @@ export async function loadJourneyProgress(
       current_step: 0,
       completed_steps: Array(data.completed_steps_count || 0).fill(''),
       completed_steps_count: data.completed_steps_count || 0,
-      total_steps_count: data.total_steps_count || 42,
+      total_steps_count: getTotalSteps(data.filing_method),
       collapsed_steps: {},
       role: 'both',
       filing_type: data.filing_method || 'online',
@@ -116,7 +122,7 @@ export async function listUserJourneys(userId: string): Promise<JourneyProgressR
     const { data, error } = await withTimeout<any>(
       supabase
         .from('journeys')
-        .select('id, journey_type, completed_steps_count, total_steps_count, updated_at')
+        .select('id, journey_type, completed_steps_count, total_steps_count, updated_at, filing_method')
         .eq('user_id', userId)
         .order('updated_at', { ascending: false })
     );
@@ -135,7 +141,7 @@ export async function listUserJourneys(userId: string): Promise<JourneyProgressR
       current_step: 0,
       completed_steps: Array(record.completed_steps_count).fill(''), // Create array of appropriate length
       completed_steps_count: record.completed_steps_count, // Include actual count
-      total_steps_count: record.total_steps_count,
+      total_steps_count: getTotalSteps(record.filing_method),
       collapsed_steps: {},
       role: 'both' as const,
       filing_type: 'online' as const,
@@ -199,8 +205,7 @@ export async function saveJourneyProgress(
     
     // Calculate progress metrics
     const completedCount = state.completedSteps.size || 0;
-    // Note: For now using a default of 42 total steps, update if different
-    const totalCount = 42;
+    const totalCount = getTotalSteps(state.filingType);    
     const completionPercentage = totalCount > 0 ? (completedCount / totalCount) * 100 : 0;
     
     const payload = {
