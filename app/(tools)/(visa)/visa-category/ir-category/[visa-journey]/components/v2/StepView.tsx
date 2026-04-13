@@ -73,6 +73,13 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
+import {
   RoadmapData,
   QuestSuite,
   TutorialStepData,
@@ -90,9 +97,7 @@ import { InlineGuideData } from "./InlineGuideData";
 import { USCIS_TUTORIAL_STEPS } from "./UscisTutorialData";
 import Image from "next/image";
 import Link from "next/link";
-import {
-  HOUSEHOLD_GUIDE_CONTENT,
-} from "./HouseholdTutorialData";
+import { HOUSEHOLD_GUIDE_CONTENT } from "./HouseholdTutorialData";
 import {
   SUBMISSION_TUTORIAL_STEPS,
   SubmissionTutorialOverlay,
@@ -177,6 +182,17 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
     id: string;
     name: string;
   } | null>(null);
+  const [docActionModal, setDocActionModal] = useState<{
+    isOpen: boolean;
+    doc: any | null;
+    title?: string;
+    subtitle?: string;
+    onReadGuide?: () => void;
+    onUpload?: () => void;
+  }>({
+    isOpen: false,
+    doc: null,
+  });
 
   // Filing Quiz States
   const [showQuiz, setShowQuiz] = useState(false);
@@ -2078,6 +2094,123 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
     );
   };
 
+  const renderDocActionModal = () => {
+    if (!docActionModal.doc) return null;
+    const { doc, title, subtitle, onReadGuide, onUpload } = docActionModal;
+
+    return (
+      <Dialog
+        open={docActionModal.isOpen}
+        onOpenChange={(open) =>
+          setDocActionModal({ ...docActionModal, isOpen: open })
+        }
+      >
+        <DialogContent className="max-w-xl p-0 overflow-hidden border-none rounded-[28px] shadow-2xl">
+          <div className="relative overflow-hidden bg-white">
+            {/* Background Decorations */}
+            <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full -translate-y-1/2 translate-x-1/2 blur-3xl" />
+            <div className="absolute bottom-0 left-0 w-48 h-48 bg-primary/5 rounded-full translate-y-1/2 -translate-x-1/2 blur-2xl" />
+
+            <div className="relative p-8">
+              <div className="flex items-center gap-4 mb-6">
+                <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center text-primary">
+                  {(() => {
+                    switch (doc.icon) {
+                      case "ShieldCheck":
+                        return <ShieldCheck size={24} />;
+                      case "User":
+                        return <User size={24} />;
+                      case "FileText":
+                        return <FileText size={24} />;
+                      case "FileCheck":
+                        return <FileCheck size={24} />;
+                      case "MessageSquare":
+                        return <MessageSquare size={24} />;
+                      case "Scale":
+                        return <Scale size={24} />;
+                      case "Globe":
+                        return <Globe size={24} />;
+                      case "ClipboardList":
+                        return <ClipboardList size={24} />;
+                      case "Lock":
+                        return <Lock size={24} />;
+                      case "Camera":
+                        return <Camera size={24} />;
+                      default:
+                        return <FileText size={24} />;
+                    }
+                  })()}
+                </div>
+                <div>
+                  <h3 className="text-xl font-bold text-[#0f1f38]">
+                    {title || doc.name || doc.title}
+                  </h3>
+                  <p className="text-sm text-[#6b8097]">
+                    {subtitle ||
+                      doc.subtitle ||
+                      doc.sub ||
+                      "Choose an action to proceed with this document"}
+                  </p>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {/* Read Guide Card */}
+                <button
+                  onClick={() => {
+                    setDocActionModal({ ...docActionModal, isOpen: false });
+                    if (onReadGuide) onReadGuide();
+                  }}
+                  className="group relative text-left p-6 rounded-2xl border-[1.5px] border-[#d0e4f7] bg-white transition-all hover:border-primary hover:shadow-[0_12px_24px_rgba(15,31,56,0.08)] hover:-translate-y-1"
+                >
+                  <div className="w-10 h-10 rounded-xl bg-[#e8f1fb] text-primary flex items-center justify-center mb-4 group-hover:bg-primary group-hover:text-white transition-colors">
+                    <BookOpen size={20} />
+                  </div>
+                  <h4 className="font-bold text-[#0f1f38] mb-1">
+                    Read the Guide
+                  </h4>
+                  <p className="text-xs text-[#6b8097] leading-relaxed">
+                    View requirements, pitfalls, and step-by-step instructions.
+                  </p>
+                </button>
+
+                {/* Upload Card */}
+                <button
+                  onClick={() => {
+                    setDocActionModal({ ...docActionModal, isOpen: false });
+                    if (onUpload) onUpload();
+                  }}
+                  className="group relative text-left p-6 rounded-2xl border-[1.5px] border-[#d0e4f7] bg-white transition-all hover:border-primary hover:shadow-[0_12px_24px_rgba(15,31,56,0.08)] hover:-translate-y-1"
+                >
+                  <div className="w-10 h-10 rounded-xl bg-[#eaf7f2] text-[#1a7a5e] flex items-center justify-center mb-4 group-hover:bg-[#1a7a5e] group-hover:text-white transition-colors">
+                    <Upload size={20} />
+                  </div>
+                  <h4 className="font-bold text-[#0f1f38] mb-1">
+                    Upload Document
+                  </h4>
+                  <p className="text-xs text-[#6b8097] leading-relaxed">
+                    Attach and submit your document for processing.
+                  </p>
+                </button>
+              </div>
+
+              <div className="mt-8 pt-6 border-t border-[#d0e4f7]/50 flex justify-end">
+                <button
+                  onClick={() =>
+                    setDocActionModal({ ...docActionModal, isOpen: false })
+                  }
+                  className="px-6 py-2.5 rounded-full text-sm font-semibold text-[#6b8097] hover:bg-slate-100 transition-colors"
+                >
+                  Close
+                </button>
+              </div>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+    );
+  };
+
   const renderToolStep = () => {
     const tool = currentStep.tool_data as any;
     if (!tool) return null;
@@ -2541,19 +2674,72 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                           {group.items.map((doc: any) => {
                             const st =
                               financialDocsStatus[doc.id] || "not-started";
+                            const defId = mapDocumentNameToId(doc.title);
+                            const isUploadedInVault = uploadedDocuments.some(
+                              (ud) => ud.documentDefId === defId,
+                            );
+                            const uploadedDoc = uploadedDocuments.find(
+                              (ud) => ud.documentDefId === defId,
+                            );
+                            const isReviewed = st === "reviewed";
+                            const isInProgress = st === "in-progress";
+
                             return (
                               <div
                                 key={doc.id}
-                                className={`bg-white border-[1.5px] border-[#d0e4f7] rounded-[10px] p-[18px_20px] flex items-center gap-[16px] text-left transition-all hover:border-primary hover:shadow-[0_4px_20px_rgba(47,111,212,0.08)] ${
-                                  st === "reviewed"
-                                    ? "bg-[#e8f5ef] border-[#a8d9be]"
-                                    : st === "in-progress"
-                                      ? "bg-[#fef8e8] border-[#f0d98a]"
-                                      : ""
+                                onClick={() => {
+                                  setDocActionModal({
+                                    isOpen: true,
+                                    doc,
+                                    title: doc.title,
+                                    subtitle: doc.sub,
+                                    onReadGuide: () => {
+                                      // Mark as in-progress when opened (unless already reviewed)
+                                      if (
+                                        financialDocsStatus[doc.id] !==
+                                        "reviewed"
+                                      ) {
+                                        actions.updateMetadata({
+                                          financialDocsStatus: {
+                                            ...financialDocsStatus,
+                                            [doc.id]: "in-progress",
+                                          },
+                                        });
+                                      }
+                                      setActiveFinancialDoc(doc);
+                                      setIsFinancialDocGuideOpen(true);
+                                    },
+                                    onUpload: () => {
+                                      setActiveUploadId(doc.id);
+                                      setActiveUploadType("financial");
+                                      openUploadModal(defId);
+                                    },
+                                  });
+                                }}
+                                className={`group flex items-center gap-[16px] px-[20px] py-[18px] rounded-[14px] border-[1.5px] transition-all cursor-pointer relative shadow-[0_2px_12px_rgba(15,31,56,0.07),0_1px_3px_rgba(15,31,56,0.04)] hover:border-primary hover:shadow-[0_8px_32px_rgba(15,31,56,0.12),0_2px_8px_rgba(15,31,56,0.06)] hover:-translate-y-px active:translate-y-0 active:shadow-[0_2px_12px_rgba(15,31,56,0.07),0_1px_3px_rgba(15,31,56,0.04)] mb-[10px]
+                                ${
+                                  isReviewed
+                                    ? "bg-[#eaf7ff] border-[#b8daff]"
+                                    : isInProgress
+                                      ? "bg-[#fff9e6] border-[#fde68a]/50"
+                                      : "bg-white border-[#d0e4f7]"
                                 }`}
                               >
-                                <div className="w-[40px] h-[40px] rounded-[10px] bg-[#eef3fa] border border-[#d0e4f7] flex items-center justify-center shrink-0 text-[18px]">
-                                  {getIcon(doc.icon)}
+                                <div
+                                  className={`w-[40px] h-[40px] rounded-[10px] flex items-center justify-center shrink-0 transition-all duration-300 border text-[18px]
+                                  ${
+                                    isReviewed
+                                      ? "bg-[#1a7a5e] text-white border-[#1a7a5e]"
+                                      : isInProgress
+                                        ? "bg-white border-[#fde68a] text-[#d97706]"
+                                        : "bg-[#e8f1fb] border-[#d0e4f7] text-primary/80"
+                                  }`}
+                                >
+                                  {isReviewed ? (
+                                    <CheckCircle2 size={18} strokeWidth={2.5} />
+                                  ) : (
+                                    getIcon(doc.icon)
+                                  )}
                                 </div>
                                 <div className="flex-1 min-w-0">
                                   <div className="text-[15px] font-semibold text-[#0c1b33] mb-[4px]">
@@ -2585,53 +2771,121 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                                     ))}
                                   </div>
                                 </div>
-                                <div className="flex flex-col items-center gap-2">
-                                  <button
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      const defId = mapDocumentNameToId(
-                                        doc.title,
+
+                                <div className="shrink-0 flex items-center gap-2">
+                                  {(() => {
+                                    const isDeleting = uploadedDoc
+                                      ? isDeletingIds.includes(uploadedDoc.id)
+                                      : false;
+
+                                    if (isDeleting) return null;
+
+                                    const displayStatus = isUploadedInVault
+                                      ? "Uploaded"
+                                      : isReloadingDocs
+                                        ? "Checking..."
+                                        : isReviewed
+                                          ? "Reviewed"
+                                          : isInProgress
+                                            ? "In progress"
+                                            : "Not started";
+
+                                    const statusClasses = isUploadedInVault
+                                      ? "bg-[#eaf7f2] text-[#1a7a5e] border-[#b5e0d0] font-bold shadow-sm"
+                                      : isReloadingDocs
+                                        ? "bg-muted/30 text-muted-foreground border-muted-foreground/20 animate-pulse"
+                                        : isReviewed
+                                          ? "bg-[#eaf7f2] text-[#1a7a5e] border-[#b5e0d0]"
+                                          : isInProgress
+                                            ? "bg-[#fff9e6] text-[#d97706] border-[#fde68a]"
+                                            : "bg-white text-[#6b8097] border-[#d0e4f7] hover:border-primary hover:text-primary";
+
+                                    return (
+                                      <div
+                                        className={`px-[11px] py-[5px] rounded-full border text-[12px] font-medium tracking-normal transition-all ${statusClasses}`}
+                                      >
+                                        {displayStatus}
+                                      </div>
+                                    );
+                                  })()}
+
+                                  {(() => {
+                                    const isDeleting = uploadedDoc
+                                      ? isDeletingIds.includes(uploadedDoc.id)
+                                      : false;
+
+                                    if (isReloadingDocs && !uploadedDoc) {
+                                      return (
+                                        <div className="flex items-center gap-1.5 px-[11px] py-[5px] text-[12px] text-muted-foreground font-medium animate-pulse">
+                                          <div className="h-3 w-3 rounded-full border-2 border-muted-foreground/30 border-t-muted-foreground animate-spin" />
+                                          Checking...
+                                        </div>
                                       );
-                                      setActiveUploadId(doc.id);
-                                      setActiveUploadType("financial");
-                                      openUploadModal(defId);
-                                    }}
-                                    className="rounded-full bg-white px-[11px] py-[5px] border border-[#d0e4f7] text-[12px] font-medium flex items-center justify-center gap-1 text-[#6b8097] hover:border-primary hover:text-primary transition-all shadow-[0_2px_8px_rgba(0,0,0,0.04)]"
-                                  >
-                                    <Upload size={14} strokeWidth={2.5} />
-                                    <span>Vault</span>
-                                  </button>
-                                  <button
-                                    onClick={() => {
-                                      // Mark as in-progress when opened (unless already reviewed)
-                                      if (
-                                        financialDocsStatus[doc.id] !==
-                                        "reviewed"
-                                      ) {
-                                        actions.updateMetadata({
-                                          financialDocsStatus: {
-                                            ...financialDocsStatus,
-                                            [doc.id]: "in-progress",
-                                          },
-                                        });
-                                      }
-                                      setActiveFinancialDoc(doc);
-                                      setIsFinancialDocGuideOpen(true);
-                                    }}
-                                    className={`text-[12px] font-medium px-[11px] py-[5px] rounded-full shrink-0 border whitespace-nowrap ${
-                                      st === "reviewed"
-                                        ? "bg-[#e8f5ef] text-[#15744f] border-[#a8d9be]"
-                                        : st === "in-progress"
-                                          ? "bg-[#fef8e8] text-[#8a6200] border-[#f0d98a]"
-                                          : "bg-[#f4f7fb] text-[#6b8097] border-[#d0e4f7]"
-                                    }`}
-                                  >
-                                    {st === "reviewed"
-                                      ? "✓ Reviewed"
-                                      : st === "in-progress"
-                                        ? "In progress"
-                                        : "Open guide"}
-                                  </button>
+                                    }
+
+                                    if (isDeleting) {
+                                      return (
+                                        <div className="flex items-center gap-1.5 px-[11px] py-[5px] text-[12px] text-red-500 font-medium animate-pulse">
+                                          <div className="h-3 w-3 rounded-full border-2 border-red-500/30 border-t-red-500 animate-spin" />
+                                          Deleting...
+                                        </div>
+                                      );
+                                    }
+
+                                    if (uploadedDoc) {
+                                      return (
+                                        <DropdownMenu>
+                                          <DropdownMenuTrigger asChild>
+                                            <button
+                                              onClick={(e) =>
+                                                e.stopPropagation()
+                                              }
+                                              className="h-8 w-8 rounded-full hover:bg-muted flex items-center justify-center transition-colors text-muted-foreground hover:text-foreground border border-transparent hover:border-muted-foreground/20"
+                                            >
+                                              <MoreVertical size={18} />
+                                            </button>
+                                          </DropdownMenuTrigger>
+                                          <DropdownMenuContent
+                                            side="top"
+                                            align="end"
+                                            className="w-[140px] rounded-xl shadow-xl border-muted/20"
+                                          >
+                                            <DropdownMenuItem
+                                              onClick={(e) => {
+                                                e.stopPropagation();
+                                                window.open(
+                                                  `/api/documents/${uploadedDoc.id}/download`,
+                                                  "_blank",
+                                                );
+                                              }}
+                                              className="flex items-center gap-2 cursor-pointer font-medium text-[13px] py-2.5"
+                                            >
+                                              <Eye
+                                                size={16}
+                                                className="text-primary"
+                                              />
+                                              Preview
+                                            </DropdownMenuItem>
+                                            <DropdownMenuItem
+                                              onClick={(e) => {
+                                                e.stopPropagation();
+                                                setDocumentToDelete({
+                                                  id: uploadedDoc.id,
+                                                  name: doc.title,
+                                                });
+                                              }}
+                                              className="flex items-center gap-2 cursor-pointer font-medium text-[13px] py-2.5 text-red-600 focus:text-red-700 focus:bg-red-50"
+                                            >
+                                              <Trash2 size={16} />
+                                              Delete
+                                            </DropdownMenuItem>
+                                          </DropdownMenuContent>
+                                        </DropdownMenu>
+                                      );
+                                    }
+
+                                    return null;
+                                  })()}
                                 </div>
                               </div>
                             );
@@ -4826,14 +5080,28 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                           <div
                             key={item.id}
                             onClick={() => {
-                              setSelectedGatheringItem(item);
-                              setIsGatheringGuideOpen(true);
-                              if (status === "not-started") {
-                                setGatheringStatus((prev) => ({
-                                  ...prev,
-                                  [item.id]: "in-progress",
-                                }));
-                              }
+                              setDocActionModal({
+                                isOpen: true,
+                                doc: item,
+                                title: item.title,
+                                subtitle: item.sub,
+                                onReadGuide: () => {
+                                  setSelectedGatheringItem(item);
+                                  setIsGatheringGuideOpen(true);
+                                  if (status === "not-started") {
+                                    setGatheringStatus((prev) => ({
+                                      ...prev,
+                                      [item.id]: "in-progress",
+                                    }));
+                                  }
+                                },
+                                onUpload: () => {
+                                  const defId = mapDocumentNameToId(item.title);
+                                  setActiveUploadId(item.id);
+                                  setActiveUploadType("doc");
+                                  openUploadModal(defId);
+                                },
+                              });
                             }}
                             className={`group border-[1.5px] rounded-[16px] px-[20px] py-[16px] flex items-center gap-[14px] cursor-pointer transition-all hover:-translate-y-[1px] ${
                               isRev
@@ -4990,24 +5258,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                                   );
                                 }
 
-                                return (
-                                  <button
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      const defId = mapDocumentNameToId(
-                                        item.title,
-                                      );
-                                      setActiveUploadId(item.id);
-                                      setActiveUploadType("doc");
-                                      openUploadModal(defId);
-                                    }}
-                                    className="rounded-full bg-white px-[11px] py-[5px] border border-[#d0e4f7] text-[12px] font-medium flex items-center justify-center gap-1 text-[#6b8097] hover:border-primary hover:text-primary transition-all shadow-[0_2px_8px_rgba(0,0,0,0.04)]"
-                                    title="Upload document"
-                                  >
-                                    <Upload size={15} strokeWidth={2.5} />{" "}
-                                    Upload
-                                  </button>
-                                );
+                                return null;
                               })()}
                             </div>
                           </div>
@@ -6373,29 +6624,43 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                           role="button"
                           tabIndex={0}
                           onClick={() => {
-                            if (item.external_href) {
-                              window.open(
-                                item.external_href,
-                                "_blank",
-                                "noopener,noreferrer",
-                              );
-                              actions.updateMetadata({
-                                civilDocsStatus: {
-                                  ...civilDocsStatus,
-                                  [item.id]: "reviewed",
-                                },
-                              });
-                            } else {
-                              // Mark inline guides as in-progress when opened
-                              actions.updateMetadata({
-                                civilDocsStatus: {
-                                  ...civilDocsStatus,
-                                  [item.id]: "in-progress",
-                                },
-                              });
-                              setActiveCivilDoc(item);
-                              setIsCivilDocGuideOpen(true);
-                            }
+                            setDocActionModal({
+                              isOpen: true,
+                              doc: item,
+                              title: item.title,
+                              subtitle: item.sub,
+                              onReadGuide: () => {
+                                if (item.external_href) {
+                                  window.open(
+                                    item.external_href,
+                                    "_blank",
+                                    "noopener,noreferrer",
+                                  );
+                                  actions.updateMetadata({
+                                    civilDocsStatus: {
+                                      ...civilDocsStatus,
+                                      [item.id]: "reviewed",
+                                    },
+                                  });
+                                } else {
+                                  // Mark inline guides as in-progress when opened
+                                  actions.updateMetadata({
+                                    civilDocsStatus: {
+                                      ...civilDocsStatus,
+                                      [item.id]: "in-progress",
+                                    },
+                                  });
+                                  setActiveCivilDoc(item);
+                                  setIsCivilDocGuideOpen(true);
+                                }
+                              },
+                              onUpload: () => {
+                                const defId = mapDocumentNameToId(item.title);
+                                setActiveUploadId(item.id);
+                                setActiveUploadType("doc");
+                                openUploadModal(defId);
+                              },
+                            });
                           }}
                           className={`bg-white border-[1.5px] rounded-[16px] p-[18px_20px] flex items-center gap-[16px] cursor-pointer transition-all hover:border-primary hover:shadow-[0_4px_20px_rgba(47,111,212,0.1)] hover:-translate-y-px active:translate-y-0 text-left w-full
                             ${st === "reviewed" ? "border-[#a8d9be] bg-[#e8f5ef]" : st === "in-progress" ? "border-[#f0d98a] bg-[#fef8e8]" : "border-[#d0e4f7]"}
@@ -6575,23 +6840,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                                 );
                               }
 
-                              return (
-                                <button
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    const defId = mapDocumentNameToId(
-                                      item.title,
-                                    );
-                                    setActiveUploadId(item.id);
-                                    setActiveUploadType("doc");
-                                    openUploadModal(defId);
-                                  }}
-                                  className="rounded-full bg-white px-[11px] py-[5px] border border-[#d0e4f7] text-[12px] font-medium flex items-center justify-center gap-1 text-[#6b8097] hover:border-primary hover:text-primary transition-all shadow-[0_2px_8px_rgba(0,0,0,0.04)]"
-                                  title="Upload document"
-                                >
-                                  <Upload size={15} strokeWidth={2.5} /> Upload
-                                </button>
-                              );
+                              return null;
                             })()}
                           </div>
                         </div>
@@ -7435,36 +7684,48 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                               <div
                                 key={doc.id || idx}
                                 onClick={() => {
-                                  if (
-                                    doc.guideUrl &&
-                                    doc.guideUrl !== "/guides"
-                                  ) {
-                                    // For external guides, open in new tab and mark as reviewed
-                                    window.open(doc.guideUrl, "_blank");
-                                    // Mark as reviewed (external guides don't have a mark button)
-                                    if (
-                                      actions.updateDocumentStatus &&
-                                      doc.id
-                                    ) {
-                                      actions.updateDocumentStatus(
-                                        doc.id,
-                                        "reviewed",
+                                  setDocActionModal({
+                                    isOpen: true,
+                                    doc,
+                                    title: doc.name,
+                                    subtitle: doc.subtitle,
+                                    onReadGuide: () => {
+                                      if (
+                                        doc.guideUrl &&
+                                        doc.guideUrl !== "/guides"
+                                      ) {
+                                        window.open(doc.guideUrl, "_blank");
+                                        if (
+                                          actions.updateDocumentStatus &&
+                                          doc.id
+                                        ) {
+                                          actions.updateDocumentStatus(
+                                            doc.id,
+                                            "reviewed",
+                                          );
+                                        }
+                                      } else {
+                                        setSelectedGuideId(doc.id || null);
+                                        if (
+                                          actions.updateDocumentStatus &&
+                                          doc.id
+                                        ) {
+                                          actions.updateDocumentStatus(
+                                            doc.id,
+                                            "in-progress",
+                                          );
+                                        }
+                                      }
+                                    },
+                                    onUpload: () => {
+                                      const defId = mapDocumentNameToId(
+                                        doc.name,
                                       );
-                                    }
-                                  } else {
-                                    // For inline guides, open modal and mark as in-progress
-                                    setSelectedGuideId(doc.id || null);
-                                    // Mark as in-progress immediately when opened
-                                    if (
-                                      actions.updateDocumentStatus &&
-                                      doc.id
-                                    ) {
-                                      actions.updateDocumentStatus(
-                                        doc.id,
-                                        "in-progress",
-                                      );
-                                    }
-                                  }
+                                      setActiveUploadId(doc.id);
+                                      setActiveUploadType("doc");
+                                      openUploadModal(defId);
+                                    },
+                                  });
                                 }}
                                 className={`group flex items-center gap-[16px] px-[20px] py-[18px] rounded-[14px] border-[1.5px] transition-all cursor-pointer relative shadow-[0_2px_12px_rgba(15,31,56,0.07),0_1px_3px_rgba(15,31,56,0.04)] hover:border-primary hover:shadow-[0_8px_32px_rgba(15,31,56,0.12),0_2px_8px_rgba(15,31,56,0.06)] hover:-translate-y-px active:translate-y-0 active:shadow-[0_2px_12px_rgba(15,31,56,0.07),0_1px_3px_rgba(15,31,56,0.04)] mb-[10px]
                                 ${
@@ -7672,24 +7933,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                                       );
                                     }
 
-                                    return (
-                                      <button
-                                        onClick={(e) => {
-                                          e.stopPropagation();
-                                          const defId = mapDocumentNameToId(
-                                            doc.name,
-                                          );
-                                          setActiveUploadId(doc.id);
-                                          setActiveUploadType("doc");
-                                          openUploadModal(defId);
-                                        }}
-                                        className="rounded-full bg-white px-[11px] py-[5px] border border-[#d0e4f7] text-[12px] font-medium flex items-center justify-center gap-1 text-[#6b8097] hover:border-primary hover:text-primary transition-all shadow-[0_2px_8px_rgba(0,0,0,0.04)]"
-                                        title="Upload document"
-                                      >
-                                        <Upload size={15} strokeWidth={2.5} />{" "}
-                                        Upload
-                                      </button>
-                                    );
+                                    return null;
                                   })()}
                                 </div>
                               </div>
@@ -8097,6 +8341,8 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
           setShowDeleteConfirmation(true);
         }}
       />
+
+      {renderDocActionModal()}
 
       <ConfirmationModal
         open={showDeleteConfirmation}
