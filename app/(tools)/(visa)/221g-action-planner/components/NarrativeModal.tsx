@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useLayoutEffect, useMemo, useState, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   X,
@@ -955,13 +955,23 @@ export function NarrativeModal({
   } as const;
 
   const scenes = scenesByVariant[variant];
+  const modalScrollRef = useRef<HTMLDivElement | null>(null);
+  const sceneScrollRef = useRef<HTMLDivElement | null>(null);
   const [currentScene, setCurrentScene] = useState(0);
   const [isPlaying, setIsPlaying] = useState(true);
   const [isCompactView, setIsCompactView] = useState(false);
+  const [isMobileView, setIsMobileView] = useState(false);
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
   const scene = scenes[currentScene];
   const isWizardScene = scene.id === "wizard";
+  const isCompactFirstScene = isCompactView && currentScene === 0;
   const isFirstFourScene = ["welcome", "what-is", "pitfalls", "workflow"].includes(scene.id);
+  const isPagesTwoToFiveScene = ["what-is", "pitfalls", "workflow", "output"].includes(scene.id);
+  const isPagesThreeToSixScene = ["pitfalls", "workflow", "output", "wizard"].includes(scene.id);
+  const isPagesFourToFiveScene = ["workflow", "output"].includes(scene.id);
+  const isCompactPagesTwoToFive = isCompactView && isPagesTwoToFiveScene;
+  const isCompactPagesThreeToSix = isCompactView && isPagesThreeToSixScene;
+  const isCompactPagesFourToFive = isCompactView && isPagesFourToFiveScene;
   const docBadgeTextByVariant: Record<NonNullable<NarrativeModalProps["variant"]>, string> = {
     "221g": "221(g)",
     passport: "Passport",
@@ -974,17 +984,18 @@ export function NarrativeModal({
   };
   const docBadgeText = docBadgeTextByVariant[variant];
   const isGuideVariant = variant !== "221g";
-  const reduceHeavyEffects = isCompactView || prefersReducedMotion;
-  const compactModalMotion = isCompactView
+  const reduceHeavyEffects = isMobileView || prefersReducedMotion;
+  const useSimpleIllustrations = prefersReducedMotion;
+  const compactModalMotion = reduceHeavyEffects
     ? {
-        initialY: 20,
-        exitY: 14,
-        sceneInitialX: 12,
-        sceneExitX: -12,
-        sceneInitialY: 4,
-        sceneExitY: -4,
-        duration: 0.45,
-        sceneDuration: 0.18,
+        initialY: 14,
+        exitY: 10,
+        sceneInitialX: 8,
+        sceneExitX: -8,
+        sceneInitialY: 3,
+        sceneExitY: -3,
+        duration: 0.36,
+        sceneDuration: 0.16,
       }
     : {
         initialY: 40,
@@ -1032,6 +1043,18 @@ export function NarrativeModal({
     }
   };
 
+  const handleCompactWheel = (event: React.WheelEvent<HTMLDivElement>) => {
+    if (!isCompactView) return;
+
+    // Reduce wheel jump distance in compact view for gentler scrolling.
+    event.preventDefault();
+    event.currentTarget.scrollBy({
+      top: event.deltaY * 0.32,
+      left: 0,
+      behavior: "auto",
+    });
+  };
+
   useEffect(() => {
     if (isOpen) {
       setCurrentScene(0);
@@ -1042,20 +1065,24 @@ export function NarrativeModal({
   useEffect(() => {
     if (typeof window === "undefined") return;
 
-    const compactMq = window.matchMedia("(max-width: 480px)");
+    const compactMq = window.matchMedia("(max-width: 650px)");
+    const mobileMq = window.matchMedia("(max-width: 768px)");
     const reducedMq = window.matchMedia("(prefers-reduced-motion: reduce)");
 
     const syncState = () => {
       setIsCompactView(compactMq.matches);
+      setIsMobileView(mobileMq.matches);
       setPrefersReducedMotion(reducedMq.matches);
     };
 
     syncState();
     compactMq.addEventListener("change", syncState);
+    mobileMq.addEventListener("change", syncState);
     reducedMq.addEventListener("change", syncState);
 
     return () => {
       compactMq.removeEventListener("change", syncState);
+      mobileMq.removeEventListener("change", syncState);
       reducedMq.removeEventListener("change", syncState);
     };
   }, []);
@@ -1074,21 +1101,34 @@ export function NarrativeModal({
     return () => clearTimeout(timer);
   }, [isOpen, isPlaying, currentScene]);
 
+  useLayoutEffect(() => {
+    if (!isOpen) return;
+
+    // Keep the first scene visible on compact/mobile by resetting both scroll containers.
+    modalScrollRef.current?.scrollTo({ top: 0, left: 0, behavior: "auto" });
+    sceneScrollRef.current?.scrollTo({ top: 0, left: 0, behavior: "auto" });
+    if (typeof window !== "undefined") {
+      window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+    }
+  }, [isOpen, currentScene]);
+
   return (
     <AnimatePresence>
       {isOpen && (
         <motion.div
+          ref={modalScrollRef}
           initial={reduceHeavyEffects ? { opacity: 0 } : { opacity: 0, backdropFilter: "blur(0px)" }}
           animate={reduceHeavyEffects ? { opacity: 1 } : { opacity: 1, backdropFilter: "blur(12px)" }}
           exit={reduceHeavyEffects ? { opacity: 0 } : { opacity: 0, backdropFilter: "blur(0px)" }}
           transition={{ duration: compactModalMotion.duration, ease: [0.16, 1, 0.3, 1] }}
           className={[
-            "fixed inset-0 z-50 flex items-start justify-center overflow-y-auto p-2.5 pt-3 sm:items-start sm:p-4 md:items-center md:p-8",
+            "fixed inset-0 z-50 flex items-start justify-center overflow-y-auto welcome-thick-scrollbar p-2.5 pt-3 sm:items-start sm:p-4 md:items-center md:p-8",
             isCompactView ? "p-1.5 pt-2" : "",
           ].join(" ")}
           style={{
             background:
               "radial-gradient(circle at 50% 25%, rgba(255,255,255,0.92) 0%, rgba(248,251,252,0.9) 42%, rgba(13,115,119,0.16) 100%)",
+            scrollbarWidth: "thin",
           }}
         >
           {!reduceHeavyEffects && (
@@ -1120,14 +1160,19 @@ export function NarrativeModal({
           )}
 
           <motion.div
-            initial={{ scale: isCompactView ? 0.992 : 0.98, opacity: 0, y: compactModalMotion.initialY }}
+            initial={{ scale: reduceHeavyEffects ? 0.992 : 0.98, opacity: 0, y: compactModalMotion.initialY }}
             animate={{ scale: 1, opacity: 1, y: 0 }}
-            exit={{ scale: isCompactView ? 0.992 : 0.98, opacity: 0, y: compactModalMotion.exitY }}
+            exit={{ scale: reduceHeavyEffects ? 0.992 : 0.98, opacity: 0, y: compactModalMotion.exitY }}
             transition={{ duration: compactModalMotion.duration, ease: [0.16, 1, 0.3, 1] }}
-              className={[
-                "relative flex w-full max-w-5xl max-h-[calc(100svh-0.75rem)] min-h-0 flex-col overflow-hidden rounded-[1.65rem] border border-[#cfe3e3] bg-[linear-gradient(180deg,#ffffff_0%,#fcffff_100%)] shadow-[0_32px_80px_-34px_rgba(13,115,119,0.35)] ring-1 ring-white/90 antialiased sm:max-h-[calc(100svh-1.5rem)] sm:rounded-[2.5rem] sm:ring-2 md:max-h-[calc(100svh-4rem)]",
-                isCompactView ? "max-h-[calc(100svh-0.25rem)] rounded-[1.2rem]" : "",
-              ].join(" ")}
+            className={[
+              "relative flex w-full max-w-5xl max-h-[calc(100svh-0.75rem)] min-h-0 flex-col overflow-hidden border border-[#cfe3e3] bg-[linear-gradient(180deg,#ffffff_0%,#fcffff_100%)] shadow-[0_32px_80px_-34px_rgba(13,115,119,0.35)] ring-1 ring-white/90 antialiased sm:max-h-[calc(100svh-1.5rem)] sm:rounded-[2.5rem] sm:ring-2 md:max-h-[calc(100svh-4rem)]",
+              isCompactView ? "!w-[98vw] !h-[98vh] !max-w-full !max-h-[98vh] rounded-[1.2rem] overflow-y-auto welcome-thick-scrollbar" : "rounded-[1.65rem]",
+            ].join(" ")}
+            style={
+              isCompactView
+                ? { scrollbarWidth: "thin", width: '98vw', height: '98vh', maxWidth: '100vw', maxHeight: '98vh' }
+                : undefined
+            }
           >
             <div className="absolute left-0 right-0 top-0 z-20 h-1 bg-[#f0f7f7]">
               <motion.div
@@ -1148,7 +1193,7 @@ export function NarrativeModal({
             <div className="absolute right-2.5 top-2.5 z-20 flex items-center gap-2 sm:right-6 sm:top-6 sm:gap-3">
               <button
                 onClick={onClose}
-                className="rounded-xl border border-[#d8eaea] bg-white/95 p-2 shadow-[0_8px_18px_rgba(13,115,119,0.12)] transition-all duration-300 hover:-translate-y-0.5 hover:bg-[#f7fbfb] sm:rounded-2xl sm:p-3"
+                className="transition-opacity duration-300 hover:opacity-70"
                 style={{ color: colors.deepTeal }}
                 type="button"
               >
@@ -1167,10 +1212,15 @@ export function NarrativeModal({
             </label>
 
             <div
+              ref={sceneScrollRef}
+              onWheel={handleCompactWheel}
               className={[
-                "relative flex min-h-0 flex-1 items-start justify-center overflow-y-auto overscroll-contain bg-gradient-to-b from-white via-[#fbfefe] to-[#f3faf9] px-3 pb-4 pt-16 sm:px-8 sm:pb-8 sm:pt-20 md:items-center md:p-12",
-                isCompactView ? "px-2.5 pb-2 pt-12" : "",
+                "relative flex flex-col min-h-0 flex-1 overflow-x-hidden overscroll-contain bg-gradient-to-b from-white via-[#fbfefe] to-[#f3faf9] w-full h-full",
+                isCompactView
+                  ? "overflow-y-auto px-3 pt-4 pb-4"
+                  : "items-start justify-center overflow-y-auto px-3 pb-4 pt-16 sm:px-8 sm:pb-8 sm:pt-20 md:items-center md:p-12"
               ].join(" ")}
+              style={{ scrollbarWidth: "thin" }}
             >
               <div
                 className="pointer-events-none absolute inset-x-0 top-0 bg-gradient-to-b from-white/95 to-transparent"
@@ -1182,7 +1232,9 @@ export function NarrativeModal({
                 <motion.div
                   key={scene.id}
                   initial={
-                    reduceHeavyEffects
+                    isCompactView
+                      ? { opacity: 1, filter: "blur(0px)" }
+                      : reduceHeavyEffects
                       ? { opacity: 0, y: compactModalMotion.sceneInitialY }
                       : { opacity: 0, filter: "blur(12px)", x: compactModalMotion.sceneInitialX, scale: 0.98 }
                   }
@@ -1196,41 +1248,44 @@ export function NarrativeModal({
                       ? { opacity: 0, y: compactModalMotion.sceneExitY }
                       : { opacity: 0, filter: "blur(12px)", x: compactModalMotion.sceneExitX, scale: 0.98 }
                   }
-                  transition={{ duration: reduceHeavyEffects ? compactModalMotion.sceneDuration : 0.7, ease: [0.16, 1, 0.3, 1] }}
+                  transition={{ duration: compactModalMotion.sceneDuration, ease: [0.16, 1, 0.3, 1] }}
                   className={[
-                    "flex w-full flex-col items-center justify-start gap-3 pb-1 md:flex-row md:justify-center md:gap-12",
-                    isCompactView ? "gap-2" : "",
-                    isFirstFourScene ? "sm:gap-6" : "",
-                    isWizardScene ? "pt-2 sm:pt-3" : "",
-                    scene.id === "needs" ? "md:items-start" : "md:items-center",
+                    "flex w-full flex-col gap-3 pb-1 md:flex-row md:justify-center md:gap-12 md:items-center",
+                    isCompactView ? "gap-8 px-3" : "",
+                    isCompactView && isCompactFirstScene ? "justify-center items-center text-center mt-4" : "items-center"
                   ].join(" ")}
                 >
                   <div
                     className={[
-                      "w-full flex-none sm:max-w-md sm:flex-1",
-                      isCompactView ? "max-w-[148px]" : "",
-                      isFirstFourScene ? "max-w-[160px] sm:max-w-md" : "max-w-[200px]",
+                      "w-full flex-none sm:max-w-md sm:flex-1 overflow-visible max-w-[200px]",
+                      isCompactView ? "flex justify-center mb-2" : "",
+                      isCompactView && isCompactFirstScene ? "justify-center items-center text-center mb-2" : ""
                     ].join(" ")}
                   >
                     <SceneIllustration
                       scene={scene}
-                      reduceMotion={reduceHeavyEffects}
+                      reduceMotion={useSimpleIllustrations}
+                      compactMode={isCompactView}
                       documentBadgeText={docBadgeText}
                       outputMode={isGuideVariant ? "guide" : "221g"}
+                      {...((isCompactView && isPagesFourToFiveScene) ? { size: 70 } : {})}
                     />
                   </div>
 
                   <div
                     className={[
-                      "z-10 w-full max-w-lg flex-1 text-center md:text-left",
-                      scene.id === "needs" ? "md:pt-2" : "",
+                      "relative z-20 w-full max-w-lg flex-1",
+                      isCompactView ? "text-center mt-6 px-2" : "text-center md:text-left",
+                      isCompactView && isCompactFirstScene ? "text-center mt-2" : ""
                     ].join(" ")}
                   >
                     <motion.h2
                       className={[
                         "font-black leading-[1.05] tracking-[-0.02em] text-balance break-words w-full sm:text-[2rem] md:text-[3.1rem]",
-                        isCompactView ? "text-[1.24rem] leading-[1.08]" : "",
-                        isFirstFourScene ? "mb-2.5 text-[1.48rem]" : "mb-2.5 text-[1.38rem]",
+                        isCompactFirstScene ? "mb-4 text-[1.12rem] leading-[1.12]" : "",
+                        isCompactView ? "mb-5" : "",
+                        isCompactPagesThreeToSix ? "mb-2.5 text-[1.12rem] leading-[1.14]" : "",
+                        isFirstFourScene ? "mb-2 text-[1.48rem]" : "mb-2 text-[1.38rem]",
                       ].join(" ")}
                       style={{ color: colors.deepTeal }}
                     >
@@ -1251,7 +1306,7 @@ export function NarrativeModal({
                       <motion.p
                         className={[
                           "mx-auto max-w-[60ch] text-[14px] font-medium leading-6 tracking-[0.002em] sm:text-[16px] sm:leading-7 md:mx-0 md:text-[1.12rem] md:leading-[1.65]",
-                          isCompactView ? "text-[13px] leading-[1.45]" : "",
+                          isCompactPagesThreeToSix ? "text-[13px] leading-[1.5]" : "",
                         ].join(" ")}
 
                         style={{ color: colors.sageGrey }}
@@ -1275,10 +1330,7 @@ export function NarrativeModal({
             </div>
 
             <div
-              className={[
-                "relative z-20 border-t border-[#d5e7e7] bg-white/97 px-2.5 py-2.5 shadow-[0_-8px_24px_-18px_rgba(13,115,119,0.32)] sm:px-6 sm:py-4",
-                isCompactView ? "px-2 py-2" : "",
-              ].join(" ")}
+              className="relative z-20 border-t border-[#d5e7e7] bg-white/97 px-2.5 py-2.5 shadow-[0_-8px_24px_-18px_rgba(13,115,119,0.32)] sm:px-6 sm:py-4"
             >
               <img
                 src="/assets/images/mascot.png"
@@ -1289,12 +1341,12 @@ export function NarrativeModal({
                 ].join(" ")}
                 draggable={false}
               />
-              <div className={["grid grid-cols-1 items-center gap-3 sm:grid-cols-[auto_1fr_auto] sm:gap-4", isCompactView ? "gap-2" : ""].join(" ")}>
+              <div className="grid grid-cols-1 items-center gap-2 sm:grid-cols-[auto_1fr_auto] sm:gap-4">
                 <div className="order-1 flex items-center justify-start">
                   <button
                     onClick={handlePrev}
                     disabled={currentScene === 0}
-                    className="flex items-center gap-1.5 rounded-xl px-2.5 py-1.5 text-[13px] font-semibold tracking-[0.01em] leading-none transition-all duration-300 hover:bg-[#f3f9f9] disabled:cursor-not-allowed disabled:opacity-30 sm:px-3 sm:py-2 sm:text-[16px]"
+                    className="flex items-center gap-1 rounded-xl px-2 py-1 text-[12px] font-semibold tracking-[0.01em] leading-none transition-all duration-300 hover:bg-[#f3f9f9] disabled:cursor-not-allowed disabled:opacity-30 sm:px-3 sm:py-2 sm:text-[16px]"
                     style={{ color: colors.deepTeal }}
                     type="button"
                   >
@@ -1313,7 +1365,7 @@ export function NarrativeModal({
                       }}
                       className="relative h-1.5 overflow-hidden rounded-full transition-all duration-500"
                       style={{
-                        width: index === currentScene ? (isCompactView ? "1.9rem" : "2.25rem") : "0.46rem",
+                        width: index === currentScene ? "1.2rem" : "0.38rem",
                         backgroundColor: "#edf4f4",
                       }}
                       type="button"
@@ -1332,10 +1384,7 @@ export function NarrativeModal({
                 <div className="order-2 flex items-center justify-end gap-2 sm:order-3 sm:gap-3">
                   <button
                     onClick={handleNext}
-                    className={[
-                      "group flex h-9 min-w-[104px] items-center justify-center gap-1.5 rounded-2xl px-3 text-[14px] font-black leading-none tracking-[0.01em] text-white shadow-lg transition-all duration-300 hover:-translate-y-0.5 hover:shadow-xl active:scale-95 sm:h-11 sm:min-w-[158px] sm:gap-2 sm:px-6 sm:text-[18px]",
-                      isCompactView ? "h-8 min-w-[92px] rounded-xl px-2.5 text-[13px]" : "",
-                    ].join(" ")}
+                    className="group flex h-9 min-w-[104px] items-center justify-center gap-1.5 rounded-2xl px-3 text-[14px] font-black leading-none tracking-[0.01em] text-white shadow-lg transition-all duration-300 hover:-translate-y-0.5 hover:shadow-xl active:scale-95 sm:h-11 sm:min-w-[158px] sm:gap-2 sm:px-6 sm:text-[18px]"
                     style={{
                       background: `linear-gradient(135deg, ${colors.deepTeal}, #129c9e)`,
                       boxShadow: "0 12px 28px -10px rgba(13, 115, 119, 0.42)",
@@ -1350,7 +1399,7 @@ export function NarrativeModal({
                 </div>
               </div>
 
-              <label className="mt-1.5 flex items-center justify-end gap-1.5 text-[11px] font-semibold tracking-[0.01em] text-slate-600 sm:hidden">
+              <label className="mt-0.5 flex items-center justify-end gap-1 text-[10px] font-semibold tracking-[0.01em] text-slate-600 sm:hidden">
                 <input
                   type="checkbox"
                   checked={dontShowAgain}
@@ -1370,43 +1419,51 @@ export function NarrativeModal({
 function SceneIllustration({
   scene,
   reduceMotion = false,
+  compactMode = false,
   documentBadgeText,
   outputMode,
 }: {
   scene: Scene;
   reduceMotion?: boolean;
+  compactMode?: boolean;
   documentBadgeText: string;
   outputMode: "221g" | "guide";
 }) {
   const isNeedsScene = scene.illustration === "preparation";
 
   if (reduceMotion) {
-    return <SimpleSceneIllustration scene={scene} isNeedsScene={isNeedsScene} />;
+    return <SimpleSceneIllustration scene={scene} isNeedsScene={isNeedsScene} compactMode={compactMode} />;
   }
 
   return (
     <div
       className={[
-        "relative mx-auto flex aspect-square w-full items-center justify-center",
+        "relative mx-auto flex aspect-square w-full items-center justify-center overflow-visible",
         isNeedsScene ? "max-w-[280px] md:max-w-[310px]" : "max-w-md",
       ].join(" ")}
     >
-      <motion.div
-        animate={{ scale: [1, 1.05, 1], opacity: [0.4, 0.6, 0.4] }}
-        transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
-        className="absolute inset-0 rounded-full blur-[70px]"
-        style={{
-          background: `radial-gradient(circle, ${colors.softAqua}40 0%, ${colors.mutedLavender}20 50%, transparent 100%)`,
-        }}
-      />
+      <div className={compactMode ? "h-full w-full scale-[0.82]" : "h-full w-full"}>
+      {!compactMode && (
+        <motion.div
+          animate={{ scale: [1, 1.05, 1], opacity: [0.4, 0.6, 0.4] }}
+          transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
+          className="absolute inset-0 rounded-full blur-[70px]"
+          style={{
+            background: `radial-gradient(circle, ${colors.softAqua}40 0%, ${colors.mutedLavender}20 50%, transparent 100%)`,
+          }}
+        />
+      )}
 
-      {scene.illustration === "welcome" && <WelcomeScene />}
+      {scene.illustration === "welcome" ? (
+        <WelcomeScene compactMode={compactMode} />
+      ) : null}
       {scene.illustration === "document" && <DocumentScene badgeText={documentBadgeText} />}
       {scene.illustration === "warning" && <WarningScene />}
       {scene.illustration === "checklist" && <ChecklistScene />}
       {scene.illustration === "output" && <OutputScene mode={outputMode} />}
       {scene.illustration === "wizard" && <WizardScene />}
       {scene.illustration === "preparation" && <PreparationScene />}
+      </div>
     </div>
   );
 }
@@ -1414,9 +1471,11 @@ function SceneIllustration({
 function SimpleSceneIllustration({
   scene,
   isNeedsScene,
+  compactMode = false,
 }: {
   scene: Scene;
   isNeedsScene: boolean;
+  compactMode?: boolean;
 }) {
   const iconMap: Record<string, React.ElementType> = {
     welcome: BookOpen,
@@ -1434,28 +1493,29 @@ function SimpleSceneIllustration({
     <div
       className={[
         "relative mx-auto flex aspect-square w-full items-center justify-center",
+        compactMode ? "max-w-[112px]" : "",
         isNeedsScene ? "max-w-[220px] md:max-w-[310px]" : "max-w-[240px] md:max-w-md",
       ].join(" ")}
     >
       <div className="absolute inset-0 rounded-full bg-[#eaf6f5]" />
-      <div className="relative z-10 flex h-28 w-28 items-center justify-center rounded-3xl border border-[#d4eaea] bg-white shadow-sm md:h-36 md:w-36">
-        <Icon className="h-12 w-12 text-[#0d7377] md:h-16 md:w-16" />
+      <div className={compactMode ? "relative z-10 flex h-20 w-20 items-center justify-center rounded-3xl border border-[#d4eaea] bg-white shadow-sm" : "relative z-10 flex h-28 w-28 items-center justify-center rounded-3xl border border-[#d4eaea] bg-white shadow-sm md:h-36 md:w-36"}>
+        <Icon className={compactMode ? "h-9 w-9 text-[#0d7377]" : "h-12 w-12 text-[#0d7377] md:h-16 md:w-16"} />
       </div>
     </div>
   );
 }
 
-function WelcomeScene() {
+function WelcomeScene({ compactMode = false }: { compactMode?: boolean }) {
   return (
     <div className="relative flex h-full w-full items-center justify-center">
       <motion.div
-        initial={{ scale: 0.8, y: 20, opacity: 0 }}
+        initial={{ scale: compactMode ? 0.9 : 0.8, y: compactMode ? 8 : 20, opacity: 0 }}
         animate={{ scale: 1, y: 0, opacity: 1 }}
         transition={{ type: "spring", damping: 20 }}
-        className="relative z-10 flex h-52 w-52 items-center justify-center rounded-3xl border border-[#afdbdb]/40 bg-white shadow-[0_20px_50px_-15px_rgba(13,115,119,0.2)]"
+        className={compactMode ? "relative z-10 flex h-28 w-28 items-center justify-center rounded-3xl border border-[#afdbdb]/40 bg-white shadow-[0_20px_50px_-15px_rgba(13,115,119,0.2)]" : "relative z-10 flex h-52 w-52 items-center justify-center rounded-3xl border border-[#afdbdb]/40 bg-white shadow-[0_20px_50px_-15px_rgba(13,115,119,0.2)]"}
       >
         <motion.div animate={{ y: [0, -8, 0] }} transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}>
-          <BookOpen className="h-24 w-24" style={{ color: colors.deepTeal }} />
+          <BookOpen className={compactMode ? "h-12 w-12" : "h-24 w-24"} style={{ color: colors.deepTeal }} />
         </motion.div>
       </motion.div>
 
