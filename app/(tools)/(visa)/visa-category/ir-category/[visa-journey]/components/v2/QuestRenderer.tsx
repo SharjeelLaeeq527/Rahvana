@@ -364,6 +364,7 @@ export function QuestRenderer({
         ? tempAnswers[screen.id].length > 0
         : true);
 
+
     return (
       <div className="w-full h-full min-h-[700px] flex flex-col animate-in slide-in-from-right-4 fade-in duration-500 bg-white">
         {/* Topbar */}
@@ -410,6 +411,51 @@ export function QuestRenderer({
               </p>
             )}
 
+            {/* Expandable hint dialog before options if present */}
+            {screen.hint && (
+              <div className="mb-8 mt-2">
+                <button
+                  type="button"
+                  onClick={() => setShowHint((v) => !v)}
+                  className="flex items-center gap-2 text-[14px] font-bold text-primary hover:opacity-80 transition-opacity select-none"
+                  aria-expanded={showHint}
+                  aria-controls={`hint-panel-${screen.id}`}
+                >
+                  <span
+                    className={`transition-transform duration-300 ${showHint ? "rotate-90" : "rotate-0"}`}
+                  >
+                    <svg width="18" height="18" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M6 8L10 12L14 8" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                    </svg>
+                  </span>
+                  <span>Examples & accepted documents</span>
+                </button>
+                {showHint && (
+                  <div
+                    id={`hint-panel-${screen.id}`}
+                    className="mt-4 p-5 bg-[#f0f7ff] border border-[#d0e4f7] rounded-[16px] animate-in slide-in-from-top-2 duration-300"
+                  >
+                    {screen.hint.intro && (
+                      <p className="text-[13px] font-bold text-[#0f1f38] mb-2">
+                        {screen.hint.intro}
+                      </p>
+                    )}
+                    <ul className="space-y-2">
+                      {screen.hint.items.map((it, i) => (
+                        <li
+                          key={i}
+                          className="flex gap-2 text-[13.5px] text-[#3a4f63] leading-relaxed"
+                        >
+                          <span className="text-primary mt-1">•</span>
+                          <span>{it}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+              </div>
+            )}
+
             <div className="flex flex-col gap-[10px] mb-6">
               {screen.options.map((opt) => {
                 const val = tempAnswers[screen.id];
@@ -451,38 +497,6 @@ export function QuestRenderer({
                 );
               })}
             </div>
-
-            {screen.hint && (
-              <div className="mb-8">
-                <button
-                  onClick={() => setShowHint(!showHint)}
-                  className="flex items-center gap-1.5 text-[14px] font-bold text-primary hover:opacity-80 transition-opacity"
-                >
-                  <span>{showHint ? "▾" : "▸"}</span>
-                  <span>Examples & accepted documents</span>
-                </button>
-                {showHint && (
-                  <div className="mt-4 p-5 bg-[#f0f7ff] border border-[#d0e4f7] rounded-[16px] animate-in slide-in-from-top-2 duration-300">
-                    {screen.hint.intro && (
-                      <p className="text-[13px] font-bold text-[#0f1f38] mb-2">
-                        {screen.hint.intro}
-                      </p>
-                    )}
-                    <ul className="space-y-2">
-                      {screen.hint.items.map((it, i) => (
-                        <li
-                          key={i}
-                          className="flex gap-2 text-[13.5px] text-[#3a4f63] leading-relaxed"
-                        >
-                          <span className="text-primary mt-1">•</span>
-                          <span>{it}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-              </div>
-            )}
 
             <div className="mt-auto pt-6 flex flex-col gap-3">
               <button
