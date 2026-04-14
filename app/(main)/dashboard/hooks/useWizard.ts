@@ -359,6 +359,13 @@ export function useWizard(options: UseWizardOptions = {}) {
         const allActiveSteps: any[] = [];
         chapters.forEach((chapter: any) => {
           const activeSteps = (chapter.steps || []).filter((s: any) => {
+            const visibleWhen = s.visible_when;
+            if (visibleWhen && Object.keys(visibleWhen).length > 0) {
+              if (visibleWhen.filingMethod) {
+                return visibleWhen.filingMethod === filingMethod;
+              }
+            }
+            
             const branch = s.branch;
             if (!branch || branch === 'both') return true;
             return branch === filingMethod;
@@ -369,18 +376,19 @@ export function useWizard(options: UseWizardOptions = {}) {
         // 2. Find target step index
         const targetIdx = allActiveSteps.findIndex(s => (s.step_key || s.id) === stepKey);
 
-        // 3. If found, check all preceding steps
+        // Allow if first step (index 0)
         if (targetIdx > 0) {
-          const previousSteps = allActiveSteps.slice(0, targetIdx);
-          const firstIncomplete = previousSteps.find(s => !state.completedSteps.has(s.step_key || s.id));
-          
-          if (firstIncomplete) {
-            toast.error(`Previous step pending: "${firstIncomplete.step_name}"`, {
-              description: "Steps must be completed in order. Please finish the preceding tasks first.",
-              duration: 4000
-            });
-            return; // HARD BLOCK
-          }
+           // 3. If NOT first step, check all preceding steps
+           const previousSteps = allActiveSteps.slice(0, targetIdx);
+           const firstIncomplete = previousSteps.find(s => !state.completedSteps.has(s.step_key || s.id));
+           
+           if (firstIncomplete) {
+             toast.error(`Previous step pending: "${firstIncomplete.step_name}"`, {
+               description: "Steps must be completed in order. Please finish the preceding tasks first.",
+               duration: 4000
+             });
+             return; // HARD BLOCK
+           }
         }
       }
 

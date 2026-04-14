@@ -88,7 +88,7 @@ import {
 } from "../types";
 import { WizardState } from "@/app/(main)/dashboard/hooks/useWizard";
 import { QuestRenderer } from "./QuestRenderer";
-import { getAllActiveSteps, getStageProgress } from "./journeyHelpers";
+import { getAllActiveSteps, getStageProgress, getDocumentReviewProgress, getQuestProgress } from "./journeyHelpers";
 import CredentialFormModal from "@/app/(main)/portal-wallet/components/CredentialFormModal";
 import ViewCredentialModal from "@/app/(main)/portal-wallet/components/ViewCredentialModal";
 import { toast } from "sonner";
@@ -1497,6 +1497,33 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
     [data, state.currentStage, state],
   );
 
+  const [showIncompleteWarning, setShowIncompleteWarning] = useState(false);
+  const [pendingStepToComplete, setPendingStepToComplete] = useState<string | null>(null);
+
+  const checkRequirementsMet = useCallback((step: any) => {
+    if (!step) return true;
+    
+    // Sirf Step 1 (quest) aur Step 2 (docs) ke liye check karo
+    const restrictedSteps = ['step_1_1', 'step_1_2'];
+    const stepKey = step.step_key || step.id;
+    
+    if (!restrictedSteps.includes(stepKey)) return true;
+    
+    if (step.step_type === 'docs') {
+      const progress = getDocumentReviewProgress(step, state.metadata);
+      console.log('[checkRequirementsMet] docs progress:', progress, 'for step:', stepKey);
+      return progress.isComplete;
+    }
+    
+    if (step.step_type === 'quest') {
+      const progress = getQuestProgress(step, state);
+      console.log('[checkRequirementsMet] quest progress:', progress, 'for step:', stepKey);
+      return progress.isComplete;
+    }
+    
+    return true;
+  }, [state.metadata, state.answers, state.completedSteps]);
+
   const handleToggleComplete = (stepKey?: string) => {
     const filingMethod = state.metadata?.filingMethod || state.filingType || 'online';
     const allActive = getAllActiveSteps(data, filingMethod);
@@ -1504,44 +1531,73 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
 
     if (!targetSKey) return;
 
-    const targetIdx = allActive.findIndex(
-      (s) => (s.step_key || (s as any).id) === targetSKey,
-    );
+    const isAlreadyCompleted = state.completedSteps.has(targetSKey);
 
-    // If step is found in active sequence, enforce chronological order
-    if (targetIdx !== -1) {
-      const previousSteps = allActive.slice(0, targetIdx);
-      const incompleteStep = previousSteps.find(
-        (s) => !state.completedSteps.has(s.step_key || (s as any).id),
+    // Only blocking sequence when MARKING AS COMPLETE
+    if (!isAlreadyCompleted) {
+      const targetIdx = allActive.findIndex(
+        (s) => (s.step_key || (s as any).id) === targetSKey,
       );
 
-      if (incompleteStep) {
-        toast.error(
-          `Action restricted: Complete previous steps first: "${incompleteStep.step_name}"`,
-          {
-            description: "You cannot mark this step as read until all preceding steps are finished in order.",
-            duration: 5000,
-          }
+      // 1. Sequence Enforcement
+      if (targetIdx !== -1) {
+        const previousSteps = allActive.slice(0, targetIdx);
+        const incompleteStep = previousSteps.find(
+          (s) => !state.completedSteps.has(s.step_key || (s as any).id),
         );
-        return; // HARD BLOCK
-      }
-    } else {
-      // Fallback for steps not in the active list (e.g. branch-specific)
-      const allPossibleSteps = (data.chapters || (data as any).stages).flatMap((c: any) => c.steps);
-      const fallbackIdx = allPossibleSteps.findIndex((s: any) => (s.step_key || s.id) === targetSKey);
-      
-      if (fallbackIdx > 0) {
-        const previousSteps = allPossibleSteps.slice(0, fallbackIdx);
-        const incompleteStep = previousSteps.find(s => !state.completedSteps.has(s.step_key || s.id));
+
         if (incompleteStep) {
-           toast.error(`Sequence Error: Please finish previous steps first.`);
-           return;
+          toast.error(
+            `Action restricted: Complete previous steps first: "${incompleteStep.step_name}"`,
+            {
+              description: "You cannot mark this step as read until all preceding steps are finished in order.",
+              duration: 5000,
+            }
+          );
+          return; // HARD BLOCK
         }
+      } else {
+        // Fallback for steps not in the active list (e.g. branch-specific)
+        const allPossibleSteps = (data.chapters || (data as any).stages).flatMap((c: any) => c.steps);
+        const fallbackIdx = allPossibleSteps.findIndex((s: any) => (s.step_key || s.id) === targetSKey);
+        
+        if (fallbackIdx > 0) {
+          const previousSteps = allPossibleSteps.slice(0, fallbackIdx);
+          const incompleteStep = previousSteps.find(s => !state.completedSteps.has(s.step_key || s.id));
+          if (incompleteStep) {
+             toast.error(`Sequence Error: Please finish previous steps first.`);
+             return;
+          }
+        }
+      }
+
+      // 2. Requirements Check (ONLY for quest and docs)
+      const targetStep = allActive.find(s => (s.step_key || s.id) === targetSKey) || currentStep;
+      const requirementsMet = checkRequirementsMet(targetStep);
+      
+      if (!requirementsMet) {
+        setPendingStepToComplete(targetSKey);
+        setShowIncompleteWarning(true);
+        return; // Pause for modal
       }
     }
 
     actions.toggleComplete(targetSKey);
   };
+
+  // Calculate if there's an incomplete prerequisite step
+  const incompletePrerequisite = useMemo(() => {
+    if (isCompleted) return null;
+    const filingMethod = state.metadata?.filingMethod || state.filingType || 'online';
+    const allActive = getAllActiveSteps(data, filingMethod);
+    const targetIdx = allActive.findIndex(s => (s.step_key || s.id) === sId);
+    
+    // If first step, it's always allowed
+    if (targetIdx <= 0) return null;
+
+    const prevSteps = allActive.slice(0, targetIdx);
+    return prevSteps.find(s => !state.completedSteps.has(s.step_key || s.id));
+  }, [data, filingMethod, sId, state.completedSteps, isCompleted]);
 
   // Create a safe wrapper for actions to enforce sequence globally
   const safeActions = useMemo(() => ({
@@ -7616,6 +7672,30 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
         <div
           className={`w-full ${currentStep.step_type === "quest" ? "" : "max-w-4xl"}`}
         >
+          {/* Global Sequential Completion Locked Banner */}
+          {!isCompleted && incompletePrerequisite && (
+            <div className="mb-8 p-5 bg-[#fffbeb] border border-[#fef3c7] rounded-3xl flex items-start gap-4 animate-in fade-in slide-in-from-top-4 duration-700 shadow-sm">
+              <div className="w-12 h-12 rounded-2xl bg-[#fef3c7] flex items-center justify-center shrink-0 shadow-inner border border-[#fde68a]">
+                <Lock size={22} className="text-[#92400e]" strokeWidth={2.5} />
+              </div>
+              <div className="flex-1">
+                <div className="text-[15px] font-bold text-[#92400e] mb-1">
+                  Journey Sequence Order
+                </div>
+                <div className="text-[14px] text-[#b45309] leading-relaxed max-w-[600px]">
+                  You are exploring this step. To unlock the "Mark as Completed" action, please finish 
+                  <button 
+                            onClick={() => handleNavigate(incompletePrerequisite.step_key || incompletePrerequisite.id)}
+                            className="font-extrabold underline px-1.5 hover:text-[#78350f] transition-colors"
+                          >
+                            "{incompletePrerequisite.step_name}"
+                          </button> 
+                  first.
+                </div>
+              </div>
+            </div>
+          )}
+
           {currentStep.step_type === "quest" ? (
             <div className="w-full min-h-[600px] flex flex-col items-center">
               <QuestRenderer
@@ -8171,6 +8251,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
 
                     <div className="flex flex-col gap-[10px] mb-[28px]">
                       <button
+                        disabled={!!incompletePrerequisite}
                         onClick={() =>
                           handleConfirmation(
                             state.metadata.filingMethod as string,
@@ -8178,17 +8259,25 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                         }
                         className={`w-full p-[15px_24px] rounded-[14px] text-white font-semibold text-[15px] transition-all duration-[0.24s] shadow-sm transform
                             ${!state.metadata.filingMethod ? "hidden" : "block"}
-                            ${
+                            ${incompletePrerequisite ? "bg-slate-300 cursor-not-allowed opacity-70 grayscale" : 
                               state.metadata.filingMethod === "online"
                                 ? "bg-[#0e5c42] hover:bg-[#0a4330] hover:-translate-y-px hover:shadow-[0_6px_24px_rgba(14,92,66,0.35)]"
                                 : "bg-[#2e1f72] hover:bg-[#1e1348] hover:-translate-y-px hover:shadow-[0_6px_24px_rgba(46,31,114,0.35)]"
                             }`}
                       >
-                        Confirm:{" "}
-                        {state.metadata.filingMethod === "online"
-                          ? "File Online"
-                          : "File by Mail"}{" "}
-                        →
+                        {incompletePrerequisite ? (
+                           <span className="flex items-center justify-center gap-2">
+                             <Lock size={14} /> Finish "{incompletePrerequisite.step_name.slice(0, 15)}..." first
+                           </span>
+                        ) : (
+                          <>
+                            Confirm:{" "}
+                            {state.metadata.filingMethod === "online"
+                              ? "File Online"
+                              : "File by Mail"}{" "}
+                            →
+                          </>
+                        )}
                       </button>
 
                       <button
@@ -8265,6 +8354,35 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                   ))}
                 </div>
               )}
+
+              {/* Sequential Completion Guard & Button */}
+              <div className="mt-8 pt-8 border-t border-slate-100">
+                <button
+                  disabled={!!incompletePrerequisite}
+                  onClick={() => handleToggleComplete()}
+                  className={`w-full p-4 rounded-xl font-bold flex items-center justify-center gap-2 transition-all group ${
+                    isCompleted
+                      ? "bg-[#e8f5ef] text-[#15744f] hover:bg-[#d0efe1]"
+                      : incompletePrerequisite 
+                        ? "bg-slate-100 text-slate-400 border border-slate-200 cursor-not-allowed grayscale"
+                        : "bg-primary text-white hover:bg-primary/90 shadow-[0_4px_20px_rgba(47,111,212,0.3)] hover:-translate-y-0.5 active:translate-y-0"
+                  }`}
+                >
+                  {isCompleted ? (
+                    <>
+                      <CheckCircle2 size={18} />
+                      <span>Completed — Well Done!</span>
+                    </>
+                  ) : incompletePrerequisite ? (
+                    <>
+                      <Lock size={16} strokeWidth={2.5} />
+                      <span>Finish "{incompletePrerequisite.step_name.slice(0, 20)}..." first</span>
+                    </>
+                  ) : (
+                    <span>Mark Step as Done</span>
+                  )}
+                </button>
+              </div>
             </div>
           )}
         </div>
@@ -8429,6 +8547,27 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
           } catch (err) {
             toast.error("Failed to delete document");
           }
+        }}
+      />
+
+      <ConfirmationModal
+        open={showIncompleteWarning}
+        onOpenChange={setShowIncompleteWarning}
+        title="Step Not Fully Complete"
+        description={
+          currentStep?.step_type === 'docs' 
+            ? "You haven't reviewed all required documents yet. Missing items may cause issues later in your case. Are you sure you want to mark this step as done?"
+            : "You haven't completed all required questions in this step. Incomplete answers may affect your journey progress. Are you sure you want to continue?"
+        }
+        cancelText="Go Back & Complete"
+        confirmText="Mark as Done Anyway"
+        confirmVariant="primary"
+        onConfirm={async () => {
+          if (pendingStepToComplete) {
+            actions.toggleComplete(pendingStepToComplete);
+            setPendingStepToComplete(null);
+          }
+          setShowIncompleteWarning(false);
         }}
       />
 
