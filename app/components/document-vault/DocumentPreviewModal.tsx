@@ -84,7 +84,7 @@ export function DocumentPreviewModal({
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="max-w-4xl w-[95vw] sm:w-full p-0 overflow-hidden sm:rounded-xl">
+      <DialogContent className="max-w-5xl w-[95vw] h-[90vh] sm:h-[85vh] p-0 overflow-hidden sm:rounded-xl flex flex-col gap-0">
         {/* Screen reader accessible title */}
         <DialogTitle className="sr-only">
           {t(`documentVaultPage.documents.${documentDef.id}.name`) !==
@@ -94,7 +94,7 @@ export function DocumentPreviewModal({
         </DialogTitle>
 
         {/* Header with Title */}
-        <div className="p-4 sm:p-6 border-b bg-slate-50 dark:bg-slate-900 flex justify-between items-center gap-4">
+        <div className="relative z-20 p-4 sm:p-6 border-b bg-slate-50 dark:bg-slate-900 flex justify-between items-center gap-4 shrink-0">
           <h2 className="text-lg sm:text-xl font-semibold line-clamp-1">
             {t(`documentVaultPage.documents.${documentDef.id}.name`) !==
             `documentVaultPage.documents.${documentDef.id}.name`
@@ -115,7 +115,7 @@ export function DocumentPreviewModal({
         </div>
 
         {/* Preview Content */}
-        <div className="relative overflow-auto bg-slate-100 dark:bg-slate-900 flex items-center justify-center p-4 min-h-[50vh] h-[60vh] sm:h-[600px]">
+        <div className="relative flex-1 overflow-auto bg-slate-100 dark:bg-slate-900 flex items-center justify-center p-4">
           {isLoading && (
             <div className="text-center">
               <Loader
@@ -205,7 +205,7 @@ export function DocumentPreviewModal({
 
         {/* Footer with Zoom controls (only for PDF) */}
         {!isLoading && previewUrl && isPdf && (
-          <div className="flex items-center justify-center gap-2 p-4 border-t bg-slate-50 dark:bg-slate-900">
+          <div className="flex items-center justify-center gap-2 p-4 border-t bg-slate-50 dark:bg-slate-900 shrink-0">
             <Button
               variant="outline"
               size="sm"

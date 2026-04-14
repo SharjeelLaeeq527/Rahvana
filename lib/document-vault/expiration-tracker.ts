@@ -212,23 +212,23 @@ export function formatExpirationDate(
 
   // Use translation function if provided
   if (daysUntil < 0) {
-    return t("documentVaultPage.logic.expiration.expiredAgo", {
+    return t("documentVaultPage.components.logic.expiration.expiredAgo", {
       days: Math.abs(daysUntil),
     });
   } else if (daysUntil === 0) {
-    return t("documentVaultPage.logic.expiration.expiresToday");
+    return t("documentVaultPage.components.logic.expiration.expiresToday");
   } else if (daysUntil === 1) {
-    return t("documentVaultPage.logic.expiration.expiresTomorrow");
+    return t("documentVaultPage.components.logic.expiration.expiresTomorrow");
   } else if (daysUntil <= 7) {
-    return t("documentVaultPage.logic.expiration.expiresInDays", {
+    return t("documentVaultPage.components.logic.expiration.expiresInDays", {
       days: daysUntil,
     });
   } else if (daysUntil <= 30) {
-    return t("documentVaultPage.logic.expiration.expiresInWeeks", {
+    return t("documentVaultPage.components.logic.expiration.expiresInWeeks", {
       weeks: Math.ceil(daysUntil / 7),
     });
   } else if (daysUntil <= 90) {
-    return t("documentVaultPage.logic.expiration.expiresInMonths", {
+    return t("documentVaultPage.components.logic.expiration.expiresInMonths", {
       months: Math.ceil(daysUntil / 30),
     });
   } else {
@@ -455,13 +455,18 @@ export function generateNotifications(
   });
 
   // Create notifications for successfully uploaded documents that don't have other notifications
-  const notificationDocIds = new Set(notifications.map((n) => n.documentDefId || n.documentId));
+  const notificationDocIds = new Set(
+    notifications.map((n) => n.documentDefId || n.documentId),
+  );
   documents.forEach((doc) => {
     const def = documentDefs.get(doc.documentDefId);
     if (!def) return;
 
     // Skip if this document already has a notification (missing, expiring, expired)
-    if (notificationDocIds.has(doc.documentDefId) || notificationDocIds.has(doc.id)) {
+    if (
+      notificationDocIds.has(doc.documentDefId) ||
+      notificationDocIds.has(doc.id)
+    ) {
       return;
     }
 
@@ -585,7 +590,7 @@ export function validateExpirationDate(
     return {
       valid: false,
       error: t
-        ? t("documentVaultPage.logic.validation.pastDate")
+        ? t("documentVaultPage.components.logic.validation.pastDate")
         : "Expiration date cannot be in the past",
     };
   }
@@ -594,7 +599,7 @@ export function validateExpirationDate(
     return {
       valid: false,
       error: t
-        ? t("documentVaultPage.logic.validation.beforeUpload")
+        ? t("documentVaultPage.components.logic.validation.beforeUpload")
         : "Expiration date cannot be before upload date",
     };
   }
@@ -608,7 +613,7 @@ export function validateExpirationDate(
     return {
       valid: false,
       error: t
-        ? t("documentVaultPage.logic.validation.tooFarFuture", {
+        ? t("documentVaultPage.components.logic.validation.tooFarFuture", {
             years: maxYears,
           })
         : `Expiration date cannot be more than ${maxYears} years in the future`,

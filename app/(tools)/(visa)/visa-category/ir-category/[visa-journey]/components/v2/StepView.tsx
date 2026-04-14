@@ -117,6 +117,13 @@ import { useAuth } from "@/app/context/AuthContext";
 import PassportPhotoTool from "@/components/tools/PassportPhotoTool";
 import DocumentTranslationTool from "@/components/tools/DocumentTranslationTool";
 import SponsorshipCalculatorTool from "@/components/tools/SponsorshipCalculatorTool";
+import { DocumentQuestionnaire } from "@/app/components/questionnaire/DocumentQuestionnaire";
+import { IR1_QUESTIONNAIRE_CONFIG } from "@/lib/questionnaire/ir1-questionnaire";
+import { computeDocumentList } from "@/lib/questionnaire/engine";
+import type {
+  QuestionnaireResult,
+  ConditionalDocument,
+} from "@/lib/questionnaire/types";
 
 interface SecurityQuestion {
   id: string;
@@ -267,6 +274,37 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
   // Sponsorship Calculator State
   const [isSponsorshipCalcOpen, setIsSponsorshipCalcOpen] = useState(false);
   const sponsorshipResult = (state.metadata.sponsorshipResult as any) || null;
+
+  // Document Questionnaire State (Chapter 1, Step 2)
+  const isDocQuestionnaireCompleted =
+    state.metadata?.docQuestionnaireCompleted === true;
+  const [showDocQuestionnaire, setShowDocQuestionnaire] = useState(false);
+
+  // Compute effective document items: use engine-finalized list if questionnaire done,
+  // otherwise fall back to the raw JSON data
+  const questionnaireDocItems = useMemo(() => {
+    if (!isDocQuestionnaireCompleted) return null;
+    const savedAnswers = state.metadata?.docQuestionnaireAnswers as
+      | Record<string, string>
+      | undefined;
+    if (!savedAnswers) return null;
+    const computed = computeDocumentList(
+      IR1_QUESTIONNAIRE_CONFIG,
+      savedAnswers,
+    );
+    // Map ConditionalDocument shape to the document_items shape the UI uses
+    return computed.map((doc: ConditionalDocument) => ({
+      id: doc.id,
+      name: doc.name,
+      subtitle: doc.subtitle,
+      tag: doc.tag === "joint_sponsor" ? "other" : doc.tag,
+      guideUrl: doc.guideUrl,
+      icon: doc.icon,
+      group: doc.group,
+      status: "not-started",
+      required: doc.required,
+    }));
+  }, [isDocQuestionnaireCompleted, state.metadata?.docQuestionnaireAnswers]);
 
   // Selected scenario for Step 6 (Gather Financial Documents)
   const [selectedScenario, setSelectedScenario] = useState<string>("pet-only");
@@ -544,7 +582,6 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
         return iconKey;
     }
   };
-
 
   const SCENARIOS: Record<string, any> = {
     "pet-only": {
@@ -2440,7 +2477,8 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
               <div className="text-[12px] font-semibold tracking-wide uppercase text-[#6b8097] mb-[12px]">
                 Your Affidavit of Support Plan
               </div>
-              {(!sponsorshipResult || Object.keys(sponsorshipResult).length === 0) ? (
+              {!sponsorshipResult ||
+              Object.keys(sponsorshipResult).length === 0 ? (
                 <div className="bg-[#fafcff] border-[1.5px] border-dashed border-[#d0e4f7] rounded-[10px] p-[24px] text-center">
                   <div className="text-[14px] text-[#6b8097] leading-[1.6]">
                     Complete the sponsorship calculator to generate the correct
@@ -2454,7 +2492,9 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                       <div className="text-[10px] font-bold uppercase tracking-widest text-primary">
                         Sponsorship Plan Summary
                       </div>
-                      <div className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase ${sponsorshipResult.isEligible ? "bg-emerald-100 text-emerald-700" : "bg-rose-100 text-rose-700"}`}>
+                      <div
+                        className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase ${sponsorshipResult.isEligible ? "bg-emerald-100 text-emerald-700" : "bg-rose-100 text-rose-700"}`}
+                      >
                         {sponsorshipResult.isEligible ? "Met" : "Shortfall"}
                       </div>
                     </div>
@@ -2491,7 +2531,9 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                   </div>
 
                   <div className="flex flex-col gap-[10px]">
-                    <div className="text-[11px] font-bold text-[#6b8097] uppercase tracking-wider px-1">Required Forms</div>
+                    <div className="text-[11px] font-bold text-[#6b8097] uppercase tracking-wider px-1">
+                      Required Forms
+                    </div>
                     {sponsorshipResult?.forms?.map((f: any, i: number) => (
                       <div
                         key={i}
@@ -2516,14 +2558,16 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                           </div>
                         </div>
                         <div className="text-primary opacity-0 group-hover:opacity-100 transition-opacity">
-                           <ArrowRight size={14} />
+                          <ArrowRight size={14} />
                         </div>
                       </div>
                     ))}
                   </div>
 
                   <div className="bg-[#fef8e8]/50 border border-[#f0d98a]/30 rounded-lg p-3 text-[12px] text-[#8a6200] leading-relaxed">
-                    <strong>Note:</strong> You must include the most recent federal tax return for EVERY person listed above who is contributing income.
+                    <strong>Note:</strong> You must include the most recent
+                    federal tax return for EVERY person listed above who is
+                    contributing income.
                   </div>
 
                   <div className="text-[12px] text-[#6b8097] text-center">
@@ -7578,156 +7622,227 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
           ) : currentStep.step_type === "tool" ? (
             renderToolStep()
           ) : currentStep.step_type === "docs" ? (
-            <div className="w-full flex flex-col items-center animate-in fade-in slide-in-from-bottom-6 duration-1000">
-              {/* Header for Docs */}
-              <div className="text-left w-full max-w-[740px] mb-[24px]">
-                <h1 className="text-[clamp(26px,4vw,34px)] font-black text-[#0f1f38] leading-[1.2]">
-                  {currentStep.step_name}
-                </h1>
-                <p className="text-[#3a4f63] text-[15px] leading-[1.65] mb-[12px] max-w-[550px]">
-                  {currentStep.step_description}
-                </p>
-
-                {/* Local Progress Bar - Refined like Reference */}
-                {currentStep.document_items &&
-                  currentStep.document_items.length > 0 && (
-                    <div className="w-full flex items-center gap-[12px] mt-3">
-                      <div className="flex-1 h-[5px] bg-primary/30 rounded-full overflow-hidden">
-                        <div
-                          className="h-full bg-linear-to-r from-primary to-primary transition-all duration-1000 ease-out"
-                          style={{
-                            width: `${(currentStep.document_items.filter((d: any) => state.metadata?.docReviewStatus?.[d.id] || state.documentChecklist[d.name]).length / currentStep.document_items.length) * 100}%`,
-                          }}
-                        />
-                      </div>
-                      <span className="text-[12px] font-medium text-[#6b8097] whitespace-nowrap">
-                        {
-                          currentStep.document_items.filter(
-                            (d: any) =>
-                              state.metadata?.docReviewStatus?.[d.id] ||
-                              state.documentChecklist[d.name],
-                          ).length
-                        }{" "}
-                        of {currentStep.document_items.length} reviewed
-                      </span>
-                    </div>
-                  )}
-              </div>
-
-              {/* Document Cards */}
-              <div className="w-full max-w-[740px]">
-                <div className="w-full">
-                  {(() => {
-                    const docItems =
-                      (currentStep as any).document_items ||
-                      currentStep.document_items;
-                    if (!docItems) return [];
-                    const uniqueGroups = Array.from(
-                      new Set(
-                        docItems.map((d: any) => d.group || "Required Now"),
-                      ),
-                    );
-                    const defaultOrder = [
-                      "Required Now",
-                      "Required if Applicable",
-                      "USCIS Intake Order",
-                      "Supporting Evidence",
-                      "Gather Now for Later",
-                    ];
-                    return (uniqueGroups as string[]).sort((a, b) => {
-                      const idxA = defaultOrder.indexOf(a);
-                      const idxB = defaultOrder.indexOf(b);
-                      if (idxA !== -1 && idxB !== -1) return idxA - idxB;
-                      if (idxA !== -1) return -1;
-                      if (idxB !== -1) return 1;
-                      return a.localeCompare(b);
+            <>
+              {/* Document Questionnaire Overlay — shown once for step_1_2 */}
+              {showDocQuestionnaire && currentStep.step_key === "step_1_2" && (
+                <DocumentQuestionnaire
+                  config={IR1_QUESTIONNAIRE_CONFIG}
+                  onComplete={(result: QuestionnaireResult) => {
+                    // Persist answers + completion flag via backend
+                    actions.updateMetadata({
+                      docQuestionnaireCompleted: true,
+                      docQuestionnaireAnswers: result.answers,
+                      docQuestionnaireCompletedAt: result.completedAt,
                     });
-                  })().map((groupName) => {
-                    const docItems =
-                      (currentStep as any).document_items ||
-                      currentStep.document_items;
-                    const groupItems = docItems?.filter(
-                      (d: any) => (d.group || "Required Now") === groupName,
-                    );
+                    setShowDocQuestionnaire(false);
+                  }}
+                />
+              )}
 
-                    if (!groupItems || groupItems.length === 0) return null;
+              <div className="w-full flex flex-col items-center animate-in fade-in slide-in-from-bottom-6 duration-1000">
+                {/* Questionnaire CTA — only for step_1_2 when not yet completed */}
+                {/* uncomment this line */}
+                {/* {currentStep.step_key === "step_1_2" && !isDocQuestionnaireCompleted && ( */}
+                <div className="w-full max-w-[740px] mb-[24px]">
+                  <button
+                    onClick={() => setShowDocQuestionnaire(true)}
+                    className="w-full p-[20px_24px] rounded-[16px] border-[2px] border-primary bg-[rgba(59,125,216,0.06)] hover:bg-[rgba(59,125,216,0.12)] hover:shadow-[0_4px_20px_rgba(59,125,216,0.15)] hover:-translate-y-px transition-all cursor-pointer text-left group"
+                  >
+                    <div className="text-[10px] font-black uppercase tracking-widest text-primary mb-[6px]">
+                      Recommended · Takes 1 minute
+                    </div>
+                    <h3 className="text-[16px] font-semibold text-[#0f1f38] mb-[4px]">
+                      Personalize Your Document Checklist
+                    </h3>
+                    <p className="text-[13px] text-[#6b8097] leading-[1.5] mb-[10px]">
+                      Answer a few questions about your situation so we can add
+                      or remove documents that apply to you specifically.
+                    </p>
+                    <div className="flex items-center gap-[6px] text-[13px] font-semibold text-primary">
+                      <span>Start Personalization</span>
+                      <ArrowRight size={14} strokeWidth={2} />
+                    </div>
+                  </button>
+                </div>
+                {/* )} */}
 
-                    return (
-                      <div
-                        key={groupName}
-                        className="animate-in fade-in slide-in-from-bottom-4 duration-700 mb-[32px]"
-                      >
-                        <div className="flex items-center gap-[10px] mb-[14px]">
-                          <span className="text-[11px] font-semibold tracking-[0.09em] uppercase text-[#6b8097] whitespace-nowrap">
-                            {groupName}
-                          </span>
-                          <div className="h-px flex-1 bg-primary/30" />
-                        </div>
+                {/* Header for Docs */}
+                {(() => {
+                  // Use questionnaire-computed docs if available, otherwise fall back to JSON data
+                  const effectiveDocItems =
+                    sId === "step_1_2" && questionnaireDocItems
+                      ? questionnaireDocItems
+                      : (currentStep as any).document_items ||
+                        currentStep.document_items;
+                  return (
+                    <>
+                      <div className="text-left w-full max-w-[740px] mb-[24px]">
+                        <h1 className="text-[clamp(26px,4vw,34px)] font-black text-[#0f1f38] leading-[1.2]">
+                          {currentStep.step_name}
+                        </h1>
+                        <p className="text-[#3a4f63] text-[15px] leading-[1.65] mb-[12px] max-w-[550px]">
+                          {currentStep.step_description}
+                        </p>
 
-                        <div className="flex flex-col">
-                          {groupItems.map((doc: any, idx: number) => {
-                            const docReviewStatus =
-                              state.metadata?.docReviewStatus?.[doc.id];
-                            const isReviewed =
-                              docReviewStatus === "reviewed" ||
-                              state.documentChecklist[doc.name];
-                            const hasAttachment =
-                              state.docUploads[doc.name] ||
-                              state.notes[doc.name];
-                            const isInProgress =
-                              (hasAttachment && !isReviewed) ||
-                              docReviewStatus === "in-progress";
-                            const isPetitioner = doc.tag === "petitioner";
-                            const isBeneficiary = doc.tag === "beneficiary";
+                        {/* Personalized badge */}
+                        {sId === "step_1_2" && isDocQuestionnaireCompleted && (
+                          <div className="flex items-center gap-[8px] mb-[8px]">
+                            <span className="text-[11px] font-semibold tracking-[0.04em] px-[10px] py-[3px] rounded-full bg-[#eaf7f2] text-[#1a7a5e] border border-[#b5e0d0]">
+                              ✓ Personalized for your case
+                            </span>
+                          </div>
+                        )}
+
+                        {/* Local Progress Bar */}
+                        {effectiveDocItems && effectiveDocItems.length > 0 && (
+                          <div className="w-full flex items-center gap-[12px] mt-3">
+                            <div className="flex-1 h-[5px] bg-primary/30 rounded-full overflow-hidden">
+                              <div
+                                className="h-full bg-linear-to-r from-primary to-primary transition-all duration-1000 ease-out"
+                                style={{
+                                  width: `${(effectiveDocItems.filter((d: any) => state.metadata?.docReviewStatus?.[d.id] || state.documentChecklist[d.name]).length / effectiveDocItems.length) * 100}%`,
+                                }}
+                              />
+                            </div>
+                            <span className="text-[12px] font-medium text-[#6b8097] whitespace-nowrap">
+                              {
+                                effectiveDocItems.filter(
+                                  (d: any) =>
+                                    state.metadata?.docReviewStatus?.[d.id] ||
+                                    state.documentChecklist[d.name],
+                                ).length
+                              }{" "}
+                              of {effectiveDocItems.length} reviewed
+                            </span>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Document Cards */}
+                      <div className="w-full max-w-[740px]">
+                        <div className="w-full">
+                          {(() => {
+                            const docItems = effectiveDocItems;
+                            if (!docItems) return [];
+                            const uniqueGroups = Array.from(
+                              new Set(
+                                docItems.map(
+                                  (d: any) => d.group || "Required Now",
+                                ),
+                              ),
+                            );
+                            const defaultOrder = [
+                              "Required Now",
+                              "Required if Applicable",
+                              "USCIS Intake Order",
+                              "Supporting Evidence",
+                              "Gather Now for Later",
+                            ];
+                            return (uniqueGroups as string[]).sort((a, b) => {
+                              const idxA = defaultOrder.indexOf(a);
+                              const idxB = defaultOrder.indexOf(b);
+                              if (idxA !== -1 && idxB !== -1)
+                                return idxA - idxB;
+                              if (idxA !== -1) return -1;
+                              if (idxB !== -1) return 1;
+                              return a.localeCompare(b);
+                            });
+                          })().map((groupName) => {
+                            // const docItems =
+                            //   (currentStep as any).document_items ||
+                            //   currentStep.document_items;
+                            const docItems = effectiveDocItems;
+                            const groupItems = docItems?.filter(
+                              (d: any) =>
+                                (d.group || "Required Now") === groupName,
+                            );
+
+                            if (!groupItems || groupItems.length === 0)
+                              return null;
 
                             return (
                               <div
-                                key={doc.id || idx}
-                                onClick={() => {
-                                  setDocActionModal({
-                                    isOpen: true,
-                                    doc,
-                                    title: doc.name,
-                                    subtitle: doc.subtitle,
-                                    onReadGuide: () => {
-                                      if (
-                                        doc.guideUrl &&
-                                        doc.guideUrl !== "/guides"
-                                      ) {
-                                        window.open(doc.guideUrl, "_blank");
-                                        if (
-                                          actions.updateDocumentStatus &&
-                                          doc.id
-                                        ) {
-                                          actions.updateDocumentStatus(
-                                            doc.id,
-                                            "reviewed",
-                                          );
-                                        }
-                                      } else {
-                                        setSelectedGuideId(doc.id || null);
-                                        if (
-                                          actions.updateDocumentStatus &&
-                                          doc.id
-                                        ) {
-                                          actions.updateDocumentStatus(
-                                            doc.id,
-                                            "in-progress",
-                                          );
-                                        }
-                                      }
-                                    },
-                                    onUpload: () => {
-                                      const defId = mapDocumentNameToId(
-                                        doc.name,
-                                      );
-                                      setActiveUploadId(doc.id);
-                                      setActiveUploadType("doc");
-                                      openUploadModal(defId);
-                                    },
-                                  });
-                                }}
-                                className={`group flex items-center gap-[16px] px-[20px] py-[18px] rounded-[14px] border-[1.5px] transition-all cursor-pointer relative shadow-[0_2px_12px_rgba(15,31,56,0.07),0_1px_3px_rgba(15,31,56,0.04)] hover:border-primary hover:shadow-[0_8px_32px_rgba(15,31,56,0.12),0_2px_8px_rgba(15,31,56,0.06)] hover:-translate-y-px active:translate-y-0 active:shadow-[0_2px_12px_rgba(15,31,56,0.07),0_1px_3px_rgba(15,31,56,0.04)] mb-[10px]
+                                key={groupName}
+                                className="animate-in fade-in slide-in-from-bottom-4 duration-700 mb-[32px]"
+                              >
+                                <div className="flex items-center gap-[10px] mb-[14px]">
+                                  <span className="text-[11px] font-semibold tracking-[0.09em] uppercase text-[#6b8097] whitespace-nowrap">
+                                    {groupName}
+                                  </span>
+                                  <div className="h-px flex-1 bg-primary/30" />
+                                </div>
+
+                                <div className="flex flex-col">
+                                  {groupItems.map((doc: any, idx: number) => {
+                                    const docReviewStatus =
+                                      state.metadata?.docReviewStatus?.[doc.id];
+                                    const isReviewed =
+                                      docReviewStatus === "reviewed" ||
+                                      state.documentChecklist[doc.name];
+                                    const hasAttachment =
+                                      state.docUploads[doc.name] ||
+                                      state.notes[doc.name];
+                                    const isInProgress =
+                                      (hasAttachment && !isReviewed) ||
+                                      docReviewStatus === "in-progress";
+                                    const isPetitioner =
+                                      doc.tag === "petitioner";
+                                    const isBeneficiary =
+                                      doc.tag === "beneficiary";
+
+                                    return (
+                                      <div
+                                        key={doc.id || idx}
+                                        onClick={() => {
+                                          setDocActionModal({
+                                            isOpen: true,
+                                            doc,
+                                            title: doc.name,
+                                            subtitle: doc.subtitle,
+                                            onReadGuide: () => {
+                                              if (
+                                                doc.guideUrl &&
+                                                doc.guideUrl !== "/guides"
+                                              ) {
+                                                window.open(
+                                                  doc.guideUrl,
+                                                  "_blank",
+                                                );
+                                                if (
+                                                  actions.updateDocumentStatus &&
+                                                  doc.id
+                                                ) {
+                                                  actions.updateDocumentStatus(
+                                                    doc.id,
+                                                    "reviewed",
+                                                  );
+                                                }
+                                              } else {
+                                                setSelectedGuideId(
+                                                  doc.id || null,
+                                                );
+                                                if (
+                                                  actions.updateDocumentStatus &&
+                                                  doc.id
+                                                ) {
+                                                  actions.updateDocumentStatus(
+                                                    doc.id,
+                                                    "in-progress",
+                                                  );
+                                                }
+                                              }
+                                            },
+                                            onUpload: () => {
+                                              const defId = mapDocumentNameToId(
+                                                doc.name,
+                                              );
+                                              setActiveUploadId(doc.id);
+                                              setActiveUploadType("doc");
+                                              openUploadModal(defId);
+                                            },
+                                          });
+                                        }}
+                                        className={`group flex items-center gap-[16px] px-[20px] py-[18px] rounded-[14px] border-[1.5px] transition-all cursor-pointer relative shadow-[0_2px_12px_rgba(15,31,56,0.07),0_1px_3px_rgba(15,31,56,0.04)] hover:border-primary hover:shadow-[0_8px_32px_rgba(15,31,56,0.12),0_2px_8px_rgba(15,31,56,0.06)] hover:-translate-y-px active:translate-y-0 active:shadow-[0_2px_12px_rgba(15,31,56,0.07),0_1px_3px_rgba(15,31,56,0.04)] mb-[10px]
                                 ${
                                   isReviewed
                                     ? "bg-[#eaf7ff] border-[#b8daff]"
@@ -7735,9 +7850,9 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                                       ? "bg-[#fff9e6] border-[#fde68a]/50"
                                       : "bg-white border-[#d0e4f7]"
                                 }`}
-                              >
-                                <div
-                                  className={`w-[40px] h-[40px] rounded-[10px] flex items-center justify-center shrink-0 transition-all duration-300 border text-[18px]
+                                      >
+                                        <div
+                                          className={`w-[40px] h-[40px] rounded-[10px] flex items-center justify-center shrink-0 transition-all duration-300 border text-[18px]
                                   ${
                                     isReviewed
                                       ? "bg-[#1a7a5e] text-white border-[#1a7a5e]"
@@ -7745,50 +7860,61 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                                         ? "bg-white border-[#fde68a] text-[#d97706]"
                                         : "bg-[#e8f1fb] border-[#d0e4f7] text-primary/80"
                                   }`}
-                                >
-                                  {isReviewed ? (
-                                    <CheckCircle2 size={18} strokeWidth={2.5} />
-                                  ) : (
-                                    (() => {
-                                      switch (doc.icon) {
-                                        case "ShieldCheck":
-                                          return <ShieldCheck size={18} />;
-                                        case "User":
-                                          return <User size={18} />;
-                                        case "FileText":
-                                          return <FileText size={18} />;
-                                        case "FileCheck":
-                                          return <FileCheck size={18} />;
-                                        case "MessageSquare":
-                                          return <MessageSquare size={18} />;
-                                        case "Scale":
-                                          return <Scale size={18} />;
-                                        case "Globe":
-                                          return <Globe size={18} />;
-                                        case "ClipboardList":
-                                          return <ClipboardList size={18} />;
-                                        case "Lock":
-                                          return <Lock size={18} />;
-                                        case "Camera":
-                                          return <Camera size={18} />;
-                                        default:
-                                          return <FileText size={18} />;
-                                      }
-                                    })()
-                                  )}
-                                </div>
+                                        >
+                                          {isReviewed ? (
+                                            <CheckCircle2
+                                              size={18}
+                                              strokeWidth={2.5}
+                                            />
+                                          ) : (
+                                            (() => {
+                                              switch (doc.icon) {
+                                                case "ShieldCheck":
+                                                  return (
+                                                    <ShieldCheck size={18} />
+                                                  );
+                                                case "User":
+                                                  return <User size={18} />;
+                                                case "FileText":
+                                                  return <FileText size={18} />;
+                                                case "FileCheck":
+                                                  return (
+                                                    <FileCheck size={18} />
+                                                  );
+                                                case "MessageSquare":
+                                                  return (
+                                                    <MessageSquare size={18} />
+                                                  );
+                                                case "Scale":
+                                                  return <Scale size={18} />;
+                                                case "Globe":
+                                                  return <Globe size={18} />;
+                                                case "ClipboardList":
+                                                  return (
+                                                    <ClipboardList size={18} />
+                                                  );
+                                                case "Lock":
+                                                  return <Lock size={18} />;
+                                                case "Camera":
+                                                  return <Camera size={18} />;
+                                                default:
+                                                  return <FileText size={18} />;
+                                              }
+                                            })()
+                                          )}
+                                        </div>
 
-                                <div className="flex-1 min-w-0">
-                                  <h3 className="text-[15px] font-semibold text-[#0f1f38] mb-[4px] leading-[1.3] truncate">
-                                    {doc.name}
-                                  </h3>
-                                  <p className="text-[13px] text-[#6b8097] leading-[1.4] mb-[7px] truncate">
-                                    {doc.subtitle}
-                                  </p>
-                                  <div className="flex flex-wrap gap-[6px]">
-                                    {doc.tag && (
-                                      <span
-                                        className={`px-[9px] py-[3px] rounded-full text-[11px] font-semibold tracking-[0.04em]
+                                        <div className="flex-1 min-w-0">
+                                          <h3 className="text-[15px] font-semibold text-[#0f1f38] mb-[4px] leading-[1.3] truncate">
+                                            {doc.name}
+                                          </h3>
+                                          <p className="text-[13px] text-[#6b8097] leading-[1.4] mb-[7px] truncate">
+                                            {doc.subtitle}
+                                          </p>
+                                          <div className="flex flex-wrap gap-[6px]">
+                                            {doc.tag && (
+                                              <span
+                                                className={`px-[9px] py-[3px] rounded-full text-[11px] font-semibold tracking-[0.04em]
                                         ${
                                           isPetitioner
                                             ? "bg-[#e8f1fb] text-primary/80"
@@ -7796,164 +7922,188 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                                               ? "bg-[#eaf7f2] text-[#1a7a5e]"
                                               : "bg-[#f3f0fb] text-[#4a2d80]"
                                         }`}
-                                      >
-                                        {doc.tag.charAt(0).toUpperCase() +
-                                          doc.tag.slice(1)}
-                                      </span>
-                                    )}
-                                    {isBeneficiary && (
-                                      <span className="px-[9px] py-[3px] rounded-full text-[11px] font-semibold tracking-[0.04em] bg-[#f3f0fb] text-[#4a2d80]">
-                                        Rahvana Guide
-                                      </span>
-                                    )}
-                                  </div>
-                                </div>
+                                              >
+                                                {doc.tag
+                                                  .charAt(0)
+                                                  .toUpperCase() +
+                                                  doc.tag.slice(1)}
+                                              </span>
+                                            )}
+                                            {isBeneficiary && (
+                                              <span className="px-[9px] py-[3px] rounded-full text-[11px] font-semibold tracking-[0.04em] bg-[#f3f0fb] text-[#4a2d80]">
+                                                Rahvana Guide
+                                              </span>
+                                            )}
+                                          </div>
+                                        </div>
 
-                                <div className="shrink-0 flex items-center gap-2">
-                                  {(() => {
-                                    const defId = mapDocumentNameToId(doc.name);
-                                    const isUploadedInVault =
-                                      uploadedDocuments.some(
-                                        (ud) => ud.documentDefId === defId,
-                                      );
-                                    const uploadedDoc = uploadedDocuments.find(
-                                      (ud) => ud.documentDefId === defId,
-                                    );
-                                    const isDeleting = uploadedDoc
-                                      ? isDeletingIds.includes(uploadedDoc.id)
-                                      : false;
+                                        <div className="shrink-0 flex items-center gap-2">
+                                          {(() => {
+                                            const defId = mapDocumentNameToId(
+                                              doc.name,
+                                            );
+                                            const isUploadedInVault =
+                                              uploadedDocuments.some(
+                                                (ud) =>
+                                                  ud.documentDefId === defId,
+                                              );
+                                            const uploadedDoc =
+                                              uploadedDocuments.find(
+                                                (ud) =>
+                                                  ud.documentDefId === defId,
+                                              );
+                                            const isDeleting = uploadedDoc
+                                              ? isDeletingIds.includes(
+                                                  uploadedDoc.id,
+                                                )
+                                              : false;
 
-                                    if (isDeleting) return null; // Badge hidden while deleting
+                                            if (isDeleting) return null; // Badge hidden while deleting
 
-                                    const displayStatus = isUploadedInVault
-                                      ? "Uploaded"
-                                      : isReloadingDocs
-                                        ? "Checking..."
-                                        : isReviewed
-                                          ? "Reviewed"
-                                          : isInProgress
-                                            ? "In progress"
-                                            : "Not started";
+                                            const displayStatus =
+                                              isUploadedInVault
+                                                ? "Uploaded"
+                                                : isReloadingDocs
+                                                  ? "Checking..."
+                                                  : isReviewed
+                                                    ? "Reviewed"
+                                                    : isInProgress
+                                                      ? "In progress"
+                                                      : "Not started";
 
-                                    const statusClasses = isUploadedInVault
-                                      ? "bg-[#eaf7f2] text-[#1a7a5e] border-[#b5e0d0] font-bold shadow-sm"
-                                      : isReloadingDocs
-                                        ? "bg-muted/30 text-muted-foreground border-muted-foreground/20 animate-pulse"
-                                        : isReviewed
-                                          ? "bg-[#eaf7f2] text-[#1a7a5e] border-[#b5e0d0]"
-                                          : isInProgress
-                                            ? "bg-[#fff9e6] text-[#d97706] border-[#fde68a]"
-                                            : "bg-white text-[#6b8097] border-[#d0e4f7] hover:border-primary hover:text-primary";
+                                            const statusClasses =
+                                              isUploadedInVault
+                                                ? "bg-[#eaf7f2] text-[#1a7a5e] border-[#b5e0d0] font-bold shadow-sm"
+                                                : isReloadingDocs
+                                                  ? "bg-muted/30 text-muted-foreground border-muted-foreground/20 animate-pulse"
+                                                  : isReviewed
+                                                    ? "bg-[#eaf7f2] text-[#1a7a5e] border-[#b5e0d0]"
+                                                    : isInProgress
+                                                      ? "bg-[#fff9e6] text-[#d97706] border-[#fde68a]"
+                                                      : "bg-white text-[#6b8097] border-[#d0e4f7] hover:border-primary hover:text-primary";
 
-                                    return (
-                                      <div
-                                        className={`px-[11px] py-[5px] rounded-full border text-[12px] font-medium tracking-normal transition-all ${statusClasses}`}
-                                      >
-                                        {displayStatus}
+                                            return (
+                                              <div
+                                                className={`px-[11px] py-[5px] rounded-full border text-[12px] font-medium tracking-normal transition-all ${statusClasses}`}
+                                              >
+                                                {displayStatus}
+                                              </div>
+                                            );
+                                          })()}
+
+                                          {(() => {
+                                            const defId = mapDocumentNameToId(
+                                              doc.name,
+                                            );
+                                            const uploadedDoc =
+                                              uploadedDocuments.find(
+                                                (ud) =>
+                                                  ud.documentDefId === defId,
+                                              );
+                                            const isDeleting = uploadedDoc
+                                              ? isDeletingIds.includes(
+                                                  uploadedDoc.id,
+                                                )
+                                              : false;
+
+                                            if (
+                                              isReloadingDocs &&
+                                              !uploadedDoc
+                                            ) {
+                                              return (
+                                                <div className="flex items-center gap-1.5 px-[11px] py-[5px] text-[12px] text-muted-foreground font-medium animate-pulse">
+                                                  <div className="h-3 w-3 rounded-full border-2 border-muted-foreground/30 border-t-muted-foreground animate-spin" />
+                                                  Checking...
+                                                </div>
+                                              );
+                                            }
+
+                                            if (isDeleting) {
+                                              return (
+                                                <div className="flex items-center gap-1.5 px-[11px] py-[5px] text-[12px] text-red-500 font-medium animate-pulse">
+                                                  <div className="h-3 w-3 rounded-full border-2 border-red-500/30 border-t-red-500 animate-spin" />
+                                                  Deleting...
+                                                </div>
+                                              );
+                                            }
+
+                                            if (uploadedDoc) {
+                                              return (
+                                                <DropdownMenu>
+                                                  <DropdownMenuTrigger asChild>
+                                                    <button
+                                                      onClick={(e) =>
+                                                        e.stopPropagation()
+                                                      }
+                                                      className="h-8 w-8 rounded-full hover:bg-muted flex items-center justify-center transition-colors text-muted-foreground hover:text-foreground border border-transparent hover:border-muted-foreground/20"
+                                                    >
+                                                      <MoreVertical size={18} />
+                                                    </button>
+                                                  </DropdownMenuTrigger>
+                                                  <DropdownMenuContent
+                                                    side="top"
+                                                    align="end"
+                                                    className="w-[140px] rounded-xl shadow-xl border-muted/20"
+                                                  >
+                                                    <DropdownMenuItem
+                                                      onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        window.open(
+                                                          `/api/documents/${uploadedDoc.id}/download`,
+                                                          "_blank",
+                                                        );
+                                                      }}
+                                                      className="flex items-center gap-2 cursor-pointer font-medium text-[13px] py-2.5"
+                                                    >
+                                                      <Eye
+                                                        size={16}
+                                                        className="text-primary"
+                                                      />
+                                                      Preview
+                                                    </DropdownMenuItem>
+                                                    <DropdownMenuItem
+                                                      onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        setDocumentToDelete({
+                                                          id: uploadedDoc.id,
+                                                          name: doc.name,
+                                                        });
+                                                      }}
+                                                      className="flex items-center gap-2 cursor-pointer font-medium text-[13px] py-2.5 text-red-600 focus:text-red-700 focus:bg-red-50"
+                                                    >
+                                                      <Trash2 size={16} />
+                                                      Delete
+                                                    </DropdownMenuItem>
+                                                  </DropdownMenuContent>
+                                                </DropdownMenu>
+                                              );
+                                            }
+
+                                            return null;
+                                          })()}
+                                        </div>
                                       </div>
                                     );
-                                  })()}
-
-                                  {(() => {
-                                    const defId = mapDocumentNameToId(doc.name);
-                                    const uploadedDoc = uploadedDocuments.find(
-                                      (ud) => ud.documentDefId === defId,
-                                    );
-                                    const isDeleting = uploadedDoc
-                                      ? isDeletingIds.includes(uploadedDoc.id)
-                                      : false;
-
-                                    if (isReloadingDocs && !uploadedDoc) {
-                                      return (
-                                        <div className="flex items-center gap-1.5 px-[11px] py-[5px] text-[12px] text-muted-foreground font-medium animate-pulse">
-                                          <div className="h-3 w-3 rounded-full border-2 border-muted-foreground/30 border-t-muted-foreground animate-spin" />
-                                          Checking...
-                                        </div>
-                                      );
-                                    }
-
-                                    if (isDeleting) {
-                                      return (
-                                        <div className="flex items-center gap-1.5 px-[11px] py-[5px] text-[12px] text-red-500 font-medium animate-pulse">
-                                          <div className="h-3 w-3 rounded-full border-2 border-red-500/30 border-t-red-500 animate-spin" />
-                                          Deleting...
-                                        </div>
-                                      );
-                                    }
-
-                                    if (uploadedDoc) {
-                                      return (
-                                        <DropdownMenu>
-                                          <DropdownMenuTrigger asChild>
-                                            <button
-                                              onClick={(e) =>
-                                                e.stopPropagation()
-                                              }
-                                              className="h-8 w-8 rounded-full hover:bg-muted flex items-center justify-center transition-colors text-muted-foreground hover:text-foreground border border-transparent hover:border-muted-foreground/20"
-                                            >
-                                              <MoreVertical size={18} />
-                                            </button>
-                                          </DropdownMenuTrigger>
-                                          <DropdownMenuContent
-                                            side="top"
-                                            align="end"
-                                            className="w-[140px] rounded-xl shadow-xl border-muted/20"
-                                          >
-                                            <DropdownMenuItem
-                                              onClick={(e) => {
-                                                e.stopPropagation();
-                                                window.open(
-                                                  `/api/documents/${uploadedDoc.id}/download`,
-                                                  "_blank",
-                                                );
-                                              }}
-                                              className="flex items-center gap-2 cursor-pointer font-medium text-[13px] py-2.5"
-                                            >
-                                              <Eye
-                                                size={16}
-                                                className="text-primary"
-                                              />
-                                              Preview
-                                            </DropdownMenuItem>
-                                            <DropdownMenuItem
-                                              onClick={(e) => {
-                                                e.stopPropagation();
-                                                setDocumentToDelete({
-                                                  id: uploadedDoc.id,
-                                                  name: doc.name,
-                                                });
-                                              }}
-                                              className="flex items-center gap-2 cursor-pointer font-medium text-[13px] py-2.5 text-red-600 focus:text-red-700 focus:bg-red-50"
-                                            >
-                                              <Trash2 size={16} />
-                                              Delete
-                                            </DropdownMenuItem>
-                                          </DropdownMenuContent>
-                                        </DropdownMenu>
-                                      );
-                                    }
-
-                                    return null;
-                                  })()}
+                                  })}
                                 </div>
                               </div>
                             );
                           })}
                         </div>
                       </div>
-                    );
-                  })}
-                </div>
-              </div>
 
-              <div className="mt-[48px] px-[20px] py-[16px] bg-[#e8f1fb] rounded-[9px] text-[12px] text-[#6b8097] leading-[1.65] text-center max-w-[740px] w-full mb-[24px]">
-                Rahvana provides structured guidance only. This is not legal
-                advice.
-                <br />
-                Consult a licensed immigration attorney for case-specific
-                decisions.
+                      <div className="mt-[48px] px-[20px] py-[16px] bg-[#e8f1fb] rounded-[9px] text-[12px] text-[#6b8097] leading-[1.65] text-center max-w-[740px] w-full mb-[24px]">
+                        Rahvana provides structured guidance only. This is not
+                        legal advice.
+                        <br />
+                        Consult a licensed immigration attorney for
+                        case-specific decisions.
+                      </div>
+                    </>
+                  );
+                })()}
               </div>
-            </div>
+            </>
           ) : currentStep.step_type === "filing" ? (
             <div className="w-full flex flex-col items-center animate-in fade-in slide-in-from-bottom-6 duration-1000">
               <div className="flex flex-col w-full max-w-[660px] pb-[80px] px-[24px]">

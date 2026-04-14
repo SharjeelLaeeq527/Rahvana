@@ -167,6 +167,7 @@ export interface DocumentVaultConfig {
   petitionerName?: string;
   beneficiaryName?: string;
   jointSponsorName?: string;
+  dynamicDocuments?: Record<string, { id: string; name: string }[]>;
 }
 
 export type NotificationType =
