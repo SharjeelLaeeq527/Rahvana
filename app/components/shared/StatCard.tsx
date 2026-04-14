@@ -4,6 +4,7 @@ interface StatCardProps {
   title: string;
   icon: React.ReactNode;
   status: "live" | "coming-soon";
+  type?: string | null; // Optional type for journey cards
   count?: number;
   countLabel?: string;
   description?: string;
@@ -18,6 +19,7 @@ const StatCard: React.FC<StatCardProps> = ({
   countLabel = "requests",
   description,
   onClick,
+  type,
 }) => {
   const isLive = status === "live";
 
@@ -59,13 +61,20 @@ const StatCard: React.FC<StatCardProps> = ({
         {icon}
       </div>
 
-      {/* Title */}
-      <h3
-        className={`text-[15px] font-semibold mb-1 ${isLive ? "text-[#0a1128]" : "text-[#6b7280]"}`}
-        style={{ fontFamily: "Inter, sans-serif" }}
-      >
-        {title}
-      </h3>
+      {/* Title + Journey Type */}
+      <div className="flex justify-between">
+        <h3
+          className={`text-[15px] font-semibold mb-1 ${isLive ? "text-[#0a1128]" : "text-[#6b7280]"}`}
+          style={{ fontFamily: "Inter, sans-serif" }}
+        >
+          {title}
+        </h3>
+        {type && (
+          <span className="inline-block bg-[#e8f6f6] text-[#0d7377] text-[11px] font-semibold px-2.5 py-1 rounded-full mb-2">
+            {type}
+          </span>
+        )}
+      </div>
 
       {/* Description or count label */}
       {description && (
