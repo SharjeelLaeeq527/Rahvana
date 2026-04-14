@@ -8,9 +8,9 @@ interface CourierRegistrationToolProps {
   courierCredentials: any;
   setCourierGuideIdx: (idx: number) => void;
   setIsCourierGuideOpen: (open: boolean) => void;
-  setWalletPortalType: (type: string) => void;
+  setWalletPortalType: (type: "USCIS" | "NVC" | "COURIER") => void;
   setIsWalletViewOpen: (open: boolean) => void;
-  setWalletMode: (mode: string) => void;
+  setWalletMode: (mode: "add" | "edit") => void;
   setIsWalletFormOpen: (open: boolean) => void;
 }
 
