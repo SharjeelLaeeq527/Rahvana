@@ -631,46 +631,70 @@ export default function SponsorshipCalculatorTool({
             if (step === 6) {
               return (
                 <div className="animate-in fade-in slide-in-from-right-4 duration-300">
-                  <div className="text-[11px] font-semibold tracking-widest uppercase mb-4 text-center" style={{ color: stepColor }}>Step 7 of 11</div>
-                  <h2 className="text-[clamp(22px,3.5vw,28px)] font-black text-[#0c1b33] mb-6 text-center">Income Details</h2>
-                  
-                  <div className="space-y-8 mb-8">
-                    <div className="p-6 rounded-2xl border-2" style={{ backgroundColor: `${COLORS.secondary}05`, borderColor: `${COLORS.secondary}30` }}>
-                      <label className="text-[12px] font-black uppercase tracking-wider mb-2 block" style={{ color: COLORS.secondary }}>1. Current Annual Income</label>
-                      <div className="relative">
-                        <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-bold text-2xl">$</span>
-                        <input 
-                          type="number" 
-                          value={data.currentAnnualIncome || ""} 
-                          onChange={(e) => setData({...data, currentAnnualIncome: parseInt(e.target.value) || 0})}
-                          className="w-full pl-8 pr-4 py-4 bg-white border-2 border-slate-200 rounded-xl text-2xl font-bold focus:border-primary outline-none transition-all"
-                          placeholder="0"
-                        />
-                      </div>
-                      <p className="text-[11px] text-slate-500 mt-2">Your current salary \u00d7 12, or expected income this calendar year.</p>
-                    </div>
+                  <div className="text-[11px] font-semibold tracking-widest uppercase mb-4 text-center" style={{ color: stepColor }}>
+                    Step 7 of 11
+                  </div>
 
-                    <div className="p-6 rounded-2xl border-2" style={{ backgroundColor: `${COLORS.secondary}05`, borderColor: `${COLORS.secondary}30` }}>
-                      <label className="text-[12px] font-black uppercase tracking-wider mb-2 block" style={{ color: COLORS.secondary }}>2. Most Recent AGI (Tax Record)</label>
+                  <h2 className="text-[clamp(22px,3.5vw,28px)] font-black text-[#0c1b33] mb-6 text-center">
+                    Income Details
+                  </h2>
+
+                  <div className="space-y-8 mb-8">
+                    {/* SINGLE INPUT ONLY */}
+                    <div
+                      className="p-6 rounded-2xl border-2"
+                      style={{
+                        backgroundColor: `${COLORS.secondary}05`,
+                        borderColor: `${COLORS.secondary}30`,
+                      }}
+                    >
+                      <label
+                        className="text-[12px] font-black uppercase tracking-wider mb-2 block"
+                        style={{ color: COLORS.secondary }}
+                      >
+                        Current Annual Income (AGI)
+                      </label>
+
                       <div className="relative">
-                        <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-bold text-2xl">$</span>
-                        <input 
-                          type="number" 
-                          value={data.agi || ""} 
-                          onChange={(e) => setData({...data, agi: parseInt(e.target.value) || 0})}
+                        <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-bold text-2xl">
+                          $
+                        </span>
+
+                        <input
+                          type="number"
+                          value={data.currentAnnualIncome || ""}
+                          onChange={(e) =>
+                            setData({
+                              ...data,
+                              currentAnnualIncome: parseInt(e.target.value) || 0,
+                              agi: parseInt(e.target.value) || 0, // sync AGI automatically
+                            })
+                          }
                           className="w-full pl-8 pr-4 py-4 bg-white border-2 border-slate-200 rounded-xl text-2xl font-bold focus:border-primary outline-none transition-all"
                           placeholder="0"
                         />
                       </div>
-                      <p className="text-[11px] text-slate-500 mt-2">Line 11 of your most recent IRS Form 1040.</p>
+
+                      {/* UPDATED DESCRIPTION */}
+                      <p className="text-[11px] text-slate-500 mt-2">
+                        Adjusted Gross Income (AGI) — Line 11 of your most recent IRS Form 1040.
+                      </p>
                     </div>
                   </div>
 
                   <div className="flex gap-[10px]">
-                    <button onClick={() => setStepIdx(5)} className="p-[13px_22px] bg-transparent text-[#3a4f63] border-[1.5px] border-[#d0e4f7] rounded-[10px] font-medium hover:border-[#3a4f63] flex items-center gap-2">
+                    <button
+                      onClick={() => setStepIdx(5)}
+                      className="p-[13px_22px] bg-transparent text-[#3a4f63] border-[1.5px] border-[#d0e4f7] rounded-[10px] font-medium hover:border-[#3a4f63] flex items-center gap-2"
+                    >
                       <ArrowLeft size={14} /> Back
                     </button>
-                    <button onClick={() => setStepIdx(7)} style={{ backgroundColor: COLORS.primary }} className="flex-1 p-[14px_22px] text-white rounded-[10px) text-[15px] font-semibold transition-all hover:opacity-90 flex items-center justify-center gap-2">
+
+                    <button
+                      onClick={() => setStepIdx(7)}
+                      style={{ backgroundColor: COLORS.primary }}
+                      className="flex-1 p-[14px_22px] text-white rounded-[10px] text-[15px] font-semibold transition-all hover:opacity-90 flex items-center justify-center gap-2"
+                    >
                       Continue <ArrowRight size={14} />
                     </button>
                   </div>
