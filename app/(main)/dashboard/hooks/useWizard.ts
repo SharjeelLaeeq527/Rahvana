@@ -462,14 +462,36 @@ export function useWizard(options: UseWizardOptions = {}) {
       );
       if (!hasChanges) return;
 
+      // If updating NVC/USCIS/Courier fields, re-fetch Portal Wallet and merge
+      const portalFields = ["nvcCaseNum", "nvcInvoice", "receiptNum", "interviewEmbassy", "medicalDate"];
+      const shouldSyncWallet = Object.keys(metadata).some((k) => portalFields.includes(k));
+
+      let mergedMetadata = { ...metadata };
+      if (shouldSyncWallet) {
+        try {
+          const res = await fetch("/api/portal-wallet");
+          const wallet = await res.json();
+          const nvcCreds = wallet.credentials?.find((c: any) => c.portal_type?.toUpperCase() === "NVC");
+          if (nvcCreds) {
+            if (nvcCreds.nvc_case_number) mergedMetadata.nvcCaseNum = nvcCreds.nvc_case_number;
+            if (nvcCreds.nvc_invoice_id) mergedMetadata.nvcInvoice = nvcCreds.nvc_invoice_id;
+          }
+          const uscisCreds = wallet.credentials?.find((c: any) => c.portal_type?.toUpperCase() === "USCIS");
+          if (uscisCreds && uscisCreds.receipt_number) mergedMetadata.receiptNum = uscisCreds.receipt_number;
+          // Add more fields as needed
+        } catch (err) {
+          console.error("[useWizard] Failed to sync Portal Wallet to metadata:", err);
+        }
+      }
+
       setState((prev) => ({
         ...prev,
-        metadata: { ...prev.metadata, ...metadata }
+        metadata: { ...prev.metadata, ...mergedMetadata }
       }));
 
       if (state.backendId) {
         try {
-          const ops = Object.entries(metadata).map(([key, val]) => ({
+          const ops = Object.entries(mergedMetadata).map(([key, val]) => ({
             operation: "set",
             data_key: key,
             data_value: val,
@@ -565,7 +587,99 @@ export function useWizard(options: UseWizardOptions = {}) {
       await actions.updateMetadata({
         docReviewStatus: updatedDocReviewStatus
       });
-    }
+    },
+
+    savePaymentMethod: async (methodValue: string) => {
+      if (!state.backendId) {
+        console.warn("[useWizard] No backendId for payment method save");
+        throw new Error("Journey not initialized");
+      }
+
+      try {
+        const dataKey = "paper_payment_method";
+        const response = await fetch(`/api/case_data/${state.backendId}/${dataKey}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            data_value: methodValue,
+            is_verified: false,
+            source: "step_action",
+          }),
+        });
+
+        if (!response.ok) {
+          const error = await response.json().catch(() => ({ error: `HTTP ${response.status}` }));
+          throw new Error(error.error || `Failed to save payment method: ${response.status}`);
+        }
+
+        // Update local state with the saved data
+        setState((prev) => ({
+          ...prev,
+          metadata: { ...prev.metadata, [dataKey]: methodValue },
+        }));
+
+        console.log("[useWizard] Payment method saved successfully");
+      } catch (err) {
+        console.error("[useWizard] Payment method save failed:", err);
+        throw err;
+      }
+    },
+
+    saveMailingDetails: async (carrier: string, trackingNumber: string) => {
+      if (!state.backendId) {
+        console.warn("[useWizard] No backendId for mailing details save");
+        throw new Error("Journey not initialized");
+      }
+
+      try {
+        // Save both in parallel
+        const [carrierRes, trackingRes] = await Promise.all([
+          fetch(`/api/case_data/${state.backendId}/paper_mailing_carrier`, {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              data_value: carrier,
+              is_verified: false,
+              source: "step_action",
+            }),
+          }),
+          fetch(`/api/case_data/${state.backendId}/paper_mailing_tracking`, {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              data_value: trackingNumber,
+              is_verified: false,
+              source: "step_action",
+            }),
+          }),
+        ]);
+
+        // Check both responses
+        if (!carrierRes.ok) {
+          const error = await carrierRes.json().catch(() => ({ error: `HTTP ${carrierRes.status}` }));
+          throw new Error(error.error || `Failed to save carrier: ${carrierRes.status}`);
+        }
+        if (!trackingRes.ok) {
+          const error = await trackingRes.json().catch(() => ({ error: `HTTP ${trackingRes.status}` }));
+          throw new Error(error.error || `Failed to save tracking: ${trackingRes.status}`);
+        }
+
+        // Update local state with both saved values
+        setState((prev) => ({
+          ...prev,
+          metadata: {
+            ...prev.metadata,
+            paper_mailing_carrier: carrier,
+            paper_mailing_tracking: trackingNumber,
+          },
+        }));
+
+        console.log("[useWizard] Mailing details saved successfully");
+      } catch (err) {
+        console.error("[useWizard] Mailing details save failed:", err);
+        throw err;
+      }
+    },
   }), [state.backendId, state.metadata, state.completedSteps, state.stepMap, state.role, journeyId, userId, activeRoadmap, normalizeState]);
 
   return { state, actions, isLoaded, hasExistingProgress, isSyncing };

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useState, useEffect } from "react";
 import { ChevronDown, ArrowRight } from "lucide-react";
 import { RoadmapData } from "../types";
 import { WizardState } from "@/app/(main)/dashboard/hooks/useWizard";
@@ -126,31 +126,102 @@ export function DashboardView({
   }, [state]);
 
   const milestones = [
-    { label: "Eligibility confirmed", sid: "c1s1" },
-    { label: "Documents gathered", sid: "c1s2" },
+    { label: "Eligibility confirmed", sid: "step_1_1" },
+    { label: "Documents gathered", sid: "step_1_2" },
     { label: "Filing method selected", key: "filingMethod" },
-    { label: "I-130 submitted to USCIS", key: "receiptNum" },
-    { label: "NVC fees paid", sid: "c2s3" },
-    { label: "DS-260 submitted", sid: "c2s4" },
-    { label: "Documents submitted to NVC", sid: "c2s5" },
+    { label: "I-130 submitted to USCIS", key: "receiptNum", sid: "step_1_3" },
+    { label: "NVC fees paid", sid: "step_2_2" },
+    { label: "DS-260 submitted", sid: "step_2_3" },
+    { label: "Documents submitted to NVC", sid: "step_2_5" },
     { label: "Documentarily Qualified", key: "dqDate" },
-    { label: "Medical exam scheduled", key: "medicalDate" },
+    { label: "Medical exam scheduled", key: "medicalDate", sid: "step_3_1" },
     { label: "Interview scheduled", key: "interviewDate" },
-    { label: "Medical exam attended", sid: "c3s5" },
-    { label: "Visa interview attended", sid: "c3s6" },
+    { label: "Medical exam attended", sid: "step_3_5" },
+    { label: "Visa interview attended", sid: "step_3_8" },
   ];
 
   const milestonesReached = milestones.filter((m) => {
+    // For milestones with both key and sid, consider either as completion
+    if (m.key && m.sid) {
+      return (
+        (state.metadata && state.metadata[m.key]) ||
+        (state.completedSteps && state.completedSteps.has && state.completedSteps.has(m.sid))
+      );
+    }
     if (m.key) return !!(state.metadata && state.metadata[m.key]);
-    if (m.sid) return !!(state.answers && state.answers[m.sid]);
+    if (m.sid) {
+      // Check completedSteps, answers, and metadata for sid-based milestones
+      return (
+        (state.completedSteps && state.completedSteps.has && state.completedSteps.has(m.sid)) ||
+        (state.answers && state.answers[m.sid]) ||
+        (state.metadata && state.metadata[m.sid])
+      );
+    }
     return false;
   }).length;
+
+  // Securely fetch and display NVC case number and invoice ID from the API
+  const [nvcCaseNum, setNvcCaseNum] = useState<string | undefined>(undefined);
+  const [nvcInvoice, setNvcInvoice] = useState<string | undefined>(undefined);
+  const [nvcLoading, setNvcLoading] = useState(true);
+  const [nvcError, setNvcError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    setNvcLoading(true);
+    setNvcError(null);
+    async function fetchNvcFields() {
+      // Fallback to 'NVC' if portalType is missing
+      const portalType = state.metadata.portalType || "NVC";
+      try {
+        const res = await fetch("/api/portal-wallet/reveal", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ portalType, type: "all_details" }),
+        });
+        const data = await res.json();
+        if (!cancelled && data.details) {
+          setNvcCaseNum(data.details.nvcCaseNum);
+          setNvcInvoice(data.details.nvcInvoice);
+          setNvcError(null);
+        } else if (!cancelled) {
+          setNvcCaseNum(undefined);
+          setNvcInvoice(undefined);
+          setNvcError("No details found");
+        }
+      } catch {
+        if (!cancelled) {
+          setNvcCaseNum(undefined);
+          setNvcInvoice(undefined);
+          setNvcError("Failed to fetch NVC fields");
+        }
+      } finally {
+        if (!cancelled) setNvcLoading(false);
+      }
+    }
+    fetchNvcFields();
+    return () => { cancelled = true; };
+  }, [state.metadata.portalType]);
 
   const caseFields = [
     { label: "Filing method", value: state.metadata.filingMethod },
     { label: "Receipt number", value: state.metadata.receiptNum },
-    { label: "NVC case number", value: state.metadata.nvcCaseNum },
-    { label: "NVC invoice ID", value: state.metadata.nvcInvoice },
+    {
+      label: "NVC case number",
+      value: nvcLoading
+        ? "Loading..."
+        : nvcError
+          ? `Error: ${nvcError}`
+          : nvcCaseNum,
+    },
+    {
+      label: "NVC invoice ID",
+      value: nvcLoading
+        ? "Loading..."
+        : nvcError
+          ? `Error: ${nvcError}`
+          : nvcInvoice,
+    },
     { label: "DQ date", value: state.metadata.dqDate },
     { label: "Interview date", value: state.metadata.interviewDate },
     { label: "Embassy", value: state.metadata.interviewEmbassy },
@@ -467,9 +538,16 @@ export function DashboardView({
               <div className="px-[18px] pb-4 pt-1 animate-in fade-in slide-in-from-top-1">
                 <div className="flex flex-col gap-1.5 py-1">
                   {milestones.map((m, i) => {
-                    const isDone = m.key
-                      ? !!(state.metadata && state.metadata[m.key])
-                      : !!(state.answers && state.answers[m.sid!]);
+                    // For milestones with both key and sid, consider either as completion
+                    const isDone = m.key && m.sid
+                      ? ((state.metadata && state.metadata[m.key]) || (state.completedSteps && state.completedSteps.has && state.completedSteps.has(m.sid!)))
+                      : m.key
+                        ? !!(state.metadata && state.metadata[m.key])
+                        : (
+                            (state.completedSteps && state.completedSteps.has && state.completedSteps.has(m.sid!)) ||
+                            (state.answers && state.answers[m.sid!]) ||
+                            (state.metadata && state.metadata[m.sid!])
+                          );
                     return (
                       <div
                         key={i}
