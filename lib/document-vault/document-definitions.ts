@@ -535,7 +535,6 @@ const RELATIONSHIP_DOCS: DocumentDefinition[] = [
   //   description: "Photos from wedding ceremony",
   //   category: "RELATIONSHIP",
   //   applicableVisas: FAMILY_VISAS,
-
   //   roles: ["BENEFICIARY", "PETITIONER"],
   //   stages: ["USCIS", "NVC", "INTERVIEW"],
   //   required: true,
@@ -552,7 +551,6 @@ const RELATIONSHIP_DOCS: DocumentDefinition[] = [
   //   description: "Photos together throughout relationship",
   //   category: "RELATIONSHIP",
   //   applicableVisas: FAMILY_VISAS,
-
   //   roles: ["BENEFICIARY", "PETITIONER"],
   //   stages: ["USCIS", "NVC", "INTERVIEW"],
   //   required: true,
@@ -570,7 +568,6 @@ const RELATIONSHIP_DOCS: DocumentDefinition[] = [
   //     "Chat logs, call records, emails demonstrating ongoing relationship",
   //   category: "RELATIONSHIP",
   //   applicableVisas: FAMILY_VISAS,
-
   //   roles: ["BENEFICIARY", "PETITIONER"],
   //   stages: ["USCIS", "NVC", "INTERVIEW"],
   //   required: true,
@@ -587,7 +584,6 @@ const RELATIONSHIP_DOCS: DocumentDefinition[] = [
   //   description: "Joint bank accounts, property, insurance, etc.",
   //   category: "RELATIONSHIP",
   //   applicableVisas: FAMILY_VISAS,
-
   //   roles: ["BENEFICIARY", "PETITIONER"],
   //   stages: ["NVC", "INTERVIEW"],
   //   required: false,
@@ -964,7 +960,7 @@ const MISC_DOCS: DocumentDefinition[] = [
   {
     id: "passport-petitioner",
     key: "PASSPORT_PETITIONER",
-    name: "Petitioner Passport / Proof of Citizenship",
+    name: "Proof of Citizenship",
     description:
       "Proof of U.S. citizenship (Passport, Birth Certificate, or Naturalization Certificate)",
     category: "IDENTITY",
@@ -1153,7 +1149,6 @@ const EDUCATION_DOCS: DocumentDefinition[] = [
   //   description: "SSC/Matriculation certificate from Pakistan",
   //   category: "EDUCATION",
   //   applicableVisas: FAMILY_VISAS,
-
   //   roles: ["BENEFICIARY"],
   //   stages: ["USCIS", "NVC", "INTERVIEW"],
   //   required: false,
@@ -1179,7 +1174,6 @@ const EDUCATION_DOCS: DocumentDefinition[] = [
   //   description: "HSSC/Intermediate certificate from Pakistan",
   //   category: "EDUCATION",
   //   applicableVisas: FAMILY_VISAS,
-
   //   roles: ["BENEFICIARY"],
   //   stages: ["USCIS", "NVC", "INTERVIEW"],
   //   required: false,
@@ -1193,7 +1187,6 @@ const EDUCATION_DOCS: DocumentDefinition[] = [
   //   description: "Bachelor's degree certificate and transcripts",
   //   category: "EDUCATION",
   //   applicableVisas: FAMILY_VISAS,
-
   //   roles: ["BENEFICIARY"],
   //   stages: ["USCIS", "NVC", "INTERVIEW"],
   //   required: false,
@@ -1219,7 +1212,6 @@ const EDUCATION_DOCS: DocumentDefinition[] = [
   //   description: "Master's degree certificate and transcripts",
   //   category: "EDUCATION",
   //   applicableVisas: FAMILY_VISAS,
-
   //   roles: ["BENEFICIARY"],
   //   stages: ["USCIS", "NVC", "INTERVIEW"],
   //   required: false,
@@ -1234,7 +1226,6 @@ const EDUCATION_DOCS: DocumentDefinition[] = [
   //     "Professional certifications and licenses (e.g., ACCA, CA, PMP)",
   //   category: "EDUCATION",
   //   applicableVisas: FAMILY_VISAS,
-
   //   roles: ["BENEFICIARY"],
   //   stages: ["USCIS", "NVC", "INTERVIEW"],
   //   required: false,
@@ -1248,7 +1239,6 @@ const EDUCATION_DOCS: DocumentDefinition[] = [
   //   description: "HEC attested educational documents",
   //   category: "EDUCATION",
   //   applicableVisas: FAMILY_VISAS,
-
   //   roles: ["BENEFICIARY"],
   //   stages: ["USCIS", "NVC"],
   //   required: false,
@@ -1282,7 +1272,6 @@ const EDUCATION_DOCS: DocumentDefinition[] = [
   //   description: "Official acceptance letter from the U.S. university",
   //   category: "EDUCATION",
   //   applicableVisas: [...USA_STUDENT_VISAS, ...CHINA_STUDENT_VISAS],
-
   //   roles: ["BENEFICIARY"],
   //   stages: ["INTERVIEW"],
   //   required: false,
@@ -1299,7 +1288,6 @@ const EDUCATION_DOCS: DocumentDefinition[] = [
   //   description: "Official academic transcripts from previous institutions",
   //   category: "EDUCATION",
   //   applicableVisas: UNIVERSAL_VISAS,
-
   //   roles: ["BENEFICIARY"],
   //   stages: ["INTERVIEW"],
   //   required: false,
@@ -1313,7 +1301,6 @@ const EDUCATION_DOCS: DocumentDefinition[] = [
   //   description: "Official degree certificates from previous institutions",
   //   category: "EDUCATION",
   //   applicableVisas: UNIVERSAL_VISAS,
-
   //   roles: ["BENEFICIARY"],
   //   stages: ["INTERVIEW"],
   //   required: false,
@@ -1327,7 +1314,6 @@ const EDUCATION_DOCS: DocumentDefinition[] = [
   //   description: "Official scores for GRE, GMAT, SAT, or other required tests",
   //   category: "EDUCATION",
   //   applicableVisas: USA_STUDENT_VISAS,
-
   //   roles: ["BENEFICIARY"],
   //   stages: ["INTERVIEW"],
   //   required: false,
@@ -1341,7 +1327,6 @@ const EDUCATION_DOCS: DocumentDefinition[] = [
   //   description: "Official scores for IELTS, TOEFL, Duolingo, etc.",
   //   category: "EDUCATION",
   //   applicableVisas: ALL_STUDENT_VISAS,
-
   //   roles: ["BENEFICIARY"],
   //   stages: ["INTERVIEW"],
   //   required: false,
@@ -1389,7 +1374,6 @@ const WORK_DOCS: DocumentDefinition[] = [
   //   description: "Experience letter from Pakistani employers",
   //   category: "WORK",
   //   applicableVisas: UNIVERSAL_VISAS,
-
   //   roles: ["BENEFICIARY"],
   //   stages: ["USCIS", "NVC", "INTERVIEW"],
   //   required: false,
@@ -1416,7 +1400,6 @@ const WORK_DOCS: DocumentDefinition[] = [
   //   description: "Employment contracts from Pakistani employers",
   //   category: "WORK",
   //   applicableVisas: FAMILY_VISAS,
-
   //   roles: ["BENEFICIARY"],
   //   stages: ["USCIS", "NVC", "INTERVIEW"],
   //   required: false,
@@ -1430,7 +1413,6 @@ const WORK_DOCS: DocumentDefinition[] = [
   //   description: "Recent salary slips from Pakistani employment",
   //   category: "WORK",
   //   applicableVisas: FAMILY_VISAS,
-
   //   roles: ["BENEFICIARY"],
   //   stages: ["USCIS", "NVC"],
   //   required: false,
@@ -1444,7 +1426,6 @@ const WORK_DOCS: DocumentDefinition[] = [
   //   description: "NOC from current Pakistani employer",
   //   category: "WORK",
   //   applicableVisas: FAMILY_VISAS,
-
   //   roles: ["BENEFICIARY"],
   //   stages: ["INTERVIEW"],
   //   required: false,
@@ -1470,7 +1451,6 @@ const WORK_DOCS: DocumentDefinition[] = [
   //   description: "Employees' Old-Age Benefits Institution certificate",
   //   category: "WORK",
   //   applicableVisas: FAMILY_VISAS,
-
   //   roles: ["BENEFICIARY"],
   //   stages: ["NVC", "INTERVIEW"],
   //   required: false,
@@ -1502,7 +1482,6 @@ const WORK_DOCS: DocumentDefinition[] = [
   //   description: "Current Curriculum Vitae or Resume",
   //   category: "WORK",
   //   applicableVisas: UNIVERSAL_VISAS,
-
   //   roles: ["BENEFICIARY"],
   //   stages: ["INTERVIEW"],
   //   required: false,
@@ -1709,7 +1688,6 @@ const PROPERTY_DOCS: DocumentDefinition[] = [
   //   description: "Property deeds, registry papers, fard documents",
   //   category: "PROPERTY",
   //   applicableVisas: FAMILY_VISAS,
-
   //   roles: ["BENEFICIARY", "PETITIONER"],
   //   stages: ["USCIS", "NVC", "INTERVIEW"],
   //   required: false,
@@ -1736,7 +1714,6 @@ const PROPERTY_DOCS: DocumentDefinition[] = [
   //   description: "Vehicle registration documents in Pakistan",
   //   category: "PROPERTY",
   //   applicableVisas: FAMILY_VISAS,
-
   //   roles: ["BENEFICIARY", "PETITIONER"],
   //   stages: ["NVC"],
   //   required: false,
@@ -1750,7 +1727,6 @@ const PROPERTY_DOCS: DocumentDefinition[] = [
   //   description: "Bank account statements, fixed deposit certificates",
   //   category: "PROPERTY",
   //   applicableVisas: FAMILY_VISAS,
-
   //   roles: ["BENEFICIARY", "PETITIONER"],
   //   stages: ["NVC", "INTERVIEW"],
   //   required: false,
@@ -1766,7 +1742,6 @@ const PROPERTY_DOCS: DocumentDefinition[] = [
   //   description: "NRA certificate from Pakistan",
   //   category: "PROPERTY",
   //   applicableVisas: FAMILY_VISAS,
-
   //   roles: ["BENEFICIARY"],
   //   stages: ["NVC"],
   //   required: false,
@@ -1780,7 +1755,6 @@ const PROPERTY_DOCS: DocumentDefinition[] = [
   //   description: "Stocks, bonds, mutual fund certificates",
   //   category: "PROPERTY",
   //   applicableVisas: FAMILY_VISAS,
-
   //   roles: ["BENEFICIARY", "PETITIONER"],
   //   stages: ["NVC", "INTERVIEW"],
   //   required: false,
@@ -2179,7 +2153,6 @@ const ADDRESS_PROOF_DOCS: DocumentDefinition[] = [
   //   description: "Electricity, gas, water, telephone bills",
   //   category: "ADDRESS_PROOF",
   //   applicableVisas: FAMILY_VISAS,
-
   //   roles: ["BENEFICIARY"],
   //   stages: ["USCIS", "NVC", "INTERVIEW"],
   //   required: false,
@@ -2208,7 +2181,6 @@ const ADDRESS_PROOF_DOCS: DocumentDefinition[] = [
   //   description: "Rental lease agreement",
   //   category: "ADDRESS_PROOF",
   //   applicableVisas: FAMILY_VISAS,
-
   //   roles: ["BENEFICIARY"],
   //   stages: ["USCIS", "NVC", "INTERVIEW"],
   //   required: false,
@@ -2235,7 +2207,6 @@ const ADDRESS_PROOF_DOCS: DocumentDefinition[] = [
   //   description: "Property tax payment receipts",
   //   category: "ADDRESS_PROOF",
   //   applicableVisas: FAMILY_VISAS,
-
   //   roles: ["BENEFICIARY", "PETITIONER"],
   //   stages: ["NVC", "INTERVIEW"],
   //   required: false,
@@ -2249,7 +2220,6 @@ const ADDRESS_PROOF_DOCS: DocumentDefinition[] = [
   //   description: "PO Box rental receipt or ownership proof",
   //   category: "ADDRESS_PROOF",
   //   applicableVisas: FAMILY_VISAS,
-
   //   roles: ["BENEFICIARY"],
   //   stages: ["NVC", "INTERVIEW"],
   //   required: false,

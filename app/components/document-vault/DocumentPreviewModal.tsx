@@ -8,7 +8,7 @@ import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Download, ZoomIn, ZoomOut, X } from "lucide-react";
 import { Loader } from "@/components/ui/spinner";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import Image from "next/image";
 import { useLanguage } from "@/app/context/LanguageContext";
 
@@ -29,6 +29,25 @@ export function DocumentPreviewModal({
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const { t } = useLanguage();
+
+  const displayTitle = useMemo(() => {
+    const categoryName =
+      t(`documentVaultPage.documents.${documentDef.id}.name`) !==
+      `documentVaultPage.documents.${documentDef.id}.name`
+        ? t(`documentVaultPage.documents.${documentDef.id}.name`)
+        : documentDef.name;
+
+    // If it's a multi-upload document, the specific type is stored in notes
+    if (uploadedDoc?.notes?.startsWith("Type: ")) {
+      const specificType = uploadedDoc.notes
+        .split("\n")[0]
+        .replace("Type: ", "")
+        .trim();
+      return `${specificType} / ${categoryName}`;
+    }
+
+    return categoryName;
+  }, [documentDef, uploadedDoc, t]);
 
   // Load document when modal opens
   useEffect(() => {
@@ -86,20 +105,12 @@ export function DocumentPreviewModal({
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent className="max-w-5xl w-[95vw] h-[90vh] sm:h-[85vh] p-0 overflow-hidden sm:rounded-xl flex flex-col gap-0">
         {/* Screen reader accessible title */}
-        <DialogTitle className="sr-only">
-          {t(`documentVaultPage.documents.${documentDef.id}.name`) !==
-          `documentVaultPage.documents.${documentDef.id}.name`
-            ? t(`documentVaultPage.documents.${documentDef.id}.name`)
-            : documentDef.name}
-        </DialogTitle>
+        <DialogTitle className="sr-only">{displayTitle}</DialogTitle>
 
         {/* Header with Title */}
         <div className="relative z-20 p-4 sm:p-6 border-b bg-slate-50 dark:bg-slate-900 flex justify-between items-center gap-4 shrink-0">
           <h2 className="text-lg sm:text-xl font-semibold line-clamp-1">
-            {t(`documentVaultPage.documents.${documentDef.id}.name`) !==
-            `documentVaultPage.documents.${documentDef.id}.name`
-              ? t(`documentVaultPage.documents.${documentDef.id}.name`)
-              : documentDef.name}
+            {displayTitle}
           </h2>
           <Button
             variant="ghost"
@@ -135,12 +146,7 @@ export function DocumentPreviewModal({
                     transform: `scale(${zoom / 100})`,
                     transformOrigin: "center center",
                   }}
-                  title={
-                    t(`documentVaultPage.documents.${documentDef.id}.name`) !==
-                    `documentVaultPage.documents.${documentDef.id}.name`
-                      ? t(`documentVaultPage.documents.${documentDef.id}.name`)
-                      : documentDef.name
-                  }
+                  title={displayTitle}
                 />
               )}
 
@@ -153,15 +159,7 @@ export function DocumentPreviewModal({
                 >
                   <Image
                     src={previewUrl}
-                    alt={
-                      t(
-                        `documentVaultPage.documents.${documentDef.id}.name`,
-                      ) !== `documentVaultPage.documents.${documentDef.id}.name`
-                        ? t(
-                            `documentVaultPage.documents.${documentDef.id}.name`,
-                          )
-                        : documentDef.name
-                    }
+                    alt={displayTitle}
                     width={800}
                     height={600}
                     className="max-w-full max-h-full object-contain shadow-lg"
@@ -174,10 +172,7 @@ export function DocumentPreviewModal({
                 <div className="text-center p-8">
                   <div className="text-6xl mb-4">📄</div>
                   <p className="text-muted-foreground text-lg mb-2">
-                    {t(`documentVaultPage.documents.${documentDef.id}.name`) !==
-                    `documentVaultPage.documents.${documentDef.id}.name`
-                      ? t(`documentVaultPage.documents.${documentDef.id}.name`)
-                      : documentDef.name}
+                    {displayTitle}
                   </p>
                   <p className="text-sm text-muted-foreground mb-4">
                     {t("documentVaultPage.components.previewModal.fileType")}

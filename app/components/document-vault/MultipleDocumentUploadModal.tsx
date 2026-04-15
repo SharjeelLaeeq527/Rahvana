@@ -12,9 +12,20 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { Upload, X, Plus, Trash2, FileText, CheckCircle2 } from "lucide-react";
+import {
+  Upload,
+  X,
+  Plus,
+  Trash2,
+  FileText,
+  CheckCircle2,
+  Eye,
+} from "lucide-react";
 import { toast } from "sonner";
 import { ALL_DOCUMENTS } from "@/lib/document-vault/document-definitions";
+import { DocumentPreviewModal } from "./DocumentPreviewModal";
+import { UploadedDocument } from "@/lib/document-vault/types";
+import { ConfirmationModal } from "@/app/components/shared/ConfirmationModal";
 
 interface PendingUpload {
   id: string;
@@ -44,16 +55,27 @@ export function MultipleDocumentUploadModal({
 }: MultipleDocumentUploadModalProps) {
   const [pendingUploads, setPendingUploads] = useState<PendingUpload[]>([]);
   const [uploading, setUploading] = useState(false);
-  const { config, uploadedDocuments: vaultDocuments } = useDocumentVaultStore();
+  const [previewDoc, setPreviewDoc] = useState<UploadedDocument | null>(null);
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [selectedDeleteId, setSelectedDeleteId] = useState<string | null>(null);
+  const [deleteLoading, setDeleteLoading] = useState(false);
+  const {
+    config,
+    uploadedDocuments: vaultDocuments,
+    deleteDocument,
+    isDeletingIds,
+  } = useDocumentVaultStore();
   const { t } = useLanguage();
 
   // Find the base document definition
   const documentDef = useMemo(() => {
-    return ALL_DOCUMENTS.find((d) => d.id === categoryId) || {
-      id: categoryId,
-      key: categoryId.toUpperCase().replace(/[^A-Z]/g, "_"),
-      roles: ["BENEFICIARY"] as DocumentRole[],
-    };
+    return (
+      ALL_DOCUMENTS.find((d) => d.id === categoryId) || {
+        id: categoryId,
+        key: categoryId.toUpperCase().replace(/[^A-Z]/g, "_"),
+        roles: ["BENEFICIARY"] as DocumentRole[],
+      }
+    );
   }, [categoryId]);
 
   // Derive already uploaded documents and their types for this category
@@ -78,7 +100,9 @@ export function MultipleDocumentUploadModal({
     if (open) {
       setPendingUploads((prev) => {
         if (prev.length === 0) {
-          return [{ id: Math.random().toString(), type: "", notes: "", file: null }];
+          return [
+            { id: Math.random().toString(), type: "", notes: "", file: null },
+          ];
         }
         return prev;
       });
@@ -104,7 +128,10 @@ export function MultipleDocumentUploadModal({
     );
   };
 
-  const handleFileSelect = (id: string, e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileSelect = (
+    id: string,
+    e: React.ChangeEvent<HTMLInputElement>,
+  ) => {
     const file = e.target.files?.[0];
     if (file) {
       if (file.size > 10 * 1024 * 1024) {
@@ -128,11 +155,13 @@ export function MultipleDocumentUploadModal({
 
   const getAvailableOptions = (currentSlotId: string) => {
     const usedPendingTypes = pendingUploads
-      .filter((p) => p.id !== currentSlotId && p.type && p.type !== OTHER_OPTION)
+      .filter(
+        (p) => p.id !== currentSlotId && p.type && p.type !== OTHER_OPTION,
+      )
       .map((p) => p.type);
-    
+
     return options.filter(
-      (opt) => !uploadedTypes.includes(opt) && !usedPendingTypes.includes(opt)
+      (opt) => !uploadedTypes.includes(opt) && !usedPendingTypes.includes(opt),
     );
   };
 
@@ -186,27 +215,56 @@ export function MultipleDocumentUploadModal({
           if (!response.ok) {
             throw new Error(data.error || "Upload failed");
           }
-        })
+        }),
       );
 
-      toast.success(`Successfully uploaded ${validUploads.length} document(s)`, {
-        id: "multi-upload-progress",
-      });
+      toast.success(
+        `Successfully uploaded ${validUploads.length} document(s)`,
+        {
+          id: "multi-upload-progress",
+        },
+      );
 
       // Provide completion callbacks
       await onUploadComplete();
-      
+
       // Keep modal open, but clear completed files and add a blank row
       setPendingUploads([]);
       addPendingUpload();
     } catch (error) {
       console.error("Multi-upload error:", error);
       toast.error(
-        error instanceof Error ? error.message : "Failed to upload all documents",
-        { id: "multi-upload-progress" }
+        error instanceof Error
+          ? error.message
+          : "Failed to upload all documents",
+        { id: "multi-upload-progress" },
       );
     } finally {
       setUploading(false);
+    }
+  };
+
+  const handlePreview = (doc: UploadedDocument) => {
+    setPreviewDoc(doc);
+  };
+
+  const handleDelete = (docId: string) => {
+    setSelectedDeleteId(docId);
+    setDeleteModalOpen(true);
+  };
+
+  const confirmDelete = async () => {
+    if (!selectedDeleteId) return;
+    try {
+      setDeleteLoading(true);
+      await deleteDocument(selectedDeleteId);
+      toast.success("Document deleted successfully");
+      setDeleteModalOpen(false);
+      setSelectedDeleteId(null);
+    } catch (error) {
+      toast.error("Failed to delete document");
+    } finally {
+      setDeleteLoading(false);
     }
   };
 
@@ -261,10 +319,41 @@ export function MultipleDocumentUploadModal({
                         <h4 className="font-semibold text-[#0f1f38] text-sm">
                           {typeLabel}
                         </h4>
-                        <p className="text-xs text-[#6b8097] truncate">
+                        <p className="text-xs text-[#6b8097] truncate mb-1">
                           {doc.originalFilename} •{" "}
                           {(doc.fileSize / 1024 / 1024).toFixed(2)} MB
                         </p>
+                        {doc.notes?.includes("\nNotes: ") && (
+                          <p className="text-[11px] font-medium text-[#3a4f63] bg-slate-100/50 p-1.5 rounded inline-block">
+                            <span className="text-[#6b8097] font-bold">
+                              Note:
+                            </span>{" "}
+                            {doc.notes.split("\nNotes: ")[1]}
+                          </p>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-1 shrink-0">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8 rounded-lg text-primary hover:text-primary hover:bg-primary/5 transition-all"
+                          onClick={() => handlePreview(doc)}
+                        >
+                          <Eye size={18} />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8 rounded-lg text-red-500 hover:text-red-500 hover:bg-red-50 transition-all"
+                          onClick={() => handleDelete(doc.id)}
+                          disabled={isDeletingIds.includes(doc.id)}
+                        >
+                          {isDeletingIds.includes(doc.id) ? (
+                            <div className="w-4 h-4 border-2 border-red-500 border-t-transparent rounded-full animate-spin" />
+                          ) : (
+                            <Trash2 size={18} />
+                          )}
+                        </Button>
                       </div>
                     </div>
                   );
@@ -272,6 +361,29 @@ export function MultipleDocumentUploadModal({
               </div>
             </div>
           )}
+
+          {/* Preview Modal */}
+          {previewDoc && (
+            <DocumentPreviewModal
+              open={!!previewDoc}
+              onClose={() => setPreviewDoc(null)}
+              documentDef={documentDef}
+              uploadedDoc={previewDoc}
+            />
+          )}
+
+          {/* Delete Confirmation Modal */}
+          <ConfirmationModal
+            open={deleteModalOpen}
+            onOpenChange={setDeleteModalOpen}
+            title="Delete Document?"
+            description="Are you sure you want to delete this document? This cannot be undone."
+            confirmText="Delete"
+            cancelText="Cancel"
+            confirmVariant="danger"
+            loading={deleteLoading}
+            onConfirm={confirmDelete}
+          />
 
           {/* Pending Uploads Rows */}
           <div className="space-y-4 mb-8">
@@ -306,7 +418,9 @@ export function MultipleDocumentUploadModal({
                         Select type...
                       </option>
                       {uploadItem.type && (
-                        <option value={uploadItem.type}>{uploadItem.type}</option>
+                        <option value={uploadItem.type}>
+                          {uploadItem.type}
+                        </option>
                       )}
                       {availableOptions.map((opt) => (
                         <option key={opt} value={opt}>
@@ -319,20 +433,20 @@ export function MultipleDocumentUploadModal({
                     </select>
                   </div>
 
-                  <div className="flex-1 w-full flex flex-col gap-4">
+                  <div className="flex-1 w-full flex flex-col gap-4 min-w-0">
                     <div className="flex flex-col md:flex-row gap-5">
-                      <div className="flex-1">
+                      <div className="flex-1 min-w-0">
                         <Label className="text-[13px] font-semibold text-[#3a4f63] mb-1.5 block">
                           Select File
                         </Label>
                         <div className="relative">
                           {uploadItem.file ? (
                             <div className="flex items-center justify-between p-3 rounded-xl border-2 border-[#e8f1fb] bg-slate-50/50">
-                              <div className="flex items-center gap-3 min-w-0">
+                              <div className="flex items-center gap-3 flex-1 min-w-0">
                                 <div className="w-8 h-8 rounded shrink-0 bg-primary/10 text-primary flex items-center justify-center">
                                   <FileText size={16} />
                                 </div>
-                                <span className="text-[14px] font-semibold text-[#0f1f38] truncate">
+                                <span className="text-[14px] font-semibold text-[#0f1f38] truncate block">
                                   {uploadItem.file.name}
                                 </span>
                               </div>
@@ -340,7 +454,11 @@ export function MultipleDocumentUploadModal({
                                 variant="ghost"
                                 size="sm"
                                 className="text-red-500 hover:text-red-600 hover:bg-red-50 rounded-lg px-2"
-                                onClick={() => updatePendingUpload(uploadItem.id, { file: null })}
+                                onClick={() =>
+                                  updatePendingUpload(uploadItem.id, {
+                                    file: null,
+                                  })
+                                }
                                 disabled={uploading}
                               >
                                 Remove
@@ -358,7 +476,9 @@ export function MultipleDocumentUploadModal({
                                 type="file"
                                 accept=".pdf,.jpg,.jpeg,.png,.gif"
                                 className="hidden"
-                                onChange={(e) => handleFileSelect(uploadItem.id, e)}
+                                onChange={(e) =>
+                                  handleFileSelect(uploadItem.id, e)
+                                }
                                 disabled={uploading}
                               />
                             </label>
@@ -366,12 +486,14 @@ export function MultipleDocumentUploadModal({
                         </div>
                       </div>
 
-                      <div className="flex-1">
+                      <div className="flex-1 min-w-0">
                         <div className="flex items-center justify-between mb-1.5">
                           <Label className="text-[13px] font-semibold text-[#3a4f63] block">
                             Notes (Optional)
                           </Label>
-                          <span className={`text-[10px] font-bold ${uploadItem.notes.length > 180 ? 'text-orange-500' : 'text-slate-400'}`}>
+                          <span
+                            className={`text-[10px] font-bold ${uploadItem.notes.length > 180 ? "text-orange-500" : "text-slate-400"}`}
+                          >
                             {uploadItem.notes.length}/200
                           </span>
                         </div>
@@ -379,7 +501,11 @@ export function MultipleDocumentUploadModal({
                           type="text"
                           placeholder="Brief description..."
                           value={uploadItem.notes}
-                          onChange={(e) => updatePendingUpload(uploadItem.id, { notes: e.target.value.slice(0, 200) })}
+                          onChange={(e) =>
+                            updatePendingUpload(uploadItem.id, {
+                              notes: e.target.value.slice(0, 200),
+                            })
+                          }
                           className="w-full border-2 border-[#e8f1fb] rounded-xl p-3 text-[14px] font-medium text-[#0f1f38] focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all outline-none bg-slate-50/50"
                           disabled={uploading}
                         />
