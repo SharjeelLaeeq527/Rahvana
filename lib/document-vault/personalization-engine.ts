@@ -216,6 +216,14 @@ export function generateRequiredDocuments(
     finalDocs = [...finalDocs, ...forcedUploadDocs];
   }
 
+  // Filter out documents that should be hidden until uploaded
+  finalDocs = finalDocs.filter((doc) => {
+    if (doc.hideUntilUploaded) {
+      return uploadedDocIds.includes(doc.id);
+    }
+    return true;
+  });
+
   // Sort by category and then by name
   return finalDocs.sort((a, b) => {
     if (a.category !== b.category) {

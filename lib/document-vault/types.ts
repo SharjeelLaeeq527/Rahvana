@@ -108,6 +108,7 @@ export interface DocumentDefinition {
     visaCategories?: VisaCategory[];
     scenarioFlags?: Partial<ScenarioFlags>;
   };
+  hideUntilUploaded?: boolean;
 }
 
 export interface DocumentWizardStep {
