@@ -7,9 +7,9 @@ const sections = [
   { id: "acceptance", title: "1. Acceptance" },
   { id: "service", title: "2. Our Service" },
   { id: "payments", title: "3. Payments & Account" },
-  { id: "rules", title: "4. Your Responsibilities" },
-  { id: "liability", title: "5. Liability" },
-  { id: "updates", title: "6. Updates" },
+  { id: "rules", title: "4. User Responsibilities" },
+  { id: "liability", title: "5. Limitation of Liability" },
+  { id: "updates", title: "6. Updates to Terms" },
   { id: "contact", title: "7. Contact" },
 ];
 
@@ -23,7 +23,7 @@ export default function TermsOfService() {
           if (entry.isIntersecting) setActiveSection(entry.target.id);
         });
       },
-      { rootMargin: "-20% 0px -70% 0px" },
+      { rootMargin: "-20% 0px -70% 0px" }
     );
 
     sections.forEach(({ id }) => {
@@ -35,14 +35,15 @@ export default function TermsOfService() {
   }, []);
 
   const scrollTo = (id: string) => {
-    document
-      .getElementById(id)
-      ?.scrollIntoView({ behavior: "smooth", block: "start" });
+    document.getElementById(id)?.scrollIntoView({
+      behavior: "smooth",
+      block: "start",
+    });
   };
 
   return (
     <div className="min-h-screen bg-gray-50 text-gray-800">
-      {/* Hero */}
+      {/* Header */}
       <div className="bg-white border-b border-gray-100">
         <div className="site-main-px site-main-py">
           <div className="flex items-center gap-2 text-sm text-gray-400 mb-5">
@@ -63,7 +64,7 @@ export default function TermsOfService() {
             </h1>
 
             <p className="text-gray-500 text-lg">
-              By using Rahvana, you agree to these terms.
+              By accessing or using Rahvana, you agree to these Terms.
             </p>
 
             <div className="flex gap-6 mt-5 text-sm text-gray-400">
@@ -74,7 +75,7 @@ export default function TermsOfService() {
                 </span>
               </span>
               <span>
-                Applies to:{" "}
+                Website:{" "}
                 <span className="text-gray-700 font-medium">
                   rahvana.com
                 </span>
@@ -84,9 +85,9 @@ export default function TermsOfService() {
         </div>
       </div>
 
+      {/* Body */}
       <div className="site-main-px site-main-py">
         <div className="flex gap-10">
-
           {/* Sidebar */}
           <aside className="hidden lg:block w-60">
             <div className="sticky top-8">
@@ -116,23 +117,20 @@ export default function TermsOfService() {
             {/* Disclaimer */}
             <div className="bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 mb-10">
               <p className="text-sm text-amber-700">
-                <strong>Disclaimer:</strong> Rahvana is not a law firm and
-                does not provide legal advice. Consult a licensed immigration
-                attorney for legal guidance.
+                <strong>Disclaimer:</strong> Rahvana is not a law firm and does
+                not provide legal advice. All information is for general
+                informational and educational purposes only.
               </p>
             </div>
 
-            {/* 1 */}
             <Section id="acceptance" title="1. Acceptance">
               <p>
-                By accessing or using Rahvana at{" "}
-                <a href="https://rahvana.com">rahvana.com</a>, you agree to
-                these Terms of Service. If you do not agree, please do not use
-                our platform.
+                By using Rahvana at https://rahvana.com, you confirm that you
+                have read, understood, and agree to be bound by these Terms of
+                Service. If you do not agree, you must not use the platform.
               </p>
             </Section>
 
-            {/* 2 */}
             <Section id="service" title="2. Our Service">
               <p>
                 Rahvana is owned and operated by Arachnie Inc, a Delaware,
@@ -140,68 +138,72 @@ export default function TermsOfService() {
               </p>
 
               <p>
-                Rahvana provides immigration roadmaps, checklists, case
-                tracking tools, appointment scheduling assistance, and related
-                features for various US visa processes. It is an informational
-                platform only and does not provide legal advice.
+                Rahvana provides digital immigration support tools including
+                case tracking, roadmap generation, document checklists,
+                appointment guidance, and related informational services.
+              </p>
+
+              <p>
+                Rahvana is not a law firm and does not provide legal advice,
+                representation, or guarantee any immigration outcome.
               </p>
             </Section>
 
-            {/* 3 */}
             <Section id="payments" title="3. Payments & Account">
               <p>
-                Some features of Rahvana may be free, while others (such as
-                Rahvana Plus) may require a paid subscription. All payments are
-                processed securely by third-party providers such as Stripe.
+                Some features may require a paid subscription. Payments are
+                processed securely through third-party providers such as Stripe.
+                We do not store full payment card details.
               </p>
 
               <p>
-                You may cancel your subscription at any time. To delete your
-                account and associated data, contact support@rahvana.com.
+                You may cancel your subscription at any time. Account deletion
+                requests can be made by contacting support@rahvana.com.
               </p>
             </Section>
 
-            {/* 4 */}
-            <Section id="rules" title="4. Your Responsibilities">
+            <Section id="rules" title="4. User Responsibilities">
               <p>
-                You agree to use Rahvana only for lawful purposes related to
-                your personal immigration journey.
+                You agree to use Rahvana only for lawful personal immigration
+                purposes.
               </p>
 
               <p>
-                You must not share your account, misuse the platform, attempt
-                to reverse-engineer the system, or use it to provide paid
-                services to others.
+                You must not misuse the platform, attempt to reverse-engineer,
+                copy, resell, or provide access to unauthorized third parties.
               </p>
             </Section>
 
-            {/* 5 */}
-            <Section id="liability" title="5. Liability">
+            <Section id="liability" title="5. Limitation of Liability">
               <p>
-                Rahvana is provided "as is" without warranties of any kind.
-                We are not responsible for immigration decisions, delays,
-                denials, or outcomes.
+                Rahvana is provided on an "as-is" and "as-available" basis
+                without warranties of any kind.
               </p>
 
               <p>
-                To the maximum extent permitted by law, our total liability is
-                limited to the amount you paid in the past 12 months.
+                We are not responsible for any immigration decisions, delays,
+                rejections, or outcomes resulting from use of our platform.
               </p>
 
               <p>
-                These Terms are governed by the laws of Delaware, United States.
+                To the maximum extent permitted by law, our total liability for
+                any claim shall not exceed the amount paid by you in the past
+                12 months.
+              </p>
+
+              <p>
+                These Terms are governed by the laws of the State of Delaware,
+                United States.
               </p>
             </Section>
 
-            {/* 6 */}
             <Section id="updates" title="6. Updates to Terms">
               <p>
-                We may update these Terms from time to time. We will notify
-                users of significant changes and obtain consent where required.
+                We may modify these Terms at any time. If changes are material,
+                we will notify users and update the effective date accordingly.
               </p>
             </Section>
 
-            {/* 7 */}
             <Section id="contact" title="7. Contact">
               <p>Email: support@rahvana.com</p>
               <p>Website: rahvana.com</p>

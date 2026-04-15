@@ -128,6 +128,7 @@ import { MedicalExamGuideTool } from "./MedicalExamGuideTool";
 import { CourierRegistrationTool } from "./CourierRegistrationTool";
 import { InterviewPrepTool } from "./InterviewPrepTool";
 import { InterviewDayTool } from "./InterviewDayTool";
+import CaseRegistrationForm from "./CaseRegistrationForm";
 
 interface SecurityQuestion {
   id: string;
@@ -2419,6 +2420,28 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                     <span>Update in Portal Wallet</span>
                     <ExternalLink size={11} strokeWidth={2} />
                   </Link>
+                </div>
+              )}
+
+              {/* Case Registration Form (Step 2.1 - NVC Welcome) */}
+              {sId === "step_2_1" && state.answers?.["c2s1"] && (
+                <div className="mt-4 animate-in fade-in slide-in-from-top-2 duration-300">
+                  <CaseRegistrationForm
+                    existingData={{
+                      nvcCaseNum: state.metadata?.nvcCaseNum,
+                      nvcInvoice: state.metadata?.nvcInvoice,
+                      embassyCity: state.metadata?.embassyCity,
+                      beneficiaryName: state.metadata?.beneficiaryName,
+                    }}
+                    onComplete={(data) => {
+                      actions.updateMetadata({
+                        nvcCaseNum: data.nvcCaseNum,
+                        nvcInvoice: data.nvcInvoice,
+                        embassyCity: data.embassyCity,
+                        beneficiaryName: data.beneficiaryName,
+                      });
+                    }}
+                  />
                 </div>
               )}
             </div>
