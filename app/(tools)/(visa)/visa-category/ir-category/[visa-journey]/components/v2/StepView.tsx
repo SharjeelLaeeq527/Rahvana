@@ -96,7 +96,11 @@ import type {
   ConditionalDocument,
 } from "@/lib/questionnaire/types";
 import { StepHeader } from "./StepHeader";
-import { CeacCredsModal, NvcFeeModal, ApUpdateModal } from "./PortalWalletManager";
+import {
+  CeacCredsModal,
+  NvcFeeModal,
+  ApUpdateModal,
+} from "./PortalWalletManager";
 import { SponsorshipModule } from "./SponsorshipModule";
 import {
   CivilDocGuideOverlay,
@@ -385,10 +389,18 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
   const [pccSaved, setPccSaved] = useState(state.metadata.pcc_saved === "true");
 
   // Appointment Received States
-  const [interviewSaved, setInterviewSaved] = useState(state.metadata.interviewSaved === true);
-  const [interviewDate, setInterviewDate] = useState((state.metadata.interviewDate as string) || "");
-  const [letterDate, setLetterDate] = useState((state.metadata.letterDate as string) || "");
-  const [consulateLocation, setConsulateLocation] = useState((state.metadata.consulateLocation as string) || "");
+  const [interviewSaved, setInterviewSaved] = useState(
+    state.metadata.interviewSaved === true,
+  );
+  const [interviewDate, setInterviewDate] = useState(
+    (state.metadata.interviewDate as string) || "",
+  );
+  const [letterDate, setLetterDate] = useState(
+    (state.metadata.letterDate as string) || "",
+  );
+  const [consulateLocation, setConsulateLocation] = useState(
+    (state.metadata.consulateLocation as string) || "",
+  );
 
   // Step 3.7 Interview Prep States
   const [isPrepLaunched, setIsPrepLaunched] = useState(
@@ -526,49 +538,6 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
     state.metadata?.filingMethod || state.filingType || "online";
 
   const getIcon = getStepIcon;
-
-const SCENARIOS: Record<string, any> = {
-    "pet-only": {
-      label: "Petitioner only (qualifies alone)",
-      sponsors: ["Petitioner"],
-      householdMembers: [],
-      jointSponsors: [],
-      forms: "I-864EZ",
-      taxYears: 3,
-    },
-    "pet-hm": {
-      label: "Petitioner + Household Member",
-      sponsors: ["Petitioner"],
-      householdMembers: ["Household Member 1"],
-      jointSponsors: [],
-      forms: "I-864, I-864A",
-      taxYears: 3,
-    },
-    "pet-js1": {
-      label: "Petitioner + 1 Joint Sponsor",
-      sponsors: ["Petitioner"],
-      householdMembers: [],
-      jointSponsors: ["Joint Sponsor 1"],
-      forms: "I-864 (×2)",
-      taxYears: 3,
-    },
-    "pet-js2": {
-      label: "Petitioner + 2 Joint Sponsors",
-      sponsors: ["Petitioner"],
-      householdMembers: [],
-      jointSponsors: ["Joint Sponsor 1", "Joint Sponsor 2"],
-      forms: "I-864 (×3)",
-      taxYears: 3,
-    },
-    "pet-hm-js": {
-      label: "Petitioner + HM + Joint Sponsor",
-      sponsors: ["Petitioner"],
-      householdMembers: ["Household Member 1"],
-      jointSponsors: ["Joint Sponsor 1"],
-      forms: "I-864, I-864A, I-864",
-      taxYears: 3,
-    },
-  };
 
   const activeStepsInChapter = useMemo(() => {
     if (!currentChapter) return [];
@@ -977,7 +946,6 @@ const SCENARIOS: Record<string, any> = {
     }
   };
 
-
   const renderDocActionModal = () => {
     if (!docActionModal.doc) return null;
     const { doc, title, subtitle, onReadGuide, onUpload } = docActionModal;
@@ -1156,8 +1124,12 @@ const SCENARIOS: Record<string, any> = {
         <div className="w-full max-w-[680px] px-[24px] pb-[96px] flex flex-col">
           {/* Step Header */}
           <StepHeader
-            chapterNumber={currentChapter?.chapter_number || state.currentStage + 1}
-            chapterName={currentChapter?.chapter_name || currentChapter?.name || ""}
+            chapterNumber={
+              currentChapter?.chapter_number || state.currentStage + 1
+            }
+            chapterName={
+              currentChapter?.chapter_name || currentChapter?.name || ""
+            }
             stepName={currentStep.step_name}
             stepDescription={currentStep.step_description}
             isBeneficiaryTheme={isBeneficiaryTheme}
@@ -1226,13 +1198,17 @@ const SCENARIOS: Record<string, any> = {
           {/* Return Note (Success Banner) */}
           {isLaunched && (
             <div className="mb-[20px] bg-[#e8f5ef] border border-[#a8d9be] rounded-[10px] p-[14px_18px] flex items-start gap-[12px] animate-in slide-in-from-top-2 duration-300">
-              <div className="text-[15px] mt-[1px] text-[#15744f] shrink-0">✓</div>
+              <div className="text-[15px] mt-[1px] text-[#15744f] shrink-0">
+                ✓
+              </div>
               <div className="flex-1">
                 <div className="text-[13px] font-semibold text-[#15744f] mb-[2px]">
-                  {tool.launch_module.return_note?.title || "Tool launched in a new tab"}
+                  {tool.launch_module.return_note?.title ||
+                    "Tool launched in a new tab"}
                 </div>
                 <div className="text-[12px] text-[#3a4f63] leading-normal">
-                  {tool.launch_module?.return_note?.body || "Complete the process and return here."}
+                  {tool.launch_module?.return_note?.body ||
+                    "Complete the process and return here."}
                 </div>
               </div>
             </div>
@@ -1255,7 +1231,16 @@ const SCENARIOS: Record<string, any> = {
               actions={actions}
               metadata={state.metadata}
               dqState={{
-                dqSaved, setDqSaved, dqDate, setDqDate, dqCategory, setDqCategory, dqPost, setDqPost, dqCountry, setDqCountry
+                dqSaved,
+                setDqSaved,
+                dqDate,
+                setDqDate,
+                dqCategory,
+                setDqCategory,
+                dqPost,
+                setDqPost,
+                dqCountry,
+                setDqCountry,
               }}
             />
           )}
@@ -1265,7 +1250,14 @@ const SCENARIOS: Record<string, any> = {
               state={state}
               actions={actions}
               interviewState={{
-                interviewSaved, setInterviewSaved, interviewDate, setInterviewDate, letterDate, setLetterDate, consulateLocation, setConsulateLocation
+                interviewSaved,
+                setInterviewSaved,
+                interviewDate,
+                setInterviewDate,
+                letterDate,
+                setLetterDate,
+                consulateLocation,
+                setConsulateLocation,
               }}
             />
           )}
@@ -1275,8 +1267,20 @@ const SCENARIOS: Record<string, any> = {
               state={state}
               actions={actions}
               medState={{
-                medSaved, setMedSaved, medDate, setMedDate, medTime, setMedTime, medClinic, setMedClinic,
-                isMedWizardOpen, setIsMedWizardOpen, medWizardStep, setMedWizardStep, medWizardMode, setMedWizardMode
+                medSaved,
+                setMedSaved,
+                medDate,
+                setMedDate,
+                medTime,
+                setMedTime,
+                medClinic,
+                setMedClinic,
+                isMedWizardOpen,
+                setIsMedWizardOpen,
+                medWizardStep,
+                setMedWizardStep,
+                medWizardMode,
+                setMedWizardMode,
               }}
             />
           )}
@@ -1286,7 +1290,14 @@ const SCENARIOS: Record<string, any> = {
               state={state}
               actions={actions}
               polioState={{
-                polioLaunched, setPolioLaunched, isPolioGuideOpen, setIsPolioGuideOpen, polioGuideStep, setPolioGuideStep, polioChecks, setPolioChecks
+                polioLaunched,
+                setPolioLaunched,
+                isPolioGuideOpen,
+                setIsPolioGuideOpen,
+                polioGuideStep,
+                setPolioGuideStep,
+                polioChecks,
+                setPolioChecks,
               }}
             />
           )}
@@ -1296,7 +1307,18 @@ const SCENARIOS: Record<string, any> = {
               state={state}
               actions={actions}
               pccState={{
-                pccSaved, setPccSaved, pccReceived, setPccReceived, pccData, setPccData, isPccOverlayOpen, setIsPccOverlayOpen, pccOverlayStep, setPccOverlayStep, pccOverlayMode, setPccOverlayMode
+                pccSaved,
+                setPccSaved,
+                pccReceived,
+                setPccReceived,
+                pccData,
+                setPccData,
+                isPccOverlayOpen,
+                setIsPccOverlayOpen,
+                pccOverlayStep,
+                setPccOverlayStep,
+                pccOverlayMode,
+                setPccOverlayMode,
               }}
             />
           )}
@@ -1349,22 +1371,23 @@ const SCENARIOS: Record<string, any> = {
           {tool.type === "awaiting_review" && (
             <AwaitingReviewStep data={AWAITING_REVIEW_DATA} />
           )}
-               
-
-
 
           {/* GATHER ORIGINAL DOCUMENTS (Step 3.4 SPECIFIC) */}
           {tool.type === "gathering_checklist" && (
-            <GatheringChecklistTool 
-              tool={tool} 
-              state={state} 
-              actions={actions} 
-              gatheringState={{ 
-                gatheringStatus, setGatheringStatus, 
-                selectedGatheringItem, setSelectedGatheringItem, 
-                isGatheringGuideOpen, setIsGatheringGuideOpen, 
-                gatheringGuideStep, setGatheringGuideStep 
-              }} 
+            <GatheringChecklistTool
+              tool={tool}
+              state={state}
+              actions={actions}
+              gatheringState={{
+                gatheringStatus,
+                setGatheringStatus,
+                selectedGatheringItem,
+                setSelectedGatheringItem,
+                isGatheringGuideOpen,
+                setIsGatheringGuideOpen,
+                gatheringGuideStep,
+                setGatheringGuideStep,
+              }}
             />
           )}
 
@@ -3266,7 +3289,9 @@ const SCENARIOS: Record<string, any> = {
                                               setActiveUploadId(doc.id);
                                               setActiveUploadType("doc");
 
-                                              if (doc.id === "doc_citizenship") {
+                                              if (
+                                                doc.id === "doc_citizenship"
+                                              ) {
                                                 setMultipleUploadModalState({
                                                   isOpen: true,
                                                   categoryId: defId,
@@ -3276,10 +3301,12 @@ const SCENARIOS: Record<string, any> = {
                                                     "U.S. birth certificate",
                                                     "Certificate of Naturalization (Form N-550)",
                                                     "Certificate of Citizenship (Form N-560)",
-                                                    "Consular Report of Birth Abroad (Form FS-240 / DS-1350)"
-                                                  ]
+                                                    "Consular Report of Birth Abroad (Form FS-240 / DS-1350)",
+                                                  ],
                                                 });
-                                              } else if (doc.id === "doc_relationship") {
+                                              } else if (
+                                                doc.id === "doc_relationship"
+                                              ) {
                                                 setMultipleUploadModalState({
                                                   isOpen: true,
                                                   categoryId: defId,
@@ -3291,10 +3318,12 @@ const SCENARIOS: Record<string, any> = {
                                                     "Shared finances",
                                                     "Shared residence",
                                                     "Family evidence",
-                                                    "Affidavits"
-                                                  ]
+                                                    "Affidavits",
+                                                  ],
                                                 });
-                                              } else if (doc.id === "doc_translations") {
+                                              } else if (
+                                                doc.id === "doc_translations"
+                                              ) {
                                                 setMultipleUploadModalState({
                                                   isOpen: true,
                                                   categoryId: defId,
@@ -3304,8 +3333,8 @@ const SCENARIOS: Record<string, any> = {
                                                     "Translated NADRA MRC",
                                                     "Translated Birth Certificate",
                                                     "Translated Divorce Decree",
-                                                    "Other Translated Civil Documents"
-                                                  ]
+                                                    "Other Translated Civil Documents",
+                                                  ],
                                                 });
                                               } else {
                                                 openUploadModal(defId);
@@ -4676,15 +4705,17 @@ const SCENARIOS: Record<string, any> = {
       {multipleUploadModalState.isOpen && (
         <MultipleDocumentUploadModal
           open={multipleUploadModalState.isOpen}
-          onClose={() => setMultipleUploadModalState((prev) => ({ ...prev, isOpen: false }))}
+          onClose={() =>
+            setMultipleUploadModalState((prev) => ({ ...prev, isOpen: false }))
+          }
           categoryId={multipleUploadModalState.categoryId}
           documentName={multipleUploadModalState.documentName}
           options={multipleUploadModalState.options}
           onUploadComplete={async () => {
-             if (activeUploadId && actions.updateDocumentStatus) {
-               await actions.updateDocumentStatus(activeUploadId, "reviewed");
-             }
-             await reloadDocuments();
+            if (activeUploadId && actions.updateDocumentStatus) {
+              await actions.updateDocumentStatus(activeUploadId, "reviewed");
+            }
+            await reloadDocuments();
           }}
         />
       )}
