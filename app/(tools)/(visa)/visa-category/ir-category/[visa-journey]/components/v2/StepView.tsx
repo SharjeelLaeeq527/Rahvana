@@ -112,6 +112,7 @@ import { useAuth } from "@/app/context/AuthContext";
 import PassportPhotoTool from "@/components/tools/PassportPhotoTool";
 import DocumentTranslationTool from "@/components/tools/DocumentTranslationTool";
 import SponsorshipCalculatorTool from "@/components/tools/SponsorshipCalculatorTool";
+import { EMBASSY_GUIDANCE_DATA } from "@/app/(tools)/(visa)/221g-action-planner/utils/embassyGuidance";
 
 interface SecurityQuestion {
   id: string;
@@ -1429,7 +1430,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                 href={guideHref}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-1 text-[12px] text-primary font-semibold underline hover:text-primary/80"
+                className="inline-flex items-center gap-1 text-[12px] font-semibold underline text-[#a389f4] hover:text-[#a389f4]/80"
               >
                 Not sure how to obtain/create this document? We've got you covered, have a look at this guide
                 <ExternalLink size={13} className="ml-1" />
@@ -1505,7 +1506,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
   );
   const localIdx = activeStepsInChapter.findIndex(
     (s: any) => (s.step_key || s.id) === sId,
-  );
+  );EMBASSY_GUIDANCE_DATA
 
   const chapterProg = useMemo(
     () => getStageProgress(data, state.currentStage, state),
@@ -1629,11 +1630,32 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
       setIsWalletFormOpen(false);
       await fetchCredentials();
 
+      // After saving, fetch latest credentials and update metadata for dashboard
+      if (data.portalType === "NVC") {
+        try {
+          const res = await fetch("/api/portal-wallet");
+          const wallet = await res.json();
+          const nvcCreds = wallet.credentials?.find((c: any) => c.portal_type?.toUpperCase() === "NVC");
+          if (nvcCreds) {
+            if (nvcCreds.nvc_case_number) {
+              actions.updateMetadata({ nvcCaseNum: nvcCreds.nvc_case_number });
+            }
+            if (nvcCreds.nvc_invoice_id) {
+              actions.updateMetadata({ nvcInvoice: nvcCreds.nvc_invoice_id });
+            }
+            // Always set portalType in metadata for dashboard API
+            actions.updateMetadata({ portalType: "NVC" });
+            // Force dashboard to reload wizard state
+            window.location.reload();
+          }
+        } catch (err) {
+          // eslint-disable-next-line no-console
+          console.error("Failed to sync NVC credentials to metadata", err);
+        }
+        if (sId === "step_2_1" && !isCompleted) actions.toggleComplete("step_2_1");
+      }
       if (data.portalType === "USCIS" && sId === "step_1_6") {
         if (!isCompleted) actions.toggleComplete("step_1_6");
-      }
-      if (data.portalType === "NVC" && sId === "step_2_1") {
-        if (!isCompleted) actions.toggleComplete("step_2_1");
       }
     } catch {
       toast.error("Failed to save credentials. Please try again.");
@@ -1851,8 +1873,28 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
   };
 
   const handleToggleComplete = () => {
-    actions.toggleComplete(currentStep.step_key || sId);
-  };
+    const stepKey = currentStep.step_key || sId;
+    // Map step keys to correct metadata fields for milestone tracking
+    const milestoneMetaMap: Record<string, { key: string, value?: () => string }> = {
+      "step_1_3": { key: "receiptNum", value: () => new Date().toISOString().slice(0, 10) }, // I-130 submitted to USCIS
+      "step_2_10": { key: "dqDate", value: () => new Date().toISOString().slice(0, 10) },   // Documentarily Qualified
+      "step_3_1": { key: "medicalDate", value: () => new Date().toISOString().slice(0, 10) }, // Medical exam scheduled
+      "step_3_7": { key: "interviewDate", value: () => new Date().toISOString().slice(0, 10) }, // Interview scheduled
+      "step_2_1": { key: "nvcCaseNum", value: () => "NVC2026-" + Math.floor(Math.random()*1000000) }, // NVC case number (demo value)
+      "step_2_2": { key: "nvcInvoice", value: () => "INVC-" + Math.floor(Math.random()*1000000) }, // NVC invoice ID (demo value)
+      "step_3_7b": { key: "interviewEmbassy", value: () => "Islamabad" }, // Embassy (demo value)
+    };
+    actions.toggleComplete(stepKey);
+    // If this step is a milestone, set the metadata field if not already set
+    const metaObj = milestoneMetaMap[stepKey];
+    if (metaObj && (state.metadata[metaObj.key] === undefined || state.metadata[metaObj.key] === null || state.metadata[metaObj.key] === "")) {
+      const value = metaObj.value ? metaObj.value() : new Date().toISOString().slice(0, 10);
+      // Debug log for tracking metadata update
+      // eslint-disable-next-line no-console
+      console.log(`[Milestone] Setting metadata field '${metaObj.key}' to:`, value);
+      actions.updateMetadata({ [metaObj.key]: value });
+    }
+  }
 
   const handleMarkDocReviewed = (docId: string) => {
     const next = { ...civilDocsStatus, [docId]: "reviewed" };
@@ -4163,6 +4205,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                                       med_date: medDate,
                                       med_time: medTime,
                                       med_clinic: medClinic,
+                                      medicalDate: medDate, // For dashboard alert/case details
                                     });
                                     setIsMedWizardOpen(false);
                                     toast.success("Medical appointment saved!");
@@ -9653,8 +9696,8 @@ function CeacCredsModal({
 
     await onSave({
       portalType: "NVC",
-      nvcCaseNumber: caseNumber.trim(),
-      nvcInvoiceId: invoiceId.trim(),
+      nvcCaseNum: caseNumber.trim(),
+      nvcInvoice: invoiceId.trim(),
       username: email.trim(), // Storing email in username field
     });
     onClose();

@@ -459,14 +459,36 @@ export function useWizard(options: UseWizardOptions = {}) {
       );
       if (!hasChanges) return;
 
+      // If updating NVC/USCIS/Courier fields, re-fetch Portal Wallet and merge
+      const portalFields = ["nvcCaseNum", "nvcInvoice", "receiptNum", "interviewEmbassy", "medicalDate"];
+      const shouldSyncWallet = Object.keys(metadata).some((k) => portalFields.includes(k));
+
+      let mergedMetadata = { ...metadata };
+      if (shouldSyncWallet) {
+        try {
+          const res = await fetch("/api/portal-wallet");
+          const wallet = await res.json();
+          const nvcCreds = wallet.credentials?.find((c: any) => c.portal_type?.toUpperCase() === "NVC");
+          if (nvcCreds) {
+            if (nvcCreds.nvc_case_number) mergedMetadata.nvcCaseNum = nvcCreds.nvc_case_number;
+            if (nvcCreds.nvc_invoice_id) mergedMetadata.nvcInvoice = nvcCreds.nvc_invoice_id;
+          }
+          const uscisCreds = wallet.credentials?.find((c: any) => c.portal_type?.toUpperCase() === "USCIS");
+          if (uscisCreds && uscisCreds.receipt_number) mergedMetadata.receiptNum = uscisCreds.receipt_number;
+          // Add more fields as needed
+        } catch (err) {
+          console.error("[useWizard] Failed to sync Portal Wallet to metadata:", err);
+        }
+      }
+
       setState((prev) => ({
         ...prev,
-        metadata: { ...prev.metadata, ...metadata }
+        metadata: { ...prev.metadata, ...mergedMetadata }
       }));
 
       if (state.backendId) {
         try {
-          const ops = Object.entries(metadata).map(([key, val]) => ({
+          const ops = Object.entries(mergedMetadata).map(([key, val]) => ({
             operation: "set",
             data_key: key,
             data_value: val,

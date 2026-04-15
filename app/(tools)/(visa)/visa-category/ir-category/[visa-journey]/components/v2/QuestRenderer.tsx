@@ -422,7 +422,7 @@ export function QuestRenderer({
                   aria-controls={`hint-panel-${screen.id}`}
                 >
                   <span
-                    className={`transition-transform duration-300 ${showHint ? "rotate-90" : "rotate-0"}`}
+                    className={`transition-transform duration-300 ${showHint ? "rotate-0" : "-rotate-90"}`}
                   >
                     <svg width="18" height="18" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
                       <path d="M6 8L10 12L14 8" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>

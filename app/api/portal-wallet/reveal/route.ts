@@ -47,22 +47,27 @@ export async function POST(req: Request) {
       );
     }
 
+
+    // Return all details for dashboard
+    if (type === "all_details") {
+      return NextResponse.json({
+        details: {
+          nvcCaseNum: decrypt(credential.nvc_case_number),
+          nvcInvoice: decrypt(credential.nvc_invoice_id),
+        }
+      });
+    }
+
     // NVC case number reveal
     if (type === "nvc_case_number") {
       const value = decrypt(credential.nvc_case_number);
-    
-      return NextResponse.json({
-        value,
-      });
+      return NextResponse.json({ value });
     }
-    
+
     // NVC invoice ID reveal
     if (type === "nvc_invoice_id") {
       const value = decrypt(credential.nvc_invoice_id);
-    
-      return NextResponse.json({
-        value,
-      });
+      return NextResponse.json({ value });
     }
 
     // PASSWORD REVEAL
