@@ -268,7 +268,7 @@ export function DocumentUploadModal({
             </div>
 
             {/* Role selection */}
-            <div className="space-y-2">
+            {/* <div className="space-y-2">
               <Label className="text-sm font-semibold text-[#3a4f63]">
                 {t("documentVaultPage.components.uploadModal.providedBy")}
               </Label>
@@ -283,7 +283,7 @@ export function DocumentUploadModal({
                   </option>
                 ))}
               </select>
-            </div>
+            </div> */}
 
             {/* Expiration date (if needed) */}
             {needsExpirationDate && (

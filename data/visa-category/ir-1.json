@@ -2732,7 +2732,7 @@
           ],
           "tool_data": {
             "id": "step_2_7",
-            "type": "household_builder",
+            "type": "household_member",
             "title": "Sponsorship Management",
             "disclaimer": "Rahvana provides structured guidance only. This is not legal advice. Relationship-proof requirements may vary — confirm with your attorney or NVC guidance."
           }

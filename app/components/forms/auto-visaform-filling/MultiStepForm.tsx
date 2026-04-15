@@ -12,6 +12,21 @@ import { createBrowserClient } from "@supabase/ssr";
 import { useAuth } from "@/app/context/AuthContext";
 import { autoFillForm } from "@/lib/autoFill/mapper";
 import type { MasterProfile } from "@/types/profile";
+import { useDocumentVaultStore } from "@/lib/document-vault/store";
+import { DocumentRole } from "@/lib/document-vault/types";
+import { useToast } from "@/app/components/shared/ToastProvider";
+
+const FORM_ID_MAPPING: Record<string, string> = {
+  i130: "i-130-petition",
+  i130a: "i-130a-supplemental",
+  i129f: "i-129f-petition",
+  i912: "i-912-waiver",
+  i864: "i-864-affidavit",
+  i864a: "i-864a-contract",
+  i864ez: "i-864ez-affidavit",
+  i693: "i-693-medical",
+  ds260: "ds-260",
+};
 
 type ViewType = "form" | "review";
 
@@ -28,6 +43,13 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
   const [profileLoaded, setProfileLoaded] = useState(false);
   const [isPreviewing, setIsPreviewing] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
+  const [isSavingToVault, setIsSavingToVault] = useState(false);
+  const { showToast } = useToast();
+  const {
+    config: vaultConfig,
+    reloadDocuments,
+    initialize: initializeVault,
+  } = useDocumentVaultStore();
   const supabase = createBrowserClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
@@ -41,6 +63,13 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
   useEffect(() => {
     if (config) setFormData(config.getInitialFormData());
   }, [config]);
+
+  // Initialize vault store
+  useEffect(() => {
+    if (user && !vaultConfig) {
+      initializeVault(user.id);
+    }
+  }, [user, vaultConfig, initializeVault]);
 
   // Auto-fill from user profile
   useEffect(() => {
@@ -131,7 +160,7 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
     setView("form");
   };
 
-  const buildPdfPayload = (): Record<string, string> => {
+  const buildPdfPayload = useCallback((): Record<string, string> => {
     if (!config) return {};
 
     const payload: Record<string, string> = {};
@@ -156,7 +185,8 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
             );
         }
       } else if (field.type === "checkbox") {
-        const isChecked = value === "Yes" || String(value) === "true" || value === "on";
+        const isChecked =
+          value === "Yes" || String(value) === "true" || value === "on";
         payload[field.pdfKey] = isChecked ? "Yes" : "Off";
       } else {
         payload[field.pdfKey] = value;
@@ -164,7 +194,7 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
     });
 
     return payload;
-  };
+  }, [config, formData]);
 
   const handlePreviewPDF = async () => {
     const payload = buildPdfPayload();
@@ -224,6 +254,120 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
       setIsDownloading(false);
     }
   };
+
+  const handleSaveToVault = useCallback(async () => {
+    if (!user) {
+      showToast("Please login to save to the Document Vault", "error");
+      return;
+    }
+
+    if (!vaultConfig) {
+      showToast("Document Vault is not ready. Please wait a moment.", "error");
+      return;
+    }
+
+    const docDefId = FORM_ID_MAPPING[formCode.toLowerCase()];
+    if (!docDefId) {
+      showToast(
+        `This form (${formCode}) cannot be saved to the vault automatically yet.`,
+        "error"
+      );
+      return;
+    }
+
+    const payload = buildPdfPayload();
+    const apiUrl =
+      process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000/api/v1";
+
+    setIsSavingToVault(true);
+
+    try {
+      // 1. Generate PDF
+      const res = await fetch(`${apiUrl}/fill-pdf`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ formId: formCode, data: payload }),
+      });
+
+      if (!res.ok) throw new Error(await res.text());
+      const blob = await res.blob();
+
+      // 2. Prepare Upload
+      const file = new File(
+        [blob],
+        `${formCode.toUpperCase()}-auto-filled.pdf`,
+        {
+          type: "application/pdf",
+        }
+      );
+
+      const formDataUpload = new FormData();
+      formDataUpload.append("file", file);
+      formDataUpload.append("documentDefId", docDefId);
+
+      // Default role based on form code if possible
+      let role: DocumentRole = "PETITIONER";
+      if (
+        formCode.toLowerCase() === "i130a" ||
+        formCode.toLowerCase() === "ds260" ||
+        formCode.toLowerCase() === "i693"
+      ) {
+        role = "BENEFICIARY";
+      } else if (formCode.toLowerCase() === "i864a") {
+        role = "HOUSEHOLD_MEMBER";
+      }
+
+      formDataUpload.append("role", role);
+      formDataUpload.append("caseId", vaultConfig.caseId || "CASE");
+
+      let personName = "Unknown";
+      if (role === "PETITIONER" && vaultConfig.petitionerName) {
+        personName = vaultConfig.petitionerName;
+      } else if (role === "BENEFICIARY" && vaultConfig.beneficiaryName) {
+        personName = vaultConfig.beneficiaryName;
+      } else if (role === "JOINT_SPONSOR" && vaultConfig.jointSponsorName) {
+        personName = vaultConfig.jointSponsorName;
+      }
+      formDataUpload.append("personName", personName);
+      formDataUpload.append(
+        "notes",
+        `Automatically generated via ${config?.formTitle || formCode} tool.`
+      );
+
+      // 3. Upload to vault
+      const uploadRes = await fetch("/api/documents/upload", {
+        method: "POST",
+        body: formDataUpload,
+      });
+
+      if (!uploadRes.ok) {
+        const errorData = await uploadRes.json();
+        throw new Error(errorData.error || "Upload failed");
+      }
+
+      showToast("Successfully saved to Document Vault!", "success");
+
+      // Refresh vault documents list
+      if (reloadDocuments) {
+        await reloadDocuments();
+      }
+    } catch (err: unknown) {
+      console.error("Save to vault error:", err);
+      showToast(
+        err instanceof Error ? err.message : "Failed to save to vault",
+        "error"
+      );
+    } finally {
+      setIsSavingToVault(false);
+    }
+  }, [
+    user,
+    vaultConfig,
+    formCode,
+    buildPdfPayload,
+    config?.formTitle,
+    reloadDocuments,
+  ]);
 
   if (!config) {
     return (
@@ -460,8 +604,10 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
                 onBackToForm={() => setView("form")}
                 onPreviewPDF={handlePreviewPDF}
                 onDownloadPDF={handleDownloadPDF}
+                onSaveToVault={handleSaveToVault}
                 isPreviewing={isPreviewing}
                 isDownloading={isDownloading}
+                isSavingToVault={isSavingToVault}
               />
             </div>
           )}

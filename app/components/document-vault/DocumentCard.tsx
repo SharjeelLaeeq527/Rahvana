@@ -1,4 +1,8 @@
-"use client";
+import { useState } from "react";
+import {
+  DocumentDefinition,
+  UploadedDocument,
+} from "@/lib/document-vault/types";
 
 import {
   DocumentDefinition,
@@ -28,8 +32,10 @@ import {
   Trash2,
   AlertCircle,
   CheckCircle,
-  Clock,
   Info,
+  Edit2,
+  Check,
+  X,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -38,6 +44,8 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+
+import { Input } from "@/components/ui/input";
 
 interface DocumentCardProps {
   documentDef: DocumentDefinition;
@@ -48,6 +56,7 @@ interface DocumentCardProps {
   onOpenWizard: () => void;
   onExport?: () => void;
   onPreview?: () => void;
+  onRename?: (newName: string) => void;
 }
 
 export function DocumentCard({
@@ -59,8 +68,11 @@ export function DocumentCard({
   onOpenWizard,
   onExport,
   onPreview,
+  onRename,
 }: DocumentCardProps) {
   const { t } = useLanguage();
+  const [isEditing, setIsEditing] = useState(false);
+  const [editValue, setEditValue] = useState("");
 
   const getStatusBadge = () => {
     if (!uploadedDoc) {
@@ -168,15 +180,68 @@ export function DocumentCard({
               >
                 <FileText className="w-5 h-5" />
               </div>
-              <h3 className="font-extrabold text-slate-900 dark:text-white leading-tight">
-                {t(`documentVaultPage.documents.${documentDef.id}.name`) !==
-                `documentVaultPage.documents.${documentDef.id}.name`
-                  ? t(`documentVaultPage.documents.${documentDef.id}.name`)
-                  : documentDef.name}
-                {documentDef.required && (
-                  <span className="text-red-500 ml-1 font-black">*</span>
+              <div className="flex-1">
+                {isEditing ? (
+                  <div className="flex items-center gap-1">
+                    <Input
+                      value={editValue}
+                      onChange={(e) => setEditValue(e.target.value)}
+                      className="h-8 py-0 px-2 text-sm font-bold"
+                      autoFocus
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") {
+                          onRename?.(editValue);
+                          setIsEditing(false);
+                        } else if (e.key === "Escape") {
+                          setIsEditing(false);
+                        }
+                      }}
+                    />
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      className="h-8 w-8 p-0 text-emerald-600"
+                      onClick={() => {
+                        onRename?.(editValue);
+                        setIsEditing(false);
+                      }}
+                    >
+                      <Check className="w-4 h-4" />
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      className="h-8 w-8 p-0 text-red-500"
+                      onClick={() => setIsEditing(false)}
+                    >
+                      <X className="w-4 h-4" />
+                    </Button>
+                  </div>
+                ) : (
+                  <h3 className="font-extrabold text-slate-900 dark:text-white leading-tight flex items-center gap-1">
+                    {t(`documentVaultPage.documents.${documentDef.id}.name`) !==
+                    `documentVaultPage.documents.${documentDef.id}.name`
+                      ? t(`documentVaultPage.documents.${documentDef.id}.name`)
+                      : documentDef.name}
+                    {documentDef.id.startsWith("dynamic-") && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-5 w-5 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
+                        onClick={() => {
+                          setIsEditing(true);
+                          setEditValue(documentDef.name);
+                        }}
+                      >
+                        <Edit2 className="w-3.5 h-3.5 text-slate-400" />
+                      </Button>
+                    )}
+                    {documentDef.required && (
+                      <span className="text-red-500 ml-1 font-black">*</span>
+                    )}
+                  </h3>
                 )}
-              </h3>
+              </div>
             </div>
             <p className="text-xs text-slate-500 dark:text-slate-400 line-clamp-2 mt-2 leading-relaxed font-medium">
               {t(

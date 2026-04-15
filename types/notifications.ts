@@ -65,7 +65,7 @@ export const NOTIFICATION_TEMPLATES: Record<NotificationType, {
     action_url: '/visa-category/ir-category/ir-1-journey',
   },
   dq_qualified: {
-    title: '🎉 You Are Documentarily Qualified!',
+    title: 'You Are Documentarily Qualified!',
     body: 'Congratulations! NVC has confirmed your case is Documentarily Qualified. Your interview will be scheduled based on visa bulletin availability.',
     priority: 'critical',
     action_label: 'View Dashboard',

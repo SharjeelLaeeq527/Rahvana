@@ -213,7 +213,7 @@ export function DashboardView({
                 {trackingStatus.dq_status === "qualified" && (
                   <WaitingStateCard
                     icon="check"
-                    title="🎉 Documentarily Qualified!"
+                    title="Documentarily Qualified!"
                     description="NVC has completed their review. Your case is now in the interview scheduling queue."
                     date={trackingStatus.dq_date}
                     status="complete"
