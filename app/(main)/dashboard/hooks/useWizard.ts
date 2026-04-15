@@ -266,7 +266,10 @@ export function useWizard(options: UseWizardOptions = {}) {
             backendId: targetJourneyId!,
             stepMap,
             completedSteps: completedSet,
-            metadata,
+            metadata: {
+              ...metadata,
+              tracking_status: journey.tracking_status || {},
+            },
             filingType: (journey.filing_method as any) || prev.filingType,
             currentStage: derivedStage,
             currentStep: derivedStep,

@@ -1,11 +1,11 @@
 [
-  {
-    id: "po_box_address_proof",
-    name: "PO Box Address Proof",
-    category: "address_proof",
-    requiredFor: ["beneficiary"],
-    required: false,
-  },
+  // {
+  //   id: "po_box_address_proof",
+  //   name: "PO Box Address Proof",
+  //   category: "address_proof",
+  //   requiredFor: ["beneficiary"],
+  //   required: false,
+  // },
   {
     id: "property_tax_bills",
     name: "Property Tax Bills",

@@ -7,9 +7,9 @@ const sections = [
   { id: "acceptance", title: "1. Acceptance" },
   { id: "service", title: "2. Our Service" },
   { id: "payments", title: "3. Payments & Account" },
-  { id: "rules", title: "4. Your Responsibilities" },
-  { id: "liability", title: "5. Liability" },
-  { id: "updates", title: "6. Updates" },
+  { id: "rules", title: "4. User Responsibilities" },
+  { id: "liability", title: "5. Limitation of Liability" },
+  { id: "updates", title: "6. Updates to Terms" },
   { id: "contact", title: "7. Contact" },
 ];
 
@@ -23,44 +23,51 @@ export default function TermsOfService() {
           if (entry.isIntersecting) setActiveSection(entry.target.id);
         });
       },
-      { rootMargin: "-20% 0px -70% 0px" },
+      { rootMargin: "-20% 0px -70% 0px" }
     );
+
     sections.forEach(({ id }) => {
       const el = document.getElementById(id);
       if (el) observer.observe(el);
     });
+
     return () => observer.disconnect();
   }, []);
 
   const scrollTo = (id: string) => {
-    document
-      .getElementById(id)
-      ?.scrollIntoView({ behavior: "smooth", block: "start" });
+    document.getElementById(id)?.scrollIntoView({
+      behavior: "smooth",
+      block: "start",
+    });
   };
 
   return (
     <div className="min-h-screen bg-gray-50 text-gray-800">
-      {/* Hero */}
+      {/* Header */}
       <div className="bg-white border-b border-gray-100">
         <div className="site-main-px site-main-py">
           <div className="flex items-center gap-2 text-sm text-gray-400 mb-5">
-            <Link href="/" className="hover:text-teal-600 transition-colors">
+            <Link href="/" className="hover:text-teal-600">
               Home
             </Link>
             <span>/</span>
             <span className="text-gray-600">Terms of Service</span>
           </div>
-          <div className="">
+
+          <div>
             <div className="inline-flex items-center gap-2 bg-teal-50 border border-teal-200 rounded-full px-4 py-1.5 text-teal-700 text-xs font-medium mb-5">
               Legal Document
             </div>
+
             <h1 className="text-4xl font-bold text-gray-900 mb-4">
               Terms of Service
             </h1>
-            <p className="text-gray-500 text-lg leading-relaxed">
-              By using Rahvana, you agree to these terms.
+
+            <p className="text-gray-500 text-lg">
+              By accessing or using Rahvana, you agree to these Terms.
             </p>
-            <div className="flex flex-wrap gap-6 mt-5 text-sm text-gray-400">
+
+            <div className="flex gap-6 mt-5 text-sm text-gray-400">
               <span>
                 Effective Date:{" "}
                 <span className="text-gray-700 font-medium">
@@ -68,121 +75,146 @@ export default function TermsOfService() {
                 </span>
               </span>
               <span>
-                Applies to:{" "}
-                <span className="text-gray-700 font-medium">rahvana.com</span>
+                Website:{" "}
+                <span className="text-gray-700 font-medium">
+                  rahvana.com
+                </span>
               </span>
             </div>
           </div>
         </div>
       </div>
 
+      {/* Body */}
       <div className="site-main-px site-main-py">
         <div className="flex gap-10">
-          {/* Sticky Sidebar */}
-          <aside className="hidden lg:block w-60 shrink-0">
+          {/* Sidebar */}
+          <aside className="hidden lg:block w-60">
             <div className="sticky top-8">
-              <p className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-4">
+              <p className="text-xs font-semibold text-gray-400 uppercase mb-4">
                 Contents
               </p>
-              <nav className="flex flex-col gap-0.5">
-                {sections.map((s) => (
-                  <button
-                    key={s.id}
-                    onClick={() => scrollTo(s.id)}
-                    className={`text-left text-sm px-3 py-2 rounded-lg transition-all ${
-                      activeSection === s.id
-                        ? "bg-teal-50 text-teal-700 border-l-2 border-teal-600 font-medium"
-                        : "text-gray-400 hover:text-gray-700 hover:bg-gray-100"
-                    }`}
-                  >
-                    {s.title}
-                  </button>
-                ))}
-              </nav>
+
+              {sections.map((s) => (
+                <button
+                  key={s.id}
+                  onClick={() => scrollTo(s.id)}
+                  className={`block w-full text-left px-3 py-2 rounded ${
+                    activeSection === s.id
+                      ? "bg-teal-50 text-teal-700"
+                      : "text-gray-400 hover:text-gray-700"
+                  }`}
+                >
+                  {s.title}
+                </button>
+              ))}
             </div>
           </aside>
 
           {/* Content */}
-          <main className="flex-1 min-w-0 w-full">
-            <div
-              className="prose prose-gray max-w-none w-full
-              prose-headings:text-gray-900 prose-headings:font-semibold
-              prose-p:text-gray-700 prose-p:leading-relaxed
-              prose-li:text-gray-700 prose-strong:text-gray-800
-              prose-a:text-teal-600 prose-a:no-underline hover:prose-a:underline"
-            >
-              <div className="not-prose bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 flex items-start gap-2 mb-10">
-                <span className="text-amber-500 mt-0.5">⚠️</span>
-                <p className="text-sm text-amber-700">
-                  <strong>Disclaimer:</strong> Rahvana is not a law firm and
-                  does not provide legal advice. Consult a licensed immigration
-                  attorney for legal guidance.
-                </p>
-              </div>
+          <main className="flex-1">
 
-              <Section id="acceptance" title="1. Acceptance">
-                <p>
-                  By accessing or using Rahvana at{" "}
-                  <a href="https://rahvana.com">rahvana.com</a>, you agree to
-                  these Terms of Service. If you do not agree, please do not use
-                  our platform.
-                </p>
-              </Section>
-
-              <Section id="service" title="2. Our Service">
-                <p>
-                  Rahvana provides immigration roadmaps, checklists, and tools
-                  for various US visa categories and related processes. It is an
-                  informational platform only — not legal advice.
-                </p>
-              </Section>
-
-              <Section id="payments" title="3. Payments & Account">
-                <p>
-                  Access to basic Rahvana tools is currently free.{" "}
-                  <strong>Rahvana Plus</strong> is a premium yearly
-                  subscription. All payments are processed securely by Stripe.
-                  You may cancel your subscription at any time from your account
-                  settings. To permanently close your account and delete your
-                  data, please contact{" "}
-                  <a href="mailto:support@rahvana.com">support@rahvana.com</a>.
-                  For billing questions, reach out to our support team.
-                </p>
-              </Section>
-
-              <Section id="rules" title="4. Your Responsibilities">
-                <p>
-                  Use Rahvana only for personal, lawful immigration purposes. Do
-                  not share your account, attempt to reverse-engineer the
-                  platform, or use it to offer paid immigration services to
-                  others.
-                </p>
-              </Section>
-
-              <Section id="liability" title="5. Liability">
-                <p>
-                  Rahvana is provided "as is." We are not liable for immigration
-                  application outcomes or visa denials. Our total liability is
-                  limited to amounts you paid in the 12 months prior to any
-                  claim. These Terms are governed by the laws of Delaware,
-                  United States.
-                </p>
-              </Section>
-
-              <Section id="updates" title="6. Updates to Terms">
-                <p>
-                  We may update these terms from time to time. We will notify
-                  you of any significant changes and obtain active consent
-                  before they apply to you. We will also provide a
-                  plain-language summary of what has changed.
-                </p>
-              </Section>
-
-              <Section id="contact" title="7. Contact">
-                <ContactCard />
-              </Section>
+            {/* Disclaimer */}
+            <div className="bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 mb-10">
+              <p className="text-sm text-amber-700">
+                <strong>Disclaimer:</strong> Rahvana is not a law firm and does
+                not provide legal advice. All information is for general
+                informational and educational purposes only.
+              </p>
             </div>
-            <LegalNav current="terms" />
+
+            <Section id="acceptance" title="1. Acceptance">
+              <p>
+                By using Rahvana at https://rahvana.com, you confirm that you
+                have read, understood, and agree to be bound by these Terms of
+                Service. If you do not agree, you must not use the platform.
+              </p>
+            </Section>
+
+            <Section id="service" title="2. Our Service">
+              <p>
+                Rahvana is owned and operated by Arachnie Inc, a Delaware,
+                United States corporation.
+              </p>
+
+              <p>
+                Rahvana provides digital immigration support tools including
+                case tracking, roadmap generation, document checklists,
+                appointment guidance, and related informational services.
+              </p>
+
+              <p>
+                Rahvana is not a law firm and does not provide legal advice,
+                representation, or guarantee any immigration outcome.
+              </p>
+            </Section>
+
+            <Section id="payments" title="3. Payments & Account">
+              <p>
+                Some features may require a paid subscription. Payments are
+                processed securely through third-party providers such as Stripe.
+                We do not store full payment card details.
+              </p>
+
+              <p>
+                You may cancel your subscription at any time. Account deletion
+                requests can be made by contacting support@rahvana.com.
+              </p>
+            </Section>
+
+            <Section id="rules" title="4. User Responsibilities">
+              <p>
+                You agree to use Rahvana only for lawful personal immigration
+                purposes.
+              </p>
+
+              <p>
+                You must not misuse the platform, attempt to reverse-engineer,
+                copy, resell, or provide access to unauthorized third parties.
+              </p>
+            </Section>
+
+            <Section id="liability" title="5. Limitation of Liability">
+              <p>
+                Rahvana is provided on an "as-is" and "as-available" basis
+                without warranties of any kind.
+              </p>
+
+              <p>
+                We are not responsible for any immigration decisions, delays,
+                rejections, or outcomes resulting from use of our platform.
+              </p>
+
+              <p>
+                To the maximum extent permitted by law, our total liability for
+                any claim shall not exceed the amount paid by you in the past
+                12 months.
+              </p>
+
+              <p>
+                These Terms are governed by the laws of the State of Delaware,
+                United States.
+              </p>
+            </Section>
+
+            <Section id="updates" title="6. Updates to Terms">
+              <p>
+                We may modify these Terms at any time. If changes are material,
+                we will notify users and update the effective date accordingly.
+              </p>
+            </Section>
+
+            <Section id="contact" title="7. Contact">
+              <p>Email: support@rahvana.com</p>
+              <p>Website: rahvana.com</p>
+            </Section>
+
+            <div className="mt-10">
+              <Link href="/privacy-policy" className="text-teal-600">
+                Privacy Policy
+              </Link>
+            </div>
+
           </main>
         </div>
       </div>
@@ -190,83 +222,11 @@ export default function TermsOfService() {
   );
 }
 
-function Section({
-  id,
-  title,
-  children,
-}: {
-  id: string;
-  title: string;
-  children: React.ReactNode;
-}) {
+function Section({ id, title, children }: any) {
   return (
-    <section id={id} className="mb-12 scroll-mt-8">
-      <div className="flex items-center gap-3 mb-5">
-        <h2 className="text-xl font-semibold text-gray-900 whitespace-nowrap">
-          {title}
-        </h2>
-        <div className="h-px flex-1 bg-gray-200" />
-      </div>
+    <section id={id} className="mb-10">
+      <h2 className="text-xl font-semibold mb-3">{title}</h2>
       {children}
     </section>
-  );
-}
-
-function ContactCard() {
-  return (
-    <div className="bg-teal-50 border border-teal-100 rounded-xl p-6   not-prose">
-      <p className="text-sm font-semibold text-gray-800 mb-3">
-        Rahvana Legal Team
-      </p>
-      <div className="space-y-1.5">
-        {/* <p className="text-sm text-gray-500">Email: <a href="mailto:legal@rahvana.com" className="text-teal-600 hover:underline">legal@rahvana.com</a></p> */}
-        <p className="text-sm text-gray-500">
-          Email:{" "}
-          <a
-            href="mailto:support@rahvana.com"
-            className="text-teal-600 hover:underline"
-          >
-            support@rahvana.com
-          </a>
-        </p>
-        <p className="text-sm text-gray-500">
-          Website:{" "}
-          <a
-            href="https://rahvana.com"
-            className="text-teal-600 hover:underline"
-          >
-            rahvana.com
-          </a>
-        </p>
-      </div>
-    </div>
-  );
-}
-
-function LegalNav({ current }: { current: string }) {
-  const pages = [
-    { href: "/privacy-policy", label: "Privacy Policy" },
-    { href: "/terms", label: "Terms of Service" },
-    { href: "/cookie-policy", label: "Cookie Policy" },
-  ];
-  return (
-    <div className="mt-16 pt-8 border-t border-gray-200">
-      <p className="text-xs text-gray-400 uppercase tracking-widest mb-4">
-        Other Legal Documents
-      </p>
-      <div className="flex flex-wrap gap-3">
-        {pages
-          .filter((p) => !p.href.includes(current))
-          .map((p) => (
-            <Link
-              key={p.href}
-              href={p.href}
-              className="px-4 py-2 bg-white hover:bg-teal-50 border border-gray-200 hover:border-teal-300 rounded-lg text-sm text-gray-600 hover:text-teal-700 transition-all"
-            >
-              {p.label}
-            </Link>
-          ))}
-      </div>
-    </div>
   );
 }

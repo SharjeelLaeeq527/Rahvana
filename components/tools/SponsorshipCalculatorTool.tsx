@@ -11,12 +11,29 @@ import {
   FileText,
   Check,
   ArrowRight,
+  ArrowLeft,
+  Heart,
+  DollarSign,
+  UserPlus,
+  Trash2,
+  AlertTriangle,
+  ChevronDown,
+  ChevronUp,
 } from "lucide-react";
 
 // --- CONSTANTS ---
 const I864_URL = "https://www.uscis.gov/sites/default/files/document/forms/i-864.pdf";
 const I864EZ_URL = "https://www.uscis.gov/sites/default/files/document/forms/i-864ez.pdf";
 const I864A_URL = "https://www.uscis.gov/sites/default/files/document/forms/i-864a.pdf";
+
+// --- COLOR PALETTE ---
+const COLORS = {
+  primary: "#0d7377", // Dark Teal
+  secondary: "#afdbdb", // Light Aqua
+  household: "#cdadcc", // Soft Purple
+  joint: "#89a4a0",     // Sage
+  danger: "#db8090",    // Rose/Coral
+};
 
 export const POVERTY_GUIDELINES: Record<number, { level100: number; level125: number }> = {
   2: { level100: 20440, level125: 25550 },
@@ -43,10 +60,10 @@ export const getSponsorshipThreshold = (householdSize: number, level: 100 | 125)
 };
 
 export const calculateSponsorshipHouseholdSize = (d: any): number => {
-  const sponsoringOwnSpouse =
-    d.isMarried &&
+  const sponsoringOwnSpouse = 
+    d.isMarried && 
     d.relationshipToApplicant?.toLowerCase() === "spouse";
-
+  
   return (
     1 + // Sponsor
     (d.isMarried && !sponsoringOwnSpouse ? 1 : 0) +
@@ -60,39 +77,48 @@ export const calculateSponsorshipHouseholdSize = (d: any): number => {
 };
 
 export const getSponsorshipResult = (d: any) => {
+  // Self-petition Check
+  if (d.isVAWA || d.isWidow || d.isSpecialImmigrant) {
+    return {
+      isEligible: true,
+      isSelfPetition: true,
+      householdSize: 1,
+      requiredIncome: 0,
+      totalIncome: 0,
+      forms: [{ name: "Form I-864W", sub: "Request for Exemption for Intending Immigrant", url: "#" }],
+      raw: d
+    };
+  }
+
   const householdSize = calculateSponsorshipHouseholdSize(d);
   const povertyLevel = d.isMilitary && d.currentSponsoredApplicant ? 100 : 125;
   const requiredIncome = getSponsorshipThreshold(householdSize, povertyLevel);
+  
+  // Primary Income Logic (AGI Fallback)
+  const primaryIncome = d.currentAnnualIncome > 0 ? d.currentAnnualIncome : (d.agi || 0);
 
-  // FIX: Current Annual Income is the primary eligibility figure.
-  // AGI (from tax return) is documentary evidence only — used as fallback
-  // if user hasn't entered current income yet.
-  const primaryIncome =
-    d.currentAnnualIncome > 0
-      ? d.currentAnnualIncome
-      : (d.agi || 0);
+  const hmIncome = (d.householdMembers || []).reduce((sum: number, m: any) => sum + (m.annualIncome || 0), 0);
+  const jsIncome = (d.jointSponsors || []).reduce((sum: number, s: any) => sum + (s.annualIncome || 0), 0);
+  
+  // Assets Logic
+  const assetMultiplier = (d.relationshipToApplicant?.toLowerCase() === "spouse" || d.relationshipToApplicant?.toLowerCase() === "parent") ? 3 : 5;
+  const usableAssets = (d.assetValue || 0) / assetMultiplier;
 
-  const hmIncome = (d.householdMembers || []).reduce(
-    (sum: number, m: any) => sum + (m.annualIncome || 0),
-    0
-  );
-  const jsIncome = (d.jointSponsors || []).reduce(
-    (sum: number, s: any) => sum + (s.annualIncome || 0),
-    0
-  );
-  const totalIncome = primaryIncome + hmIncome + jsIncome;
-  const isEligible = totalIncome >= requiredIncome;
+  const totalIncome = primaryIncome + hmIncome + jsIncome + usableAssets;
+  const isEligible = totalIncome >= requiredIncome || d.sponsorDeceased; // Substitute sponsor logic simplified
 
   const forms: any[] = [];
-  if (!hmIncome && !jsIncome && primaryIncome >= requiredIncome) {
+  if (d.sponsorDeceased) {
+    forms.push({ name: "Form I-864 \u2014 Substitute Sponsor", sub: "Required when original petitioner is deceased", url: I864_URL });
+  } else if (!hmIncome && !jsIncome && (d.assetValue || 0) === 0 && primaryIncome >= requiredIncome) {
     forms.push({
-      name: "Form I-864EZ — Petitioner",
-      sub: "Simplified affidavit — petitioner qualifies alone with wage/salary income",
+      name: "Form I-864EZ \u2014 Petitioner",
+      sub: "Simplified affidavit \u2014 petitioner qualifies alone with wage/salary income",
       url: I864EZ_URL,
     });
   } else {
     forms.push({
-      name: "Form I-864 — Petitioner",
+      name: "Form I-864 \u2014 Petitioner",
       sub: "Full affidavit of support for the petitioner",
       url: I864_URL,
     });
@@ -100,7 +126,7 @@ export const getSponsorshipResult = (d: any) => {
 
   (d.householdMembers || []).forEach((m: any, i: number) => {
     forms.push({
-      name: `Form I-864A — Household Member (${m.relationship || i + 1})`,
+      name: `Form I-864A \u2014 Household Member (${m.relationship || i + 1})`,
       sub: "Contract between sponsor and household member",
       url: I864A_URL,
     });
@@ -109,7 +135,7 @@ export const getSponsorshipResult = (d: any) => {
   if (jsIncome > 0) {
     (d.jointSponsors || []).forEach((s: any, i: number) => {
       forms.push({
-        name: `Form I-864 — Joint Sponsor (${s.name || i + 1})`,
+        name: `Form I-864 \u2014 Joint Sponsor (${s.name || i + 1})`,
         sub: "Required for additional financial support",
         url: I864_URL,
       });
@@ -124,6 +150,7 @@ export const getSponsorshipResult = (d: any) => {
     primaryIncome,
     hmIncome,
     jsIncome,
+    assetIncome: usableAssets,
     shortfall: Math.max(0, requiredIncome - totalIncome),
     forms,
     raw: d,
@@ -144,6 +171,7 @@ export default function SponsorshipCalculatorTool({
   onSave,
 }: SponsorshipCalculatorToolProps) {
   const [stepIdx, setStepIdx] = useState(0);
+  const [expandedOptions, setExpandedOptions] = useState<Record<string, boolean>>({});
   const [data, setData] = useState({
     sponsorStatus: initialData?.sponsorStatus || "",
     isMilitary: initialData?.isMilitary ?? null,
@@ -160,13 +188,35 @@ export default function SponsorshipCalculatorTool({
     currentAnnualIncome: initialData?.currentAnnualIncome || 0,
     householdMembers: initialData?.householdMembers || [],
     jointSponsors: initialData?.jointSponsors || [],
+    // Advanced Options
+    assetValue: initialData?.assetValue || 0,
+    sponsorDeceased: initialData?.sponsorDeceased || false,
+    isVAWA: initialData?.isVAWA || false,
+    isWidow: initialData?.isWidow || false,
+    isSpecialImmigrant: initialData?.isSpecialImmigrant || false,
   });
 
   if (!isOpen) return null;
 
   const result = getSponsorshipResult(data);
+  const getStepColor = (idx: number) => {
+    switch(idx) {
+      case 1: return COLORS.joint;     // Petitioner
+      case 2: return COLORS.primary;   // Marital
+      case 3: return COLORS.danger;    // Dependents
+      case 4: return COLORS.joint;     // Previous
+      case 5: return COLORS.primary;   // Sponsoring
+      case 6: return COLORS.secondary; // Income
+      case 8: return COLORS.household; // Household
+      case 9: return "#f59e0b";        // Alternatives (Amber)
+      default: return COLORS.primary;
+    }
+  };
+  const stepColor = getStepColor(stepIdx);
 
+  // --- INTERNAL HELPERS ---
   const generateId = () => Math.random().toString(36).substr(2, 9);
+  const toggleOption = (id: string) => setExpandedOptions(prev => ({ ...prev, [id]: !prev[id] }));
 
   const addHouseholdMember = () => {
     setData({
@@ -232,14 +282,15 @@ export default function SponsorshipCalculatorTool({
         </button>
         <div className="flex-1 h-[5px] bg-[#d0e4f7] rounded-[10px] overflow-hidden">
           <div
-            className="h-full bg-linear-to-r from-primary to-primary/70 transition-all duration-500"
+            className="h-full bg-linear-to-r transition-all duration-500"
             style={{
-              width: `${Math.round(((stepIdx + 1) / 10) * 100)}%`,
+              width: `${Math.round(((stepIdx + 1) / 11) * 100)}%`,
+              backgroundColor: COLORS.primary
             }}
           />
         </div>
         <div className="text-[12px] font-medium text-[#6b8097] whitespace-nowrap shrink-0">
-          {stepIdx + 1} / 10
+          {stepIdx + 1} / 11
         </div>
       </div>
 
@@ -249,12 +300,11 @@ export default function SponsorshipCalculatorTool({
           {(() => {
             const step = stepIdx;
 
-            // ─── STEP 0: Welcome ───────────────────────────────────────────
             if (step === 0) {
               return (
                 <div className="animate-in fade-in slide-in-from-right-4 duration-300">
-                  <div className="text-[11px] font-semibold tracking-widest uppercase text-primary mb-4">
-                    Sponsorship Calculator · Step 1 of 10
+                  <div className="text-[11px] font-semibold tracking-widest uppercase mb-4" style={{ color: COLORS.primary }}>
+                    Sponsorship Calculator · Step 1 of 11
                   </div>
                   <h2 className="text-[clamp(22px,3.5vw,28px)] font-black text-[#0c1b33] mb-2 leading-[1.3]">
                     Welcome to the Integrated Sponsorship Calculator
@@ -263,16 +313,17 @@ export default function SponsorshipCalculatorTool({
                     This tool determines your sponsorship strategy based on USCIS requirements.
                     We use your <strong className="text-[#0c1b33]">Current Annual Income</strong> for
                     eligibility, and your <strong className="text-[#0c1b33]">AGI from tax records</strong> as
-                    documentary evidence — both are required by USCIS.
+                    documentary evidence.
                   </p>
-                  <div className="bg-[#e8f1fb] border border-[#d0e4f7] rounded-[10px] p-[14px_16px] mb-6">
+                  <div className="rounded-[10px] p-[14px_16px] mb-6" style={{ backgroundColor: `${COLORS.secondary}20`, border: `1px solid ${COLORS.secondary}50` }}>
                     <p className="text-[13px] text-[#3a4f63] leading-[1.6]">
                       Keep your most recent federal tax return (Form 1040) and current pay stubs handy.
                     </p>
                   </div>
                   <button
                     onClick={() => setStepIdx(1)}
-                    className="w-full p-[14px_22px] bg-primary text-white rounded-[10px] text-[15px] font-semibold transition-all hover:bg-primary/80 hover:-translate-y-px"
+                    style={{ backgroundColor: COLORS.primary }}
+                    className="w-full p-[14px_22px] text-white rounded-[10px] text-[15px] font-semibold transition-all hover:opacity-90 hover:-translate-y-px"
                   >
                     Get Started →
                   </button>
@@ -280,12 +331,11 @@ export default function SponsorshipCalculatorTool({
               );
             }
 
-            // ─── STEP 1: Petitioner Status ─────────────────────────────────
             if (step === 1) {
               return (
                 <div className="animate-in fade-in slide-in-from-right-4 duration-300">
-                  <div className="text-[11px] font-semibold tracking-widest uppercase text-primary mb-4">
-                    Sponsorship Calculator · Step 2 of 10
+                  <div className="text-[11px] font-semibold tracking-widest uppercase mb-4 text-center" style={{ color: stepColor }}>
+                    Step 2 of 11
                   </div>
                   <h2 className="text-[clamp(22px,3.5vw,28px)] font-black text-[#0c1b33] mb-4 text-center">
                     Petitioner Status
@@ -293,16 +343,24 @@ export default function SponsorshipCalculatorTool({
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-6">
                     <button
                       onClick={() => setData({ ...data, sponsorStatus: "citizen" })}
-                      className={`p-4 rounded-xl border-2 transition-all ${data.sponsorStatus === "citizen" ? "border-primary bg-primary/5 shadow-sm" : "border-slate-200 hover:border-primary/50"}`}
+                      className={`p-4 rounded-xl border-2 transition-all ${data.sponsorStatus === "citizen" ? "" : "border-slate-200 hover:bg-slate-50"}`}
+                      style={{ 
+                        borderColor: data.sponsorStatus === "citizen" ? COLORS.joint : undefined,
+                        backgroundColor: data.sponsorStatus === "citizen" ? `${COLORS.joint}10` : undefined,
+                      }}
                     >
-                      <Shield className="w-8 h-8 mx-auto mb-2 text-primary" />
+                      <Shield className="w-8 h-8 mx-auto mb-2" style={{ color: COLORS.joint }} />
                       <p className="font-semibold text-slate-900">US Citizen</p>
                     </button>
                     <button
                       onClick={() => setData({ ...data, sponsorStatus: "greenCard" })}
-                      className={`p-4 rounded-xl border-2 transition-all ${data.sponsorStatus === "greenCard" ? "border-primary bg-primary/5 shadow-sm" : "border-slate-200 hover:border-primary/50"}`}
+                      className={`p-4 rounded-xl border-2 transition-all ${data.sponsorStatus === "greenCard" ? "" : "border-slate-200 hover:bg-slate-50"}`}
+                      style={{ 
+                        borderColor: data.sponsorStatus === "greenCard" ? COLORS.joint : undefined,
+                        backgroundColor: data.sponsorStatus === "greenCard" ? `${COLORS.joint}10` : undefined,
+                      }}
                     >
-                      <User className="w-8 h-8 mx-auto mb-2 text-primary" />
+                      <User className="w-8 h-8 mx-auto mb-2" style={{ color: COLORS.joint }} />
                       <p className="font-semibold text-slate-900">Green Card Holder</p>
                     </button>
                   </div>
@@ -311,51 +369,69 @@ export default function SponsorshipCalculatorTool({
                     <div className="grid grid-cols-2 gap-3">
                       <button
                         onClick={() => setData({ ...data, isMilitary: true })}
-                        className={`p-3 rounded-xl border-2 transition-all ${data.isMilitary === true ? "border-primary bg-primary/5" : "border-slate-200"}`}
+                        className={`p-3 rounded-xl border-2 transition-all ${data.isMilitary === true ? "" : "border-slate-200"}`}
+                        style={{ 
+                          borderColor: data.isMilitary === true ? COLORS.joint : undefined,
+                          backgroundColor: data.isMilitary === true ? `${COLORS.joint}10` : undefined,
+                        }}
                       >
                         Yes
                       </button>
                       <button
                         onClick={() => setData({ ...data, isMilitary: false })}
-                        className={`p-3 rounded-xl border-2 transition-all ${data.isMilitary === false ? "border-primary bg-primary/5" : "border-slate-200"}`}
+                        className={`p-3 rounded-xl border-2 transition-all ${data.isMilitary === false ? "" : "border-slate-200"}`}
+                        style={{ 
+                          borderColor: data.isMilitary === false ? COLORS.joint : undefined,
+                          backgroundColor: data.isMilitary === false ? `${COLORS.joint}10` : undefined,
+                        }}
                       >
                         No
                       </button>
                     </div>
                   </div>
                   <div className="flex gap-[10px]">
-                    <button onClick={() => setStepIdx(0)} className="p-[13px_22px] bg-transparent text-[#3a4f63] border-[1.5px] border-[#d0e4f7] rounded-[10px] font-medium hover:border-[#3a4f63]">← Back</button>
-                    <button
+                    <button onClick={() => setStepIdx(0)} className="p-[13px_22px] bg-transparent text-[#3a4f63] border-[1.5px] border-[#d0e4f7] rounded-[10px] font-medium hover:border-[#3a4f63] flex items-center gap-2">
+                      <ArrowLeft size={14} /> Back
+                    </button>
+                    <button 
                       disabled={!data.sponsorStatus || data.isMilitary === null}
-                      onClick={() => setStepIdx(2)}
-                      className={`flex-1 p-[14px_22px] rounded-[10px] text-[15px] font-semibold transition-all ${(!data.sponsorStatus || data.isMilitary === null) ? "bg-slate-200 text-slate-400 cursor-not-allowed" : "bg-primary text-white hover:bg-primary/80"}`}
+                      onClick={() => setStepIdx(2)} 
+                      style={{ backgroundColor: (!data.sponsorStatus || data.isMilitary === null) ? "#e2e8f0" : stepColor }}
+                      className={`flex-1 p-[14px_22px] rounded-[10px] text-[15px] font-semibold transition-all flex items-center justify-center gap-2 ${(!data.sponsorStatus || data.isMilitary === null) ? "text-slate-400 cursor-not-allowed" : "text-white hover:opacity-90"}`}
                     >
-                      Continue →
+                      Continue <ArrowRight size={14} />
                     </button>
                   </div>
                 </div>
               );
             }
 
-            // ─── STEP 2: Marital Status ────────────────────────────────────
             if (step === 2) {
               return (
                 <div className="animate-in fade-in slide-in-from-right-4 duration-300 text-center">
-                  <div className="text-[11px] font-semibold tracking-widest uppercase text-primary mb-4">Step 3 of 10</div>
+                  <div className="text-[11px] font-semibold tracking-widest uppercase mb-4" style={{ color: stepColor }}>Step 3 of 11</div>
                   <h2 className="text-[clamp(22px,3.5vw,28px)] font-black text-[#0c1b33] mb-6">Marital Status</h2>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
                     <button
                       onClick={() => setData({ ...data, isMarried: true })}
-                      className={`p-6 rounded-xl border-2 transition-all ${data.isMarried === true ? "border-primary bg-primary/5" : "border-slate-200"}`}
+                      className={`p-6 rounded-xl border-2 transition-all ${data.isMarried === true ? "" : "border-slate-200"}`}
+                      style={{ 
+                        borderColor: data.isMarried === true ? COLORS.primary : undefined,
+                        backgroundColor: data.isMarried === true ? `${COLORS.primary}10` : undefined,
+                      }}
                     >
-                      <Users className="w-10 h-10 mx-auto mb-3 text-primary" />
+                      <Users className="w-10 h-10 mx-auto mb-3" style={{ color: COLORS.primary }} />
                       <p className="font-semibold text-slate-900">Married</p>
                     </button>
                     <button
                       onClick={() => setData({ ...data, isMarried: false, relationshipToApplicant: "" })}
-                      className={`p-6 rounded-xl border-2 transition-all ${data.isMarried === false ? "border-primary bg-primary/5" : "border-slate-200"}`}
+                      className={`p-6 rounded-xl border-2 transition-all ${data.isMarried === false ? "" : "border-slate-200"}`}
+                      style={{ 
+                        borderColor: data.isMarried === false ? COLORS.primary : undefined,
+                        backgroundColor: data.isMarried === false ? `${COLORS.primary}10` : undefined,
+                      }}
                     >
-                      <User className="w-10 h-10 mx-auto mb-3 text-primary" />
+                      <User className="w-10 h-10 mx-auto mb-3" style={{ color: COLORS.primary }} />
                       <p className="font-semibold text-slate-900">Single / Not Married</p>
                     </button>
                   </div>
@@ -365,13 +441,21 @@ export default function SponsorshipCalculatorTool({
                       <div className="grid grid-cols-2 gap-3">
                         <button
                           onClick={() => setData({ ...data, relationshipToApplicant: "spouse" })}
-                          className={`p-3 rounded-xl border-2 transition-all ${data.relationshipToApplicant === "spouse" ? "border-primary bg-primary/5" : "border-slate-200"}`}
+                          className={`p-3 rounded-xl border-2 transition-all ${data.relationshipToApplicant === "spouse" ? "" : "border-slate-200"}`}
+                          style={{ 
+                            borderColor: data.relationshipToApplicant === "spouse" ? COLORS.primary : undefined,
+                            backgroundColor: data.relationshipToApplicant === "spouse" ? `${COLORS.primary}10` : undefined,
+                          }}
                         >
                           Yes
                         </button>
                         <button
                           onClick={() => setData({ ...data, relationshipToApplicant: "other" })}
-                          className={`p-3 rounded-xl border-2 transition-all ${data.relationshipToApplicant === "other" ? "border-primary bg-primary/5" : "border-slate-200"}`}
+                          className={`p-3 rounded-xl border-2 transition-all ${data.relationshipToApplicant === "other" ? "" : "border-slate-200"}`}
+                          style={{ 
+                            borderColor: data.relationshipToApplicant === "other" ? COLORS.primary : undefined,
+                            backgroundColor: data.relationshipToApplicant === "other" ? `${COLORS.primary}10` : undefined,
+                          }}
                         >
                           No
                         </button>
@@ -379,70 +463,83 @@ export default function SponsorshipCalculatorTool({
                     </div>
                   )}
                   <div className="flex gap-[10px]">
-                    <button onClick={() => setStepIdx(1)} className="p-[13px_22px] bg-transparent text-[#3a4f63] border-[1.5px] border-[#d0e4f7] rounded-[10px] font-medium hover:border-[#3a4f63]">← Back</button>
-                    <button
+                    <button onClick={() => setStepIdx(1)} className="p-[13px_22px] bg-transparent text-[#3a4f63] border-[1.5px] border-[#d0e4f7] rounded-[10px] font-medium hover:border-[#3a4f63] flex items-center gap-2">
+                      <ArrowLeft size={14} /> Back
+                    </button>
+                    <button 
                       disabled={data.isMarried === null || (data.isMarried && !data.relationshipToApplicant)}
-                      onClick={() => setStepIdx(3)}
-                      className={`flex-1 p-[14px_22px] rounded-[10px] text-[15px] font-semibold transition-all ${(data.isMarried === null || (data.isMarried && !data.relationshipToApplicant)) ? "bg-slate-200 text-slate-400 cursor-not-allowed" : "bg-primary text-white hover:bg-primary/80"}`}
+                      onClick={() => setStepIdx(3)} 
+                      style={{ backgroundColor: (data.isMarried === null || (data.isMarried && !data.relationshipToApplicant)) ? "#e2e8f0" : stepColor }}
+                      className={`flex-1 p-[14px_22px] rounded-[10px] text-[15px] font-semibold transition-all flex items-center justify-center gap-2 ${(data.isMarried === null || (data.isMarried && !data.relationshipToApplicant)) ? "text-slate-400 cursor-not-allowed" : "text-white hover:opacity-90"}`}
                     >
-                      Continue →
+                      Continue <ArrowRight size={14} />
                     </button>
                   </div>
                 </div>
               );
             }
 
-            // ─── STEP 3: Dependents ────────────────────────────────────────
             if (step === 3) {
               return (
                 <div className="animate-in fade-in slide-in-from-right-4 duration-300 text-center">
-                  <div className="text-[11px] font-semibold tracking-widest uppercase text-primary mb-4">Step 4 of 10</div>
-                  <h2 className="text-[clamp(22px,3.5vw,28px)] font-black text-[#0c1b33] mb-6">Dependents</h2>
+                  <div className="text-[11px] font-semibold tracking-widest uppercase mb-4" style={{ color: stepColor }}>Step 4 of 11</div>
+                  <h2 className="text-[clamp(22px,3.5vw,28px)] font-black text-[#0c1b33] mb-6 text-center">Dependents</h2>
                   <div className="space-y-6 mb-8 text-left">
-                    <div className="bg-slate-50 p-4 rounded-xl border border-slate-200">
-                      <label className="text-[12px] font-bold text-[#6b8097] uppercase tracking-wider mb-2 block">Your Children</label>
+                    <div className="p-4 rounded-xl border" style={{ backgroundColor: `${COLORS.danger}05`, borderColor: `${COLORS.danger}30` }}>
+                      <label className="text-[12px] font-bold uppercase tracking-wider mb-2 block" style={{ color: COLORS.danger }}>Your Children</label>
                       <div className="flex items-center gap-4">
-                        <button onClick={() => setData({ ...data, numberOfChildren: Math.max(0, data.numberOfChildren - 1) })} className="w-10 h-10 rounded-lg bg-white border border-slate-200 flex items-center justify-center">-</button>
+                        <button onClick={() => setData({...data, numberOfChildren: Math.max(0, data.numberOfChildren - 1)})} className="w-10 h-10 rounded-lg bg-white border border-slate-200 flex items-center justify-center">-</button>
                         <span className="text-2xl font-bold w-12 text-center">{data.numberOfChildren}</span>
-                        <button onClick={() => setData({ ...data, numberOfChildren: data.numberOfChildren + 1 })} className="w-10 h-10 rounded-lg bg-primary text-white flex items-center justify-center">+</button>
+                        <button onClick={() => setData({...data, numberOfChildren: data.numberOfChildren + 1})} style={{ backgroundColor: COLORS.danger }} className="w-10 h-10 rounded-lg text-white flex items-center justify-center">+</button>
                       </div>
                     </div>
-                    <div className="bg-slate-50 p-4 rounded-xl border border-slate-200">
-                      <label className="text-[12px] font-bold text-[#6b8097] uppercase tracking-wider mb-2 block">Other Tax Dependents</label>
+                    <div className="p-4 rounded-xl border" style={{ backgroundColor: `${COLORS.danger}05`, borderColor: `${COLORS.danger}30` }}>
+                      <label className="text-[12px] font-bold uppercase tracking-wider mb-2 block" style={{ color: COLORS.danger }}>Other Tax Dependents</label>
                       <div className="flex items-center gap-4">
-                        <button onClick={() => setData({ ...data, taxDependents: Math.max(0, data.taxDependents - 1) })} className="w-10 h-10 rounded-lg bg-white border border-slate-200 flex items-center justify-center">-</button>
+                        <button onClick={() => setData({...data, taxDependents: Math.max(0, data.taxDependents - 1)})} className="w-10 h-10 rounded-lg bg-white border border-slate-200 flex items-center justify-center">-</button>
                         <span className="text-2xl font-bold w-12 text-center">{data.taxDependents}</span>
-                        <button onClick={() => setData({ ...data, taxDependents: data.taxDependents + 1 })} className="w-10 h-10 rounded-lg bg-primary text-white flex items-center justify-center">+</button>
+                        <button onClick={() => setData({...data, taxDependents: data.taxDependents + 1})} style={{ backgroundColor: COLORS.danger }} className="w-10 h-10 rounded-lg text-white flex items-center justify-center">+</button>
                       </div>
                     </div>
                   </div>
                   <div className="flex gap-[10px]">
-                    <button onClick={() => setStepIdx(2)} className="p-[13px_22px] bg-transparent text-[#3a4f63] border-[1.5px] border-[#d0e4f7] rounded-[10px] font-medium hover:border-[#3a4f63]">← Back</button>
-                    <button onClick={() => setStepIdx(4)} className="flex-1 p-[14px_22px] bg-primary text-white rounded-[10px] text-[15px] font-semibold transition-all hover:bg-primary/80">Continue →</button>
+                    <button onClick={() => setStepIdx(2)} className="p-[13px_22px] bg-transparent text-[#3a4f63] border-[1.5px] border-[#d0e4f7] rounded-[10px] font-medium hover:border-[#3a4f63] flex items-center gap-2">
+                      <ArrowLeft size={14} /> Back
+                    </button>
+                    <button onClick={() => setStepIdx(4)} style={{ backgroundColor: stepColor }} className="flex-1 p-[14px_22px] text-white rounded-[10px] text-[15px] font-semibold transition-all hover:opacity-90 flex items-center justify-center gap-2">
+                      Continue <ArrowRight size={14} />
+                    </button>
                   </div>
                 </div>
               );
             }
 
-            // ─── STEP 4: Previous Sponsorships ────────────────────────────
             if (step === 4) {
               return (
                 <div className="animate-in fade-in slide-in-from-right-4 duration-300">
-                  <div className="text-[11px] font-semibold tracking-widest uppercase text-primary mb-4 text-center">Step 5 of 10</div>
+                  <div className="text-[11px] font-semibold tracking-widest uppercase mb-4 text-center" style={{ color: stepColor }}>Step 5 of 11</div>
                   <h2 className="text-[clamp(22px,3.5vw,28px)] font-black text-[#0c1b33] mb-6 text-center">Previous Sponsorships</h2>
                   <p className="text-[14px] text-[#3a4f63] leading-[1.6] mb-6 text-center">
                     Have you filed an I-864 for anyone else who is now a Lawful Permanent Resident?
                   </p>
-                  <div className="grid grid-cols-2 gap-4 mb-6">
+                  <div className="grid grid-cols-2 gap-4 mb-6 text-center">
                     <button
                       onClick={() => setData({ ...data, hasPreviousSponsorship: true })}
-                      className={`p-4 rounded-xl border-2 transition-all ${data.hasPreviousSponsorship === true ? "border-primary bg-primary/5" : "border-slate-200"}`}
+                      className={`p-4 rounded-xl border-2 transition-all ${data.hasPreviousSponsorship === true ? "" : "border-slate-200"}`}
+                      style={{ 
+                        borderColor: data.hasPreviousSponsorship === true ? COLORS.joint : undefined,
+                        backgroundColor: data.hasPreviousSponsorship === true ? `${COLORS.joint}10` : undefined,
+                      }}
                     >
                       Yes
                     </button>
                     <button
                       onClick={() => setData({ ...data, hasPreviousSponsorship: false, previousSponsoredCount: 0 })}
-                      className={`p-4 rounded-xl border-2 transition-all ${data.hasPreviousSponsorship === false ? "border-primary bg-primary/5" : "border-slate-200"}`}
+                      className={`p-4 rounded-xl border-2 transition-all ${data.hasPreviousSponsorship === false ? "" : "border-slate-200"}`}
+                      style={{ 
+                        borderColor: data.hasPreviousSponsorship === false ? COLORS.joint : undefined,
+                        backgroundColor: data.hasPreviousSponsorship === false ? `${COLORS.joint}10` : undefined,
+                      }}
                     >
                       No
                     </button>
@@ -450,278 +547,308 @@ export default function SponsorshipCalculatorTool({
                   {data.hasPreviousSponsorship && (
                     <div className="mb-6 animate-in zoom-in-95 duration-200">
                       <label className="text-[12px] font-bold text-[#6b8097] uppercase tracking-wider mb-2 block">How many people?</label>
-                      <div className="flex items-center gap-4">
-                        <button onClick={() => setData({ ...data, previousSponsoredCount: Math.max(0, data.previousSponsoredCount - 1) })} className="w-10 h-10 rounded-lg bg-white border border-slate-200 flex items-center justify-center">-</button>
+                      <div className="flex items-center gap-4 justify-center">
+                        <button onClick={() => setData({...data, previousSponsoredCount: Math.max(0, data.previousSponsoredCount - 1)})} className="w-10 h-10 rounded-lg bg-white border border-slate-200 flex items-center justify-center">-</button>
                         <span className="text-2xl font-bold w-12 text-center">{data.previousSponsoredCount}</span>
-                        <button onClick={() => setData({ ...data, previousSponsoredCount: data.previousSponsoredCount + 1 })} className="w-10 h-10 rounded-lg bg-primary text-white flex items-center justify-center">+</button>
+                        <button onClick={() => setData({...data, previousSponsoredCount: data.previousSponsoredCount + 1})} style={{ backgroundColor: COLORS.joint }} className="w-10 h-10 text-white rounded-lg flex items-center justify-center">+</button>
                       </div>
                     </div>
                   )}
                   <div className="flex gap-[10px]">
-                    <button onClick={() => setStepIdx(3)} className="p-[13px_22px] bg-transparent text-[#3a4f63] border-[1.5px] border-[#d0e4f7] rounded-[10px] font-medium hover:border-[#3a4f63]">← Back</button>
-                    <button
+                    <button onClick={() => setStepIdx(3)} className="p-[13px_22px] bg-transparent text-[#3a4f63] border-[1.5px] border-[#d0e4f7] rounded-[10px] font-medium hover:border-[#3a4f63] flex items-center gap-2">
+                      <ArrowLeft size={14} /> Back
+                    </button>
+                    <button 
                       disabled={data.hasPreviousSponsorship === null}
-                      onClick={() => setStepIdx(5)}
-                      className={`flex-1 p-[14px_22px] rounded-[10px] text-[15px] font-semibold transition-all ${data.hasPreviousSponsorship === null ? "bg-slate-200 text-slate-400 cursor-not-allowed" : "bg-primary text-white hover:bg-primary/80"}`}
+                      onClick={() => setStepIdx(5)} 
+                      style={{ backgroundColor: data.hasPreviousSponsorship === null ? "#e2e8f0" : stepColor }}
+                      className={`flex-1 p-[14px_22px] rounded-[10px] text-[15px] font-semibold transition-all flex items-center justify-center gap-2 ${data.hasPreviousSponsorship === null ? "text-slate-400 cursor-not-allowed" : "text-white hover:opacity-90"}`}
                     >
-                      Continue →
+                      Continue <ArrowRight size={14} />
                     </button>
                   </div>
                 </div>
               );
             }
 
-            // ─── STEP 5: Current Sponsoring ───────────────────────────────
             if (step === 5) {
               return (
                 <div className="animate-in fade-in slide-in-from-right-4 duration-300">
-                  <div className="text-[11px] font-semibold tracking-widest uppercase text-primary mb-4 text-center">Step 6 of 10</div>
-                  <h2 className="text-[clamp(22px,3.5vw,28px)] font-black text-[#0c1b33] mb-6 text-center">Current Sponsoring</h2>
+                  <div className="text-[11px] font-semibold tracking-widest uppercase mb-4 text-center" style={{ color: stepColor }}>Step 6 of 11</div>
+                  <h2 className="text-[clamp(22px,3.5vw,28px)] font-black text-[#0c1b33] mb-4 text-center">Who are you Sponsoring?</h2>
                   <p className="text-[14px] text-[#3a4f63] leading-[1.6] mb-6 text-center">
-                    Who else is being sponsored in this application?
+                    Select all who are immigrating in this application.
                   </p>
                   <div className="space-y-4 mb-8">
-                    <label className="flex items-center gap-4 p-4 rounded-xl border-2 bg-slate-50 border-slate-200 opacity-60 cursor-not-allowed">
-                      <input type="checkbox" checked={true} readOnly className="w-5 h-5 rounded border-slate-300 text-primary" />
-                      <div>
-                        <p className="font-semibold text-slate-900">Main Applicant</p>
-                        <p className="text-xs text-slate-500">The person you filed the I-130 for.</p>
+                    <div className="p-4 rounded-xl border flex items-center gap-4 bg-opacity-10" style={{ backgroundColor: `${COLORS.primary}10`, borderColor: `${COLORS.primary}30` }}>
+                      <Check className="w-6 h-6" style={{ color: COLORS.primary }} />
+                      <div className="text-left">
+                        <p className="font-semibold" style={{ color: COLORS.primary }}>Main Applicant</p>
+                        <p className="text-xs text-slate-500">The primary person being sponsored.</p>
                       </div>
-                    </label>
+                    </div>
                     {data.relationshipToApplicant !== "spouse" && (
-                      <button
-                        onClick={() => setData({ ...data, currentSponsoredSpouse: !data.currentSponsoredSpouse })}
-                        className={`w-full flex items-center gap-4 p-4 rounded-xl border-2 transition-all ${data.currentSponsoredSpouse ? "border-primary bg-primary/5" : "bg-white border-slate-200"}`}
+                      <label
+                        className={`w-full flex items-center gap-4 p-4 rounded-xl border-2 transition-all cursor-pointer ${data.currentSponsoredSpouse ? "" : "bg-white border-slate-200"}`}
+                        style={{ 
+                          backgroundColor: data.currentSponsoredSpouse ? `${COLORS.primary}10` : undefined, 
+                          borderColor: data.currentSponsoredSpouse ? COLORS.primary : undefined 
+                        }}
                       >
-                        <div className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-colors ${data.currentSponsoredSpouse ? "bg-primary border-primary" : "border-slate-300"}`}>
-                          {data.currentSponsoredSpouse && <Check size={14} className="text-white" />}
-                        </div>
+                        <input 
+                          type="checkbox" 
+                          checked={data.currentSponsoredSpouse} 
+                          onChange={() => setData({...data, currentSponsoredSpouse: !data.currentSponsoredSpouse})}
+                          className="w-5 h-5 rounded border-slate-300"
+                        />
                         <div className="text-left">
                           <p className="font-semibold text-slate-900">Applicant's Spouse</p>
-                          <p className="text-xs text-slate-500">If they are immigrating at the same time.</p>
+                          <p className="text-xs text-slate-500">If immigrating with the main applicant.</p>
                         </div>
-                      </button>
+                      </label>
                     )}
                     <div className="p-4 rounded-xl border-2 border-slate-200 bg-white">
                       <p className="font-semibold text-slate-900 mb-2">Applicant's Children</p>
                       <div className="flex items-center gap-4">
-                        <button onClick={() => setData({ ...data, currentSponsoredChildren: Math.max(0, data.currentSponsoredChildren - 1) })} className="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center">-</button>
+                        <button onClick={() => setData({...data, currentSponsoredChildren: Math.max(0, data.currentSponsoredChildren - 1)})} className="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center">-</button>
                         <span className="text-xl font-bold w-8 text-center">{data.currentSponsoredChildren}</span>
-                        <button onClick={() => setData({ ...data, currentSponsoredChildren: data.currentSponsoredChildren + 1 })} className="w-8 h-8 rounded-lg bg-primary text-white flex items-center justify-center">+</button>
+                        <button onClick={() => setData({...data, currentSponsoredChildren: data.currentSponsoredChildren + 1})} style={{ backgroundColor: COLORS.primary }} className="w-8 h-8 text-white rounded-lg flex items-center justify-center">+</button>
                       </div>
                     </div>
                   </div>
                   <div className="flex gap-[10px]">
-                    <button onClick={() => setStepIdx(4)} className="p-[13px_22px] bg-transparent text-[#3a4f63] border-[1.5px] border-[#d0e4f7] rounded-[10px] font-medium hover:border-[#3a4f63]">← Back</button>
-                    <button onClick={() => setStepIdx(6)} className="flex-1 p-[14px_22px] bg-primary text-white rounded-[10px] text-[15px] font-semibold transition-all hover:bg-primary/80">Continue →</button>
+                    <button onClick={() => setStepIdx(4)} className="p-[13px_22px] bg-transparent text-[#3a4f63] border-[1.5px] border-[#d0e4f7] rounded-[10px] font-medium hover:border-[#3a4f63] flex items-center gap-2">
+                      <ArrowLeft size={14} /> Back
+                    </button>
+                    <button onClick={() => setStepIdx(6)} style={{ backgroundColor: stepColor }} className="flex-1 p-[14px_22px] text-white rounded-[10px] text-[15px] font-semibold transition-all hover:opacity-90 flex items-center justify-center gap-2">
+                      Continue <ArrowRight size={14} />
+                    </button>
                   </div>
                 </div>
               );
             }
 
-            // ─── STEP 6: Income Details ────────────────────────────────────
             if (step === 6) {
               return (
                 <div className="animate-in fade-in slide-in-from-right-4 duration-300">
-                  <div className="text-[11px] font-semibold tracking-widest uppercase text-primary mb-4 text-center">Step 7 of 10</div>
-                  <h2 className="text-[clamp(22px,3.5vw,28px)] font-black text-[#0c1b33] mb-4 text-center">Income Details</h2>
-
-                  {/* Explainer banner */}
-                  <div className="bg-[#e8f1fb] border border-[#d0e4f7] rounded-[10px] p-[12px_14px] mb-8">
-                    <p className="text-[12px] text-[#3a4f63] leading-[1.6]">
-                      <strong className="text-[#0c1b33]">How USCIS uses these:</strong><br />
-                      ① <strong>Current Income</strong> — determines eligibility (125% Federal Poverty Guideline).<br />
-                      ② <strong>AGI from tax return</strong> — documentary evidence, submitted alongside Form I-864.
-                    </p>
+                  <div className="text-[11px] font-semibold tracking-widest uppercase mb-4 text-center" style={{ color: stepColor }}>
+                    Step 7 of 11
                   </div>
 
+                  <h2 className="text-[clamp(22px,3.5vw,28px)] font-black text-[#0c1b33] mb-6 text-center">
+                    Income Details
+                  </h2>
+
                   <div className="space-y-8 mb-8">
-                    {/* ── Field 1: Current Annual Income (PRIMARY — eligibility) */}
-                    <div>
-                      <label className="text-[12px] font-bold text-[#6b8097] uppercase tracking-wider mb-1 block">
-                        1. Current Annual Income
-                        <span className="ml-2 text-[10px] normal-case font-semibold text-emerald-600 bg-emerald-50 border border-emerald-200 px-2 py-[2px] rounded-full">Eligibility Check</span>
+                    {/* SINGLE INPUT ONLY */}
+                    <div
+                      className="p-6 rounded-2xl border-2"
+                      style={{
+                        backgroundColor: `${COLORS.secondary}05`,
+                        borderColor: `${COLORS.secondary}30`,
+                      }}
+                    >
+                      <label
+                        className="text-[12px] font-black uppercase tracking-wider mb-2 block"
+                        style={{ color: COLORS.secondary }}
+                      >
+                        Current Annual Income (AGI)
                       </label>
+
                       <div className="relative">
-                        <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-bold">$</span>
+                        <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-bold text-2xl">
+                          $
+                        </span>
+
                         <input
                           type="number"
                           value={data.currentAnnualIncome || ""}
-                          onChange={(e) => setData({ ...data, currentAnnualIncome: parseInt(e.target.value) || 0 })}
-                          className="w-full pl-8 pr-4 py-4 bg-slate-50 border-2 border-slate-200 rounded-xl text-2xl font-bold focus:border-primary outline-none transition-all"
+                          onChange={(e) =>
+                            setData({
+                              ...data,
+                              currentAnnualIncome: parseInt(e.target.value) || 0,
+                              agi: parseInt(e.target.value) || 0, // sync AGI automatically
+                            })
+                          }
+                          className="w-full pl-8 pr-4 py-4 bg-white border-2 border-slate-200 rounded-xl text-2xl font-bold focus:border-primary outline-none transition-all"
                           placeholder="0"
                         />
                       </div>
-                      <p className="text-[11px] text-slate-500 mt-2">
-                        Your expected income this calendar year (e.g. current monthly salary × 12).
-                        USCIS uses this to verify you meet the 125% poverty threshold.
-                      </p>
-                    </div>
 
-                    {/* ── Field 2: AGI from Tax Return (DOCUMENTARY EVIDENCE) */}
-                    <div>
-                      <label className="text-[12px] font-bold text-[#6b8097] uppercase tracking-wider mb-1 block">
-                        2. Most Recent AGI (Tax Record)
-                        <span className="ml-2 text-[10px] normal-case font-semibold text-blue-600 bg-blue-50 border border-blue-200 px-2 py-[2px] rounded-full">Documentary Evidence</span>
-                      </label>
-                      <div className="relative">
-                        <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-bold">$</span>
-                        <input
-                          type="number"
-                          value={data.agi || ""}
-                          onChange={(e) => setData({ ...data, agi: parseInt(e.target.value) || 0 })}
-                          className="w-full pl-8 pr-4 py-4 bg-slate-50 border-2 border-slate-200 rounded-xl text-2xl font-bold focus:border-primary outline-none transition-all"
-                          placeholder="0"
-                        />
-                      </div>
+                      {/* UPDATED DESCRIPTION */}
                       <p className="text-[11px] text-slate-500 mt-2">
-                        Adjusted Gross Income — <strong>Line 11</strong> of your most recent IRS Form 1040.
-                        Required by USCIS as supporting evidence; also used as a fallback if current income is not entered.
+                        Adjusted Gross Income (AGI) — Line 11 of your most recent IRS Form 1040.
                       </p>
                     </div>
                   </div>
 
                   <div className="flex gap-[10px]">
-                    <button onClick={() => setStepIdx(5)} className="p-[13px_22px] bg-transparent text-[#3a4f63] border-[1.5px] border-[#d0e4f7] rounded-[10px] font-medium hover:border-[#3a4f63]">← Back</button>
-                    <button onClick={() => setStepIdx(7)} className="flex-1 p-[14px_22px] bg-primary text-white rounded-[10px] text-[15px] font-semibold transition-all hover:bg-primary/80">Continue →</button>
+                    <button
+                      onClick={() => setStepIdx(5)}
+                      className="p-[13px_22px] bg-transparent text-[#3a4f63] border-[1.5px] border-[#d0e4f7] rounded-[10px] font-medium hover:border-[#3a4f63] flex items-center gap-2"
+                    >
+                      <ArrowLeft size={14} /> Back
+                    </button>
+
+                    <button
+                      onClick={() => setStepIdx(7)}
+                      style={{ backgroundColor: COLORS.primary }}
+                      className="flex-1 p-[14px_22px] text-white rounded-[10px] text-[15px] font-semibold transition-all hover:opacity-90 flex items-center justify-center gap-2"
+                    >
+                      Continue <ArrowRight size={14} />
+                    </button>
                   </div>
                 </div>
               );
             }
 
-            // ─── STEP 7: Initial Status ────────────────────────────────────
             if (step === 7) {
               return (
                 <div className="animate-in fade-in slide-in-from-right-4 duration-300">
-                  <div className="text-[11px] font-semibold tracking-widest uppercase text-primary mb-4 text-center">Step 8 of 10</div>
+                  <div className="text-[11px] font-semibold tracking-widest uppercase mb-4 text-center" style={{ color: COLORS.primary }}>Step 8 of 11</div>
                   <h2 className="text-[clamp(22px,3.5vw,28px)] font-black text-[#0c1b33] mb-6 text-center">Initial Status</h2>
-
-                  <div className={`p-6 rounded-2xl border-2 mb-8 ${result.isEligible ? "bg-emerald-50 border-emerald-200" : "bg-amber-50 border-amber-200"}`}>
+                  
+                  <div className={`p-6 rounded-2xl border-2 mb-8`} 
+                    style={{ 
+                      backgroundColor: result.isEligible ? `${COLORS.secondary}20` : `${COLORS.danger}20`,
+                      borderColor: result.isEligible ? COLORS.secondary : COLORS.danger 
+                    }}>
                     <div className="flex items-center justify-between mb-4">
                       <span className="text-[12px] font-bold uppercase tracking-wider text-slate-500">Current Standing</span>
-                      <span className={`px-3 py-1 rounded-full text-[11px] font-bold uppercase ${result.isEligible ? "bg-emerald-500 text-white" : "bg-amber-500 text-white"}`}>
+                      <span className="px-3 py-1 rounded-full text-[11px] font-bold uppercase" 
+                        style={{ backgroundColor: result.isEligible ? COLORS.secondary : COLORS.danger, color: 'white' }}>
                         {result.isEligible ? "Qualified" : "Shortfall"}
                       </span>
                     </div>
                     <div className="text-3xl font-black text-slate-900 mb-1">
                       ${result.primaryIncome.toLocaleString()} / ${result.requiredIncome.toLocaleString()}
                     </div>
-                    <p className="text-[13px] text-slate-600">
+                    <p className="text-[13px] text-slate-600 font-medium">
                       {result.isEligible
-                        ? "Based on your income and household size, you appear to qualify as the sole sponsor."
-                        : `You are $${result.shortfall.toLocaleString()} below the required threshold.`}
+                        ? "Based on your income and household size, you qualify as the sole sponsor."
+                        : `You are $${(result.shortfall ?? 0).toLocaleString()} below the threshold.`}
                     </p>
                   </div>
 
                   <div className="space-y-4 mb-8">
                     <p className="text-[14px] font-bold text-slate-900">Do you need to add support?</p>
-                    <button
+                    <button 
                       onClick={() => setStepIdx(8)}
-                      className="w-full p-4 rounded-xl border-2 border-slate-200 hover:border-primary transition-all text-left flex items-center justify-between group"
+                      className="w-full p-6 rounded-2xl border-2 border-dashed border-slate-300 hover:border-primary transition-all text-left flex items-center justify-between group bg-slate-50"
                     >
                       <div>
-                        <p className="font-semibold text-slate-900">Add Support Income</p>
-                        <p className="text-xs text-slate-500">Add household members or joint sponsors.</p>
+                        <p className="font-bold text-slate-900">Add Support Income</p>
+                        <p className="text-xs text-slate-500">Household members or Joint sponsors.</p>
                       </div>
-                      <Plus size={18} className="text-slate-400 group-hover:text-primary" />
+                      <Plus size={24} className="text-slate-400 group-hover:text-primary" />
                     </button>
+                    {!result.isEligible && (
+                      <button 
+                        onClick={() => setStepIdx(9)}
+                        className="w-full p-6 rounded-2xl border-2 border-dashed border-slate-300 hover:border-primary transition-all text-left flex items-center justify-between group bg-slate-50"
+                      >
+                        <div>
+                          <p className="font-bold text-slate-900">More Options / What-if</p>
+                          <p className="text-xs text-slate-500">Substitute sponsor, Assets, or Self-petition.</p>
+                        </div>
+                        <AlertTriangle size={24} className="text-slate-400 group-hover:text-amber-500" />
+                      </button>
+                    )}
                   </div>
 
                   <div className="flex gap-[10px]">
-                    <button onClick={() => setStepIdx(6)} className="p-[13px_22px] bg-transparent text-[#3a4f63] border-[1.5px] border-[#d0e4f7] rounded-[10px] font-medium hover:border-[#3a4f63]">← Back</button>
-                    <button onClick={() => setStepIdx(9)} className="flex-1 p-[14px_22px] bg-primary text-white rounded-[10px] text-[15px] font-semibold transition-all hover:bg-primary/80">View Final Plan →</button>
+                    <button onClick={() => setStepIdx(6)} className="p-[13px_22px] bg-transparent text-[#3a4f63] border-[1.5px] border-[#d0e4f7] rounded-[10px] font-medium hover:border-[#3a4f63] flex items-center gap-2">
+                      <ArrowLeft size={14} /> Back
+                    </button>
+                    <button onClick={() => setStepIdx(10)} style={{ backgroundColor: COLORS.primary }} className="flex-1 p-[14px_22px] text-white rounded-[10px] text-[15px] font-semibold transition-all hover:opacity-90 flex items-center justify-center gap-2">
+                      View Final Plan <ArrowRight size={14} />
+                    </button>
                   </div>
                 </div>
               );
             }
 
-            // ─── STEP 8: Support Resources ────────────────────────────────
             if (step === 8) {
               return (
                 <div className="animate-in fade-in slide-in-from-right-4 duration-300">
-                  <div className="text-[11px] font-semibold tracking-widest uppercase text-primary mb-4 text-center">Step 9 of 10</div>
+                  <div className="text-[11px] font-semibold tracking-widest uppercase mb-4 text-center" style={{ color: stepColor }}>Step 9 of 11</div>
                   <h2 className="text-[clamp(22px,3.5vw,28px)] font-black text-[#0c1b33] mb-6 text-center">Support Resources</h2>
-
+                  
                   <div className="space-y-6 mb-8 text-left">
-                    {/* Household Members */}
-                    <div className="border-2 border-primary/20 rounded-2xl overflow-hidden bg-slate-50/50">
-                      <div className="p-4 bg-primary/5 border-b border-primary/10 flex justify-between items-center">
+                    <div className="border-2 rounded-2xl overflow-hidden" 
+                      style={{ borderColor: `${COLORS.household}40`, backgroundColor: `${COLORS.household}05` }}>
+                      <div className="p-4 flex justify-between items-center" style={{ backgroundColor: `${COLORS.household}15` }}>
                         <div className="flex items-center gap-2">
-                          <Home size={16} className="text-primary" />
+                          <Home size={18} style={{ color: COLORS.household }} />
                           <span className="font-bold text-slate-900">Household Members</span>
                         </div>
-                        <button onClick={addHouseholdMember} className="p-1 px-3 bg-primary text-white rounded-lg text-xs font-bold hover:bg-primary/80 transition-all">+ Add</button>
+                        <button onClick={addHouseholdMember} style={{ backgroundColor: COLORS.household }} className="p-1 px-4 text-white rounded-lg text-xs font-bold hover:opacity-80 transition-all">+ Add</button>
                       </div>
                       <div className="p-4 space-y-3">
                         {data.householdMembers.length === 0 ? (
-                          <p className="text-xs text-slate-400 italic">No members added</p>
+                          <p className="text-xs text-slate-400 text-center py-2 italic font-medium">No members added</p>
                         ) : (
                           data.householdMembers.map((m: any) => (
-                            <div key={m.id} className="bg-white p-3 rounded-xl border border-slate-200">
-                              <div className="flex gap-2 mb-2">
-                                <select
+                            <div key={m.id} className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+                              <div className="flex gap-2 mb-3">
+                                <select 
                                   value={m.relationship}
-                                  onChange={(e) => updateHouseholdMember(m.id, { relationship: e.target.value })}
-                                  className="flex-1 p-2 text-xs border rounded-lg bg-slate-50"
+                                  onChange={(e) => updateHouseholdMember(m.id, {relationship: e.target.value})}
+                                  className="flex-1 p-2 text-sm border-2 border-slate-100 rounded-lg bg-slate-50 focus:border-purple-200 outline-none"
                                 >
                                   <option value="">Relationship...</option>
                                   <option value="Spouse">Spouse</option>
                                   <option value="Child">Child</option>
                                   <option value="Parent">Parent</option>
                                   <option value="Sibling">Sibling</option>
+                                  <option value="Other Living in Household">Other Relative</option>
                                 </select>
-                                <button onClick={() => removeHouseholdMember(m.id)} className="p-2 text-red-400 hover:bg-red-50 rounded-lg transition-all"><X size={14} /></button>
+                                <button onClick={() => removeHouseholdMember(m.id)} className="p-2 text-red-300 hover:bg-red-50 rounded-lg"><Trash2 size={16} /></button>
                               </div>
-                              <div className="relative">
-                                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs">$</span>
-                                <input
-                                  type="number"
-                                  value={m.annualIncome || ""}
-                                  onChange={(e) => updateHouseholdMember(m.id, { annualIncome: parseInt(e.target.value) || 0 })}
-                                  className="w-full pl-6 p-2 text-sm border rounded-lg font-bold"
-                                  placeholder="Income"
-                                />
-                              </div>
+                              <input 
+                                type="number" 
+                                value={m.annualIncome || ""} 
+                                onChange={(e) => updateHouseholdMember(m.id, {annualIncome: parseInt(e.target.value) || 0})}
+                                className="w-full p-3 text-lg border-2 border-slate-100 rounded-lg font-black text-slate-900"
+                                placeholder="$ Income"
+                              />
                             </div>
                           ))
                         )}
                       </div>
                     </div>
 
-                    {/* Joint Sponsors */}
-                    <div className="border-2 border-primary/20 rounded-2xl overflow-hidden bg-slate-50/50">
-                      <div className="p-4 bg-primary/5 border-b border-primary/10 flex justify-between items-center">
+                    <div className="border-2 rounded-2xl overflow-hidden" 
+                      style={{ borderColor: `${COLORS.joint}40`, backgroundColor: `${COLORS.joint}05` }}>
+                      <div className="p-4 flex justify-between items-center" style={{ backgroundColor: `${COLORS.joint}15` }}>
                         <div className="flex items-center gap-2">
-                          <Shield size={16} className="text-primary" />
+                          <UserPlus size={18} style={{ color: COLORS.joint }} />
                           <span className="font-bold text-slate-900">Joint Sponsors</span>
                         </div>
-                        <button onClick={addJointSponsor} className="p-1 px-3 bg-primary text-white rounded-lg text-xs font-bold hover:bg-primary/80 transition-all">+ Add</button>
+                        <button onClick={addJointSponsor} style={{ backgroundColor: COLORS.joint }} className="p-1 px-4 text-white rounded-lg text-xs font-bold hover:opacity-80 transition-all">+ Add</button>
                       </div>
                       <div className="p-4 space-y-3">
                         {data.jointSponsors.length === 0 ? (
-                          <p className="text-xs text-slate-400 italic">No joint sponsors added</p>
+                          <p className="text-xs text-slate-400 text-center py-2 italic font-medium">No joint sponsors added</p>
                         ) : (
                           data.jointSponsors.map((s: any) => (
-                            <div key={s.id} className="bg-white p-3 rounded-xl border border-slate-200">
-                              <div className="flex gap-2 mb-2">
-                                <input
-                                  type="text"
-                                  value={s.name}
-                                  onChange={(e) => updateJointSponsor(s.id, { name: e.target.value })}
-                                  placeholder="Sponsor Name"
-                                  className="flex-1 p-2 text-xs border rounded-lg bg-slate-50"
+                            <div key={s.id} className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+                              <input 
+                                type="text"
+                                value={s.name}
+                                onChange={(e) => updateJointSponsor(s.id, {name: e.target.value})}
+                                placeholder="Sponsor Name"
+                                className="w-full p-2 mb-2 text-sm border-2 border-slate-100 rounded-lg bg-slate-50"
+                              />
+                              <div className="flex gap-2">
+                                <input 
+                                  type="number" 
+                                  value={s.annualIncome || ""} 
+                                  onChange={(e) => updateJointSponsor(s.id, {annualIncome: parseInt(e.target.value) || 0})}
+                                  className="flex-1 p-3 text-lg border-2 border-slate-100 rounded-lg font-black text-slate-900"
+                                  placeholder="$ Income"
                                 />
-                                <button onClick={() => removeJointSponsor(s.id)} className="p-2 text-red-400 hover:bg-red-50 rounded-lg transition-all"><X size={14} /></button>
-                              </div>
-                              <div className="relative">
-                                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs">$</span>
-                                <input
-                                  type="number"
-                                  value={s.annualIncome || ""}
-                                  onChange={(e) => updateJointSponsor(s.id, { annualIncome: parseInt(e.target.value) || 0 })}
-                                  className="w-full pl-6 p-2 text-sm border rounded-lg font-bold"
-                                  placeholder="Income"
-                                />
+                                <button onClick={() => removeJointSponsor(s.id)} className="p-3 text-red-300 hover:bg-red-50 rounded-lg"><Trash2 size={18} /></button>
                               </div>
                             </div>
                           ))
@@ -731,91 +858,160 @@ export default function SponsorshipCalculatorTool({
                   </div>
 
                   <div className="flex gap-[10px]">
-                    <button onClick={() => setStepIdx(7)} className="p-[13px_22px] bg-transparent text-[#3a4f63] border-[1.5px] border-[#d0e4f7] rounded-[10px] font-medium hover:border-[#3a4f63]">← Back</button>
-                    <button onClick={() => setStepIdx(9)} className="flex-1 p-[14px_22px] bg-primary text-white rounded-[10px] text-[15px] font-semibold transition-all hover:bg-primary/80">Continue →</button>
+                    <button onClick={() => setStepIdx(7)} className="p-[13px_22px] bg-transparent text-[#3a4f63] border-[1.5px] border-[#d0e4f7] rounded-[10px] font-medium hover:border-[#3a4f63] flex items-center gap-2">
+                      <ArrowLeft size={14} /> Back
+                    </button>
+                    <button onClick={() => setStepIdx(9)} style={{ backgroundColor: stepColor }} className="flex-1 p-[14px_22px] text-white rounded-[10px] text-[15px] font-semibold transition-all hover:opacity-90 flex items-center justify-center gap-2">
+                      Continue <ArrowRight size={14} />
+                    </button>
                   </div>
                 </div>
               );
             }
 
-            // ─── STEP 9: Final Plan ────────────────────────────────────────
             if (step === 9) {
               return (
                 <div className="animate-in fade-in slide-in-from-right-4 duration-300">
-                  <div className="text-[11px] font-semibold tracking-widest uppercase text-primary mb-4 text-center">Step 10 of 10</div>
-                  <h2 className="text-[clamp(22px,3.5vw,28px)] font-black text-[#0c1b33] mb-6 text-center">Final Sponsorship Plan</h2>
-
+                  <div className="text-[11px] font-semibold tracking-widest uppercase mb-4 text-center" style={{ color: COLORS.primary }}>Step 10 of 11</div>
+                  <h2 className="text-[clamp(22px,3.5vw,28px)] font-black text-[#0c1b33] mb-6 text-center">Alternative Options</h2>
+                  
                   <div className="space-y-4 mb-8">
-                    {/* Result card */}
-                    <div className={`p-6 rounded-2xl border-2 ${result.isEligible ? "bg-emerald-50 border-emerald-200" : "bg-rose-50 border-rose-200"}`}>
-                      <div className="text-center">
-                        <div className="text-[10px] font-black uppercase text-slate-500 tracking-wider mb-2">Final Conclusion</div>
-                        <div className={`text-2xl font-black mb-2 ${result.isEligible ? "text-emerald-700" : "text-rose-700"}`}>
-                          {result.isEligible ? "Requirement Met ✓" : "Threshold Gap Not Met ✗"}
+                    {/* Assets Option */}
+                    <div className="border-2 rounded-xl overflow-hidden border-slate-200">
+                      <div className="p-4 bg-slate-50 flex justify-between items-center cursor-pointer" onClick={() => toggleOption('assets')}>
+                        <div className="flex items-center gap-2">
+                          <DollarSign size={18} style={{ color: COLORS.secondary }} />
+                          <span className="font-bold text-slate-800">Use Assets (Property/Savings)</span>
                         </div>
-                        <p className="text-[13px] text-slate-600">
-                          Total Household Income: <strong className="text-[#0c1b33]">${result.totalIncome.toLocaleString()}</strong><br />
-                          Required for Household of {result.householdSize}: <strong className="text-[#0c1b33]">${result.requiredIncome.toLocaleString()}</strong>
-                        </p>
+                        {expandedOptions.assets ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
                       </div>
+                      {expandedOptions.assets && (
+                        <div className="p-4 bg-white animate-in slide-in-from-top-2 duration-200">
+                          <p className="text-xs text-slate-500 mb-4">You can use 1/3 (spouse/child of USC) or 1/5 of asset value to meet the requirement.</p>
+                          <div className="relative">
+                            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 font-bold">$</span>
+                            <input 
+                              type="number" 
+                              value={data.assetValue || ""} 
+                              onChange={(e) => setData({...data, assetValue: parseInt(e.target.value) || 0})}
+                              className="w-full pl-8 p-3 text-lg border-2 border-slate-100 rounded-lg"
+                              placeholder="Total Asset Value"
+                            />
+                          </div>
+                        </div>
+                      )}
                     </div>
 
-                    {/* Income breakdown */}
-                    <div className="bg-slate-50 p-5 rounded-2xl border border-slate-200">
-                      <div className="text-[11px] font-bold uppercase text-slate-400 mb-3">Income Breakdown</div>
-                      <div className="space-y-2 text-[13px]">
-                        <div className="flex justify-between">
-                          <span className="text-slate-600">
-                            Primary Income
-                            <span className="ml-1 text-[10px] text-slate-400">
-                              {data.currentAnnualIncome > 0 ? "(Current Annual)" : "(AGI Fallback)"}
-                            </span>
-                          </span>
-                          <span className="font-bold">${result.primaryIncome.toLocaleString()}</span>
+                    {/* Substitute Sponsor Option */}
+                    <div className="border-2 rounded-xl overflow-hidden border-slate-200">
+                      <div className="p-4 bg-slate-50 flex justify-between items-center cursor-pointer" onClick={() => toggleOption('substitute')}>
+                        <div className="flex items-center gap-2">
+                          <Heart size={18} style={{ color: COLORS.danger }} />
+                          <span className="font-bold text-slate-800">Substitute Sponsor</span>
                         </div>
-                        {result.hmIncome > 0 && (
-                          <div className="flex justify-between">
-                            <span className="text-slate-600">Household Members</span>
-                            <span className="font-bold">${result.hmIncome.toLocaleString()}</span>
-                          </div>
-                        )}
-                        {result.jsIncome > 0 && (
-                          <div className="flex justify-between">
-                            <span className="text-slate-600">Joint Sponsors</span>
-                            <span className="font-bold">${result.jsIncome.toLocaleString()}</span>
-                          </div>
-                        )}
-                        <div className="flex justify-between border-t border-slate-200 pt-2 mt-1">
-                          <span className="font-bold text-slate-800">Total</span>
-                          <span className="font-black text-slate-900">${result.totalIncome.toLocaleString()}</span>
-                        </div>
+                        {expandedOptions.substitute ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
                       </div>
+                      {expandedOptions.substitute && (
+                        <div className="p-4 bg-white">
+                          <p className="text-xs text-slate-500 mb-3">If the original petitioner has passed away.</p>
+                          <label className="flex items-center gap-2 text-sm font-semibold cursor-pointer">
+                            <input 
+                              type="checkbox" 
+                              checked={data.sponsorDeceased} 
+                              onChange={() => setData({...data, sponsorDeceased: !data.sponsorDeceased})}
+                              className="w-4 h-4 rounded"
+                            />
+                            The Petitioner is Deceased
+                          </label>
+                        </div>
+                      )}
                     </div>
 
-                    {/* Required forms */}
-                    <div className="bg-slate-50 p-5 rounded-2xl border border-slate-200">
-                      <div className="text-[11px] font-bold uppercase text-slate-400 mb-3">Required Forms</div>
-                      <div className="space-y-2">
-                        {result.forms.map((f: any, i: number) => (
-                          <div key={i} className="flex items-start gap-3 p-3 bg-white rounded-xl border border-slate-100">
-                            <FileText size={16} className="text-primary mt-1 shrink-0" />
-                            <div>
-                              <div className="text-sm font-bold text-slate-900">{f.name}</div>
-                              <div className="text-[11px] text-slate-500">{f.sub}</div>
-                            </div>
-                          </div>
-                        ))}
+                    {/* Self-Petition Option */}
+                    <div className="border-2 rounded-xl overflow-hidden border-slate-200">
+                      <div className="p-4 bg-slate-50 flex justify-between items-center cursor-pointer" onClick={() => toggleOption('self')}>
+                        <div className="flex items-center gap-2">
+                          <Shield size={18} style={{ color: COLORS.primary }} />
+                          <span className="font-bold text-slate-800">Self-Petition Categories</span>
+                        </div>
+                        {expandedOptions.self ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+                      </div>
+                      {expandedOptions.self && (
+                        <div className="p-4 bg-white space-y-3">
+                          <label className="flex items-center gap-2 text-sm cursor-pointer">
+                            <input type="checkbox" checked={data.isVAWA} onChange={() => setData({...data, isVAWA: !data.isVAWA})} /> VAWA Self-petitioner
+                          </label>
+                          <label className="flex items-center gap-2 text-sm cursor-pointer">
+                            <input type="checkbox" checked={data.isWidow} onChange={() => setData({...data, isWidow: !data.isWidow})} /> Widow(er) of US Citizen
+                          </label>
+                          <label className="flex items-center gap-2 text-sm cursor-pointer">
+                            <input type="checkbox" checked={data.isSpecialImmigrant} onChange={() => setData({...data, isSpecialImmigrant: !data.isSpecialImmigrant})} /> Special Immigrant
+                          </label>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="flex gap-[10px]">
+                    <button onClick={() => setStepIdx(7)} className="p-[13px_22px] bg-transparent text-[#3a4f63] border-[1.5px] border-[#d0e4f7] rounded-[10px] font-medium hover:border-[#3a4f63] flex items-center gap-2">
+                      <ArrowLeft size={14} /> Back
+                    </button>
+                    <button onClick={() => setStepIdx(10)} style={{ backgroundColor: COLORS.primary }} className="flex-1 p-[14px_22px] text-white rounded-[10px] text-[15px] font-semibold transition-all hover:opacity-90 flex items-center justify-center gap-2">
+                      View Results <ArrowRight size={14} />
+                    </button>
+                  </div>
+                </div>
+              );
+            }
+
+            if (step === 10) {
+              return (
+                <div className="animate-in fade-in slide-in-from-right-4 duration-300">
+                  <div className="text-[11px] font-semibold tracking-widest uppercase mb-4 text-center" style={{ color: COLORS.primary }}>Step 11 of 11</div>
+                  <h2 className="text-[clamp(22px,3.5vw,28px)] font-black text-[#0c1b33] mb-6 text-center">Final Sponsorship Plan</h2>
+                  
+                  <div className="space-y-4 mb-8">
+                    <div className={`p-8 rounded-3xl border-2 text-center`}
+                      style={{ 
+                        backgroundColor: result.isEligible ? `${COLORS.secondary}20` : `${COLORS.danger}20`,
+                        borderColor: result.isEligible ? COLORS.secondary : COLORS.danger 
+                      }}>
+                      <div className="text-[10px] font-black uppercase text-slate-500 tracking-widest mb-3">Final Conclusion</div>
+                      <div className="text-3xl font-black mb-3" style={{ color: result.isEligible ? COLORS.primary : COLORS.danger }}>
+                        {result.isEligible ? "ELIGIBLE \u2713" : "NOT ELIGIBLE \u2717"}
+                      </div>
+                      <p className="text-[14px] text-slate-600 leading-relaxed font-medium">
+                        Total Household Income: <strong className="text-[#0c1b33] text-lg">${result.totalIncome.toLocaleString()}</strong><br/>
+                        Required (Household of {result.householdSize}): <strong className="text-[#0c1b33] text-lg">${result.requiredIncome.toLocaleString()}</strong>
+                      </p>
+                    </div>
+
+                    <div className="p-6 rounded-2xl border-2 border-slate-100 bg-slate-50/50">
+                      <div className="text-[11px] font-bold uppercase text-slate-400 mb-4 tracking-wider">Required Forms</div>
+                      <div className="space-y-3">
+                         {result.forms.map((f: any, i: number) => (
+                           <div key={i} className="flex items-start gap-3 p-4 bg-white rounded-2xl border border-slate-200 shadow-sm">
+                             <FileText size={20} className="mt-1 shrink-0" style={{ color: COLORS.primary }} />
+                             <div>
+                               <div className="text-sm font-black text-slate-900 leading-tight">{f.name}</div>
+                               <div className="text-[11px] text-slate-500 font-medium">{f.sub}</div>
+                             </div>
+                           </div>
+                         ))}
                       </div>
                     </div>
                   </div>
 
                   <div className="flex gap-[10px]">
-                    <button onClick={() => setStepIdx(8)} className="p-[13px_22px] bg-transparent text-[#3a4f63] border-[1.5px] border-[#d0e4f7] rounded-[10px] font-medium hover:border-[#3a4f63]">← Edit Support</button>
-                    <button
-                      onClick={() => onSave(result)}
-                      className="flex-1 p-[14px_22px] bg-emerald-600 text-white rounded-[10px] text-[15px] font-semibold shadow-lg shadow-emerald-200 transition-all hover:bg-emerald-700 hover:-translate-y-px"
+                    <button onClick={() => setStepIdx(data.assetValue > 0 || data.sponsorDeceased ? 9 : 8)} className="p-[13px_22px] bg-transparent text-[#3a4f63] border-[1.5px] border-[#d0e4f7] rounded-[10px] font-medium hover:border-[#3a4f63] flex items-center gap-2">
+                      <ArrowLeft size={14} /> Edit Info
+                    </button>
+                    <button 
+                      onClick={() => onSave(result)} 
+                      style={{ backgroundColor: COLORS.primary }}
+                      className="flex-1 p-[14px_22px] text-white rounded-[10px] text-[15px] font-semibold shadow-lg transition-all hover:opacity-90 hover:-translate-y-px flex items-center justify-center gap-2"
                     >
-                      Complete & Save Plan →
+                      Complete & Save Plan <ArrowRight size={14} />
                     </button>
                   </div>
                 </div>

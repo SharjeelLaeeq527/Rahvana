@@ -1,9 +1,13 @@
-"use client";
-
+import { useState } from "react";
 import {
   DocumentDefinition,
   UploadedDocument,
 } from "@/lib/document-vault/types";
+
+// import {
+//   DocumentDefinition,
+//   UploadedDocument,
+// } from "@/lib/document-vault/types";
 import { useLanguage } from "@/app/context/LanguageContext";
 import {
   formatExpirationDate,
@@ -30,6 +34,9 @@ import {
   FileArchive,
   MoreVertical,
   ExternalLink,
+  Edit2,
+  Check,
+  X,
 } from "lucide-react";
 import {
   Table,
@@ -48,6 +55,8 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
+import { Input } from "@/components/ui/input";
+
 interface DocumentTableViewProps {
   documents: DocumentDefinition[];
   uploadedDocuments: UploadedDocument[];
@@ -57,6 +66,7 @@ interface DocumentTableViewProps {
   onOpenWizard: (docId: string) => void;
   onExport: (docId: string, hasCompressed: boolean) => void;
   onPreview: (doc: UploadedDocument) => void;
+  onRename?: (category: string, docId: string, newName: string) => void;
 }
 
 export function DocumentTableView({
@@ -68,8 +78,11 @@ export function DocumentTableView({
   onOpenWizard,
   onExport,
   onPreview,
+  onRename,
 }: DocumentTableViewProps) {
   const { t } = useLanguage();
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editValue, setEditValue] = useState("");
 
   const getStatusBadge = (
     docDef: DocumentDefinition,
@@ -152,10 +165,63 @@ export function DocumentTableView({
                     </div>
                     <div>
                       <div className="font-semibold text-sm flex items-center gap-1.5">
-                        {t(`documentVaultPage.documents.${doc.id}.name`) !==
-                        `documentVaultPage.documents.${doc.id}.name`
-                          ? t(`documentVaultPage.documents.${doc.id}.name`)
-                          : doc.name}
+                        {editingId === doc.id ? (
+                          <div className="flex items-center gap-1">
+                            <Input
+                              value={editValue}
+                              onChange={(e) => setEditValue(e.target.value)}
+                              className="h-7 py-0 px-2 text-sm max-w-[200px]"
+                              autoFocus
+                              onKeyDown={(e) => {
+                                if (e.key === "Enter") {
+                                  onRename?.(doc.category, doc.id, editValue);
+                                  setEditingId(null);
+                                } else if (e.key === "Escape") {
+                                  setEditingId(null);
+                                }
+                              }}
+                            />
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              className="h-7 w-7 p-0 text-emerald-600"
+                              onClick={() => {
+                                onRename?.(doc.category, doc.id, editValue);
+                                setEditingId(null);
+                              }}
+                            >
+                              <Check className="w-3.5 h-3.5" />
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              className="h-7 w-7 p-0 text-red-500"
+                              onClick={() => setEditingId(null)}
+                            >
+                              <X className="w-3.5 h-3.5" />
+                            </Button>
+                          </div>
+                        ) : (
+                          <>
+                            {t(`documentVaultPage.documents.${doc.id}.name`) !==
+                            `documentVaultPage.documents.${doc.id}.name`
+                              ? t(`documentVaultPage.documents.${doc.id}.name`)
+                              : doc.name}
+                            {doc.id.startsWith("dynamic-") && (
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="h-4 w-4 p-0 opacity-0 group-hover:opacity-100 transition-opacity ml-1"
+                                onClick={() => {
+                                  setEditingId(doc.id);
+                                  setEditValue(doc.name);
+                                }}
+                              >
+                                <Edit2 className="w-3 h-3 text-slate-400" />
+                              </Button>
+                            )}
+                          </>
+                        )}
                         {doc.required && (
                           <span className="text-destructive font-bold">*</span>
                         )}
