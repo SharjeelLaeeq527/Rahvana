@@ -71,7 +71,7 @@ export async function GET(req: NextRequest) {
       .from('case_data')
       .select('journey_id, data_key, data_value')
       .in('journey_id', journeyIds)
-      .in('data_key', ['nvcCaseNum', 'nvc_case_num', 'nvcInvoice', 'nvc_invoice_id']);
+      .in('data_key', ['nvcCaseNum', 'nvc_case_num', 'nvcInvoice', 'nvc_invoice_id', 'passportNumber', 'surname']);
 
     // Map the shape for the frontend
     const journeys = rawJourneys.map((j: any) => {
@@ -80,12 +80,16 @@ export async function GET(req: NextRequest) {
       const jCaseData = caseData?.filter((cd) => cd.journey_id === j.id) || [];
       const nvcCaseData = jCaseData.find((cd) => cd.data_key === 'nvcCaseNum' || cd.data_key === 'nvc_case_num');
       const invoiceData = jCaseData.find((cd) => cd.data_key === 'nvcInvoice' || cd.data_key === 'nvc_invoice_id');
+      const passportData = jCaseData.find((cd) => cd.data_key === 'passportNumber');
+      const surnameData = jCaseData.find((cd) => cd.data_key === 'surname');
       
       return {
         ...j,
         user_email: profile?.email || 'No email found',
         nvc_case_number: nvcCaseData?.data_value || '',
         nvc_invoice: invoiceData?.data_value || '',
+        passport_number: passportData?.data_value || '',
+        surname: surnameData?.data_value || '',
       };
     });
 

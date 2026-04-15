@@ -42,6 +42,8 @@ import {
   CheckCircle,
   AlertCircle,
   FileText,
+  Copy,
+  ExternalLink,
 } from "lucide-react";
 
 interface Journey {
@@ -57,6 +59,8 @@ interface Journey {
   user_email?: string;
   nvc_case_number?: string;
   nvc_invoice?: string;
+  passport_number?: string;
+  surname?: string;
 }
 
 export default function VisaCasesTable() {
@@ -414,18 +418,41 @@ export default function VisaCasesTable() {
           {selectedJourney && (
             <div className="space-y-6">
               {/* User Info */}
-              <div className="grid grid-cols-2 gap-4 p-4 bg-muted rounded-lg">
+              <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 p-4 bg-muted rounded-lg border border-slate-200">
                 <div>
                   <Label className="text-muted-foreground text-xs">User Email</Label>
-                  <p className="font-medium text-sm mt-1">{selectedJourney.user_email || "Unknown"}</p>
+                  <div className="flex items-center gap-2 mt-1">
+                    <p className="font-medium text-sm text-[#0c1b33]">{selectedJourney.user_email || "Unknown"}</p>
+                    <Copy className="h-3 w-3 text-slate-400 cursor-pointer hover:text-primary active:scale-95" onClick={() => navigator.clipboard.writeText(selectedJourney.user_email || "")} />
+                  </div>
                 </div>
                 <div>
                   <Label className="text-muted-foreground text-xs">NVC Case Number</Label>
-                  <p className="font-mono font-bold text-sm mt-1">{selectedJourney.nvc_case_number || "Not provided"}</p>
+                  <div className="flex items-center gap-2 mt-1">
+                    <p className="font-mono font-bold text-sm text-slate-800">{selectedJourney.nvc_case_number || "Not provided"}</p>
+                    {selectedJourney.nvc_case_number && <Copy className="h-3 w-3 text-slate-400 cursor-pointer hover:text-primary active:scale-95" onClick={() => navigator.clipboard.writeText(selectedJourney.nvc_case_number || "")} />}
+                  </div>
                 </div>
                 <div>
-                  <Label className="text-muted-foreground text-xs">User ID</Label>
-                  <p className="font-mono text-xs mt-1">{selectedJourney.user_id}</p>
+                  <Label className="text-muted-foreground text-xs">CEAC Invoice ID</Label>
+                  <div className="flex items-center gap-2 mt-1">
+                    <p className="font-mono font-bold text-sm text-slate-800">{selectedJourney.nvc_invoice || "Not provided"}</p>
+                    {selectedJourney.nvc_invoice && <Copy className="h-3 w-3 text-slate-400 cursor-pointer hover:text-primary active:scale-95" onClick={() => navigator.clipboard.writeText(selectedJourney.nvc_invoice || "")} />}
+                  </div>
+                </div>
+                <div>
+                  <Label className="text-muted-foreground text-xs">Passport Number</Label>
+                  <div className="flex items-center gap-2 mt-1">
+                    <p className="font-mono font-bold text-sm text-slate-800 uppercase">{selectedJourney.passport_number || "Not provided"}</p>
+                    {selectedJourney.passport_number && <Copy className="h-3 w-3 text-slate-400 cursor-pointer hover:text-primary active:scale-95" onClick={() => navigator.clipboard.writeText(selectedJourney.passport_number || "")} />}
+                  </div>
+                </div>
+                <div>
+                  <Label className="text-muted-foreground text-xs">Surname (First 5 Letters)</Label>
+                  <div className="flex items-center gap-2 mt-1">
+                    <p className="font-mono font-bold text-sm text-slate-800 uppercase">{selectedJourney.surname || "Not provided"}</p>
+                    {selectedJourney.surname && <Copy className="h-3 w-3 text-slate-400 cursor-pointer hover:text-primary active:scale-95" onClick={() => navigator.clipboard.writeText(selectedJourney.surname || "")} />}
+                  </div>
                 </div>
                 <div>
                   <Label className="text-muted-foreground text-xs">Journey Type</Label>
@@ -437,14 +464,24 @@ export default function VisaCasesTable() {
                 </div>
                 <div>
                   <Label className="text-muted-foreground text-xs">Created</Label>
-                  <p className="text-sm mt-1">
+                  <p className="text-sm mt-1 text-slate-600">
                     {new Date(selectedJourney.created_at).toLocaleDateString("en-US", {
-                      month: "long",
+                      month: "short",
                       day: "numeric",
                       year: "numeric",
                     })}
                   </p>
                 </div>
+              </div>
+
+              {/* CEAC Quick Link */}
+              <div className="bg-blue-50 border border-blue-200 rounded-md p-3 flex items-center justify-between">
+                <div className="text-sm text-blue-900">
+                  <span className="font-semibold">Check CEAC Portal:</span> Use the credentials above to check live tracking.
+                </div>
+                <Button size="sm" variant="outline" className="bg-white" onClick={() => window.open("https://ceac.state.gov/CEACStatTracker/Status.aspx", "_blank")}>
+                  Open CEAC <ExternalLink className="ml-2 h-3 w-3" />
+                </Button>
               </div>
 
               {/* Tracking Steps */}

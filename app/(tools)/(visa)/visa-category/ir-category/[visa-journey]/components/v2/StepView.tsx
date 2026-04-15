@@ -2432,6 +2432,8 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                       nvcInvoice: state.metadata?.nvcInvoice,
                       embassyCity: state.metadata?.embassyCity,
                       beneficiaryName: state.metadata?.beneficiaryName,
+                      passportNumber: state.metadata?.passportNumber,
+                      surname: state.metadata?.surname,
                     }}
                     onComplete={(data) => {
                       actions.updateMetadata({
@@ -2439,6 +2441,8 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                         nvcInvoice: data.nvcInvoice,
                         embassyCity: data.embassyCity,
                         beneficiaryName: data.beneficiaryName,
+                        passportNumber: data.passportNumber,
+                        surname: data.surname,
                       });
                     }}
                   />

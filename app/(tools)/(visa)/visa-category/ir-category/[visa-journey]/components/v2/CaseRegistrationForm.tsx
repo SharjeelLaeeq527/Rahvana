@@ -21,12 +21,16 @@ interface CaseRegistrationFormProps {
     nvcInvoice: string;
     embassyCity: string;
     beneficiaryName: string;
+    passportNumber: string;
+    surname: string;
   }) => void;
   existingData?: {
     nvcCaseNum?: string;
     nvcInvoice?: string;
     embassyCity?: string;
     beneficiaryName?: string;
+    passportNumber?: string;
+    surname?: string;
   };
 }
 
@@ -38,10 +42,12 @@ export default function CaseRegistrationForm({
   const [nvcInvoice, setNvcInvoice] = useState(existingData?.nvcInvoice || "");
   const [embassyCity, setEmbassyCity] = useState(existingData?.embassyCity || "");
   const [beneficiaryName, setBeneficiaryName] = useState(existingData?.beneficiaryName || "");
+  const [passportNumber, setPassportNumber] = useState(existingData?.passportNumber || "");
+  const [surname, setSurname] = useState(existingData?.surname || "");
   const [isSaved, setIsSaved] = useState(false);
 
   const handleSave = () => {
-    if (!nvcCaseNum || !nvcInvoice || !embassyCity) {
+    if (!nvcCaseNum || !nvcInvoice || !embassyCity || !passportNumber || !surname) {
       return;
     }
 
@@ -50,13 +56,15 @@ export default function CaseRegistrationForm({
       nvcInvoice,
       embassyCity,
       beneficiaryName,
+      passportNumber,
+      surname,
     });
 
     setIsSaved(true);
     setTimeout(() => setIsSaved(false), 3000);
   };
 
-  const isComplete = nvcCaseNum && nvcInvoice && embassyCity;
+  const isComplete = nvcCaseNum && nvcInvoice && embassyCity && passportNumber && surname;
 
   return (
     <Card className="border-2 border-teal-200 bg-teal-50/30">
@@ -161,6 +169,41 @@ export default function CaseRegistrationForm({
             onChange={(e) => setBeneficiaryName(e.target.value)}
             className="mt-1"
           />
+        </div>
+
+        {/* Passport Number */}
+        <div>
+          <Label htmlFor="passport-number">
+            Passport Number <span className="text-red-500">*</span>
+          </Label>
+          <Input
+            id="passport-number"
+            placeholder="e.g., AZ1234567"
+            value={passportNumber}
+            onChange={(e) => setPassportNumber(e.target.value)}
+            className="mt-1 uppercase"
+          />
+          <p className="text-xs text-muted-foreground mt-1">
+            Needed for CEAC visa status checking.
+          </p>
+        </div>
+
+        {/* First 5 Letters of Surname */}
+        <div>
+          <Label htmlFor="surname">
+            First 5 Letters of Surname <span className="text-red-500">*</span>
+          </Label>
+          <Input
+            id="surname"
+            placeholder="e.g., AHMED"
+            value={surname}
+            onChange={(e) => setSurname(e.target.value.substring(0, 5))}
+            className="mt-1 uppercase"
+            maxLength={5}
+          />
+          <p className="text-xs text-muted-foreground mt-1">
+            Needed for CEAC visa status checking.
+          </p>
         </div>
 
         {/* Save Button */}
