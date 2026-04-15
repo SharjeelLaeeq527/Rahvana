@@ -1004,11 +1004,7 @@
           "step_short_description": "via Rahvana wizard",
           "step_description": "Use Rahvana's guided Autoform Filler to complete the I-130 Petition for Alien Relative — with structured step-by-step support, clear prompts, and a built-in review flow.",
           "step_type": "tool",
-          "branch": "online",
-          "visible_when": {
-            "filingMethodConfirmed": true,
-            "filingMethod": "online"
-          },
+          "visible_when": {},
           "tool_data": {
             "id": "i130-filler-online",
             "eyebrow": "Fill Form I-130",
@@ -1060,6 +1056,13 @@
                   "USCIS account setup is a separate step",
                   "Complete this before uploading to USCIS"
                 ]
+              },
+              {
+                "label": "Need more help?",
+                "items": [
+                  "Not sure how to fill a section? See the official I-130 instructions for detailed guidance.",
+                  "[Official I-130 Instructions (uscis.gov)](https://www.uscis.gov/sites/default/files/document/forms/i-130instr.pdf)"
+                ]
               }
             ],
             "disclaimer": "Rahvana provides structured guidance only. This is not legal advice. Consult a licensed immigration attorney for case-specific decisions."
@@ -1098,11 +1101,7 @@
           "step_short_description": "via Rahvana wizard",
           "step_description": "Complete the beneficiary spouse information form using Rahvana's guided Autoform Filler — structured prompts, field-by-field clarity, and a built-in review before you finalize.",
           "step_type": "tool",
-          "branch": "online",
-          "visible_when": {
-            "filingMethodConfirmed": true,
-            "filingMethod": "online"
-          },
+          "visible_when": {},
           "who": "via Rahvana wizard",
           "dependencies": [
             "step_1_4"
@@ -1418,7 +1417,7 @@
               "Foreign-language documents require a certified English translation uploaded alongside the original"
             ],
             "guide_card": {
-              "title": "View Step-by-Step Upload Guide",
+              "title": "View",
               "subtitle": "A focused walkthrough showing how to locate and complete the evidence upload section inside the USCIS portal."
             },
             "tutorial_steps": [
@@ -1603,6 +1602,7 @@
                 "ss_desc": "Case number issued immediately — save it now.",
                 "ss_highlight": "Download Receipt Notice",
                 "caption": "The receipt number lets you track your I-130 case status. It also begins the official USCIS processing clock.",
+                "caption_class": "success",
                 "note": null
               }
             ],
@@ -1734,7 +1734,7 @@
                 "ss_headline": "Receipt Notice Issued",
                 "ss_desc": "Your case number begins with \"IOE\" — save it immediately.",
                 "ss_highlight": "Download Receipt Notice",
-                "caption": "Case submitted successfully. Your I-130 petition is now in USCIS processing.",
+                "caption": "The receipt number lets you track your I-130 case status. It also begins the official USCIS processing clock.",
                 "caption_class": "success",
                 "note": null
               }
@@ -1745,168 +1745,446 @@
         {
           "step_key": "step_1_11",
           "step_number": 11,
-          "step_name": "Download & Print Forms",
-          "step_short_description": "I-130, I-130A, G-1145",
-          "step_type": "tool",
-          "branch": "paper",
-          "visible_when": {
-            "filingMethodConfirmed": true,
-            "filingMethod": "paper"
-          },
-          "display_number_override": 4,
-          "step_description": "Download the latest versions of Form I-130 and I-130A from USCIS. Fill them out on your computer or by hand (black ink), print them, and prepare for signing.",
-          "who": "Petitioner",
-          "where": "uscis.gov/i-130",
-          "timeline": "1-2 days",
-          "dependencies": [
-            "step_1_3"
-          ],
-          "is_required": true,
-          "display_order": 11,
-          "tool_data": {
-            "id": "paper-forms-download",
-            "title": "Download & Print Forms",
-            "subtitle": "Get the official USCIS paper forms and instructions. Ensure you are using the most current version to avoid rejection.",
-            "chips": [
-              {
-                "label": "Paper Path",
-                "type": "path"
-              },
-              {
-                "label": "USCIS Forms",
-                "type": "uscis"
-              }
-            ],
-            "launch_module": {
-              "icon": "file",
-              "heading": "Download official I-130 forms",
-              "features": [
-                "Form I-130 (Petition for Alien Relative)",
-                "Form I-130A (Spouse Beneficiary Info)",
-                "Form G-1145 (e-Notification)",
-                "Official I-130 Instructions PDF"
-              ],
-              "button_label": "Go to USCIS I-130 Page",
-              "href": "https://www.uscis.gov/i-130"
-            }
-          }
-        },
-        {
-          "step_key": "step_1_12",
-          "step_number": 12,
-          "step_name": "Assemble Paper Packet",
-          "step_short_description": "Order: Fee → G-1145 → Forms → Evidence",
-          "step_type": "docs",
-          "branch": "paper",
-          "visible_when": {
-            "filingMethodConfirmed": true,
-            "filingMethod": "paper"
-          },
-          "display_number_override": 5,
-          "step_description": "Organize your I-130 filing in the exact order USCIS prefers. A well-organized packet prevents missing documents and speeds up intake processing.",
-          "who": "Petitioner",
-          "where": "Physical assembly",
-          "timeline": "2-4 hours",
-          "dependencies": [
-            "step_1_11"
-          ],
-          "is_required": true,
-          "display_order": 12,
-          "document_items": [
-            {
-              "id": "p_fee",
-              "name": "Filing Fee ($675)",
-              "subtitle": "Personal check, money order, or Form G-1450 (Credit Card)",
-              "tag": "petitioner",
-              "group": "USCIS Intake Order",
-              "status": "not-started",
-              "required": true
-            },
-            {
-              "id": "p_g1145",
-              "name": "Form G-1145",
-              "subtitle": "e-Notification of Application/Petition Acceptance",
-              "tag": "petitioner",
-              "group": "USCIS Intake Order",
-              "status": "not-started",
-              "required": true
-            },
-            {
-              "id": "p_i130",
-              "name": "Form I-130 (Signed)",
-              "subtitle": "Ensure all 12 pages are included and original signature is in black ink",
-              "tag": "petitioner",
-              "group": "USCIS Intake Order",
-              "status": "not-started",
-              "required": true
-            },
-            {
-              "id": "p_i130a",
-              "name": "Form I-130A (Signed)",
-              "subtitle": "Spouse beneficiary info — must be filed with the I-130",
-              "tag": "beneficiary",
-              "group": "USCIS Intake Order",
-              "status": "not-started",
-              "required": true
-            },
-            {
-              "id": "p_evidence",
-              "name": "Supporting Evidence Binder",
-              "subtitle": "Chronological evidence of genuine relationship",
-              "tag": "both",
-              "group": "Supporting Evidence",
-              "status": "not-started",
-              "required": true
-            }
-          ]
-        },
-        {
-          "step_key": "step_1_13",
-          "step_number": 13,
-          "step_name": "Mail to USCIS Lockbox",
-          "step_short_description": "Use UPS/FedEx/DHL for tracking",
-          "step_type": "tool",
+          "step_name": "Print Hard Copies of the Forms",
+          "step_short_description": "Paper Filing Path",
+          "step_type": "action",
           "branch": "paper",
           "visible_when": {
             "filingMethodConfirmed": true,
             "filingMethod": "paper"
           },
           "display_number_override": 6,
-          "step_description": "Send your completed, signed, and organized I-130 packet to the correct USCIS Lockbox based on your state of residence. Use a reliable courier with tracking.",
+          "step_description": "Before mailing anything to USCIS, print the completed I-130 and I-130A from Rahvana in full, at normal size, and in a clear readable format.",
           "who": "Petitioner",
-          "where": "Courier service (UPS/FedEx)",
-          "timeline": "1-3 days shipping",
+          "where": "uscis.gov/i-130",
+          "timeline": "1-2 hours",
+          "dependencies": [
+            "step_1_3"
+          ],
+          "is_required": true,
+          "display_order": 11,
+          "action_data": {
+            "id": "paper-forms-print",
+            "hero_heading": "Print your completed forms",
+            "hero_description": "Use the completed forms generated through Rahvana's Autoform Filler. Print the final versions only, keep every page in order, and make sure nothing is cut off or scaled incorrectly.",
+            "badge": "Paper-only step",
+            "action_tips": [
+              "Print full pages at standard size without shrinking or cropping.",
+              "Use the final completed versions of both forms before moving to payment and packet assembly."
+            ],
+            "cta_button": {
+              "label": "Open completed forms to print",
+              "href": "https://www.rahvana.com/visa-forms/i130/wizard"
+            },
+            "guide_button_label": "View print guide",
+            "second_card_title": "Mark this step done",
+            "second_card_subtitle": "Save that your hard copies have been printed and are ready for the next paper-filing steps.",
+            "action_button_label": "Save printed status",
+            "action_button_status_heading": "Printed status saved",
+            "action_button_status_message": "Your forms are marked as printed. You can continue to preparing the filing fee.",
+            "guide_card": {
+              "title": "Printing guide",
+              "subtitle": "See the recommended print settings and what to check before you move on."
+            },
+            "chips": [
+              {
+                "label": "Petitioner",
+                "type": "role"
+              },
+              {
+                "label": "Paper filing",
+                "type": "path"
+              },
+              {
+                "label": "Forms ready",
+                "type": "path"
+              }
+            ],
+            "action_items_title": "Before you continue",
+            "action_items": [
+              {
+                "title": "Print both forms",
+                "description": "Make sure you print the completed I-130 and I-130A together so the packet is ready for assembly."
+              },
+              {
+                "title": "Check page quality",
+                "description": "Every page should be sharp, legible, and complete. If a page looks faint or clipped, reprint it."
+              }
+            ],
+            "guide_steps": [
+              {
+                "label": "Print guide · Step 1",
+                "title": "Open the completed form package",
+                "text": "Start from the completed Rahvana form pages so you print the exact versions you plan to mail.",
+                "url": "rahvana.com/visa-forms",
+                "visual": "<div class=\"mt\">Completed form package</div><div class=\"mb\"><div class=\"mr\"><div class=\"mf\"></div><div class=\"mbtn\">Download PDF</div></div><div class=\"small\">Use the final PDF for I-130 and the final PDF for I-130A.</div></div>",
+                "note": "If you made edits recently, reopen the forms and confirm you are printing the latest completed versions."
+              },
+              {
+                "label": "Print guide · Step 2",
+                "title": "Use normal page size and full-page printing",
+                "text": "Print at standard size and avoid settings that shrink, crop, or reformat the form pages.",
+                "url": "print dialog",
+                "visual": "<div class=\"mt\">Print settings</div><div class=\"mb\"><div class=\"mr\"><div class=\"mf\"></div><div class=\"mf\"></div></div><div class=\"mr\"><div class=\"mf\"></div></div><div class=\"mbtn\">Print</div></div>",
+                "note": "Keep the full page visible. Do not use settings that clip margins or remove pages."
+              },
+              {
+                "label": "Print guide · Step 3",
+                "title": "Print both forms clearly",
+                "text": "Make sure all pages are readable and in the correct order before you move on.",
+                "url": "printed pages",
+                "visual": "<div class=\"mt\">Printed packet check</div><div class=\"mb\"><div class=\"small\">I-130 pages</div></div><div class=\"mb\"><div class=\"small\">I-130A pages</div></div>",
+                "note": "If any page is faint, skewed, or incomplete, reprint that form before proceeding."
+              },
+              {
+                "label": "Print guide · Step 4",
+                "title": "Set the printed forms aside for the packet",
+                "text": "Once both forms are printed cleanly, keep them together so you can prepare payment and assemble the filing packet next.",
+                "url": "paper filing path",
+                "visual": "<div class=\"mt\">Ready for next step</div><div class=\"mb\"><div class=\"small\">Printed I-130</div></div><div class=\"mb\"><div class=\"small\">Printed I-130A</div></div><div class=\"mbtn\">Continue to payment</div>",
+                "note": "You are not mailing yet. The next paper-only steps are preparing payment and assembling the packet."
+              }
+            ]
+          }
+        },
+        {
+          "step_key": "step_1_12",
+          "step_number": 12,
+          "step_name": "Prepare Filing Fee",
+          "step_short_description": "Payment prep for mailing",
+          "step_type": "action",
+          "branch": "paper",
+          "visible_when": {
+            "filingMethodConfirmed": true,
+            "filingMethod": "paper"
+          },
+          "display_number_override": 7,
+          "step_description": "Get the filing fee ready before assembling the packet. This step helps you prepare the payment correctly and place it where it belongs in the mailing packet.",
+          "who": "Petitioner",
+          "where": "uscis.gov/i-130",
+          "timeline": "1-2 hours",
+          "dependencies": [
+            "step_1_11"
+          ],
+          "is_required": true,
+          "display_order": 12,
+          "action_data": {
+            "id": "paper-payment-prep",
+            "hero_heading": "Prepare the fee before mailing",
+            "hero_description": "Use this step to prepare the filing payment and understand how it should be included in the packet. Always confirm the current USCIS fee and accepted paper-filing payment method before mailing.",
+            "badge": "Check current USCIS fee",
+            "action_tips": [
+              "Confirm the current Form I-130 fee directly from official USCIS guidance before mailing.",
+              "Keep the payment item ready before you assemble the final packet."
+            ],
+            "cta_button": {},
+            "guide_button_label": "View payment guide",
+            "guide_card": {
+              "title": "Payment guide",
+              "subtitle": "See how to prepare the filing fee and where it fits into the packet."
+            },
+            "chips": [
+              {
+                "label": "Petitioner",
+                "type": "role"
+              },
+              {
+                "label": "Paper filing",
+                "type": "path"
+              },
+              {
+                "label": "Payment prep",
+                "type": "path"
+              }
+            ],
+            "action_items_title": "What to keep in mind",
+            "action_items": [
+              {
+                "title": "Use a paper-filing payment method",
+                "description": "Prepare the fee using a method USCIS currently accepts for paper filing. Verify the method and the amount before mailing."
+              },
+              {
+                "title": "Keep payment at the front of the packet",
+                "description": "When your payment item is ready, keep it with the front of the filing packet so assembly is straightforward."
+              }
+            ],
+            "second_card_title": "Save payment method",
+            "second_card_subtitle": "Store the method you plan to use so the packet checklist stays consistent.",
+            "action_button_status_heading": "Payment method saved",
+            "action_button_status_message": "Saved payment method: {selected_method}.",
+            "dropdown_card": {
+              "title": "Save payment method",
+              "subtitle": "Store the method you plan to use so the packet checklist stays consistent.",
+              "dropdown_options": [
+                {
+                  "value": "",
+                  "label": "Select payment method"
+                },
+                {
+                  "value": "Card with Form G-1450",
+                  "label": "Card with Form G-1450"
+                },
+                {
+                  "value": "Check or money order",
+                  "label": "Check or money order"
+                },
+                {
+                  "value": "Other verified method",
+                  "label": "Other verified method"
+                }
+              ]
+            },
+            "guide_steps": [
+              {
+                "label": "Payment guide · Step 1",
+                "title": "Confirm the current filing fee first",
+                "text": "Before preparing payment, confirm the current Form I-130 fee from official USCIS guidance so you do not mail an outdated amount.",
+                "url": "uscis.gov/i-130",
+                "visual": "<div class=\"mt\">Official USCIS fee check</div><div class=\"mb\"><div class=\"small\">Review the current fee and accepted paper-filing payment instructions before you finalize the packet.</div></div>",
+                "note": "Do not rely on an old screenshot or memory for the amount. USCIS fee amounts can change."
+              },
+              {
+                "label": "Payment guide · Step 2",
+                "title": "Choose the paper-filing payment method",
+                "text": "Prepare the fee using the paper-filing payment method you plan to use. Keep everything complete and ready before packet assembly.",
+                "url": "uscis.gov/g-1450",
+                "visual": "<div class=\"mt\">Payment preparation</div><div class=\"mb\"><div class=\"small\">Card with Form G-1450</div></div><div class=\"mb\"><div class=\"small\">Check or money order</div></div>",
+                "note": "If you plan to use a card, complete the required payment form carefully. If you use another method, confirm it is currently accepted for your filing."
+              },
+              {
+                "label": "Payment guide · Step 3",
+                "title": "Keep payment ready with the packet front section",
+                "text": "Your payment item should be easy to place at the front of the packet when you assemble the final mailing order.",
+                "url": "paper packet",
+                "visual": "<div class=\"mt\">Packet front section</div><div class=\"mb\"><div class=\"small\">1. Payment</div></div><div class=\"mb\"><div class=\"small\">2. Forms</div></div><div class=\"mb\"><div class=\"small\">3. Supporting evidence</div></div>",
+                "note": "This keeps packet assembly clear and reduces the chance of forgetting payment when you mail the packet."
+              },
+              {
+                "label": "Payment guide · Step 4",
+                "title": "Save your payment choice and continue",
+                "text": "Once your fee is ready, save the payment method in Rahvana and move to packet assembly.",
+                "url": "rahvana paper filing path",
+                "visual": "<div class=\"mt\">Ready for packet assembly</div><div class=\"mb\"><div class=\"small\">Payment prepared</div></div><div class=\"mbtn\">Continue to packet assembly</div>",
+                "note": "Payment preparation should be complete before you build the final paper packet."
+              }
+            ]
+          }
+        },
+        {
+          "step_key": "step_1_13",
+          "step_number": 13,
+          "step_name": "Assemble Filing Packet",
+          "step_short_description": "Paper Filing Path",
+          "step_type": "action",
+          "branch": "paper",
+          "visible_when": {
+            "filingMethodConfirmed": true,
+            "filingMethod": "paper"
+          },
+          "display_number_override": 8,
+          "step_description": "Bring the paper filing together in a clean, organized order so it is easy to review before mailing. This is where the paper branch becomes its own physical packet workflow.",
+          "who": "Petitioner",
+          "where": "uscis.gov/i-130",
+          "timeline": "1-2 hours",
           "dependencies": [
             "step_1_12"
           ],
           "is_required": true,
           "display_order": 13,
-          "tool_data": {
-            "id": "mailing-lockbox",
-            "title": "Mail to USCIS Lockbox",
-            "subtitle": "Final step for paper filing. Ensure you use the correct address to avoid processing delays or lost mail.",
+          "action_data": {
+            "id": "paper-packet-assembly",
+            "hero_heading": "Build a clean mailing packet",
+            "hero_description": "Use a consistent packet order so your forms, payment, supporting evidence, and translations stay easy to verify before mailing to USCIS.",
+            "badge": "Recommended order",
+            "action_tips": [
+              "Put the payment and completed forms first, then supporting evidence and translations.",
+              "Keep everything complete, legible, and in a single final review stack before mailing."
+            ],
+            "second_card_title": "Save packet readiness",
+            "second_card_subtitle": "Mark the packet as assembled once everything is in place and ready for mailing.",
+            "action_button_label": "Save packet as ready",
+            "action_button_status_heading": "Packet marked ready",
+            "action_button_status_message": "Your packet is saved as assembled and ready for mailing.",
+            "cta_button": {},
+            "guide_button_label": "View assembly guide",
+            "guide_card": {
+              "title": "Packet order guide",
+              "subtitle": "Walk through the recommended packet structure and what belongs in each section."
+            },
             "chips": [
               {
-                "label": "Final Step",
-                "type": "final"
+                "label": "Petitioner",
+                "type": "role"
               },
               {
-                "label": "Courier Tracking",
+                "label": "Paper filing",
+                "type": "path"
+              },
+              {
+                "label": "Packet prep",
                 "type": "path"
               }
             ],
-            "launch_module": {
-              "icon": "mail",
-              "heading": "Find your USCIS Lockbox address",
-              "features": [
-                "Address depends on your state of residence",
-                "Different address for UPS/FedEx vs. US Postal Service",
-                "Always check the latest 'Where to File' list",
-                "Keep your tracking number securely"
-              ],
-              "button_label": "View Filing Addresses",
-              "href": "https://www.uscis.gov/i-130-addresses"
-            }
+            "action_items_title": "Recommended packet sections",
+            "action_items": [
+              {
+                "title": "Front section",
+                "description": "Prepared payment and forms should be at the front of the packet."
+              },
+              {
+                "title": "Support section",
+                "description": "Add proof of U.S. citizenship, marriage documents, prior marriage termination evidence if needed, translations, and relationship evidence behind the forms."
+              }
+            ],
+            "guide_steps": [
+              {
+                "label": "Assembly guide · Step 1",
+                "title": "Start with the payment section",
+                "text": "Keep the prepared filing fee item at the front so the packet is easy to review before mailing.",
+                "url": "paper packet",
+                "visual": "<div class=\"mt\">Packet section 1</div><div class=\"mb\"><div class=\"small\">Payment</div></div>",
+                "note": "Only move on after the fee has already been prepared and confirmed."
+              },
+              {
+                "label": "Assembly guide · Step 2",
+                "title": "Place the forms next",
+                "text": "Put the completed I-130 and I-130A right behind the payment section as the main filing forms.",
+                "url": "completed forms",
+                "visual": "<div class=\"mt\">Packet section 2</div><div class=\"mb\"><div class=\"small\">I-130</div></div><div class=\"mb\"><div class=\"small\">I-130A</div></div>",
+                "note": "Keep the pages complete and in order. Do not mix the form pages into the evidence stack."
+              },
+              {
+                "label": "Assembly guide · Step 3",
+                "title": "Add core supporting evidence",
+                "text": "After the forms, add the documents that support the petition, including citizenship proof and marriage evidence.",
+                "url": "supporting evidence",
+                "visual": "<div class=\"mt\">Packet section 3</div><div class=\"mb\"><div class=\"small\">Proof of U.S. citizenship</div></div><div class=\"mb\"><div class=\"small\">Marriage certificate / Nikah Nama</div></div><div class=\"mb\"><div class=\"small\">Prior marriage termination proof if applicable</div></div>",
+                "note": "This is Rahvana's recommended assembly order for clarity. Make sure all required evidence is included."
+              },
+              {
+                "label": "Assembly guide · Step 4",
+                "title": "Add translations and relationship evidence",
+                "text": "Place translations and any additional bona fide marriage evidence behind the core civil documents.",
+                "url": "translations and evidence",
+                "visual": "<div class=\"mt\">Packet section 4</div><div class=\"mb\"><div class=\"small\">Translations</div></div><div class=\"mb\"><div class=\"small\">Relationship evidence</div></div>",
+                "note": "Keep translated copies with the document they support whenever that makes the packet easier to review."
+              },
+              {
+                "label": "Assembly guide · Step 5",
+                "title": "Do one final packet check",
+                "text": "Before mailing, confirm the packet is complete, legible, and arranged the way you intend to send it.",
+                "url": "final packet review",
+                "visual": "<div class=\"mt\">Final packet check</div><div class=\"mb\"><div class=\"small\">Payment ready</div></div><div class=\"mb\"><div class=\"small\">Forms included</div></div><div class=\"mb\"><div class=\"small\">Evidence included</div></div><div class=\"mbtn\">Ready to mail</div>",
+                "note": "Once this is done, the next paper-only step is mailing the packet and tracking delivery."
+              }
+            ]
+          }
+        },
+        {
+          "step_key": "step_1_14",
+          "step_number": 14,
+          "step_name": "Mail Packet to USCIS & Track Delivery",
+          "step_short_description": "Paper Filing Path",
+          "step_type": "action",
+          "branch": "paper",
+          "visible_when": {
+            "filingMethodConfirmed": true,
+            "filingMethod": "paper"
+          },
+          "display_number_override": 9,
+          "step_description": "Send the completed paper packet to the correct USCIS mailing location, keep the shipment trackable, and save the delivery details in Rahvana so the path back into receipt notice tracking is clear.",
+          "who": "Petitioner",
+          "where": "uscis.gov/mailing-addresses",
+          "timeline": "1-2 hours",
+          "dependencies": [
+            "step_1_13"
+          ],
+          "is_required": true,
+          "display_order": 14,
+          "action_data": {
+            "id": "paper-packet-mailing",
+            "hero_heading": "Mail the packet and save delivery details",
+            "hero_description": "Use a trackable mailing method, confirm the correct USCIS filing address before sending, and save the carrier and tracking number so you can prove delivery if needed.",
+            "badge": "Trackable mailing",
+            "action_tips": [
+              "Confirm the current USCIS filing address before mailing. Do not rely on an old saved address.",
+              "Use a carrier and service that gives you a tracking number and delivery confirmation."
+            ],
+            "second_card_title": "Save mailing details",
+            "second_card_subtitle": "Store the carrier and tracking number now so the paper branch can rejoin receipt tracking cleanly.",
+            "action_button_label": "Save delivery details",
+            "action_button_status_heading": "Delivery details saved",
+            "action_button_status_message": "Saved {carrier} · {tracking}",
+            "guide_button_label": "View mailing guide",
+            "guide_card": {
+              "title": "Mailing guide",
+              "subtitle": "See how to confirm address, prepare shipment, and keep proof of mailing."
+            },
+            "mailing_card": {
+              "title": "Save mailing details",
+              "subtitle": "Store carrier and tracking number so paper filing path can rejoin receipt tracking.",
+              "carrier_placeholder": "Carrier (USPS, UPS, FedEx)",
+              "tracking_placeholder": "Tracking number"
+            },
+            "chips": [
+              {
+                "label": "Petitioner",
+                "type": "role"
+              },
+              {
+                "label": "Mailing step",
+                "type": "path"
+              },
+              {
+                "label": "Trackable delivery",
+                "type": "path"
+              }
+            ],
+            "action_items_title": "What to save",
+            "action_items": [
+              {
+                "title": "Carrier and tracking number",
+                "description": "Save these as soon as the packet is mailed so you can confirm delivery later."
+              },
+              {
+                "title": "Delivery confirmation",
+                "description": "Once the shipment shows delivered, keep that proof. After that, the flow merges back into the same receipt-notice steps as online filing."
+              }
+            ],
+            "guide_steps": [
+              {
+                "label": "Mailing guide · Step 1",
+                "title": "Confirm the current USCIS filing address",
+                "text": "Before mailing, verify the current USCIS filing address for your paper submission so the packet goes to the correct location.",
+                "url": "uscis.gov/forms/filing-guidance",
+                "visual": "<div class=\"mt\">Current filing address check</div><div class=\"mb\"><div class=\"small\">Review the official USCIS filing guidance and mailing location before you send the packet.</div></div>",
+                "note": "Do not mail to an old address saved from a previous screenshot or conversation."
+              },
+              {
+                "label": "Mailing guide · Step 2",
+                "title": "Use a secure, trackable mailing method",
+                "text": "Choose a carrier and service that gives you a tracking number and lets you confirm when the packet is delivered.",
+                "url": "carrier checkout",
+                "visual": "<div class=\"mt\">Shipment setup</div><div class=\"mb\"><div class=\"small\">Carrier selected</div></div><div class=\"mb\"><div class=\"small\">Tracking number issued</div></div>",
+                "note": "A trackable method gives you the proof you need before USCIS issues the receipt notice."
+              },
+              {
+                "label": "Mailing guide · Step 3",
+                "title": "Mail the packet and save the tracking details",
+                "text": "As soon as the packet is mailed, save the carrier and tracking number in Rahvana.",
+                "url": "rahvana paper filing path",
+                "visual": "<div class=\"mt\">Mailing details</div><div class=\"mb\"><div class=\"small\">Carrier</div></div><div class=\"mb\"><div class=\"small\">Tracking number</div></div><div class=\"mbtn\">Save details</div>",
+                "note": "Do not wait until later to record the tracking number. Save it the same day you mail the packet."
+              },
+              {
+                "label": "Mailing guide · Step 4",
+                "title": "Watch for delivery, then wait for the USCIS receipt notice",
+                "text": "Once the carrier shows delivered, keep the proof and then watch for USCIS acceptance and the receipt notice.",
+                "url": "delivery confirmation",
+                "visual": "<div class=\"mt\">Delivery confirmed</div><div class=\"mb\"><div class=\"small\">Shipment delivered</div></div><div class=\"mbtn\">Continue to receipt notice</div>",
+                "note": "After delivery, the paper path rejoins the same receipt-notice and case-tracking flow used in the online branch."
+              }
+            ]
           }
         }
       ]
@@ -2066,6 +2344,7 @@
             "launch_module": {
               "icon": "payment",
               "stripe_variant": "blue",
+              "bg_color": "#121c2e",
               "eyebrow": "Official NVC / CEAC Portal",
               "heading": "Open CEAC to pay your required fees",
               "features": [
@@ -3006,6 +3285,7 @@
             "Label clearly"
           ],
           "tool_data": {
+            "id": "step_3_4",
             "type": "gathering_checklist",
             "doc_gathering": {
               "groups": [
@@ -3019,10 +3299,11 @@
                       "icon": "passport",
                       "title": "Passport (current + any prior passports)",
                       "sub": "Bring originals of all passports — current and expired — that contain U.S. visa history",
+                      "guideUrl": "/guides/passport-guide",
                       "sections": [
                         {
                           "t": "What to bring",
-                          "c": "<p>Bring the original current passport with at least 6 months validity beyond the interview date. Also bring any prior passports that may contain relevant U.S. visa history.</p>"
+                          "c": "<p>Bring the original current passport with at least 6 months validity beyond the interview date. Also bring any prior passports that may contain relevant U.S. visa history.</p><div class=\"guide-link\"><a href=\"/guides/passport-guide\" target=\"_blank\" style=\"color:#a389f4;text-decoration:underline;font-weight:500;\">Not sure how to obtain or renew a passport? Read the Passport Guide.</a></div>"
                         },
                         {
                           "t": "Photocopies",
@@ -3035,10 +3316,11 @@
                       "icon": "birth",
                       "title": "Original Birth Certificate",
                       "sub": "Beneficiary's official civil birth record",
+                      "guideUrl": "/guides/birth-certificate-guide",
                       "sections": [
                         {
                           "t": "What to bring",
-                          "c": "<p>The original NADRA-issued CBRC or other official birth certificate. If you have an older Union Council record, bring both the original and the NADRA CBRC if available.</p>"
+                          "c": "<p>The original NADRA-issued CBRC or other official birth certificate. If you have an older Union Council record, bring both the original and the NADRA CBRC if available.</p><div class=\"guide-link\"><a href=\"/guides/birth-certificate-guide\" target=\"_blank\" style=\"color:#a389f4;text-decoration:underline;font-weight:500;\">Not sure how to obtain a birth certificate? Read the Birth Certificate Guide.</a></div>"
                         },
                         {
                           "t": "Translation",
@@ -3051,10 +3333,11 @@
                       "icon": "marriage",
                       "title": "Original Marriage Certificate / Nikah Nama",
                       "sub": "Original Nikah Nama and NADRA MRC, plus translations",
+                      "guideUrl": "/guides/nikah-nama-guide",
                       "sections": [
                         {
                           "t": "What to bring",
-                          "c": "<p>Bring the original Nikah Nama and the NADRA Marriage Registration Certificate. Both should be accompanied by their certified English translations.</p>"
+                          "c": "<p>Bring the original Nikah Nama and the NADRA Marriage Registration Certificate. Both should be accompanied by their certified English translations.</p><div class=\"guide-link\"><a href=\"/guides/nikah-nama-guide\" target=\"_blank\" style=\"color:#a389f4;text-decoration:underline;font-weight:500;\">Not sure how to obtain a Nikah Nama or MRC? Read the Marriage Registration Guide.</a></div>"
                         },
                         {
                           "t": "Important",
@@ -3067,10 +3350,11 @@
                       "icon": "pcc",
                       "title": "Original Police Clearance Certificate (Fresh)",
                       "sub": "The fresh PCC obtained for this interview cycle",
+                      "guideUrl": "/guides/police-verification-guide",
                       "sections": [
                         {
                           "t": "What to bring",
-                          "c": "<p>Bring the original fresh PCC obtained during Chapter 3 Step 3. Do not bring the older PCC submitted during NVC processing — this must be the fresh one.</p>"
+                          "c": "<p>Bring the original fresh PCC obtained during Chapter 3 Step 3. Do not bring the older PCC submitted during NVC processing — this must be the fresh one.</p><div class=\"guide-link\"><a href=\"/guides/police-verification-guide\" target=\"_blank\" style=\"color:#a389f4;text-decoration:underline;font-weight:500;\">Not sure how to get a Police Clearance Certificate? Read the Police Verification Guide.</a></div>"
                         },
                         {
                           "t": "Validity",
@@ -3114,6 +3398,7 @@
                       "icon": "calculator",
                       "title": "Most Recent Tax Evidence — Petitioner",
                       "sub": "Federal tax return or IRS transcript copies",
+                      
                       "sections": [
                         {
                           "t": "What to bring",
@@ -3126,6 +3411,7 @@
                       "icon": "briefcase",
                       "title": "Employment Letter — Petitioner",
                       "sub": "Current employment confirmation letter if available",
+                      
                       "sections": [
                         {
                           "t": "What to bring",
@@ -3145,6 +3431,7 @@
                       "icon": "camera",
                       "title": "Passport-Style Photos",
                       "sub": "2–4 recent passport-style photos meeting embassy specifications",
+                      
                       "sections": [
                         {
                           "t": "What to bring",
@@ -3157,10 +3444,11 @@
                       "icon": "polio",
                       "title": "Polio Vaccination Certificate (Original)",
                       "sub": "The original polio vaccination certificate from an approved site",
+                      "guideUrl": "/guides/polio-guide",
                       "sections": [
                         {
                           "t": "What to bring",
-                          "c": "<p>Bring the original polio vaccination certificate obtained in Step 2. The panel physician should have already reviewed it, but bring the original in case it is requested at the window.</p>"
+                          "c": "<p>Bring the original polio vaccination certificate obtained in Step 2. The panel physician should have already reviewed it, but bring the original in case it is requested at the window.</p><div class=\"guide-link\"><a href=\"/guides/polio-guide\" target=\"_blank\" style=\"color:#a389f4;text-decoration:underline;font-weight:500;\">Not sure how to get a Polio Vaccination Certificate? Read the Polio Certificate Guide.</a></div><div class=\"guide-link\"><a href=\"/guides/polio-vaccination-guide\" target=\"_blank\" style=\"color:#be185d;text-decoration:underline;font-weight:500;\">Step-by-step Polio Vaccination Process Guide</a></div>"
                         }
                       ]
                     },
@@ -3169,6 +3457,7 @@
                       "icon": "medical",
                       "title": "Medical Examination Results Packet Reference",
                       "sub": "Not brought by you — sealed by physician — but confirm it was sent",
+                      
                       "sections": [
                         {
                           "t": "How this works",
@@ -3188,6 +3477,7 @@
                       "icon": "folder",
                       "title": "Labeled Folder System or Document Binder",
                       "sub": "Organized tabs separating each document group",
+                      
                       "sections": [
                         {
                           "t": "Why this matters",
@@ -3204,6 +3494,7 @@
                       "icon": "copy",
                       "title": "Full Photocopy Set of All Documents",
                       "sub": "One complete photocopy set kept separate from originals",
+                      
                       "sections": [
                         {
                           "t": "Why bring copies",
@@ -3493,7 +3784,7 @@
               "heading": "Step-by-step guide from arrival to outcome",
               "icon": "building",
               "cues": [
-                "Arrival timing and embassy entry",
+                "Arrival timing and embassy entry is strict",
                 "Security, biometrics, and document intake",
                 "Consular interview flow and common questions",
                 "Possible outcomes and what happens next"
@@ -3554,7 +3845,7 @@
               {
                 "label": "Step 8 of 8",
                 "heading": "Possible outcomes after the interview",
-                "instruction": "The officer will indicate the outcome at the window or shortly after. The three main outcomes are approval, Administrative Processing (AP), or refusal. If AP applies, proceed to Step 9 to track your case.",
+                "instruction": "The officer will indicate the outcome at the window or shortly after. The three main outcomes are approval, Administrative Processing (AP), or refusal. If AP applies, proceed to Step 9 to track and manage the AP process.",
                 "vlabel": "Interview Outcomes",
                 "visual": "<div class=\"mock-card\">\n      <div class=\"mock-title\">What you may hear</div>\n      <div class=\"mock-row\">Approved — passport retained, visa to be delivered <span class=\"mock-badge-green\">Best</span></div>\n      <div class=\"mock-row\">Administrative Processing — more time needed <span class=\"mock-badge-amber\">Step 9</span></div>\n      <div class=\"mock-row\">Refused — written reason provided <span class=\"mock-badge-blue\">Consult attorney</span></div>\n    </div>"
               }

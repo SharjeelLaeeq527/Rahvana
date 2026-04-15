@@ -34,6 +34,8 @@ export const CustomDropdown = ({
     onChange(selectedValue);
   };
 
+  const selectedLabel = value ? options.find((opt) => opt.value === value)?.label : null;
+
   return (
     <div
       onClick={(e) => e.stopPropagation()}
@@ -41,10 +43,22 @@ export const CustomDropdown = ({
     >
       <Select value={value || ""} onValueChange={handleSelect} disabled={disabled}>
         <SelectTrigger
-          className={`w-full h-10 px-3 py-2 text-sm rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-teal-500 bg-white hover:border-slate-400 transition-colors ${className}`}
+          className={`w-full px-3 py-3 text-sm rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white hover:border-slate-400 transition-colors text-left font-medium ${className}`}
           onClick={(e) => e.stopPropagation()}
+          style={{
+            height: "auto",
+            minHeight: "52px",
+            display: "flex",
+            alignItems: "center",
+          }}
         >
-          <SelectValue placeholder={placeholder} />
+          {selectedLabel ? (
+            <span style={{ color: "#1c2b3a", fontSize: "15px" }}>
+              {selectedLabel}
+            </span>
+          ) : (
+            <SelectValue placeholder={placeholder} />
+          )}
         </SelectTrigger>
         <SelectContent onClick={(e) => e.stopPropagation()}>
           {options.map((option) => (

@@ -2906,8 +2906,12 @@ const DOCS = {
         title: 'Accepted documents',
         content: `<p>USCIS accepts one of the following as proof of U.S. citizenship:</p>
         <ul>
-          <li><strong>U.S. passport</strong> — valid or recently expired; most commonly used</li>
-          <li><strong>U.S. birth certificate</strong> — issued by a U.S. state or county vital records office</li>
+          <li><strong>U.S. passport</strong> — valid or recently expired; most commonly used
+            <div class="guide-link"><a href="/guides/passport-guide" target="_blank">Not sure how to obtain/create this document? We've got you covered, have a look at this guide.</a></div>
+          </li>
+          <li><strong>U.S. birth certificate</strong> — issued by a U.S. state or county vital records office
+            <div class="guide-link"><a href="/guides/birth-certificate-guide" target="_blank">Not sure how to obtain/create this document? We've got you covered, have a look at this guide.</a></div>
+          </li>
           <li><strong>Certificate of Naturalization (Form N-550)</strong> — issued by USCIS after oath ceremony</li>
           <li><strong>Certificate of Citizenship (Form N-560)</strong> — for those who acquired or derived citizenship through a parent</li>
           <li><strong>Consular Report of Birth Abroad (Form FS-240 / DS-1350)</strong> — for those born abroad to a U.S. citizen parent</li>
@@ -2965,7 +2969,8 @@ const DOCS = {
           <li>Application form (available at DGIP offices or online)</li>
           <li>Fee payment receipt</li>
         </ul>
-        <a href=&quot;https://www.rahvana.com/guides/passport-guide&quot; target=&quot;_blank&quot; class=&quot;guide-link-btn&quot;>
+        <div class="guide-link"><a href="/guides/passport-guide" target="_blank">Not sure how to obtain/create this document? We've got you covered, have a look at this guide.</a></div>
+        <a href="https://www.rahvana.com/guides/passport-guide" target="_blank" class="guide-link-btn">
           Full Passport Guide on Rahvana →
         </a>`,
       },
@@ -2989,6 +2994,7 @@ const DOCS = {
       {
         title: 'Why USCIS wants it',
         content: `<p>USCIS requires proof that a legally valid marriage exists. For Pakistan-origin marriages, the Nikah Nama combined with the NADRA Marriage Registration Certificate (MRC) together establish the complete legal marriage record.</p>
+        <div class="guide-link"><a href="/guides/nikah-nama-guide" target="_blank">Not sure how to obtain/create this document? We've got you covered, have a look at this guide.</a></div>
         <div class=&quot;info-box&quot;><p>Submit both the Nikah Nama and the NADRA MRC — they serve different evidentiary purposes. The Nikah Nama is the original contract; the NADRA MRC is the government's civil registration confirmation.</p></div>`,
       },
       {
@@ -3351,16 +3357,16 @@ function renderLanding() {
         const sm = statusMeta[status];
 
         card.innerHTML = `
-          <div class=&quot;doc-icon&quot;>${doc.icon}</div>
-          <div class=&quot;doc-card-body&quot;>
-            <div class=&quot;doc-card-title&quot;>${doc.title}</div>
-            <div class=&quot;doc-card-sub&quot;>${doc.sub}</div>
-            <div class=&quot;doc-card-tags&quot;>
+          <div class="doc-icon">${doc.icon}</div>
+          <div class="doc-card-body">
+            <div class="doc-card-title">${doc.title}</div>
+            <div class="doc-card-sub">${doc.sub}</div>
+            <div class="doc-card-tags">
               ${doc.parties.map(p => partyTag(p)).join('')}
-              ${doc.source === 'rahvana' ? `<span class=&quot;party-tag tag-other&quot; style=&quot;background:#f0f0ff;color:#4a3d9a&quot;>Rahvana Guide</span>` : ''}
+              ${doc.source === 'rahvana' ? '<span class="party-tag tag-other" style="background:#f0f0ff;color:#4a3d9a">Rahvana Guide</span>' : ''}
             </div>
           </div>
-          <div class=&quot;doc-status ${sm.cls}&quot;>${sm.label}</div>
+          <div class="doc-status ${sm.cls}">${sm.label}</div>
         `;
         card.addEventListener('click', () => openGuide(docId));
         card.addEventListener('keydown', e => { if (e.key==='Enter'||e.key===' ') openGuide(docId); });
@@ -3381,26 +3387,26 @@ function renderExpandCard(docId, doc) {
   const sm = status === 'reviewed' ? ' reviewed' : status === 'in-progress' ? ' in-progress' : '';
 
   wrap.innerHTML = `
-    <div class=&quot;expand-header${sm}&quot; id=&quot;expand-header-${docId}&quot;>
-      <div class=&quot;doc-icon&quot;>${doc.icon}</div>
-      <div class=&quot;doc-card-body&quot;>
-        <div class=&quot;doc-card-title&quot;>${doc.title}</div>
-        <div class=&quot;doc-card-sub&quot;>${doc.sub}</div>
-        <div class=&quot;doc-card-tags&quot;>
+    <div class="expand-header${sm}" id="expand-header-${docId}">
+      <div class="doc-icon">${doc.icon}</div>
+      <div class="doc-card-body">
+        <div class="doc-card-title">${doc.title}</div>
+        <div class="doc-card-sub">${doc.sub}</div>
+        <div class="doc-card-tags">
           ${doc.parties.map(p => partyTag(p)).join('')}
         </div>
       </div>
-      <span class=&quot;expand-arrow&quot; id=&quot;expand-arrow-${docId}&quot;>▾</span>
+      <span class="expand-arrow" id="expand-arrow-${docId}">▾</span>
     </div>
-    <div class=&quot;expand-body&quot; id=&quot;expand-body-${docId}&quot;>
+    <div class="expand-body" id="expand-body-${docId}">
       ${doc.subItems.map(si => `
-        <div class=&quot;expand-sub-item&quot; data-sub=&quot;${si.id}&quot; role=&quot;button&quot; tabindex=&quot;0&quot;>
-          <div class=&quot;expand-sub-label&quot;>${si.label}</div>
-          <div class=&quot;expand-sub-note&quot;>${si.note}</div>
+        <div class="expand-sub-item" data-sub="${si.id}" role="button" tabindex="0">
+          <div class="expand-sub-label">${si.label}</div>
+          <div class="expand-sub-note">${si.note}</div>
         </div>
       `).join('')}
-      <div style=&quot;padding-top:12px&quot;>
-        <button class=&quot;btn-secondary&quot; id=&quot;open-guide-${docId}&quot; style=&quot;width:100%;font-size:13px;padding:11px 16px&quot;>
+      <div style="padding-top:12px">
+        <button class="btn-secondary" id="open-guide-${docId}" style="width:100%;font-size:13px;padding:11px 16px">
           Open Translation Guide
         </button>
       </div>
@@ -3483,18 +3489,18 @@ function renderGuideContent(docId) {
   const isReviewed = docStatus[docId] === 'reviewed';
 
   body.innerHTML = `
-    <div class=&quot;guide-inner screen-enter&quot;>
-      <div class=&quot;g-doc-label&quot;>Step 2 · Gather Required Documents</div>
+    <div class="guide-inner screen-enter">
+      <div class="g-doc-label">Step 2 · Gather Required Documents</div>
       ${sourceLabel}
-      <h2 style=&quot;font-family:var(--font-serif);font-size:clamp(22px,3.5vw,28px);color:var(--navy);margin-bottom:6px;line-height:1.25&quot;>${doc.title}</h2>
-      <p style=&quot;font-size:14px;color:var(--ink-soft);margin-bottom:28px;line-height:1.6&quot;>${doc.sub}</p>
+      <h2 style="font-family:var(--font-serif);font-size:clamp(22px,3.5vw,28px);color:var(--navy);margin-bottom:6px;line-height:1.25">${doc.title}</h2>
+      <p style="font-size:14px;color:var(--ink-soft);margin-bottom:28px;line-height:1.6">${doc.sub}</p>
       ${sectionsHTML}
-      <div class=&quot;guide-actions&quot;>
+      <div class="guide-actions">
         ${isReviewed
-          ? `<button class=&quot;btn-mark-reviewed&quot; disabled style=&quot;cursor:default&quot;>✓ Marked as reviewed</button>`
-          : `<button class=&quot;btn-mark-reviewed&quot; id=&quot;mark-reviewed-btn&quot;>Mark as reviewed</button>`
+          ? '<button class="btn-mark-reviewed" disabled style="cursor:default">✓ Marked as reviewed</button>'
+          : '<button class="btn-mark-reviewed" id="mark-reviewed-btn">Mark as reviewed</button>'
         }
-        <button class=&quot;btn-secondary&quot; id=&quot;back-to-list-btn&quot;>← Back to document list</button>
+        <button class="btn-secondary" id="back-to-list-btn">← Back to document list</button>
       </div>
     </div>
   `;

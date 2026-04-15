@@ -15,6 +15,7 @@ export interface RoadmapStep {
     | "decision"
     | "quest"
     | "tool"
+    | "action"
     | "docs"
     | "filing";
   tool_integration?: string | null;
@@ -49,6 +50,7 @@ export interface RoadmapStep {
   filing_data?: FilingData;
   quest_data?: QuestData;
   tool_data?: ToolData;
+  action_data?: ActionData;
   logic?: string;
   prerequisites?: string[];
   is_persistent?: boolean;
@@ -286,6 +288,65 @@ export interface ToolData {
   readiness_grid?: any[];
   type?: string;
   disclaimer?: string;
+}
+
+export interface GuideStep {
+  label: string;
+  title: string;
+  text: string;
+  url?: string;
+  visual?: string;
+  note?: string;
+}
+
+export interface ActionItem {
+  title: string;
+  description: string;
+}
+
+export interface DropdownOption {
+  value: string;
+  label: string;
+}
+
+export interface ActionData {
+  guide_button_label: string;
+  id: string;
+  hero_heading: string;
+  hero_description?: string;
+  badge?: string;
+  action_tips?: string[];
+  action_button_label?: string;
+  action_button_status_heading?: string;
+  action_button_status_message?: string;
+  second_card_title?: string;
+  second_card_subtitle?: string;
+  cta_button?: {
+    label: string;
+    href?: string;
+  };
+  guide_card?: {
+    title: string;
+    subtitle: string;
+  };
+  dropdown_card?: {
+    title: string;
+    subtitle: string;
+    dropdown_options?: DropdownOption[];
+  };
+  mailing_card?: {
+    title: string;
+    subtitle: string;
+    carrier_placeholder?: string;
+    tracking_placeholder?: string;
+  };
+  action_items_title?: string;
+  action_items: ActionItem[];
+  guide_steps: GuideStep[];
+  chips?: {
+    label: string;
+    type: string;
+  }[];
 }
 
 export interface JourneyState {
