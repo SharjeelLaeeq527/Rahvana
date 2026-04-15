@@ -25,6 +25,7 @@ import { toast } from "sonner";
 import { ALL_DOCUMENTS } from "@/lib/document-vault/document-definitions";
 import { DocumentPreviewModal } from "./DocumentPreviewModal";
 import { UploadedDocument } from "@/lib/document-vault/types";
+import { CustomDropdown } from "@/app/components/shared/CustomDropdown";
 import { ConfirmationModal } from "@/app/components/shared/ConfirmationModal";
 
 interface PendingUpload {
@@ -404,33 +405,26 @@ export function MultipleDocumentUploadModal({
                     <Label className="text-[13px] font-semibold text-[#3a4f63] mb-1.5 block">
                       Document Type
                     </Label>
-                    <select
+                    <CustomDropdown
                       value={uploadItem.type}
-                      onChange={(e) =>
+                      onChange={(val) =>
                         updatePendingUpload(uploadItem.id, {
-                          type: e.target.value,
+                          type: val,
                         })
                       }
-                      className="w-full border-2 border-[#e8f1fb] rounded-xl p-3 text-[14px] font-medium text-[#0f1f38] focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all outline-none bg-slate-50/50"
+                      options={Array.from(
+                        new Set([
+                          ...(uploadItem.type ? [uploadItem.type] : []),
+                          ...availableOptions,
+                          ...(!options.includes(OTHER_OPTION)
+                            ? [OTHER_OPTION]
+                            : []),
+                        ]),
+                      ).map((opt) => ({ label: opt, value: opt }))}
+                      placeholder="Select type..."
+                      className="rounded-xl border-2 border-[#e8f1fb] focus:ring-4 focus:ring-primary/10 focus:border-primary bg-slate-50/50"
                       disabled={uploading}
-                    >
-                      <option value="" disabled>
-                        Select type...
-                      </option>
-                      {uploadItem.type && (
-                        <option value={uploadItem.type}>
-                          {uploadItem.type}
-                        </option>
-                      )}
-                      {availableOptions.map((opt) => (
-                        <option key={opt} value={opt}>
-                          {opt}
-                        </option>
-                      ))}
-                      {!options.includes(OTHER_OPTION) && (
-                        <option value={OTHER_OPTION}>{OTHER_OPTION}</option>
-                      )}
-                    </select>
+                    />
                   </div>
 
                   <div className="flex-1 w-full flex flex-col gap-4 min-w-0">
