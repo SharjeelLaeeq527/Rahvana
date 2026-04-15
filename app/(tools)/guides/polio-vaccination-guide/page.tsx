@@ -12,7 +12,7 @@ import DocumentNeedStep from "../../../components/guides/steps/DocumentNeedStep"
 import RoadmapStep from "../../../components/guides/steps/RoadmapStep";
 // import OfficeFinderStep from "../../../components/guides/steps/OfficeFinderStep";
 import ValidationStep from "../../../components/guides/steps/ValidationStep";
-import WhatsThisModal from "../../../components/guides/WhatsThisModal";
+import { NarrativeModal } from "../../(visa)/221g-action-planner/components/NarrativeModal";
 import { type WizardState, WizardStepId } from "@/types/guide-wizard";
 import guideData from "@/data/polio-guide-data.json";
 import { ArrowLeft, ArrowRight } from "lucide-react";
@@ -57,6 +57,7 @@ const INFO_PANEL_KEYS: Record<
 const PolioVaccinationGuide = () => {
   const [currentStep, setCurrentStep] = useState(0);
   const [showWhatsThis, setShowWhatsThis] = useState(true);
+  const [dontShowAgain, setDontShowAgain] = useState(false);
   const [isSaved, setIsSaved] = useState(false);
   const [navigationHandled, setNavigationHandled] = useState(false);
   const [state, setState] = useState<WizardState>({
@@ -139,12 +140,24 @@ const PolioVaccinationGuide = () => {
 
     hasInitializedModal.current = true;
 
-    if (!session.hide_intro_modal) {
+    const localHide =
+      typeof window !== "undefined" &&
+      localStorage.getItem("dont_show_polio_vaccination_welcome") ===
+        "true";
+
+    if (!session.hide_intro_modal && !localHide) {
       setShowWhatsThis(true);
     } else {
       setShowWhatsThis(false);
     }
   }, [session]);
+
+  const handleCloseIntro = () => {
+    if (dontShowAgain && typeof window !== "undefined") {
+      localStorage.setItem("dont_show_polio_vaccination_welcome", "true");
+    }
+    setShowWhatsThis(false);
+  };
 
   useEffect(() => {
     if (session?.saved) {
@@ -445,12 +458,13 @@ const PolioVaccinationGuide = () => {
         />
       </div>
 
-      <WhatsThisModal
-        open={showWhatsThis}
-        onClose={() => setShowWhatsThis(false)}
-        data={guideData.wizard.whats_this}
-        documentLabel="Polio Certificate"
-        guideSlug="polio-vaccination-guide"
+      <NarrativeModal
+        isOpen={showWhatsThis}
+        onClose={handleCloseIntro}
+        onComplete={handleCloseIntro}
+        dontShowAgain={dontShowAgain}
+        onDontShowAgainChange={setDontShowAgain}
+        variant="polio-vaccination"
       />
       <FeedbackButton
         steps={Object.values(STEP_LABELS)}

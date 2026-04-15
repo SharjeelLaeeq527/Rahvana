@@ -7,7 +7,7 @@ import WizardSidebar from "../../../components/guides/WizardSidebar";
 import WizardInfoPanel, {
   InfoPanelData,
 } from "../../../components/guides/WizardInfoPanel";
-import WhatsThisModal from "../../../components/guides/WhatsThisModal";
+import { NarrativeModal } from "../../(visa)/221g-action-planner/components/NarrativeModal";
 import FeedbackButton from "@/app/components/FeedbackButton";
 import { Loader } from "@/components/ui/spinner";
 
@@ -71,6 +71,7 @@ const INFO_PANEL_KEYS: Record<
 export default function PoliceVerificationGuide() {
   const [currentStep, setCurrentStep] = useState(0);
   const [showWhatsThis, setShowWhatsThis] = useState(true);
+  const [dontShowAgain, setDontShowAgain] = useState(false);
   const [isSaved, setIsSaved] = useState(false);
   const [navigationHandled, setNavigationHandled] = useState(false);
 
@@ -196,12 +197,23 @@ export default function PoliceVerificationGuide() {
 
     hasInitializedModal.current = true;
 
-    if (!session.hide_intro_modal) {
+    const localHide =
+      typeof window !== "undefined" &&
+      localStorage.getItem("dont_show_police_character_welcome") === "true";
+
+    if (!session.hide_intro_modal && !localHide) {
       setShowWhatsThis(true);
     } else {
       setShowWhatsThis(false);
     }
   }, [session]);
+
+  const handleCloseIntro = () => {
+    if (dontShowAgain && typeof window !== "undefined") {
+      localStorage.setItem("dont_show_police_character_welcome", "true");
+    }
+    setShowWhatsThis(false);
+  };
 
   useEffect(() => {
     if (session?.saved) {
@@ -509,12 +521,13 @@ export default function PoliceVerificationGuide() {
         </WizardInfoPanel>
       </div>
 
-      <WhatsThisModal
-        open={showWhatsThis}
-        onClose={() => setShowWhatsThis(false)}
-        data={guideData.wizard.whats_this}
-        documentLabel="Police Verification"
-        guideSlug="police-verification-guide"
+      <NarrativeModal
+        isOpen={showWhatsThis}
+        onClose={handleCloseIntro}
+        onComplete={handleCloseIntro}
+        dontShowAgain={dontShowAgain}
+        onDontShowAgainChange={setDontShowAgain}
+        variant="police-verification"
       />
 
       <FeedbackButton
