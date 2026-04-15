@@ -9,6 +9,7 @@ import {
   getStageProgress,
   isStageUnlocked,
 } from "./journeyHelpers";
+import WaitingStateCard from "./WaitingStateCard";
 
 interface DashboardViewProps {
   data: RoadmapData;
@@ -54,8 +55,38 @@ export function DashboardView({
     }[] = [];
     const meta = state.metadata || {};
     const done = state.answers || {};
+    const trackingStatus = (state.metadata?.tracking_status as any) || {};
 
-    if (meta.interviewDate) {
+    // Admin tracking-based alerts
+    if (trackingStatus.interview_date) {
+      list.push({
+        type: "gold",
+        iconColor: "d-gold",
+        title: "Interview scheduled",
+        text: `${trackingStatus.interview_date} ${trackingStatus.interview_embassy ? `· ${trackingStatus.interview_embassy}` : ""}`,
+      });
+    }
+
+    if (trackingStatus.dq_status === "qualified" && !trackingStatus.interview_date) {
+      list.push({
+        type: "sky",
+        iconColor: "d-sky",
+        title: "In scheduling queue",
+        text: `DQ date: ${trackingStatus.dq_date || "N/A"}. Monitor CEAC for your interview appointment.`,
+      });
+    }
+
+    if (trackingStatus.ap_status === "pending") {
+      list.push({
+        type: "amber",
+        iconColor: "d-amber",
+        title: "Administrative Processing",
+        text: "Your case is under additional review. This is normal and can take several weeks.",
+      });
+    }
+
+    // Legacy metadata-based alerts
+    if (meta.interviewDate && !trackingStatus.interview_date) {
       list.push({
         type: "gold",
         iconColor: "d-gold",
@@ -64,7 +95,7 @@ export function DashboardView({
       });
     }
 
-    if (meta.dqDate && !meta.interviewDate) {
+    if (meta.dqDate && !meta.interviewDate && trackingStatus.dq_status !== "qualified") {
       list.push({
         type: "sky",
         iconColor: "d-sky",
@@ -135,51 +166,155 @@ export function DashboardView({
         <h1 className="font-black text-[clamp(22px,3vw,28px)] text-[#0c1b33] mb-6">
           Case Dashboard
         </h1>
+        {/* Tracking Status & Hero Section */}
+        <div className="flex flex-col gap-4 mb-6">
+          {/* Admin Tracking Status Cards (PROMINENT) */}
+          {(() => {
+            const trackingStatus = (state.metadata?.tracking_status as any) || {};
+            const hasTrackingData = Object.keys(trackingStatus).length > 0;
+            const isCaseRegistered = !!state.metadata?.nvcCaseNum;
 
-        {/* Hero Section */}
-        <section className="bg-[#0c1b33] rounded-2xl p-[22px_26px] mb-3 relative overflow-hidden animate-in zoom-in duration-500 after:content-[''] after:absolute after:-top-[50px] after:-right-[50px] after:w-[180px] after:h-[180px] after:rounded-full after:bg-[#2f6fd41f] after:pointer-events-none">
-          <div className="relative z-10">
-            <div className="text-[10px] font-bold uppercase tracking-[0.12em] text-white/40 mb-1.5">
-              Next best action
-            </div>
-            <h2 className="text-white/95 text-xl font-black leading-tight mb-1">
-              {nextActionData?.step.step_name || "Journey Complete!"}
-            </h2>
-            <p className="text-white/45 text-[12.5px] leading-relaxed mb-4 max-w-md">
-              {nextActionData?.step.step_description ||
-                "You have reached the end of the roadmap. All major verification steps are fulfilled."}
-            </p>
-            <button
-              onClick={() => {
-                if (nextActionData) {
-                  if (onSelectStep) {
-                    onSelectStep(nextActionData.chapterIdx, nextActionData.stepIdxInChapter);
-                  } else {
-                    actions.setStage(nextActionData.chapterIdx);
-                    actions.setCurrentStep(nextActionData.stepIdxInChapter);
+            if (!hasTrackingData && !isCaseRegistered) return null;
+
+            return (
+              <div className="space-y-3 animate-in fade-in slide-in-from-top-4 duration-700">
+                <div className="flex items-center justify-between px-1">
+                  <h2 className="text-[12px] font-black uppercase tracking-[0.1em] text-[#0c1b33]">
+                    Live Case Tracking
+                  </h2>
+                  <div className="flex items-center gap-1.5">
+                    <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
+                    <span className="text-[10px] font-bold text-[#6b8097]">Linked to Embassy</span>
+                  </div>
+                </div>
+
+                {/* Case Under Review / Initial State */}
+                {!hasTrackingData && isCaseRegistered && (
+                  <WaitingStateCard
+                    icon="clock"
+                    title="Case Registered & Under Review"
+                    description="Your NVC identifiers have been recorded. Our admin team will verify your case status at the embassy/NVC shortly. Check back for updates."
+                    status="waiting"
+                  />
+                )}
+
+                {/* NVC Review Complete */}
+                {trackingStatus.nvc_review_complete && (
+                  <WaitingStateCard
+                    icon="check"
+                    title="NVC Document Review Complete"
+                    description="NVC has reviewed your documents. Your case is being processed for Documentarily Qualified status."
+                    date={trackingStatus.nvc_review_date}
+                    status="complete"
+                  />
+                )}
+
+                {/* DQ Status */}
+                {trackingStatus.dq_status === "qualified" && (
+                  <WaitingStateCard
+                    icon="check"
+                    title="🎉 Documentarily Qualified!"
+                    description="NVC has completed their review. Your case is now in the interview scheduling queue."
+                    date={trackingStatus.dq_date}
+                    status="complete"
+                    actionLabel="Check IV Wait Times"
+                    onAction={() => {
+                      if (trackingStatus.interview_embassy) {
+                        window.open(`/iv-tool?city=${trackingStatus.interview_embassy}`, "_blank");
+                      }
+                    }}
+                  />
+                )}
+
+                {/* Interview Queue */}
+                {trackingStatus.interview_queue && !trackingStatus.interview_date && (
+                  <WaitingStateCard
+                    icon="clock"
+                    title="In Interview Queue"
+                    description="Your case is in the scheduling queue at the embassy. Interview dates will be assigned based on visa bulletin and wait times."
+                    status="waiting"
+                    showIVToolLink
+                    ivEmbassy={trackingStatus.interview_embassy}
+                  />
+                )}
+
+                {/* Interview Scheduled */}
+                {trackingStatus.interview_date && (
+                  <WaitingStateCard
+                    icon="calendar"
+                    title="Interview Scheduled"
+                    description={`Your visa interview is scheduled. Please prepare all required documents and attend on time.`}
+                    date={`${trackingStatus.interview_date} ${trackingStatus.interview_time ? `at ${trackingStatus.interview_time}` : ""}`}
+                    status="complete"
+                    actionLabel="Interview Prep Guide"
+                    onAction={() => {
+                      actions.setStage(2);
+                      actions.setCurrentStep(3);
+                    }}
+                  />
+                )}
+
+                {/* Administrative Processing */}
+                {trackingStatus.ap_status === "pending" && (
+                  <WaitingStateCard
+                    icon="alert"
+                    title="Administrative Processing"
+                    description="Your case is under additional administrative review. This is normal and can take several weeks."
+                    date={trackingStatus.ap_date}
+                    status="waiting"
+                    actionLabel="Check CEAC Status"
+                    actionUrl="https://ceac.state.gov/CEAC/"
+                  />
+                )}
+              </div>
+            );
+          })()}
+
+          {/* Hero Section */}
+          <section className="bg-[#0c1b33] rounded-2xl p-[22px_26px] relative overflow-hidden animate-in zoom-in duration-500 after:content-[''] after:absolute after:-top-[50px] after:-right-[50px] after:w-[180px] after:h-[180px] after:rounded-full after:bg-[#2f6fd41f] after:pointer-events-none">
+            <div className="relative z-10">
+              <div className="text-[10px] font-bold uppercase tracking-[0.12em] text-white/40 mb-1.5">
+                Next roadmap step
+              </div>
+              <h2 className="text-white/95 text-xl font-black leading-tight mb-1">
+                {nextActionData?.step.step_name || "Journey Complete!"}
+              </h2>
+              <p className="text-white/45 text-[12.5px] leading-relaxed mb-4 max-w-md">
+                {nextActionData?.step.step_description ||
+                  "You have reached the end of the roadmap. All major verification steps are fulfilled."}
+              </p>
+              <button
+                onClick={() => {
+                  if (nextActionData) {
+                    if (onSelectStep) {
+                      onSelectStep(nextActionData.chapterIdx, nextActionData.stepIdxInChapter);
+                    } else {
+                      actions.setStage(nextActionData.chapterIdx);
+                      actions.setCurrentStep(nextActionData.stepIdxInChapter);
+                    }
                   }
-                }
-              }}
-              disabled={!nextActionData}
-              className="inline-flex items-center gap-2 px-4 py-2.5 bg-primary hover:bg-primary/90 disabled:opacity-50 text-white rounded-[10px] font-bold text-[13px] shadow-lg shadow-primary/40 transition-all active:scale-95 group"
-            >
-              Continue
-              <ArrowRight
-                size={14}
-                className="group-hover:translate-x-1 transition-transform"
-                strokeWidth={3}
-              />
-            </button>
-          </div>
-        </section>
+                }}
+                disabled={!nextActionData}
+                className="inline-flex items-center gap-2 px-4 py-2.5 bg-primary hover:bg-primary/90 disabled:opacity-50 text-white rounded-[10px] font-bold text-[13px] shadow-lg shadow-primary/40 transition-all active:scale-95 group"
+              >
+                Continue Roadmap
+                <ArrowRight
+                  size={14}
+                  className="group-hover:translate-x-1 transition-transform"
+                  strokeWidth={3}
+                />
+              </button>
+            </div>
+          </section>
+        </div>
 
-        {/* Dynamic Alerts */}
+        {/* Dynamic Alerts (Secondary Info) */}
         {alerts.length > 0 && (
-          <div className="flex flex-col gap-2 mb-3 animate-in fade-in slide-in-from-top-2 duration-500">
-            {alerts.map((alert, i) => (
+          <div className="flex flex-col gap-2 mb-6 animate-in fade-in slide-in-from-top-2 duration-500">
+            {alerts.slice(0, 3).map((alert, i) => (
               <div
                 key={i}
-                className={`flex gap-2.5 items-start p-3 rounded-[7px] border ${
+                className={`flex gap-2.5 items-start p-3 rounded-[7px] border shadow-xs ${
                   alert.type === "gold"
                     ? "bg-[#fffbeb] border-[#fde68a] text-[#b38600]"
                     : alert.type === "sky"
@@ -191,17 +326,11 @@ export function DashboardView({
               >
                 <div
                   className={`w-1.5 h-1.5 rounded-full mt-1.5 shrink-0 ${
-                    alert.type === "gold"
-                      ? "bg-[#b38600]"
-                      : alert.type === "sky"
-                        ? "bg-primary"
-                        : alert.type === "amber"
-                          ? "bg-[#8a6200]"
-                          : "bg-[#15744f]"
+                    alert.type === "gold" ? "bg-[#b38600]" : alert.type === "sky" ? "bg-primary" : alert.type === "amber" ? "bg-[#8a6200]" : "bg-[#15744f]"
                   }`}
                 />
-                <div className="text-[12.5px] leading-relaxed">
-                  <strong className="font-bold block">{alert.title}</strong>
+                <div className="text-[12px] leading-relaxed">
+                  <span className="font-bold">{alert.title}: </span>
                   <span className="opacity-80">{alert.text}</span>
                 </div>
               </div>
