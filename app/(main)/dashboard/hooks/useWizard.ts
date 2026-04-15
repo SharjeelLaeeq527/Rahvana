@@ -562,7 +562,99 @@ export function useWizard(options: UseWizardOptions = {}) {
       await actions.updateMetadata({
         docReviewStatus: updatedDocReviewStatus
       });
-    }
+    },
+
+    savePaymentMethod: async (methodValue: string) => {
+      if (!state.backendId) {
+        console.warn("[useWizard] No backendId for payment method save");
+        throw new Error("Journey not initialized");
+      }
+
+      try {
+        const dataKey = "paper_payment_method";
+        const response = await fetch(`/api/case_data/${state.backendId}/${dataKey}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            data_value: methodValue,
+            is_verified: false,
+            source: "step_action",
+          }),
+        });
+
+        if (!response.ok) {
+          const error = await response.json().catch(() => ({ error: `HTTP ${response.status}` }));
+          throw new Error(error.error || `Failed to save payment method: ${response.status}`);
+        }
+
+        // Update local state with the saved data
+        setState((prev) => ({
+          ...prev,
+          metadata: { ...prev.metadata, [dataKey]: methodValue },
+        }));
+
+        console.log("[useWizard] Payment method saved successfully");
+      } catch (err) {
+        console.error("[useWizard] Payment method save failed:", err);
+        throw err;
+      }
+    },
+
+    saveMailingDetails: async (carrier: string, trackingNumber: string) => {
+      if (!state.backendId) {
+        console.warn("[useWizard] No backendId for mailing details save");
+        throw new Error("Journey not initialized");
+      }
+
+      try {
+        // Save both in parallel
+        const [carrierRes, trackingRes] = await Promise.all([
+          fetch(`/api/case_data/${state.backendId}/paper_mailing_carrier`, {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              data_value: carrier,
+              is_verified: false,
+              source: "step_action",
+            }),
+          }),
+          fetch(`/api/case_data/${state.backendId}/paper_mailing_tracking`, {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              data_value: trackingNumber,
+              is_verified: false,
+              source: "step_action",
+            }),
+          }),
+        ]);
+
+        // Check both responses
+        if (!carrierRes.ok) {
+          const error = await carrierRes.json().catch(() => ({ error: `HTTP ${carrierRes.status}` }));
+          throw new Error(error.error || `Failed to save carrier: ${carrierRes.status}`);
+        }
+        if (!trackingRes.ok) {
+          const error = await trackingRes.json().catch(() => ({ error: `HTTP ${trackingRes.status}` }));
+          throw new Error(error.error || `Failed to save tracking: ${trackingRes.status}`);
+        }
+
+        // Update local state with both saved values
+        setState((prev) => ({
+          ...prev,
+          metadata: {
+            ...prev.metadata,
+            paper_mailing_carrier: carrier,
+            paper_mailing_tracking: trackingNumber,
+          },
+        }));
+
+        console.log("[useWizard] Mailing details saved successfully");
+      } catch (err) {
+        console.error("[useWizard] Mailing details save failed:", err);
+        throw err;
+      }
+    },
   }), [state.backendId, state.metadata, state.completedSteps, state.stepMap, state.role, journeyId, userId, activeRoadmap, normalizeState]);
 
   return { state, actions, isLoaded, hasExistingProgress, isSyncing };

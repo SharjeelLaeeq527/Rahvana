@@ -81,6 +81,7 @@ import {
 } from "../types";
 import { WizardState } from "@/app/(main)/dashboard/hooks/useWizard";
 import { QuestRenderer } from "./QuestRenderer";
+import { ActionStepRenderer } from "./ActionStepRenderer";
 import { getAllActiveSteps, getStageProgress } from "./journeyHelpers";
 import CredentialFormModal from "@/app/(main)/portal-wallet/components/CredentialFormModal";
 import ViewCredentialModal from "@/app/(main)/portal-wallet/components/ViewCredentialModal";
@@ -142,6 +143,8 @@ interface StepViewProps {
       docId: string,
       status: "not-started" | "in-progress" | "reviewed",
     ) => Promise<void>;
+    savePaymentMethod?: (methodValue: string) => Promise<void>;
+    saveMailingDetails?: (carrier: string, trackingNumber: string) => Promise<void>;
   };
   onBack: () => void;
 }
@@ -7328,6 +7331,20 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
             </div>
           ) : currentStep.step_type === "tool" ? (
             renderToolStep()
+          ) : currentStep.step_type === "action" ? (
+            <ActionStepRenderer
+              step={currentStep}
+              isCompleted={state.completedSteps.has(currentStep.step_key)}
+              onToggleComplete={handleToggleComplete}
+              chapter={currentChapter?.chapter_name || "Chapter"}
+              filingType={
+                state.metadata.filingMethod === "online"
+                  ? "Online Filing"
+                  : "Paper Filing"
+              }
+              state={state}
+              actions={actions}
+            />
           ) : currentStep.step_type === "docs" ? (
             <div className="w-full flex flex-col items-center animate-in fade-in slide-in-from-bottom-6 duration-1000">
               {/* Header for Docs */}

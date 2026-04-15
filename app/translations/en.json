@@ -703,12 +703,7 @@
         "categories": {
           "civil": {
             "title": "Civil Documents",
-            "items": [
-              "Birth Certificates",
-              "Nikah Nama",
-              "Passports",
-              "CNIC"
-            ]
+            "items": ["Birth Certificates", "Nikah Nama", "Passports", "CNIC"]
           },
           "financial": {
             "title": "Financial Support",
@@ -738,17 +733,11 @@
           },
           "medical": {
             "title": "Medical & Health",
-            "items": [
-              "Medical Exam (DS-2019)",
-              "Vaccination Records"
-            ]
+            "items": ["Medical Exam (DS-2019)", "Vaccination Records"]
           },
           "photos": {
             "title": "Visa Photos",
-            "items": [
-              "2x2 Inch Validated Photos",
-              "Digital Copies"
-            ]
+            "items": ["2x2 Inch Validated Photos", "Digital Copies"]
           }
         }
       },
@@ -1655,10 +1644,7 @@
           "step1": {
             "title": "Get FBR Tax Returns",
             "description": "Download your tax returns from FBR portal.",
-            "tips": [
-              "Last 3 years recommended",
-              "NTN certificate also helpful"
-            ]
+            "tips": ["Last 3 years recommended", "NTN certificate also helpful"]
           }
         }
       },
@@ -2604,11 +2590,7 @@
     "heroTitle1": "Your Immigration Journey, ",
     "heroTitle2": "Simplified",
     "heroDescription": "Navigate the complexities of immigration with confidence. Rahvana provides step-by-step guidance, smart tools, and expert support to help you reunite with loved ones.",
-    "heroFeatures": [
-      "Secure Vault",
-      "AI Insights",
-      "Step-by-Step Guidance"
-    ],
+    "heroFeatures": ["Secure Vault", "AI Insights", "Step-by-Step Guidance"],
     "resumeJourney": "Resume My Journey",
     "exploreJourneys": "Explore Journeys",
     "journeysBadge": "Find Your Path",
@@ -3062,6 +3044,10 @@
       "form-forge": {
         "title": "Smart Form Filler",
         "desc": "Auto-fills your official form and generates a ready-to-upload PDF."
+      },
+      "uscis-case-status": {
+        "title": "USCIS Case Status",
+        "desc": "Real-time USCIS case status lookup via the official Torch API. Enter your receipt number for an instant update."
       },
       "doc-vault": {
         "title": "Document Vault",
