@@ -869,7 +869,7 @@ function ResultsScreen({
               const countryData = getCountryData(destination);
               const visaWithSources = {
                 ...v,
-                countryId: countryData?.id,
+                countryId: countryData?.code,
                 officialSources: countryData?.officialSources,
               };
               const countryNotes =

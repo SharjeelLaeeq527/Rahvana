@@ -9,6 +9,50 @@ import {
   UploadedDocument,
 } from "./types";
 import { ALL_DOCUMENTS } from "./document-definitions";
+import { getCategoryDisplayName } from "./personalization-engine"; // Self-reference for type but might be better to move types later
+
+export const DYNAMIC_CATEGORIES = [
+  "PROPERTY",
+  "RELATIONSHIP",
+  "ADDRESS_PROOF",
+  "EDUCATION",
+  "WORK",
+];
+
+export const CATEGORY_SUGGESTIONS: Record<string, string[]> = {
+  PROPERTY: [
+    "Bank Assets in Pakistan",
+    "Investment Certificates",
+    "NRA (Non-Resident Alien) Certificate",
+    "Property ownership document (Deeds/Registry)",
+    "Vehicle registration papers",
+  ],
+  RELATIONSHIP: [
+    "Nikah Nama (Marriage Certificate)",
+    "Wedding Photos",
+    "Communication Evidence (Chat logs/Call records)",
+    "Joint Bank Accounts or Assets",
+    "Affidavits from friends/family",
+  ],
+  ADDRESS_PROOF: [
+    "Utility Bills (Electricity/Gas/Water)",
+    "Rent Agreement",
+    "Property Tax Bills",
+    "PO Box Address Proof",
+  ],
+  EDUCATION: [
+    "Degree Certificates",
+    "Transcripts / Mark Sheets",
+    "Standardized Test Scores (IELTS/TOEFL/SAT)",
+    "School Leaving Certificates",
+  ],
+  WORK: [
+    "Experience Letters from previous employers",
+    "Current Employment Contracts",
+    "Salary Slips (Recent 3-6 months)",
+    "NOC (No Objection Certificate)",
+  ],
+};
 
 type TranslateFn = (key: string, options?: Record<string, unknown>) => string;
 
@@ -62,13 +106,58 @@ function isDocumentRequired(
 export function generateRequiredDocuments(
   config: DocumentVaultConfig,
   includeOptional: boolean = true,
+  uploadedDocIds: string[] = [],
 ): DocumentDefinition[] {
   const { visaCategory, scenarioFlags } = config;
 
   // Filter documents based on requirements
-  const requiredDocs = ALL_DOCUMENTS.filter((doc) =>
-    isDocumentRequired(doc, visaCategory, scenarioFlags),
-  );
+  let requiredDocs = ALL_DOCUMENTS.filter((doc) => {
+    // If category is dynamic, ignore static definitions
+    if (DYNAMIC_CATEGORIES.includes(doc.category)) {
+      return false;
+    }
+    return isDocumentRequired(doc, visaCategory, scenarioFlags);
+  });
+
+  // Add dynamic documents from config
+  DYNAMIC_CATEGORIES.forEach((category) => {
+    const slots = config.dynamicDocuments?.[category] || [];
+
+    if (slots.length === 0) {
+      // Default first slot if none exist
+      const displayName = getCategoryDisplayName(category);
+      // Remove "Documents" or "Evidence" from suffix for cleaner naming if exists
+      const baseName = displayName.replace(/ (Documents|Evidence)$/, "");
+      
+      requiredDocs.push({
+        id: `dynamic-${category}-1`,
+        key: `DYNAMIC_${category}_1`,
+        name: `${baseName} Document (1)`,
+        description: `User-added ${category.toLowerCase()} document`,
+        category: category as any,
+        roles: ["BENEFICIARY"],
+        stages: ["NVC", "INTERVIEW"],
+        required: false, // Per user feedback: not required
+        multipleFilesAllowed: true,
+        validityType: "none",
+      });
+    } else {
+      slots.forEach((slot, index) => {
+        requiredDocs.push({
+          id: slot.id,
+          key: `DYNAMIC_${category}_${index + 1}`,
+          name: slot.name,
+          description: `User-added ${category.toLowerCase()} document`,
+          category: category as any,
+          roles: ["BENEFICIARY"],
+          stages: ["NVC", "INTERVIEW"],
+          required: false,
+          multipleFilesAllowed: true,
+          validityType: "none",
+        });
+      });
+    }
+  });
 
   // If includeOptional is true, also add documents that are optional but applicable
   let finalDocs = requiredDocs;
@@ -119,6 +208,22 @@ export function generateRequiredDocuments(
     finalDocs = [...requiredDocs, ...optionalDocs];
   }
 
+  // Ensure documents that have been uploaded are ALWAYS present, even if their scenario flag wasn't set!
+  if (uploadedDocIds.length > 0) {
+    const forcedUploadDocs = ALL_DOCUMENTS.filter(
+      (doc) => uploadedDocIds.includes(doc.id) && !finalDocs.includes(doc)
+    );
+    finalDocs = [...finalDocs, ...forcedUploadDocs];
+  }
+
+  // Filter out documents that should be hidden until uploaded
+  finalDocs = finalDocs.filter((doc) => {
+    if (doc.hideUntilUploaded) {
+      return uploadedDocIds.includes(doc.id);
+    }
+    return true;
+  });
+
   // Sort by category and then by name
   return finalDocs.sort((a, b) => {
     if (a.category !== b.category) {
@@ -134,8 +239,9 @@ export function generateRequiredDocuments(
 export function getDocumentsByCategory(
   config: DocumentVaultConfig,
   includeOptional: boolean = true,
+  uploadedDocIds: string[] = [],
 ) {
-  const requiredDocs = generateRequiredDocuments(config, includeOptional);
+  const requiredDocs = generateRequiredDocuments(config, includeOptional, uploadedDocIds);
 
   const byCategory: Record<string, DocumentDefinition[]> = {};
 

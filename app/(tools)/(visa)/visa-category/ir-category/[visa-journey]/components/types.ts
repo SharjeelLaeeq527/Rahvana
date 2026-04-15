@@ -1,116 +1,410 @@
 export interface RoadmapStep {
-  stepNumber?: number;
-  id: string;
-  name: string;
-  nameUr?: string;
-  title?: string;
-  titleUr?: string;
-  description?: string;
-  descriptionUr?: string;
+  step_key: string;
+  step_number: number;
+  step_name: string;
+  step_short_description: string;
+  step_description: string;
+  step_type:
+    | "informational"
+    | "form_fillable"
+    | "form_submit"
+    | "awaiting_response"
+    | "document_upload"
+    | "appointment_scheduling"
+    | "review"
+    | "decision"
+    | "quest"
+    | "tool"
+    | "action"
+    | "docs"
+    | "filing";
+  tool_integration?: string | null;
+  dependencies: string[];
+  visible_when: Record<string, string | number | boolean | string[] | null>;
+  estimated_duration_days: number;
+  is_required: boolean;
+  display_order: number;
+
+  // UI-specific properties (now in snake_case)
   who?: string;
-  whoUr?: string;
   where?: string;
-  whereUr?: string;
   actions?: string[];
-  actionsUr?: string[];
   output?: string;
-  outputUr?: string;
   notes?: string;
-  notesUr?: string;
   info?: string;
   warn?: string;
   timeline?: string;
-  documents?: string[];
-  documentsUr?: string[];
-  pakistanSpecific?: string;
   fee?: string;
-  filingType?: string;
-  inputs?: string[];
-  officialSource?: string;
-  nextTrigger?: string;
-  relevantTools?: {
+  official_source?: string;
+  next_trigger?: string;
+  relevant_tools?: {
     label: string;
-    labelUr?: string;
     href: string;
     type?: "tool" | "service" | "guide";
   }[];
-  possibleOutcomes?: string[];
-  scenarioSpecific?: string;
+  possible_outcomes?: string[];
+  scenario_specific?: string;
   success?: string;
-  successUr?: string;
+
+  document_items?: DocumentItem[];
+  filing_data?: FilingData;
+  quest_data?: QuestData;
+  tool_data?: ToolData;
+  action_data?: ActionData;
+  logic?: string;
+  prerequisites?: string[];
+  is_persistent?: boolean;
+  chapter_id?: string | number;
+  branch?: "online" | "paper" | "both";
+}
+
+export interface QuestOption {
+  label: string;
+  value: string;
+  outcome?: "pass" | "caution" | "review" | "stop" | "next" | "pass_direct";
+  sub?: string;
+}
+
+export interface QuestScreen {
+  id: string;
+  label?: string;
+  question: string;
+  helper?: string;
+  type: "single" | "multi";
+  options: QuestOption[];
+  hint?: {
+    intro?: string;
+    items: string[];
+  };
+  multi_pass_logic?: string;
+}
+
+export interface QuestData {
+  id: string;
+  title: string;
+  subtitle: string;
+  screens: QuestScreen[];
+  result_logic: string;
+}
+
+export interface QuestSuite {
+  id: string;
+  title: string;
+  subtitle: string;
+  quests: QuestData[];
+}
+
+export interface FilingMethod {
+  id: string;
+  name: string;
+  title?: string;
+  price: string;
+  subtitle: string;
+  features: string[];
+  icon?: string;
+  color?: string;
+}
+
+export interface FilingData {
+  id: string;
+  title?: string;
+  subtitle?: string;
+  methods: FilingMethod[];
+  footerNote?: string;
+  quiz?: FilingQuiz;
+}
+
+export interface FilingQuiz {
+  screens: FilingQuizScreen[];
+}
+
+export interface FilingQuizScreen {
+  id: string;
+  question: string;
+  helper?: string;
+  hint?: { items: string[] };
+  options: {
+    label: string;
+    value: string;
+    signal: "online" | "paper" | "discuss" | "neutral";
+  }[];
+}
+
+export interface DocumentItem {
+  id: string;
+  name: string;
+  subtitle?: string;
+  tag?: "petitioner" | "beneficiary" | "both" | "other" | "third party";
+  guide_url?: string;
+  icon?: string;
+  group?: string;
+}
+
+export interface DocumentGatheringItem {
+  id: string;
+  icon: string;
+  title: string;
+  sub: string;
+  sections: {
+    t: string;
+    c: string;
+  }[];
+}
+
+export interface DocumentGatheringGroup {
+  id: string;
+  label: string;
+  badge: "Required" | "Required if applicable" | "Recommended";
+  items: DocumentGatheringItem[];
+}
+
+export interface ToolChip {
+  label: string;
+  type: "role" | "tool" | "newtab" | "uscis" | "path";
+}
+
+export interface SupportCard {
+  label: string;
+  items: string[];
+}
+
+export interface SecondaryAction {
+  id: string;
+  type: "tutorial" | "wallet";
+  title: string;
+  subtitle: string;
+  cta: string;
+  icon?: "book" | "wallet" | "shield";
+  href?: string;
+}
+
+export interface ActionCard {
+  id: string;
+  type: string;
+  icon: string;
+  title: string;
+  subtitle: string;
+  cta_label?: string;
+  href?: string;
+}
+
+export interface TutorialStepData {
+  label: string;
+  heading: string;
+  instruction: string;
+  url: string;
+  /** Path or URL to a real screenshot. When supplied the image replaces the
+   *  structured placeholder. Leave null/undefined to keep the placeholder. */
+  screenshot?: string | null;
+  ss_label: string;
+  ss_headline: string;
+  ss_desc: string;
+  ss_highlight: string | null;
+  caption: string;
+  caption_class?: "success" | null;
+  note: string | null;
+}
+
+export interface FeeBlock {
+  label: string; // e.g. "Current online fee"
+  amount: string; // e.g. "$625"
+  note: string; // e.g. "Form I-130 · online filing"
+  details: string[]; // bullet points shown on the right side
+}
+
+export interface ToolData {
+  id: string;
+  title: string;
+  subtitle?: string;
+  eyebrow?: string;
+  companion?: string;
+  chips?: {
+    label: string;
+    type: "role" | "tool" | "newtab" | "uscis" | "path" | "pay" | "final";
+  }[];
+  launch_module: {
+    icon:
+      | "form"
+      | "calc"
+      | "search"
+      | "user"
+      | "shield"
+      | "portal"
+      | "upload"
+      | "check"
+      | "payment"
+      | "mail"
+      | "file"
+      | "submit";
+    /** Controls the right-end colour of the top accent stripe.
+     *  "gold" → payment step, "green" → final submit step (default: blue) */
+    stripe_variant?: "blue" | "gold" | "green";
+    /** Optional custom background hex for the dark module */
+    bg_color?: string;
+    eyebrow: string;
+    heading: string;
+    features: string[];
+    button_label?: string;
+    button_launched_label?: string;
+    href?: string;
+    note?: string;
+    launched_note?: string;
+    type?: string;
+    return_note?: { title: string; body: string };
+  };
+  /** Payment fee display block — shown inside the launch module for step 9 */
+  fee_block?: FeeBlock;
+  /** Pre-submission checklist — shown inside the launch module for step 10 */
+  alert_note?: string;
+  review_checklist?: string[];
+  guide_card?: { title: string; subtitle: string };
+  wallet_card?: { type: string; title: string; subtitle: string };
+  tutorial_steps?: TutorialStepData[];
+  doc_list?: {
+    groups: {
+      id: string;
+      label: string;
+      badge?: string;
+      items: any[];
+    }[];
+  };
+  action_cards?: ActionCard[];
+  upload_requirements?: string[];
+  doc_gathering?: {
+    groups: DocumentGatheringGroup[];
+  };
+  secondary_actions?: SecondaryAction[];
+  wallet_integration?: {
+    portal_type: "USCIS" | "NVC" | "COURIER";
+  };
+  support_cards?: {
+    label: string;
+    items: string[];
+  }[];
+  tutorial?: any[];
+  checklists?: any[];
+  tips?: string[];
+  outcomes?: any[];
+  readiness_grid?: any[];
+  type?: string;
+  disclaimer?: string;
+}
+
+export interface GuideStep {
+  label: string;
+  title: string;
+  text: string;
+  url?: string;
+  visual?: string;
+  note?: string;
+}
+
+export interface ActionItem {
+  title: string;
+  description: string;
+}
+
+export interface DropdownOption {
+  value: string;
+  label: string;
+}
+
+export interface ActionData {
+  guide_button_label: string;
+  id: string;
+  hero_heading: string;
+  hero_description?: string;
+  badge?: string;
+  action_tips?: string[];
+  action_button_label?: string;
+  action_button_status_heading?: string;
+  action_button_status_message?: string;
+  second_card_title?: string;
+  second_card_subtitle?: string;
+  cta_button?: {
+    label: string;
+    href?: string;
+  };
+  guide_card?: {
+    title: string;
+    subtitle: string;
+  };
+  dropdown_card?: {
+    title: string;
+    subtitle: string;
+    dropdown_options?: DropdownOption[];
+  };
+  mailing_card?: {
+    title: string;
+    subtitle: string;
+    carrier_placeholder?: string;
+    tracking_placeholder?: string;
+  };
+  action_items_title?: string;
+  action_items: ActionItem[];
+  guide_steps: GuideStep[];
+  chips?: {
+    label: string;
+    type: string;
+  }[];
+}
+
+export interface JourneyState {
+  current_chapter_id: string | number;
+  current_step_id: string;
+  completed_steps: string[];
+  unresolved_tasks: string[];
+  answers: Record<string, any>;
+  metadata: Record<string, any>;
 }
 
 export interface RoadmapSource {
   label: string;
-  labelUr?: string;
   url: string;
 }
 
-export interface RoadmapStage {
-  id: number | string;
-  name: string;
-  nameUr?: string;
+export interface RoadmapChapter {
+  chapter_key: string;
+  chapter_number: number;
+  chapter_name: string;
+  chapter_description: string;
+  estimated_duration_months: number;
+  display_order: number;
+  steps: RoadmapStep[];
+
+  // Optional legacy support fields
+  id?: number | string;
+  name?: string;
   title?: string;
-  titleUr?: string;
   description?: string;
-  descriptionUr?: string;
   timeline?: string;
   icon?: string;
   color?: string;
-  scenarioSpecific?: string;
+  scenario_specific?: string;
   sources?: RoadmapSource[];
-  steps: RoadmapStep[];
-}
-
-export interface ScenarioOption {
-  id: string;
-  title: string;
-  desc: string;
+  progress?: number;
 }
 
 export interface RoadmapData {
-  scenarios: any;
+  journey_type: string;
+  journey_name: string;
+  journey_description: string;
+  total_estimated_months: number;
+  chapters: RoadmapChapter[];
 
+  // Optional legacy or additional top-level keys
+  scenarios?: any;
   info?: string;
-
-  infoLink?: string;
-  infoLinkText?: string;
-
-  infoLinks?: {
+  info_links?: {
     text: string;
     url: string;
   }[];
-
   disclaimer?: string;
-  disclaimerUr?: string;
-
-  disclaimerLink?: string;
-  disclaimerLinkText?: string;
-
-  disclaimerLinks?: {
-    text: string;
-    url: string;
-  }[];
-
-  scenarioNotes: Record<string, string>;
-
-  title?: string;
-  titleUr?: string;
-
-  description?: string;
-  descriptionUr?: string;
-
-  stages: RoadmapStage[];
-
-  documents?: string[];
-
-  visaOverview?: {
+  visa_overview?: {
     title: string;
-    titleUr?: string;
     text: string;
-    textUr?: string;
     flag: string;
     link: string;
-    linkText?: string;
+    link_text?: string;
   };
 }

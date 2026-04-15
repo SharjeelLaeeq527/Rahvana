@@ -18,6 +18,7 @@ import {
 import { DocumentDatabaseStorage } from '@/lib/document-vault/storage-database';
 import { calculateExpirationDate } from '@/lib/document-vault/expiration-tracker';
 import { ALL_DOCUMENTS } from '@/lib/document-vault/document-definitions';
+import { generateRequiredDocuments } from '@/lib/document-vault/personalization-engine';
 import { UploadedDocument, DocumentRole } from '@/lib/document-vault/types';
 import { createClient as createClientJs } from '@supabase/supabase-js';
 import { encryptFile } from '@/lib/document-vault/file-encryption';
@@ -156,16 +157,36 @@ export async function POST(request: NextRequest) {
     }
 
     // Find document definition
-    const documentDef = ALL_DOCUMENTS.find((d) => d.id === documentDefId);
+    // We must fetch the user's config to also recognize dynamic documents
+    const dbStorage = new DocumentDatabaseStorage(supabase);
+    const config = await dbStorage.getVaultConfig(user.id);
+    
+    let documentDef;
+    if (config) {
+      // Use config to generate complete list (static + dynamic)
+      const allPossibleDocs = generateRequiredDocuments(config, true);
+      documentDef = allPossibleDocs.find((d) => d.id === documentDefId);
+    } else {
+      // Fallback to static list if no config found (rare)
+      documentDef = ALL_DOCUMENTS.find((d) => d.id === documentDefId);
+    }
+
     if (!documentDef) {
-      return NextResponse.json(
-        { error: 'Invalid document definition' },
-        { status: 400 }
-      );
+      documentDef = {
+        id: documentDefId,
+        key: documentDefId.toUpperCase().replace(/[^A-Z]/g, "_"),
+        name: documentDefId.replace(/-/g, " "),
+        description: "Dynamically added document",
+        category: "MISC" as const,
+        roles: ["BENEFICIARY"] as DocumentRole[],
+        stages: ["USCIS", "NVC"] as const,
+        required: false,
+        multipleFilesAllowed: true,
+        validityType: "none" as const,
+      };
     }
 
     // Get existing documents for this definition
-    const dbStorage = new DocumentDatabaseStorage(supabase);
     const existingDocs = await dbStorage.getDocumentsByDefId(documentDefId, user.id);
     const version = getNextVersionNumber(existingDocs);
 

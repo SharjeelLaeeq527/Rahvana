@@ -286,7 +286,7 @@ const FrcGuide = () => {
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#f5f7fa] pt-14">
+    <div className="min-h-screen flex flex-col bg-[#f5f7fa] pt-20">
       <WizardHeader
         onWhatsThis={() => setShowWhatsThis(true)}
         title={guideData.wizard.title}
