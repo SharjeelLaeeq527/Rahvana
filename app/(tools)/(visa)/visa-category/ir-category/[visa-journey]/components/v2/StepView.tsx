@@ -112,6 +112,7 @@ import { POLICE_CLEARANCE_DATA } from "./PoliceClearanceData";
 import { mapDocumentNameToId } from "@/lib/document-vault/journey-mapping";
 import { useDocumentVaultStore } from "@/lib/document-vault/store";
 import { DocumentUploadModal } from "@/app/components/document-vault/DocumentUploadModal";
+import { MultipleDocumentUploadModal } from "@/app/components/document-vault/MultipleDocumentUploadModal";
 import { ALL_DOCUMENTS } from "@/lib/document-vault/document-definitions";
 import { useAuth } from "@/app/context/AuthContext";
 import PassportPhotoTool from "@/components/tools/PassportPhotoTool";
@@ -199,6 +200,18 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
   }>({
     isOpen: false,
     doc: null,
+  });
+
+  const [multipleUploadModalState, setMultipleUploadModalState] = useState<{
+    isOpen: boolean;
+    categoryId: string;
+    documentName: string;
+    options: string[];
+  }>({
+    isOpen: false,
+    categoryId: "",
+    documentName: "",
+    options: [],
   });
 
   // Filing Quiz States
@@ -2179,9 +2192,9 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                   })()}
                 </div>
                 <div>
-                  <h3 className="text-xl font-bold text-[#0f1f38]">
+                  <DialogTitle className="text-xl font-bold text-[#0f1f38]">
                     {title || doc.name || doc.title}
-                  </h3>
+                  </DialogTitle>
                   <p className="text-sm text-[#6b8097]">
                     {subtitle ||
                       doc.subtitle ||
@@ -7838,7 +7851,51 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                                               );
                                               setActiveUploadId(doc.id);
                                               setActiveUploadType("doc");
-                                              openUploadModal(defId);
+
+                                              if (doc.id === "doc_citizenship") {
+                                                setMultipleUploadModalState({
+                                                  isOpen: true,
+                                                  categoryId: defId,
+                                                  documentName: doc.name,
+                                                  options: [
+                                                    "U.S. passport",
+                                                    "U.S. birth certificate",
+                                                    "Certificate of Naturalization (Form N-550)",
+                                                    "Certificate of Citizenship (Form N-560)",
+                                                    "Consular Report of Birth Abroad (Form FS-240 / DS-1350)"
+                                                  ]
+                                                });
+                                              } else if (doc.id === "doc_relationship") {
+                                                setMultipleUploadModalState({
+                                                  isOpen: true,
+                                                  categoryId: defId,
+                                                  documentName: doc.name,
+                                                  options: [
+                                                    "Communication history",
+                                                    "Photos together",
+                                                    "Travel history",
+                                                    "Shared finances",
+                                                    "Shared residence",
+                                                    "Family evidence",
+                                                    "Affidavits"
+                                                  ]
+                                                });
+                                              } else if (doc.id === "doc_translations") {
+                                                setMultipleUploadModalState({
+                                                  isOpen: true,
+                                                  categoryId: defId,
+                                                  documentName: doc.name,
+                                                  options: [
+                                                    "Translated Nikah Nama",
+                                                    "Translated NADRA MRC",
+                                                    "Translated Birth Certificate",
+                                                    "Translated Divorce Decree",
+                                                    "Other Translated Civil Documents"
+                                                  ]
+                                                });
+                                              } else {
+                                                openUploadModal(defId);
+                                              }
                                             },
                                           });
                                         }}
@@ -9200,6 +9257,23 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
             </div>
           </div>
         )}
+
+      {/* Multiple Document Upload Modal Integration */}
+      {multipleUploadModalState.isOpen && (
+        <MultipleDocumentUploadModal
+          open={multipleUploadModalState.isOpen}
+          onClose={() => setMultipleUploadModalState((prev) => ({ ...prev, isOpen: false }))}
+          categoryId={multipleUploadModalState.categoryId}
+          documentName={multipleUploadModalState.documentName}
+          options={multipleUploadModalState.options}
+          onUploadComplete={async () => {
+             if (activeUploadId && actions.updateDocumentStatus) {
+               await actions.updateDocumentStatus(activeUploadId, "reviewed");
+             }
+             await reloadDocuments();
+          }}
+        />
+      )}
 
       {/* Document Vault Integration */}
       {uploadModalOpen && selectedDocumentDefId && (
