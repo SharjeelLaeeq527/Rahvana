@@ -71,7 +71,10 @@ import { InlineGuideData } from "./InlineGuideData";
 import { USCIS_TUTORIAL_STEPS } from "./UscisTutorialData";
 import Image from "next/image";
 import Link from "next/link";
-import { HOUSEHOLD_TUTORIAL_STEPS, HOUSEHOLD_GUIDE_CONTENT } from "./HouseholdTutorialData";
+import {
+  HOUSEHOLD_TUTORIAL_STEPS,
+  HOUSEHOLD_GUIDE_CONTENT,
+} from "./HouseholdTutorialData";
 import {
   SUBMISSION_TUTORIAL_STEPS,
   SubmissionTutorialOverlay,
@@ -84,6 +87,7 @@ import { POLICE_CLEARANCE_DATA } from "./PoliceClearanceData";
 import { mapDocumentNameToId } from "@/lib/document-vault/journey-mapping";
 import { useDocumentVaultStore } from "@/lib/document-vault/store";
 import { DocumentUploadModal } from "@/app/components/document-vault/DocumentUploadModal";
+import { MultipleDocumentUploadModal } from "@/app/components/document-vault/MultipleDocumentUploadModal";
 import { ALL_DOCUMENTS } from "@/lib/document-vault/document-definitions";
 import { useAuth } from "@/app/context/AuthContext";
 import PassportPhotoTool from "@/components/tools/PassportPhotoTool";
@@ -97,7 +101,11 @@ import type {
   ConditionalDocument,
 } from "@/lib/questionnaire/types";
 import { StepHeader } from "./StepHeader";
-import { CeacCredsModal, NvcFeeModal, ApUpdateModal } from "./PortalWalletManager";
+import {
+  CeacCredsModal,
+  NvcFeeModal,
+  ApUpdateModal,
+} from "./PortalWalletManager";
 import { SponsorshipModule } from "./SponsorshipModule";
 import {
   CivilDocGuideOverlay,
@@ -160,7 +168,10 @@ interface StepViewProps {
       status: "not-started" | "in-progress" | "reviewed",
     ) => Promise<void>;
     savePaymentMethod?: (methodValue: string) => Promise<void>;
-    saveMailingDetails?: (carrier: string, trackingNumber: string) => Promise<void>;
+    saveMailingDetails?: (
+      carrier: string,
+      trackingNumber: string,
+    ) => Promise<void>;
   };
   onBack: () => void;
 }
@@ -206,6 +217,18 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
   }>({
     isOpen: false,
     doc: null,
+  });
+
+  const [multipleUploadModalState, setMultipleUploadModalState] = useState<{
+    isOpen: boolean;
+    categoryId: string;
+    documentName: string;
+    options: string[];
+  }>({
+    isOpen: false,
+    categoryId: "",
+    documentName: "",
+    options: [],
   });
 
   // Filing Quiz States
@@ -350,10 +373,18 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
   const [pccSaved, setPccSaved] = useState(state.metadata.pcc_saved === "true");
 
   // Appointment Received States
-  const [interviewSaved, setInterviewSaved] = useState(state.metadata.interviewSaved === true);
-  const [interviewDate, setInterviewDate] = useState((state.metadata.interviewDate as string) || "");
-  const [letterDate, setLetterDate] = useState((state.metadata.letterDate as string) || "");
-  const [consulateLocation, setConsulateLocation] = useState((state.metadata.consulateLocation as string) || "");
+  const [interviewSaved, setInterviewSaved] = useState(
+    state.metadata.interviewSaved === true,
+  );
+  const [interviewDate, setInterviewDate] = useState(
+    (state.metadata.interviewDate as string) || "",
+  );
+  const [letterDate, setLetterDate] = useState(
+    (state.metadata.letterDate as string) || "",
+  );
+  const [consulateLocation, setConsulateLocation] = useState(
+    (state.metadata.consulateLocation as string) || "",
+  );
 
   // Step 3.7 Interview Prep States
   const [isPrepLaunched, setIsPrepLaunched] = useState(
@@ -496,7 +527,6 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
     state.metadata?.filingMethod || state.filingType || "online";
 
   const getIcon = getStepIcon;
-
 
   const activeStepsInChapter = useMemo(() => {
     if (!currentChapter) return [];
@@ -649,7 +679,9 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
         try {
           const res = await fetch("/api/portal-wallet");
           const wallet = await res.json();
-          const nvcCreds = wallet.credentials?.find((c: any) => c.portal_type?.toUpperCase() === "NVC");
+          const nvcCreds = wallet.credentials?.find(
+            (c: any) => c.portal_type?.toUpperCase() === "NVC",
+          );
           if (nvcCreds) {
             if (nvcCreds.nvc_case_number) {
               actions.updateMetadata({ nvcCaseNum: nvcCreds.nvc_case_number });
@@ -666,7 +698,8 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
           // eslint-disable-next-line no-console
           console.error("Failed to sync NVC credentials to metadata", err);
         }
-        if (sId === "step_2_1" && !isCompleted) actions.toggleComplete("step_2_1");
+        if (sId === "step_2_1" && !isCompleted)
+          actions.toggleComplete("step_2_1");
       }
       if (data.portalType === "USCIS" && sId === "step_1_6") {
         if (!isCompleted) actions.toggleComplete("step_1_6");
@@ -889,23 +922,54 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
   const handleToggleComplete = () => {
     const stepKey = currentStep.step_key || sId;
     // Map step keys to correct metadata fields for milestone tracking
-    const milestoneMetaMap: Record<string, { key: string, value?: () => string }> = {
-      "step_1_3": { key: "receiptNum", value: () => new Date().toISOString().slice(0, 10) }, // I-130 submitted to USCIS
-      "step_2_10": { key: "dqDate", value: () => new Date().toISOString().slice(0, 10) },   // Documentarily Qualified
-      "step_3_1": { key: "medicalDate", value: () => new Date().toISOString().slice(0, 10) }, // Medical exam scheduled
-      "step_3_7": { key: "interviewDate", value: () => new Date().toISOString().slice(0, 10) }, // Interview scheduled
-      "step_2_1": { key: "nvcCaseNum", value: () => "NVC2026-" + Math.floor(Math.random()*1000000) }, // NVC case number (demo value)
-      "step_2_2": { key: "nvcInvoice", value: () => "INVC-" + Math.floor(Math.random()*1000000) }, // NVC invoice ID (demo value)
-      "step_3_7b": { key: "interviewEmbassy", value: () => "Islamabad" }, // Embassy (demo value)
+    const milestoneMetaMap: Record<
+      string,
+      { key: string; value?: () => string }
+    > = {
+      step_1_3: {
+        key: "receiptNum",
+        value: () => new Date().toISOString().slice(0, 10),
+      }, // I-130 submitted to USCIS
+      step_2_10: {
+        key: "dqDate",
+        value: () => new Date().toISOString().slice(0, 10),
+      }, // Documentarily Qualified
+      step_3_1: {
+        key: "medicalDate",
+        value: () => new Date().toISOString().slice(0, 10),
+      }, // Medical exam scheduled
+      step_3_7: {
+        key: "interviewDate",
+        value: () => new Date().toISOString().slice(0, 10),
+      }, // Interview scheduled
+      step_2_1: {
+        key: "nvcCaseNum",
+        value: () => "NVC2026-" + Math.floor(Math.random() * 1000000),
+      }, // NVC case number (demo value)
+      step_2_2: {
+        key: "nvcInvoice",
+        value: () => "INVC-" + Math.floor(Math.random() * 1000000),
+      }, // NVC invoice ID (demo value)
+      step_3_7b: { key: "interviewEmbassy", value: () => "Islamabad" }, // Embassy (demo value)
     };
     actions.toggleComplete(stepKey);
     // If this step is a milestone, set the metadata field if not already set
     const metaObj = milestoneMetaMap[stepKey];
-    if (metaObj && (state.metadata[metaObj.key] === undefined || state.metadata[metaObj.key] === null || state.metadata[metaObj.key] === "")) {
-      const value = metaObj.value ? metaObj.value() : new Date().toISOString().slice(0, 10);
+    if (
+      metaObj &&
+      (state.metadata[metaObj.key] === undefined ||
+        state.metadata[metaObj.key] === null ||
+        state.metadata[metaObj.key] === "")
+    ) {
+      const value = metaObj.value
+        ? metaObj.value()
+        : new Date().toISOString().slice(0, 10);
       // Debug log for tracking metadata update
       // eslint-disable-next-line no-console
-      console.log(`[Milestone] Setting metadata field '${metaObj.key}' to:`, value);
+      console.log(
+        `[Milestone] Setting metadata field '${metaObj.key}' to:`,
+        value,
+      );
       actions.updateMetadata({ [metaObj.key]: value });
     }
   };
@@ -945,7 +1009,6 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
       }
     }
   };
-
 
   const renderDocActionModal = () => {
     if (!docActionModal.doc) return null;
@@ -1698,7 +1761,13 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
     if (!tool) return null;
 
     if (tool.type === "awaiting_review") {
-      return <AwaitingReviewStep data={AWAITING_REVIEW_DATA} />;
+      return (
+        <AwaitingReviewStep
+          data={AWAITING_REVIEW_DATA}
+          state={state}
+          actions={actions}
+        />
+      );
     }
 
     // Theme detection based on icon or ID
@@ -1754,8 +1823,12 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
         <div className="w-full max-w-[680px] px-[24px] pb-[96px] flex flex-col">
           {/* Step Header */}
           <StepHeader
-            chapterNumber={currentChapter?.chapter_number || state.currentStage + 1}
-            chapterName={currentChapter?.chapter_name || currentChapter?.name || ""}
+            chapterNumber={
+              currentChapter?.chapter_number || state.currentStage + 1
+            }
+            chapterName={
+              currentChapter?.chapter_name || currentChapter?.name || ""
+            }
             stepName={currentStep.step_name}
             stepDescription={currentStep.step_description}
             isBeneficiaryTheme={isBeneficiaryTheme}
@@ -1824,13 +1897,17 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
           {/* Return Note (Success Banner) */}
           {isLaunched && (
             <div className="mb-[20px] bg-[#e8f5ef] border border-[#a8d9be] rounded-[10px] p-[14px_18px] flex items-start gap-[12px] animate-in slide-in-from-top-2 duration-300">
-              <div className="text-[15px] mt-[1px] text-[#15744f] shrink-0">✓</div>
+              <div className="text-[15px] mt-[1px] text-[#15744f] shrink-0">
+                ✓
+              </div>
               <div className="flex-1">
                 <div className="text-[13px] font-semibold text-[#15744f] mb-[2px]">
-                  {tool.launch_module.return_note?.title || "Tool launched in a new tab"}
+                  {tool.launch_module.return_note?.title ||
+                    "Tool launched in a new tab"}
                 </div>
                 <div className="text-[12px] text-[#3a4f63] leading-normal">
-                  {tool.launch_module?.return_note?.body || "Complete the process and return here."}
+                  {tool.launch_module?.return_note?.body ||
+                    "Complete the process and return here."}
                 </div>
               </div>
             </div>
@@ -1853,7 +1930,16 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
               actions={actions}
               metadata={state.metadata}
               dqState={{
-                dqSaved, setDqSaved, dqDate, setDqDate, dqCategory, setDqCategory, dqPost, setDqPost, dqCountry, setDqCountry
+                dqSaved,
+                setDqSaved,
+                dqDate,
+                setDqDate,
+                dqCategory,
+                setDqCategory,
+                dqPost,
+                setDqPost,
+                dqCountry,
+                setDqCountry,
               }}
             />
           )}
@@ -1863,7 +1949,14 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
               state={state}
               actions={actions}
               interviewState={{
-                interviewSaved, setInterviewSaved, interviewDate, setInterviewDate, letterDate, setLetterDate, consulateLocation, setConsulateLocation
+                interviewSaved,
+                setInterviewSaved,
+                interviewDate,
+                setInterviewDate,
+                letterDate,
+                setLetterDate,
+                consulateLocation,
+                setConsulateLocation,
               }}
             />
           )}
@@ -1873,8 +1966,20 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
               state={state}
               actions={actions}
               medState={{
-                medSaved, setMedSaved, medDate, setMedDate, medTime, setMedTime, medClinic, setMedClinic,
-                isMedWizardOpen, setIsMedWizardOpen, medWizardStep, setMedWizardStep, medWizardMode, setMedWizardMode
+                medSaved,
+                setMedSaved,
+                medDate,
+                setMedDate,
+                medTime,
+                setMedTime,
+                medClinic,
+                setMedClinic,
+                isMedWizardOpen,
+                setIsMedWizardOpen,
+                medWizardStep,
+                setMedWizardStep,
+                medWizardMode,
+                setMedWizardMode,
               }}
             />
           )}
@@ -1884,7 +1989,14 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
               state={state}
               actions={actions}
               polioState={{
-                polioLaunched, setPolioLaunched, isPolioGuideOpen, setIsPolioGuideOpen, polioGuideStep, setPolioGuideStep, polioChecks, setPolioChecks
+                polioLaunched,
+                setPolioLaunched,
+                isPolioGuideOpen,
+                setIsPolioGuideOpen,
+                polioGuideStep,
+                setPolioGuideStep,
+                polioChecks,
+                setPolioChecks,
               }}
             />
           )}
@@ -1894,7 +2006,18 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
               state={state}
               actions={actions}
               pccState={{
-                pccSaved, setPccSaved, pccReceived, setPccReceived, pccData, setPccData, isPccOverlayOpen, setIsPccOverlayOpen, pccOverlayStep, setPccOverlayStep, pccOverlayMode, setPccOverlayMode
+                pccSaved,
+                setPccSaved,
+                pccReceived,
+                setPccReceived,
+                pccData,
+                setPccData,
+                isPccOverlayOpen,
+                setIsPccOverlayOpen,
+                pccOverlayStep,
+                setPccOverlayStep,
+                pccOverlayMode,
+                setPccOverlayMode,
               }}
             />
           )}
@@ -1934,7 +2057,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
             />
           )} */}
 
-{/* HOUSEHOLD MEMBER BUILDER (Step 2.7 SPECIFIC) */}
+          {/* HOUSEHOLD MEMBER BUILDER (Step 2.7 SPECIFIC) */}
           {tool.type === "household_member" && renderHouseholdBuilder()}
 
           {tool.type === "submission_review" && (
@@ -1949,21 +2072,29 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
 
           {/* AWAITING NVC REVIEW (Step 2.9 SPECIFIC) */}
           {tool.type === "awaiting_review" && (
-            <AwaitingReviewStep data={AWAITING_REVIEW_DATA} />
+            <AwaitingReviewStep
+              data={AWAITING_REVIEW_DATA}
+              state={state}
+              actions={actions}
+            />
           )}
 
           {/* GATHER ORIGINAL DOCUMENTS (Step 3.4 SPECIFIC) */}
           {tool.type === "gathering_checklist" && (
-            <GatheringChecklistTool 
-              tool={tool} 
-              state={state} 
-              actions={actions} 
-              gatheringState={{ 
-                gatheringStatus, setGatheringStatus, 
-                selectedGatheringItem, setSelectedGatheringItem, 
-                isGatheringGuideOpen, setIsGatheringGuideOpen, 
-                gatheringGuideStep, setGatheringGuideStep 
-              }} 
+            <GatheringChecklistTool
+              tool={tool}
+              state={state}
+              actions={actions}
+              gatheringState={{
+                gatheringStatus,
+                setGatheringStatus,
+                selectedGatheringItem,
+                setSelectedGatheringItem,
+                isGatheringGuideOpen,
+                setIsGatheringGuideOpen,
+                gatheringGuideStep,
+                setGatheringGuideStep,
+              }}
             />
           )}
 
@@ -3807,7 +3938,55 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                                       );
                                       setActiveUploadId(doc.id);
                                       setActiveUploadType("doc");
-                                      openUploadModal(defId);
+
+                                      if (doc.id === "doc_citizenship") {
+                                        setMultipleUploadModalState({
+                                          isOpen: true,
+                                          categoryId: defId,
+                                          documentName: doc.name,
+                                          options: [
+                                            "U.S. passport",
+                                            "U.S. birth certificate",
+                                            "Certificate of Naturalization (Form N-550)",
+                                            "Certificate of Citizenship (Form N-560)",
+                                            "Consular Report of Birth Abroad (Form FS-240 / DS-1350)",
+                                          ],
+                                        });
+                                      } else if (
+                                        doc.id === "doc_relationship"
+                                      ) {
+                                        setMultipleUploadModalState({
+                                          isOpen: true,
+                                          categoryId: defId,
+                                          documentName: doc.name,
+                                          options: [
+                                            "Communication history",
+                                            "Photos together",
+                                            "Travel history",
+                                            "Shared finances",
+                                            "Shared residence",
+                                            "Family evidence",
+                                            "Affidavits",
+                                          ],
+                                        });
+                                      } else if (
+                                        doc.id === "doc_translations"
+                                      ) {
+                                        setMultipleUploadModalState({
+                                          isOpen: true,
+                                          categoryId: defId,
+                                          documentName: doc.name,
+                                          options: [
+                                            "Translated Nikah Nama",
+                                            "Translated NADRA MRC",
+                                            "Translated Birth Certificate",
+                                            "Translated Divorce Decree",
+                                            "Other Translated Civil Documents",
+                                          ],
+                                        });
+                                      } else {
+                                        openUploadModal(defId);
+                                      }
                                     },
                                   });
                                 }}
@@ -5137,6 +5316,25 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
           </div>
         )}
 
+      {/* Multiple Document Upload Modal Integration */}
+      {multipleUploadModalState.isOpen && (
+        <MultipleDocumentUploadModal
+          open={multipleUploadModalState.isOpen}
+          onClose={() =>
+            setMultipleUploadModalState((prev) => ({ ...prev, isOpen: false }))
+          }
+          categoryId={multipleUploadModalState.categoryId}
+          documentName={multipleUploadModalState.documentName}
+          options={multipleUploadModalState.options}
+          onUploadComplete={async () => {
+            if (activeUploadId && actions.updateDocumentStatus) {
+              await actions.updateDocumentStatus(activeUploadId, "reviewed");
+            }
+            await reloadDocuments();
+          }}
+        />
+      )}
+
       {/* Document Vault Integration */}
       {uploadModalOpen && selectedDocumentDefId && (
         <DocumentUploadModal
@@ -5186,4 +5384,3 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
 };
 
 export default StepView;
-
