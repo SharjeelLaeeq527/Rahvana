@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useMemo, useState, useEffect } from "react";
-import { ChevronDown, ArrowRight } from "lucide-react";
+import { ChevronDown, ArrowRight, BellRing, ExternalLink, Save, Check, AlertTriangle, Clock } from "lucide-react";
 import { RoadmapData } from "../types";
 import { WizardState } from "@/app/(main)/dashboard/hooks/useWizard";
 import {
@@ -19,6 +19,7 @@ interface DashboardViewProps {
   actions: {
     setCurrentStep: (idx: number) => void;
     setStage: (idx: number) => void;
+    updateMetadata: (metadata: Record<string, any>) => void;
   };
 }
 
@@ -38,6 +39,22 @@ export function DashboardView({
       "case-details": true,
     },
   );
+
+  const [outcome, setOutcome] = useState<string>(
+    (state?.metadata?.nvc_review_outcome as string) || ""
+  );
+  const [outcomeSaved, setOutcomeSaved] = useState<boolean>(
+    !!state?.metadata?.nvc_review_outcome
+  );
+
+  const handleSaveOutcome = () => {
+    if (!outcome) return;
+    setOutcomeSaved(true);
+    actions.updateMetadata({
+      nvc_review_outcome: outcome,
+      nvc_review_complete: outcome === "qualified"
+    });
+  };
 
   const toggleAccordion = (id: string) => {
     setOpenAccordions((prev) => ({
@@ -258,6 +275,134 @@ export function DashboardView({
                     <span className="text-[10px] font-bold text-[#6b8097]">Linked to Embassy</span>
                   </div>
                 </div>
+
+                {/* Daily Check Reminder & Outcome Tracker (USER REQUESTED) */}
+                {isCaseRegistered && !trackingStatus.nvc_review_complete && trackingStatus.dq_status !== "qualified" && (
+                  <div className="flex flex-col gap-4">
+                    {/* Daily Reminder Card - Premium Sleek Design */}
+                    {outcome !== "qualified" && (
+                      <div className="group relative bg-[#0c1b33] rounded-[22px] p-6 text-white shadow-[0_20px_50px_rgba(12,27,51,0.15)] overflow-hidden animate-in slide-in-from-top-2 duration-500">
+                        {/* Background Accents */}
+                        <div className="absolute top-0 right-0 w-[150px] h-[150px] bg-primary/20 rounded-full blur-[80px] -mr-10 -mt-10" />
+                        <div className="absolute bottom-0 left-0 w-[100px] h-[100px] bg-indigo-500/10 rounded-full blur-[60px] -ml-5 -mb-5" />
+                        
+                        <div className="relative flex items-center gap-5">
+                          <div className="w-12 h-12 rounded-[16px] bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center shrink-0 shadow-inner">
+                            <BellRing className="text-white h-5 w-5 animate-pulse" />
+                          </div>
+                          
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2 mb-1.5">
+                              <span className="text-[10px] font-black uppercase tracking-[0.15em] text-slate-300">Case Monitoring</span>
+                              <div className="h-px flex-1 bg-white/10" />
+                            </div>
+                            <h3 className="text-[17px] font-black tracking-tight mb-1">Check NVC Email & Portal Today</h3>
+                            <p className="text-[12.5px] text-slate-300 leading-relaxed mb-4 max-w-[480px]">
+                              To avoid delays, please check your CEAC portal daily. As soon as you are <span className="text-white font-bold">Documentary Qualified (DQ)</span>, record it below.
+                            </p>
+                            
+                            <button 
+                              onClick={() => window.open("https://ceac.state.gov/IV/Login.aspx", "_blank")}
+                              className="px-5 py-2.5 bg-white text-[#1e293b] rounded-[12px] text-[11.5px] font-black uppercase tracking-wider flex items-center gap-2 hover:bg-slate-100 transition-all cursor-pointer shadow-md"
+                            >
+                              Open CEAC Portal <ExternalLink size={13} strokeWidth={3} />
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Outcome Recording Form - Minimalist Theme Integration */}
+                    <div className="bg-white border-[1.5px] border-[#d0e4f7] rounded-[22px] p-6 shadow-sm relative transition-all">
+                      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                        <div className="flex items-center gap-4">
+                          <div className="w-10 h-10 rounded-[12px] bg-[#f4f7fb] flex items-center justify-center border border-[#d0e4f7] shrink-0">
+                            <Save className={`${outcomeSaved ? 'text-primary' : 'text-slate-400'}`} size={18} />
+                          </div>
+                          <div>
+                            <h3 className="text-[15px] font-black text-[#0c1b33]">Document Review Result</h3>
+                            <p className="text-[11.5px] text-[#6b8097]">
+                              {outcome === "qualified" 
+                                ? "Your case has been marked as Documentarily Qualified." 
+                                : "Check your inbox for NVC messages and record the updates here."}
+                            </p>
+                          </div>
+                        </div>
+
+                        {outcomeSaved ? (
+                          <button 
+                            onClick={() => setOutcomeSaved(false)}
+                            className="text-[11px] font-black text-primary uppercase tracking-widest hover:underline cursor-pointer flex items-center gap-1.5"
+                          >
+                            Edit Status <ArrowRight size={12} strokeWidth={3} />
+                          </button>
+                        ) : null}
+                      </div>
+
+                      <div className="h-px bg-[#d0e4f7]/60 my-5" />
+                      
+                      {!outcomeSaved ? (
+                        <div className="flex flex-col sm:flex-row gap-3">
+                          <div className="relative flex-1">
+                            <select
+                              value={outcome}
+                              onChange={(e) => setOutcome(e.target.value)}
+                              className="w-full appearance-none p-3.5 pr-10 border border-[#d0e4f7] rounded-[16px] text-[12.5px] font-bold text-[#3a4f63] bg-[#f8fafc] focus:outline-none focus:ring-4 focus:ring-primary/5 focus:border-primary transition-all cursor-pointer"
+                            >
+                              <option value="">Select current NVC status...</option>
+                              <option value="qualified">Documentary Qualified (DQ) - Complete</option>
+                              <option value="rfe">Corrections Needed (RFE / Checklist)</option>
+                              <option value="under_review">Still Awaiting Result / Under Review</option>
+                            </select>
+                            <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-[#6b8097]">
+                              <ChevronDown size={16} />
+                            </div>
+                          </div>
+                          
+                          <button
+                            onClick={handleSaveOutcome}
+                            disabled={!outcome}
+                            className={`flex items-center justify-center gap-2 px-8 py-3.5 rounded-[16px] text-[12.5px] font-black uppercase tracking-wider transition-all ${
+                              outcome 
+                                ? 'bg-primary text-white hover:bg-primary/90 hover:shadow-md cursor-pointer active:scale-95' 
+                                : 'bg-[#f4f7fb] text-[#b8d4f0] border border-[#d0e4f7] cursor-not-allowed'
+                            }`}
+                          >
+                            Save Update
+                          </button>
+                        </div>
+                      ) : (
+                        <div className={`p-4 rounded-[18px] flex items-start gap-4 animate-in zoom-in-95 duration-300 ${
+                          outcome === "qualified" 
+                            ? "bg-slate-50 border border-slate-200" 
+                            : outcome === "rfe"
+                              ? "bg-amber-50/50 border border-amber-200/60"
+                              : "bg-[#f4f7fb] border border-[#d0e4f7]"
+                        }`}>
+                          <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${
+                            outcome === "qualified" ? "bg-green-100 text-green-600" : outcome === "rfe" ? "bg-amber-100 text-amber-600" : "bg-slate-100 text-slate-600"
+                          }`}>
+                            {outcome === "qualified" ? <Check size={16} strokeWidth={3} /> : outcome === "rfe" ? <AlertTriangle size={16} strokeWidth={3} /> : <Clock size={16} strokeWidth={3} />}
+                          </div>
+                          <div className="flex-1">
+                            <div className={`text-[13px] font-black uppercase tracking-wider mb-0.5 ${
+                              outcome === "qualified" ? "text-green-800" : outcome === "rfe" ? "text-amber-800" : "text-slate-800"
+                            }`}>
+                              {outcome === "qualified" ? "Documentary Qualified" : outcome === "rfe" ? "Action Required" : "Awaiting Result"}
+                            </div>
+                            <p className="text-[12px] text-slate-600 leading-relaxed font-medium">
+                              {outcome === "qualified" 
+                                ? "NVC review complete. We are now preparing for your consular interview phase." 
+                                : outcome === "rfe"
+                                  ? "NVC has asked for corrections. Log in to CEAC immediately to view the checklist and re-upload documents."
+                                  : "Review is still in progress. Our daily reminders will stay active to keep you updated."}
+                            </p>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
 
                 {/* Case Under Review / Initial State */}
                 {!hasTrackingData && isCaseRegistered && (

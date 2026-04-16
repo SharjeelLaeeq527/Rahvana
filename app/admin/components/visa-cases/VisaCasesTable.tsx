@@ -418,55 +418,72 @@ export default function VisaCasesTable() {
           {selectedJourney && (
             <div className="space-y-6">
               {/* User Info */}
-              <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 p-4 bg-muted rounded-lg border border-slate-200">
-                <div>
-                  <Label className="text-muted-foreground text-xs">User Email</Label>
-                  <div className="flex items-center gap-2 mt-1">
-                    <p className="font-medium text-sm text-[#0c1b33]">{selectedJourney.user_email || "Unknown"}</p>
-                    <Copy className="h-3 w-3 text-slate-400 cursor-pointer hover:text-primary active:scale-95" onClick={() => navigator.clipboard.writeText(selectedJourney.user_email || "")} />
+              {/* User Info */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 p-5 bg-slate-50 rounded-xl border border-slate-200">
+                <div className="space-y-1">
+                  <Label className="text-muted-foreground text-[10px] uppercase tracking-wider font-semibold">User Email</Label>
+                  <div className="flex items-center gap-2">
+                    <p className="font-medium text-sm text-[#0c1b33] break-all">{selectedJourney.user_email || "Unknown"}</p>
+                    <button onClick={() => navigator.clipboard.writeText(selectedJourney.user_email || "")} className="p-1 hover:bg-slate-200 rounded transition-colors" title="Copy Email">
+                      <Copy className="h-3 w-3 text-slate-400 cursor-pointer" />
+                    </button>
                   </div>
                 </div>
-                <div>
-                  <Label className="text-muted-foreground text-xs">NVC Case Number</Label>
-                  <div className="flex items-center gap-2 mt-1">
-                    <p className="font-mono font-bold text-sm text-slate-800">{selectedJourney.nvc_case_number || "Not provided"}</p>
-                    {selectedJourney.nvc_case_number && <Copy className="h-3 w-3 text-slate-400 cursor-pointer hover:text-primary active:scale-95" onClick={() => navigator.clipboard.writeText(selectedJourney.nvc_case_number || "")} />}
+                <div className="space-y-1">
+                  <div className="flex items-center gap-1">
+                    <Label className="text-muted-foreground text-[10px] uppercase tracking-wider font-semibold">NVC Case Number</Label>
+                    <Badge variant="outline" className="text-[8px] h-3 px-1 border-teal-200 text-teal-600 bg-teal-50">Secure</Badge>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <p className="font-mono font-bold text-sm text-slate-800 break-all">{selectedJourney.nvc_case_number || "Not provided"}</p>
+                    {selectedJourney.nvc_case_number && (
+                      <button onClick={() => navigator.clipboard.writeText(selectedJourney.nvc_case_number || "")} className="p-1 hover:bg-slate-200 rounded transition-colors" title="Copy Case Number">
+                        <Copy className="h-3 w-3 text-slate-400 cursor-pointer" />
+                      </button>
+                    )}
                   </div>
                 </div>
-                <div>
-                  <Label className="text-muted-foreground text-xs">CEAC Invoice ID</Label>
-                  <div className="flex items-center gap-2 mt-1">
-                    <p className="font-mono font-bold text-sm text-slate-800">{selectedJourney.nvc_invoice || "Not provided"}</p>
-                    {selectedJourney.nvc_invoice && <Copy className="h-3 w-3 text-slate-400 cursor-pointer hover:text-primary active:scale-95" onClick={() => navigator.clipboard.writeText(selectedJourney.nvc_invoice || "")} />}
+                <div className="space-y-1">
+                  <div className="flex items-center gap-1">
+                    <Label className="text-muted-foreground text-[10px] uppercase tracking-wider font-semibold">Passport Number</Label>
+                    <Badge variant="outline" className="text-[8px] h-3 px-1 border-teal-200 text-teal-600 bg-teal-50">Secure</Badge>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <p className="font-mono font-bold text-sm text-slate-800 uppercase break-all">{selectedJourney.passport_number || "Not provided"}</p>
+                    {selectedJourney.passport_number && (
+                      <button onClick={() => navigator.clipboard.writeText(selectedJourney.passport_number || "")} className="p-1 hover:bg-slate-200 rounded transition-colors" title="Copy Passport">
+                        <Copy className="h-3 w-3 text-slate-400 cursor-pointer" />
+                      </button>
+                    )}
                   </div>
                 </div>
-                <div>
-                  <Label className="text-muted-foreground text-xs">Passport Number</Label>
-                  <div className="flex items-center gap-2 mt-1">
-                    <p className="font-mono font-bold text-sm text-slate-800 uppercase">{selectedJourney.passport_number || "Not provided"}</p>
-                    {selectedJourney.passport_number && <Copy className="h-3 w-3 text-slate-400 cursor-pointer hover:text-primary active:scale-95" onClick={() => navigator.clipboard.writeText(selectedJourney.passport_number || "")} />}
+                <div className="space-y-1">
+                  <div className="flex items-center gap-1">
+                    <Label className="text-muted-foreground text-[10px] uppercase tracking-wider font-semibold">Surname (First 5)</Label>
+                    <Badge variant="outline" className="text-[8px] h-3 px-1 border-teal-200 text-teal-600 bg-teal-50">Secure</Badge>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <p className="font-mono font-bold text-sm text-slate-800 uppercase break-all">{selectedJourney.surname || "Not provided"}</p>
+                    {selectedJourney.surname && (
+                      <button onClick={() => navigator.clipboard.writeText(selectedJourney.surname || "")} className="p-1 hover:bg-slate-200 rounded transition-colors" title="Copy Surname">
+                        <Copy className="h-3 w-3 text-slate-400 cursor-pointer" />
+                      </button>
+                    )}
                   </div>
                 </div>
-                <div>
-                  <Label className="text-muted-foreground text-xs">Surname (First 5 Letters)</Label>
-                  <div className="flex items-center gap-2 mt-1">
-                    <p className="font-mono font-bold text-sm text-slate-800 uppercase">{selectedJourney.surname || "Not provided"}</p>
-                    {selectedJourney.surname && <Copy className="h-3 w-3 text-slate-400 cursor-pointer hover:text-primary active:scale-95" onClick={() => navigator.clipboard.writeText(selectedJourney.surname || "")} />}
-                  </div>
-                </div>
-                <div>
-                  <Label className="text-muted-foreground text-xs">Journey Type</Label>
+                <div className="space-y-1">
+                  <Label className="text-muted-foreground text-[10px] uppercase tracking-wider font-semibold">Journey Type</Label>
                   <p className="font-semibold text-sm mt-1">{selectedJourney.journey_type}</p>
                 </div>
-                <div>
-                  <Label className="text-muted-foreground text-xs">Status</Label>
+                <div className="space-y-1">
+                  <Label className="text-muted-foreground text-[10px] uppercase tracking-wider font-semibold">Status</Label>
                   <div className="mt-1">{getStatusBadge(selectedJourney.status)}</div>
                 </div>
-                <div>
-                  <Label className="text-muted-foreground text-xs">Created</Label>
-                  <p className="text-sm mt-1 text-slate-600">
+                <div className="space-y-1">
+                  <Label className="text-muted-foreground text-[10px] uppercase tracking-wider font-semibold">Created Date</Label>
+                  <p className="text-sm mt-1 text-slate-600 font-medium">
                     {new Date(selectedJourney.created_at).toLocaleDateString("en-US", {
-                      month: "short",
+                      month: "long",
                       day: "numeric",
                       year: "numeric",
                     })}

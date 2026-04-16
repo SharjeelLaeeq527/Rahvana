@@ -1698,7 +1698,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
     if (!tool) return null;
 
     if (tool.type === "awaiting_review") {
-      return <AwaitingReviewStep data={AWAITING_REVIEW_DATA} />;
+      return <AwaitingReviewStep data={AWAITING_REVIEW_DATA} state={state} actions={actions} />;
     }
 
     // Theme detection based on icon or ID
@@ -1949,7 +1949,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
 
           {/* AWAITING NVC REVIEW (Step 2.9 SPECIFIC) */}
           {tool.type === "awaiting_review" && (
-            <AwaitingReviewStep data={AWAITING_REVIEW_DATA} />
+            <AwaitingReviewStep data={AWAITING_REVIEW_DATA} state={state} actions={actions} />
           )}
 
           {/* GATHER ORIGINAL DOCUMENTS (Step 3.4 SPECIFIC) */}

@@ -473,12 +473,12 @@ export function useWizard(options: UseWizardOptions = {}) {
           const wallet = await res.json();
           const nvcCreds = wallet.credentials?.find((c: any) => c.portal_type?.toUpperCase() === "NVC");
           if (nvcCreds) {
-            if (nvcCreds.nvc_case_number) mergedMetadata.nvcCaseNum = nvcCreds.nvc_case_number;
-            if (nvcCreds.nvc_invoice_id) mergedMetadata.nvcInvoice = nvcCreds.nvc_invoice_id;
+            // Only sync from wallet if the form didn't just provide a new value
+            if (nvcCreds.nvc_case_number && !metadata.nvcCaseNum) mergedMetadata.nvcCaseNum = nvcCreds.nvc_case_number;
+            if (nvcCreds.nvc_invoice_id && !metadata.nvcInvoice) mergedMetadata.nvcInvoice = nvcCreds.nvc_invoice_id;
           }
           const uscisCreds = wallet.credentials?.find((c: any) => c.portal_type?.toUpperCase() === "USCIS");
-          if (uscisCreds && uscisCreds.receipt_number) mergedMetadata.receiptNum = uscisCreds.receipt_number;
-          // Add more fields as needed
+          if (uscisCreds && uscisCreds.receipt_number && !metadata.receiptNum) mergedMetadata.receiptNum = uscisCreds.receipt_number;
         } catch (err) {
           console.error("[useWizard] Failed to sync Portal Wallet to metadata:", err);
         }

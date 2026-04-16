@@ -86,6 +86,23 @@ export default function NotificationCenter({
       });
     }
 
+    // Daily Reminder during NVC Review
+    if (!trackingStatus?.nvc_review_complete && !trackingStatus?.dq_status && trackingStatus?.nvc_case_number) {
+      mockNotifications.push({
+        id: "4",
+        user_id: userId || "user",
+        journey_id: journeyId || "journey",
+        type: "nvc_check_reminder",
+        priority: "normal",
+        title: NOTIFICATION_TEMPLATES.nvc_check_reminder.title,
+        body: NOTIFICATION_TEMPLATES.nvc_check_reminder.body,
+        status: "unread",
+        created_at: now,
+        action_label: "Open CEAC Portal",
+        action_url: "https://ceac.state.gov/IV/Login.aspx"
+      });
+    }
+
     setNotifications(mockNotifications.sort((a, b) => 
       new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
     ));
