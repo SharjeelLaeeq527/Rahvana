@@ -137,6 +137,8 @@ import { InterviewPrepTool } from "./InterviewPrepTool";
 import { InterviewDayTool } from "./InterviewDayTool";
 import CaseRegistrationForm from "./CaseRegistrationForm";
 import { EMBASSY_GUIDANCE_DATA } from "@/app/(tools)/(visa)/221g-action-planner/utils/embassyGuidance";
+import { APPROVAL_NOTICE_DATA } from "./ApprovalNoticeData";
+import { ApprovalNoticeTool } from "./ApprovalNoticeTool";
 
 interface SecurityQuestion {
   id: string;
@@ -416,6 +418,23 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
   );
   const [isApSaved, setIsApSaved] = useState(state.metadata.apSaved === "true");
   const [isApUpdateModalOpen, setIsApUpdateModalOpen] = useState(false);
+
+  // Step 1.17 Approval Notice States
+  const [isApprovalModalOpen, setIsApprovalModalOpen] = useState(false);
+  const [isApprovalGuideOpen, setIsApprovalGuideOpen] = useState(false);
+  const [approvalGuideStep, setApprovalGuideStep] = useState(0);
+  const [approvalDetails, setApprovalDetails] = useState(() => {
+    return (
+      state.metadata.approvalDetails || {
+        approvalDate: "",
+        receiptNumber: "",
+        priorityDate: "",
+      }
+    );
+  });
+  const [isApprovalSaved, setIsApprovalSaved] = useState(
+    state.metadata.approvalSaved === "true",
+  );
 
   const handleSaveApUpdate = (entry: any) => {
     const nextLog = [entry, ...apUpdateLog];
@@ -1423,7 +1442,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                 <div className="text-[10px] font-bold tracking-widest uppercase text-white/35 mb-1">
                   CEAC Guidance
                 </div>
-                <div className="text-[clamp(19px,2.8vw,23px)] font-serif text-white/92 leading-tight">
+                <div className="text-[clamp(19px,2.8vw,23px)] text-white/92 leading-tight">
                   Add sponsorship participants in CEAC
                 </div>
               </div>
@@ -1940,6 +1959,25 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                 setDqPost,
                 dqCountry,
                 setDqCountry,
+              }}
+            />
+          )}
+
+          {tool.type === "approval_notice" && (
+            <ApprovalNoticeTool
+              state={state}
+              actions={actions}
+              approvalState={{
+                isApprovalModalOpen,
+                setIsApprovalModalOpen,
+                isApprovalGuideOpen,
+                setIsApprovalGuideOpen,
+                approvalGuideStep,
+                setApprovalGuideStep,
+                approvalDetails,
+                setApprovalDetails,
+                isApprovalSaved,
+                setIsApprovalSaved,
               }}
             />
           )}
@@ -3483,7 +3521,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
 
           {/* Disclaimer */}
           <p
-            className={`${currentStep.step_key === "step_2_4" || currentStep.step_key === "step_2_6" || currentStep.step_key === "step_2_7" ? "mt-10" : "mt-0"} text-[11.5px] text-[#6b8097] leading-[1.65] text-center pt-[8px]`}
+            className={`${currentStep.step_key === "step_2_4" || currentStep.step_key === "step_2_6" || currentStep.step_key === "step_2_7"|| currentStep.step_key === "step_1_17" ? "mt-10" : "mt-0"} text-[11.5px] text-[#6b8097] leading-[1.65] text-center pt-[8px]`}
           >
             {tool.disclaimer ||
               "Rahvana provides structured guidance only. This is not legal advice. Consult a licensed immigration attorney for case-specific decisions."}
