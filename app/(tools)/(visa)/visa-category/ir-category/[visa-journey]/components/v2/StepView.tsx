@@ -544,6 +544,409 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
   const sId = currentStep?.step_key || (currentStep as any)?.id || "";
   const isCompleted = state.completedSteps.has(sId);
 
+  // --- CUSTOM RENDER FOR STEP 11 & 12 ---
+  // step_1_15: Register Receipt Notice & Track Case
+  // step_1_16: Monitor USCIS Case Status
+  // --- PIXEL-PERFECT UI FOR STEP 11 ---
+  if (sId === "step_1_15" && currentStep.tool_data) {
+    // UI state: "waiting", "register", "tracked"
+    const [uiState, setUiState] = React.useState<'waiting'|'register'|'tracked'>('waiting');
+    const tool = currentStep.tool_data;
+    // Dummy state for form fields (not persisted)
+    const [manual, setManual] = React.useState({ receipt: '', noticeDate: '', priorityDate: '', caseLabel: '' });
+    const [upload, setUpload] = React.useState({ file: null, receipt: '', noticeDate: '', priorityDate: '' });
+    const [error, setError] = React.useState('');
+    const [success, setSuccess] = React.useState(false);
+    // Overlay tutorial state for guide
+    const [isGuideOpen, setIsGuideOpen] = React.useState(false);
+    const [guideStep, setGuideStep] = React.useState(0);
+    // Steps content (from HTML)
+    // Use a placeholder image for all steps until screenshots are uploaded
+    const placeholder = '/assets/images/placeholder-ss.png';
+    const receiptGuideSteps = [
+      {
+        label: 'Step 1 of 4 — Watch for USCIS acceptance',
+        heading: 'Look for the first accepted-filing notice',
+        instruction: 'After USCIS accepts the filing, watch your <strong>USCIS online account</strong>, any available <strong>e-notification</strong>, and the <strong>physical notice by mail</strong>. The goal is to bring back the receipt number once it appears.',
+        ssLabel: 'USCIS Notice Sources',
+        ssHeadline: 'USCIS Account · Email/Text · Mail Notice',
+        ssDesc: 'Any of these may be the first place you notice the case has been accepted.',
+        ssHighlight: null,
+        caption: 'Return to Rahvana once you have the receipt number or the notice itself.',
+        note: null,
+        screenshot: placeholder,
+      },
+      {
+        label: 'Step 2 of 4 — Find the receipt number',
+        heading: 'Find the 13-character receipt number',
+        instruction: 'The receipt number is the core tracking identifier. It consists of <strong>3 letters followed by 10 numbers</strong>, such as IOE1234567890.',
+        ssLabel: 'Receipt Number Pattern',
+        ssHeadline: '3 letters + 10 numbers',
+        ssDesc: 'Common prefixes include IOE, EAC, WAC, LIN, SRC, NBC, or MSC.',
+        ssHighlight: 'Example: IOE1234567890',
+        caption: 'This is the number Rahvana should save to enable case monitoring.',
+        note: 'If the notice contains multiple numbers, prioritize the USCIS receipt number tied to the I-130 filing.',
+        screenshot: placeholder,
+      },
+      {
+        label: 'Step 3 of 4 — Decide how to register it',
+        heading: 'Choose the easiest intake path',
+        instruction: 'If you already have the document, upload the notice. If you only have the receipt number from the portal or an e-notification, manual entry is faster.',
+        ssLabel: 'Rahvana Intake Options',
+        ssHeadline: 'Upload Notice or Enter Receipt Number',
+        ssDesc: 'Both paths end in the same confirmation and tracked-case state.',
+        ssHighlight: null,
+        caption: 'Upload is useful for preserving the notice. Manual entry is useful when speed matters more.',
+        note: null,
+        screenshot: placeholder,
+      },
+      {
+        label: 'Step 4 of 4 — Save and turn on monitoring',
+        heading: 'Confirm the details and enable tracking',
+        instruction: 'Before saving, confirm the receipt number and any dates shown on the notice. After that, Rahvana can store the case record, enable tracking, and keep a timeline of changes.',
+        ssLabel: 'Tracked Case State',
+        ssHeadline: 'Receipt Registered · Tracking Enabled',
+        ssDesc: 'Status history and notifications should begin from the saved baseline.',
+        ssHighlight: 'Store receipt number → Save baseline status',
+        caption: 'For IR-1, saving the priority date is useful for records, but it should not dominate this step.',
+        note: 'This prototype represents tracking honestly: monitored status checks and notifications, not a promise of an official USCIS developer-grade API.',
+        screenshot: placeholder,
+      },
+    ];
+    // --- ICONS ---
+    const CheckIcon = () => (<svg viewBox="0 0 24 24" className="w-5 h-5" fill="none" stroke="currentColor"><polyline points="20 6 9 17 4 12" /></svg>);
+    const BookIcon = () => (<svg viewBox="0 0 24 24" className="w-5 h-5" fill="none" stroke="currentColor"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>);
+    const PortalIcon = () => (<svg viewBox="0 0 24 24" className="w-6 h-6" fill="none" stroke="currentColor"><rect x="4" y="5" width="16" height="14"/><path d="M4 9h16"/><path d="M8 14h8"/><path d="M8 18h5"/></svg>);
+
+    // --- PIXEL-PERFECT LAYOUT ---
+    return (
+      <div className="max-w-[720px] mx-auto px-6 py-12 flex flex-col">
+        {/* Eyebrow */}
+        <div className="flex items-center gap-2 mb-1">
+          <span className="text-[11px] font-semibold uppercase tracking-wider text-[#6b8097]">Chapter 1 · USCIS Petition Filing</span>
+          <span className="text-[11px] text-[#b8d4f0]">›</span>
+          <span className="text-[11px] font-semibold uppercase tracking-wider text-[#2f6fd4]">{tool.title}</span>
+        </div>
+        {/* Title & Desc */}
+        <h1 className="font-serif text-[clamp(28px,4.5vw,38px)] text-[#0c1b33] leading-[1.15] tracking-tight mb-2">{tool.title}</h1>
+        <p className="text-[15px] text-[#3a4f63] leading-[1.7] max-w-[560px] mb-6">{tool.subtitle}</p>
+        {/* Chips */}
+        <div className="flex gap-2 flex-wrap mb-9">
+          <span className="chip chip-role bg-[#e8f1fb] text-[#2d4a6e] border border-[#d0e4f7] text-[11px] font-semibold uppercase px-3 py-1 rounded-full">Petitioner</span>
+          <span className="chip chip-path bg-[#fff7ed] text-[#b45309] border border-[#fed7aa] text-[11px] font-semibold uppercase px-3 py-1 rounded-full">Online Filing</span>
+          <span className="chip chip-track bg-[#e8f5ef] text-[#15744f] border border-[#a8d9be] text-[11px] font-semibold uppercase px-3 py-1 rounded-full">Tracking</span>
+        </div>
+        {/* Launch Module */}
+        <div className="rounded-2xl border border-white/10 bg-[#101e35] shadow-[0_20px_60px_rgba(12,27,51,0.18)] mb-5 relative overflow-hidden">
+          <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-[#2f6fd4] via-[#15744f] to-transparent opacity-80" />
+          <div className="p-8 md:p-[32px_34px_28px]">
+            <div className="flex items-start gap-4 mb-6">
+              <div className="w-[46px] h-[46px] rounded-[11px] bg-white/6 border border-white/10 flex items-center justify-center shrink-0">
+                <PortalIcon />
+              </div>
+              <div>
+                <div className="text-[10px] font-bold uppercase tracking-widest text-white/35 mb-1">Post-Filing Checkpoint · Receipt Registration</div>
+                <div className="font-serif text-[clamp(19px,2.8vw,23px)] text-white/92 leading-tight">Wait for the notice, register it, then let Rahvana monitor the case</div>
+              </div>
+            </div>
+            <div className="h-px bg-white/10 mb-5" />
+            {/* Phases */}
+            {tool.phases && tool.phases.map((p: any, i: number) => (
+              <div key={i} className="flex gap-2 items-start bg-white/5 border border-white/10 rounded-[10px] px-4 py-3 mb-2">
+                <span className="text-[10px] font-bold uppercase tracking-widest text-white/80 px-3 py-1 rounded-full bg-white/10 border border-white/10 whitespace-nowrap">{p.badge}</span>
+                <span className="text-[13px] text-white/60 leading-snug">{p.copy}</span>
+              </div>
+            ))}
+            {/* Launch Cues */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mt-2 mb-2">
+              {tool.launch_cues && tool.launch_cues.map((cue: string, i: number) => (
+                <div key={i} className="flex gap-2 items-start bg-white/5 border border-white/10 rounded-[10px] px-4 py-3">
+                  <span className="w-[5px] h-[5px] rounded-full bg-[#64dca0] mt-1.5 shrink-0" />
+                  <span className="text-[13px] text-white/60 leading-snug">{cue}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+        {/* State Shells */}
+        {uiState === 'waiting' && (
+          <>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
+              <button className="card bg-white border-[1.5px] border-[#a8d9be] rounded-2xl p-5 flex flex-col items-start hover:border-[#2f6fd4] transition" onClick={() => setUiState('register')}>
+                <div className="card-icon icon-green w-10 h-10 rounded-xl bg-[#e8f5ef] border border-[#a8d9be] flex items-center justify-center mb-3"><CheckIcon /></div>
+                <div className="font-semibold text-[#0c1b33] mb-1">I Received My Receipt Notice</div>
+                <div className="text-[13px] text-[#6b8097] mb-2">Move into the registration step and save the receipt details inside Rahvana.</div>
+                <div className="flex items-center gap-1 text-[#2f6fd4] font-semibold text-[12px] mt-2">Register notice <svg viewBox="0 0 24 24" className="w-4 h-4" fill="none" stroke="currentColor"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></div>
+              </button>
+              <button className="card bg-white border-[1.5px] border-[#c9bef2] rounded-2xl p-5 flex flex-col items-start hover:border-[#2f6fd4] transition" onClick={() => setIsGuideOpen(true)}>
+                <div className="card-icon icon-purple w-10 h-10 rounded-xl bg-[#f3f0fb] border border-[#c9bef2] flex items-center justify-center mb-3"><BookIcon /></div>
+                <div className="font-semibold text-[#0c1b33] mb-1">Where Do I Find the Receipt Number?</div>
+                <div className="text-[13px] text-[#6b8097] mb-2">Open a short walkthrough that shows where to look and what information to bring back.</div>
+                <div className="flex items-center gap-1 text-[#2f6fd4] font-semibold text-[12px] mt-2">Open guide <svg viewBox="0 0 24 24" className="w-4 h-4" fill="none" stroke="currentColor"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></div>
+              </button>
+            </div>
+            <p className="text-[12px] text-[#6b8097] text-center mt-2">Best next move: wait until USCIS accepts the filing, then return here with the receipt number or receipt notice.</p>
+            {/* Guide Dialog */}
+            {/* Receipt Notice Guide Overlay */}
+            {isGuideOpen && (
+              <div className="fixed inset-0 z-[200] bg-white flex flex-col overflow-hidden animate-fadeIn">
+                {/* Topbar */}
+                <div className="flex items-center px-6 py-4 border-b border-[#d0e4f7] gap-4 flex-shrink-0">
+                  <button className="w-9 h-9 rounded-full border bg-[#f4f7fb] flex items-center justify-center hover:bg-[#e8f1fb]" onClick={() => setIsGuideOpen(false)}>
+                    <svg viewBox="0 0 24 24" className="w-5 h-5" fill="none" stroke="#3a4f63" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                  </button>
+                  <div className="flex-1 h-2 bg-[#d0e4f7] rounded-full overflow-hidden">
+                    <div className="h-full bg-gradient-to-r from-[#2f6fd4] to-[#6aa8f0] rounded-full transition-all duration-300" style={{ width: `${(guideStep/(receiptGuideSteps.length-1))*100}%` }} />
+                  </div>
+                  <div className="text-[12px] font-medium text-[#6b8097] whitespace-nowrap ml-4">{guideStep+1} / {receiptGuideSteps.length}</div>
+                </div>
+                {/* Body */}
+                <div className="flex-1 flex justify-center overflow-y-auto px-2 md:px-0 py-0 md:py-0">
+                  <div className="w-full max-w-[580px] mx-auto flex flex-col pt-12 pb-8 px-4 md:px-0">
+                    <div className="text-[11px] font-semibold uppercase tracking-widest text-[#2f6fd4] mb-4">Receipt Notice Guide · {receiptGuideSteps[guideStep].label}</div>
+                    <h2 className="font-serif text-[clamp(22px,3.2vw,28px)] text-[#0c1b33] leading-[1.2] mb-3">{receiptGuideSteps[guideStep].heading}</h2>
+                    <div className="text-[15px] text-[#3a4f63] leading-[1.7] mb-6" dangerouslySetInnerHTML={{__html: receiptGuideSteps[guideStep].instruction}} />
+                    {/* Screenshot section - visually enhanced placeholder, fixed overflow */}
+                    <div className="w-full max-w-[420px] mx-auto rounded-2xl border border-[#d0e4f7] mb-6 bg-gradient-to-br from-[#f4f7fb] via-[#eef3fa] to-[#e8f1fb] shadow-[0_4px_24px_rgba(47,111,212,0.07)]">
+                      <div className="flex items-center gap-2 px-5 py-2 border-b border-[#d0e4f7] bg-[#eef3fa] rounded-t-2xl">
+                        <span className="w-3 h-3 rounded-full bg-[#f87171]" />
+                        <span className="w-3 h-3 rounded-full bg-[#fbbf24]" />
+                        <span className="w-3 h-3 rounded-full bg-[#34d399]" />
+                        <span className="flex-1 h-5 ml-3 bg-white border border-[#d0e4f7] rounded px-2 text-[10px] text-[#6b8097] font-mono flex items-center">{receiptGuideSteps[guideStep].ssLabel}</span>
+                      </div>
+                      <div className="flex flex-col items-center justify-center min-h-[200px] px-8 py-8 bg-transparent rounded-b-2xl">
+                        {/* Placeholder box for screenshot */}
+                        <div className="w-full max-w-[320px] h-[130px] flex flex-col items-center justify-center border-2 border-dashed border-[#b8d4f0] bg-white/80 rounded-xl mb-3 shadow-inner">
+                          <svg className="w-10 h-10 text-[#b8d4f0] mb-2" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="14" rx="2"/><path d="M8 14h8"/><path d="M8 18h5"/></svg>
+                          <span className="text-[13px] text-[#b8d4f0] font-semibold">Screenshot coming soon</span>
+                        </div>
+                        <div className="flex flex-col items-center gap-1 w-full">
+                          <div className="text-[13px] font-semibold text-[#0c1b33]">{receiptGuideSteps[guideStep].ssHeadline}</div>
+                          <div className="text-[14px] text-[#3a4f63] mb-1">{receiptGuideSteps[guideStep].ssDesc}</div>
+                          {receiptGuideSteps[guideStep].ssHighlight && <div className="px-3 py-2 bg-[#e8f1fb] border border-[#2f6fd4]/20 rounded-lg text-[13px] font-semibold text-[#2f6fd4] mb-1">{receiptGuideSteps[guideStep].ssHighlight}</div>}
+                        </div>
+                      </div>
+                      {receiptGuideSteps[guideStep].caption && <div className="px-5 py-3 border-t border-[#d0e4f7] bg-white text-[12.5px] text-[#6b8097] rounded-b-2xl">{receiptGuideSteps[guideStep].caption}</div>}
+                    </div>
+                    {receiptGuideSteps[guideStep].note && <div className="bg-[#fef8e8] border border-[#f0d98a] rounded-lg p-4 text-[14px] text-[#8a6200] mb-6">{receiptGuideSteps[guideStep].note}</div>}
+                    {/* Navigation */}
+                    <div className="flex gap-3 mt-2 justify-end">
+                      <button className="tut-btn-back px-5 py-2 rounded-full border text-[14px] font-semibold bg-white border-[#d0e4f7] text-[#6b8097]" disabled={guideStep===0} onClick={()=>setGuideStep(s=>Math.max(0,s-1))}>Back</button>
+                      {guideStep < receiptGuideSteps.length-1 ? (
+                        <button className="tut-btn-next flex-1 px-5 py-2 rounded-full text-white bg-[#2f6fd4] font-semibold" onClick={()=>setGuideStep(s=>s+1)}>Next</button>
+                      ) : (
+                        <button className="tut-btn-done flex-1 px-5 py-2 rounded-full text-white bg-[#15744f] font-semibold" onClick={()=>setIsGuideOpen(false)}>Done</button>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+          </>
+        )}
+        {uiState === 'register' && (
+          <div className="panel bg-white border-[1.5px] border-[#d0e4f7] rounded-2xl p-8 md:p-10 mb-6 shadow-lg">
+            <div className="font-serif text-[22px] text-[#0c1b33] mb-2">Register the receipt notice</div>
+            <div className="text-[14px] text-[#3a4f63] mb-6">Choose the easiest intake path. <span className="font-semibold text-[#2f6fd4]">Manual entry</span> is the fastest. <span className="font-semibold text-[#b45309]">Upload</span> is helpful when you want Rahvana to preserve the notice as part of the case record.</div>
+            <div className="flex gap-2 mb-6">
+              <button className={`switch-btn px-5 py-2 rounded-full border text-[13px] font-semibold mr-2 ${manual ? 'bg-[#2f6fd4] text-white border-[#2f6fd4]' : 'bg-white text-[#3a4f63] border-[#d0e4f7]'}`}>Enter Receipt Number</button>
+              <button className={`switch-btn px-5 py-2 rounded-full border text-[13px] font-semibold ${!manual ? 'bg-[#2f6fd4] text-white border-[#2f6fd4]' : 'bg-white text-[#3a4f63] border-[#d0e4f7]'}`}>Upload Receipt Notice</button>
+            </div>
+            {error && <div className="error show bg-[#fff1f2] border border-[#fecdd3] rounded-lg p-3 text-[13px] text-[#9f1239] mb-2">{error}</div>}
+            {success && <div className="success-banner show bg-[#e8f5ef] border border-[#a8d9be] rounded-lg p-3 text-[13px] text-[#15744f] mb-2">Notice added for this session. Confirm the extracted details below, then save the case to enable tracking.</div>}
+            {/* Manual Entry */}
+            <div className="form-grid grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-5 mb-4">
+              <div className="form-field col-span-2 flex flex-col">
+                <label className="form-label text-[12px] font-semibold uppercase text-[#6b8097] mb-1">Receipt Number</label>
+                <input className="form-input border border-[#d0e4f7] rounded-lg px-4 py-3 text-[15px]" placeholder="IOE1234567890" maxLength={13} value={manual.receipt} onChange={e => setManual({ ...manual, receipt: e.target.value })} />
+              </div>
+              <div className="form-field flex flex-col">
+                <label className="form-label text-[12px] font-semibold uppercase text-[#6b8097] mb-1">Notice Date</label>
+                <input className="form-input border border-[#d0e4f7] rounded-lg px-4 py-3 text-[15px]" type="date" value={manual.noticeDate} onChange={e => setManual({ ...manual, noticeDate: e.target.value })} />
+              </div>
+              <div className="form-field flex flex-col">
+                <label className="form-label text-[12px] font-semibold uppercase text-[#6b8097] mb-1">Priority Date</label>
+                <input className="form-input border border-[#d0e4f7] rounded-lg px-4 py-3 text-[15px]" type="date" value={manual.priorityDate} onChange={e => setManual({ ...manual, priorityDate: e.target.value })} />
+              </div>
+              <div className="form-field col-span-2 flex flex-col">
+                <label className="form-label text-[12px] font-semibold uppercase text-[#6b8097] mb-1">Case Label (optional)</label>
+                <input className="form-input border border-[#d0e4f7] rounded-lg px-4 py-3 text-[15px]" placeholder="IR-1 I-130 · March 2026 filing" value={manual.caseLabel} onChange={e => setManual({ ...manual, caseLabel: e.target.value })} />
+              </div>
+            </div>
+            <div className="bg-[#fef8e8] border border-[#f0d98a] rounded-lg p-3 text-[13px] text-[#8a6200] mb-4">Rahvana should always confirm the receipt number with the user before turning on tracking. Upload parsing can help, but it should never silently save extracted values without review.</div>
+            <div className="flex gap-2 mt-2">
+              <button className="ghost-btn px-5 py-2 rounded-full border text-[14px] font-semibold bg-white border-[#d0e4f7] text-[#6b8097]" onClick={() => setUiState('waiting')}>Back</button>
+              <button className="primary-btn px-5 py-2 rounded-full text-white bg-[#2f6fd4] font-semibold" onClick={() => setUiState('tracked')}>Save Receipt & Enable Tracking</button>
+            </div>
+          </div>
+        )}
+        {uiState === 'tracked' && (
+          <>
+            <div className="summary bg-[#e8f5ef] border border-[#a8d9be] rounded-2xl p-6 mb-6">
+              <div className="font-serif text-[24px] text-[#0e5c3c] mb-1">Receipt notice registered</div>
+              <div className="text-[14px] text-[#3a4f63] mb-4">Rahvana now has the core case reference needed to monitor status changes. The current values below are stored locally in this prototype to simulate the tracked-case state.</div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
+                <div className="summary-card bg-white border border-[#a8d9be] rounded-lg p-4"><div className="text-[10px] font-bold uppercase text-[#6b8097] mb-1">Receipt Number</div><div className="text-[14px] font-semibold text-[#0c1b33]">{manual.receipt || '—'}</div></div>
+                <div className="summary-card bg-white border border-[#a8d9be] rounded-lg p-4"><div className="text-[10px] font-bold uppercase text-[#6b8097] mb-1">Tracking</div><div className="text-[14px] font-semibold text-[#0c1b33]">Enabled</div></div>
+                <div className="summary-card bg-white border border-[#a8d9be] rounded-lg p-4"><div className="text-[10px] font-bold uppercase text-[#6b8097] mb-1">Notice Date</div><div className="text-[14px] font-semibold text-[#0c1b33]">{manual.noticeDate || 'Not saved'}</div></div>
+                <div className="summary-card bg-white border border-[#a8d9be] rounded-lg p-4"><div className="text-[10px] font-bold uppercase text-[#6b8097] mb-1">Priority Date</div><div className="text-[14px] font-semibold text-[#0c1b33]">{manual.priorityDate || 'Not saved'}</div></div>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
+                <div className="summary-card bg-white border border-[#a8d9be] rounded-lg p-4"><div className="text-[10px] font-bold uppercase text-[#6b8097] mb-1">Last Known Status</div><div className="text-[14px] font-semibold text-[#0c1b33]">Case Was Received</div></div>
+                <div className="summary-card bg-white border border-[#a8d9be] rounded-lg p-4"><div className="text-[10px] font-bold uppercase text-[#6b8097] mb-1">Last Checked</div><div className="text-[14px] font-semibold text-[#0c1b33]">Just now</div></div>
+              </div>
+              <div className="flex gap-2 mt-2">
+                <button className="ghost-btn px-4 py-2 rounded-full border text-[13px] font-semibold bg-white border-[#d0e4f7] text-[#6b8097]">View Saved Receipt Details</button>
+                <button className="ghost-btn px-4 py-2 rounded-full border text-[13px] font-semibold bg-white border-[#d0e4f7] text-[#6b8097]" onClick={() => setUiState('register')}>Update Receipt Info</button>
+              </div>
+            </div>
+            <div className="panel bg-white border-[1.5px] border-[#d0e4f7] rounded-2xl p-6 mb-6">
+              <div className="font-semibold text-[15px] text-[#0c1b33] mb-1">Status timeline</div>
+              <div className="text-[13px] text-[#6b8097] mb-4">This prototype shows how Rahvana can keep a clean history of status changes without pretending USCIS provides a perfect developer-grade notification feed.</div>
+              <div className="flex flex-col gap-3">
+                <div className="flex gap-3 items-start bg-white border border-[#a8d9be] rounded-lg p-3">
+                  <span className="w-[10px] h-[10px] rounded-full bg-[#15744f] mt-1.5 shrink-0" />
+                  <div>
+                    <div className="text-[13px] font-bold text-[#0c1b33] mb-1">Tracking enabled</div>
+                    <div className="text-[12px] text-[#6b8097]">Rahvana stored the receipt number and began monitoring for future changes.</div>
+                  </div>
+                </div>
+                <div className="flex gap-3 items-start bg-white border border-[#a8d9be] rounded-lg p-3">
+                  <span className="w-[10px] h-[10px] rounded-full bg-[#15744f] mt-1.5 shrink-0" />
+                  <div>
+                    <div className="text-[13px] font-bold text-[#0c1b33] mb-1">Case Was Received</div>
+                    <div className="text-[12px] text-[#6b8097]">Initial placeholder status stored as the baseline for future comparisons.</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </>
+        )}
+        {tool.footer_note && (
+          <div className="mt-8 text-xs text-[#6b8097] border-t pt-4">{tool.footer_note}</div>
+        )}
+      </div>
+    );
+  }
+
+  if (sId === "step_1_16" && currentStep.tool_data) {
+    const tool = currentStep.tool_data;
+    return (
+      <div className="max-w-2xl mx-auto px-4 py-10">
+        <h1 className="text-2xl font-bold mb-2">{tool.title}</h1>
+        <div className="text-lg text-gray-700 mb-6">{tool.subtitle}</div>
+        {tool.launch_module && (
+          <div className="mb-6 border rounded-lg p-4 bg-white">
+            <div className="font-semibold mb-2">Current Status: <span className="text-blue-700">{tool.launch_module.status?.hero}</span></div>
+            <div className="mb-2 text-gray-700">{tool.launch_module.status?.copy}</div>
+            <div className="mb-2 text-xs text-green-700">{tool.launch_module.status?.badge}</div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mb-2">
+              {tool.launch_module.metrics?.map((m: any, i: number) => (
+                <div key={i} className="border rounded px-2 py-1 bg-gray-50">
+                  <div className="font-bold text-xs">{m.label}</div>
+                  <div className="text-sm">{m.value}</div>
+                  <div className="text-xs text-gray-500">{m.sub}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+        {tool.checklist && (
+          <div className="mb-6">
+            <div className="font-semibold mb-2">Checklist:</div>
+            <ul className="list-disc ml-6 space-y-1">
+              {tool.checklist.map((c: any, i: number) => (
+                <li key={i}><span className="font-bold">{c.title}:</span> {c.copy}</li>
+              ))}
+            </ul>
+          </div>
+        )}
+        {tool.future_timeline && (
+          <div className="mb-6">
+            <div className="font-semibold mb-2">Future Timeline:</div>
+            <ol className="list-decimal ml-6 space-y-1">
+              {tool.future_timeline.map((t: any, i: number) => (
+                <li key={i}><span className="font-bold mr-2">{t.title}:</span>{t.copy} <span className="text-xs text-blue-600">{t.pill}</span></li>
+              ))}
+            </ol>
+          </div>
+        )}
+        {tool.useful_now && (
+          <div className="mb-6">
+            <div className="font-semibold mb-2">Useful Right Now:</div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {tool.useful_now.map((u: any, i: number) => (
+                <div key={i} className="border rounded-lg p-4 bg-gray-50">
+                  <div className="font-bold text-primary mb-1">{u.title}</div>
+                  <div className="text-gray-700 mb-2">{u.copy}</div>
+                  <button className="text-blue-600 underline text-sm">{u.action}</button>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+        {tool.relevant_updates && (
+          <div className="mb-6">
+            <div className="font-semibold mb-2">Relevant Updates:</div>
+            <ul className="list-disc ml-6 space-y-1">
+              {tool.relevant_updates.map((u: any, i: number) => (
+                <li key={i}><span className="font-bold">{u.title}:</span> {u.copy} <span className="text-xs text-gray-500">({u.source})</span></li>
+              ))}
+            </ul>
+          </div>
+        )}
+        {tool.build_case && (
+          <div className="mb-6">
+            <div className="font-semibold mb-2">Keep Building Your Case:</div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {tool.build_case.map((b: any, i: number) => (
+                <div key={i} className="border rounded-lg p-4 bg-gray-50">
+                  <div className="font-bold text-primary mb-1">{b.title}</div>
+                  <div className="text-gray-700 mb-2">{b.copy}</div>
+                  {b.buttons && b.buttons.map((btn: string, j: number) => (
+                    <button key={j} className="text-blue-600 underline text-xs mr-2">{btn}</button>
+                  ))}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+        {tool.community && (
+          <div className="mb-6">
+            <div className="font-semibold mb-2">Community & Proof Layer:</div>
+            <ul className="list-disc ml-6 space-y-1">
+              {tool.community.map((c: any, i: number) => (
+                <li key={i}>
+                  <div className="italic">{c.quote}</div>
+                  <div className="text-xs text-gray-500">{c.meta} <span className="text-gray-400">{c.sub}</span></div>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+        {tool.tutorial_steps && (
+          <div className="mb-6">
+            <div className="font-semibold mb-2">Tutorial Steps:</div>
+            <ol className="list-decimal ml-6 space-y-2">
+              {tool.tutorial_steps.map((step: any, i: number) => (
+                <li key={i}>
+                  <div className="font-bold">{step.label}</div>
+                  <div className="text-gray-700">{step.heading}</div>
+                  <div className="text-sm">{step.instruction}</div>
+                  {step.copy && <div className="text-xs text-gray-500">{step.copy}</div>}
+                  {step.note && <div className="text-xs text-blue-600">{step.note}</div>}
+                </li>
+              ))}
+            </ol>
+          </div>
+        )}
+        {tool.footer_note && (
+          <div className="mt-8 text-xs text-gray-500 border-t pt-4">{tool.footer_note}</div>
+        )}
+      </div>
+    );
+  }
+
   const allActiveSteps = useMemo(
     () => getAllActiveSteps(data, filingMethod),
     [data, filingMethod],
