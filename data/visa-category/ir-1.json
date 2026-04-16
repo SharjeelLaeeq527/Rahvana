@@ -1582,12 +1582,12 @@
                 "ss_desc": "Credit card · Debit card · ACH bank transfer",
                 "ss_highlight": null,
                 "caption": "USCIS uses Pay.gov for online fee collection. Your payment information is handled by that secure federal payment system.",
-                "note": "Do not close the browser tab during payment processing. Wait for the confirmation page before navigating away."
+                "note": "Do not close the browser tab during payment processing. Wait for the confirmation screen."
               },
               {
                 "label": "Step 4 of 4 — Receive your receipt notice",
                 "heading": "Payment complete — receipt issued immediately",
-                "instruction": "After successful payment, USCIS immediately issues a <strong>receipt notice</strong> with your case number (typically beginning with \"IOE\"). Your case is now officially submitted. Download or save this receipt — you will need the case number to track your case.",
+                "instruction": "After successful payment, USCIS immediately issues a <strong>receipt notice</strong> with your case number (typically beginning with \"IOE\"). Your case is now officially submitted. Download or save this receipt — it is your proof of filing and your case tracking number.",
                 "url": "my.uscis.gov",
                 "screenshot": null,
                 "ss_label": "Submission Complete",
@@ -1893,7 +1893,7 @@
             "action_items": [
               {
                 "title": "Use a paper-filing payment method",
-                "description": "Prepare the fee using a method USCIS currently accepts for paper filing. Verify the method and the amount before mailing."
+                "description": "Prepare the fee using the paper-filing payment method you plan to use. Verify the method and the amount before mailing."
               },
               {
                 "title": "Keep payment at the front of the packet",
@@ -1902,6 +1902,7 @@
             ],
             "second_card_title": "Save payment method",
             "second_card_subtitle": "Store the method you plan to use so the packet checklist stays consistent.",
+            "action_button_label": "Save payment method",
             "action_button_status_heading": "Payment method saved",
             "action_button_status_message": "Saved payment method: {selected_method}.",
             "dropdown_card": {
@@ -2392,7 +2393,7 @@
                             ],
                             "tutorial_steps": [
                               { "label": "Step 1 of 4 — Open official USCIS status tools", "heading": "Start with the official case-status view", "instruction": "USCIS case-status tools revolve around the receipt number. The official status view usually reflects the latest recorded action on the case.", "url": "egov.uscis.gov", "kicker": "Official USCIS tracking", "head": "Case Status Online", "copy": "Track your case using the 13-character receipt number.", "pills": ["Receipt number required", "Last action shown", "Official USCIS tool"], "note": "A quiet status page does not necessarily mean nothing is happening internally. It usually means there has been no new official outward-facing update yet." },
-                              { "label": "Step 2 of 4 — Understand common pending statuses", "heading": "Learn the difference between waiting and action-required states", "instruction": "Most of the time, a pending case is in a waiting state like “Case Was Received” or “Case Is Being Actively Reviewed.” The important distinction is whether USCIS is simply processing or has asked for something.", "url": "rahvana.local/status-map", "kicker": "Status guide", "head": "Status meanings", "copy": "Separate passive waiting from states that require action.", "pills": ["Received", "Actively reviewed", "RFE", "Approved"], "note": "Use this guide to understand whether you need to act now or simply stay prepared." },
+                              { "label": "Step 2 of 4 — Understand common pending statuses", "heading": "Learn the difference between waiting and action-required states", "instruction": "Most of the time, a pending case is in a waiting state like \"Case Was Received\" or \"Case Is Being Actively Reviewed.\" The important distinction is whether USCIS is simply processing or has asked for something.", "url": "rahvana.local/status-map", "kicker": "Status guide", "head": "Status meanings", "copy": "Separate passive waiting from states that require action.", "pills": ["Received", "Actively reviewed", "RFE", "Approved"], "note": "Use this guide to understand whether you need to act now or simply stay prepared." },
                               { "label": "Step 3 of 4 — Use the waiting period well", "heading": "Turn waiting time into preparation time", "instruction": "Use this waiting period to stay prepared, keep your records current, and learn what usually comes next in the journey.", "url": "rahvana.local/pending-prep", "kicker": "While-you-wait tools", "head": "Stay prepared while waiting", "copy": "A prep checklist, next-step preview, and useful modules for this waiting period.", "pills": ["Prep checklist", "Coming next", "Useful right now"], "note": "A few small tasks now can make the next phase feel much easier when the case moves forward." },
                               { "label": "Step 4 of 4 — Know when the page should pivot", "heading": "Be ready for the next meaningful change", "instruction": "If USCIS later issues a request for evidence, approval, or another major update, your next step here should change with it.", "url": "rahvana.local/conditional-next-steps", "kicker": "Next-step guide", "head": "Pivot when USCIS changes the status", "copy": "RFE and approval should each unlock their own dedicated next-step experiences.", "pills": ["Conditional branches", "Next step unlocks", "Action clarity"], "note": "Your next task should match the actual update USCIS gives you." }
                             ],
@@ -2585,7 +2586,7 @@
                 "url": "ceac.state.gov",
                 "ss_label": "CEAC Login",
                 "ss_headline": "Sign In to Your Immigrant Visa Case",
-                "ss_desc": "Sign In"
+                "ss_desc": "NVC Case Number: ISL2026XXXXXX, Invoice ID: ••••••••••••••••"
               },
               {
                 "label": "Step 2 of 6 — Enter case details",
@@ -3283,7 +3284,6 @@
           "step_number": 9,
           "step_name": "Awaiting NVC Document Review",
           "step_short_description": "NVC processing & review",
-          "step_description": "Your documents have been submitted. NVC is now reviewing your package for completeness and consistency before issuing a documentary qualification decision.",
           "step_type": "tool",
           "who": "NVC",
           "where": "NVC Review",
@@ -3983,7 +3983,7 @@
               "heading": "Step-by-step guide from arrival to outcome",
               "icon": "building",
               "cues": [
-                "Arrival timing and embassy entry",
+                "Arrival timing and embassy entry is strict",
                 "Security, biometrics, and document intake",
                 "Consular interview flow and common questions",
                 "Possible outcomes and what happens next"
@@ -4044,7 +4044,7 @@
               {
                 "label": "Step 8 of 8",
                 "heading": "Possible outcomes after the interview",
-                "instruction": "The officer will indicate the outcome at the window or shortly after. The three main outcomes are approval, Administrative Processing (AP), or refusal. If AP applies, proceed to Step 9 to track your case.",
+                "instruction": "The officer will indicate the outcome at the window or shortly after. The three main outcomes are approval, Administrative Processing (AP), or refusal. If AP applies, proceed to Step 9 to track and manage the AP process.",
                 "vlabel": "Interview Outcomes",
                 "visual": "<div class=\"mock-card\">\n      <div class=\"mock-title\">What you may hear</div>\n      <div class=\"mock-row\">Approved — passport retained, visa to be delivered <span class=\"mock-badge-green\">Best</span></div>\n      <div class=\"mock-row\">Administrative Processing — more time needed <span class=\"mock-badge-amber\">Step 9</span></div>\n      <div class=\"mock-row\">Refused — written reason provided <span class=\"mock-badge-blue\">Consult attorney</span></div>\n    </div>"
               }

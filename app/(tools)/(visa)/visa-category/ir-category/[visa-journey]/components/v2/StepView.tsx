@@ -1,4 +1,9 @@
 "use client";
+import { ProcessingTimeModal, MilestonesModal, AfterI130ApprovalModal, RelationshipEvidenceModal, AffidavitSupportModal, AddEvidenceNoteModal } from "./StatusModals";
+import { GuideTutorialOverlay } from "./GuideTutorialOverlays";
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+
 
 import React, { useEffect, useMemo, useState, useCallback } from "react";
 import {
@@ -129,7 +134,9 @@ import { CourierRegistrationTool } from "./CourierRegistrationTool";
 import { InterviewPrepTool } from "./InterviewPrepTool";
 import { InterviewDayTool } from "./InterviewDayTool";
 import CaseRegistrationForm from "./CaseRegistrationForm";
+
 import { EMBASSY_GUIDANCE_DATA } from "@/app/(tools)/(visa)/221g-action-planner/utils/embassyGuidance";
+
 
 interface SecurityQuestion {
   id: string;
@@ -175,6 +182,71 @@ interface FilingQuizResult {
 }
 
 export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
+          // Status Guide Tutorial Overlay state
+          const [showStatusGuide, setShowStatusGuide] = useState(false);
+          const [statusGuideStep, setStatusGuideStep] = useState(0);
+
+          // USCIS Status Tutorial Steps (from HTML)
+          const USCIS_STATUS_TUTORIAL_STEPS = [
+            {
+              label: 'Step 1 of 4 — Open official USCIS status tools',
+              heading: 'Start with the official case-status view',
+              instruction: 'USCIS case-status tools revolve around the receipt number. The official status view usually reflects the latest recorded action on the case.',
+              url: 'egov.uscis.gov',
+              kicker: 'Official USCIS tracking',
+              head: 'Case Status Online',
+              copy: 'Track your case using the 13-character receipt number.',
+              pills: ['Receipt number required','Last action shown','Official USCIS tool'],
+              note: 'A quiet status page does not necessarily mean nothing is happening internally. It usually means there has been no new official outward-facing update yet.'
+            },
+            {
+              label: 'Step 2 of 4 — Understand common pending statuses',
+              heading: 'Learn the difference between waiting and action-required states',
+              instruction: 'Most of the time, a pending case is in a waiting state like “Case Was Received” or “Case Is Being Actively Reviewed.” The important distinction is whether USCIS is simply processing or has asked for something.',
+              url: 'rahvana.local/status-map',
+              kicker: 'Status guide',
+              head: 'Status meanings',
+              copy: 'Separate passive waiting from states that require action.',
+              pills: ['Received','Actively reviewed','RFE','Approved'],
+              note: 'Use this guide to understand whether you need to act now or simply stay prepared.'
+            },
+            {
+              label: 'Step 3 of 4 — Use the waiting period well',
+              heading: 'Turn waiting time into preparation time',
+              instruction: 'Use this waiting period to stay prepared, keep your records current, and learn what usually comes next in the journey.',
+              url: 'rahvana.local/pending-prep',
+              kicker: 'While-you-wait tools',
+              head: 'Stay prepared while waiting',
+              copy: 'A prep checklist, next-step preview, and useful modules for this waiting period.',
+              pills: ['Prep checklist','Coming next','Useful right now'],
+              note: 'A few small tasks now can make the next phase feel much easier when the case moves forward.'
+            },
+            {
+              label: 'Step 4 of 4 — Know when the page should pivot',
+              heading: 'Be ready for the next meaningful change',
+              instruction: 'If USCIS later issues a request for evidence, approval, or another major update, your next step here should change with it.',
+              url: 'rahvana.local/conditional-next-steps',
+              kicker: 'Next-step guide',
+              head: 'Pivot when USCIS changes the status',
+              copy: 'RFE and approval should each unlock their own dedicated next-step experiences.',
+              pills: ['Conditional branches','Next step unlocks','Action clarity'],
+              note: 'Your next task should match the actual update USCIS gives you.'
+            }
+          ];
+        // Add Evidence Note modal state
+        const [showAddEvidenceNoteModal, setShowAddEvidenceNoteModal] = useState(false);
+      // Useful Right Now modals
+      const [showAfterI130Modal, setShowAfterI130Modal] = useState(false);
+      const [showRelationshipEvidenceModal, setShowRelationshipEvidenceModal] = useState(false);
+      const [showAffidavitSupportModal, setShowAffidavitSupportModal] = useState(false);
+    // Modal state for status explainer panel
+    const [showProcessingModal, setShowProcessingModal] = React.useState(false);
+    const [showMilestonesModal, setShowMilestonesModal] = React.useState(false);
+  // Status panel modal states for step_1_16 (must be inside component)
+  const [isProcessingTimeModalOpen, setIsProcessingTimeModalOpen] = useState(false);
+  const [isMilestonesModalOpen, setIsMilestonesModalOpen] = useState(false);
+  const handleProcessingTimeModalToggle = () => setIsProcessingTimeModalOpen((v) => !v);
+  const handleMilestonesModalToggle = () => setIsMilestonesModalOpen((v) => !v);
   const { user } = useAuth();
   const {
     openUploadModal,
@@ -544,10 +616,23 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
   const sId = currentStep?.step_key || (currentStep as any)?.id || "";
   const isCompleted = state.completedSteps.has(sId);
 
+  // --- PIXEL-PERFECT UI FOR STEP 11 ---
+  // Move guide steps state to top-level so it persists across renders
+  const [receiptGuideSteps, setReceiptGuideSteps] = React.useState<any[]>([]);
+  React.useEffect(() => {
+    import('@/data/receipt-guide-steps.json').then((mod) => {
+      setReceiptGuideSteps(
+        mod.default.map((step: any) => ({
+          ...step,
+          screenshot: '/assets/images/placeholder-ss.png',
+        }))
+      );
+    });
+  }, []);
+
   // --- CUSTOM RENDER FOR STEP 11 & 12 ---
   // step_1_15: Register Receipt Notice & Track Case
   // step_1_16: Monitor USCIS Case Status
-  // --- PIXEL-PERFECT UI FOR STEP 11 ---
   if (sId === "step_1_15" && currentStep.tool_data) {
     // UI state: "waiting", "register", "tracked"
     const [uiState, setUiState] = React.useState<'waiting'|'register'|'tracked'>('waiting');
@@ -560,59 +645,6 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
     // Overlay tutorial state for guide
     const [isGuideOpen, setIsGuideOpen] = React.useState(false);
     const [guideStep, setGuideStep] = React.useState(0);
-    // Steps content (from HTML)
-    // Use a placeholder image for all steps until screenshots are uploaded
-    const placeholder = '/assets/images/placeholder-ss.png';
-    const receiptGuideSteps = [
-      {
-        label: 'Step 1 of 4 — Watch for USCIS acceptance',
-        heading: 'Look for the first accepted-filing notice',
-        instruction: 'After USCIS accepts the filing, watch your <strong>USCIS online account</strong>, any available <strong>e-notification</strong>, and the <strong>physical notice by mail</strong>. The goal is to bring back the receipt number once it appears.',
-        ssLabel: 'USCIS Notice Sources',
-        ssHeadline: 'USCIS Account · Email/Text · Mail Notice',
-        ssDesc: 'Any of these may be the first place you notice the case has been accepted.',
-        ssHighlight: null,
-        caption: 'Return to Rahvana once you have the receipt number or the notice itself.',
-        note: null,
-        screenshot: placeholder,
-      },
-      {
-        label: 'Step 2 of 4 — Find the receipt number',
-        heading: 'Find the 13-character receipt number',
-        instruction: 'The receipt number is the core tracking identifier. It consists of <strong>3 letters followed by 10 numbers</strong>, such as IOE1234567890.',
-        ssLabel: 'Receipt Number Pattern',
-        ssHeadline: '3 letters + 10 numbers',
-        ssDesc: 'Common prefixes include IOE, EAC, WAC, LIN, SRC, NBC, or MSC.',
-        ssHighlight: 'Example: IOE1234567890',
-        caption: 'This is the number Rahvana should save to enable case monitoring.',
-        note: 'If the notice contains multiple numbers, prioritize the USCIS receipt number tied to the I-130 filing.',
-        screenshot: placeholder,
-      },
-      {
-        label: 'Step 3 of 4 — Decide how to register it',
-        heading: 'Choose the easiest intake path',
-        instruction: 'If you already have the document, upload the notice. If you only have the receipt number from the portal or an e-notification, manual entry is faster.',
-        ssLabel: 'Rahvana Intake Options',
-        ssHeadline: 'Upload Notice or Enter Receipt Number',
-        ssDesc: 'Both paths end in the same confirmation and tracked-case state.',
-        ssHighlight: null,
-        caption: 'Upload is useful for preserving the notice. Manual entry is useful when speed matters more.',
-        note: null,
-        screenshot: placeholder,
-      },
-      {
-        label: 'Step 4 of 4 — Save and turn on monitoring',
-        heading: 'Confirm the details and enable tracking',
-        instruction: 'Before saving, confirm the receipt number and any dates shown on the notice. After that, Rahvana can store the case record, enable tracking, and keep a timeline of changes.',
-        ssLabel: 'Tracked Case State',
-        ssHeadline: 'Receipt Registered · Tracking Enabled',
-        ssDesc: 'Status history and notifications should begin from the saved baseline.',
-        ssHighlight: 'Store receipt number → Save baseline status',
-        caption: 'For IR-1, saving the priority date is useful for records, but it should not dominate this step.',
-        note: 'This prototype represents tracking honestly: monitored status checks and notifications, not a promise of an official USCIS developer-grade API.',
-        screenshot: placeholder,
-      },
-    ];
     // --- ICONS ---
     const CheckIcon = () => (<svg viewBox="0 0 24 24" className="w-5 h-5" fill="none" stroke="currentColor"><polyline points="20 6 9 17 4 12" /></svg>);
     const BookIcon = () => (<svg viewBox="0 0 24 24" className="w-5 h-5" fill="none" stroke="currentColor"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>);
@@ -675,13 +707,13 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
               <button className="card bg-white border-[1.5px] border-[#a8d9be] rounded-2xl p-5 flex flex-col items-start hover:border-[#2f6fd4] transition" onClick={() => setUiState('register')}>
                 <div className="card-icon icon-green w-10 h-10 rounded-xl bg-[#e8f5ef] border border-[#a8d9be] flex items-center justify-center mb-3"><CheckIcon /></div>
                 <div className="font-semibold text-[#0c1b33] mb-1">I Received My Receipt Notice</div>
-                <div className="text-[13px] text-[#6b8097] mb-2">Move into the registration step and save the receipt details inside Rahvana.</div>
+                <div className="text-[13px] text-[#6b8097] text-left mb-2">Move into the registration step and save the receipt details inside Rahvana.</div>
                 <div className="flex items-center gap-1 text-[#2f6fd4] font-semibold text-[12px] mt-2">Register notice <svg viewBox="0 0 24 24" className="w-4 h-4" fill="none" stroke="currentColor"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></div>
               </button>
               <button className="card bg-white border-[1.5px] border-[#c9bef2] rounded-2xl p-5 flex flex-col items-start hover:border-[#2f6fd4] transition" onClick={() => setIsGuideOpen(true)}>
                 <div className="card-icon icon-purple w-10 h-10 rounded-xl bg-[#f3f0fb] border border-[#c9bef2] flex items-center justify-center mb-3"><BookIcon /></div>
                 <div className="font-semibold text-[#0c1b33] mb-1">Where Do I Find the Receipt Number?</div>
-                <div className="text-[13px] text-[#6b8097] mb-2">Open a short walkthrough that shows where to look and what information to bring back.</div>
+                <div className="text-[13px] text-[#6b8097] text-left mb-2">Open a short walkthrough that shows where to look and what information to bring back.</div>
                 <div className="flex items-center gap-1 text-[#2f6fd4] font-semibold text-[12px] mt-2">Open guide <svg viewBox="0 0 24 24" className="w-4 h-4" fill="none" stroke="currentColor"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></div>
               </button>
             </div>
@@ -689,58 +721,14 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
             {/* Guide Dialog */}
             {/* Receipt Notice Guide Overlay */}
             {isGuideOpen && (
-              <div className="fixed inset-0 z-[200] bg-white flex flex-col overflow-hidden animate-fadeIn">
-                {/* Topbar */}
-                <div className="flex items-center px-6 py-4 border-b border-[#d0e4f7] gap-4 flex-shrink-0">
-                  <button className="w-9 h-9 rounded-full border bg-[#f4f7fb] flex items-center justify-center hover:bg-[#e8f1fb]" onClick={() => setIsGuideOpen(false)}>
-                    <svg viewBox="0 0 24 24" className="w-5 h-5" fill="none" stroke="#3a4f63" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-                  </button>
-                  <div className="flex-1 h-2 bg-[#d0e4f7] rounded-full overflow-hidden">
-                    <div className="h-full bg-gradient-to-r from-[#2f6fd4] to-[#6aa8f0] rounded-full transition-all duration-300" style={{ width: `${(guideStep/(receiptGuideSteps.length-1))*100}%` }} />
-                  </div>
-                  <div className="text-[12px] font-medium text-[#6b8097] whitespace-nowrap ml-4">{guideStep+1} / {receiptGuideSteps.length}</div>
-                </div>
-                {/* Body */}
-                <div className="flex-1 flex justify-center overflow-y-auto px-2 md:px-0 py-0 md:py-0">
-                  <div className="w-full max-w-[580px] mx-auto flex flex-col pt-12 pb-8 px-4 md:px-0">
-                    <div className="text-[11px] font-semibold uppercase tracking-widest text-[#2f6fd4] mb-4">Receipt Notice Guide · {receiptGuideSteps[guideStep].label}</div>
-                    <h2 className="font-serif text-[clamp(22px,3.2vw,28px)] text-[#0c1b33] leading-[1.2] mb-3">{receiptGuideSteps[guideStep].heading}</h2>
-                    <div className="text-[15px] text-[#3a4f63] leading-[1.7] mb-6" dangerouslySetInnerHTML={{__html: receiptGuideSteps[guideStep].instruction}} />
-                    {/* Screenshot section - visually enhanced placeholder, fixed overflow */}
-                    <div className="w-full max-w-[420px] mx-auto rounded-2xl border border-[#d0e4f7] mb-6 bg-gradient-to-br from-[#f4f7fb] via-[#eef3fa] to-[#e8f1fb] shadow-[0_4px_24px_rgba(47,111,212,0.07)]">
-                      <div className="flex items-center gap-2 px-5 py-2 border-b border-[#d0e4f7] bg-[#eef3fa] rounded-t-2xl">
-                        <span className="w-3 h-3 rounded-full bg-[#f87171]" />
-                        <span className="w-3 h-3 rounded-full bg-[#fbbf24]" />
-                        <span className="w-3 h-3 rounded-full bg-[#34d399]" />
-                        <span className="flex-1 h-5 ml-3 bg-white border border-[#d0e4f7] rounded px-2 text-[10px] text-[#6b8097] font-mono flex items-center">{receiptGuideSteps[guideStep].ssLabel}</span>
-                      </div>
-                      <div className="flex flex-col items-center justify-center min-h-[200px] px-8 py-8 bg-transparent rounded-b-2xl">
-                        {/* Placeholder box for screenshot */}
-                        <div className="w-full max-w-[320px] h-[130px] flex flex-col items-center justify-center border-2 border-dashed border-[#b8d4f0] bg-white/80 rounded-xl mb-3 shadow-inner">
-                          <svg className="w-10 h-10 text-[#b8d4f0] mb-2" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="14" rx="2"/><path d="M8 14h8"/><path d="M8 18h5"/></svg>
-                          <span className="text-[13px] text-[#b8d4f0] font-semibold">Screenshot coming soon</span>
-                        </div>
-                        <div className="flex flex-col items-center gap-1 w-full">
-                          <div className="text-[13px] font-semibold text-[#0c1b33]">{receiptGuideSteps[guideStep].ssHeadline}</div>
-                          <div className="text-[14px] text-[#3a4f63] mb-1">{receiptGuideSteps[guideStep].ssDesc}</div>
-                          {receiptGuideSteps[guideStep].ssHighlight && <div className="px-3 py-2 bg-[#e8f1fb] border border-[#2f6fd4]/20 rounded-lg text-[13px] font-semibold text-[#2f6fd4] mb-1">{receiptGuideSteps[guideStep].ssHighlight}</div>}
-                        </div>
-                      </div>
-                      {receiptGuideSteps[guideStep].caption && <div className="px-5 py-3 border-t border-[#d0e4f7] bg-white text-[12.5px] text-[#6b8097] rounded-b-2xl">{receiptGuideSteps[guideStep].caption}</div>}
-                    </div>
-                    {receiptGuideSteps[guideStep].note && <div className="bg-[#fef8e8] border border-[#f0d98a] rounded-lg p-4 text-[14px] text-[#8a6200] mb-6">{receiptGuideSteps[guideStep].note}</div>}
-                    {/* Navigation */}
-                    <div className="flex gap-3 mt-2 justify-end">
-                      <button className="tut-btn-back px-5 py-2 rounded-full border text-[14px] font-semibold bg-white border-[#d0e4f7] text-[#6b8097]" disabled={guideStep===0} onClick={()=>setGuideStep(s=>Math.max(0,s-1))}>Back</button>
-                      {guideStep < receiptGuideSteps.length-1 ? (
-                        <button className="tut-btn-next flex-1 px-5 py-2 rounded-full text-white bg-[#2f6fd4] font-semibold" onClick={()=>setGuideStep(s=>s+1)}>Next</button>
-                      ) : (
-                        <button className="tut-btn-done flex-1 px-5 py-2 rounded-full text-white bg-[#15744f] font-semibold" onClick={()=>setIsGuideOpen(false)}>Done</button>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              </div>
+              <GuideTutorialOverlay
+                isOpen={isGuideOpen}
+                onClose={() => setIsGuideOpen(false)}
+                tutorial={receiptGuideSteps}
+                index={guideStep}
+                setIndex={setGuideStep}
+                title="Receipt Notice Guide"
+              />
             )}
           </>
         )}
@@ -831,117 +819,395 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
 
   if (sId === "step_1_16" && currentStep.tool_data) {
     const tool = currentStep.tool_data;
+    // Reusable MetaChips component (move outside render)
+
+    // Move MetaChips outside the render body
+    function MetaChips() {
+      return (
+        <div className="flex gap-2 flex-wrap mb-6">
+          <span className="chip chip-role bg-[#e8f1fb] text-[#2d4a6e] border border-[#d0e4f7] text-[11px] font-semibold uppercase px-3 py-1 rounded-full">Petitioner</span>
+          <span className="chip chip-path bg-[#fff7ed] text-[#b45309] border border-[#fed7aa] text-[11px] font-semibold uppercase px-3 py-1 rounded-full">Online Filing</span>
+          <span className="chip chip-track bg-[#f3f0fb] text-[#4a2d8a] border border-[#c9bef2] text-[11px] font-semibold uppercase px-3 py-1 rounded-full">USCIS Tracking</span>
+        </div>
+      );
+    }
+
+    // Checklist Panel as a component
+    type ChecklistPanelProps = {
+      onShowProcessingModal: () => void;
+      onShowMilestonesModal: () => void;
+    };
+    function ChecklistPanel({ onShowProcessingModal, onShowMilestonesModal }: ChecklistPanelProps) {
+      // Interactive checklist state (persisted to localStorage)
+      const checklistKey = 'ir1_step12_checklist';
+      const initialChecklist = useMemo(() => {
+        if (typeof window !== 'undefined') {
+          const saved = localStorage.getItem(checklistKey);
+          if (saved) return JSON.parse(saved);
+        }
+        // Default: all false
+        return tool.checklist ? tool.checklist.map(() => false) : [];
+      }, [tool.checklist]);
+      const [checklist, setChecklist] = useState(initialChecklist);
+      useEffect(() => {
+        if (typeof window !== 'undefined') {
+          localStorage.setItem(checklistKey, JSON.stringify(checklist));
+        }
+      }, [checklist]);
+      const toggleChecklist = (idx: number) => {
+        setChecklist((prev: boolean[]) => {
+          const next = [...prev];
+          next[idx] = !next[idx];
+          return next;
+        });
+      };
+      return (
+        <div className="mb-2 rounded-[18px] border border-[#d0e4f7] bg-white/80 shadow-[0_8px_24px_rgba(12,27,51,0.07)] p-6 md:p-8">
+          <div className="flex flex-col md:flex-row md:items-start md:justify-between mb-2 gap-2">
+            <div>
+              <h2 className="font-serif text-[22px] md:text-[32px] text-[#0c1b33] leading-tight mb-1">Stay Prepared While USCIS Reviews Your Case</h2>
+              <div className="text-[13px] text-[#3a4f63] leading-[1.7] max-w-[560px]">Use this waiting period to stay organized, build stronger records, and prepare for the steps that usually come after USCIS review.</div>
+            </div>
+            <span className="ml-auto mt-2 md:mt-0 px-3 py-1 rounded-full bg-[#e8f1fb] border border-[#d0e4f7] text-[#2d4a6e] text-[11px] font-bold uppercase tracking-wide shadow-sm whitespace-nowrap flex-shrink-0">High-value now</span>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
+            {/* Left: Explainer */}
+            <div className="rounded-[14px] border border-[#d0e4f7] bg-white p-6 flex flex-col h-full">
+              <div className="text-[10px] font-bold uppercase tracking-wide text-[#2f6fd4] mb-3">What this status means</div>
+              <div className="font-serif text-[18px] text-[#0c1b33] mb-1">USCIS has the case</div>
+              <div className="text-[12px] text-[#3a4f63] mb-4">This usually means the filing has entered the system and is in line for review. Most users do not need to take any action right now unless USCIS later issues an update, a request for evidence, or another notice.</div>
+              <Button
+                variant="outline"
+                size="sm"
+                className="flex items-center gap-2 px-4 py-2 rounded-lg border border-[#d0e4f7] bg-[#f4f7fb] text-[12px] font-semibold text-[#0c1b33] hover:border-[#2f6fd4] mb-2"
+                onClick={onShowProcessingModal}
+                type="button"
+              >
+                <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 12h18"/><path d="M12 3v18"/></svg>
+                Check processing-time context
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                className="flex items-center gap-2 px-4 py-2 rounded-lg border border-[#d0e4f7] bg-[#f4f7fb] text-[12px] font-semibold text-[#0c1b33] hover:border-[#2f6fd4]"
+                onClick={onShowMilestonesModal}
+                type="button"
+              >
+                <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+                See common next milestones
+              </Button>
+            </div>
+            {/* Right: Interactive Checklist */}
+            <div className="flex flex-col gap-3">
+              {tool.checklist && tool.checklist.map((c: any, i: number) => {
+                const done = !!checklist[i];
+                return (
+                  <div
+                    key={i}
+                    className={`flex gap-3 items-start rounded-[14px] border p-4 cursor-pointer transition ${done ? 'bg-[#e8f5ef] border-[#a8d9be]' : 'bg-white border-[#d0e4f7]'}`}
+                    onClick={() => toggleChecklist(i)}
+                    tabIndex={0}
+                    role="button"
+                    aria-pressed={done}
+                  >
+                    <div className={`w-5 h-5 rounded-full border flex items-center justify-center mt-1.5 shrink-0 transition ${done ? 'border-[#15744f] bg-[#64dca0]' : 'border-[#b8d9f0] bg-white'}`}>
+                      {done ? (
+                        <svg className="w-3 h-3 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
+                      ) : (
+                        <svg className="w-3 h-3 text-[#a8d9be]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
+                      )}
+                    </div>
+                    <div className="flex-1">
+                      <div className={`font-bold mb-1 text-[13px] ${done ? 'text-[#15744f]' : 'text-[#0c1b33]'}`}>{c.title}</div>
+                      <div className="text-[11px] text-[#3a4f63] leading-[1.6]">{c.copy}</div>
+                    </div>
+                  </div>
+                );
+              })}
+              <div className="muted-note text-[10px] text-[#6b8097] mt-2">These are practical ways to stay prepared while you wait.</div>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
     return (
-      <div className="max-w-2xl mx-auto px-4 py-10">
-        <h1 className="text-2xl font-bold mb-2">{tool.title}</h1>
-        <div className="text-lg text-gray-700 mb-6">{tool.subtitle}</div>
+      <div className="max-w-[760px] mx-auto px-6 py-12 flex flex-col gap-6">
+        {/* Title & Desc (pixel-perfect) */}
+        <h1 className="page-title font-serif text-[clamp(30px,4.6vw,40px)] text-[#0c1b33] leading-[1.12] tracking-tight mb-2">
+          Monitor USCIS Case Status
+        </h1>
+        <p className="page-desc text-[15px] text-[#3a4f63] leading-[1.72] max-w-[620px] mb-4">
+          Stay prepared while USCIS reviews your case. Rahvana keeps the tracking context in one place, explains what the current status means, and gives you useful next-step prep so the waiting period does not become dead time.
+        </p>
+        <MetaChips />
+        {/* Launch Module with tracking buttons */}
         {tool.launch_module && (
-          <div className="mb-6 border rounded-lg p-4 bg-white">
-            <div className="font-semibold mb-2">Current Status: <span className="text-blue-700">{tool.launch_module.status?.hero}</span></div>
-            <div className="mb-2 text-gray-700">{tool.launch_module.status?.copy}</div>
-            <div className="mb-2 text-xs text-green-700">{tool.launch_module.status?.badge}</div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mb-2">
-              {tool.launch_module.metrics?.map((m: any, i: number) => (
-                <div key={i} className="border rounded px-2 py-1 bg-gray-50">
-                  <div className="font-bold text-xs">{m.label}</div>
-                  <div className="text-sm">{m.value}</div>
-                  <div className="text-xs text-gray-500">{m.sub}</div>
+          <div className="rounded-2xl border border-white/10 bg-[#101e35] shadow-[0_20px_60px_rgba(12,27,51,0.18)] mb-2 relative overflow-hidden launch-module">
+            <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-[#2f6fd4] via-[#6aa8f0] to-transparent opacity-80" />
+            <div className="launch-inner p-8 md:p-[32px_34px_28px]">
+              <div className="launch-top flex items-start gap-4 mb-6">
+                <div className="launch-header flex gap-4 items-start">
+                  <div className="launch-icon w-[48px] h-[48px] rounded-[12px] bg-white/6 border border-white/10 flex items-center justify-center shrink-0">
+                    <Monitor className="w-7 h-7 text-white/80" />
+                  </div>
+                  <div>
+                    <div className="launch-eyebrow text-[10px] font-bold uppercase tracking-widest text-white/35 mb-1">Pending with USCIS · Active Monitoring</div>
+                    <div className="launch-heading font-serif text-[clamp(21px,3vw,26px)] text-white/92 leading-tight">{tool.launch_module.status?.hero}</div>
+                    <div className="launch-copy text-[13.5px] text-white/66 leading-snug max-w-[470px]">{tool.launch_module.status?.copy}</div>
+                  </div>
                 </div>
-              ))}
+                <span className="status-badge ml-auto">{tool.launch_module.status?.badge}</span>
+              </div>
+              <div className="launch-divider h-px bg-white/10 mb-5" />
+              {/* Metrics */}
+              <div className="metrics grid grid-cols-1 md:grid-cols-4 gap-3 mb-4">
+                {tool.launch_module.metrics?.map((m: any, i: number) => (
+                  <div key={i} className="metric bg-white/5 border border-white/10 rounded-[12px] px-4 py-3 flex flex-col">
+                    <div className="metric-label text-[10px] font-bold uppercase tracking-widest text-white/80 mb-1">{m.label}</div>
+                    <div className="metric-value text-[14px] font-semibold text-white/92">{m.value}</div>
+                    <div className="metric-sub text-[11px] text-white/66 mt-1">{m.sub}</div>
+                  </div>
+                ))}
+              </div>
+              {/* Tracking Action Buttons */}
+              <div className="launch-actions grid grid-cols-1 md:grid-cols-2 gap-3 mt-2">
+                <Button
+                  variant="brand"
+                  className="flex items-center gap-2 px-5 py-3 rounded-xl text-white font-semibold"
+                  onClick={() => {/* TODO: implement refresh logic */}}
+                >
+                  <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12a9 9 0 1 1-2.64-6.36"/><polyline points="21 3 21 9 15 9"/></svg>
+                  Refresh tracking status
+                </Button>
+                <Button
+                  variant="outline"
+                  className="flex items-center gap-2 px-5 py-3 rounded-xl border border-white/10 bg-white/5 text-white font-semibold hover:bg-white/10 transition"
+                  onClick={() => setShowStatusGuide(true)}
+                >
+                  <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.82 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                  What does this status mean?
+                </Button>
+                      {/* Status Guide Tutorial Overlay */}
+                      <GuideTutorialOverlay
+                        isOpen={showStatusGuide}
+                        onClose={() => setShowStatusGuide(false)}
+                        tutorial={USCIS_STATUS_TUTORIAL_STEPS}
+                        index={statusGuideStep}
+                        setIndex={setStatusGuideStep}
+                        title="What does this status mean?"
+                      />
+              </div>
             </div>
           </div>
         )}
-        {tool.checklist && (
-          <div className="mb-6">
-            <div className="font-semibold mb-2">Checklist:</div>
-            <ul className="list-disc ml-6 space-y-1">
-              {tool.checklist.map((c: any, i: number) => (
-                <li key={i}><span className="font-bold">{c.title}:</span> {c.copy}</li>
-              ))}
-            </ul>
-          </div>
-        )}
+        {/* Status Explainer Panel (grid, left: explainer, right: checklist) */}
+        {/* Interactive Checklist Panel */}
+        <ChecklistPanel 
+          onShowProcessingModal={() => setShowProcessingModal(true)}
+          onShowMilestonesModal={() => setShowMilestonesModal(true)}
+        />
+        <ProcessingTimeModal open={showProcessingModal} onClose={() => setShowProcessingModal(false)} />
+        <MilestonesModal open={showMilestonesModal} onClose={() => setShowMilestonesModal(false)} />
+        {/* What's Coming Next Panel (pixel-perfect, matches screenshot) */}
         {tool.future_timeline && (
-          <div className="mb-6">
-            <div className="font-semibold mb-2">Future Timeline:</div>
-            <ol className="list-decimal ml-6 space-y-1">
-              {tool.future_timeline.map((t: any, i: number) => (
-                <li key={i}><span className="font-bold mr-2">{t.title}:</span>{t.copy} <span className="text-xs text-blue-600">{t.pill}</span></li>
-              ))}
-            </ol>
+          <div className="mb-6 rounded-[18px] border border-[#d0e4f7] bg-white/80 shadow-[0_8px_24px_rgba(12,27,51,0.07)] p-6 md:p-8">
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-2 gap-2">
+              <div className="min-w-0">
+                <h2 className="font-serif text-[28px] md:text-[32px] text-[#0c1b33] leading-tight mb-1">What's Coming Next</h2>
+                <div className="text-[15px] text-[#3a4f63] leading-[1.7] max-w-[560px]">See the likely path ahead so you can prepare early without feeling rushed into work that does not matter yet.</div>
+              </div>
+              <span className="ml-auto mt-2 md:mt-0 px-3 py-1 rounded-full bg-[#e8f1fb] border border-[#d0e4f7] text-[#2d4a6e] text-[11px] font-bold uppercase tracking-wide shadow-sm whitespace-nowrap flex-shrink-0">Coming Next</span>
+            </div>
+            {/* Timeline */}
+            <div className="mt-6 flex flex-col gap-8 relative">
+              {/* Vertical line for timeline */}
+              <div className="absolute left-[11px] top-[33px] bottom-0 w-px bg-[#d0e4f7] z-0" style={{height: `calc(100% - 33px)`}} />
+              {tool.future_timeline?.map((item: any, idx: number) => {
+                const isLast = idx === (tool.future_timeline?.length ?? 0) - 1;
+                return (
+                  <div key={idx} className="flex items-start gap-4 relative z-10">
+                    {/* Timeline dot */}
+                    <div className="flex flex-col items-center min-w-[24px]">
+                      <span className="w-4 h-4 rounded-full border-4 border-[#2f6fd4] bg-white block mt-1" />
+                    </div>
+                    {/* Step content */}
+                    <div>
+                      <div className="font-semibold text-[16px] text-[#0c1b33] mb-1 leading-tight">{item.title}</div>
+                      <div className="text-[14px] text-[#3a4f63] mb-2 leading-[1.6]">{item.copy}</div>
+                      {item.pill && (
+                        <span className="inline-block px-3 py-1 rounded-full bg-[#f4f7fb] border border-[#d0e4f7] text-[#6b8097] text-[12px] font-bold uppercase tracking-wide whitespace-nowrap">{item.pill}</span>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
           </div>
         )}
+        {/* Useful Right Now Panel (with tag) */}
         {tool.useful_now && (
-          <div className="mb-6">
-            <div className="font-semibold mb-2">Useful Right Now:</div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {tool.useful_now.map((u: any, i: number) => (
-                <div key={i} className="border rounded-lg p-4 bg-gray-50">
-                  <div className="font-bold text-primary mb-1">{u.title}</div>
-                  <div className="text-gray-700 mb-2">{u.copy}</div>
-                  <button className="text-blue-600 underline text-sm">{u.action}</button>
-                </div>
-              ))}
+          <div className="mb-6 rounded-[22px] border border-[#d0e4f7] bg-white/80 shadow-[0_8px_24px_rgba(12,27,51,0.07)] p-6 md:p-8">
+            {/* Section header and pill */}
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-2 gap-2">
+              <div>
+                <h2 className="font-serif text-[28px] md:text-[32px] text-[#0c1b33] leading-tight mb-1">Useful Right Now</h2>
+                <div className="text-[15px] text-[#3a4f63] leading-[1.7] max-w-[560px]">These are focused, case-relevant resources you can use while USCIS is still processing your petition.</div>
+              </div>
+              <span className="ml-auto mt-2 md:mt-0 px-4 py-2 rounded-full bg-[#e8f1fb] border border-[#d0e4f7] text-[#2d4a6e] text-[13px] font-bold uppercase tracking-wide shadow-sm">Education + Updates</span>
             </div>
+            {/* 3-column card grid */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5 mt-4">
+              {tool.useful_now.map((u: any, i: number) => {
+                const iconColor = u.icon === 'green' ? 'bg-[#e8f5ef] text-[#15744f] border-[#a8d9be]' :
+                  u.icon === 'purple' ? 'bg-[#f3f0fb] text-[#4a2d8a] border-[#c9bef2]' :
+                  u.icon === 'amber' ? 'bg-[#fef8e8] text-[#8a6200] border-[#f0d98a]' :
+                  'bg-[#e8f1fb] text-[#2d4a6e] border-[#d0e4f7]';
+                const Icon = u.icon === 'green' ? CheckCircle :
+                  u.icon === 'purple' ? BookOpen :
+                  u.icon === 'amber' ? Scale :
+                  Info;
+                return (
+                  <div key={i} className="flex flex-col h-full rounded-2xl border border-[#d0e4f7] bg-white shadow-[0_8px_24px_rgba(12,27,51,0.07)] p-6 transition hover:shadow-md">
+                    <div className={`w-[38px] h-[38px] rounded-[10px] flex items-center justify-center mb-4 border ${iconColor}`}>
+                      <Icon className="w-[20px] h-[20px]" />
+                    </div>
+                    <div className="font-semibold text-[16px] text-[#0c1b33] mb-1 leading-tight">{u.title}</div>
+                    <div className="text-[13.5px] text-[#3a4f63] mb-4 leading-[1.6] flex-1">{u.copy}</div>
+                    {/* Map buttons to modals by index and action */}
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="flex items-center gap-2 px-4 py-2 rounded-lg border border-[#d0e4f7] bg-[#f4f7fb] text-[12px] font-semibold text-[#0c1b33] hover:border-[#2f6fd4] mt-auto"
+                      onClick={() => {
+                        if (u.action?.toLowerCase().includes('preview')) setShowAfterI130Modal(true);
+                        else if (u.action?.toLowerCase().includes('evidence guide')) setShowRelationshipEvidenceModal(true);
+                        else if (u.action?.toLowerCase().includes('see future prep')) setShowAffidavitSupportModal(true);
+                      }}
+                    >
+                      {u.action}
+                      <ArrowRight className="w-4 h-4 ml-1" />
+                    </Button>
+                    {/* Useful Right Now Modals */}
+                    <AfterI130ApprovalModal open={showAfterI130Modal} onClose={() => setShowAfterI130Modal(false)} />
+                    <RelationshipEvidenceModal open={showRelationshipEvidenceModal} onClose={() => setShowRelationshipEvidenceModal(false)} />
+                    <AffidavitSupportModal open={showAffidavitSupportModal} onClose={() => setShowAffidavitSupportModal(false)} />
+                  </div>
+                );
+              })}
+            </div>
+            {/* Update cards below */}
+            {tool.relevant_updates && (
+              <div className="mt-7 flex flex-col gap-4">
+                {tool.relevant_updates.map((u: any, i: number) => (
+                  <div key={i} className="w-full rounded-2xl border border-[#d0e4f7] bg-white px-6 py-5 flex flex-col md:flex-row md:items-center md:justify-between shadow-sm">
+                    <div>
+                      <div className="font-semibold text-[15px] text-[#0c1b33] mb-1 leading-tight">{u.title}</div>
+                      <div className="text-[13.5px] text-[#3a4f63] leading-[1.6]">{u.copy}</div>
+                    </div>
+                    <span className="mt-3 md:mt-0 md:ml-6 px-3 py-1 rounded-full bg-[#f4f7fb] border border-[#d0e4f7] text-[#6b8097] text-[12px] font-bold uppercase tracking-wide whitespace-nowrap">{u.source}</span>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         )}
+        {/* Relevant Updates Panel (with tag) */}
         {tool.relevant_updates && (
-          <div className="mb-6">
-            <div className="font-semibold mb-2">Relevant Updates:</div>
-            <ul className="list-disc ml-6 space-y-1">
+          <div className="panel bg-white border-[1.5px] border-[#d0e4f7] rounded-2xl p-6 mb-2 shadow-sm">
+            <div className="panel-header flex justify-between gap-4 items-start mb-4">
+              <div>
+                <div className="panel-title font-serif text-[24px] text-[#0c1b33]">Relevant Updates</div>
+              </div>
+              <div className="panel-tag text-[11px] font-bold uppercase px-3 py-1 rounded-full bg-[#e8f1fb] border border-[#d0e4f7] text-[#2d4a6e] whitespace-nowrap">Updates</div>
+            </div>
+            <div className="update-list flex flex-col gap-3">
               {tool.relevant_updates.map((u: any, i: number) => (
-                <li key={i}><span className="font-bold">{u.title}:</span> {u.copy} <span className="text-xs text-gray-500">({u.source})</span></li>
-              ))}
-            </ul>
-          </div>
-        )}
-        {tool.build_case && (
-          <div className="mb-6">
-            <div className="font-semibold mb-2">Keep Building Your Case:</div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {tool.build_case.map((b: any, i: number) => (
-                <div key={i} className="border rounded-lg p-4 bg-gray-50">
-                  <div className="font-bold text-primary mb-1">{b.title}</div>
-                  <div className="text-gray-700 mb-2">{b.copy}</div>
-                  {b.buttons && b.buttons.map((btn: string, j: number) => (
-                    <button key={j} className="text-blue-600 underline text-xs mr-2">{btn}</button>
-                  ))}
+                <div key={i} className="update-card p-4 rounded-lg border border-[#d0e4f7] bg-[#f8fbff]">
+                  <div className="update-top flex justify-between gap-2 mb-1 items-start">
+                    <div className="update-title font-semibold text-[#0c1b33]">{u.title}</div>
+                    <div className="update-source text-[11px] font-bold uppercase text-[#6b8097]">{u.source}</div>
+                  </div>
+                  <div className="update-copy text-[13px] text-[#3a4f63]">{u.copy}</div>
                 </div>
               ))}
             </div>
           </div>
         )}
+        {/* Keep Building Your Case Panel (with tag) */}
+        {tool.build_case && (
+          <div className="mb-6 rounded-[18px] border border-[#d0e4f7] bg-white/80 shadow-[0_8px_24px_rgba(12,27,51,0.07)] p-6 md:p-8">
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-2 gap-2">
+              <div>
+                <h2 className="font-serif text-[24px] md:text-[28px] text-[#0c1b33] leading-tight mb-1">Keep Building Your Case</h2>
+                <div className="text-[15px] text-[#3a4f63] leading-[1.7] max-w-[620px] mt-1">Even while the case is pending, you can strengthen readiness by continuing to collect relationship evidence and organizing what may matter later.</div>
+              </div>
+              <span className="ml-auto mt-2 md:mt-0 px-4 py-1.5 rounded-full bg-[#f4f7fb] border border-[#d0e4f7] text-[#2d4a6e] text-[13px] font-bold uppercase tracking-wide shadow-sm whitespace-nowrap flex-shrink-0">Ongoing Prep</span>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
+              {tool.build_case.map((b: any, i: number) => {
+                // Icon logic: green for first, pink for second
+                const iconBg = i === 0 ? 'bg-[#e8f5ef] border-[#a8d9be]' : 'bg-[#fbeff3] border-[#f7b8d0]';
+                const iconColor = i === 0 ? '#15744f' : '#d12b6a';
+                const Icon = i === 0
+                  ? (props: any) => (
+                      <svg {...props} viewBox="0 0 24 24" fill="none" stroke={iconColor} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 21c-4.8-4-8-6.7-8-10.2C4 6.6 7.6 3 12 3s8 3.6 8 7.8c0 3.5-3.2 6.2-8 10.2z"/><circle cx="12" cy="10" r="3"/></svg>
+                    )
+                  : (props: any) => (
+                      <svg {...props} viewBox="0 0 24 24" fill="none" stroke={iconColor} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="8" width="18" height="13" rx="2"/><circle cx="8.5" cy="14.5" r="2.5"/><path d="M19 8V6a2 2 0 0 0-2-2h-2.5"/><path d="M15 2v4"/></svg>
+                    );
+                return (
+                  <div key={i} className="rounded-[14px] border border-[#d0e4f7] bg-white p-6 flex flex-col h-full transition">
+                    <div className={`w-[38px] h-[38px] rounded-[10px] flex items-center justify-center mb-4 border ${iconBg}`}> 
+                      <Icon className="w-[22px] h-[22px]" />
+                    </div>
+                    <div className="font-semibold text-[16px] text-[#0c1b33] mb-1 leading-tight">{b.title}</div>
+                    <div className="text-[13.5px] text-[#3a4f63] mb-4 leading-[1.6] flex-1">{b.copy}</div>
+                    <div className="flex gap-2 mt-auto flex-wrap">
+                      {b.buttons && b.buttons.map((btn: string, j: number) => (
+                        <button
+                          key={j}
+                          type="button"
+                          className="px-4 py-2 rounded-lg border border-[#d0e4f7] bg-[#f4f7fb] text-[14px] font-semibold text-[#0c1b33] hover:border-[#2f6fd4] focus:outline-none focus:ring-2 focus:ring-[#2f6fd4] transition shadow-sm"
+                          onClick={() => {
+                            if (btn.toLowerCase().includes('add note')) setShowAddEvidenceNoteModal(true);
+                          }}
+                        >
+                          {btn}
+                        </button>
+                      ))}
+                      <AddEvidenceNoteModal open={showAddEvidenceNoteModal} onClose={() => setShowAddEvidenceNoteModal(false)} />
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+        {/* Community & Proof Layer Panel (with tag) */}
         {tool.community && (
-          <div className="mb-6">
-            <div className="font-semibold mb-2">Community & Proof Layer:</div>
-            <ul className="list-disc ml-6 space-y-1">
+          <div className="mb-6 rounded-[15px] border border-[#d0e4f7] bg-white/80 shadow-[0_8px_24px_rgba(12,27,51,0.07)] p-6 md:p-8">
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-2 gap-2">
+              <div>
+                <h2 className="font-serif text-[24px] md:text-[22px] text-[#0c1b33] leading-tight mb-1">Community & Proof Layer</h2>
+                <div className="text-[12px] text-[#3a4f63] leading-[1.7] max-w-[620px] mt-1">See practical insights from similar journeys and common habits that help people stay organized during this stage.</div>
+              </div>
+              <span className="ml-auto mt-2 md:mt-0 px-4 py-1.5 rounded-full bg-[#f4f7fb] border border-[#d0e4f7] text-[#2d4a6e] text-[11px] font-bold uppercase tracking-wide shadow-sm whitespace-nowrap flex-shrink-0">Human Context</span>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
               {tool.community.map((c: any, i: number) => (
-                <li key={i}>
-                  <div className="italic">{c.quote}</div>
-                  <div className="text-xs text-gray-500">{c.meta} <span className="text-gray-400">{c.sub}</span></div>
-                </li>
+                <div key={i} className="rounded-[14px] border border-[#d0e4f7] bg-white p-6 flex flex-col h-full">
+                  <div className="italic text-[12px] text-[#0c1b33] mb-5 leading-[1.7]">{c.quote}</div>
+                  <div className="font-semibold text-[#0c1b33] text-[12px] mb-0.5">{c.meta}</div>
+                  <div className="text-[13px] text-[#6b8097] mt-0.5">{c.sub}</div>
+                </div>
               ))}
-            </ul>
+            </div>
           </div>
         )}
-        {tool.tutorial_steps && (
-          <div className="mb-6">
-            <div className="font-semibold mb-2">Tutorial Steps:</div>
-            <ol className="list-decimal ml-6 space-y-2">
-              {tool.tutorial_steps.map((step: any, i: number) => (
-                <li key={i}>
-                  <div className="font-bold">{step.label}</div>
-                  <div className="text-gray-700">{step.heading}</div>
-                  <div className="text-sm">{step.instruction}</div>
-                  {step.copy && <div className="text-xs text-gray-500">{step.copy}</div>}
-                  {step.note && <div className="text-xs text-blue-600">{step.note}</div>}
-                </li>
-              ))}
-            </ol>
-          </div>
-        )}
+        {/* Footer Note */}
         {tool.footer_note && (
-          <div className="mt-8 text-xs text-gray-500 border-t pt-4">{tool.footer_note}</div>
+          <p className="footer-note text-[11.5px] text-[#6b8097] text-center pt-4">{tool.footer_note}</p>
         )}
       </div>
     );
@@ -5402,7 +5668,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                     <div className="w-full bg-[#eef3fa] border-[1.5px] border-[#d0e4f7] rounded-[10px] overflow-hidden mb-5 relative flex flex-col">
                       <div className="bg-[#eef3fa] flex flex-col items-center justify-center p-9 text-center">
                         <div className="w-11 h-11 rounded-full bg-primary/30 flex items-center justify-center mb-2.5 shadow-sm">
-                          <Search
+                          <Search 
                             size={22}
                             className="text-[#6b8097]"
                             strokeWidth={1.6}

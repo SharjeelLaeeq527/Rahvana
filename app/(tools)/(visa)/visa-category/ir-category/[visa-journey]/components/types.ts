@@ -213,6 +213,10 @@ export interface FeeBlock {
 }
 
 export interface ToolData {
+        status_explainer?: {
+          headline: string;
+          body: string;
+        };
       // For IR-1/CR-1 custom steps and StepView.tsx compatibility
       status?: {
         hero?: string;

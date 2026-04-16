@@ -1,4 +1,28 @@
 "use client";
+// Generic tutorial overlay for status guides (used for 'What does this status mean?')
+export const GuideTutorialOverlay: React.FC<TutorialOverlayProps> = (props) => {
+  const s = props.tutorial[props.index];
+  return (
+    <TutorialShell {...props} title={props.title || s.heading}>
+      <div className="text-[11px] font-semibold tracking-widest uppercase text-primary mb-3.5">{props.title || s.label}</div>
+      <h2 className="text-[clamp(20px,3.2vw,26px)] text-[#0c1b33] leading-tight mb-2">{s.heading}</h2>
+      <p className="text-[14px] text-[#3a4f63] leading-relaxed mb-[18px]">{s.instruction}</p>
+      <div className="bg-white border-[1.5px] border-[#d0e4f7] rounded-[10px] overflow-hidden mb-[18px] shadow-[0_2px_12px_rgba(12,27,51,0.06)]">
+        <div className="bg-[#eef3fa] border-b border-[#d0e4f7] p-[10px_14px] flex items-center gap-1.5">
+          <div className="w-[9px] h-[9px] rounded-full bg-[#f87171]" /><div className="w-[9px] h-[9px] rounded-full bg-[#fbbf24]" /><div className="w-[9px] h-[9px] rounded-full bg-[#34d399]" />
+          <div className="text-[10px] font-semibold tracking-[0.07em] uppercase text-[#6b8097] ml-auto">{s.url}</div>
+        </div>
+        <div className="p-[18px] leading-relaxed">
+          <div className="bb-kicker text-[10px] font-bold uppercase text-[#2f6fd4] mb-1">{s.kicker}</div>
+          <div className="bb-head text-[15px] font-bold text-[#0c1b33] mb-1">{s.head}</div>
+          <div className="bb-copy text-[13px] text-[#3a4f63] mb-2">{s.copy}</div>
+          <div className="bb-pill-row flex gap-2 flex-wrap mb-2">{s.pills && s.pills.map((p:string, i:number) => <span key={i} className="bb-pill inline-block px-3 py-1 rounded-full bg-[#f4f7fb] border border-[#d0e4f7] text-[#6b8097] text-[11px] font-bold uppercase tracking-wide whitespace-nowrap">{p}</span>)}</div>
+        </div>
+      </div>
+      {s.note && <div className="bg-[#fef8e8] border border-[#f0d98a] rounded-[10px] p-[11px_14px] text-[13px] text-[#8a6200] leading-relaxed mb-[24px]">{s.note}</div>}
+    </TutorialShell>
+  );
+};
 
 import React, { useEffect } from "react";
 import { X, ChevronLeft, ArrowRight } from "lucide-react";
