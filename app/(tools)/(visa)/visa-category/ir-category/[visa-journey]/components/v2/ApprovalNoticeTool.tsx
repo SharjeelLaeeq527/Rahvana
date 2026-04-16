@@ -443,12 +443,13 @@ export const ApprovalNoticeTool: React.FC<ApprovalNoticeToolProps> = ({
           {data.prepCards.actions.map((act, i) => (
             <Link
               key={i}
-              href="'https://travel.state.gov/content/travel/en/us-visas/immigrate/the-immigrant-visa-process/step-1-submit-a-petition/step-2-begin-nvc-processing.html"
+              target="_blank"
+              rel="noopener noreferrer"
+              href="https://travel.state.gov/content/travel/en/us-visas/immigrate/the-immigrant-visa-process/step-1-submit-a-petition/step-2-begin-nvc-processing.html"
             >
-              {" "}
               <button className="inline-flex items-center justify-center gap-[8px] p-[10px_13px] rounded-[10px] border-[1.5px] border-[#d0e4f7] bg-[#f4f7fb] text-[12px] font-semibold text-[#0c1b33] hover:border-[#2f6fd4] hover:text-[#2f6fd4] hover:-translate-y-[1px] transition-all cursor-pointer">
                 {act.type === "info" ? (
-                  <Info size={15} className="text-slate-800" strokeWidth={2} />
+                  <Info size={15} className="stroke-current" strokeWidth={2} />
                 ) : (
                   <svg
                     viewBox="0 0 24 24"
