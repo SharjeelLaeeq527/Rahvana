@@ -591,7 +591,7 @@ export function SiteHeader({
         {/* --- GLOBAL MEGAMENU PLACEMENT --- */}
         <div
           ref={megaMenuContainerRef}
-          className="absolute top-[calc(100%-14px)] left-0 right-0 w-full px-6 pointer-events-auto z-50"
+          className="absolute top-[calc(100%-14px)] left-0 right-0 w-full px-6 pointer-events-auto z-[9999]"
           onMouseEnter={() => {
             if (activeMenu && activeMenu !== "profile") {
               if (menuTimeoutRef.current) clearTimeout(menuTimeoutRef.current);
