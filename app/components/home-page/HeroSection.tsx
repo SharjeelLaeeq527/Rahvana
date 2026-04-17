@@ -10,7 +10,7 @@ import {
 import { useAuth } from "@/app/context/AuthContext";
 import { useLanguage } from "@/app/context/LanguageContext";
 
-const heroImage = "/assets/images/herobg.jpg";
+const heroImage = "/assets/images/herobg.png";
 
 export function CinematicHero() {
   const [hasTransitioned, setHasTransitioned] = useState(false);

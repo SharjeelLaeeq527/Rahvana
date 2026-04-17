@@ -1,0 +1,50 @@
+[
+  {
+    "label": "Step 1 of 4 — Watch for USCIS acceptance",
+    "heading": "Look for the first accepted-filing notice",
+    "instruction": "After USCIS accepts the filing, watch your <strong>USCIS online account</strong>, any available <strong>e-notification</strong>, and the <strong>physical notice by mail</strong>. The goal is to bring back the receipt number once it appears.",
+    "url": "my.uscis.gov",
+    "ssLabel": "USCIS Notice Sources",
+    "ssHeadline": "USCIS Account · Email/Text · Mail Notice",
+    "ssDesc": "Any of these may be the first place you notice the case has been accepted.",
+    "ssHighlight": null,
+    "caption": "Return to Rahvana once you have the receipt number or the notice itself.",
+    "note": null
+  },
+  {
+    "label": "Step 2 of 4 — Find the receipt number",
+    "heading": "Find the 13-character receipt number",
+    "instruction": "The receipt number is the core tracking identifier. It consists of <strong>3 letters followed by 10 numbers</strong>, such as IOE1234567890.",
+    "url": "egov.uscis.gov",
+    "ssLabel": "Receipt Number Pattern",
+    "ssHeadline": "3 letters + 10 numbers",
+    "ssDesc": "Common prefixes include IOE, EAC, WAC, LIN, SRC, NBC, or MSC.",
+    "ssHighlight": "Example: IOE1234567890",
+    "caption": "This is the number Rahvana should save to enable case monitoring.",
+    "note": "If the notice contains multiple numbers, prioritize the USCIS receipt number tied to the I-130 filing."
+  },
+  {
+    "label": "Step 3 of 4 — Decide how to register it",
+    "heading": "Choose the easiest intake path",
+    "instruction": "If you already have the document, upload the notice. If you only have the receipt number from the portal or an e-notification, manual entry is faster.",
+    "url": "rahvana.com",
+    "ssLabel": "Rahvana Intake Options",
+    "ssHeadline": "Upload Notice or Enter Receipt Number",
+    "ssDesc": "Both paths end in the same confirmation and tracked-case state.",
+    "ssHighlight": null,
+    "caption": "Upload is useful for preserving the notice. Manual entry is useful when speed matters more.",
+    "note": null
+  },
+  {
+    "label": "Step 4 of 4 — Save and turn on monitoring",
+    "heading": "Confirm the details and enable tracking",
+    "instruction": "Before saving, confirm the receipt number and any dates shown on the notice. After that, Rahvana can store the case record, enable tracking, and keep a timeline of changes.",
+    "url": "rahvana.com",
+    "ssLabel": "Tracked Case State",
+    "ssHeadline": "Receipt Registered · Tracking Enabled",
+    "ssDesc": "Status history and notifications should begin from the saved baseline.",
+    "ssHighlight": "Store receipt number → Save baseline status",
+    "caption": "For IR-1, saving the priority date is useful for records, but it should not dominate this step.",
+    "note": "This prototype represents tracking honestly: monitored status checks and notifications, not a promise of an official USCIS developer-grade API."
+  }
+]

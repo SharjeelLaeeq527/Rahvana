@@ -1,7 +1,16 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { CheckCircle2 } from "lucide-react";
+import {
+  CheckCircle2,
+  Package,
+  Truck,
+  MapPin,
+  Clock,
+  AlertCircle,
+  Loader,
+  CheckCircle,
+} from "lucide-react";
 import { useWizard } from "@/app/(main)/dashboard/hooks/useWizard";
 import { CustomDropdown } from "@/app/components/shared/CustomDropdown";
 import { RoadmapStep } from "../types";
@@ -31,6 +40,82 @@ const COLORS = {
   greenbg: "#e8f5ef",
 };
 
+// Helper: Format relative time
+const formatRelativeTime = (isoString: string): string => {
+  const date = new Date(isoString);
+  const now = new Date();
+  const diffMs = now.getTime() - date.getTime();
+  const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+  const diffDays = Math.floor(diffHours / 24);
+  const diffMinutes = Math.floor(diffMs / (1000 * 60));
+
+  if (diffMinutes < 1) return "just now";
+  if (diffMinutes < 60) return `${diffMinutes}m ago`;
+  if (diffHours < 24) return `${diffHours}h ago`;
+  if (diffDays < 7) return `${diffDays}d ago`;
+  return date.toLocaleDateString();
+};
+
+// Helper: Get tracking status icon and color
+const getTrackingStatusDisplay = (status: string) => {
+  const statusMap: Record<
+    string,
+    { icon: React.ReactNode; label: string; color: string; bgColor: string }
+  > = {
+    pre_transit: {
+      icon: <Clock size={16} />,
+      label: "Pre-Transit",
+      color: "text-yellow-700",
+      bgColor: "bg-yellow-50",
+    },
+    in_transit: {
+      icon: <Truck size={16} />,
+      label: "In Transit",
+      color: "text-blue-700",
+      bgColor: "bg-blue-50",
+    },
+    out_for_delivery: {
+      icon: <MapPin size={16} />,
+      label: "Out for Delivery",
+      color: "text-blue-700",
+      bgColor: "bg-blue-50",
+    },
+    delivered: {
+      icon: <CheckCircle size={16} />,
+      label: "Delivered",
+      color: "text-green-700",
+      bgColor: "bg-green-50",
+    },
+    available_for_pickup: {
+      icon: <Package size={16} />,
+      label: "Available for Pickup",
+      color: "text-purple-700",
+      bgColor: "bg-purple-50",
+    },
+    failure: {
+      icon: <AlertCircle size={16} />,
+      label: "Delivery Failed",
+      color: "text-red-700",
+      bgColor: "bg-red-50",
+    },
+    unknown: {
+      icon: <Loader size={16} />,
+      label: "Pending Status",
+      color: "text-gray-700",
+      bgColor: "bg-gray-50",
+    },
+  };
+
+  return (
+    statusMap[status] || {
+      icon: <Loader size={16} />,
+      label: status,
+      color: "text-gray-700",
+      bgColor: "bg-gray-50",
+    }
+  );
+};
+
 export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
   step,
   isCompleted,
@@ -50,6 +135,10 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
   const [mailingTracking, setMailingTracking] = useState("");
   const [isSavingPayment, setIsSavingPayment] = useState(false);
   const [isSavingMailing, setIsSavingMailing] = useState(false);
+  const [trackingStatus, setTrackingStatus] = useState<string>("unknown");
+  const [trackingLastChecked, setTrackingLastChecked] = useState<string | null>(null);
+  const [deliveredAt, setDeliveredAt] = useState<string | null>(null);
+  const [isLoadingTracking, setIsLoadingTracking] = useState(false);
 
   // Load persisted data from metadata on mount
   useEffect(() => {
@@ -88,6 +177,70 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
       document.body.style.overflow = "";
     };
   }, [showGuide]);
+
+  // Load tracking data from metadata on mount
+  useEffect(() => {
+    if (state.metadata?.tracking_status) {
+      setTrackingStatus(state.metadata.tracking_status);
+    }
+    if (state.metadata?.tracking_last_checked_at) {
+      setTrackingLastChecked(state.metadata.tracking_last_checked_at);
+    }
+    if (state.metadata?.delivered_at) {
+      setDeliveredAt(state.metadata.delivered_at);
+    }
+  }, [
+    state.metadata?.easypost_tracker_id,
+    state.metadata?.tracking_status,
+    state.metadata?.tracking_last_checked_at,
+    state.metadata?.delivered_at,
+  ]);
+
+  // Fetch tracking status periodically when tracker exists
+  useEffect(() => {
+    // Only fetch if we have a tracker ID and not yet delivered
+    if (!state.metadata?.easypost_tracker_id || trackingStatus === "delivered") {
+      return;
+    }
+
+    const fetchTrackingStatus = async () => {
+      try {
+        setIsLoadingTracking(true);
+        const response = await fetch(
+          `/api/easypost/tracker/status?caseId=${state.backendId}`
+        );
+
+        if (!response.ok) {
+          console.error("[ActionStepRenderer] Failed to fetch tracking status");
+          return;
+        }
+
+        const data = await response.json();
+
+        // Update local state with latest tracking info
+        setTrackingStatus(data.status);
+        setTrackingLastChecked(data.lastChecked);
+        if (data.deliveredAt) {
+          setDeliveredAt(data.deliveredAt);
+        }
+      } catch (error) {
+        console.error("[ActionStepRenderer] Error fetching tracking:", error);
+      } finally {
+        setIsLoadingTracking(false);
+      }
+    };
+
+    // Fetch on mount
+    fetchTrackingStatus();
+
+    // Poll every 5 minutes if not delivered
+    const pollInterval = 5 * 60 * 1000; // 5 minutes
+    const intervalId = setInterval(fetchTrackingStatus, pollInterval);
+
+    return () => {
+      if (intervalId) clearInterval(intervalId);
+    };
+  }, [state.metadata?.easypost_tracker_id, state.backendId, trackingStatus]);
 
   const handlePrevGuide = () => {
     setGuideStep((prev) => Math.max(0, prev - 1));
@@ -139,6 +292,12 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
       `}</style>
       {/* Main Content */}
       <div className="max-w-3xl mx-auto px-5.5 py-12">
+        {/* Eyebrow for Paper Filing Path steps */}
+        {(step.step_key === 'step_1_11' || step.step_key === 'step_1_12' || step.step_key === 'step_1_13' || step.step_key === 'step_1_14') && (
+          <div className="text-[10px] font-bold uppercase tracking-widest text-soft mb-2 text-[#636B97]">
+            Chapter 1 · Chapter 1: USCIS Petition Filing <span className="text-[#BDD7F1] mx-2">&gt;</span> <span className="text-[#3B7DD8]">{step.step_name}</span>
+          </div>
+        )}
         {/* Title */}
         <h1 className="text-4xl leading-tight text-navy font-black -tracking-wide mb-3">
           {step.step_name}
@@ -592,13 +751,14 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
               >
                 <CheckCircle2 size={18} style={{ flexShrink: 0 }} />
 
-                <div>
+                <div style={{ flex: 1 }}>
+                  {/* Common Heading */}
                   <strong style={{ display: "block" }}>
-                    {actionData.action_button_status_heading ||
-                      "Selection saved"}
+                    {actionData.action_button_status_heading || "Selection saved"}
                   </strong>
 
-                  <span style={{ fontSize: "12px", display: "block" }}>
+                  {/* Status Message - Different for dropdown vs mailing */}
+                  <span style={{ fontSize: "12px", display: "block", marginBottom: "8px" }}>
                     {actionData.mailing_card && mailingTracking
                       ? (
                           actionData.action_button_status_message ||
@@ -613,14 +773,68 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
                           .replace("{selected}", selectedDropdown)
                           .replace("{selected_method}", selectedDropdown)}
                   </span>
+
+                  {/* Tracking Status Section - Only for mailing with tracker */}
+                  {actionData.mailing_card && state.metadata?.easypost_tracker_id && (
+                    <div
+                      style={{
+                        marginTop: "10px",
+                        paddingTop: "10px",
+                        borderTop: "1px solid rgba(21, 116, 79, 0.2)",
+                      }}
+                    >
+                      <div
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: "8px",
+                          marginBottom: "6px",
+                          fontSize: "12px",
+                        }}
+                      >
+                        <strong>Tracking Status:</strong>
+                        {isLoadingTracking && (
+                          <>
+                            <Loader 
+                              size={14} 
+                              style={{ 
+                                animation: "spin 1s linear infinite",
+                              }} 
+                            />
+                            <span>Updating...</span>
+                          </>
+                        )}
+                        {!isLoadingTracking && (
+                          <>
+                            {getTrackingStatusDisplay(trackingStatus).icon}
+                            <span style={{ fontWeight: 600 }}>
+                              {getTrackingStatusDisplay(trackingStatus).label}
+                            </span>
+                          </>
+                        )}
+                      </div>
+
+                      {/* Last Checked Time */}
+                      {trackingLastChecked && (
+                        <div style={{ fontSize: "11px", color: "rgba(21, 116, 79, 0.7)", marginBottom: "4px" }}>
+                          Last checked: {formatRelativeTime(trackingLastChecked)}
+                        </div>
+                      )}
+
+                      {/* Delivered Date */}
+                      {deliveredAt && trackingStatus === "delivered" && (
+                        <div style={{ fontSize: "11px", fontWeight: 600, color: COLORS.green }}>
+                          ✅ Delivered: {new Date(deliveredAt).toLocaleDateString()}
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
               </section>
             )}
+
+          {/* Status Message Section End */}
         </section>
-
-        {/* Info Cards Row - REMOVED, now inside hero */}
-
-        {/* Status Message - REMOVED, now inside hero */}
 
         {/* Action Items Section - Enabled appearance */}
         {actionData.action_items && actionData.action_items.length > 0 && (
