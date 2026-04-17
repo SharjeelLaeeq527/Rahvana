@@ -1,3 +1,6 @@
+import React from "react";
+import { Stethoscope, ClipboardList } from "lucide-react";
+
 export const MEDICAL_EXAM_DATA = {
   eyebrow: {
     chapter: "Chapter 3 · Medical & Interview",
@@ -16,13 +19,13 @@ export const MEDICAL_EXAM_DATA = {
     paths: [
       {
         id: "service",
-        icon: "🏥",
+        icon: <Stethoscope size={28} className="text-teal-400" />,
         title: "Use Rahvana's booking service",
         sub: "Rahvana assists with booking an embassy-approved physician for your location"
       },
       {
         id: "guide",
-        icon: "📋",
+        icon: <ClipboardList size={28} className="text-blue-400" />,
         title: "I'll book it myself",
         sub: "Follow the step-by-step guide to find and book an approved physician yourself"
       }

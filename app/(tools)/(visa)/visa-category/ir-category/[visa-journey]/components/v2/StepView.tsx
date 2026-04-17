@@ -522,6 +522,63 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
     actions.updateMetadata({ jsCount, hhCount, hhRelationships });
   }, [jsCount, hhCount, hhRelationships]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  // --- SYNC TOOL STATES FROM METADATA ---
+
+  // DQ Recording Sync
+  useEffect(() => {
+    setDqSaved(state.metadata.dqSaved === true);
+    setDqDate(state.metadata.dqDate || "");
+    setDqCategory(state.metadata.dqCategory || "");
+    setDqPost(state.metadata.dqPost || "");
+    setDqCountry(state.metadata.dqCountry || "Pakistan");
+  }, [state.metadata.dqSaved, state.metadata.dqDate, state.metadata.dqCategory, state.metadata.dqPost, state.metadata.dqCountry]);
+
+  // Medical Exam Sync
+  useEffect(() => {
+    setMedSaved(state.metadata.med_appt_saved === "true");
+    setMedDate(state.metadata.med_date || "");
+    setMedTime(state.metadata.med_time || "");
+    setMedClinic(state.metadata.med_clinic || "");
+  }, [state.metadata.med_appt_saved, state.metadata.med_date, state.metadata.med_time, state.metadata.med_clinic]);
+
+  // Appointment Received Sync
+  useEffect(() => {
+    setInterviewSaved(state.metadata.interviewSaved === true);
+    setInterviewDate(state.metadata.interviewDate || "");
+    setLetterDate(state.metadata.letterDate || "");
+    setConsulateLocation(state.metadata.consulateLocation || "");
+  }, [state.metadata.interviewSaved, state.metadata.interviewDate, state.metadata.letterDate, state.metadata.consulateLocation]);
+
+  // Polio Certificate Sync
+  useEffect(() => {
+    setPolioLaunched(state.metadata.polio_launched === "true");
+    if (state.metadata.polio_checks) {
+      setPolioChecks(state.metadata.polio_checks as boolean[]);
+    }
+  }, [state.metadata.polio_launched, state.metadata.polio_checks]);
+
+  // Police Clearance Sync
+  useEffect(() => {
+    setPccSaved(state.metadata.pcc_saved === "true");
+    setPccData({
+      receipt: state.metadata.pcc_receipt || "",
+      track: state.metadata.pcc_track || "",
+      date: state.metadata.pcc_date || "",
+    });
+    setPccReceived(state.metadata.pcc_received === "true");
+  }, [state.metadata.pcc_saved, state.metadata.pcc_receipt, state.metadata.pcc_track, state.metadata.pcc_date, state.metadata.pcc_received]);
+
+  // Gathering Checklist Sync
+  useEffect(() => {
+    if (state.metadata.gathering_status) {
+      try {
+        setGatheringStatus(JSON.parse(state.metadata.gathering_status));
+      } catch (err) {
+        console.error("Failed to sync gathering status:", err);
+      }
+    }
+  }, [state.metadata.gathering_status]);
+
   const chapters = data.chapters || (data as any).stages;
   const currentChapter = chapters?.[state.currentStage];
 
@@ -2273,6 +2330,10 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                 pccOverlayMode,
                 setPccOverlayMode,
               }}
+              openUploadModal={openUploadModal}
+              setActiveUploadId={setActiveUploadId}
+              setActiveUploadType={setActiveUploadType}
+              uploadedDocuments={uploadedDocuments}
             />
           )}
 
