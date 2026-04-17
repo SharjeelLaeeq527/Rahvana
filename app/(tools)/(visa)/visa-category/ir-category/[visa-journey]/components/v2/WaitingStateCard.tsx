@@ -25,6 +25,7 @@ interface WaitingStateCardProps {
   onAction?: () => void;
   showIVToolLink?: boolean;
   ivEmbassy?: string;
+  className?: string; // Support for grid spans and other custom styling
 }
 
 export default function WaitingStateCard({
@@ -38,6 +39,7 @@ export default function WaitingStateCard({
   onAction,
   showIVToolLink,
   ivEmbassy,
+  className,
 }: WaitingStateCardProps) {
   const iconMap = {
     file: <FileText className="h-5 w-5" />,
@@ -62,7 +64,7 @@ export default function WaitingStateCard({
   };
 
   return (
-    <Card className={`border-2 ${statusColors[status]} transition-all hover:shadow-md`}>
+    <Card className={`border-2 ${statusColors[status]} transition-all hover:shadow-md h-full ${className || ""}`}>
       <CardContent className="p-4">
         <div className="flex items-start gap-3">
           <div className="flex-shrink-0 mt-1">{iconMap[icon]}</div>
