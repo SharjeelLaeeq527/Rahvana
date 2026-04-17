@@ -40,22 +40,6 @@ export function DashboardView({
     },
   );
 
-  const [outcome, setOutcome] = useState<string>(
-    (state?.metadata?.nvc_review_outcome as string) || ""
-  );
-  const [outcomeSaved, setOutcomeSaved] = useState<boolean>(
-    !!state?.metadata?.nvc_review_outcome
-  );
-
-  const handleSaveOutcome = () => {
-    if (!outcome) return;
-    setOutcomeSaved(true);
-    actions.updateMetadata({
-      nvc_review_outcome: outcome,
-      nvc_review_complete: outcome === "qualified"
-    });
-  };
-
   const toggleAccordion = (id: string) => {
     setOpenAccordions((prev) => ({
       ...prev,
@@ -276,130 +260,38 @@ export function DashboardView({
                   </div>
                 </div>
 
-                {/* Daily Check Reminder & Outcome Tracker (USER REQUESTED) */}
-                {isCaseRegistered && !trackingStatus.nvc_review_complete && trackingStatus.dq_status !== "qualified" && (
-                  <div className="flex flex-col gap-4">
-                    {/* Daily Reminder Card - Premium Sleek Design */}
-                    {outcome !== "qualified" && (
-                      <div className="group relative bg-[#0c1b33] rounded-[22px] p-6 text-white shadow-[0_20px_50px_rgba(12,27,51,0.15)] overflow-hidden animate-in slide-in-from-top-2 duration-500">
-                        {/* Background Accents */}
-                        <div className="absolute top-0 right-0 w-[150px] h-[150px] bg-primary/20 rounded-full blur-[80px] -mr-10 -mt-10" />
-                        <div className="absolute bottom-0 left-0 w-[100px] h-[100px] bg-indigo-500/10 rounded-full blur-[60px] -ml-5 -mb-5" />
-                        
-                        <div className="relative flex items-center gap-5">
-                          <div className="w-12 h-12 rounded-[16px] bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center shrink-0 shadow-inner">
-                            <BellRing className="text-white h-5 w-5 animate-pulse" />
-                          </div>
-                          
-                          <div className="flex-1">
-                            <div className="flex items-center gap-2 mb-1.5">
-                              <span className="text-[10px] font-black uppercase tracking-[0.15em] text-slate-300">Case Monitoring</span>
-                              <div className="h-px flex-1 bg-white/10" />
-                            </div>
-                            <h3 className="text-[17px] font-black tracking-tight mb-1">Check NVC Email & Portal Today</h3>
-                            <p className="text-[12.5px] text-slate-300 leading-relaxed mb-4 max-w-[480px]">
-                              To avoid delays, please check your CEAC portal daily. As soon as you are <span className="text-white font-bold">Documentary Qualified (DQ)</span>, record it below.
-                            </p>
-                            
-                            <button 
-                              onClick={() => window.open("https://ceac.state.gov/IV/Login.aspx", "_blank")}
-                              className="px-5 py-2.5 bg-white text-[#1e293b] rounded-[12px] text-[11.5px] font-black uppercase tracking-wider flex items-center gap-2 hover:bg-slate-100 transition-all cursor-pointer shadow-md"
-                            >
-                              Open CEAC Portal <ExternalLink size={13} strokeWidth={3} />
-                            </button>
-                          </div>
-                        </div>
+                {/* Daily Check Reminder - Shows only during NVC review phase */}
+                {isCaseRegistered && 
+                 !trackingStatus.nvc_review_complete && 
+                 trackingStatus.dq_status !== "qualified" && 
+                 !state.metadata?.dqDate && (
+                  <div className="group relative bg-[#0c1b33] rounded-[22px] p-6 text-white shadow-[0_20px_50px_rgba(12,27,51,0.15)] overflow-hidden animate-in slide-in-from-top-2 duration-500">
+                    {/* Background Accents */}
+                    <div className="absolute top-0 right-0 w-[150px] h-[150px] bg-primary/20 rounded-full blur-[80px] -mr-10 -mt-10" />
+                    <div className="absolute bottom-0 left-0 w-[100px] h-[100px] bg-indigo-500/10 rounded-full blur-[60px] -ml-5 -mb-5" />
+                    
+                    <div className="relative flex items-center gap-5">
+                      <div className="w-12 h-12 rounded-[16px] bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center shrink-0 shadow-inner">
+                        <BellRing className="text-white h-5 w-5 animate-pulse" />
                       </div>
-                    )}
-
-                    {/* Outcome Recording Form - Minimalist Theme Integration */}
-                    <div className="bg-white border-[1.5px] border-[#d0e4f7] rounded-[22px] p-6 shadow-sm relative transition-all">
-                      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                        <div className="flex items-center gap-4">
-                          <div className="w-10 h-10 rounded-[12px] bg-[#f4f7fb] flex items-center justify-center border border-[#d0e4f7] shrink-0">
-                            <Save className={`${outcomeSaved ? 'text-primary' : 'text-slate-400'}`} size={18} />
-                          </div>
-                          <div>
-                            <h3 className="text-[15px] font-black text-[#0c1b33]">Document Review Result</h3>
-                            <p className="text-[11.5px] text-[#6b8097]">
-                              {outcome === "qualified" 
-                                ? "Your case has been marked as Documentarily Qualified." 
-                                : "Check your inbox for NVC messages and record the updates here."}
-                            </p>
-                          </div>
-                        </div>
-
-                        {outcomeSaved ? (
-                          <button 
-                            onClick={() => setOutcomeSaved(false)}
-                            className="text-[11px] font-black text-primary uppercase tracking-widest hover:underline cursor-pointer flex items-center gap-1.5"
-                          >
-                            Edit Status <ArrowRight size={12} strokeWidth={3} />
-                          </button>
-                        ) : null}
-                      </div>
-
-                      <div className="h-px bg-[#d0e4f7]/60 my-5" />
                       
-                      {!outcomeSaved ? (
-                        <div className="flex flex-col sm:flex-row gap-3">
-                          <div className="relative flex-1">
-                            <select
-                              value={outcome}
-                              onChange={(e) => setOutcome(e.target.value)}
-                              className="w-full appearance-none p-3.5 pr-10 border border-[#d0e4f7] rounded-[16px] text-[12.5px] font-bold text-[#3a4f63] bg-[#f8fafc] focus:outline-none focus:ring-4 focus:ring-primary/5 focus:border-primary transition-all cursor-pointer"
-                            >
-                              <option value="">Select current NVC status...</option>
-                              <option value="qualified">Documentary Qualified (DQ) - Complete</option>
-                              <option value="rfe">Corrections Needed (RFE / Checklist)</option>
-                              <option value="under_review">Still Awaiting Result / Under Review</option>
-                            </select>
-                            <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-[#6b8097]">
-                              <ChevronDown size={16} />
-                            </div>
-                          </div>
-                          
-                          <button
-                            onClick={handleSaveOutcome}
-                            disabled={!outcome}
-                            className={`flex items-center justify-center gap-2 px-8 py-3.5 rounded-[16px] text-[12.5px] font-black uppercase tracking-wider transition-all ${
-                              outcome 
-                                ? 'bg-primary text-white hover:bg-primary/90 hover:shadow-md cursor-pointer active:scale-95' 
-                                : 'bg-[#f4f7fb] text-[#b8d4f0] border border-[#d0e4f7] cursor-not-allowed'
-                            }`}
-                          >
-                            Save Update
-                          </button>
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-1.5">
+                          <span className="text-[10px] font-black uppercase tracking-[0.15em] text-slate-300">Case Monitoring</span>
+                          <div className="h-px flex-1 bg-white/10" />
                         </div>
-                      ) : (
-                        <div className={`p-4 rounded-[18px] flex items-start gap-4 animate-in zoom-in-95 duration-300 ${
-                          outcome === "qualified" 
-                            ? "bg-slate-50 border border-slate-200" 
-                            : outcome === "rfe"
-                              ? "bg-amber-50/50 border border-amber-200/60"
-                              : "bg-[#f4f7fb] border border-[#d0e4f7]"
-                        }`}>
-                          <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${
-                            outcome === "qualified" ? "bg-green-100 text-green-600" : outcome === "rfe" ? "bg-amber-100 text-amber-600" : "bg-slate-100 text-slate-600"
-                          }`}>
-                            {outcome === "qualified" ? <Check size={16} strokeWidth={3} /> : outcome === "rfe" ? <AlertTriangle size={16} strokeWidth={3} /> : <Clock size={16} strokeWidth={3} />}
-                          </div>
-                          <div className="flex-1">
-                            <div className={`text-[13px] font-black uppercase tracking-wider mb-0.5 ${
-                              outcome === "qualified" ? "text-green-800" : outcome === "rfe" ? "text-amber-800" : "text-slate-800"
-                            }`}>
-                              {outcome === "qualified" ? "Documentary Qualified" : outcome === "rfe" ? "Action Required" : "Awaiting Result"}
-                            </div>
-                            <p className="text-[12px] text-slate-600 leading-relaxed font-medium">
-                              {outcome === "qualified" 
-                                ? "NVC review complete. We are now preparing for your consular interview phase." 
-                                : outcome === "rfe"
-                                  ? "NVC has asked for corrections. Log in to CEAC immediately to view the checklist and re-upload documents."
-                                  : "Review is still in progress. Our daily reminders will stay active to keep you updated."}
-                            </p>
-                          </div>
-                        </div>
-                      )}
+                        <h3 className="text-[17px] font-black tracking-tight mb-1">Check NVC Email & Portal Today</h3>
+                        <p className="text-[12.5px] text-slate-300 leading-relaxed mb-4 max-w-[480px]">
+                          Your documents are in review. To avoid delays, please check your CEAC portal daily for any messages or status updates.
+                        </p>
+                        
+                        <button 
+                          onClick={() => window.open("https://ceac.state.gov/IV/Login.aspx", "_blank")}
+                          className="px-5 py-2.5 bg-white text-[#1e293b] rounded-[12px] text-[11.5px] font-black uppercase tracking-wider flex items-center gap-2 hover:bg-slate-100 transition-all cursor-pointer shadow-md"
+                        >
+                          Open CEAC Portal <ExternalLink size={13} strokeWidth={3} />
+                        </button>
+                      </div>
                     </div>
                   </div>
                 )}
@@ -425,8 +317,124 @@ export function DashboardView({
                   />
                 )}
 
-                {/* DQ Status */}
-                {trackingStatus.dq_status === "qualified" && (
+                {/* Intelligent IR1 Visa Live Tracker */}
+                {((trackingStatus.dq_status === "qualified") || (state.metadata?.dqStatus === "qualified") || (state.metadata?.nvc_review_outcome === "qualified")) && !trackingStatus.interview_date && (() => {
+                  const dqDateStr = trackingStatus.dq_date || state.metadata?.dqDate;
+                  if (!dqDateStr) {
+                    return (
+                      <div className="bg-[#0f1f38] rounded-[22px] border border-[#2f6fd4]/30 p-6 text-white my-4 relative overflow-hidden">
+                        <div className="absolute -top-10 -right-10 w-40 h-40 bg-primary/20 rounded-full blur-[80px] pointer-events-none" />
+                        <div className="relative z-10 flex items-center gap-4">
+                          <div className="w-10 h-10 rounded-full bg-amber-500/20 flex items-center justify-center border border-amber-500/30">
+                            <Clock className="text-amber-500" size={18} />
+                          </div>
+                          <div>
+                            <h3 className="text-[15px] font-black">Record your DQ Date</h3>
+                            <p className="text-[11.5px] text-slate-400">Please complete "Chapter 2, Step 10" in the roadmap to see wait time estimations.</p>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  }
+                  
+                  const dqDateObj = new Date(dqDateStr);
+                  const diffTime = new Date().getTime() - dqDateObj.getTime();
+                  const daysSinceDq = Math.max(0, Math.floor(diffTime / (1000 * 60 * 60 * 24)));
+                  const monthsSinceDq = Math.floor(daysSinceDq / 30);
+                  
+                  // Islamabad heuristics
+                  const averageLow = 7;
+                  const averageHigh = 10;
+                  
+                  let backlogStatus = "";
+                  if (monthsSinceDq < 5) {
+                    backlogStatus = `You are in the early waiting stage. Currently, the embassy is processing cases from around ${averageLow}-${averageHigh} months ago.`;
+                  } else if (monthsSinceDq >= 5 && monthsSinceDq < 8) {
+                    backlogStatus = `You are getting closer! Many applicants receive their interview letters around this time. Prepare your documents.`;
+                  } else {
+                    backlogStatus = `You have been waiting for ${monthsSinceDq} months. You are well within or past the typical window. An interview letter could arrive any day.`;
+                  }
+                  
+                  // Estimated window
+                  const estimatedDateLow = new Date(dqDateObj);
+                  estimatedDateLow.setMonth(estimatedDateLow.getMonth() + averageLow);
+                  const estimatedDateHigh = new Date(dqDateObj);
+                  estimatedDateHigh.setMonth(estimatedDateHigh.getMonth() + averageHigh);
+                  
+                  const formatMonthYear = (d: Date) => d.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+                  const windowStr = `${formatMonthYear(estimatedDateLow)} \u2013 ${formatMonthYear(estimatedDateHigh)}`;
+
+                  return (
+                    <div className="bg-[#0f1f38] rounded-[22px] border border-[#2f6fd4]/30 shadow-2xl p-6 text-white animate-in zoom-in-95 duration-500 overflow-hidden relative my-4">
+                      {/* Background accents */}
+                      <div className="absolute -top-10 -right-10 w-40 h-40 bg-primary/20 rounded-full blur-[80px] pointer-events-none" />
+                      <div className="absolute -bottom-10 -left-10 w-40 h-40 bg-[#34d399]/10 rounded-full blur-[80px] pointer-events-none" />
+
+                      <div className="relative z-10 flex flex-col gap-6">
+                        <div>
+                          <div className="inline-flex items-center gap-2 px-3 py-1 bg-white/10 rounded-full border border-white/10 text-[10px] font-black uppercase tracking-[0.15em] text-[#6aa8f0] mb-4">
+                            <span className="w-1.5 h-1.5 rounded-full bg-[#6aa8f0] animate-pulse" />
+                            Live Visa Tracker
+                          </div>
+                          
+                          <h3 className="text-[22px] font-black mb-1">In Interview Queue</h3>
+                          <p className="text-slate-300 text-[13px] leading-relaxed mb-5 max-w-[500px]">
+                            Intelligent tracking and estimations for Islamabad (ISL) embassy based on current backlog trends.
+                          </p>
+
+                          <div className="space-y-3">
+                            <div className="grid grid-cols-2 gap-3">
+                              <div className="bg-white/5 rounded-[14px] p-4 border border-white/5 shadow-inner">
+                                <div className="text-[10px] uppercase tracking-widest text-[#6b8097] mb-1 font-bold">DQ Date</div>
+                                <div className="text-[15px] font-bold text-white">{dqDateObj.toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric"})}</div>
+                                <div className="text-[11px] text-[#34d399] mt-1 font-black tracking-wide">{daysSinceDq} DAYS AGO</div>
+                              </div>
+                              <div className="bg-white/5 rounded-[14px] p-4 border border-white/5 shadow-inner">
+                                <div className="text-[10px] uppercase tracking-widest text-[#6b8097] mb-1 font-bold">Stage</div>
+                                <div className="text-[15px] font-bold text-[#6aa8f0]">Waiting for Letter</div>
+                                <div className="text-[11px] text-slate-400 mt-1 font-medium select-none truncate">Monitoring NVC messages</div>
+                              </div>
+                            </div>
+
+                            <div className="bg-[#1e293b]/50 rounded-[14px] p-4 border border-white/10 relative overflow-hidden group">
+                              <div className="absolute inset-0 bg-gradient-to-r from-amber-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                              <div className="text-[10px] uppercase tracking-widest text-amber-500/80 mb-1 font-bold">Estimated Interview Letter Window</div>
+                              <div className="text-[20px] font-black text-amber-400 mb-2.5">{windowStr}</div>
+                              <div className="text-[12px] text-slate-300 leading-relaxed bg-black/20 p-2.5 rounded-lg border border-white/5">
+                                <span className="font-bold text-white">Islamabad Check:</span> {backlogStatus}
+                              </div>
+                            </div>
+                          </div>
+                          
+                          <div className="mt-5 pt-5 border-t border-white/10 flex items-start gap-4">
+                            <div className="w-10 h-10 rounded-[12px] bg-primary/20 flex items-center justify-center shrink-0 border border-primary/30 mt-1">
+                              <BellRing className="text-primary h-5 w-5" />
+                            </div>
+                            <div className="flex-1">
+                              <div className="flex items-center justify-between mb-1">
+                                <div className="text-[13px] font-black text-white">Assistant Reminder</div>
+                              </div>
+                              <div className="text-[12px] text-slate-300 leading-relaxed mb-2.5">
+                                {daysSinceDq < 180 
+                                  ? "It is too early to expect a letter, but you should check CEAC periodically. Have you gathered all original documents for the interview?" 
+                                  : "You are in the primary window. Check your email and CEAC portal daily. Ensure your medical exam is planned."}
+                              </div>
+                              <div className="p-3 bg-white/5 rounded-xl border border-white/10 flex items-center gap-3">
+                                <AlertTriangle className="text-[#6aa8f0] shrink-0" size={16} />
+                                <div className="text-[11px] font-medium text-slate-300 leading-tight">
+                                  Any new update? <button onClick={() => window.scrollTo({top: 0, behavior: 'smooth'})} className="text-white hover:text-primary font-bold underline underline-offset-2 transition-colors inline">Record it above</button>, and I will update your tracker.
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })()}
+
+                {/* DQ Status Legacy Cards (if simple) - Retained for safety, but above tracker will show */}
+                {trackingStatus.dq_status === "qualified" && !trackingStatus.interview_date && (
                   <WaitingStateCard
                     icon="check"
                     title="Documentarily Qualified!"

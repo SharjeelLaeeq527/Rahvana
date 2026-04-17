@@ -145,8 +145,9 @@ export async function PATCH(req: NextRequest) {
       admin_last_checked_at: new Date().toISOString()
     };
 
-    // Merge tracking_status if provided
-    if (tracking_status) {
+    if (body.clear_tracking) {
+      updateData.tracking_status = {}; // Clear completely
+    } else if (tracking_status) {
       // Fetch current tracking_status first
       const { data: current } = await supabase
         .from('journeys')

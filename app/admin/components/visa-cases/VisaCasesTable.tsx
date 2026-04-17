@@ -136,6 +136,33 @@ export default function VisaCasesTable() {
     }
   };
 
+  const handleClearTracking = async () => {
+    if (!selectedJourney) return;
+    if (!confirm("Are you sure you want to clear ALL tracking data? This will revert the case to an un-tracked state.")) return;
+
+    setIsSaving(true);
+    try {
+      const res = await fetch("/api/admin/visa-cases", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          id: selectedJourney.id,
+          clear_tracking: true,
+        }),
+      });
+
+      if (!res.ok) throw new Error("Failed to clear tracking");
+
+      await fetchJourneys(true);
+      setIsDialogOpen(false);
+      setSelectedJourney(null);
+    } catch (err: any) {
+      console.error("Error clearing tracking:", err);
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
   const getStatusBadge = (status: string) => {
     const statusMap: Record<string, { label: string; variant: "default" | "secondary" | "destructive" | "outline" }> = {
       not_started: { label: "Not Started", variant: "outline" },
@@ -704,23 +731,35 @@ export default function VisaCasesTable() {
                 />
               </div>
 
-              <DialogFooter>
-                <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
-                  Cancel
+              <DialogFooter className="flex justify-between w-full sm:justify-between items-center mt-6">
+                <Button 
+                  variant="destructive" 
+                  size="sm" 
+                  onClick={handleClearTracking} 
+                  disabled={isSaving}
+                  className="mr-auto"
+                >
+                  <AlertCircle className="mr-2 h-4 w-4" />
+                  Clear Tracking
                 </Button>
-                <Button onClick={handleSaveNotes} disabled={isSaving}>
-                  {isSaving ? (
-                    <>
-                      <Loader size="sm" />
-                      Saving...
-                    </>
-                  ) : (
-                    <>
-                      <Save className="mr-2 h-4 w-4" />
-                      Save Changes
-                    </>
-                  )}
-                </Button>
+                <div className="flex gap-2">
+                  <Button variant="outline" onClick={() => setIsDialogOpen(false)} disabled={isSaving}>
+                    Cancel
+                  </Button>
+                  <Button onClick={handleSaveNotes} disabled={isSaving}>
+                    {isSaving ? (
+                      <>
+                        <Loader size="sm" />
+                        Saving...
+                      </>
+                    ) : (
+                      <>
+                        <Save className="mr-2 h-4 w-4" />
+                        Save Changes
+                      </>
+                    )}
+                  </Button>
+                </div>
               </DialogFooter>
             </div>
           )}
