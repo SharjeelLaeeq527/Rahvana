@@ -630,9 +630,9 @@ export function useWizard(options: UseWizardOptions = {}) {
         console.warn("[useWizard] No backendId for mailing details save");
         throw new Error("Journey not initialized");
       }
-
+    
       try {
-        // Save both in parallel
+        // Step 1: Save carrier and tracking number (existing code)
         const [carrierRes, trackingRes] = await Promise.all([
           fetch(`/api/case_data/${state.backendId}/paper_mailing_carrier`, {
             method: "PATCH",
@@ -653,27 +653,79 @@ export function useWizard(options: UseWizardOptions = {}) {
             }),
           }),
         ]);
-
+    
         // Check both responses
         if (!carrierRes.ok) {
-          const error = await carrierRes.json().catch(() => ({ error: `HTTP ${carrierRes.status}` }));
-          throw new Error(error.error || `Failed to save carrier: ${carrierRes.status}`);
+          const error = await carrierRes
+            .json()
+            .catch(() => ({ error: `HTTP ${carrierRes.status}` }));
+          throw new Error(
+            error.error || `Failed to save carrier: ${carrierRes.status}`
+          );
         }
         if (!trackingRes.ok) {
-          const error = await trackingRes.json().catch(() => ({ error: `HTTP ${trackingRes.status}` }));
-          throw new Error(error.error || `Failed to save tracking: ${trackingRes.status}`);
+          const error = await trackingRes
+            .json()
+            .catch(() => ({ error: `HTTP ${trackingRes.status}` }));
+          throw new Error(
+            error.error || `Failed to save tracking: ${trackingRes.status}`
+          );
         }
-
-        // Update local state with both saved values
-        setState((prev) => ({
-          ...prev,
-          metadata: {
+    
+        // NEW: Step 2 - Create EasyPost tracker
+        console.log(
+          "[useWizard] Creating EasyPost tracker...",
+          carrier,
+          trackingNumber
+        );
+    
+        const trackerRes = await fetch("/api/easypost/tracker/create", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            caseId: state.backendId,
+            carrier: carrier,
+            trackingCode: trackingNumber,
+          }),
+        });
+    
+        let trackerData = null;
+        if (!trackerRes.ok) {
+          const error = await trackerRes
+            .json()
+            .catch(() => ({ error: `HTTP ${trackerRes.status}` }));
+          console.error(
+            "[useWizard] Failed to create tracker:",
+            error.error || trackerRes.status
+          );
+          // Don't throw here - tracking creation failure shouldn't fail the main save
+          // The cron job can retry later
+        } else {
+          trackerData = await trackerRes.json();
+          console.log("[useWizard] EasyPost tracker created:", trackerData.id);
+        }
+    
+        // Update local state with saved values
+        setState((prev) => {
+          const newMetadata = {
             ...prev.metadata,
             paper_mailing_carrier: carrier,
             paper_mailing_tracking: trackingNumber,
-          },
-        }));
+          };
 
+          // If tracker created successfully, also store tracker data
+          if (trackerData) {
+            newMetadata.easypost_tracker_id = trackerData.id;
+            newMetadata.tracking_status = trackerData.status;
+            newMetadata.tracking_last_checked_at = new Date().toISOString();
+          }
+
+          return {
+            ...prev,
+            metadata: newMetadata,
+          };
+        });
+    
         console.log("[useWizard] Mailing details saved successfully");
       } catch (err) {
         console.error("[useWizard] Mailing details save failed:", err);

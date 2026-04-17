@@ -1057,3 +1057,26 @@ export async function getJourneyDocumentsDB(
 
   return (data as JourneyDocument[]) || [];
 }
+
+// Get all case IDs that have active EasyPost trackers - Used by cron job to update tracking status
+export async function getAllCasesWithTrackers(): Promise<string[]> {
+  try {
+    const { supabase, user } = await getSupabaseWithUser();
+
+    const { data, error } = await supabase
+      .from("case_data")
+      .select("case_id")
+      .eq("data_key", "easypost_tracker_id")
+      .not("data_value", "is", null)
+      .neq("data_value", "");
+
+    if (error) throw error;
+
+    // Get unique case IDs
+    const caseIds = [...new Set(data.map((row: any) => row.case_id))];
+    return caseIds;
+  } catch (error) {
+    console.error("[Data Access] Error getting cases with trackers:", error);
+    throw error;
+  }
+}
