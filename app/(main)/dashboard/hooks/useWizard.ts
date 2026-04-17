@@ -1,8 +1,9 @@
+"use client";
+
 import { useState, useEffect, useCallback, useRef, useMemo } from "react";
-import { roadmapData } from "../../../../data/roadmap";
 import { toast } from "sonner";
-import { mapDocumentNameToId } from "@/lib/document-vault/journey-mapping";
 import { useDocumentVaultStore } from "@/lib/document-vault/store";
+import { mapDocumentNameToId } from "@/lib/document-vault/journey-mapping";
 
 export interface WizardState {
   currentStage: number;
@@ -19,12 +20,11 @@ export interface WizardState {
   >;
   notes: Record<string, string>;
   started: boolean;
-  // New Journey Engine fields
   answers: Record<string, any>;
   metadata: Record<string, any>;
   unresolvedTasks: string[];
-  backendId?: string; // Supabase UUID
-  stepMap: Record<string, string>; // step_key -> uuid
+  backendId?: string;
+  stepMap: Record<string, string>;
 }
 
 const DEFAULT_STATE: WizardState = {
@@ -46,11 +46,8 @@ const DEFAULT_STATE: WizardState = {
 };
 
 interface UseWizardOptions {
-  /** Supabase user ID — if provided, progress syncs to DB */
   userId?: string | null;
-  /** Journey ID (e.g., 'ir1') */
   journeyId?: string;
-  /** Custom roadmap data (optional) */
   roadmapData?: any;
 }
 
@@ -61,18 +58,14 @@ export function useWizard(options: UseWizardOptions = {}) {
     roadmapData: externalRoadmapData,
   } = options;
 
-  const activeRoadmap = externalRoadmapData || roadmapData;
+  const activeRoadmap = externalRoadmapData;
 
   const [state, setState] = useState<WizardState>(DEFAULT_STATE);
   const [isLoaded, setIsLoaded] = useState(false);
   const [hasExistingProgress, setHasExistingProgress] = useState(false);
   const [isSyncing, setIsSyncing] = useState(false);
-  // Queue for serializing step toggle API calls
-  const syncQueueRef = useRef<Array<() => Promise<void>>>([]);
-  const isSyncingRef = useRef(false);
-  const isInitialLoadRef = useRef(true);
 
-  // ─── Normalize State (Moved up for use in useEffect and Memoized actions) ───────────
+  // ─── Normalize State ───────────
   const normalizeState = useCallback(() => {
     if (!activeRoadmap || !(activeRoadmap.chapters || activeRoadmap.stages)) return;
 
@@ -81,7 +74,6 @@ export function useWizard(options: UseWizardOptions = {}) {
       const chapters = activeRoadmap.chapters || activeRoadmap.stages;
       const filingMethod = prev.metadata?.filingMethod || prev.filingType || 'online';
 
-      // Helper: Get active steps for a chapter based on filing method
       const getActiveStepsForChapter = (chapterIdx: number) => {
         const chapter = chapters[chapterIdx];
         if (!chapter) return [];
@@ -98,38 +90,31 @@ export function useWizard(options: UseWizardOptions = {}) {
         });
       };
 
-      // Validate and adjust currentStage
       if (currentStage < 0) currentStage = 0;
       if (currentStage >= chapters.length) {
         currentStage = Math.max(0, chapters.length - 1);
       }
 
-      // Get active steps for current chapter
       let activeSteps = getActiveStepsForChapter(currentStage);
 
-      // If current chapter has no active steps, find next chapter with active steps
       while (activeSteps.length === 0 && currentStage < chapters.length - 1) {
         currentStage++;
         activeSteps = getActiveStepsForChapter(currentStage);
       }
 
-      // Determine current step within the chapter
       let narrowedStep: number;
       const stepsInChapter = chapters[currentStage]?.steps || [];
       const activeStepsInChapter = getActiveStepsForChapter(currentStage);
 
       if (currentStep === null || currentStep < 0 || currentStep >= stepsInChapter.length) {
-        // Find first incomplete active step
         const firstIncomplete = stepsInChapter.findIndex((s: any) => {
           const sId = s.step_key || s.id;
-          // Check if this step is active (visible)
           const isActive = activeStepsInChapter.some((as: any) => 
             (as.step_key || as.id) === sId
           );
           return isActive && !prev.completedSteps.has(sId);
         });
         
-        // If all active steps complete, stay on first active step (don't auto-advance chapter)
         if (firstIncomplete === -1) {
           narrowedStep = activeStepsInChapter.length > 0 ? stepsInChapter.findIndex((s: any) =>
             activeStepsInChapter.some((as: any) => (as.step_key || as.id) === (s.step_key || s.id))
@@ -160,13 +145,11 @@ export function useWizard(options: UseWizardOptions = {}) {
       try {
         console.log(`[useWizard] Syncing for journey: ${journeyId}`);
 
-        // 1. Find existing journey (Case-Insensitive search)
         const listRes = await fetch(`/api/journeys?journey_type=${journeyId.toUpperCase()}`);
         const listData = await listRes.json();
 
         let targetJourneyId: string | null = null;
         if (listData.success && listData.data && listData.data.length > 0) {
-          // Look for exact or case-insensitive match
           const found = listData.data.find((j: any) => {
             const itemType = j.journey.journey_type.toLowerCase().replace(/-/g, "");
             const queryType = journeyId.toLowerCase().replace(/-/g, "");
@@ -175,7 +158,6 @@ export function useWizard(options: UseWizardOptions = {}) {
           if (found) targetJourneyId = found.journey.id;
         }
 
-        // 2. Auto-Initialize if not found
         if (!targetJourneyId) {
           const configType = journeyId.toLowerCase() === 'ir1' ? 'ir-1' : journeyId.toLowerCase();
           const initRes = await fetch('/api/journeys/create-from-config', {
@@ -186,7 +168,6 @@ export function useWizard(options: UseWizardOptions = {}) {
           if (initData.success) {
             targetJourneyId = initData.data.journey.id;
           } else {
-             // Handle "already exists" error gracefully - might have been created concurrently
             if (initData.error?.includes("unique constraint")) {
                const retryRes = await fetch(`/api/journeys?journey_type=${journeyId.toUpperCase()}`);
                const retryData = await retryRes.json();
@@ -201,27 +182,20 @@ export function useWizard(options: UseWizardOptions = {}) {
 
         if (cancelled) return;
 
-        // 3. Load full state tree
         const detailRes = await fetch(`/api/journeys/${targetJourneyId}`);
         const detailData = await detailRes.json();
 
         if (detailData.success && !cancelled) {
-          const { journey, chapters, steps, case_data, progress_summary } = detailData.data;
+          const { journey, steps, case_data } = detailData.data;
 
           const stepMap: Record<string, string> = {};
           const completedSet = new Set<string>();
           
-          // Group steps by chapter for easier lookup
-          const stepsByChapter: Record<string, any[]> = {};
           steps.forEach((s: any) => {
             stepMap[s.step_key] = s.id;
             if (s.status === 'completed') {
               completedSet.add(s.step_key);
             }
-            if (!stepsByChapter[s.chapter_id]) {
-              stepsByChapter[s.chapter_id] = [];
-            }
-            stepsByChapter[s.chapter_id].push(s);
           });
 
           const metadata: Record<string, any> = {};
@@ -229,8 +203,6 @@ export function useWizard(options: UseWizardOptions = {}) {
             metadata[cd.data_key] = cd.data_value;
           });
 
-          // Derive currentStage & currentStep from the actual completedSteps (source of truth)
-          // This avoids stale DB cached progress percentages misleading the UI position.
           const filingMethod = journey.filing_method || 'online';
           const roadmapChapters = activeRoadmap?.chapters || activeRoadmap?.stages || [];
           
@@ -253,9 +225,7 @@ export function useWizard(options: UseWizardOptions = {}) {
               derivedStep = firstIncomplete === -1 ? 0 : firstIncomplete;
               break;
             }
-            // If this chapter is fully done, keep looking
             if (ci === roadmapChapters.length - 1) {
-              // All chapters complete
               derivedStage = ci;
               derivedStep = chapterSteps.length > 0 ? chapterSteps.length - 1 : 0;
             }
@@ -288,32 +258,24 @@ export function useWizard(options: UseWizardOptions = {}) {
 
     loadProgress();
     return () => { cancelled = true; };
-  }, [userId, journeyId]);
+  }, [userId, journeyId, activeRoadmap]);
 
-  // normalizeState is only needed for manual navigation (setStage), not on load.
-  // Position is now correctly derived from completedSteps in loadProgress.
-
-  // ─── Actions (Memoized to prevent infinite update loops) ───────────────────
+  // ─── Actions ───────────────────────────────────────────────────────────────
   const actions = useMemo(() => ({
     setStage: (idx: number) => {
       setState((prev) => {
         const chapters = activeRoadmap.chapters || activeRoadmap.stages;
         const chapter = chapters[idx];
         
-        // Persist the current chapter to the backend
         if (state.backendId && chapter?.id) {
           fetch(`/api/journeys/${state.backendId}`, {
             method: "PATCH",
-            body: JSON.stringify({ 
-              current_chapter_id: chapter.id,
-            }),
+            body: JSON.stringify({ current_chapter_id: chapter.id }),
           }).catch((err) => console.error("[useWizard] Failed to save chapter position:", err));
         }
         
         return { ...prev, currentStage: idx, currentStep: null };
       });
-      // Don't auto-normalize here - user is manually selecting chapter
-      // They should see chapter view, not auto-jump to a step
     },
 
     setCurrentStep: (idx: number) => {
@@ -323,7 +285,6 @@ export function useWizard(options: UseWizardOptions = {}) {
         if (!stage) return prev;
         const stepId = stage.steps[idx]?.step_key || stage.steps[idx]?.id;
         
-        // Persist the current step to the backend
         if (state.backendId && stepId && prev.stepMap[stepId]) {
           const stepUuid = prev.stepMap[stepId];
           fetch(`/api/journeys/${state.backendId}`, {
@@ -351,39 +312,68 @@ export function useWizard(options: UseWizardOptions = {}) {
         return;
       }
 
-      if (!state.stepMap[stepKey]) {
-        console.warn("[useWizard] toggleComplete: stepKey not found in stepMap", {
-          stepKey,
-          availableKeys: Object.keys(state.stepMap).slice(0, 10),
+      const isCompleted = state.completedSteps.has(stepKey);
+
+      // ENFORCE SEQUENTIAL COMPLETION (ONLY when marking as completed)
+      if (!isCompleted) {
+        const chapters = activeRoadmap.chapters || activeRoadmap.stages || [];
+        const filingMethod = state.metadata?.filingMethod || state.filingType || 'online';
+        
+        const allActiveSteps: any[] = [];
+        chapters.forEach((chapter: any) => {
+          const activeSteps = (chapter.steps || []).filter((s: any) => {
+            const visibleWhen = s.visible_when;
+            if (visibleWhen && Object.keys(visibleWhen).length > 0) {
+              if (visibleWhen.filingMethod) return visibleWhen.filingMethod === filingMethod;
+            }
+            const branch = s.branch;
+            if (!branch || branch === 'both') return true;
+            return branch === filingMethod;
+          });
+          allActiveSteps.push(...activeSteps);
         });
-        toast.error(`Sync Error: Step missing from journey. Please reset your journey.`);
+
+        const targetIdx = allActiveSteps.findIndex(s => (s.step_key || s.id) === stepKey);
+
+        if (targetIdx > 0) {
+           const previousSteps = allActiveSteps.slice(0, targetIdx);
+           const firstIncomplete = previousSteps.find(s => !state.completedSteps.has(s.step_key || s.id));
+           
+           if (firstIncomplete) {
+             toast.error(`Previous step pending: "${firstIncomplete.step_name}"`, {
+               description: "Steps must be completed in order. Please finish the preceding tasks first.",
+               duration: 4000
+             });
+             return; // HARD BLOCK
+           }
+        }
+      }
+
+      if (!state.stepMap[stepKey]) {
+        console.warn("[useWizard] toggleComplete: stepKey not found in stepMap");
+        toast.error(`Sync Error: Step missing from journey. Please refresh your journey.`);
         return;
       }
 
       const stepUuid = state.stepMap[stepKey];
-      const isCompleted = state.completedSteps.has(stepKey);
 
-      // Optimistic update — instant UI feedback regardless of queue state
+      // Optimistic update
       setState((prev) => {
         const newCompleted = new Set(prev.completedSteps);
         if (newCompleted.has(stepKey)) newCompleted.delete(stepKey);
         else newCompleted.add(stepKey);
         
-        // Auto-advance to next chapter if completing last step
-        if (!isCompleted) { // Only when marking as complete, not uncompleting
+        if (!isCompleted) {
           const chapters = activeRoadmap.chapters || activeRoadmap.stages;
           const filingMethod = prev.metadata?.filingMethod || prev.filingType || 'online';
           
-          // Helper to get active steps for a chapter
           const getActiveStepsForChapter = (chapterIdx: number) => {
             const chapter = chapters[chapterIdx];
             if (!chapter) return [];
             return chapter.steps.filter((s: any) => {
               const visibleWhen = s.visible_when;
               if (visibleWhen && Object.keys(visibleWhen).length > 0) {
-                if (visibleWhen.filingMethod) {
-                  return visibleWhen.filingMethod === filingMethod;
-                }
+                if (visibleWhen.filingMethod) return visibleWhen.filingMethod === filingMethod;
               }
               const branch = s.branch;
               if (!branch || branch === 'both') return true;
@@ -391,18 +381,16 @@ export function useWizard(options: UseWizardOptions = {}) {
             });
           };
           
-          // Check if all active steps in current chapter are now complete
           const currentChapterActive = getActiveStepsForChapter(prev.currentStage);
           const allCurrentChapterComplete = currentChapterActive.length > 0 && 
             currentChapterActive.every((s: any) => newCompleted.has(s.step_key || s.id));
           
-          // If current chapter is now complete and there's a next chapter, move to it
           if (allCurrentChapterComplete && prev.currentStage < chapters.length - 1) {
             return {
               ...prev,
               completedSteps: newCompleted,
               currentStage: prev.currentStage + 1,
-              currentStep: null, // Will be normalized to first incomplete step
+              currentStep: null,
             };
           }
         }
@@ -410,16 +398,18 @@ export function useWizard(options: UseWizardOptions = {}) {
         return { ...prev, completedSteps: newCompleted };
       });
 
-      // Enqueue the API call
-      const job = async () => {
-        const url = isCompleted
-          ? `/api/steps/${stepUuid}`
-          : `/api/steps/${stepUuid}?action=complete`;
-
+      // Background Sync
+      if (stepUuid) {
+        setIsSyncing(true);
         try {
+          const url = !isCompleted
+            ? `/api/steps/${stepUuid}?action=complete`
+            : `/api/steps/${stepUuid}`;
+
           const res = await fetch(url, {
-            method: isCompleted ? "PATCH" : "POST",
-            body: JSON.stringify(isCompleted ? { status: "not_started" } : {}),
+            method: !isCompleted ? "POST" : "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(!isCompleted ? {} : { status: "not_started" }),
           });
 
           if (!res.ok) {
@@ -429,34 +419,22 @@ export function useWizard(options: UseWizardOptions = {}) {
           console.log("[useWizard] sync success:", stepKey);
         } catch (err) {
           console.error("[useWizard] sync failed:", stepKey, err);
-          toast.error("Failed to save step. Please check your connection.");
-          // Rollback this specific step
+          toast.error("Failed to save progress. Please check your connection.");
+          
+          // Rollback
           setState((prev) => {
             const newCompleted = new Set(prev.completedSteps);
-            if (isCompleted) newCompleted.add(stepKey);
-            else newCompleted.delete(stepKey);
+            if (!isCompleted) newCompleted.delete(stepKey);
+            else newCompleted.add(stepKey);
             return { ...prev, completedSteps: newCompleted };
           });
+        } finally {
+          setIsSyncing(false);
         }
-      };
-
-      syncQueueRef.current.push(job);
-
-      // If not already processing the queue, start draining it
-      if (!isSyncingRef.current) {
-        isSyncingRef.current = true;
-        setIsSyncing(true);
-        while (syncQueueRef.current.length > 0) {
-          const next = syncQueueRef.current.shift()!;
-          await next();
-        }
-        isSyncingRef.current = false;
-        setIsSyncing(false);
       }
     },
 
     updateMetadata: async (metadata: Record<string, any>) => {
-      // Deep comparison to prevent redundant updates
       const hasChanges = Object.entries(metadata).some(
         ([key, val]) => JSON.stringify(state.metadata[key]) !== JSON.stringify(val)
       );
@@ -528,13 +506,41 @@ export function useWizard(options: UseWizardOptions = {}) {
       collapsedSteps: { ...prev.collapsedSteps, [stepId]: !prev.collapsedSteps[stepId] }
     })),
 
+    toggleDocument: (doc: string) => {
+      setState((prev) => ({
+        ...prev,
+        documentChecklist: {
+          ...prev.documentChecklist,
+          [doc]: !prev.documentChecklist[doc]
+        }
+      }));
+    },
+
+    updateNote: (stepKey: string, note: string) => {
+      setState((prev) => ({
+        ...prev,
+        notes: {
+          ...prev.notes,
+          [stepKey]: note
+        }
+      }));
+    },
+
+    clearDocument: (doc: string) => {
+      setState((prev) => {
+        const nextUploads = { ...prev.docUploads };
+        delete nextUploads[doc];
+        return { ...prev, docUploads: nextUploads };
+      });
+    },
+
     uploadDocument: async (doc: string, file: File) => {
       setState((prev) => ({
         ...prev,
         docUploads: { ...prev.docUploads, [doc]: { name: file.name, size: file.size, lastModified: file.lastModified } }
       }));
 
-      if (userId) {
+      if (userId && journeyId) {
         toast.loading(`Saving ${file.name} to vault...`, { id: "vault-upload" });
         try {
           const documentDefId = mapDocumentNameToId(doc);
@@ -546,7 +552,6 @@ export function useWizard(options: UseWizardOptions = {}) {
           const res = await fetch("/api/documents/upload", { method: "POST", body: formData });
           if (!res.ok) throw new Error();
           
-          // Refresh the global document vault store
           useDocumentVaultStore.getState().reloadDocuments();
           
           toast.success("Saved to vault", { id: "vault-upload" });
@@ -576,14 +581,12 @@ export function useWizard(options: UseWizardOptions = {}) {
     },
 
     updateDocumentStatus: async (documentId: string, status: 'not-started' | 'in-progress' | 'reviewed') => {
-      // Get or initialize document review status from metadata
       const currentDocReviewStatus = state.metadata?.docReviewStatus || {};
       const updatedDocReviewStatus = {
         ...currentDocReviewStatus,
         [documentId]: status
       };
 
-      // Update metadata with new document status
       await actions.updateMetadata({
         docReviewStatus: updatedDocReviewStatus
       });

@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useMemo, useState, useEffect } from "react";
-import { ChevronDown, ArrowRight, BellRing, ExternalLink, Save, Check, AlertTriangle, Clock } from "lucide-react";
+import { ChevronDown, ArrowRight, BellRing, ExternalLink, Save, Check, AlertTriangle, Clock, Shield } from "lucide-react";
 import { RoadmapData } from "../types";
 import { WizardState } from "@/app/(main)/dashboard/hooks/useWizard";
 import {
@@ -10,6 +10,7 @@ import {
   isStageUnlocked,
 } from "./journeyHelpers";
 import WaitingStateCard from "./WaitingStateCard";
+import APTrackingTool from "./APTrackingTool";
 
 interface DashboardViewProps {
   data: RoadmapData;
@@ -394,79 +395,144 @@ export function DashboardView({
                           onClick={() => window.open("https://ceac.state.gov/IV/Login.aspx", "_blank")}
                           className="px-5 py-2.5 bg-white text-[#1e293b] rounded-[12px] text-[11.5px] font-black uppercase tracking-wider flex items-center gap-2 hover:bg-slate-100 transition-all cursor-pointer shadow-md"
                         >
-                          Open CEAC Portal <ExternalLink size={13} strokeWidth={3} />
+          Open CEAC Portal <ExternalLink size={13} strokeWidth={3} />
                         </button>
                       </div>
                     </div>
                   </div>
                 )}
 
-                {/* Intelligent IR1 Visa Live Tracker - From HEAD */}
+                {/* Dynamic Interview Scheduling Estimator */}
                 {((trackingStatus.dq_status === "qualified") || (state.metadata?.dqStatus === "qualified") || (state.metadata?.nvc_review_outcome === "qualified")) && !trackingStatus.interview_date && (() => {
                   const dqDateStr = trackingStatus.dq_date || state.metadata?.dqDate;
-                  if (!dqDateStr) return null;
-                  
-                  const dqDateObj = new Date(dqDateStr);
-                  const diffTime = new Date().getTime() - dqDateObj.getTime();
-                  const daysSinceDq = Math.max(0, Math.floor(diffTime / (1000 * 60 * 60 * 24)));
-                  const monthsSinceDq = Math.floor(daysSinceDq / 30);
-                  
-                  // Islamabad heuristics
-                  const averageLow = 7;
-                  const averageHigh = 10;
-                  
-                  let backlogStatus = "";
-                  if (monthsSinceDq < 5) {
-                    backlogStatus = `You are in the early waiting stage. Currently, the embassy is processing cases from around ${averageLow}-${averageHigh} months ago.`;
-                  } else if (monthsSinceDq >= 5 && monthsSinceDq < 8) {
-                    backlogStatus = `You are getting closer! Many applicants receive their interview letters around this time. Prepare your documents.`;
-                  } else {
-                    backlogStatus = `You have been waiting for ${monthsSinceDq} months. You are well within or past the typical window. An interview letter could arrive any day.`;
+                  if (!dqDateStr) {
+                    return (
+                      <div className="bg-[#0f1f38] rounded-[22px] border border-[#2f6fd4]/30 p-6 text-white my-4 relative overflow-hidden">
+                        <div className="absolute -top-10 -right-10 w-40 h-40 bg-primary/20 rounded-full blur-[80px] pointer-events-none" />
+                        <div className="relative z-10 flex items-center gap-4">
+                          <div className="w-10 h-10 rounded-full bg-amber-500/20 flex items-center justify-center border border-amber-500/30">
+                            <Clock className="text-amber-500" size={18} />
+                          </div>
+                          <div>
+                            <h3 className="text-[15px] font-black">Waiting for DQ Confirmation</h3>
+                            <p className="text-[11.5px] text-slate-400">Please record your DQ date in Chapter 2, Step 10 to enable scheduling estimates.</p>
+                          </div>
+                        </div>
+                      </div>
+                    );
                   }
                   
-                  const estimatedDateLow = new Date(dqDateObj);
-                  estimatedDateLow.setMonth(estimatedDateLow.getMonth() + averageLow);
-                  const estimatedDateHigh = new Date(dqDateObj);
-                  estimatedDateHigh.setMonth(estimatedDateHigh.getMonth() + averageHigh);
-                  
-                  const formatMonthYear = (d: Date) => d.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
-                  const windowStr = `${formatMonthYear(estimatedDateLow)} \u2013 ${formatMonthYear(estimatedDateHigh)}`;
+                  const dqDateObj = new Date(dqDateStr + "T00:00:00");
+                  const diffTime = new Date().getTime() - dqDateObj.getTime();
+                  const daysSinceDq = Math.max(0, Math.floor(diffTime / (1000 * 60 * 60 * 24)));
+
+                  // Purely from what user entered in Step 2.11 — no hardcoded fallback
+                  const currentSchedulingMonthYear = state.metadata?.currentSchedulingMonthYear as string | undefined;
+                  const postLabel = (state.metadata?.post || state.metadata?.dqPost || "Embassy") as string;
+
+                  // If user hasn't entered scheduling month yet in Step 2.11, show a nudge
+                  if (!currentSchedulingMonthYear) {
+                    return (
+                      <div className="bg-[#0f1f38] rounded-[22px] border border-[#2f6fd4]/30 p-6 text-white mb-4 relative overflow-hidden">
+                        <div className="absolute -top-10 -right-10 w-40 h-40 bg-primary/10 rounded-full blur-[80px] pointer-events-none" />
+                        <div className="relative z-10">
+                          <div className="inline-flex items-center gap-2 px-3 py-1 bg-white/10 rounded-full border border-white/10 text-[10px] font-black uppercase tracking-[0.15em] text-[#6aa8f0] mb-4">
+                            <span className="w-1.5 h-1.5 rounded-full bg-[#6aa8f0] animate-pulse" />
+                            Interview Queue ({postLabel})
+                          </div>
+                          <h3 className="text-[18px] font-black mb-1">In Queue — Awaiting Estimate</h3>
+                          <p className="text-[12.5px] text-slate-400 leading-relaxed mb-4 max-w-md">
+                            Your DQ date is recorded. To see your estimated interview window, go to <span className="font-bold text-white">Chapter 2 → Step 11 (Interview Scheduling Queue)</span> and enter the current official scheduling month from travel.state.gov.
+                          </p>
+                          <div className="bg-white/5 rounded-xl p-3 border border-white/10 flex items-center justify-between">
+                            <div>
+                              <div className="text-[10px] uppercase tracking-widest text-[#6b8097] font-black">Your DQ Date</div>
+                              <div className="text-[14px] font-bold text-white mt-0.5">{dqDateObj.toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" })}</div>
+                            </div>
+                            <div className="text-[11px] font-black text-[#34d399]">{daysSinceDq} DAYS AGO</div>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  }
+
+                  // Calculate wait from user-entered scheduling month vs DQ date
+                  const [ivY, ivM] = currentSchedulingMonthYear.split("-").map(Number);
+                  const ivDate = new Date(ivY, ivM - 1, 1);
+                  const rawMonths = (dqDateObj.getFullYear() - ivDate.getFullYear()) * 12 + (dqDateObj.getMonth() - ivDate.getMonth());
+                  const waitMonths = Math.max(0, rawMonths);
+
+                  const lowDate = new Date();
+                  lowDate.setMonth(lowDate.getMonth() + waitMonths);
+                  const highDate = new Date(lowDate);
+                  highDate.setMonth(highDate.getMonth() + 2);
+
+                  const fmtOpts: Intl.DateTimeFormatOptions = { month: 'short', year: 'numeric' };
+                  const windowStr = waitMonths === 0
+                    ? "Approaching — Could be anytime"
+                    : `${lowDate.toLocaleDateString('en-US', fmtOpts)} \u2013 ${highDate.toLocaleDateString('en-US', fmtOpts)}`;
+
+                  const backlogMsg = waitMonths === 0
+                    ? "The embassy has reached or passed your DQ month. Your interview letter may arrive soon."
+                    : `The embassy is currently processing cases from ${new Date(ivY, ivM - 1, 1).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}. Your DQ is approximately ${waitMonths} month${waitMonths !== 1 ? 's' : ''} away from being scheduled.`;
 
                   return (
                     <div className="bg-[#0f1f38] rounded-[22px] border border-[#2f6fd4]/30 shadow-2xl p-6 text-white animate-in zoom-in-95 duration-500 overflow-hidden relative mb-4">
                       <div className="absolute -top-10 -right-10 w-40 h-40 bg-primary/20 rounded-full blur-[80px] pointer-events-none" />
-                      <div className="absolute -bottom-10 -left-10 w-40 h-40 bg-[#34d399]/10 rounded-full blur-[80px] pointer-events-none" />
                       <div className="relative z-10 flex flex-col gap-6">
-                        <div>
-                          <div className="inline-flex items-center gap-2 px-3 py-1 bg-white/10 rounded-full border border-white/10 text-[10px] font-black uppercase tracking-[0.15em] text-[#6aa8f0] mb-4">
-                            <span className="w-1.5 h-1.5 rounded-full bg-[#6aa8f0] animate-pulse" />
-                            Live Visa Tracker
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                          <div>
+                            <div className="inline-flex items-center gap-2 px-3 py-1 bg-white/10 rounded-full border border-white/10 text-[10px] font-black uppercase tracking-[0.15em] text-[#6aa8f0] mb-3">
+                              <span className="w-1.5 h-1.5 rounded-full bg-[#6aa8f0] animate-pulse" />
+                              Dynamic Scheduling Tracker
+                            </div>
+                            <h3 className="text-[20px] font-black leading-tight">In Interview Queue ({postLabel})</h3>
+                            <p className="text-slate-400 text-[12px] mt-1 pr-10">
+                              Estimated timeline based on your DQ date and the official embassy progress.
+                            </p>
                           </div>
-                          <h3 className="text-[22px] font-black mb-1">In Interview Queue</h3>
-                          <p className="text-slate-300 text-[13px] leading-relaxed mb-5 max-w-[500px]">
-                            Intelligent tracking and estimations for Islamabad (ISL) embassy based on current backlog trends.
-                          </p>
-                          <div className="space-y-3">
-                            <div className="grid grid-cols-2 gap-3">
-                              <div className="bg-white/5 rounded-[14px] p-4 border border-white/5 shadow-inner">
-                                <div className="text-[10px] uppercase tracking-widest text-[#6b8097] mb-1 font-bold">DQ Date</div>
-                                <div className="text-[15px] font-bold text-white">{dqDateObj.toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric"})}</div>
-                                <div className="text-[11px] text-[#34d399] mt-1 font-black tracking-wide">{daysSinceDq} DAYS AGO</div>
-                              </div>
-                              <div className="bg-white/5 rounded-[14px] p-4 border border-white/5 shadow-inner">
-                                <div className="text-[10px] uppercase tracking-widest text-[#6b8097] mb-1 font-bold">Stage</div>
-                                <div className="text-[15px] font-bold text-[#6aa8f0]">Waiting for Letter</div>
-                                <div className="text-[11px] text-slate-400 mt-1 font-medium select-none truncate">Monitoring NVC messages</div>
-                              </div>
+                          
+                          {/* Official Embassy Progress Sync (Display Only) */}
+                          <div className="bg-white/5 border border-white/10 rounded-xl p-3 shrink-0 flex flex-col gap-2 min-w-[160px]">
+                            <span className="text-[10px] font-black text-[#6aa8f0] uppercase tracking-wider">Embassy Check</span>
+                            <div className="flex flex-col gap-1">
+                               <span className="text-[11px] text-slate-400">Scheduling up to:</span>
+                               <span className="bg-black/20 border border-white/10 rounded-md p-1.5 text-[12px] font-bold text-white text-center">
+                                 {new Date(currentSchedulingMonthYear + "-01T00:00:00").toLocaleDateString("en-US", { month: "short", year: "numeric" })}
+                               </span>
                             </div>
-                            <div className="bg-[#1e293b]/50 rounded-[14px] p-4 border border-white/10 relative overflow-hidden group">
-                              <div className="absolute inset-0 bg-gradient-to-r from-amber-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-                              <div className="text-[10px] uppercase tracking-widest text-amber-500/80 mb-1 font-bold">Estimated Interview Letter Window</div>
-                              <div className="text-[20px] font-black text-amber-400 mb-2.5">{windowStr}</div>
-                              <div className="text-[12px] text-slate-300 leading-relaxed bg-black/20 p-2.5 rounded-lg border border-white/5">
-                                <span className="font-bold text-white">Islamabad Check:</span> {backlogStatus}
-                              </div>
-                            </div>
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                          <div className="bg-white/5 rounded-[14px] p-4 border border-white/5">
+                            <div className="text-[10px] uppercase tracking-widest text-[#6b8097] mb-1 font-black">Your DQ Date</div>
+                            <div className="text-[15px] font-bold text-white">{dqDateObj.toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric"})}</div>
+                            <div className="text-[11px] text-[#34d399] mt-1 font-black">{daysSinceDq} DAYS AGO</div>
+                          </div>
+                          
+                          <div className="bg-white/5 rounded-[14px] p-4 border border-white/5">
+                            <div className="text-[10px] uppercase tracking-widest text-[#6b8097] mb-1 font-black">Current Backlog</div>
+                            <div className="text-[15px] font-bold text-[#6aa8f0]">{waitMonths > 0 ? `${waitMonths} MONTHS` : "< 1 MONTH"}</div>
+                            <div className="text-[11px] text-slate-400 mt-1 font-medium italic">Estimated wait blocks</div>
+                          </div>
+
+                          <div className="bg-amber-500/10 rounded-[14px] p-4 border border-amber-500/20 lg:col-span-1 sm:col-span-2">
+                            <div className="text-[10px] uppercase tracking-widest text-amber-500/80 mb-1 font-black">Est. Interview Letter</div>
+                            <div className="text-[16px] font-black text-amber-400">{windowStr}</div>
+                            <div className="text-[11px] text-amber-500/60 mt-1 font-medium select-none truncate">Subject to embassy quota</div>
+                          </div>
+                        </div>
+
+                        <div className="bg-white/5 border border-white/10 rounded-xl p-4 flex items-start gap-4">
+                          <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center shrink-0 border border-primary/20">
+                            <Shield className="text-primary" size={16} />
+                          </div>
+                          <div>
+                            <h4 className="text-[13px] font-black mb-1">Status Intelligence</h4>
+                            <p className="text-[12px] text-slate-400 leading-relaxed">
+                              {backlogMsg}
+                            </p>
                           </div>
                         </div>
                       </div>
@@ -485,9 +551,9 @@ export function DashboardView({
                       const finalGridClass =
                         trackingCards.length === 1 ? "md:col-span-3" : gridClass;
 
-                      return React.cloneElement(card, {
-                        key: card.key || idx,
-                        className: `${card.props.className || ""} ${finalGridClass}`,
+                      return React.cloneElement(card as React.ReactElement<any>, {
+                        key: (card as any).key || idx,
+                        className: `${(card as any).props.className || ""} ${finalGridClass}`,
                       });
                     })}
                   </div>
@@ -572,6 +638,23 @@ export function DashboardView({
             ))}
           </div>
         )}
+
+         {/* AP Tracking Tool - Shows after interview attended OR admin marks AP pending */}
+         {(() => {
+           const trackingStatus = state.metadata?.trackingStatus || {};
+           const hasStartedAp = state.completedSteps?.has("c3s8") || 
+                               state.completedSteps?.has("step_3_8") || 
+                               trackingStatus.ap_status === "pending" || 
+                               !!(state.metadata?.apStartDate);
+                               
+           if (!hasStartedAp) return null;
+           
+           return (
+             <APTrackingTool
+               state={state}
+             />
+           );
+         })()}
 
         {/* Chapter Strip */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2.5 mb-3">
