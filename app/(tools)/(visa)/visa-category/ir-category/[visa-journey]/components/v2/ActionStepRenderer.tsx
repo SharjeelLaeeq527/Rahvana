@@ -139,6 +139,12 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
       `}</style>
       {/* Main Content */}
       <div className="max-w-3xl mx-auto px-5.5 py-12">
+        {/* Eyebrow for Paper Filing Path steps */}
+        {(step.step_key === 'step_1_11' || step.step_key === 'step_1_12' || step.step_key === 'step_1_13' || step.step_key === 'step_1_14') && (
+          <div className="text-[10px] font-bold uppercase tracking-widest text-soft mb-2 text-[#636B97]">
+            Chapter 1 · Chapter 1: USCIS Petition Filing <span className="text-[#BDD7F1] mx-2">&gt;</span> <span className="text-[#3B7DD8]">{step.step_name}</span>
+          </div>
+        )}
         {/* Title */}
         <h1 className="text-4xl leading-tight text-navy font-black -tracking-wide mb-3">
           {step.step_name}

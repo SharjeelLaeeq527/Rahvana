@@ -1,9 +1,21 @@
 "use client";
-import { ProcessingTimeModal, MilestonesModal, AfterI130ApprovalModal, RelationshipEvidenceModal, AffidavitSupportModal, AddEvidenceNoteModal } from "./StatusModals";
+import {
+  ProcessingTimeModal,
+  MilestonesModal,
+  AfterI130ApprovalModal,
+  RelationshipEvidenceModal,
+  AffidavitSupportModal,
+  AddEvidenceNoteModal,
+} from "./StatusModals";
 import { GuideTutorialOverlay } from "./GuideTutorialOverlays";
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardContent,
+} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-
 
 import React, { useEffect, useMemo, useState, useCallback } from "react";
 import {
@@ -14,6 +26,7 @@ import {
   CheckSquare,
   ArrowRight,
   ShieldCheck,
+  Shield,
   Search,
   MessageSquare,
   Scale,
@@ -147,7 +160,6 @@ import { EMBASSY_GUIDANCE_DATA } from "@/app/(tools)/(visa)/221g-action-planner/
 import { APPROVAL_NOTICE_DATA } from "./ApprovalNoticeData";
 import { ApprovalNoticeTool } from "./ApprovalNoticeTool";
 
-
 interface SecurityQuestion {
   id: string;
   question: string;
@@ -195,70 +207,84 @@ interface FilingQuizResult {
 }
 
 export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
-          // Status Guide Tutorial Overlay state
-          const [showStatusGuide, setShowStatusGuide] = useState(false);
-          const [statusGuideStep, setStatusGuideStep] = useState(0);
+  // Status Guide Tutorial Overlay state
+  const [showStatusGuide, setShowStatusGuide] = useState(false);
+  const [statusGuideStep, setStatusGuideStep] = useState(0);
 
-          // USCIS Status Tutorial Steps (from HTML)
-          const USCIS_STATUS_TUTORIAL_STEPS = [
-            {
-              label: 'Step 1 of 4 — Open official USCIS status tools',
-              heading: 'Start with the official case-status view',
-              instruction: 'USCIS case-status tools revolve around the receipt number. The official status view usually reflects the latest recorded action on the case.',
-              url: 'egov.uscis.gov',
-              kicker: 'Official USCIS tracking',
-              head: 'Case Status Online',
-              copy: 'Track your case using the 13-character receipt number.',
-              pills: ['Receipt number required','Last action shown','Official USCIS tool'],
-              note: 'A quiet status page does not necessarily mean nothing is happening internally. It usually means there has been no new official outward-facing update yet.'
-            },
-            {
-              label: 'Step 2 of 4 — Understand common pending statuses',
-              heading: 'Learn the difference between waiting and action-required states',
-              instruction: 'Most of the time, a pending case is in a waiting state like “Case Was Received” or “Case Is Being Actively Reviewed.” The important distinction is whether USCIS is simply processing or has asked for something.',
-              url: 'rahvana.local/status-map',
-              kicker: 'Status guide',
-              head: 'Status meanings',
-              copy: 'Separate passive waiting from states that require action.',
-              pills: ['Received','Actively reviewed','RFE','Approved'],
-              note: 'Use this guide to understand whether you need to act now or simply stay prepared.'
-            },
-            {
-              label: 'Step 3 of 4 — Use the waiting period well',
-              heading: 'Turn waiting time into preparation time',
-              instruction: 'Use this waiting period to stay prepared, keep your records current, and learn what usually comes next in the journey.',
-              url: 'rahvana.local/pending-prep',
-              kicker: 'While-you-wait tools',
-              head: 'Stay prepared while waiting',
-              copy: 'A prep checklist, next-step preview, and useful modules for this waiting period.',
-              pills: ['Prep checklist','Coming next','Useful right now'],
-              note: 'A few small tasks now can make the next phase feel much easier when the case moves forward.'
-            },
-            {
-              label: 'Step 4 of 4 — Know when the page should pivot',
-              heading: 'Be ready for the next meaningful change',
-              instruction: 'If USCIS later issues a request for evidence, approval, or another major update, your next step here should change with it.',
-              url: 'rahvana.local/conditional-next-steps',
-              kicker: 'Next-step guide',
-              head: 'Pivot when USCIS changes the status',
-              copy: 'RFE and approval should each unlock their own dedicated next-step experiences.',
-              pills: ['Conditional branches','Next step unlocks','Action clarity'],
-              note: 'Your next task should match the actual update USCIS gives you.'
-            }
-          ];
-        // Add Evidence Note modal state
-        const [showAddEvidenceNoteModal, setShowAddEvidenceNoteModal] = useState(false);
-      // Useful Right Now modals
-      const [showAfterI130Modal, setShowAfterI130Modal] = useState(false);
-      const [showRelationshipEvidenceModal, setShowRelationshipEvidenceModal] = useState(false);
-      const [showAffidavitSupportModal, setShowAffidavitSupportModal] = useState(false);
-    // Modal state for status explainer panel
-    const [showProcessingModal, setShowProcessingModal] = React.useState(false);
-    const [showMilestonesModal, setShowMilestonesModal] = React.useState(false);
+  // USCIS Status Tutorial Steps (from HTML)
+  const USCIS_STATUS_TUTORIAL_STEPS = [
+    {
+      label: "Step 1 of 4 — Open official USCIS status tools",
+      heading: "Start with the official case-status view",
+      instruction:
+        "USCIS case-status tools revolve around the receipt number. The official status view usually reflects the latest recorded action on the case.",
+      url: "egov.uscis.gov",
+      kicker: "Official USCIS tracking",
+      head: "Case Status Online",
+      copy: "Track your case using the 13-character receipt number.",
+      pills: [
+        "Receipt number required",
+        "Last action shown",
+        "Official USCIS tool",
+      ],
+      note: "A quiet status page does not necessarily mean nothing is happening internally. It usually means there has been no new official outward-facing update yet.",
+    },
+    {
+      label: "Step 2 of 4 — Understand common pending statuses",
+      heading:
+        "Learn the difference between waiting and action-required states",
+      instruction:
+        "Most of the time, a pending case is in a waiting state like “Case Was Received” or “Case Is Being Actively Reviewed.” The important distinction is whether USCIS is simply processing or has asked for something.",
+      url: "rahvana.local/status-map",
+      kicker: "Status guide",
+      head: "Status meanings",
+      copy: "Separate passive waiting from states that require action.",
+      pills: ["Received", "Actively reviewed", "RFE", "Approved"],
+      note: "Use this guide to understand whether you need to act now or simply stay prepared.",
+    },
+    {
+      label: "Step 3 of 4 — Use the waiting period well",
+      heading: "Turn waiting time into preparation time",
+      instruction:
+        "Use this waiting period to stay prepared, keep your records current, and learn what usually comes next in the journey.",
+      url: "rahvana.local/pending-prep",
+      kicker: "While-you-wait tools",
+      head: "Stay prepared while waiting",
+      copy: "A prep checklist, next-step preview, and useful modules for this waiting period.",
+      pills: ["Prep checklist", "Coming next", "Useful right now"],
+      note: "A few small tasks now can make the next phase feel much easier when the case moves forward.",
+    },
+    {
+      label: "Step 4 of 4 — Know when the page should pivot",
+      heading: "Be ready for the next meaningful change",
+      instruction:
+        "If USCIS later issues a request for evidence, approval, or another major update, your next step here should change with it.",
+      url: "rahvana.local/conditional-next-steps",
+      kicker: "Next-step guide",
+      head: "Pivot when USCIS changes the status",
+      copy: "RFE and approval should each unlock their own dedicated next-step experiences.",
+      pills: ["Conditional branches", "Next step unlocks", "Action clarity"],
+      note: "Your next task should match the actual update USCIS gives you.",
+    },
+  ];
+  // Add Evidence Note modal state
+  const [showAddEvidenceNoteModal, setShowAddEvidenceNoteModal] =
+    useState(false);
+  // Useful Right Now modals
+  const [showAfterI130Modal, setShowAfterI130Modal] = useState(false);
+  const [showRelationshipEvidenceModal, setShowRelationshipEvidenceModal] =
+    useState(false);
+  const [showAffidavitSupportModal, setShowAffidavitSupportModal] =
+    useState(false);
+  // Modal state for status explainer panel
+  const [showProcessingModal, setShowProcessingModal] = React.useState(false);
+  const [showMilestonesModal, setShowMilestonesModal] = React.useState(false);
   // Status panel modal states for step_1_16 (must be inside component)
-  const [isProcessingTimeModalOpen, setIsProcessingTimeModalOpen] = useState(false);
+  const [isProcessingTimeModalOpen, setIsProcessingTimeModalOpen] =
+    useState(false);
   const [isMilestonesModalOpen, setIsMilestonesModalOpen] = useState(false);
-  const handleProcessingTimeModalToggle = () => setIsProcessingTimeModalOpen((v) => !v);
+  const handleProcessingTimeModalToggle = () =>
+    setIsProcessingTimeModalOpen((v) => !v);
   const handleMilestonesModalToggle = () => setIsMilestonesModalOpen((v) => !v);
   const { user } = useAuth();
   const {
@@ -363,7 +389,9 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
   // Tutorial State
   const [isTutorialOpen, setIsTutorialOpen] = useState(false);
   const [tutorialIdx, setTutorialIdx] = useState(0);
-  const [tutorialPath, setTutorialPath] = useState<"household_member" | "joint_sponsor" | null>(null);
+  const [tutorialPath, setTutorialPath] = useState<
+    "household_member" | "joint_sponsor" | null
+  >(null);
   const [useCeacGuideData, setUseCeacGuideData] = useState(false); // Flag for Start CEAC Guide button
 
   // Household Member Builder States (Step 7)
@@ -638,12 +666,12 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
   // Move guide steps state to top-level so it persists across renders
   const [receiptGuideSteps, setReceiptGuideSteps] = React.useState<any[]>([]);
   React.useEffect(() => {
-    import('@/data/receipt-guide-steps.json').then((mod) => {
+    import("@/data/receipt-guide-steps.json").then((mod) => {
       setReceiptGuideSteps(
         mod.default.map((step: any) => ({
           ...step,
-          screenshot: '/assets/images/placeholder-ss.png',
-        }))
+          screenshot: "/assets/images/placeholder-ss.png",
+        })),
       );
     });
   }, []);
@@ -653,38 +681,83 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
   // step_1_16: Monitor USCIS Case Status
   if (sId === "step_1_15" && currentStep.tool_data) {
     // UI state: "waiting", "register", "tracked"
-    const [uiState, setUiState] = React.useState<'waiting'|'register'|'tracked'>('waiting');
+    const [uiState, setUiState] = React.useState<
+      "waiting" | "register" | "tracked"
+    >("waiting");
     const tool = currentStep.tool_data;
     // Dummy state for form fields (not persisted)
-    const [manual, setManual] = React.useState({ receipt: '', noticeDate: '', priorityDate: '', caseLabel: '' });
-    const [upload, setUpload] = React.useState({ file: null, receipt: '', noticeDate: '', priorityDate: '' });
-    const [error, setError] = React.useState('');
+    const [manual, setManual] = React.useState({
+      receipt: "",
+      noticeDate: "",
+      priorityDate: "",
+      caseLabel: "",
+    });
+    const [upload, setUpload] = React.useState({
+      file: null,
+      receipt: "",
+      noticeDate: "",
+      priorityDate: "",
+    });
+    const [error, setError] = React.useState("");
     const [success, setSuccess] = React.useState(false);
     // Overlay tutorial state for guide
     const [isGuideOpen, setIsGuideOpen] = React.useState(false);
     const [guideStep, setGuideStep] = React.useState(0);
     // --- ICONS ---
-    const CheckIcon = () => (<svg viewBox="0 0 24 24" className="w-5 h-5" fill="none" stroke="currentColor"><polyline points="20 6 9 17 4 12" /></svg>);
-    const BookIcon = () => (<svg viewBox="0 0 24 24" className="w-5 h-5" fill="none" stroke="currentColor"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>);
-    const PortalIcon = () => (<svg viewBox="0 0 24 24" className="w-6 h-6" fill="none" stroke="currentColor"><rect x="4" y="5" width="16" height="14"/><path d="M4 9h16"/><path d="M8 14h8"/><path d="M8 18h5"/></svg>);
+    const CheckIcon = () => (
+      <svg
+        viewBox="0 0 24 24"
+        className="w-5 h-5"
+        fill="none"
+        stroke="currentColor"
+      >
+        <polyline points="20 6 9 17 4 12" />
+      </svg>
+    );
+    const BookIcon = () => (
+      <svg
+        viewBox="0 0 24 24"
+        className="w-5 h-5"
+        fill="none"
+        stroke="currentColor"
+      >
+        <rect x="2" y="3" width="20" height="14" rx="2" />
+        <path d="M8 21h8M12 17v4" />
+      </svg>
+    );
+
 
     // --- PIXEL-PERFECT LAYOUT ---
     return (
       <div className="max-w-[720px] mx-auto px-6 py-12 flex flex-col">
         {/* Eyebrow */}
         <div className="flex items-center gap-2 mb-1">
-          <span className="text-[11px] font-semibold uppercase tracking-wider text-[#6b8097]">Chapter 1 · USCIS Petition Filing</span>
+          <span className="text-[11px] font-semibold uppercase tracking-wider text-[#6b8097]">
+            Chapter 1 · USCIS Petition Filing
+          </span>
           <span className="text-[11px] text-[#b8d4f0]">›</span>
-          <span className="text-[11px] font-semibold uppercase tracking-wider text-[#2f6fd4]">{tool.title}</span>
+          <span className="text-[11px] font-semibold uppercase tracking-wider text-[#2f6fd4]">
+            {tool.title}
+          </span>
         </div>
         {/* Title & Desc */}
-        <h1 className="font-serif text-[clamp(28px,4.5vw,38px)] text-[#0c1b33] leading-[1.15] tracking-tight mb-2">{tool.title}</h1>
-        <p className="text-[15px] text-[#3a4f63] leading-[1.7] max-w-[560px] mb-6">{tool.subtitle}</p>
+        <h1 className="text-[clamp(28px,4.5vw,38px)] text-[#0c1b33] leading-[1.15] tracking-tight mb-2">
+          {tool.title}
+        </h1>
+        <p className="text-[15px] text-[#3a4f63] leading-[1.7] max-w-[560px] mb-6">
+          {tool.subtitle}
+        </p>
         {/* Chips */}
         <div className="flex gap-2 flex-wrap mb-9">
-          <span className="chip chip-role bg-[#e8f1fb] text-[#2d4a6e] border border-[#d0e4f7] text-[11px] font-semibold uppercase px-3 py-1 rounded-full">Petitioner</span>
-          <span className="chip chip-path bg-[#fff7ed] text-[#b45309] border border-[#fed7aa] text-[11px] font-semibold uppercase px-3 py-1 rounded-full">Online Filing</span>
-          <span className="chip chip-track bg-[#e8f5ef] text-[#15744f] border border-[#a8d9be] text-[11px] font-semibold uppercase px-3 py-1 rounded-full">Tracking</span>
+          <span className="chip chip-role bg-[#e8f1fb] text-[#2d4a6e] border border-[#d0e4f7] text-[11px] font-semibold uppercase px-3 py-1 rounded-full">
+            Petitioner
+          </span>
+          <span className="chip chip-path bg-[#fff7ed] text-[#b45309] border border-[#fed7aa] text-[11px] font-semibold uppercase px-3 py-1 rounded-full">
+            Online Filing
+          </span>
+          <span className="chip chip-track bg-[#e8f5ef] text-[#15744f] border border-[#a8d9be] text-[11px] font-semibold uppercase px-3 py-1 rounded-full">
+            Tracking
+          </span>
         </div>
         {/* Launch Module */}
         <div className="rounded-2xl border border-white/10 bg-[#101e35] shadow-[0_20px_60px_rgba(12,27,51,0.18)] mb-5 relative overflow-hidden">
@@ -692,50 +765,114 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
           <div className="p-8 md:p-[32px_34px_28px]">
             <div className="flex items-start gap-4 mb-6">
               <div className="w-[46px] h-[46px] rounded-[11px] bg-white/6 border border-white/10 flex items-center justify-center shrink-0">
-                <PortalIcon />
+                <Globe className="w-6 h-6 text-white/80" />
               </div>
               <div>
-                <div className="text-[10px] font-bold uppercase tracking-widest text-white/35 mb-1">Post-Filing Checkpoint · Receipt Registration</div>
-                <div className="font-serif text-[clamp(19px,2.8vw,23px)] text-white/92 leading-tight">Wait for the notice, register it, then let Rahvana monitor the case</div>
+                <div className="text-[10px] font-bold uppercase tracking-widest text-white/35 mb-1">
+                  Post-Filing Checkpoint · Receipt Registration
+                </div>
+                <div className="text-[clamp(19px,2.8vw,23px)] text-white/92 leading-tight">
+                  Wait for the notice, register it, then let Rahvana monitor the
+                  case
+                </div>
               </div>
             </div>
             <div className="h-px bg-white/10 mb-5" />
             {/* Phases */}
-            {tool.phases && tool.phases.map((p: any, i: number) => (
-              <div key={i} className="flex gap-2 items-start bg-white/5 border border-white/10 rounded-[10px] px-4 py-3 mb-2">
-                <span className="text-[10px] font-bold uppercase tracking-widest text-white/80 px-3 py-1 rounded-full bg-white/10 border border-white/10 whitespace-nowrap">{p.badge}</span>
-                <span className="text-[13px] text-white/60 leading-snug">{p.copy}</span>
-              </div>
-            ))}
-            {/* Launch Cues */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mt-2 mb-2">
-              {tool.launch_cues && tool.launch_cues.map((cue: string, i: number) => (
-                <div key={i} className="flex gap-2 items-start bg-white/5 border border-white/10 rounded-[10px] px-4 py-3">
-                  <span className="w-[5px] h-[5px] rounded-full bg-[#64dca0] mt-1.5 shrink-0" />
-                  <span className="text-[13px] text-white/60 leading-snug">{cue}</span>
+            {tool.phases &&
+              tool.phases.map((p: any, i: number) => (
+                <div
+                  key={i}
+                  className="flex gap-2 items-start bg-white/5 border border-white/10 rounded-[10px] px-4 py-3 mb-2"
+                >
+                  <span className="text-[10px] font-bold uppercase tracking-widest text-white/80 px-3 py-1 rounded-full bg-white/10 border border-white/10 whitespace-nowrap">
+                    {p.badge}
+                  </span>
+                  <span className="text-[13px] text-white/60 leading-snug">
+                    {p.copy}
+                  </span>
                 </div>
               ))}
+            {/* Launch Cues */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mt-2 mb-2">
+              {tool.launch_cues &&
+                tool.launch_cues.map((cue: string, i: number) => (
+                  <div
+                    key={i}
+                    className="flex gap-2 items-start bg-white/5 border border-white/10 rounded-[10px] px-4 py-3"
+                  >
+                    <span className="w-[5px] h-[5px] rounded-full bg-[#64dca0] mt-1.5 shrink-0" />
+                    <span className="text-[13px] text-white/60 leading-snug">
+                      {cue}
+                    </span>
+                  </div>
+                ))}
             </div>
           </div>
         </div>
         {/* State Shells */}
-        {uiState === 'waiting' && (
+        {uiState === "waiting" && (
           <>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
-              <button className="card bg-white border-[1.5px] border-[#a8d9be] rounded-2xl p-5 flex flex-col items-start hover:border-[#2f6fd4] transition" onClick={() => setUiState('register')}>
-                <div className="card-icon icon-green w-10 h-10 rounded-xl bg-[#e8f5ef] border border-[#a8d9be] flex items-center justify-center mb-3"><CheckIcon /></div>
-                <div className="font-semibold text-[#0c1b33] mb-1">I Received My Receipt Notice</div>
-                <div className="text-[13px] text-[#6b8097] text-left mb-2">Move into the registration step and save the receipt details inside Rahvana.</div>
-                <div className="flex items-center gap-1 text-[#2f6fd4] font-semibold text-[12px] mt-2">Register notice <svg viewBox="0 0 24 24" className="w-4 h-4" fill="none" stroke="currentColor"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></div>
+              <button
+                className="card bg-white border-[1.5px] border-[#a8d9be] rounded-2xl p-5 flex flex-col items-start hover:border-[#2f6fd4] transition"
+                onClick={() => setUiState("register")}
+              >
+                <div className="card-icon icon-green w-10 h-10 rounded-xl bg-[#e8f5ef] border border-[#a8d9be] flex items-center justify-center mb-3">
+                  <CheckIcon />
+                </div>
+                <div className="font-semibold text-[#0c1b33] mb-1">
+                  I Received My Receipt Notice
+                </div>
+                <div className="text-[13px] text-[#6b8097] text-left mb-2">
+                  Move into the registration step and save the receipt details
+                  inside Rahvana.
+                </div>
+                <div className="flex items-center gap-1 text-[#2f6fd4] font-semibold text-[12px] mt-2">
+                  Register notice{" "}
+                  <svg
+                    viewBox="0 0 24 24"
+                    className="w-4 h-4"
+                    fill="none"
+                    stroke="currentColor"
+                  >
+                    <line x1="5" y1="12" x2="19" y2="12" />
+                    <polyline points="12 5 19 12 12 19" />
+                  </svg>
+                </div>
               </button>
-              <button className="card bg-white border-[1.5px] border-[#c9bef2] rounded-2xl p-5 flex flex-col items-start hover:border-[#2f6fd4] transition" onClick={() => setIsGuideOpen(true)}>
-                <div className="card-icon icon-purple w-10 h-10 rounded-xl bg-[#f3f0fb] border border-[#c9bef2] flex items-center justify-center mb-3"><BookIcon /></div>
-                <div className="font-semibold text-[#0c1b33] mb-1">Where Do I Find the Receipt Number?</div>
-                <div className="text-[13px] text-[#6b8097] text-left mb-2">Open a short walkthrough that shows where to look and what information to bring back.</div>
-                <div className="flex items-center gap-1 text-[#2f6fd4] font-semibold text-[12px] mt-2">Open guide <svg viewBox="0 0 24 24" className="w-4 h-4" fill="none" stroke="currentColor"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></div>
+              <button
+                className="card bg-white border-[1.5px] border-[#c9bef2] rounded-2xl p-5 flex flex-col items-start hover:border-[#2f6fd4] transition"
+                onClick={() => setIsGuideOpen(true)}
+              >
+                <div className="card-icon icon-purple w-10 h-10 rounded-xl bg-[#f3f0fb] border border-[#c9bef2] flex items-center justify-center mb-3">
+                  <BookIcon />
+                </div>
+                <div className="font-semibold text-[#0c1b33] mb-1">
+                  Where Do I Find the Receipt Number?
+                </div>
+                <div className="text-[13px] text-[#6b8097] text-left mb-2">
+                  Open a short walkthrough that shows where to look and what
+                  information to bring back.
+                </div>
+                <div className="flex items-center gap-1 text-[#2f6fd4] font-semibold text-[12px] mt-2">
+                  Open guide{" "}
+                  <svg
+                    viewBox="0 0 24 24"
+                    className="w-4 h-4"
+                    fill="none"
+                    stroke="currentColor"
+                  >
+                    <line x1="5" y1="12" x2="19" y2="12" />
+                    <polyline points="12 5 19 12 12 19" />
+                  </svg>
+                </div>
               </button>
             </div>
-            <p className="text-[12px] text-[#6b8097] text-center mt-2">Best next move: wait until USCIS accepts the filing, then return here with the receipt number or receipt notice.</p>
+            <p className="text-[12px] text-[#6b8097] text-center mt-2">
+              Best next move: wait until USCIS accepts the filing, then return
+              here with the receipt number or receipt notice.
+            </p>
             {/* Guide Dialog */}
             {/* Receipt Notice Guide Overlay */}
             {isGuideOpen && (
@@ -750,78 +887,226 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
             )}
           </>
         )}
-        {uiState === 'register' && (
+        {uiState === "register" && (
           <div className="panel bg-white border-[1.5px] border-[#d0e4f7] rounded-2xl p-8 md:p-10 mb-6 shadow-lg">
-            <div className="font-serif text-[22px] text-[#0c1b33] mb-2">Register the receipt notice</div>
-            <div className="text-[14px] text-[#3a4f63] mb-6">Choose the easiest intake path. <span className="font-semibold text-[#2f6fd4]">Manual entry</span> is the fastest. <span className="font-semibold text-[#b45309]">Upload</span> is helpful when you want Rahvana to preserve the notice as part of the case record.</div>
-            <div className="flex gap-2 mb-6">
-              <button className={`switch-btn px-5 py-2 rounded-full border text-[13px] font-semibold mr-2 ${manual ? 'bg-[#2f6fd4] text-white border-[#2f6fd4]' : 'bg-white text-[#3a4f63] border-[#d0e4f7]'}`}>Enter Receipt Number</button>
-              <button className={`switch-btn px-5 py-2 rounded-full border text-[13px] font-semibold ${!manual ? 'bg-[#2f6fd4] text-white border-[#2f6fd4]' : 'bg-white text-[#3a4f63] border-[#d0e4f7]'}`}>Upload Receipt Notice</button>
+            <div className="text-[22px] text-[#0c1b33] mb-2">
+              Register the receipt notice
             </div>
-            {error && <div className="error show bg-[#fff1f2] border border-[#fecdd3] rounded-lg p-3 text-[13px] text-[#9f1239] mb-2">{error}</div>}
-            {success && <div className="success-banner show bg-[#e8f5ef] border border-[#a8d9be] rounded-lg p-3 text-[13px] text-[#15744f] mb-2">Notice added for this session. Confirm the extracted details below, then save the case to enable tracking.</div>}
+            <div className="text-[14px] text-[#3a4f63] mb-6">
+              Choose the easiest intake path.{" "}
+              <span className="font-semibold text-[#2f6fd4]">Manual entry</span>{" "}
+              is the fastest.{" "}
+              <span className="font-semibold text-[#b45309]">Upload</span> is
+              helpful when you want Rahvana to preserve the notice as part of
+              the case record.
+            </div>
+            <div className="flex gap-2 mb-6">
+              <button
+                className={`switch-btn px-5 py-2 rounded-full border text-[13px] font-semibold mr-2 ${manual ? "bg-[#2f6fd4] text-white border-[#2f6fd4]" : "bg-white text-[#3a4f63] border-[#d0e4f7]"}`}
+              >
+                Enter Receipt Number
+              </button>
+              <button
+                className={`switch-btn px-5 py-2 rounded-full border text-[13px] font-semibold ${!manual ? "bg-[#2f6fd4] text-white border-[#2f6fd4]" : "bg-white text-[#3a4f63] border-[#d0e4f7]"}`}
+              >
+                Upload Receipt Notice
+              </button>
+            </div>
+            {error && (
+              <div className="error show bg-[#fff1f2] border border-[#fecdd3] rounded-lg p-3 text-[13px] text-[#9f1239] mb-2">
+                {error}
+              </div>
+            )}
+            {success && (
+              <div className="success-banner show bg-[#e8f5ef] border border-[#a8d9be] rounded-lg p-3 text-[13px] text-[#15744f] mb-2">
+                Notice added for this session. Confirm the extracted details
+                below, then save the case to enable tracking.
+              </div>
+            )}
             {/* Manual Entry */}
             <div className="form-grid grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-5 mb-4">
               <div className="form-field col-span-2 flex flex-col">
-                <label className="form-label text-[12px] font-semibold uppercase text-[#6b8097] mb-1">Receipt Number</label>
-                <input className="form-input border border-[#d0e4f7] rounded-lg px-4 py-3 text-[15px]" placeholder="IOE1234567890" maxLength={13} value={manual.receipt} onChange={e => setManual({ ...manual, receipt: e.target.value })} />
+                <label className="form-label text-[12px] font-semibold uppercase text-[#6b8097] mb-1">
+                  Receipt Number
+                </label>
+                <input
+                  className="form-input border border-[#d0e4f7] rounded-lg px-4 py-3 text-[15px]"
+                  placeholder="IOE1234567890"
+                  maxLength={13}
+                  value={manual.receipt}
+                  onChange={(e) =>
+                    setManual({ ...manual, receipt: e.target.value })
+                  }
+                />
               </div>
               <div className="form-field flex flex-col">
-                <label className="form-label text-[12px] font-semibold uppercase text-[#6b8097] mb-1">Notice Date</label>
-                <input className="form-input border border-[#d0e4f7] rounded-lg px-4 py-3 text-[15px]" type="date" value={manual.noticeDate} onChange={e => setManual({ ...manual, noticeDate: e.target.value })} />
+                <label className="form-label text-[12px] font-semibold uppercase text-[#6b8097] mb-1">
+                  Notice Date
+                </label>
+                <input
+                  className="form-input border border-[#d0e4f7] rounded-lg px-4 py-3 text-[15px]"
+                  type="date"
+                  value={manual.noticeDate}
+                  onChange={(e) =>
+                    setManual({ ...manual, noticeDate: e.target.value })
+                  }
+                />
               </div>
               <div className="form-field flex flex-col">
-                <label className="form-label text-[12px] font-semibold uppercase text-[#6b8097] mb-1">Priority Date</label>
-                <input className="form-input border border-[#d0e4f7] rounded-lg px-4 py-3 text-[15px]" type="date" value={manual.priorityDate} onChange={e => setManual({ ...manual, priorityDate: e.target.value })} />
+                <label className="form-label text-[12px] font-semibold uppercase text-[#6b8097] mb-1">
+                  Priority Date
+                </label>
+                <input
+                  className="form-input border border-[#d0e4f7] rounded-lg px-4 py-3 text-[15px]"
+                  type="date"
+                  value={manual.priorityDate}
+                  onChange={(e) =>
+                    setManual({ ...manual, priorityDate: e.target.value })
+                  }
+                />
               </div>
               <div className="form-field col-span-2 flex flex-col">
-                <label className="form-label text-[12px] font-semibold uppercase text-[#6b8097] mb-1">Case Label (optional)</label>
-                <input className="form-input border border-[#d0e4f7] rounded-lg px-4 py-3 text-[15px]" placeholder="IR-1 I-130 · March 2026 filing" value={manual.caseLabel} onChange={e => setManual({ ...manual, caseLabel: e.target.value })} />
+                <label className="form-label text-[12px] font-semibold uppercase text-[#6b8097] mb-1">
+                  Case Label (optional)
+                </label>
+                <input
+                  className="form-input border border-[#d0e4f7] rounded-lg px-4 py-3 text-[15px]"
+                  placeholder="IR-1 I-130 · March 2026 filing"
+                  value={manual.caseLabel}
+                  onChange={(e) =>
+                    setManual({ ...manual, caseLabel: e.target.value })
+                  }
+                />
               </div>
             </div>
-            <div className="bg-[#fef8e8] border border-[#f0d98a] rounded-lg p-3 text-[13px] text-[#8a6200] mb-4">Rahvana should always confirm the receipt number with the user before turning on tracking. Upload parsing can help, but it should never silently save extracted values without review.</div>
+            <div className="bg-[#fef8e8] border border-[#f0d98a] rounded-lg p-3 text-[13px] text-[#8a6200] mb-4">
+              Rahvana should always confirm the receipt number with the user
+              before turning on tracking. Upload parsing can help, but it should
+              never silently save extracted values without review.
+            </div>
             <div className="flex gap-2 mt-2">
-              <button className="ghost-btn px-5 py-2 rounded-full border text-[14px] font-semibold bg-white border-[#d0e4f7] text-[#6b8097]" onClick={() => setUiState('waiting')}>Back</button>
-              <button className="primary-btn px-5 py-2 rounded-full text-white bg-[#2f6fd4] font-semibold" onClick={() => setUiState('tracked')}>Save Receipt & Enable Tracking</button>
+              <button
+                className="ghost-btn px-5 py-2 rounded-full border text-[14px] font-semibold bg-white border-[#d0e4f7] text-[#6b8097]"
+                onClick={() => setUiState("waiting")}
+              >
+                Back
+              </button>
+              <button
+                className="primary-btn px-5 py-2 rounded-full text-white bg-[#2f6fd4] font-semibold"
+                onClick={() => setUiState("tracked")}
+              >
+                Save Receipt & Enable Tracking
+              </button>
             </div>
           </div>
         )}
-        {uiState === 'tracked' && (
+        {uiState === "tracked" && (
           <>
             <div className="summary bg-[#e8f5ef] border border-[#a8d9be] rounded-2xl p-6 mb-6">
-              <div className="font-serif text-[24px] text-[#0e5c3c] mb-1">Receipt notice registered</div>
-              <div className="text-[14px] text-[#3a4f63] mb-4">Rahvana now has the core case reference needed to monitor status changes. The current values below are stored locally in this prototype to simulate the tracked-case state.</div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
-                <div className="summary-card bg-white border border-[#a8d9be] rounded-lg p-4"><div className="text-[10px] font-bold uppercase text-[#6b8097] mb-1">Receipt Number</div><div className="text-[14px] font-semibold text-[#0c1b33]">{manual.receipt || '—'}</div></div>
-                <div className="summary-card bg-white border border-[#a8d9be] rounded-lg p-4"><div className="text-[10px] font-bold uppercase text-[#6b8097] mb-1">Tracking</div><div className="text-[14px] font-semibold text-[#0c1b33]">Enabled</div></div>
-                <div className="summary-card bg-white border border-[#a8d9be] rounded-lg p-4"><div className="text-[10px] font-bold uppercase text-[#6b8097] mb-1">Notice Date</div><div className="text-[14px] font-semibold text-[#0c1b33]">{manual.noticeDate || 'Not saved'}</div></div>
-                <div className="summary-card bg-white border border-[#a8d9be] rounded-lg p-4"><div className="text-[10px] font-bold uppercase text-[#6b8097] mb-1">Priority Date</div><div className="text-[14px] font-semibold text-[#0c1b33]">{manual.priorityDate || 'Not saved'}</div></div>
+              <div className="text-[24px] text-[#0e5c3c] mb-1">
+                Receipt notice registered
+              </div>
+              <div className="text-[14px] text-[#3a4f63] mb-4">
+                Rahvana now has the core case reference needed to monitor status
+                changes. The current values below are stored locally in this
+                prototype to simulate the tracked-case state.
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
-                <div className="summary-card bg-white border border-[#a8d9be] rounded-lg p-4"><div className="text-[10px] font-bold uppercase text-[#6b8097] mb-1">Last Known Status</div><div className="text-[14px] font-semibold text-[#0c1b33]">Case Was Received</div></div>
-                <div className="summary-card bg-white border border-[#a8d9be] rounded-lg p-4"><div className="text-[10px] font-bold uppercase text-[#6b8097] mb-1">Last Checked</div><div className="text-[14px] font-semibold text-[#0c1b33]">Just now</div></div>
+                <div className="summary-card bg-white border border-[#a8d9be] rounded-lg p-4">
+                  <div className="text-[10px] font-bold uppercase text-[#6b8097] mb-1">
+                    Receipt Number
+                  </div>
+                  <div className="text-[14px] font-semibold text-[#0c1b33]">
+                    {manual.receipt || "—"}
+                  </div>
+                </div>
+                <div className="summary-card bg-white border border-[#a8d9be] rounded-lg p-4">
+                  <div className="text-[10px] font-bold uppercase text-[#6b8097] mb-1">
+                    Tracking
+                  </div>
+                  <div className="text-[14px] font-semibold text-[#0c1b33]">
+                    Enabled
+                  </div>
+                </div>
+                <div className="summary-card bg-white border border-[#a8d9be] rounded-lg p-4">
+                  <div className="text-[10px] font-bold uppercase text-[#6b8097] mb-1">
+                    Notice Date
+                  </div>
+                  <div className="text-[14px] font-semibold text-[#0c1b33]">
+                    {manual.noticeDate || "Not saved"}
+                  </div>
+                </div>
+                <div className="summary-card bg-white border border-[#a8d9be] rounded-lg p-4">
+                  <div className="text-[10px] font-bold uppercase text-[#6b8097] mb-1">
+                    Priority Date
+                  </div>
+                  <div className="text-[14px] font-semibold text-[#0c1b33]">
+                    {manual.priorityDate || "Not saved"}
+                  </div>
+                </div>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
+                <div className="summary-card bg-white border border-[#a8d9be] rounded-lg p-4">
+                  <div className="text-[10px] font-bold uppercase text-[#6b8097] mb-1">
+                    Last Known Status
+                  </div>
+                  <div className="text-[14px] font-semibold text-[#0c1b33]">
+                    Case Was Received
+                  </div>
+                </div>
+                <div className="summary-card bg-white border border-[#a8d9be] rounded-lg p-4">
+                  <div className="text-[10px] font-bold uppercase text-[#6b8097] mb-1">
+                    Last Checked
+                  </div>
+                  <div className="text-[14px] font-semibold text-[#0c1b33]">
+                    Just now
+                  </div>
+                </div>
               </div>
               <div className="flex gap-2 mt-2">
-                <button className="ghost-btn px-4 py-2 rounded-full border text-[13px] font-semibold bg-white border-[#d0e4f7] text-[#6b8097]">View Saved Receipt Details</button>
-                <button className="ghost-btn px-4 py-2 rounded-full border text-[13px] font-semibold bg-white border-[#d0e4f7] text-[#6b8097]" onClick={() => setUiState('register')}>Update Receipt Info</button>
+                <button className="ghost-btn px-4 py-2 rounded-full border text-[13px] font-semibold bg-white border-[#d0e4f7] text-[#6b8097]">
+                  View Saved Receipt Details
+                </button>
+                <button
+                  className="ghost-btn px-4 py-2 rounded-full border text-[13px] font-semibold bg-white border-[#d0e4f7] text-[#6b8097]"
+                  onClick={() => setUiState("register")}
+                >
+                  Update Receipt Info
+                </button>
               </div>
             </div>
             <div className="panel bg-white border-[1.5px] border-[#d0e4f7] rounded-2xl p-6 mb-6">
-              <div className="font-semibold text-[15px] text-[#0c1b33] mb-1">Status timeline</div>
-              <div className="text-[13px] text-[#6b8097] mb-4">This prototype shows how Rahvana can keep a clean history of status changes without pretending USCIS provides a perfect developer-grade notification feed.</div>
+              <div className="font-semibold text-[15px] text-[#0c1b33] mb-1">
+                Status timeline
+              </div>
+              <div className="text-[13px] text-[#6b8097] mb-4">
+                This prototype shows how Rahvana can keep a clean history of
+                status changes without pretending USCIS provides a perfect
+                developer-grade notification feed.
+              </div>
               <div className="flex flex-col gap-3">
                 <div className="flex gap-3 items-start bg-white border border-[#a8d9be] rounded-lg p-3">
                   <span className="w-[10px] h-[10px] rounded-full bg-[#15744f] mt-1.5 shrink-0" />
                   <div>
-                    <div className="text-[13px] font-bold text-[#0c1b33] mb-1">Tracking enabled</div>
-                    <div className="text-[12px] text-[#6b8097]">Rahvana stored the receipt number and began monitoring for future changes.</div>
+                    <div className="text-[13px] font-bold text-[#0c1b33] mb-1">
+                      Tracking enabled
+                    </div>
+                    <div className="text-[12px] text-[#6b8097]">
+                      Rahvana stored the receipt number and began monitoring for
+                      future changes.
+                    </div>
                   </div>
                 </div>
                 <div className="flex gap-3 items-start bg-white border border-[#a8d9be] rounded-lg p-3">
                   <span className="w-[10px] h-[10px] rounded-full bg-[#15744f] mt-1.5 shrink-0" />
                   <div>
-                    <div className="text-[13px] font-bold text-[#0c1b33] mb-1">Case Was Received</div>
-                    <div className="text-[12px] text-[#6b8097]">Initial placeholder status stored as the baseline for future comparisons.</div>
+                    <div className="text-[13px] font-bold text-[#0c1b33] mb-1">
+                      Case Was Received
+                    </div>
+                    <div className="text-[12px] text-[#6b8097]">
+                      Initial placeholder status stored as the baseline for
+                      future comparisons.
+                    </div>
                   </div>
                 </div>
               </div>
@@ -829,7 +1114,9 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
           </>
         )}
         {tool.footer_note && (
-          <div className="mt-8 text-xs text-[#6b8097] border-t pt-4">{tool.footer_note}</div>
+          <div className="mt-8 text-xs text-[#6b8097] border-t pt-4">
+            {tool.footer_note}
+          </div>
         )}
       </div>
     );
@@ -843,9 +1130,15 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
     function MetaChips() {
       return (
         <div className="flex gap-2 flex-wrap mb-6">
-          <span className="chip chip-role bg-[#e8f1fb] text-[#2d4a6e] border border-[#d0e4f7] text-[11px] font-semibold uppercase px-3 py-1 rounded-full">Petitioner</span>
-          <span className="chip chip-path bg-[#fff7ed] text-[#b45309] border border-[#fed7aa] text-[11px] font-semibold uppercase px-3 py-1 rounded-full">Online Filing</span>
-          <span className="chip chip-track bg-[#f3f0fb] text-[#4a2d8a] border border-[#c9bef2] text-[11px] font-semibold uppercase px-3 py-1 rounded-full">USCIS Tracking</span>
+          <span className="chip chip-role bg-[#e8f1fb] text-[#2d4a6e] border border-[#d0e4f7] text-[11px] font-semibold uppercase px-3 py-1 rounded-full">
+            Petitioner
+          </span>
+          <span className="chip chip-path bg-[#fff7ed] text-[#b45309] border border-[#fed7aa] text-[11px] font-semibold uppercase px-3 py-1 rounded-full">
+            Online Filing
+          </span>
+          <span className="chip chip-track bg-[#f3f0fb] text-[#4a2d8a] border border-[#c9bef2] text-[11px] font-semibold uppercase px-3 py-1 rounded-full">
+            USCIS Tracking
+          </span>
         </div>
       );
     }
@@ -855,11 +1148,14 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
       onShowProcessingModal: () => void;
       onShowMilestonesModal: () => void;
     };
-    function ChecklistPanel({ onShowProcessingModal, onShowMilestonesModal }: ChecklistPanelProps) {
+    function ChecklistPanel({
+      onShowProcessingModal,
+      onShowMilestonesModal,
+    }: ChecklistPanelProps) {
       // Interactive checklist state (persisted to localStorage)
-      const checklistKey = 'ir1_step12_checklist';
+      const checklistKey = "ir1_step12_checklist";
       const initialChecklist = useMemo(() => {
-        if (typeof window !== 'undefined') {
+        if (typeof window !== "undefined") {
           const saved = localStorage.getItem(checklistKey);
           if (saved) return JSON.parse(saved);
         }
@@ -868,7 +1164,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
       }, [tool.checklist]);
       const [checklist, setChecklist] = useState(initialChecklist);
       useEffect(() => {
-        if (typeof window !== 'undefined') {
+        if (typeof window !== "undefined") {
           localStorage.setItem(checklistKey, JSON.stringify(checklist));
         }
       }, [checklist]);
@@ -883,17 +1179,34 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
         <div className="mb-2 rounded-[18px] border border-[#d0e4f7] bg-white/80 shadow-[0_8px_24px_rgba(12,27,51,0.07)] p-6 md:p-8">
           <div className="flex flex-col md:flex-row md:items-start md:justify-between mb-2 gap-2">
             <div>
-              <h2 className="font-serif text-[22px] md:text-[32px] text-[#0c1b33] leading-tight mb-1">Stay Prepared While USCIS Reviews Your Case</h2>
-              <div className="text-[13px] text-[#3a4f63] leading-[1.7] max-w-[560px]">Use this waiting period to stay organized, build stronger records, and prepare for the steps that usually come after USCIS review.</div>
+              <h2 className="text-[22px] md:text-[32px] text-[#0c1b33] leading-tight mb-1">
+                Stay Prepared While USCIS Reviews Your Case
+              </h2>
+              <div className="text-[13px] text-[#3a4f63] leading-[1.7] max-w-[560px]">
+                Use this waiting period to stay organized, build stronger
+                records, and prepare for the steps that usually come after USCIS
+                review.
+              </div>
             </div>
-            <span className="ml-auto mt-2 md:mt-0 px-3 py-1 rounded-full bg-[#e8f1fb] border border-[#d0e4f7] text-[#2d4a6e] text-[11px] font-bold uppercase tracking-wide shadow-sm whitespace-nowrap flex-shrink-0">High-value now</span>
+            <span className="ml-auto mt-2 md:mt-0 px-3 py-1 rounded-full bg-[#e8f1fb] border border-[#d0e4f7] text-[#2d4a6e] text-[11px] font-bold uppercase tracking-wide shadow-sm whitespace-nowrap flex-shrink-0">
+              High-value now
+            </span>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
             {/* Left: Explainer */}
             <div className="rounded-[14px] border border-[#d0e4f7] bg-white p-6 flex flex-col h-full">
-              <div className="text-[10px] font-bold uppercase tracking-wide text-[#2f6fd4] mb-3">What this status means</div>
-              <div className="font-serif text-[18px] text-[#0c1b33] mb-1">USCIS has the case</div>
-              <div className="text-[12px] text-[#3a4f63] mb-4">This usually means the filing has entered the system and is in line for review. Most users do not need to take any action right now unless USCIS later issues an update, a request for evidence, or another notice.</div>
+              <div className="text-[10px] font-bold uppercase tracking-wide text-[#2f6fd4] mb-3">
+                What this status means
+              </div>
+              <div className="text-[18px] text-[#0c1b33] mb-1">
+                USCIS has the case
+              </div>
+              <div className="text-[12px] text-[#3a4f63] mb-4">
+                This usually means the filing has entered the system and is in
+                line for review. Most users do not need to take any action right
+                now unless USCIS later issues an update, a request for evidence,
+                or another notice.
+              </div>
               <Button
                 variant="outline"
                 size="sm"
@@ -901,7 +1214,18 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                 onClick={onShowProcessingModal}
                 type="button"
               >
-                <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 12h18"/><path d="M12 3v18"/></svg>
+                <svg
+                  className="w-4 h-4"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M3 12h18" />
+                  <path d="M12 3v18" />
+                </svg>
                 Check processing-time context
               </Button>
               <Button
@@ -911,38 +1235,79 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                 onClick={onShowMilestonesModal}
                 type="button"
               >
-                <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+                <svg
+                  className="w-4 h-4"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <polyline points="9 18 15 12 9 6" />
+                </svg>
                 See common next milestones
               </Button>
             </div>
             {/* Right: Interactive Checklist */}
             <div className="flex flex-col gap-3">
-              {tool.checklist && tool.checklist.map((c: any, i: number) => {
-                const done = !!checklist[i];
-                return (
-                  <div
-                    key={i}
-                    className={`flex gap-3 items-start rounded-[14px] border p-4 cursor-pointer transition ${done ? 'bg-[#e8f5ef] border-[#a8d9be]' : 'bg-white border-[#d0e4f7]'}`}
-                    onClick={() => toggleChecklist(i)}
-                    tabIndex={0}
-                    role="button"
-                    aria-pressed={done}
-                  >
-                    <div className={`w-5 h-5 rounded-full border flex items-center justify-center mt-1.5 shrink-0 transition ${done ? 'border-[#15744f] bg-[#64dca0]' : 'border-[#b8d9f0] bg-white'}`}>
-                      {done ? (
-                        <svg className="w-3 h-3 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
-                      ) : (
-                        <svg className="w-3 h-3 text-[#a8d9be]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
-                      )}
+              {tool.checklist &&
+                tool.checklist.map((c: any, i: number) => {
+                  const done = !!checklist[i];
+                  return (
+                    <div
+                      key={i}
+                      className={`flex gap-3 items-start rounded-[14px] border p-4 cursor-pointer transition ${done ? "bg-[#e8f5ef] border-[#a8d9be]" : "bg-white border-[#d0e4f7]"}`}
+                      onClick={() => toggleChecklist(i)}
+                      tabIndex={0}
+                      role="button"
+                      aria-pressed={done}
+                    >
+                      <div
+                        className={`w-5 h-5 rounded-full border flex items-center justify-center mt-1.5 shrink-0 transition ${done ? "border-[#15744f] bg-[#64dca0]" : "border-[#b8d9f0] bg-white"}`}
+                      >
+                        {done ? (
+                          <svg
+                            className="w-3 h-3 text-white"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="3"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          >
+                            <polyline points="20 6 9 17 4 12" />
+                          </svg>
+                        ) : (
+                          <svg
+                            className="w-3 h-3 text-[#a8d9be]"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          >
+                            <polyline points="20 6 9 17 4 12" />
+                          </svg>
+                        )}
+                      </div>
+                      <div className="flex-1">
+                        <div
+                          className={`font-bold mb-1 text-[13px] ${done ? "text-[#15744f]" : "text-[#0c1b33]"}`}
+                        >
+                          {c.title}
+                        </div>
+                        <div className="text-[11px] text-[#3a4f63] leading-[1.6]">
+                          {c.copy}
+                        </div>
+                      </div>
                     </div>
-                    <div className="flex-1">
-                      <div className={`font-bold mb-1 text-[13px] ${done ? 'text-[#15744f]' : 'text-[#0c1b33]'}`}>{c.title}</div>
-                      <div className="text-[11px] text-[#3a4f63] leading-[1.6]">{c.copy}</div>
-                    </div>
-                  </div>
-                );
-              })}
-              <div className="muted-note text-[10px] text-[#6b8097] mt-2">These are practical ways to stay prepared while you wait.</div>
+                  );
+                })}
+              <div className="muted-note text-[10px] text-[#6b8097] mt-2">
+                These are practical ways to stay prepared while you wait.
+              </div>
             </div>
           </div>
         </div>
@@ -950,13 +1315,23 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
     }
 
     return (
-      <div className="max-w-[760px] mx-auto px-6 py-12 flex flex-col gap-6">
+      <div className="max-w-[760px] mx-auto px-6 py-12 flex flex-col gap-3">
         {/* Title & Desc (pixel-perfect) */}
-        <h1 className="page-title font-serif text-[clamp(30px,4.6vw,40px)] text-[#0c1b33] leading-[1.12] tracking-tight mb-2">
+        <div className="flex items-center gap-2 mb-2">
+          <span className="text-[11px] font-semibold uppercase tracking-wider text-[#6b8097]">
+            Chapter 1 · USCIS Petition Filing
+          </span>
+          <span className="text-[11px] text-[#b8d4f0]">›</span>
+          <span className="text-[11px] font-semibold uppercase tracking-wider text-[#2f6fd4]">Monitor USCIS Case Status</span>
+        </div>
+        <h1 className="page-title text-[clamp(30px,4.6vw,40px)] text-[#0c1b33] leading-[1.12] tracking-tight mb-1">
           Monitor USCIS Case Status
         </h1>
-        <p className="page-desc text-[15px] text-[#3a4f63] leading-[1.72] max-w-[620px] mb-4">
-          Stay prepared while USCIS reviews your case. Rahvana keeps the tracking context in one place, explains what the current status means, and gives you useful next-step prep so the waiting period does not become dead time.
+        <p className="page-desc text-[15px] text-[#3a4f63] leading-[1.72] max-w-[620px] mb-3">
+          Stay prepared while USCIS reviews your case. Rahvana keeps the
+          tracking context in one place, explains what the current status means,
+          and gives you useful next-step prep so the waiting period does not
+          become dead time.
         </p>
         <MetaChips />
         {/* Launch Module with tracking buttons */}
@@ -967,35 +1342,64 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
               <div className="launch-top flex items-start gap-4 mb-6">
                 <div className="launch-header flex gap-4 items-start">
                   <div className="launch-icon w-[48px] h-[48px] rounded-[12px] bg-white/6 border border-white/10 flex items-center justify-center shrink-0">
-                    <Monitor className="w-7 h-7 text-white/80" />
+                    <Shield className="w-7 h-7 text-white/80" />
                   </div>
                   <div>
-                    <div className="launch-eyebrow text-[10px] font-bold uppercase tracking-widest text-white/35 mb-1">Pending with USCIS · Active Monitoring</div>
-                    <div className="launch-heading font-serif text-[clamp(21px,3vw,26px)] text-white/92 leading-tight">{tool.launch_module.status?.hero}</div>
-                    <div className="launch-copy text-[13.5px] text-white/66 leading-snug max-w-[470px]">{tool.launch_module.status?.copy}</div>
+                    <div className="launch-eyebrow text-[10px] font-bold uppercase tracking-widest text-white/35 mb-1">
+                      Pending with USCIS · Active Monitoring
+                    </div>
+                    <div className="text-[clamp(21px,3vw,26px)] text-white/92 leading-tight">
+                      {tool.launch_module.status?.hero}
+                    </div>
+                    <div className="launch-copy text-[13.5px] text-white/66 leading-snug max-w-[470px]">
+                      {tool.launch_module.status?.copy}
+                    </div>
                   </div>
                 </div>
-                <span className="status-badge ml-auto">{tool.launch_module.status?.badge}</span>
+                <span className="status-badge ml-auto">
+                  {tool.launch_module.status?.badge}
+                </span>
               </div>
               <div className="launch-divider h-px bg-white/10 mb-5" />
               {/* Metrics */}
               <div className="metrics grid grid-cols-1 md:grid-cols-4 gap-3 mb-4">
                 {tool.launch_module.metrics?.map((m: any, i: number) => (
-                  <div key={i} className="metric bg-white/5 border border-white/10 rounded-[12px] px-4 py-3 flex flex-col">
-                    <div className="metric-label text-[10px] font-bold uppercase tracking-widest text-white/80 mb-1">{m.label}</div>
-                    <div className="metric-value text-[14px] font-semibold text-white/92">{m.value}</div>
-                    <div className="metric-sub text-[11px] text-white/66 mt-1">{m.sub}</div>
+                  <div
+                    key={i}
+                    className="metric bg-white/5 border border-white/10 rounded-[12px] px-4 py-3 flex flex-col"
+                  >
+                    <div className="metric-label text-[10px] font-bold uppercase tracking-widest text-white/80 mb-1">
+                      {m.label}
+                    </div>
+                    <div className="metric-value text-[14px] font-semibold text-white/92">
+                      {m.value}
+                    </div>
+                    <div className="metric-sub text-[11px] text-white/66 mt-1">
+                      {m.sub}
+                    </div>
                   </div>
                 ))}
               </div>
               {/* Tracking Action Buttons */}
               <div className="launch-actions grid grid-cols-1 md:grid-cols-2 gap-3 mt-2">
                 <Button
-                  variant="brand"
-                  className="flex items-center gap-2 px-5 py-3 rounded-xl text-white font-semibold"
-                  onClick={() => {/* TODO: implement refresh logic */}}
+                  className="flex items-center gap-2 px-5 py-3 rounded-xl bg-[#2f6fd4] text-white font-semibold hover:bg-[#2460bb] transition"
+                  onClick={() => {
+                    /* TODO: implement refresh logic */
+                  }}
                 >
-                  <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12a9 9 0 1 1-2.64-6.36"/><polyline points="21 3 21 9 15 9"/></svg>
+                  <svg
+                    className="w-4 h-4"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <path d="M21 12a9 9 0 1 1-2.64-6.36" />
+                    <polyline points="21 3 21 9 15 9" />
+                  </svg>
                   Refresh tracking status
                 </Button>
                 <Button
@@ -1003,58 +1407,95 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                   className="flex items-center gap-2 px-5 py-3 rounded-xl border border-white/10 bg-white/5 text-white font-semibold hover:bg-white/10 transition"
                   onClick={() => setShowStatusGuide(true)}
                 >
-                  <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.82 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                  <svg
+                    className="w-4 h-4"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <circle cx="12" cy="12" r="10" />
+                    <path d="M9.09 9a3 3 0 0 1 5.82 1c0 2-3 3-3 3" />
+                    <line x1="12" y1="17" x2="12.01" y2="17" />
+                  </svg>
                   What does this status mean?
                 </Button>
-                      {/* Status Guide Tutorial Overlay */}
-                      <GuideTutorialOverlay
-                        isOpen={showStatusGuide}
-                        onClose={() => setShowStatusGuide(false)}
-                        tutorial={USCIS_STATUS_TUTORIAL_STEPS}
-                        index={statusGuideStep}
-                        setIndex={setStatusGuideStep}
-                        title="What does this status mean?"
-                      />
+                {/* Status Guide Tutorial Overlay */}
+                <GuideTutorialOverlay
+                  isOpen={showStatusGuide}
+                  onClose={() => setShowStatusGuide(false)}
+                  tutorial={USCIS_STATUS_TUTORIAL_STEPS}
+                  index={statusGuideStep}
+                  setIndex={setStatusGuideStep}
+                  title="What does this status mean?"
+                />
               </div>
             </div>
           </div>
         )}
         {/* Status Explainer Panel (grid, left: explainer, right: checklist) */}
         {/* Interactive Checklist Panel */}
-        <ChecklistPanel 
+        <ChecklistPanel
           onShowProcessingModal={() => setShowProcessingModal(true)}
           onShowMilestonesModal={() => setShowMilestonesModal(true)}
         />
-        <ProcessingTimeModal open={showProcessingModal} onClose={() => setShowProcessingModal(false)} />
-        <MilestonesModal open={showMilestonesModal} onClose={() => setShowMilestonesModal(false)} />
+        <ProcessingTimeModal
+          open={showProcessingModal}
+          onClose={() => setShowProcessingModal(false)}
+        />
+        <MilestonesModal
+          open={showMilestonesModal}
+          onClose={() => setShowMilestonesModal(false)}
+        />
         {/* What's Coming Next Panel (pixel-perfect, matches screenshot) */}
         {tool.future_timeline && (
           <div className="mb-6 rounded-[18px] border border-[#d0e4f7] bg-white/80 shadow-[0_8px_24px_rgba(12,27,51,0.07)] p-6 md:p-8">
             <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-2 gap-2">
               <div className="min-w-0">
-                <h2 className="font-serif text-[28px] md:text-[32px] text-[#0c1b33] leading-tight mb-1">What's Coming Next</h2>
-                <div className="text-[15px] text-[#3a4f63] leading-[1.7] max-w-[560px]">See the likely path ahead so you can prepare early without feeling rushed into work that does not matter yet.</div>
+                <h2 className="text-[28px] md:text-[32px] text-[#0c1b33] leading-tight mb-1">
+                  What's Coming Next
+                </h2>
+                <div className="text-[15px] text-[#3a4f63] leading-[1.7] max-w-[560px]">
+                  See the likely path ahead so you can prepare early without
+                  feeling rushed into work that does not matter yet.
+                </div>
               </div>
-              <span className="ml-auto mt-2 md:mt-0 px-3 py-1 rounded-full bg-[#e8f1fb] border border-[#d0e4f7] text-[#2d4a6e] text-[11px] font-bold uppercase tracking-wide shadow-sm whitespace-nowrap flex-shrink-0">Coming Next</span>
+              <span className="ml-auto mt-2 md:mt-0 px-3 py-1 rounded-full bg-[#e8f1fb] border border-[#d0e4f7] text-[#2d4a6e] text-[11px] font-bold uppercase tracking-wide shadow-sm whitespace-nowrap flex-shrink-0">
+                Coming Next
+              </span>
             </div>
             {/* Timeline */}
             <div className="mt-6 flex flex-col gap-8 relative">
               {/* Vertical line for timeline */}
-              <div className="absolute left-[11px] top-[33px] bottom-0 w-px bg-[#d0e4f7] z-0" style={{height: `calc(100% - 33px)`}} />
+              <div
+                className="absolute left-[11px] top-[33px] bottom-0 w-px bg-[#d0e4f7] z-0"
+                style={{ height: `calc(100% - 33px)` }}
+              />
               {tool.future_timeline?.map((item: any, idx: number) => {
                 const isLast = idx === (tool.future_timeline?.length ?? 0) - 1;
                 return (
-                  <div key={idx} className="flex items-start gap-4 relative z-10">
+                  <div
+                    key={idx}
+                    className="flex items-start gap-4 relative z-10"
+                  >
                     {/* Timeline dot */}
                     <div className="flex flex-col items-center min-w-[24px]">
                       <span className="w-4 h-4 rounded-full border-4 border-[#2f6fd4] bg-white block mt-1" />
                     </div>
                     {/* Step content */}
                     <div>
-                      <div className="font-semibold text-[16px] text-[#0c1b33] mb-1 leading-tight">{item.title}</div>
-                      <div className="text-[14px] text-[#3a4f63] mb-2 leading-[1.6]">{item.copy}</div>
+                      <div className="font-semibold text-[16px] text-[#0c1b33] mb-1 leading-tight">
+                        {item.title}
+                      </div>
+                      <div className="text-[14px] text-[#3a4f63] mb-2 leading-[1.6]">
+                        {item.copy}
+                      </div>
                       {item.pill && (
-                        <span className="inline-block px-3 py-1 rounded-full bg-[#f4f7fb] border border-[#d0e4f7] text-[#6b8097] text-[12px] font-bold uppercase tracking-wide whitespace-nowrap">{item.pill}</span>
+                        <span className="inline-block px-3 py-1 rounded-full bg-[#f4f7fb] border border-[#d0e4f7] text-[#6b8097] text-[12px] font-bold uppercase tracking-wide whitespace-nowrap">
+                          {item.pill}
+                        </span>
                       )}
                     </div>
                   </div>
@@ -1069,47 +1510,87 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
             {/* Section header and pill */}
             <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-2 gap-2">
               <div>
-                <h2 className="font-serif text-[28px] md:text-[32px] text-[#0c1b33] leading-tight mb-1">Useful Right Now</h2>
-                <div className="text-[15px] text-[#3a4f63] leading-[1.7] max-w-[560px]">These are focused, case-relevant resources you can use while USCIS is still processing your petition.</div>
+                <h2 className="text-[28px] md:text-[32px] text-[#0c1b33] leading-tight mb-1">
+                  Useful Right Now
+                </h2>
+                <div className="text-[15px] text-[#3a4f63] leading-[1.7] max-w-[560px]">
+                  These are focused, case-relevant resources you can use while
+                  USCIS is still processing your petition.
+                </div>
               </div>
-              <span className="ml-auto mt-2 md:mt-0 px-4 py-2 rounded-full bg-[#e8f1fb] border border-[#d0e4f7] text-[#2d4a6e] text-[13px] font-bold uppercase tracking-wide shadow-sm">Education + Updates</span>
+              <span className="ml-auto mt-2 md:mt-0 px-4 py-2 rounded-full bg-[#e8f1fb] border border-[#d0e4f7] text-[#2d4a6e] text-[13px] font-bold uppercase tracking-wide shadow-sm">
+                Education + Updates
+              </span>
             </div>
             {/* 3-column card grid */}
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5 mt-4">
               {tool.useful_now.map((u: any, i: number) => {
-                const iconColor = u.icon === 'green' ? 'bg-[#e8f5ef] text-[#15744f] border-[#a8d9be]' :
-                  u.icon === 'purple' ? 'bg-[#f3f0fb] text-[#4a2d8a] border-[#c9bef2]' :
-                  u.icon === 'amber' ? 'bg-[#fef8e8] text-[#8a6200] border-[#f0d98a]' :
-                  'bg-[#e8f1fb] text-[#2d4a6e] border-[#d0e4f7]';
-                const Icon = u.icon === 'green' ? CheckCircle :
-                  u.icon === 'purple' ? BookOpen :
-                  u.icon === 'amber' ? Scale :
-                  Info;
+                const iconColor =
+                  u.icon === "green"
+                    ? "bg-[#e8f5ef] text-[#15744f] border-[#a8d9be]"
+                    : u.icon === "purple"
+                      ? "bg-[#f3f0fb] text-[#4a2d8a] border-[#c9bef2]"
+                      : u.icon === "amber"
+                        ? "bg-[#fef8e8] text-[#8a6200] border-[#f0d98a]"
+                        : "bg-[#e8f1fb] text-[#2d4a6e] border-[#d0e4f7]";
+                const Icon =
+                  u.icon === "green"
+                    ? CheckCircle
+                    : u.icon === "purple"
+                      ? BookOpen
+                      : u.icon === "amber"
+                        ? Scale
+                        : Info;
                 return (
-                  <div key={i} className="flex flex-col h-full rounded-2xl border border-[#d0e4f7] bg-white shadow-[0_8px_24px_rgba(12,27,51,0.07)] p-6 transition hover:shadow-md">
-                    <div className={`w-[38px] h-[38px] rounded-[10px] flex items-center justify-center mb-4 border ${iconColor}`}>
+                  <div
+                    key={i}
+                    className="flex flex-col h-full rounded-2xl border border-[#d0e4f7] bg-white shadow-[0_8px_24px_rgba(12,27,51,0.07)] p-6 transition hover:shadow-md"
+                  >
+                    <div
+                      className={`w-[38px] h-[38px] rounded-[10px] flex items-center justify-center mb-4 border ${iconColor}`}
+                    >
                       <Icon className="w-[20px] h-[20px]" />
                     </div>
-                    <div className="font-semibold text-[16px] text-[#0c1b33] mb-1 leading-tight">{u.title}</div>
-                    <div className="text-[13.5px] text-[#3a4f63] mb-4 leading-[1.6] flex-1">{u.copy}</div>
+                    <div className="font-semibold text-[16px] text-[#0c1b33] mb-1 leading-tight">
+                      {u.title}
+                    </div>
+                    <div className="text-[13.5px] text-[#3a4f63] mb-4 leading-[1.6] flex-1">
+                      {u.copy}
+                    </div>
                     {/* Map buttons to modals by index and action */}
                     <Button
                       variant="outline"
                       size="sm"
                       className="flex items-center gap-2 px-4 py-2 rounded-lg border border-[#d0e4f7] bg-[#f4f7fb] text-[12px] font-semibold text-[#0c1b33] hover:border-[#2f6fd4] mt-auto"
                       onClick={() => {
-                        if (u.action?.toLowerCase().includes('preview')) setShowAfterI130Modal(true);
-                        else if (u.action?.toLowerCase().includes('evidence guide')) setShowRelationshipEvidenceModal(true);
-                        else if (u.action?.toLowerCase().includes('see future prep')) setShowAffidavitSupportModal(true);
+                        if (u.action?.toLowerCase().includes("preview"))
+                          setShowAfterI130Modal(true);
+                        else if (
+                          u.action?.toLowerCase().includes("evidence guide")
+                        )
+                          setShowRelationshipEvidenceModal(true);
+                        else if (
+                          u.action?.toLowerCase().includes("see future prep")
+                        )
+                          setShowAffidavitSupportModal(true);
                       }}
                     >
                       {u.action}
                       <ArrowRight className="w-4 h-4 ml-1" />
                     </Button>
                     {/* Useful Right Now Modals */}
-                    <AfterI130ApprovalModal open={showAfterI130Modal} onClose={() => setShowAfterI130Modal(false)} />
-                    <RelationshipEvidenceModal open={showRelationshipEvidenceModal} onClose={() => setShowRelationshipEvidenceModal(false)} />
-                    <AffidavitSupportModal open={showAffidavitSupportModal} onClose={() => setShowAffidavitSupportModal(false)} />
+                    <AfterI130ApprovalModal
+                      open={showAfterI130Modal}
+                      onClose={() => setShowAfterI130Modal(false)}
+                    />
+                    <RelationshipEvidenceModal
+                      open={showRelationshipEvidenceModal}
+                      onClose={() => setShowRelationshipEvidenceModal(false)}
+                    />
+                    <AffidavitSupportModal
+                      open={showAffidavitSupportModal}
+                      onClose={() => setShowAffidavitSupportModal(false)}
+                    />
                   </div>
                 );
               })}
@@ -1118,12 +1599,21 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
             {tool.relevant_updates && (
               <div className="mt-7 flex flex-col gap-4">
                 {tool.relevant_updates.map((u: any, i: number) => (
-                  <div key={i} className="w-full rounded-2xl border border-[#d0e4f7] bg-white px-6 py-5 flex flex-col md:flex-row md:items-center md:justify-between shadow-sm">
+                  <div
+                    key={i}
+                    className="w-full rounded-2xl border border-[#d0e4f7] bg-white px-6 py-5 flex flex-col md:flex-row md:items-center md:justify-between shadow-sm"
+                  >
                     <div>
-                      <div className="font-semibold text-[15px] text-[#0c1b33] mb-1 leading-tight">{u.title}</div>
-                      <div className="text-[13.5px] text-[#3a4f63] leading-[1.6]">{u.copy}</div>
+                      <div className="font-semibold text-[15px] text-[#0c1b33] mb-1 leading-tight">
+                        {u.title}
+                      </div>
+                      <div className="text-[13.5px] text-[#3a4f63] leading-[1.6]">
+                        {u.copy}
+                      </div>
                     </div>
-                    <span className="mt-3 md:mt-0 md:ml-6 px-3 py-1 rounded-full bg-[#f4f7fb] border border-[#d0e4f7] text-[#6b8097] text-[12px] font-bold uppercase tracking-wide whitespace-nowrap">{u.source}</span>
+                    <span className="mt-3 md:mt-0 md:ml-6 px-3 py-1 rounded-full bg-[#f4f7fb] border border-[#d0e4f7] text-[#6b8097] text-[12px] font-bold uppercase tracking-wide whitespace-nowrap">
+                      {u.source}
+                    </span>
                   </div>
                 ))}
               </div>
@@ -1135,18 +1625,31 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
           <div className="panel bg-white border-[1.5px] border-[#d0e4f7] rounded-2xl p-6 mb-2 shadow-sm">
             <div className="panel-header flex justify-between gap-4 items-start mb-4">
               <div>
-                <div className="panel-title font-serif text-[24px] text-[#0c1b33]">Relevant Updates</div>
+                <div className="panel-title text-[24px] text-[#0c1b33]">
+                  Relevant Updates
+                </div>
               </div>
-              <div className="panel-tag text-[11px] font-bold uppercase px-3 py-1 rounded-full bg-[#e8f1fb] border border-[#d0e4f7] text-[#2d4a6e] whitespace-nowrap">Updates</div>
+              <div className="panel-tag text-[11px] font-bold uppercase px-3 py-1 rounded-full bg-[#e8f1fb] border border-[#d0e4f7] text-[#2d4a6e] whitespace-nowrap">
+                Updates
+              </div>
             </div>
             <div className="update-list flex flex-col gap-3">
               {tool.relevant_updates.map((u: any, i: number) => (
-                <div key={i} className="update-card p-4 rounded-lg border border-[#d0e4f7] bg-[#f8fbff]">
+                <div
+                  key={i}
+                  className="update-card p-4 rounded-lg border border-[#d0e4f7] bg-[#f8fbff]"
+                >
                   <div className="update-top flex justify-between gap-2 mb-1 items-start">
-                    <div className="update-title font-semibold text-[#0c1b33]">{u.title}</div>
-                    <div className="update-source text-[11px] font-bold uppercase text-[#6b8097]">{u.source}</div>
+                    <div className="update-title font-semibold text-[#0c1b33]">
+                      {u.title}
+                    </div>
+                    <div className="update-source text-[11px] font-bold uppercase text-[#6b8097]">
+                      {u.source}
+                    </div>
                   </div>
-                  <div className="update-copy text-[13px] text-[#3a4f63]">{u.copy}</div>
+                  <div className="update-copy text-[13px] text-[#3a4f63]">
+                    {u.copy}
+                  </div>
                 </div>
               ))}
             </div>
@@ -1157,44 +1660,94 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
           <div className="mb-6 rounded-[18px] border border-[#d0e4f7] bg-white/80 shadow-[0_8px_24px_rgba(12,27,51,0.07)] p-6 md:p-8">
             <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-2 gap-2">
               <div>
-                <h2 className="font-serif text-[24px] md:text-[28px] text-[#0c1b33] leading-tight mb-1">Keep Building Your Case</h2>
-                <div className="text-[15px] text-[#3a4f63] leading-[1.7] max-w-[620px] mt-1">Even while the case is pending, you can strengthen readiness by continuing to collect relationship evidence and organizing what may matter later.</div>
+                <h2 className="text-[24px] md:text-[28px] text-[#0c1b33] leading-tight mb-1">
+                  Keep Building Your Case
+                </h2>
+                <div className="text-[15px] text-[#3a4f63] leading-[1.7] max-w-[620px] mt-1">
+                  Even while the case is pending, you can strengthen readiness
+                  by continuing to collect relationship evidence and organizing
+                  what may matter later.
+                </div>
               </div>
-              <span className="ml-auto mt-2 md:mt-0 px-4 py-1.5 rounded-full bg-[#f4f7fb] border border-[#d0e4f7] text-[#2d4a6e] text-[13px] font-bold uppercase tracking-wide shadow-sm whitespace-nowrap flex-shrink-0">Ongoing Prep</span>
+              <span className="ml-auto mt-2 md:mt-0 px-4 py-1.5 rounded-full bg-[#f4f7fb] border border-[#d0e4f7] text-[#2d4a6e] text-[13px] font-bold uppercase tracking-wide shadow-sm whitespace-nowrap flex-shrink-0">
+                Ongoing Prep
+              </span>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
               {tool.build_case.map((b: any, i: number) => {
                 // Icon logic: green for first, pink for second
-                const iconBg = i === 0 ? 'bg-[#e8f5ef] border-[#a8d9be]' : 'bg-[#fbeff3] border-[#f7b8d0]';
-                const iconColor = i === 0 ? '#15744f' : '#d12b6a';
-                const Icon = i === 0
-                  ? (props: any) => (
-                      <svg {...props} viewBox="0 0 24 24" fill="none" stroke={iconColor} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 21c-4.8-4-8-6.7-8-10.2C4 6.6 7.6 3 12 3s8 3.6 8 7.8c0 3.5-3.2 6.2-8 10.2z"/><circle cx="12" cy="10" r="3"/></svg>
-                    )
-                  : (props: any) => (
-                      <svg {...props} viewBox="0 0 24 24" fill="none" stroke={iconColor} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="8" width="18" height="13" rx="2"/><circle cx="8.5" cy="14.5" r="2.5"/><path d="M19 8V6a2 2 0 0 0-2-2h-2.5"/><path d="M15 2v4"/></svg>
-                    );
+                const iconBg =
+                  i === 0
+                    ? "bg-[#e8f5ef] border-[#a8d9be]"
+                    : "bg-[#fbeff3] border-[#f7b8d0]";
+                const iconColor = i === 0 ? "#15744f" : "#d12b6a";
+                const Icon =
+                  i === 0
+                    ? (props: any) => (
+                        <svg
+                          {...props}
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke={iconColor}
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        >
+                          <path d="M12 21c-4.8-4-8-6.7-8-10.2C4 6.6 7.6 3 12 3s8 3.6 8 7.8c0 3.5-3.2 6.2-8 10.2z" />
+                          <circle cx="12" cy="10" r="3" />
+                        </svg>
+                      )
+                    : (props: any) => (
+                        <svg
+                          {...props}
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke={iconColor}
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        >
+                          <rect x="3" y="8" width="18" height="13" rx="2" />
+                          <circle cx="8.5" cy="14.5" r="2.5" />
+                          <path d="M19 8V6a2 2 0 0 0-2-2h-2.5" />
+                          <path d="M15 2v4" />
+                        </svg>
+                      );
                 return (
-                  <div key={i} className="rounded-[14px] border border-[#d0e4f7] bg-white p-6 flex flex-col h-full transition">
-                    <div className={`w-[38px] h-[38px] rounded-[10px] flex items-center justify-center mb-4 border ${iconBg}`}> 
+                  <div
+                    key={i}
+                    className="rounded-[14px] border border-[#d0e4f7] bg-white p-6 flex flex-col h-full transition"
+                  >
+                    <div
+                      className={`w-[38px] h-[38px] rounded-[10px] flex items-center justify-center mb-4 border ${iconBg}`}
+                    >
                       <Icon className="w-[22px] h-[22px]" />
                     </div>
-                    <div className="font-semibold text-[16px] text-[#0c1b33] mb-1 leading-tight">{b.title}</div>
-                    <div className="text-[13.5px] text-[#3a4f63] mb-4 leading-[1.6] flex-1">{b.copy}</div>
+                    <div className="font-semibold text-[16px] text-[#0c1b33] mb-1 leading-tight">
+                      {b.title}
+                    </div>
+                    <div className="text-[13.5px] text-[#3a4f63] mb-4 leading-[1.6] flex-1">
+                      {b.copy}
+                    </div>
                     <div className="flex gap-2 mt-auto flex-wrap">
-                      {b.buttons && b.buttons.map((btn: string, j: number) => (
-                        <button
-                          key={j}
-                          type="button"
-                          className="px-4 py-2 rounded-lg border border-[#d0e4f7] bg-[#f4f7fb] text-[14px] font-semibold text-[#0c1b33] hover:border-[#2f6fd4] focus:outline-none focus:ring-2 focus:ring-[#2f6fd4] transition shadow-sm"
-                          onClick={() => {
-                            if (btn.toLowerCase().includes('add note')) setShowAddEvidenceNoteModal(true);
-                          }}
-                        >
-                          {btn}
-                        </button>
-                      ))}
-                      <AddEvidenceNoteModal open={showAddEvidenceNoteModal} onClose={() => setShowAddEvidenceNoteModal(false)} />
+                      {b.buttons &&
+                        b.buttons.map((btn: string, j: number) => (
+                          <button
+                            key={j}
+                            type="button"
+                            className="px-4 py-2 rounded-lg border border-[#d0e4f7] bg-[#f4f7fb] text-[14px] font-semibold text-[#0c1b33] hover:border-[#2f6fd4] focus:outline-none focus:ring-2 focus:ring-[#2f6fd4] transition shadow-sm"
+                            onClick={() => {
+                              if (btn.toLowerCase().includes("add note"))
+                                setShowAddEvidenceNoteModal(true);
+                            }}
+                          >
+                            {btn}
+                          </button>
+                        ))}
+                      <AddEvidenceNoteModal
+                        open={showAddEvidenceNoteModal}
+                        onClose={() => setShowAddEvidenceNoteModal(false)}
+                      />
                     </div>
                   </div>
                 );
@@ -1207,17 +1760,33 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
           <div className="mb-6 rounded-[15px] border border-[#d0e4f7] bg-white/80 shadow-[0_8px_24px_rgba(12,27,51,0.07)] p-6 md:p-8">
             <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-2 gap-2">
               <div>
-                <h2 className="font-serif text-[24px] md:text-[22px] text-[#0c1b33] leading-tight mb-1">Community & Proof Layer</h2>
-                <div className="text-[12px] text-[#3a4f63] leading-[1.7] max-w-[620px] mt-1">See practical insights from similar journeys and common habits that help people stay organized during this stage.</div>
+                <h2 className="text-[24px] md:text-[22px] text-[#0c1b33] leading-tight mb-1">
+                  Community & Proof Layer
+                </h2>
+                <div className="text-[12px] text-[#3a4f63] leading-[1.7] max-w-[620px] mt-1">
+                  See practical insights from similar journeys and common habits
+                  that help people stay organized during this stage.
+                </div>
               </div>
-              <span className="ml-auto mt-2 md:mt-0 px-4 py-1.5 rounded-full bg-[#f4f7fb] border border-[#d0e4f7] text-[#2d4a6e] text-[11px] font-bold uppercase tracking-wide shadow-sm whitespace-nowrap flex-shrink-0">Human Context</span>
+              <span className="ml-auto mt-2 md:mt-0 px-4 py-1.5 rounded-full bg-[#f4f7fb] border border-[#d0e4f7] text-[#2d4a6e] text-[11px] font-bold uppercase tracking-wide shadow-sm whitespace-nowrap flex-shrink-0">
+                Human Context
+              </span>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
               {tool.community.map((c: any, i: number) => (
-                <div key={i} className="rounded-[14px] border border-[#d0e4f7] bg-white p-6 flex flex-col h-full">
-                  <div className="italic text-[12px] text-[#0c1b33] mb-5 leading-[1.7]">{c.quote}</div>
-                  <div className="font-semibold text-[#0c1b33] text-[12px] mb-0.5">{c.meta}</div>
-                  <div className="text-[13px] text-[#6b8097] mt-0.5">{c.sub}</div>
+                <div
+                  key={i}
+                  className="rounded-[14px] border border-[#d0e4f7] bg-white p-6 flex flex-col h-full"
+                >
+                  <div className="italic text-[12px] text-[#0c1b33] mb-5 leading-[1.7]">
+                    {c.quote}
+                  </div>
+                  <div className="font-semibold text-[#0c1b33] text-[12px] mb-0.5">
+                    {c.meta}
+                  </div>
+                  <div className="text-[13px] text-[#6b8097] mt-0.5">
+                    {c.sub}
+                  </div>
                 </div>
               ))}
             </div>
@@ -1225,7 +1794,9 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
         )}
         {/* Footer Note */}
         {tool.footer_note && (
-          <p className="footer-note text-[11.5px] text-[#6b8097] text-center pt-4">{tool.footer_note}</p>
+          <p className="footer-note text-[11.5px] text-[#6b8097] text-center pt-4">
+            {tool.footer_note}
+          </p>
         )}
       </div>
     );
@@ -2155,7 +2726,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
         {(() => {
           const tool = currentStep.tool_data as any;
           const guideCards = tool?.guide_cards;
-          
+
           if (guideCards && guideCards.length > 0 && tool?.tutorial_steps) {
             return (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-7">
@@ -2163,11 +2734,17 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                   <button
                     key={card.id}
                     onClick={() => {
-                      const pathMap: Record<string, "household_member" | "joint_sponsor"> = {
+                      const pathMap: Record<
+                        string,
+                        "household_member" | "joint_sponsor"
+                      > = {
                         "add-household-member": "household_member",
                         "add-joint-sponsor": "joint_sponsor",
                       };
-                      setTutorialPath(pathMap[card.id] || card.id as "household_member" | "joint_sponsor");
+                      setTutorialPath(
+                        pathMap[card.id] ||
+                          (card.id as "household_member" | "joint_sponsor"),
+                      );
                       setTutorialIdx(0);
                       setIsTutorialOpen(true);
                     }}
@@ -4243,7 +4820,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
 
           {/* Disclaimer */}
           <p
-            className={`${currentStep.step_key === "step_2_4" || currentStep.step_key === "step_2_6" || currentStep.step_key === "step_2_7"|| currentStep.step_key === "step_1_17" ? "mt-10" : "mt-0"} text-[11.5px] text-[#6b8097] leading-[1.65] text-center pt-[8px]`}
+            className={`${currentStep.step_key === "step_2_4" || currentStep.step_key === "step_2_6" || currentStep.step_key === "step_2_7" || currentStep.step_key === "step_1_17" ? "mt-10" : "mt-0"} text-[11.5px] text-[#6b8097] leading-[1.65] text-center pt-[8px]`}
           >
             {tool.disclaimer ||
               "Rahvana provides structured guidance only. This is not legal advice. Consult a licensed immigration attorney for case-specific decisions."}
@@ -5777,31 +6354,31 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
           // otherwise fall back to the static USCIS_TUTORIAL_STEPS (step 6)
           const tool = currentStep?.tool_data;
           const dynamicStepsRaw = tool?.tutorial_steps;
-          
+
           // Handle both array (old format) and object (new format with household_member/joint_sponsor)
           let dynamicSteps: any[] | null = null;
           let isDynamic = false;
           const effectivePath = tutorialPath || "household_member"; // Default to household_member if not set
-          
+
           if (dynamicStepsRaw) {
             if (Array.isArray(dynamicStepsRaw)) {
               // Old format: array of steps
               dynamicSteps = dynamicStepsRaw;
               isDynamic = dynamicStepsRaw.length > 0;
-            } else if (typeof dynamicStepsRaw === 'object') {
+            } else if (typeof dynamicStepsRaw === "object") {
               // New format: object with paths (household_member/joint_sponsor)
               dynamicSteps = (dynamicStepsRaw as any)[effectivePath];
               isDynamic = dynamicSteps && dynamicSteps.length > 0;
             }
           }
-          
+
           const steps =
             isDynamic && dynamicSteps
               ? dynamicSteps
               : tool?.type === "household_member"
                 ? HOUSEHOLD_TUTORIAL_STEPS
                 : USCIS_TUTORIAL_STEPS;
-          
+
           const currentTutStep = steps[tutorialIdx];
 
           return (
@@ -5878,18 +6455,34 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                         }}
                       >
                         {(currentTutStep as TutorialStepData).media?.src ? (
-                          (currentTutStep as TutorialStepData).media?.type === "video" ? (
+                          (currentTutStep as TutorialStepData).media?.type ===
+                          "video" ? (
                             <TutorialVideo
-                              key={(currentTutStep as TutorialStepData).media?.src!}
-                              src={(currentTutStep as TutorialStepData).media?.src!}
-                              poster={(currentTutStep as TutorialStepData).videoMeta?.poster}
-                              alt={(currentTutStep as TutorialStepData).screenTitle}
+                              key={
+                                (currentTutStep as TutorialStepData).media?.src!
+                              }
+                              src={
+                                (currentTutStep as TutorialStepData).media?.src!
+                              }
+                              poster={
+                                (currentTutStep as TutorialStepData).videoMeta
+                                  ?.poster
+                              }
+                              alt={
+                                (currentTutStep as TutorialStepData).screenTitle
+                              }
                             />
                           ) : (
                             <Image
-                              key={(currentTutStep as TutorialStepData).media?.src!}
-                              src={(currentTutStep as TutorialStepData).media?.src!}
-                              alt={(currentTutStep as TutorialStepData).screenTitle}
+                              key={
+                                (currentTutStep as TutorialStepData).media?.src!
+                              }
+                              src={
+                                (currentTutStep as TutorialStepData).media?.src!
+                              }
+                              alt={
+                                (currentTutStep as TutorialStepData).screenTitle
+                              }
                               fill
                               className="object-contain"
                               sizes="(max-width: 640px) 95vw, (max-width: 1024px) 90vw, 1000px"
@@ -5901,14 +6494,22 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                         ) : (currentTutStep as TutorialStepData).video ? (
                           <TutorialVideo
                             src={(currentTutStep as TutorialStepData).video!}
-                            poster={(currentTutStep as TutorialStepData).videoMeta
-                              ?.poster}
-                            alt={(currentTutStep as TutorialStepData).screenTitle}
+                            poster={
+                              (currentTutStep as TutorialStepData).videoMeta
+                                ?.poster
+                            }
+                            alt={
+                              (currentTutStep as TutorialStepData).screenTitle
+                            }
                           />
                         ) : (currentTutStep as TutorialStepData).screenshot ? (
                           <Image
-                            src={(currentTutStep as TutorialStepData).screenshot!}
-                            alt={(currentTutStep as TutorialStepData).screenTitle}
+                            src={
+                              (currentTutStep as TutorialStepData).screenshot!
+                            }
+                            alt={
+                              (currentTutStep as TutorialStepData).screenTitle
+                            }
                             fill
                             className="object-contain"
                             sizes="(max-width: 640px) 95vw, (max-width: 1024px) 90vw, 1000px"
@@ -5923,8 +6524,10 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                             </span>
 
                             <div className="text-[18px] font-semibold text-[#0c1b33] text-center w-fit">
-                              {(currentTutStep as TutorialStepData).ss_headline ||
-                                (currentTutStep as TutorialStepData).screenTitle}
+                              {(currentTutStep as TutorialStepData)
+                                .ss_headline ||
+                                (currentTutStep as TutorialStepData)
+                                  .screenTitle}
                             </div>
 
                             {/* {(currentTutStep as TutorialStepData).instruction && (
@@ -5938,50 +6541,62 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                             )} */}
 
                             {((currentTutStep as TutorialStepData).ss_desc ||
-                              (currentTutStep as TutorialStepData).screenDesc) && (
+                              (currentTutStep as TutorialStepData)
+                                .screenDesc) && (
                               <div className="text-[13px] text-[#5a6f85] leading-[1.55] bg-[#f8fafb] border-l-[3px] border-[#d0e4f7] pl-[12px] py-[8px] text-center w-fit">
                                 {(currentTutStep as TutorialStepData).ss_desc ||
-                                  (currentTutStep as TutorialStepData).screenDesc}
+                                  (currentTutStep as TutorialStepData)
+                                    .screenDesc}
                               </div>
                             )}
 
-                            {(currentTutStep as TutorialStepData).ss_highlight && (
+                            {(currentTutStep as TutorialStepData)
+                              .ss_highlight && (
                               <div className="px-[16px] py-[12px] bg-[rgba(47,111,212,0.12)] border-[1.5px] border-[rgba(47,111,212,0.22)] rounded-[10px] text-[13px] font-semibold text-primary text-center w-fit">
-                                ✓ {(currentTutStep as TutorialStepData).ss_highlight}
+                                ✓{" "}
+                                {
+                                  (currentTutStep as TutorialStepData)
+                                    .ss_highlight
+                                }
                               </div>
                             )}
 
                             {(currentTutStep as TutorialStepData).fields &&
-                              (currentTutStep as TutorialStepData).fields!.length > 0 && (
+                              (currentTutStep as TutorialStepData).fields!
+                                .length > 0 && (
                                 <div className="flex flex-col gap-[8px] w-full">
-                                  {(currentTutStep as TutorialStepData).fields!.map(
-                                    (field, idx) =>
-                                      field.type === "btn" ? (
-                                        <div
-                                          key={idx}
-                                          className="w-full px-[16px] py-[10px] bg-[#2f6fd4] text-white border-none rounded-[8px] text-[13px] font-semibold cursor-default opacity-90"
-                                        >
-                                          {field.label}
-                                        </div>
-                                      ) : (
-                                        <div key={idx} className="flex flex-col gap-[4px]">
-                                          {field.label && (
-                                            <label className="text-[12px] font-medium text-[#3a4f63]">
-                                              {field.label}
-                                            </label>
-                                          )}
-                                          <input
-                                            type={
-                                              field.isPassword
-                                                ? "password"
-                                                : "text"
-                                            }
-                                            placeholder={field.placeholder}
-                                            disabled
-                                            className="w-full px-[12px] py-[8px] border border-[#d0e4f7] rounded-[6px] text-[13px] bg-[#f8fafb] text-[#9a9a9a]"
-                                          />
-                                        </div>
-                                      ),
+                                  {(
+                                    currentTutStep as TutorialStepData
+                                  ).fields!.map((field, idx) =>
+                                    field.type === "btn" ? (
+                                      <div
+                                        key={idx}
+                                        className="w-full px-[16px] py-[10px] bg-[#2f6fd4] text-white border-none rounded-[8px] text-[13px] font-semibold cursor-default opacity-90"
+                                      >
+                                        {field.label}
+                                      </div>
+                                    ) : (
+                                      <div
+                                        key={idx}
+                                        className="flex flex-col gap-[4px]"
+                                      >
+                                        {field.label && (
+                                          <label className="text-[12px] font-medium text-[#3a4f63]">
+                                            {field.label}
+                                          </label>
+                                        )}
+                                        <input
+                                          type={
+                                            field.isPassword
+                                              ? "password"
+                                              : "text"
+                                          }
+                                          placeholder={field.placeholder}
+                                          disabled
+                                          className="w-full px-[12px] py-[8px] border border-[#d0e4f7] rounded-[6px] text-[13px] bg-[#f8fafb] text-[#9a9a9a]"
+                                        />
+                                      </div>
+                                    ),
                                   )}
                                 </div>
                               )}
@@ -6012,8 +6627,9 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                         <div className="flex-1 h-[18px] bg-[#fafcff] rounded-[4px] border border-[#d0e4f7] ml-[8px] flex items-center px-[10px]">
                           <span className="text-[10px] text-[#6b8097] font-mono">
                             {
-                              (currentTutStep as (typeof USCIS_TUTORIAL_STEPS)[0])
-                                .url
+                              (
+                                currentTutStep as (typeof USCIS_TUTORIAL_STEPS)[0]
+                              ).url
                             }
                           </span>
                         </div>
@@ -6035,16 +6651,19 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                             .media.type === "img" ? (
                             <Image
                               key={
-                                (currentTutStep as (typeof USCIS_TUTORIAL_STEPS)[0])
-                                  .media.src
+                                (
+                                  currentTutStep as (typeof USCIS_TUTORIAL_STEPS)[0]
+                                ).media.src
                               }
                               src={
-                                (currentTutStep as (typeof USCIS_TUTORIAL_STEPS)[0])
-                                  .media.src!
+                                (
+                                  currentTutStep as (typeof USCIS_TUTORIAL_STEPS)[0]
+                                ).media.src!
                               }
                               alt={
-                                (currentTutStep as (typeof USCIS_TUTORIAL_STEPS)[0])
-                                  .screenTitle
+                                (
+                                  currentTutStep as (typeof USCIS_TUTORIAL_STEPS)[0]
+                                ).screenTitle
                               }
                               fill
                               className="object-contain"
@@ -6056,81 +6675,94 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                           ) : (
                             <TutorialVideo
                               key={
-                                (currentTutStep as (typeof USCIS_TUTORIAL_STEPS)[0])
-                                  .media.src
+                                (
+                                  currentTutStep as (typeof USCIS_TUTORIAL_STEPS)[0]
+                                ).media.src
                               }
                               src={
-                                (currentTutStep as (typeof USCIS_TUTORIAL_STEPS)[0])
-                                  .media.src!
+                                (
+                                  currentTutStep as (typeof USCIS_TUTORIAL_STEPS)[0]
+                                ).media.src!
                               }
                               poster={
-                                (currentTutStep as (typeof USCIS_TUTORIAL_STEPS)[0])
-                                  .videoMeta?.poster
+                                (
+                                  currentTutStep as (typeof USCIS_TUTORIAL_STEPS)[0]
+                                ).videoMeta?.poster
                               }
                               alt={
-                                (currentTutStep as (typeof USCIS_TUTORIAL_STEPS)[0])
-                                  .screenTitle
+                                (
+                                  currentTutStep as (typeof USCIS_TUTORIAL_STEPS)[0]
+                                ).screenTitle
                               }
                             />
                           )
                         ) : (
                           <div className="flex flex-col gap-[16px] px-[24px] py-[12px] w-full items-center">
                             <div className="text-[18px] font-semibold text-[#0c1b33] text-center w-fit">
-                              {(currentTutStep as (typeof USCIS_TUTORIAL_STEPS)[0])
-                                .ss_headline ||
-                                (currentTutStep as (typeof USCIS_TUTORIAL_STEPS)[0])
-                                  .screenTitle}
+                              {(
+                                currentTutStep as (typeof USCIS_TUTORIAL_STEPS)[0]
+                              ).ss_headline ||
+                                (
+                                  currentTutStep as (typeof USCIS_TUTORIAL_STEPS)[0]
+                                ).screenTitle}
                             </div>
 
-                            {((currentTutStep as (typeof USCIS_TUTORIAL_STEPS)[0])
-                              .ss_desc ||
-                              (currentTutStep as (typeof USCIS_TUTORIAL_STEPS)[0])
-                                .screenDesc) && (
+                            {((
+                              currentTutStep as (typeof USCIS_TUTORIAL_STEPS)[0]
+                            ).ss_desc ||
+                              (
+                                currentTutStep as (typeof USCIS_TUTORIAL_STEPS)[0]
+                              ).screenDesc) && (
                               <div className="text-[13px] text-[#5a6f85] leading-[1.55] bg-[#f8fafb] border-l-[3px] border-[#d0e4f7] pl-[12px] py-[8px] text-center w-fit">
-                                {(currentTutStep as (typeof USCIS_TUTORIAL_STEPS)[0])
-                                  .ss_desc ||
-                                  (currentTutStep as (typeof USCIS_TUTORIAL_STEPS)[0])
-                                    .screenDesc}
+                                {(
+                                  currentTutStep as (typeof USCIS_TUTORIAL_STEPS)[0]
+                                ).ss_desc ||
+                                  (
+                                    currentTutStep as (typeof USCIS_TUTORIAL_STEPS)[0]
+                                  ).screenDesc}
                               </div>
                             )}
 
                             {/* Highlight Box */}
-                            {(currentTutStep as (typeof USCIS_TUTORIAL_STEPS)[0])
-                              .fields &&
-                              (currentTutStep as (typeof USCIS_TUTORIAL_STEPS)[0])
-                                .fields.length > 0 && (
+                            {(
+                              currentTutStep as (typeof USCIS_TUTORIAL_STEPS)[0]
+                            ).fields &&
+                              (
+                                currentTutStep as (typeof USCIS_TUTORIAL_STEPS)[0]
+                              ).fields.length > 0 && (
                                 <div className="flex flex-col gap-[8px] w-full">
-                                  {(currentTutStep as (typeof USCIS_TUTORIAL_STEPS)[0]).fields.map(
-                                    (field, idx) =>
-                                      field.type === "btn" ? (
-                                        <div
-                                          key={idx}
-                                          className="w-full px-[22px] py-[10px] bg-[#2f6fd4] text-white border-none rounded-[8px] text-[13px] font-semibold cursor-default opacity-90"
-                                        >
-                                          {field.label}
-                                        </div>
-                                      ) : (
-                                        <div
-                                          key={idx}
-                                          className="flex flex-col gap-[4px]"
-                                        >
-                                          {field.label && (
-                                            <label className="text-[12px] font-medium text-[#3a4f63]">
-                                              {field.label}
-                                            </label>
-                                          )}
-                                          <input
-                                            type={
-                                              field.isPassword
-                                                ? "password"
-                                                : "text"
-                                            }
-                                            placeholder={field.placeholder}
-                                            disabled
-                                            className="w-full px-[12px] py-[8px] border border-[#d0e4f7] rounded-[6px] text-[13px] bg-[#f8fafb] text-[#9a9a9a]"
-                                          />
-                                        </div>
-                                      ),
+                                  {(
+                                    currentTutStep as (typeof USCIS_TUTORIAL_STEPS)[0]
+                                  ).fields.map((field, idx) =>
+                                    field.type === "btn" ? (
+                                      <div
+                                        key={idx}
+                                        className="w-full px-[22px] py-[10px] bg-[#2f6fd4] text-white border-none rounded-[8px] text-[13px] font-semibold cursor-default opacity-90"
+                                      >
+                                        {field.label}
+                                      </div>
+                                    ) : (
+                                      <div
+                                        key={idx}
+                                        className="flex flex-col gap-[4px]"
+                                      >
+                                        {field.label && (
+                                          <label className="text-[12px] font-medium text-[#3a4f63]">
+                                            {field.label}
+                                          </label>
+                                        )}
+                                        <input
+                                          type={
+                                            field.isPassword
+                                              ? "password"
+                                              : "text"
+                                          }
+                                          placeholder={field.placeholder}
+                                          disabled
+                                          className="w-full px-[12px] py-[8px] border border-[#d0e4f7] rounded-[6px] text-[13px] bg-[#f8fafb] text-[#9a9a9a]"
+                                        />
+                                      </div>
+                                    ),
                                   )}
                                 </div>
                               )}
@@ -6141,8 +6773,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                   )}
 
                   {/* Note Block */}
-                  {((isDynamic &&
-                    (currentTutStep as TutorialStepData).note) ||
+                  {((isDynamic && (currentTutStep as TutorialStepData).note) ||
                     (!isDynamic &&
                       (currentTutStep as (typeof USCIS_TUTORIAL_STEPS)[0])
                         .note)) && (
@@ -6153,7 +6784,9 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                         ) : (
                           <div
                             dangerouslySetInnerHTML={{
-                              __html: (currentTutStep as (typeof USCIS_TUTORIAL_STEPS)[0]).note!,
+                              __html: (
+                                currentTutStep as (typeof USCIS_TUTORIAL_STEPS)[0]
+                              ).note!,
                             }}
                           />
                         )}
