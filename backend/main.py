@@ -26,7 +26,7 @@ app.add_middleware(
         "http://127.0.0.1:3000",
         "https://rahvana-1.onrender.com",
         "https://www.rahvana.com",
-        "https://rahvana-test.vercel.app"
+        "https://www.rahvana-test.vercel.app"
     ],
     allow_credentials=True,
     allow_methods=["*"],
