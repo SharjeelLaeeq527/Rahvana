@@ -37,6 +37,8 @@ import {
   Trash2,
   Truck,
   MoreVertical,
+  Activity,
+  Clock,
 } from "lucide-react";
 
 import {
@@ -68,10 +70,14 @@ import ViewCredentialModal from "@/app/(main)/portal-wallet/components/ViewCrede
 import { toast } from "sonner";
 import { ConfirmationModal } from "@/app/components/shared/ConfirmationModal";
 import { InlineGuideData } from "./InlineGuideData";
+import { INTERVIEW_SCHEDULING_DATA } from "./InterviewSchedulingData";
 import { USCIS_TUTORIAL_STEPS } from "./UscisTutorialData";
 import Image from "next/image";
 import Link from "next/link";
-import { HOUSEHOLD_TUTORIAL_STEPS, HOUSEHOLD_GUIDE_CONTENT } from "./HouseholdTutorialData";
+import {
+  HOUSEHOLD_TUTORIAL_STEPS,
+  HOUSEHOLD_GUIDE_CONTENT,
+} from "./HouseholdTutorialData";
 import {
   SUBMISSION_TUTORIAL_STEPS,
   SubmissionTutorialOverlay,
@@ -98,7 +104,11 @@ import type {
   ConditionalDocument,
 } from "@/lib/questionnaire/types";
 import { StepHeader } from "./StepHeader";
-import { CeacCredsModal, NvcFeeModal, ApUpdateModal } from "./PortalWalletManager";
+import {
+  CeacCredsModal,
+  NvcFeeModal,
+  ApUpdateModal,
+} from "./PortalWalletManager";
 import { SponsorshipModule } from "./SponsorshipModule";
 import {
   CivilDocGuideOverlay,
@@ -130,6 +140,8 @@ import { InterviewPrepTool } from "./InterviewPrepTool";
 import { InterviewDayTool } from "./InterviewDayTool";
 import CaseRegistrationForm from "./CaseRegistrationForm";
 import { EMBASSY_GUIDANCE_DATA } from "@/app/(tools)/(visa)/221g-action-planner/utils/embassyGuidance";
+import { APPROVAL_NOTICE_DATA } from "./ApprovalNoticeData";
+import { ApprovalNoticeTool } from "./ApprovalNoticeTool";
 
 interface SecurityQuestion {
   id: string;
@@ -161,7 +173,10 @@ interface StepViewProps {
       status: "not-started" | "in-progress" | "reviewed",
     ) => Promise<void>;
     savePaymentMethod?: (methodValue: string) => Promise<void>;
-    saveMailingDetails?: (carrier: string, trackingNumber: string) => Promise<void>;
+    saveMailingDetails?: (
+      carrier: string,
+      trackingNumber: string,
+    ) => Promise<void>;
   };
   onBack: () => void;
 }
@@ -363,10 +378,18 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
   const [pccSaved, setPccSaved] = useState(state.metadata.pcc_saved === "true");
 
   // Appointment Received States
-  const [interviewSaved, setInterviewSaved] = useState(state.metadata.interviewSaved === true);
-  const [interviewDate, setInterviewDate] = useState((state.metadata.interviewDate as string) || "");
-  const [letterDate, setLetterDate] = useState((state.metadata.letterDate as string) || "");
-  const [consulateLocation, setConsulateLocation] = useState((state.metadata.consulateLocation as string) || "");
+  const [interviewSaved, setInterviewSaved] = useState(
+    state.metadata.interviewSaved === true,
+  );
+  const [interviewDate, setInterviewDate] = useState(
+    (state.metadata.interviewDate as string) || "",
+  );
+  const [letterDate, setLetterDate] = useState(
+    (state.metadata.letterDate as string) || "",
+  );
+  const [consulateLocation, setConsulateLocation] = useState(
+    (state.metadata.consulateLocation as string) || "",
+  );
 
   // Step 3.7 Interview Prep States
   const [isPrepLaunched, setIsPrepLaunched] = useState(
@@ -398,6 +421,23 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
   );
   const [isApSaved, setIsApSaved] = useState(state.metadata.apSaved === "true");
   const [isApUpdateModalOpen, setIsApUpdateModalOpen] = useState(false);
+
+  // Step 1.17 Approval Notice States
+  const [isApprovalModalOpen, setIsApprovalModalOpen] = useState(false);
+  const [isApprovalGuideOpen, setIsApprovalGuideOpen] = useState(false);
+  const [approvalGuideStep, setApprovalGuideStep] = useState(0);
+  const [approvalDetails, setApprovalDetails] = useState(() => {
+    return (
+      state.metadata.approvalDetails || {
+        approvalDate: "",
+        receiptNumber: "",
+        priorityDate: "",
+      }
+    );
+  });
+  const [isApprovalSaved, setIsApprovalSaved] = useState(
+    state.metadata.approvalSaved === "true",
+  );
 
   const handleSaveApUpdate = (entry: any) => {
     const nextLog = [entry, ...apUpdateLog];
@@ -509,7 +549,6 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
     state.metadata?.filingMethod || state.filingType || "online";
 
   const getIcon = getStepIcon;
-
 
   const activeStepsInChapter = useMemo(() => {
     if (!currentChapter) return [];
@@ -662,7 +701,9 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
         try {
           const res = await fetch("/api/portal-wallet");
           const wallet = await res.json();
-          const nvcCreds = wallet.credentials?.find((c: any) => c.portal_type?.toUpperCase() === "NVC");
+          const nvcCreds = wallet.credentials?.find(
+            (c: any) => c.portal_type?.toUpperCase() === "NVC",
+          );
           if (nvcCreds) {
             if (nvcCreds.nvc_case_number) {
               actions.updateMetadata({ nvcCaseNum: nvcCreds.nvc_case_number });
@@ -679,7 +720,8 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
           // eslint-disable-next-line no-console
           console.error("Failed to sync NVC credentials to metadata", err);
         }
-        if (sId === "step_2_1" && !isCompleted) actions.toggleComplete("step_2_1");
+        if (sId === "step_2_1" && !isCompleted)
+          actions.toggleComplete("step_2_1");
       }
       if (data.portalType === "USCIS" && sId === "step_1_6") {
         if (!isCompleted) actions.toggleComplete("step_1_6");
@@ -902,23 +944,54 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
   const handleToggleComplete = () => {
     const stepKey = currentStep.step_key || sId;
     // Map step keys to correct metadata fields for milestone tracking
-    const milestoneMetaMap: Record<string, { key: string, value?: () => string }> = {
-      "step_1_3": { key: "receiptNum", value: () => new Date().toISOString().slice(0, 10) }, // I-130 submitted to USCIS
-      "step_2_10": { key: "dqDate", value: () => new Date().toISOString().slice(0, 10) },   // Documentarily Qualified
-      "step_3_1": { key: "medicalDate", value: () => new Date().toISOString().slice(0, 10) }, // Medical exam scheduled
-      "step_3_7": { key: "interviewDate", value: () => new Date().toISOString().slice(0, 10) }, // Interview scheduled
-      "step_2_1": { key: "nvcCaseNum", value: () => "NVC2026-" + Math.floor(Math.random()*1000000) }, // NVC case number (demo value)
-      "step_2_2": { key: "nvcInvoice", value: () => "INVC-" + Math.floor(Math.random()*1000000) }, // NVC invoice ID (demo value)
-      "step_3_7b": { key: "interviewEmbassy", value: () => "Islamabad" }, // Embassy (demo value)
+    const milestoneMetaMap: Record<
+      string,
+      { key: string; value?: () => string }
+    > = {
+      step_1_3: {
+        key: "receiptNum",
+        value: () => new Date().toISOString().slice(0, 10),
+      }, // I-130 submitted to USCIS
+      step_2_10: {
+        key: "dqDate",
+        value: () => new Date().toISOString().slice(0, 10),
+      }, // Documentarily Qualified
+      step_3_1: {
+        key: "medicalDate",
+        value: () => new Date().toISOString().slice(0, 10),
+      }, // Medical exam scheduled
+      step_3_7: {
+        key: "interviewDate",
+        value: () => new Date().toISOString().slice(0, 10),
+      }, // Interview scheduled
+      step_2_1: {
+        key: "nvcCaseNum",
+        value: () => "NVC2026-" + Math.floor(Math.random() * 1000000),
+      }, // NVC case number (demo value)
+      step_2_2: {
+        key: "nvcInvoice",
+        value: () => "INVC-" + Math.floor(Math.random() * 1000000),
+      }, // NVC invoice ID (demo value)
+      step_3_7b: { key: "interviewEmbassy", value: () => "Islamabad" }, // Embassy (demo value)
     };
     actions.toggleComplete(stepKey);
     // If this step is a milestone, set the metadata field if not already set
     const metaObj = milestoneMetaMap[stepKey];
-    if (metaObj && (state.metadata[metaObj.key] === undefined || state.metadata[metaObj.key] === null || state.metadata[metaObj.key] === "")) {
-      const value = metaObj.value ? metaObj.value() : new Date().toISOString().slice(0, 10);
+    if (
+      metaObj &&
+      (state.metadata[metaObj.key] === undefined ||
+        state.metadata[metaObj.key] === null ||
+        state.metadata[metaObj.key] === "")
+    ) {
+      const value = metaObj.value
+        ? metaObj.value()
+        : new Date().toISOString().slice(0, 10);
       // Debug log for tracking metadata update
       // eslint-disable-next-line no-console
-      console.log(`[Milestone] Setting metadata field '${metaObj.key}' to:`, value);
+      console.log(
+        `[Milestone] Setting metadata field '${metaObj.key}' to:`,
+        value,
+      );
       actions.updateMetadata({ [metaObj.key]: value });
     }
   };
@@ -958,7 +1031,6 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
       }
     }
   };
-
 
   const renderDocActionModal = () => {
     if (!docActionModal.doc) return null;
@@ -1373,7 +1445,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                 <div className="text-[10px] font-bold tracking-widest uppercase text-white/35 mb-1">
                   CEAC Guidance
                 </div>
-                <div className="text-[clamp(19px,2.8vw,23px)] font-serif text-white/92 leading-tight">
+                <div className="text-[clamp(19px,2.8vw,23px)] text-white/92 leading-tight">
                   Add sponsorship participants in CEAC
                 </div>
               </div>
@@ -1711,7 +1783,13 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
     if (!tool) return null;
 
     if (tool.type === "awaiting_review") {
-      return <AwaitingReviewStep data={AWAITING_REVIEW_DATA} state={state} actions={actions} />;
+      return (
+        <AwaitingReviewStep
+          data={AWAITING_REVIEW_DATA}
+          state={state}
+          actions={actions}
+        />
+      );
     }
 
     // Theme detection based on icon or ID
@@ -1767,8 +1845,12 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
         <div className="w-full max-w-[680px] px-[24px] pb-[96px] flex flex-col">
           {/* Step Header */}
           <StepHeader
-            chapterNumber={currentChapter?.chapter_number || state.currentStage + 1}
-            chapterName={currentChapter?.chapter_name || currentChapter?.name || ""}
+            chapterNumber={
+              currentChapter?.chapter_number || state.currentStage + 1
+            }
+            chapterName={
+              currentChapter?.chapter_name || currentChapter?.name || ""
+            }
             stepName={currentStep.step_name}
             stepDescription={currentStep.step_description}
             isBeneficiaryTheme={isBeneficiaryTheme}
@@ -1837,13 +1919,17 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
           {/* Return Note (Success Banner) */}
           {isLaunched && (
             <div className="mb-[20px] bg-[#e8f5ef] border border-[#a8d9be] rounded-[10px] p-[14px_18px] flex items-start gap-[12px] animate-in slide-in-from-top-2 duration-300">
-              <div className="text-[15px] mt-[1px] text-[#15744f] shrink-0">✓</div>
+              <div className="text-[15px] mt-[1px] text-[#15744f] shrink-0">
+                ✓
+              </div>
               <div className="flex-1">
                 <div className="text-[13px] font-semibold text-[#15744f] mb-[2px]">
-                  {tool.launch_module.return_note?.title || "Tool launched in a new tab"}
+                  {tool.launch_module.return_note?.title ||
+                    "Tool launched in a new tab"}
                 </div>
                 <div className="text-[12px] text-[#3a4f63] leading-normal">
-                  {tool.launch_module?.return_note?.body || "Complete the process and return here."}
+                  {tool.launch_module?.return_note?.body ||
+                    "Complete the process and return here."}
                 </div>
               </div>
             </div>
@@ -1866,7 +1952,248 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
               actions={actions}
               metadata={state.metadata}
               dqState={{
-                dqSaved, setDqSaved, dqDate, setDqDate, dqCategory, setDqCategory, dqPost, setDqPost, dqCountry, setDqCountry
+                dqSaved,
+                setDqSaved,
+                dqDate,
+                setDqDate,
+                dqCategory,
+                setDqCategory,
+                dqPost,
+                setDqPost,
+                dqCountry,
+                setDqCountry,
+              }}
+            />
+          )}
+
+          {/* INTERVIEW SCHEDULING (Step 2.11 SPECIFIC) */}
+          {tool.type === "interview_scheduling" && (
+            <div className="flex flex-col animate-in fade-in slide-in-from-bottom-2 duration-380">
+              {/* Queue status card */}
+              <div className="relative bg-[#0c1b33] rounded-[16px] p-[24px_26px] mb-[16px] overflow-hidden">
+                <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-[#b38600] via-[#f0d98a] to-transparent opacity-[0.85]" />
+                <div className="text-[10px] font-bold tracking-widest uppercase text-white/38 mb-[8px]">
+                  Post-DQ Queue Status
+                </div>
+                <div
+                  className="text-[20px] font-serif text-white/92 mb-[18px] flex items-center gap-[10px]"
+                  style={{ fontFamily: "'DM Serif Display', serif" }}
+                >
+                  <span className="inline-block w-[7px] h-[7px] rounded-full bg-[#6aa8f0] animate-pulse shadow-[0_0_8px_rgba(106,168,240,0.6)]" />
+                  In queue — awaiting interview letter
+                </div>
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-[14px]">
+                  <div>
+                    <div className="text-[10px] font-semibold tracking-widest uppercase text-white/36 mb-[3px]">
+                      DQ Date
+                    </div>
+                    <div className="text-[13px] font-semibold text-[#f0d98a]">
+                      {state.metadata.dqDate
+                        ? new Date(
+                            state.metadata.dqDate + "T00:00:00",
+                          ).toLocaleDateString("en-US", {
+                            year: "numeric",
+                            month: "long",
+                            day: "numeric",
+                          })
+                        : "—"}
+                    </div>
+                  </div>
+                  <div>
+                    <div className="text-[10px] font-semibold tracking-widest uppercase text-white/36 mb-[3px]">
+                      Post
+                    </div>
+                    <div className="text-[13px] font-semibold text-white/88">
+                      {state.metadata.post || state.metadata.dqPost || "—"}
+                    </div>
+                  </div>
+                  <div className="col-span-2 md:col-span-1">
+                    <div className="text-[10px] font-semibold tracking-widest uppercase text-white/36 mb-[3px]">
+                      Current stage
+                    </div>
+                    <div className="text-[13px] font-semibold text-white/88">
+                      Awaiting interview letter
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Scheduling grid */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-[14px] mb-[14px]">
+                {/* Official Card */}
+                <div className="bg-[#fafcff] border-[1.5px] border-[#d0e4f7] rounded-[16px] p-[18px_20px] shadow-[0_4px_24px_rgba(12,27,51,0.08)]">
+                  <div className="text-[10px] font-bold tracking-widest uppercase text-[#2d4a6e] mb-[6px]">
+                    Official Scheduling Status
+                  </div>
+                  <div className="text-[13px] font-semibold text-[#0c1b33] mb-[6px]">
+                    Cases currently being scheduled from:
+                  </div>
+                  <div
+                    className="text-[20px] font-serif text-[#0c1b33] mb-[4px]"
+                    style={{ fontFamily: "'DM Serif Display', serif" }}
+                  >
+                    {INTERVIEW_SCHEDULING_DATA.schedulingData[
+                      ((state.metadata.post || state.metadata.dqPost) as keyof typeof INTERVIEW_SCHEDULING_DATA.schedulingData) ||
+                        "Other"
+                    ]?.official || "—"}
+                  </div>
+                  <div className="text-[12px] text-[#6b8097] leading-[1.5]">
+                    From the State Department scheduling bulletin for this post
+                    and category. Verify current status at travel.state.gov.
+                  </div>
+                  <div className="inline-flex items-center gap-[4px] bg-[#e8f1fb] border border-[#d0e4f7] rounded-full px-[10px] py-[3px] text-[10px] font-semibold text-[#2d4a6e] mt-[8px]">
+                    <Info size={9} strokeWidth={2.5} />
+                    U.S. State Department · Official
+                  </div>
+                </div>
+
+                {/* Estimate Card */}
+                <div className="bg-[#fafcff] border-[1.5px] border-[#e8d47a] rounded-[16px] p-[18px_20px] shadow-[0_4px_24px_rgba(12,27,51,0.08)]">
+                  <div className="text-[10px] font-bold tracking-widest uppercase text-[#b38600] mb-[6px]">
+                    Rahvana Estimate
+                  </div>
+                  <div className="text-[13px] font-semibold text-[#0c1b33] mb-[6px]">
+                    Queue movement trend:
+                  </div>
+                  <div
+                    className="text-[20px] font-serif text-[#0c1b33] mb-[4px]"
+                    style={{ fontFamily: "'DM Serif Display', serif" }}
+                  >
+                    {INTERVIEW_SCHEDULING_DATA.schedulingData[
+                      ((state.metadata.post || state.metadata.dqPost) as keyof typeof INTERVIEW_SCHEDULING_DATA.schedulingData) ||
+                        "Other"
+                    ]?.trend || "—"}
+                  </div>
+                  <div className="text-[12px] text-[#6b8097] leading-[1.5]">
+                    {state.metadata.dqDate
+                      ? INTERVIEW_SCHEDULING_DATA.schedulingData[
+                          ((state.metadata.post || state.metadata.dqPost) as keyof typeof INTERVIEW_SCHEDULING_DATA.schedulingData) ||
+                            "Other"
+                        ]?.detail
+                      : "Save your DQ details in the previous step to see scheduling context here."}
+                  </div>
+                  <div className="inline-flex items-center gap-[4px] bg-[#fffbec] border border-[#e8d47a] rounded-full px-[10px] py-[3px] text-[10px] font-semibold text-[#b38600] mt-[8px]">
+                    <Activity size={9} strokeWidth={2.5} />
+                    Rahvana Estimate · Not guaranteed
+                  </div>
+                  <div className="text-[11px] text-[#6b8097] mt-[6px] italic leading-[1.5]">
+                    Estimates are trend-based projections. Actual scheduling
+                    depends on post capacity and priority.
+                  </div>
+                </div>
+              </div>
+
+              {/* While you wait + milestone line */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-[14px] mb-[14px]">
+                {/* While you wait */}
+                <div className="bg-[#fafcff] border-[1.5px] border-[#d0e4f7] rounded-[16px] p-[18px_20px] shadow-[0_4px_24px_rgba(12,27,51,0.08)]">
+                  <div className="flex items-center gap-[9px] mb-[12px]">
+                    <div className="w-[34px] h-[34px] rounded-[8px] bg-[#e8f5ef] border border-[#a8d9be] flex items-center justify-center shrink-0">
+                      <Clock
+                        size={16}
+                        className="text-[#15744f]"
+                        strokeWidth={1.8}
+                      />
+                    </div>
+                    <div className="text-[14px] font-semibold text-[#0c1b33]">
+                      While you wait
+                    </div>
+                  </div>
+                  <div className="flex flex-col gap-[7px]">
+                    {INTERVIEW_SCHEDULING_DATA.whileYouWait.map((item, i) => (
+                      <div
+                        key={i}
+                        className="flex items-start gap-[8px] text-[13px] color-[#3a4f63] leading-[1.5]"
+                      >
+                        <div className="w-[4px] h-[4px] rounded-full bg-[#b8d4f0] shrink-0 mt-[6px]" />
+                        <span>{item}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Milestone progress line */}
+                <div className="bg-[#fafcff] border-[1.5px] border-[#d0e4f7] rounded-[16px] p-[18px_20px] shadow-[0_4px_24px_rgba(12,27,51,0.08)]">
+                  <div className="text-[13px] font-semibold text-[#0c1b33] mb-[14px]">
+                    Your progress in Chapter 2
+                  </div>
+                  <div className="flex flex-col relative pl-[22px]">
+                    <div className="absolute left-[7px] top-[6px] bottom-[6px] w-[2px] bg-[#d0e4f7] rounded-[2px]" />
+                    {INTERVIEW_SCHEDULING_DATA.milestones.map((ms, i) => (
+                      <div
+                        key={i}
+                        className="flex items-center gap-[10px] mb-[12px] last:mb-0"
+                      >
+                        <div
+                          className={`w-[14px] h-[14px] rounded-full shrink-0 z-[1] ml-[-22px] ${
+                            ms.status === "done"
+                              ? "bg-[#15744f]"
+                              : ms.status === "active"
+                                ? "bg-[#2f6fd4] animate-pulse"
+                                : "bg-[#d0e4f7]"
+                          }`}
+                        />
+                        <span
+                          className={`text-[13px] ${
+                            ms.status === "done"
+                              ? "text-[#0e5c3c] font-medium"
+                              : ms.status === "active"
+                                ? "text-[#2f6fd4] font-bold"
+                                : "text-[#6b8097] font-medium"
+                          }`}
+                        >
+                          {ms.label} {ms.status === "active" && "← here"}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* How it works info card */}
+              <div className="bg-[#fafcff] border-[1.5px] border-[#d0e4f7] rounded-[16px] p-[18px_20px] mb-[14px] shadow-[0_4px_24px_rgba(12,27,51,0.08)]">
+                <div className="flex items-center gap-[9px] mb-[12px]">
+                  <div className="w-[34px] h-[34px] rounded-[8px] bg-[#e8f1fb] border border-[#d0e4f7] flex items-center justify-center shrink-0">
+                    <Info
+                      size={16}
+                      className="text-[#2f6fd4]"
+                      strokeWidth={1.8}
+                    />
+                  </div>
+                  <div className="text-[14px] font-semibold text-[#0c1b33]">
+                    How interview scheduling works at this stage
+                  </div>
+                </div>
+                <div className="flex flex-col gap-[7px]">
+                  {INTERVIEW_SCHEDULING_DATA.howItWorks.map((item, i) => (
+                    <div
+                      key={i}
+                      className="flex items-start gap-[8px] text-[13px] color-[#3a4f63] leading-[1.5]"
+                    >
+                      <div className="w-[4px] h-[4px] rounded-full bg-[#b8d4f0] shrink-0 mt-[6px]" />
+                      <span>{item}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {tool.type === "approval_notice" && (
+            <ApprovalNoticeTool
+              state={state}
+              actions={actions}
+              approvalState={{
+                isApprovalModalOpen,
+                setIsApprovalModalOpen,
+                isApprovalGuideOpen,
+                setIsApprovalGuideOpen,
+                approvalGuideStep,
+                setApprovalGuideStep,
+                approvalDetails,
+                setApprovalDetails,
+                isApprovalSaved,
+                setIsApprovalSaved,
               }}
             />
           )}
@@ -1876,7 +2203,14 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
               state={state}
               actions={actions}
               interviewState={{
-                interviewSaved, setInterviewSaved, interviewDate, setInterviewDate, letterDate, setLetterDate, consulateLocation, setConsulateLocation
+                interviewSaved,
+                setInterviewSaved,
+                interviewDate,
+                setInterviewDate,
+                letterDate,
+                setLetterDate,
+                consulateLocation,
+                setConsulateLocation,
               }}
             />
           )}
@@ -1886,8 +2220,20 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
               state={state}
               actions={actions}
               medState={{
-                medSaved, setMedSaved, medDate, setMedDate, medTime, setMedTime, medClinic, setMedClinic,
-                isMedWizardOpen, setIsMedWizardOpen, medWizardStep, setMedWizardStep, medWizardMode, setMedWizardMode
+                medSaved,
+                setMedSaved,
+                medDate,
+                setMedDate,
+                medTime,
+                setMedTime,
+                medClinic,
+                setMedClinic,
+                isMedWizardOpen,
+                setIsMedWizardOpen,
+                medWizardStep,
+                setMedWizardStep,
+                medWizardMode,
+                setMedWizardMode,
               }}
             />
           )}
@@ -1897,7 +2243,14 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
               state={state}
               actions={actions}
               polioState={{
-                polioLaunched, setPolioLaunched, isPolioGuideOpen, setIsPolioGuideOpen, polioGuideStep, setPolioGuideStep, polioChecks, setPolioChecks
+                polioLaunched,
+                setPolioLaunched,
+                isPolioGuideOpen,
+                setIsPolioGuideOpen,
+                polioGuideStep,
+                setPolioGuideStep,
+                polioChecks,
+                setPolioChecks,
               }}
             />
           )}
@@ -1907,7 +2260,18 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
               state={state}
               actions={actions}
               pccState={{
-                pccSaved, setPccSaved, pccReceived, setPccReceived, pccData, setPccData, isPccOverlayOpen, setIsPccOverlayOpen, pccOverlayStep, setPccOverlayStep, pccOverlayMode, setPccOverlayMode
+                pccSaved,
+                setPccSaved,
+                pccReceived,
+                setPccReceived,
+                pccData,
+                setPccData,
+                isPccOverlayOpen,
+                setIsPccOverlayOpen,
+                pccOverlayStep,
+                setPccOverlayStep,
+                pccOverlayMode,
+                setPccOverlayMode,
               }}
             />
           )}
@@ -1947,7 +2311,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
             />
           )} */}
 
-{/* HOUSEHOLD MEMBER BUILDER (Step 2.7 SPECIFIC) */}
+          {/* HOUSEHOLD MEMBER BUILDER (Step 2.7 SPECIFIC) */}
           {tool.type === "household_member" && renderHouseholdBuilder()}
 
           {tool.type === "submission_review" && (
@@ -1962,21 +2326,29 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
 
           {/* AWAITING NVC REVIEW (Step 2.9 SPECIFIC) */}
           {tool.type === "awaiting_review" && (
-            <AwaitingReviewStep data={AWAITING_REVIEW_DATA} state={state} actions={actions} />
+            <AwaitingReviewStep
+              data={AWAITING_REVIEW_DATA}
+              state={state}
+              actions={actions}
+            />
           )}
 
           {/* GATHER ORIGINAL DOCUMENTS (Step 3.4 SPECIFIC) */}
           {tool.type === "gathering_checklist" && (
-            <GatheringChecklistTool 
-              tool={tool} 
-              state={state} 
-              actions={actions} 
-              gatheringState={{ 
-                gatheringStatus, setGatheringStatus, 
-                selectedGatheringItem, setSelectedGatheringItem, 
-                isGatheringGuideOpen, setIsGatheringGuideOpen, 
-                gatheringGuideStep, setGatheringGuideStep 
-              }} 
+            <GatheringChecklistTool
+              tool={tool}
+              state={state}
+              actions={actions}
+              gatheringState={{
+                gatheringStatus,
+                setGatheringStatus,
+                selectedGatheringItem,
+                setSelectedGatheringItem,
+                isGatheringGuideOpen,
+                setIsGatheringGuideOpen,
+                gatheringGuideStep,
+                setGatheringGuideStep,
+              }}
             />
           )}
 
@@ -3365,7 +3737,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
 
           {/* Disclaimer */}
           <p
-            className={`${currentStep.step_key === "step_2_4" || currentStep.step_key === "step_2_6" || currentStep.step_key === "step_2_7" ? "mt-10" : "mt-0"} text-[11.5px] text-[#6b8097] leading-[1.65] text-center pt-[8px]`}
+            className={`${currentStep.step_key === "step_2_4" || currentStep.step_key === "step_2_6" || currentStep.step_key === "step_2_7" || currentStep.step_key === "step_1_17" ? "mt-10" : "mt-0"} text-[11.5px] text-[#6b8097] leading-[1.65] text-center pt-[8px]`}
           >
             {tool.disclaimer ||
               "Rahvana provides structured guidance only. This is not legal advice. Consult a licensed immigration attorney for case-specific decisions."}
@@ -5266,4 +5638,3 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
 };
 
 export default StepView;
-
