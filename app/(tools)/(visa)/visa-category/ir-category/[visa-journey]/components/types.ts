@@ -239,6 +239,27 @@ export interface FeeBlock {
 }
 
 export interface ToolData {
+        status_explainer?: {
+          headline: string;
+          body: string;
+        };
+      // For IR-1/CR-1 custom steps and StepView.tsx compatibility
+      status?: {
+        hero?: string;
+        copy?: string;
+        badge?: string;
+      };
+      metrics?: { label: string; value: string }[];
+      checklist?: any[];
+      future_timeline?: { title: string; sub: string }[];
+      useful_now?: string[];
+      relevant_updates?: string[];
+      build_case?: string[];
+      community?: string[];
+    // --- Rahvana custom fields for IR-1/CR-1 steps 11/12 ---
+    phases?: { badge: string; copy: string }[];
+    launch_cues?: string[];
+    footer_note?: string;
   id: string;
   title: string;
   subtitle?: string;
@@ -277,6 +298,13 @@ export interface ToolData {
     launched_note?: string;
     type?: string;
     return_note?: { title: string; body: string };
+    // --- Custom fields for IR-1/CR-1 steps ---
+    status?: {
+      hero?: string;
+      copy?: string;
+      badge?: string;
+    };
+    metrics?: { label: string; value: string }[];
   };
   /** Payment fee display block — shown inside the launch module for step 9 */
   fee_block?: FeeBlock;

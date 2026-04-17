@@ -1741,12 +1741,12 @@
                 "ss_desc": "Credit card · Debit card · ACH bank transfer",
                 "ss_highlight": null,
                 "caption": "USCIS uses Pay.gov for online fee collection. Your payment information is handled by that secure federal payment system.",
-                "note": "Do not close the browser tab during payment processing. Wait for the confirmation page before navigating away."
+                "note": "Do not close the browser tab during payment processing. Wait for the confirmation screen."
               },
               {
                 "label": "Step 4 of 4 — Receive your receipt notice",
                 "heading": "Payment complete — receipt issued immediately",
-                "instruction": "After successful payment, USCIS immediately issues a <strong>receipt notice</strong> with your case number (typically beginning with \"IOE\"). Your case is now officially submitted. Download or save this receipt — you will need the case number to track your case.",
+                "instruction": "After successful payment, USCIS immediately issues a <strong>receipt notice</strong> with your case number (typically beginning with \"IOE\"). Your case is now officially submitted. Download or save this receipt — it is your proof of filing and your case tracking number.",
                 "url": "my.uscis.gov",
                 "screenshot": null,
                 "ss_label": "Submission Complete",
@@ -2107,7 +2107,7 @@
             "action_items": [
               {
                 "title": "Use a paper-filing payment method",
-                "description": "Prepare the fee using a method USCIS currently accepts for paper filing. Verify the method and the amount before mailing."
+                "description": "Prepare the fee using the paper-filing payment method you plan to use. Verify the method and the amount before mailing."
               },
               {
                 "title": "Keep payment at the front of the packet",
@@ -2116,6 +2116,7 @@
             ],
             "second_card_title": "Save payment method",
             "second_card_subtitle": "Store the method you plan to use so the packet checklist stays consistent.",
+            "action_button_label": "Save payment method",
             "action_button_status_heading": "Payment method saved",
             "action_button_status_message": "Saved payment method: {selected_method}.",
             "dropdown_card": {
@@ -2418,7 +2419,227 @@
               "type": "stage"
             }
           ]
-        }
+        },
+         {
+                          "step_key": "step_1_15",
+                          "step_number": 11,
+                          "step_name": "Register Receipt in CEAC Portal",
+                          "step_short_description": "Register your USCIS receipt in CEAC",
+                          "step_type": "tool",
+                          "branch": "online",
+                          "visible_when": {
+                            "filingMethodConfirmed": true,
+                            "filingMethod": "online"
+                          },
+                          "step_description": "After receiving your USCIS receipt notice, register your case in the CEAC portal to begin NVC processing. This step ensures your case is trackable and ready for the next phase.",
+                          "who": "Petitioner",
+                          "where": "ceac.state.gov",
+                          "timeline": "1-2 days after receipt",
+                          "dependencies": [
+                            "step_1_10"
+                          ],
+                          "is_required": true,
+                          "display_order": 15,
+                          "tool_data": {
+                            "id": "step_1_15",
+                            "title": "Register Receipt Notice & Track Case",
+                            "subtitle": "Once USCIS accepts the filing, bring the receipt notice back into Rahvana so the case can be registered, tracked, and monitored for meaningful status changes.",
+                            "chips": [
+                              { "label": "Petitioner", "type": "role" },
+                              { "label": "Online Filing", "type": "path" },
+                              { "label": "Tracking", "type": "track" }
+                            ],
+                            "phases": [
+                              { "badge": "Phase 1", "copy": "Watch for the receipt number in your USCIS account, e-notification, or physical mail notice after USCIS accepts the filing." },
+                              { "badge": "Phase 2", "copy": "Bring the receipt back into Rahvana by uploading the notice or entering the receipt number manually." },
+                              { "badge": "Phase 3", "copy": "Enable tracking so Rahvana can watch for case-status changes and keep a timeline of updates." }
+                            ],
+                            "launch_cues": [
+                              "Receipt numbers use 3 letters followed by 10 numbers.",
+                              "Priority date can be saved for recordkeeping, but it is not the main driver for IR-1 cases.",
+                              "Upload and manual entry are both supported.",
+                              "Tracking should be treated as monitored status lookup, not a guaranteed USCIS API feed."
+                            ],
+                            "cards": [
+                              {
+                                "icon": "green",
+                                "title": "I Received My Receipt Notice",
+                                "sub": "Move into the registration step and save the receipt details inside Rahvana.",
+                                "cta": "Register notice"
+                              },
+                              {
+                                "icon": "purple",
+                                "title": "Where Do I Find the Receipt Number?",
+                                "sub": "Open a short walkthrough that shows where to look and what information to bring back.",
+                                "cta": "Open guide"
+                              }
+                            ],
+                            "registration_panel": {
+                              "manual_fields": [
+                                { "label": "Receipt Number", "placeholder": "IOE1234567890" },
+                                { "label": "Notice Date", "placeholder": "" },
+                                { "label": "Priority Date", "placeholder": "" },
+                                { "label": "Case Label (optional)", "placeholder": "IR-1 I-130 · March 2026 filing" }
+                              ],
+                              "upload_fields": [
+                                { "label": "Receipt Notice File", "accept": ".pdf,.png,.jpg,.jpeg" },
+                                { "label": "Confirm Receipt Number", "placeholder": "IOE1234567890" },
+                                { "label": "Notice Date", "placeholder": "" },
+                                { "label": "Priority Date", "placeholder": "" }
+                              ],
+                              "hint": "Rahvana should always confirm the receipt number with the user before turning on tracking. Upload parsing can help, but it should never silently save extracted values without review.",
+                              "error": "Please enter a valid USCIS receipt number in the format 3 letters followed by 10 numbers, such as IOE1234567890.",
+                              "success": "Notice added for this session. Confirm the extracted details below, then save the case to enable tracking."
+                            },
+                            "summary": {
+                              "title": "Receipt notice registered",
+                              "sub": "Rahvana now has the core case reference needed to monitor status changes. The current values below are stored locally in this prototype to simulate the tracked-case state.",
+                              "fields": [
+                                { "k": "Receipt Number", "v": "—" },
+                                { "k": "Tracking", "v": "Enabled" },
+                                { "k": "Notice Date", "v": "Not saved" },
+                                { "k": "Priority Date", "v": "Not saved" },
+                                { "k": "Last Known Status", "v": "Case Was Received" },
+                                { "k": "Last Checked", "v": "Just now" }
+                              ]
+                            },
+                            "timeline": [
+                              { "title": "Tracking enabled", "sub": "Rahvana stored the receipt number and began monitoring for future changes." },
+                              { "title": "Case Was Received", "sub": "Initial placeholder status stored as the baseline for future comparisons." }
+                            ],
+                            "footer_note": "Rahvana can monitor for status changes and notify the user, but this should be presented as managed monitoring around USCIS status tools — not as a guaranteed official USCIS API stream.",
+                            "tutorial_steps": [
+                              {
+                                "label": "Step 1 of 4 — Watch for USCIS acceptance",
+                                "heading": "Look for the first accepted-filing notice",
+                                "instruction": "After USCIS accepts the filing, watch your <strong>USCIS online account</strong>, any available <strong>e-notification</strong>, and the <strong>physical notice by mail</strong>. The goal is to bring back the receipt number once it appears.",
+                                "url": "my.uscis.gov",
+                                "ssLabel": "USCIS Notice Sources",
+                                "ssHeadline": "USCIS Account · Email/Text · Mail Notice",
+                                "ssDesc": "Any of these may be the first place you notice the case has been accepted.",
+                                "caption": "Return to Rahvana once you have the receipt number or the notice itself."
+                              },
+                              {
+                                "label": "Step 2 of 4 — Find the receipt number",
+                                "heading": "Find the 13-character receipt number",
+                                "instruction": "The receipt number is the core tracking identifier. It consists of <strong>3 letters followed by 10 numbers</strong>, such as IOE1234567890.",
+                                "url": "egov.uscis.gov",
+                                "ssLabel": "Receipt Number Pattern",
+                                "ssHeadline": "3 letters + 10 numbers",
+                                "ssDesc": "Common prefixes include IOE, EAC, WAC, LIN, SRC, NBC, or MSC.",
+                                "ssHighlight": "Example: IOE1234567890",
+                                "caption": "This is the number Rahvana should save to enable case monitoring.",
+                                "note": "If the notice contains multiple numbers, prioritize the USCIS receipt number tied to the I-130 filing."
+                              },
+                              {
+                                "label": "Step 3 of 4 — Decide how to register it",
+                                "heading": "Choose the easiest intake path",
+                                "instruction": "If you already have the document, upload the notice. If you only have the receipt number from the portal or an e-notification, manual entry is faster.",
+                                "url": "rahvana.com",
+                                "ssLabel": "Rahvana Intake Options",
+                                "ssHeadline": "Upload Notice or Enter Receipt Number",
+                                "ssDesc": "Both paths end in the same confirmation and tracked-case state.",
+                                "caption": "Upload is useful for preserving the notice. Manual entry is useful when speed matters more."
+                              },
+                              {
+                                "label": "Step 4 of 4 — Save and turn on monitoring",
+                                "heading": "Confirm the details and enable tracking",
+                                "instruction": "Before saving, confirm the receipt number and any dates shown on the notice. After that, Rahvana can store the case record, enable tracking, and keep a timeline of changes.",
+                                "url": "rahvana.com",
+                                "ssLabel": "Tracked Case State",
+                                "ssHeadline": "Receipt Registered · Tracking Enabled",
+                                "ssDesc": "Status history and notifications should begin from the saved baseline.",
+                                "ssHighlight": "Store receipt number → Save baseline status",
+                                "caption": "For IR-1, saving the priority date is useful for records, but it should not dominate this step.",
+                                "note": "This prototype represents tracking honestly: monitored status checks and notifications, not a promise of an official USCIS developer-grade API."
+                              }
+                            ]
+                          }
+                        },
+                        {
+                          "step_key": "step_1_16",
+                          "step_number": 12,
+                          "step_name": "Track Case Status in CEAC",
+                          "step_short_description": "Monitor your case status and updates",
+                          "step_type": "tool",
+                          "branch": "online",
+                          "visible_when": {
+                            "filingMethodConfirmed": true,
+                            "filingMethod": "online"
+                          },
+                          "step_description": "Monitor your case status in the CEAC portal after registration. Track updates, fee invoices, and document requests as your case progresses through NVC processing.",
+                          "who": "Petitioner",
+                          "where": "ceac.state.gov",
+                          "timeline": "Ongoing after registration",
+                          "dependencies": [
+                            "step_1_15"
+                          ],
+                          "is_required": true,
+                          "display_order": 16,
+                          "tool_data": {
+                            "id": "step_1_16",
+                            "title": "Monitor USCIS Case Status",
+                            "subtitle": "Stay prepared while USCIS reviews your case. Rahvana keeps the tracking context in one place, explains what the current status means, and gives you useful next-step prep so the waiting period does not become dead time.",
+                            "chips": [
+                              { "label": "Petitioner", "type": "role" },
+                              { "label": "Online Filing", "type": "path" },
+                              { "label": "USCIS Tracking", "type": "track" }
+                            ],
+                            "launch_module": {
+                              "status": {
+                                "hero": "Case Was Received",
+                                "copy": "USCIS has accepted the filing and issued a receipt number. This stage is mostly waiting, monitoring, and preparing intelligently for what may come next.",
+                                "badge": "Tracking active"
+                              },
+                              "metrics": [
+                                { "label": "Receipt number", "value": "Not saved", "sub": "USCIS tracking identifier" },
+                                { "label": "Last checked", "value": "Just now", "sub": "Rahvana monitoring baseline" },
+                                { "label": "Priority date", "value": "Saved if provided", "sub": "Useful record, not the center of IR-1" },
+                                { "label": "Next likely phase", "value": "USCIS review", "sub": "Then approval or RFE, depending on the case" }
+                              ],
+                              "actions": [
+                                { "label": "Refresh tracking status", "type": "primary" },
+                                { "label": "What does this status mean?", "type": "secondary" }
+                              ]
+                            },
+                            "checklist": [
+                              { "id": "docs", "title": "Organize future NVC and civil documents", "copy": "Use the waiting period to make sure passports, birth certificates, translations, and marriage records are easy to retrieve later." },
+                              { "id": "evidence", "title": "Keep collecting relationship evidence", "copy": "Add photos, travel records, call logs, chats, and other ongoing proof so later stages do not rely only on older material." },
+                              { "id": "rfe", "title": "Understand common USCIS RFE scenarios", "copy": "Learn what an RFE is, what it usually means, and how Rahvana will help if one arrives." },
+                              { "id": "next", "title": "Preview what happens after approval", "copy": "Get familiar with NVC, fees, DS-260, affidavit of support, and later interview prep so the next phase is not a surprise." }
+                            ],
+                            "future_timeline": [
+                              { "title": "USCIS continues review", "copy": "The case remains pending while USCIS reviews the filing and supporting evidence.", "pill": "Current phase" },
+                              { "title": "Possible Request for Evidence", "copy": "If USCIS needs more material, it may issue an RFE asking for specific evidence or clarification.", "pill": "Conditional" },
+                              { "title": "Petition approval", "copy": "If approved, the I-130 stage closes and the case moves toward the National Visa Center.", "pill": "Likely next milestone" },
+                              { "title": "NVC case creation", "copy": "After approval, the State Department side begins and new fees, forms, and civil-document steps come into play.", "pill": "Later stage" }
+                            ],
+                            "useful_now": [
+                              { "icon": "green", "title": "What happens after I-130 approval?", "copy": "A compact explainer that prepares you for NVC case creation, fees, DS-260, and document upload.", "action": "Open preview" },
+                              { "icon": "purple", "title": "How to keep building relationship evidence", "copy": "Practical guidance on what new proof is worth saving while the case is pending.", "action": "View evidence guide" },
+                              { "icon": "amber", "title": "Affidavit of support preview", "copy": "A short preparation module so household size, income questions, and sponsor strategy do not hit all at once later.", "action": "See future prep" }
+                            ],
+                            "relevant_updates": [
+                              { "title": "USCIS processing-time tools are available while the case is pending", "source": "Official USCIS context", "copy": "Users can check official processing-time context and later use case tools if the filing appears to be taking longer than expected." },
+                              { "title": "Case status online only shows the latest official case action", "source": "Important expectation", "copy": "A quiet period does not mean the case is lost. USCIS status tools usually reflect the latest recorded action, not every internal movement." }
+                            ],
+                            "build_case": [
+                              { "icon": "green", "title": "Add new evidence entries", "copy": "Log visits, upload new photos, and keep a clean timeline of the relationship as it continues.", "buttons": ["Add note", "Mark planned"] },
+                              { "icon": "rose", "title": "Track household or income changes", "copy": "If finances, employment, or household size change while waiting, keeping that organized now can make later sponsorship steps easier.", "buttons": ["Save reminder", "Open notes"] }
+                            ],
+                            "community": [
+                              { "quote": "“While our case was quiet, we used the waiting time to clean up all of our civil documents and relationship evidence. When the next stage came, we were not scrambling.”", "meta": "Anonymized IR-family journey", "sub": "Illustrative prep pattern · not legal advice" },
+                              { "quote": "“The most helpful thing during the pending phase was having a simple list of what we could do now versus what truly needed to wait.”", "meta": "Common insight from similar journeys", "sub": "Lightweight, practical, and grounded in real waiting-stage habits" }
+                            ],
+                            "tutorial_steps": [
+                              { "label": "Step 1 of 4 — Open official USCIS status tools", "heading": "Start with the official case-status view", "instruction": "USCIS case-status tools revolve around the receipt number. The official status view usually reflects the latest recorded action on the case.", "url": "egov.uscis.gov", "kicker": "Official USCIS tracking", "head": "Case Status Online", "copy": "Track your case using the 13-character receipt number.", "pills": ["Receipt number required", "Last action shown", "Official USCIS tool"], "note": "A quiet status page does not necessarily mean nothing is happening internally. It usually means there has been no new official outward-facing update yet." },
+                              { "label": "Step 2 of 4 — Understand common pending statuses", "heading": "Learn the difference between waiting and action-required states", "instruction": "Most of the time, a pending case is in a waiting state like \"Case Was Received\" or \"Case Is Being Actively Reviewed.\" The important distinction is whether USCIS is simply processing or has asked for something.", "url": "rahvana.local/status-map", "kicker": "Status guide", "head": "Status meanings", "copy": "Separate passive waiting from states that require action.", "pills": ["Received", "Actively reviewed", "RFE", "Approved"], "note": "Use this guide to understand whether you need to act now or simply stay prepared." },
+                              { "label": "Step 3 of 4 — Use the waiting period well", "heading": "Turn waiting time into preparation time", "instruction": "Use this waiting period to stay prepared, keep your records current, and learn what usually comes next in the journey.", "url": "rahvana.local/pending-prep", "kicker": "While-you-wait tools", "head": "Stay prepared while waiting", "copy": "A prep checklist, next-step preview, and useful modules for this waiting period.", "pills": ["Prep checklist", "Coming next", "Useful right now"], "note": "A few small tasks now can make the next phase feel much easier when the case moves forward." },
+                              { "label": "Step 4 of 4 — Know when the page should pivot", "heading": "Be ready for the next meaningful change", "instruction": "If USCIS later issues a request for evidence, approval, or another major update, your next step here should change with it.", "url": "rahvana.local/conditional-next-steps", "kicker": "Next-step guide", "head": "Pivot when USCIS changes the status", "copy": "RFE and approval should each unlock their own dedicated next-step experiences.", "pills": ["Conditional branches", "Next step unlocks", "Action clarity"], "note": "Your next task should match the actual update USCIS gives you." }
+                            ],
+                            "footer_note": "Rahvana will keep this case visible, explain major updates clearly, and help you stay prepared while USCIS reviews the petition."
+                          }
+                        }
       ]
     },
     {
@@ -3866,7 +4087,6 @@
           "step_number": 9,
           "step_name": "Awaiting NVC Document Review",
           "step_short_description": "NVC processing & review",
-          "step_description": "Your documents have been submitted. NVC is now reviewing your package for completeness and consistency before issuing a documentary qualification decision.",
           "step_type": "tool",
           "who": "NVC",
           "where": "NVC Review",
@@ -4566,7 +4786,7 @@
               "heading": "Step-by-step guide from arrival to outcome",
               "icon": "building",
               "cues": [
-                "Arrival timing and embassy entry",
+                "Arrival timing and embassy entry is strict",
                 "Security, biometrics, and document intake",
                 "Consular interview flow and common questions",
                 "Possible outcomes and what happens next"
@@ -4627,7 +4847,7 @@
               {
                 "label": "Step 8 of 8",
                 "heading": "Possible outcomes after the interview",
-                "instruction": "The officer will indicate the outcome at the window or shortly after. The three main outcomes are approval, Administrative Processing (AP), or refusal. If AP applies, proceed to Step 9 to track your case.",
+                "instruction": "The officer will indicate the outcome at the window or shortly after. The three main outcomes are approval, Administrative Processing (AP), or refusal. If AP applies, proceed to Step 9 to track and manage the AP process.",
                 "vlabel": "Interview Outcomes",
                 "visual": "<div class=\"mock-card\">\n      <div class=\"mock-title\">What you may hear</div>\n      <div class=\"mock-row\">Approved — passport retained, visa to be delivered <span class=\"mock-badge-green\">Best</span></div>\n      <div class=\"mock-row\">Administrative Processing — more time needed <span class=\"mock-badge-amber\">Step 9</span></div>\n      <div class=\"mock-row\">Refused — written reason provided <span class=\"mock-badge-blue\">Consult attorney</span></div>\n    </div>"
               }
