@@ -1,75 +1,106 @@
+export interface TutorialStepMedia {
+  type: "img" | "video";
+  src: string;
+}
+
+export interface TutorialStepField {
+  type: "btn" | "field";
+  label?: string;
+  placeholder?: string;
+  isPassword?: boolean;
+}
+
 export interface TutorialStep {
   label: string;
   heading: string;
   instruction: string;
-  screenshot: string;
-  alt: string;
-  caption: string;
+  url: string;
+  screenTitle: string;
+  screenDesc: string;
+  ss_headline?: string;
+  ss_desc?: string;
+  media: TutorialStepMedia;
+  videoMeta?: { poster: string };
+  fields?: TutorialStepField[];
   note: string | null;
 }
 
 export const USCIS_TUTORIAL_STEPS: TutorialStep[] = [
   {
-    label: 'Step 1 of 7 — Open the USCIS sign-up page',
-    heading: 'Go to the official USCIS account sign-up page',
-    instruction: 'In your browser, navigate to <strong>myaccount.uscis.gov/create-account</strong>. You will land on the USCIS sign-up page where you can enter your email address to begin.',
-    screenshot: '/assets/uscis-step-01-landing.png',
-    alt: 'USCIS account sign-up page showing the email entry field and Sign Up button',
-    caption: 'myaccount.uscis.gov/create-account — the official USCIS account creation page',
+    label: 'Step 1 — Go to the USCIS account page',
+    heading: 'Navigate to the USCIS create-account page',
+    instruction: 'Open a browser and go to <strong>myaccount.uscis.gov/create-account</strong>. This is the official USCIS account setup portal — bookmark it for future reference.',
+    url: 'myaccount.uscis.gov/create-account',
+    screenTitle: 'USCIS Online Account',
+    screenDesc: 'Sign Up for a USCIS Account',
+    media: { type: 'img', src: '/assets/images/ir1-journey/c1_step6/01-uscis-acc-sign-up.png' },
+    fields: [{ type: 'btn', label: 'Create Account' }],
     note: null,
   },
   {
-    label: 'Step 2 of 7 — Enter your email address',
+    label: 'Step 2 — Enter your email address',
     heading: "Enter the petitioner's email address",
-    instruction: 'Enter a valid email address the petitioner actively monitors. Type it a second time to confirm, then click <strong>Sign Up</strong>. All USCIS case notices — including Requests for Evidence — will go to this address.',
-    screenshot: '/assets/uscis-step-02-email.png',
-    alt: 'USCIS sign-up form with email and confirm-email fields filled in',
-    caption: 'Use a personal email address the petitioner checks regularly.',
-    note: 'Do not use a shared, work, or temporary email. USCIS sends mail from myaccount@uscis.dhs.gov — add it to your safe-senders list to avoid missing notices.',
+    instruction: 'Enter a valid email address that the petitioner controls. This email becomes the USCIS account login and will receive all USCIS case notices and communications.',
+    url: 'myaccount.uscis.gov/create-account',
+    screenTitle: 'Create Your Account',
+    screenDesc: 'Enter and confirm your email address',
+    media: { type: 'img', src: '/assets/images/ir1-journey/c1_step6/02-petitioners-email-address.png' },
+    fields: [
+      { type: 'field', placeholder: 'Email address' },
+      { type: 'field', placeholder: 'Confirm email address' },
+      { type: 'btn', label: 'Sign Up' },
+    ],
+    note: 'Use a personal email address the petitioner actively monitors. All USCIS notices — including Requests for Evidence — will be sent here. Do not use a shared or work email.',
   },
   {
-    label: 'Step 3 of 7 — Create a password',
-    heading: 'Set a strong account password',
-    instruction: 'Create a password between <strong>8 and 64 characters</strong>. Letters, numbers, and special characters are all accepted. Enter it twice to confirm, then continue.',
-    screenshot: '/assets/uscis-step-03-password.png',
-    alt: 'USCIS password creation screen with both password fields filled',
-    caption: "Choose a strong, unique password you don't use on other sites.",
+    label: 'Step 3 — Create a strong password',
+    heading: 'Set up a secure password',
+    instruction: 'Create a password between 8 and 64 characters. You may use letters, numbers, and special characters. Enter it twice to confirm.',
+    url: 'myaccount.uscis.gov/create-account',
+    screenTitle: 'Create a Password',
+    screenDesc: '8–64 characters · letters, numbers, symbols',
+    media: { type: 'img', src: '/assets/images/ir1-journey/c1_step6/04-strong-account-password.png' },
+    fields: [
+      { type: 'field', placeholder: 'Password', isPassword: true },
+      { type: 'field', placeholder: 'Confirm password', isPassword: true },
+      { type: 'btn', label: 'Continue' },
+    ],
     note: null,
   },
   {
-    label: 'Step 4 of 7 — Set up two-step verification',
-    heading: 'Choose a two-step verification method',
-    instruction: 'USCIS requires two-step verification on every login. Choose one method: <strong>authentication app</strong> (most reliable), <strong>SMS text message</strong>, or <strong>email</strong>. Complete the prompt to activate it.',
-    screenshot: '/assets/uscis-step-04-verification.png',
-    alt: 'USCIS two-step verification screen showing Auth App, SMS, and Email options',
-    caption: 'An authenticator app (Google Authenticator, Authy, etc.) is the most reliable method.',
-    note: null,
+    label: 'Step 4 — Set up two-step verification',
+    heading: 'Choose a verification method',
+    instruction: 'USCIS requires two-step verification on every login. Choose one method: authentication app (most secure), SMS text message, or email. You\'ll also receive a one-time backup code — save it somewhere safe.',
+    url: 'myaccount.uscis.gov/create-account',
+    screenTitle: 'Two-Step Verification',
+    screenDesc: 'Choose: Auth App · SMS · Email',
+    media: { type: 'video', src: '/assets/videos/ir1-journey/c1_step6/05-verification-code.mp4' },
+    videoMeta: { poster: '/assets/images/ir1-journey/c1_step6/06-backup-code.png' },
+    fields: [{ type: 'btn', label: 'Continue' }],
+    note: 'Save the backup code that appears after setup. If you lose access to your verification method (e.g. a new phone), this code is the only way to recover account access.',
   },
   {
-    label: 'Step 5 of 7 — Save your backup code',
-    heading: 'Copy and store your one-time backup code',
-    instruction: 'After verification setup, USCIS shows a <strong>one-time backup code</strong>. Copy it immediately and store it somewhere safe — this is the only recovery option if you lose access to your verification device.',
-    screenshot: '/assets/uscis-step-05-backup-code.png',
-    alt: 'USCIS screen displaying the one-time backup code',
-    caption: 'The backup code is shown only once. Save it in a secure password manager or write it down.',
-    note: 'If you skip this and later lose your phone or change your number, you may be permanently locked out of your USCIS account. Do not skip.',
+    label: 'Step 5 — Answer 5 security questions',
+    heading: 'Set up your 5 security questions',
+    instruction: 'USCIS requires you to select and answer five security questions. These are used to verify your identity if you need to reset your password. Choose questions with answers only you would know.',
+    url: 'myaccount.uscis.gov/create-account',
+    screenTitle: 'Security Questions',
+    screenDesc: 'Select and answer all 5 questions',
+    media: { type: 'video', src: '/assets/videos/ir1-journey/c1_step6/07-security-questions.mp4' },
+    videoMeta: { poster: '/assets/images/ir1-journey/c1_step6/07-security-questions.png' },
+    fields: [{ type: 'btn', label: 'Save and Continue' }],
+    note: 'Write down your questions and answers somewhere safe — ideally in a secure password manager. You will also be asked to enter these in Rahvana\'s Portal Wallet for safekeeping.',
   },
   {
-    label: 'Step 6 of 7 — Answer 5 security questions',
-    heading: 'Select and answer five security questions',
-    instruction: 'USCIS asks you to choose and answer <strong>five security questions</strong>. These are used to verify identity during password resets. Pick questions with answers only you know, and record both the questions and answers.',
-    screenshot: '/assets/uscis-step-06-security-questions.png',
-    alt: 'USCIS security questions screen with five dropdown and answer field pairs',
-    caption: 'Answer all five before clicking Save and Continue.',
-    note: "You will record these same answers in Rahvana's Portal Wallet. Keep your wording consistent — capitalization and spelling matter when you are asked to re-enter them.",
-  },
-  {
-    label: 'Step 7 of 7 — Choose account type and finish',
-    heading: 'Select your account type to complete setup',
-    instruction: 'You will see a "Welcome to your USCIS Account" screen. Select <strong>myUSCIS</strong>, then choose <strong>"I am an applicant, petitioner, or requestor"</strong> and click Submit. A confirmation email will arrive from myaccount@uscis.dhs.gov.',
-    screenshot: '/assets/uscis-step-07-account-type.png',
-    alt: 'USCIS account type selection screen with applicant/petitioner/requestor option visible',
-    caption: 'Select the correct account type — choosing incorrectly limits what forms you can file.',
-    note: "Check your spam folder if the confirmation email doesn't arrive within 10 minutes. Once confirmed, your USCIS account is active — return here to save your credentials.",
+    label: 'Step 6 — Select account type and finish',
+    heading: 'Select your account type',
+    instruction: 'After verification, you\'ll see a "Welcome to your USCIS Account" screen. Select <strong>myUSCIS</strong>, then choose <strong>"I am an applicant, petitioner, or requestor"</strong> and click Submit. A confirmation email will arrive from myaccount@uscis.dhs.gov.',
+    url: 'my.uscis.gov',
+    screenTitle: 'Select Account Type',
+    screenDesc: '"I am an applicant, petitioner, or requestor"',
+    media: { type: 'video', src: '/assets/videos/ir1-journey/c1_step6/08-welcome-uscis.mp4' },
+    videoMeta: { poster: '/assets/images/ir1-journey/c1_step6/05-welcome-uscis.png' },
+    fields: [{ type: 'btn', label: 'Submit' }],
+    note: 'Check your spam folder if the confirmation email doesn\'t arrive within 10 minutes. Once confirmed, your USCIS account is ready. Return to Rahvana to save your credentials.',
   },
 ];

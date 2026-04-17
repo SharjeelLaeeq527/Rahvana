@@ -193,16 +193,42 @@ export interface TutorialStepData {
   heading: string;
   instruction: string;
   url: string;
-  /** Path or URL to a real screenshot. When supplied the image replaces the
-   *  structured placeholder. Leave null/undefined to keep the placeholder. */
-  screenshot?: string | null;
-  ss_label: string;
-  ss_headline: string;
-  ss_desc: string;
-  ss_highlight: string | null;
-  caption: string;
-  caption_class?: "success" | null;
+  screenTitle: string;
+  screenDesc: string;
+  /** Media: either image or video with source URL (can be empty to fill later) */
+  media?: {
+    type: "img" | "video";
+    src?: string; // Leave empty to fill later, e.g. "/public/assets/images/demo-01.mp4"
+  };
+  /** Optional video metadata (e.g., poster image) */
+  videoMeta?: {
+    poster?: string;
+  };
+  /** Optional fields to display in the mock screen */
+  fields?: Array<{
+    type: "btn" | "field";
+    label?: string;
+    placeholder?: string;
+    isPassword?: boolean;
+  }>;
+  /** Helper note shown below the screen frame */
   note: string | null;
+  /** Backward compatibility: legacy video field */
+  video?: string;
+  /** Backward compatibility: legacy screenshot field */
+  screenshot?: string;
+  /** Backward compatibility: caption class (e.g., "success") */
+  caption_class?: string;
+  /** Backward compatibility: caption text */
+  caption?: string;
+  /** Backward compatibility: highlight text */
+  ss_highlight?: string;
+  /** Backward compatibility: label for screenshot */
+  ss_label?: string;
+  /** Screen headline - takes priority over screenTitle in display */
+  ss_headline?: string;
+  /** Screen description - takes priority over screenDesc in display */
+  ss_desc?: string;
 }
 
 export interface FeeBlock {
@@ -213,6 +239,27 @@ export interface FeeBlock {
 }
 
 export interface ToolData {
+        status_explainer?: {
+          headline: string;
+          body: string;
+        };
+      // For IR-1/CR-1 custom steps and StepView.tsx compatibility
+      status?: {
+        hero?: string;
+        copy?: string;
+        badge?: string;
+      };
+      metrics?: { label: string; value: string }[];
+      checklist?: any[];
+      future_timeline?: { title: string; sub: string }[];
+      useful_now?: string[];
+      relevant_updates?: string[];
+      build_case?: string[];
+      community?: string[];
+    // --- Rahvana custom fields for IR-1/CR-1 steps 11/12 ---
+    phases?: { badge: string; copy: string }[];
+    launch_cues?: string[];
+    footer_note?: string;
   id: string;
   title: string;
   subtitle?: string;
@@ -251,6 +298,13 @@ export interface ToolData {
     launched_note?: string;
     type?: string;
     return_note?: { title: string; body: string };
+    // --- Custom fields for IR-1/CR-1 steps ---
+    status?: {
+      hero?: string;
+      copy?: string;
+      badge?: string;
+    };
+    metrics?: { label: string; value: string }[];
   };
   /** Payment fee display block — shown inside the launch module for step 9 */
   fee_block?: FeeBlock;

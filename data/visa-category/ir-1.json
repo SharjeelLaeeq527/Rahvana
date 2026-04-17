@@ -839,9 +839,7 @@
           "step_description": "Decide between Online vs. Paper filing",
           "who": "Decision required",
           "where": "Rahvana tool",
-          "dependencies": [
-            "step_1_2"
-          ],
+          "dependencies": ["step_1_2"],
           "visible_when": {},
           "estimated_duration_days": 1,
           "is_required": true,
@@ -1063,9 +1061,7 @@
           "who": "via Rahvana wizard",
           "where": "my.uscis.gov",
           "timeline": "2-4 hours",
-          "dependencies": [
-            "step_1_3"
-          ],
+          "dependencies": ["step_1_3"],
           "estimated_duration_days": 2,
           "is_required": true,
           "display_order": 4,
@@ -1096,9 +1092,7 @@
           "step_type": "tool",
           "visible_when": {},
           "who": "via Rahvana wizard",
-          "dependencies": [
-            "step_1_4"
-          ],
+          "dependencies": ["step_1_4"],
           "estimated_duration_days": 1,
           "is_required": true,
           "display_order": 5,
@@ -1168,9 +1162,7 @@
           },
           "step_description": "Set up the petitioner's USCIS online account — the gateway for filing Form I-130 digitally, tracking the case, and responding to any USCIS requests.",
           "who": "myaccount.uscis.gov",
-          "dependencies": [
-            "step_1_3"
-          ],
+          "dependencies": ["step_1_3"],
           "estimated_duration_days": 1,
           "is_required": true,
           "display_order": 6,
@@ -1244,9 +1236,7 @@
           "step_description": "Sign in to your USCIS account and begin the online I-130 petition. From your account dashboard, click \"File a Form Online\" to start the form and enter your prepared information.",
           "who": "Petitioner",
           "where": "myaccount.uscis.gov",
-          "dependencies": [
-            "step_1_6"
-          ],
+          "dependencies": ["step_1_6"],
           "estimated_duration_days": 1,
           "is_required": true,
           "display_order": 7,
@@ -1270,7 +1260,7 @@
             ],
             "launch_module": {
               "icon": "portal",
-              "eyebrow": "USCIS Portal \u00b7 myaccount.uscis.gov",
+              "eyebrow": "USCIS Portal · myaccount.uscis.gov",
               "heading": "Start the online I-130 petition on USCIS",
               "features": [
                 "Sign in at myaccount.uscis.gov",
@@ -1281,7 +1271,7 @@
               "button_label": "Go to USCIS Portal",
               "button_launched_label": "Portal Opened",
               "href": "https://myaccount.uscis.gov/",
-              "note": "Opens your USCIS account in a new tab \u2014 return here after starting the form",
+              "note": "Opens your USCIS account in a new tab — return here after starting the form",
               "launched_note": "Sign in and click \"File a Form Online\" to begin the I-130 draft",
               "return_note": {
                 "title": "USCIS portal opened in a new tab",
@@ -1294,64 +1284,203 @@
             },
             "tutorial_steps": [
               {
-                "label": "Step 1 of 5 \u2014 Sign in to USCIS",
+                "label": "Step 1 of 10 — Sign in to USCIS",
                 "heading": "Sign in to your USCIS account",
                 "instruction": "Go to <strong>myaccount.uscis.gov</strong> and sign in with the email address and password you set up when creating the account. Complete the two-step verification prompt.",
                 "url": "myaccount.uscis.gov",
-                "ss_label": "USCIS Account Sign-In",
-                "ss_headline": "Sign in to your account",
-                "ss_desc": "Enter email \u2192 Enter password \u2192 Complete verification",
-                "ss_highlight": null,
-                "caption": "Two-step verification is required on every login \u2014 have your phone or authenticator app ready.",
+                "screenTitle": "USCIS Account Sign-In",
+                "screenDesc": "Enter your email and password",
+                "media": {
+                  "type": "img",
+                  "src": "/assets/images/ir1-journey/c1_step7/01-sign-in.png"
+                },
+                "fields": [
+                  {
+                    "type": "field",
+                    "placeholder": "Email address"
+                  },
+                  {
+                    "type": "field",
+                    "placeholder": "Password",
+                    "isPassword": true
+                  },
+                  {
+                    "type": "btn",
+                    "label": "Sign In"
+                  }
+                ],
+                "note": "Two-step verification is required on every login — have your phone or authenticator app ready."
+              },
+              {
+                "label": "Step 2 of 10 — Go to myUSCIS",
+                "heading": "Navigate to myUSCIS",
+                "instruction": "After signing in, you will be directed to the <strong>myUSCIS portal homepage</strong>. This is your central hub for filing forms, checking case status, and managing your USCIS cases.",
+                "url": "my.uscis.gov",
+                "screenTitle": "USCIS Portal",
+                "screenDesc": "MyUSCIS account access",
+                "media": {
+                  "type": "img",
+                  "src": "/assets/images/ir1-journey/c1_step7/02-go-to-my-uscis.png"
+                },
+                "fields": [
+                  {
+                    "type": "btn",
+                    "label": "Continue"
+                  }
+                ],
                 "note": null
               },
               {
-                "label": "Step 2 of 5 \u2014 Reach the account dashboard",
-                "heading": "Find your account dashboard",
-                "instruction": "After signing in, you will land on your <strong>myUSCIS account homepage</strong>. This is your central hub for filing forms, checking case status, and sending secure messages to USCIS.",
+                "label": "Step 3 of 10 — MyUSCIS Account Homepage",
+                "heading": "View your account homepage",
+                "instruction": "Your myUSCIS account homepage displays your <strong>filed cases, notices, and filing options</strong>. This is where you will manage all your online USCIS applications.",
                 "url": "my.uscis.gov",
-                "ss_label": "myUSCIS Dashboard",
-                "ss_headline": "Your USCIS Account Home",
-                "ss_desc": "Your filed cases, notices, and account tools appear here.",
-                "ss_highlight": null,
-                "caption": "If you have existing draft cases, they will appear here. Look for the \"File a Form Online\" option to start a new filing.",
+                "screenTitle": "MyUSCIS Dashboard",
+                "screenDesc": "Your account home and filing hub",
+                "media": {
+                  "type": "img",
+                  "src": "/assets/images/ir1-journey/c1_step7/03-my-uscis-acc-homepage.png"
+                },
+                "fields": [
+                  {
+                    "type": "btn",
+                    "label": "View Dashboard"
+                  }
+                ],
                 "note": null
               },
               {
-                "label": "Step 3 of 5 \u2014 Click \"File a Form Online\"",
-                "heading": "Click \"File a Form Online\" on the dashboard",
-                "instruction": "From the account homepage, locate and click the <strong>\"File a Form Online\"</strong> button or link. This is the official USCIS starting point for all online form submissions, including Form I-130.",
+                "label": "Step 4 of 10 — File a Form Online",
+                "heading": "Click 'File a Form Online'",
+                "instruction": "From your account homepage, locate and click the <strong>\"File a Form Online\"</strong> button. This is the starting point for all online form submissions.",
                 "url": "my.uscis.gov",
-                "ss_label": "Account Dashboard",
-                "ss_headline": "File a Form Online",
-                "ss_desc": "This button appears on the myUSCIS account homepage.",
-                "ss_highlight": "File a Form Online",
-                "caption": "Per official USCIS guidance, \"File a Form Online\" is the starting point for all new online submissions.",
-                "note": "\"File a Form Online\" is the exact label used by USCIS. If you do not see it immediately, scroll down on the dashboard \u2014 its position may vary."
+                "screenTitle": "File a Form Online",
+                "screenDesc": "Start a new online application",
+                "media": {
+                  "type": "img",
+                  "src": "/assets/images/ir1-journey/c1_step7/04-file-a-form-online.png"
+                },
+                "fields": [
+                  {
+                    "type": "btn",
+                    "label": "File a Form Online"
+                  }
+                ],
+                "note": "If you don't see this button immediately, scroll down — its position may vary on the dashboard."
               },
               {
-                "label": "Step 4 of 5 \u2014 Select Form I-130",
+                "label": "Step 5 of 10 — Select Form I-130",
                 "heading": "Find and select Form I-130",
-                "instruction": "After clicking \"File a Form Online,\" you will see a list of forms available to file digitally. Locate <strong>Form I-130, Petition for Alien Relative</strong> and select it to begin.",
+                "instruction": "After clicking \"File a Form Online,\" you will see a list of available forms. Locate <strong>Form I-130, Petition for Alien Relative</strong> and select it to begin.",
                 "url": "my.uscis.gov/file-online",
-                "ss_label": "Online Form Selection",
-                "ss_headline": "Form I-130",
-                "ss_desc": "Petition for Alien Relative \u2014 select to start the online draft",
-                "ss_highlight": "I-130, Petition for Alien Relative",
-                "caption": "Form I-130 is listed on the forms-available-to-file-online page. USCIS confirms it is currently available for online filing.",
+                "screenTitle": "Select Form",
+                "screenDesc": "Choose Form I-130",
+                "media": {
+                  "type": "img",
+                  "src": "/assets/images/ir1-journey/c1_step7/05-select-I-130.png"
+                },
+                "fields": [
+                  {
+                    "type": "btn",
+                    "label": "Select I-130"
+                  }
+                ],
                 "note": null
               },
               {
-                "label": "Step 5 of 5 \u2014 Begin the online I-130 draft",
-                "heading": "Start the I-130 filing draft",
-                "instruction": "Once you select Form I-130, the USCIS portal will walk you through the form section by section. <strong>Progress saves automatically</strong> \u2014 you can return and continue at any time.",
+                "label": "Step 6 of 10 — Review Filing Methods",
+                "heading": "Confirm your filing method",
+                "instruction": "USCIS may ask you to confirm your filing preference: <strong>guided online workflow</strong> or <strong>PDF upload method</strong>. Choose the guided online workflow for step-by-step assistance.",
                 "url": "my.uscis.gov",
-                "ss_label": "I-130 Filing Draft",
-                "ss_headline": "Form I-130 \u2014 In Progress",
-                "ss_desc": "Complete each section and save. Return to finish anytime.",
-                "ss_highlight": null,
-                "caption": "USCIS offers two filing methods: guided online workflow or PDF upload. Complete review before paying the $625 filing fee.",
-                "note": "Do not pay the fee until you have reviewed all entered information carefully. Fees are generally non-refundable once submitted."
+                "screenTitle": "Filing Methods",
+                "screenDesc": "Select guided online or PDF upload",
+                "media": {
+                  "type": "img",
+                  "src": "/assets/images/ir1-journey/c1_step7/06-filing-methods.png"
+                },
+                "fields": [
+                  {
+                    "type": "btn",
+                    "label": "Continue"
+                  }
+                ],
+                "note": null
+              },
+              {
+                "label": "Step 7 of 10 — Begin the I-130 Form",
+                "heading": "Start filling out Form I-130",
+                "instruction": "The USCIS portal will walk you through the form <strong>section by section</strong>. Enter your information carefully — progress saves automatically as you go.",
+                "url": "my.uscis.gov",
+                "screenTitle": "Form I-130",
+                "screenDesc": "Begin the application form",
+                "media": {
+                  "type": "img",
+                  "src": "/assets/images/ir1-journey/c1_step7/07-I-130-form.png"
+                },
+                "fields": [
+                  {
+                    "type": "btn",
+                    "label": "Start Form"
+                  }
+                ],
+                "note": "You can save your progress and return later to continue — the system will remember where you left off."
+              },
+              {
+                "label": "Step 8 of 10 — Fill Required Fields",
+                "heading": "Complete all required sections",
+                "instruction": "Fill in all required fields carefully and accurately. <strong>Your answers must match your official documents</strong>. Check twice before moving to the next section.",
+                "url": "my.uscis.gov",
+                "screenTitle": "Fill Form Sections",
+                "screenDesc": "Enter all required information",
+                "media": {
+                  "type": "img",
+                  "src": "/assets/images/ir1-journey/c1_step7/08-fill-required-fields.png"
+                },
+                "fields": [
+                  {
+                    "type": "btn",
+                    "label": "Continue"
+                  }
+                ],
+                "note": "Inconsistencies between your form and official documents can lead to a Request for Evidence (RFE) — take time to be accurate."
+              },
+              {
+                "label": "Step 9 of 10 — Go to I-130A Section",
+                "heading": "Complete Form I-130A for beneficiary",
+                "instruction": "After completing the I-130, you will proceed to <strong>Form I-130A</strong> — the supplemental form for information about the beneficiary (your spouse). Fill this section with your spouse's details.",
+                "url": "my.uscis.gov",
+                "screenTitle": "Form I-130A",
+                "screenDesc": "Beneficiary supplemental information",
+                "media": {
+                  "type": "img",
+                  "src": "/assets/images/ir1-journey/c1_step7/09-go-to-I-130A-section.png"
+                },
+                "fields": [
+                  {
+                    "type": "btn",
+                    "label": "Complete I-130A"
+                  }
+                ],
+                "note": null
+              },
+              {
+                "label": "Step 10 of 10 — Upload I-130A Form",
+                "heading": "Upload the completed I-130A",
+                "instruction": "After completing Form I-130A, upload it along with your supporting evidence. Ensure all files are clearly named, legible, and in PDF or JPG format.",
+                "url": "my.uscis.gov",
+                "screenTitle": "Upload Documents",
+                "screenDesc": "Attach I-130A and supporting evidence",
+                "media": {
+                  "type": "img",
+                  "src": "/assets/images/ir1-journey/c1_step7/10-upload-130A-form.png"
+                },
+                "fields": [
+                  {
+                    "type": "btn",
+                    "label": "Upload Files"
+                  }
+                ],
+                "note": "All documents must be under 12 MB each. Foreign-language documents require certified English translations uploaded separately."
               }
             ],
             "disclaimer": "Rahvana provides structured guidance only. This is not legal advice. USCIS.gov is the official filing portal. Always verify information at uscis.gov before submitting."
@@ -1364,12 +1493,10 @@
           "step_short_description": "PDF/JPG, 12 MB max",
           "step_type": "tool",
           "branch": "online",
-          "step_description": "Attach your supporting documents inside the USCIS online portal. This is the evidence-upload phase \u2014 your documents become part of the official I-130 filing record.",
+          "step_description": "Attach your supporting documents inside the USCIS online portal. This is the evidence-upload phase — your documents become part of the official I-130 filing record.",
           "who": "Petitioner",
           "where": "myaccount.uscis.gov",
-          "dependencies": [
-            "step_1_7"
-          ],
+          "dependencies": ["step_1_7"],
           "visible_when": {},
           "estimated_duration_days": 1,
           "is_required": true,
@@ -1394,7 +1521,7 @@
             ],
             "launch_module": {
               "icon": "upload",
-              "eyebrow": "USCIS Portal \u00b7 Evidence Upload Phase",
+              "eyebrow": "USCIS Portal · Evidence Upload Phase",
               "heading": "Attach your evidence files to the I-130 filing",
               "features": [
                 "Sign in and open your I-130 draft",
@@ -1415,64 +1542,84 @@
             },
             "tutorial_steps": [
               {
-                "label": "Step 1 of 5 \u2014 Open your I-130 draft",
-                "heading": "Sign in and open the I-130 draft",
-                "instruction": "Sign in to <strong>myaccount.uscis.gov</strong> and locate your I-130 case in progress. Open the draft filing to continue from where you left off.",
-                "url": "myaccount.uscis.gov",
-                "ss_label": "myUSCIS Dashboard",
-                "ss_headline": "Your Cases",
-                "ss_desc": "Find your in-progress I-130 draft and open it.",
-                "ss_highlight": null,
-                "caption": "Your in-progress forms appear in your account dashboard. Click the I-130 draft to continue.",
+                "label": "Step 1 of 4 — Locate the Evidence Section",
+                "heading": "Find the evidence upload section",
+                "instruction": "Inside your I-130 draft, navigate to the <strong>evidence or supporting documents</strong> section. USCIS labels this as the upload step in the guided online filing workflow.",
+                "url": "my.uscis.gov",
+                "screenTitle": "Upload Section",
+                "screenDesc": "Find supporting documents upload",
+                "media": {
+                  "type": "img",
+                  "src": "/assets/images/ir1-journey/c1_step8/01-locate-the-evidence-section.png"
+                },
+                "fields": [
+                  {
+                    "type": "btn",
+                    "label": "Access Upload Section"
+                  }
+                ],
                 "note": null
               },
               {
-                "label": "Step 2 of 5 \u2014 Find the evidence upload section",
-                "heading": "Locate the evidence upload section",
-                "instruction": "Inside the I-130 draft, navigate to the <strong>evidence or supporting documents</strong> section. USCIS labels this as the upload step in the guided online filing workflow.",
+                "label": "Step 2 of 4 — Upload Documents",
+                "heading": "Attach your supporting evidence",
+                "instruction": "Upload each document individually using the upload interface. Select and attach all required documents: passport, marriage certificate, civil documents, photos, and any other evidence supporting your petition.",
                 "url": "my.uscis.gov",
-                "ss_label": "I-130 Filing Draft",
-                "ss_headline": "Upload Supporting Documents",
-                "ss_desc": "This section appears as part of the online filing workflow.",
-                "ss_highlight": "Upload Supporting Documents",
-                "caption": "The evidence upload section is a dedicated step inside the online filing workflow.",
-                "note": null
+                "screenTitle": "Document Upload",
+                "screenDesc": "Attach all supporting files",
+                "media": {
+                  "type": "img",
+                  "src": "/assets/images/ir1-journey/c1_step8/02-upload-documents.png"
+                },
+                "fields": [
+                  {
+                    "type": "btn",
+                    "label": "Choose Files"
+                  },
+                  {
+                    "type": "btn",
+                    "label": "Upload"
+                  }
+                ],
+                "note": "USCIS accepts PDF, JPG, and JPEG files up to 12 MB each. If a document is in a foreign language, upload the original AND the certified English translation as separate files."
               },
               {
-                "label": "Step 3 of 5 \u2014 Attach each document",
-                "heading": "Attach each supporting document",
-                "instruction": "Upload each document individually. Use the upload interface to select and attach your files. You can upload as many files as needed.",
+                "label": "Step 3 of 4 — Review Each File",
+                "heading": "Verify each uploaded file",
+                "instruction": "After uploading each file, verify it appears in the list of attached documents. <strong>Open or preview any file</strong> to confirm it is legible, complete, and the correct document.",
                 "url": "my.uscis.gov",
-                "ss_label": "Evidence Upload",
-                "ss_headline": "Attach Files",
-                "ss_desc": "Select each document file and upload it.",
-                "ss_highlight": null,
-                "caption": "USCIS accepts PDF, JPG, and JPEG files up to 12 MB each. Do not encrypt or password-protect files.",
-                "note": "If a document is in a foreign language \u2014 such as a Nikah Nama in Urdu \u2014 upload the original <strong>and</strong> the certified English translation as separate files. USCIS requires both."
-              },
-              {
-                "label": "Step 4 of 5 \u2014 Verify each upload",
-                "heading": "Confirm each file appears correctly",
-                "instruction": "After uploading each file, verify it appears in the list of attached documents. Open or preview any file to confirm it is legible, complete, and the correct document.",
-                "url": "my.uscis.gov",
-                "ss_label": "Uploaded Documents",
-                "ss_headline": "Review Attached Files",
-                "ss_desc": "Each uploaded file should appear in the attachment list.",
-                "ss_highlight": null,
-                "caption": "Check that file names and previews match what you intended to upload before moving on.",
+                "screenTitle": "File Review",
+                "screenDesc": "Check each attachment",
+                "media": {
+                  "type": "img",
+                  "src": "/assets/images/ir1-journey/c1_step8/03-review-each-file.png"
+                },
+                "fields": [
+                  {
+                    "type": "btn",
+                    "label": "Preview Files"
+                  }
+                ],
                 "note": "A blurry, rotated, or incomplete scan can lead to a Request for Evidence (RFE). Verify each file is fully legible before continuing."
               },
               {
-                "label": "Step 5 of 5 \u2014 Proceed to review",
-                "heading": "Complete uploads and proceed to review",
-                "instruction": "Once all required documents are attached and verified, continue to the next phase of the online filing workflow. The next step will ask you to review your completed filing before signing and paying.",
+                "label": "Step 4 of 4 — All Documents Attached",
+                "heading": "Confirm all documents are uploaded",
+                "instruction": "Once all required documents are attached and verified, your evidence section is complete. <strong>Do not proceed</strong> until you have confirmed all required documents are present.",
                 "url": "my.uscis.gov",
-                "ss_label": "Upload Complete",
-                "ss_headline": "All Documents Attached",
-                "ss_desc": "Proceed to the review step when uploads are complete.",
-                "ss_highlight": "Continue to Review",
-                "caption": "Do not proceed until all required evidence is attached \u2014 adding documents after submission requires a separate step.",
-                "note": null
+                "screenTitle": "Upload Complete",
+                "screenDesc": "All documents attached and ready",
+                "media": {
+                  "type": "img",
+                  "src": "/assets/images/ir1-journey/c1_step8/04-all-doc-attached.png"
+                },
+                "fields": [
+                  {
+                    "type": "btn",
+                    "label": "Continue to Review"
+                  }
+                ],
+                "note": "Adding documents after submission requires a separate request to USCIS. Double-check your uploads at this stage."
               }
             ],
             "disclaimer": "Rahvana provides structured guidance only. This is not legal advice. Always verify current requirements at uscis.gov before submitting."
@@ -1493,9 +1640,7 @@
           "who": "Petitioner",
           "where": "my.uscis.gov / pay.gov",
           "timeline": "Same session as submission",
-          "dependencies": [
-            "step_1_8"
-          ],
+          "dependencies": ["step_1_8"],
           "estimated_duration_days": 1,
           "is_required": true,
           "display_order": 9,
@@ -1582,12 +1727,12 @@
                 "ss_desc": "Credit card · Debit card · ACH bank transfer",
                 "ss_highlight": null,
                 "caption": "USCIS uses Pay.gov for online fee collection. Your payment information is handled by that secure federal payment system.",
-                "note": "Do not close the browser tab during payment processing. Wait for the confirmation page before navigating away."
+                "note": "Do not close the browser tab during payment processing. Wait for the confirmation screen."
               },
               {
                 "label": "Step 4 of 4 — Receive your receipt notice",
                 "heading": "Payment complete — receipt issued immediately",
-                "instruction": "After successful payment, USCIS immediately issues a <strong>receipt notice</strong> with your case number (typically beginning with \"IOE\"). Your case is now officially submitted. Download or save this receipt — you will need the case number to track your case.",
+                "instruction": "After successful payment, USCIS immediately issues a <strong>receipt notice</strong> with your case number (typically beginning with \"IOE\"). Your case is now officially submitted. Download or save this receipt — it is your proof of filing and your case tracking number.",
                 "url": "my.uscis.gov",
                 "screenshot": null,
                 "ss_label": "Submission Complete",
@@ -1616,9 +1761,7 @@
           "who": "Petitioner",
           "where": "my.uscis.gov",
           "timeline": "Same session as payment",
-          "dependencies": [
-            "step_1_9"
-          ],
+          "dependencies": ["step_1_9"],
           "estimated_duration_days": 1,
           "is_required": true,
           "display_order": 10,
@@ -1665,70 +1808,125 @@
             },
             "tutorial_steps": [
               {
-                "label": "Step 1 of 5 — Open the filing review",
-                "heading": "Open the review summary in your filing draft",
-                "instruction": "Sign in to your USCIS account, open your I-130 draft, and navigate to the <strong>review step</strong>. The portal will display a full summary of everything you have entered — form fields, selected options, and attached evidence.",
+                "label": "Step 1 of 5 — Review Your Petition",
+                "heading": "Open the filing review",
+                "instruction": "Sign in to your USCIS account, open your I-130 draft, and navigate to the <strong>review step</strong>. The portal will display a full summary of everything you have entered.",
                 "url": "myaccount.uscis.gov",
-                "screenshot": null,
-                "ss_label": "Filing Review",
-                "ss_headline": "Review Your Application",
-                "ss_desc": "All entered information and attachments appear here.",
-                "ss_highlight": null,
-                "caption": "Read the review summary carefully — this is your last opportunity to spot errors before the official submission.",
-                "note": "Per USCIS guidance: \"Review the summary of the information you provided\" before signing. Take your time here — do not rush."
+                "screenTitle": "Filing Review",
+                "screenDesc": "Watch the review process",
+                "media": {
+                  "type": "video",
+                  "src": "/assets/videos/ir1-journey/c1_step10/01-review-your-petition.mp4"
+                },
+                "videoMeta": {
+                  "poster": "/assets/images/ir1-journey/c1_step10/01-review-petition.png"
+                },
+                "fields": [
+                  {
+                    "type": "btn",
+                    "label": "Review"
+                  }
+                ],
+                "note": "Read the review summary carefully — this is your last opportunity to spot errors before official submission."
               },
               {
-                "label": "Step 2 of 5 — Check uploaded evidence",
-                "heading": "Confirm your attached evidence is correct",
-                "instruction": "Within the review, verify that each piece of supporting evidence is correctly attached. Check that file names match the documents they represent and that nothing is missing.",
+                "label": "Step 2 of 5 — Open the Review Summary",
+                "heading": "Examine the complete filing summary",
+                "instruction": "Watch as the portal displays your complete filing summary. Review each section carefully to ensure <strong>all information is accurate and complete</strong>.",
                 "url": "my.uscis.gov",
-                "screenshot": null,
-                "ss_label": "Attached Evidence",
-                "ss_headline": "Review Supporting Documents",
-                "ss_desc": "Confirm each attachment is the correct file.",
-                "ss_highlight": null,
-                "caption": "A missing or incorrect attachment is harder to fix after submission — verify each file at this stage.",
+                "screenTitle": "Review Summary",
+                "screenDesc": "See your complete application",
+                "media": {
+                  "type": "video",
+                  "src": "/assets/videos/ir1-journey/c1_step10/02-open-the-review-summary.mp4"
+                },
+                "videoMeta": {
+                  "poster": "/assets/images/ir1-journey/c1_step10/02-review-summary.png"
+                },
+                "fields": [
+                  {
+                    "type": "btn",
+                    "label": "Continue"
+                  }
+                ],
                 "note": null
               },
               {
-                "label": "Step 3 of 5 — Digitally sign the filing",
-                "heading": "Sign the filing with your full legal name",
-                "instruction": "After completing the review, USCIS will prompt you to <strong>digitally sign</strong>. Enter your full legal name — first, middle (if applicable), and last — exactly as it appears in official documents. The system affixes your signature and the signing date automatically.",
+                "label": "Step 3 of 5 — Confirm Your Attached Evidence",
+                "heading": "Verify all supporting documents",
+                "instruction": "Within the review, verify that each piece of supporting evidence is correctly attached. Check that file names match the documents they represent and that nothing is missing.",
                 "url": "my.uscis.gov",
-                "screenshot": null,
-                "ss_label": "Electronic Signature",
-                "ss_headline": "Digitally Sign Your Application",
-                "ss_desc": "Enter your full legal name to sign.",
-                "ss_highlight": "Sign — Enter Full Legal Name",
-                "caption": "Entering your name constitutes your legal certification that the information is accurate and complete.",
+                "screenTitle": "Evidence Confirmation",
+                "screenDesc": "Review attached documents",
+                "media": {
+                  "type": "img",
+                  "src": "/assets/images/ir1-journey/c1_step10/03-confirm-your-attached-evidence.png"
+                },
+                "fields": [
+                  {
+                    "type": "btn",
+                    "label": "Verify Evidence"
+                  }
+                ],
+                "note": "A missing or incorrect attachment is harder to fix after submission — verify each file at this stage."
+              },
+              {
+                "label": "Step 4 of 5 — Enter Your Full Legal Name",
+                "heading": "Digitally sign your petition",
+                "instruction": "After completing the review, USCIS will prompt you to <strong>digitally sign</strong>. Enter your full legal name — first, middle (if applicable), and last — exactly as it appears in official documents.",
+                "url": "my.uscis.gov",
+                "screenTitle": "Electronic Signature",
+                "screenDesc": "Sign with your full legal name",
+                "media": {
+                  "type": "img",
+                  "src": "/assets/images/ir1-journey/c1_step10/04-enter-full-legal-name.png"
+                },
+                "fields": [
+                  {
+                    "type": "field",
+                    "placeholder": "First Name"
+                  },
+                  {
+                    "type": "field",
+                    "placeholder": "Middle Name (optional)"
+                  },
+                  {
+                    "type": "field",
+                    "placeholder": "Last Name"
+                  },
+                  {
+                    "type": "btn",
+                    "label": "Sign"
+                  }
+                ],
                 "note": "Once you sign and proceed to payment, going back to edit requires contacting USCIS. Be certain before continuing."
               },
               {
-                "label": "Step 4 of 5 — Pay the filing fee",
-                "heading": "Pay the I-130 online filing fee",
-                "instruction": "After signing, the portal advances to the payment step. Confirm the filing fee displayed (currently $625 for online I-130 filing as of March 2026). Enter your credit card, debit card, or ACH bank transfer details to complete payment.",
+                "label": "Step 5 of 5 — Pay the I-130 Fees",
+                "heading": "Complete the filing fee payment",
+                "instruction": "After signing, the portal advances to the payment step. Confirm the filing fee displayed ($625 for online I-130 filing). <strong>Enter your payment information</strong> to complete submission.",
                 "url": "pay.gov",
-                "screenshot": null,
-                "ss_label": "USCIS Payment",
-                "ss_headline": "Filing Fee — $625",
-                "ss_desc": "Pay by credit card, debit card, or ACH bank transfer.",
-                "ss_highlight": null,
-                "caption": "Do not close the browser tab during payment processing. Wait for the confirmation screen.",
-                "note": "USCIS fees are generally non-refundable once a case is accepted for processing. Confirm the fee in your portal before entering payment information."
-              },
-              {
-                "label": "Step 5 of 5 — Submit and receive your receipt",
-                "heading": "Submit and save your receipt notice",
-                "instruction": "After payment, your I-130 petition is officially submitted. USCIS immediately issues a <strong>receipt notice</strong> containing your case number (typically beginning with \"IOE\"). <strong>Download this receipt now</strong> — it is your proof of filing and your case tracking number.",
-                "url": "my.uscis.gov",
-                "screenshot": null,
-                "ss_label": "Submission Confirmed",
-                "ss_headline": "Receipt Notice Issued",
-                "ss_desc": "Your case number begins with \"IOE\" — save it immediately.",
-                "ss_highlight": "Download Receipt Notice",
-                "caption": "Case submitted successfully. Your I-130 petition is now in USCIS processing.",
-                "caption_class": "success",
-                "note": null
+                "screenTitle": "Filing Fee Payment",
+                "screenDesc": "Pay $625 filing fee",
+                "media": {
+                  "type": "img",
+                  "src": "/assets/images/ir1-journey/c1_step10/05-I-130-fees.png"
+                },
+                "fields": [
+                  {
+                    "type": "field",
+                    "placeholder": "Card Number"
+                  },
+                  {
+                    "type": "field",
+                    "placeholder": "Expiry Date"
+                  },
+                  {
+                    "type": "btn",
+                    "label": "Pay Now"
+                  }
+                ],
+                "note": "Do not close the browser tab during payment processing. Wait for the confirmation screen. USCIS fees are generally non-refundable once a case is accepted."
               }
             ],
             "disclaimer": "Rahvana provides structured guidance only. This is not legal advice.\nReview your filing carefully before submitting — USCIS fees are non-refundable once a case is accepted."
@@ -1750,9 +1948,7 @@
           "who": "Petitioner",
           "where": "uscis.gov/i-130",
           "timeline": "1-2 hours",
-          "dependencies": [
-            "step_1_3"
-          ],
+          "dependencies": ["step_1_3"],
           "is_required": true,
           "display_order": 11,
           "action_data": {
@@ -1855,9 +2051,7 @@
           "who": "Petitioner",
           "where": "uscis.gov/i-130",
           "timeline": "1-2 hours",
-          "dependencies": [
-            "step_1_11"
-          ],
+          "dependencies": ["step_1_11"],
           "is_required": true,
           "display_order": 12,
           "action_data": {
@@ -1893,7 +2087,7 @@
             "action_items": [
               {
                 "title": "Use a paper-filing payment method",
-                "description": "Prepare the fee using a method USCIS currently accepts for paper filing. Verify the method and the amount before mailing."
+                "description": "Prepare the fee using the paper-filing payment method you plan to use. Verify the method and the amount before mailing."
               },
               {
                 "title": "Keep payment at the front of the packet",
@@ -1902,6 +2096,7 @@
             ],
             "second_card_title": "Save payment method",
             "second_card_subtitle": "Store the method you plan to use so the packet checklist stays consistent.",
+            "action_button_label": "Save payment method",
             "action_button_status_heading": "Payment method saved",
             "action_button_status_message": "Saved payment method: {selected_method}.",
             "dropdown_card": {
@@ -1978,9 +2173,7 @@
           "who": "Petitioner",
           "where": "uscis.gov/i-130",
           "timeline": "1-2 hours",
-          "dependencies": [
-            "step_1_12"
-          ],
+          "dependencies": ["step_1_12"],
           "is_required": true,
           "display_order": 13,
           "action_data": {
@@ -2088,9 +2281,7 @@
           "who": "Petitioner",
           "where": "uscis.gov/mailing-addresses",
           "timeline": "1-2 hours",
-          "dependencies": [
-            "step_1_13"
-          ],
+          "dependencies": ["step_1_13"],
           "is_required": true,
           "display_order": 14,
           "action_data": {
@@ -2178,6 +2369,402 @@
               }
             ]
           }
+        },
+        {
+          "step_key": "step_1_15",
+          "step_number": 11,
+          "step_name": "Register Receipt in CEAC Portal",
+          "step_short_description": "Register your USCIS receipt in CEAC",
+          "step_type": "tool",
+          "visible_when": {},
+          "step_description": "After receiving your USCIS receipt notice, register your case in the CEAC portal to begin NVC processing. This step ensures your case is trackable and ready for the next phase.",
+          "who": "Petitioner",
+          "where": "ceac.state.gov",
+          "timeline": "1-2 days after receipt",
+          "dependencies": ["step_1_10"],
+          "is_required": true,
+          "display_order": 15,
+          "tool_data": {
+            "id": "step_1_15",
+            "title": "Register Receipt Notice & Track Case",
+            "subtitle": "Once USCIS accepts the filing, bring the receipt notice back into Rahvana so the case can be registered, tracked, and monitored for meaningful status changes.",
+            "chips": [
+              { "label": "Petitioner", "type": "role" },
+              { "label": "Online Filing", "type": "path" },
+              { "label": "Tracking", "type": "track" }
+            ],
+            "phases": [
+              {
+                "badge": "Phase 1",
+                "copy": "Watch for the receipt number in your USCIS account, e-notification, or physical mail notice after USCIS accepts the filing."
+              },
+              {
+                "badge": "Phase 2",
+                "copy": "Bring the receipt back into Rahvana by uploading the notice or entering the receipt number manually."
+              },
+              {
+                "badge": "Phase 3",
+                "copy": "Enable tracking so Rahvana can watch for case-status changes and keep a timeline of updates."
+              }
+            ],
+            "launch_cues": [
+              "Receipt numbers use 3 letters followed by 10 numbers.",
+              "Priority date can be saved for recordkeeping, but it is not the main driver for IR-1 cases.",
+              "Upload and manual entry are both supported.",
+              "Tracking should be treated as monitored status lookup, not a guaranteed USCIS API feed."
+            ],
+            "cards": [
+              {
+                "icon": "green",
+                "title": "I Received My Receipt Notice",
+                "sub": "Move into the registration step and save the receipt details inside Rahvana.",
+                "cta": "Register notice"
+              },
+              {
+                "icon": "purple",
+                "title": "Where Do I Find the Receipt Number?",
+                "sub": "Open a short walkthrough that shows where to look and what information to bring back.",
+                "cta": "Open guide"
+              }
+            ],
+            "registration_panel": {
+              "manual_fields": [
+                { "label": "Receipt Number", "placeholder": "IOE1234567890" },
+                { "label": "Notice Date", "placeholder": "" },
+                { "label": "Priority Date", "placeholder": "" },
+                {
+                  "label": "Case Label (optional)",
+                  "placeholder": "IR-1 I-130 · March 2026 filing"
+                }
+              ],
+              "upload_fields": [
+                {
+                  "label": "Receipt Notice File",
+                  "accept": ".pdf,.png,.jpg,.jpeg"
+                },
+                {
+                  "label": "Confirm Receipt Number",
+                  "placeholder": "IOE1234567890"
+                },
+                { "label": "Notice Date", "placeholder": "" },
+                { "label": "Priority Date", "placeholder": "" }
+              ],
+              "hint": "Rahvana should always confirm the receipt number with the user before turning on tracking. Upload parsing can help, but it should never silently save extracted values without review.",
+              "error": "Please enter a valid USCIS receipt number in the format 3 letters followed by 10 numbers, such as IOE1234567890.",
+              "success": "Notice added for this session. Confirm the extracted details below, then save the case to enable tracking."
+            },
+            "summary": {
+              "title": "Receipt notice registered",
+              "sub": "Rahvana now has the core case reference needed to monitor status changes. The current values below are stored locally in this prototype to simulate the tracked-case state.",
+              "fields": [
+                { "k": "Receipt Number", "v": "—" },
+                { "k": "Tracking", "v": "Enabled" },
+                { "k": "Notice Date", "v": "Not saved" },
+                { "k": "Priority Date", "v": "Not saved" },
+                { "k": "Last Known Status", "v": "Case Was Received" },
+                { "k": "Last Checked", "v": "Just now" }
+              ]
+            },
+            "timeline": [
+              {
+                "title": "Tracking enabled",
+                "sub": "Rahvana stored the receipt number and began monitoring for future changes."
+              },
+              {
+                "title": "Case Was Received",
+                "sub": "Initial placeholder status stored as the baseline for future comparisons."
+              }
+            ],
+            "footer_note": "Rahvana can monitor for status changes and notify the user, but this should be presented as managed monitoring around USCIS status tools — not as a guaranteed official USCIS API stream.",
+            "tutorial_steps": [
+              {
+                "label": "Step 1 of 4 — Watch for USCIS acceptance",
+                "heading": "Look for the first accepted-filing notice",
+                "instruction": "After USCIS accepts the filing, watch your <strong>USCIS online account</strong>, any available <strong>e-notification</strong>, and the <strong>physical notice by mail</strong>. The goal is to bring back the receipt number once it appears.",
+                "url": "my.uscis.gov",
+                "ssLabel": "USCIS Notice Sources",
+                "ssHeadline": "USCIS Account · Email/Text · Mail Notice",
+                "ssDesc": "Any of these may be the first place you notice the case has been accepted.",
+                "caption": "Return to Rahvana once you have the receipt number or the notice itself."
+              },
+              {
+                "label": "Step 2 of 4 — Find the receipt number",
+                "heading": "Find the 13-character receipt number",
+                "instruction": "The receipt number is the core tracking identifier. It consists of <strong>3 letters followed by 10 numbers</strong>, such as IOE1234567890.",
+                "url": "egov.uscis.gov",
+                "ssLabel": "Receipt Number Pattern",
+                "ssHeadline": "3 letters + 10 numbers",
+                "ssDesc": "Common prefixes include IOE, EAC, WAC, LIN, SRC, NBC, or MSC.",
+                "ssHighlight": "Example: IOE1234567890",
+                "caption": "This is the number Rahvana should save to enable case monitoring.",
+                "note": "If the notice contains multiple numbers, prioritize the USCIS receipt number tied to the I-130 filing."
+              },
+              {
+                "label": "Step 3 of 4 — Decide how to register it",
+                "heading": "Choose the easiest intake path",
+                "instruction": "If you already have the document, upload the notice. If you only have the receipt number from the portal or an e-notification, manual entry is faster.",
+                "url": "rahvana.com",
+                "ssLabel": "Rahvana Intake Options",
+                "ssHeadline": "Upload Notice or Enter Receipt Number",
+                "ssDesc": "Both paths end in the same confirmation and tracked-case state.",
+                "caption": "Upload is useful for preserving the notice. Manual entry is useful when speed matters more."
+              },
+              {
+                "label": "Step 4 of 4 — Save and turn on monitoring",
+                "heading": "Confirm the details and enable tracking",
+                "instruction": "Before saving, confirm the receipt number and any dates shown on the notice. After that, Rahvana can store the case record, enable tracking, and keep a timeline of changes.",
+                "url": "rahvana.com",
+                "ssLabel": "Tracked Case State",
+                "ssHeadline": "Receipt Registered · Tracking Enabled",
+                "ssDesc": "Status history and notifications should begin from the saved baseline.",
+                "ssHighlight": "Store receipt number → Save baseline status",
+                "caption": "For IR-1, saving the priority date is useful for records, but it should not dominate this step.",
+                "note": "This prototype represents tracking honestly: monitored status checks and notifications, not a promise of an official USCIS developer-grade API."
+              }
+            ]
+          }
+        },
+        {
+          "step_key": "step_1_16",
+          "step_number": 12,
+          "step_name": "Track Case Status in CEAC",
+          "step_short_description": "Monitor your case status and updates",
+          "step_type": "tool",
+          "visible_when": {},
+          "step_description": "Monitor your case status in the CEAC portal after registration. Track updates, fee invoices, and document requests as your case progresses through NVC processing.",
+          "who": "Petitioner",
+          "where": "ceac.state.gov",
+          "timeline": "Ongoing after registration",
+          "dependencies": ["step_1_15"],
+          "is_required": true,
+          "display_order": 16,
+          "tool_data": {
+            "id": "step_1_16",
+            "title": "Monitor USCIS Case Status",
+            "subtitle": "Stay prepared while USCIS reviews your case. Rahvana keeps the tracking context in one place, explains what the current status means, and gives you useful next-step prep so the waiting period does not become dead time.",
+            "chips": [
+              { "label": "Petitioner", "type": "role" },
+              { "label": "Online Filing", "type": "path" },
+              { "label": "USCIS Tracking", "type": "track" }
+            ],
+            "launch_module": {
+              "status": {
+                "hero": "Case Was Received",
+                "copy": "USCIS has accepted the filing and issued a receipt number. This stage is mostly waiting, monitoring, and preparing intelligently for what may come next.",
+                "badge": "Tracking active"
+              },
+              "metrics": [
+                {
+                  "label": "Receipt number",
+                  "value": "Not saved",
+                  "sub": "USCIS tracking identifier"
+                },
+                {
+                  "label": "Last checked",
+                  "value": "Just now",
+                  "sub": "Rahvana monitoring baseline"
+                },
+                {
+                  "label": "Priority date",
+                  "value": "Saved if provided",
+                  "sub": "Useful record, not the center of IR-1"
+                },
+                {
+                  "label": "Next likely phase",
+                  "value": "USCIS review",
+                  "sub": "Then approval or RFE, depending on the case"
+                }
+              ],
+              "actions": [
+                { "label": "Refresh tracking status", "type": "primary" },
+                { "label": "What does this status mean?", "type": "secondary" }
+              ]
+            },
+            "checklist": [
+              {
+                "id": "docs",
+                "title": "Organize future NVC and civil documents",
+                "copy": "Use the waiting period to make sure passports, birth certificates, translations, and marriage records are easy to retrieve later."
+              },
+              {
+                "id": "evidence",
+                "title": "Keep collecting relationship evidence",
+                "copy": "Add photos, travel records, call logs, chats, and other ongoing proof so later stages do not rely only on older material."
+              },
+              {
+                "id": "rfe",
+                "title": "Understand common USCIS RFE scenarios",
+                "copy": "Learn what an RFE is, what it usually means, and how Rahvana will help if one arrives."
+              },
+              {
+                "id": "next",
+                "title": "Preview what happens after approval",
+                "copy": "Get familiar with NVC, fees, DS-260, affidavit of support, and later interview prep so the next phase is not a surprise."
+              }
+            ],
+            "future_timeline": [
+              {
+                "title": "USCIS continues review",
+                "copy": "The case remains pending while USCIS reviews the filing and supporting evidence.",
+                "pill": "Current phase"
+              },
+              {
+                "title": "Possible Request for Evidence",
+                "copy": "If USCIS needs more material, it may issue an RFE asking for specific evidence or clarification.",
+                "pill": "Conditional"
+              },
+              {
+                "title": "Petition approval",
+                "copy": "If approved, the I-130 stage closes and the case moves toward the National Visa Center.",
+                "pill": "Likely next milestone"
+              },
+              {
+                "title": "NVC case creation",
+                "copy": "After approval, the State Department side begins and new fees, forms, and civil-document steps come into play.",
+                "pill": "Later stage"
+              }
+            ],
+            "useful_now": [
+              {
+                "icon": "green",
+                "title": "What happens after I-130 approval?",
+                "copy": "A compact explainer that prepares you for NVC case creation, fees, DS-260, and document upload.",
+                "action": "Open preview"
+              },
+              {
+                "icon": "purple",
+                "title": "How to keep building relationship evidence",
+                "copy": "Practical guidance on what new proof is worth saving while the case is pending.",
+                "action": "View evidence guide"
+              },
+              {
+                "icon": "amber",
+                "title": "Affidavit of support preview",
+                "copy": "A short preparation module so household size, income questions, and sponsor strategy do not hit all at once later.",
+                "action": "See future prep"
+              }
+            ],
+            "relevant_updates": [
+              {
+                "title": "USCIS processing-time tools are available while the case is pending",
+                "source": "Official USCIS context",
+                "copy": "Users can check official processing-time context and later use case tools if the filing appears to be taking longer than expected."
+              },
+              {
+                "title": "Case status online only shows the latest official case action",
+                "source": "Important expectation",
+                "copy": "A quiet period does not mean the case is lost. USCIS status tools usually reflect the latest recorded action, not every internal movement."
+              }
+            ],
+            "build_case": [
+              {
+                "icon": "green",
+                "title": "Add new evidence entries",
+                "copy": "Log visits, upload new photos, and keep a clean timeline of the relationship as it continues.",
+                "buttons": ["Add note", "Mark planned"]
+              },
+              {
+                "icon": "rose",
+                "title": "Track household or income changes",
+                "copy": "If finances, employment, or household size change while waiting, keeping that organized now can make later sponsorship steps easier.",
+                "buttons": ["Save reminder", "Open notes"]
+              }
+            ],
+            "community": [
+              {
+                "quote": "“While our case was quiet, we used the waiting time to clean up all of our civil documents and relationship evidence. When the next stage came, we were not scrambling.”",
+                "meta": "Anonymized IR-family journey",
+                "sub": "Illustrative prep pattern · not legal advice"
+              },
+              {
+                "quote": "“The most helpful thing during the pending phase was having a simple list of what we could do now versus what truly needed to wait.”",
+                "meta": "Common insight from similar journeys",
+                "sub": "Lightweight, practical, and grounded in real waiting-stage habits"
+              }
+            ],
+            "tutorial_steps": [
+              {
+                "label": "Step 1 of 4 — Open official USCIS status tools",
+                "heading": "Start with the official case-status view",
+                "instruction": "USCIS case-status tools revolve around the receipt number. The official status view usually reflects the latest recorded action on the case.",
+                "url": "egov.uscis.gov",
+                "kicker": "Official USCIS tracking",
+                "head": "Case Status Online",
+                "copy": "Track your case using the 13-character receipt number.",
+                "pills": [
+                  "Receipt number required",
+                  "Last action shown",
+                  "Official USCIS tool"
+                ],
+                "note": "A quiet status page does not necessarily mean nothing is happening internally. It usually means there has been no new official outward-facing update yet."
+              },
+              {
+                "label": "Step 2 of 4 — Understand common pending statuses",
+                "heading": "Learn the difference between waiting and action-required states",
+                "instruction": "Most of the time, a pending case is in a waiting state like \"Case Was Received\" or \"Case Is Being Actively Reviewed.\" The important distinction is whether USCIS is simply processing or has asked for something.",
+                "url": "rahvana.local/status-map",
+                "kicker": "Status guide",
+                "head": "Status meanings",
+                "copy": "Separate passive waiting from states that require action.",
+                "pills": ["Received", "Actively reviewed", "RFE", "Approved"],
+                "note": "Use this guide to understand whether you need to act now or simply stay prepared."
+              },
+              {
+                "label": "Step 3 of 4 — Use the waiting period well",
+                "heading": "Turn waiting time into preparation time",
+                "instruction": "Use this waiting period to stay prepared, keep your records current, and learn what usually comes next in the journey.",
+                "url": "rahvana.local/pending-prep",
+                "kicker": "While-you-wait tools",
+                "head": "Stay prepared while waiting",
+                "copy": "A prep checklist, next-step preview, and useful modules for this waiting period.",
+                "pills": ["Prep checklist", "Coming next", "Useful right now"],
+                "note": "A few small tasks now can make the next phase feel much easier when the case moves forward."
+              },
+              {
+                "label": "Step 4 of 4 — Know when the page should pivot",
+                "heading": "Be ready for the next meaningful change",
+                "instruction": "If USCIS later issues a request for evidence, approval, or another major update, your next step here should change with it.",
+                "url": "rahvana.local/conditional-next-steps",
+                "kicker": "Next-step guide",
+                "head": "Pivot when USCIS changes the status",
+                "copy": "RFE and approval should each unlock their own dedicated next-step experiences.",
+                "pills": [
+                  "Conditional branches",
+                  "Next step unlocks",
+                  "Action clarity"
+                ],
+                "note": "Your next task should match the actual update USCIS gives you."
+              }
+            ],
+            "footer_note": "Rahvana will keep this case visible, explain major updates clearly, and help you stay prepared while USCIS reviews the petition."
+          }
+        },
+        {
+          "step_key": "step_1_17",
+          "step_number": 13,
+          "step_name": "Receive Approval Notice (I-797)",
+          "step_short_description": "I-130 petition approved",
+          "step_description": "Your I-130 approval notice confirms that USCIS approved the petition. Save this notice, keep the original safe, and start preparing for NVC while you wait for the next contact.",
+          "step_type": "tool",
+          "tool_data": {
+            "id": "step_1_17",
+            "type": "approval_notice",
+            "disclaimer": "USCIS approval is a major milestone. Save the notice, keep the original safe, and use the waiting period to get ready for the NVC stage."
+          },
+          "chips": [
+            {
+              "label": "Petitioner",
+              "type": "role"
+            },
+            {
+              "label": "Mail or online account",
+              "type": "uscis"
+            },
+            {
+              "label": "USCIS approved",
+              "type": "stage"
+            }
+          ]
         }
       ]
     },
@@ -2246,21 +2833,31 @@
               {
                 "label": "Step 1 of 5 — Find your NVC Welcome Letter",
                 "heading": "Find your NVC Welcome Letter",
+                "screenTitle": "Find your NVC Welcome Letter",
                 "instruction": "After USCIS approves your I-130 petition, your case is transferred to the National Visa Center (NVC). The NVC sends a Welcome Letter or email to the petitioner's address — this communication contains the two key details you need to access CEAC.",
                 "url": "NVC Welcome Communication",
                 "ss_label": "NVC Welcome Communication",
                 "ss_headline": "Notice of NVC Receipt",
                 "ss_desc": "Check both physical mail and email. The letter may arrive weeks after I-130 approval. The subject line typically references your NVC Case Number.",
-                "note": "Check both physical mail and email. The letter may arrive weeks after I-130 approval. The subject line typically references your NVC Case Number."
+                "note": "Check both physical mail and email. The letter may arrive weeks after I-130 approval. The subject line typically references your NVC Case Number.",
+                "media": {
+                  "type": "img",
+                  "src": "/assets/images/ir1-journey/c2_step1/01-nvc-welcome-letter.png"
+                }
               },
               {
                 "label": "Step 2 of 5 — Locate your NVC Case Number",
                 "heading": "Locate your NVC Case Number",
+                "screenTitle": "Locate your NVC Case Number",
                 "instruction": "The NVC Case Number appears clearly in the Welcome Letter or email. For IR-1 spouse cases from Pakistan, it typically follows a format like <strong>ISL2026XXXXXX</strong> — beginning with your consulate code, followed by the year and case digits.",
                 "url": "NVC Case Number Location",
                 "ss_label": "NVC Case Number Location",
                 "ss_headline": "Notice of NVC Receipt",
-                "ss_desc": "ISL2026XXXXXX"
+                "ss_desc": "ISL2026XXXXXX",
+                "media": {
+                  "type": "img",
+                  "src": "/assets/images/ir1-journey/c2_step1/02-case-into-ceac.png"
+                }
               },
               {
                 "label": "Step 3 of 5 — Locate your Invoice ID Number",
@@ -2361,50 +2958,75 @@
               {
                 "label": "Step 1 of 6 — Open CEAC",
                 "heading": "Open CEAC and sign in",
+                "screenTitle": "Open CEAC and sign in",
                 "instruction": "Go to the CEAC portal and sign in using the NVC Case Number and Invoice ID from your Welcome Letter.",
                 "url": "ceac.state.gov",
                 "ss_label": "CEAC Login",
                 "ss_headline": "Sign In to Your Immigrant Visa Case",
-                "ss_desc": "Sign In"
+                "ss_desc": "Sign In",
+                "media": {
+                  "type": "img",
+                  "src": "/assets/images/ir1-journey/c2_step2/01-case-into-ceac.png"
+                }
               },
               {
                 "label": "Step 2 of 6 — Enter case details",
                 "heading": "Enter your case information",
+                "screenTitle": "Enter your case information",
                 "instruction": "Enter your case number and invoice ID exactly as they appear in the NVC Welcome Letter. Both fields are required to access the case.",
                 "url": "ceac.state.gov",
                 "ss_label": "Case Access",
                 "ss_headline": "Case Number & Invoice ID Required",
                 "ss_desc": "ISL2026XXXXXX — Invoice ID confirmed",
-                "note": "Keep your NVC Welcome Letter accessible. Both numbers are case-sensitive."
+                "note": "Keep your NVC Welcome Letter accessible. Both numbers are case-sensitive.",
+                "media": {
+                  "type": "img",
+                  "src": "/assets/images/ir1-journey/c2_step2/02-case-info.png"
+                }
               },
               {
                 "label": "Step 3 of 6 — Fee payment area",
                 "heading": "Go to the fee payment section",
+                "screenTitle": "Go to the fee payment section",
                 "instruction": "After entering CEAC, navigate to the payment or invoices area. This is where NVC fee invoices are listed and where you can initiate payment.",
                 "url": "ceac.state.gov",
                 "ss_label": "CEAC Dashboard",
                 "ss_headline": "Fee Payment",
-                "ss_desc": "Fee Payment — Available"
+                "ss_desc": "Fee Payment — Available",
+                "media": {
+                  "type": "img",
+                  "src": "/assets/images/ir1-journey/c2_step2/03-fee-section.png"
+                }
               },
               {
                 "label": "Step 4 of 6 — Review fee invoices",
                 "heading": "Review the required fee invoices",
+                "screenTitle": "Review the required fee invoices",
                 "instruction": "CEAC will display the required fee invoices for your case. Review both the Affidavit of Support fee and the Immigrant Visa fee before proceeding.",
                 "url": "ceac.state.gov",
                 "ss_label": "Fee Invoices",
                 "ss_headline": "Review Fees",
                 "ss_desc": "Affidavit of Support Fee / Immigrant Visa Fee",
-                "note": "Confirm the exact amounts shown in your CEAC portal before paying. Do not rely on third-party estimates."
+                "note": "Confirm the exact amounts shown in your CEAC portal before paying. Do not rely on third-party estimates.",
+                "media": {
+                  "type": "video",
+                  "src": "/assets/videos/ir1-journey/c2_step2/04-payment-method.mp4"
+                }
               },
               {
                 "label": "Step 5 of 6 — Submit payment",
                 "heading": "Follow the payment prompts carefully",
+                "screenTitle": "Follow the payment prompts carefully",
                 "instruction": "Proceed through the CEAC payment flow. Complete the payment method selection and confirm the transaction according to the portal prompts.",
                 "url": "ceac.state.gov",
                 "ss_label": "Payment",
                 "ss_headline": "Confirm and Pay",
                 "ss_desc": "Submit Payment",
-                "note": "Do not close the browser tab during payment processing. Wait for the confirmation screen."
+                "note": "Do not close the browser tab during payment processing. Wait for the confirmation screen.",
+                "media": {
+                  "type": "img",
+                  "src": "/assets/images/ir1-journey/c2_step2/05-payment-confirmation.png"
+                }
               },
               {
                 "label": "Step 6 of 6 — Return and save",
@@ -2512,61 +3134,96 @@
               {
                 "label": "Step 1 of 7 — Sign in to CEAC",
                 "heading": "Sign in to CEAC",
+                "screenTitle": "Sign in to CEAC",
                 "instruction": "Enter CEAC using your NVC Case Number and Invoice ID from the Welcome Letter. Your fees must be fully processed before DS-260 is available.",
                 "ss_label": "CEAC Login",
                 "ss_headline": "Immigrant Visa Case — Sign In",
-                "ss_desc": "NVC Case Number: ISL2026XXXXXX, Invoice ID: ••••••••••••••••"
+                "ss_desc": "NVC Case Number: ISL2026XXXXXX, Invoice ID: ••••••••••••••••",
+                "media": {
+                  "type": "img",
+                  "src": "/assets/images/ir1-journey/c2_step3/01-case-into-ceac.png"
+                }
               },
               {
                 "label": "Step 2 of 7 — Open the DS-260 section",
                 "heading": "Open the DS-260 section",
+                "screenTitle": "Open the DS-260 section",
                 "instruction": "Once fee payment is processed, DS-260 becomes available inside your CEAC case. Navigate to the DS-260 area and select Start or Resume.",
                 "ss_label": "CEAC Case",
                 "ss_headline": "DS-260 Immigrant Visa Application",
                 "ss_desc": "Available after NVC fee processing is confirmed.",
-                "note": "If DS-260 is not yet available, confirm both NVC fees are paid."
+                "note": "If DS-260 is not yet available, confirm both NVC fees are paid.",
+                "media": {
+                  "type": "img",
+                  "src": "/assets/images/ir1-journey/c2_step3/02-fee-process-completed.png"
+                }
               },
               {
                 "label": "Step 3 of 7 — Start your DS-260",
                 "heading": "Start your DS-260",
+                "screenTitle": "Start your DS-260",
                 "instruction": "Click Start or Resume to begin. The form is divided into multiple sections. Use your Rahvana-generated PDF as a reference while completing each section.",
                 "ss_label": "DS-260 Form",
                 "ss_headline": "Begin Application",
-                "ss_desc": "Work through the form section by section using your prepared answers."
+                "ss_desc": "Work through the form section by section using your prepared answers.",
+                "media": {
+                  "type": "img",
+                  "src": "/assets/images/ir1-journey/c2_step3/03-start-DS-260.png"
+                }
               },
               {
                 "label": "Step 4 of 7 — Complete section by section",
                 "heading": "Complete section by section",
+                "screenTitle": "Complete section by section",
                 "instruction": "Move through each DS-260 section in sequence. Enter your information carefully. Keep answers consistent with other immigration forms in your case.",
                 "ss_label": "Form Progress",
                 "ss_headline": "Section-by-Section",
                 "ss_desc": "Personal info → Travel history → Work/education → Security questions → Review",
-                "note": "Answers must be consistent with your I-130 and other submitted forms."
+                "note": "Answers must be consistent with your I-130 and other submitted forms.",
+                "media": {
+                  "type": "img",
+                  "src": "/assets/images/ir1-journey/c2_step3/04-sec-by-sec.png"
+                }
               },
               {
                 "label": "Step 5 of 7 — Review your answers carefully",
                 "heading": "Review your answers carefully",
+                "screenTitle": "Review your answers carefully",
                 "instruction": "Use the review stage to check for errors or missing information before certifying. This is your last opportunity to make edits.",
                 "ss_label": "Review",
                 "ss_headline": "Review All Answers",
-                "ss_desc": "Check each section before proceeding to final certification."
+                "ss_desc": "Check each section before proceeding to final certification.",
+                "media": {
+                  "type": "img",
+                  "src": "/assets/images/ir1-journey/c2_step3/05-review-answers.png"
+                }
               },
               {
                 "label": "Step 6 of 7 — Sign and submit the DS-260",
                 "heading": "Sign and submit the DS-260",
+                "screenTitle": "Sign and submit the DS-260",
                 "instruction": "The final step requires certification. Read carefully before submitting — changes after submission are not straightforward.",
                 "ss_label": "Certification",
                 "ss_headline": "Sign and Submit",
                 "ss_desc": "Certify accuracy of your application before final submission.",
-                "note": "Submission is final. Contact the NVC if corrections are needed after submitting."
+                "note": "Submission is final. Contact the NVC if corrections are needed after submitting.",
+                "media": {
+                  "type": "img",
+                  "src": "/assets/images/ir1-journey/c2_step3/06-sign-and-submit.png"
+                }
               },
               {
                 "label": "Step 7 of 7 — Save your confirmation page",
                 "heading": "Save your confirmation page",
+                "screenTitle": "Save your confirmation page",
                 "instruction": "After submission, CEAC displays a confirmation page. Save or print this for your records as proof that DS-260 has been received.",
                 "ss_label": "Certification",
                 "ss_headline": "DS-260 Submitted",
-                "ss_desc": "Application Received"
+                "ss_desc": "Application Received",
+                "media": {
+                  "type": "img",
+                  "src": "/assets/images/ir1-journey/c2_step3/07-form-submitted.png"
+                }
               }
             ],
             "disclaimer": "Rahvana provides structured guidance only. This is not legal advice.\nReview all answers carefully. DS-260 availability depends on NVC fee processing."
@@ -2606,10 +3263,7 @@
                       "icon": "passport",
                       "title": "Beneficiary Passport Biographic Page",
                       "sub": "Current passport page showing photo and personal details",
-                      "tags": [
-                        "bene",
-                        "govt"
-                      ],
+                      "tags": ["bene", "govt"],
                       "external_href": "/guides/passport-guide",
                       "status": "not-started",
                       "required": true
@@ -2619,10 +3273,7 @@
                       "icon": "birth",
                       "title": "Birth Certificate",
                       "sub": "Beneficiary's civil birth record",
-                      "tags": [
-                        "bene",
-                        "govt"
-                      ],
+                      "tags": ["bene", "govt"],
                       "external_href": "/guides/birth-certificate-guide",
                       "status": "not-started",
                       "required": true
@@ -2632,10 +3283,7 @@
                       "icon": "marriage",
                       "title": "Marriage Certificate / Marriage Registration Record",
                       "sub": "Official civil proof of the marriage — Nikah Nama and NADRA MRC",
-                      "tags": [
-                        "both",
-                        "govt"
-                      ],
+                      "tags": ["both", "govt"],
                       "external_href": "/guides/nikah-nama-guide",
                       "status": "not-started",
                       "required": true,
@@ -2663,10 +3311,7 @@
                       "icon": "police",
                       "title": "Police Certificate",
                       "sub": "Pakistan Police Character Certificate (PCC) for the beneficiary",
-                      "tags": [
-                        "bene",
-                        "govt"
-                      ],
+                      "tags": ["bene", "govt"],
                       "external_href": "/guides/police-verification-guide",
                       "status": "not-started",
                       "required": true
@@ -2676,10 +3321,7 @@
                       "icon": "translations",
                       "title": "Certified English Translations",
                       "sub": "Required for all non-English civil documents",
-                      "tags": [
-                        "bene",
-                        "3p"
-                      ],
+                      "tags": ["bene", "3p"],
                       "status": "not-started",
                       "required": true,
                       "sections": [
@@ -2713,10 +3355,7 @@
                       "icon": "prior-marriage",
                       "title": "Prior Marriage Termination Documents",
                       "sub": "Required if either spouse was previously married",
-                      "tags": [
-                        "both",
-                        "govt"
-                      ],
+                      "tags": ["both", "govt"],
                       "status": "not-started",
                       "required": false,
                       "sections": [
@@ -2743,10 +3382,7 @@
                       "icon": "death-cert",
                       "title": "Death Certificate of Former Spouse",
                       "sub": "Only if prior marriage ended by death",
-                      "tags": [
-                        "both",
-                        "govt"
-                      ],
+                      "tags": ["both", "govt"],
                       "status": "not-started",
                       "required": false,
                       "sections": [
@@ -2765,10 +3401,7 @@
                       "icon": "name-change",
                       "title": "Name Change Documents",
                       "sub": "Legal proof of any name change used in the case",
-                      "tags": [
-                        "bene",
-                        "govt"
-                      ],
+                      "tags": ["bene", "govt"],
                       "status": "not-started",
                       "required": false,
                       "sections": [
@@ -2787,10 +3420,7 @@
                       "icon": "help",
                       "title": "Missing Document / Record Unavailability Evidence",
                       "sub": "When a required record genuinely does not exist",
-                      "tags": [
-                        "bene",
-                        "3p"
-                      ],
+                      "tags": ["bene", "3p"],
                       "status": "not-started",
                       "required": false,
                       "sections": [
@@ -2820,9 +3450,7 @@
                       "icon": "folder",
                       "title": "Organized Translation Set",
                       "sub": "All translations paired and labeled with their originals",
-                      "tags": [
-                        "bene"
-                      ],
+                      "tags": ["bene"],
                       "status": "not-started",
                       "required": false,
                       "sections": [
@@ -2841,9 +3469,7 @@
                       "icon": "save",
                       "title": "Upload-Ready File Copies",
                       "sub": "Clean, legible, properly formatted scan set",
-                      "tags": [
-                        "both"
-                      ],
+                      "tags": ["both"],
                       "status": "not-started",
                       "required": false,
                       "sections": [
@@ -2866,9 +3492,7 @@
                       "icon": "message",
                       "title": "Relationship Evidence Backup Set",
                       "sub": "Supporting bona fide marriage evidence for later use",
-                      "tags": [
-                        "both"
-                      ],
+                      "tags": ["both"],
                       "status": "not-started",
                       "required": false,
                       "sections": [
@@ -2886,6 +3510,233 @@
                 }
               ]
             },
+            "guide_card": {
+              "title": "Step-by-Step Document Preparation Guide",
+              "subtitle": "Walk through scanning, organizing, translating, and preparing civil documents for CEAC upload."
+            },
+            "tutorial_steps": [
+              {
+                "label": "Step 1 of 13 — Sign in to CEAC",
+                "heading": "Sign in to CEAC",
+                "screenTitle": "Sign in to CEAC",
+                "instruction": "Enter CEAC using your NVC Case Number and Invoice ID from the Welcome Letter. Your fees must be fully processed and DS-260 completed before you can upload civil documents.",
+                "url": "ceac.state.gov",
+                "ss_label": "CEAC Login",
+                "ss_headline": "Access Your Case",
+                "ss_desc": "Sign in with Case Number and Invoice ID",
+                "ss_highlight": null,
+                "caption": "Login credentials are found in your NVC Welcome Letter.",
+                "note": null,
+                "media": {
+                  "type": "img",
+                  "src": "/assets/images/ir1-journey/c2_step4/01-case-into-ceac.png"
+                }
+              },
+              {
+                "label": "Step 2 of 13 — Submit IV and AOS fees",
+                "heading": "Confirm all fees are paid",
+                "screenTitle": "Confirm all fees are paid",
+                "instruction": "Before document submission begins, verify in CEAC that both the Affidavit of Support fee ($120) and the Immigrant Visa fee ($345) have been successfully processed.",
+                "url": "ceac.state.gov",
+                "ss_label": "Fee Status",
+                "ss_headline": "NVC Fees Paid",
+                "ss_desc": "AOS + IV fees required before document upload",
+                "ss_highlight": null,
+                "caption": "If fees are not marked as paid, do not proceed — contact NVC first.",
+                "note": null,
+                "media": {
+                  "type": "img",
+                  "src": "/assets/images/ir1-journey/c2_step4/02-submit-iv-fees.png"
+                }
+              },
+              {
+                "label": "Step 3 of 13 — Start civil document upload",
+                "heading": "Navigate to the civil documents section",
+                "screenTitle": "Navigate to the civil documents section",
+                "instruction": "In CEAC, locate and open the civil documents upload area. This is where you will attach the required birth certificates, marriage records, police certificates, and other supporting documents.",
+                "url": "ceac.state.gov",
+                "ss_label": "Document Upload",
+                "ss_headline": "Civil Documents Section",
+                "ss_desc": "Begin document submission",
+                "ss_highlight": null,
+                "caption": "Ensure all documents are scanned, organized, and renamed before beginning uploads.",
+                "note": null,
+                "media": {
+                  "type": "img",
+                  "src": "/assets/images/ir1-journey/c2_step4/03-start-civil-doc.png"
+                }
+              },
+              {
+                "label": "Step 4 of 13 — Upload documents to CEAC",
+                "heading": "Upload each document individually",
+                "screenTitle": "Upload each document individually",
+                "instruction": "Select and upload each civil document one by one. Ensure each file is under 4 MB. For non-English documents, upload both the original and the certified English translation as separate files.",
+                "url": "ceac.state.gov",
+                "ss_label": "File Upload",
+                "ss_headline": "Select Files to Upload",
+                "ss_desc": "PDF or image files, max 4 MB each",
+                "ss_highlight": null,
+                "caption": "CEAC uploads are processed individually — you will see feedback for each file.",
+                "note": null,
+                "media": {
+                  "type": "img",
+                  "src": "/assets/images/ir1-journey/c2_step4/04-upload-the-doc.png"
+                }
+              },
+              {
+                "label": "Step 5 of 13 — Upload documents one by one",
+                "heading": "Process each upload sequentially",
+                "screenTitle": "Process each upload sequentially",
+                "instruction": "Continue uploading remaining documents one at a time. CEAC will show the upload progress for each file. Wait for confirmation before uploading the next document.",
+                "url": "ceac.state.gov",
+                "ss_label": "Sequential Upload",
+                "ss_headline": "Upload Queue",
+                "ss_desc": "One document at a time — wait for confirmation",
+                "ss_highlight": null,
+                "caption": "Uploading sequentially helps you track which documents have been processed.",
+                "note": "Do not close the browser tab during the upload process.",
+                "media": {
+                  "type": "img",
+                  "src": "/assets/images/ir1-journey/c2_step4/05-upload-1-by-1.png"
+                }
+              },
+              {
+                "label": "Step 6 of 13 — Upload all required documents",
+                "heading": "Complete the full civil document set",
+                "screenTitle": "Complete the full civil document set",
+                "instruction": "Upload all required civil documents as per CEAC's document type list. Include birth certificates, marriage records, police certificates, and all certified English translations. Verify each upload is confirmed before moving to the next.",
+                "url": "ceac.state.gov",
+                "ss_label": "Complete Set",
+                "ss_headline": "All Documents Uploaded",
+                "ss_desc": "Required documents checklist completed",
+                "ss_highlight": null,
+                "caption": "Use Rahvana's civil document checklist as your reference during uploads.",
+                "note": null,
+                "media": {
+                  "type": "img",
+                  "src": "/assets/images/ir1-journey/c2_step4/06-upload-all-req-doc.png"
+                }
+              },
+              {
+                "label": "Step 7 of 13 — Document unavailable? Use comments",
+                "heading": "Report missing or unavailable documents",
+                "screenTitle": "Report missing or unavailable documents",
+                "instruction": "If a required document is genuinely unavailable or does not exist, use the comments field to explain why. Provide a brief, clear explanation of the circumstance and any substitute documents you have submitted instead.",
+                "url": "ceac.state.gov",
+                "ss_label": "Comments Section",
+                "ss_headline": "Explain Missing Documents",
+                "ss_desc": "Use comments to document unavailability",
+                "ss_highlight": null,
+                "caption": "Be concise and factual — explain only what is genuinely unavailable, not what is incomplete.",
+                "note": null,
+                "media": {
+                  "type": "img",
+                  "src": "/assets/images/ir1-journey/c2_step4/07-documnet-unavailable.png"
+                }
+              },
+              {
+                "label": "Step 8 of 13 — Write comments for missing documents",
+                "heading": "Document your explanation in comments",
+                "screenTitle": "Document your explanation in comments",
+                "instruction": "In the comment section, write a clear explanation for any document that is unavailable. Include the document name, reason for unavailability, and any substitute documents submitted. Keep the explanation brief and professional.",
+                "url": "ceac.state.gov",
+                "ss_label": "Comment Entry",
+                "ss_headline": "Explain Availability Issues",
+                "ss_desc": "Provide context for missing documents",
+                "ss_highlight": null,
+                "caption": "Example: 'Birth certificate was lost in a flood in 2015. Submitted secondary evidence including school and medical records instead.'",
+                "note": null,
+                "media": {
+                  "type": "img",
+                  "src": "/assets/images/ir1-journey/c2_step4/08-in-comment-section-write-the-reason.png"
+                }
+              },
+              {
+                "label": "Step 9 of 13 — Document rejected? Review and correct",
+                "heading": "Review rejection reasons and correct issues",
+                "screenTitle": "Review rejection reasons and correct issues",
+                "instruction": "If a document is rejected by CEAC, you will see an explanation of why — it may be file size, format, legibility, or missing information. Review the reason carefully and prepare a corrected version of the document.",
+                "url": "ceac.state.gov",
+                "ss_label": "Rejection Notice",
+                "ss_headline": "Document Rejected",
+                "ss_desc": "Review rejection reason and resubmit corrected file",
+                "ss_highlight": null,
+                "caption": "Common rejection reasons: file too large (over 4 MB), image too blurry, or missing required pages.",
+                "note": null,
+                "media": {
+                  "type": "img",
+                  "src": "/assets/images/ir1-journey/c2_step4/09-if-civil-doc-rejected.png"
+                }
+              },
+              {
+                "label": "Step 10 of 13 — Re-upload rejected documents",
+                "heading": "Upload the corrected document",
+                "screenTitle": "Upload the corrected document",
+                "instruction": "After correcting the issue, re-upload the document following CEAC's process. If the file was too large, try compressing it. If it was blurry, rescan it at higher resolution (300 DPI minimum). Upload the corrected version and wait for confirmation.",
+                "url": "ceac.state.gov",
+                "ss_label": "Resubmission",
+                "ss_headline": "Upload Corrected File",
+                "ss_desc": "Resubmit corrected document",
+                "ss_highlight": null,
+                "caption": "Use Rahvana's Document Vault compression tool if file size is the issue.",
+                "note": null,
+                "media": {
+                  "type": "img",
+                  "src": "/assets/images/ir1-journey/c2_step4/10-upload-again.png"
+                }
+              },
+              {
+                "label": "Step 11 of 13 — Document accepted",
+                "heading": "Confirmation that document was accepted",
+                "screenTitle": "Confirmation that document was accepted",
+                "instruction": "Once a document is accepted by CEAC, you will see an approval message or status change. The document is now part of your official case record. Continue uploading remaining documents until all required documents are submitted.",
+                "url": "ceac.state.gov",
+                "ss_label": "Acceptance",
+                "ss_headline": "Document Accepted",
+                "ss_desc": "File is now in case record",
+                "ss_highlight": null,
+                "caption": "Each accepted document moves you one step closer to documentary qualification.",
+                "note": null,
+                "media": {
+                  "type": "img",
+                  "src": "/assets/images/ir1-journey/c2_step4/11-approval-msg.png"
+                }
+              },
+              {
+                "label": "Step 12 of 13 — Check submission status",
+                "heading": "Verify your overall submission status",
+                "screenTitle": "Verify your overall submission status",
+                "instruction": "After uploading all civil documents, check the overall status in CEAC to confirm all items have been received and are marked as 'Submitted' or 'Received.' This gives you confidence before proceeding.",
+                "url": "ceac.state.gov",
+                "ss_label": "Status Check",
+                "ss_headline": "Submission Status",
+                "ss_desc": "Confirm all documents marked as received",
+                "ss_highlight": null,
+                "caption": "Document submission is a milestone — once completed, NVC will begin reviewing your package for documentary qualification.",
+                "note": null,
+                "media": {
+                  "type": "img",
+                  "src": "/assets/images/ir1-journey/c2_step4/12-check-status.png"
+                }
+              },
+              {
+                "label": "Step 13 of 13 — Case ready for NVC review",
+                "heading": "Your case is ready for NVC processing",
+                "screenTitle": "Your case is ready for NVC processing",
+                "instruction": "With all required civil documents submitted and accepted, your case package is now ready for NVC's documentary qualification review. NVC will now examine your complete case to determine whether all required documents are present and consistent before issuing a DQ (Documentary Qualification) notice.",
+                "url": "ceac.state.gov",
+                "ss_label": "Ready for Review",
+                "ss_headline": "Case Pending NVC Review",
+                "ss_desc": "Awaiting Documentary Qualification determination",
+                "ss_highlight": null,
+                "caption": "NVC document review typically takes 4-8 weeks. Monitor your email and CEAC case status for updates.",
+                "note": null,
+                "media": {
+                  "type": "img",
+                  "src": "/assets/images/ir1-journey/c2_step4/13-case-ready.png"
+                }
+              }
+            ],
             "disclaimer": "Rahvana provides structured guidance only. This is not legal advice. Always verify NVC document requirements at travel.state.gov."
           }
         },
@@ -2924,6 +3775,148 @@
               ],
               "buttonText": "Start Sponsorship Calculator"
             },
+            "guide_card": {
+              "title": "Step-by-Step Affidavit of Support Guide",
+              "subtitle": "Walk through paying sponsorship fees, submitting financial documents, and uploading supporting evidence to CEAC."
+            },
+            "tutorial_steps": [
+              {
+                "label": "Step 1 of 8 — Pay Affidavit of Support fee",
+                "heading": "Pay the AOS sponsorship fee",
+                "screenTitle": "Pay the AOS sponsorship fee",
+                "instruction": "In CEAC, navigate to the fee section and pay the Affidavit of Support fee ($120 as of 2026). This fee is required before financial documentation can be submitted. Use your CEAC account to complete the payment.",
+                "url": "ceac.state.gov",
+                "ss_label": "Fee Payment",
+                "ss_headline": "Affidavit of Support Fee",
+                "ss_desc": "$120 required payment",
+                "ss_highlight": null,
+                "caption": "AOS fee is separate from the Immigrant Visa fee — both must be paid before document submission.",
+                "note": null,
+                "media": {
+                  "type": "img",
+                  "src": "/assets/images/ir1-journey/c2_step5/01-pay-aos-fees.png"
+                }
+              },
+              {
+                "label": "Step 2 of 8 — Receive AOS payment receipt",
+                "heading": "Confirm payment and save receipt",
+                "screenTitle": "Confirm payment and save receipt",
+                "instruction": "After successfully paying the AOS fee, CEAC will display a payment receipt or confirmation. Save or print this confirmation for your records as proof that the fee has been paid.",
+                "url": "ceac.state.gov",
+                "ss_label": "Receipt",
+                "ss_headline": "Payment Confirmed",
+                "ss_desc": "Save receipt for your records",
+                "ss_highlight": null,
+                "caption": "The receipt confirms the fee payment and allows you to proceed with submitting sponsorship documents.",
+                "note": null,
+                "media": {
+                  "type": "img",
+                  "src": "/assets/images/ir1-journey/c2_step5/02-aos-payment-receipt.png"
+                }
+              },
+              {
+                "label": "Step 3 of 8 — Start AOS and financial document submission",
+                "heading": "Begin the Affidavit of Support document submission",
+                "screenTitle": "Begin the Affidavit of Support document submission",
+                "instruction": "Once the AOS fee is paid, navigate to the Affidavit of Support section in CEAC. This is where you will upload the completed I-864 or I-864EZ form and all supporting financial documents for the petitioner and any joint sponsors or household members.",
+                "url": "ceac.state.gov",
+                "ss_label": "AOS Submission",
+                "ss_headline": "Start Financial Documents",
+                "ss_desc": "Prepare to upload AOS forms and financial evidence",
+                "ss_highlight": null,
+                "caption": "Have all financial documents ready: tax returns, W-2s, pay stubs, bank statements, and employment letters.",
+                "note": null,
+                "media": {
+                  "type": "img",
+                  "src": "/assets/images/ir1-journey/c2_step5/03-start-submission-aos-and-financial-docs.png"
+                }
+              },
+              {
+                "label": "Step 4 of 8 — Select and verify document type",
+                "heading": "Check the document type before uploading",
+                "screenTitle": "Check the document type before uploading",
+                "instruction": "CEAC requires you to specify the document type for each file (e.g., Tax Return, W-2, Affidavit of Support form, etc.). Verify that you are selecting the correct document type from CEAC's dropdown menu before uploading each file.",
+                "url": "ceac.state.gov",
+                "ss_label": "Document Type",
+                "ss_headline": "Select Document Category",
+                "ss_desc": "Verify correct type before upload",
+                "ss_highlight": null,
+                "caption": "Incorrectly classified documents may be rejected or cause confusion during NVC review — always verify the type first.",
+                "note": null,
+                "media": {
+                  "type": "img",
+                  "src": "/assets/images/ir1-journey/c2_step5/04-check-doc-type.png"
+                }
+              },
+              {
+                "label": "Step 5 of 8 — Upload financial documents",
+                "heading": "Upload each financial document",
+                "screenTitle": "Upload each financial document",
+                "instruction": "Upload all required financial documents one by one. Ensure each file is under 4 MB, clearly labeled, and in PDF or image format. Include tax returns, W-2 forms, pay stubs, bank statements, employment letters, and any other evidence of income or assets required to support the I-864 sponsorship.",
+                "url": "ceac.state.gov",
+                "ss_label": "Upload",
+                "ss_headline": "Submit Financial Evidence",
+                "ss_desc": "Tax returns, W-2s, pay stubs, bank statements",
+                "ss_highlight": null,
+                "caption": "Upload files in the order they are requested by CEAC to keep the submission organized.",
+                "note": "Do not close the browser tab during the upload process.",
+                "media": {
+                  "type": "img",
+                  "src": "/assets/images/ir1-journey/c2_step5/05-upload-docs.png"
+                }
+              },
+              {
+                "label": "Step 6 of 8 — Verify submission completeness",
+                "heading": "Check that all documents are submitted",
+                "screenTitle": "Check that all documents are submitted",
+                "instruction": "After uploading all financial documents, review the submission checklist in CEAC to confirm that all required documents have been received and are marked as 'Submitted' or 'Accepted.' This ensures your AOS package is complete.",
+                "url": "ceac.state.gov",
+                "ss_label": "Verification",
+                "ss_headline": "Submission Complete",
+                "ss_desc": "All required AOS documents submitted",
+                "ss_highlight": null,
+                "caption": "A complete AOS submission is necessary for NVC to determine documentary qualification.",
+                "note": null,
+                "media": {
+                  "type": "img",
+                  "src": "/assets/images/ir1-journey/c2_step5/06-check-submission.png"
+                }
+              },
+              {
+                "label": "Step 7 of 8 — Document rejected? Review reason",
+                "heading": "Understand why a document was rejected",
+                "screenTitle": "Understand why a document was rejected",
+                "instruction": "If a financial document is rejected by CEAC, you will see a rejection reason. Common reasons include: file too large (over 4 MB), image too blurry, missing pages, or incorrect document type. Review the reason carefully and prepare a corrected version.",
+                "url": "ceac.state.gov",
+                "ss_label": "Rejection",
+                "ss_headline": "Document Rejected",
+                "ss_desc": "Review reason and prepare corrected file",
+                "ss_highlight": null,
+                "caption": "Re-scan blurry documents at 300 DPI and compress large files using Rahvana's Document Vault tool.",
+                "note": null,
+                "media": {
+                  "type": "img",
+                  "src": "/assets/images/ir1-journey/c2_step5/07-if-rejected-any-doc.png"
+                }
+              },
+              {
+                "label": "Step 8 of 8 — Replace rejected document",
+                "heading": "Re-upload the corrected document",
+                "screenTitle": "Re-upload the corrected document",
+                "instruction": "After correcting the issue, re-upload the document using CEAC's resubmission process. Ensure the new file meets all requirements: under 4 MB, clear and legible, correct document type selected. Upload and wait for confirmation that the document is now accepted.",
+                "url": "ceac.state.gov",
+                "ss_label": "Resubmission",
+                "ss_headline": "Upload Corrected Document",
+                "ss_desc": "Resubmit corrected financial document",
+                "ss_highlight": null,
+                "caption": "Once accepted, your AOS package will be considered complete and ready for NVC documentary qualification review.",
+                "note": null,
+                "media": {
+                  "type": "img",
+                  "src": "/assets/images/ir1-journey/c2_step5/08-replace-the-doc.png"
+                }
+              }
+            ],
             "disclaimer": "Rahvana provides structured guidance only. This is not legal advice. Consult a licensed immigration attorney for case-specific decisions."
           },
           "url": "/affidavit-support/i-864",
@@ -2978,8 +3971,7 @@
                 "label": "Recommended to Strengthen Readiness",
                 "badge": "badge-rec"
               }
-            ],
-            "disclaimer": "Rahvana provides structured guidance only. This is not legal advice. Always verify NVC financial requirements at travel.state.gov."
+            ]
           }
         },
         {
@@ -3004,6 +3996,281 @@
             "id": "step_2_7",
             "type": "household_member",
             "title": "Sponsorship Management",
+            "guide_cards": [
+              {
+                "id": "add-household-member",
+                "title": "Add Household Member",
+                "subtitle": "Step-by-step guide for adding a household member to your sponsorship in CEAC.",
+                "layout": "flex"
+              },
+              {
+                "id": "add-joint-sponsor",
+                "title": "Add Joint Sponsor",
+                "subtitle": "Step-by-step guide for adding a joint sponsor to your sponsorship in CEAC.",
+                "layout": "flex"
+              }
+            ],
+            "tutorial_steps": {
+              "household_member": [
+                {
+                  "label": "Step 1 of 7 — Add household member",
+                  "heading": "Add a household member to your sponsorship",
+                  "screenTitle": "Add a household member to your sponsorship",
+                  "instruction": "In CEAC, navigate to the sponsorship section and select the option to add a household member. A household member is someone who lives with the petitioner and whose income contributes to meeting the affidavit of support income requirement.",
+                  "url": "ceac.state.gov",
+                  "ss_label": "Add Member",
+                  "ss_headline": "Household Member Addition",
+                  "ss_desc": "Add a person living in the petitioner's household",
+                  "ss_highlight": null,
+                  "caption": "Household members can include adult children, parents, siblings, or others living in the same residence.",
+                  "note": null,
+                  "media": {
+                    "type": "img",
+                    "src": "/assets/images/ir1-journey/c2_step6a/01-add-household-member.png"
+                  }
+                },
+                {
+                  "label": "Step 2 of 7 — Add household member documents",
+                  "heading": "Upload household member's financial documents",
+                  "screenTitle": "Upload household member's financial documents",
+                  "instruction": "Select and upload the required financial documents for the household member. These typically include tax returns, W-2 forms, pay stubs, and bank statements showing their income and assets.",
+                  "url": "ceac.state.gov",
+                  "ss_label": "Document Upload",
+                  "ss_headline": "Financial Documentation",
+                  "ss_desc": "Tax returns, W-2s, pay stubs, bank statements",
+                  "ss_highlight": null,
+                  "caption": "Ensure documents are under 4 MB and clearly labeled before upload.",
+                  "note": null,
+                  "media": {
+                    "type": "img",
+                    "src": "/assets/images/ir1-journey/c2_step6a/02-add-join-sponser-docs.png"
+                  }
+                },
+                {
+                  "label": "Step 3 of 7 — Receive confirmation message",
+                  "heading": "Confirmation that household member was added",
+                  "screenTitle": "Confirmation that household member was added",
+                  "instruction": "CEAC will display a confirmation message once the household member and their documents have been successfully received. Save this confirmation for your records.",
+                  "url": "ceac.state.gov",
+                  "ss_label": "Confirmation",
+                  "ss_headline": "Addition Confirmed",
+                  "ss_desc": "Household member successfully added",
+                  "ss_highlight": null,
+                  "caption": "The household member is now part of your sponsorship package.",
+                  "note": null,
+                  "media": {
+                    "type": "img",
+                    "src": "/assets/images/ir1-journey/c2_step6a/03-get-msg.png"
+                  }
+                },
+                {
+                  "label": "Step 4 of 7 — Approval of household member addition",
+                  "heading": "Household member addition approved",
+                  "screenTitle": "Household member addition approved",
+                  "instruction": "Once CEAC has reviewed and approved the household member addition, you will see an approval status. This confirms that their income is now counted toward your affidavit of support income requirement.",
+                  "url": "ceac.state.gov",
+                  "ss_label": "Approval",
+                  "ss_headline": "Household Member Approved",
+                  "ss_desc": "Income now counted in sponsorship package",
+                  "ss_highlight": null,
+                  "caption": "Approval typically takes several business days after submission.",
+                  "note": null,
+                  "media": {
+                    "type": "img",
+                    "src": "/assets/images/ir1-journey/c2_step6a/04-joint-household-approval.png"
+                  }
+                },
+                {
+                  "label": "Step 5 of 7 — Start document submission",
+                  "heading": "Begin financial document submission in CEAC",
+                  "screenTitle": "Begin financial document submission in CEAC",
+                  "instruction": "After the household member is approved, navigate to the Affidavit of Support document submission section. You will now submit all financial documents for both the petitioner and the household member.",
+                  "url": "ceac.state.gov",
+                  "ss_label": "Submission Start",
+                  "ss_headline": "Begin Document Submission",
+                  "ss_desc": "Upload all financial evidence",
+                  "ss_highlight": null,
+                  "caption": "Organize all documents before starting the submission process.",
+                  "note": null,
+                  "media": {
+                    "type": "img",
+                    "src": "/assets/images/ir1-journey/c2_step6a/05-start-submission-of-docs.png"
+                  }
+                },
+                {
+                  "label": "Step 6 of 7 — Upload financial documents",
+                  "heading": "Upload all required financial documents",
+                  "screenTitle": "Upload all required financial documents",
+                  "instruction": "Upload the complete financial document set for both the petitioner and the household member. Ensure each file is under 4 MB and in the correct format (PDF or image). Submit documents one by one and wait for confirmation.",
+                  "url": "ceac.state.gov",
+                  "ss_label": "Upload",
+                  "ss_headline": "Financial Evidence Submission",
+                  "ss_desc": "Complete financial package for both sponsors",
+                  "ss_highlight": null,
+                  "caption": "Upload sequentially and verify each file is accepted before proceeding to the next.",
+                  "note": "Do not close the browser tab during uploads.",
+                  "media": {
+                    "type": "img",
+                    "src": "/assets/images/ir1-journey/c2_step6a/06-upload-docs.png"
+                  }
+                },
+                {
+                  "label": "Step 7 of 7 — Check submission status",
+                  "heading": "Verify your submission is complete",
+                  "screenTitle": "Verify your submission is complete",
+                  "instruction": "After uploading all documents, check the submission status in CEAC to confirm all required financial documents have been received and marked as Submitted or Accepted. This completes the household member sponsorship process.",
+                  "url": "ceac.state.gov",
+                  "ss_label": "Status Verification",
+                  "ss_headline": "Submission Complete",
+                  "ss_desc": "All documents confirmed as received",
+                  "ss_highlight": null,
+                  "caption": "A complete submission ensures NVC can proceed with documentary qualification review.",
+                  "note": null,
+                  "media": {
+                    "type": "img",
+                    "src": "/assets/images/ir1-journey/c2_step6a/07-check-status.png"
+                  }
+                }
+              ],
+              "joint_sponsor": [
+                {
+                  "label": "Step 1 of 8 — Click on joint sponsor option",
+                  "heading": "Select the joint sponsor option in CEAC",
+                  "screenTitle": "Select the joint sponsor option in CEAC",
+                  "instruction": "In CEAC, navigate to the sponsorship section and select the option to add a joint sponsor. A joint sponsor is a separate person (typically with significant income and assets) who jointly files the Affidavit of Support with the petitioner.",
+                  "url": "ceac.state.gov",
+                  "ss_label": "Joint Sponsor",
+                  "ss_headline": "Add Joint Sponsor",
+                  "ss_desc": "Select joint sponsor addition option",
+                  "ss_highlight": null,
+                  "caption": "A joint sponsor is required when the petitioner's income alone does not meet the poverty line requirement.",
+                  "note": null,
+                  "media": {
+                    "type": "img",
+                    "src": "/assets/images/ir1-journey/c2_step6b/01-click-on-joint-sponser.png"
+                  }
+                },
+                {
+                  "label": "Step 2 of 8 — Add joint sponsor documents",
+                  "heading": "Upload joint sponsor's financial documents",
+                  "screenTitle": "Upload joint sponsor's financial documents",
+                  "instruction": "Select and upload the required financial documents for the joint sponsor. Include their complete tax returns (3 years), W-2 forms, current pay stubs (6 months), bank statements, and employment verification letter.",
+                  "url": "ceac.state.gov",
+                  "ss_label": "Document Upload",
+                  "ss_headline": "Joint Sponsor Financial Documentation",
+                  "ss_desc": "Complete financial package for joint sponsor",
+                  "ss_highlight": null,
+                  "caption": "Ensure all documents are current, clear, and properly labeled.",
+                  "note": null,
+                  "media": {
+                    "type": "img",
+                    "src": "/assets/images/ir1-journey/c2_step6b/02-add-joint-sponser-doc.png"
+                  }
+                },
+                {
+                  "label": "Step 3 of 8 — Receive confirmation message",
+                  "heading": "Confirmation that joint sponsor was added",
+                  "screenTitle": "Confirmation that joint sponsor was added",
+                  "instruction": "CEAC will display a confirmation message once the joint sponsor and their documents have been successfully received. This confirms that the joint sponsor addition is in process.",
+                  "url": "ceac.state.gov",
+                  "ss_label": "Confirmation",
+                  "ss_headline": "Addition Confirmed",
+                  "ss_desc": "Joint sponsor successfully submitted",
+                  "ss_highlight": null,
+                  "caption": "Save the confirmation message for your records.",
+                  "note": null,
+                  "media": {
+                    "type": "img",
+                    "src": "/assets/images/ir1-journey/c2_step6b/03-get-a-msg.png"
+                  }
+                },
+                {
+                  "label": "Step 4 of 8 — Approval of joint sponsor addition",
+                  "heading": "Joint sponsor addition approved",
+                  "screenTitle": "Joint sponsor addition approved",
+                  "instruction": "Once CEAC has reviewed and approved the joint sponsor addition, you will see an approval status. This confirms that the joint sponsor is now officially part of your affidavit of support package and their income is counted.",
+                  "url": "ceac.state.gov",
+                  "ss_label": "Approval",
+                  "ss_headline": "Joint Sponsor Approved",
+                  "ss_desc": "Income now counted in I-864 package",
+                  "ss_highlight": null,
+                  "caption": "Approval confirms both the petitioner and joint sponsor can meet the income requirement.",
+                  "note": null,
+                  "media": {
+                    "type": "img",
+                    "src": "/assets/images/ir1-journey/c2_step6b/04-joint-sponser-approval.png"
+                  }
+                },
+                {
+                  "label": "Step 5 of 8 — Start financial document submission",
+                  "heading": "Begin Affidavit of Support submission",
+                  "screenTitle": "Begin Affidavit of Support submission",
+                  "instruction": "After the joint sponsor is approved, navigate to the Affidavit of Support section in CEAC. You will now submit the completed I-864 form and all supporting financial documents for both the petitioner and joint sponsor.",
+                  "url": "ceac.state.gov",
+                  "ss_label": "Submission Start",
+                  "ss_headline": "Start AOS Submission",
+                  "ss_desc": "Begin uploading I-864 and financial evidence",
+                  "ss_highlight": null,
+                  "caption": "Ensure the I-864 form is completed and signed before uploading.",
+                  "note": null,
+                  "media": {
+                    "type": "img",
+                    "src": "/assets/images/ir1-journey/c2_step6b/05-start-submission-of-docs.png"
+                  }
+                },
+                {
+                  "label": "Step 6 of 8 — Confirm submission status",
+                  "heading": "Verify submission is complete",
+                  "screenTitle": "Verify submission is complete",
+                  "instruction": "After uploading all required Affidavit of Support documents (I-864 form, tax returns, pay stubs, bank statements for both petitioner and joint sponsor), check the submission status in CEAC to confirm all items have been received.",
+                  "url": "ceac.state.gov",
+                  "ss_label": "Confirmation",
+                  "ss_headline": "Submission Confirmed",
+                  "ss_desc": "All documents marked as submitted",
+                  "ss_highlight": null,
+                  "caption": "A complete submission is critical for NVC documentary qualification.",
+                  "note": null,
+                  "media": {
+                    "type": "img",
+                    "src": "/assets/images/ir1-journey/c2_step6b/06-submitted.png"
+                  }
+                },
+                {
+                  "label": "Step 7 of 8 — Check document status",
+                  "heading": "Check the status of your submission",
+                  "screenTitle": "Check the status of your submission",
+                  "instruction": "Review the overall status of your Affidavit of Support submission in CEAC. All documents for both the petitioner and joint sponsor should show as received or accepted. This indicates your complete financial package is ready for NVC review.",
+                  "url": "ceac.state.gov",
+                  "ss_label": "Status Check",
+                  "ss_headline": "Document Status Review",
+                  "ss_desc": "All AOS documents confirmed in system",
+                  "ss_highlight": null,
+                  "caption": "Monitor CEAC regularly for any update notices or document requests.",
+                  "note": null,
+                  "media": {
+                    "type": "img",
+                    "src": "/assets/images/ir1-journey/c2_step6b/07-check-status.png"
+                  }
+                },
+                {
+                  "label": "Step 8 of 8 — Add additional documents if needed",
+                  "heading": "Submit any additional supporting documents",
+                  "screenTitle": "Submit any additional supporting documents",
+                  "instruction": "If needed, you can add additional financial documents or supporting evidence through CEAC. This may include updated pay stubs, recent bank statements, or any other documents that strengthen your sponsorship case.",
+                  "url": "ceac.state.gov",
+                  "ss_label": "Additional Docs",
+                  "ss_headline": "Add Supporting Evidence",
+                  "ss_desc": "Submit any supplemental financial documents",
+                  "ss_highlight": null,
+                  "caption": "Additional documents can be submitted at any time during CEAC processing.",
+                  "note": null,
+                  "media": {
+                    "type": "img",
+                    "src": "/assets/images/ir1-journey/c2_step6b/08-add-additional-docs.png"
+                  }
+                }
+              ]
+            },
             "disclaimer": "Rahvana provides structured guidance only. This is not legal advice. Relationship-proof requirements may vary — confirm with your attorney or NVC guidance."
           }
         },
@@ -3063,7 +4330,6 @@
           "step_number": 9,
           "step_name": "Awaiting NVC Document Review",
           "step_short_description": "NVC processing & review",
-          "step_description": "Your documents have been submitted. NVC is now reviewing your package for completeness and consistency before issuing a documentary qualification decision.",
           "step_type": "tool",
           "who": "NVC",
           "where": "NVC Review",
@@ -3763,7 +5029,7 @@
               "heading": "Step-by-step guide from arrival to outcome",
               "icon": "building",
               "cues": [
-                "Arrival timing and embassy entry",
+                "Arrival timing and embassy entry is strict",
                 "Security, biometrics, and document intake",
                 "Consular interview flow and common questions",
                 "Possible outcomes and what happens next"
@@ -3824,7 +5090,7 @@
               {
                 "label": "Step 8 of 8",
                 "heading": "Possible outcomes after the interview",
-                "instruction": "The officer will indicate the outcome at the window or shortly after. The three main outcomes are approval, Administrative Processing (AP), or refusal. If AP applies, proceed to Step 9 to track your case.",
+                "instruction": "The officer will indicate the outcome at the window or shortly after. The three main outcomes are approval, Administrative Processing (AP), or refusal. If AP applies, proceed to Step 9 to track and manage the AP process.",
                 "vlabel": "Interview Outcomes",
                 "visual": "<div class=\"mock-card\">\n      <div class=\"mock-title\">What you may hear</div>\n      <div class=\"mock-row\">Approved — passport retained, visa to be delivered <span class=\"mock-badge-green\">Best</span></div>\n      <div class=\"mock-row\">Administrative Processing — more time needed <span class=\"mock-badge-amber\">Step 9</span></div>\n      <div class=\"mock-row\">Refused — written reason provided <span class=\"mock-badge-blue\">Consult attorney</span></div>\n    </div>"
               }
