@@ -6,8 +6,9 @@ import { DashboardView } from "./DashboardView";
 import { ChapterView } from "./ChapterView";
 import { StepView } from "./StepView";
 import { WizardState } from "@/app/(main)/dashboard/hooks/useWizard";
-import { ChevronRight, ArrowLeft, Check, LayoutDashboard } from "lucide-react";
+import { ChevronRight, ArrowLeft, Check, LayoutDashboard, Bell, X } from "lucide-react";
 import { getDisplayStepNumber } from "./journeyHelpers";
+import NotificationCenter from "./NotificationCenter";
 
 interface RoadmapLayoutV2Props {
   data: RoadmapData;
@@ -31,6 +32,7 @@ export default function RoadmapLayoutV2({
 }: RoadmapLayoutV2Props) {
   const [view, setView] = useState<ViewType>("dashboard");
   const [selectedChapterIdx, setSelectedChapterIdx] = useState<number>(0);
+  const [isNotificationOpen, setIsNotificationOpen] = useState(false);
 
   // Sync selected chapter from state, but keep view as 'dashboard' by default on load
   useEffect(() => {
@@ -96,7 +98,7 @@ export default function RoadmapLayoutV2({
   return (
     <div className="flex flex-col min-h-screen bg-[#f4f7fb] font-sans text-[#1c2b3a] animate-in fade-in duration-500">
       {/* Top Navigation */}
-      <nav className="sticky top-[55px] h-[52px] bg-white border-b border-[#d0e4f7] flex items-center px-5 gap-3 shrink-0 z-50">
+      <nav className="sticky top-[55px] h-[52px] bg-white border-b border-[#d0e4f7] flex items-center px-5 gap-3 shrink-0 z-40">
         {/* Dynamic Back / Logo */}
         <div className="flex items-center gap-3">
           {view !== "dashboard" && (
@@ -174,6 +176,19 @@ export default function RoadmapLayoutV2({
             </button>
           )}
 
+          <div className="relative">
+            <button
+              onClick={() => setIsNotificationOpen(!isNotificationOpen)}
+              className={`w-9 h-9 rounded-full flex items-center justify-center transition-all active:scale-95 cursor-pointer relative
+                ${isNotificationOpen ? "bg-primary text-white" : "text-[#6b8097] hover:bg-[#f4f7fb] hover:text-primary border border-[#d0e4f7]"}`}
+            >
+              <Bell size={18} strokeWidth={2.5} />
+              {state.metadata?.tracking_status && Object.keys(state.metadata.tracking_status).length > 0 && (
+                <span className="absolute top-0 right-0 w-2.5 h-2.5 bg-red-500 border-2 border-white rounded-full" />
+              )}
+            </button>
+          </div>
+
           <button
             onClick={() => {
               if (
@@ -186,9 +201,29 @@ export default function RoadmapLayoutV2({
             }}
             className="p-1.5 hover:bg-red-50 text-slate-300 hover:text-red-500 rounded-lg transition-colors cursor-pointer"
             title="Reset Journey"
-          ></button>
+          >
+            <X size={18} />
+          </button>
         </div>
       </nav>
+
+      {/* Notification Drawer Overlay */}
+      {isNotificationOpen && (
+        <>
+          <div 
+            className="fixed inset-0 bg-black/20 backdrop-blur-[2px] z-[60] animate-in fade-in duration-300"
+            onClick={() => setIsNotificationOpen(false)}
+          />
+          <div className="fixed right-0 top-0 bottom-0 z-[70]">
+            <NotificationCenter 
+              userId={state.backendId}
+              journeyId="ir-1"
+              trackingStatus={state.metadata?.tracking_status}
+              onClose={() => setIsNotificationOpen(false)}
+            />
+          </div>
+        </>
+      )}
 
       {/* Main Content Area */}
       <main className="flex-1 flex flex-col relative overflow-hidden">
@@ -201,6 +236,7 @@ export default function RoadmapLayoutV2({
             actions={{
               setCurrentStep: actions.setCurrentStep,
               setStage: actions.setStage,
+              updateMetadata: actions.updateMetadata,
             }}
           />
         )}

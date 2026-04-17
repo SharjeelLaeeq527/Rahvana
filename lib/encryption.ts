@@ -16,12 +16,20 @@
 import crypto from 'crypto';
 import CryptoJS from 'crypto-js'; // kept ONLY for legacy decryption
 
-const RAW_SECRET = process.env.PORTAL_WALLET_SECRET!;
+// Hardcoded secret for local development. Replace with env variable in production!
+const RAW_SECRET = process.env.PORTAL_WALLET_SECRET;
+if (!RAW_SECRET) {
+  throw new Error("PORTAL_WALLET_SECRET environment variable is not set. Encryption/decryption cannot proceed.");
+}
 
-// Derive a fixed 32-byte key from the env secret using SHA-256
+// Derive a fixed 32-byte key from the envsecret using SHA-256
 function getDerivedKey(): Buffer {
+  if (!RAW_SECRET) {
+    throw new Error("PORTAL_WALLET_SECRET environment variable is not set. Encryption/decryption cannot proceed.");
+  }
   return crypto.createHash('sha256').update(RAW_SECRET).digest();
 }
+
 
 // ================================
 // ENCRYPT — AES-256-GCM (new)
@@ -74,8 +82,9 @@ export function decrypt(cipherText: string): string {
 
   // LEGACY format — CryptoJS AES (old data in DB)
   try {
-    const bytes = CryptoJS.AES.decrypt(cipherText, RAW_SECRET);
-    return bytes.toString(CryptoJS.enc.Utf8);
+    // RAW_SECRET is always a string now (guaranteed above)
+    const bytes = CryptoJS.AES.decrypt(cipherText, RAW_SECRET as string);
+    return bytes ? bytes.toString(CryptoJS.enc.Utf8) : '';
   } catch (err) {
     console.error('[decrypt] Legacy CryptoJS decryption failed:', err);
     return '';

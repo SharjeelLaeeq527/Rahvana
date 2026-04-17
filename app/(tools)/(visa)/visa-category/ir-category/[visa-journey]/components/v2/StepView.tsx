@@ -5,16 +5,12 @@ import {
   ArrowLeft,
   Zap,
   CheckCircle2,
-  AlertTriangle,
-  Clock,
   CheckCircle,
   CheckSquare,
   ArrowRight,
   ShieldCheck,
   Search,
   MessageSquare,
-  XCircle,
-  Clipboard,
   Scale,
   Globe,
   Lock,
@@ -31,21 +27,18 @@ import {
   CreditCard,
   Wallet,
   User,
+  Users,
   FileText,
   ClipboardList,
   ChevronLeft,
-  ChevronRight,
   Calendar,
-  Activity,
   Info,
-  Briefcase,
-  Syringe,
-  Hospital,
-  Copy,
   Eye,
   Trash2,
   Truck,
   MoreVertical,
+  Activity,
+  Clock,
 } from "lucide-react";
 
 import {
@@ -70,16 +63,21 @@ import {
 } from "../types";
 import { WizardState } from "@/app/(main)/dashboard/hooks/useWizard";
 import { QuestRenderer } from "./QuestRenderer";
+import { ActionStepRenderer } from "./ActionStepRenderer";
 import { getAllActiveSteps, getStageProgress, getDocumentReviewProgress, getQuestProgress } from "./journeyHelpers";
 import CredentialFormModal from "@/app/(main)/portal-wallet/components/CredentialFormModal";
 import ViewCredentialModal from "@/app/(main)/portal-wallet/components/ViewCredentialModal";
 import { toast } from "sonner";
 import { ConfirmationModal } from "@/app/components/shared/ConfirmationModal";
 import { InlineGuideData } from "./InlineGuideData";
+import { INTERVIEW_SCHEDULING_DATA } from "./InterviewSchedulingData";
 import { USCIS_TUTORIAL_STEPS } from "./UscisTutorialData";
 import Image from "next/image";
 import Link from "next/link";
-import { HOUSEHOLD_GUIDE_CONTENT } from "./HouseholdTutorialData";
+import {
+  HOUSEHOLD_TUTORIAL_STEPS,
+  HOUSEHOLD_GUIDE_CONTENT,
+} from "./HouseholdTutorialData";
 import {
   SUBMISSION_TUTORIAL_STEPS,
   SubmissionTutorialOverlay,
@@ -92,13 +90,25 @@ import { POLICE_CLEARANCE_DATA } from "./PoliceClearanceData";
 import { mapDocumentNameToId } from "@/lib/document-vault/journey-mapping";
 import { useDocumentVaultStore } from "@/lib/document-vault/store";
 import { DocumentUploadModal } from "@/app/components/document-vault/DocumentUploadModal";
+import { MultipleDocumentUploadModal } from "@/app/components/document-vault/MultipleDocumentUploadModal";
 import { ALL_DOCUMENTS } from "@/lib/document-vault/document-definitions";
 import { useAuth } from "@/app/context/AuthContext";
 import PassportPhotoTool from "@/components/tools/PassportPhotoTool";
 import DocumentTranslationTool from "@/components/tools/DocumentTranslationTool";
 import SponsorshipCalculatorTool from "@/components/tools/SponsorshipCalculatorTool";
+import { DocumentQuestionnaire } from "@/app/components/questionnaire/DocumentQuestionnaire";
+import { IR1_QUESTIONNAIRE_CONFIG } from "@/lib/questionnaire/ir1-questionnaire";
+import { computeDocumentList } from "@/lib/questionnaire/engine";
+import type {
+  QuestionnaireResult,
+  ConditionalDocument,
+} from "@/lib/questionnaire/types";
 import { StepHeader } from "./StepHeader";
-import { CeacCredsModal, NvcFeeModal, ApUpdateModal } from "./PortalWalletManager";
+import {
+  CeacCredsModal,
+  NvcFeeModal,
+  ApUpdateModal,
+} from "./PortalWalletManager";
 import { SponsorshipModule } from "./SponsorshipModule";
 import {
   CivilDocGuideOverlay,
@@ -112,7 +122,7 @@ import {
 } from "./GuideTutorialOverlays";
 import {
   DqRecordingTool,
-  InterviewSchedulingTool,
+  // InterviewSchedulingTool,
   AppointmentReceivedTool,
   MedicalExamTool,
   PolioCertificateTool,
@@ -128,6 +138,10 @@ import { MedicalExamGuideTool } from "./MedicalExamGuideTool";
 import { CourierRegistrationTool } from "./CourierRegistrationTool";
 import { InterviewPrepTool } from "./InterviewPrepTool";
 import { InterviewDayTool } from "./InterviewDayTool";
+import CaseRegistrationForm from "./CaseRegistrationForm";
+import { EMBASSY_GUIDANCE_DATA } from "@/app/(tools)/(visa)/221g-action-planner/utils/embassyGuidance";
+import { APPROVAL_NOTICE_DATA } from "./ApprovalNoticeData";
+import { ApprovalNoticeTool } from "./ApprovalNoticeTool";
 
 interface SecurityQuestion {
   id: string;
@@ -157,6 +171,11 @@ interface StepViewProps {
     updateDocumentStatus?: (
       docId: string,
       status: "not-started" | "in-progress" | "reviewed",
+    ) => Promise<void>;
+    savePaymentMethod?: (methodValue: string) => Promise<void>;
+    saveMailingDetails?: (
+      carrier: string,
+      trackingNumber: string,
     ) => Promise<void>;
   };
   onBack: () => void;
@@ -203,6 +222,18 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
   }>({
     isOpen: false,
     doc: null,
+  });
+
+  const [multipleUploadModalState, setMultipleUploadModalState] = useState<{
+    isOpen: boolean;
+    categoryId: string;
+    documentName: string;
+    options: string[];
+  }>({
+    isOpen: false,
+    categoryId: "",
+    documentName: "",
+    options: [],
   });
 
   // Filing Quiz States
@@ -264,11 +295,15 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
   const [tutorialIdx, setTutorialIdx] = useState(0);
 
   // Household Member Builder States (Step 7)
-  const [jsCount, setJsCount] = useState(0);
-  const [hhCount, setHhCount] = useState(0);
+  const [jsCount, setJsCount] = useState<number>(
+    (state.metadata.jsCount as number) || 0,
+  );
+  const [hhCount, setHhCount] = useState<number>(
+    (state.metadata.hhCount as number) || 0,
+  );
   const [hhRelationships, setHhRelationships] = useState<
     Record<number, string>
-  >({});
+  >((state.metadata.hhRelationships as Record<number, string>) || {});
   const [activeHhDoc, setActiveHhDoc] = useState<any>(null);
   const [isHhDocGuideOpen, setIsHhDocGuideOpen] = useState(false);
   const [hhDocsStatus, setHhDocsStatus] = useState<Record<string, string>>(
@@ -343,10 +378,18 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
   const [pccSaved, setPccSaved] = useState(state.metadata.pcc_saved === "true");
 
   // Appointment Received States
-  const [interviewSaved, setInterviewSaved] = useState(state.metadata.interviewSaved === true);
-  const [interviewDate, setInterviewDate] = useState((state.metadata.interviewDate as string) || "");
-  const [letterDate, setLetterDate] = useState((state.metadata.letterDate as string) || "");
-  const [consulateLocation, setConsulateLocation] = useState((state.metadata.consulateLocation as string) || "");
+  const [interviewSaved, setInterviewSaved] = useState(
+    state.metadata.interviewSaved === true,
+  );
+  const [interviewDate, setInterviewDate] = useState(
+    (state.metadata.interviewDate as string) || "",
+  );
+  const [letterDate, setLetterDate] = useState(
+    (state.metadata.letterDate as string) || "",
+  );
+  const [consulateLocation, setConsulateLocation] = useState(
+    (state.metadata.consulateLocation as string) || "",
+  );
 
   // Step 3.7 Interview Prep States
   const [isPrepLaunched, setIsPrepLaunched] = useState(
@@ -378,6 +421,23 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
   );
   const [isApSaved, setIsApSaved] = useState(state.metadata.apSaved === "true");
   const [isApUpdateModalOpen, setIsApUpdateModalOpen] = useState(false);
+
+  // Step 1.17 Approval Notice States
+  const [isApprovalModalOpen, setIsApprovalModalOpen] = useState(false);
+  const [isApprovalGuideOpen, setIsApprovalGuideOpen] = useState(false);
+  const [approvalGuideStep, setApprovalGuideStep] = useState(0);
+  const [approvalDetails, setApprovalDetails] = useState(() => {
+    return (
+      state.metadata.approvalDetails || {
+        approvalDate: "",
+        receiptNumber: "",
+        priorityDate: "",
+      }
+    );
+  });
+  const [isApprovalSaved, setIsApprovalSaved] = useState(
+    state.metadata.approvalSaved === "true",
+  );
 
   const handleSaveApUpdate = (entry: any) => {
     const nextLog = [entry, ...apUpdateLog];
@@ -457,6 +517,11 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
     }
   }, [state.metadata.hhDocsStatus]);
 
+  // Sync household counts and relationships back to metadata
+  useEffect(() => {
+    actions.updateMetadata({ jsCount, hhCount, hhRelationships });
+  }, [jsCount, hhCount, hhRelationships]); // eslint-disable-line react-hooks/exhaustive-deps
+
   const chapters = data.chapters || (data as any).stages;
   const currentChapter = chapters?.[state.currentStage];
 
@@ -484,7 +549,6 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
     state.metadata?.filingMethod || state.filingType || "online";
 
   const getIcon = getStepIcon;
-
 
   const activeStepsInChapter = useMemo(() => {
     if (!currentChapter) return [];
@@ -595,6 +659,58 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
     }
 
     actions.toggleComplete(targetSKey);
+
+    // Map step keys to correct metadata fields for milestone tracking
+    const milestoneMetaMap: Record<
+      string,
+      { key: string; value?: () => string }
+    > = {
+      step_1_3: {
+        key: "receiptNum",
+        value: () => new Date().toISOString().slice(0, 10),
+      }, // I-130 submitted to USCIS
+      step_2_10: {
+        key: "dqDate",
+        value: () => new Date().toISOString().slice(0, 10),
+      }, // Documentarily Qualified
+      step_3_1: {
+        key: "medicalDate",
+        value: () => new Date().toISOString().slice(0, 10),
+      }, // Medical exam scheduled
+      step_3_7: {
+        key: "interviewDate",
+        value: () => new Date().toISOString().slice(0, 10),
+      }, // Interview scheduled
+      step_2_1: {
+        key: "nvcCaseNum",
+        value: () => "NVC2026-" + Math.floor(Math.random() * 1000000),
+      }, // NVC case number (demo value)
+      step_2_2: {
+        key: "nvcInvoice",
+        value: () => "INVC-" + Math.floor(Math.random() * 1000000),
+      }, // NVC invoice ID (demo value)
+      step_3_7b: { key: "interviewEmbassy", value: () => "Islamabad" }, // Embassy (demo value)
+    };
+
+    // If this step is a milestone, set the metadata field if not already set
+    const metaObj = milestoneMetaMap[targetSKey];
+    if (
+      metaObj &&
+      (state.metadata[metaObj.key] === undefined ||
+        state.metadata[metaObj.key] === null ||
+        state.metadata[metaObj.key] === "")
+    ) {
+      const value = metaObj.value
+        ? metaObj.value()
+        : new Date().toISOString().slice(0, 10);
+      // Debug log for tracking metadata update
+      // eslint-disable-next-line no-console
+      console.log(
+        `[Milestone] Setting metadata field '${metaObj.key}' to:`,
+        value,
+      );
+      actions.updateMetadata({ [metaObj.key]: value });
+    }
   };
 
   // Calculate if there's an incomplete prerequisite step
@@ -728,6 +844,33 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
       setIsWalletFormOpen(false);
       await fetchCredentials();
 
+      // After saving, fetch latest credentials and update metadata for dashboard
+      if (data.portalType === "NVC") {
+        try {
+          const res = await fetch("/api/portal-wallet");
+          const wallet = await res.json();
+          const nvcCreds = wallet.credentials?.find(
+            (c: any) => c.portal_type?.toUpperCase() === "NVC",
+          );
+          if (nvcCreds) {
+            if (nvcCreds.nvc_case_number) {
+              actions.updateMetadata({ nvcCaseNum: nvcCreds.nvc_case_number });
+            }
+            if (nvcCreds.nvc_invoice_id) {
+              actions.updateMetadata({ nvcInvoice: nvcCreds.nvc_invoice_id });
+            }
+            // Always set portalType in metadata for dashboard API
+            actions.updateMetadata({ portalType: "NVC" });
+            // Force dashboard to reload wizard state
+            window.location.reload();
+          }
+        } catch (err) {
+          // eslint-disable-next-line no-console
+          console.error("Failed to sync NVC credentials to metadata", err);
+        }
+        if (sId === "step_2_1" && !isCompleted)
+          actions.toggleComplete("step_2_1");
+      }
       if (data.portalType === "USCIS" && sId === "step_1_6") {
         if (!isCompleted) handleToggleComplete("step_1_6");
       }
@@ -949,7 +1092,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
     setShowQuiz(false);
   };
 
-  // handleToggleComplete logic moved up and wrapped in safeActions for global access
+
 
   const handleMarkDocReviewed = (docId: string) => {
     const next = { ...civilDocsStatus, [docId]: "reviewed" };
@@ -986,7 +1129,6 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
       }
     }
   };
-
 
   const renderDocActionModal = () => {
     if (!docActionModal.doc) return null;
@@ -1036,9 +1178,9 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                   })()}
                 </div>
                 <div>
-                  <h3 className="text-xl font-bold text-[#0f1f38]">
+                  <DialogTitle className="text-xl font-bold text-[#0f1f38]">
                     {title || doc.name || doc.title}
-                  </h3>
+                  </DialogTitle>
                   <p className="text-sm text-[#6b8097]">
                     {subtitle ||
                       doc.subtitle ||
@@ -1105,12 +1247,647 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
     );
   };
 
+  const getHhDocItems = (count: number, rels: Record<number, string>) => {
+    const items: any[] = [];
+    for (let i = 1; i <= count; i++) {
+      const relationship = rels[i] || "spouse";
+      const label = `Household Member ${i}`;
+
+      switch (relationship) {
+        case "spouse":
+          items.push({
+            id: `hh${i}-marriage`,
+            icon: "marriage",
+            title: `Marriage Certificate — ${label}`,
+            sub: "Proves the spousal relationship to the petitioner",
+            tags: [
+              { cls: "tag-hh", label: "Household Member" },
+              { cls: "tag-rel", label: "Relationship Proof" },
+              { cls: "tag-gov", label: "Govt Record" },
+            ],
+            guideKey: "marriage-cert-hh",
+            group: "required",
+          });
+          items.push({
+            id: `hh${i}-residence`,
+            icon: "home",
+            title: `Proof of Shared Residence — ${label}`,
+            sub: "Confirms both spouses share the same household address",
+            tags: [
+              { cls: "tag-hh", label: "Household Member" },
+              { cls: "tag-res", label: "Shared Residence" },
+            ],
+            guideKey: "shared-residence",
+            group: "required",
+          });
+          items.push({
+            id: `hh${i}-id`,
+            icon: "id",
+            title: `Identity Document — ${label}`,
+            sub: "Government-issued ID confirming the household member's identity",
+            tags: [
+              { cls: "tag-hh", label: "Household Member" },
+              { cls: "tag-id", label: "Identity" },
+              { cls: "tag-gov", label: "Govt Record" },
+            ],
+            guideKey: "id-doc-hh",
+            group: "required",
+          });
+          break;
+
+        case "child":
+          items.push({
+            id: `hh${i}-birth-hh`,
+            icon: "birth",
+            title: `Birth Certificate — ${label}`,
+            sub: "Proves the parent–child relationship to the petitioner",
+            tags: [
+              { cls: "tag-hh", label: "Household Member" },
+              { cls: "tag-rel", label: "Relationship Proof" },
+              { cls: "tag-gov", label: "Govt Record" },
+            ],
+            guideKey: "birth-cert-hh",
+            group: "required",
+          });
+          items.push({
+            id: `hh${i}-residence`,
+            icon: "home",
+            title: `Proof of Shared Residence — ${label}`,
+            sub: "Confirms child lives in the same household",
+            tags: [
+              { cls: "tag-hh", label: "Household Member" },
+              { cls: "tag-res", label: "Shared Residence" },
+            ],
+            guideKey: "shared-residence",
+            group: "required",
+          });
+          items.push({
+            id: `hh${i}-id`,
+            icon: "id",
+            title: `Identity Document — ${label}`,
+            sub: "Government-issued ID for the household member",
+            tags: [
+              { cls: "tag-hh", label: "Household Member" },
+              { cls: "tag-id", label: "Identity" },
+              { cls: "tag-gov", label: "Govt Record" },
+            ],
+            guideKey: "id-doc-hh",
+            group: "conditional",
+          });
+          break;
+
+        case "parent":
+          items.push({
+            id: `hh${i}-birth-sponsor`,
+            icon: "birth",
+            title: `Birth Certificate of Petitioner`,
+            sub: `Shows ${label} (parent) is listed — establishes the parent–child link`,
+            tags: [
+              { cls: "tag-hh", label: "Household Member" },
+              { cls: "tag-rel", label: "Relationship Proof" },
+              { cls: "tag-gov", label: "Govt Record" },
+            ],
+            guideKey: "birth-cert-sponsor",
+            group: "required",
+          });
+          items.push({
+            id: `hh${i}-id`,
+            icon: "id",
+            title: `Identity Document — ${label}`,
+            sub: "Government-issued ID for the household member",
+            tags: [
+              { cls: "tag-hh", label: "Household Member" },
+              { cls: "tag-id", label: "Identity" },
+              { cls: "tag-gov", label: "Govt Record" },
+            ],
+            guideKey: "id-doc-hh",
+            group: "required",
+          });
+          items.push({
+            id: `hh${i}-residence`,
+            icon: "home",
+            title: `Proof of Shared Residence — ${label}`,
+            sub: "Confirms parent and petitioner share the same household",
+            tags: [
+              { cls: "tag-hh", label: "Household Member" },
+              { cls: "tag-res", label: "Shared Residence" },
+            ],
+            guideKey: "shared-residence",
+            group: "conditional",
+          });
+          break;
+
+        case "sibling":
+          items.push({
+            id: `hh${i}-birth-sponsor`,
+            icon: "birth",
+            title: "Birth Certificate of Petitioner",
+            sub: "Shows shared parentage with the sibling household member",
+            tags: [
+              { cls: "tag-hh", label: "Household Member" },
+              { cls: "tag-rel", label: "Relationship Proof" },
+              { cls: "tag-gov", label: "Govt Record" },
+            ],
+            guideKey: "birth-cert-sponsor",
+            group: "required",
+          });
+          items.push({
+            id: `hh${i}-birth-hh`,
+            icon: "birth",
+            title: `Birth Certificate — ${label}`,
+            sub: "Combined with petitioner's birth cert to show shared parentage",
+            tags: [
+              { cls: "tag-hh", label: "Household Member" },
+              { cls: "tag-rel", label: "Relationship Proof" },
+              { cls: "tag-gov", label: "Govt Record" },
+            ],
+            guideKey: "birth-cert-hh",
+            group: "required",
+          });
+          items.push({
+            id: `hh${i}-id`,
+            icon: "id",
+            title: `Identity Document — ${label}`,
+            sub: "Government-issued ID for the household member",
+            tags: [
+              { cls: "tag-hh", label: "Household Member" },
+              { cls: "tag-id", label: "Identity" },
+              { cls: "tag-gov", label: "Govt Record" },
+            ],
+            guideKey: "id-doc-hh",
+            group: "required",
+          });
+          items.push({
+            id: `hh${i}-residence`,
+            icon: "home",
+            title: `Proof of Shared Residence — ${label}`,
+            sub: "Confirms sibling and petitioner share the same household",
+            tags: [
+              { cls: "tag-hh", label: "Household Member" },
+              { cls: "tag-res", label: "Shared Residence" },
+            ],
+            guideKey: "shared-residence",
+            group: "conditional",
+          });
+          break;
+
+        case "other-relative":
+        case "other-hh":
+        default:
+          items.push({
+            id: `hh${i}-residence`,
+            icon: "home",
+            title: `Proof of Shared Residence — ${label}`,
+            sub: "Demonstrates the shared-household basis for including their income",
+            tags: [
+              { cls: "tag-hh", label: "Household Member" },
+              { cls: "tag-res", label: "Shared Residence" },
+            ],
+            guideKey: "shared-residence",
+            group: "required",
+          });
+          items.push({
+            id: `hh${i}-family-link`,
+            icon: "link",
+            title: `Supporting Family-Link Evidence — ${label}`,
+            sub: "Civil records or affidavit establishing the household connection",
+            tags: [
+              { cls: "tag-hh", label: "Household Member" },
+              { cls: "tag-rel", label: "Relationship Proof" },
+            ],
+            guideKey: "family-link",
+            group: "required",
+          });
+          items.push({
+            id: `hh${i}-id`,
+            icon: "id",
+            title: `Identity Document — ${label}`,
+            sub: "Government-issued ID for the household member",
+            tags: [
+              { cls: "tag-hh", label: "Household Member" },
+              { cls: "tag-id", label: "Identity" },
+              { cls: "tag-gov", label: "Govt Record" },
+            ],
+            guideKey: "id-doc-hh",
+            group: "conditional",
+          });
+          break;
+      }
+    }
+    return items;
+  };
+
+  const renderHouseholdBuilder = () => {
+    const allItems = getHhDocItems(hhCount, hhRelationships);
+    const total = allItems.length;
+    const reviewed = allItems.filter(
+      (item) => hhDocsStatus[item.id] === "reviewed",
+    ).length;
+    const progressPct = total > 0 ? Math.round((reviewed / total) * 100) : 0;
+
+    return (
+      <div className="flex flex-col mt-4">
+        <div className="flex gap-[7px] flex-wrap mb-7">
+          <span className="text-[11px] font-semibold tracking-wider uppercase px-3 py-[2px] rounded-full bg-[#f3f0fb] text-[#4a2d8a] border border-[#c9bef2]">
+            CEAC Portal
+          </span>
+          <span className="text-[11px] font-semibold tracking-wider uppercase px-3 py-[2px] rounded-full bg-[#fff7ed] text-[#b45309] border border-[#fed7aa]">
+            Financial Sponsorship
+          </span>
+          <span className="text-[11px] font-semibold tracking-wider uppercase px-3 py-[2px] rounded-full bg-[#e8f5ef] text-[#15744f] border border-[#a8d9be]">
+            Interactive Checklist
+          </span>
+        </div>
+
+        {/* DISTINCTION CARDS */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-7">
+          <div className="bg-[#e8f1fb] border-[1.5px] border-[#d0e4f7] rounded-[16px] p-4.5">
+            <div className="text-[10px] font-bold tracking-widest uppercase text-[#2d4a6e] mb-1.5">
+              Joint Sponsor
+            </div>
+            <div className="text-[15px] font-semibold text-[#0c1b33] mb-1.5 leading-tight">
+              Added in CEAC, no proof checklist
+            </div>
+            <div className="text-[13px] text-[#3a4f63] leading-relaxed">
+              A joint sponsor is an independent U.S. citizen or LPR who sponsors
+              separately. Added through the CEAC sponsorship flow —{" "}
+              <strong>no relationship-proof documents</strong> are typically
+              required from them.
+            </div>
+          </div>
+          <div className="bg-[#e8f5ef] border-[1.5px] border-[#a8d9be] rounded-[16px] p-4.5">
+            <div className="text-[10px] font-bold tracking-widest uppercase text-[#15744f] mb-1.5">
+              Household Member
+            </div>
+            <div className="text-[15px] font-semibold text-[#0e5c3c] mb-1.5 leading-tight">
+              Added in CEAC + relationship proof required
+            </div>
+            <div className="text-[13px] text-[#3a4f63] leading-relaxed">
+              A household member&apos;s income is used alongside the
+              petitioner&apos;s. Added through CEAC — and also requires{" "}
+              <strong>relationship-proof documentation</strong> showing their
+              connection to the sponsoring household.
+            </div>
+          </div>
+        </div>
+
+        {/* PRIMARY LAUNCH MODULE */}
+        <div className="bg-[#0e1e38] rounded-[16px] border border-white/7 shadow-[0_20px_60px_rgba(12,27,51,0.18)] overflow-hidden mb-6 relative">
+          <div className="absolute top-0 left-0 right-0 h-[2px] bg-linear-to-r from-primary via-[#6aa8f0] to-transparent opacity-70" />
+          <div className="p-8 md:p-[32px_34px_28px]">
+            <div className="flex items-start gap-4 mb-[22px]">
+              <div className="w-[46px] h-[46px] rounded-[11px] bg-white/6 border border-white/10 flex items-center justify-center shrink-0">
+                <Users className="text-white/75" size={22} />
+              </div>
+              <div>
+                <div className="text-[10px] font-bold tracking-widest uppercase text-white/35 mb-1">
+                  CEAC Guidance
+                </div>
+                <div className="text-[clamp(19px,2.8vw,23px)] text-white/92 leading-tight">
+                  Add sponsorship participants in CEAC
+                </div>
+              </div>
+            </div>
+            <div className="h-px bg-white/10 mb-5" />
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-[9px] mb-[26px]">
+              {[
+                "Access the affidavit support section",
+                "Add a household member or joint sponsor",
+                "Review what information CEAC needs",
+                "Return here to prepare relationship proof",
+              ].map((cue, idx) => (
+                <div
+                  key={idx}
+                  className="bg-white/6 border border-white/10 rounded-[10px] p-[11px_13px] flex items-start gap-[9px]"
+                >
+                  <div className="w-[5px] h-[5px] rounded-full bg-[#6aa8f0]/70 shrink-0 mt-[5px]" />
+                  <div className="text-[13px] text-white/55 leading-tight">
+                    {cue}
+                  </div>
+                </div>
+              ))}
+            </div>
+            <button
+              onClick={() => {
+                setTutorialIdx(0);
+                setIsTutorialOpen(true);
+              }}
+              className="w-full py-4 px-7 bg-[#3b7dd8] text-white rounded-[12px] text-[15px] font-semibold cursor-pointer hover:bg-[#3b7dd8] transition-all shadow-[0_4px_20px_rgba(47,111,212,0.35)] hover:shadow-[0_8px_32px_rgba(47,111,212,0.45)] hover:-translate-y-0.5 active:translate-y-0"
+            >
+              Start CEAC Guide
+            </button>
+          </div>
+        </div>
+
+        {/* SCENARIO BUILDER */}
+        <div className="bg-white border-[1.5px] border-[#d0e4f7] rounded-[16px] p-[22px] mb-[18px]">
+          <div className="text-[14px] font-semibold text-[#0c1b33] mb-4">
+            Define your scenario — who is involved in the sponsorship?
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <div className="flex flex-col">
+              <label className="text-[11px] font-semibold text-[#6b8097] uppercase tracking-wider mb-1.5 ml-0.5">
+                Number of joint sponsors
+              </label>
+              <select
+                value={jsCount}
+                onChange={(e) => setJsCount(parseInt(e.target.value))}
+                className="w-full p-[9px_12px] border-[1.5px] border-[#d0e4f7] rounded-[10px] text-[14px] bg-white outline-none focus:border-primary appearance-none bg-[position:right_10px_center] bg-no-repeat pr-[30px]"
+                style={{
+                  backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236b8097' stroke-width='2' stroke-linecap='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E")`,
+                }}
+              >
+                <option value="0">0 — not using a joint sponsor</option>
+                <option value="1">1 joint sponsor</option>
+                <option value="2">2 joint sponsors</option>
+              </select>
+            </div>
+            <div className="flex flex-col">
+              <label className="text-[11px] font-semibold text-[#6b8097] uppercase tracking-wider mb-1.5 ml-0.5">
+                Number of household members
+              </label>
+              <select
+                value={hhCount}
+                onChange={(e) => setHhCount(parseInt(e.target.value))}
+                className="w-full p-[9px_12px] border-[1.5px] border-[#d0e4f7] rounded-[10px] text-[14px] bg-white outline-none focus:border-primary appearance-none bg-[position:right_10px_center] bg-no-repeat pr-[30px]"
+                style={{
+                  backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236b8097' stroke-width='2' stroke-linecap='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E")`,
+                }}
+              >
+                <option value="0">0 — no household members</option>
+                <option value="1">1 household member</option>
+                <option value="2">2 household members</option>
+                <option value="3">3 household members</option>
+              </select>
+            </div>
+          </div>
+
+          {hhCount > 0 && (
+            <div className="mt-4 pt-4 border-t border-[#d0e4f7]">
+              <div className="text-[11px] font-bold text-[#6b8097] uppercase tracking-widest mb-3 ml-0.5">
+                Household member relationship to the petitioner
+              </div>
+              <div className="flex flex-col gap-2">
+                {Array.from({ length: hhCount }).map((_, idx) => {
+                  const num = idx + 1;
+                  return (
+                    <div
+                      key={num}
+                      className="flex flex-col sm:flex-row sm:items-center gap-2"
+                    >
+                      <span className="text-[13px] font-medium text-[#3a4f63] min-w-[140px]">
+                        Household Member {num}
+                      </span>
+                      <select
+                        value={hhRelationships[num] || "other-hh"}
+                        onChange={(e) =>
+                          setHhRelationships((prev) => ({
+                            ...prev,
+                            [num]: e.target.value,
+                          }))
+                        }
+                        className="flex-1 p-[8px_10px] border-[1.5px] border-[#d0e4f7] rounded-[10px] text-[13px] bg-white outline-none focus:border-primary appearance-none bg-[position:right_8px_center] bg-no-repeat pr-[26px]"
+                        style={{
+                          backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='11' height='11' viewBox='0 0 24 24' fill='none' stroke='%236b8097' stroke-width='2' stroke-linecap='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E")`,
+                        }}
+                      >
+                        <option value="spouse">Spouse of petitioner</option>
+                        <option value="child">Child of petitioner</option>
+                        <option value="parent">Parent of petitioner</option>
+                        <option value="sibling">Sibling of petitioner</option>
+                        <option value="other-relative">Other relative</option>
+                        <option value="other-hh">Other household member</option>
+                      </select>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* SUMMARY BANNER */}
+        {(jsCount > 0 || hhCount > 0) && (
+          <div className="bg-[#0c1b33] rounded-[16px] p-[16px_20px] mb-5 flex flex-wrap gap-x-8 gap-y-4">
+            <div className="flex flex-col">
+              <div className="text-[10px] font-semibold tracking-widest uppercase text-white/40 mb-0.5">
+                Joint Sponsors
+              </div>
+              <div className="text-[14px] font-semibold text-white/90">
+                {jsCount === 0
+                  ? "None"
+                  : `${jsCount} joint sponsor${jsCount > 1 ? "s" : ""}`}
+              </div>
+              {jsCount > 0 && (
+                <div className="text-[11px] text-white/50 mt-0.5">
+                  No relationship-proof checklist required
+                </div>
+              )}
+            </div>
+            <div className="flex flex-col">
+              <div className="text-[10px] font-semibold tracking-widest uppercase text-white/40 mb-0.5">
+                Household Members
+              </div>
+              <div className="text-[14px] font-semibold text-white/90">
+                {hhCount === 0
+                  ? "None"
+                  : `${hhCount} household member${hhCount > 1 ? "s" : ""}`}
+              </div>
+              {hhCount > 0 && (
+                <div className="text-[11px] text-white/50 mt-0.5">
+                  Relationship-proof checklist generated below
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* PROGRESS AND CHECKLIST */}
+        {hhCount > 0 ? (
+          <div className="flex flex-col">
+            <div className="flex items-center gap-3 mb-7">
+              <div className="flex-1 h-[5px] bg-[#d0e4f7] rounded-[10px] overflow-hidden">
+                <div
+                  className="h-full bg-linear-to-r from-primary to-[#6aa8f0] transition-all duration-500 rounded-[10px]"
+                  style={{ width: `${progressPct}%` }}
+                />
+              </div>
+              <div className="text-[12px] font-medium text-[#6b8097] whitespace-nowrap">
+                {reviewed} of {total} reviewed
+              </div>
+            </div>
+
+            {(() => {
+              const req = allItems.filter((i) => i.group === "required");
+              const cond = allItems.filter((i) => i.group === "conditional");
+
+              return (
+                <div className="flex flex-col gap-7">
+                  {req.length > 0 && (
+                    <div className="flex flex-col gap-3">
+                      <div className="flex items-center gap-[10px]">
+                        <span className="text-[11px] font-semibold tracking-widest uppercase text-[#6b8097]">
+                          Required
+                        </span>
+                        <span className="text-[10px] font-semibold tracking-widest uppercase px-[9px] py-[3px] rounded-full bg-[#ffeaea] text-[#a01c1c] border border-[#f5bebe]">
+                          Required
+                        </span>
+                        <div className="flex-1 h-px bg-[#d0e4f7]" />
+                      </div>
+                      {req.map((item) => renderHhDocCard(item))}
+                    </div>
+                  )}
+                  {cond.length > 0 && (
+                    <div className="flex flex-col gap-3">
+                      <div className="flex items-center gap-[10px]">
+                        <span className="text-[11px] font-semibold tracking-widest uppercase text-[#6b8097]">
+                          Required if Applicable
+                        </span>
+                        <span className="text-[10px] font-semibold tracking-widest uppercase px-[9px] py-[3px] rounded-full bg-[#fef8e8] text-[#8a6200] border border-[#f0d98a]">
+                          Required if Applicable
+                        </span>
+                        <div className="flex-1 h-px bg-[#d0e4f7]" />
+                      </div>
+                      {cond.map((item) => renderHhDocCard(item))}
+                    </div>
+                  )}
+                </div>
+              );
+            })()}
+          </div>
+        ) : jsCount > 0 ? (
+          <div className="bg-white border-[1.5px] border-dashed border-[#d0e4f7] rounded-[16px] p-[32px_24px] text-center mb-5">
+            <div className="text-[14px] font-semibold text-[#6b8097] mb-1.5">
+              No relationship-proof checklist needed
+            </div>
+            <div className="text-[13px] text-[#6b8097]">
+              Joint sponsors do not require relationship documentation. Your
+              I-864 forms are the primary requirement — see Step 5 for those.
+            </div>
+          </div>
+        ) : (
+          <div className="bg-white border-[1.5px] border-dashed border-[#d0e4f7] rounded-[16px] p-[32px_24px] text-center mb-5">
+            <div className="text-[14px] font-semibold text-[#6b8097] mb-1.5">
+              Set your scenario above
+            </div>
+            <div className="text-[13px] text-[#6b8097]">
+              Select the number of joint sponsors and household members to see
+              the relevant checklist.
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  const renderHhDocCard = (item: any) => {
+    const st = hhDocsStatus[item.id] || "not-started";
+    const stLabel =
+      st === "reviewed"
+        ? "✓ Reviewed"
+        : st === "in-progress"
+          ? "In progress"
+          : "Open guide";
+
+    return (
+      <div
+        key={item.id}
+        onClick={() => {
+          if (hhDocsStatus[item.id] === "not-started") {
+            const next = { ...hhDocsStatus, [item.id]: "in-progress" };
+            setHhDocsStatus(next);
+            actions.updateMetadata({ hhDocsStatus: next });
+          }
+          setActiveHhDoc(item);
+          setIsHhDocGuideOpen(true);
+        }}
+        className={`w-full group bg-white border-[1.5px] border-[#d0e4f7] rounded-[16px] p-[17px_20px] flex items-center gap-[15px] text-left transition-all hover:border-primary hover:shadow-[0_4px_20px_rgba(47,111,212,0.1)] hover:-translate-y-px active:translate-y-0 cursor-pointer ${
+          st === "reviewed"
+            ? "bg-[#e8f5ef] border-[#a8d9be]"
+            : st === "in-progress"
+              ? "bg-[#fef8e8] border-[#f0d98a]"
+              : ""
+        }`}
+      >
+        <div
+          className={`w-[38px] h-[38px] rounded-[9px] bg-[#e8f1fb] border border-[#d0e4f7] flex items-center justify-center shrink-0 text-[16px] transition-all group-hover:bg-primary/10 group-hover:border-primary/30 ${
+            st === "reviewed" ? "bg-[#e8f5ef] border-[#a8d9be]" : ""
+          }`}
+        >
+          {getStepIcon(item.icon)}
+        </div>
+        <div className="flex-1 min-w-0">
+          <div className="text-[14px] font-semibold text-[#0c1b33] mb-0.5 leading-tight">
+            {item.title}
+          </div>
+          <div className="text-[12px] text-[#6b8097] leading-tight">
+            {item.sub}
+          </div>
+          <div className="flex gap-[5px] mt-[6px] flex-wrap">
+            {item.tags.map((tag: any, idx: number) => {
+              const tagMap: Record<string, string> = {
+                "tag-hh": "bg-[#fff7ed] text-[#b45309] border-[#fed7aa]",
+                "tag-js": "bg-[#f3f0fb] text-[#4a2d8a] border-[#c9bef2]",
+                "tag-rel": "bg-[#e8f1fb] text-[#2d4a6e] border-[#d0e4f7]",
+                "tag-res": "bg-[#e8f5ef] text-[#15744f] border-[#a8d9be]",
+                "tag-id": "bg-[#eef3fa] text-[#3a4f63] border-[#d0e4f7]",
+                "tag-gov": "bg-[#fff7ed] text-[#b45309] border-[#fed7aa]",
+              };
+              return (
+                <span
+                  key={idx}
+                  className={`text-[10px] font-semibold px-2 py-[2px] rounded-full tracking-wider border ${
+                    tagMap[tag.cls] || "bg-[#f4f7fb] text-[#6b8097]"
+                  }`}
+                >
+                  {tag.label}
+                </span>
+              );
+            })}
+          </div>
+        </div>
+        <div className="flex flex-col items-center gap-2">
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              const defId = mapDocumentNameToId(item.title);
+              setActiveUploadId(item.id);
+              setActiveUploadType("hh");
+              openUploadModal(defId);
+            }}
+            className="rounded-full bg-white px-[11px] py-[5px] border border-[#d0e4f7] text-[12px] font-medium flex items-center justify-center gap-1 text-[#6b8097] hover:border-primary hover:text-primary transition-all shadow-[0_2px_8px_rgba(0,0,0,0.04)]"
+          >
+            <Upload size={14} strokeWidth={2.5} />
+            <span>Vault</span>
+          </button>
+          <div
+            className={`text-[11px] font-semibold px-2.5 py-1 rounded-full whitespace-nowrap shrink-0 transition-all border ${
+              st === "reviewed"
+                ? "bg-[#e8f5ef] text-[#15744f] border-[#a8d9be]"
+                : st === "in-progress"
+                  ? "bg-[#fef8e8] text-[#8a6200] border-[#f0d98a]"
+                  : "bg-[#f4f7fb] text-[#6b8097] border-[#d0e4f7]"
+            }`}
+          >
+            {stLabel}
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   const renderToolStep = () => {
     const tool = currentStep.tool_data as any;
     if (!tool) return null;
 
     if (tool.type === "awaiting_review") {
-      return <AwaitingReviewStep data={AWAITING_REVIEW_DATA} />;
+      return (
+        <AwaitingReviewStep
+          data={AWAITING_REVIEW_DATA}
+          state={state}
+          actions={actions}
+        />
+      );
     }
 
     // Theme detection based on icon or ID
@@ -1166,8 +1943,12 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
         <div className="w-full max-w-[680px] px-[24px] pb-[96px] flex flex-col">
           {/* Step Header */}
           <StepHeader
-            chapterNumber={currentChapter?.chapter_number || state.currentStage + 1}
-            chapterName={currentChapter?.chapter_name || currentChapter?.name || ""}
+            chapterNumber={
+              currentChapter?.chapter_number || state.currentStage + 1
+            }
+            chapterName={
+              currentChapter?.chapter_name || currentChapter?.name || ""
+            }
             stepName={currentStep.step_name}
             stepDescription={currentStep.step_description}
             isBeneficiaryTheme={isBeneficiaryTheme}
@@ -1236,13 +2017,17 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
           {/* Return Note (Success Banner) */}
           {isLaunched && (
             <div className="mb-[20px] bg-[#e8f5ef] border border-[#a8d9be] rounded-[10px] p-[14px_18px] flex items-start gap-[12px] animate-in slide-in-from-top-2 duration-300">
-              <div className="text-[15px] mt-[1px] text-[#15744f] shrink-0">✓</div>
+              <div className="text-[15px] mt-[1px] text-[#15744f] shrink-0">
+                ✓
+              </div>
               <div className="flex-1">
                 <div className="text-[13px] font-semibold text-[#15744f] mb-[2px]">
-                  {tool.launch_module.return_note?.title || "Tool launched in a new tab"}
+                  {tool.launch_module.return_note?.title ||
+                    "Tool launched in a new tab"}
                 </div>
                 <div className="text-[12px] text-[#3a4f63] leading-normal">
-                  {tool.launch_module?.return_note?.body || "Complete the process and return here."}
+                  {tool.launch_module?.return_note?.body ||
+                    "Complete the process and return here."}
                 </div>
               </div>
             </div>
@@ -1265,7 +2050,248 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
               actions={actions}
               metadata={state.metadata}
               dqState={{
-                dqSaved, setDqSaved, dqDate, setDqDate, dqCategory, setDqCategory, dqPost, setDqPost, dqCountry, setDqCountry
+                dqSaved,
+                setDqSaved,
+                dqDate,
+                setDqDate,
+                dqCategory,
+                setDqCategory,
+                dqPost,
+                setDqPost,
+                dqCountry,
+                setDqCountry,
+              }}
+            />
+          )}
+
+          {/* INTERVIEW SCHEDULING (Step 2.11 SPECIFIC) */}
+          {tool.type === "interview_scheduling" && (
+            <div className="flex flex-col animate-in fade-in slide-in-from-bottom-2 duration-380">
+              {/* Queue status card */}
+              <div className="relative bg-[#0c1b33] rounded-[16px] p-[24px_26px] mb-[16px] overflow-hidden">
+                <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-[#b38600] via-[#f0d98a] to-transparent opacity-[0.85]" />
+                <div className="text-[10px] font-bold tracking-widest uppercase text-white/38 mb-[8px]">
+                  Post-DQ Queue Status
+                </div>
+                <div
+                  className="text-[20px] font-serif text-white/92 mb-[18px] flex items-center gap-[10px]"
+                  style={{ fontFamily: "'DM Serif Display', serif" }}
+                >
+                  <span className="inline-block w-[7px] h-[7px] rounded-full bg-[#6aa8f0] animate-pulse shadow-[0_0_8px_rgba(106,168,240,0.6)]" />
+                  In queue — awaiting interview letter
+                </div>
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-[14px]">
+                  <div>
+                    <div className="text-[10px] font-semibold tracking-widest uppercase text-white/36 mb-[3px]">
+                      DQ Date
+                    </div>
+                    <div className="text-[13px] font-semibold text-[#f0d98a]">
+                      {state.metadata.dqDate
+                        ? new Date(
+                            state.metadata.dqDate + "T00:00:00",
+                          ).toLocaleDateString("en-US", {
+                            year: "numeric",
+                            month: "long",
+                            day: "numeric",
+                          })
+                        : "—"}
+                    </div>
+                  </div>
+                  <div>
+                    <div className="text-[10px] font-semibold tracking-widest uppercase text-white/36 mb-[3px]">
+                      Post
+                    </div>
+                    <div className="text-[13px] font-semibold text-white/88">
+                      {state.metadata.post || state.metadata.dqPost || "—"}
+                    </div>
+                  </div>
+                  <div className="col-span-2 md:col-span-1">
+                    <div className="text-[10px] font-semibold tracking-widest uppercase text-white/36 mb-[3px]">
+                      Current stage
+                    </div>
+                    <div className="text-[13px] font-semibold text-white/88">
+                      Awaiting interview letter
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Scheduling grid */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-[14px] mb-[14px]">
+                {/* Official Card */}
+                <div className="bg-[#fafcff] border-[1.5px] border-[#d0e4f7] rounded-[16px] p-[18px_20px] shadow-[0_4px_24px_rgba(12,27,51,0.08)]">
+                  <div className="text-[10px] font-bold tracking-widest uppercase text-[#2d4a6e] mb-[6px]">
+                    Official Scheduling Status
+                  </div>
+                  <div className="text-[13px] font-semibold text-[#0c1b33] mb-[6px]">
+                    Cases currently being scheduled from:
+                  </div>
+                  <div
+                    className="text-[20px] font-serif text-[#0c1b33] mb-[4px]"
+                    style={{ fontFamily: "'DM Serif Display', serif" }}
+                  >
+                    {INTERVIEW_SCHEDULING_DATA.schedulingData[
+                      ((state.metadata.post || state.metadata.dqPost) as keyof typeof INTERVIEW_SCHEDULING_DATA.schedulingData) ||
+                        "Other"
+                    ]?.official || "—"}
+                  </div>
+                  <div className="text-[12px] text-[#6b8097] leading-[1.5]">
+                    From the State Department scheduling bulletin for this post
+                    and category. Verify current status at travel.state.gov.
+                  </div>
+                  <div className="inline-flex items-center gap-[4px] bg-[#e8f1fb] border border-[#d0e4f7] rounded-full px-[10px] py-[3px] text-[10px] font-semibold text-[#2d4a6e] mt-[8px]">
+                    <Info size={9} strokeWidth={2.5} />
+                    U.S. State Department · Official
+                  </div>
+                </div>
+
+                {/* Estimate Card */}
+                <div className="bg-[#fafcff] border-[1.5px] border-[#e8d47a] rounded-[16px] p-[18px_20px] shadow-[0_4px_24px_rgba(12,27,51,0.08)]">
+                  <div className="text-[10px] font-bold tracking-widest uppercase text-[#b38600] mb-[6px]">
+                    Rahvana Estimate
+                  </div>
+                  <div className="text-[13px] font-semibold text-[#0c1b33] mb-[6px]">
+                    Queue movement trend:
+                  </div>
+                  <div
+                    className="text-[20px] font-serif text-[#0c1b33] mb-[4px]"
+                    style={{ fontFamily: "'DM Serif Display', serif" }}
+                  >
+                    {INTERVIEW_SCHEDULING_DATA.schedulingData[
+                      ((state.metadata.post || state.metadata.dqPost) as keyof typeof INTERVIEW_SCHEDULING_DATA.schedulingData) ||
+                        "Other"
+                    ]?.trend || "—"}
+                  </div>
+                  <div className="text-[12px] text-[#6b8097] leading-[1.5]">
+                    {state.metadata.dqDate
+                      ? INTERVIEW_SCHEDULING_DATA.schedulingData[
+                          ((state.metadata.post || state.metadata.dqPost) as keyof typeof INTERVIEW_SCHEDULING_DATA.schedulingData) ||
+                            "Other"
+                        ]?.detail
+                      : "Save your DQ details in the previous step to see scheduling context here."}
+                  </div>
+                  <div className="inline-flex items-center gap-[4px] bg-[#fffbec] border border-[#e8d47a] rounded-full px-[10px] py-[3px] text-[10px] font-semibold text-[#b38600] mt-[8px]">
+                    <Activity size={9} strokeWidth={2.5} />
+                    Rahvana Estimate · Not guaranteed
+                  </div>
+                  <div className="text-[11px] text-[#6b8097] mt-[6px] italic leading-[1.5]">
+                    Estimates are trend-based projections. Actual scheduling
+                    depends on post capacity and priority.
+                  </div>
+                </div>
+              </div>
+
+              {/* While you wait + milestone line */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-[14px] mb-[14px]">
+                {/* While you wait */}
+                <div className="bg-[#fafcff] border-[1.5px] border-[#d0e4f7] rounded-[16px] p-[18px_20px] shadow-[0_4px_24px_rgba(12,27,51,0.08)]">
+                  <div className="flex items-center gap-[9px] mb-[12px]">
+                    <div className="w-[34px] h-[34px] rounded-[8px] bg-[#e8f5ef] border border-[#a8d9be] flex items-center justify-center shrink-0">
+                      <Clock
+                        size={16}
+                        className="text-[#15744f]"
+                        strokeWidth={1.8}
+                      />
+                    </div>
+                    <div className="text-[14px] font-semibold text-[#0c1b33]">
+                      While you wait
+                    </div>
+                  </div>
+                  <div className="flex flex-col gap-[7px]">
+                    {INTERVIEW_SCHEDULING_DATA.whileYouWait.map((item, i) => (
+                      <div
+                        key={i}
+                        className="flex items-start gap-[8px] text-[13px] color-[#3a4f63] leading-[1.5]"
+                      >
+                        <div className="w-[4px] h-[4px] rounded-full bg-[#b8d4f0] shrink-0 mt-[6px]" />
+                        <span>{item}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Milestone progress line */}
+                <div className="bg-[#fafcff] border-[1.5px] border-[#d0e4f7] rounded-[16px] p-[18px_20px] shadow-[0_4px_24px_rgba(12,27,51,0.08)]">
+                  <div className="text-[13px] font-semibold text-[#0c1b33] mb-[14px]">
+                    Your progress in Chapter 2
+                  </div>
+                  <div className="flex flex-col relative pl-[22px]">
+                    <div className="absolute left-[7px] top-[6px] bottom-[6px] w-[2px] bg-[#d0e4f7] rounded-[2px]" />
+                    {INTERVIEW_SCHEDULING_DATA.milestones.map((ms, i) => (
+                      <div
+                        key={i}
+                        className="flex items-center gap-[10px] mb-[12px] last:mb-0"
+                      >
+                        <div
+                          className={`w-[14px] h-[14px] rounded-full shrink-0 z-[1] ml-[-22px] ${
+                            ms.status === "done"
+                              ? "bg-[#15744f]"
+                              : ms.status === "active"
+                                ? "bg-[#2f6fd4] animate-pulse"
+                                : "bg-[#d0e4f7]"
+                          }`}
+                        />
+                        <span
+                          className={`text-[13px] ${
+                            ms.status === "done"
+                              ? "text-[#0e5c3c] font-medium"
+                              : ms.status === "active"
+                                ? "text-[#2f6fd4] font-bold"
+                                : "text-[#6b8097] font-medium"
+                          }`}
+                        >
+                          {ms.label} {ms.status === "active" && "← here"}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* How it works info card */}
+              <div className="bg-[#fafcff] border-[1.5px] border-[#d0e4f7] rounded-[16px] p-[18px_20px] mb-[14px] shadow-[0_4px_24px_rgba(12,27,51,0.08)]">
+                <div className="flex items-center gap-[9px] mb-[12px]">
+                  <div className="w-[34px] h-[34px] rounded-[8px] bg-[#e8f1fb] border border-[#d0e4f7] flex items-center justify-center shrink-0">
+                    <Info
+                      size={16}
+                      className="text-[#2f6fd4]"
+                      strokeWidth={1.8}
+                    />
+                  </div>
+                  <div className="text-[14px] font-semibold text-[#0c1b33]">
+                    How interview scheduling works at this stage
+                  </div>
+                </div>
+                <div className="flex flex-col gap-[7px]">
+                  {INTERVIEW_SCHEDULING_DATA.howItWorks.map((item, i) => (
+                    <div
+                      key={i}
+                      className="flex items-start gap-[8px] text-[13px] color-[#3a4f63] leading-[1.5]"
+                    >
+                      <div className="w-[4px] h-[4px] rounded-full bg-[#b8d4f0] shrink-0 mt-[6px]" />
+                      <span>{item}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {tool.type === "approval_notice" && (
+            <ApprovalNoticeTool
+              state={state}
+              actions={actions}
+              approvalState={{
+                isApprovalModalOpen,
+                setIsApprovalModalOpen,
+                isApprovalGuideOpen,
+                setIsApprovalGuideOpen,
+                approvalGuideStep,
+                setApprovalGuideStep,
+                approvalDetails,
+                setApprovalDetails,
+                isApprovalSaved,
+                setIsApprovalSaved,
               }}
             />
           )}
@@ -1275,7 +2301,14 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
               state={state}
               actions={actions}
               interviewState={{
-                interviewSaved, setInterviewSaved, interviewDate, setInterviewDate, letterDate, setLetterDate, consulateLocation, setConsulateLocation
+                interviewSaved,
+                setInterviewSaved,
+                interviewDate,
+                setInterviewDate,
+                letterDate,
+                setLetterDate,
+                consulateLocation,
+                setConsulateLocation,
               }}
             />
           )}
@@ -1285,8 +2318,20 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
               state={state}
               actions={actions}
               medState={{
-                medSaved, setMedSaved, medDate, setMedDate, medTime, setMedTime, medClinic, setMedClinic,
-                isMedWizardOpen, setIsMedWizardOpen, medWizardStep, setMedWizardStep, medWizardMode, setMedWizardMode
+                medSaved,
+                setMedSaved,
+                medDate,
+                setMedDate,
+                medTime,
+                setMedTime,
+                medClinic,
+                setMedClinic,
+                isMedWizardOpen,
+                setIsMedWizardOpen,
+                medWizardStep,
+                setMedWizardStep,
+                medWizardMode,
+                setMedWizardMode,
               }}
             />
           )}
@@ -1296,7 +2341,14 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
               state={state}
               actions={actions}
               polioState={{
-                polioLaunched, setPolioLaunched, isPolioGuideOpen, setIsPolioGuideOpen, polioGuideStep, setPolioGuideStep, polioChecks, setPolioChecks
+                polioLaunched,
+                setPolioLaunched,
+                isPolioGuideOpen,
+                setIsPolioGuideOpen,
+                polioGuideStep,
+                setPolioGuideStep,
+                polioChecks,
+                setPolioChecks,
               }}
             />
           )}
@@ -1306,7 +2358,18 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
               state={state}
               actions={actions}
               pccState={{
-                pccSaved, setPccSaved, pccReceived, setPccReceived, pccData, setPccData, isPccOverlayOpen, setIsPccOverlayOpen, pccOverlayStep, setPccOverlayStep, pccOverlayMode, setPccOverlayMode
+                pccSaved,
+                setPccSaved,
+                pccReceived,
+                setPccReceived,
+                pccData,
+                setPccData,
+                isPccOverlayOpen,
+                setIsPccOverlayOpen,
+                pccOverlayStep,
+                setPccOverlayStep,
+                pccOverlayMode,
+                setPccOverlayMode,
               }}
             />
           )}
@@ -1331,7 +2394,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
           )}
 
           {/* Step 2.7 Household Member Builder Rendering */}
-          {tool.type === "household_member" && (
+          {/* {tool.type === "household_member" && (
             <HouseholdMemberTool
               hhCount={hhCount}
               hhRelationships={hhRelationships}
@@ -1344,7 +2407,11 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
               setActiveHhDoc={setActiveHhDoc}
               setIsHhDocGuideOpen={setIsHhDocGuideOpen}
             />
-          )}
+          )} */}
+
+          {/* HOUSEHOLD MEMBER BUILDER (Step 2.7 SPECIFIC) */}
+          {tool.type === "household_member" && renderHouseholdBuilder()}
+
           {tool.type === "submission_review" && (
             <SubmissionReviewTool
               tool={tool}
@@ -1357,24 +2424,29 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
 
           {/* AWAITING NVC REVIEW (Step 2.9 SPECIFIC) */}
           {tool.type === "awaiting_review" && (
-            <AwaitingReviewStep data={AWAITING_REVIEW_DATA} />
+            <AwaitingReviewStep
+              data={AWAITING_REVIEW_DATA}
+              state={state}
+              actions={actions}
+            />
           )}
-               
-
-
 
           {/* GATHER ORIGINAL DOCUMENTS (Step 3.4 SPECIFIC) */}
           {tool.type === "gathering_checklist" && (
-            <GatheringChecklistTool 
-              tool={tool} 
-              state={state} 
-              actions={actions} 
-              gatheringState={{ 
-                gatheringStatus, setGatheringStatus, 
-                selectedGatheringItem, setSelectedGatheringItem, 
-                isGatheringGuideOpen, setIsGatheringGuideOpen, 
-                gatheringGuideStep, setGatheringGuideStep 
-              }} 
+            <GatheringChecklistTool
+              tool={tool}
+              state={state}
+              actions={actions}
+              gatheringState={{
+                gatheringStatus,
+                setGatheringStatus,
+                selectedGatheringItem,
+                setSelectedGatheringItem,
+                isGatheringGuideOpen,
+                setIsGatheringGuideOpen,
+                gatheringGuideStep,
+                setGatheringGuideStep,
+              }}
             />
           )}
 
@@ -2127,7 +3199,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                           `}
                           >
                             <div className="text-primary/70">
-                              {getIcon(item.icon)}
+                              {getStepIcon(item.icon)}
                             </div>
                           </div>
                           <div className="flex-1 min-w-0">
@@ -2515,6 +3587,32 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                   </Link>
                 </div>
               )}
+
+              {/* Case Registration Form (Step 2.1 - NVC Welcome) */}
+              {sId === "step_2_1" && state.answers?.["c2s1"] && (
+                <div className="mt-4 animate-in fade-in slide-in-from-top-2 duration-300">
+                  <CaseRegistrationForm
+                    existingData={{
+                      nvcCaseNum: state.metadata?.nvcCaseNum,
+                      nvcInvoice: state.metadata?.nvcInvoice,
+                      embassyCity: state.metadata?.embassyCity,
+                      beneficiaryName: state.metadata?.beneficiaryName,
+                      passportNumber: state.metadata?.passportNumber,
+                      surname: state.metadata?.surname,
+                    }}
+                    onComplete={(data) => {
+                      actions.updateMetadata({
+                        nvcCaseNum: data.nvcCaseNum,
+                        nvcInvoice: data.nvcInvoice,
+                        embassyCity: data.embassyCity,
+                        beneficiaryName: data.beneficiaryName,
+                        passportNumber: data.passportNumber,
+                        surname: data.surname,
+                      });
+                    }}
+                  />
+                </div>
+              )}
             </div>
           )}
 
@@ -2737,7 +3835,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
 
           {/* Disclaimer */}
           <p
-            className={`${currentStep.step_key === "step_2_4" || currentStep.step_key === "step_2_6" || currentStep.step_key === "step_2_7" ? "mt-10" : "mt-0"} text-[11.5px] text-[#6b8097] leading-[1.65] text-center pt-[8px]`}
+            className={`${currentStep.step_key === "step_2_4" || currentStep.step_key === "step_2_6" || currentStep.step_key === "step_2_7" || currentStep.step_key === "step_1_17" ? "mt-10" : "mt-0"} text-[11.5px] text-[#6b8097] leading-[1.65] text-center pt-[8px]`}
           >
             {tool.disclaimer ||
               "Rahvana provides structured guidance only. This is not legal advice. Consult a licensed immigration attorney for case-specific decisions."}
@@ -3056,6 +4154,20 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
             </div>
           ) : currentStep.step_type === "tool" ? (
             renderToolStep()
+          ) : currentStep.step_type === "action" ? (
+            <ActionStepRenderer
+              step={currentStep}
+              isCompleted={state.completedSteps.has(currentStep.step_key)}
+              onToggleComplete={handleToggleComplete}
+              chapter={currentChapter?.chapter_name || "Chapter"}
+              filingType={
+                state.metadata.filingMethod === "online"
+                  ? "Online Filing"
+                  : "Paper Filing"
+              }
+              state={state}
+              actions={actions}
+            />
           ) : currentStep.step_type === "docs" ? (
             <div className="w-full flex flex-col items-center animate-in fade-in slide-in-from-bottom-6 duration-1000">
               {/* Header for Docs */}
@@ -3202,7 +4314,55 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                                       );
                                       setActiveUploadId(doc.id);
                                       setActiveUploadType("doc");
-                                      openUploadModal(defId);
+
+                                      if (doc.id === "doc_citizenship") {
+                                        setMultipleUploadModalState({
+                                          isOpen: true,
+                                          categoryId: defId,
+                                          documentName: doc.name,
+                                          options: [
+                                            "U.S. passport",
+                                            "U.S. birth certificate",
+                                            "Certificate of Naturalization (Form N-550)",
+                                            "Certificate of Citizenship (Form N-560)",
+                                            "Consular Report of Birth Abroad (Form FS-240 / DS-1350)",
+                                          ],
+                                        });
+                                      } else if (
+                                        doc.id === "doc_relationship"
+                                      ) {
+                                        setMultipleUploadModalState({
+                                          isOpen: true,
+                                          categoryId: defId,
+                                          documentName: doc.name,
+                                          options: [
+                                            "Communication history",
+                                            "Photos together",
+                                            "Travel history",
+                                            "Shared finances",
+                                            "Shared residence",
+                                            "Family evidence",
+                                            "Affidavits",
+                                          ],
+                                        });
+                                      } else if (
+                                        doc.id === "doc_translations"
+                                      ) {
+                                        setMultipleUploadModalState({
+                                          isOpen: true,
+                                          categoryId: defId,
+                                          documentName: doc.name,
+                                          options: [
+                                            "Translated Nikah Nama",
+                                            "Translated NADRA MRC",
+                                            "Translated Birth Certificate",
+                                            "Translated Divorce Decree",
+                                            "Other Translated Civil Documents",
+                                          ],
+                                        });
+                                      } else {
+                                        openUploadModal(defId);
+                                      }
                                     },
                                   });
                                 }}
@@ -4171,7 +5331,9 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
           const steps =
             dynamicSteps && dynamicSteps.length > 0
               ? dynamicSteps
-              : USCIS_TUTORIAL_STEPS;
+              : tool?.type === "household_member"
+                ? HOUSEHOLD_TUTORIAL_STEPS
+                : USCIS_TUTORIAL_STEPS;
           const isDynamic = !!(dynamicSteps && dynamicSteps.length > 0);
           const currentTutStep = steps[tutorialIdx];
 
@@ -4594,6 +5756,25 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
             </div>
           </div>
         )}
+
+      {/* Multiple Document Upload Modal Integration */}
+      {multipleUploadModalState.isOpen && (
+        <MultipleDocumentUploadModal
+          open={multipleUploadModalState.isOpen}
+          onClose={() =>
+            setMultipleUploadModalState((prev) => ({ ...prev, isOpen: false }))
+          }
+          categoryId={multipleUploadModalState.categoryId}
+          documentName={multipleUploadModalState.documentName}
+          options={multipleUploadModalState.options}
+          onUploadComplete={async () => {
+            if (activeUploadId && actions.updateDocumentStatus) {
+              await actions.updateDocumentStatus(activeUploadId, "reviewed");
+            }
+            await reloadDocuments();
+          }}
+        />
+      )}
 
       {/* Document Vault Integration */}
       {uploadModalOpen && selectedDocumentDefId && (

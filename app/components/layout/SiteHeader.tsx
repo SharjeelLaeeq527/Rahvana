@@ -21,7 +21,9 @@ import {
   FolderLock,
   Wand2,
   Sparkles,
-  HelpCircleIcon
+  HelpCircleIcon,
+  ToolCase,
+  Wrench,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import MegaMenu from "./MegaMenu";
@@ -156,8 +158,10 @@ export function SiteHeader({
             setActiveMenu(null);
           }
         } else {
-          const isInsideMegaMenu = megaMenuContainerRef.current?.contains(target);
-          const isInsideNavTrigger = navRefs.current[activeMenu]?.contains(target);
+          const isInsideMegaMenu =
+            megaMenuContainerRef.current?.contains(target);
+          const isInsideNavTrigger =
+            navRefs.current[activeMenu]?.contains(target);
           if (!isInsideMegaMenu && !isInsideNavTrigger) {
             setActiveMenu(null);
           }
@@ -174,7 +178,8 @@ export function SiteHeader({
       setActiveMenu("profile");
     };
     window.addEventListener("open-profile-menu", handleOpenMenu);
-    return () => window.removeEventListener("open-profile-menu", handleOpenMenu);
+    return () =>
+      window.removeEventListener("open-profile-menu", handleOpenMenu);
   }, []);
 
   // Close menus on route change
@@ -339,7 +344,9 @@ export function SiteHeader({
               xmlns="http://www.w3.org/2000/svg"
               viewBox="152 220 710 215"
               className={`h-8 w-auto fill-current ${
-                isHomeHeroState ? "text-white drop-shadow-sm" : "text-rahvana-primary"
+                isHomeHeroState
+                  ? "text-white drop-shadow-sm"
+                  : "text-rahvana-primary"
               }`}
             >
               <path d="M194.478302,411.482117C188.648972,398.666321 181.184067,387.211884 174.078979,375.556946C161.946335,355.654999 154.218430,334.429535 152.466766,310.927032C150.965759,290.787415 151.490814,271.069061 158.657028,251.953415C161.906097,243.286591 167.372574,236.333282 175.068100,231.098938C187.972153,222.321823 212.377777,222.515015 222.031631,242.165817C226.003326,250.250381 232.154404,254.994858 241.386230,255.103607C240.874603,257.700470 239.210571,257.303253 238.057617,257.539734C214.604111,262.350281 200.098267,276.975067 192.363480,299.065857C184.921768,320.319672 187.555267,352.132874 198.628662,372.172211C195.346085,360.736084 194.548477,349.072571 194.585556,337.231354C194.686203,305.091156 209.071442,282.030487 237.587112,267.388245C252.463837,259.749298 268.363953,254.738281 283.791870,248.515182C300.024750,241.967392 315.867065,234.607849 330.889893,225.571030C331.848022,224.994675 332.727417,224.133804 334.330139,224.642090C334.086884,229.016586 332.356110,232.995224 331.110291,237.029678C325.877838,253.974487 319.356995,270.258270 307.731262,284.109070C295.584656,298.580475 279.797791,306.307983 261.751282,310.259583C255.743668,311.575104 249.729248,312.898682 243.795959,314.506500C229.390137,318.410126 220.388382,329.212219 218.286926,343.947327C216.575470,355.947906 217.905655,367.798737 218.737152,379.737518C219.623474,392.463135 221.756760,405.206818 219.303925,418.003387C217.963852,424.994537 214.710114,430.344635 207.688766,433.006439C204.303909,434.289673 202.544754,433.679260 201.368622,430.074707C199.358749,423.914886 196.908096,417.898895 194.478302,411.482117z"></path>
@@ -353,15 +360,15 @@ export function SiteHeader({
           </Link>
 
           <nav className="hidden lg:flex items-center gap-1">
-            <div
-              ref={(el) => { navRefs.current["journeys"] = el; }}
-              className="relative pt-2 pb-0"
-              onMouseEnter={() => handleMenuEnter("journeys")}
-              onMouseLeave={handleMenuLeave}
-            >
-              <HydrationSafeButton
-                className={`flex items-center gap-1.5 px-4 py-2 text-sm font-semibold rounded-lg transition-all cursor-pointer ${
-                  isActive("journeys") || activeMenu === "journeys"
+            <div className="relative pt-2 pb-0">
+              <Link
+                href="/visa-category/ir-category/ir1-journey"
+                onClick={(e) => handleNav("ir1-journey", e)}
+                className={`block px-4 py-2 text-sm font-semibold rounded-lg transition-all ${
+                  isActive(
+                    "ir1-journey",
+                    "/visa-category/ir-category/ir1-journey",
+                  )
                     ? isHomeHeroState
                       ? "bg-white/20 text-white"
                       : "bg-muted text-[#0d7377]"
@@ -370,20 +377,79 @@ export function SiteHeader({
                       : "text-muted-foreground hover:bg-muted hover:text-[#0d7377]"
                 }`}
               >
-                Explore Journeys
+                IR-1 Journey
+              </Link>
+            </div>
+
+            {/* 
+<div
+  ref={(el) => { navRefs.current["journeys"] = el; }}
+  className="relative pt-2 pb-0"
+  onMouseEnter={() => handleMenuEnter("journeys")}
+  onMouseLeave={handleMenuLeave}
+>
+  <HydrationSafeButton
+    className={`flex items-center gap-1.5 px-4 py-2 text-sm font-semibold rounded-lg transition-all cursor-pointer ${
+      isActive("journeys") || activeMenu === "journeys"
+        ? isHomeHeroState
+          ? "bg-white/20 text-white"
+          : "bg-muted text-[#0d7377]"
+        : isHomeHeroState
+          ? "text-white/90 hover:bg-white/15 hover:text-white"
+          : "text-muted-foreground hover:bg-muted hover:text-[#0d7377]"
+    }`}
+  >
+    Explore Journeys
+    <ChevronDown
+      className={`h-4 w-4 transition-transform duration-300 ${
+        activeMenu === "journeys" ? "rotate-180" : ""
+      }`}
+    />
+  </HydrationSafeButton>
+
+  {activeMenu === "journeys" && (
+    <span className="absolute bottom-0 left-3 right-3 h-0.5 rounded-full bg-primary" />
+  )}
+</div>
+*/}
+
+            {/* Resources */}
+            <div
+              ref={(el) => {
+                navRefs.current["resources"] = el;
+              }}
+              className="relative pt-2 pb-0"
+              onMouseEnter={() => handleMenuEnter("resources")}
+              onMouseLeave={handleMenuLeave}
+            >
+              <HydrationSafeButton
+                className={`flex items-center gap-1.5 px-4 py-2 text-sm font-semibold rounded-lg transition-all cursor-pointer ${
+                  isActive("resources") || activeMenu === "resources"
+                    ? isHomeHeroState
+                      ? "bg-white/20 text-white"
+                      : "bg-muted text-[#0d7377]"
+                    : isHomeHeroState
+                      ? "text-white/90 hover:bg-white/15 hover:text-white"
+                      : "text-muted-foreground hover:bg-muted hover:text-[#0d7377]"
+                }`}
+              >
+                Resources
                 <ChevronDown
-                  className={`h-4 w-4 transition-transform duration-300 ${activeMenu === "journeys" ? "rotate-180" : ""}`}
+                  className={`h-4 w-4 transition-transform duration-300 ${activeMenu === "resources" ? "rotate-180" : ""}`}
                 />
               </HydrationSafeButton>
               {/* Active indicator bar */}
-              {activeMenu === "journeys" && (
+              {activeMenu === "resources" && (
                 <span className="absolute bottom-0 left-3 right-3 h-0.5 rounded-full bg-primary" />
               )}
             </div>
 
-            {/* Toolbox */}
+            {/* Commented out - Tools, Guides, Services - Now under Resources */}
+            {/*
             <div
-              ref={(el) => { navRefs.current["tools"] = el; }}
+              ref={(el) => {
+                navRefs.current["tools"] = el;
+              }}
               className="relative pt-2 pb-0"
               onMouseEnter={() => handleMenuEnter("tools")}
               onMouseLeave={handleMenuLeave}
@@ -404,15 +470,15 @@ export function SiteHeader({
                   className={`h-4 w-4 transition-transform duration-300 ${activeMenu === "tools" ? "rotate-180" : ""}`}
                 />
               </HydrationSafeButton>
-              {/* Active indicator bar */}
               {activeMenu === "tools" && (
                 <span className="absolute bottom-0 left-3 right-3 h-0.5 rounded-full bg-primary" />
               )}
             </div>
 
-            {/* Guides */}
             <div
-              ref={(el) => { navRefs.current["guides"] = el; }}
+              ref={(el) => {
+                navRefs.current["guides"] = el;
+              }}
               className="relative pt-2 pb-0"
               onMouseEnter={() => handleMenuEnter("guides")}
               onMouseLeave={handleMenuLeave}
@@ -433,15 +499,15 @@ export function SiteHeader({
                   className={`h-4 w-4 transition-transform duration-300 ${activeMenu === "guides" ? "rotate-180" : ""}`}
                 />
               </HydrationSafeButton>
-              {/* Active indicator bar */}
               {activeMenu === "guides" && (
                 <span className="absolute bottom-0 left-3 right-3 h-0.5 rounded-full bg-primary" />
               )}
             </div>
 
-            {/* Services */}
             <div
-              ref={(el) => { navRefs.current["services"] = el; }}
+              ref={(el) => {
+                navRefs.current["services"] = el;
+              }}
               className="relative pt-2 pb-0"
               onMouseEnter={() => handleMenuEnter("services")}
               onMouseLeave={handleMenuLeave}
@@ -462,11 +528,11 @@ export function SiteHeader({
                   className={`h-4 w-4 transition-transform duration-300 ${activeMenu === "services" ? "rotate-180" : ""}`}
                 />
               </HydrationSafeButton>
-              {/* Active indicator bar */}
               {activeMenu === "services" && (
                 <span className="absolute bottom-0 left-3 right-3 h-0.5 rounded-full bg-primary" />
               )}
             </div>
+            */}
 
             <div className="relative pt-2 pb-0">
               <Link
@@ -525,7 +591,7 @@ export function SiteHeader({
         {/* --- GLOBAL MEGAMENU PLACEMENT --- */}
         <div
           ref={megaMenuContainerRef}
-          className="absolute top-[calc(100%-14px)] left-0 right-0 w-full px-6 pointer-events-auto z-50"
+          className="absolute top-[calc(100%-14px)] left-0 right-0 w-full px-6 pointer-events-auto z-[9999]"
           onMouseEnter={() => {
             if (activeMenu && activeMenu !== "profile") {
               if (menuTimeoutRef.current) clearTimeout(menuTimeoutRef.current);
@@ -533,18 +599,85 @@ export function SiteHeader({
           }}
           onMouseLeave={handleMenuLeave}
         >
-            {activeMenu === "journeys" && (
-              <MegaMenu key="journeys" isOpen={true} arrowOffset={arrowOffset} {...NAV_DATA.journeys} />
-            )}
-            {activeMenu === "tools" && (
-              <MegaMenu key="tools" isOpen={true} arrowOffset={arrowOffset} {...NAV_DATA.tools} />
-            )}
-            {activeMenu === "guides" && (
-              <MegaMenu key="guides" isOpen={true} arrowOffset={arrowOffset} {...NAV_DATA.guides} />
-            )}
-            {activeMenu === "services" && (
-              <MegaMenu key="services" isOpen={true} arrowOffset={arrowOffset} {...NAV_DATA.services} />
-            )}
+          {activeMenu === "journeys" && (
+            <MegaMenu
+              key="journeys"
+              isOpen={true}
+              arrowOffset={arrowOffset}
+              {...NAV_DATA.journeys}
+            />
+          )}
+          {activeMenu === "resources" && (
+            <motion.div
+              initial={{ opacity: 0, y: -8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -8 }}
+              transition={{ duration: 0.15 }}
+              className="absolute top-full bg-card border border-border rounded-xl shadow-xl p-4 mt-2"
+              style={{ width: "200px", left: `${arrowOffset - 90}px` }}
+            >
+              <div>
+                <Link
+                  href="/tools"
+                  onClick={() => handleNav("tools")}
+                  className="flex items-center gap-2 py-2 px-2 text-sm font-medium text-muted-foreground hover:text-[#0d7377] hover:bg-muted rounded-md transition-colors"
+                >
+                  <Wrench className="h-4 w-4 text-[#0d7377] dark:text-teal-400" />
+                  Tools
+                </Link>
+                <Link
+                  href="/guides"
+                  onClick={() => handleNav("guides")}
+                  className="flex items-center gap-2 py-2 px-2 text-sm font-medium text-muted-foreground hover:text-[#0d7377] hover:bg-muted rounded-md transition-colors"
+                >
+                  <BookOpen className="h-4 w-4 text-cyan-500 dark:text-cyan-400" />
+                  Guides
+                </Link>
+                <Link
+                  href="/services"
+                  onClick={() => handleNav("services")}
+                  className="flex items-center gap-2 py-2 px-2 text-sm font-medium text-muted-foreground hover:text-[#0d7377] hover:bg-muted rounded-md transition-colors"
+                >
+                  <Briefcase className="h-4 w-4 text-amber-500 dark:text-amber-400" />
+                  Services
+                </Link>
+                <div className="my-2 border-t border-border" />
+                <Link
+                  href="/resources"
+                  className="block py-2 px-2 text-sm font-semibold text-[#0d7377] hover:underline transition-colors"
+                >
+                  View all Resources &rarr;
+                </Link>
+              </div>
+            </motion.div>
+          )}
+          {/* Commented out - Tools, Guides, Services now under Resources */}
+          {/*
+          {activeMenu === "tools" && (
+            <MegaMenu
+              key="tools"
+              isOpen={true}
+              arrowOffset={arrowOffset}
+              {...NAV_DATA.tools}
+            />
+          )}
+          {activeMenu === "guides" && (
+            <MegaMenu
+              key="guides"
+              isOpen={true}
+              arrowOffset={arrowOffset}
+              {...NAV_DATA.guides}
+            />
+          )}
+          {activeMenu === "services" && (
+            <MegaMenu
+              key="services"
+              isOpen={true}
+              arrowOffset={arrowOffset}
+              {...NAV_DATA.services}
+            />
+          )}
+          */}
         </div>
 
         {/* Right side – Search + Login */}
@@ -593,7 +726,9 @@ export function SiteHeader({
                         <div className="flex items-center justify-between px-4 py-3 border-b border-border bg-muted/30">
                           <div className="flex items-center gap-2">
                             <Bell className="w-4 h-4 text-[#0d7377]" />
-                            <span className="text-sm font-bold text-foreground">Notifications</span>
+                            <span className="text-sm font-bold text-foreground">
+                              Notifications
+                            </span>
                           </div>
                           <span className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground bg-muted px-2 py-0.5 rounded-full">
                             0 New
@@ -611,9 +746,12 @@ export function SiteHeader({
                             </span>
                           </div>
                           <div className="text-center space-y-1">
-                            <p className="text-sm font-semibold text-foreground">You&apos;re all caught up!</p>
+                            <p className="text-sm font-semibold text-foreground">
+                              You&apos;re all caught up!
+                            </p>
                             <p className="text-xs text-muted-foreground leading-relaxed max-w-50 mx-auto">
-                              No new notifications right now. We&apos;ll let you know when something needs your attention.
+                              No new notifications right now. We&apos;ll let you
+                              know when something needs your attention.
                             </p>
                           </div>
                         </div>
@@ -647,10 +785,11 @@ export function SiteHeader({
               }}
               onMouseLeave={handleMenuLeave}
             >
-              <HydrationSafeButton 
+              <HydrationSafeButton
                 onClick={(e) => {
                   e.stopPropagation();
-                  if (menuTimeoutRef.current) clearTimeout(menuTimeoutRef.current);
+                  if (menuTimeoutRef.current)
+                    clearTimeout(menuTimeoutRef.current);
                   setActiveMenu(activeMenu === "profile" ? null : "profile");
                 }}
                 className={`flex items-center justify-center w-10 h-10 rounded-full border-2 transition-all shadow-sm font-semibold text-lg ${
@@ -867,54 +1006,151 @@ export function SiteHeader({
 
           <div className="flex-1 overflow-y-auto py-4">
             <nav className="flex flex-col px-4 gap-1">
+              {/* IR-1 Journey Link */}
+              <HydrationSafeButton
+                onClick={() => handleNav("ir1-journey")}
+                className={`flex items-center gap-3 px-4 py-3 rounded-xl text-left transition-all ${
+                  isActive("ir1-journey", "/visa-category/ir-category/ir1-journey")
+                    ? "bg-[#0d7377]/10 text-[#0d7377]"
+                    : "text-muted-foreground hover:bg-muted"
+                }`}
+              >
+                <Briefcase className="w-5 h-5 text-teal-600 dark:text-teal-400" />
+                <span className="font-bold">IR-1 Journey</span>
+              </HydrationSafeButton>
+
+              {/* Commented out - Explore Journeys - Now using IR-1 Journey */}
               {/* <HydrationSafeButton
-                  onClick={() => handleNav("home")}
-                  className={`flex items-center gap-3 px-4 py-3 rounded-xl text-left transition-all ${
-                    isActive("home", "/")
-                      ? "bg-primary/10 text-primary"
-                      : "text-muted-foreground hover:bg-muted"
+                onClick={() => {
+                  setExpandedSections((prev) =>
+                    prev.includes("journeys")
+                      ? prev.filter((s) => s !== "journeys")
+                      : [...prev, "journeys"],
+                  );
+                }}
+                className="w-full flex items-center justify-between px-4 py-3 rounded-xl text-muted-foreground hover:bg-muted transition-all cursor-pointer"
+              >
+                <div className="flex items-center gap-3">
+                  <Briefcase className="w-5 h-5 text-[#0d7377]" />
+                  <span className="font-bold">Explore Journeys</span>
+                </div>
+                <ChevronDown
+                  className={`h-4 w-4 transition-transform duration-400 ${
+                    expandedSections.includes("journeys") ? "rotate-180" : ""
                   }`}
+                />
+              </HydrationSafeButton>
+              */}
+
+              {/* Resources Section - Mobile */}
+              <div className="mt-2">
+                <HydrationSafeButton
+                  onClick={() => {
+                    setExpandedSections((prev) =>
+                      prev.includes("resources")
+                        ? prev.filter((s) => s !== "resources")
+                        : [...prev, "resources"],
+                    );
+                  }}
+                  className="w-full flex items-center justify-between px-4 py-3 rounded-xl text-muted-foreground hover:bg-muted transition-all cursor-pointer"
                 >
-                  <span className="font-bold">Home</span>
-                </HydrationSafeButton> */}
+                  <div className="flex items-center gap-3">
+                    <ToolCase className="w-5 h-5 text-[#db8090] dark:text-[#db8090]" />
+                    <span className="font-bold">Resources</span>
+                  </div>
+                  <ChevronDown
+                    className={`h-4 w-4 transition-transform duration-400 ${
+                      expandedSections.includes("resources") ? "rotate-180" : ""
+                    }`}
+                  />
+                </HydrationSafeButton>
+
+                <AnimatePresence initial={false}>
+                  {expandedSections.includes("resources") && (
+                    <motion.div
+                      initial={{ height: 0, opacity: 0 }}
+                      animate={{ height: "auto", opacity: 1 }}
+                      exit={{ height: 0, opacity: 0 }}
+                      transition={{ duration: 0.2, ease: "easeInOut" }}
+                      className="overflow-hidden"
+                    >
+                      <div className="ml-9 mt-1 flex flex-col gap-2 border-l-2 border-slate-100 pl-4 py-2">
+                        <Link
+                          href="/tools"
+                          onClick={() => setIsMenuOpen(false)}
+                          className="block py-2 text-sm transition-all rounded-md px-2 text-slate-600 hover:text-[#0d7377] hover:bg-slate-50"
+                        >
+                          Tools
+                        </Link>
+                        <Link
+                          href="/guides"
+                          onClick={() => setIsMenuOpen(false)}
+                          className="block py-2 text-sm transition-all rounded-md px-2 text-slate-600 hover:text-[#0d7377] hover:bg-slate-50"
+                        >
+                          Guides
+                        </Link>
+                        <Link
+                          href="/services"
+                          onClick={() => setIsMenuOpen(false)}
+                          className="block py-2 text-sm transition-all rounded-md px-2 text-slate-600 hover:text-[#0d7377] hover:bg-slate-50"
+                        >
+                          Services
+                        </Link>
+                        <div className="my-1 border-t border-slate-100" />
+                        <Link
+                          href="#"
+                          className="text-sm font-semibold text-[#0d7377] hover:underline mt-2 flex items-center gap-1 px-2"
+                        >
+                          View all Resources &rarr;
+                        </Link>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
 
               {/* Dynamic Mobile Menu Sections */}
-              {Object.values(NAV_DATA).map((section) => (
-                <div key={section.id} className="mt-2">
-                  <HydrationSafeButton
-                    onClick={() => {
-                      setExpandedSections((prev) =>
-                        prev.includes(section.id)
-                          ? prev.filter((s) => s !== section.id)
-                          : [...prev, section.id],
-                      );
-                    }}
-                    className="w-full flex items-center justify-between px-4 py-3 rounded-xl text-muted-foreground hover:bg-muted transition-all cursor-pointer"
-                  >
-                    <div className="flex items-center gap-3">
-                      {MOBILE_ICONS[section.id] || (
-                        <Briefcase className="w-5 h-5 text-[#0d7377]" />
-                      )}
-                      <span className="font-bold">{section.label}</span>
-                    </div>
-                    <ChevronDown
-                      className={`h-4 w-4 transition-transform duration-400 ${
-                        expandedSections.includes(section.id)
-                          ? "rotate-180"
-                          : ""
-                      }`}
-                    />
-                  </HydrationSafeButton>
+              {Object.values(NAV_DATA).map((section) => {
+                // Skip journeys and tools, guides, services sections
+                if (section.id === "journeys" || section.id === "tools" || section.id === "guides" || section.id === "services") {
+                  return null;
+                }
+                return (
+                  <div key={section.id} className="mt-2">
+                    <HydrationSafeButton
+                      onClick={() => {
+                        setExpandedSections((prev) =>
+                          prev.includes(section.id)
+                            ? prev.filter((s) => s !== section.id)
+                            : [...prev, section.id],
+                        );
+                      }}
+                      className="w-full flex items-center justify-between px-4 py-3 rounded-xl text-muted-foreground hover:bg-muted transition-all cursor-pointer"
+                    >
+                      <div className="flex items-center gap-3">
+                        {MOBILE_ICONS[section.id] || (
+                          <Briefcase className="w-5 h-5 text-[#0d7377]" />
+                        )}
+                        <span className="font-bold">{section.label}</span>
+                      </div>
+                      <ChevronDown
+                        className={`h-4 w-4 transition-transform duration-400 ${
+                          expandedSections.includes(section.id)
+                            ? "rotate-180"
+                            : ""
+                        }`}
+                      />
+                    </HydrationSafeButton>
 
-                  <AnimatePresence initial={false}>
-                    {expandedSections.includes(section.id) && (
-                      <motion.div
-                        initial={{ height: 0, opacity: 0 }}
-                        animate={{ height: "auto", opacity: 1 }}
-                        exit={{ height: 0, opacity: 0 }}
-                        transition={{ duration: 0.2, ease: "easeInOut" }}
-                        className="overflow-hidden"
-                      >
+                    <AnimatePresence initial={false}>
+                      {expandedSections.includes(section.id) && (
+                        <motion.div
+                          initial={{ height: 0, opacity: 0 }}
+                          animate={{ height: "auto", opacity: 1 }}
+                          exit={{ height: 0, opacity: 0 }}
+                          transition={{ duration: 0.2, ease: "easeInOut" }}
+                          className="overflow-hidden"
+                        >
                         <div className="ml-9 mt-1 flex flex-col gap-4 border-l-2 border-slate-100 pl-4 py-2">
                           {section.tabs.map((tab) => (
                             <div key={tab.id} className="flex flex-col gap-2">
@@ -1006,10 +1242,11 @@ export function SiteHeader({
                           )}
                         </div>
                       </motion.div>
-                    )}
-                  </AnimatePresence>
-                </div>
-              ))}
+                      )}
+                    </AnimatePresence>
+                  </div>
+                );
+              })}
 
               {/* <div className="mt-4 px-4 py-2 text-xs font-bold uppercase tracking-wider text-slate-400">General</div> */}
               <HydrationSafeButton

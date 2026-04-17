@@ -12,7 +12,10 @@ import {
   ScenarioFlags,
   VisaCategory,
 } from "./types";
-import { generateRequiredDocuments } from "./personalization-engine";
+import { 
+  generateRequiredDocuments,
+  getCategoryDisplayName 
+} from "./personalization-engine";
 import {
   updateDocumentStatuses,
   generateNotifications,
@@ -62,6 +65,12 @@ interface DocumentVaultStore {
   deleteDocument: (documentId: string) => void;
   refreshDocumentStatuses: () => void;
   reloadDocuments: () => Promise<void>;
+  addDynamicSlot: (category: string) => void;
+  renameDynamicSlot: (
+    categoryId: string,
+    slotId: string,
+    newName: string,
+  ) => void;
 
   // UI actions
   setSelectedDocument: (documentDefId: string | null) => void;
@@ -106,8 +115,12 @@ interface DocumentVaultStore {
   getUnreadNotificationCount: () => number;
   getPendingNotificationCount: () => number;
   getUploadedNotificationCount: () => number;
-  isNotificationDocumentUploaded: (notification: NotificationMessage) => boolean;
-  getNotificationStatus: (notification: NotificationMessage) => 'pending' | 'uploaded';
+  isNotificationDocumentUploaded: (
+    notification: NotificationMessage,
+  ) => boolean;
+  getNotificationStatus: (
+    notification: NotificationMessage,
+  ) => "pending" | "uploaded";
 
   // Reset
   reset: () => void;
@@ -191,7 +204,11 @@ export const useDocumentVaultStore = create<DocumentVaultStore>()(
 
         if (config) {
           const uploadedDocIds = documents.map((d: any) => d.documentDefId);
-          const requiredDocs = generateRequiredDocuments(config, true, uploadedDocIds); // Include optional documents
+          const requiredDocs = generateRequiredDocuments(
+            config,
+            true,
+            uploadedDocIds,
+          ); // Include optional documents
 
           // Create document definitions map
           const defsMap = new Map(ALL_DOCUMENTS.map((d) => [d.id, d]));
@@ -231,8 +248,12 @@ export const useDocumentVaultStore = create<DocumentVaultStore>()(
 
     setConfig: async (config: DocumentVaultConfig) => {
       const { uploadedDocuments } = get();
-      const uploadedDocIds = uploadedDocuments.map(d => d.documentDefId);
-      const requiredDocs = generateRequiredDocuments(config, true, uploadedDocIds); // Include optional documents
+      const uploadedDocIds = uploadedDocuments.map((d) => d.documentDefId);
+      const requiredDocs = generateRequiredDocuments(
+        config,
+        true,
+        uploadedDocIds,
+      ); // Include optional documents
 
       // Set config in store IMMEDIATELY — don't wait for DB
       // This ensures the upload modal always has a non-null config
@@ -249,10 +270,12 @@ export const useDocumentVaultStore = create<DocumentVaultStore>()(
           body: JSON.stringify(config),
         });
       } catch (error) {
-        console.error("Failed to persist config to DB (config still active for session):", error);
+        console.error(
+          "Failed to persist config to DB (config still active for session):",
+          error,
+        );
       }
     },
-
 
     updateScenarioFlags: (flags: Partial<ScenarioFlags>) => {
       const { config } = get();
@@ -377,25 +400,98 @@ export const useDocumentVaultStore = create<DocumentVaultStore>()(
         // Also regenerate requiredDocuments if config is available
         const { config } = get();
         if (config) {
-          const uploadedIds = updatedDocs.map(d => d.documentDefId);
-          const requiredDocs = generateRequiredDocuments(config, true, uploadedIds);
-          set({ 
-            uploadedDocuments: updatedDocs, 
+          const uploadedIds = updatedDocs.map((d) => d.documentDefId);
+          const requiredDocs = generateRequiredDocuments(
+            config,
+            true,
+            uploadedIds,
+          );
+          set({
+            uploadedDocuments: updatedDocs,
             requiredDocuments: requiredDocs,
             isReloadingDocs: false,
-            hasLoadedDocsInitial: true
+            hasLoadedDocsInitial: true,
           });
         } else {
-          set({ 
+          set({
             uploadedDocuments: updatedDocs,
             isReloadingDocs: false,
-            hasLoadedDocsInitial: true
+            hasLoadedDocsInitial: true,
           });
         }
       } catch (error) {
         console.error("Failed to reload documents:", error);
         set({ isReloadingDocs: false });
       }
+    },
+
+    addDynamicSlot: (category: string) => {
+      const { config } = get();
+      if (!config) return;
+
+      const dynamicDocs = config.dynamicDocuments || {};
+      const slots = dynamicDocs[category] || [];
+      const updatedSlots = [...slots];
+
+      // Get consistent naming from personalization-engine
+      const displayName = getCategoryDisplayName(category);
+      const baseName = displayName.replace(/ (Documents|Evidence)$/, "");
+
+      if (updatedSlots.length === 0) {
+        // If empty, materialize the first virtual slot (ID matching the engine's default)
+        // AND add the second one so the user sees a new card immediately.
+        updatedSlots.push({
+          id: `dynamic-${category}-1`,
+          name: `${baseName} Document (1)`,
+        });
+        updatedSlots.push({
+          id: `dynamic-${category}-${Date.now()}-2`,
+          name: `${baseName} Document (2)`,
+        });
+      } else {
+        // Standard addition
+        const newIndex = updatedSlots.length + 1;
+        updatedSlots.push({
+          id: `dynamic-${category}-${Date.now()}`,
+          name: `${baseName} Document (${newIndex})`,
+        });
+      }
+
+      const updatedDynamicDocs = {
+        ...dynamicDocs,
+        [category]: updatedSlots,
+      };
+
+      const updatedConfig = {
+        ...config,
+        dynamicDocuments: updatedDynamicDocs,
+      };
+
+      get().setConfig(updatedConfig);
+    },
+
+    renameDynamicSlot: (category: string, slotId: string, newName: string) => {
+      const { config } = get();
+      if (!config) return;
+
+      const dynamicDocs = config.dynamicDocuments || {};
+      const slots = dynamicDocs[category] || [];
+
+      const updatedSlots = slots.map((slot) =>
+        slot.id === slotId ? { ...slot, name: newName } : slot,
+      );
+
+      const updatedDynamicDocs = {
+        ...dynamicDocs,
+        [category]: updatedSlots,
+      };
+
+      const updatedConfig = {
+        ...config,
+        dynamicDocuments: updatedDynamicDocs,
+      };
+
+      get().setConfig(updatedConfig);
     },
 
     setSelectedDocument: (documentDefId: string | null) => {

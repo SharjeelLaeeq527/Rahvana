@@ -724,9 +724,9 @@ export default function SponsorshipCalculatorTool({
                       ${result.primaryIncome.toLocaleString()} / ${result.requiredIncome.toLocaleString()}
                     </div>
                     <p className="text-[13px] text-slate-600 font-medium">
-                      {result.isEligible 
-                        ? "Based on your income and household size, you qualify as the sole sponsor." 
-                        : `You are $${result.shortfall.toLocaleString()} below the threshold.`}
+                      {result.isEligible
+                        ? "Based on your income and household size, you qualify as the sole sponsor."
+                        : `You are $${(result.shortfall ?? 0).toLocaleString()} below the threshold.`}
                     </p>
                   </div>
 

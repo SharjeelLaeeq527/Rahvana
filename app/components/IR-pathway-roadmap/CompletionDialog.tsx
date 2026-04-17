@@ -29,7 +29,7 @@ export default function CompletionDialog({
 
             <div className="space-y-3">
               <DialogTitle className="text-3xl font-bold">
-                Congratulations! 🎉
+                Congratulations!
               </DialogTitle>
               <p className="text-muted-foreground text-base">
                 You&apos;ve completed all steps of the Pakistan to USA spousal immigration journey!

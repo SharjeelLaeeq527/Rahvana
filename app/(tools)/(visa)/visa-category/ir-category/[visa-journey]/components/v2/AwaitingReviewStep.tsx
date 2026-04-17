@@ -1,10 +1,15 @@
 "use client";
 
-import React from "react";
-import { Search, Clock, Scale } from "lucide-react";
+import React, { useState } from "react";
+import { Search, Clock, Scale, BellRing, Save, ExternalLink } from "lucide-react";
+import { WizardState } from "@/app/(main)/dashboard/hooks/useWizard";
 
 interface AwaitingReviewStepProps {
   data: any;
+  state?: WizardState;
+  actions?: {
+    updateMetadata: (data: Record<string, unknown>) => void;
+  };
 }
 
 export const AwaitingReviewStep: React.FC<AwaitingReviewStepProps> = ({ data }) => {
@@ -217,3 +222,4 @@ export const AwaitingReviewStep: React.FC<AwaitingReviewStepProps> = ({ data }) 
     </div>
   );
 };
+

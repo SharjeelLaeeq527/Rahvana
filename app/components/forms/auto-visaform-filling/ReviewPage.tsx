@@ -1,17 +1,19 @@
-"use client"
+"use client";
 
 import type { Field } from "@/lib/formConfig/types";
-import { Loader } from "@/components/ui/spinner";
+// import { Loader } from "@/components/ui/spinner";
 
 interface ReviewPageProps {
-  formData: Record<string, string>
-  sections: { title: string; fields: Field[] }[]
-  onEditStep: (step: number) => void
-  onBackToForm: () => void
-  onPreviewPDF: () => void
-  onDownloadPDF: () => void
-  isPreviewing?: boolean
-  isDownloading?: boolean
+  formData: Record<string, string>;
+  sections: { title: string; fields: Field[] }[];
+  onEditStep: (step: number) => void;
+  onBackToForm: () => void;
+  onPreviewPDF: () => void;
+  onDownloadPDF: () => void;
+  onSaveToVault?: () => void;
+  isPreviewing?: boolean;
+  isDownloading?: boolean;
+  isSavingToVault?: boolean;
 }
 
 export function ReviewPage({
@@ -21,13 +23,17 @@ export function ReviewPage({
   onBackToForm,
   onPreviewPDF,
   onDownloadPDF,
+  onSaveToVault,
   isPreviewing,
   isDownloading,
+  isSavingToVault,
 }: ReviewPageProps) {
   return (
     <div className="space-y-6">
       <div className="mb-8">
-        <h2 className="text-3xl font-bold text-gray-900 mb-2">Review Your Information</h2>
+        <h2 className="text-3xl font-bold text-gray-900 mb-2">
+          Review Your Information
+        </h2>
         <p className="text-gray-600">
           Please review all sections. Click &#34;Edit&#34; to make changes.
         </p>
@@ -35,8 +41,8 @@ export function ReviewPage({
 
       <div className="space-y-4">
         {sections.map((section, idx) => {
-          const stepNum = idx + 1
-          const hasData = section.fields.some((f) => formData[f.key])
+          const stepNum = idx + 1;
+          const hasData = section.fields.some((f) => formData[f.key]);
 
           return (
             <div
@@ -57,8 +63,8 @@ export function ReviewPage({
                 </div>
                 <button
                   onClick={(e) => {
-                    e.stopPropagation()
-                    onEditStep(stepNum)
+                    e.stopPropagation();
+                    onEditStep(stepNum);
                   }}
                   className="px-4 py-2 bg-primary hover:bg-primary/80 text-white font-semibold rounded-lg transition"
                 >
@@ -72,51 +78,59 @@ export function ReviewPage({
                     key={field.key || `field-${fieldIdx}`}
                     className="flex justify-between items-start pb-3 border-b border-gray-100 last:border-b-0"
                   >
-                    <span className="font-semibold text-gray-700 flex-1">{field.label}:</span>
+                    <span className="font-semibold text-gray-700 flex-1">
+                      {field.label}:
+                    </span>
                     <span className="text-gray-600 text-right max-w-xs ml-4">
-                      {formData[field.key] || <span className="text-gray-400 italic">Empty</span>}
+                      {formData[field.key] || (
+                        <span className="text-gray-400 italic">Empty</span>
+                      )}
                     </span>
                   </div>
                 ))}
               </div>
             </div>
-          )
+          );
         })}
       </div>
 
       {/* Buttons */}
-      <div className="flex gap-4 mt-8 justify-between">
-        <button
-          onClick={onBackToForm}
-          className="px-6 py-3 bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold rounded-lg transition"
-        >
-          Back to Form
-        </button>
+      <div className="flex flex-wrap gap-4 mt-8 justify-between">
+        <div className="flex gap-4">
+          <button
+            onClick={onBackToForm}
+            className="px-6 py-3 bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold rounded-lg transition"
+          >
+            Back to Form
+          </button>
+        </div>
 
-        <button
-          onClick={onPreviewPDF}
-          disabled={isPreviewing || isDownloading}
-          className="px-8 py-3 bg-primary hover:bg-primary/80 disabled:opacity-70 disabled:cursor-not-allowed text-white font-semibold rounded-lg transition flex items-center justify-center gap-2"
-        >
-          {isPreviewing ? (
-            <Loader size="sm" text="Previewing..." />
-          ) : (
-            "Preview PDF"
-          )}
-        </button>
+        <div className="flex flex-wrap gap-4">
+          <button
+            onClick={onPreviewPDF}
+            disabled={isPreviewing || isDownloading || isSavingToVault}
+            className="px-6 py-3 bg-gray-600 hover:bg-gray-700 disabled:opacity-70 disabled:cursor-not-allowed text-white font-semibold rounded-lg transition flex items-center justify-center gap-2"
+          >
+            {isPreviewing ? "Previewing..." : "Preview PDF"}
+          </button>
 
-        <button
-          onClick={onDownloadPDF}
-          disabled={isPreviewing || isDownloading}
-          className="px-8 py-3 bg-primary hover:bg-primary/80 disabled:opacity-70 disabled:cursor-not-allowed text-white font-semibold rounded-lg transition flex items-center justify-center gap-2"
-        >
-          {isDownloading ? (
-            <Loader size="sm" text="Downloading..." />
-          ) : (
-            "Download PDF"
-          )}
-        </button>
+          <button
+            onClick={onDownloadPDF}
+            disabled={isPreviewing || isDownloading || isSavingToVault}
+            className="px-6 py-3 bg-gray-600 hover:bg-gray-700 disabled:opacity-70 disabled:cursor-not-allowed text-white font-semibold rounded-lg transition flex items-center justify-center gap-2"
+          >
+            {isDownloading ? "Downloading..." : "Download PDF"}
+          </button>
+
+          <button
+            onClick={onSaveToVault}
+            disabled={isPreviewing || isDownloading || isSavingToVault}
+            className="px-8 py-3 bg-primary hover:bg-primary/80 disabled:opacity-70 disabled:cursor-not-allowed text-white font-semibold rounded-lg transition shadow-lg shadow-primary/20 flex items-center justify-center gap-2"
+          >
+            {isSavingToVault ? "Saving..." : "Save to Vault"}
+          </button>
+        </div>
       </div>
     </div>
-  )
+  );
 }

@@ -75,7 +75,7 @@ export default function Footer() {
               {t("footer.journeys") || "Journeys"}
             </h4>
             <nav className="flex flex-col gap-4 text-sm">
-              <Link
+              {/* <Link
                 href="/visa-category/ir-category?category=Family"
                 className="text-slate-400 hover:text-white transition-colors"
               >
@@ -109,6 +109,12 @@ export default function Footer() {
               >
                 {t("footer.exploreAllJourneys") || "Explore all Journeys"}
                 <ArrowRight size={14} className="inline-block ml-1" />
+              </Link> */}
+              <Link
+                href="/visa-category/ir-category/ir1-journey"
+                className="text-slate-400 hover:text-white transition-colors"
+              >
+                IR-1 Journey
               </Link>
             </nav>
           </div>

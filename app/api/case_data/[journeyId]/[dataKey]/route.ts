@@ -31,7 +31,7 @@ export async function GET(
   }
 }
 
-// PATCH /api/case_data/[journeyId]/[dataKey] - Update single case data
+// PATCH /api/case_data/[journeyId]/[dataKey] - Update or create single case data
 export async function PATCH(
   request: NextRequest,
   { params }: { params: Promise<{ journeyId: string; dataKey: string }> },
@@ -40,7 +40,17 @@ export async function PATCH(
     const { journeyId, dataKey } = await params;
     const updates: CaseDataUpdate = await request.json();
 
-    const result = await db.updateCaseDataDB(journeyId, dataKey, updates);
+    // Use upsert to handle both create and update cases
+    const result = await db.upsertCaseDataDB(journeyId, dataKey, {
+      data_key: dataKey,
+      data_value: updates.data_value,
+      data_type: updates.data_type,
+      label: updates.label,
+      description: updates.description,
+      source: updates.source,
+      source_reference: updates.source_reference,
+      is_verified: updates.is_verified,
+    });
 
     return NextResponse.json(
       { success: true, data: { ...result, is_editable: true } },
