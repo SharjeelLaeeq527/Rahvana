@@ -69,6 +69,7 @@ import { toast } from "sonner";
 import { ConfirmationModal } from "@/app/components/shared/ConfirmationModal";
 import { InlineGuideData } from "./InlineGuideData";
 import { USCIS_TUTORIAL_STEPS } from "./UscisTutorialData";
+import { TutorialVideo } from "@/app/components/shared/TutorialVideo";
 import Image from "next/image";
 import Link from "next/link";
 import { HOUSEHOLD_TUTORIAL_STEPS, HOUSEHOLD_GUIDE_CONTENT } from "./HouseholdTutorialData";
@@ -265,6 +266,8 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
   // Tutorial State
   const [isTutorialOpen, setIsTutorialOpen] = useState(false);
   const [tutorialIdx, setTutorialIdx] = useState(0);
+  const [tutorialPath, setTutorialPath] = useState<"household_member" | "joint_sponsor" | null>(null);
+  const [useCeacGuideData, setUseCeacGuideData] = useState(false); // Flag for Start CEAC Guide button
 
   // Household Member Builder States (Step 7)
   const [jsCount, setJsCount] = useState<number>(
@@ -1386,6 +1389,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
             </div>
             <button
               onClick={() => {
+                setUseCeacGuideData(true);
                 setTutorialIdx(0);
                 setIsTutorialOpen(true);
               }}
@@ -1395,6 +1399,55 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
             </button>
           </div>
         </div>
+
+        {/* GUIDE CARDS - Flex Layout */}
+        {(() => {
+          const tool = currentStep.tool_data as any;
+          const guideCards = tool?.guide_cards;
+          
+          if (guideCards && guideCards.length > 0 && tool?.tutorial_steps) {
+            return (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-7">
+                {guideCards.map((card: any) => (
+                  <button
+                    key={card.id}
+                    onClick={() => {
+                      const pathMap: Record<string, "household_member" | "joint_sponsor"> = {
+                        "add-household-member": "household_member",
+                        "add-joint-sponsor": "joint_sponsor",
+                      };
+                      setTutorialPath(pathMap[card.id] || card.id as "household_member" | "joint_sponsor");
+                      setTutorialIdx(0);
+                      setIsTutorialOpen(true);
+                    }}
+                    className="bg-[#fafcff] border-[1.5px] border-[#d0e4f7] rounded-[16px] p-[20px] text-left group hover:border-primary hover:shadow-[0_4px_20px_rgba(47,111,212,0.1)] hover:-translate-y-px transition-all cursor-pointer select-none flex flex-col"
+                  >
+                    <div className="flex items-center gap-[10px] mb-[12px]">
+                      <div className="w-[36px] h-[36px] rounded-[9px] bg-[#f3f0fb] border border-[#c9bef2] flex items-center justify-center shrink-0">
+                        <Book
+                          size={18}
+                          className="text-[#4a2d8a]"
+                          strokeWidth={1.7}
+                        />
+                      </div>
+                    </div>
+                    <h3 className="text-[14px] font-semibold text-[#0c1b33] mb-1">
+                      {card.title}
+                    </h3>
+                    <p className="text-[12px] text-[#6b8097] leading-normal mb-3">
+                      {card.subtitle}
+                    </p>
+                    <div className="flex items-center gap-1 mt-auto text-[12px] font-semibold text-primary">
+                      <span>View guide</span>
+                      <ArrowRight size={11} strokeWidth={2} />
+                    </div>
+                  </button>
+                ))}
+              </div>
+            );
+          }
+          return null;
+        })()}
 
         {/* SCENARIO BUILDER */}
         <div className="bg-white border-[1.5px] border-[#d0e4f7] rounded-[16px] p-[22px] mb-[18px]">
@@ -4704,17 +4757,165 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
       {/* Tutorial Overlay */}
       {isTutorialOpen &&
         (() => {
+          // If useCeacGuideData is true, always use HOUSEHOLD_TUTORIAL_STEPS from file
+          if (useCeacGuideData) {
+            const steps = HOUSEHOLD_TUTORIAL_STEPS;
+            const currentTutStep = steps[tutorialIdx];
+
+            return (
+              <div className="fixed inset-0 bg-[#fafcff] z-[120] flex flex-col overflow-hidden animate-in slide-in-from-bottom-[18px] duration-[0.28s] ease-in-out">
+                {/* Tutorial Topbar */}
+                <div className="flex items-center h-[72px] border-b border-[#d0e4f7] px-6 gap-4 shrink-0 bg-[#fafcff]">
+                  <button
+                    onClick={() => {
+                      setIsTutorialOpen(false);
+                      setUseCeacGuideData(false);
+                    }}
+                    className="w-9 h-9 rounded-full bg-[#f4f7fb] border-none flex items-center justify-center text-[#3a4f63] hover:bg-primary/30 transition-all cursor-pointer"
+                  >
+                    <X size={16} strokeWidth={2} />
+                  </button>
+
+                  <div className="flex-1 h-[5px] bg-primary/30 rounded-[10px] overflow-hidden">
+                    <div
+                      className="h-full bg-linear-to-r from-primary to-primary rounded-[10px] transition-all duration-[0.4s] ease-out"
+                      style={{
+                        width: `${((tutorialIdx + 1) / steps.length) * 100}%`,
+                      }}
+                    />
+                  </div>
+
+                  <div className="text-[12px] font-medium text-[#6b8097] whitespace-nowrap shrink-0">
+                    {tutorialIdx + 1} / {steps.length}
+                  </div>
+                </div>
+
+                {/* Tutorial Body */}
+                <div className="flex-1 bg-[#fafcff] p-[48px_24px_40px] flex flex-col items-center overflow-y-auto min-h-0">
+                  <div className="w-full max-w-[580px] flex flex-col">
+                    <div className="text-[11px] font-semibold tracking-widest uppercase text-primary mb-4">
+                      {currentTutStep.label}
+                    </div>
+                    <h2 className="text-[clamp(20px,3.2vw,26px)] font-black text-[#0c1b33] mb-2 leading-[1.3]">
+                      {currentTutStep.heading}
+                    </h2>
+                    <div
+                      className="text-[14px] text-[#3a4f63] leading-[1.7] mb-5"
+                      dangerouslySetInnerHTML={{
+                        __html: currentTutStep.instruction,
+                      }}
+                    />
+
+                    {/* Screenshot Block — Fallback UI with Browser Chrome */}
+                    <div className="w-full rounded-[10px] overflow-hidden border-[1.5px] border-[#d0e4f7] mb-5 shadow-[0_2px_12px_rgba(12,27,51,0.06)]">
+                      {/* Browser Chrome Bar */}
+                      <div className="bg-[#eef3fa] border-b border-[#d0e4f7] h-[34px] flex items-center px-[14px] gap-[7px]">
+                        <div className="w-[10px] h-[10px] rounded-full bg-[#f87171]" />
+                        <div className="w-[10px] h-[10px] rounded-full bg-[#fbbf24]" />
+                        <div className="w-[10px] h-[10px] rounded-full bg-[#34d399]" />
+                        <div className="flex-1 h-[20px] bg-[#fafcff] rounded-[5px] border border-[#d0e4f7] ml-[10px] flex items-center px-[10px]">
+                          <span className="text-[10px] text-[#6b8097] font-mono">
+                            {currentTutStep.vlabel}
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Content Area — Fallback UI Pattern */}
+                      <div
+                        className="relative w-full flex items-center justify-center bg-[#f8f9fb]"
+                        style={{
+                          padding: 0,
+                          minHeight: "400px",
+                          aspectRatio: "4/3",
+                        }}
+                      >
+                        <div className="flex flex-col gap-[16px] px-[24px] py-[28px] w-full items-center">
+                          <span className="text-[11px] font-semibold uppercase tracking-[0.07em] text-[#6b8097] bg-[#e8f1fb] border border-[#d0e4f7] rounded-full px-[12px] py-[4px] w-fit">
+                            {currentTutStep.vlabel}
+                          </span>
+
+                          <div className="text-[18px] font-semibold text-[#0c1b33] text-center w-fit">
+                            {currentTutStep.heading}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Note Block */}
+                    {currentTutStep.note && (
+                      <div className="bg-[#e8f5ef] border-l-4 border-[#15744f] p-[12px_14px] rounded-[4px] mb-5">
+                        <div className="text-[12px] text-[#3a4f63] leading-[1.6]">
+                          {currentTutStep.note}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Tutorial Controls — Now inside scrollable area */}
+                    <div className="flex items-center justify-center py-[20px]">
+                      <div className="w-full flex gap-[10px] items-center">
+                        {tutorialIdx > 0 && (
+                          <button
+                            onClick={() => setTutorialIdx(tutorialIdx - 1)}
+                            className="p-[13px_22px] bg-transparent text-[#3a4f63] border-[1.5px] border-[#d0e4f7] rounded-[10px] font-sans text-[14px] font-medium cursor-pointer transition-all hover:border-[#3a4f63] hover:text-[#1c2b3a]"
+                          >
+                            ← Back
+                          </button>
+                        )}
+                        {tutorialIdx < steps.length - 1 ? (
+                          <button
+                            onClick={() => setTutorialIdx(tutorialIdx + 1)}
+                            className="flex-1 p-[13px_22px] bg-primary text-white border-none rounded-[10px] font-sans text-[14px] font-semibold cursor-pointer transition-all hover:bg-primary/80 hover:-translate-y-px active:translate-y-0 text-center"
+                          >
+                            Next →
+                          </button>
+                        ) : (
+                          <button
+                            onClick={() => {
+                              setIsTutorialOpen(false);
+                              setUseCeacGuideData(false);
+                            }}
+                            className="flex-1 p-[13px_22px] bg-[#15744f] text-white border-none rounded-[10px] font-sans text-[14px] font-semibold cursor-pointer transition-all hover:bg-[#0e5c3c] hover:-translate-y-px text-center"
+                          >
+                            Done — return to step
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            );
+          }
+
           // Use tool-specific tutorial_steps if available (steps 7, 8),
           // otherwise fall back to the static USCIS_TUTORIAL_STEPS (step 6)
           const tool = currentStep?.tool_data;
-          const dynamicSteps = tool?.tutorial_steps;
+          const dynamicStepsRaw = tool?.tutorial_steps;
+          
+          // Handle both array (old format) and object (new format with household_member/joint_sponsor)
+          let dynamicSteps: any[] | null = null;
+          let isDynamic = false;
+          const effectivePath = tutorialPath || "household_member"; // Default to household_member if not set
+          
+          if (dynamicStepsRaw) {
+            if (Array.isArray(dynamicStepsRaw)) {
+              // Old format: array of steps
+              dynamicSteps = dynamicStepsRaw;
+              isDynamic = dynamicStepsRaw.length > 0;
+            } else if (typeof dynamicStepsRaw === 'object') {
+              // New format: object with paths (household_member/joint_sponsor)
+              dynamicSteps = (dynamicStepsRaw as any)[effectivePath];
+              isDynamic = dynamicSteps && dynamicSteps.length > 0;
+            }
+          }
+          
           const steps =
-            dynamicSteps && dynamicSteps.length > 0
+            isDynamic && dynamicSteps
               ? dynamicSteps
               : tool?.type === "household_member"
                 ? HOUSEHOLD_TUTORIAL_STEPS
                 : USCIS_TUTORIAL_STEPS;
-          const isDynamic = !!(dynamicSteps && dynamicSteps.length > 0);
+          
           const currentTutStep = steps[tutorialIdx];
 
           return (
@@ -4722,7 +4923,11 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
               {/* Tutorial Topbar */}
               <div className="flex items-center h-[72px] border-b border-[#d0e4f7] px-6 gap-4 shrink-0 bg-[#fafcff]">
                 <button
-                  onClick={() => setIsTutorialOpen(false)}
+                  onClick={() => {
+                    setIsTutorialOpen(false);
+                    setTutorialPath(null);
+                    setUseCeacGuideData(false);
+                  }}
                   className="w-9 h-9 rounded-full bg-[#f4f7fb] border-none flex items-center justify-center text-[#3a4f63] hover:bg-primary/30 transition-all cursor-pointer"
                 >
                   <X size={16} strokeWidth={2} />
@@ -4743,7 +4948,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
               </div>
 
               {/* Tutorial Body */}
-              <div className="flex-1 overflow-y-auto bg-[#fafcff] p-[48px_24px_40px] flex flex-col items-center">
+              <div className="flex-1 bg-[#fafcff] p-[48px_24px_40px] flex flex-col items-center overflow-y-auto min-h-0">
                 <div className="w-full max-w-[580px] flex flex-col">
                   <div className="text-[11px] font-semibold tracking-widest uppercase text-primary mb-4">
                     {isDynamic
@@ -4777,44 +4982,126 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                         </div>
                       </div>
 
-                      {/* Content Area — real image OR structured placeholder */}
-                      {(currentTutStep as TutorialStepData).screenshot ? (
-                        /* ── REAL SCREENSHOT ─────────────────────────────────
-                           To use: set  "screenshot": "/path/or/url.png"
-                           on the tutorial step in ir-1.json.
-                           The image fills the frame at full width.          */
-                        <Image
-                          src={(currentTutStep as TutorialStepData).screenshot!}
-                          alt={(currentTutStep as TutorialStepData).ss_label}
-                          className="w-full block object-cover"
-                          draggable={false}
-                        />
-                      ) : (
-                        /* ── PLACEHOLDER (no screenshot yet) ────────────────
-                           Replace by adding a "screenshot" field above.     */
-                        <div className="bg-[#f4f7fb] flex items-center justify-center px-[24px] py-[28px] text-center min-h-[190px]">
-                          <div className="flex flex-col items-center gap-[12px] max-w-[420px] w-full">
-                            <span className="text-[11px] font-semibold uppercase tracking-[0.07em] text-[#6b8097] bg-[#e8f1fb] border border-[#d0e4f7] rounded-full px-[12px] py-[4px]">
+                      {/* Content Area — real image/video OR structured placeholder */}
+                      <div
+                        className="relative w-full flex items-center justify-center bg-[#f8f9fb]"
+                        style={{
+                          padding: 0,
+                          minHeight: "400px",
+                          aspectRatio: "4/3",
+                        }}
+                      >
+                        {(currentTutStep as TutorialStepData).media?.src ? (
+                          (currentTutStep as TutorialStepData).media?.type === "video" ? (
+                            <TutorialVideo
+                              key={(currentTutStep as TutorialStepData).media?.src!}
+                              src={(currentTutStep as TutorialStepData).media?.src!}
+                              poster={(currentTutStep as TutorialStepData).videoMeta?.poster}
+                              alt={(currentTutStep as TutorialStepData).screenTitle}
+                            />
+                          ) : (
+                            <Image
+                              key={(currentTutStep as TutorialStepData).media?.src!}
+                              src={(currentTutStep as TutorialStepData).media?.src!}
+                              alt={(currentTutStep as TutorialStepData).screenTitle}
+                              fill
+                              className="object-contain"
+                              sizes="(max-width: 640px) 95vw, (max-width: 1024px) 90vw, 1000px"
+                              quality={95}
+                              style={{ objectFit: "contain" }}
+                              priority={tutorialIdx === 0}
+                            />
+                          )
+                        ) : (currentTutStep as TutorialStepData).video ? (
+                          <TutorialVideo
+                            src={(currentTutStep as TutorialStepData).video!}
+                            poster={(currentTutStep as TutorialStepData).videoMeta
+                              ?.poster}
+                            alt={(currentTutStep as TutorialStepData).screenTitle}
+                          />
+                        ) : (currentTutStep as TutorialStepData).screenshot ? (
+                          <Image
+                            src={(currentTutStep as TutorialStepData).screenshot!}
+                            alt={(currentTutStep as TutorialStepData).screenTitle}
+                            fill
+                            className="object-contain"
+                            sizes="(max-width: 640px) 95vw, (max-width: 1024px) 90vw, 1000px"
+                            quality={95}
+                            style={{ objectFit: "contain" }}
+                            priority={tutorialIdx === 0}
+                          />
+                        ) : (
+                          <div className="flex flex-col gap-[16px] px-[24px] py-[28px] w-full items-center">
+                            <span className="text-[11px] font-semibold uppercase tracking-[0.07em] text-[#6b8097] bg-[#e8f1fb] border border-[#d0e4f7] rounded-full px-[12px] py-[4px] w-fit">
                               {(currentTutStep as TutorialStepData).ss_label}
                             </span>
-                            <div className="text-[17px] font-semibold text-[#0c1b33]">
-                              {(currentTutStep as TutorialStepData).ss_headline}
+
+                            <div className="text-[18px] font-semibold text-[#0c1b33] text-center w-fit">
+                              {(currentTutStep as TutorialStepData).ss_headline ||
+                                (currentTutStep as TutorialStepData).screenTitle}
                             </div>
-                            <div className="text-[13px] text-[#3a4f63] leading-[1.55]">
-                              {(currentTutStep as TutorialStepData).ss_desc}
-                            </div>
-                            {(currentTutStep as TutorialStepData)
-                              .ss_highlight && (
-                              <div className="px-[16px] py-[10px] bg-[rgba(47,111,212,0.12)] border-[1.5px] border-[rgba(47,111,212,0.22)] rounded-[10px] text-[13px] font-semibold text-primary">
-                                {
-                                  (currentTutStep as TutorialStepData)
-                                    .ss_highlight
-                                }
+
+                            {/* {(currentTutStep as TutorialStepData).instruction && (
+                              <div
+                                className="text-[14px] text-[#3a4f63] leading-[1.6] text-center w-fit"
+                                dangerouslySetInnerHTML={{
+                                  __html: (currentTutStep as TutorialStepData)
+                                    .instruction!,
+                                }}
+                              />
+                            )} */}
+
+                            {((currentTutStep as TutorialStepData).ss_desc ||
+                              (currentTutStep as TutorialStepData).screenDesc) && (
+                              <div className="text-[13px] text-[#5a6f85] leading-[1.55] bg-[#f8fafb] border-l-[3px] border-[#d0e4f7] pl-[12px] py-[8px] text-center w-fit">
+                                {(currentTutStep as TutorialStepData).ss_desc ||
+                                  (currentTutStep as TutorialStepData).screenDesc}
                               </div>
                             )}
+
+                            {(currentTutStep as TutorialStepData).ss_highlight && (
+                              <div className="px-[16px] py-[12px] bg-[rgba(47,111,212,0.12)] border-[1.5px] border-[rgba(47,111,212,0.22)] rounded-[10px] text-[13px] font-semibold text-primary text-center w-fit">
+                                ✓ {(currentTutStep as TutorialStepData).ss_highlight}
+                              </div>
+                            )}
+
+                            {(currentTutStep as TutorialStepData).fields &&
+                              (currentTutStep as TutorialStepData).fields!.length > 0 && (
+                                <div className="flex flex-col gap-[8px] w-full">
+                                  {(currentTutStep as TutorialStepData).fields!.map(
+                                    (field, idx) =>
+                                      field.type === "btn" ? (
+                                        <div
+                                          key={idx}
+                                          className="w-full px-[16px] py-[10px] bg-[#2f6fd4] text-white border-none rounded-[8px] text-[13px] font-semibold cursor-default opacity-90"
+                                        >
+                                          {field.label}
+                                        </div>
+                                      ) : (
+                                        <div key={idx} className="flex flex-col gap-[4px]">
+                                          {field.label && (
+                                            <label className="text-[12px] font-medium text-[#3a4f63]">
+                                              {field.label}
+                                            </label>
+                                          )}
+                                          <input
+                                            type={
+                                              field.isPassword
+                                                ? "password"
+                                                : "text"
+                                            }
+                                            placeholder={field.placeholder}
+                                            disabled
+                                            className="w-full px-[12px] py-[8px] border border-[#d0e4f7] rounded-[6px] text-[13px] bg-[#f8fafb] text-[#9a9a9a]"
+                                          />
+                                        </div>
+                                      ),
+                                  )}
+                                </div>
+                              )}
                           </div>
-                        </div>
-                      )}
+                        )}
+                      </div>
 
                       {/* Caption Bar — always visible; green tint for "success" captionClass */}
                       <div
@@ -4829,52 +5116,161 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                       </div>
                     </div>
                   ) : (
-                    /* Static USCIS steps: screenshot placeholder */
-                    <div className="w-full bg-[#eef3fa] border-[1.5px] border-[#d0e4f7] rounded-[10px] overflow-hidden mb-5 relative flex flex-col">
-                      <div className="bg-[#eef3fa] flex flex-col items-center justify-center p-9 text-center">
-                        <div className="w-11 h-11 rounded-full bg-primary/30 flex items-center justify-center mb-2.5 shadow-sm">
-                          <Search
-                            size={22}
-                            className="text-[#6b8097]"
-                            strokeWidth={1.6}
-                          />
-                        </div>
-                        <div className="text-[13px] font-semibold text-[#6b8097] mb-1">
-                          Screenshot not yet added
-                        </div>
-                        <div className="text-[11px] font-mono text-[#b8d4f0] bg-[#e8f1fb] px-2.5 py-1 rounded-[4px] break-all max-w-[280px]">
-                          {
-                            (currentTutStep as (typeof USCIS_TUTORIAL_STEPS)[0])
-                              .screenshot
-                          }
+                    /* Static USCIS steps: Mac-like browser window with three dots */
+                    <div className="w-full bg-[#eef3fa] border-[1.5px] border-[#d0e4f7] rounded-[10px] overflow-hidden mb-5 flex flex-col">
+                      {/* Browser Chrome Bar with three dots */}
+                      <div className="bg-[#d0e4f7] border-b border-[#d0e4f7] h-[32px] flex items-center px-[14px] gap-[7px]">
+                        <div className="w-[10px] h-[10px] rounded-full bg-[#f87171]" />
+                        <div className="w-[10px] h-[10px] rounded-full bg-[#fbbf24]" />
+                        <div className="w-[10px] h-[10px] rounded-full bg-[#34d399]" />
+                        <div className="flex-1 h-[18px] bg-[#fafcff] rounded-[4px] border border-[#d0e4f7] ml-[8px] flex items-center px-[10px]">
+                          <span className="text-[10px] text-[#6b8097] font-mono">
+                            {
+                              (currentTutStep as (typeof USCIS_TUTORIAL_STEPS)[0])
+                                .url
+                            }
+                          </span>
                         </div>
                       </div>
-                      <div className="p-[8px_12px_10px] bg-[#f4f7fb] border-t border-[#d0e4f7] text-[11px] text-[#6b8097] leading-normal text-left">
-                        {
+
+                      {/* Content Area */}
+                      <div
+                        className="relative flex items-center justify-center bg-[#f8f9fb]"
+                        style={{
+                          padding: 0,
+                          minHeight: "400px",
+                          aspectRatio: "4/3",
+                        }}
+                      >
+                        {/* Show real image or video if src is provided */}
+                        {(currentTutStep as (typeof USCIS_TUTORIAL_STEPS)[0])
+                          .media?.src ? (
                           (currentTutStep as (typeof USCIS_TUTORIAL_STEPS)[0])
-                            .caption
-                        }
+                            .media.type === "img" ? (
+                            <Image
+                              key={
+                                (currentTutStep as (typeof USCIS_TUTORIAL_STEPS)[0])
+                                  .media.src
+                              }
+                              src={
+                                (currentTutStep as (typeof USCIS_TUTORIAL_STEPS)[0])
+                                  .media.src!
+                              }
+                              alt={
+                                (currentTutStep as (typeof USCIS_TUTORIAL_STEPS)[0])
+                                  .screenTitle
+                              }
+                              fill
+                              className="object-contain"
+                              sizes="(max-width: 640px) 95vw, (max-width: 1024px) 90vw, 1000px"
+                              quality={95}
+                              style={{ objectFit: "contain" }}
+                              priority
+                            />
+                          ) : (
+                            <TutorialVideo
+                              key={
+                                (currentTutStep as (typeof USCIS_TUTORIAL_STEPS)[0])
+                                  .media.src
+                              }
+                              src={
+                                (currentTutStep as (typeof USCIS_TUTORIAL_STEPS)[0])
+                                  .media.src!
+                              }
+                              poster={
+                                (currentTutStep as (typeof USCIS_TUTORIAL_STEPS)[0])
+                                  .videoMeta?.poster
+                              }
+                              alt={
+                                (currentTutStep as (typeof USCIS_TUTORIAL_STEPS)[0])
+                                  .screenTitle
+                              }
+                            />
+                          )
+                        ) : (
+                          <div className="flex flex-col gap-[16px] px-[24px] py-[12px] w-full items-center">
+                            <div className="text-[18px] font-semibold text-[#0c1b33] text-center w-fit">
+                              {(currentTutStep as (typeof USCIS_TUTORIAL_STEPS)[0])
+                                .ss_headline ||
+                                (currentTutStep as (typeof USCIS_TUTORIAL_STEPS)[0])
+                                  .screenTitle}
+                            </div>
+
+                            {((currentTutStep as (typeof USCIS_TUTORIAL_STEPS)[0])
+                              .ss_desc ||
+                              (currentTutStep as (typeof USCIS_TUTORIAL_STEPS)[0])
+                                .screenDesc) && (
+                              <div className="text-[13px] text-[#5a6f85] leading-[1.55] bg-[#f8fafb] border-l-[3px] border-[#d0e4f7] pl-[12px] py-[8px] text-center w-fit">
+                                {(currentTutStep as (typeof USCIS_TUTORIAL_STEPS)[0])
+                                  .ss_desc ||
+                                  (currentTutStep as (typeof USCIS_TUTORIAL_STEPS)[0])
+                                    .screenDesc}
+                              </div>
+                            )}
+
+                            {/* Highlight Box */}
+                            {(currentTutStep as (typeof USCIS_TUTORIAL_STEPS)[0])
+                              .fields &&
+                              (currentTutStep as (typeof USCIS_TUTORIAL_STEPS)[0])
+                                .fields.length > 0 && (
+                                <div className="flex flex-col gap-[8px] w-full">
+                                  {(currentTutStep as (typeof USCIS_TUTORIAL_STEPS)[0]).fields.map(
+                                    (field, idx) =>
+                                      field.type === "btn" ? (
+                                        <div
+                                          key={idx}
+                                          className="w-full px-[22px] py-[10px] bg-[#2f6fd4] text-white border-none rounded-[8px] text-[13px] font-semibold cursor-default opacity-90"
+                                        >
+                                          {field.label}
+                                        </div>
+                                      ) : (
+                                        <div
+                                          key={idx}
+                                          className="flex flex-col gap-[4px]"
+                                        >
+                                          {field.label && (
+                                            <label className="text-[12px] font-medium text-[#3a4f63]">
+                                              {field.label}
+                                            </label>
+                                          )}
+                                          <input
+                                            type={
+                                              field.isPassword
+                                                ? "password"
+                                                : "text"
+                                            }
+                                            placeholder={field.placeholder}
+                                            disabled
+                                            className="w-full px-[12px] py-[8px] border border-[#d0e4f7] rounded-[6px] text-[13px] bg-[#f8fafb] text-[#9a9a9a]"
+                                          />
+                                        </div>
+                                      ),
+                                  )}
+                                </div>
+                              )}
+                          </div>
+                        )}
                       </div>
                     </div>
                   )}
 
                   {/* Note Block */}
-                  {currentTutStep.note && (
+                  {((isDynamic &&
+                    (currentTutStep as TutorialStepData).note) ||
+                    (!isDynamic &&
+                      (currentTutStep as (typeof USCIS_TUTORIAL_STEPS)[0])
+                        .note)) && (
                     <div className="bg-[#fef8e8] border border-[#f0d98a] rounded-[10px] p-[12px_15px] mb-[22px]">
                       <div className="text-[13px] text-[#8a6200] leading-[1.55]">
-                        <div
-                          dangerouslySetInnerHTML={{
-                            __html: currentTutStep.note
-                              .replace(
-                                "Important:",
-                                "<strong>Important:</strong>",
-                              )
-                              .replace(
-                                "Avoid this:",
-                                "<strong>Avoid this:</strong>",
-                              ),
-                          }}
-                        />
+                        {isDynamic ? (
+                          (currentTutStep as TutorialStepData).note
+                        ) : (
+                          <div
+                            dangerouslySetInnerHTML={{
+                              __html: (currentTutStep as (typeof USCIS_TUTORIAL_STEPS)[0]).note!,
+                            }}
+                          />
+                        )}
                       </div>
                     </div>
                   )}
@@ -5186,4 +5582,3 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
 };
 
 export default StepView;
-
