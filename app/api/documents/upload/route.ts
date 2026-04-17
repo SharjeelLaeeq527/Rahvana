@@ -26,7 +26,7 @@ import { encryptFile } from '@/lib/document-vault/file-encryption';
 // NVC/USCIS file size limit (4MB)
 const NVC_FILE_SIZE_LIMIT = 4 * 1024 * 1024;
 // Python backend URL for PDF compression
-const COMPRESSION_API_URL = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:8000';
+const COMPRESSION_API_URL = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:8000/api/v1';
 
 /**
  * Get Supabase client with SERVICE ROLE key (bypasses RLS)
@@ -87,7 +87,7 @@ async function compressPdf(buffer: Buffer, filename: string): Promise<{ success:
     const blob = new Blob([new Uint8Array(buffer)], { type: 'application/pdf' });
     formData.append('file', blob, filename);
 
-    const response = await fetch(`${COMPRESSION_API_URL}/api/v1/compress`, {
+    const response = await fetch(`${COMPRESSION_API_URL}/compress`, {
       method: 'POST',
       body: formData,
     });

@@ -19,7 +19,7 @@ export default function Compress() {
   const [result, setResult] = useState<CompressionResult | null>(null);
   const [error, setError] = useState("");
 
-  const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
+  const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000/api/v1";
 
   useEffect(() => {
     setMounted(true);
@@ -59,7 +59,7 @@ export default function Compress() {
     formData.append("file", file);
 
     try {
-      const response = await fetch(`${API_BASE}/api/v1/compress`, {
+      const response = await fetch(`${API_BASE}/compress`, {
         method: "POST",
         body: formData,
       });
