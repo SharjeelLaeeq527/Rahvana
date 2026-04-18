@@ -182,6 +182,15 @@ export function useWizard(options: UseWizardOptions = {}) {
 
         if (cancelled) return;
 
+        // Sync any missing steps from latest config into existing journey (silent, best-effort)
+        try {
+          await fetch(`/api/journeys/${targetJourneyId}/sync-steps`, { method: 'POST' });
+        } catch (syncErr) {
+          console.warn('[useWizard] Step sync failed (non-fatal):', syncErr);
+        }
+
+        if (cancelled) return;
+
         const detailRes = await fetch(`/api/journeys/${targetJourneyId}`);
         const detailData = await detailRes.json();
 
@@ -350,8 +359,58 @@ export function useWizard(options: UseWizardOptions = {}) {
       }
 
       if (!state.stepMap[stepKey]) {
-        console.warn("[useWizard] toggleComplete: stepKey not found in stepMap");
-        toast.error(`Sync Error: Step missing from journey. Please refresh your journey.`);
+        console.warn("[useWizard] toggleComplete: stepKey not found in stepMap, attempting sync...");
+        
+        // Attempt to sync missing steps from config into this journey
+        if (state.backendId) {
+          try {
+            const syncRes = await fetch(`/api/journeys/${state.backendId}/sync-steps`, { method: 'POST' });
+            const syncData = await syncRes.json();
+            
+            if (syncData.success && syncData.data.steps_added > 0) {
+              // Re-fetch journey steps to build updated stepMap
+              const detailRes = await fetch(`/api/journeys/${state.backendId}`);
+              const detailData = await detailRes.json();
+              
+              if (detailData.success) {
+                const newStepMap: Record<string, string> = {};
+                detailData.data.steps.forEach((s: any) => {
+                  newStepMap[s.step_key] = s.id;
+                });
+                
+                setState((prev) => ({ ...prev, stepMap: newStepMap }));
+                
+                // Now check if the step is available
+                if (newStepMap[stepKey]) {
+                  // Continue with the now-found step UUID
+                  const newStepUuid = newStepMap[stepKey];
+                  try {
+                    const res = await fetch(`/api/steps/${newStepUuid}?action=complete`, {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({}),
+                    });
+                    if (res.ok) {
+                      setState((prev) => {
+                        const newCompleted = new Set(prev.completedSteps);
+                        newCompleted.add(stepKey);
+                        return { ...prev, completedSteps: newCompleted, stepMap: { ...prev.stepMap, ...newStepMap } };
+                      });
+                      console.log('[useWizard] Step synced and completed:', stepKey);
+                    }
+                  } catch (err) {
+                    console.error('[useWizard] Failed to complete synced step:', err);
+                  }
+                  return;
+                }
+              }
+            }
+          } catch (err) {
+            console.warn('[useWizard] Auto-sync failed:', err);
+          }
+        }
+        
+        toast.error(`Step not found in your journey. Please refresh the page.`);
         return;
       }
 

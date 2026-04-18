@@ -83,7 +83,7 @@ import {
 import { WizardState } from "@/app/(main)/dashboard/hooks/useWizard";
 import { QuestRenderer } from "./QuestRenderer";
 import { ActionStepRenderer } from "./ActionStepRenderer";
-import { getAllActiveSteps, getStageProgress } from "./journeyHelpers";
+import { getAllActiveSteps, getStageProgress, getDisplayStepNumber } from "./journeyHelpers";
 import CredentialFormModal from "@/app/(main)/portal-wallet/components/CredentialFormModal";
 import ViewCredentialModal from "@/app/(main)/portal-wallet/components/ViewCredentialModal";
 import { toast } from "sonner";
@@ -737,33 +737,25 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
     });
   }, []);
 
+  // --- STEP 1.15 STATES LIFTED OUT OF CONDITION ---
+  const [rcptUiState, setRcptUiState] = React.useState<"waiting" | "register" | "tracked">("waiting");
+  const [rcptManual, setRcptManual] = React.useState({
+    receipt: "", noticeDate: "", priorityDate: "", caseLabel: "",
+  });
+  const [rcptUpload, setRcptUpload] = React.useState({
+    file: null, receipt: "", noticeDate: "", priorityDate: "",
+  });
+  const [rcptError, setRcptError] = React.useState("");
+  const [rcptSuccess, setRcptSuccess] = React.useState(false);
+  const [isRcptGuideOpen, setIsRcptGuideOpen] = React.useState(false);
+  const [rcptGuideStep, setRcptGuideStep] = React.useState(0);
+
   // --- CUSTOM RENDER FOR STEP 11 & 12 ---
+  let customRenderer: JSX.Element | null = null;
   // step_1_15: Register Receipt Notice & Track Case
   // step_1_16: Monitor USCIS Case Status
   if (sId === "step_1_15" && currentStep.tool_data) {
-    // UI state: "waiting", "register", "tracked"
-    const [uiState, setUiState] = React.useState<
-      "waiting" | "register" | "tracked"
-    >("waiting");
     const tool = currentStep.tool_data;
-    // Dummy state for form fields (not persisted)
-    const [manual, setManual] = React.useState({
-      receipt: "",
-      noticeDate: "",
-      priorityDate: "",
-      caseLabel: "",
-    });
-    const [upload, setUpload] = React.useState({
-      file: null,
-      receipt: "",
-      noticeDate: "",
-      priorityDate: "",
-    });
-    const [error, setError] = React.useState("");
-    const [success, setSuccess] = React.useState(false);
-    // Overlay tutorial state for guide
-    const [isGuideOpen, setIsGuideOpen] = React.useState(false);
-    const [guideStep, setGuideStep] = React.useState(0);
     // --- ICONS ---
     const CheckIcon = () => (
       <svg
@@ -789,7 +781,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
 
 
     // --- PIXEL-PERFECT LAYOUT ---
-    return (
+    customRenderer = (
       <div className="max-w-[720px] mx-auto px-6 py-12 flex flex-col">
         {/* Eyebrow */}
         <div className="flex items-center gap-2 mb-1">
@@ -872,12 +864,12 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
           </div>
         </div>
         {/* State Shells */}
-        {uiState === "waiting" && (
+        {rcptUiState === "waiting" && (
           <>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
               <button
                 className="card bg-white border-[1.5px] border-[#a8d9be] rounded-2xl p-5 flex flex-col items-start hover:border-[#2f6fd4] transition"
-                onClick={() => setUiState("register")}
+                onClick={() => setRcptUiState("register")}
               >
                 <div className="card-icon icon-green w-10 h-10 rounded-xl bg-[#e8f5ef] border border-[#a8d9be] flex items-center justify-center mb-3">
                   <CheckIcon />
@@ -904,7 +896,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
               </button>
               <button
                 className="card bg-white border-[1.5px] border-[#c9bef2] rounded-2xl p-5 flex flex-col items-start hover:border-[#2f6fd4] transition"
-                onClick={() => setIsGuideOpen(true)}
+                onClick={() => setIsRcptGuideOpen(true)}
               >
                 <div className="card-icon icon-purple w-10 h-10 rounded-xl bg-[#f3f0fb] border border-[#c9bef2] flex items-center justify-center mb-3">
                   <BookIcon />
@@ -936,19 +928,19 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
             </p>
             {/* Guide Dialog */}
             {/* Receipt Notice Guide Overlay */}
-            {isGuideOpen && (
+            {isRcptGuideOpen && (
               <GuideTutorialOverlay
-                isOpen={isGuideOpen}
-                onClose={() => setIsGuideOpen(false)}
+                isOpen={isRcptGuideOpen}
+                onClose={() => setIsRcptGuideOpen(false)}
                 tutorial={receiptGuideSteps}
-                index={guideStep}
-                setIndex={setGuideStep}
+                index={rcptGuideStep}
+                setIndex={setRcptGuideStep}
                 title="Receipt Notice Guide"
               />
             )}
           </>
         )}
-        {uiState === "register" && (
+        {rcptUiState === "register" && (
           <div className="panel bg-white border-[1.5px] border-[#d0e4f7] rounded-2xl p-8 md:p-10 mb-6 shadow-lg">
             <div className="text-[22px] text-[#0c1b33] mb-2">
               Register the receipt notice
@@ -963,22 +955,22 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
             </div>
             <div className="flex gap-2 mb-6">
               <button
-                className={`switch-btn px-5 py-2 rounded-full border text-[13px] font-semibold mr-2 ${manual ? "bg-[#2f6fd4] text-white border-[#2f6fd4]" : "bg-white text-[#3a4f63] border-[#d0e4f7]"}`}
+                className={`switch-btn px-5 py-2 rounded-full border text-[13px] font-semibold mr-2 ${rcptManual ? "bg-[#2f6fd4] text-white border-[#2f6fd4]" : "bg-white text-[#3a4f63] border-[#d0e4f7]"}`}
               >
                 Enter Receipt Number
               </button>
               <button
-                className={`switch-btn px-5 py-2 rounded-full border text-[13px] font-semibold ${!manual ? "bg-[#2f6fd4] text-white border-[#2f6fd4]" : "bg-white text-[#3a4f63] border-[#d0e4f7]"}`}
+                className={`switch-btn px-5 py-2 rounded-full border text-[13px] font-semibold ${!rcptManual ? "bg-[#2f6fd4] text-white border-[#2f6fd4]" : "bg-white text-[#3a4f63] border-[#d0e4f7]"}`}
               >
                 Upload Receipt Notice
               </button>
             </div>
-            {error && (
+            {rcptError && (
               <div className="error show bg-[#fff1f2] border border-[#fecdd3] rounded-lg p-3 text-[13px] text-[#9f1239] mb-2">
-                {error}
+                {rcptError}
               </div>
             )}
-            {success && (
+            {rcptSuccess && (
               <div className="success-banner show bg-[#e8f5ef] border border-[#a8d9be] rounded-lg p-3 text-[13px] text-[#15744f] mb-2">
                 Notice added for this session. Confirm the extracted details
                 below, then save the case to enable tracking.
@@ -994,9 +986,9 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                   className="form-input border border-[#d0e4f7] rounded-lg px-4 py-3 text-[15px]"
                   placeholder="IOE1234567890"
                   maxLength={13}
-                  value={manual.receipt}
+                  value={rcptManual.receipt}
                   onChange={(e) =>
-                    setManual({ ...manual, receipt: e.target.value })
+                    setRcptManual({ ...rcptManual, receipt: e.target.value })
                   }
                 />
               </div>
@@ -1007,9 +999,9 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                 <input
                   className="form-input border border-[#d0e4f7] rounded-lg px-4 py-3 text-[15px]"
                   type="date"
-                  value={manual.noticeDate}
+                  value={rcptManual.noticeDate}
                   onChange={(e) =>
-                    setManual({ ...manual, noticeDate: e.target.value })
+                    setRcptManual({ ...rcptManual, noticeDate: e.target.value })
                   }
                 />
               </div>
@@ -1020,9 +1012,9 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                 <input
                   className="form-input border border-[#d0e4f7] rounded-lg px-4 py-3 text-[15px]"
                   type="date"
-                  value={manual.priorityDate}
+                  value={rcptManual.priorityDate}
                   onChange={(e) =>
-                    setManual({ ...manual, priorityDate: e.target.value })
+                    setRcptManual({ ...rcptManual, priorityDate: e.target.value })
                   }
                 />
               </div>
@@ -1033,9 +1025,9 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                 <input
                   className="form-input border border-[#d0e4f7] rounded-lg px-4 py-3 text-[15px]"
                   placeholder="IR-1 I-130 · March 2026 filing"
-                  value={manual.caseLabel}
+                  value={rcptManual.caseLabel}
                   onChange={(e) =>
-                    setManual({ ...manual, caseLabel: e.target.value })
+                    setRcptManual({ ...rcptManual, caseLabel: e.target.value })
                   }
                 />
               </div>
@@ -1048,20 +1040,20 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
             <div className="flex gap-2 mt-2">
               <button
                 className="ghost-btn px-5 py-2 rounded-full border text-[14px] font-semibold bg-white border-[#d0e4f7] text-[#6b8097]"
-                onClick={() => setUiState("waiting")}
+                onClick={() => setRcptUiState("waiting")}
               >
                 Back
               </button>
               <button
                 className="primary-btn px-5 py-2 rounded-full text-white bg-[#2f6fd4] font-semibold"
-                onClick={() => setUiState("tracked")}
+                onClick={() => setRcptUiState("tracked")}
               >
                 Save Receipt & Enable Tracking
               </button>
             </div>
           </div>
         )}
-        {uiState === "tracked" && (
+        {rcptUiState === "tracked" && (
           <>
             <div className="summary bg-[#e8f5ef] border border-[#a8d9be] rounded-2xl p-6 mb-6">
               <div className="text-[24px] text-[#0e5c3c] mb-1">
@@ -1078,7 +1070,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                     Receipt Number
                   </div>
                   <div className="text-[14px] font-semibold text-[#0c1b33]">
-                    {manual.receipt || "—"}
+                    {rcptManual.receipt || "—"}
                   </div>
                 </div>
                 <div className="summary-card bg-white border border-[#a8d9be] rounded-lg p-4">
@@ -1094,7 +1086,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                     Notice Date
                   </div>
                   <div className="text-[14px] font-semibold text-[#0c1b33]">
-                    {manual.noticeDate || "Not saved"}
+                    {rcptManual.noticeDate || "Not saved"}
                   </div>
                 </div>
                 <div className="summary-card bg-white border border-[#a8d9be] rounded-lg p-4">
@@ -1102,7 +1094,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                     Priority Date
                   </div>
                   <div className="text-[14px] font-semibold text-[#0c1b33]">
-                    {manual.priorityDate || "Not saved"}
+                    {rcptManual.priorityDate || "Not saved"}
                   </div>
                 </div>
               </div>
@@ -1130,7 +1122,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                 </button>
                 <button
                   className="ghost-btn px-4 py-2 rounded-full border text-[13px] font-semibold bg-white border-[#d0e4f7] text-[#6b8097]"
-                  onClick={() => setUiState("register")}
+                  onClick={() => setRcptUiState("register")}
                 >
                   Update Receipt Info
                 </button>
@@ -1375,7 +1367,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
       );
     }
 
-    return (
+    customRenderer = (
       <div className="max-w-[760px] mx-auto px-6 py-12 flex flex-col gap-3">
         {/* Title & Desc (pixel-perfect) */}
         <div className="flex items-center gap-2 mb-2">
@@ -3202,6 +3194,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
         <div className="w-full max-w-[680px] px-[24px] pb-[96px] flex flex-col">
           {/* Step Header */}
           <StepHeader
+            stepNumber={getDisplayStepNumber(currentStep)}
             chapterNumber={
               currentChapter?.chapter_number || state.currentStage + 1
             }
@@ -5211,6 +5204,10 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
       </div>
     );
   };
+
+  if (customRenderer) {
+    return customRenderer;
+  }
 
   if (!currentStep) return null;
 

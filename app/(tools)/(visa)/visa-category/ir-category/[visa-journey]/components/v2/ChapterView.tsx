@@ -2,9 +2,9 @@
 
 import React, { useMemo } from "react";
 import { ArrowLeft, ChevronRight, AlertTriangle } from "lucide-react";
-import { RoadmapData } from "../types";
+import { RoadmapData, RoadmapStep } from "../types";
 import { WizardState } from "@/app/(main)/dashboard/hooks/useWizard";
-import { getActiveStepsForStage, getStageProgress } from "./journeyHelpers";
+import { getActiveStepsForStage, getStageProgress, getDisplayStepNumber } from "./journeyHelpers";
 
 interface ChapterViewProps {
   data: RoadmapData;
@@ -146,7 +146,7 @@ export function ChapterView({
                         : "bg-white border-[#d0e4f7] text-[#6b8097]"
                   }`}
                 >
-                  {isCompleted ? "✓" : idx + 1}
+                  {isCompleted ? "✓" : getDisplayStepNumber(step as RoadmapStep)}
                 </div>
                 <div className="flex-1">
                   <div className="text-[13.5px] font-semibold text-[#1c2b3a] leading-[1.3]">
