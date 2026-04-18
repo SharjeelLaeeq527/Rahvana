@@ -257,6 +257,23 @@ export const ApprovalNoticeTool: React.FC<ApprovalNoticeToolProps> = ({
               </>
             ) : (
               <>
+                <div className="flex gap-[10px] flex-wrap mb-3">
+                  <button
+                    onClick={() => openUploadModal("i797-approval-notice")}
+                    className="inline-flex items-center justify-center gap-[8px] p-[12px_14px] rounded-[10px] border-[1.5px] border-[#d0e4f7] bg-white text-[#0c1b33] text-[13px] font-bold hover:border-[#2f6fd4] hover:text-[#2f6fd4] hover:-translate-y-[1px] transition-all"
+                  >
+                    <svg
+                      viewBox="0 0 24 24"
+                      className="w-[15px] h-[15px] stroke-current fill-none stroke-[2px] stroke-linecap-round stroke-linejoin-round"
+                    >
+                      <path d="M12 16V4" />
+                      <polyline points="7 9 12 4 17 9" />
+                      <path d="M20 16.58A5 5 0 0 1 18 6h-1.26A8 8 0 1 0 4 16.25" />
+                      <path d="M8 20h8" />
+                    </svg>
+                    Upload approval notice
+                  </button>
+                </div>
                 <button
                   onClick={() => setIsApprovalModalOpen(true)}
                   className="inline-flex items-center justify-center gap-[8px] p-[12px_14px] rounded-[10px] border-[1.5px] border-[#d0e4f7] bg-white text-[#0c1b33] text-[13px] font-bold hover:border-[#2f6fd4] hover:text-[#2f6fd4] hover:-translate-y-[1px] transition-all"

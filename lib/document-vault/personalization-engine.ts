@@ -9,7 +9,6 @@ import {
   UploadedDocument,
 } from "./types";
 import { ALL_DOCUMENTS } from "./document-definitions";
-import { getCategoryDisplayName } from "./personalization-engine"; // Self-reference for type but might be better to move types later
 
 export const DYNAMIC_CATEGORIES = [
   "PROPERTY",
