@@ -22,6 +22,9 @@ interface DashboardViewProps {
   };
 }
 
+// Dashboard background image
+const dashboardBg = "/assets/images/dashboard.png"; // Place your image in public/assets/images/dove-bg.jpg
+
 export function DashboardView({
   data,
   state,
@@ -229,8 +232,16 @@ export function DashboardView({
   ];
 
   return (
-    <div className="flex-1 overflow-y-auto py-9 px-6 pb-20 scrollbar-hide bg-[#f4f7fb]">
-      <div className="w-full max-w-[780px] mx-auto animate-in fade-in duration-700">
+    <div
+      className="flex-1 overflow-y-auto py-9 px-6 pb-20 scrollbar-hide relative"
+      style={{ minHeight: "100vh" }}
+    >
+      {/* Fullscreen background for Dashboard */}
+      <div
+        className="pointer-events-none absolute inset-0 z-0 bg-cover bg-center bg-no-repeat"
+        style={{ backgroundImage: `url(${dashboardBg})` }}
+      />
+      <div className="w-full max-w-[780px] mx-auto animate-in fade-in duration-700 relative z-10">
         <div className="text-[10px] font-bold uppercase tracking-[0.12em] text-slate-400 mb-2">
           IR-1 Spouse Visa · Pakistan
         </div>
@@ -342,7 +353,7 @@ export function DashboardView({
           })()}
 
           {/* Hero Section */}
-          <section className="bg-[#0c1b33] rounded-2xl p-[22px_26px] relative overflow-hidden animate-in zoom-in duration-500 after:content-[''] after:absolute after:-top-[50px] after:-right-[50px] after:w-[180px] after:h-[180px] after:rounded-full after:bg-[#2f6fd41f] after:pointer-events-none">
+          <section className="bg-[#0c1b33]/95 rounded-2xl p-[20px_24px] relative overflow-hidden animate-in zoom-in duration-500 shadow-[0_8px_32px_rgba(44,62,80,0.13),0_1.5px_6px_rgba(47,111,212,0.07)] backdrop-blur-md after:content-[''] after:absolute after:-top-[50px] after:-right-[50px] after:w-[180px] after:h-[180px] after:rounded-full after:bg-[#2f6fd41f] after:pointer-events-none">
             <div className="relative z-10">
               <div className="text-[10px] font-bold uppercase tracking-[0.12em] text-white/40 mb-1.5">
                 Next roadmap step
@@ -429,14 +440,14 @@ export function DashboardView({
                 <div
                   key={stage.chapter_key || stage.id}
                   onClick={() => !isLocked && onSelectChapter(originalIdx)}
-                  className={`bg-white border-[1.5px] rounded-[10px] p-[12px_16px] transition-all flex flex-col ${
+                  className={`bg-white/95 border-[1.5px] rounded-[14px] p-[13px_17px] transition-all flex flex-col shadow-[0_4px_18px_rgba(44,62,80,0.10)] backdrop-blur-md ${
                     isLocked
                       ? "opacity-50 cursor-default border-[#d0e4f7]"
                       : isDone
-                        ? "border-[#a8d9be] cursor-pointer hover:border-[#b8d4f0] hover:shadow-sm"
+                        ? "border-[#a8d9be] cursor-pointer hover:border-[#b8d4f0] hover:shadow-md"
                         : isActive
-                          ? "border-primary bg-primary/8 cursor-pointer"
-                          : "border-[#d0e4f7] cursor-pointer hover:border-[#b8d4f0] hover:shadow-sm"
+                          ? "border-primary bg-primary/8 cursor-pointer hover:shadow-md"
+                          : "border-[#d0e4f7] cursor-pointer hover:border-[#b8d4f0] hover:shadow-md"
                   }`}
                 >
                   <div className="text-[9px] font-bold tracking-[0.1em] uppercase text-[#6b8097] mb-1.25">
@@ -466,7 +477,7 @@ export function DashboardView({
         </div>
 
         {/* Accordions */}
-        <div className="bg-white border-[1.5px] border-[#d0e4f7] rounded-2xl mb-2.5 overflow-hidden">
+        <div className="bg-white/80 border-[1.5px] border-[#d0e4f7] rounded-3xl mb-3 overflow-hidden shadow-[0_8px_32px_rgba(44,62,80,0.13),0_1.5px_6px_rgba(47,111,212,0.07)] backdrop-blur-lg">
           {/* Case Details */}
           <div className="border-t first:border-t-0 border-[#d0e4f7]">
             <div
@@ -551,19 +562,23 @@ export function DashboardView({
                     return (
                       <div
                         key={i}
-                        className="flex items-center gap-2.5 py-1.5 border-b border-[#d0e4f7]/50 last:border-0"
+                        className={`flex items-center gap-3 py-2 px-2 rounded-xl border-b border-[#d0e4f7]/40 last:border-0 transition-all backdrop-blur-[2px] ${
+                          isDone
+                            ? "bg-[#e8f5ef]/70 shadow-[0_2px_8px_rgba(21,116,79,0.07)]"
+                            : "bg-white/60"
+                        }`}
                       >
                         <div
-                          className={`w-[18px] h-[18px] rounded-full flex items-center justify-center text-[8px] font-bold ${
+                          className={`w-[20px] h-[20px] rounded-full flex items-center justify-center text-[10px] font-bold border-2 transition-all ${
                             isDone
-                              ? "bg-[#15744f] text-white"
-                              : "bg-[#d0e4f7] text-[#6b8097]"
+                              ? "bg-[#15744f] text-white border-[#15744f] shadow"
+                              : "bg-[#f4f7fb] text-[#6b8097] border-[#d0e4f7]"
                           }`}
                         >
                           {isDone ? "✓" : "•"}
                         </div>
                         <span
-                          className={`text-[12.5px] font-medium ${isDone ? "text-[#1c2b3a]" : "text-[#6b8097]"}`}
+                          className={`text-[13px] font-semibold ${isDone ? "text-[#15744f]" : "text-[#6b8097]"}`}
                         >
                           {m.label}
                         </span>

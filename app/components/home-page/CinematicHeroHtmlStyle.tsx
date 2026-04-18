@@ -4,16 +4,14 @@ const heroBg = "/assets/images/heroimage.png";
 const eiffelBg = "/assets/images/heroimage.png";
 import Link from "next/link";
 import { useAuth } from "@/app/context/AuthContext";
-;
-// For translations if needed
-// import { useLanguage } from "@/app/context/LanguageContext";
+import { useLanguage } from "@/app/context/LanguageContext";
 
 // ...existing code...
 
 export function CinematicHeroHtmlStyle() {
   // Auth/journey state (must be inside component)
   const { user } = useAuth();
-  // const { t } = useLanguage?.() || { t: (x: string) => x };
+  const { t } = useLanguage();
   const [journeys, setJourneys] = useState<null | any[]>(null);
   const [journeysLoading, setJourneysLoading] = useState(false);
   
@@ -172,10 +170,10 @@ export function CinematicHeroHtmlStyle() {
           <div className="p1-content">
             {/* Eyebrow removed as requested */}
             <h1 className="p1-h1" id="h1">
-              Your immigration<br />Journey, <em>Simplified</em>
+              Your IR-1<br />Journey, <em>Simplified</em>
             </h1>
             <p className="p1-sub" id="s1">
-              Bespoke residency and citizenship advisory. We handle the intricacies of your international relocation with absolute discretion and precision.
+              Bespoke residency advisory. We handle the intricacies of your international relocation with absolute discretion and precision.
             </p>
             <div className="scroll-cta" id="sc" onClick={() => goTo(1)}>
               <div className="scroll-ring">
@@ -195,31 +193,31 @@ export function CinematicHeroHtmlStyle() {
             <h2 className="p2-h2">Where could your<br />life go <em>next?</em></h2>
             <p className="p2-sub">Rahvana turns the visa process into a clear, confident journey — with tools and support designed around you.</p>
             <div className="btn-row">
-              {/* Robust CTA logic, style unchanged */}
+              {/* Robust CTA logic, now using Next.js Link and translation for resume journey */}
               {(!user || journeysLoading) && (
-                <a href="/visa-category/ir-category/ir1-journey" className="btn-dark">
+                <Link href="/visa-category/ir-category/ir1-journey" className="btn-dark">
                   Start your journey
                   <svg className="btn-arrow" viewBox="0 0 14 14" fill="none">
                     <path d="M1 7h12M8 3l5 4-5 4" stroke="white" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
                   </svg>
-                </a>
+                </Link>
               )}
               {user && journeys && journeys.length > 0 && (
-                <a href="/dashboard" className="btn-ghost">
-                  Resume journey
+                <Link href="/user-dashboard" className="btn-ghost">
+                  {t("homePage.resumeJourney") || "Resume my journey"}
                   <svg className="btn-arrow" viewBox="0 0 14 14" fill="none">
                     <circle cx="7" cy="7" r="5.5" stroke="#1A2530" strokeWidth="1.2" />
                     <path d="M5.5 5v4l4-2z" fill="#1A2530" />
                   </svg>
-                </a>
+                </Link>
               )}
               {user && journeys && journeys.length === 0 && !journeysLoading && (
-                <a href="/visa-category/ir-category/ir1-journey" className="btn-dark">
+                <Link href="/visa-category/ir-category/ir1-journey" className="btn-dark">
                   Start my journey
                   <svg className="btn-arrow" viewBox="0 0 14 14" fill="none">
                     <path d="M1 7h12M8 3l5 4-5 4" stroke="white" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
                   </svg>
-                </a>
+                </Link>
               )}
             </div>
           </div>

@@ -70,7 +70,7 @@ export const ApprovalNoticeTool: React.FC<ApprovalNoticeToolProps> = ({
   };
 
   return (
-    <div className="flex flex-col gap-[22px] animate-in fade-in slide-in-from-bottom-2 duration-360 w-full text-[#1c2b3a]">
+    <div className={`flex flex-col gap-[22px] animate-in fade-in slide-in-from-bottom-2 duration-360 w-full text-[#1c2b3a] min-h-screen}`}>
       {/* GLOBAL FONT IMPORT */}
       {/* <style
         dangerouslySetInnerHTML={{
@@ -83,7 +83,7 @@ export const ApprovalNoticeTool: React.FC<ApprovalNoticeToolProps> = ({
       /> */}
 
       {/* LAUNCH MODULE */}
-      <section className="bg-[#0e1e38] rounded-[16px] border border-white/10 shadow-[0_20px_60px_rgba(12,27,51,0.18),0_4px_16px_rgba(12,27,51,0.12)] overflow-hidden relative">
+      <section className="bg-[#28151c] rounded-[16px] border border-white/10 shadow-[0_20px_60px_rgba(12,27,51,0.18),0_4px_16px_rgba(12,27,51,0.12)] overflow-hidden relative">
         <div className="absolute top-0 left-0 right-0 h-[2px] bg-linear-to-r from-[#4b85e7] via-[#82b8ff] to-transparent opacity-80" />
         <div className="p-[30px_32px_28px]">
           <div className="flex flex-col sm:flex-row justify-between gap-4 items-start mb-[18px]">
@@ -98,7 +98,7 @@ export const ApprovalNoticeTool: React.FC<ApprovalNoticeToolProps> = ({
                 </svg>
               </div>
               <div>
-                <div className="text-[10px] font-bold tracking-[0.12em] uppercase text-white/40 mb-[4px]">
+                <div className="text-[10px] font-bold tracking-[0.12em] uppercase text-[#c0596a] mb-[4px]">
                   {data.launchModule.eyebrow}
                 </div>
                 <h2 className="text-[clamp(22px,3vw,27px)] leading-[1.18] text-white/95 mb-[7px]">
@@ -109,7 +109,7 @@ export const ApprovalNoticeTool: React.FC<ApprovalNoticeToolProps> = ({
                 </p>
               </div>
             </div>
-            <div className="px-3 py-2 rounded-full bg-[#a8d9be1f] border border-[#a8d9be4d] text-[#bce7cf] text-[11px] font-bold tracking-[0.08em] uppercase whitespace-nowrap">
+            <div className="px-3 py-2 rounded-full bg-[#a8d9be1f] border border-[#a8d9be4d] text-[#c0596a] text-[11px] font-bold tracking-[0.08em] uppercase whitespace-nowrap">
               {data.launchModule.badge}
             </div>
           </div>
@@ -135,7 +135,7 @@ export const ApprovalNoticeTool: React.FC<ApprovalNoticeToolProps> = ({
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-[12px]">
             <button
               onClick={handleReceivedBtn}
-              className="flex items-center justify-center gap-[10px] p-[15px_18px] rounded-[12px] text-[14px] font-semibold bg-[#2f6fd4] hover:bg-[#2460bb] text-white shadow-[0_4px_20px_rgba(47,111,212,0.35)] transition-all hover:-translate-y-[1px]"
+              className="flex items-center justify-center gap-[10px] p-[15px_18px] rounded-[12px] text-[14px] font-semibold bg-[#c0596a] hover:bg-[rgb(243, 110, 134)] hover:text-[#fff] shadow-[0_4px_20px_rgba(47,111,212,0.35)] transition-all hover:-translate-y-[1px]"
             >
               <svg
                 viewBox="0 0 24 24"
