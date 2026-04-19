@@ -178,7 +178,7 @@ export function QuestRenderer({
         label: "Not started",
         color: "text-[#6b8097]",
         icon: <Circle size={14} className="opacity-40" />,
-        bg: "bg-transparent",
+        bg: "bg-white",
         border: "border-[#d0e4f7]",
       };
 
@@ -231,7 +231,7 @@ export function QuestRenderer({
     const progressPct = (completedCount / suite.quests.length) * 100;
 
     return (
-      <div className="max-w-[740px] mx-auto w-full animate-in fade-in duration-500 ch3step-bg step-modal-spacing">
+      <div className="max-w-[740px] mx-auto w-full animate-in fade-in duration-500 step-modal-spacing">
         <div className="px-0 pt-0 pb-0 step-modal-spacing">
             <div className="mb-9">
             <h1 className={`text-[clamp(26px,4vw,34px)] font-black mb-2.5 leading-[1.2] ${isChapter1 ? "accent-brown" : isChapter2 ? "text-[#27192e]" : isChapter3 ? "text-[#0f1f38]" : "text-[#0f1f38]"}`}>
@@ -258,18 +258,28 @@ export function QuestRenderer({
                 <button
                   key={q.id}
                   onClick={() => handleStartQuest(q.id)}
-                  className="w-full flex items-center gap-[16px] px-[20px] py-[18px] rounded-[14px] border-[1.5px] text-left transition-all group hover:border-[#2f6fd4] hover:shadow-[0_8px_32px_rgba(47,111,212,0.12),0_2px_8px_rgba(47,111,212,0.06)] shadow-[0_2px_12px_rgba(47,111,212,0.07),0_1px_3px_rgba(47,111,212,0.04)] hover:-translate-y-px active:translate-y-0 bg-transparent">
+                  className="w-full flex items-center gap-[16px] px-[20px] py-[18px] rounded-[14px] border-[1.5px] border-[#d0e4f7] bg-white text-left transition-all group hover:border-[#340606] hover:shadow-[0_8px_32px_rgba(52,6,6,0.12),0_2px_8px_rgba(52,6,6,0.06)] shadow-[0_2px_12px_rgba(52,6,6,0.12),0_1px_3px_rgba(52,6,6,0.06)] hover:-translate-y-px active:translate-y-0">
                   <div
-                    className={`w-[40px] h-[40px] rounded-[10px] flex items-center justify-center text-[18px] shrink-0 transition-all border
-                    ${meta.bg === "bg-transparent" ? (isChapter1 ? "bg-[#e6d6c3] border-[#c0596a] text-[#c0596a]" : isChapter2 ? "bg-[#ede6f6] border-[#b48ad6] text-[#b48ad6]" : isChapter3 ? "bg-[#e8f1fb] border-[#2f6fd4] text-[#2f6fd4]" : "bg-[#e8f1fb] border-[#d0e4f7] text-[#2d4a6e]") : (isChapter1 ? "bg-white border-[#c0596a]/40 accent-brown" : isChapter2 ? "bg-white " + meta.border + " " + meta.color : isChapter3 ? "bg-white border-[#2f6fd4] text-[#2f6fd4]" : "bg-white " + meta.border + " " + meta.color)}`}
+                    className={`w-[40px] h-[40px] rounded-[10px] flex items-center justify-center text-[18px] shrink-0 transition-all border group
+                      ${isChapter1
+                        ? "border-[#c0596a] bg-white hover:bg-[#c0596a] hover:border-[#c0596a]"
+                        : isChapter2
+                        ? "border-[#b48ad6] bg-[#ede6f6] hover:bg-[#b48ad6] hover:border-[#b48ad6]"
+                        : isChapter3
+                        ? "border-[#2f6fd4] bg-[#e8f1fb] hover:bg-[#2f6fd4] hover:border-[#2f6fd4]"
+                        : "border-[#c0596a] bg-white hover:bg-[#c0596a] hover:border-[#c0596a]"}`}
                   >
-                    {meta.bg === "bg-transparent" ? idx + 1 : meta.icon}
+                    {meta.bg === "bg-transparent"
+                      ? idx + 1
+                      : meta.label === "Completed"
+                        ? <CheckCircle2 className="w-5 h-5 text-white" />
+                        : <Circle className={`w-5 h-5 transition-all ${isChapter1 ? "text-[#c0596a] group-hover:text-white" : isChapter2 ? "text-[#b48ad6] group-hover:text-white" : isChapter3 ? "text-[#2f6fd4] group-hover:text-white" : "text-[#c0596a] group-hover:text-white"}`} />}
                   </div>
                   <div className="flex-1 min-w-0">
                     <h3 className={`text-[15px] font-semibold mb-[4px] leading-[1.3] truncate ${isChapter1 ? "accent-brown" : isChapter2 ? "text-[#27192e]" : isChapter3 ? "text-[#0f1f38]" : "text-[#0f1f38]"}`}>
                       {q.title}
                     </h3>
-                    <p className={`text-[13px] font-normal leading-[1.4] truncate ${isChapter1 ? "accent-rose" : isChapter2 ? "text-[#b48ad6]" : isChapter3 ? "text-[#6b8097]" : "text-[#6b8097]"}`}>
+                    <p className={`text-[13px] font-normal leading-[1.4] truncate ${isChapter1 ? "accent-rose" : isChapter2 ? "text-[#b48ad6]" : isChapter3 ? "text-[#2f6fd4]" : "text-[#3a4f63]"}`}>
                       {q.subtitle}
                     </p>
                   </div>
@@ -303,15 +313,15 @@ export function QuestRenderer({
     const meta = getStatusMeta(activeQuest.id);
 
     return (
-      <div className="max-w-[600px] mx-auto w-full p-0 animate-in zoom-in-95 fade-in duration-500 min-h-[600px] flex items-center justify-center ch3step-bg step-modal-spacing">
-        <div className="text-center w-full bg-transparent border-none">
+      <div className="max-w-[600px] mx-auto w-full p-0 animate-in zoom-in-95 fade-in duration-500 min-h-[600px] flex items-center justify-center step-modal-spacing">
+        <div className="text-center w-full bg-wgitet border-none">
           <div
             className={`w-20 h-20 rounded-full ${meta.bg} ${meta.color} flex items-center justify-center mx-auto mb-8 text-3xl shadow-inner ${isChapter1 ? "accent-brown bg-[#e6d6c3] border-[#c0596a]/40" : isChapter2 ? "bg-[#ede6f6] border-[#b48ad6] text-[#b48ad6]" : isChapter3 ? "bg-[#e8f1fb] border-[#2f6fd4] text-[#2f6fd4]" : ""}`}
           >
             {meta.icon}
           </div>
           <div
-            className={`inline-block px-4 py-1.5 rounded-full ${meta.bg} ${meta.color} text-[10px] font-bold uppercase tracking-[0.15em] border border-current/20 mb-6 ${isChapter1 ? "accent-brown border-[#c0596a]/40 bg-[#e6d6c3]" : isChapter2 ? "border-[#b48ad6] bg-[#ede6f6] text-[#b48ad6]" : isChapter3 ? "border-[#2f6fd4] bg-[#e8f1fb] text-[#2f6fd4]" : ""}`}
+            className={`inline-block px-4 py-1.5 rounded-full ${meta.bg} ${meta.color} text-[10px] font-bold uppercase tracking-[0.15em] border border-current/20 mb-6 ${isChapter1 ? "accent-brown border-[#c0596a]/40 bg-[#e6d6c3]" : ""}`}
           >
             {meta.label}
           </div>
@@ -352,12 +362,13 @@ export function QuestRenderer({
 
 
     return (
-      <div className="w-full h-full min-h-[700px] flex flex-col animate-in slide-in-from-right-4 fade-in duration-500 ch3step-bg step-modal-spacing">
+      <div className="w-full h-full min-h-[700px] flex flex-col animate-in slide-in-from-right-4 fade-in duration-500 step-modal-spacing">
         {/* Topbar */}
         <div className={`flex items-center p-[18px_24px] gap-[16px] shrink-0 border-b ${isChapter1 ? "border-[#c0596a]/40" : isChapter2 ? "border-[#b48ad6]" : isChapter3 ? "border-[#2f6fd4]" : "border-[#d0e4f7]"}`}>
           <button
             onClick={() => setView("landing")}
-            className={`w-[36px] h-[36px] rounded-full border-none flex items-center justify-center cursor-pointer transition-colors shrink-0 ${isChapter1 ? "bg-[#e6d6c3] hover:bg-[#f7ede5]" : isChapter2 ? "bg-[#ede6f6] hover:bg-[#b48ad6]/10" : isChapter3 ? "bg-[#e8f1fb] hover:bg-[#2f6fd4]/10" : "bg-[#f5f7fa] hover:bg-[#e8f1fb]"}`}
+            className={`cant fnd it just eit it
+              [36px] h-[36px] rounded-full border-none flex items-center justify-center cursor-pointer transition-colors shrink-0 ${isChapter1 ? "bg-[#e6d6c3] hover:bg-[#f7ede5]" : isChapter2 ? "bg-[#ede6f6] hover:bg-[#b48ad6]/10" : isChapter3 ? "bg-[#e8f1fb] hover:bg-[#2f6fd4]/10" : "bg-[#f5f7fa] hover:bg-[#e8f1fb]"}`}
             aria-label="Close quest"
           >
             <svg

@@ -1,4 +1,3 @@
-
 import React, { useEffect, useRef, useState } from "react";
 const heroBg = "/assets/images/heroimage.png";
 const eiffelBg = "/assets/images/heroimage.png";
@@ -96,7 +95,10 @@ export function CinematicHeroHtmlStyle() {
   }
 
   return (
-    <div style={{ marginTop: 0, paddingTop: 0 }}>
+    <div
+      className="w-full min-h-screen h-screen flex flex-col justify-center items-center bg-cover bg-center"
+      style={{ backgroundImage: 'url(/assets/images/heroimage.png)' }}
+    >
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Inter:wght@300;400;500&display=swap');
         * { box-sizing: border-box; }
