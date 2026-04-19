@@ -534,6 +534,9 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
   );
   const [isApSaved, setIsApSaved] = useState(state.metadata.apSaved === "true");
   const [isApUpdateModalOpen, setIsApUpdateModalOpen] = useState(false);
+  // CEAC tracking — refused sub-type prompt
+  const [refusedPromptOpen, setRefusedPromptOpen] = useState(false);
+  const [ceacApiLoading, setCeacApiLoading] = useState(false);
 
   // Step 1.17 Approval Notice States
   const [isApprovalModalOpen, setIsApprovalModalOpen] = useState(false);
@@ -556,6 +559,60 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
     const nextLog = [entry, ...apUpdateLog];
     setApUpdateLog(nextLog);
     actions.updateMetadata({ apUpdateLog: nextLog });
+  };
+
+  // Maps the JSON ceac_options strings → our CeacStatus type
+  const CEAC_STATUS_MAP: Record<string, string> = {
+    "Administrative Processing": "ap",
+    "Ready":    "ready",
+    "Issued":   "issued",
+    "Refused":  "refused",
+    "In Transit": "in_transit",
+  };
+
+  /** Call POST /api/ceac/status when user saves AP details in step_3_9 */
+  const triggerCeacStatusUpdate = async (
+    ceacStatusLabel: string,
+    refusedSubType?: "refusal_221g" | "refusal_final"
+  ) => {
+    const journeyId = state.backendId;
+    if (!journeyId) return; // no backend journey yet — skip silently
+
+    const newStatus = CEAC_STATUS_MAP[ceacStatusLabel];
+    if (!newStatus) return; // "Pending" / "Not Available" — not tracked
+
+    setCeacApiLoading(true);
+    try {
+      await fetch("/api/ceac/status", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ journeyId, newStatus, refusedSubType }),
+      });
+    } catch {
+      // Fail silently — reminders are a background feature, don't break the UI
+    } finally {
+      setCeacApiLoading(false);
+    }
+  };
+
+  /** Call PATCH /api/ceac/status to clarify refused sub-type */
+  const clarifyRefusedSubType = async (
+    refusedSubType: "refusal_221g" | "refusal_final"
+  ) => {
+    const journeyId = state.backendId;
+    if (!journeyId) return;
+    try {
+      await fetch("/api/ceac/status", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          journeyId,
+          action: "clarify_refused",
+          refusedSubType,
+        }),
+      });
+    } catch { /* silent */ }
+    setRefusedPromptOpen(false);
   };
 
   // --- STEP 3.4 (DOCUMENT GATHERING) STATE ---
@@ -4089,12 +4146,53 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                           apDetails: apDetails,
                           apSaved: "true",
                         });
+                        // Trigger CEAC notification system
+                        if (apDetails.ceacStatus === "Refused") {
+                          // Show sub-type prompt first (Rule 8: never auto-assume)
+                          triggerCeacStatusUpdate("Refused");
+                          setRefusedPromptOpen(true);
+                        } else {
+                          triggerCeacStatusUpdate(apDetails.ceacStatus);
+                        }
                       }}
-                      disabled={!apDetails.interviewDate}
+                      disabled={!apDetails.interviewDate || ceacApiLoading}
                       className="w-full p-4 bg-primary text-white rounded-xl font-bold transition-all shadow-[0_4px_16px_rgba(47,111,212,0.3)] hover:-translate-y-0.5 active:translate-y-0 disabled:opacity-50 disabled:translate-y-0"
                     >
-                      Save AP Status & Activate Tracking
+                      {ceacApiLoading ? "Saving..." : "Save AP Status & Activate Tracking"}
                     </button>
+
+                    {/* Refused sub-type prompt — shown after save if status = Refused */}
+                    {refusedPromptOpen && (
+                      <div className="mt-4 bg-[#fff7ed] border border-[#f0d98a] rounded-xl p-5 animate-in fade-in slide-in-from-top-2 duration-300">
+                        <div className="text-[12px] font-bold uppercase tracking-wide text-[#8a6200] mb-2">
+                          One more question
+                        </div>
+                        <p className="text-[13.5px] text-[#3a4f63] leading-relaxed mb-4">
+                          Your CEAC status is <strong>Refused</strong>. This can mean two very different things.
+                          Which one applies to your case?
+                        </p>
+                        <div className="flex flex-col gap-2">
+                          <button
+                            onClick={() => clarifyRefusedSubType("refusal_221g")}
+                            className="w-full p-3.5 rounded-lg border-[1.5px] border-[#f0d98a] bg-white text-[13px] font-semibold text-[#8a6200] text-left hover:bg-[#fef8e8] transition-all"
+                          >
+                            <span className="font-black">221(g)</span> — Officer requested more documents or info. Case is still active.
+                          </button>
+                          <button
+                            onClick={() => clarifyRefusedSubType("refusal_final")}
+                            className="w-full p-3.5 rounded-lg border-[1.5px] border-[#fecdd3] bg-white text-[13px] font-semibold text-[#9f1239] text-left hover:bg-[#fff1f2] transition-all"
+                          >
+                            <span className="font-black">Final Denial</span> — Officer denied under a specific ground (INA §212 etc.)
+                          </button>
+                          <button
+                            onClick={() => setRefusedPromptOpen(false)}
+                            className="text-[12px] text-[#6b8097] hover:text-[#1c2b3a] mt-1 text-center"
+                          >
+                            Not sure yet — I&apos;ll check my notice
+                          </button>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
               ) : (
