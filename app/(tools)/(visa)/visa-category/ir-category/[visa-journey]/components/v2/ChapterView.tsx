@@ -181,23 +181,29 @@ export function ChapterView({
         )}
 
         <div className="flex flex-col gap-1.5">
-          {activeSteps.map((step, idx) => {
-            const sId = step.step_key || (step as any).id;
-            const isCompleted = state.completedSteps.has(sId);
-            const isCurrent =
-              !isCompleted &&
-              activeSteps
-                .slice(0, idx)
-                .every((s) =>
-                  state.completedSteps.has(s.step_key || (s as any).id),
-                );
-            const fullStepIdx = chapter.steps.findIndex(
-              (s) => (s.step_key || (s as any).id) === sId,
-            );
+          {activeSteps
+            .filter(
+              (step) =>
+                step.step_key !== "step_1_15" &&
+                step.step_key !== "step_1_16"
+            )
+            .map((step, idx) => {
+              const sId = step.step_key || (step as any).id;
+              const isCompleted = state.completedSteps.has(sId);
+              const isCurrent =
+                !isCompleted &&
+                activeSteps
+                  .slice(0, idx)
+                  .every((s) =>
+                    state.completedSteps.has(s.step_key || (s as any).id),
+                  );
+              const fullStepIdx = chapter.steps.findIndex(
+                (s) => (s.step_key || (s as any).id) === sId,
+              );
 
-            // Accent and border colors to match screenshot
-            // Updated to a nicer shade of purple for Chapter 2, blue for Chapter 3
-            let borderColor = isChapter3
+              // Accent and border colors to match screenshot
+              // Updated to a nicer shade of purple for Chapter 2, blue for Chapter 3
+              let borderColor = isChapter3
               ? "border-[#7fc1f9]"
               : isChapter2
                 ? "border-[#8f6be9]"
