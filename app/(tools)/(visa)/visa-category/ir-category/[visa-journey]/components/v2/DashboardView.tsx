@@ -77,18 +77,8 @@ export function DashboardView({
     const hasTrackingData = Object.keys(trackingStatus).length > 0;
 
     // Admin tracking-based alerts
-    if (trackingStatus.ap_status === "pending") {
-      list.push({
-        type: "amber",
-        iconColor: "d-amber",
-        title: "Administrative Processing",
-        text: "Your case is under additional review. This is normal and can take several weeks.",
-        action: {
-          label: "Check CEAC Status",
-          url: "https://ceac.state.gov/CEAC/",
-        },
-      });
-    }
+    // NOTE: AP alert removed here — APTrackingTool (sidebar) handles this
+    // when user has recorded AP details, WaitingStateCard handles it before that.
 
     if (trackingStatus.interview_date) {
       list.push({
@@ -354,16 +344,19 @@ export function DashboardView({
               />
             )}
 
-            {/* Administrative Processing */}
-            {trackingStatus.ap_status === "pending" && (
+            {/* Administrative Processing — only show simple card when user
+                has NOT yet recorded AP details in Step 9 (apSaved).
+                Once step_3_9 is filled, APTrackingTool in the sidebar
+                provides the full detailed view. */}
+            {trackingStatus.ap_status === "pending" && state.metadata?.apSaved !== "true" && (
               <WaitingStateCard
                 icon="alert"
-                title="Administrative Processing"
-                description="Your case is under additional administrative review. This is normal and can take several weeks."
+                title="Case in Administrative Processing"
+                description="Your case is under review. Go to Chapter 3 → Step 9 to record your AP details and activate full tracking."
                 date={trackingStatus.ap_date}
                 status="waiting"
-                actionLabel="Check CEAC Status"
-                actionUrl="https://ceac.state.gov/CEAC/"
+                actionLabel="Go to Step 9"
+                actionUrl="/visa-category/ir-category/ir1-journey"
               />
             )}
 
@@ -612,12 +605,12 @@ export function DashboardView({
               );
             })()}
 
-            {/* AP Tracking Tool */}
-            {(() => {
-              const hasStartedAp = state.completedSteps?.has("c3s8") || state.completedSteps?.has("step_3_8") || trackingStatus.ap_status === "pending" || !!(state.metadata?.apStartDate);
-              if (!hasStartedAp) return null;
-              return <APTrackingTool state={state} />;
-            })()}
+            {/* AP Tracking Tool — full detailed view.
+                Shows ONLY when user has recorded AP details in Step 3.9.
+                Before that, the simple WaitingStateCard (main column) is shown. */}
+            {state.metadata?.apSaved === "true" && (
+              <APTrackingTool state={state} />
+            )}
           </div>
         </div>
 

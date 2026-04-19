@@ -4048,11 +4048,12 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                       <div className="flex flex-col gap-1.5">
                         <label className="text-[11px] font-bold uppercase tracking-wide text-[#6b8097]">
-                          Interview Date
+                          Date of Interview (when AP was placed)
                         </label>
                         <input
                           type="date"
                           value={apDetails.interviewDate}
+                          max={new Date().toISOString().split("T")[0]}
                           onChange={(e) =>
                             setApDetails({
                               ...apDetails,

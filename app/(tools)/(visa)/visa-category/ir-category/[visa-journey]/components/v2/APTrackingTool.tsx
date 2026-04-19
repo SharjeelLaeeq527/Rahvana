@@ -62,7 +62,10 @@ export default function APTrackingTool({ state }: APTrackingToolProps) {
   }
 
   const startDate = apDetails.interviewDate ? new Date(apDetails.interviewDate) : null;
-  const daysInAP = startDate 
+  // AP date must be in the past (interview already happened).
+  // If user accidentally entered a future date, show 0 with a hint instead of negative.
+  const isDateInFuture = startDate ? startDate.getTime() > Date.now() : false;
+  const daysInAP = (startDate && !isDateInFuture)
     ? Math.max(0, Math.floor((Date.now() - startDate.getTime()) / (1000 * 60 * 60 * 24)))
     : 0;
 
@@ -94,7 +97,11 @@ export default function APTrackingTool({ state }: APTrackingToolProps) {
             </div>
             <h3 className="text-[20px] font-black text-white leading-tight">Administrative Processing</h3>
             <div className="flex items-center gap-3 mt-1">
-               <span className="text-[12px] font-bold text-red-400">{daysInAP} Days Passed</span>
+               {isDateInFuture ? (
+                 <span className="text-[12px] font-bold text-amber-400">Interview date is upcoming — AP tracking starts after your interview</span>
+               ) : (
+                 <span className="text-[12px] font-bold text-red-400">{daysInAP} Day{daysInAP !== 1 ? 's' : ''} in AP</span>
+               )}
                {apDetails.lastCheck && (
                  <span className="text-[11px] text-slate-500">Checked: {new Date(apDetails.lastCheck).toLocaleDateString()}</span>
                )}
