@@ -3194,7 +3194,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
         <div className="w-full max-w-[680px] px-[24px] pb-[96px] flex flex-col">
           {/* Step Header */}
           <StepHeader
-            stepNumber={getDisplayStepNumber(currentStep)}
+            stepNumber={localIdx + 1}
             chapterNumber={
               currentChapter?.chapter_number || state.currentStage + 1
             }
