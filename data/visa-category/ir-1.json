@@ -2397,7 +2397,6 @@
         {
           "step_key": "step_1_15",
           "step_number": 11,
-          "display_number_override": 10,
           "step_name": "Register Receipt in CEAC Portal",
           "step_short_description": "Register your USCIS receipt in CEAC",
           "step_type": "tool",
@@ -2596,7 +2595,6 @@
         {
           "step_key": "step_1_16",
           "step_number": 12,
-          "display_number_override": 11,
           "step_name": "Track Case Status in CEAC",
           "step_short_description": "Monitor your case status and updates",
           "step_type": "tool",
@@ -2844,7 +2842,6 @@
         {
           "step_key": "step_1_17",
           "step_number": 13,
-          "display_number_override": 12,
           "step_name": "Receive Approval Notice (I-797)",
           "step_short_description": "I-130 petition approved",
           "step_description": "Your I-130 approval notice confirms that USCIS approved the petition. Save this notice, keep the original safe, and start preparing for NVC while you wait for the next contact.",
