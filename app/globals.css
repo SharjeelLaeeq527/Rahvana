@@ -82,7 +82,7 @@
 }
 /* Chapter 1 Step Background Utility */
 @import "tailwindcss";
-@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&family=DM+Serif+Display:ital@0;1&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&family=DM+Serif+Display:ital@0;1&display=swap");
 
 @custom-variant dark (&:is(.dark *));
 
@@ -513,33 +513,41 @@
 
 /* Custom Scrollbar Theme Colors and Corners */
 .custom-scrollbar::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 10px;
+  height: 10px;
 }
 
 .custom-scrollbar::-webkit-scrollbar-track {
   background: transparent;
-  border-radius: 8px;
+  /* margin-block provides the spacing from top and bottom (the red arrows in your image) */
+  margin-block: 20px;
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb {
   background: rgba(255, 255, 255, 0.25);
-  border-radius: 8px;
+  border-radius: 20px;
+  /* Transparent border + background-clip: padding-box creates horizontal 'margin' 
+     so the scrollbar never hits the side edges or rounded corners */
+  border: 3px solid transparent;
+  background-clip: padding-box;
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
   background: rgba(255, 255, 255, 0.4);
+  background-clip: padding-box;
 }
 
 /* Adjust scrollbar for light backgrounds to match theme */
 .bg-slate-50\/30.custom-scrollbar::-webkit-scrollbar-thumb,
 .bg-slate-50 .custom-scrollbar::-webkit-scrollbar-thumb {
   background: rgba(13, 115, 119, 0.25);
+  background-clip: padding-box;
 }
 
 .bg-slate-50\/30.custom-scrollbar::-webkit-scrollbar-thumb:hover,
 .bg-slate-50 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
   background: rgba(13, 115, 119, 0.45);
+  background-clip: padding-box;
 }
 
 .custom-scrollbar {
@@ -549,17 +557,19 @@
 
 /* Premium Scrollbar - Teal Theme */
 .scrollbar-premium::-webkit-scrollbar {
-  width: 6px;
+  width: 10px;
+  height: 10px;
 }
 
 .scrollbar-premium::-webkit-scrollbar-track {
   background: transparent;
+  margin-block: 20px;
 }
 
 .scrollbar-premium::-webkit-scrollbar-thumb {
   background: #0d7377;
-  border-radius: 3px;
-  border: 2px solid transparent;
+  border-radius: 20px;
+  border: 3px solid transparent;
   background-clip: padding-box;
 }
 

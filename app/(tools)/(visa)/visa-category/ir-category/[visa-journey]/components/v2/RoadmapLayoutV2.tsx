@@ -7,7 +7,6 @@ import { ChapterView } from "./ChapterView";
 import { StepView } from "./StepView";
 import { WizardState } from "@/app/(main)/dashboard/hooks/useWizard";
 import { ChevronRight, ArrowLeft, Check, LayoutDashboard, Bell, X } from "lucide-react";
-import { getDisplayStepNumber } from "./journeyHelpers";
 import NotificationCenter from "./NotificationCenter";
 
 interface RoadmapLayoutV2Props {
@@ -139,7 +138,13 @@ export default function RoadmapLayoutV2({
             state.currentStep !== -1 && (() => {
               const chapter = data.chapters?.[state.currentStage];
               const step = chapter?.steps[state.currentStep];
-              const displayNum = step ? getDisplayStepNumber(step) : (state.currentStep + 1);
+              const filingMethod = state.metadata?.filingMethod || state.filingType;
+              const activeSteps = chapter?.steps.filter(
+                (s: any) => !s.branch || s.branch === "both" || s.branch === filingMethod
+              ) ?? [];
+              const displayNum = step
+                ? activeSteps.findIndex((s: any) => (s.step_key || s.id) === (step.step_key || (step as any).id)) + 1
+                : state.currentStep + 1;
               return (
                 <>
                   <ChevronRight
@@ -232,6 +237,7 @@ export default function RoadmapLayoutV2({
             actions={{
               setCurrentStep: actions.setCurrentStep,
               setStage: actions.setStage,
+              updateMetadata: actions.updateMetadata,
             }}
           />
         )}

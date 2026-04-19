@@ -85,7 +85,7 @@ export const getSponsorshipResult = (d: any) => {
       householdSize: 1,
       requiredIncome: 0,
       totalIncome: 0,
-      forms: [{ name: "Form I-864W", sub: "Request for Exemption for Intending Immigrant", url: "#" }],
+      forms: [{ id: "i864w", name: "Form I-864W", sub: "Request for Exemption for Intending Immigrant", url: "#" }],
       raw: d
     };
   }
@@ -109,15 +109,17 @@ export const getSponsorshipResult = (d: any) => {
 
   const forms: any[] = [];
   if (d.sponsorDeceased) {
-    forms.push({ name: "Form I-864 \u2014 Substitute Sponsor", sub: "Required when original petitioner is deceased", url: I864_URL });
+    forms.push({ id: "i864", name: "Form I-864 \u2014 Substitute Sponsor", sub: "Required when original petitioner is deceased", url: I864_URL });
   } else if (!hmIncome && !jsIncome && (d.assetValue || 0) === 0 && primaryIncome >= requiredIncome) {
     forms.push({
+      id: "i864ez",
       name: "Form I-864EZ \u2014 Petitioner",
       sub: "Simplified affidavit \u2014 petitioner qualifies alone with wage/salary income",
       url: I864EZ_URL,
     });
   } else {
     forms.push({
+      id: "i864",
       name: "Form I-864 \u2014 Petitioner",
       sub: "Full affidavit of support for the petitioner",
       url: I864_URL,
@@ -126,6 +128,7 @@ export const getSponsorshipResult = (d: any) => {
 
   (d.householdMembers || []).forEach((m: any, i: number) => {
     forms.push({
+      id: "i864a",
       name: `Form I-864A \u2014 Household Member (${m.relationship || i + 1})`,
       sub: "Contract between sponsor and household member",
       url: I864A_URL,
@@ -135,6 +138,7 @@ export const getSponsorshipResult = (d: any) => {
   if (jsIncome > 0) {
     (d.jointSponsors || []).forEach((s: any, i: number) => {
       forms.push({
+        id: "i864",
         name: `Form I-864 \u2014 Joint Sponsor (${s.name || i + 1})`,
         sub: "Required for additional financial support",
         url: I864_URL,

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createServerClient } from '@supabase/ssr';
+import { decrypt } from '@/lib/encryption';
 
 export const dynamic = 'force-dynamic';
 
@@ -73,11 +74,19 @@ export async function GET(req: NextRequest) {
       .in('journey_id', journeyIds)
       .in('data_key', ['nvcCaseNum', 'nvc_case_num', 'nvcInvoice', 'nvc_invoice_id', 'passportNumber', 'surname']);
 
+    console.log(`[Admin API] Fetched ${caseData?.length || 0} case_data rows for ${journeyIds.length} journeys`);
+    if (caseData && caseData.length > 0) {
+      console.log(`[Admin API] Sample keys found:`, [...new Set(caseData.map(d => d.data_key))]);
+    }
+
     // Map the shape for the frontend
     const journeys = rawJourneys.map((j: any) => {
       // Extract profile and nvc case number
       const profile = profiles?.find((p) => p.id === j.user_id);
-      const jCaseData = caseData?.filter((cd) => cd.journey_id === j.id) || [];
+      const jCaseData = (caseData?.filter((cd) => cd.journey_id === j.id) || []).map(cd => ({
+        ...cd,
+        data_value: typeof cd.data_value === 'string' && cd.data_value.startsWith('gcm:') ? decrypt(cd.data_value) : cd.data_value
+      }));
       const nvcCaseData = jCaseData.find((cd) => cd.data_key === 'nvcCaseNum' || cd.data_key === 'nvc_case_num');
       const invoiceData = jCaseData.find((cd) => cd.data_key === 'nvcInvoice' || cd.data_key === 'nvc_invoice_id');
       const passportData = jCaseData.find((cd) => cd.data_key === 'passportNumber');
@@ -136,8 +145,9 @@ export async function PATCH(req: NextRequest) {
       admin_last_checked_at: new Date().toISOString()
     };
 
-    // Merge tracking_status if provided
-    if (tracking_status) {
+    if (body.clear_tracking) {
+      updateData.tracking_status = {}; // Clear completely
+    } else if (tracking_status) {
       // Fetch current tracking_status first
       const { data: current } = await supabase
         .from('journeys')

@@ -113,55 +113,123 @@ export function isStageUnlocked(data: RoadmapData, chapterIdx: number, state: Wi
 }
 
 /**
- * Calculates document review progress for a step with document_items.
- * Returns { reviewed, total, requiredReviewed, requiredTotal, percentage, isComplete }
+ * Calculates document review progress for a step.
  */
-export function getDocumentReviewProgress(step: RoadmapStep, metadata: any) {
-  const stepAny = step as any;
-  const documentItems = stepAny.document_items || [];
+export function getDocumentReviewProgress(step: any, metadata: any) {
+  const documentItems = step.document_items || [];
   
-  if (documentItems.length === 0) {
-    return { reviewed: 0, total: 0, requiredReviewed: 0, requiredTotal: 0, percentage: 0, isComplete: false };
+  // Tool-based doc steps (step 2.4, etc)
+  let toolItems: any[] = [];
+  if (step.tool_data?.doc_list?.groups) {
+    toolItems = step.tool_data.doc_list.groups.flatMap((g: any) => g.items || []);
+  } else if (step.tool_data?.groups) {
+     toolItems = step.tool_data.groups.flatMap((g: any) => g.items || []);
   }
   
-  // Get document review status from metadata
-  const docReviewStatus = metadata?.docReviewStatus || {};
+  const items = documentItems.length > 0 ? documentItems : toolItems;
   
-  // Count total and reviewed documents
-  const total = documentItems.length;
-  let reviewed = 0;
+  if (items.length === 0) {
+    return { reviewed: 0, total: 0, requiredReviewed: 0, requiredTotal: 0, percentage: 0, isComplete: true };
+  }
   
-  // Count required documents
-  let requiredTotal = 0;
-  let requiredReviewed = 0;
+  // docReviewStatus is stored at metadata.docReviewStatus
+  const docReviewStatus = (metadata?.docReviewStatus as Record<string, string>) || {};
+
+  // Only required items block completion
+  const requiredItems = items.filter((d: any) => 
+    !d.group || d.group === 'Required Now' || d.group === 'USCIS Intake Order'
+  );
   
-  documentItems.forEach((doc: any) => {
-    const docId = doc.id;
-    const isReviewed = docReviewStatus[docId] === 'reviewed';
-    const isRequired = doc.required !== false; // Default to true if not specified
-    
-    if (isReviewed) {
-      reviewed++;
-    }
-    
-    if (isRequired) {
-      requiredTotal++;
-      if (isReviewed) {
-        requiredReviewed++;
+  const reviewedCount = items.filter((d: any) => 
+    docReviewStatus[d.id] === 'reviewed'
+  ).length;
+
+  const requiredReviewedCount = requiredItems.filter((d: any) => 
+    docReviewStatus[d.id] === 'reviewed'
+  ).length;
+
+  const isComplete = requiredItems.length === 0 
+    ? false // agar koi required item hi nahi hai, complete mat maano
+    : requiredReviewedCount >= requiredItems.length;
+
+  return { 
+    reviewed: reviewedCount, 
+    total: items.length, 
+    requiredReviewed: requiredReviewedCount, 
+    requiredTotal: requiredItems.length, 
+    percentage: items.length > 0 ? Math.round((reviewedCount / items.length) * 100) : 0, 
+    isComplete 
+  };
+}
+
+/**
+ * Calculates Quest progress for a suite.
+ */
+export function getQuestProgress(step: any, state: any) {
+  const questData = step.quest_data;
+  if (!questData) return { answered: 0, total: 0, percentage: 0, isComplete: true };
+
+  // Quest ka step_key lo
+  const stepKey = step.step_key || step.id;
+  const answers = state.answers || {};
+  const completedSteps = state.completedSteps;
+  
+  // Agar step already completed hai backend se, skip check
+  if (completedSteps && completedSteps.has && completedSteps.has(stepKey)) {
+    return { answered: 1, total: 1, percentage: 100, isComplete: true };
+  }
+
+  // Quest suites enumerate karo
+  const suites = questData.suites || questData.quests || [];
+  
+  if (suites.length === 0) {
+    // Single quest without suites — check if answers[stepKey] has any data
+    const hasAnyAnswer = answers[stepKey] && Object.keys(answers[stepKey]).length > 0;
+    return { 
+      answered: hasAnyAnswer ? 1 : 0, 
+      total: 1, 
+      percentage: hasAnyAnswer ? 100 : 0, 
+      isComplete: hasAnyAnswer 
+    };
+  }
+
+  let totalRequired = 0;
+  let totalAnswered = 0;
+
+  suites.forEach((suite: any) => {
+    const screens = suite.screens || [];
+    screens.forEach((screen: any) => {
+      if (screen.required === false) return;
+      totalRequired++;
+      
+      // Answer keys jo QuestRenderer use karta hai: answers[questId][screenId]
+      const questLevelAnswer = answers[questData.id]?.[screen.id];
+      // Ya flat format: answers[stepKey_suiteId_screenId]
+      const flatAnswer = answers[`${stepKey}_${suite.id}_${screen.id}`];
+      // Ya suite level: answers[suite.id]?.[screen.id]
+      const suiteLevelAnswer = answers[suite.id]?.[screen.id];
+      
+      if (
+        (questLevelAnswer !== undefined && questLevelAnswer !== null && questLevelAnswer !== '') ||
+        (flatAnswer !== undefined && flatAnswer !== null && flatAnswer !== '') ||
+        (suiteLevelAnswer !== undefined && suiteLevelAnswer !== null && suiteLevelAnswer !== '')
+      ) {
+        totalAnswered++;
       }
-    }
+    });
   });
-  
-  // Step is complete only when all required documents are reviewed
-  const isComplete = requiredTotal > 0 && requiredReviewed === requiredTotal;
-  const percentage = requiredTotal > 0 ? Math.round((requiredReviewed / requiredTotal) * 100) : 0;
-  
-  return {
-    reviewed,
-    total,
-    requiredReviewed,
-    requiredTotal,
-    percentage,
-    isComplete
+
+  // Agar koi screens nahi mili lekin suites hain, check karo koi bhi answer hai
+  if (totalRequired === 0) {
+    const hasAnyAnswer = Object.keys(answers).some(k => k.includes(stepKey) || k.includes(questData.id || ''));
+    return { answered: hasAnyAnswer ? 1 : 0, total: 1, percentage: hasAnyAnswer ? 100 : 0, isComplete: hasAnyAnswer };
+  }
+
+  const isComplete = totalAnswered >= totalRequired;
+  return { 
+    answered: totalAnswered, 
+    total: totalRequired, 
+    percentage: Math.round((totalAnswered / totalRequired) * 100), 
+    isComplete 
   };
 }

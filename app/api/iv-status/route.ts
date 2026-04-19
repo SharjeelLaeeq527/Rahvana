@@ -22,7 +22,7 @@ interface SimilarCountry {
 // === Cache ===
 let cachedData: IVData[] | null = null;
 let cacheTime: number = 0;
-const CACHE_DURATION = 24 * 60 * 60 * 1000; // 24 hours
+const CACHE_DURATION = 60 * 60 * 1000; // 1 hour (was 24h — was causing stale data)
 
 // === Helper Functions ===
 

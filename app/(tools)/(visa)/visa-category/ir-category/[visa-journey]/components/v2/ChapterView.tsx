@@ -2,7 +2,7 @@
 
 import React, { useMemo } from "react";
 import { ArrowLeft, ChevronRight, AlertTriangle } from "lucide-react";
-import { RoadmapData } from "../types";
+import { RoadmapData, RoadmapStep } from "../types";
 import { WizardState } from "@/app/(main)/dashboard/hooks/useWizard";
 import { getActiveStepsForStage, getStageProgress } from "./journeyHelpers";
 
