@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { caseDataService } from "@/lib/journey/service";
+import { encrypt, decrypt } from "@/lib/encryption";
 
 // POST /api/case_data - Create or update case data
 export async function POST(request: NextRequest) {
@@ -27,7 +28,15 @@ export async function POST(request: NextRequest) {
         body.journey_id,
         body.operations.reduce((acc: Record<string, any>, op: any) => {
           if (op.operation === "set" || op.operation === "update") {
-            acc[op.data_key] = op.data_value;
+            const sensitiveKeys = ["nvcCaseNum", "nvcInvoice", "passportNumber", "surname"];
+            let value = op.data_value;
+            
+            // Encrypt sensitive keys if not already encrypted
+            if (sensitiveKeys.includes(op.data_key) && value && typeof value === 'string' && !value.startsWith('gcm:')) {
+              value = encrypt(value);
+            }
+            
+            acc[op.data_key] = value;
           }
           return acc;
         }, {}),
@@ -47,10 +56,16 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    const sensitiveKeys = ["nvcCaseNum", "nvcInvoice", "passportNumber", "surname"];
+    let finalValue = body.data_value;
+    if (sensitiveKeys.includes(body.data_key) && finalValue && typeof finalValue === 'string' && !finalValue.startsWith('gcm:')) {
+      finalValue = encrypt(finalValue);
+    }
+
     const result = await caseDataService.setCaseData(
       body.journey_id,
       body.data_key,
-      body.data_value,
+      finalValue,
       {
         is_verified: body.is_verified,
         source: body.source,
@@ -101,6 +116,16 @@ export async function GET(request: NextRequest) {
     };
 
     const caseProfile = await caseDataService.getCaseProfile(journeyId);
+
+    // Decrypt sensitive fields in the response
+    if (caseProfile.all_data) {
+      Object.keys(caseProfile.all_data).forEach((key) => {
+        const item = caseProfile.all_data[key];
+        if (item && typeof item.data_value === 'string' && item.data_value.startsWith('gcm:')) {
+          item.data_value = decrypt(item.data_value);
+        }
+      });
+    }
 
     return NextResponse.json(
       { success: true, data: caseProfile },

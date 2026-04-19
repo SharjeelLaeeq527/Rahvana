@@ -92,7 +92,7 @@ export const DqRecordingTool: React.FC<StepToolRendererProps> = ({ dqState, acti
                 <option value="Karachi">Karachi</option>
             </select>
           </div>
-          <button onClick={() => { setDqSaved(true); actions.updateMetadata({ dqSaved: true, dqDate, dqCategory, dqPost, dqCountry }); }} className="w-full bg-primary text-white py-3 rounded-lg font-bold">Save DQ & Activate Tracking</button>
+          <button onClick={() => { setDqSaved(true); actions.updateMetadata({ dqSaved: true, dqDate, dqCategory, dqPost, dqCountry, post: dqPost }); }} className="w-full bg-primary text-white py-3 rounded-lg font-bold">Save DQ & Activate Tracking</button>
         </div>
       ) : (
         <div className="bg-emerald-50 border border-emerald-200 p-4 rounded-xl mb-4 flex justify-between items-center">
@@ -105,7 +105,7 @@ export const DqRecordingTool: React.FC<StepToolRendererProps> = ({ dqState, acti
 };
 
 export const InterviewSchedulingTool: React.FC<{ metadata: any }> = ({ metadata }) => {
-  const postKey = (metadata.post as keyof typeof INTERVIEW_SCHEDULING_DATA.schedulingData) || "Other";
+  const postKey = ((metadata.post || metadata.dqPost) as keyof typeof INTERVIEW_SCHEDULING_DATA.schedulingData) || "Other";
   const postData = INTERVIEW_SCHEDULING_DATA.schedulingData[postKey];
 
   return (

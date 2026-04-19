@@ -9,7 +9,8 @@ export type NotificationType =
   | 'interview_scheduled'
   | 'administrative_processing'
   | 'ap_cleared'
-  | 'admin_status_update';
+  | 'admin_status_update'
+  | 'nvc_check_reminder';
 
 export type NotificationPriority = 'low' | 'normal' | 'high' | 'critical';
 
@@ -98,5 +99,12 @@ export const NOTIFICATION_TEMPLATES: Record<NotificationType, {
     priority: 'normal',
     action_label: 'View Dashboard',
     action_url: '/visa-category/ir-category/ir-1-journey',
+  },
+  nvc_check_reminder: {
+    title: 'Daily Reminder: Check NVC Inbox',
+    body: 'Your case is currently awaiting NVC document review. Have you checked your registered email or the CEAC portal for updates today?',
+    priority: 'normal',
+    action_label: 'Open CEAC Portal',
+    action_url: 'https://ceac.state.gov/IV/Login.aspx',
   },
 };

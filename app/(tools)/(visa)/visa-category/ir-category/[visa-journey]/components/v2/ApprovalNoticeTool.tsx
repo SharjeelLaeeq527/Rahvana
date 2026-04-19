@@ -109,7 +109,7 @@ export const ApprovalNoticeTool: React.FC<ApprovalNoticeToolProps> = ({
                 </p>
               </div>
             </div>
-            <div className="px-3 py-2 rounded-full bg-[#a8d9be1f] border border-[#a8d9be4d] text-[#bce7cf] text-[11px] font-bold tracking-[0.08em] uppercase whitespace-nowrap">
+            <div className="px-3 py-[6px] rounded-full bg-[#a8d9be1f] border border-[#a8d9be4d] text-[#bce7cf] text-[11px] font-bold tracking-[0.08em] uppercase whitespace-nowrap">
               {data.launchModule.badge}
             </div>
           </div>

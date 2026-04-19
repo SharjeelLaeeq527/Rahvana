@@ -236,6 +236,7 @@ export default function RoadmapLayoutV2({
             actions={{
               setCurrentStep: actions.setCurrentStep,
               setStage: actions.setStage,
+              updateMetadata: actions.updateMetadata,
             }}
           />
         )}

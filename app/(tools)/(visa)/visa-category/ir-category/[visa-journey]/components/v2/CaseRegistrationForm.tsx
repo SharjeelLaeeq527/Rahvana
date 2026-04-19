@@ -45,9 +45,41 @@ export default function CaseRegistrationForm({
   const [passportNumber, setPassportNumber] = useState(existingData?.passportNumber || "");
   const [surname, setSurname] = useState(existingData?.surname || "");
   const [isSaved, setIsSaved] = useState(false);
+  const [errors, setErrors] = useState<Record<string, string>>({});
+
+  const validate = () => {
+    const newErrors: Record<string, string> = {};
+    
+    // NVC Case Number: 3 letters + 10 digits
+    if (!/^[A-Z]{3}[0-9]{10}$/i.test(nvcCaseNum)) {
+      newErrors.nvcCaseNum = "Invalid format. Use 3 letters followed by 10 digits (e.g. ISL2024123456).";
+    }
+
+    // Invoice ID: Simple alphanumeric check
+    if (!/^[A-Z0-9]{8,15}$/i.test(nvcInvoice)) {
+      newErrors.nvcInvoice = "Invalid Invoice ID. Should be 8-15 alphanumeric characters.";
+    }
+
+    // Passport: 1-2 letters + 7-9 digits
+    if (!/^[A-Z]{1,2}[0-9]{6,9}$/i.test(passportNumber)) {
+      newErrors.passportNumber = "Invalid passport format (e.g. AZ1234567).";
+    }
+
+    // Surname: Exactly 5 letters
+    if (!/^[A-Z]{5}$/i.test(surname)) {
+      newErrors.surname = "Must be exactly the first 5 letters of the beneficiary's surname.";
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
 
   const handleSave = () => {
     if (!nvcCaseNum || !nvcInvoice || !embassyCity || !passportNumber || !surname) {
+      return;
+    }
+
+    if (!validate()) {
       return;
     }
 
@@ -107,12 +139,19 @@ export default function CaseRegistrationForm({
             id="nvc-case-num"
             placeholder="e.g., 2025ABC1234567890"
             value={nvcCaseNum}
-            onChange={(e) => setNvcCaseNum(e.target.value)}
-            className="mt-1"
+            onChange={(e) => {
+              setNvcCaseNum(e.target.value.toUpperCase());
+              if (errors.nvcCaseNum) setErrors(prev => ({ ...prev, nvcCaseNum: "" }));
+            }}
+            className={`mt-1 ${errors.nvcCaseNum ? "border-red-500" : ""}`}
           />
-          <p className="text-xs text-muted-foreground mt-1">
-            Found in your NVC Welcome Letter
-          </p>
+          {errors.nvcCaseNum ? (
+            <p className="text-xs text-red-500 mt-1">{errors.nvcCaseNum}</p>
+          ) : (
+            <p className="text-xs text-muted-foreground mt-1">
+              Found in your NVC Welcome Letter (e.g. ISL2024000000)
+            </p>
+          )}
         </div>
 
         {/* CEAC Invoice ID */}
@@ -124,12 +163,19 @@ export default function CaseRegistrationForm({
             id="nvc-invoice"
             placeholder="e.g., 202500001234"
             value={nvcInvoice}
-            onChange={(e) => setNvcInvoice(e.target.value)}
-            className="mt-1"
+            onChange={(e) => {
+              setNvcInvoice(e.target.value.toUpperCase());
+              if (errors.nvcInvoice) setErrors(prev => ({ ...prev, nvcInvoice: "" }));
+            }}
+            className={`mt-1 ${errors.nvcInvoice ? "border-red-500" : ""}`}
           />
-          <p className="text-xs text-muted-foreground mt-1">
-            Also provided in your NVC Welcome Letter
-          </p>
+          {errors.nvcInvoice ? (
+            <p className="text-xs text-red-500 mt-1">{errors.nvcInvoice}</p>
+          ) : (
+            <p className="text-xs text-muted-foreground mt-1">
+              Also provided in your NVC Welcome Letter
+            </p>
+          )}
         </div>
 
         {/* Embassy/Consulate City */}
@@ -180,12 +226,19 @@ export default function CaseRegistrationForm({
             id="passport-number"
             placeholder="e.g., AZ1234567"
             value={passportNumber}
-            onChange={(e) => setPassportNumber(e.target.value)}
-            className="mt-1 uppercase"
+            onChange={(e) => {
+              setPassportNumber(e.target.value.toUpperCase());
+              if (errors.passportNumber) setErrors(prev => ({ ...prev, passportNumber: "" }));
+            }}
+            className={`mt-1 uppercase ${errors.passportNumber ? "border-red-500" : ""}`}
           />
-          <p className="text-xs text-muted-foreground mt-1">
-            Needed for CEAC visa status checking.
-          </p>
+          {errors.passportNumber ? (
+            <p className="text-xs text-red-500 mt-1">{errors.passportNumber}</p>
+          ) : (
+            <p className="text-xs text-muted-foreground mt-1">
+              Needed for CEAC visa status checking.
+            </p>
+          )}
         </div>
 
         {/* First 5 Letters of Surname */}
@@ -197,13 +250,20 @@ export default function CaseRegistrationForm({
             id="surname"
             placeholder="e.g., AHMED"
             value={surname}
-            onChange={(e) => setSurname(e.target.value.substring(0, 5))}
-            className="mt-1 uppercase"
+            onChange={(e) => {
+              setSurname(e.target.value.substring(0, 5).toUpperCase());
+              if (errors.surname) setErrors(prev => ({ ...prev, surname: "" }));
+            }}
+            className={`mt-1 uppercase ${errors.surname ? "border-red-500" : ""}`}
             maxLength={5}
           />
-          <p className="text-xs text-muted-foreground mt-1">
-            Needed for CEAC visa status checking.
-          </p>
+          {errors.surname ? (
+            <p className="text-xs text-red-500 mt-1">{errors.surname}</p>
+          ) : (
+            <p className="text-xs text-muted-foreground mt-1">
+              Needed for CEAC visa status checking.
+            </p>
+          )}
         </div>
 
         {/* Save Button */}

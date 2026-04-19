@@ -44,6 +44,7 @@ import {
   FileText,
   Copy,
   ExternalLink,
+  ChevronDown,
 } from "lucide-react";
 
 interface Journey {
@@ -73,6 +74,7 @@ export default function VisaCasesTable() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [adminNotes, setAdminNotes] = useState("");
   const [trackingStatus, setTrackingStatus] = useState<Record<string, any>>({});
+  const [openStep, setOpenStep] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
 
@@ -131,6 +133,33 @@ export default function VisaCasesTable() {
       setSelectedJourney(null);
     } catch (err: any) {
       console.error("Error saving notes:", err);
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleClearTracking = async () => {
+    if (!selectedJourney) return;
+    if (!confirm("Are you sure you want to clear ALL tracking data? This will revert the case to an un-tracked state.")) return;
+
+    setIsSaving(true);
+    try {
+      const res = await fetch("/api/admin/visa-cases", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          id: selectedJourney.id,
+          clear_tracking: true,
+        }),
+      });
+
+      if (!res.ok) throw new Error("Failed to clear tracking");
+
+      await fetchJourneys(true);
+      setIsDialogOpen(false);
+      setSelectedJourney(null);
+    } catch (err: any) {
+      console.error("Error clearing tracking:", err);
     } finally {
       setIsSaving(false);
     }
@@ -418,55 +447,72 @@ export default function VisaCasesTable() {
           {selectedJourney && (
             <div className="space-y-6">
               {/* User Info */}
-              <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 p-4 bg-muted rounded-lg border border-slate-200">
-                <div>
-                  <Label className="text-muted-foreground text-xs">User Email</Label>
-                  <div className="flex items-center gap-2 mt-1">
-                    <p className="font-medium text-sm text-[#0c1b33]">{selectedJourney.user_email || "Unknown"}</p>
-                    <Copy className="h-3 w-3 text-slate-400 cursor-pointer hover:text-primary active:scale-95" onClick={() => navigator.clipboard.writeText(selectedJourney.user_email || "")} />
+              {/* User Info */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 p-5 bg-slate-50 rounded-xl border border-slate-200">
+                <div className="space-y-1">
+                  <Label className="text-muted-foreground text-[10px] uppercase tracking-wider font-semibold">User Email</Label>
+                  <div className="flex items-center gap-2">
+                    <p className="font-medium text-sm text-[#0c1b33] break-all">{selectedJourney.user_email || "Unknown"}</p>
+                    <button onClick={() => navigator.clipboard.writeText(selectedJourney.user_email || "")} className="p-1 hover:bg-slate-200 rounded transition-colors" title="Copy Email">
+                      <Copy className="h-3 w-3 text-slate-400 cursor-pointer" />
+                    </button>
                   </div>
                 </div>
-                <div>
-                  <Label className="text-muted-foreground text-xs">NVC Case Number</Label>
-                  <div className="flex items-center gap-2 mt-1">
-                    <p className="font-mono font-bold text-sm text-slate-800">{selectedJourney.nvc_case_number || "Not provided"}</p>
-                    {selectedJourney.nvc_case_number && <Copy className="h-3 w-3 text-slate-400 cursor-pointer hover:text-primary active:scale-95" onClick={() => navigator.clipboard.writeText(selectedJourney.nvc_case_number || "")} />}
+                <div className="space-y-1">
+                  <div className="flex items-center gap-1">
+                    <Label className="text-muted-foreground text-[10px] uppercase tracking-wider font-semibold">NVC Case Number</Label>
+                    <Badge variant="outline" className="text-[8px] h-3 px-1 border-teal-200 text-teal-600 bg-teal-50">Secure</Badge>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <p className="font-mono font-bold text-sm text-slate-800 break-all">{selectedJourney.nvc_case_number || "Not provided"}</p>
+                    {selectedJourney.nvc_case_number && (
+                      <button onClick={() => navigator.clipboard.writeText(selectedJourney.nvc_case_number || "")} className="p-1 hover:bg-slate-200 rounded transition-colors" title="Copy Case Number">
+                        <Copy className="h-3 w-3 text-slate-400 cursor-pointer" />
+                      </button>
+                    )}
                   </div>
                 </div>
-                <div>
-                  <Label className="text-muted-foreground text-xs">CEAC Invoice ID</Label>
-                  <div className="flex items-center gap-2 mt-1">
-                    <p className="font-mono font-bold text-sm text-slate-800">{selectedJourney.nvc_invoice || "Not provided"}</p>
-                    {selectedJourney.nvc_invoice && <Copy className="h-3 w-3 text-slate-400 cursor-pointer hover:text-primary active:scale-95" onClick={() => navigator.clipboard.writeText(selectedJourney.nvc_invoice || "")} />}
+                <div className="space-y-1">
+                  <div className="flex items-center gap-1">
+                    <Label className="text-muted-foreground text-[10px] uppercase tracking-wider font-semibold">Passport Number</Label>
+                    <Badge variant="outline" className="text-[8px] h-3 px-1 border-teal-200 text-teal-600 bg-teal-50">Secure</Badge>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <p className="font-mono font-bold text-sm text-slate-800 uppercase break-all">{selectedJourney.passport_number || "Not provided"}</p>
+                    {selectedJourney.passport_number && (
+                      <button onClick={() => navigator.clipboard.writeText(selectedJourney.passport_number || "")} className="p-1 hover:bg-slate-200 rounded transition-colors" title="Copy Passport">
+                        <Copy className="h-3 w-3 text-slate-400 cursor-pointer" />
+                      </button>
+                    )}
                   </div>
                 </div>
-                <div>
-                  <Label className="text-muted-foreground text-xs">Passport Number</Label>
-                  <div className="flex items-center gap-2 mt-1">
-                    <p className="font-mono font-bold text-sm text-slate-800 uppercase">{selectedJourney.passport_number || "Not provided"}</p>
-                    {selectedJourney.passport_number && <Copy className="h-3 w-3 text-slate-400 cursor-pointer hover:text-primary active:scale-95" onClick={() => navigator.clipboard.writeText(selectedJourney.passport_number || "")} />}
+                <div className="space-y-1">
+                  <div className="flex items-center gap-1">
+                    <Label className="text-muted-foreground text-[10px] uppercase tracking-wider font-semibold">Surname (First 5)</Label>
+                    <Badge variant="outline" className="text-[8px] h-3 px-1 border-teal-200 text-teal-600 bg-teal-50">Secure</Badge>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <p className="font-mono font-bold text-sm text-slate-800 uppercase break-all">{selectedJourney.surname || "Not provided"}</p>
+                    {selectedJourney.surname && (
+                      <button onClick={() => navigator.clipboard.writeText(selectedJourney.surname || "")} className="p-1 hover:bg-slate-200 rounded transition-colors" title="Copy Surname">
+                        <Copy className="h-3 w-3 text-slate-400 cursor-pointer" />
+                      </button>
+                    )}
                   </div>
                 </div>
-                <div>
-                  <Label className="text-muted-foreground text-xs">Surname (First 5 Letters)</Label>
-                  <div className="flex items-center gap-2 mt-1">
-                    <p className="font-mono font-bold text-sm text-slate-800 uppercase">{selectedJourney.surname || "Not provided"}</p>
-                    {selectedJourney.surname && <Copy className="h-3 w-3 text-slate-400 cursor-pointer hover:text-primary active:scale-95" onClick={() => navigator.clipboard.writeText(selectedJourney.surname || "")} />}
-                  </div>
-                </div>
-                <div>
-                  <Label className="text-muted-foreground text-xs">Journey Type</Label>
+                <div className="space-y-1">
+                  <Label className="text-muted-foreground text-[10px] uppercase tracking-wider font-semibold">Journey Type</Label>
                   <p className="font-semibold text-sm mt-1">{selectedJourney.journey_type}</p>
                 </div>
-                <div>
-                  <Label className="text-muted-foreground text-xs">Status</Label>
+                <div className="space-y-1">
+                  <Label className="text-muted-foreground text-[10px] uppercase tracking-wider font-semibold">Status</Label>
                   <div className="mt-1">{getStatusBadge(selectedJourney.status)}</div>
                 </div>
-                <div>
-                  <Label className="text-muted-foreground text-xs">Created</Label>
-                  <p className="text-sm mt-1 text-slate-600">
+                <div className="space-y-1">
+                  <Label className="text-muted-foreground text-[10px] uppercase tracking-wider font-semibold">Created Date</Label>
+                  <p className="text-sm mt-1 text-slate-600 font-medium">
                     {new Date(selectedJourney.created_at).toLocaleDateString("en-US", {
-                      month: "short",
+                      month: "long",
                       day: "numeric",
                       year: "numeric",
                     })}
@@ -484,195 +530,187 @@ export default function VisaCasesTable() {
                 </Button>
               </div>
 
-              {/* Tracking Steps */}
-              <div className="space-y-4">
-                <h3 className="font-semibold text-sm uppercase tracking-wide">Tracking Steps (Manual Update)</h3>
+              {/* Tracking Steps (Collapsible) */}
+              <div className="space-y-3">
+                <h3 className="font-semibold text-xs uppercase tracking-widest text-slate-500 mb-2">Operational Tracking (Editable)</h3>
 
                 {/* Step 2.9: NVC Review */}
-                <Card className="border-2">
-                  <CardContent className="p-4">
-                    <div className="flex items-center justify-between mb-3">
-                      <Label className="font-semibold">Step 2.9: NVC Document Review</Label>
-                      <Badge variant={trackingStatus.nvc_review_complete ? "default" : "outline"}>
-                        {trackingStatus.nvc_review_complete ? "Complete" : "Pending"}
-                      </Badge>
+                <div className="border border-slate-200 rounded-xl overflow-hidden bg-white">
+                  <button 
+                    onClick={() => setOpenStep(openStep === 'nvc' ? null : 'nvc')}
+                    className="w-full flex items-center justify-between p-4 hover:bg-slate-50 transition-colors"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${trackingStatus.nvc_review_complete ? 'bg-green-100 text-green-600' : 'bg-slate-100 text-slate-400'}`}>
+                        <FileText size={16} />
+                      </div>
+                      <div className="text-left">
+                        <p className="text-sm font-bold text-[#0c1b33]">2.9: NVC Review Status</p>
+                        <p className="text-[11px] text-slate-500">{trackingStatus.nvc_review_complete ? `Completed on ${trackingStatus.nvc_review_date}` : 'Awaiting review completion'}</p>
+                      </div>
                     </div>
-                    <div className="flex gap-2">
-                      <Button
-                        size="sm"
-                        variant={trackingStatus.nvc_review_complete ? "outline" : "default"}
-                        onClick={() =>
-                          setTrackingStatus((prev) => ({
-                            ...prev,
-                            nvc_review_complete: !prev.nvc_review_complete,
-                            nvc_review_date: !prev.nvc_review_complete ? new Date().toISOString().split("T")[0] : null,
-                          }))
-                        }
-                      >
-                        {trackingStatus.nvc_review_complete ? "Undo" : "Mark Complete"}
-                      </Button>
-                      {trackingStatus.nvc_review_date && (
-                        <span className="text-sm text-muted-foreground self-center">
-                          Date: {trackingStatus.nvc_review_date}
-                        </span>
-                      )}
+                    <ChevronDown size={16} className={`text-slate-400 transition-transform ${openStep === 'nvc' ? 'rotate-180' : ''}`} />
+                  </button>
+                  
+                  {openStep === 'nvc' && (
+                    <div className="p-4 border-t border-slate-100 bg-slate-50/30 animate-in slide-in-from-top-2 duration-200">
+                      <div className="flex items-center justify-between bg-white p-3 rounded-lg border border-slate-200">
+                        <span className="text-sm font-medium">Mark Review as Complete</span>
+                        <Button
+                          size="sm"
+                          variant={trackingStatus.nvc_review_complete ? "outline" : "default"}
+                          onClick={() =>
+                            setTrackingStatus((prev) => ({
+                              ...prev,
+                              nvc_review_complete: !prev.nvc_review_complete,
+                              nvc_review_date: !prev.nvc_review_complete ? new Date().toISOString().split("T")[0] : null,
+                            }))
+                          }
+                        >
+                          {trackingStatus.nvc_review_complete ? "Undo" : "Confirm Completion"}
+                        </Button>
+                      </div>
                     </div>
-                  </CardContent>
-                </Card>
+                  )}
+                </div>
 
                 {/* Step 2.10: DQ Status */}
-                <Card className="border-2">
-                  <CardContent className="p-4">
-                    <div className="flex items-center justify-between mb-3">
-                      <Label className="font-semibold">Step 2.10: Documentarily Qualified (DQ)</Label>
-                      <Badge variant={trackingStatus.dq_status === "qualified" ? "default" : "outline"}>
-                        {trackingStatus.dq_status || "Pending"}
-                      </Badge>
+                <div className="border border-slate-200 rounded-xl overflow-hidden bg-white">
+                  <button 
+                    onClick={() => setOpenStep(openStep === 'dq' ? null : 'dq')}
+                    className="w-full flex items-center justify-between p-4 hover:bg-slate-50 transition-colors"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${trackingStatus.dq_status === "qualified" ? 'bg-teal-100 text-teal-600' : 'bg-slate-100 text-slate-400'}`}>
+                        <CheckCircle size={16} />
+                      </div>
+                      <div className="text-left">
+                        <p className="text-sm font-bold text-[#0c1b33]">2.10: DQ (Doc Qualified)</p>
+                        <p className="text-[11px] text-slate-500">{trackingStatus.dq_status === "qualified" ? `Approved on ${trackingStatus.dq_date}` : 'Case pending DQ approval'}</p>
+                      </div>
                     </div>
-                    <div className="flex gap-2 items-center">
-                      <Select
-                        value={trackingStatus.dq_status || "pending"}
-                        onValueChange={(val) =>
-                          setTrackingStatus((prev) => ({
-                            ...prev,
-                            dq_status: val,
-                            dq_date: val === "qualified" ? new Date().toISOString().split("T")[0] : prev.dq_date,
-                          }))
-                        }
-                      >
-                        <SelectTrigger className="w-[180px]">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="pending">Pending</SelectItem>
-                          <SelectItem value="qualified">Qualified</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      {trackingStatus.dq_status === "qualified" && trackingStatus.dq_date && (
-                        <span className="text-sm text-muted-foreground">
-                          DQ Date: {trackingStatus.dq_date}
-                        </span>
-                      )}
+                    <ChevronDown size={16} className={`text-slate-400 transition-transform ${openStep === 'dq' ? 'rotate-180' : ''}`} />
+                  </button>
+                  
+                  {openStep === 'dq' && (
+                    <div className="p-4 border-t border-slate-100 bg-slate-50/30 animate-in slide-in-from-top-2 duration-200">
+                      <div className="space-y-3">
+                        <Label className="text-xs uppercase tracking-wider font-bold">Set Status</Label>
+                        <Select
+                          value={trackingStatus.dq_status || "pending"}
+                          onValueChange={(val) =>
+                            setTrackingStatus((prev) => ({
+                              ...prev,
+                              dq_status: val,
+                              dq_date: val === "qualified" ? new Date().toISOString().split("T")[0] : prev.dq_date,
+                            }))
+                          }
+                        >
+                          <SelectTrigger className="bg-white">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="pending">Pending</SelectItem>
+                            <SelectItem value="qualified">Qualified</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
                     </div>
-                  </CardContent>
-                </Card>
+                  )}
+                </div>
 
                 {/* Step 2.11: Interview Queue */}
-                <Card className="border-2">
-                  <CardContent className="p-4">
-                    <div className="flex items-center justify-between mb-3">
-                      <Label className="font-semibold">Step 2.11: Interview Queue</Label>
-                      <Badge variant={trackingStatus.interview_queue ? "default" : "outline"}>
-                        {trackingStatus.interview_queue ? "In Queue" : "Not Queued"}
-                      </Badge>
-                    </div>
-                    <Button
-                      size="sm"
-                      variant={trackingStatus.interview_queue ? "outline" : "default"}
-                      onClick={() =>
-                        setTrackingStatus((prev) => ({
-                          ...prev,
-                          interview_queue: !prev.interview_queue,
-                        }))
-                      }
-                    >
-                      {trackingStatus.interview_queue ? "Remove from Queue" : "Mark In Queue"}
-                    </Button>
-                  </CardContent>
-                </Card>
-
-                {/* Step 2.12: Interview Scheduled */}
-                <Card className="border-2">
-                  <CardContent className="p-4 space-y-3">
-                    <div className="flex items-center justify-between">
-                      <Label className="font-semibold">Step 2.12: Interview Scheduled</Label>
-                      <Badge variant={trackingStatus.interview_date ? "default" : "outline"}>
-                        {trackingStatus.interview_date ? "Scheduled" : "Not Scheduled"}
-                      </Badge>
-                    </div>
-                    <div className="grid grid-cols-2 gap-3">
-                      <div>
-                        <Label className="text-xs text-muted-foreground">Date</Label>
-                        <Input
-                          type="date"
-                          value={trackingStatus.interview_date || ""}
-                          onChange={(e) =>
-                            setTrackingStatus((prev) => ({
-                              ...prev,
-                              interview_date: e.target.value,
-                            }))
-                          }
-                        />
+                <div className="border border-slate-200 rounded-xl overflow-hidden bg-white">
+                  <button 
+                    onClick={() => setOpenStep(openStep === 'queue' ? null : 'queue')}
+                    className="w-full flex items-center justify-between p-4 hover:bg-slate-50 transition-colors"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${trackingStatus.interview_queue ? 'bg-blue-100 text-blue-600' : 'bg-slate-100 text-slate-400'}`}>
+                        <Clock size={16} />
                       </div>
-                      <div>
-                        <Label className="text-xs text-muted-foreground">Time</Label>
-                        <Input
-                          type="time"
-                          value={trackingStatus.interview_time || ""}
-                          onChange={(e) =>
-                            setTrackingStatus((prev) => ({
-                              ...prev,
-                              interview_time: e.target.value,
-                            }))
-                          }
-                        />
-                      </div>
-                      <div className="col-span-2">
-                        <Label className="text-xs text-muted-foreground">Embassy/Consulate</Label>
-                        <Input
-                          placeholder="e.g., Islamabad, Karachi"
-                          value={trackingStatus.interview_embassy || ""}
-                          onChange={(e) =>
-                            setTrackingStatus((prev) => ({
-                              ...prev,
-                              interview_embassy: e.target.value,
-                            }))
-                          }
-                        />
+                      <div className="text-left">
+                        <p className="text-sm font-bold text-[#0c1b33]">2.11: Interview Queue</p>
+                        <p className="text-[11px] text-slate-500">{trackingStatus.interview_queue ? 'Currently in queue at ISL' : 'Not yet in queue'}</p>
                       </div>
                     </div>
-                  </CardContent>
-                </Card>
+                    <ChevronDown size={16} className={`text-slate-400 transition-transform ${openStep === 'queue' ? 'rotate-180' : ''}`} />
+                  </button>
+                  
+                  {openStep === 'queue' && (
+                    <div className="p-4 border-t border-slate-100 bg-slate-50/30 animate-in slide-in-from-top-2 duration-200">
+                      <div className="flex items-center justify-between bg-white p-3 rounded-lg border border-slate-200">
+                        <span className="text-sm font-medium">Add to Interview Queue</span>
+                        <Button
+                          size="sm"
+                          variant={trackingStatus.interview_queue ? "outline" : "default"}
+                          onClick={() =>
+                            setTrackingStatus((prev) => ({
+                              ...prev,
+                              interview_queue: !prev.interview_queue,
+                            }))
+                          }
+                        >
+                          {trackingStatus.interview_queue ? "Remove" : "Assign Queue"}
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+                </div>
 
                 {/* Step 3.9: Administrative Processing */}
-                <Card className="border-2">
-                  <CardContent className="p-4 space-y-3">
-                    <div className="flex items-center justify-between">
-                      <Label className="font-semibold">Step 3.9: Administrative Processing (AP)</Label>
-                      <Badge variant={trackingStatus.ap_status ? "default" : "outline"}>
-                        {trackingStatus.ap_status || "Not Started"}
-                      </Badge>
+                <div className="border border-slate-200 rounded-xl overflow-hidden bg-white">
+                  <button 
+                    onClick={() => setOpenStep(openStep === 'ap' ? null : 'ap')}
+                    className="w-full flex items-center justify-between p-4 hover:bg-slate-50 transition-colors"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${trackingStatus.ap_status ? 'bg-orange-100 text-orange-600' : 'bg-slate-100 text-slate-400'}`}>
+                        <AlertCircle size={16} />
+                      </div>
+                      <div className="text-left">
+                        <p className="text-sm font-bold text-[#0c1b33]">3.9: Admin Processing (AP)</p>
+                        <p className="text-[11px] text-slate-500">{trackingStatus.ap_status ? `Status: ${trackingStatus.ap_status === 'pending' ? 'Pending' : 'Cleared'}` : 'Case normal (No AP)'}</p>
+                      </div>
                     </div>
-                    <div className="flex gap-2">
-                      <Button
-                        size="sm"
-                        variant={trackingStatus.ap_status === "pending" ? "outline" : "default"}
-                        onClick={() =>
-                          setTrackingStatus((prev) => ({
-                            ...prev,
-                            ap_status: prev.ap_status === "pending" ? null : "pending",
-                            ap_date: prev.ap_status === "pending" ? null : new Date().toISOString().split("T")[0],
-                          }))
-                        }
-                      >
-                        {trackingStatus.ap_status === "pending" ? "Undo AP" : "Mark AP"}
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant={trackingStatus.ap_status === "cleared" ? "outline" : "default"}
-                        onClick={() =>
-                          setTrackingStatus((prev) => ({
-                            ...prev,
-                            ap_status: prev.ap_status === "cleared" ? null : "cleared",
-                            ap_cleared_date: prev.ap_status === "cleared" ? null : new Date().toISOString().split("T")[0],
-                          }))
-                        }
-                      >
-                        {trackingStatus.ap_status === "cleared" ? "Undo Cleared" : "Mark AP Cleared"}
-                      </Button>
+                    <ChevronDown size={16} className={`text-slate-400 transition-transform ${openStep === 'ap' ? 'rotate-180' : ''}`} />
+                  </button>
+                  
+                  {openStep === 'ap' && (
+                    <div className="p-4 border-t border-slate-100 bg-slate-50/30 animate-in slide-in-from-top-2 duration-200">
+                      <div className="flex gap-2">
+                        <Button
+                          className="flex-1"
+                          size="sm"
+                          variant={trackingStatus.ap_status === "pending" ? "destructive" : "outline"}
+                          onClick={() =>
+                            setTrackingStatus((prev) => ({
+                              ...prev,
+                              ap_status: prev.ap_status === "pending" ? null : "pending",
+                              ap_date: prev.ap_status === "pending" ? null : new Date().toISOString().split("T")[0],
+                            }))
+                          }
+                        >
+                          {trackingStatus.ap_status === "pending" ? "Remove AP" : "Mark Pending"}
+                        </Button>
+                        <Button
+                          className="flex-1"
+                          size="sm"
+                          variant={trackingStatus.ap_status === "cleared" ? "secondary" : "default"}
+                          onClick={() =>
+                            setTrackingStatus((prev) => ({
+                              ...prev,
+                              ap_status: prev.ap_status === "cleared" ? null : "cleared",
+                              ap_cleared_date: prev.ap_status === "cleared" ? null : new Date().toISOString().split("T")[0],
+                            }))
+                          }
+                        >
+                          {trackingStatus.ap_status === "cleared" ? "Undo Cleared" : "Mark Cleared"}
+                        </Button>
+                      </div>
                     </div>
-                  </CardContent>
-                </Card>
+                  )}
+                </div>
               </div>
 
               {/* Admin Notes */}
@@ -687,23 +725,35 @@ export default function VisaCasesTable() {
                 />
               </div>
 
-              <DialogFooter>
-                <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
-                  Cancel
+              <DialogFooter className="flex justify-between w-full sm:justify-between items-center mt-6">
+                <Button 
+                  variant="destructive" 
+                  size="sm" 
+                  onClick={handleClearTracking} 
+                  disabled={isSaving}
+                  className="mr-auto"
+                >
+                  <AlertCircle className="mr-2 h-4 w-4" />
+                  Clear Tracking
                 </Button>
-                <Button onClick={handleSaveNotes} disabled={isSaving}>
-                  {isSaving ? (
-                    <>
-                      <Loader size="sm" />
-                      Saving...
-                    </>
-                  ) : (
-                    <>
-                      <Save className="mr-2 h-4 w-4" />
-                      Save Changes
-                    </>
-                  )}
-                </Button>
+                <div className="flex gap-2">
+                  <Button variant="outline" onClick={() => setIsDialogOpen(false)} disabled={isSaving}>
+                    Cancel
+                  </Button>
+                  <Button onClick={handleSaveNotes} disabled={isSaving}>
+                    {isSaving ? (
+                      <>
+                        <Loader size="sm" />
+                        Saving...
+                      </>
+                    ) : (
+                      <>
+                        <Save className="mr-2 h-4 w-4" />
+                        Save Changes
+                      </>
+                    )}
+                  </Button>
+                </div>
               </DialogFooter>
             </div>
           )}

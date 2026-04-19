@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useMemo, useState, useEffect } from "react";
-import { ChevronDown, ArrowRight } from "lucide-react";
+import { ChevronDown, ArrowRight, BellRing, ExternalLink, Save, Check, AlertTriangle, Clock, Shield } from "lucide-react";
 import { RoadmapData } from "../types";
 import { WizardState } from "@/app/(main)/dashboard/hooks/useWizard";
 import {
@@ -10,6 +10,7 @@ import {
   isStageUnlocked,
 } from "./journeyHelpers";
 import WaitingStateCard from "./WaitingStateCard";
+import APTrackingTool from "./APTrackingTool";
 
 interface DashboardViewProps {
   data: RoadmapData;
@@ -19,6 +20,7 @@ interface DashboardViewProps {
   actions: {
     setCurrentStep: (idx: number) => void;
     setStage: (idx: number) => void;
+    updateMetadata: (metadata: Record<string, any>) => void;
   };
 }
 
@@ -67,7 +69,10 @@ export function DashboardView({
       });
     }
 
-    if (trackingStatus.dq_status === "qualified" && !trackingStatus.interview_date) {
+    if (
+      trackingStatus.dq_status === "qualified" &&
+      !trackingStatus.interview_date
+    ) {
       list.push({
         type: "sky",
         iconColor: "d-sky",
@@ -95,7 +100,11 @@ export function DashboardView({
       });
     }
 
-    if (meta.dqDate && !meta.interviewDate && trackingStatus.dq_status !== "qualified") {
+    if (
+      meta.dqDate &&
+      !meta.interviewDate &&
+      trackingStatus.dq_status !== "qualified"
+    ) {
       list.push({
         type: "sky",
         iconColor: "d-sky",
@@ -145,14 +154,18 @@ export function DashboardView({
     if (m.key && m.sid) {
       return (
         (state.metadata && state.metadata[m.key]) ||
-        (state.completedSteps && state.completedSteps.has && state.completedSteps.has(m.sid))
+        (state.completedSteps &&
+          state.completedSteps.has &&
+          state.completedSteps.has(m.sid))
       );
     }
     if (m.key) return !!(state.metadata && state.metadata[m.key]);
     if (m.sid) {
       // Check completedSteps, answers, and metadata for sid-based milestones
       return (
-        (state.completedSteps && state.completedSteps.has && state.completedSteps.has(m.sid)) ||
+        (state.completedSteps &&
+          state.completedSteps.has &&
+          state.completedSteps.has(m.sid)) ||
         (state.answers && state.answers[m.sid]) ||
         (state.metadata && state.metadata[m.sid])
       );
@@ -200,7 +213,9 @@ export function DashboardView({
       }
     }
     fetchNvcFields();
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [state.metadata.portalType]);
 
   const caseFields = [
@@ -239,67 +254,54 @@ export function DashboardView({
         </h1>
         {/* Tracking Status & Hero Section */}
         <div className="flex flex-col gap-4 mb-6">
-          {/* Admin Tracking Status Cards (PROMINENT) */}
           {(() => {
-            const trackingStatus = (state.metadata?.tracking_status as any) || {};
+            const trackingStatus =
+              (state.metadata?.tracking_status as any) || {};
             const hasTrackingData = Object.keys(trackingStatus).length > 0;
             const isCaseRegistered = !!state.metadata?.nvcCaseNum;
 
             if (!hasTrackingData && !isCaseRegistered) return null;
 
-            return (
-              <div className="space-y-3 animate-in fade-in slide-in-from-top-4 duration-700">
-                <div className="flex items-center justify-between px-1">
-                  <h2 className="text-[12px] font-black uppercase tracking-[0.1em] text-[#0c1b33]">
-                    Live Case Tracking
-                  </h2>
-                  <div className="flex items-center gap-1.5">
-                    <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
-                    <span className="text-[10px] font-bold text-[#6b8097]">Linked to Embassy</span>
-                  </div>
-                </div>
+            // Identify all active tracking cards
+            const trackingCards = [
+              // Order: Most advanced to least advanced
 
-                {/* Case Under Review / Initial State */}
-                {!hasTrackingData && isCaseRegistered && (
-                  <WaitingStateCard
-                    icon="clock"
-                    title="Case Registered & Under Review"
-                    description="Your NVC identifiers have been recorded. Our admin team will verify your case status at the embassy/NVC shortly. Check back for updates."
-                    status="waiting"
-                  />
-                )}
+              // Administrative Processing
+              trackingStatus.ap_status === "pending" && (
+                <WaitingStateCard
+                  key="ap"
+                  icon="alert"
+                  title="Administrative Processing"
+                  description="Your case is under additional administrative review. This is normal and can take several weeks."
+                  date={trackingStatus.ap_date}
+                  status="waiting"
+                  actionLabel="Check CEAC Status"
+                  actionUrl="https://ceac.state.gov/CEAC/"
+                />
+              ),
 
-                {/* NVC Review Complete */}
-                {trackingStatus.nvc_review_complete && (
-                  <WaitingStateCard
-                    icon="check"
-                    title="NVC Document Review Complete"
-                    description="NVC has reviewed your documents. Your case is being processed for Documentarily Qualified status."
-                    date={trackingStatus.nvc_review_date}
-                    status="complete"
-                  />
-                )}
+              // Interview Scheduled
+              trackingStatus.interview_date && (
+                <WaitingStateCard
+                  key="interview-scheduled"
+                  icon="calendar"
+                  title="Interview Scheduled"
+                  description={`Your visa interview is scheduled. Please prepare all required documents and attend on time.`}
+                  date={`${trackingStatus.interview_date} ${trackingStatus.interview_time ? `at ${trackingStatus.interview_time}` : ""}`}
+                  status="complete"
+                  actionLabel="Interview Prep Guide"
+                  onAction={() => {
+                    actions.setStage(2);
+                    actions.setCurrentStep(3);
+                  }}
+                />
+              ),
 
-                {/* DQ Status */}
-                {trackingStatus.dq_status === "qualified" && (
+              // In Interview Queue
+              trackingStatus.interview_queue &&
+                !trackingStatus.interview_date && (
                   <WaitingStateCard
-                    icon="check"
-                    title="Documentarily Qualified!"
-                    description="NVC has completed their review. Your case is now in the interview scheduling queue."
-                    date={trackingStatus.dq_date}
-                    status="complete"
-                    actionLabel="Check IV Wait Times"
-                    onAction={() => {
-                      if (trackingStatus.interview_embassy) {
-                        window.open(`/iv-tool?city=${trackingStatus.interview_embassy}`, "_blank");
-                      }
-                    }}
-                  />
-                )}
-
-                {/* Interview Queue */}
-                {trackingStatus.interview_queue && !trackingStatus.interview_date && (
-                  <WaitingStateCard
+                    key="interview-queue"
                     icon="clock"
                     title="In Interview Queue"
                     description="Your case is in the scheduling queue at the embassy. Interview dates will be assigned based on visa bulletin and wait times."
@@ -307,35 +309,254 @@ export function DashboardView({
                     showIVToolLink
                     ivEmbassy={trackingStatus.interview_embassy}
                   />
+                ),
+
+              // Documentarily Qualified
+              trackingStatus.dq_status === "qualified" && (
+                <WaitingStateCard
+                  key="dq"
+                  icon="check"
+                  title="Documentarily Qualified!"
+                  description="NVC has completed their review. Your case is now in the interview scheduling queue."
+                  date={trackingStatus.dq_date}
+                  status="complete"
+                  actionLabel="Check IV Wait Times"
+                  onAction={() => {
+                    if (trackingStatus.interview_embassy) {
+                      window.open(
+                        `/iv-tool?city=${trackingStatus.interview_embassy}`,
+                        "_blank",
+                      );
+                    }
+                  }}
+                />
+              ),
+
+              // NVC Review Complete
+              trackingStatus.nvc_review_complete && (
+                <WaitingStateCard
+                  key="nvc"
+                  icon="check"
+                  title="NVC Document Review Complete"
+                  description="NVC has reviewed your documents. Your case is being processed for Documentarily Qualified status."
+                  date={trackingStatus.nvc_review_date}
+                  status="complete"
+                />
+              ),
+
+              // Initial State / Under Review
+              !hasTrackingData && isCaseRegistered && (
+                <WaitingStateCard
+                  key="review"
+                  icon="clock"
+                  title="Case Registered & Under Review"
+                  description="Your NVC identifiers have been recorded. Our admin team will verify your case status at the embassy/NVC shortly. Check back for updates."
+                  status="waiting"
+                />
+              ),
+            ].filter(Boolean) as React.ReactElement[];
+
+            return (
+              <div className="space-y-4 animate-in fade-in slide-in-from-top-4 duration-700">
+                <div className="flex items-center justify-between px-1">
+                  <h2 className="text-[12px] font-black uppercase tracking-[0.1em] text-[#0c1b33]">
+                    Live Case Tracking
+                  </h2>
+                  <div className="flex items-center gap-1.5">
+                    <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
+                    <span className="text-[10px] font-bold text-[#6b8097]">
+                      Linked to Embassy
+                    </span>
+                  </div>
+                </div>
+
+                {/* Daily Check Reminder - Sophisticated Design from HEAD */}
+                {isCaseRegistered && 
+                 !trackingStatus.nvc_review_complete && 
+                 trackingStatus.dq_status !== "qualified" && 
+                 !state.metadata?.dqDate && (
+                  <div className="group relative bg-[#0c1b33] rounded-[22px] p-6 text-white shadow-[0_20px_50px_rgba(12,27,51,0.15)] overflow-hidden animate-in slide-in-from-top-2 duration-500">
+                    <div className="absolute top-0 right-0 w-[150px] h-[150px] bg-primary/20 rounded-full blur-[80px] -mr-10 -mt-10" />
+                    <div className="absolute bottom-0 left-0 w-[100px] h-[100px] bg-indigo-500/10 rounded-full blur-[60px] -ml-5 -mb-5" />
+                    <div className="relative flex items-center gap-5">
+                      <div className="w-12 h-12 rounded-[16px] bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center shrink-0 shadow-inner">
+                        <BellRing className="text-white h-5 w-5 animate-pulse" />
+                      </div>
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-1.5">
+                          <span className="text-[10px] font-black uppercase tracking-[0.15em] text-slate-300">Case Monitoring</span>
+                          <div className="h-px flex-1 bg-white/10" />
+                        </div>
+                        <h3 className="text-[17px] font-black tracking-tight mb-1">Check NVC Email & Portal Today</h3>
+                        <p className="text-[12.5px] text-slate-300 leading-relaxed mb-4 max-w-[480px]">
+                          Your documents are in review. To avoid delays, please check your CEAC portal daily for any messages or status updates.
+                        </p>
+                        <button 
+                          onClick={() => window.open("https://ceac.state.gov/IV/Login.aspx", "_blank")}
+                          className="px-5 py-2.5 bg-white text-[#1e293b] rounded-[12px] text-[11.5px] font-black uppercase tracking-wider flex items-center gap-2 hover:bg-slate-100 transition-all cursor-pointer shadow-md"
+                        >
+          Open CEAC Portal <ExternalLink size={13} strokeWidth={3} />
+                        </button>
+                      </div>
+                    </div>
+                  </div>
                 )}
 
-                {/* Interview Scheduled */}
-                {trackingStatus.interview_date && (
-                  <WaitingStateCard
-                    icon="calendar"
-                    title="Interview Scheduled"
-                    description={`Your visa interview is scheduled. Please prepare all required documents and attend on time.`}
-                    date={`${trackingStatus.interview_date} ${trackingStatus.interview_time ? `at ${trackingStatus.interview_time}` : ""}`}
-                    status="complete"
-                    actionLabel="Interview Prep Guide"
-                    onAction={() => {
-                      actions.setStage(2);
-                      actions.setCurrentStep(3);
-                    }}
-                  />
-                )}
+                {/* Dynamic Interview Scheduling Estimator */}
+                {((trackingStatus.dq_status === "qualified") || (state.metadata?.dqStatus === "qualified") || (state.metadata?.nvc_review_outcome === "qualified")) && !trackingStatus.interview_date && (() => {
+                  const dqDateStr = trackingStatus.dq_date || state.metadata?.dqDate;
+                  if (!dqDateStr) {
+                    return (
+                      <div className="bg-[#0f1f38] rounded-[22px] border border-[#2f6fd4]/30 p-6 text-white my-4 relative overflow-hidden">
+                        <div className="absolute -top-10 -right-10 w-40 h-40 bg-primary/20 rounded-full blur-[80px] pointer-events-none" />
+                        <div className="relative z-10 flex items-center gap-4">
+                          <div className="w-10 h-10 rounded-full bg-amber-500/20 flex items-center justify-center border border-amber-500/30">
+                            <Clock className="text-amber-500" size={18} />
+                          </div>
+                          <div>
+                            <h3 className="text-[15px] font-black">Waiting for DQ Confirmation</h3>
+                            <p className="text-[11.5px] text-slate-400">Please record your DQ date in Chapter 2, Step 10 to enable scheduling estimates.</p>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  }
+                  
+                  const dqDateObj = new Date(dqDateStr + "T00:00:00");
+                  const diffTime = new Date().getTime() - dqDateObj.getTime();
+                  const daysSinceDq = Math.max(0, Math.floor(diffTime / (1000 * 60 * 60 * 24)));
 
-                {/* Administrative Processing */}
-                {trackingStatus.ap_status === "pending" && (
-                  <WaitingStateCard
-                    icon="alert"
-                    title="Administrative Processing"
-                    description="Your case is under additional administrative review. This is normal and can take several weeks."
-                    date={trackingStatus.ap_date}
-                    status="waiting"
-                    actionLabel="Check CEAC Status"
-                    actionUrl="https://ceac.state.gov/CEAC/"
-                  />
+                  // Purely from what user entered in Step 2.11 — no hardcoded fallback
+                  const currentSchedulingMonthYear = state.metadata?.currentSchedulingMonthYear as string | undefined;
+                  const postLabel = (state.metadata?.post || state.metadata?.dqPost || "Embassy") as string;
+
+                  // If user hasn't entered scheduling month yet in Step 2.11, show a nudge
+                  if (!currentSchedulingMonthYear) {
+                    return (
+                      <div className="bg-[#0f1f38] rounded-[22px] border border-[#2f6fd4]/30 p-6 text-white mb-4 relative overflow-hidden">
+                        <div className="absolute -top-10 -right-10 w-40 h-40 bg-primary/10 rounded-full blur-[80px] pointer-events-none" />
+                        <div className="relative z-10">
+                          <div className="inline-flex items-center gap-2 px-3 py-1 bg-white/10 rounded-full border border-white/10 text-[10px] font-black uppercase tracking-[0.15em] text-[#6aa8f0] mb-4">
+                            <span className="w-1.5 h-1.5 rounded-full bg-[#6aa8f0] animate-pulse" />
+                            Interview Queue ({postLabel})
+                          </div>
+                          <h3 className="text-[18px] font-black mb-1">In Queue — Awaiting Estimate</h3>
+                          <p className="text-[12.5px] text-slate-400 leading-relaxed mb-4 max-w-md">
+                            Your DQ date is recorded. To see your estimated interview window, go to <span className="font-bold text-white">Chapter 2 → Step 11 (Interview Scheduling Queue)</span> and enter the current official scheduling month from travel.state.gov.
+                          </p>
+                          <div className="bg-white/5 rounded-xl p-3 border border-white/10 flex items-center justify-between">
+                            <div>
+                              <div className="text-[10px] uppercase tracking-widest text-[#6b8097] font-black">Your DQ Date</div>
+                              <div className="text-[14px] font-bold text-white mt-0.5">{dqDateObj.toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" })}</div>
+                            </div>
+                            <div className="text-[11px] font-black text-[#34d399]">{daysSinceDq} DAYS AGO</div>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  }
+
+                  // Calculate wait from user-entered scheduling month vs DQ date
+                  const [ivY, ivM] = currentSchedulingMonthYear.split("-").map(Number);
+                  const ivDate = new Date(ivY, ivM - 1, 1);
+                  const rawMonths = (dqDateObj.getFullYear() - ivDate.getFullYear()) * 12 + (dqDateObj.getMonth() - ivDate.getMonth());
+                  const waitMonths = Math.max(0, rawMonths);
+
+                  const lowDate = new Date();
+                  lowDate.setMonth(lowDate.getMonth() + waitMonths);
+                  const highDate = new Date(lowDate);
+                  highDate.setMonth(highDate.getMonth() + 2);
+
+                  const fmtOpts: Intl.DateTimeFormatOptions = { month: 'short', year: 'numeric' };
+                  const windowStr = waitMonths === 0
+                    ? "Approaching — Could be anytime"
+                    : `${lowDate.toLocaleDateString('en-US', fmtOpts)} \u2013 ${highDate.toLocaleDateString('en-US', fmtOpts)}`;
+
+                  const backlogMsg = waitMonths === 0
+                    ? "The embassy has reached or passed your DQ month. Your interview letter may arrive soon."
+                    : `The embassy is currently processing cases from ${new Date(ivY, ivM - 1, 1).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}. Your DQ is approximately ${waitMonths} month${waitMonths !== 1 ? 's' : ''} away from being scheduled.`;
+
+                  return (
+                    <div className="bg-[#0f1f38] rounded-[22px] border border-[#2f6fd4]/30 shadow-2xl p-6 text-white animate-in zoom-in-95 duration-500 overflow-hidden relative mb-4">
+                      <div className="absolute -top-10 -right-10 w-40 h-40 bg-primary/20 rounded-full blur-[80px] pointer-events-none" />
+                      <div className="relative z-10 flex flex-col gap-6">
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                          <div>
+                            <div className="inline-flex items-center gap-2 px-3 py-1 bg-white/10 rounded-full border border-white/10 text-[10px] font-black uppercase tracking-[0.15em] text-[#6aa8f0] mb-3">
+                              <span className="w-1.5 h-1.5 rounded-full bg-[#6aa8f0] animate-pulse" />
+                              Dynamic Scheduling Tracker
+                            </div>
+                            <h3 className="text-[20px] font-black leading-tight">In Interview Queue ({postLabel})</h3>
+                            <p className="text-slate-400 text-[12px] mt-1 pr-10">
+                              Estimated timeline based on your DQ date and the official embassy progress.
+                            </p>
+                          </div>
+                          
+                          {/* Official Embassy Progress Sync (Display Only) */}
+                          <div className="bg-white/5 border border-white/10 rounded-xl p-3 shrink-0 flex flex-col gap-2 min-w-[160px]">
+                            <span className="text-[10px] font-black text-[#6aa8f0] uppercase tracking-wider">Embassy Check</span>
+                            <div className="flex flex-col gap-1">
+                               <span className="text-[11px] text-slate-400">Scheduling up to:</span>
+                               <span className="bg-black/20 border border-white/10 rounded-md p-1.5 text-[12px] font-bold text-white text-center">
+                                 {new Date(currentSchedulingMonthYear + "-01T00:00:00").toLocaleDateString("en-US", { month: "short", year: "numeric" })}
+                               </span>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                          <div className="bg-white/5 rounded-[14px] p-4 border border-white/5">
+                            <div className="text-[10px] uppercase tracking-widest text-[#6b8097] mb-1 font-black">Your DQ Date</div>
+                            <div className="text-[15px] font-bold text-white">{dqDateObj.toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric"})}</div>
+                            <div className="text-[11px] text-[#34d399] mt-1 font-black">{daysSinceDq} DAYS AGO</div>
+                          </div>
+                          
+                          <div className="bg-white/5 rounded-[14px] p-4 border border-white/5">
+                            <div className="text-[10px] uppercase tracking-widest text-[#6b8097] mb-1 font-black">Current Backlog</div>
+                            <div className="text-[15px] font-bold text-[#6aa8f0]">{waitMonths > 0 ? `${waitMonths} MONTHS` : "< 1 MONTH"}</div>
+                            <div className="text-[11px] text-slate-400 mt-1 font-medium italic">Estimated wait blocks</div>
+                          </div>
+
+                          <div className="bg-amber-500/10 rounded-[14px] p-4 border border-amber-500/20 lg:col-span-1 sm:col-span-2">
+                            <div className="text-[10px] uppercase tracking-widest text-amber-500/80 mb-1 font-black">Est. Interview Letter</div>
+                            <div className="text-[16px] font-black text-amber-400">{windowStr}</div>
+                            <div className="text-[11px] text-amber-500/60 mt-1 font-medium select-none truncate">Subject to embassy quota</div>
+                          </div>
+                        </div>
+
+                        <div className="bg-white/5 border border-white/10 rounded-xl p-4 flex items-start gap-4">
+                          <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center shrink-0 border border-primary/20">
+                            <Shield className="text-primary" size={16} />
+                          </div>
+                          <div>
+                            <h4 className="text-[13px] font-black mb-1">Status Intelligence</h4>
+                            <p className="text-[12px] text-slate-400 leading-relaxed">
+                              {backlogMsg}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })()}
+
+                {/* Bento Box Grid for multiple cards */}
+                {trackingCards.length > 0 && (
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                    {trackingCards.map((card, idx) => {
+                      const gridClass =
+                        idx === 0 && trackingCards.length > 1
+                          ? "md:col-span-2"
+                          : "md:col-span-1";
+                      const finalGridClass =
+                        trackingCards.length === 1 ? "md:col-span-3" : gridClass;
+
+                      return React.cloneElement(card as React.ReactElement<any>, {
+                        key: (card as any).key || idx,
+                        className: `${(card as any).props.className || ""} ${finalGridClass}`,
+                      });
+                    })}
+                  </div>
                 )}
               </div>
             );
@@ -358,7 +579,10 @@ export function DashboardView({
                 onClick={() => {
                   if (nextActionData) {
                     if (onSelectStep) {
-                      onSelectStep(nextActionData.chapterIdx, nextActionData.stepIdxInChapter);
+                      onSelectStep(
+                        nextActionData.chapterIdx,
+                        nextActionData.stepIdxInChapter,
+                      );
                     } else {
                       actions.setStage(nextActionData.chapterIdx);
                       actions.setCurrentStep(nextActionData.stepIdxInChapter);
@@ -397,7 +621,13 @@ export function DashboardView({
               >
                 <div
                   className={`w-1.5 h-1.5 rounded-full mt-1.5 shrink-0 ${
-                    alert.type === "gold" ? "bg-[#b38600]" : alert.type === "sky" ? "bg-primary" : alert.type === "amber" ? "bg-[#8a6200]" : "bg-[#15744f]"
+                    alert.type === "gold"
+                      ? "bg-[#b38600]"
+                      : alert.type === "sky"
+                        ? "bg-primary"
+                        : alert.type === "amber"
+                          ? "bg-[#8a6200]"
+                          : "bg-[#15744f]"
                   }`}
                 />
                 <div className="text-[12px] leading-relaxed">
@@ -408,6 +638,23 @@ export function DashboardView({
             ))}
           </div>
         )}
+
+         {/* AP Tracking Tool - Shows after interview attended OR admin marks AP pending */}
+         {(() => {
+           const trackingStatus = state.metadata?.trackingStatus || {};
+           const hasStartedAp = state.completedSteps?.has("c3s8") || 
+                               state.completedSteps?.has("step_3_8") || 
+                               trackingStatus.ap_status === "pending" || 
+                               !!(state.metadata?.apStartDate);
+                               
+           if (!hasStartedAp) return null;
+           
+           return (
+             <APTrackingTool
+               state={state}
+             />
+           );
+         })()}
 
         {/* Chapter Strip */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2.5 mb-3">
@@ -539,15 +786,19 @@ export function DashboardView({
                 <div className="flex flex-col gap-1.5 py-1">
                   {milestones.map((m, i) => {
                     // For milestones with both key and sid, consider either as completion
-                    const isDone = m.key && m.sid
-                      ? ((state.metadata && state.metadata[m.key]) || (state.completedSteps && state.completedSteps.has && state.completedSteps.has(m.sid!)))
-                      : m.key
-                        ? !!(state.metadata && state.metadata[m.key])
-                        : (
-                            (state.completedSteps && state.completedSteps.has && state.completedSteps.has(m.sid!)) ||
+                    const isDone =
+                      m.key && m.sid
+                        ? (state.metadata && state.metadata[m.key]) ||
+                          (state.completedSteps &&
+                            state.completedSteps.has &&
+                            state.completedSteps.has(m.sid!))
+                        : m.key
+                          ? !!(state.metadata && state.metadata[m.key])
+                          : (state.completedSteps &&
+                              state.completedSteps.has &&
+                              state.completedSteps.has(m.sid!)) ||
                             (state.answers && state.answers[m.sid!]) ||
-                            (state.metadata && state.metadata[m.sid!])
-                          );
+                            (state.metadata && state.metadata[m.sid!]);
                     return (
                       <div
                         key={i}
