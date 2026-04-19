@@ -19,7 +19,7 @@ import Image from "next/image";
 import { StackedCarousel } from "./components/StackedCarousel";
 import Link from "next/link";
 import HydrationSafeButton from "@/app/components/HydrationSafeButton";
-import { CinematicHero } from "./components/home-page/HeroSection";
+import { CinematicHeroHtmlStyle } from "./components/home-page/CinematicHeroHtmlStyle";
 import { ComingSoonModal } from "./components/shared/ComingSoonModal";
 import { useAuth } from "./context/AuthContext";
 import { createClient } from "@/lib/supabase/client";
@@ -358,7 +358,9 @@ function HomePageContent() {
       <main className="min-h-[calc(100vh-200px)]">
         {activeSection === "home" && (
           <div className="flex flex-col">
-            <CinematicHero />
+            {/* Use the new styled hero, but keep the same CTA and header logic */}
+            {/* @ts-expect-error Server Component import */}
+            <CinematicHeroHtmlStyle />
 
             {/* HOW RAHVANA WORKS SECTION */}
             <section className="py-12 md:py-24 bg-muted/30" id="about">

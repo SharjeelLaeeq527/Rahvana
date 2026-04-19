@@ -10,6 +10,7 @@ import {
   isStageUnlocked,
 } from "./journeyHelpers";
 import APTrackingTool from "./APTrackingTool";
+import WaitingStateCard from "./WaitingStateCard";
 
 interface DashboardViewProps {
   data: RoadmapData;
@@ -22,6 +23,9 @@ interface DashboardViewProps {
     updateMetadata: (metadata: Record<string, any>) => void;
   };
 }
+
+// Dashboard background image
+const dashboardBg = "/assets/images/dashboard.png"; // Place your image in public/assets/images/dove-bg.jpg
 
 export function DashboardView({
   data,
@@ -302,8 +306,16 @@ export function DashboardView({
   ];
 
   return (
-    <div className="flex-1 overflow-y-auto py-9 px-6 pb-20 scrollbar-hide bg-[#f4f7fb]">
-      <div className="w-full max-w-[1200px] mx-auto animate-in fade-in duration-700">
+    <div
+      className="flex-1 overflow-y-auto py-9 px-6 pb-20 scrollbar-hide relative"
+      style={{ minHeight: "100vh" }}
+    >
+      {/* Fullscreen background for Dashboard */}
+      <div
+        className="pointer-events-none absolute inset-0 z-0 bg-cover bg-center bg-no-repeat"
+        style={{ backgroundImage: `url(${dashboardBg})` }}
+      />
+      <div className="w-full max-w-[780px] mx-auto animate-in fade-in duration-700 relative z-10">
         <div className="text-[10px] font-bold uppercase tracking-[0.12em] text-slate-400 mb-2">
           IR-1 Spouse Visa · Pakistan
         </div>
@@ -314,29 +326,70 @@ export function DashboardView({
         <div className="flex flex-col lg:flex-row gap-8 items-start">
           {/* Main Content Column */}
           <div className="flex-1 flex flex-col gap-6 order-1">
-            <section className="bg-[#0c1b33] rounded-2xl p-[28px_32px] relative overflow-hidden animate-in zoom-in duration-500 after:content-[''] after:absolute after:-top-[50px] after:-right-[50px] after:w-[180px] after:h-[180px] after:rounded-full after:bg-[#2f6fd41f] after:pointer-events-none">
-              <div className="relative z-10">
-                <div className="text-[10px] font-bold uppercase tracking-[0.12em] text-white/40 mb-1.5">
-                  Next roadmap step
-                </div>
-                <h2 className="text-white/95 text-xl font-black leading-tight mb-2">
-                  {nextActionData?.step.step_name || "Journey Complete!"}
-                </h2>
-                <p className="text-white/45 text-[13px] leading-relaxed mb-6 max-w-md">
-                  {nextActionData?.step.step_description ||
-                    "You have reached the end of the roadmap. All major verification steps are fulfilled."}
-                </p>
-                <button
-                  onClick={() => {
-                    if (nextActionData) {
-                      if (onSelectStep) {
-                        onSelectStep(nextActionData.chapterIdx, nextActionData.stepIdxInChapter);
-                      } else {
-                        actions.setStage(nextActionData.chapterIdx);
-                        actions.setCurrentStep(nextActionData.stepIdxInChapter);
-                      }
+            {/* Interview Queue */}
+            {trackingStatus.interview_queue && !trackingStatus.interview_date && (
+              <WaitingStateCard
+                icon="clock"
+                title="In Interview Queue"
+                description="Your case is in the scheduling queue at the embassy. Interview dates will be assigned based on visa bulletin and wait times."
+                status="waiting"
+                showIVToolLink
+                ivEmbassy={trackingStatus.interview_embassy}
+              />
+            )}
+
+            {/* Interview Scheduled */}
+            {trackingStatus.interview_date && (
+              <WaitingStateCard
+                icon="calendar"
+                title="Interview Scheduled"
+                description={`Your visa interview is scheduled. Please prepare all required documents and attend on time.`}
+                date={`${trackingStatus.interview_date} ${trackingStatus.interview_time ? `at ${trackingStatus.interview_time}` : ""}`}
+                status="complete"
+                actionLabel="Interview Prep Guide"
+                onAction={() => {
+                  actions.setStage(2);
+                  actions.setCurrentStep(3);
+                }}
+              />
+            )}
+
+            {/* Administrative Processing */}
+            {trackingStatus.ap_status === "pending" && (
+              <WaitingStateCard
+                icon="alert"
+                title="Administrative Processing"
+                description="Your case is under additional administrative review. This is normal and can take several weeks."
+                date={trackingStatus.ap_date}
+                status="waiting"
+                actionLabel="Check CEAC Status"
+                actionUrl="https://ceac.state.gov/CEAC/"
+              />
+            )}
+
+          {/* Hero Section */}
+          <section className="bg-[#0c1b33]/95 rounded-2xl p-[20px_24px] relative overflow-hidden animate-in zoom-in duration-500 shadow-[0_8px_32px_rgba(44,62,80,0.13),0_1.5px_6px_rgba(47,111,212,0.07)] backdrop-blur-md after:content-[''] after:absolute after:-top-[50px] after:-right-[50px] after:w-[180px] after:h-[180px] after:rounded-full after:bg-[#2f6fd41f] after:pointer-events-none">
+            <div className="relative z-10">
+              <div className="text-[10px] font-bold uppercase tracking-[0.12em] text-white/40 mb-1.5">
+                Next roadmap step
+              </div>
+              <h2 className="text-white/95 text-xl font-black leading-tight mb-1">
+                {nextActionData?.step.step_name || "Journey Complete!"}
+              </h2>
+              <p className="text-white/45 text-[12.5px] leading-relaxed mb-4 max-w-md">
+                {nextActionData?.step.step_description ||
+                  "You have reached the end of the roadmap. All major verification steps are fulfilled."}
+              </p>
+              <button
+                onClick={() => {
+                  if (nextActionData) {
+                    if (onSelectStep) {
+                      onSelectStep(nextActionData.chapterIdx, nextActionData.stepIdxInChapter);
+                    } else {
+                      actions.setStage(nextActionData.chapterIdx);
+                      actions.setCurrentStep(nextActionData.stepIdxInChapter);
                     }
-                  }}
+                  }}}
                   disabled={!nextActionData}
                   className="inline-flex items-center gap-2 px-6 py-3 bg-primary hover:bg-primary/90 disabled:opacity-50 text-white rounded-[12px] font-bold text-[14px] shadow-lg shadow-primary/40 transition-all active:scale-95 group"
                 >
@@ -565,6 +618,121 @@ export function DashboardView({
               if (!hasStartedAp) return null;
               return <APTrackingTool state={state} />;
             })()}
+          </div>
+        </div>
+
+        {/* Accordions */}
+        <div className="bg-white/80 border-[1.5px] border-[#d0e4f7] rounded-3xl mb-3 overflow-hidden shadow-[0_8px_32px_rgba(44,62,80,0.13),0_1.5px_6px_rgba(47,111,212,0.07)] backdrop-blur-lg">
+          {/* Case Details */}
+          <div className="border-t first:border-t-0 border-[#d0e4f7]">
+            <div
+              onClick={() => toggleAccordion("case-details")}
+              className={`flex items-center p-[14px_18px] cursor-pointer hover:bg-[#eef3fa] transition-colors ${openAccordions["case-details"] ? "bg-[#eef3fa]/50" : ""}`}
+            >
+              <span className="text-[12.5px] font-bold text-[#0c1b33]">
+                Case details
+              </span>
+              <span className="text-[11px] text-[#6b8097] ml-auto mr-2">
+                {caseFields.some((f) => f.value) ? "Recorded" : "Not recorded"}
+              </span>
+              <div
+                className={`transition-transform duration-200 ${openAccordions["case-details"] ? "rotate-180" : ""}`}
+              >
+                <ChevronDown
+                  size={14}
+                  strokeWidth={2.5}
+                  className="text-[#6b8097]"
+                />
+              </div>
+            </div>
+            {openAccordions["case-details"] && (
+              <div className="px-[18px] pb-4 pt-1 animate-in fade-in slide-in-from-top-1">
+                <div className="flex flex-col">
+                  {caseFields.map((item, i) => (
+                    <div
+                      key={i}
+                      className="flex justify-between items-center py-2 border-b border-[#d0e4f7]/50 last:border-0"
+                    >
+                      <span className="text-[12.5px] text-[#6b8097]">
+                        {item.label}
+                      </span>
+                      <span
+                        className={`text-[12.5px] font-medium ${!item.value ? "text-[#6b8097] italic" : "text-[#0c1b33]"}`}
+                      >
+                        {item.value || "Not recorded"}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Milestones */}
+          <div className="border-t border-[#d0e4f7]">
+            <div
+              onClick={() => toggleAccordion("milestones")}
+              className={`flex items-center p-[14px_18px] cursor-pointer hover:bg-[#eef3fa] transition-colors ${openAccordions["milestones"] ? "bg-[#eef3fa]/50" : ""}`}
+            >
+              <span className="text-[12.5px] font-bold text-[#0c1b33]">
+                Milestone history
+              </span>
+              <span className="text-[11px] text-[#6b8097] ml-auto mr-2">
+                {milestonesReached} of {milestones.length} reached
+              </span>
+              <div
+                className={`transition-transform duration-200 ${openAccordions["milestones"] ? "rotate-180" : ""}`}
+              >
+                <ChevronDown
+                  size={14}
+                  strokeWidth={2.5}
+                  className="text-[#6b8097]"
+                />
+              </div>
+            </div>
+            {openAccordions["milestones"] && (
+              <div className="px-[18px] pb-4 pt-1 animate-in fade-in slide-in-from-top-1">
+                <div className="flex flex-col gap-1.5 py-1">
+                  {milestones.map((m, i) => {
+                    // For milestones with both key and sid, consider either as completion
+                    const isDone = m.key && m.sid
+                      ? ((state.metadata && state.metadata[m.key]) || (state.completedSteps && state.completedSteps.has && state.completedSteps.has(m.sid!)))
+                      : m.key
+                        ? !!(state.metadata && state.metadata[m.key])
+                        : (
+                            (state.completedSteps && state.completedSteps.has && state.completedSteps.has(m.sid!)) ||
+                            (state.answers && state.answers[m.sid!]) ||
+                            (state.metadata && state.metadata[m.sid!])
+                          );
+                    return (
+                      <div
+                        key={i}
+                        className={`flex items-center gap-3 py-2 px-2 rounded-xl border-b border-[#d0e4f7]/40 last:border-0 transition-all backdrop-blur-[2px] ${
+                          isDone
+                            ? "bg-[#e8f5ef]/70 shadow-[0_2px_8px_rgba(21,116,79,0.07)]"
+                            : "bg-white/60"
+                        }`}
+                      >
+                        <div
+                          className={`w-[20px] h-[20px] rounded-full flex items-center justify-center text-[10px] font-bold border-2 transition-all ${
+                            isDone
+                              ? "bg-[#15744f] text-white border-[#15744f] shadow"
+                              : "bg-[#f4f7fb] text-[#6b8097] border-[#d0e4f7]"
+                          }`}
+                        >
+                          {isDone ? "✓" : "•"}
+                        </div>
+                        <span
+                          className={`text-[13px] font-semibold ${isDone ? "text-[#15744f]" : "text-[#6b8097]"}`}
+                        >
+                          {m.label}
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>

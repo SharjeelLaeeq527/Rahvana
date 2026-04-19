@@ -1,3 +1,86 @@
+/* Universal background for all guides */
+.guide-bg {
+  background-image: url('/assets/images/guides-bg.png');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+}
+.step-modal.ch3step-bg {
+  background-image: linear-gradient(rgba(242, 232, 232, 0.32), rgba(248, 245, 245, 0.32)), url('/assets/images/ch3steps-bg.png');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+}
+/* Toned down Chapter 1 Step Background */
+
+.ch1step-bg {
+  background-image: linear-gradient(rgba(255,255,255,0.32), rgba(255,255,255,0.32)), url('/assets/images/ch1steps-bg.png');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+}
+ .ch2step-bg {
+  background-image: linear-gradient(rgba(255,255,255,0.54), rgba(255,255,255,0.54)), url('/assets/images/ch2steps-bg.png');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+} 
+.ch3step-bg {
+  background-image: linear-gradient(rgba(242, 232, 232, 0.32), rgba(248, 245, 245, 0.32)), url('/assets/images/ch3steps-bg.png');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+}
+/* Nicer purple for Chapter 2 background */
+.chapter2-bg {
+  background: #e6dbfa url('/assets/images/chapter-2-bg.png') center/cover no-repeat fixed;
+}
+
+/* Accent colors for headings, progress, etc. */
+.accent-rose {
+  color: #c0596a;
+}
+.accent-brown {
+  color: #28151c;
+}
+
+.accent-rose-bg {
+  background-color: #ac636f;
+}
+.accent-brown-bg {
+  background-color: #28151c;
+}
+
+/* Crisp Modal Styling for Steps */
+.step-modal {
+  border-radius: 18px;
+  box-shadow: 0 8px 40px rgba(40,21,28,0.13), 0 1.5px 6px rgba(192,89,106,0.07);
+  border: 1.5px solid #e7e2e0;
+  padding: 36px 32px 32px 32px;
+}
+
+.step-modal:not(.ch1step-bg):not(.ch2step-bg):not(.ch3step-bg) {
+  background: #fff;
+}
+
+/* Brown Card Utility (for blue cards) */
+.brown-card {
+  background: #28151c;
+  color: #fff;
+  border-radius: 14px;
+  border: 1.5px solid #c0596a;
+  box-shadow: 0 4px 18px rgba(40,21,28,0.10);
+}
+
+.step-modal-spacing {
+  margin-top: 48px;
+}
+/* Chapter 1 Step Background Utility */
 @import "tailwindcss";
 @import url("https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&family=DM+Serif+Display:ital@0;1&display=swap");
 

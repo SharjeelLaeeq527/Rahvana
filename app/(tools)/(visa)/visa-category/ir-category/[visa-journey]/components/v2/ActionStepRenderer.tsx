@@ -24,6 +24,9 @@ interface ActionStepRendererProps {
   filingType?: string;
   state?: any;
   actions?: any;
+  isChapter1?: boolean;
+  isChapter2?: boolean;
+  isChapter3?: boolean;
 }
 
 // Tailwind-compatible color values
@@ -121,6 +124,9 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
   isCompleted,
   state: propsState,
   actions: propsActions,
+  isChapter1 = false,
+  isChapter2 = false,
+  isChapter3 = false,
 }) => {
   // Use passed state/actions if available, otherwise fallback to hook (for backward compatibility)
   const hookData = useWizard();
@@ -279,19 +285,24 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
   const actionData = step.action_data;
   const guideProgress = guideStep / (actionData.guide_steps?.length || 1);
 
-  return (
-    <div className="text-ink min-h-screen">
-      <style>{`
-        .mt { font-size: 20px; font-weight: 700; color: ${COLORS.navy}; margin-bottom: 14px; }
-        .mb { border: 1px solid ${COLORS.line}; background: #fbfdff; border-radius: 14px; padding: 14px; margin-bottom: 12px; }
-        .mr { display: flex; gap: 12px; align-items: center; margin-bottom: 10px; }
-        .mf { height: 42px; border: 1px solid ${COLORS.line}; border-radius: 10px; background: #fff; flex: 1; }
-        .mbtn { display: inline-flex; padding: 11px 18px; border-radius: 10px; background: ${COLORS.accent}; color: #fff; font-size: 13px; font-weight: 700; border: none; cursor: pointer; }
-        .small { font-size: 13px; color: ${COLORS.muted}; line-height: 1.6; }
-        input::placeholder { color: ${COLORS.muted}; opacity: 1; }
-      `}</style>
-      {/* Main Content */}
-      <div className="max-w-3xl mx-auto px-5.5 py-12">
+    return (
+      <div
+        className={`min-h-screen${isChapter3 ? ' ch3step-bg' : ''}`}
+        style={
+          isChapter3
+            ? {
+                backgroundImage: "url('/assets/images/ch3steps-bg.png')",
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
+                backgroundRepeat: 'no-repeat',
+                backgroundAttachment: 'fixed',
+                minHeight: '100vh',
+              }
+            : undefined
+        }
+      >
+        {/* Main Content */}
+        <div className="max-w-3xl mx-auto px-5.5 py-12">
         {/* Eyebrow for Paper Filing Path steps */}
         {(step.step_key === 'step_1_11' || step.step_key === 'step_1_12' || step.step_key === 'step_1_13' || step.step_key === 'step_1_14') && (
           <div className="text-[10px] font-bold uppercase tracking-widest text-soft mb-2 text-[#636B97]">
@@ -299,54 +310,22 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
           </div>
         )}
         {/* Title */}
-        <h1 className="text-4xl leading-tight text-navy font-black -tracking-wide mb-3">
+        <h1 className={`text-4xl leading-tight font-black -tracking-wide mb-3 ${isChapter1 ? 'accent-brown' : isChapter2 ? 'text-[#27192e]' : 'text-navy'}`}>
           {step.step_name}
         </h1>
 
         {/* Subtitle */}
-        <p className="text-base leading-relaxed text-soft max-w-2xl mb-5.5">
+        <p className={`text-base leading-relaxed max-w-2xl mb-5.5 ${isChapter1 ? 'accent-brown' : isChapter2 ? 'text-[#b48ad6]' : 'text-soft'}`}>
           {step.step_description}
         </p>
 
         {/* Chips - Full background colors */}
         {actionData.chips && actionData.chips.length > 0 && (
-          <div
-            style={{
-              display: "flex",
-              flexWrap: "wrap",
-              gap: "8px",
-              marginBottom: "26px",
-            }}
-          >
+          <div className={`flex flex-wrap gap-2 mb-6 ${isChapter1 ? 'accent-rose' : isChapter2 ? 'accent-purple' : ''}`}>
             {actionData.chips.map((chip, idx) => (
               <span
                 key={idx}
-                style={{
-                  fontSize: "11px",
-                  fontWeight: 700,
-                  letterSpacing: ".06em",
-                  textTransform: "uppercase",
-                  padding: "7px 12px",
-                  borderRadius: "999px",
-                  background:
-                    chip.type === "role"
-                      ? "#e8f1fb"
-                      : chip.type === "path"
-                        ? "#f3f0fb"
-                        : "#fffbec",
-                  color:
-                    chip.type === "role"
-                      ? "#2f6fd4"
-                      : chip.type === "path"
-                        ? "#4a2d8a"
-                        : "#c49a0a",
-                  border:
-                    chip.type === "role"
-                      ? "1px solid #d0e4f7"
-                      : chip.type === "path"
-                        ? "1px solid #c9bef2"
-                        : "1px solid #e8d47a",
-                }}
+                className={`text-[11px] font-bold uppercase px-3 py-1 rounded-full border ${isChapter1 ? 'accent-rose-bg border-rose-200 text-[#c0596a]' : isChapter2 ? 'accent-purple-bg border-[#e3c6f7] text-[#b48ad6]' : 'bg-[#e8f1fb] border-[#d0e4f7] text-[#2f6fd4]'}`}
               >
                 {chip.label}
               </span>
