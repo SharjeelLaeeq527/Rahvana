@@ -2311,6 +2311,14 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
     }
   };
 
+  // Auto-complete step_1_17 when approval notice details are saved
+  useEffect(() => {
+    if (sId === "step_1_17" && isApprovalSaved && !isCompleted) {
+      handleToggleComplete();
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sId, isApprovalSaved]);
+
   const handleNavigate = (stepId: string) => {
     const activeChapters = data.chapters || (data as any).stages;
     for (let sIdx = 0; sIdx < activeChapters.length; sIdx++) {
@@ -5206,7 +5214,37 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
   };
 
   if (customRenderer) {
-    return customRenderer;
+    return (
+      <div className="flex-1 flex flex-col h-full bg-slate-50 relative overflow-hidden font-sans">
+        <div className="flex-1 overflow-y-auto scrollbar-hide flex flex-col items-center relative pb-[100px]">
+          {customRenderer}
+        </div>
+        <footer className="absolute bottom-0 left-0 right-0 h-[58px] bg-[#fafcff] border-t border-[#d0e4f7] flex items-center gap-2 px-4 shrink-0 z-40 shadow-[0_-4px_20px_rgba(0,0,0,0.03)]">
+          <button
+            onClick={() => prevStep && handleNavigate((prevStep as any).step_key || (prevStep as any).id)}
+            className={`px-4 py-[9px] bg-transparent border-[1.5px] border-[#d0e4f7] rounded-[10px] text-[13px] font-medium text-[#6b8097] flex items-center gap-[5px] transition-all hover:border-[#3a4f63] hover:text-[#1c2b3a] shrink-0 ${!prevStep ? "invisible pointer-events-none" : ""}`}
+          >
+            <ArrowLeft size={12} strokeWidth={2.5} />
+            Previous
+          </button>
+          <div className="flex-1 flex items-center gap-2 mx-auto px-4">
+            <div className="flex-1 h-1 bg-[#d0e4f7] rounded-[10px] overflow-hidden">
+              <div className="h-full bg-linear-to-r from-primary to-primary/70 transition-all duration-500 ease-out" style={{ width: `${progressPct}%` }} />
+            </div>
+            <div className="text-[11px] font-semibold text-[#6b8097] whitespace-nowrap">
+              Step {localIdx + 1} of {activeStepsInChapter.length}
+            </div>
+          </div>
+          <button
+            onClick={() => nextStep && handleNavigate((nextStep as any).step_key || (nextStep as any).id)}
+            className={`px-[18px] py-[9px] bg-primary rounded-[10px] text-[13px] font-semibold text-white flex items-center gap-[5px] transition-all hover:brightness-110 active:scale-95 shrink-0 shadow-sm shadow-primary/20 ${!nextStep || !isCompleted ? "invisible pointer-events-none" : ""}`}
+          >
+            Next
+            <ArrowRight size={12} strokeWidth={2.5} />
+          </button>
+        </footer>
+      </div>
+    );
   }
 
   if (!currentStep) return null;
