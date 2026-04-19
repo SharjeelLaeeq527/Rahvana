@@ -751,7 +751,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
   const [rcptGuideStep, setRcptGuideStep] = React.useState(0);
 
   // --- CUSTOM RENDER FOR STEP 11 & 12 ---
-  let customRenderer: JSX.Element | null = null;
+  let customRenderer: React.ReactElement | null = null;
   // step_1_15: Register Receipt Notice & Track Case
   // step_1_16: Monitor USCIS Case Status
   if (sId === "step_1_15" && currentStep.tool_data) {
@@ -6785,7 +6785,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
             } else if (typeof dynamicStepsRaw === "object") {
               // New format: object with paths (household_member/joint_sponsor)
               dynamicSteps = (dynamicStepsRaw as any)[effectivePath];
-              isDynamic = dynamicSteps && dynamicSteps.length > 0;
+              isDynamic = !!(dynamicSteps && dynamicSteps.length > 0);
             }
           }
 
@@ -7141,16 +7141,13 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                             )}
 
                             {/* Highlight Box */}
-                            {(
+                            {((
                               currentTutStep as (typeof USCIS_TUTORIAL_STEPS)[0]
-                            ).fields &&
-                              (
-                                currentTutStep as (typeof USCIS_TUTORIAL_STEPS)[0]
-                              ).fields.length > 0 && (
+                            ).fields?.length ?? 0) > 0 && (
                                 <div className="flex flex-col gap-[8px] w-full">
                                   {(
                                     currentTutStep as (typeof USCIS_TUTORIAL_STEPS)[0]
-                                  ).fields.map((field, idx) =>
+                                  ).fields?.map((field, idx) =>
                                     field.type === "btn" ? (
                                       <div
                                         key={idx}
