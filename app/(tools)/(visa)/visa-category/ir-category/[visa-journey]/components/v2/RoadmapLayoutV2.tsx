@@ -216,9 +216,9 @@ export default function RoadmapLayoutV2({
             onClick={() => setIsNotificationOpen(false)}
           />
           <div className="fixed right-0 top-0 bottom-0 z-[70]">
-            <NotificationCenter 
+            <NotificationCenter
               userId={state.backendId}
-              journeyId="ir-1"
+              journeyId={state.backendId}
               trackingStatus={state.metadata?.tracking_status}
               onClose={() => setIsNotificationOpen(false)}
             />
