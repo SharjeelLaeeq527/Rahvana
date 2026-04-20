@@ -176,31 +176,16 @@ export class UnifiedReminderEngine {
 
   // ─────────────────────────────────────────────────────────
   // PUBLIC: runSuppression
-  // Cancels pending reminders whose suppress condition is now met.
-  // Called on every GET /reminders to keep the queue clean.
+  // Two things every time GET /reminders is called:
+  //   1. Cancel PENDING scheduled notifications whose condition is met
+  //   2. Auto-dismiss already-DELIVERED journey_reminders whose condition
+  //      is now met — this is the key fix for stale bell notifications
   // ─────────────────────────────────────────────────────────
   async runSuppression(journeyId: string): Promise<void> {
-    // Fetch all pending journey reminders for this journey
-    const { data: pending } = await this.supabase
-      .from('ceac_scheduled_notifications')
-      .select('id, reminder_id')
-      .eq('journey_id', journeyId)
-      .eq('reminder_origin', 'journey')
-      .eq('status', 'pending')
-
-    if (!pending || pending.length === 0) return
-
-    // Fetch journey state once
+    // Fetch current journey state once
     const [journeyResult, stepsResult] = await Promise.allSettled([
-      this.supabase
-        .from('journeys')
-        .select('metadata')
-        .eq('id', journeyId)
-        .single(),
-      this.supabase
-        .from('journey_steps')
-        .select('step_key, status')
-        .eq('journey_id', journeyId),
+      this.supabase.from('journeys').select('metadata').eq('id', journeyId).single(),
+      this.supabase.from('journey_steps').select('step_key, status').eq('journey_id', journeyId),
     ])
 
     const metadata: Record<string, unknown> =
@@ -215,52 +200,36 @@ export class UnifiedReminderEngine {
       }
     }
 
-    const toCancel: string[] = []
+    // Build list of all reminder IDs whose suppress condition is now met
+    const suppressedIds = REMINDER_REGISTRY
+      .filter((def) => def.origin === 'journey' && this._isSuppressed(def.suppressWhen, metadata, completedStepKeys))
+      .map((def) => def.id)
 
-    for (const row of pending) {
-      const def = REMINDER_REGISTRY.find((r) => r.id === row.reminder_id)
-      if (!def) continue
+    if (suppressedIds.length === 0) return
 
-      if (this._isSuppressed(def.suppressWhen, metadata, completedStepKeys)) {
-        toCancel.push(row.id)
-      }
-    }
+    // 1. Cancel all PENDING scheduled notifications for suppressed reminders
+    await this.supabase
+      .from('ceac_scheduled_notifications')
+      .update({
+        status: 'cancelled',
+        cancelled_at: new Date().toISOString(),
+        cancel_reason: 'suppress_condition_met',
+      })
+      .eq('journey_id', journeyId)
+      .eq('reminder_origin', 'journey')
+      .eq('status', 'pending')
+      .in('reminder_id', suppressedIds)
 
-    // Cancel in scheduled queue
-    if (toCancel.length > 0) {
-      await this.supabase
-        .from('ceac_scheduled_notifications')
-        .update({
-          status: 'cancelled',
-          cancelled_at: new Date().toISOString(),
-          cancel_reason: 'suppress_condition_met',
-        })
-        .in('id', toCancel)
-    }
-
-    // Also auto-dismiss already-delivered journey_reminders whose suppress
-    // condition is now met (so stale notifications disappear from bell).
-    const suppressedReminderIds = toCancel
-      .map((id) => pending?.find((r) => r.id === id)?.reminder_id)
-      .filter(Boolean) as string[]
-
-    if (suppressedReminderIds.length > 0) {
-      await this.supabase
-        .from('journey_reminders')
-        .update({ is_dismissed: true, dismissed_at: new Date().toISOString() })
-        .eq('journey_id', journeyId)
-        .in('dedup_key', suppressedReminderIds.map((rid) => `${journeyId}:journey:${rid}:0`))
-    }
-
-    // Broader suppression: auto-dismiss journey_reminders by reminder_id match
-    // using dedup_key pattern for all delivered reminders from registry
-    for (const suppressed of suppressedReminderIds) {
+    // 2. Auto-dismiss any DELIVERED journey_reminders for suppressed reminder IDs.
+    //    dedup_key format: `{journeyId}:journey:{reminder_id}:{recurrence_count}`
+    //    We match on prefix so all recurrences are caught.
+    for (const rid of suppressedIds) {
       await this.supabase
         .from('journey_reminders')
         .update({ is_dismissed: true, dismissed_at: new Date().toISOString() })
         .eq('journey_id', journeyId)
         .eq('is_dismissed', false)
-        .like('dedup_key', `${journeyId}:journey:${suppressed}%`)
+        .like('dedup_key', `${journeyId}:journey:${rid}%`)
     }
   }
 
