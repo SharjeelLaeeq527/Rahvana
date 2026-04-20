@@ -120,21 +120,69 @@ export class UnifiedReminderEngine {
       }
     }
 
-    // Get all reminder IDs already scheduled for this journey
+    // Get all already-scheduled reminder rows (with fire_at for date-change detection)
     const { data: existing } = await this.supabase
       .from('ceac_scheduled_notifications')
-      .select('reminder_id')
+      .select('reminder_id, fire_at, step_trigger_key')
       .eq('journey_id', journeyId)
       .eq('reminder_origin', 'journey')
       .not('status', 'eq', 'cancelled')
 
     const scheduledIds = new Set((existing ?? []).map((r) => r.reminder_id))
 
+    // For date-based reminders: detect if the metadata date changed since scheduling.
+    // If changed → cancel old group + clear stale journey_reminders, allow re-scheduling.
+    const dateTriggerGroups = new Set<string>()
+    for (const def of REMINDER_REGISTRY) {
+      if (def.origin !== 'journey' || def.trigger.type !== 'metadata_date_set') continue
+      const metaKey = (def.trigger as any).metadataKey as string
+      const currentDateVal = String(metadata[metaKey] ?? '')
+      if (!currentDateVal) continue
+
+      // Find any scheduled row for this reminder
+      const existingRow = (existing ?? []).find((r) => r.reminder_id === def.id)
+      if (!existingRow) continue
+
+      // Compute expected fire_at from current metadata date
+      const currentBase = new Date(currentDateVal + 'T00:00:00')
+      const expectedFireAt = new Date(currentBase)
+      expectedFireAt.setDate(expectedFireAt.getDate() + def.delayDays)
+
+      // Compare with stored fire_at (within 1 day tolerance)
+      const storedFireAt = new Date(existingRow.fire_at)
+      const diffDays = Math.abs(expectedFireAt.getTime() - storedFireAt.getTime()) / (1000 * 60 * 60 * 24)
+
+      if (diffDays > 1 && !dateTriggerGroups.has(def.group)) {
+        // Date changed — cancel all pending/sent rows for this group and dismiss in bell
+        dateTriggerGroups.add(def.group)
+        await this.supabase
+          .from('ceac_scheduled_notifications')
+          .update({ status: 'cancelled', cancelled_at: new Date().toISOString(), cancel_reason: 'date_changed' })
+          .eq('journey_id', journeyId)
+          .eq('trigger_group', def.group)
+          .in('status', ['pending', 'sent'])
+
+        await this.supabase
+          .from('journey_reminders')
+          .update({ is_dismissed: true, dismissed_at: new Date().toISOString() })
+          .eq('journey_id', journeyId)
+          .eq('is_dismissed', false)
+          .like('dedup_key', `${journeyId}:journey:${def.group.replace('c3_', 'c3_s1_')}%`)
+
+        // Remove from scheduledIds so they get re-scheduled
+        for (const r of (existing ?? [])) {
+          if (r.reminder_id.includes(def.group.split('_').slice(0,2).join('_'))) {
+            scheduledIds.delete(r.reminder_id)
+          }
+        }
+      }
+    }
+
     const toSchedule: Array<{ def: JourneyReminderDef; baseDate: Date }> = []
 
     for (const def of REMINDER_REGISTRY) {
       if (def.origin !== 'journey') continue
-      if (scheduledIds.has(def.id)) continue // already scheduled
+      if (scheduledIds.has(def.id)) continue
 
       let triggerMet = false
       let baseDate = new Date()
@@ -159,7 +207,7 @@ export class UnifiedReminderEngine {
           const apptDate = new Date(String(dateVal) + 'T00:00:00')
           if (!isNaN(apptDate.getTime())) {
             triggerMet = true
-            baseDate = apptDate  // fire_at = appointmentDate + delayDays (negative = before)
+            baseDate = apptDate
           }
         }
       }
