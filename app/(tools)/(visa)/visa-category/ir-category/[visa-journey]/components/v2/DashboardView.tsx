@@ -305,7 +305,7 @@ export function DashboardView({
         className="pointer-events-none absolute inset-0 z-0 bg-cover bg-center bg-no-repeat"
         style={{ backgroundImage: `url(${dashboardBg})` }}
       />
-      <div className="w-full max-w-[780px] mx-auto animate-in fade-in duration-700 relative z-10">
+      <div className="w-full max-w-[1200px] mx-auto animate-in fade-in duration-700 relative z-10">
         <div className="text-[10px] font-bold uppercase tracking-[0.12em] text-slate-400 mb-2">
           IR-1 Spouse Visa · Pakistan
         </div>
@@ -429,21 +429,46 @@ export function DashboardView({
                 })}
             </div>
 
-            <div className="bg-white border-[1.5px] border-[#d0e4f7] rounded-[20px] overflow-hidden">
-              {/* Case Details Accordion */}
+            {/* Accordions */}
+            <div className="bg-white/80 border-[1.5px] border-[#d0e4f7] rounded-3xl overflow-hidden shadow-[0_8px_32px_rgba(44,62,80,0.13),0_1.5px_6px_rgba(47,111,212,0.07)] backdrop-blur-lg">
+              {/* Case Details */}
               <div className="border-t first:border-t-0 border-[#d0e4f7]">
-                <div onClick={() => toggleAccordion("case-details")} className={`flex items-center p-4 cursor-pointer hover:bg-[#eef3fa] transition-colors ${openAccordions["case-details"] ? "bg-[#eef3fa]/50" : ""}`}>
-                  <span className="text-[13px] font-bold text-[#0c1b33]">Case details</span>
-                  <span className="text-[11px] text-[#6b8097] ml-auto mr-2">{caseFields.some((f) => f.value) ? "Recorded" : "Not recorded"}</span>
-                  <div className={`transition-transform duration-200 ${openAccordions["case-details"] ? "rotate-180" : ""}`}><ChevronDown size={14} strokeWidth={2.5} className="text-[#6b8097]" /></div>
+                <div
+                  onClick={() => toggleAccordion("case-details")}
+                  className={`flex items-center p-[14px_18px] cursor-pointer hover:bg-[#eef3fa] transition-colors ${openAccordions["case-details"] ? "bg-[#eef3fa]/50" : ""}`}
+                >
+                  <span className="text-[12.5px] font-bold text-[#0c1b33]">
+                    Case details
+                  </span>
+                  <span className="text-[11px] text-[#6b8097] ml-auto mr-2">
+                    {caseFields.some((f) => f.value) ? "Recorded" : "Not recorded"}
+                  </span>
+                  <div
+                    className={`transition-transform duration-200 ${openAccordions["case-details"] ? "rotate-180" : ""}`}
+                  >
+                    <ChevronDown
+                      size={14}
+                      strokeWidth={2.5}
+                      className="text-[#6b8097]"
+                    />
+                  </div>
                 </div>
                 {openAccordions["case-details"] && (
-                  <div className="px-5 pb-5 pt-1 animate-in fade-in slide-in-from-top-1">
+                  <div className="px-[18px] pb-4 pt-1 animate-in fade-in slide-in-from-top-1">
                     <div className="flex flex-col">
                       {caseFields.map((item, i) => (
-                        <div key={i} className="flex justify-between items-center py-2.5 border-b border-[#d0e4f7]/50 last:border-0">
-                          <span className="text-[12.5px] text-[#6b8097]">{item.label}</span>
-                          <span className={`text-[12.5px] font-medium ${!item.value ? "text-[#6b8097] italic" : "text-[#0c1b33]"}`}>{item.value || "Not recorded"}</span>
+                        <div
+                          key={i}
+                          className="flex justify-between items-center py-2 border-b border-[#d0e4f7]/50 last:border-0"
+                        >
+                          <span className="text-[12.5px] text-[#6b8097]">
+                            {item.label}
+                          </span>
+                          <span
+                            className={`text-[12.5px] font-medium ${!item.value ? "text-[#6b8097] italic" : "text-[#0c1b33]"}`}
+                          >
+                            {item.value || "Not recorded"}
+                          </span>
                         </div>
                       ))}
                     </div>
@@ -451,26 +476,65 @@ export function DashboardView({
                 )}
               </div>
 
-              {/* Milestone History Accordion */}
+              {/* Milestones */}
               <div className="border-t border-[#d0e4f7]">
-                <div onClick={() => toggleAccordion("milestones")} className={`flex items-center p-4 cursor-pointer hover:bg-[#eef3fa] transition-colors ${openAccordions["milestones"] ? "bg-[#eef3fa]/50" : ""}`}>
-                  <span className="text-[13px] font-bold text-[#0c1b33]">Milestone history</span>
-                  <span className="text-[11px] text-[#6b8097] ml-auto mr-2">{milestonesReached} of {milestones.length} reached</span>
-                  <div className={`transition-transform duration-200 ${openAccordions["milestones"] ? "rotate-180" : ""}`}><ChevronDown size={14} strokeWidth={2.5} className="text-[#6b8097]" /></div>
+                <div
+                  onClick={() => toggleAccordion("milestones")}
+                  className={`flex items-center p-[14px_18px] cursor-pointer hover:bg-[#eef3fa] transition-colors ${openAccordions["milestones"] ? "bg-[#eef3fa]/50" : ""}`}
+                >
+                  <span className="text-[12.5px] font-bold text-[#0c1b33]">
+                    Milestone history
+                  </span>
+                  <span className="text-[11px] text-[#6b8097] ml-auto mr-2">
+                    {milestonesReached} of {milestones.length} reached
+                  </span>
+                  <div
+                    className={`transition-transform duration-200 ${openAccordions["milestones"] ? "rotate-180" : ""}`}
+                  >
+                    <ChevronDown
+                      size={14}
+                      strokeWidth={2.5}
+                      className="text-[#6b8097]"
+                    />
+                  </div>
                 </div>
                 {openAccordions["milestones"] && (
-                  <div className="px-5 pb-5 pt-1 animate-in fade-in slide-in-from-top-1">
-                    <div className="flex flex-col gap-1 py-1">
+                  <div className="px-[18px] pb-4 pt-1 animate-in fade-in slide-in-from-top-1">
+                    <div className="flex flex-col gap-1.5 py-1">
                       {milestones.map((m, i) => {
-                        const isDone = m.key && m.sid ? (state.metadata && state.metadata[m.key]) || (state.completedSteps?.has?.(m.sid)) : 
-                                       m.key ? !!(state.metadata && state.metadata[m.key]) : 
-                                       (state.completedSteps?.has?.(m.sid!)) || (state.answers && state.answers[m.sid!]) || (state.metadata && state.metadata[m.sid!]);
+                        // For milestones with both key and sid, consider either as completion
+                        const isDone = m.key && m.sid
+                          ? ((state.metadata && state.metadata[m.key]) || (state.completedSteps && state.completedSteps.has && state.completedSteps.has(m.sid!)))
+                          : m.key
+                            ? !!(state.metadata && state.metadata[m.key])
+                            : (
+                                (state.completedSteps && state.completedSteps.has && state.completedSteps.has(m.sid!)) ||
+                                (state.answers && state.answers[m.sid!]) ||
+                                (state.metadata && state.metadata[m.sid!])
+                              );
                         return (
-                          <div key={i} className="flex items-center gap-3 py-2 border-b border-[#d0e4f7]/50 last:border-0">
-                            <div className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold ${isDone ? "bg-[#15744f] text-white" : "bg-[#d0e4f7] text-[#6b8097]"}`}>
+                          <div
+                            key={i}
+                            className={`flex items-center gap-3 py-2 px-2 rounded-xl border-b border-[#d0e4f7]/40 last:border-0 transition-all backdrop-blur-[2px] ${
+                              isDone
+                                ? "bg-[#e8f5ef]/70 shadow-[0_2px_8px_rgba(21,116,79,0.07)]"
+                                : "bg-white/60"
+                            }`}
+                          >
+                            <div
+                              className={`w-[20px] h-[20px] rounded-full flex items-center justify-center text-[10px] font-bold border-2 transition-all ${
+                                isDone
+                                  ? "bg-[#15744f] text-white border-[#15744f] shadow"
+                                  : "bg-[#f4f7fb] text-[#6b8097] border-[#d0e4f7]"
+                              }`}
+                            >
                               {isDone ? "✓" : "•"}
                             </div>
-                            <span className={`text-[12.5px] font-medium ${isDone ? "text-[#1c2b3a]" : "text-[#6b8097]"}`}>{m.label}</span>
+                            <span
+                              className={`text-[13px] font-semibold ${isDone ? "text-[#15744f]" : "text-[#6b8097]"}`}
+                            >
+                              {m.label}
+                            </span>
                           </div>
                         );
                       })}
@@ -479,6 +543,8 @@ export function DashboardView({
                 )}
               </div>
             </div>
+
+
           </div>
 
           {/* Sidebar Column (Case Tracking) */}
@@ -614,120 +680,7 @@ export function DashboardView({
           </div>
         </div>
 
-        {/* Accordions */}
-        <div className="bg-white/80 border-[1.5px] border-[#d0e4f7] rounded-3xl mb-3 overflow-hidden shadow-[0_8px_32px_rgba(44,62,80,0.13),0_1.5px_6px_rgba(47,111,212,0.07)] backdrop-blur-lg">
-          {/* Case Details */}
-          <div className="border-t first:border-t-0 border-[#d0e4f7]">
-            <div
-              onClick={() => toggleAccordion("case-details")}
-              className={`flex items-center p-[14px_18px] cursor-pointer hover:bg-[#eef3fa] transition-colors ${openAccordions["case-details"] ? "bg-[#eef3fa]/50" : ""}`}
-            >
-              <span className="text-[12.5px] font-bold text-[#0c1b33]">
-                Case details
-              </span>
-              <span className="text-[11px] text-[#6b8097] ml-auto mr-2">
-                {caseFields.some((f) => f.value) ? "Recorded" : "Not recorded"}
-              </span>
-              <div
-                className={`transition-transform duration-200 ${openAccordions["case-details"] ? "rotate-180" : ""}`}
-              >
-                <ChevronDown
-                  size={14}
-                  strokeWidth={2.5}
-                  className="text-[#6b8097]"
-                />
-              </div>
-            </div>
-            {openAccordions["case-details"] && (
-              <div className="px-[18px] pb-4 pt-1 animate-in fade-in slide-in-from-top-1">
-                <div className="flex flex-col">
-                  {caseFields.map((item, i) => (
-                    <div
-                      key={i}
-                      className="flex justify-between items-center py-2 border-b border-[#d0e4f7]/50 last:border-0"
-                    >
-                      <span className="text-[12.5px] text-[#6b8097]">
-                        {item.label}
-                      </span>
-                      <span
-                        className={`text-[12.5px] font-medium ${!item.value ? "text-[#6b8097] italic" : "text-[#0c1b33]"}`}
-                      >
-                        {item.value || "Not recorded"}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-          </div>
 
-          {/* Milestones */}
-          <div className="border-t border-[#d0e4f7]">
-            <div
-              onClick={() => toggleAccordion("milestones")}
-              className={`flex items-center p-[14px_18px] cursor-pointer hover:bg-[#eef3fa] transition-colors ${openAccordions["milestones"] ? "bg-[#eef3fa]/50" : ""}`}
-            >
-              <span className="text-[12.5px] font-bold text-[#0c1b33]">
-                Milestone history
-              </span>
-              <span className="text-[11px] text-[#6b8097] ml-auto mr-2">
-                {milestonesReached} of {milestones.length} reached
-              </span>
-              <div
-                className={`transition-transform duration-200 ${openAccordions["milestones"] ? "rotate-180" : ""}`}
-              >
-                <ChevronDown
-                  size={14}
-                  strokeWidth={2.5}
-                  className="text-[#6b8097]"
-                />
-              </div>
-            </div>
-            {openAccordions["milestones"] && (
-              <div className="px-[18px] pb-4 pt-1 animate-in fade-in slide-in-from-top-1">
-                <div className="flex flex-col gap-1.5 py-1">
-                  {milestones.map((m, i) => {
-                    // For milestones with both key and sid, consider either as completion
-                    const isDone = m.key && m.sid
-                      ? ((state.metadata && state.metadata[m.key]) || (state.completedSteps && state.completedSteps.has && state.completedSteps.has(m.sid!)))
-                      : m.key
-                        ? !!(state.metadata && state.metadata[m.key])
-                        : (
-                            (state.completedSteps && state.completedSteps.has && state.completedSteps.has(m.sid!)) ||
-                            (state.answers && state.answers[m.sid!]) ||
-                            (state.metadata && state.metadata[m.sid!])
-                          );
-                    return (
-                      <div
-                        key={i}
-                        className={`flex items-center gap-3 py-2 px-2 rounded-xl border-b border-[#d0e4f7]/40 last:border-0 transition-all backdrop-blur-[2px] ${
-                          isDone
-                            ? "bg-[#e8f5ef]/70 shadow-[0_2px_8px_rgba(21,116,79,0.07)]"
-                            : "bg-white/60"
-                        }`}
-                      >
-                        <div
-                          className={`w-[20px] h-[20px] rounded-full flex items-center justify-center text-[10px] font-bold border-2 transition-all ${
-                            isDone
-                              ? "bg-[#15744f] text-white border-[#15744f] shadow"
-                              : "bg-[#f4f7fb] text-[#6b8097] border-[#d0e4f7]"
-                          }`}
-                        >
-                          {isDone ? "✓" : "•"}
-                        </div>
-                        <span
-                          className={`text-[13px] font-semibold ${isDone ? "text-[#15744f]" : "text-[#6b8097]"}`}
-                        >
-                          {m.label}
-                        </span>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
       </div>
     </div>
   );
