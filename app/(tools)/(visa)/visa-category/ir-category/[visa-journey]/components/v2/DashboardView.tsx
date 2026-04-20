@@ -322,24 +322,9 @@ export function DashboardView({
     { label: "Medical date", value: state.metadata.medicalDate },
   ];
 
-  const dqDateStr = trackingStatus.dq_date || state.metadata?.dqDate;
-  const isTrackerActive = useMemo(() => {
-    return (
-      (trackingStatus.dq_status === "qualified" ||
-        state.metadata?.dqStatus === "qualified" ||
-        state.metadata?.nvc_review_outcome === "qualified") &&
-      !trackingStatus.interview_date &&
-      !!dqDateStr
-    );
-  }, [trackingStatus, state.metadata, dqDateStr]);
-
-  const showSidebar = alerts.length > 0 || isTrackerActive;
-
   return (
     <div className="flex-1 overflow-y-auto py-9 px-6 pb-20 scrollbar-hide bg-[#f4f7fb]">
-      <div
-        className={`w-full ${showSidebar ? "max-w-[1200px]" : "max-w-[800px]"} mx-auto animate-in fade-in duration-700`}
-      >
+      <div className="w-full max-w-[1200px] mx-auto animate-in fade-in duration-700">
         <div className="text-[10px] font-bold uppercase tracking-[0.12em] text-slate-400 mb-2">
           IR-1 Spouse Visa · Pakistan
         </div>
@@ -569,7 +554,7 @@ export function DashboardView({
           </div>
 
           {/* Sidebar Column (Case Tracking) */}
-          {showSidebar && (
+          {(hasTrackingData || isCaseRegistered) && (
             <div className="w-full lg:w-[360px] shrink-0 order-2 flex flex-col gap-4">
               <div className="flex items-center justify-between px-1">
                 <h2 className="text-[12px] font-black uppercase tracking-[0.1em] text-[#0c1b33]">
@@ -643,8 +628,15 @@ export function DashboardView({
               )}
 
               {/* Intelligent IR1 Visa Live Tracker */}
-              {isTrackerActive &&
+              {((trackingStatus.dq_status === "qualified") ||
+                (state.metadata?.dqStatus === "qualified") ||
+                (state.metadata?.nvc_review_outcome === "qualified")) &&
+                !trackingStatus.interview_date &&
                 (() => {
+                  const dqDateStr =
+                    trackingStatus.dq_date || state.metadata?.dqDate;
+                  if (!dqDateStr) return null;
+
                   const dqDateObj = new Date(dqDateStr);
                   const diffTime = new Date().getTime() - dqDateObj.getTime();
                   const daysSinceDq = Math.max(
