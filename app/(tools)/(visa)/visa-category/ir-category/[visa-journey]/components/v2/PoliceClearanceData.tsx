@@ -1,3 +1,6 @@
+import React from "react";
+import { Building2, ClipboardList } from "lucide-react";
+
 export const POLICE_CLEARANCE_DATA = {
   eyebrow: {
     chapter: "Chapter 3 · Medical & Interview",
@@ -17,14 +20,14 @@ export const POLICE_CLEARANCE_DATA = {
     paths: [
       {
         id: "service",
-        icon: "🏛️",
+        icon: <Building2 size={28} className="text-purple-400" />,
         title: "Rahvana submits the application",
         sub: "Rahvana handles the application submission on your behalf",
         note: "Sindh only · You must still collect the certificate",
       },
       {
         id: "guide",
-        icon: "📋",
+        icon: <ClipboardList size={28} className="text-blue-400" />,
         title: "I'll apply myself",
         sub: "Follow the step-by-step guide to apply for the PCC yourself",
       },

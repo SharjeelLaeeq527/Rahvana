@@ -19,6 +19,7 @@ export type ReminderType =
   | 'tool_session_abandoned'     // tool started 3+ days ago, incomplete
   | 'step_pending_too_long'      // step in-progress for 7+ days
   | 'appointment_not_recorded'   // appointment step complete, no date saved
+  | 'ceac_status_update'         // CEAC status notification (Chapter 3, Step 9)
 
 /** Priority levels — used for UI ordering and salience */
 export type ReminderPriority = 'critical' | 'high' | 'normal' | 'low'

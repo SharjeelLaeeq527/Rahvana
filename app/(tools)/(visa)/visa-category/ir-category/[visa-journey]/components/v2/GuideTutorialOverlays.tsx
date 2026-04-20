@@ -60,7 +60,7 @@ const TutorialShell: React.FC<TutorialOverlayProps & { children: React.ReactNode
   const isLast = index === total - 1;
 
   return (
-    <div className="fixed inset-0 z-500 bg-white flex flex-col overflow-hidden animate-in slide-in-from-bottom-[18px] duration-[0.28s] ease-in-out font-sans">
+    <div className="fixed inset-0 z-500 bg-white flex flex-col overflow-hidden animate-in slide-in-from-bottom-[18px] duration-[0.28s] ease-in-out font-sans guide-bg">
       <div className="flex items-center p-[18px_24px] border-b border-[#d0e4f7] gap-4 shrink-0 bg-white">
         <button onClick={onClose} className="w-9 h-9 rounded-full border-none bg-[#f4f7fb] cursor-pointer flex items-center justify-center hover:bg-[#e8f1fb] transition-colors shrink-0">
           <X size={16} strokeWidth={2} className="text-[#3a4f63]" />
@@ -73,7 +73,7 @@ const TutorialShell: React.FC<TutorialOverlayProps & { children: React.ReactNode
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto flex flex-col items-center p-[48px_24px_40px] bg-white">
+      <div className="flex-1 overflow-y-auto flex flex-col items-center p-[48px_24px_40px]">
         <div className="w-full max-w-[580px] flex flex-col min-h-full">
           {children}
           <div className="mt-auto pt-6 flex gap-2.5">
