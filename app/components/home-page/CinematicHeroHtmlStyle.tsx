@@ -1,4 +1,3 @@
-
 import React, { useEffect, useRef, useState } from "react";
 const heroBg = "/assets/images/heroimage.png";
 const eiffelBg = "/assets/images/heroimage.png";
@@ -96,12 +95,31 @@ export function CinematicHeroHtmlStyle() {
   }
 
   return (
-    <div style={{ marginTop: 0, paddingTop: 0 }}>
+    <div
+      className="relative w-full min-h-screen h-screen flex flex-col justify-center items-center bg-cover bg-center"
+      style={{ backgroundImage: 'url(/assets/images/heroimage.png)' }}
+    >
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Inter:wght@300;400;500&display=swap');
         * { box-sizing: border-box; }
-        .stage { width: 100%; height: 600px; position: relative; overflow: hidden; cursor: default; font-family: 'Inter', sans-serif; background: #0D1B2A; margin-top: 0 !important; padding-top: 0 !important; }
-        .panel { position: absolute; inset: 0; width: 100%; height: 100%; transition: opacity 0.7s cubic-bezier(0.83,0,0.17,1), transform 0.7s cubic-bezier(0.83,0,0.17,1); }
+        .stage {
+          width: 100vw;
+          height: 100vh;
+          position: relative;
+          overflow: hidden;
+          cursor: default;
+          font-family: 'Inter', sans-serif;
+          background: #0D1B2A;
+          margin-top: 0 !important;
+          padding-top: 0 !important;
+        }
+        .panel {
+          position: absolute;
+          inset: 0;
+          width: 100vw;
+          height: 100vh;
+          transition: opacity 0.7s cubic-bezier(0.83,0,0.17,1), transform 0.7s cubic-bezier(0.83,0,0.17,1);
+        }
         #p1 { z-index: 2; background-image: url('${eiffelBg}'); background-size: cover; background-position: center; transition: transform 0.7s cubic-bezier(0.83,0,0.17,1), opacity 0.7s cubic-bezier(0.83,0,0.17,1), clip-path 0.7s cubic-bezier(0.83,0,0.17,1); clip-path: ${panel === 1 ? "polygon(0 0, 100% 0, 100% 0%, 0 0%)" : "polygon(0 0, 100% 0, 100% 100%, 0 100%)"}; opacity: ${panel === 1 ? 0 : 1}; pointer-events: ${panel === 1 ? "none" : "auto"}; }
         #p2 { pointer-events: ${panel === 0 ? "none" : "auto"}; }
         .p1-photo { position: absolute; inset: 0; background-image: url('${heroBg}'); background-size: cover; background-position: center; transition: transform 1.4s cubic-bezier(0.25,0.46,0.45,0.94); }
@@ -127,13 +145,61 @@ export function CinematicHeroHtmlStyle() {
         .scroll-cta:hover .scroll-label { color: #7ECEC4; }
         .chevron-down { width: 16px; height: 16px; animation: bounce 1.8s ease-in-out infinite; }
         @keyframes bounce { 0%,100% { transform: translateY(0); } 50% { transform: translateY(4px); } }
-        #p2 { z-index: 1; background: #F2EDE8; display: grid; grid-template-columns: 1.2fr 1.8fr; }
-        .p2-left { display: flex; flex-direction: column; justify-content: center; padding: 0 7% 0 11%; z-index: 2; }
-        .p2-right { position: relative; overflow: hidden; }
-        .p2-img { position: absolute; inset: 0; background-color: #0D1B2A; background-image: url('${heroBg}'); background-size: cover; background-position: right center; clip-path: path('M 0 0 Q 8% 50% 0 100% L 100% 100% L 100% 0 Z'); transition: transform 0.8s ease; box-shadow: -24px 0 48px -16px rgba(13,27,42,0.10); }
+        #p2 {
+          z-index: 1;
+          background: #F2EDE8;
+          display: grid;
+          grid-template-columns: 1.2fr 1.8fr;
+          position: absolute;
+          inset: 0;
+          width: 100vw;
+          height: 100vh;
+        }
+        .p2-left {
+          display: flex;
+          flex-direction: column;
+          justify-content: center;
+          padding: 0 7% 0 11%;
+          z-index: 2;
+          height: 100vh;
+        }
+        .p2-right {
+          position: relative;
+          overflow: hidden;
+          height: 100vh;
+        }
+        .p2-img {
+          position: absolute;
+          inset: 0;
+          width: 100%;
+          height: 100%;
+          background-color: #0D1B2A;
+          background-image: url('${heroBg}');
+          background-size: cover;
+          background-position: right center;
+          clip-path: path('M 0 0 Q 8% 50% 0 100% L 100% 100% L 100% 0 Z');
+          transition: transform 0.8s ease;
+          box-shadow: -24px 0 48px -16px rgba(13,27,42,0.10);
+        }
         .p2-img:hover { transform: scale(1.03); }
-        .p2-veil { position: absolute; inset: 0; background: linear-gradient(135deg, rgba(13,27,42,0.78) 0%, rgba(13,27,42,0.45) 50%, rgba(13,27,42,0.15) 100%); z-index: 2; pointer-events: none; }
-        .p2-img-fade { position: absolute; inset: 0; background: linear-gradient(90deg, #F2EDE8 0%, rgba(242,237,232,0.92) 10%, rgba(242,237,232,0.7) 22%, rgba(242,237,232,0.3) 38%, transparent 65%); z-index: 3; pointer-events: none; }
+        .p2-veil {
+          position: absolute;
+          inset: 0;
+          width: 100%;
+          height: 100%;
+          background: linear-gradient(135deg, rgba(13,27,42,0.78) 0%, rgba(13,27,42,0.45) 50%, rgba(13,27,42,0.15) 100%);
+          z-index: 2;
+          pointer-events: none;
+        }
+        .p2-img-fade {
+          position: absolute;
+          inset: 0;
+          width: 100%;
+          height: 100%;
+          background: linear-gradient(90deg, #F2EDE8 0%, rgba(242,237,232,0.92) 10%, rgba(242,237,232,0.7) 22%, rgba(242,237,232,0.3) 38%, transparent 65%);
+          z-index: 3;
+          pointer-events: none;
+        }
         .p2-accent { width: 40px; height: 2px; background: #6B5B7B; margin-bottom: 20px; }
         .p2-eyebrow { font-size: 11px; font-weight: 500; letter-spacing: 0.16em; text-transform: uppercase; color: #6B5B7B; margin-bottom: 18px; }
         .p2-h2 { font-family: 'Cormorant Garamond', serif; font-size: clamp(32px, 4.5vw, 56px); font-weight: 300; line-height: 1.1; color: #1A2530; letter-spacing: -0.02em; margin-bottom: 20px; }
@@ -185,7 +251,7 @@ export function CinematicHeroHtmlStyle() {
             </div>
           </div>
         </div>
-        {/* PANEL 2 (REPLACED WITH HTML REFERENCE) */}
+        {/* PANEL 2  */}
         <div className="panel" id="p2" style={{ zIndex: 1 }}>
           <div className="p2-left">
             <div className="p2-accent" />

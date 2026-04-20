@@ -76,15 +76,36 @@ export default function NotificationCenter({
   const [loading, setLoading]       = useState(false);
   const [error, setError]           = useState<string | null>(null);
 
+  const [resolvedJourneyId, setResolvedJourneyId] = useState<string | null>(journeyId === "ir-1" ? null : (journeyId || null));
+
   // ── Fetch from real API ──────────────────────────────────
   const fetchReminders = useCallback(async () => {
-    // Need a real UUID journey ID — "ir-1" is a config key, not a DB id
-    if (!journeyId || journeyId === "ir-1") return;
+    let activeJourneyId = journeyId && journeyId !== "ir-1" ? journeyId : null;
+
+    if (!activeJourneyId) {
+      try {
+        const listRes = await fetch("/api/journeys");
+        if (listRes.ok) {
+          const listData = await listRes.json();
+          if (listData.success && listData.data && listData.data.length > 0) {
+            const active = listData.data.find((j: any) => j.journey.status === "in_progress") || listData.data[0];
+            activeJourneyId = active.journey.id;
+            setResolvedJourneyId(activeJourneyId);
+          }
+        }
+      } catch (err) {
+        console.error("Failed to fetch active journey", err);
+      }
+    } else {
+      setResolvedJourneyId(activeJourneyId);
+    }
+
+    if (!activeJourneyId) return;
 
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch(`/api/v1/journeys/${journeyId}/reminders`);
+      const res = await fetch(`/api/v1/journeys/${activeJourneyId}/reminders`);
       if (!res.ok) throw new Error(`${res.status}`);
       const data = await res.json();
       setReminders(data.reminders ?? []);
@@ -101,9 +122,9 @@ export default function NotificationCenter({
 
   // ── Dismiss ──────────────────────────────────────────────
   const dismiss = async (reminderId: string) => {
-    if (!journeyId || journeyId === "ir-1") return;
+    if (!resolvedJourneyId) return;
     setReminders((prev) => prev.filter((r) => r.id !== reminderId));
-    await fetch(`/api/v1/journeys/${journeyId}/reminders/${reminderId}`, {
+    await fetch(`/api/v1/journeys/${resolvedJourneyId}/reminders/${reminderId}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ action: "dismiss" }),
@@ -112,9 +133,9 @@ export default function NotificationCenter({
 
   // ── Snooze 3 days ────────────────────────────────────────
   const snooze = async (reminderId: string) => {
-    if (!journeyId || journeyId === "ir-1") return;
+    if (!resolvedJourneyId) return;
     setReminders((prev) => prev.filter((r) => r.id !== reminderId));
-    await fetch(`/api/v1/journeys/${journeyId}/reminders/${reminderId}`, {
+    await fetch(`/api/v1/journeys/${resolvedJourneyId}/reminders/${reminderId}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ action: "snooze", snooze_days: 3 }),
@@ -124,7 +145,7 @@ export default function NotificationCenter({
   const unread = reminders.filter((r) => !r.is_dismissed);
 
   // ── No real journey ID yet ───────────────────────────────
-  const noRealId = !journeyId || journeyId === "ir-1";
+  const noRealId = !resolvedJourneyId;
 
   return (
     <div className="flex flex-col h-full bg-white border-l border-[#d0e4f7] shadow-2xl w-[360px] animate-in slide-in-from-right duration-300">

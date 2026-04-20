@@ -5327,9 +5327,8 @@
               "title": "Record your AP details",
               "subtitle": "Save this now so Rahvana can track and remind you",
               "ceac_options": [
-                "In Transit",
-                "Ready",
                 "Administrative Processing",
+                "Ready",
                 "Issued",
                 "Refused",
                 "Pending",

@@ -6,8 +6,7 @@ import { DashboardView } from "./DashboardView";
 import { ChapterView } from "./ChapterView";
 import { StepView } from "./StepView";
 import { WizardState } from "@/app/(main)/dashboard/hooks/useWizard";
-import { ChevronRight, ArrowLeft, Check, LayoutDashboard, Bell, X } from "lucide-react";
-import NotificationCenter from "./NotificationCenter";
+import { ChevronRight, ArrowLeft, Check, LayoutDashboard, X } from "lucide-react";
 
 interface RoadmapLayoutV2Props {
   data: RoadmapData;
@@ -31,7 +30,6 @@ export default function RoadmapLayoutV2({
 }: RoadmapLayoutV2Props) {
   const [view, setView] = useState<ViewType>("dashboard");
   const [selectedChapterIdx, setSelectedChapterIdx] = useState<number>(0);
-  const [isNotificationOpen, setIsNotificationOpen] = useState(false);
 
   // Sync selected chapter from state, but keep view as 'dashboard' by default on load
   useEffect(() => {
@@ -177,19 +175,6 @@ export default function RoadmapLayoutV2({
             </button>
           )}
 
-          <div className="relative">
-            <button
-              onClick={() => setIsNotificationOpen(!isNotificationOpen)}
-              className={`w-9 h-9 rounded-full flex items-center justify-center transition-all active:scale-95 cursor-pointer relative
-                ${isNotificationOpen ? "bg-primary text-white" : "text-[#6b8097] hover:bg-[#f4f7fb] hover:text-primary border border-[#d0e4f7]"}`}
-            >
-              <Bell size={18} strokeWidth={2.5} />
-              {state.metadata?.tracking_status && Object.keys(state.metadata.tracking_status).length > 0 && (
-                <span className="absolute top-0 right-0 w-2.5 h-2.5 bg-red-500 border-2 border-white rounded-full" />
-              )}
-            </button>
-          </div>
-
           <button
             onClick={() => {
               if (
@@ -207,24 +192,6 @@ export default function RoadmapLayoutV2({
           </button>
         </div>
       </nav>
-
-      {/* Notification Drawer Overlay */}
-      {isNotificationOpen && (
-        <>
-          <div 
-            className="fixed inset-0 bg-black/20 backdrop-blur-[2px] z-[60] animate-in fade-in duration-300"
-            onClick={() => setIsNotificationOpen(false)}
-          />
-          <div className="fixed right-0 top-0 bottom-0 z-[70]">
-            <NotificationCenter
-              userId={state.backendId}
-              journeyId={state.backendId}
-              trackingStatus={state.metadata?.tracking_status}
-              onClose={() => setIsNotificationOpen(false)}
-            />
-          </div>
-        </>
-      )}
 
       {/* Main Content Area */}
       <main className="flex-1 flex flex-col relative overflow-hidden">

@@ -406,6 +406,8 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
     "household_member" | "joint_sponsor" | null
   >(null);
   const [useCeacGuideData, setUseCeacGuideData] = useState(false); // Flag for Start CEAC Guide button
+  const [ivLoading, setIvLoading] = useState(false);
+  const [ivError, setIvError] = useState<string | null>(null);
 
   // Household Member Builder States (Step 7)
   const [jsCount, setJsCount] = useState<number>(
@@ -3497,8 +3499,6 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-[14px] mb-[14px]">
                 {/* Official Card - IV Tool Auto-Sync */}
                 {(() => {
-                  const [ivLoading, setIvLoading] = React.useState(false);
-                  const [ivError, setIvError] = React.useState<string | null>(null);
                   const savedMonth = state.metadata?.currentSchedulingMonthYear as string | undefined;
                   const savedUpdated = state.metadata?.schedulingDataLastUpdated as string | undefined;
                   const postName = (state.metadata?.dqPost || state.metadata?.post || "") as string;

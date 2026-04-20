@@ -325,7 +325,7 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
             {actionData.chips.map((chip, idx) => (
               <span
                 key={idx}
-                className={`text-[11px] font-bold uppercase px-3 py-1 rounded-full border ${isChapter1 ? 'accent-rose-bg border-rose-200 text-[#c0596a]' : isChapter2 ? 'accent-purple-bg border-[#e3c6f7] text-[#b48ad6]' : 'bg-[#e8f1fb] border-[#d0e4f7] text-[#2f6fd4]'}`}
+                className={`text-[11px] font-bold uppercase px-3 py-1 rounded-full border ${isChapter1 ? 'accent-rose-bg border-rose-200 text-[#ffff]' : isChapter2 ? 'accent-purple-bg border-[#e3c6f7] text-[#b48ad6]' : 'bg-[#e8f1fb] border-[#d0e4f7] text-[#2f6fd4]'}`}
               >
                 {chip.label}
               </span>
@@ -336,8 +336,11 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
         {/* Hero Section */}
         <section
           style={{
-            background: "linear-gradient(180deg, #122541 0%, #0f2038 100%)",
-            color: "#fff",
+            background:
+              step.step_key === 'step_1_11'
+                ? "linear-gradient(180deg, #28151c 0%, #28151c 100%)"
+                : "linear-gradient(180deg, #122541 0%, #0f2038 100%)",
+            color: step.step_key === 'step_1_11' ? "#fff" : "#fff", // white text on accent brown
             borderRadius: "24px",
             padding: "24px",
             boxShadow: "0 18px 48px rgba(12, 27, 51, 0.12)",
@@ -351,6 +354,7 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
               lineHeight: 1.15,
               marginBottom: "6px",
               fontWeight: 700,
+              color: step.step_key === 'step_1_11' ? "#c0596a" : undefined, // white text on accent brown
             }}
           >
             {actionData.hero_heading}
@@ -362,7 +366,7 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
               style={{
                 fontSize: "14px",
                 lineHeight: 1.65,
-                color: "rgba(255, 255, 255, 0.74)",
+                color: step.step_key === 'step_1_11' ? "#fff" : "rgba(255, 255, 255, 0.74)", // white text on accent brown
               }}
             >
               {actionData.hero_description}
@@ -376,13 +380,14 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
                 display: "inline-flex",
                 padding: "8px 12px",
                 borderRadius: "999px",
-                background: "rgba(255, 255, 255, 0.08)",
+                background: step.step_key === 'step_1_11' ? "#fff" : "rgba(255, 255, 255, 0.08)",
                 fontSize: "11px",
                 fontWeight: 800,
                 letterSpacing: ".08em",
                 textTransform: "uppercase",
                 marginTop: "10px",
                 marginBottom: "12px",
+                color: step.step_key === 'step_1_11' ? "#7c4b26" : "#fff", // accent brown text on white badge
               }}
             >
               {actionData.badge}
@@ -430,7 +435,7 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
                 alignItems: "center",
                 justifyContent: "center",
                 width: "100%",
-                background: COLORS.accent,
+                background: step.step_key === 'step_1_11' ? "#c0596a" : COLORS.accent, // accent rose for print step
                 color: "#fff",
                 border: "none",
                 borderRadius: "14px",
@@ -442,10 +447,10 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
                 transition: "background 0.2s",
               }}
               onMouseEnter={(e) => {
-                (e.target as HTMLElement).style.background = COLORS.accent2;
+                (e.target as HTMLElement).style.background = step.step_key === 'step_1_11' ? "#a94c5a" : COLORS.accent2;
               }}
               onMouseLeave={(e) => {
-                (e.target as HTMLElement).style.background = COLORS.accent;
+                (e.target as HTMLElement).style.background = step.step_key === 'step_1_11' ? "#c0596a" : COLORS.accent;
               }}
             >
               {actionData.cta_button.label}
