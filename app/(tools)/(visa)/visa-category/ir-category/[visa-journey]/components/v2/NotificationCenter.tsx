@@ -1,126 +1,135 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-import { 
-  Bell, 
-  X, 
-  CheckCircle2, 
-  Clock, 
-  AlertTriangle, 
+import React, { useState, useEffect, useCallback } from "react";
+import {
+  Bell,
+  X,
+  CheckCircle2,
+  Clock,
+  AlertTriangle,
   Info,
   Calendar,
   ExternalLink,
-  ChevronRight
+  ChevronRight,
+  RefreshCw,
 } from "lucide-react";
-import { 
-  Notification, 
-  NotificationType, 
-  NOTIFICATION_TEMPLATES 
-} from "@/types/notifications";
+
+// ─────────────────────────────────────────────────────────────
+// Types (matching journey_reminders table shape)
+// ─────────────────────────────────────────────────────────────
+interface JourneyReminder {
+  id: string;
+  journey_id: string;
+  reminder_type: string;
+  priority: "critical" | "high" | "normal" | "low";
+  title: string;
+  body: string;
+  step_key?: string | null;
+  action_url?: string | null;
+  action_label?: string | null;
+  is_dismissed: boolean;
+  snoozed_until?: string | null;
+  created_at: string;
+}
 
 interface NotificationCenterProps {
   userId?: string;
-  journeyId?: string;
+  journeyId?: string;          // real Supabase journey UUID
   trackingStatus?: Record<string, any>;
   onClose?: () => void;
 }
 
-export default function NotificationCenter({ 
-  userId, 
-  journeyId, 
-  trackingStatus 
+// ─────────────────────────────────────────────────────────────
+// Priority colours
+// ─────────────────────────────────────────────────────────────
+const PRIORITY_DOT: Record<string, string> = {
+  critical: "bg-red-500",
+  high:     "bg-orange-400",
+  normal:   "bg-primary",
+  low:      "bg-slate-300",
+};
+
+// ─────────────────────────────────────────────────────────────
+// Icon per reminder type
+// ─────────────────────────────────────────────────────────────
+function ReminderIcon({ type, priority }: { type: string; priority: string }) {
+  const cls = priority === "critical" ? "text-red-500"
+            : priority === "high"     ? "text-orange-400"
+            : "text-primary";
+
+  if (type === "ceac_status_update")      return <Bell       className={cls} size={16} />;
+  if (type === "appointment_approaching") return <Calendar   className={cls} size={16} />;
+  if (type === "missing_document")        return <AlertTriangle className={cls} size={16} />;
+  if (type === "receipt_not_captured")    return <Info       className={cls} size={16} />;
+  if (type === "nvc_fee_not_confirmed")   return <Clock      className={cls} size={16} />;
+  return <Bell className={cls} size={16} />;
+}
+
+// ─────────────────────────────────────────────────────────────
+// Main component
+// ─────────────────────────────────────────────────────────────
+export default function NotificationCenter({
+  journeyId,
+  onClose,
 }: NotificationCenterProps) {
-  const [notifications, setNotifications] = useState<Notification[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [reminders, setReminders]   = useState<JourneyReminder[]>([]);
+  const [loading, setLoading]       = useState(false);
+  const [error, setError]           = useState<string | null>(null);
 
-  // Generate mock notifications based on tracking status for demonstration
+  // ── Fetch from real API ──────────────────────────────────
+  const fetchReminders = useCallback(async () => {
+    // Need a real UUID journey ID — "ir-1" is a config key, not a DB id
+    if (!journeyId || journeyId === "ir-1") return;
+
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await fetch(`/api/v1/journeys/${journeyId}/reminders`);
+      if (!res.ok) throw new Error(`${res.status}`);
+      const data = await res.json();
+      setReminders(data.reminders ?? []);
+    } catch (err) {
+      setError("Could not load notifications.");
+    } finally {
+      setLoading(false);
+    }
+  }, [journeyId]);
+
   useEffect(() => {
-    const mockNotifications: Notification[] = [];
-    const now = new Date().toISOString();
+    fetchReminders();
+  }, [fetchReminders]);
 
-    if (trackingStatus?.nvc_review_complete) {
-      mockNotifications.push({
-        id: "1",
-        user_id: userId || "user",
-        journey_id: journeyId || "journey",
-        type: "nvc_review_complete",
-        priority: "high",
-        title: NOTIFICATION_TEMPLATES.nvc_review_complete.title,
-        body: NOTIFICATION_TEMPLATES.nvc_review_complete.body,
-        status: "unread",
-        created_at: trackingStatus.nvc_review_date || now,
-        action_label: "View Status",
-        action_url: "#"
-      });
-    }
-
-    if (trackingStatus?.dq_status === "qualified") {
-      mockNotifications.push({
-        id: "2",
-        user_id: userId || "user",
-        journey_id: journeyId || "journey",
-        type: "dq_qualified",
-        priority: "critical",
-        title: NOTIFICATION_TEMPLATES.dq_qualified.title,
-        body: NOTIFICATION_TEMPLATES.dq_qualified.body,
-        status: "unread",
-        created_at: trackingStatus.dq_date || now,
-        action_label: "Ready for Interview",
-        action_url: "#"
-      });
-    }
-
-    if (trackingStatus?.interview_date) {
-      mockNotifications.push({
-        id: "3",
-        user_id: userId || "user",
-        journey_id: journeyId || "journey",
-        type: "interview_scheduled",
-        priority: "critical",
-        title: NOTIFICATION_TEMPLATES.interview_scheduled.title,
-        body: NOTIFICATION_TEMPLATES.interview_scheduled.body,
-        status: "unread",
-        created_at: now,
-        action_label: "Prepare Now",
-        action_url: "#"
-      });
-    }
-
-    // Daily Reminder during NVC Review
-    if (!trackingStatus?.nvc_review_complete && !trackingStatus?.dq_status && trackingStatus?.nvc_case_number) {
-      mockNotifications.push({
-        id: "4",
-        user_id: userId || "user",
-        journey_id: journeyId || "journey",
-        type: "nvc_check_reminder",
-        priority: "normal",
-        title: NOTIFICATION_TEMPLATES.nvc_check_reminder.title,
-        body: NOTIFICATION_TEMPLATES.nvc_check_reminder.body,
-        status: "unread",
-        created_at: now,
-        action_label: "Open CEAC Portal",
-        action_url: "https://ceac.state.gov/IV/Login.aspx"
-      });
-    }
-
-    setNotifications(mockNotifications.sort((a, b) => 
-      new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
-    ));
-  }, [trackingStatus, userId, journeyId]);
-
-  const getIcon = (type: NotificationType) => {
-    switch (type) {
-      case "nvc_review_complete": return <CheckCircle2 className="text-green-500" size={18} />;
-      case "dq_qualified": return <CheckCircle2 className="text-teal-500" size={18} />;
-      case "interview_scheduled": return <Calendar className="text-blue-500" size={18} />;
-      case "administrative_processing": return <Clock className="text-orange-500" size={18} />;
-      case "admin_status_update": return <Info className="text-primary" size={18} />;
-      default: return <Bell className="text-slate-400" size={18} />;
-    }
+  // ── Dismiss ──────────────────────────────────────────────
+  const dismiss = async (reminderId: string) => {
+    if (!journeyId || journeyId === "ir-1") return;
+    setReminders((prev) => prev.filter((r) => r.id !== reminderId));
+    await fetch(`/api/v1/journeys/${journeyId}/reminders/${reminderId}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ action: "dismiss" }),
+    }).catch(() => {});
   };
+
+  // ── Snooze 3 days ────────────────────────────────────────
+  const snooze = async (reminderId: string) => {
+    if (!journeyId || journeyId === "ir-1") return;
+    setReminders((prev) => prev.filter((r) => r.id !== reminderId));
+    await fetch(`/api/v1/journeys/${journeyId}/reminders/${reminderId}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ action: "snooze", snooze_days: 3 }),
+    }).catch(() => {});
+  };
+
+  const unread = reminders.filter((r) => !r.is_dismissed);
+
+  // ── No real journey ID yet ───────────────────────────────
+  const noRealId = !journeyId || journeyId === "ir-1";
 
   return (
     <div className="flex flex-col h-full bg-white border-l border-[#d0e4f7] shadow-2xl w-[360px] animate-in slide-in-from-right duration-300">
+
+      {/* Header */}
       <div className="flex items-center justify-between p-5 border-b border-[#d0e4f7]">
         <div className="flex items-center gap-2">
           <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
@@ -128,56 +137,134 @@ export default function NotificationCenter({
           </div>
           <h2 className="text-[15px] font-black text-[#0c1b33]">Notifications</h2>
         </div>
-        <div className="flex items-center gap-1.5">
-          <span className="text-[10px] font-bold bg-primary text-white px-1.5 py-0.5 rounded-full">
-            {notifications.filter(n => n.status === "unread").length}
-          </span>
+        <div className="flex items-center gap-2">
+          {unread.length > 0 && (
+            <span className="text-[10px] font-bold bg-primary text-white px-1.5 py-0.5 rounded-full">
+              {unread.length}
+            </span>
+          )}
+          <button
+            onClick={fetchReminders}
+            disabled={loading}
+            className="w-7 h-7 rounded-full flex items-center justify-center text-[#6b8097] hover:bg-[#f4f7fb] transition-colors"
+          >
+            <RefreshCw size={13} className={loading ? "animate-spin" : ""} />
+          </button>
+          {onClose && (
+            <button
+              onClick={onClose}
+              className="w-7 h-7 rounded-full flex items-center justify-center text-[#6b8097] hover:bg-[#f4f7fb] transition-colors"
+            >
+              <X size={14} />
+            </button>
+          )}
         </div>
       </div>
 
+      {/* Body */}
       <div className="flex-1 overflow-y-auto scrollbar-hide">
-        {notifications.length === 0 ? (
+
+        {/* Journey not synced to DB yet */}
+        {noRealId && (
           <div className="flex flex-col items-center justify-center h-full p-10 text-center">
             <div className="w-16 h-16 rounded-full bg-slate-50 flex items-center justify-center mb-4">
               <Bell size={24} className="text-slate-200" />
             </div>
-            <h3 className="text-[14px] font-bold text-[#0c1b33] mb-1">All caught up!</h3>
+            <h3 className="text-[14px] font-bold text-[#0c1b33] mb-1">Notifications activate after sync</h3>
             <p className="text-[12px] text-[#6b8097] leading-relaxed">
-              When the embassy or admin team updates your case, you'll see notifications here.
+              Complete a step to sync your journey to the server, then notifications will appear here.
             </p>
           </div>
-        ) : (
+        )}
+
+        {/* Loading */}
+        {!noRealId && loading && (
+          <div className="flex items-center justify-center h-32">
+            <RefreshCw size={20} className="text-primary animate-spin" />
+          </div>
+        )}
+
+        {/* Error */}
+        {!noRealId && !loading && error && (
+          <div className="p-5 text-center">
+            <p className="text-[12px] text-red-400">{error}</p>
+            <button onClick={fetchReminders} className="mt-2 text-[11px] text-primary font-bold hover:underline">
+              Try again
+            </button>
+          </div>
+        )}
+
+        {/* Empty */}
+        {!noRealId && !loading && !error && reminders.length === 0 && (
+          <div className="flex flex-col items-center justify-center h-full p-10 text-center">
+            <div className="w-16 h-16 rounded-full bg-slate-50 flex items-center justify-center mb-4">
+              <CheckCircle2 size={24} className="text-green-300" />
+            </div>
+            <h3 className="text-[14px] font-bold text-[#0c1b33] mb-1">All caught up!</h3>
+            <p className="text-[12px] text-[#6b8097] leading-relaxed">
+              No pending notifications. When reminders are due, they'll appear here.
+            </p>
+          </div>
+        )}
+
+        {/* Notification list */}
+        {!noRealId && !loading && reminders.length > 0 && (
           <div className="divide-y divide-[#d0e4f7]/50">
-            {notifications.map((n) => (
-              <div 
-                key={n.id} 
-                className={`p-5 transition-colors hover:bg-slate-50 cursor-pointer relative group ${n.status === "unread" ? "bg-primary/5" : ""}`}
+            {reminders.map((r) => (
+              <div
+                key={r.id}
+                className={`p-5 transition-colors relative group ${
+                  r.priority === "critical" || r.priority === "high"
+                    ? "bg-primary/5"
+                    : "hover:bg-slate-50"
+                }`}
               >
-                {n.status === "unread" && (
-                  <div className="absolute left-0 top-0 bottom-0 w-0.5 bg-primary" />
-                )}
-                
+                {/* Priority dot */}
+                <div className={`absolute left-0 top-0 bottom-0 w-0.5 ${PRIORITY_DOT[r.priority] ?? "bg-primary"}`} />
+
                 <div className="flex gap-3">
                   <div className="mt-0.5 shrink-0">
-                    {getIcon(n.type)}
+                    <ReminderIcon type={r.reminder_type} priority={r.priority} />
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between mb-1">
-                      <span className="text-[13px] font-bold text-[#0c1b33] line-clamp-1">{n.title}</span>
+                      <span className="text-[13px] font-bold text-[#0c1b33] line-clamp-1">
+                        {r.title}
+                      </span>
                       <span className="text-[10px] text-[#6b8097] whitespace-nowrap ml-2">
-                        {new Date(n.created_at).toLocaleDateString()}
+                        {new Date(r.created_at).toLocaleDateString("en-US", {
+                          month: "short", day: "numeric",
+                        })}
                       </span>
                     </div>
+
                     <p className="text-[12px] text-[#3a4f63] leading-relaxed mb-3 line-clamp-3">
-                      {n.body}
+                      {r.body}
                     </p>
-                    
-                    {n.action_label && (
-                      <button className="flex items-center gap-1 text-[11px] font-black text-primary hover:underline uppercase tracking-wider">
-                        {n.action_label}
-                        <ChevronRight size={12} strokeWidth={3} />
+
+                    <div className="flex items-center gap-3">
+                      {r.action_label && r.action_url && (
+                        <a
+                          href={r.action_url}
+                          className="flex items-center gap-1 text-[11px] font-black text-primary hover:underline uppercase tracking-wider"
+                        >
+                          {r.action_label}
+                          <ChevronRight size={12} strokeWidth={3} />
+                        </a>
+                      )}
+                      <button
+                        onClick={() => snooze(r.id)}
+                        className="text-[10px] text-[#6b8097] hover:text-[#3a4f63] font-medium"
+                      >
+                        Snooze 3d
                       </button>
-                    )}
+                      <button
+                        onClick={() => dismiss(r.id)}
+                        className="text-[10px] text-[#6b8097] hover:text-red-400 font-medium"
+                      >
+                        Dismiss
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -186,11 +273,17 @@ export default function NotificationCenter({
         )}
       </div>
 
-      <div className="p-4 border-t border-[#d0e4f7] bg-slate-50">
-        <button className="w-full py-2.5 rounded-lg border border-[#d0e4f7] bg-white text-[12px] font-bold text-[#3a4f63] hover:bg-slate-50 transition-colors flex items-center justify-center gap-2">
-          <span>Mark all as read</span>
-        </button>
-      </div>
+      {/* Footer */}
+      {!noRealId && reminders.length > 0 && (
+        <div className="p-4 border-t border-[#d0e4f7] bg-slate-50">
+          <button
+            onClick={() => reminders.forEach((r) => dismiss(r.id))}
+            className="w-full py-2.5 rounded-lg border border-[#d0e4f7] bg-white text-[12px] font-bold text-[#3a4f63] hover:bg-slate-50 transition-colors"
+          >
+            Dismiss all
+          </button>
+        </div>
+      )}
     </div>
   );
 }

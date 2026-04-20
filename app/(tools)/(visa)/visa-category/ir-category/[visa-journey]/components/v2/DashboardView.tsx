@@ -96,28 +96,9 @@ export function DashboardView({
       });
     }
 
-    if (
-      trackingStatus.dq_status === "qualified" &&
-      !trackingStatus.interview_date
-    ) {
-      list.push({
-        type: "sky",
-        iconColor: "d-sky",
-        title: "In scheduling queue",
-        text: `NVC has completed their review. Your case is now in the interview scheduling queue. (DQ date: ${trackingStatus.dq_date || "N/A"})`,
-        action: {
-          label: "Check IV Wait Times",
-          onAction: () => {
-            if (trackingStatus.interview_embassy) {
-              window.open(
-                `/iv-tool?city=${trackingStatus.interview_embassy}`,
-                "_blank",
-              );
-            }
-          },
-        },
-      });
-    }
+    // "In scheduling queue" alert removed — the Dynamic Scheduling Tracker
+    // (sidebar dark card with DQ date + embassy month + estimate) shows
+    // this same info in full detail. No duplicate text alert needed.
 
     if (
       trackingStatus.nvc_review_complete &&
@@ -154,19 +135,9 @@ export function DashboardView({
       });
     }
 
-    if (
-      meta.dqDate &&
-      !meta.interviewDate &&
-      trackingStatus.dq_status !== "qualified" &&
-      !list.some((a) => a.title === "In scheduling queue")
-    ) {
-      list.push({
-        type: "sky",
-        iconColor: "d-sky",
-        title: "In scheduling queue (Manual)",
-        text: `DQ date: ${meta.dqDate}. Monitor CEAC for your interview appointment.`,
-      });
-    }
+    // "In scheduling queue (Manual)" removed — the Dynamic Scheduling Tracker
+    // card (sidebar) already shows DQ date + embassy month + estimated window
+    // in a much better UI. No need for this duplicate text alert.
 
     if (done && done["c3s3"] && !done["c3s4"]) {
       list.push({
@@ -316,8 +287,15 @@ export function DashboardView({
         <div className="flex flex-col lg:flex-row gap-8 items-start">
           {/* Main Content Column */}
           <div className="flex-1 flex flex-col gap-6 order-1">
-            {/* Interview Queue */}
-            {trackingStatus.interview_queue && !trackingStatus.interview_date && (
+            {/* Interview Queue — only show simple card when there is NO DQ
+                date/status yet. Once DQ data exists, the Dynamic Scheduling
+                Tracker in the sidebar already shows "In Interview Queue"
+                with full detail (DQ date, embassy month, estimate). */}
+            {trackingStatus.interview_queue &&
+              !trackingStatus.interview_date &&
+              !state.metadata?.dqDate &&
+              trackingStatus.dq_status !== "qualified" &&
+              !state.metadata?.dqStatus && (
               <WaitingStateCard
                 icon="clock"
                 title="In Interview Queue"
@@ -515,7 +493,10 @@ export function DashboardView({
             )}
 
             {/* Dynamic Scheduling Tracker - Professional Redesign */}
-            {((trackingStatus.dq_status === "qualified") || (state.metadata?.dqStatus === "qualified") || (state.metadata?.nvc_review_outcome === "qualified")) && !trackingStatus.interview_date && (() => {
+            {/* Show Interview Queue / DQ Tracker when:
+                - Admin marked DQ qualified, OR user recorded DQ date in Step 2.10
+                - AND interview not yet scheduled */}
+            {((trackingStatus.dq_status === "qualified") || (state.metadata?.dqStatus === "qualified") || (state.metadata?.nvc_review_outcome === "qualified") || !!state.metadata?.dqDate) && !trackingStatus.interview_date && (() => {
               const dqDateStr = trackingStatus.dq_date || state.metadata?.dqDate;
               const currentSchedulingMonthYear = state.metadata?.currentSchedulingMonthYear as string | undefined;
               const postLabel = (state.metadata?.post || state.metadata?.dqPost || "Embassy") as string;
