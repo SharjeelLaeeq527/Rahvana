@@ -96,7 +96,7 @@ export function CinematicHeroHtmlStyle() {
 
   return (
     <div
-      className="w-full min-h-screen h-screen flex flex-col justify-center items-center bg-cover bg-center"
+      className="relative w-full min-h-screen h-screen flex flex-col justify-center items-center bg-cover bg-center"
       style={{ backgroundImage: 'url(/assets/images/heroimage.png)' }}
     >
       <style>{`

@@ -697,13 +697,20 @@ export function SiteHeader({
             : isSignedIn && (
                 <div className="relative" ref={notifRef}>
                   <HydrationSafeButton
-                    variant="outline"
+                    variant="ghost"
                     size="icon"
                     aria-label="Notifications"
                     onClick={() => setNotificationsOpen((prev) => !prev)}
-                    className="relative bg-white/10 text-white hover:bg-white/20 hover:text-white border-white rounded-md transition-colors p-0"
+                    className={`relative rounded-md transition-colors shadow-none border-0 ${
+                      isHomeHeroState
+                        ? "text-white"
+                        : isHomeHeroP2State
+                          ? "text-white"
+                          : "text-rahvana-primary"
+                    }`}
+                    style={{padding: 0, minWidth: 40, minHeight: 40, background: 'none', boxShadow: 'none', border: 'none'}}
                   >
-                    <Bell className="h-5 w-5" aria-hidden="true" style={{ color: '#fff' }} />
+                    <Bell className="h-5 w-5" aria-hidden="true" style={isHomeHeroP2State ? { color: '#fff' } : isHomeHeroState ? { color: '#fff' } : { color: 'var(--rahvana-primary, #0d7377)' }} />
                   </HydrationSafeButton>
 
                   <AnimatePresence>
@@ -785,9 +792,16 @@ export function SiteHeader({
                     clearTimeout(menuTimeoutRef.current);
                   setActiveMenu(activeMenu === "profile" ? null : "profile");
                 }}
-                className="flex items-center justify-center w-10 h-10 rounded-full border-2 transition-all shadow-sm font-semibold text-lg bg-white/10 border-white text-white hover:bg-white/20 hover:text-white"
+                className={`flex items-center justify-center transition-all shadow-none font-semibold text-lg rounded-none w-auto h-auto p-0 m-0 ${
+                  isHomeHeroState
+                    ? "text-white"
+                    : isHomeHeroP2State
+                      ? "text-white"
+                      : "text-rahvana-primary"
+                }`}
+                style={{background: 'none', boxShadow: 'none', border: 'none', width: 'auto', height: 'auto', padding: 0, margin: 0, borderRadius: 0}}
               >
-                <span style={{ color: '#fff' }}>{(
+                <span style={isHomeHeroP2State ? { color: '#fff' } : isHomeHeroState ? { color: '#fff' } : { color: 'var(--rahvana-primary, #0d7377)' }}>{(
                   profile?.full_name ||
                   user?.user_metadata?.full_name ||
                   user?.user_metadata?.name ||
