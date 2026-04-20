@@ -124,7 +124,7 @@ const CIVIL_DOCS: DocumentDefinition[] = [
   },
   {
     id: "passport-beneficiary",
-    key: "PASSPORT_COPY",
+    key: "PASSPORT",
     name: "Beneficiary Passport Biographic Page",
     description: "Scan of the biographical page of your current passport",
     category: "CIVIL",

@@ -1978,19 +1978,15 @@
               "Print full pages at standard size without shrinking or cropping.",
               "Use the final completed versions of both forms before moving to payment and packet assembly."
             ],
-            "cta_button": {
-              "label": "Open completed forms to print",
-              "href": "https://www.rahvana.com/visa-forms/i130/wizard"
-            },
-            "guide_button_label": "View print guide",
+            "guide_button_label": "View guide",
             "second_card_title": "Mark this step done",
             "second_card_subtitle": "Save that your hard copies have been printed and are ready for the next paper-filing steps.",
             "action_button_label": "Save printed status",
             "action_button_status_heading": "Printed status saved",
             "action_button_status_message": "Your forms are marked as printed. You can continue to preparing the filing fee.",
             "guide_card": {
-              "title": "Printing guide",
-              "subtitle": "See the recommended print settings and what to check before you move on."
+              "title": "Printing / Download guide",
+              "subtitle": "See the recommended print / download settings and what to check before you move on."
             },
             "chips": [
               {
@@ -2020,35 +2016,75 @@
             "guide_steps": [
               {
                 "label": "Print guide · Step 1",
-                "title": "Open the completed form package",
-                "text": "Start from the completed Rahvana form pages so you print the exact versions you plan to mail.",
-                "url": "rahvana.com/visa-forms",
-                "visual": "<div class=\"mt\">Completed form package</div><div class=\"mb\"><div class=\"mr\"><div class=\"mf\"></div><div class=\"mbtn\">Download PDF</div></div><div class=\"small\">Use the final PDF for I-130 and the final PDF for I-130A.</div></div>",
-                "note": "If you made edits recently, reopen the forms and confirm you are printing the latest completed versions."
+                "title": "Navigate to the Print Hard Copies step",
+                "text": "In USCIS Petition Filing, navigate to the <strong>Print Hard Copies of the Forms</strong> step, and click on either <strong>Print I-130</strong> or <strong>Print I-130A</strong> button.",
+                "url": "uscis-petition",
+                "visual": "<img src=\"/assets/images/ir1-journey/c1_step11/1-click-button.png\" alt=\"Navigate to print forms\" style=\"width:100%; \" />",
+                "note": "If you have not added this document in the Document Vault yet, you will get an error. First upload the document there, then try again."
               },
               {
                 "label": "Print guide · Step 2",
-                "title": "Use normal page size and full-page printing",
-                "text": "Print at standard size and avoid settings that shrink, crop, or reformat the form pages.",
-                "url": "print dialog",
-                "visual": "<div class=\"mt\">Print settings</div><div class=\"mb\"><div class=\"mr\"><div class=\"mf\"></div><div class=\"mf\"></div></div><div class=\"mr\"><div class=\"mf\"></div></div><div class=\"mbtn\">Print</div></div>",
-                "note": "Keep the full page visible. Do not use settings that clip margins or remove pages."
+                "title": "Open the preview modal and click Print",
+                "text": "After clicking the button, the preview modal will open. Look for the <strong>Print icon</strong> in the top toolbar and click it to open your system's print dialog.",
+                "url": "preview-modal",
+                "visual": "<img src=\"/assets/images/ir1-journey/c1_step11/2-click-print-icon.png\" alt=\"Click print icon\" style=\"width:100%;\" />",
+                "note": "The print icon typically appears as a printer symbol in the document toolbar."
               },
               {
                 "label": "Print guide · Step 3",
-                "title": "Print both forms clearly",
-                "text": "Make sure all pages are readable and in the correct order before you move on.",
-                "url": "printed pages",
-                "visual": "<div class=\"mt\">Printed packet check</div><div class=\"mb\"><div class=\"small\">I-130 pages</div></div><div class=\"mb\"><div class=\"small\">I-130A pages</div></div>",
-                "note": "If any page is faint, skewed, or incomplete, reprint that form before proceeding."
+                "title": "Select destination and pages",
+                "text": "In the print dialog, select your printer destination from the available options. Choose which pages you want to print or keep the default to print all pages.",
+                "url": "print-options",
+                "visual": "<img src=\"/assets/images/ir1-journey/c1_step11/3-click-destination.png\" alt=\"Select print destination\" style=\"width:100%; \" />",
+                "note": "Make sure you have a compatible printer connected and selected."
               },
               {
                 "label": "Print guide · Step 4",
-                "title": "Set the printed forms aside for the packet",
-                "text": "Once both forms are printed cleanly, keep them together so you can prepare payment and assemble the filing packet next.",
-                "url": "paper filing path",
-                "visual": "<div class=\"mt\">Ready for next step</div><div class=\"mb\"><div class=\"small\">Printed I-130</div></div><div class=\"mb\"><div class=\"small\">Printed I-130A</div></div><div class=\"mbtn\">Continue to payment</div>",
-                "note": "You are not mailing yet. The next paper-only steps are preparing payment and assembling the packet."
+                "title": "Set paper size and orientation",
+                "text": "Select the correct paper size: <strong>Letter</strong> (8.5\" × 11\") for US filing, or <strong>A4</strong> (210 × 297mm) for Pakistan or other international locations. Ensure orientation matches your document.",
+                "url": "paper-setup",
+                "visual": "<img src=\"/assets/images/ir1-journey/c1_step11/4-select-paper-size.png\" alt=\"Set paper size\" style=\"width:100%; \" />",
+                "note": "USCIS accepts both Letter and A4 sizes. Check your local requirements."
+              },
+              {
+                "label": "Print guide · Step 5",
+                "title": "Enable collate option for proper sequencing",
+                "text": "In the advanced print options, make sure to check the <strong>Collate</strong> checkbox. This ensures all your pages are printed in the correct sequence so your final packet is properly organized.",
+                "url": "print-collate",
+                "visual": "<img src=\"/assets/images/ir1-journey/c1_step11/enable-collate.png\" alt=\"Check collate option\" style=\"width:100%; \" />",
+                "note": "Collating prevents pages from being mixed up if you're printing multiple copies."
+              },
+              {
+                "label": "Print guide · Step 6",
+                "title": "Click Print and wait for completion",
+                "text": "Click the <strong>Print</strong> button and wait for your printer to complete the print job. Don't close the preview or dialog until printing is finished.",
+                "url": "final-print",
+                "visual": "<img src=\"/assets/images/ir1-journey/c1_step11/5-click-print-button.png\" alt=\"Print completion\" style=\"width:100%; \" />",
+                "note": "Check that all pages printed clearly and are not faded or cut off before proceeding."
+              },
+              {
+                "label": "Download guide · Step 1",
+                "title": "Navigate to the Print Hard Copies step",
+                "text": "In USCIS Petition Filing, navigate to the <strong>Print Hard Copies of Forms</strong> step, and click on either <strong>Print I-130</strong> or <strong>Print I-130A</strong> button.",
+                "url": "uscis-petition",
+                "visual": "<img src=\"/assets/images/ir1-journey/c1_step11/1-click-button.png\" alt=\"Navigate to download forms\" style=\"width:100%; \" />",
+                "note": "If you have not added this document in the Document Vault yet, you will get an error. First upload the document there, then try again."
+              },
+              {
+                "label": "Download guide · Step 2",
+                "title": "Open preview modal and click Download",
+                "text": "After clicking the button, the preview modal will open. Look for the <strong>Download icon</strong> in the top toolbar and click it to download the document to your computer.",
+                "url": "preview-modal",
+                "visual": "<img src=\"/assets/images/ir1-journey/c1_step11/6-click-download-icon.png\" alt=\"Click download icon\" style=\"width:100%; \" />",
+                "note": "The download icon typically appears as a downward arrow or download symbol in the document toolbar."
+              },
+              {
+                "label": "Download guide · Step 3",
+                "title": "Choose save location and filename",
+                "text": "When the save dialog appears, select the destination folder on your computer where you want to store the file. Give it a clear name like <strong>I-130_Final.pdf</strong> or <strong>I-130A_Completed.pdf</strong> and click <strong>Save</strong>.",
+                "url": "save-location",
+                "visual": "<img src=\"/assets/images/ir1-journey/c1_step11/7-save.png\" alt=\"Save file location\" style=\"width:100%; \" />",
+                "note": "Choose a memorable location such as a dedicated immigration folder so you can find it later."
               }
             ]
           }
