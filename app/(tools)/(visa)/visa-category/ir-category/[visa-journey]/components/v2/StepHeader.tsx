@@ -4,6 +4,7 @@ import React from "react";
 import { ChevronRight } from "lucide-react";
 
 interface StepHeaderProps {
+  stepNumber?: number;
   chapterNumber: number;
   chapterName: string;
   stepName: string;

@@ -7,7 +7,6 @@ import { ChapterView } from "./ChapterView";
 import { StepView } from "./StepView";
 import { WizardState } from "@/app/(main)/dashboard/hooks/useWizard";
 import { ChevronRight, ArrowLeft, Check, LayoutDashboard, Bell, X } from "lucide-react";
-import { getDisplayStepNumber } from "./journeyHelpers";
 import NotificationCenter from "./NotificationCenter";
 
 interface RoadmapLayoutV2Props {
@@ -78,7 +77,6 @@ export default function RoadmapLayoutV2({
       const chapter = data.chapters?.[state.currentStage];
       const step = chapter?.steps[state.currentStep];
       const sId = step?.step_key;
-      // console.log("[RoadmapLayoutV2] isStepDone:", { stage: state.currentStage, step: state.currentStep, sId, completed: state.completedSteps.has(sId) });
       return state.completedSteps.has(sId);
     })();
 
@@ -86,17 +84,14 @@ export default function RoadmapLayoutV2({
     const chapter = data.chapters?.[state.currentStage];
     const step = chapter?.steps[state.currentStep || 0];
     const sKey = step?.step_key;
-    console.log("[RoadmapLayoutV2] handleToggleComplete attempt:", { 
-      currentStage: state.currentStage, 
-      currentStep: state.currentStep, 
-      chapterKey: chapter?.chapter_key,
-      sKey 
-    });
     if (sKey) actions.toggleComplete(sKey);
   };
 
+  const isChapter3 = selectedChapterIdx === 2;
   return (
-    <div className="flex flex-col min-h-screen bg-[#f4f7fb] font-sans text-[#1c2b3a] animate-in fade-in duration-500">
+    <div
+      className="min-h-screen w-full flex flex-col bg-[#f4f7fb] font-sans text-[#1c2b3a] animate-in fade-in duration-500"
+    >
       {/* Top Navigation */}
       <nav className="sticky top-[55px] h-[52px] bg-white border-b border-[#d0e4f7] flex items-center px-5 gap-3 shrink-0 z-40">
         {/* Dynamic Back / Logo */}
@@ -143,7 +138,13 @@ export default function RoadmapLayoutV2({
             state.currentStep !== -1 && (() => {
               const chapter = data.chapters?.[state.currentStage];
               const step = chapter?.steps[state.currentStep];
-              const displayNum = step ? getDisplayStepNumber(step) : (state.currentStep + 1);
+              const filingMethod = state.metadata?.filingMethod || state.filingType;
+              const activeSteps = chapter?.steps.filter(
+                (s: any) => !s.branch || s.branch === "both" || s.branch === filingMethod
+              ) ?? [];
+              const displayNum = step
+                ? activeSteps.findIndex((s: any) => (s.step_key || s.id) === (step.step_key || (step as any).id)) + 1
+                : state.currentStep + 1;
               return (
                 <>
                   <ChevronRight
@@ -215,9 +216,9 @@ export default function RoadmapLayoutV2({
             onClick={() => setIsNotificationOpen(false)}
           />
           <div className="fixed right-0 top-0 bottom-0 z-[70]">
-            <NotificationCenter 
+            <NotificationCenter
               userId={state.backendId}
-              journeyId="ir-1"
+              journeyId={state.backendId}
               trackingStatus={state.metadata?.tracking_status}
               onClose={() => setIsNotificationOpen(false)}
             />

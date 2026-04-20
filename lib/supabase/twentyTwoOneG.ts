@@ -76,21 +76,20 @@ export async function save221gCase(
 
 export async function getUser221gCase(userId: string) {
   const supabase = createClient();
-  console.log("Fetching 221g case for user:", userId);
   const { data: existingCases, error } = await supabase
     .from("user_221g_cases")
     .select("*")
     .eq("user_id", userId)
     .order("created_at", { ascending: false })
     .limit(1);
-  const data = existingCases?.[0] || null;
 
   if (error) {
-    console.error("Error in getUser221gCase:", error);
-    throw error;
+    // Table may not exist yet or user has no record — return null silently
+    // so FollowUpManager simply shows nothing without breaking the journey
+    return null;
   }
-  console.log("Fetched case data:", data);
-  return data;
+
+  return existingCases?.[0] || null;
 }
 
 export async function update221gStatus(

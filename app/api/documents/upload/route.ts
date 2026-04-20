@@ -3,25 +3,24 @@
 // Uses Supabase Storage (works on BOTH local AND Vercel)
 // Files are encrypted with AES-256-GCM BEFORE upload — owner cannot read stored files
 
-import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/server";
+import { NextRequest, NextResponse } from 'next/server';
+import { createClient } from '@/lib/supabase/server';
 import {
   generateStandardizedFilename,
   isValidFileType,
   isValidFileSize,
   getFileExtension,
-} from "@/lib/document-vault/file-utils";
+} from '@/lib/document-vault/file-utils';
 import {
   generateDocumentId,
   getNextVersionNumber,
-} from "@/lib/document-vault/storage-client";
-import { DocumentDatabaseStorage } from "@/lib/document-vault/storage-database";
-import { calculateExpirationDate } from "@/lib/document-vault/expiration-tracker";
-import { ALL_DOCUMENTS } from "@/lib/document-vault/document-definitions";
-import { generateRequiredDocuments } from "@/lib/document-vault/personalization-engine";
-import { UploadedDocument, DocumentRole } from "@/lib/document-vault/types";
-import { createClient as createClientJs } from "@supabase/supabase-js";
-import { encryptFile } from "@/lib/document-vault/file-encryption";
+} from '@/lib/document-vault/storage-client';
+import { DocumentDatabaseStorage } from '@/lib/document-vault/storage-database';
+import { calculateExpirationDate } from '@/lib/document-vault/expiration-tracker';
+import { ALL_DOCUMENTS } from '@/lib/document-vault/document-definitions';
+import { UploadedDocument, DocumentRole } from '@/lib/document-vault/types';
+import { createClient as createClientJs } from '@supabase/supabase-js';
+import { encryptFile } from '@/lib/document-vault/file-encryption';
 
 // NVC/USCIS file size limit (4MB)
 const NVC_FILE_SIZE_LIMIT = 4 * 1024 * 1024;
@@ -36,7 +35,7 @@ function getStorageSupabase() {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
   if (!supabaseUrl || !serviceRoleKey) {
-    throw new Error("Supabase credentials not configured");
+    throw new Error('Supabase credentials not configured');
   }
   // Service role key bypasses RLS
   return createClientJs(supabaseUrl, serviceRoleKey);
@@ -50,11 +49,11 @@ async function uploadToStorage(
   fileName: string,
   mimeType: string,
   userId: string,
-  documentId: string,
+  documentId: string
 ): Promise<{ success: boolean; storagePath?: string; error?: string }> {
   try {
     const supabase = getStorageSupabase();
-    const bucketName = "document-vault";
+    const bucketName = 'document-vault';
     const storagePath = `${userId}/${documentId}/${fileName}`;
 
     const { error } = await supabase.storage
@@ -72,38 +71,30 @@ async function uploadToStorage(
   } catch (error) {
     return {
       success: false,
-      error: error instanceof Error ? error.message : "Upload failed",
+      error: error instanceof Error ? error.message : 'Upload failed',
     };
   }
 }
 
+
+
 /**
  * Compress PDF file using Python backend
  */
-async function compressPdf(
-  buffer: Buffer,
-  filename: string,
-): Promise<{ success: boolean; buffer?: Buffer; error?: string }> {
+async function compressPdf(buffer: Buffer, filename: string): Promise<{ success: boolean; buffer?: Buffer; error?: string }> {
   try {
     const formData = new FormData();
-    const blob = new Blob([new Uint8Array(buffer)], {
-      type: "application/pdf",
-    });
-    formData.append("file", blob, filename);
+    const blob = new Blob([new Uint8Array(buffer)], { type: 'application/pdf' });
+    formData.append('file', blob, filename);
 
     const response = await fetch(`${COMPRESSION_API_URL}/compress`, {
-      method: "POST",
+      method: 'POST',
       body: formData,
     });
 
     if (!response.ok) {
-      const errorData = await response
-        .json()
-        .catch(() => ({ detail: "Compression failed" }));
-      return {
-        success: false,
-        error: errorData.detail || "Compression failed",
-      };
+      const errorData = await response.json().catch(() => ({ detail: 'Compression failed' }));
+      return { success: false, error: errorData.detail || 'Compression failed' };
     }
 
     const compressedBlob = await response.blob();
@@ -111,11 +102,8 @@ async function compressPdf(
 
     return { success: true, buffer: compressedBuffer };
   } catch (error) {
-    console.error("PDF compression error:", error);
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : "Compression failed",
-    };
+    console.error('PDF compression error:', error);
+    return { success: false, error: error instanceof Error ? error.message : 'Compression failed' };
   }
 }
 
@@ -129,26 +117,24 @@ export async function POST(request: NextRequest) {
     } = await supabase.auth.getUser();
 
     if (authError || !user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     // Parse form data
     const formData = await request.formData();
-    const file = formData.get("file") as File;
-    const documentDefId = formData.get("documentDefId") as string;
-    const role = formData.get("role") as DocumentRole;
-    const personName = formData.get("personName") as string;
-    const caseId = formData.get("caseId") as string | undefined;
-    const expirationDateStr = formData.get("expirationDate") as
-      | string
-      | undefined;
-    const notes = formData.get("notes") as string | undefined;
+    const file = formData.get('file') as File;
+    const documentDefId = formData.get('documentDefId') as string;
+    const role = formData.get('role') as DocumentRole;
+    const personName = formData.get('personName') as string;
+    const caseId = formData.get('caseId') as string | undefined;
+    const expirationDateStr = formData.get('expirationDate') as string | undefined;
+    const notes = formData.get('notes') as string | undefined;
 
     // Validate required fields
     if (!file || !documentDefId || !role || !personName) {
       return NextResponse.json(
-        { error: "Missing required fields" },
-        { status: 400 },
+        { error: 'Missing required fields' },
+        { status: 400 }
       );
     }
 
@@ -157,7 +143,7 @@ export async function POST(request: NextRequest) {
     if (!fileTypeValidation.valid) {
       return NextResponse.json(
         { error: fileTypeValidation.message },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -166,45 +152,22 @@ export async function POST(request: NextRequest) {
     if (!fileSizeValidation.valid) {
       return NextResponse.json(
         { error: fileSizeValidation.message },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
     // Find document definition
-    // We must fetch the user's config to also recognize dynamic documents
-    const dbStorage = new DocumentDatabaseStorage(supabase);
-    const config = await dbStorage.getVaultConfig(user.id);
-
-    let documentDef;
-    if (config) {
-      // Use config to generate complete list (static + dynamic)
-      const allPossibleDocs = generateRequiredDocuments(config, true);
-      documentDef = allPossibleDocs.find((d) => d.id === documentDefId);
-    } else {
-      // Fallback to static list if no config found (rare)
-      documentDef = ALL_DOCUMENTS.find((d) => d.id === documentDefId);
-    }
-
+    const documentDef = ALL_DOCUMENTS.find((d) => d.id === documentDefId);
     if (!documentDef) {
-      documentDef = {
-        id: documentDefId,
-        key: documentDefId.toUpperCase().replace(/[^A-Z]/g, "_"),
-        name: documentDefId.replace(/-/g, " "),
-        description: "Dynamically added document",
-        category: "MISC" as const,
-        roles: ["BENEFICIARY"] as DocumentRole[],
-        stages: ["USCIS", "NVC"] as const,
-        required: false,
-        multipleFilesAllowed: true,
-        validityType: "none" as const,
-      };
+      return NextResponse.json(
+        { error: 'Invalid document definition' },
+        { status: 400 }
+      );
     }
 
     // Get existing documents for this definition
-    const existingDocs = await dbStorage.getDocumentsByDefId(
-      documentDefId,
-      user.id,
-    );
+    const dbStorage = new DocumentDatabaseStorage(supabase);
+    const existingDocs = await dbStorage.getDocumentsByDefId(documentDefId, user.id);
     const version = getNextVersionNumber(existingDocs);
 
     // Generate standardized filename
@@ -232,27 +195,27 @@ export async function POST(request: NextRequest) {
 
     // Check if file needs compression
     // NOTE: We use rawBuffer size for NVC limit check (real file size)
-    const isPdf = file.type === "application/pdf";
+    const isPdf = file.type === 'application/pdf';
     const needsCompression = rawBuffer.length > NVC_FILE_SIZE_LIMIT && isPdf;
 
     // Determine filename for original file
     const originalFilename = needsCompression
-      ? standardizedFilename.replace(/\.pdf$/i, "_master.pdf")
+      ? standardizedFilename.replace(/\.pdf$/i, '_master.pdf')
       : standardizedFilename;
 
     // Upload encrypted buffer to Supabase Storage
     const uploadResult = await uploadToStorage(
-      buffer, // <-- encrypted bytes go to storage
+      buffer,           // <-- encrypted bytes go to storage
       originalFilename,
-      "application/octet-stream", // always store as binary blob
+      'application/octet-stream', // always store as binary blob
       user.id,
-      documentId,
+      documentId
     );
 
     if (!uploadResult.success) {
       return NextResponse.json(
-        { error: uploadResult.error || "Failed to upload file" },
-        { status: 500 },
+        { error: uploadResult.error || 'Failed to upload file' },
+        { status: 500 }
       );
     }
 
@@ -264,9 +227,7 @@ export async function POST(request: NextRequest) {
     let compressedStoragePath: string | undefined;
 
     if (needsCompression) {
-      console.log(
-        `File ${file.name} is ${(rawBuffer.length / 1024 / 1024).toFixed(2)}MB - auto-compressing...`,
-      );
+      console.log(`File ${file.name} is ${(rawBuffer.length / 1024 / 1024).toFixed(2)}MB - auto-compressing...`);
 
       const compressionResult = await compressPdf(rawBuffer, file.name);
 
@@ -277,18 +238,15 @@ export async function POST(request: NextRequest) {
           compressedFilename = standardizedFilename;
 
           // Encrypt the compressed buffer before uploading
-          const encryptedCompressedBuffer = encryptFile(
-            compressionResult.buffer,
-            user.id,
-          );
+          const encryptedCompressedBuffer = encryptFile(compressionResult.buffer, user.id);
 
           // Upload encrypted-compressed file to Supabase Storage
           const compressedUploadResult = await uploadToStorage(
             encryptedCompressedBuffer,
             compressedFilename,
-            "application/octet-stream", // store as binary blob
+            'application/octet-stream', // store as binary blob
             user.id,
-            documentId,
+            documentId
           );
 
           if (compressedUploadResult.success) {
@@ -296,9 +254,7 @@ export async function POST(request: NextRequest) {
             compressedFileSize = rawCompressedSize; // store real size for UI display
             compressedStoragePath = compressedUploadResult.storagePath;
 
-            console.log(
-              `Compression + Encryption successful: ${(rawBuffer.length / 1024 / 1024).toFixed(2)}MB -> ${(rawCompressedSize / 1024 / 1024).toFixed(2)}MB (then encrypted)`,
-            );
+            console.log(`Compression + Encryption successful: ${(rawBuffer.length / 1024 / 1024).toFixed(2)}MB -> ${(rawCompressedSize / 1024 / 1024).toFixed(2)}MB (then encrypted)`);
           }
         }
       }
@@ -319,19 +275,19 @@ export async function POST(request: NextRequest) {
       documentDefId,
       originalFilename: file.name,
       standardizedFilename: originalFilename,
-      fileSize: file.size, // real size shown to user
-      mimeType: file.type, // original MIME type preserved
+      fileSize: file.size,           // real size shown to user
+      mimeType: file.type,           // original MIME type preserved
       storagePath: uploadResult.storagePath!,
       hasCompressedVersion,
       compressedFilename,
-      compressedFileSize, // real compressed size shown to user
+      compressedFileSize,            // real compressed size shown to user
       compressedStoragePath,
       uploadedAt: uploadDate,
       uploadedBy: role,
       version,
       expirationDate,
       isExpired: false,
-      status: "UPLOADED",
+      status: 'UPLOADED',
       notes,
     };
 
@@ -341,13 +297,13 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       success: true,
       document: savedDocument,
-      message: "Document uploaded successfully",
+      message: 'Document uploaded successfully',
     });
   } catch (error) {
-    console.error("Upload error:", error);
+    console.error('Upload error:', error);
     return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 },
+      { error: 'Internal server error' },
+      { status: 500 }
     );
   }
 }

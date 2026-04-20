@@ -31,35 +31,18 @@ export function FollowUpManager() {
 
       try {
         const data = await getUser221gCase(user.id);
-        console.log("FollowUpManager check:", data);
         if (data) {
           setCaseData(data);
-
-          // Check if follow-up is due
           if (data.next_follow_up_at) {
             const now = new Date();
             const nextFollowUp = new Date(data.next_follow_up_at);
-            console.log(
-              "Timing check - Now:",
-              now.toISOString(),
-              "Next:",
-              nextFollowUp.toISOString(),
-            );
-
             if (now >= nextFollowUp) {
-              console.log("Follow-up is due! Showing dialog.");
               setShowDialog(true);
-            } else {
-              console.log("Follow-up not yet due.");
             }
-          } else {
-            console.log("Follow-ups are permanently disabled for this case.");
           }
-        } else {
-          console.log("No 221g case found for this user.");
         }
-      } catch (err) {
-        console.error("Error checking follow-up", err);
+      } catch {
+        // 221g is an optional feature — never break the main journey
       } finally {
         setLoading(false);
       }

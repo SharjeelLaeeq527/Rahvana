@@ -57,6 +57,7 @@ import {
   MoreVertical,
   Activity,
   Clock,
+  RefreshCw,
 } from "lucide-react";
 
 import {
@@ -82,7 +83,7 @@ import {
 import { WizardState } from "@/app/(main)/dashboard/hooks/useWizard";
 import { QuestRenderer } from "./QuestRenderer";
 import { ActionStepRenderer } from "./ActionStepRenderer";
-import { getAllActiveSteps, getStageProgress } from "./journeyHelpers";
+import { getAllActiveSteps, getStageProgress, getDisplayStepNumber } from "./journeyHelpers";
 import CredentialFormModal from "@/app/(main)/portal-wallet/components/CredentialFormModal";
 import ViewCredentialModal from "@/app/(main)/portal-wallet/components/ViewCredentialModal";
 import { toast } from "sonner";
@@ -210,6 +211,15 @@ interface FilingQuizResult {
 }
 
 export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
+  // Top-level step/chapter detection logic for use throughout the file
+  const chapters = data.chapters || (data as any).stages;
+  const currentChapter = chapters?.[state.currentStage];
+  const currentStep = currentChapter?.steps?.[state.currentStep || 0];
+  const sId = currentStep?.step_key || (currentStep as any)?.id || "";
+  const isChapter1 = sId.startsWith("step_1_");
+  const isChapter2 = sId.startsWith("step_2_");
+  const isChapter3 = sId.startsWith("step_3_");
+    // --- Robust Chapter 1 detection for all substeps ---
   // Status Guide Tutorial Overlay state
   const [showStatusGuide, setShowStatusGuide] = useState(false);
   const [statusGuideStep, setStatusGuideStep] = useState(0);
@@ -480,7 +490,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
   // Step 3.3 Police Clearance Certificate States
   const [pccSaved, setPccSaved] = useState(state.metadata.pcc_saved === "true");
 
-  // Appointment Received States
+  // States
   const [interviewSaved, setInterviewSaved] = useState(
     state.metadata.interviewSaved === true,
   );
@@ -524,6 +534,9 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
   );
   const [isApSaved, setIsApSaved] = useState(state.metadata.apSaved === "true");
   const [isApUpdateModalOpen, setIsApUpdateModalOpen] = useState(false);
+  // CEAC tracking — refused sub-type prompt
+  const [refusedPromptOpen, setRefusedPromptOpen] = useState(false);
+  const [ceacApiLoading, setCeacApiLoading] = useState(false);
 
   // Step 1.17 Approval Notice States
   const [isApprovalModalOpen, setIsApprovalModalOpen] = useState(false);
@@ -546,6 +559,60 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
     const nextLog = [entry, ...apUpdateLog];
     setApUpdateLog(nextLog);
     actions.updateMetadata({ apUpdateLog: nextLog });
+  };
+
+  // Maps the JSON ceac_options strings → our CeacStatus type
+  const CEAC_STATUS_MAP: Record<string, string> = {
+    "Administrative Processing": "ap",
+    "Ready":    "ready",
+    "Issued":   "issued",
+    "Refused":  "refused",
+    "In Transit": "in_transit",
+  };
+
+  /** Call POST /api/ceac/status when user saves AP details in step_3_9 */
+  const triggerCeacStatusUpdate = async (
+    ceacStatusLabel: string,
+    refusedSubType?: "refusal_221g" | "refusal_final"
+  ) => {
+    const journeyId = state.backendId;
+    if (!journeyId) return; // no backend journey yet — skip silently
+
+    const newStatus = CEAC_STATUS_MAP[ceacStatusLabel];
+    if (!newStatus) return; // "Pending" / "Not Available" — not tracked
+
+    setCeacApiLoading(true);
+    try {
+      await fetch("/api/ceac/status", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ journeyId, newStatus, refusedSubType }),
+      });
+    } catch {
+      // Fail silently — reminders are a background feature, don't break the UI
+    } finally {
+      setCeacApiLoading(false);
+    }
+  };
+
+  /** Call PATCH /api/ceac/status to clarify refused sub-type */
+  const clarifyRefusedSubType = async (
+    refusedSubType: "refusal_221g" | "refusal_final"
+  ) => {
+    const journeyId = state.backendId;
+    if (!journeyId) return;
+    try {
+      await fetch("/api/ceac/status", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          journeyId,
+          action: "clarify_refused",
+          refusedSubType,
+        }),
+      });
+    } catch { /* silent */ }
+    setRefusedPromptOpen(false);
   };
 
   // --- STEP 3.4 (DOCUMENT GATHERING) STATE ---
@@ -682,9 +749,6 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
     }
   }, [state.metadata.gathering_status]);
 
-  const chapters = data.chapters || (data as any).stages;
-  const currentChapter = chapters?.[state.currentStage];
-
   // Retrieve Medical tool data for Step 3.5 overlay
   const medicalToolData = useMemo(() => {
     if (!chapters) return null;
@@ -718,12 +782,10 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
     );
   }, [currentChapter, filingMethod]);
 
-  const currentStep = currentChapter?.steps?.[state.currentStep || 0];
-  const sId = currentStep?.step_key || (currentStep as any)?.id || "";
+  // (removed duplicate declarations, see above)
   const isCompleted = state.completedSteps.has(sId);
 
-  // --- PIXEL-PERFECT UI FOR STEP 11 ---
-  // Move guide steps state to top-level so it persists across renders
+  
   const [receiptGuideSteps, setReceiptGuideSteps] = React.useState<any[]>([]);
   React.useEffect(() => {
     import("@/data/receipt-guide-steps.json").then((mod) => {
@@ -736,33 +798,25 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
     });
   }, []);
 
+  // --- STEP 1.15 STATES LIFTED OUT OF CONDITION ---
+  const [rcptUiState, setRcptUiState] = React.useState<"waiting" | "register" | "tracked">("waiting");
+  const [rcptManual, setRcptManual] = React.useState({
+    receipt: "", noticeDate: "", priorityDate: "", caseLabel: "",
+  });
+  const [rcptUpload, setRcptUpload] = React.useState({
+    file: null, receipt: "", noticeDate: "", priorityDate: "",
+  });
+  const [rcptError, setRcptError] = React.useState("");
+  const [rcptSuccess, setRcptSuccess] = React.useState(false);
+  const [isRcptGuideOpen, setIsRcptGuideOpen] = React.useState(false);
+  const [rcptGuideStep, setRcptGuideStep] = React.useState(0);
+
   // --- CUSTOM RENDER FOR STEP 11 & 12 ---
+  let customRenderer: React.ReactElement | null = null;
   // step_1_15: Register Receipt Notice & Track Case
   // step_1_16: Monitor USCIS Case Status
   if (sId === "step_1_15" && currentStep.tool_data) {
-    // UI state: "waiting", "register", "tracked"
-    const [uiState, setUiState] = React.useState<
-      "waiting" | "register" | "tracked"
-    >("waiting");
     const tool = currentStep.tool_data;
-    // Dummy state for form fields (not persisted)
-    const [manual, setManual] = React.useState({
-      receipt: "",
-      noticeDate: "",
-      priorityDate: "",
-      caseLabel: "",
-    });
-    const [upload, setUpload] = React.useState({
-      file: null,
-      receipt: "",
-      noticeDate: "",
-      priorityDate: "",
-    });
-    const [error, setError] = React.useState("");
-    const [success, setSuccess] = React.useState(false);
-    // Overlay tutorial state for guide
-    const [isGuideOpen, setIsGuideOpen] = React.useState(false);
-    const [guideStep, setGuideStep] = React.useState(0);
     // --- ICONS ---
     const CheckIcon = () => (
       <svg
@@ -788,81 +842,123 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
 
 
     // --- PIXEL-PERFECT LAYOUT ---
-    return (
-      <div className="max-w-[720px] mx-auto px-6 py-12 flex flex-col">
+    customRenderer = (
+      <div className={`min-h-screen w-full${isChapter3 ? " ch3step-bg" : isChapter1 ? " ch1step-bg" : isChapter2 ? " ch2step-bg" : ""}`}>
+        <div className={`bg-cover bg-center w-screen min-h-screen relative ${isChapter3 ? "chapter3-bg" : ""}`}>
+          <div className={`max-w-[720px] mx-auto px-6 py-12 flex flex-col step-modal-spacing${isChapter3 ? " ch3step-bg" : ""}`}>
         {/* Eyebrow */}
         <div className="flex items-center gap-2 mb-1">
-          <span className="text-[11px] font-semibold uppercase tracking-wider text-[#6b8097]">
+          <span className="text-[11px] font-semibold uppercase tracking-wider accent-brown">
             Chapter 1 · USCIS Petition Filing
           </span>
           <span className="text-[11px] text-[#b8d4f0]">›</span>
-          <span className="text-[11px] font-semibold uppercase tracking-wider text-[#2f6fd4]">
+          <span className="text-[11px] font-semibold uppercase tracking-wider accent-brown">
             {tool.title}
           </span>
         </div>
         {/* Title & Desc */}
-        <h1 className="text-[clamp(28px,4.5vw,38px)] text-[#0c1b33] leading-[1.15] tracking-tight mb-2">
+        <h1 className="text-[clamp(28px,4.5vw,38px)] leading-[1.15] tracking-tight mb-2 accent-brown">
           {tool.title}
         </h1>
-        <p className="text-[15px] text-[#3a4f63] leading-[1.7] max-w-[560px] mb-6">
+        <p className="text-[15px] leading-[1.7] max-w-[560px] mb-6 accent-brown">
           {tool.subtitle}
         </p>
         {/* Chips */}
         <div className="flex gap-2 flex-wrap mb-9">
-          <span className="chip chip-role bg-[#e8f1fb] text-[#2d4a6e] border border-[#d0e4f7] text-[11px] font-semibold uppercase px-3 py-1 rounded-full">
+          <span className="chip chip-role bg-white text-[#28151c] border border-[#28151c] text-[11px] font-semibold uppercase px-3 py-1 rounded-full">
             Petitioner
           </span>
-          <span className="chip chip-path bg-[#fff7ed] text-[#b45309] border border-[#fed7aa] text-[11px] font-semibold uppercase px-3 py-1 rounded-full">
+          <span className="chip chip-path bg-white text-[#28151c] border border-[#28151c] text-[11px] font-semibold uppercase px-3 py-1 rounded-full">
             Online Filing
           </span>
-          <span className="chip chip-track bg-[#e8f5ef] text-[#15744f] border border-[#a8d9be] text-[11px] font-semibold uppercase px-3 py-1 rounded-full">
+          <span className="chip chip-track bg-white text-[#28151c] border border-[#28151c] text-[11px] font-semibold uppercase px-3 py-1 rounded-full">
             Tracking
           </span>
         </div>
         {/* Launch Module */}
-        <div className="rounded-2xl border border-white/10 bg-[#101e35] shadow-[0_20px_60px_rgba(12,27,51,0.18)] mb-5 relative overflow-hidden">
-          <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-[#2f6fd4] via-[#15744f] to-transparent opacity-80" />
+        <div
+          className="rounded-2xl mb-5 relative overflow-hidden"
+          style={{ background: "#28151c" }}
+        >
+          <div
+            className="absolute top-0 left-0 right-0 h-[2px]"
+            style={{
+              background: "linear-gradient(to right, #c0596a, #28151c, transparent)",
+              opacity: 0.8,
+            }}
+          />
           <div className="p-8 md:p-[32px_34px_28px]">
             <div className="flex items-start gap-4 mb-6">
-              <div className="w-[46px] h-[46px] rounded-[11px] bg-white/6 border border-white/10 flex items-center justify-center shrink-0">
-                <Globe className="w-6 h-6 text-white/80" />
+              <div
+                className="w-[46px] h-[46px] rounded-[11px] flex items-center justify-center shrink-0"
+                style={{ background: "#c0596a" }}
+              >
+                <Globe className="w-6 h-6 text-white" />
               </div>
               <div>
-                <div className="text-[10px] font-bold uppercase tracking-widest text-white/35 mb-1">
+                <div
+                  className="text-[10px] font-bold uppercase tracking-widest mb-1"
+                  style={{ color: "#c0596a" }}
+                >
                   Post-Filing Checkpoint · Receipt Registration
                 </div>
-                <div className="text-[clamp(19px,2.8vw,23px)] text-white/92 leading-tight">
-                  Wait for the notice, register it, then let Rahvana monitor the
-                  case
+                <div
+                  className="text-[clamp(19px,2.8vw,23px)] leading-tight"
+                  style={{ color: "#fff" }}
+                >
+                  Wait for the notice, register it, then let Rahvana monitor the case
                 </div>
               </div>
             </div>
-            <div className="h-px bg-white/10 mb-5" />
+            <div className="h-px mb-5" style={{ background: "#c0596a33" }} />
             {/* Phases */}
             {tool.phases &&
               tool.phases.map((p: any, i: number) => (
                 <div
                   key={i}
-                  className="flex gap-2 items-start bg-white/5 border border-white/10 rounded-[10px] px-4 py-3 mb-2"
+                  className="flex gap-2 items-start rounded-[10px] px-4 py-3 mb-2"
+                  style={{ background: "#c0596a" }}
                 >
-                  <span className="text-[10px] font-bold uppercase tracking-widest text-white/80 px-3 py-1 rounded-full bg-white/10 border border-white/10 whitespace-nowrap">
+                  <span
+                    className="text-[10px] font-bold uppercase tracking-widest px-3 py-1 rounded-full whitespace-nowrap"
+                    style={{
+                      background: "#fff",
+                      color: "#28151c",
+                      border: "1px solid #c0596a",
+                    }}
+                  >
                     {p.badge}
                   </span>
-                  <span className="text-[13px] text-white/60 leading-snug">
+                  <span
+                    className="text-[13px] leading-snug"
+                    style={{ color: "#fff" }}
+                  >
                     {p.copy}
                   </span>
                 </div>
               ))}
             {/* Launch Cues */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mt-2 mb-2">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6 mb-2">
               {tool.launch_cues &&
                 tool.launch_cues.map((cue: string, i: number) => (
                   <div
                     key={i}
-                    className="flex gap-2 items-start bg-white/5 border border-white/10 rounded-[10px] px-4 py-3"
+                    className="flex gap-3 items-center rounded-xl px-7 py-5"
+                    style={{
+                      background: "#3a2328",
+                      border: "1.5px solid #c0596a",
+                      color: "#fff",
+                      minHeight: "64px",
+                    }}
                   >
-                    <span className="w-[5px] h-[5px] rounded-full bg-[#64dca0] mt-1.5 shrink-0" />
-                    <span className="text-[13px] text-white/60 leading-snug">
+                    <span
+                      className="w-[7px] h-[7px] rounded-full mt-1 shrink-0"
+                      style={{ background: "#c0596a" }}
+                    />
+                    <span
+                      className="text-[16px] font-normal leading-snug"
+                      style={{ color: "#fff" }}
+                    >
                       {cue}
                     </span>
                   </div>
@@ -871,24 +967,24 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
           </div>
         </div>
         {/* State Shells */}
-        {uiState === "waiting" && (
+        {rcptUiState === "waiting" && (
           <>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
               <button
-                className="card bg-white border-[1.5px] border-[#a8d9be] rounded-2xl p-5 flex flex-col items-start hover:border-[#2f6fd4] transition"
-                onClick={() => setUiState("register")}
+                className="card rounded-2xl p-5 flex flex-col items-start transition bg-white border-[1.5px] border-[#c0596a]/40 hover:border-[#a13e4e]"
+                onClick={() => setRcptUiState("register")}
               >
-                <div className="card-icon icon-green w-10 h-10 rounded-xl bg-[#e8f5ef] border border-[#a8d9be] flex items-center justify-center mb-3">
+                <div className="card-icon icon-green w-10 h-10 rounded-xl flex items-center justify-center mb-3 bg-[#fbeaec] border-[#c0596a]/30">
                   <CheckIcon />
                 </div>
-                <div className="font-semibold text-[#0c1b33] mb-1">
+                <div className="font-semibold mb-1 accent-brown">
                   I Received My Receipt Notice
                 </div>
-                <div className="text-[13px] text-[#6b8097] text-left mb-2">
+                <div className="text-[13px] text-left mb-2 accent-brown">
                   Move into the registration step and save the receipt details
                   inside Rahvana.
                 </div>
-                <div className="flex items-center gap-1 text-[#2f6fd4] font-semibold text-[12px] mt-2">
+                <div className="flex items-center gap-1 font-semibold text-[12px] mt-2 accent-brown">
                   Register notice{" "}
                   <svg
                     viewBox="0 0 24 24"
@@ -902,20 +998,20 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                 </div>
               </button>
               <button
-                className="card bg-white border-[1.5px] border-[#c9bef2] rounded-2xl p-5 flex flex-col items-start hover:border-[#2f6fd4] transition"
-                onClick={() => setIsGuideOpen(true)}
+                className="card rounded-2xl p-5 flex flex-col items-start transition bg-white border-[1.5px] border-[#c0596a]/40 hover:border-[#a13e4e]"
+                onClick={() => setIsRcptGuideOpen(true)}
               >
-                <div className="card-icon icon-purple w-10 h-10 rounded-xl bg-[#f3f0fb] border border-[#c9bef2] flex items-center justify-center mb-3">
+                <div className="card-icon icon-purple w-10 h-10 rounded-xl flex items-center justify-center mb-3 bg-[#fbeaec] border-[#c0596a]/30">
                   <BookIcon />
                 </div>
-                <div className="font-semibold text-[#0c1b33] mb-1">
+                <div className="font-semibold mb-1 accent-brown">
                   Where Do I Find the Receipt Number?
                 </div>
-                <div className="text-[13px] text-[#6b8097] text-left mb-2">
+                <div className="text-[13px] text-left mb-2 accent-brown">
                   Open a short walkthrough that shows where to look and what
                   information to bring back.
                 </div>
-                <div className="flex items-center gap-1 text-[#2f6fd4] font-semibold text-[12px] mt-2">
+                <div className="flex items-center gap-1 font-semibold text-[12px] mt-2 accent-brown">
                   Open guide{" "}
                   <svg
                     viewBox="0 0 24 24"
@@ -929,30 +1025,30 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                 </div>
               </button>
             </div>
-            <p className="text-[12px] text-[#6b8097] text-center mt-2">
+            <p className="text-[12px] text-center mt-2 accent-brown">
               Best next move: wait until USCIS accepts the filing, then return
               here with the receipt number or receipt notice.
             </p>
             {/* Guide Dialog */}
             {/* Receipt Notice Guide Overlay */}
-            {isGuideOpen && (
+            {isRcptGuideOpen && (
               <GuideTutorialOverlay
-                isOpen={isGuideOpen}
-                onClose={() => setIsGuideOpen(false)}
+                isOpen={isRcptGuideOpen}
+                onClose={() => setIsRcptGuideOpen(false)}
                 tutorial={receiptGuideSteps}
-                index={guideStep}
-                setIndex={setGuideStep}
+                index={rcptGuideStep}
+                setIndex={setRcptGuideStep}
                 title="Receipt Notice Guide"
               />
             )}
           </>
         )}
-        {uiState === "register" && (
-          <div className="panel bg-white border-[1.5px] border-[#d0e4f7] rounded-2xl p-8 md:p-10 mb-6 shadow-lg">
-            <div className="text-[22px] text-[#0c1b33] mb-2">
+        {rcptUiState === "register" && (
+          <div className={`panel rounded-2xl p-8 md:p-10 mb-6 shadow-lg ${isChapter1 ? 'bg-[#fffff] border-[#c0596a]/40' : 'bg-white border-[1.5px] border-[#d0e4f7]'}`}>
+            <div className={`text-[22px] mb-2 ${isChapter1 ? 'accent-brown' : 'text-[#0c1b33]'}`}>
               Register the receipt notice
             </div>
-            <div className="text-[14px] text-[#3a4f63] mb-6">
+            <div className={`text-[14px] mb-6 ${isChapter1 ? 'accent-brown' : 'text-[#3a4f63]'}`}>
               Choose the easiest intake path.{" "}
               <span className="font-semibold text-[#2f6fd4]">Manual entry</span>{" "}
               is the fastest.{" "}
@@ -962,22 +1058,22 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
             </div>
             <div className="flex gap-2 mb-6">
               <button
-                className={`switch-btn px-5 py-2 rounded-full border text-[13px] font-semibold mr-2 ${manual ? "bg-[#2f6fd4] text-white border-[#2f6fd4]" : "bg-white text-[#3a4f63] border-[#d0e4f7]"}`}
+                className={`switch-btn px-5 py-2 rounded-full border text-[13px] font-semibold mr-2 ${isChapter1 ? (rcptManual ? 'bg-[#c0596a] text-white border-[#c0596a]' : 'bg-white text-[#c0596a] border-[#c0596a]/40') : (rcptManual ? "bg-[#2f6fd4] text-white border-[#2f6fd4]" : "bg-white text-[#3a4f63] border-[#d0e4f7]")}`}
               >
                 Enter Receipt Number
               </button>
               <button
-                className={`switch-btn px-5 py-2 rounded-full border text-[13px] font-semibold ${!manual ? "bg-[#2f6fd4] text-white border-[#2f6fd4]" : "bg-white text-[#3a4f63] border-[#d0e4f7]"}`}
+                className={`switch-btn px-5 py-2 rounded-full border text-[13px] font-semibold ${isChapter1 ? (!rcptManual ? 'bg-[#c0596a] text-white border-[#c0596a]' : 'bg-white text-[#c0596a] border-[#c0596a]/40') : (!rcptManual ? "bg-[#2f6fd4] text-white border-[#2f6fd4]" : "bg-white text-[#3a4f63] border-[#d0e4f7]")}`}
               >
                 Upload Receipt Notice
               </button>
             </div>
-            {error && (
+            {rcptError && (
               <div className="error show bg-[#fff1f2] border border-[#fecdd3] rounded-lg p-3 text-[13px] text-[#9f1239] mb-2">
-                {error}
+                {rcptError}
               </div>
             )}
-            {success && (
+            {rcptSuccess && (
               <div className="success-banner show bg-[#e8f5ef] border border-[#a8d9be] rounded-lg p-3 text-[13px] text-[#15744f] mb-2">
                 Notice added for this session. Confirm the extracted details
                 below, then save the case to enable tracking.
@@ -993,9 +1089,9 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                   className="form-input border border-[#d0e4f7] rounded-lg px-4 py-3 text-[15px]"
                   placeholder="IOE1234567890"
                   maxLength={13}
-                  value={manual.receipt}
+                  value={rcptManual.receipt}
                   onChange={(e) =>
-                    setManual({ ...manual, receipt: e.target.value })
+                    setRcptManual({ ...rcptManual, receipt: e.target.value })
                   }
                 />
               </div>
@@ -1006,9 +1102,9 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                 <input
                   className="form-input border border-[#d0e4f7] rounded-lg px-4 py-3 text-[15px]"
                   type="date"
-                  value={manual.noticeDate}
+                  value={rcptManual.noticeDate}
                   onChange={(e) =>
-                    setManual({ ...manual, noticeDate: e.target.value })
+                    setRcptManual({ ...rcptManual, noticeDate: e.target.value })
                   }
                 />
               </div>
@@ -1019,9 +1115,9 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                 <input
                   className="form-input border border-[#d0e4f7] rounded-lg px-4 py-3 text-[15px]"
                   type="date"
-                  value={manual.priorityDate}
+                  value={rcptManual.priorityDate}
                   onChange={(e) =>
-                    setManual({ ...manual, priorityDate: e.target.value })
+                    setRcptManual({ ...rcptManual, priorityDate: e.target.value })
                   }
                 />
               </div>
@@ -1032,93 +1128,93 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                 <input
                   className="form-input border border-[#d0e4f7] rounded-lg px-4 py-3 text-[15px]"
                   placeholder="IR-1 I-130 · March 2026 filing"
-                  value={manual.caseLabel}
+                  value={rcptManual.caseLabel}
                   onChange={(e) =>
-                    setManual({ ...manual, caseLabel: e.target.value })
+                    setRcptManual({ ...rcptManual, caseLabel: e.target.value })
                   }
                 />
               </div>
             </div>
-            <div className="bg-[#fef8e8] border border-[#f0d98a] rounded-lg p-3 text-[13px] text-[#8a6200] mb-4">
+            <div className={`rounded-lg p-3 text-[13px] mb-4 ${isChapter1 ? 'bg-[#ffffff] border border-[#c0596a] text-[#fff]' : 'bg-[#28151c] border border-[#c0596a] text-[#fff]'}`}>
               Rahvana should always confirm the receipt number with the user
               before turning on tracking. Upload parsing can help, but it should
               never silently save extracted values without review.
             </div>
             <div className="flex gap-2 mt-2">
               <button
-                className="ghost-btn px-5 py-2 rounded-full border text-[14px] font-semibold bg-white border-[#d0e4f7] text-[#6b8097]"
-                onClick={() => setUiState("waiting")}
+                className={`ghost-btn px-5 py-2 rounded-full border text-[14px] font-semibold ${isChapter1 ? 'bg-white border border-[#c0596a] text-[#c0596a]' : 'bg-white border border-[#c0596a] text-[#28151c]'}`}
+                onClick={() => setRcptUiState("waiting")}
               >
                 Back
               </button>
               <button
-                className="primary-btn px-5 py-2 rounded-full text-white bg-[#2f6fd4] font-semibold"
-                onClick={() => setUiState("tracked")}
+                className={`primary-btn px-5 py-2 rounded-full text-white font-semibold ${isChapter1 ? 'bg-[#c0596a] hover:bg-[#a13e4e]' : 'bg-[#c0596a] hover:bg-[#a13e4e]'}`}
+                onClick={() => setRcptUiState("tracked")}
               >
                 Save Receipt & Enable Tracking
               </button>
             </div>
           </div>
         )}
-        {uiState === "tracked" && (
+        {rcptUiState === "tracked" && (
           <>
-            <div className="summary bg-[#e8f5ef] border border-[#a8d9be] rounded-2xl p-6 mb-6">
-              <div className="text-[24px] text-[#0e5c3c] mb-1">
+            <div className={`summary rounded-2xl p-6 mb-6 ${isChapter1 ? 'bg-[#28151c] border border-[#c0596a]' : 'bg-[#28151c] border border-[#c0596a]'}`}>
+              <div className={`text-[24px] mb-1 text-[#fff]`}>
                 Receipt notice registered
               </div>
-              <div className="text-[14px] text-[#3a4f63] mb-4">
+              <div className={`text-[14px] mb-4 text-[#fff]`}>
                 Rahvana now has the core case reference needed to monitor status
                 changes. The current values below are stored locally in this
                 prototype to simulate the tracked-case state.
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
-                <div className="summary-card bg-white border border-[#a8d9be] rounded-lg p-4">
-                  <div className="text-[10px] font-bold uppercase text-[#6b8097] mb-1">
+                <div className={`summary-card rounded-lg p-4 bg-[#3a2328] border border-[#c0596a]`}>
+                  <div className={`text-[10px] font-bold uppercase mb-1 text-[#fff]`}>
                     Receipt Number
                   </div>
-                  <div className="text-[14px] font-semibold text-[#0c1b33]">
-                    {manual.receipt || "—"}
+                  <div className={`text-[14px] font-semibold text-[#fff]`}>
+                    {rcptManual.receipt || "—"}
                   </div>
                 </div>
-                <div className="summary-card bg-white border border-[#a8d9be] rounded-lg p-4">
-                  <div className="text-[10px] font-bold uppercase text-[#6b8097] mb-1">
+                <div className={`summary-card rounded-lg p-4 bg-[#3a2328] border border-[#c0596a]`}>
+                  <div className={`text-[10px] font-bold uppercase mb-1 text-[#fff]`}>
                     Tracking
                   </div>
-                  <div className="text-[14px] font-semibold text-[#0c1b33]">
+                  <div className={`text-[14px] font-semibold text-[#fff]`}>
                     Enabled
                   </div>
                 </div>
-                <div className="summary-card bg-white border border-[#a8d9be] rounded-lg p-4">
-                  <div className="text-[10px] font-bold uppercase text-[#6b8097] mb-1">
+                <div className={`summary-card rounded-lg p-4 bg-[#3a2328] border border-[#c0596a]`}>
+                  <div className={`text-[10px] font-bold uppercase mb-1 text-[#fff]`}>
                     Notice Date
                   </div>
-                  <div className="text-[14px] font-semibold text-[#0c1b33]">
-                    {manual.noticeDate || "Not saved"}
+                  <div className={`text-[14px] font-semibold text-[#fff]`}>
+                    {rcptManual.noticeDate || "Not saved"}
                   </div>
                 </div>
-                <div className="summary-card bg-white border border-[#a8d9be] rounded-lg p-4">
-                  <div className="text-[10px] font-bold uppercase text-[#6b8097] mb-1">
+                <div className={`summary-card rounded-lg p-4 bg-[#3a2328] border border-[#c0596a]`}>
+                  <div className={`text-[10px] font-bold uppercase mb-1 text-[#fff]`}>
                     Priority Date
                   </div>
-                  <div className="text-[14px] font-semibold text-[#0c1b33]">
-                    {manual.priorityDate || "Not saved"}
+                  <div className={`text-[14px] font-semibold text-[#fff]`}>
+                    {rcptManual.priorityDate || "Not saved"}
                   </div>
                 </div>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
-                <div className="summary-card bg-white border border-[#a8d9be] rounded-lg p-4">
-                  <div className="text-[10px] font-bold uppercase text-[#6b8097] mb-1">
+                <div className={`summary-card rounded-lg p-4 bg-[#3a2328] border border-[#c0596a]`}>
+                  <div className={`text-[10px] font-bold uppercase mb-1 text-[#fff]`}>
                     Last Known Status
                   </div>
-                  <div className="text-[14px] font-semibold text-[#0c1b33]">
+                  <div className={`text-[14px] font-semibold text-[#fff]`}>
                     Case Was Received
                   </div>
                 </div>
-                <div className="summary-card bg-white border border-[#a8d9be] rounded-lg p-4">
-                  <div className="text-[10px] font-bold uppercase text-[#6b8097] mb-1">
+                <div className={`summary-card rounded-lg p-4 bg-[#3a2328] border border-[#c0596a]`}>
+                  <div className={`text-[10px] font-bold uppercase mb-1 text-[#fff]`}>
                     Last Checked
                   </div>
-                  <div className="text-[14px] font-semibold text-[#0c1b33]">
+                  <div className={`text-[14px] font-semibold text-[#fff]`}>
                     Just now
                   </div>
                 </div>
@@ -1129,7 +1225,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                 </button>
                 <button
                   className="ghost-btn px-4 py-2 rounded-full border text-[13px] font-semibold bg-white border-[#d0e4f7] text-[#6b8097]"
-                  onClick={() => setUiState("register")}
+                  onClick={() => setRcptUiState("register")}
                 >
                   Update Receipt Info
                 </button>
@@ -1179,6 +1275,8 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
           </div>
         )}
       </div>
+      </div>
+</div>
     );
   }
 
@@ -1189,7 +1287,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
     // Move MetaChips outside the render body
     function MetaChips() {
       return (
-        <div className="flex gap-2 flex-wrap mb-6">
+        <div className="flex gap-2 flex-wrap mb-6 accent-rose">
           <span className="chip chip-role bg-[#e8f1fb] text-[#2d4a6e] border border-[#d0e4f7] text-[11px] font-semibold uppercase px-3 py-1 rounded-full">
             Petitioner
           </span>
@@ -1374,20 +1472,20 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
       );
     }
 
-    return (
-      <div className="max-w-[760px] mx-auto px-6 py-12 flex flex-col gap-3">
+    customRenderer = (
+      <div className="max-w-[760px] mx-auto px-6 py-12 flex flex-col gap-3 step step-modal-spacing">
         {/* Title & Desc (pixel-perfect) */}
         <div className="flex items-center gap-2 mb-2">
-          <span className="text-[11px] font-semibold uppercase tracking-wider text-[#6b8097]">
+          <span className="text-[11px] font-semibold uppercase tracking-wider accent-brown">
             Chapter 1 · USCIS Petition Filing
           </span>
           <span className="text-[11px] text-[#b8d4f0]">›</span>
-          <span className="text-[11px] font-semibold uppercase tracking-wider text-[#2f6fd4]">Monitor USCIS Case Status</span>
+          <span className="text-[11px] font-semibold uppercase tracking-wider accent-brown">Monitor USCIS Case Status</span>
         </div>
-        <h1 className="page-title text-[clamp(30px,4.6vw,40px)] text-[#0c1b33] leading-[1.12] tracking-tight mb-1">
+        <h1 className="page-title text-[clamp(30px,4.6vw,40px)] accent-brown leading-[1.12] tracking-tight mb-1">
           Monitor USCIS Case Status
         </h1>
-        <p className="page-desc text-[15px] text-[#3a4f63] leading-[1.72] max-w-[620px] mb-3">
+        <p className="page-desc text-[15px] accent-brown leading-[1.72] max-w-[620px] mb-3">
           Stay prepared while USCIS reviews your case. Rahvana keeps the
           tracking context in one place, explains what the current status means,
           and gives you useful next-step prep so the waiting period does not
@@ -1396,45 +1494,57 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
         <MetaChips />
         {/* Launch Module with tracking buttons */}
         {tool.launch_module && (
-          <div className="rounded-2xl border border-white/10 bg-[#101e35] shadow-[0_20px_60px_rgba(12,27,51,0.18)] mb-2 relative overflow-hidden launch-module">
-            <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-[#2f6fd4] via-[#6aa8f0] to-transparent opacity-80" />
+          <div
+            className={`rounded-2xl border mb-2 relative overflow-hidden launch-module step-modal-spacing 
+              ${isChapter2 ? 'bg-[#483557] border-[#b48ad6]' : isChapter1 ? 'bg-[#28151c] border-[#28151c]' : 'bg-[#e8f1fb] border-[#b3d6f7]'}`}
+          >
+            <div className={`absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r ${isChapter2 ? 'from-[#b48ad6] via-[#b48ad6] to-transparent' : isChapter1 ? 'from-[#28151c] via-[#28151c] to-transparent' : 'from-[#b3d6f7] via-[#b3d6f7] to-transparent'} opacity-80`} />
             <div className="launch-inner p-8 md:p-[32px_34px_28px]">
               <div className="launch-top flex items-start gap-4 mb-6">
                 <div className="launch-header flex gap-4 items-start">
-                  <div className="launch-icon w-[48px] h-[48px] rounded-[12px] bg-white/6 border border-white/10 flex items-center justify-center shrink-0">
-                    <Shield className="w-7 h-7 text-white/80" />
+                  <div className={`launch-icon w-[48px] h-[48px] rounded-[12px] flex items-center justify-center shrink-0 
+                    ${isChapter2 ? 'bg-[#b48ad6] border-white' : isChapter1 ? 'bg-[#c0596a] border-white' : 'bg-[#2f6fd4] border-white'}`}
+                  >
+                    <Shield className="w-7 h-7 text-[#ffffff]" />
                   </div>
                   <div>
-                    <div className="launch-eyebrow text-[10px] font-bold uppercase tracking-widest text-white/35 mb-1">
-                      Pending with USCIS · Active Monitoring
+                    <div
+                      className="launch-eyebrow text-[10px] font-bold uppercase tracking-widest mb-1"
+                      style={{
+                        color: isChapter2 ? '#483557' : isChapter1 ? '#fff' : '#2f6fd4',
+                        borderLeft: isChapter2 ? '5px solid #b48ad6' : isChapter1 ? '5px solid #c0596a' : '5px solid #2f6fd4',
+                        paddingLeft: 10,
+                      }}
+                    >
+                      {isChapter2 ? 'Pending with NVC · Active Monitoring' : isChapter1 ? 'Pending with USCIS · Active Monitoring' : 'Pending with Consulate · Active Monitoring'}
                     </div>
-                    <div className="text-[clamp(21px,3vw,26px)] text-white/92 leading-tight">
+                    <div className={`text-[clamp(21px,3vw,26px)] leading-tight ${isChapter2 ? 'text-[#b48ad6]' : isChapter1 ? 'accent-rose' : 'text-[#2f6fd4]'}`}>
                       {tool.launch_module.status?.hero}
                     </div>
-                    <div className="launch-copy text-[13.5px] text-white/66 leading-snug max-w-[470px]">
+                    <div className="launch-copy text-[13.5px] text-white leading-snug max-w-[470px]">
                       {tool.launch_module.status?.copy}
                     </div>
                   </div>
                 </div>
-                <span className="status-badge ml-auto">
+                <span className={`status-badge ml-auto ${isChapter2 ? 'accent-purple' : isChapter1 ? 'accent-rose' : 'accent-blue'}`}>
                   {tool.launch_module.status?.badge}
                 </span>
               </div>
-              <div className="launch-divider h-px bg-white/10 mb-5" />
+              <div className={`launch-divider h-px ${isChapter2 ? 'bg-[#b48ad6]/20' : isChapter1 ? 'bg-[#c0596a]/20' : 'bg-[#2f6fd4]/20'} mb-5`} />
               {/* Metrics */}
               <div className="metrics grid grid-cols-1 md:grid-cols-4 gap-3 mb-4">
                 {tool.launch_module.metrics?.map((m: any, i: number) => (
                   <div
                     key={i}
-                    className="metric bg-white/5 border border-white/10 rounded-[12px] px-4 py-3 flex flex-col"
+                    className={`metric bg-white rounded-[12px] px-4 py-3 flex flex-col border ${isChapter2 ? 'border-[#b48ad6]' : isChapter1 ? 'border-[#28151c]' : 'border-[#2f6fd4]'}`}
                   >
-                    <div className="metric-label text-[10px] font-bold uppercase tracking-widest text-white/80 mb-1">
+                    <div className={`metric-label text-[10px] font-bold uppercase tracking-widest mb-1 ${isChapter2 ? 'text-[#b48ad6]' : isChapter1 ? 'accent-brown' : 'text-[#2f6fd4]'}`}>
                       {m.label}
                     </div>
-                    <div className="metric-value text-[14px] font-semibold text-white/92">
+                    <div className={`metric-value text-[14px] font-semibold ${isChapter2 ? 'text-[#b48ad6]' : isChapter1 ? 'accent-brown' : 'text-[#2f6fd4]'}`}>
                       {m.value}
                     </div>
-                    <div className="metric-sub text-[11px] text-white/66 mt-1">
+                    <div className={`metric-sub text-[11px] mt-1 ${isChapter2 ? 'text-[#b48ad6]' : isChapter1 ? 'accent-brown' : 'text-[#2f6fd4]'}`}>
                       {m.sub}
                     </div>
                   </div>
@@ -1443,7 +1553,8 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
               {/* Tracking Action Buttons */}
               <div className="launch-actions grid grid-cols-1 md:grid-cols-2 gap-3 mt-2">
                 <Button
-                  className="flex items-center gap-2 px-5 py-3 rounded-xl bg-[#2f6fd4] text-white font-semibold hover:bg-[#2460bb] transition"
+                  className={`flex items-center gap-2 px-5 py-3 rounded-xl font-semibold transition 
+                    ${isChapter2 ? 'bg-[#b48ad6] text-white hover:bg-[#a47cc1] hover:text-white' : isChapter1 ? 'bg-[#c0596a] text-white hover:bg-[#a13e53] hover:text-white' : 'bg-[#2f6fd4] text-white hover:bg-[#1a4e8a] hover:text-white'}`}
                   onClick={() => {
                     /* TODO: implement refresh logic */
                   }}
@@ -1464,7 +1575,8 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                 </Button>
                 <Button
                   variant="outline"
-                  className="flex items-center gap-2 px-5 py-3 rounded-xl border border-white/10 bg-white/5 text-white font-semibold hover:bg-white/10 transition"
+                  className={`flex items-center gap-2 px-5 py-3 rounded-xl border font-semibold transition 
+                    ${isChapter2 ? 'border-[#b48ad6] bg-[#f7f2fd] text-[#b48ad6] hover:bg-[#ede6f6]' : isChapter1 ? 'border-white/10 bg-white/5 text-white hover:bg-white' : 'border-[#2f6fd4] bg-[#e8f1fb] text-[#2f6fd4] hover:bg-[#d0e4f7]'}`}
                   onClick={() => setShowStatusGuide(true)}
                 >
                   <svg
@@ -2318,6 +2430,14 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
     }
   };
 
+  // Auto-complete step_1_17 when approval notice details are saved
+  useEffect(() => {
+    if (sId === "step_1_17" && isApprovalSaved && !isCompleted) {
+      handleToggleComplete();
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sId, isApprovalSaved]);
+
   const handleNavigate = (stepId: string) => {
     const activeChapters = data.chapters || (data as any).stages;
     for (let sIdx = 0; sIdx < activeChapters.length; sIdx++) {
@@ -3142,8 +3262,6 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
       return (
         <AwaitingReviewStep
           data={AWAITING_REVIEW_DATA}
-          state={state}
-          actions={actions}
         />
       );
     }
@@ -3201,6 +3319,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
         <div className="w-full max-w-[680px] px-[24px] pb-[96px] flex flex-col">
           {/* Step Header */}
           <StepHeader
+            stepNumber={localIdx + 1}
             chapterNumber={
               currentChapter?.chapter_number || state.currentStage + 1
             }
@@ -3376,58 +3495,162 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
 
               {/* Scheduling grid */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-[14px] mb-[14px]">
-                {/* Official Card */}
-                <div className="bg-[#fafcff] border-[1.5px] border-[#d0e4f7] rounded-[16px] p-[18px_20px] shadow-[0_4px_24px_rgba(12,27,51,0.08)]">
-                  <div className="text-[10px] font-bold tracking-widest uppercase text-[#2d4a6e] mb-[6px]">
-                    Official Scheduling Status
-                  </div>
-                  <div className="text-[13px] font-semibold text-[#0c1b33] mb-[6px]">
-                    Cases currently being scheduled from:
-                  </div>
-                  <div
-                    className="text-[20px] font-serif text-[#0c1b33] mb-[4px]"
-                    style={{ fontFamily: "'DM Serif Display', serif" }}
-                  >
-                    {INTERVIEW_SCHEDULING_DATA.schedulingData[
-                      ((state.metadata.post || state.metadata.dqPost) as keyof typeof INTERVIEW_SCHEDULING_DATA.schedulingData) ||
-                        "Other"
-                    ]?.official || "—"}
-                  </div>
-                  <div className="text-[12px] text-[#6b8097] leading-[1.5]">
-                    From the State Department scheduling bulletin for this post
-                    and category. Verify current status at travel.state.gov.
-                  </div>
-                  <div className="inline-flex items-center gap-[4px] bg-[#e8f1fb] border border-[#d0e4f7] rounded-full px-[10px] py-[3px] text-[10px] font-semibold text-[#2d4a6e] mt-[8px]">
-                    <Info size={9} strokeWidth={2.5} />
-                    U.S. State Department · Official
-                  </div>
-                </div>
+                {/* Official Card - IV Tool Auto-Sync */}
+                {(() => {
+                  const [ivLoading, setIvLoading] = React.useState(false);
+                  const [ivError, setIvError] = React.useState<string | null>(null);
+                  const savedMonth = state.metadata?.currentSchedulingMonthYear as string | undefined;
+                  const savedUpdated = state.metadata?.schedulingDataLastUpdated as string | undefined;
+                  const postName = (state.metadata?.dqPost || state.metadata?.post || "") as string;
 
-                {/* Estimate Card */}
+                  const handleFetch = async () => {
+                    if (!postName) {
+                      setIvError("No embassy/post found. Please complete Step 2.10 first.");
+                      return;
+                    }
+                    setIvLoading(true);
+                    setIvError(null);
+                    try {
+                      const res = await fetch("/api/iv-status", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ city: postName, visaCategory: "immediate-relative" }),
+                        cache: "no-store", // Always get fresh data, bypass 24hr API cache
+                      });
+                      const data = await res.json();
+                      const results: Array<{ Post: string; "Visa Category": string; "Case Documentarily Complete": string }> =
+                        data.data || [];
+                      const match = results.find((r) =>
+                        r.Post.toLowerCase().includes(postName.toLowerCase())
+                      ) || results[0];
+                      if (!match) {
+                        setIvError(`No scheduling data found for "${postName}". Try checking travel.state.gov manually.`);
+                        return;
+                      }
+
+                      // ── Robust date parser ──────────────────────────────
+                      // Handles: "Sep-2025", "Sep 2025", "September 2025", "September-2025"
+                      const MONTH_MAP: Record<string, string> = {
+                        jan: "01", feb: "02", mar: "03", apr: "04", may: "05", jun: "06",
+                        jul: "07", aug: "08", sep: "09", oct: "10", nov: "11", dec: "12",
+                      };
+                      const raw = match["Case Documentarily Complete"].trim();
+                      // Split by space or dash: ["Sep", "2025"] or ["September", "2025"]
+                      const parts = raw.split(/[\s-]+/);
+                      const monthPart = parts.find(p => isNaN(Number(p)));
+                      const yearPart = parts.find(p => /^\d{4}$/.test(p));
+                      const monthNum = monthPart ? MONTH_MAP[monthPart.toLowerCase().slice(0, 3)] : null;
+
+                      if (!monthNum || !yearPart) {
+                        setIvError(`Could not parse date: "${raw}". Try syncing again or check travel.state.gov.`);
+                        return;
+                      }
+                      const isoMonth = `${yearPart}-${monthNum}`;
+                      actions.updateMetadata({
+                        currentSchedulingMonthYear: isoMonth,
+                        schedulingDataLastUpdated: new Date().toISOString().split("T")[0],
+                      });
+                    } catch {
+                      setIvError("Failed to fetch. Check your connection or try again.");
+                    } finally {
+                      setIvLoading(false);
+                    }
+                  };
+
+                  return (
+                    <div className="bg-[#fafcff] border-[1.5px] border-[#d0e4f7] rounded-[16px] p-[18px_20px] shadow-[0_4px_24px_rgba(12,27,51,0.08)]">
+                      <div className="text-[10px] font-bold tracking-widest uppercase text-[#2d4a6e] mb-[6px]">
+                        Official IV Scheduling Status
+                      </div>
+                      <div className="text-[13px] font-semibold text-[#0c1b33] mb-[4px]">
+                        Embassy currently scheduling DQ month:
+                      </div>
+
+                      {savedMonth ? (
+                        <div className="mb-3">
+                          <div className="text-[22px] font-serif font-bold text-[#0c1b33] mb-1" style={{ fontFamily: "'DM Serif Display', serif" }}>
+                            {/* UTC-safe display: parse YYYY-MM manually to avoid timezone offset shift */}
+                            {(() => {
+                              const [y, m] = savedMonth.split("-").map(Number);
+                              return new Date(y, m - 1, 1).toLocaleDateString("en-US", { month: "long", year: "numeric" });
+                            })()}
+                          </div>
+                          {savedUpdated && (
+                            <div className="text-[10px] text-[#6b8097]">Last synced: {savedUpdated}</div>
+                          )}
+                        </div>
+                      ) : (
+                        <div className="text-[12.5px] text-[#6b8097] mb-3 leading-relaxed">
+                          Sync from the official IV Scheduling Status Tool to see what DQ month the embassy is currently processing.
+                        </div>
+                      )}
+
+                      {ivError && (
+                        <div className="text-[11px] text-red-600 bg-red-50 border border-red-200 rounded-lg p-2 mb-3">
+                          {ivError}
+                        </div>
+                      )}
+
+                      <button
+                        onClick={handleFetch}
+                        disabled={ivLoading}
+                        className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg text-[12px] font-bold hover:bg-primary/90 disabled:opacity-60 transition-all"
+                      >
+                        {ivLoading ? (
+                          <>
+                            <span className="w-3 h-3 border-2 border-white/40 border-t-white rounded-full animate-spin" />
+                            Fetching...
+                          </>
+                        ) : (
+                          <>
+                            <RefreshCw size={12} />
+                            {savedMonth ? "Re-sync from IV Tool" : "Sync from IV Tool"}
+                          </>
+                        )}
+                      </button>
+
+                      <div className="inline-flex items-center gap-[4px] bg-[#e8f1fb] border border-[#d0e4f7] rounded-full px-[10px] py-[3px] text-[10px] font-semibold text-[#2d4a6e] mt-[10px]">
+                        <Info size={9} strokeWidth={2.5} />
+                        U.S. State Department · Official
+                      </div>
+                    </div>
+                  );
+                })()}
+                {/* Estimate Card - Dynamic from user-entered scheduling month */}
                 <div className="bg-[#fafcff] border-[1.5px] border-[#e8d47a] rounded-[16px] p-[18px_20px] shadow-[0_4px_24px_rgba(12,27,51,0.08)]">
                   <div className="text-[10px] font-bold tracking-widest uppercase text-[#b38600] mb-[6px]">
                     Rahvana Estimate
                   </div>
-                  <div className="text-[13px] font-semibold text-[#0c1b33] mb-[6px]">
-                    Queue movement trend:
-                  </div>
-                  <div
-                    className="text-[20px] font-serif text-[#0c1b33] mb-[4px]"
-                    style={{ fontFamily: "'DM Serif Display', serif" }}
-                  >
-                    {INTERVIEW_SCHEDULING_DATA.schedulingData[
-                      ((state.metadata.post || state.metadata.dqPost) as keyof typeof INTERVIEW_SCHEDULING_DATA.schedulingData) ||
-                        "Other"
-                    ]?.trend || "—"}
-                  </div>
-                  <div className="text-[12px] text-[#6b8097] leading-[1.5]">
-                    {state.metadata.dqDate
-                      ? INTERVIEW_SCHEDULING_DATA.schedulingData[
-                          ((state.metadata.post || state.metadata.dqPost) as keyof typeof INTERVIEW_SCHEDULING_DATA.schedulingData) ||
-                            "Other"
-                        ]?.detail
-                      : "Save your DQ details in the previous step to see scheduling context here."}
-                  </div>
+                  {(() => {
+                    const ivMonth = state.metadata?.currentSchedulingMonthYear as string;
+                    const dqDateStr = state.metadata?.dqDate as string;
+                    if (!ivMonth || !dqDateStr) {
+                      return (
+                        <div className="text-[13px] text-[#6b8097] leading-relaxed">
+                          Enter the current scheduling month above from the official IV Tool to see your personal estimate.
+                        </div>
+                      );
+                    }
+                    const [ivY, ivM] = ivMonth.split("-").map(Number);
+                    const dqDate = new Date(dqDateStr + "T00:00:00");
+                    const ivDate = new Date(ivY, ivM - 1, 1);
+                    const raw = (dqDate.getFullYear() - ivDate.getFullYear()) * 12 + (dqDate.getMonth() - ivDate.getMonth());
+                    const waitMonths = Math.max(0, raw);
+                    const low = new Date(); low.setMonth(low.getMonth() + waitMonths);
+                    const high = new Date(low); high.setMonth(high.getMonth() + 2);
+                    const fmt = (d: Date) => d.toLocaleDateString("en-US", { month: "short", year: "numeric" });
+                    return (
+                      <>
+                        <div className="text-[13px] font-semibold text-[#0c1b33] mb-[2px]">Estimated interview window:</div>
+                        <div className="text-[20px] font-serif text-[#b38600] mb-[4px]" style={{ fontFamily: "'DM Serif Display', serif" }}>
+                          {waitMonths === 0 ? "Approaching now" : `${fmt(low)} – ${fmt(high)}`}
+                        </div>
+                        <div className="text-[12px] text-[#6b8097] leading-[1.5]">
+                          Embassy is approx {waitMonths} month{waitMonths !== 1 ? "s" : ""} away from your DQ date. Keep documents ready.
+                        </div>
+                      </>
+                    );
+                  })()}
                   <div className="inline-flex items-center gap-[4px] bg-[#fffbec] border border-[#e8d47a] rounded-full px-[10px] py-[3px] text-[10px] font-semibold text-[#b38600] mt-[8px]">
                     <Activity size={9} strokeWidth={2.5} />
                     Rahvana Estimate · Not guaranteed
@@ -3688,8 +3911,6 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
           {tool.type === "awaiting_review" && (
             <AwaitingReviewStep
               data={AWAITING_REVIEW_DATA}
-              state={state}
-              actions={actions}
             />
           )}
 
@@ -3827,11 +4048,12 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                       <div className="flex flex-col gap-1.5">
                         <label className="text-[11px] font-bold uppercase tracking-wide text-[#6b8097]">
-                          Interview Date
+                          Date of Interview (when AP was placed)
                         </label>
                         <input
                           type="date"
                           value={apDetails.interviewDate}
+                          max={new Date().toISOString().split("T")[0]}
                           onChange={(e) =>
                             setApDetails({
                               ...apDetails,
@@ -3925,12 +4147,53 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                           apDetails: apDetails,
                           apSaved: "true",
                         });
+                        // Trigger CEAC notification system
+                        if (apDetails.ceacStatus === "Refused") {
+                          // Show sub-type prompt first (Rule 8: never auto-assume)
+                          triggerCeacStatusUpdate("Refused");
+                          setRefusedPromptOpen(true);
+                        } else {
+                          triggerCeacStatusUpdate(apDetails.ceacStatus);
+                        }
                       }}
-                      disabled={!apDetails.interviewDate}
+                      disabled={!apDetails.interviewDate || ceacApiLoading}
                       className="w-full p-4 bg-primary text-white rounded-xl font-bold transition-all shadow-[0_4px_16px_rgba(47,111,212,0.3)] hover:-translate-y-0.5 active:translate-y-0 disabled:opacity-50 disabled:translate-y-0"
                     >
-                      Save AP Status & Activate Tracking
+                      {ceacApiLoading ? "Saving..." : "Save AP Status & Activate Tracking"}
                     </button>
+
+                    {/* Refused sub-type prompt — shown after save if status = Refused */}
+                    {refusedPromptOpen && (
+                      <div className="mt-4 bg-[#fff7ed] border border-[#f0d98a] rounded-xl p-5 animate-in fade-in slide-in-from-top-2 duration-300">
+                        <div className="text-[12px] font-bold uppercase tracking-wide text-[#8a6200] mb-2">
+                          One more question
+                        </div>
+                        <p className="text-[13.5px] text-[#3a4f63] leading-relaxed mb-4">
+                          Your CEAC status is <strong>Refused</strong>. This can mean two very different things.
+                          Which one applies to your case?
+                        </p>
+                        <div className="flex flex-col gap-2">
+                          <button
+                            onClick={() => clarifyRefusedSubType("refusal_221g")}
+                            className="w-full p-3.5 rounded-lg border-[1.5px] border-[#f0d98a] bg-white text-[13px] font-semibold text-[#8a6200] text-left hover:bg-[#fef8e8] transition-all"
+                          >
+                            <span className="font-black">221(g)</span> — Officer requested more documents or info. Case is still active.
+                          </button>
+                          <button
+                            onClick={() => clarifyRefusedSubType("refusal_final")}
+                            className="w-full p-3.5 rounded-lg border-[1.5px] border-[#fecdd3] bg-white text-[13px] font-semibold text-[#9f1239] text-left hover:bg-[#fff1f2] transition-all"
+                          >
+                            <span className="font-black">Final Denial</span> — Officer denied under a specific ground (INA §212 etc.)
+                          </button>
+                          <button
+                            onClick={() => setRefusedPromptOpen(false)}
+                            className="text-[12px] text-[#6b8097] hover:text-[#1c2b3a] mt-1 text-center"
+                          >
+                            Not sure yet — I&apos;ll check my notice
+                          </button>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
               ) : (
@@ -4142,36 +4405,36 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
             tool.type !== "adm_processing" &&
             tool.type !== "courier_registration" && (
               <div
-                className="relative bg-[#0e1e38] rounded-[16px] border border-white/7 overflow-hidden mb-[20px]"
-                style={{ backgroundColor: launchBg }}
+                className={`relative rounded-[16px] overflow-hidden mb-[20px] ${isChapter1 ? "bg-[#28151c] border border-[#c0596a]" : "bg-[#0e1e38] border border-white/7"}`}
+                style={!isChapter1 ? { backgroundColor: launchBg } : {}}
               >
                 {/* Accent Stripe */}
                 <div
                   className="absolute top-0 left-0 right-0 h-[2px] opacity-70"
-                  style={{ background: stripeGradient }}
+                  style={{ background: isChapter1 ? "linear-gradient(90deg, #c0596a 0%, #28151c 100%)" : stripeGradient }}
                 />
 
                 <div className="p-[36px_36px_32px]">
                   {/* Module Header */}
                   <div className="flex items-start gap-[16px] mb-[26px]">
-                    <div className="w-[48px] h-[48px] rounded-[12px] bg-white/[0.055] border border-white/10 flex items-center justify-center shrink-0">
+                    <div className={`w-[48px] h-[48px] rounded-[12px] flex items-center justify-center shrink-0 border ${isChapter1 ? "bg-[#c0596a] border-[#c0596a]" : "bg-white/[0.055] border-white/10"}`}>
                       <IconComponent
                         size={22}
-                        className="text-white/75"
+                        className={isChapter1 ? "text-white" : "text-white/75"}
                         strokeWidth={1.6}
                       />
                     </div>
                     <div className="flex-1">
-                      <div className="text-[10px] font-bold uppercase tracking-widest text-white/35 mb-[5px]">
+                      <div className={`text-[10px] font-bold uppercase tracking-widest mb-[5px] ${isChapter1 ? "text-[#c0596a]" : "text-white/35"}`}>
                         {tool.launch_module.eyebrow}
                       </div>
-                      <h2 className="text-[clamp(20px,3vw,24px)]  text-white/90 leading-[1.25]">
+                      <h2 className={`text-[clamp(20px,3vw,24px)] leading-[1.25] ${isChapter1 ? "text-white" : "text-white/90"}`}>
                         {tool.launch_module.heading}
                       </h2>
                     </div>
                   </div>
 
-                  <div className="h-px bg-white/9 mb-[22px]" />
+                  <div className={`h-px mb-[22px] ${isChapter1 ? "bg-[#c0596a]/30" : "bg-white/9"}`} />
 
                   {/* Fee Block (Step 9 — Pay Filing Fee) */}
                   {tool.fee_block && (
@@ -4229,27 +4492,23 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                     )}
 
                   {/* Feature Cues Grid */}
-                  <div
-                    className={`grid grid-cols-1 sm:grid-cols-2 gap-[10px] ${tool.launch_module.button_label ? "mb-[26px]" : "mb-0"}`}
-                  >
+                  <div className={`grid grid-cols-1 sm:grid-cols-2 gap-[10px] ${tool.launch_module.button_label ? "mb-[26px]" : "mb-0"}`}>
                     {tool.launch_module.features?.map(
                       (feat: string, i: number) => (
                         <div
                           key={i}
-                          className="bg-white/6 border border-white/10 rounded-[10px] p-[12px_14px] flex items-start gap-[10px]"
+                          className={`${isChapter1 ? "bg-[#3a232a] border border-[#c0596a]/30" : "bg-white/6 border border-white/10"} rounded-[10px] p-[12px_14px] flex items-start gap-[10px]`}
                         >
                           <div
-                            className={`w-[5px] h-[5px] rounded-full mt-[6px] shrink-0 ${
-                              tool.launch_module.stripe_variant === "gold"
+                            className={`w-[5px] h-[5px] rounded-full mt-[6px] shrink-0 ${isChapter1 ? "bg-[#c0596a]" : tool.launch_module.stripe_variant === "gold"
                                 ? "bg-[rgba(212,168,47,0.7)]"
                                 : tool.launch_module.stripe_variant === "green"
                                   ? "bg-[rgba(100,220,160,0.6)]"
                                   : isBeneficiaryTheme
                                     ? "bg-[#20a8a8bf]"
-                                    : "bg-[#6aa8f0b3]"
-                            }`}
+                                    : "bg-[#6aa8f0b3]"}`}
                           />
-                          <div className="text-[13px] text-white/55 leading-[1.4]">
+                          <div className={`text-[13px] leading-[1.4] ${isChapter1 ? "text-[#fbeaec]" : "text-white/55"}`}>
                             {feat}
                           </div>
                         </div>
@@ -4283,6 +4542,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                   {/* CTA Area — only rendered when a button_label is defined */}
                   {tool.launch_module.button_label && (
                     <div className="flex flex-col gap-[11px]">
+
                       <button
                         onClick={() => {
                           if (tool.launch_module.href) {
@@ -4294,16 +4554,19 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                             setIsLaunched(true);
                           }
                         }}
-                        className={`inline-flex items-center justify-center gap-[10px] w-full p-[16px_28px] text-white rounded-[12px] font-sans text-[15px] font-semibold tracking-[0.01em] transition-all duration-200 group cursor-pointer ${
-                          isLaunched && tool.launch_module.return_note
-                            ? "bg-[#3b7dd8] shadow-[0_4px_20px_rgba(14,92,60,0.3)] pointer-events-none"
-                            : "shadow-[0_4px_20px_rgba(47,111,212,0.35)] hover:translate-y-[-2px] hover:shadow-[0_8px_32px_rgba(47,111,212,0.45)]"
-                        }`}
-                        style={
-                          isLaunched && tool.launch_module.return_note
-                            ? {}
-                            : { backgroundColor: accentColor }
-                        }
+                        className={`inline-flex items-center justify-center gap-[10px] w-full p-[16px_28px] rounded-[12px] font-sans text-[15px] font-semibold tracking-[0.01em] transition-all duration-200 group cursor-pointer
+                          ${isLaunched && tool.launch_module.return_note
+                            ? isChapter1
+                              ? "bg-[#c0596a] pointer-events-none"
+                              : isChapter2
+                                ? "bg-[#b48ad6] pointer-events-none"
+                                : "bg-[#3b7dd8] pointer-events-none"
+                            : isChapter1
+                              ? "bg-[#c0596a] hover:bg-[#a13e4e] text-white shadow-[0_4px_20px_rgba(192,89,106,0.25)]"
+                              : isChapter2
+                                ? "bg-[#b48ad6] text-white shadow-[0_4px_20px_rgba(180,138,214,0.25)] hover:bg-[#a47cc1] hover:text-white hover:shadow-[0_8px_32px_rgba(180,138,214,0.35)] hover:translate-y-[-2px]"
+                                : "bg-[#2f6fd4] text-white shadow-[0_4px_20px_rgba(47,111,212,0.35)] hover:translate-y-[-2px] hover:shadow-[0_8px_32px_rgba(47,111,212,0.45)]"}`}
+                        style={isChapter1 ? {} : (!isLaunched || !tool.launch_module.return_note) ? { backgroundColor: isChapter2 ? '#b48ad6' : accentColor } : {}}
                       >
                         {isLaunched && tool.launch_module.return_note ? (
                           <>
@@ -4324,7 +4587,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                       </button>
 
                       <div
-                        className={`flex items-center justify-center gap-[5px] text-[12px] text-center leading-[1.4] transition-colors duration-200 text-white/35`}
+                        className={`flex items-center justify-center gap-[5px] text-[12px] text-center leading-[1.4] transition-colors duration-200 ${isChapter1 ? "text-[#fbeaec]" : isChapter2 ? "text-[#b48ad6]/90" : "text-white/35"}`}
                       >
                         <ExternalLink size={11} strokeWidth={1.8} />
                         <span>
@@ -5107,10 +5370,58 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
     );
   };
 
+  if (customRenderer) {
+    return (
+      <div className="flex-1 flex flex-col h-full bg-slate-50 relative overflow-hidden font-sans">
+        <div className="flex-1 overflow-y-auto scrollbar-hide flex flex-col items-center relative pb-[100px]">
+          {customRenderer}
+        </div>
+        <footer className="absolute bottom-0 left-0 right-0 h-[58px] bg-[#fafcff] border-t border-[#d0e4f7] flex items-center gap-2 px-4 shrink-0 z-40 shadow-[0_-4px_20px_rgba(0,0,0,0.03)]">
+          <button
+            onClick={() => prevStep && handleNavigate((prevStep as any).step_key || (prevStep as any).id)}
+            className={`px-4 py-[9px] bg-transparent border-[1.5px] border-[#d0e4f7] rounded-[10px] text-[13px] font-medium text-[#6b8097] flex items-center gap-[5px] transition-all hover:border-[#3a4f63] hover:text-[#1c2b3a] shrink-0 ${!prevStep ? "invisible pointer-events-none" : ""}`}
+          >
+            <ArrowLeft size={12} strokeWidth={2.5} />
+            Previous
+          </button>
+          <div className="flex-1 flex items-center gap-2 mx-auto px-4">
+            <div className="flex-1 h-1 bg-[#d0e4f7] rounded-[10px] overflow-hidden">
+              <div className="h-full bg-linear-to-r from-primary to-primary/70 transition-all duration-500 ease-out" style={{ width: `${progressPct}%` }} />
+            </div>
+            <div className="text-[11px] font-semibold text-[#6b8097] whitespace-nowrap">
+              Step {localIdx + 1} of {activeStepsInChapter.length}
+            </div>
+          </div>
+          <button
+            onClick={() => nextStep && handleNavigate((nextStep as any).step_key || (nextStep as any).id)}
+            className={`px-[18px] py-[9px] bg-primary rounded-[10px] text-[13px] font-semibold text-white flex items-center gap-[5px] transition-all hover:brightness-110 active:scale-95 shrink-0 shadow-sm shadow-primary/20 ${!nextStep || !isCompleted ? "invisible pointer-events-none" : ""}`}
+          >
+            Next
+            <ArrowRight size={12} strokeWidth={2.5} />
+          </button>
+        </footer>
+      </div>
+    );
+  }
+
   if (!currentStep) return null;
 
+  // (moved to top-level, see above)
+
   return (
-    <div className="flex-1 flex flex-col h-full bg-slate-50 relative overflow-hidden font-sans">
+    <div
+      className={`flex-1 flex flex-col h-full relative overflow-hidden font-sans ${isChapter1 ? 'ch1step-bg' : isChapter2 ? 'ch2step-bg' : 'bg-slate-50'}`}
+      style={
+        isChapter3
+          ? {
+              backgroundImage: 'linear-gradient(rgba(255,255,255,0.72), rgba(255,255,255,0.72)), url(/assets/images/ch3steps-bg.png)',
+              backgroundSize: 'cover',
+              backgroundPosition: 'center',
+              backgroundRepeat: 'no-repeat',
+            }
+          : undefined
+      }
+    >
       <div
         className={`flex-1 overflow-y-auto scrollbar-hide flex flex-col items-center relative pb-[100px] ${
           currentStep.step_type === "quest" ? "" : "p-6 md:p-10 lg:p-12"
@@ -5382,30 +5693,62 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
           className={`w-full ${currentStep.step_type === "quest" ? "" : "max-w-4xl"}`}
         >
           {currentStep.step_type === "quest" ? (
-            <div className="w-full min-h-[600px] flex flex-col items-center">
+            <div className={`w-full min-h-[600px] flex flex-col items-center${isChapter2 ? " ch2step-bg" : ""}${isChapter3 ? " ch3step-bg" : ""}`}> 
               <QuestRenderer
                 quest={currentStep.quest_data as unknown as QuestSuite}
                 onComplete={handleToggleComplete}
                 state={state}
                 actions={actions}
+                isChapter1={isChapter1}
+                isChapter2={isChapter2}
+                isChapter3={isChapter3}
               />
             </div>
           ) : currentStep.step_type === "tool" ? (
             renderToolStep()
           ) : currentStep.step_type === "action" ? (
-            <ActionStepRenderer
-              step={currentStep}
-              isCompleted={state.completedSteps.has(currentStep.step_key)}
-              onToggleComplete={handleToggleComplete}
-              chapter={currentChapter?.chapter_name || "Chapter"}
-              filingType={
-                state.metadata.filingMethod === "online"
-                  ? "Online Filing"
-                  : "Paper Filing"
+            <div
+              style={
+                isChapter3
+                  ? {
+                      backgroundImage:
+                        "linear-gradient(rgba(255,255,255,0.32), rgba(255,255,255,0.32)), url('/assets/images/ch3steps-bg.png')",
+                      backgroundSize: "cover",
+                      backgroundPosition: "center",
+                      backgroundRepeat: "no-repeat",
+                      backgroundAttachment: "fixed",
+                      minHeight: "100vh"
+                    }
+                  : isChapter2
+                  ? {
+                      backgroundImage:
+                        "linear-gradient(rgba(255,255,255,0.54), rgba(255,255,255,0.54)), url('/assets/images/ch2steps-bg.png')",
+                      backgroundSize: "cover",
+                      backgroundPosition: "center",
+                      backgroundRepeat: "no-repeat",
+                      backgroundAttachment: "fixed",
+                      minHeight: "100vh"
+                    }
+                  : {}
               }
-              state={state}
-              actions={actions}
-            />
+            >
+              <ActionStepRenderer
+                step={currentStep}
+                isCompleted={state.completedSteps.has(currentStep.step_key)}
+                onToggleComplete={handleToggleComplete}
+                chapter={currentChapter?.chapter_name || "Chapter"}
+                filingType={
+                  state.metadata.filingMethod === "online"
+                    ? "Online Filing"
+                    : "Paper Filing"
+                }
+                state={state}
+                actions={actions}
+                isChapter1={isChapter1}
+                isChapter2={isChapter2}
+                isChapter3={isChapter3}
+              />
+            </div>
           ) : currentStep.step_type === "docs" ? (
             <div className="w-full flex flex-col items-center animate-in fade-in slide-in-from-bottom-6 duration-1000">
               {/* Header for Docs */}
@@ -6058,16 +6401,10 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
               </div>
             </div>
           ) : (
-            <div className="bg-white border border-[#d0e4f7] rounded-[32px] p-10 md:p-14 lg:p-20 shadow-xl shadow-[#0f1f38]/5 animate-in fade-in zoom-in-95 duration-700 w-full max-w-[740px] mx-auto">
-              <div className="text-[11px] font-bold uppercase tracking-[0.2em] text-primary mb-4 opacity-70">
-                Case Update
-              </div>
-              <h1 className="text-[clamp(26px,4vw,34px)] font-black text-[#0f1f38] leading-[1.2]">
-                {currentStep.step_name}
-              </h1>
-              <p className="text-[#3a4f63] text-[15px] leading-[1.65] mb-[28px] max-w-[500px]">
-                {currentStep.step_description}
-              </p>
+            <div className={`bg-white border border-[#d0e4f7] rounded-[32px] p-10 md:p-14 lg:p-20 shadow-xl shadow-[#0f1f38]/5 animate-in fade-in zoom-in-95 duration-700 w-full max-w-[740px] mx-auto ${isChapter1 ? 'step-modal-spacing' : ''}`}>
+              <div className={`text-[11px] font-bold uppercase tracking-[0.2em] mb-4 opacity-70 ${isChapter1 ? 'accent-rose' : 'text-primary'}`}>Case Update</div>
+              <h1 className={`text-[clamp(26px,4vw,34px)] font-black leading-[1.2] ${isChapter1 ? 'accent-brown' : 'text-[#0f1f38]'}`}>{currentStep.step_name}</h1>
+              <p className={`text-[15px] leading-[1.65] mb-[28px] max-w-[500px] ${isChapter1 ? 'accent-brown' : 'text-[#3a4f63]'}`}>{currentStep.step_description}</p>
 
               {currentStep.actions && currentStep.actions.length > 0 && (
                 <div className="space-y-3 mb-12">
@@ -6111,15 +6448,13 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
         </button>
 
         <div className="flex-1 flex items-center gap-2 mx-auto px-4">
-          <div className="flex-1 h-1 bg-[#d0e4f7] rounded-[10px] overflow-hidden">
+          <div className="flex-1 h-1 rounded-[10px] overflow-hidden bg-[#d0e4f7]">
             <div
-              className="h-full bg-linear-to-r from-primary to-primary/70 transition-all duration-500 ease-out"
+              className={`h-full transition-all duration-500 ease-out ${isChapter1 ? 'accent-rose-bg' : 'bg-linear-to-r from-primary to-primary/70'}`}
               style={{ width: `${progressPct}%` }}
             />
           </div>
-          <div className="text-[11px] font-semibold text-[#6b8097] whitespace-nowrap">
-            Step {localIdx + 1} of {activeStepsInChapter.length}
-          </div>
+          <div className={`text-[11px] font-semibold whitespace-nowrap ${isChapter1 ? 'accent-brown' : 'text-[#6b8097]'}`}>Step {localIdx + 1} of {activeStepsInChapter.length}</div>
         </div>
 
         <button
@@ -6400,8 +6735,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                       );
 
                       // Check if all documents are now reviewed for auto-complete
-                      const sId =
-                        currentStep.step_key || (currentStep as any)?.id;
+                      // Use top-level sId
                       if (sId === "step_1_2") {
                         const docItems = currentStep.document_items || [];
                         const allReviewed = docItems.every((doc: any) => {
@@ -6533,10 +6867,10 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                 {/* Tutorial Body */}
                 <div className="flex-1 bg-[#fafcff] p-[48px_24px_40px] flex flex-col items-center overflow-y-auto min-h-0">
                   <div className="w-full max-w-[580px] flex flex-col">
-                    <div className="text-[11px] font-semibold tracking-widest uppercase text-primary mb-4">
+                    <div className={`text-[11px] font-semibold tracking-widest uppercase mb-4 ${isChapter1 ? 'accent-rose' : 'text-primary'}`}>
                       {currentTutStep.label}
                     </div>
-                    <h2 className="text-[clamp(20px,3.2vw,26px)] font-black text-[#0c1b33] mb-2 leading-[1.3]">
+                    <h2 className={`text-[clamp(20px,3.2vw,26px)] font-black mb-2 leading-[1.3] ${isChapter1 ? 'accent-brown' : 'text-[#0c1b33]'}`}>
                       {currentTutStep.heading}
                     </h2>
                     <div
@@ -6645,7 +6979,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
             } else if (typeof dynamicStepsRaw === "object") {
               // New format: object with paths (household_member/joint_sponsor)
               dynamicSteps = (dynamicStepsRaw as any)[effectivePath];
-              isDynamic = dynamicSteps && dynamicSteps.length > 0;
+              isDynamic = !!(dynamicSteps && dynamicSteps.length > 0);
             }
           }
 
@@ -7001,17 +7335,11 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                             )}
 
                             {/* Highlight Box */}
-                            {(
-                              currentTutStep as (typeof USCIS_TUTORIAL_STEPS)[0]
-                            ).fields &&
-                              (
-                                currentTutStep as (typeof USCIS_TUTORIAL_STEPS)[0]
-                              ).fields.length > 0 && (
+                            {Array.isArray((currentTutStep as (typeof USCIS_TUTORIAL_STEPS)[0])?.fields) &&
+                              ((currentTutStep as (typeof USCIS_TUTORIAL_STEPS)[0])?.fields?.length ?? 0) > 0 && (
                                 <div className="flex flex-col gap-[8px] w-full">
-                                  {(
-                                    currentTutStep as (typeof USCIS_TUTORIAL_STEPS)[0]
-                                  ).fields.map((field, idx) =>
-                                    field.type === "btn" ? (
+                                  {((currentTutStep as (typeof USCIS_TUTORIAL_STEPS)[0])?.fields ?? []).map((field, idx) =>
+                                    field?.type === "btn" ? (
                                       <div
                                         key={idx}
                                         className="w-full px-[22px] py-[10px] bg-[#2f6fd4] text-white border-none rounded-[8px] text-[13px] font-semibold cursor-default opacity-90"
@@ -7029,11 +7357,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                                           </label>
                                         )}
                                         <input
-                                          type={
-                                            field.isPassword
-                                              ? "password"
-                                              : "text"
-                                          }
+                                          type={field.isPassword ? "password" : "text"}
                                           placeholder={field.placeholder}
                                           disabled
                                           className="w-full px-[12px] py-[8px] border border-[#d0e4f7] rounded-[6px] text-[13px] bg-[#f8fafb] text-[#9a9a9a]"
