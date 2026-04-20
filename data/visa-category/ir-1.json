@@ -1978,19 +1978,15 @@
               "Print full pages at standard size without shrinking or cropping.",
               "Use the final completed versions of both forms before moving to payment and packet assembly."
             ],
-            "cta_button": {
-              "label": "Open completed forms to print",
-              "href": "https://www.rahvana.com/visa-forms/i130/wizard"
-            },
-            "guide_button_label": "View print guide",
+            "guide_button_label": "View guide",
             "second_card_title": "Mark this step done",
             "second_card_subtitle": "Save that your hard copies have been printed and are ready for the next paper-filing steps.",
             "action_button_label": "Save printed status",
             "action_button_status_heading": "Printed status saved",
             "action_button_status_message": "Your forms are marked as printed. You can continue to preparing the filing fee.",
             "guide_card": {
-              "title": "Printing guide",
-              "subtitle": "See the recommended print settings and what to check before you move on."
+              "title": "Printing / Download guide",
+              "subtitle": "See the recommended print / download settings and what to check before you move on."
             },
             "chips": [
               {
@@ -2020,35 +2016,75 @@
             "guide_steps": [
               {
                 "label": "Print guide · Step 1",
-                "title": "Open the completed form package",
-                "text": "Start from the completed Rahvana form pages so you print the exact versions you plan to mail.",
-                "url": "rahvana.com/visa-forms",
-                "visual": "<div class=\"mt\">Completed form package</div><div class=\"mb\"><div class=\"mr\"><div class=\"mf\"></div><div class=\"mbtn\">Download PDF</div></div><div class=\"small\">Use the final PDF for I-130 and the final PDF for I-130A.</div></div>",
-                "note": "If you made edits recently, reopen the forms and confirm you are printing the latest completed versions."
+                "title": "Navigate to the Print Hard Copies step",
+                "text": "In USCIS Petition Filing, navigate to the <strong>Print Hard Copies of the Forms</strong> step, and click on either <strong>Print I-130</strong> or <strong>Print I-130A</strong> button.",
+                "url": "uscis-petition",
+                "visual": "<img src=\"/assets/images/ir1-journey/c1_step11/1-click-button.png\" alt=\"Navigate to print forms\" style=\"width:100%; \" />",
+                "note": "If you have not added this document in the Document Vault yet, you will get an error. First upload the document there, then try again."
               },
               {
                 "label": "Print guide · Step 2",
-                "title": "Use normal page size and full-page printing",
-                "text": "Print at standard size and avoid settings that shrink, crop, or reformat the form pages.",
-                "url": "print dialog",
-                "visual": "<div class=\"mt\">Print settings</div><div class=\"mb\"><div class=\"mr\"><div class=\"mf\"></div><div class=\"mf\"></div></div><div class=\"mr\"><div class=\"mf\"></div></div><div class=\"mbtn\">Print</div></div>",
-                "note": "Keep the full page visible. Do not use settings that clip margins or remove pages."
+                "title": "Open the preview modal and click Print",
+                "text": "After clicking the button, the preview modal will open. Look for the <strong>Print icon</strong> in the top toolbar and click it to open your system's print dialog.",
+                "url": "preview-modal",
+                "visual": "<img src=\"/assets/images/ir1-journey/c1_step11/2-click-print-icon.png\" alt=\"Click print icon\" style=\"width:100%;\" />",
+                "note": "The print icon typically appears as a printer symbol in the document toolbar."
               },
               {
                 "label": "Print guide · Step 3",
-                "title": "Print both forms clearly",
-                "text": "Make sure all pages are readable and in the correct order before you move on.",
-                "url": "printed pages",
-                "visual": "<div class=\"mt\">Printed packet check</div><div class=\"mb\"><div class=\"small\">I-130 pages</div></div><div class=\"mb\"><div class=\"small\">I-130A pages</div></div>",
-                "note": "If any page is faint, skewed, or incomplete, reprint that form before proceeding."
+                "title": "Select destination and pages",
+                "text": "In the print dialog, select your printer destination from the available options. Choose which pages you want to print or keep the default to print all pages.",
+                "url": "print-options",
+                "visual": "<img src=\"/assets/images/ir1-journey/c1_step11/3-click-destination.png\" alt=\"Select print destination\" style=\"width:100%; \" />",
+                "note": "Make sure you have a compatible printer connected and selected."
               },
               {
                 "label": "Print guide · Step 4",
-                "title": "Set the printed forms aside for the packet",
-                "text": "Once both forms are printed cleanly, keep them together so you can prepare payment and assemble the filing packet next.",
-                "url": "paper filing path",
-                "visual": "<div class=\"mt\">Ready for next step</div><div class=\"mb\"><div class=\"small\">Printed I-130</div></div><div class=\"mb\"><div class=\"small\">Printed I-130A</div></div><div class=\"mbtn\">Continue to payment</div>",
-                "note": "You are not mailing yet. The next paper-only steps are preparing payment and assembling the packet."
+                "title": "Set paper size and orientation",
+                "text": "Select the correct paper size: <strong>Letter</strong> (8.5\" × 11\") for US filing, or <strong>A4</strong> (210 × 297mm) for Pakistan or other international locations. Ensure orientation matches your document.",
+                "url": "paper-setup",
+                "visual": "<img src=\"/assets/images/ir1-journey/c1_step11/4-select-paper-size.png\" alt=\"Set paper size\" style=\"width:100%; \" />",
+                "note": "USCIS accepts both Letter and A4 sizes. Check your local requirements."
+              },
+              {
+                "label": "Print guide · Step 5",
+                "title": "Enable collate option for proper sequencing",
+                "text": "In the advanced print options, make sure to check the <strong>Collate</strong> checkbox. This ensures all your pages are printed in the correct sequence so your final packet is properly organized.",
+                "url": "print-collate",
+                "visual": "<img src=\"/assets/images/ir1-journey/c1_step11/enable-collate.png\" alt=\"Check collate option\" style=\"width:100%; \" />",
+                "note": "Collating prevents pages from being mixed up if you're printing multiple copies."
+              },
+              {
+                "label": "Print guide · Step 6",
+                "title": "Click Print and wait for completion",
+                "text": "Click the <strong>Print</strong> button and wait for your printer to complete the print job. Don't close the preview or dialog until printing is finished.",
+                "url": "final-print",
+                "visual": "<img src=\"/assets/images/ir1-journey/c1_step11/5-click-print-button.png\" alt=\"Print completion\" style=\"width:100%; \" />",
+                "note": "Check that all pages printed clearly and are not faded or cut off before proceeding."
+              },
+              {
+                "label": "Download guide · Step 1",
+                "title": "Navigate to the Print Hard Copies step",
+                "text": "In USCIS Petition Filing, navigate to the <strong>Print Hard Copies of Forms</strong> step, and click on either <strong>Print I-130</strong> or <strong>Print I-130A</strong> button.",
+                "url": "uscis-petition",
+                "visual": "<img src=\"/assets/images/ir1-journey/c1_step11/1-click-button.png\" alt=\"Navigate to download forms\" style=\"width:100%; \" />",
+                "note": "If you have not added this document in the Document Vault yet, you will get an error. First upload the document there, then try again."
+              },
+              {
+                "label": "Download guide · Step 2",
+                "title": "Open preview modal and click Download",
+                "text": "After clicking the button, the preview modal will open. Look for the <strong>Download icon</strong> in the top toolbar and click it to download the document to your computer.",
+                "url": "preview-modal",
+                "visual": "<img src=\"/assets/images/ir1-journey/c1_step11/6-click-download-icon.png\" alt=\"Click download icon\" style=\"width:100%; \" />",
+                "note": "The download icon typically appears as a downward arrow or download symbol in the document toolbar."
+              },
+              {
+                "label": "Download guide · Step 3",
+                "title": "Choose save location and filename",
+                "text": "When the save dialog appears, select the destination folder on your computer where you want to store the file. Give it a clear name like <strong>I-130_Final.pdf</strong> or <strong>I-130A_Completed.pdf</strong> and click <strong>Save</strong>.",
+                "url": "save-location",
+                "visual": "<img src=\"/assets/images/ir1-journey/c1_step11/7-save.png\" alt=\"Save file location\" style=\"width:100%; \" />",
+                "note": "Choose a memorable location such as a dedicated immigration folder so you can find it later."
               }
             ]
           }
@@ -4661,6 +4697,171 @@
         {
           "step_key": "step_3_4",
           "step_number": 4,
+          "step_type": "tool",
+          "step_name": "Attend Medical Exam",
+          "step_short_description": "Medical screening and vaccinations",
+          "step_description": "Attend your scheduled medical examination with an embassy-approved panel physician. This is a mandatory health screening and vaccination review for all immigrants.",
+          "who": "Beneficiary",
+          "where": "IOM clinic",
+          "timeline": "2-4 hours at clinic",
+          "actions": [
+            "Arrive on time with documents",
+            "Complete intake forms",
+            "Pay fees",
+            "Physical examination",
+            "Chest X-ray",
+            "Blood tests",
+            "Vaccination review",
+            "Physician interview"
+          ],
+          "output": "Sealed medical envelope",
+          "notes": "DO NOT OPEN envelope. Results ready in 2-5 days. Collect 1-2 days before interview.",
+          "relevantTools": [
+            {
+              "label": "Book Medical Appointment",
+              "labelUr": "میڈیکل اپائنٹمنٹ بک کریں",
+              "href": "/book-appointment",
+              "type": "service"
+            }
+          ],
+          "tool_data": {
+            "type": "medical_exam_guide",
+            "bring": [
+              "Passport (original)",
+              "NVC interview appointment letter",
+              "Polio vaccination certificate (original)",
+              "Passport-style photos (2–4)",
+              "Medical exam fee (confirm with physician)",
+              "Any prior vaccination records if available"
+            ],
+            "pitfalls": [
+              "Forgetting the polio vaccination certificate",
+              "Arriving late — exams may not accommodate latecomers",
+              "Not having the exam fee ready in the accepted form",
+              "Using an unapproved or removed panel physician",
+              "Not confirming medical results were sent to the embassy"
+            ],
+            "tips": [
+              "Arrive 15–20 minutes early to handle registration",
+              "Bring a snack and water — exams can take several hours",
+              "Wear comfortable, easy-to-remove clothing for physical examination",
+              "After the exam, confirm the physician will send results before your interview date"
+            ],
+            "tutorial": [
+              {
+                "label": "Step 1 of 6",
+                "heading": "What to bring to the exam",
+                "instruction": "Gather all required items the day before. Arriving without required documents may mean rescheduling.",
+                "vlabel": "Required Items",
+                "visual": "<div class=\"mock-card\"><div class=\"mock-title\">Bring checklist</div><div class=\"mock-row\">Passport (original) <span class=\"mock-badge-green\">Required</span></div><div class=\"mock-row\">NVC appointment letter <span class=\"mock-badge-green\">Required</span></div><div class=\"mock-row\">Polio vaccination certificate <span class=\"mock-badge-green\">Required</span></div><div class=\"mock-row\">Passport photos (2–4) <span class=\"mock-badge-green\">Required</span></div><div class=\"mock-row\">Exam fee (cash/form per physician) <span class=\"mock-badge-green\">Required</span></div></div>"
+              },
+              {
+                "label": "Step 2 of 6",
+                "heading": "Arrive on time — allow extra time",
+                "instruction": "Arrive at least 15–20 minutes before your scheduled time. Security checks and registration take time. Latecomers may not be accommodated.",
+                "vlabel": "Arrival Timing",
+                "note": "If your appointment is in the morning, account for morning traffic — especially in major cities like Islamabad or Karachi.",
+                "visual": "<div class=\"mock-card\"><div class=\"mock-title\">Timing guidance</div><div style=\"font-size:13px;color:var(--ink-soft);line-height:1.6;margin-top:4px\">Arrive 15–20 minutes early. Registration and waiting can take time before the exam begins. Bring something to read — exams often involve waiting periods.</div></div>"
+              },
+              {
+                "label": "Step 3 of 6",
+                "heading": "How the exam typically proceeds",
+                "instruction": "The panel physician will conduct a physical exam, review vaccination records, check medical history, and may order blood or other tests as required by the embassy.",
+                "vlabel": "Exam Flow",
+                "visual": "<div class=\"mock-card\"><div class=\"mock-title\">Typical exam sequence</div><div class=\"mock-row\">Registration and document review</div><div class=\"mock-row\">Physical examination</div><div class=\"mock-row\">Vaccination review and administration if needed</div><div class=\"mock-row\">Blood / lab tests if required</div><div class=\"mock-row\">Results sealed and sent to embassy</div></div>"
+              },
+              {
+                "label": "Step 4 of 6",
+                "heading": "Vaccinations at the exam",
+                "instruction": "The physician may administer required vaccinations during the exam. Required vaccines vary by immigration category and age. The polio certificate you bring will be reviewed here.",
+                "vlabel": "Vaccinations",
+                "note": "Bring your polio vaccination certificate — the physician needs to confirm and document it as part of the medical packet.",
+                "visual": "<div class=\"mock-card\"><div class=\"mock-title\">Vaccination at the exam</div><div style=\"font-size:13px;color:var(--ink-soft);line-height:1.6;margin-top:4px\">Required vaccinations are administered by the physician if not already received. The physician documents all vaccinations as part of the sealed medical packet sent to the embassy.</div></div>"
+              },
+              {
+                "label": "Step 5 of 6",
+                "heading": "The fee — confirm in advance",
+                "instruction": "The medical exam fee is paid directly to the physician. It is not part of the visa fee. Confirm the amount and accepted payment methods with your physician before the exam day.",
+                "vlabel": "Fee Payment",
+                "visual": "<div class=\"mock-card\"><div class=\"mock-title\">Fee guidance</div><div style=\"font-size:13px;color:var(--ink-soft);line-height:1.6;margin-top:4px\">Fees vary by physician and exam complexity. Confirm the current fee and payment method (cash vs card) directly with the physician's office before your appointment.</div></div>"
+              },
+              {
+                "label": "Step 6 of 6",
+                "heading": "After the exam — confirm results will be sent",
+                "instruction": "Before leaving, confirm with the physician's office that the sealed medical results will be forwarded to the embassy before your interview date. Do not assume this happens automatically.",
+                "vlabel": "Post-Exam",
+                "visual": "<div style=\"background:var(--green-bg);border:1px solid var(--green-border);border-radius:var(--radius-sm);padding:14px 16px\"><div style=\"font-size:13px;font-weight:600;color:var(--green);margin-bottom:4px\">Exam complete</div><div style=\"font-size:12px;color:var(--ink-soft);line-height:1.5\">Confirm the physician's office will transmit the sealed results to the embassy before your interview date. Follow up if you have not received confirmation.</div></div>"
+              }
+            ]
+          }
+        },
+        {
+          "step_key": "step_3_5",
+          "step_number": 5,
+          "step_type": "tool",
+          "step_name": "Courier Registration",
+          "step_description": "Register your courier account to receive your visa packet after the interview is approved. Complete the sign-up, follow the guide, and save your credentials and confirmation.",
+          "step_short_description": "Register for visa packet delivery",
+          "who": "Beneficiary",
+          "where": "Home preparation",
+          "actions": [
+            "Register at usvisascheduling.com",
+            "Select courier delivery for Pakistan",
+            "Save your login credentials securely",
+            "Save confirmation page to Document Vault"
+          ],
+          "relevantTools": [
+            {
+              "label": "Courier Portal",
+              "href": "https://www.usvisascheduling.com/",
+              "type": "tool"
+            }
+          ],
+          "tool_data": {
+            "type": "courier_registration",
+            "tutorial": [
+              {
+                "label": "Step 1 of 5",
+                "heading": "Open the courier registration portal",
+                "instruction": "Click 'Open Courier Registration' on the main page to open the USVisaScheduling sign-up portal. This is the official courier service for U.S. visa delivery in Pakistan.",
+                "vlabel": "Courier Portal",
+                "visual": "<div class=\"mock-card\"><div class=\"mock-title\">usvisascheduling.com</div><div style=\"font-size:13px;color:var(--ink-soft);line-height:1.6;margin-top:4px\">Create a new account or sign in to register your courier delivery preferences for your visa packet.</div></div>"
+              },
+              {
+                "label": "Step 2 of 5",
+                "heading": "Create your account",
+                "instruction": "Select 'Create Account' or 'Sign Up'. Enter your email address and create a secure password. Verify your email address when prompted.",
+                "vlabel": "Account Creation",
+                "note": "Use an email address you actively monitor — all courier notifications will be sent there.",
+                "visual": "<div class=\"mock-card\"><div class=\"mock-title\">Create Account</div><div class=\"mock-field\"><div class=\"mock-field-label\">Email Address</div><div class=\"mock-field-input\">your@email.com</div></div><div class=\"mock-field\"><div class=\"mock-field-label\">Password</div><div class=\"mock-field-input\">••••••••••</div></div><div class=\"mock-btn\">Create Account</div></div>"
+              },
+              {
+                "label": "Step 3 of 5",
+                "heading": "Select Pakistan courier delivery",
+                "instruction": "After creating your account, select your country and configure courier delivery preferences for Pakistan. Choose the city or region matching your preferred delivery address.",
+                "vlabel": "Courier Configuration",
+                "visual": "<div class=\"mock-card\"><div class=\"mock-title\">Delivery Preferences</div><div class=\"hl-box\">Pakistan · Select delivery region</div><div style=\"margin-top:10px;font-size:13px;color:var(--ink-soft)\">Choose the city / region closest to your preferred delivery address for the visa packet.</div></div>"
+              },
+              {
+                "label": "Step 4 of 5",
+                "heading": "Complete registration and save confirmation",
+                "instruction": "Complete the registration flow and save or print the confirmation page. This confirmation record should be stored in your Document Vault.",
+                "vlabel": "Registration Confirmed",
+                "visual": "<div style=\"background:var(--green-bg);border:1px solid var(--green-border);border-radius:var(--radius-sm);padding:14px 16px\"><div style=\"font-size:13px;font-weight:600;color:var(--green);margin-bottom:4px\">Registration complete</div><div style=\"font-size:12px;color:var(--ink-soft);line-height:1.5\">Save the confirmation page or email to your Document Vault.</div></div>"
+              },
+              {
+                "label": "Step 5 of 5",
+                "heading": "Return here and save your credentials",
+                "instruction": "Return to this step and use the credential vault card to save your courier account email and password in the Portal Wallet.",
+                "vlabel": "Save Credentials",
+                "visual": "<div class=\"mock-card\"><div class=\"mock-title\">Save to Portal Wallet</div><div style=\"font-size:13px;color:var(--ink-soft);line-height:1.5;margin-top:4px\">Save your courier account email and password so you can access it later when your visa is ready for delivery.</div></div>"
+              }
+            ]
+          }
+        },
+        {
+          "step_key": "step_3_6",
+          "step_number": 6,
           "step_name": "Gather Original Documents",
           "step_short_description": "Official document compilation",
           "step_description": "Assemble the original hard-copy documents needed for your consular interview. Review each item and organize your packet carefully before interview day.",
@@ -4779,6 +4980,26 @@
                       ]
                     },
                     {
+                      "id": "ds260-original",
+                      "icon": "file-text",
+                      "title": "DS-260 Confirmation Page",
+                      "sub": "Online Immigrant Visa Application Confirmation",
+                      "sections": [
+                        {
+                          "t": "What to bring",
+                          "c": "<p>Bring the printed DS-260 confirmation page with barcode. This confirms you have successfully submitted your online immigrant visa application.</p>"
+                        },
+                        {
+                          "t": "Important notes",
+                          "c": "<p>Make sure all information in your DS-260 form is accurate and matches your supporting documents such as passport and civil records.</p>"
+                        },
+                        {
+                          "t": "Where to get it",
+                          "c": "<p>You can download and print the confirmation page after submitting your DS-260 form from the Consular Electronic Application Center (CEAC) website.</p>"
+                        }
+                      ]
+                    },
+                    {
                       "id": "tax-docs",
                       "icon": "calculator",
                       "title": "Most Recent Tax Evidence — Petitioner",
@@ -4844,6 +5065,26 @@
                           "c": "<p>The medical examination results are sealed by the panel physician and sent directly to the embassy. You do not carry the medical packet yourself. Confirm with your physician that the results were submitted before your interview date.</p>"
                         }
                       ]
+                    },
+                    {
+                      "id": "courier-registration-certificate",
+                      "icon": "truck",
+                      "title": "Courier Registration Certificate",
+                      "sub": "Proof of courier service registration for passport delivery",
+                      "sections": [
+                        {
+                          "t": "What to bring",
+                          "c": "<p>Bring a printed copy of your courier registration confirmation. This shows where your passport and visa will be delivered after approval.</p>"
+                        },
+                        {
+                          "t": "Important notes",
+                          "c": "<p>Ensure the selected courier location and contact details are correct. Any mistake may delay the delivery of your passport.</p>"
+                        },
+                        {
+                          "t": "Where to get it",
+                          "c": "<p>You can register and download your courier confirmation from the official portal: <a href=\"https://atlasauth.b2clogin.com/f50ebcfb-eadd-41d8-9099-a7049d073f5c/b2c_1a_atoproduction_atlas_susi/oauth2/v2.0/authorize?client_id=607d08d6-b63b-4735-ad82-05dfcff7efa4&redirect_uri=https%3A%2F%2Fwww.usvisascheduling.com%2Fsignin-aad-b2c_1&response_type=code%20id_token&scope=openid&state=OpenIdConnect.AuthenticationProperties%3D2K23hD4xKzVe12jbVwjyqaABq8BvO9XR4dhxyvhM7SW5r2pLF5Rw4GpLbGg1SrhKGKcppBq4KNWDndIYuM863mlKn1fzE2KBfWVp3CNydelGJjAMx8mKVWAGq8ejU1j_os42RN93Egg5pqqgb_DUyiyluHJiUekQEK3ejCf2cGnJox-DigSRszd4RuUOOihD0Y6c1Hpe6GOOk41Y0gIIquzA9zzqTcrjWjMwx0-VXDCqUcH2fmr6qPDD75ogQTvjDKt9bnqWuV4cvfGquOOyqo0gAVtBE3cfF2JUvI4eP60Ktla_mMBiyIaYOdRC6Nkw3gs-5mKXMz-0ZBpSs8plZLBPAXyRKtKkFntQdtGUjz3OpzjMFUQySSZYlg4KAqk9m6_QhSee5b0ZmVV7hf6r2ocvBlfdHQIJKpjRz6eLgJDzmfKbZWFYxce-gPpLxmcwxOC4za80kv0torvGvZAyDyeY_RONVFzmYFXyMQsGHtua9Ll6wHxDN4ZPF9lEPTsThtgrrfydnrVxWu-BWZVaGzwovnUp3hQzNoa3c8jtS11JAtMC780rjr2dNDAv9EpHWr6ISfsO-Syu-4IdVGizjsHkwqQRLNUZoqKW7YtlTUkWn80R4tDfH3WkcMLRS-4D&response_mode=form_post&nonce=639086504989774135.NDYwYmEzMGMtYjI4Yi00MDBiLTg5ZGItZmU0MTM1ZjVhYTMyNTM0YWI0ZDAtNzI5NC00OGMxLWIxYjctNjZlMzcxYjM3ODk5&ui_locales=en-US&x-client-SKU=ID_NET472&x-client-ver=6.35.0.0\" target=\"_blank\">Register Courier Service</a>.</p>"
+                        }
+                      ]
                     }
                   ]
                 },
@@ -4885,171 +5126,6 @@
               ]
             },
             "disclaimer": "Rahvana provides structured guidance only. Always verify required documents with your specific embassy's interview instructions."
-          }
-        },
-        {
-          "step_key": "step_3_5",
-          "step_number": 5,
-          "step_type": "tool",
-          "step_name": "Attend Medical Exam",
-          "step_short_description": "Medical screening and vaccinations",
-          "step_description": "Attend your scheduled medical examination with an embassy-approved panel physician. This is a mandatory health screening and vaccination review for all immigrants.",
-          "who": "Beneficiary",
-          "where": "IOM clinic",
-          "timeline": "2-4 hours at clinic",
-          "actions": [
-            "Arrive on time with documents",
-            "Complete intake forms",
-            "Pay fees",
-            "Physical examination",
-            "Chest X-ray",
-            "Blood tests",
-            "Vaccination review",
-            "Physician interview"
-          ],
-          "output": "Sealed medical envelope",
-          "notes": "DO NOT OPEN envelope. Results ready in 2-5 days. Collect 1-2 days before interview.",
-          "relevantTools": [
-            {
-              "label": "Book Medical Appointment",
-              "labelUr": "میڈیکل اپائنٹمنٹ بک کریں",
-              "href": "/book-appointment",
-              "type": "service"
-            }
-          ],
-          "tool_data": {
-            "type": "medical_exam_guide",
-            "bring": [
-              "Passport (original)",
-              "NVC interview appointment letter",
-              "Polio vaccination certificate (original)",
-              "Passport-style photos (2–4)",
-              "Medical exam fee (confirm with physician)",
-              "Any prior vaccination records if available"
-            ],
-            "pitfalls": [
-              "Forgetting the polio vaccination certificate",
-              "Arriving late — exams may not accommodate latecomers",
-              "Not having the exam fee ready in the accepted form",
-              "Using an unapproved or removed panel physician",
-              "Not confirming medical results were sent to the embassy"
-            ],
-            "tips": [
-              "Arrive 15–20 minutes early to handle registration",
-              "Bring a snack and water — exams can take several hours",
-              "Wear comfortable, easy-to-remove clothing for physical examination",
-              "After the exam, confirm the physician will send results before your interview date"
-            ],
-            "tutorial": [
-              {
-                "label": "Step 1 of 6",
-                "heading": "What to bring to the exam",
-                "instruction": "Gather all required items the day before. Arriving without required documents may mean rescheduling.",
-                "vlabel": "Required Items",
-                "visual": "<div class=\"mock-card\"><div class=\"mock-title\">Bring checklist</div><div class=\"mock-row\">Passport (original) <span class=\"mock-badge-green\">Required</span></div><div class=\"mock-row\">NVC appointment letter <span class=\"mock-badge-green\">Required</span></div><div class=\"mock-row\">Polio vaccination certificate <span class=\"mock-badge-green\">Required</span></div><div class=\"mock-row\">Passport photos (2–4) <span class=\"mock-badge-green\">Required</span></div><div class=\"mock-row\">Exam fee (cash/form per physician) <span class=\"mock-badge-green\">Required</span></div></div>"
-              },
-              {
-                "label": "Step 2 of 6",
-                "heading": "Arrive on time — allow extra time",
-                "instruction": "Arrive at least 15–20 minutes before your scheduled time. Security checks and registration take time. Latecomers may not be accommodated.",
-                "vlabel": "Arrival Timing",
-                "note": "If your appointment is in the morning, account for morning traffic — especially in major cities like Islamabad or Karachi.",
-                "visual": "<div class=\"mock-card\"><div class=\"mock-title\">Timing guidance</div><div style=\"font-size:13px;color:var(--ink-soft);line-height:1.6;margin-top:4px\">Arrive 15–20 minutes early. Registration and waiting can take time before the exam begins. Bring something to read — exams often involve waiting periods.</div></div>"
-              },
-              {
-                "label": "Step 3 of 6",
-                "heading": "How the exam typically proceeds",
-                "instruction": "The panel physician will conduct a physical exam, review vaccination records, check medical history, and may order blood or other tests as required by the embassy.",
-                "vlabel": "Exam Flow",
-                "visual": "<div class=\"mock-card\"><div class=\"mock-title\">Typical exam sequence</div><div class=\"mock-row\">Registration and document review</div><div class=\"mock-row\">Physical examination</div><div class=\"mock-row\">Vaccination review and administration if needed</div><div class=\"mock-row\">Blood / lab tests if required</div><div class=\"mock-row\">Results sealed and sent to embassy</div></div>"
-              },
-              {
-                "label": "Step 4 of 6",
-                "heading": "Vaccinations at the exam",
-                "instruction": "The physician may administer required vaccinations during the exam. Required vaccines vary by immigration category and age. The polio certificate you bring will be reviewed here.",
-                "vlabel": "Vaccinations",
-                "note": "Bring your polio vaccination certificate — the physician needs to confirm and document it as part of the medical packet.",
-                "visual": "<div class=\"mock-card\"><div class=\"mock-title\">Vaccination at the exam</div><div style=\"font-size:13px;color:var(--ink-soft);line-height:1.6;margin-top:4px\">Required vaccinations are administered by the physician if not already received. The physician documents all vaccinations as part of the sealed medical packet sent to the embassy.</div></div>"
-              },
-              {
-                "label": "Step 5 of 6",
-                "heading": "The fee — confirm in advance",
-                "instruction": "The medical exam fee is paid directly to the physician. It is not part of the visa fee. Confirm the amount and accepted payment methods with your physician before the exam day.",
-                "vlabel": "Fee Payment",
-                "visual": "<div class=\"mock-card\"><div class=\"mock-title\">Fee guidance</div><div style=\"font-size:13px;color:var(--ink-soft);line-height:1.6;margin-top:4px\">Fees vary by physician and exam complexity. Confirm the current fee and payment method (cash vs card) directly with the physician's office before your appointment.</div></div>"
-              },
-              {
-                "label": "Step 6 of 6",
-                "heading": "After the exam — confirm results will be sent",
-                "instruction": "Before leaving, confirm with the physician's office that the sealed medical results will be forwarded to the embassy before your interview date. Do not assume this happens automatically.",
-                "vlabel": "Post-Exam",
-                "visual": "<div style=\"background:var(--green-bg);border:1px solid var(--green-border);border-radius:var(--radius-sm);padding:14px 16px\"><div style=\"font-size:13px;font-weight:600;color:var(--green);margin-bottom:4px\">Exam complete</div><div style=\"font-size:12px;color:var(--ink-soft);line-height:1.5\">Confirm the physician's office will transmit the sealed results to the embassy before your interview date. Follow up if you have not received confirmation.</div></div>"
-              }
-            ]
-          }
-        },
-        {
-          "step_key": "step_3_6",
-          "step_number": 6,
-          "step_type": "tool",
-          "step_name": "Courier Registration",
-          "step_description": "Register your courier account to receive your visa packet after the interview is approved. Complete the sign-up, follow the guide, and save your credentials and confirmation.",
-          "step_short_description": "Register for visa packet delivery",
-          "who": "Beneficiary",
-          "where": "Home preparation",
-          "actions": [
-            "Register at usvisascheduling.com",
-            "Select courier delivery for Pakistan",
-            "Save your login credentials securely",
-            "Save confirmation page to Document Vault"
-          ],
-          "relevantTools": [
-            {
-              "label": "Courier Portal",
-              "href": "https://www.usvisascheduling.com/",
-              "type": "tool"
-            }
-          ],
-          "tool_data": {
-            "type": "courier_registration",
-            "tutorial": [
-              {
-                "label": "Step 1 of 5",
-                "heading": "Open the courier registration portal",
-                "instruction": "Click 'Open Courier Registration' on the main page to open the USVisaScheduling sign-up portal. This is the official courier service for U.S. visa delivery in Pakistan.",
-                "vlabel": "Courier Portal",
-                "visual": "<div class=\"mock-card\"><div class=\"mock-title\">usvisascheduling.com</div><div style=\"font-size:13px;color:var(--ink-soft);line-height:1.6;margin-top:4px\">Create a new account or sign in to register your courier delivery preferences for your visa packet.</div></div>"
-              },
-              {
-                "label": "Step 2 of 5",
-                "heading": "Create your account",
-                "instruction": "Select 'Create Account' or 'Sign Up'. Enter your email address and create a secure password. Verify your email address when prompted.",
-                "vlabel": "Account Creation",
-                "note": "Use an email address you actively monitor — all courier notifications will be sent there.",
-                "visual": "<div class=\"mock-card\"><div class=\"mock-title\">Create Account</div><div class=\"mock-field\"><div class=\"mock-field-label\">Email Address</div><div class=\"mock-field-input\">your@email.com</div></div><div class=\"mock-field\"><div class=\"mock-field-label\">Password</div><div class=\"mock-field-input\">••••••••••</div></div><div class=\"mock-btn\">Create Account</div></div>"
-              },
-              {
-                "label": "Step 3 of 5",
-                "heading": "Select Pakistan courier delivery",
-                "instruction": "After creating your account, select your country and configure courier delivery preferences for Pakistan. Choose the city or region matching your preferred delivery address.",
-                "vlabel": "Courier Configuration",
-                "visual": "<div class=\"mock-card\"><div class=\"mock-title\">Delivery Preferences</div><div class=\"hl-box\">Pakistan · Select delivery region</div><div style=\"margin-top:10px;font-size:13px;color:var(--ink-soft)\">Choose the city / region closest to your preferred delivery address for the visa packet.</div></div>"
-              },
-              {
-                "label": "Step 4 of 5",
-                "heading": "Complete registration and save confirmation",
-                "instruction": "Complete the registration flow and save or print the confirmation page. This confirmation record should be stored in your Document Vault.",
-                "vlabel": "Registration Confirmed",
-                "visual": "<div style=\"background:var(--green-bg);border:1px solid var(--green-border);border-radius:var(--radius-sm);padding:14px 16px\"><div style=\"font-size:13px;font-weight:600;color:var(--green);margin-bottom:4px\">Registration complete</div><div style=\"font-size:12px;color:var(--ink-soft);line-height:1.5\">Save the confirmation page or email to your Document Vault.</div></div>"
-              },
-              {
-                "label": "Step 5 of 5",
-                "heading": "Return here and save your credentials",
-                "instruction": "Return to this step and use the credential vault card to save your courier account email and password in the Portal Wallet.",
-                "vlabel": "Save Credentials",
-                "visual": "<div class=\"mock-card\"><div class=\"mock-title\">Save to Portal Wallet</div><div style=\"font-size:13px;color:var(--ink-soft);line-height:1.5;margin-top:4px\">Save your courier account email and password so you can access it later when your visa is ready for delivery.</div></div>"
-              }
-            ]
           }
         },
         {
@@ -5327,8 +5403,9 @@
               "title": "Record your AP details",
               "subtitle": "Save this now so Rahvana can track and remind you",
               "ceac_options": [
-                "Administrative Processing",
+                "In Transit",
                 "Ready",
+                "Administrative Processing",
                 "Issued",
                 "Refused",
                 "Pending",

@@ -75,16 +75,39 @@ export default function NotificationCenter({
   const [reminders, setReminders]   = useState<JourneyReminder[]>([]);
   const [loading, setLoading]       = useState(false);
   const [error, setError]           = useState<string | null>(null);
+  const [seeding, setSeeding]       = useState(false);
+
+  const [resolvedJourneyId, setResolvedJourneyId] = useState<string | null>(journeyId === "ir-1" ? null : (journeyId || null));
+  const isDev = process.env.NODE_ENV === 'development';
 
   // ── Fetch from real API ──────────────────────────────────
   const fetchReminders = useCallback(async () => {
-    // Need a real UUID journey ID — "ir-1" is a config key, not a DB id
-    if (!journeyId || journeyId === "ir-1") return;
+    let activeJourneyId = journeyId && journeyId !== "ir-1" ? journeyId : null;
+
+    if (!activeJourneyId) {
+      try {
+        const listRes = await fetch("/api/journeys");
+        if (listRes.ok) {
+          const listData = await listRes.json();
+          if (listData.success && listData.data && listData.data.length > 0) {
+            const active = listData.data.find((j: any) => j.journey.status === "in_progress") || listData.data[0];
+            activeJourneyId = active.journey.id;
+            setResolvedJourneyId(activeJourneyId);
+          }
+        }
+      } catch (err) {
+        console.error("Failed to fetch active journey", err);
+      }
+    } else {
+      setResolvedJourneyId(activeJourneyId);
+    }
+
+    if (!activeJourneyId) return;
 
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch(`/api/v1/journeys/${journeyId}/reminders`);
+      const res = await fetch(`/api/v1/journeys/${activeJourneyId}/reminders`);
       if (!res.ok) throw new Error(`${res.status}`);
       const data = await res.json();
       setReminders(data.reminders ?? []);
@@ -101,9 +124,9 @@ export default function NotificationCenter({
 
   // ── Dismiss ──────────────────────────────────────────────
   const dismiss = async (reminderId: string) => {
-    if (!journeyId || journeyId === "ir-1") return;
+    if (!resolvedJourneyId) return;
     setReminders((prev) => prev.filter((r) => r.id !== reminderId));
-    await fetch(`/api/v1/journeys/${journeyId}/reminders/${reminderId}`, {
+    await fetch(`/api/v1/journeys/${resolvedJourneyId}/reminders/${reminderId}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ action: "dismiss" }),
@@ -112,19 +135,44 @@ export default function NotificationCenter({
 
   // ── Snooze 3 days ────────────────────────────────────────
   const snooze = async (reminderId: string) => {
-    if (!journeyId || journeyId === "ir-1") return;
+    if (!resolvedJourneyId) return;
     setReminders((prev) => prev.filter((r) => r.id !== reminderId));
-    await fetch(`/api/v1/journeys/${journeyId}/reminders/${reminderId}`, {
+    await fetch(`/api/v1/journeys/${resolvedJourneyId}/reminders/${reminderId}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ action: "snooze", snooze_days: 3 }),
     }).catch(() => {});
   };
 
+  // ── Dev: seed sample notifications ──────────────────────
+  const seedDemo = async () => {
+    if (!resolvedJourneyId) return;
+    setSeeding(true);
+    await fetch('/api/dev/seed-notifications', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ journeyId: resolvedJourneyId }),
+    }).catch(() => {});
+    await fetchReminders();
+    setSeeding(false);
+  };
+
+  const clearDemo = async () => {
+    if (!resolvedJourneyId) return;
+    setSeeding(true);
+    await fetch('/api/dev/seed-notifications', {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ journeyId: resolvedJourneyId }),
+    }).catch(() => {});
+    await fetchReminders();
+    setSeeding(false);
+  };
+
   const unread = reminders.filter((r) => !r.is_dismissed);
 
   // ── No real journey ID yet ───────────────────────────────
-  const noRealId = !journeyId || journeyId === "ir-1";
+  const noRealId = !resolvedJourneyId;
 
   return (
     <div className="flex flex-col h-full bg-white border-l border-[#d0e4f7] shadow-2xl w-[360px] animate-in slide-in-from-right duration-300">
@@ -281,6 +329,26 @@ export default function NotificationCenter({
             className="w-full py-2.5 rounded-lg border border-[#d0e4f7] bg-white text-[12px] font-bold text-[#3a4f63] hover:bg-slate-50 transition-colors"
           >
             Dismiss all
+          </button>
+        </div>
+      )}
+
+      {/* Dev-only: Demo seeding controls */}
+      {isDev && resolvedJourneyId && (
+        <div className="p-3 border-t border-orange-200 bg-orange-50 flex gap-2">
+          <button
+            onClick={seedDemo}
+            disabled={seeding}
+            className="flex-1 py-2 rounded-lg bg-orange-500 text-white text-[11px] font-black hover:bg-orange-600 disabled:opacity-50 transition-colors"
+          >
+            {seeding ? "Loading..." : "Load Demo Notifications"}
+          </button>
+          <button
+            onClick={clearDemo}
+            disabled={seeding}
+            className="px-3 py-2 rounded-lg bg-white border border-orange-200 text-[11px] font-bold text-orange-600 hover:bg-orange-50 disabled:opacity-50 transition-colors"
+          >
+            Clear
           </button>
         </div>
       )}

@@ -204,7 +204,11 @@ const CATEGORIES: ("All" | ToolCategory)[] = [
 
 // --- Components ---
 
-export default function ToolsPage() {
+export default function ToolsPage({
+  isEmbedded = false,
+}: {
+  isEmbedded?: boolean;
+}) {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<
     "All" | ToolCategory
@@ -296,7 +300,11 @@ export default function ToolsPage() {
   }).sort((a, b) => a.title.localeCompare(b.title));
 
   return (
-    <div className="bg-background text-foreground font-sans overflow-x-hidden selection:bg-primary selection:text-primary-foreground">
+    <div
+      className={`bg-background text-foreground font-sans overflow-x-hidden selection:bg-primary selection:text-primary-foreground ${
+        isEmbedded ? "" : "pt-16"
+      }`}
+    >
       {/* Ambient Glow */}
       <div className="fixed top-0 left-0 w-full h-full pointer-events-none -z-10">
         <div className="absolute top-[10%] left-[15%] w-[500px] h-[500px] bg-[#0d7377]/5 rounded-full blur-3xl" />
@@ -305,7 +313,9 @@ export default function ToolsPage() {
 
       <div className="site-main-px site-main-py">
         {/* Hero Section */}
-        <section className="text-center mb-5 md:mb-10">
+        <section
+          className={`text-center mb-5 md:mb-10 pt-1`}
+        >
           <h1 className="text-3xl md:text-5xl font-bold mb-4 bg-clip-text text-transparent bg-linear-to-r from-foreground to-muted-foreground animate-fade-up">
             {t("toolsPage.heroTitle") || "Create. Check. Comply."}
           </h1>

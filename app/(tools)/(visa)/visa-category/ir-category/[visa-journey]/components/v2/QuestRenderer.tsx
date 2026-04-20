@@ -171,57 +171,69 @@ export function QuestRenderer({
     setView("result");
   };
 
-  const getStatusMeta = (id: string) => {
+  const getStatusMeta = (id: string, iconSize = 14) => {
     const res = questResults[id] || (state.metadata?.questResults as any)?.[id];
     if (!res)
       return {
         label: "Not started",
         color: "text-[#6b8097]",
-        icon: <Circle size={14} className="opacity-40" />,
+        icon: <Circle size={iconSize} className="opacity-40" />,
         bg: "bg-white",
         border: "border-[#d0e4f7]",
+        btnSolid: "bg-primary text-white hover:bg-[#0f1f38]",
+        btnOutline: "bg-white text-[#6b8097] border-[#d0e4f7] hover:border-primary hover:text-primary",
       };
 
     switch (res.state) {
       case "pass":
         return {
           label: "Passed",
-          color: "text-[#1a7a5e]",
-          icon: <CheckCircle2 size={14} />,
-          bg: "bg-[#f0faf6]",
-          border: "border-[#b5e0d0]/50",
+          color: "text-primary",
+          icon: <CheckCircle2 size={iconSize} />,
+          bg: "bg-primary/10",
+          border: "border-primary/20",
+          btnSolid: "bg-primary text-white hover:bg-primary/90",
+          btnOutline: "bg-white text-primary border border-primary hover:bg-primary/5",
         };
       case "caution":
         return {
           label: "Caution",
           color: "text-amber-600",
-          icon: <AlertTriangle size={14} />,
+          icon: <AlertTriangle size={iconSize} />,
           bg: "bg-amber-50",
           border: "border-amber-200/50",
+          btnSolid: "bg-amber-600 text-white hover:bg-amber-700",
+          btnOutline: "bg-white text-amber-600 border border-amber-600 hover:bg-amber-50",
         };
       case "review":
         return {
           label: "Review",
           color: "text-orange-600",
-          icon: <Info size={14} />,
+          icon: <Info size={iconSize} />,
           bg: "bg-orange-50",
           border: "border-orange-200/50",
+          btnSolid: "bg-orange-600 text-white hover:bg-orange-700",
+          btnOutline: "bg-white text-orange-600 border border-orange-600 hover:bg-orange-50",
         };
       case "stop":
         return {
           label: "Blocked",
           color: "text-red-600",
-          icon: <XCircle size={14} />,
+          icon: <XCircle size={iconSize} />,
           bg: "bg-red-50",
           border: "border-red-200/50",
+          btnSolid: "bg-red-600 text-white hover:bg-red-700",
+          btnOutline: "bg-white text-red-600 border border-red-600 hover:bg-red-50",
         };
       default:
         return {
           label: "Completed",
           color: "text-primary",
-          icon: <CheckCircle2 size={14} />,
+          icon: <CheckCircle2 size={iconSize} />,
           bg: "bg-[#f0f7ff]",
           border: "border-[#d0e4f7]",
+          btnSolid: "bg-primary text-white hover:bg-[#0f1f38]",
+          btnOutline: "bg-white text-primary border border-primary hover:bg-primary/5",
         };
     }
   };
@@ -233,17 +245,23 @@ export function QuestRenderer({
     return (
       <div className="max-w-[740px] mx-auto w-full animate-in fade-in duration-500 step-modal-spacing">
         <div className="px-0 pt-0 pb-0 step-modal-spacing">
-            <div className="mb-9">
-            <h1 className={`text-[clamp(26px,4vw,34px)] font-black mb-2.5 leading-[1.2] ${isChapter1 ? "accent-brown" : isChapter2 ? "text-[#27192e]" : isChapter3 ? "text-[#0f1f38]" : "text-[#0f1f38]"}`}>
+          <div className="mb-9">
+            <h1
+              className={`text-[clamp(26px,4vw,34px)] font-black mb-2.5 leading-[1.2] ${isChapter1 ? "accent-brown" : isChapter2 ? "text-[#27192e]" : isChapter3 ? "text-[#0f1f38]" : "text-[#0f1f38]"}`}
+            >
               {suite.title}
             </h1>
-            <p className={`text-[15px] max-w-[540px] leading-[1.65] ${isChapter1 ? "accent-rose" : isChapter2 ? "text-[#b48ad6]" : isChapter3 ? "text-[#3a4f63]" : "text-[#3a4f63]"}`}>
+            <p
+              className={`text-[15px] max-w-[540px] leading-[1.65] ${isChapter1 ? "accent-rose" : isChapter2 ? "text-[#b48ad6]" : isChapter3 ? "text-[#3a4f63]" : "text-[#3a4f63]"}`}
+            >
               {suite.subtitle}
             </p>
           </div>
 
           <div className="mb-9">
-            <div className={`w-full h-[5px] rounded-[10px] overflow-hidden ${isChapter1 ? "bg-[#e6d6c3]" : isChapter2 ? "bg-[#ede6f6]" : isChapter3 ? "bg-[#e8f1fb]" : "bg-primary/30"}`}>
+            <div
+              className={`w-full h-[5px] rounded-[10px] overflow-hidden ${isChapter1 ? "bg-[#e6d6c3]" : isChapter2 ? "bg-[#ede6f6]" : isChapter3 ? "bg-[#e8f1fb]" : "bg-primary/30"}`}
+            >
               <div
                 className={`h-full rounded-[10px] transition-all duration-1000 ease-out ${isChapter1 ? "bg-[#a97c50]" : isChapter2 ? "bg-[#b48ad6]" : isChapter3 ? "bg-[#2f6fd4]" : "bg-primary"}`}
                 style={{ width: `${progressPct}%` }}
@@ -251,14 +269,15 @@ export function QuestRenderer({
             </div>
           </div>
 
-            <div className="flex flex-col gap-[10px]">
+          <div className="flex flex-col gap-[10px]">
             {suite.quests.map((q, idx) => {
               const meta = getStatusMeta(q.id);
               return (
                 <button
                   key={q.id}
                   onClick={() => handleStartQuest(q.id)}
-                  className="w-full flex items-center gap-[16px] px-[20px] py-[18px] rounded-[14px] border-[1.5px] border-[#d0e4f7] bg-white text-left transition-all group hover:border-[#340606] hover:shadow-[0_8px_32px_rgba(52,6,6,0.12),0_2px_8px_rgba(52,6,6,0.06)] shadow-[0_2px_12px_rgba(52,6,6,0.12),0_1px_3px_rgba(52,6,6,0.06)] hover:-translate-y-px active:translate-y-0">
+                  className="w-full flex items-center gap-[16px] px-[20px] py-[18px] rounded-[14px] border-[1.5px] border-[#d0e4f7] bg-white text-left transition-all group hover:border-[#340606] hover:shadow-[0_8px_32px_rgba(52,6,6,0.12),0_2px_8px_rgba(52,6,6,0.06)] shadow-[0_2px_12px_rgba(52,6,6,0.12),0_1px_3px_rgba(52,6,6,0.06)] hover:-translate-y-px active:translate-y-0"
+                >
                   <div
                     className={`w-[40px] h-[40px] rounded-[10px] flex items-center justify-center text-[18px] shrink-0 transition-all border
                       ${["Passed", "Completed"].includes(meta.label)
@@ -296,10 +315,14 @@ export function QuestRenderer({
                           />}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <h3 className={`text-[15px] font-semibold mb-[4px] leading-[1.3] truncate ${isChapter1 ? "accent-brown" : isChapter2 ? "text-[#27192e]" : isChapter3 ? "text-[#0f1f38]" : "text-[#0f1f38]"}`}>
+                    <h3
+                      className={`text-[15px] font-semibold mb-[4px] leading-[1.3] truncate ${isChapter1 ? "accent-brown" : isChapter2 ? "text-[#27192e]" : isChapter3 ? "text-[#0f1f38]" : "text-[#0f1f38]"}`}
+                    >
                       {q.title}
                     </h3>
-                    <p className={`text-[13px] font-normal leading-[1.4] truncate ${isChapter1 ? "accent-rose" : isChapter2 ? "text-[#b48ad6]" : isChapter3 ? "text-[#2f6fd4]" : "text-[#3a4f63]"}`}>
+                    <p
+                      className={`text-[13px] font-normal leading-[1.4] truncate ${isChapter1 ? "accent-rose" : isChapter2 ? "text-[#b48ad6]" : isChapter3 ? "text-[#2f6fd4]" : "text-[#3a4f63]"}`}
+                    >
                       {q.subtitle}
                     </p>
                   </div>
@@ -316,7 +339,9 @@ export function QuestRenderer({
             })}
           </div>
 
-          <div className={`mt-[48px] px-[20px] py-[16px] rounded-[9px] text-[12px] leading-[1.65] text-center ${isChapter1 ? "accent-rose bg-[#f7ede5]" : isChapter2 ? "bg-[#ede6f6] text-[#b48ad6]" : isChapter3 ? "bg-[#e8f1fb] text-[#2f6fd4]" : "bg-[#e8f1fb] text-[#6b8097]"}`}>
+          <div
+            className={`mt-[48px] px-[20px] py-[16px] rounded-[9px] text-[12px] leading-[1.65] text-center ${isChapter1 ? "accent-rose bg-[#f7ede5]" : isChapter2 ? "bg-[#ede6f6] text-[#b48ad6]" : isChapter3 ? "bg-[#e8f1fb] text-[#2f6fd4]" : "bg-[#e8f1fb] text-[#6b8097]"}`}
+          >
             Rahvana provides structured guidance only. This is not legal advice.
             <br />
             Consult a licensed immigration attorney for case-specific decisions.
@@ -330,37 +355,41 @@ export function QuestRenderer({
     const result =
       questResults[activeQuest.id] ||
       (state.metadata?.questResults as any)?.[activeQuest.id];
-    const meta = getStatusMeta(activeQuest.id);
+    const meta = getStatusMeta(activeQuest.id, 36);
 
     return (
       <div className="max-w-[600px] mx-auto w-full p-0 animate-in zoom-in-95 fade-in duration-500 min-h-[600px] flex items-center justify-center step-modal-spacing">
         <div className="text-center w-full bg-wgitet border-none">
           <div
-            className={`w-20 h-20 rounded-full ${meta.bg} ${meta.color} flex items-center justify-center mx-auto mb-8 text-3xl shadow-inner ${isChapter1 ? "accent-brown bg-[#e6d6c3] border-[#c0596a]/40" : isChapter2 ? "bg-[#ede6f6] border-[#b48ad6] text-[#b48ad6]" : isChapter3 ? "bg-[#e8f1fb] border-[#2f6fd4] text-[#2f6fd4]" : ""}`}
+            className={`w-20 h-20 rounded-full ${meta.bg} ${meta.color} flex items-center justify-center mx-auto mb-8 text-3xl shadow-inner border border-current/10`}
           >
             {meta.icon}
           </div>
           <div
-            className={`inline-block px-4 py-1.5 rounded-full ${meta.bg} ${meta.color} text-[10px] font-bold uppercase tracking-[0.15em] border border-current/20 mb-6 ${isChapter1 ? "accent-brown border-[#c0596a]/40 bg-[#e6d6c3]" : ""}`}
+            className={`inline-block px-4 py-1.5 rounded-full ${meta.bg} ${meta.color} text-[10px] font-bold uppercase tracking-[0.15em] border border-current/20 mb-6`}
           >
             {meta.label}
           </div>
-          <h2 className={`text-3xl md:text-4xl mb-4 tracking-tight italic ${isChapter1 ? "accent-brown" : isChapter2 ? "text-[#27192e]" : isChapter3 ? "text-[#0f1f38]" : "text-[#0f1f38]"}`}>
+          <h2
+            className={`text-3xl md:text-4xl mb-4 tracking-tight italic ${isChapter1 ? "accent-brown" : isChapter2 ? "text-[#27192e]" : isChapter3 ? "text-[#0f1f38]" : "text-[#0f1f38]"}`}
+          >
             {result?.title || "Evaluating Result..."}
           </h2>
-          <p className={`mb-10 leading-relaxed max-w-[400px] mx-auto opacity-90 ${isChapter1 ? "accent-rose text-[16px]" : isChapter2 ? "text-[#b48ad6] text-[16px]" : isChapter3 ? "text-[#2f6fd4] text-[16px]" : "text-[#3a4f63] text-[16px]"}`}>
+          <p
+            className={`mb-10 leading-relaxed max-w-[400px] mx-auto opacity-90 ${isChapter1 ? "accent-rose text-[16px]" : isChapter2 ? "text-[#b48ad6] text-[16px]" : isChapter3 ? "text-[#2f6fd4] text-[16px]" : "text-[#3a4f63] text-[16px]"}`}
+          >
             {result?.body || "Please wait while we calculate your status."}
           </p>
           <div className="flex flex-col gap-3 max-w-[280px] mx-auto">
             <button
               onClick={() => setView("landing")}
-              className={`px-8 py-4 rounded-[16px] font-bold text-[15px] transition-all shadow-md active:scale-95 ${isChapter1 ? "bg-[#c0596a] text-white hover:bg-[#7c5737]" : isChapter2 ? "bg-[#b48ad6] text-white hover:bg-[#7c5737]" : isChapter3 ? "bg-[#2f6fd4] text-white hover:bg-[#0f1f38]" : "bg-primary text-white hover:bg-[#0f1f38]"}`}
+              className={`px-8 py-4 rounded-[16px] font-bold text-[15px] transition-all shadow-md active:scale-95 ${meta.btnSolid}`}
             >
               Back to Overview
             </button>
             <button
               onClick={() => setView("quest")}
-              className={`px-8 py-3.5 rounded-[16px] font-medium text-[14px] transition-all ${isChapter1 ? "bg-white accent-brown border border-[#c0596a]/40 hover:bg-[#f7ede5] hover:border-[#c0596a] hover:text-[#c0596a]" : isChapter2 ? "bg-white text-[#b48ad6] border border-[#b48ad6] hover:border-[#a47cc1] hover:text-[#a47cc1]" : isChapter3 ? "bg-white text-[#2f6fd4] border border-[#2f6fd4] hover:border-[#1a4e8a] hover:text-[#1a4e8a]" : "bg-white text-[#6b8097] border border-[#d0e4f7] hover:border-primary hover:text-primary"}`}
+              className={`px-8 py-3.5 rounded-[16px] font-medium text-[14px] transition-all ${meta.btnOutline}`}
             >
               Review my answers
             </button>
@@ -380,11 +409,12 @@ export function QuestRenderer({
         ? tempAnswers[screen.id].length > 0
         : true);
 
-
     return (
       <div className="w-full h-full min-h-[700px] flex flex-col animate-in slide-in-from-right-4 fade-in duration-500 step-modal-spacing">
         {/* Topbar */}
-        <div className={`flex items-center p-[18px_24px] gap-[16px] shrink-0 border-b ${isChapter1 ? "border-[#c0596a]/40" : isChapter2 ? "border-[#b48ad6]" : isChapter3 ? "border-[#2f6fd4]" : "border-[#d0e4f7]"}`}>
+        <div
+          className={`flex items-center p-[18px_24px] gap-[16px] shrink-0 border-b ${isChapter1 ? "border-[#c0596a]/40" : isChapter2 ? "border-[#b48ad6]" : isChapter3 ? "border-[#2f6fd4]" : "border-[#d0e4f7]"}`}
+        >
           <button
             onClick={() => setView("landing")}
             className={`cant fnd it just eit it
@@ -401,28 +431,38 @@ export function QuestRenderer({
             </svg>
           </button>
 
-          <div className={`flex-1 h-[5px] rounded-[10px] overflow-hidden ${isChapter1 ? "bg-[#e6d6c3]" : isChapter2 ? "bg-[#ede6f6]" : isChapter3 ? "bg-[#e8f1fb]" : "bg-primary/30"}`}>
+          <div
+            className={`flex-1 h-[5px] rounded-[10px] overflow-hidden ${isChapter1 ? "bg-[#e6d6c3]" : isChapter2 ? "bg-[#ede6f6]" : isChapter3 ? "bg-[#e8f1fb]" : "bg-primary/30"}`}
+          >
             <div
               className={`h-full rounded-[10px] transition-all duration-400 ease-out ${isChapter1 ? "bg-[#c0596a]" : isChapter2 ? "bg-[#b48ad6]" : isChapter3 ? "bg-[#2f6fd4]" : "bg-primary"}`}
               style={{ width: `${progressPct}%` }}
             />
           </div>
 
-          <span className={`text-[12px] font-medium whitespace-nowrap shrink-0 ${isChapter1 ? "accent-brown" : "text-[#6b8097]"}`}>
+          <span
+            className={`text-[12px] font-medium whitespace-nowrap shrink-0 ${isChapter1 ? "accent-brown" : "text-[#6b8097]"}`}
+          >
             {progressIdx} / {activeQuest.screens.length}
           </span>
         </div>
         {/* Quest Body */}
         <div className="flex-1 overflow-y-auto flex flex-col items-center p-[48px_24px_32px] step-modal-spacing">
           <div className="w-full max-w-[560px] flex flex-col">
-            <div className={`text-[11px] font-semibold uppercase tracking-widest mb-[18px] ${isChapter1 ? "accent-brown" : isChapter2 ? "text-[#b48ad6]" : isChapter3 ? "text-[#2f6fd4]" : "text-primary"}`}>
+            <div
+              className={`text-[11px] font-semibold uppercase tracking-widest mb-[18px] ${isChapter1 ? "accent-brown" : isChapter2 ? "text-[#b48ad6]" : isChapter3 ? "text-[#2f6fd4]" : "text-primary"}`}
+            >
               {activeQuest.title}
             </div>
-            <h2 className={`text-[clamp(20px,3.5vw,26px)] mb-2.5 leading-[1.35] ${isChapter1 ? "accent-brown" : isChapter2 ? "text-[#27192e]" : isChapter3 ? "text-[#0f1f38]" : "text-[#0f1f38]"}`}>
+            <h2
+              className={`text-[clamp(20px,3.5vw,26px)] mb-2.5 leading-[1.35] ${isChapter1 ? "accent-brown" : isChapter2 ? "text-[#27192e]" : isChapter3 ? "text-[#0f1f38]" : "text-[#0f1f38]"}`}
+            >
               {screen.question}
             </h2>
             {screen.helper && (
-              <p className={`text-[14px] mb-7 leading-relaxed ${isChapter1 ? "accent-rose" : isChapter2 ? "text-[#b48ad6]" : isChapter3 ? "text-[#2f6fd4]" : "text-[#3a4f63]"}`}>
+              <p
+                className={`text-[14px] mb-7 leading-relaxed ${isChapter1 ? "accent-rose" : isChapter2 ? "text-[#b48ad6]" : isChapter3 ? "text-[#2f6fd4]" : "text-[#3a4f63]"}`}
+              >
                 {screen.helper}
               </p>
             )}
@@ -440,11 +480,23 @@ export function QuestRenderer({
                   <span
                     className={`transition-transform duration-300 ${showHint ? "rotate-0" : "-rotate-90"}`}
                   >
-                    <svg width="18" height="18" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <path d="M6 8L10 12L14 8" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                    <svg
+                      width="18"
+                      height="18"
+                      viewBox="0 0 20 20"
+                      fill="none"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        d="M6 8L10 12L14 8"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
                     </svg>
                   </span>
-                  <span>Examples & accepted documents</span>
+                  <span>Examples</span>
                 </button>
                 {showHint && (
                   <div
@@ -452,7 +504,9 @@ export function QuestRenderer({
                     className={`mt-4 p-5 rounded-[16px] animate-in slide-in-from-top-2 duration-300 ${isChapter1 ? "bg-[#f7ede5] border-[#a97c50]/40" : "bg-[#f0f7ff] border border-[#d0e4f7]"}`}
                   >
                     {screen.hint.intro && (
-                      <p className={`text-[13px] font-bold mb-2 ${isChapter1 ? "accent-brown" : "text-[#0f1f38]"}`}>
+                      <p
+                        className={`text-[13px] font-bold mb-2 ${isChapter1 ? "accent-brown" : "text-[#0f1f38]"}`}
+                      >
                         {screen.hint.intro}
                       </p>
                     )}
@@ -462,7 +516,11 @@ export function QuestRenderer({
                           key={i}
                           className={`flex gap-2 text-[13.5px] leading-relaxed ${isChapter1 ? "accent-rose" : "text-[#3a4f63]"}`}
                         >
-                          <span className={`${isChapter1 ? "accent-brown" : "text-primary"} mt-1`}>•</span>
+                          <span
+                            className={`${isChapter1 ? "accent-brown" : "text-primary"} mt-1`}
+                          >
+                            •
+                          </span>
                           <span>{it}</span>
                         </li>
                       ))}
@@ -487,52 +545,60 @@ export function QuestRenderer({
                       handleOptionSelect(screen.id, opt.value, screen.type)
                     }
                     className={`w-full flex items-start gap-3.5 px-5 py-4 rounded-[14px] border-[1.5px] text-left transition-all duration-200
-                      ${isSelected
-                        ? isChapter1
-                          ? "border-[#c0596a] bg-[#fbeaec] shadow-[0_0_0_3px_rgba(192,89,106,0.10)] accent-brown"
-                          : isChapter2
-                          ? "border-[#b48ad6] bg-[#ede6f6] shadow-[0_0_0_3px_rgba(180,138,214,0.10)]"
-                          : isChapter3
-                          ? "border-[#2f6fd4] bg-[#e8f1fb] shadow-[0_0_0_3px_rgba(47,111,212,0.10)]"
-                          : "border-primary bg-primary/5 shadow-[0_0_0_3px_rgba(59,125,216,0.12)]"
-                        : isChapter1
-                        ? "border-[#c0596a]/40 bg-white hover:border-[#c0596a] hover:bg-[#fbeaec]"
-                        : isChapter2
-                        ? "border-[#b48ad6]/40 bg-white hover:border-[#b48ad6] hover:bg-[#ede6f6]"
-                        : isChapter3
-                        ? "border-[#2f6fd4]/40 bg-white hover:border-[#2f6fd4] hover:bg-[#e8f1fb]"
-                        : "border-[#d0e4f7] bg-white hover:border-primary hover:bg-primary/5"}`}
+                      ${
+                        isSelected
+                          ? isChapter1
+                            ? "border-[#c0596a] bg-[#fbeaec] shadow-[0_0_0_3px_rgba(192,89,106,0.10)] accent-brown"
+                            : isChapter2
+                              ? "border-[#b48ad6] bg-[#ede6f6] shadow-[0_0_0_3px_rgba(180,138,214,0.10)]"
+                              : isChapter3
+                                ? "border-[#2f6fd4] bg-[#e8f1fb] shadow-[0_0_0_3px_rgba(47,111,212,0.10)]"
+                                : "border-primary bg-primary/5 shadow-[0_0_0_3px_rgba(59,125,216,0.12)]"
+                          : isChapter1
+                            ? "border-[#c0596a]/40 bg-white hover:border-[#c0596a] hover:bg-[#fbeaec]"
+                            : isChapter2
+                              ? "border-[#b48ad6]/40 bg-white hover:border-[#b48ad6] hover:bg-[#ede6f6]"
+                              : isChapter3
+                                ? "border-[#2f6fd4]/40 bg-white hover:border-[#2f6fd4] hover:bg-[#e8f1fb]"
+                                : "border-[#d0e4f7] bg-white hover:border-primary hover:bg-primary/5"
+                      }`}
                   >
                     <div
                       className={`w-5 h-5 rounded-full border-2 flex items-center justify-center mt-px shrink-0 transition-all
-                        ${isSelected
-                          ? isChapter1
-                            ? "border-[#c0596a] bg-[#c0596a]"
-                            : isChapter2
-                            ? "border-[#b48ad6] bg-[#b48ad6]"
-                            : isChapter3
-                            ? "border-[#2f6fd4] bg-[#2f6fd4]"
-                            : "border-primary bg-primary"
-                          : isChapter1
-                          ? "border-[#c0596a]/40 bg-white"
-                          : isChapter2
-                          ? "border-[#b48ad6]/40 bg-white"
-                          : isChapter3
-                          ? "border-[#2f6fd4]/40 bg-white"
-                          : "border-[#d0e4f7] bg-white"}`}
+                        ${
+                          isSelected
+                            ? isChapter1
+                              ? "border-[#c0596a] bg-[#c0596a]"
+                              : isChapter2
+                                ? "border-[#b48ad6] bg-[#b48ad6]"
+                                : isChapter3
+                                  ? "border-[#2f6fd4] bg-[#2f6fd4]"
+                                  : "border-primary bg-primary"
+                            : isChapter1
+                              ? "border-[#c0596a]/40 bg-white"
+                              : isChapter2
+                                ? "border-[#b48ad6]/40 bg-white"
+                                : isChapter3
+                                  ? "border-[#2f6fd4]/40 bg-white"
+                                  : "border-[#d0e4f7] bg-white"
+                        }`}
                     >
                       {isSelected && (
-                        <div className={`w-2 h-2 rounded-full animate-in zoom-in-50 ${isChapter1 ? "bg-white" : isChapter2 ? "bg-white" : isChapter3 ? "bg-white" : "bg-white"}`} />
+                        <div
+                          className={`w-2 h-2 rounded-full animate-in zoom-in-50 ${isChapter1 ? "bg-white" : isChapter2 ? "bg-white" : isChapter3 ? "bg-white" : "bg-white"}`}
+                        />
                       )}
                     </div>
                     <div className="flex-1">
                       <div
-                        className={`text-[15px] font-medium leading-[1.4] ${isSelected ? (isChapter1 ? "accent-brown" : isChapter2 ? "text-[#b48ad6]" : isChapter3 ? "text-[#2f6fd4]" : "text-[#0f1f38]") : (isChapter1 ? "accent-brown/80" : isChapter2 ? "text-[#b48ad6]/80" : isChapter3 ? "text-[#2f6fd4]/80" : "text-[#1c2b3a]")}`}
+                        className={`text-[15px] font-medium leading-[1.4] ${isSelected ? (isChapter1 ? "accent-brown" : isChapter2 ? "text-[#b48ad6]" : isChapter3 ? "text-[#2f6fd4]" : "text-[#0f1f38]") : isChapter1 ? "accent-brown/80" : isChapter2 ? "text-[#b48ad6]/80" : isChapter3 ? "text-[#2f6fd4]/80" : "text-[#1c2b3a]"}`}
                       >
                         {opt.label}
                       </div>
                       {opt.sub && (
-                        <div className={`text-[13px] mt-0.5 leading-relaxed ${isChapter1 ? "accent-rose" : isChapter2 ? "text-[#b48ad6]" : isChapter3 ? "text-[#2f6fd4]" : "text-[#6b8097]"}`}>
+                        <div
+                          className={`text-[13px] mt-0.5 leading-relaxed ${isChapter1 ? "accent-rose" : isChapter2 ? "text-[#b48ad6]" : isChapter3 ? "text-[#2f6fd4]" : "text-[#6b8097]"}`}
+                        >
                           {opt.sub}
                         </div>
                       )}

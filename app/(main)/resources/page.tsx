@@ -14,7 +14,11 @@ export default function ResourcesPage() {
   const tabs: { id: ResourceTab; icon: React.ReactNode; label: string }[] = [
     { id: "toolbox", icon: <Wrench className="h-4 w-4" />, label: "Toolbox" },
     { id: "guides", icon: <BookOpen className="h-4 w-4" />, label: "Guides" },
-    { id: "services", icon: <Briefcase className="h-4 w-4" />, label: "Services" },
+    {
+      id: "services",
+      icon: <Briefcase className="h-4 w-4" />,
+      label: "Services",
+    },
   ];
 
   return (
@@ -26,7 +30,7 @@ export default function ResourcesPage() {
       </div>
 
       {/* Tab Selector Section */}
-      <div className="flex justify-center py-8">
+      <div className="flex justify-center pt-24">
         <div className="flex gap-4 bg-gray-200 border border-border rounded-full p-2 shadow-lg">
           {tabs.map((tab) => (
             <button
@@ -47,9 +51,9 @@ export default function ResourcesPage() {
 
       {/* Content Section */}
       <div className="w-full">
-        {activeTab === "toolbox" && <ToolsPage />}
-        {activeTab === "guides" && <GuidesPage />}
-        {activeTab === "services" && <ServicesPage />}
+        {activeTab === "toolbox" && <ToolsPage isEmbedded />}{" "}
+        {activeTab === "guides" && <GuidesPage isEmbedded />}
+        {activeTab === "services" && <ServicesPage isEmbedded />}
       </div>
     </div>
   );

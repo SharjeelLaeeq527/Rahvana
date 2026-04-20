@@ -324,7 +324,11 @@ const CATEGORIES: ("All" | GuideCategory)[] = [
 
 // --- Components ---
 
-export default function GuidesPage() {
+export default function GuidesPage({
+  isEmbedded = false,
+}: {
+  isEmbedded?: boolean;
+}) {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<
     "All" | GuideCategory
@@ -413,7 +417,11 @@ export default function GuidesPage() {
   }).sort((a, b) => a.title.localeCompare(b.title));
 
   return (
-    <div className="min-h-screen bg-background text-foreground font-sans overflow-x-hidden selection:bg-primary selection:text-primary-foreground">
+    <div
+      className={`bg-background text-foreground font-sans overflow-x-hidden selection:bg-primary selection:text-primary-foreground ${
+        isEmbedded ? "" : "pt-16"
+      }`}
+    >
       {/* Ambient Glow */}
       <div className="fixed top-0 left-0 w-full h-full pointer-events-none -z-10">
         <div className="absolute top-[10%] left-[15%] w-[500px] h-[500px] bg-[#0d7377]/5 rounded-full blur-3xl" />
@@ -422,7 +430,7 @@ export default function GuidesPage() {
 
       <div className="max-w-7xl mx-auto px-6 py-8">
         {/* Hero Section */}
-        <section className="text-center mb-5 md:mb-10 relative flex flex-col items-center">
+        <section className="text-center mb-5 md:mb-10 pt-1 relative flex flex-col items-center">
           <div className="w-full flex justify-end mb-6 md:absolute md:top-0 md:right-0 md:mb-0 md:w-auto md:block">
             <Link
               href="/guides/my-guides"

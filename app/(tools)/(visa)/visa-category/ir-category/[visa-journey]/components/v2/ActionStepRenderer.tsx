@@ -10,10 +10,18 @@ import {
   AlertCircle,
   Loader,
   CheckCircle,
+  Printer,
+  Download,
 } from "lucide-react";
 import { useWizard } from "@/app/(main)/dashboard/hooks/useWizard";
 import { CustomDropdown } from "@/app/components/shared/CustomDropdown";
 import { RoadmapStep } from "../types";
+import { DocumentPreviewModal } from "@/app/components/document-vault/DocumentPreviewModal";
+import { useDocumentVaultStore } from "@/lib/document-vault/store";
+import { DOCUMENTS_BY_KEY } from "@/lib/document-vault/document-definitions";
+import { useToast } from "@/app/components/shared/ToastProvider";
+import { UploadedDocument, DocumentDefinition } from "@/lib/document-vault/types";
+import { useAuth } from "@/app/context/AuthContext";
 
 interface ActionStepRendererProps {
   step: RoadmapStep;
@@ -132,9 +140,12 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
   const hookData = useWizard();
   const state = propsState || hookData.state;
   const actions = propsActions || hookData.actions;
+  const { showToast } = useToast();
 
   const [showGuide, setShowGuide] = useState(false);
   const [guideStep, setGuideStep] = useState(0);
+  const [showGuideChoice, setShowGuideChoice] = useState(false);
+  const [selectedGuideType, setSelectedGuideType] = useState<"print" | "download" | null>(null);
   const [statusSaved, setStatusSaved] = useState(isCompleted);
   const [selectedDropdown, setSelectedDropdown] = useState("");
   const [mailingCarrier, setMailingCarrier] = useState("");
@@ -145,6 +156,49 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
   const [trackingLastChecked, setTrackingLastChecked] = useState<string | null>(null);
   const [deliveredAt, setDeliveredAt] = useState<string | null>(null);
   const [isLoadingTracking, setIsLoadingTracking] = useState(false);
+
+  // Document Vault Integration
+  const { user } = useAuth();
+  const {
+    uploadedDocuments,
+    initialize: initializeVault,
+    hasLoadedDocsInitial,
+  } = useDocumentVaultStore();
+
+  useEffect(() => {
+    if (user && !hasLoadedDocsInitial) {
+      initializeVault(user.id);
+    }
+  }, [user, hasLoadedDocsInitial, initializeVault]);
+
+  const [previewConfig, setPreviewConfig] = useState<{
+    isOpen: boolean;
+    docDef: DocumentDefinition | null;
+    uploadedDoc: UploadedDocument | null;
+  }>({
+    isOpen: false,
+    docDef: null,
+    uploadedDoc: null,
+  });
+
+  const handlePreview = (docKey: string) => {
+    const docDef = DOCUMENTS_BY_KEY[docKey];
+    if (!docDef) return;
+
+    const uploadedDoc = uploadedDocuments.find(
+      (d) => d.documentDefId === docDef.id
+    );
+
+    if (uploadedDoc) {
+      setPreviewConfig({
+        isOpen: true,
+        docDef,
+        uploadedDoc,
+      });
+    } else {
+      showToast("This document is not uploaded in the document vault yet", "error");
+    }
+  };
 
   // Load persisted data from metadata on mount
   useEffect(() => {
@@ -174,7 +228,7 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
   }, [step.action_data?.dropdown_card, step.action_data?.mailing_card, state.metadata]);
 
   useEffect(() => {
-    if (showGuide) {
+    if (showGuide || showGuideChoice) {
       document.body.style.overflow = "hidden";
     } else {
       document.body.style.overflow = "";
@@ -182,7 +236,12 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
     return () => {
       document.body.style.overflow = "";
     };
-  }, [showGuide]);
+  }, [showGuide, showGuideChoice]);
+
+  // Reset guideStep when selectedGuideType changes
+  useEffect(() => {
+    setGuideStep(0);
+  }, [selectedGuideType]);
 
   // Load tracking data from metadata on mount
   useEffect(() => {
@@ -283,7 +342,20 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
   }
 
   const actionData = step.action_data;
-  const guideProgress = guideStep / (actionData.guide_steps?.length || 1);
+
+  // Filter guide steps for step_1_11 based on selected guide type
+  const getFilteredGuideSteps = () => {
+    if (!actionData.guide_steps) return [];
+    if (step.step_key === "step_1_11" && selectedGuideType) {
+      return actionData.guide_steps.filter((gs: any) =>
+        gs.label?.includes(selectedGuideType === "print" ? "Print" : "Download")
+      );
+    }
+    return actionData.guide_steps || [];
+  };
+
+  const filteredSteps = getFilteredGuideSteps();
+  const guideProgress = guideStep / (filteredSteps?.length || 1);
 
     return (
       <div
@@ -423,38 +495,106 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
           )}
 
           {/* Primary CTA Button */}
-          {actionData.cta_button && actionData.cta_button.href && (
-            <button
-              onClick={() => {
-                if (actionData.cta_button?.href) {
-                  window.open(actionData.cta_button.href, "_blank");
-                }
-              }}
+          {step.step_key === "step_1_11" ? (
+            <div
               style={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                width: "100%",
-                background: step.step_key === 'step_1_11' ? "#c0596a" : COLORS.accent, // accent rose for print step
-                color: "#fff",
-                border: "none",
-                borderRadius: "14px",
-                padding: "15px 18px",
-                fontSize: "15px",
-                fontWeight: 700,
-                cursor: "pointer",
+                display: "grid",
+                gridTemplateColumns: "1fr 1fr",
+                gap: "12px",
                 marginTop: "12px",
-                transition: "background 0.2s",
-              }}
-              onMouseEnter={(e) => {
-                (e.target as HTMLElement).style.background = step.step_key === 'step_1_11' ? "#a94c5a" : COLORS.accent2;
-              }}
-              onMouseLeave={(e) => {
-                (e.target as HTMLElement).style.background = step.step_key === 'step_1_11' ? "#c0596a" : COLORS.accent;
               }}
             >
-              {actionData.cta_button.label}
-            </button>
+              <button
+                onClick={() => handlePreview("I130_FORM")}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  width: "100%",
+                  background: "#c0596a",
+                  color: "#fff",
+                  border: "none",
+                  borderRadius: "14px",
+                  padding: "15px 18px",
+                  fontSize: "15px",
+                  fontWeight: 700,
+                  cursor: "pointer",
+                  transition: "background 0.2s",
+                }}
+                onMouseEnter={(e) => {
+                  (e.target as HTMLElement).style.background = "#a94c5a";
+                }}
+                onMouseLeave={(e) => {
+                  (e.target as HTMLElement).style.background = "#c0596a";
+                }}
+              >
+                Print I-130
+              </button>
+              <button
+                onClick={() => handlePreview("I130A_FORM")}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  width: "100%",
+                  background: "#c0596a",
+                  color: "#fff",
+                  border: "none",
+                  borderRadius: "14px",
+                  padding: "15px 18px",
+                  fontSize: "15px",
+                  fontWeight: 700,
+                  cursor: "pointer",
+                  transition: "background 0.2s",
+                }}
+                onMouseEnter={(e) => {
+                  (e.target as HTMLElement).style.background = "#a94c5a";
+                }}
+                onMouseLeave={(e) => {
+                  (e.target as HTMLElement).style.background = "#c0596a";
+                }}
+              >
+                Print I-130A
+              </button>
+            </div>
+          ) : (
+            actionData.cta_button &&
+            actionData.cta_button.href && (
+              <button
+                onClick={() => {
+                  if (actionData.cta_button?.href) {
+                    window.open(actionData.cta_button.href, "_blank");
+                  }
+                }}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  width: "100%",
+                  background:
+                    step.step_key === "step_1_11" ? "#c0596a" : COLORS.accent, // accent rose for print step
+                  color: "#fff",
+                  border: "none",
+                  borderRadius: "14px",
+                  padding: "15px 18px",
+                  fontSize: "15px",
+                  fontWeight: 700,
+                  cursor: "pointer",
+                  marginTop: "12px",
+                  transition: "background 0.2s",
+                }}
+                onMouseEnter={(e) => {
+                  (e.target as HTMLElement).style.background =
+                    step.step_key === "step_1_11" ? "#a94c5a" : COLORS.accent2;
+                }}
+                onMouseLeave={(e) => {
+                  (e.target as HTMLElement).style.background =
+                    step.step_key === "step_1_11" ? "#c0596a" : COLORS.accent;
+                }}
+              >
+                {actionData.cta_button.label}
+              </button>
+            )
           )}
 
           {/* Info Cards Row */}
@@ -503,7 +643,13 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
               </p>
 
               <button
-                onClick={() => setShowGuide(true)}
+                onClick={() => {
+                  if (step.step_key === "step_1_11") {
+                    setShowGuideChoice(true);
+                  } else {
+                    setShowGuide(true);
+                  }
+                }}
                 style={{
                   width: "100%",
                   background: COLORS.sky,
@@ -885,7 +1031,7 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
       </div>
 
       {/* Full-Screen Guide Modal */}
-      {showGuide && actionData.guide_steps && (
+      {showGuide && filteredSteps && filteredSteps.length > 0 && (
         <div
           style={{
             display: "flex",
@@ -963,7 +1109,7 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
                 textAlign: "right",
               }}
             >
-              {guideStep + 1} / {actionData.guide_steps.length}
+              {guideStep + 1} / {filteredSteps?.length || 0}
             </div>
           </div>
 
@@ -987,7 +1133,7 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
                 flexDirection: "column",
               }}
             >
-              {actionData.guide_steps[guideStep] && (
+              {filteredSteps[guideStep] && (
                 <>
                   <div
                     style={{
@@ -999,7 +1145,7 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
                       marginBottom: "12px",
                     }}
                   >
-                    {actionData.guide_steps[guideStep].label}
+                    {filteredSteps[guideStep]?.label}
                   </div>
 
                   <h2
@@ -1011,7 +1157,7 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
                       lineHeight: 1.3,
                     }}
                   >
-                    {actionData.guide_steps[guideStep].title}
+                    {filteredSteps[guideStep]?.title}
                   </h2>
 
                   <div
@@ -1022,7 +1168,7 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
                       marginBottom: "18px",
                     }}
                     dangerouslySetInnerHTML={{
-                      __html: actionData.guide_steps[guideStep].text,
+                      __html: filteredSteps[guideStep]?.text || "",
                     }}
                   />
 
@@ -1087,28 +1233,40 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
                           fontFamily: "monospace",
                         }}
                       >
-                        {actionData.guide_steps[guideStep].url}
+                        {filteredSteps[guideStep]?.url}
                       </div>
                     </div>
                     <div
                       style={{
-                        padding: "22px",
                         minHeight: "280px",
                         background:
                           "linear-gradient(180deg, #fcfeff 0%, #f7fbff 100%)",
                         color: COLORS.muted,
                         fontSize: "13px",
+                        display: "flex",
+                        justifyContent: "center",
+                        alignItems: "center",
                       }}
-                      dangerouslySetInnerHTML={{
-                        __html:
-                          actionData.guide_steps[guideStep].visual ||
-                          "Step visual here",
-                      }}
-                    />
+                    >
+                      <div
+                        style={{
+                          width: "100%",
+                          height: "100%",
+                          display: "flex",
+                          justifyContent: "center",
+                          alignItems: "center",
+                        }}
+                        dangerouslySetInnerHTML={{
+                          __html:
+                            filteredSteps[guideStep]?.visual ||
+                            "Step visual here",
+                        }}
+                      />
+                    </div>
                   </div>
 
                   {/* Note */}
-                  {actionData.guide_steps[guideStep].note && (
+                  {filteredSteps[guideStep]?.note && (
                     <div
                       style={{
                         padding: "12px 14px",
@@ -1122,7 +1280,7 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
                       }}
                     >
                       <strong>Important:</strong>{" "}
-                      {actionData.guide_steps[guideStep].note}
+                      {filteredSteps[guideStep]?.note}
                     </div>
                   )}
 
@@ -1163,7 +1321,7 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
                         ← Back
                       </button>
                     )}
-                    {guideStep < actionData.guide_steps.length - 1 ? (
+                    {guideStep < (filteredSteps?.length || 0) - 1 ? (
                       <button
                         onClick={handleNextGuide}
                         style={{
@@ -1236,6 +1394,206 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
         </div>
       )}
 
+      {/* Guide Choice Modal for Step 1.11 */}
+      {showGuideChoice && (
+        <div
+          style={{
+            position: "fixed",
+            inset: 0,
+            background: "rgba(0, 0, 0, 0.5)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            zIndex: 300,
+          }}
+          onClick={() => setShowGuideChoice(false)}
+        >
+          <div
+            style={{
+              background: "#fff",
+              borderRadius: "24px",
+              padding: "40px",
+              maxWidth: "500px",
+              width: "90%",
+              boxShadow: "0 20px 60px rgba(12, 27, 51, 0.16)",
+              animation: "slideUp 0.3s ease",
+              position: "relative",
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div style={{ textAlign: "center", marginBottom: "32px" }}>
+              <h2
+                style={{
+                  fontSize: "26px",
+                  fontWeight: 900,
+                  color: COLORS.navy,
+                  marginBottom: "12px",
+                  lineHeight: 1.3,
+                }}
+              >
+                Choose Your Guide
+              </h2>
+              <p
+                style={{
+                  fontSize: "15px",
+                  color: COLORS.soft,
+                  lineHeight: 1.6,
+                }}
+              >
+                Select how you would like to proceed with your forms
+              </p>
+            </div>
+
+            <div
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                gap: "14px",
+              }}
+            >
+              {/* Print Guide Option */}
+              <button
+                onClick={() => {
+                  setSelectedGuideType("print");
+                  setShowGuideChoice(false);
+                  setShowGuide(true);
+                }}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "16px",
+                  padding: "18px 20px",
+                  background: "#fff",
+                  border: `2px solid ${COLORS.line}`,
+                  borderRadius: "16px",
+                  cursor: "pointer",
+                  transition: "all 0.2s",
+                  textAlign: "left",
+                }}
+                onMouseEnter={(e) => {
+                  (e.target as HTMLElement).style.borderColor = COLORS.accent;
+                }}
+                onMouseLeave={(e) => {
+                  (e.target as HTMLElement).style.borderColor = COLORS.line;
+                }}
+              >
+                <div
+                  style={{
+                    width: "48px",
+                    height: "48px",
+                    borderRadius: "12px",
+                    background: COLORS.sky,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    flexShrink: 0,
+                  }}
+                >
+                  <Printer size={24} color={COLORS.accent} />
+                </div>
+                <div>
+                  <div
+                    style={{
+                      fontSize: "15px",
+                      fontWeight: 700,
+                      color: COLORS.navy,
+                      marginBottom: "2px",
+                    }}
+                  >
+                    View Print Guide
+                  </div>
+                  <div
+                    style={{
+                      fontSize: "13px",
+                      color: COLORS.muted,
+                    }}
+                  >
+                    Step-by-step guide to print your forms
+                  </div>
+                </div>
+              </button>
+
+              {/* Download Guide Option */}
+              <button
+                onClick={() => {
+                  setSelectedGuideType("download");
+                  setShowGuideChoice(false);
+                  setShowGuide(true);
+                }}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "16px",
+                  padding: "18px 20px",
+                  background: "#fff",
+                  border: `2px solid ${COLORS.line}`,
+                  borderRadius: "16px",
+                  cursor: "pointer",
+                  transition: "all 0.2s",
+                  textAlign: "left",
+                }}
+                onMouseEnter={(e) => {
+                  (e.target as HTMLElement).style.borderColor = COLORS.accent;
+                }}
+                onMouseLeave={(e) => {
+                  (e.target as HTMLElement).style.borderColor = COLORS.line;
+                }}
+              >
+                <div
+                  style={{
+                    width: "48px",
+                    height: "48px",
+                    borderRadius: "12px",
+                    background: COLORS.sky,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    flexShrink: 0,
+                  }}
+                >
+                  <Download size={24} color={COLORS.accent} />
+                </div>
+                <div>
+                  <div
+                    style={{
+                      fontSize: "15px",
+                      fontWeight: 700,
+                      color: COLORS.navy,
+                      marginBottom: "2px",
+                    }}
+                  >
+                    View Download Guide
+                  </div>
+                  <div
+                    style={{
+                      fontSize: "13px",
+                      color: COLORS.muted,
+                    }}
+                  >
+                    Step-by-step guide to download your forms
+                  </div>
+                </div>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {previewConfig.isOpen && previewConfig.docDef && previewConfig.uploadedDoc && (
+        <DocumentPreviewModal
+          open={previewConfig.isOpen}
+          onClose={() =>
+            setPreviewConfig({
+              isOpen: false,
+              docDef: null,
+              uploadedDoc: null,
+            })
+          }
+          documentDef={previewConfig.docDef}
+          uploadedDoc={previewConfig.uploadedDoc}
+        />
+      )}
+
       <style>{`
         @media (max-width: 640px) {
           h1 {
@@ -1247,6 +1605,16 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
             opacity: 0;
           }
           to {
+            opacity: 1;
+          }
+        }
+        @keyframes slideUp {
+          from {
+            transform: translateY(20px);
+            opacity: 0;
+          }
+          to {
+            transform: translateY(0);
             opacity: 1;
           }
         }

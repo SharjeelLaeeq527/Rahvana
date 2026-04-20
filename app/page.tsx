@@ -354,7 +354,7 @@ function HomePageContent() {
     }
   };
   return (
-    <div className="min-h-screen bg-background font-sans text-foreground">
+    <div className="min-h-screen bg-background font-sans text-foreground overflow-x-hidden">
       <main className="min-h-[calc(100vh-200px)]">
         {activeSection === "home" && (
           <div className="flex flex-col">
