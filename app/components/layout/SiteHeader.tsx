@@ -230,6 +230,7 @@ export function SiteHeader({
         "k1-journey": "/visa-category/ir-category/k1-journey",
         services: "/services",
         tools: "/tools",
+        guides: "/guides",
         pricing: "/pricing",
         dashboard: "/user-dashboard",
         mfa: "/mfa-setup",
@@ -792,14 +793,14 @@ export function SiteHeader({
                     clearTimeout(menuTimeoutRef.current);
                   setActiveMenu(activeMenu === "profile" ? null : "profile");
                 }}
-                className={`flex items-center justify-center transition-all shadow-none font-semibold text-lg rounded-none w-auto h-auto p-0 m-0 ${
+                className={`flex items-center justify-center transition-all shadow-none font-semibold text-lg rounded-none w-auto h-auto p-0 mb-2 ${
                   isHomeHeroState
                     ? "text-white"
                     : isHomeHeroP2State
                       ? "text-white"
                       : "text-rahvana-primary"
                 }`}
-                style={{background: 'none', boxShadow: 'none', border: 'none', width: 'auto', height: 'auto', padding: 0, margin: 0, borderRadius: 0}}
+                style={{background: 'none', boxShadow: 'none', border: 'none', width: 'auto', height: 'auto', padding: 0, borderRadius: 0}}
               >
                 <span style={isHomeHeroP2State ? { color: '#fff' } : isHomeHeroState ? { color: '#fff' } : { color: 'var(--rahvana-primary, #0d7377)' }}>{(
                   profile?.full_name ||

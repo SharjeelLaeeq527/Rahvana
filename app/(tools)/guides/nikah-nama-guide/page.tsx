@@ -335,7 +335,7 @@ const NikahNamaGuidePage = () => {
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#f5f7fa] pt-20">
+    <div className="min-h-screen flex flex-col bg-[#f5f7fa] pt-26">
       <WizardHeader
         onWhatsThis={() => setShowWhatsThis(true)}
         title={guideData.wizard.title}
