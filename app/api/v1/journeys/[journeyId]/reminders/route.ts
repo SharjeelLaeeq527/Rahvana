@@ -5,6 +5,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { verifyJourneyAccess, errorResponse } from '@/lib/api/journey-auth'
 import { ReminderEngine } from '@/lib/reminders/ReminderEngine'
+import { UnifiedReminderEngine } from '@/lib/notifications/UnifiedReminderEngine'
 import { REMINDER_PRIORITY_ORDER } from '@/lib/reminders/types'
 import type { ReminderListResponse } from '@/lib/reminders/types'
 
@@ -28,9 +29,17 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
 
     const { supabase } = auth
 
-    // Step 1: Run the ReminderEngine to create/refresh reminders
+    // Step 1a: Stateless condition-based reminders (documents, fees, etc.)
     const engine = new ReminderEngine(supabase)
     await engine.generateReminders(journeyId)
+
+    // Step 1b: Unified registry — schedule any unscheduled triggered reminders
+    // + cancel any whose suppress condition is now met
+    const unified = new UnifiedReminderEngine(supabase)
+    await Promise.allSettled([
+      unified.checkAndScheduleAll(journeyId),
+      unified.runSuppression(journeyId),
+    ])
 
     // Step 2: Fetch all active reminders (not dismissed, not snoozed)
     const now = new Date().toISOString()

@@ -442,6 +442,8 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
     "household_member" | "joint_sponsor" | null
   >(null);
   const [useCeacGuideData, setUseCeacGuideData] = useState(false); // Flag for Start CEAC Guide button
+  const [ivLoading, setIvLoading] = useState(false);
+  const [ivError, setIvError] = useState<string | null>(null);
 
   // Household Member Builder States (Step 7)
   const [jsCount, setJsCount] = useState<number>(
@@ -3683,6 +3685,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                   const postName = (state.metadata?.dqPost ||
                     state.metadata?.post ||
                     "") as string;
+
 
                   const handleFetch = async () => {
                     if (!postName) {

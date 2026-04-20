@@ -22,6 +22,8 @@
 import { Resend } from 'resend'
 import { createClient } from '@supabase/supabase-js'
 import { CeacReminderEngine } from './CeacReminderEngine'
+import { UnifiedReminderEngine } from '@/lib/notifications/UnifiedReminderEngine'
+import { getReminderById } from '@/lib/notifications/reminderRegistry'
 import type { CeacScheduledNotification } from './types'
 
 const resend = new Resend(process.env.RESEND_API_KEY)
@@ -64,16 +66,21 @@ export async function runCeacNotificationJob(): Promise<{
 
   if (error || !due || due.length === 0) return stats
 
-  // Process each due notification
-  for (const notif of due as CeacScheduledNotification[]) {
+  // Process each due notification (both CEAC and journey origin)
+  for (const notif of due as (CeacScheduledNotification & { reminder_origin?: string; step_trigger_key?: string })[]) {
     stats.processed++
 
     try {
-      // ── Suppression check before each send ──────────────────
-      // Run the suppression engine for this journey.
-      // If THIS notification got cancelled, skip sending.
-      const engine = new CeacReminderEngine(supabase)
-      await engine.suppressionEngine(notif.journey_id)
+      // ── Suppression check — use the right engine per origin ──
+      const isJourneyReminder = (notif as any).reminder_origin === 'journey'
+
+      if (isJourneyReminder) {
+        const unifiedEngine = new UnifiedReminderEngine(supabase)
+        await unifiedEngine.runSuppression(notif.journey_id)
+      } else {
+        const ceacEngine = new CeacReminderEngine(supabase)
+        await ceacEngine.suppressionEngine(notif.journey_id)
+      }
 
       // Re-fetch to see if suppression cancelled this specific row
       const { data: refreshed } = await supabase
@@ -102,26 +109,40 @@ export async function runCeacNotificationJob(): Promise<{
 
       stats.sent++
 
-      // ── Re-enqueue recurring WAITING reminders ───────────────
-      // WAITING type + is_recurring = true → insert the NEXT occurrence
+      // ── Re-enqueue recurring reminders ────────────────────────
+      // Check maxCount from registry for journey reminders
       if (notif.is_recurring && notif.interval_days) {
-        const nextFireAt = new Date()
-        nextFireAt.setDate(nextFireAt.getDate() + notif.interval_days)
+        let shouldRequeue = true
 
-        await supabase.from('ceac_scheduled_notifications').insert({
-          journey_id:       notif.journey_id,
-          reminder_id:      notif.reminder_id,
-          trigger_group:    notif.trigger_group,
-          reminder_type:    notif.reminder_type,
-          title:            notif.title,
-          message:          notif.message,
-          channel:          notif.channel,
-          fire_at:          nextFireAt.toISOString(),
-          status:           'pending',
-          is_recurring:     true,
-          interval_days:    notif.interval_days,
-          recurrence_count: notif.recurrence_count + 1,
-        })
+        if (isJourneyReminder) {
+          const def = getReminderById(notif.reminder_id)
+          const maxCount = def?.recurring?.maxCount
+          if (maxCount != null && notif.recurrence_count + 1 >= maxCount) {
+            shouldRequeue = false
+          }
+        }
+
+        if (shouldRequeue) {
+          const nextFireAt = new Date()
+          nextFireAt.setDate(nextFireAt.getDate() + notif.interval_days)
+
+          await supabase.from('ceac_scheduled_notifications').insert({
+            journey_id:        notif.journey_id,
+            reminder_id:       notif.reminder_id,
+            trigger_group:     notif.trigger_group,
+            reminder_type:     notif.reminder_type,
+            title:             notif.title,
+            message:           notif.message,
+            channel:           notif.channel,
+            fire_at:           nextFireAt.toISOString(),
+            status:            'pending',
+            is_recurring:      true,
+            interval_days:     notif.interval_days,
+            recurrence_count:  notif.recurrence_count + 1,
+            reminder_origin:   (notif as any).reminder_origin ?? 'ceac',
+            step_trigger_key:  (notif as any).step_trigger_key ?? null,
+          })
+        }
       }
     } catch (err: any) {
       // Log failure — mark as failed but do NOT crash the loop
@@ -166,22 +187,32 @@ async function _deliverNotification(
   }
 
   // ── 1. In-app notification (bell icon in the app) ────────────
-  // Saves to journey_reminders table which NotificationCenter reads.
-  // dedup_key prevents duplicate in-app alerts for the same reminder.
+  const isJourneyOrigin = (notif as any).reminder_origin === 'journey'
+  const def = isJourneyOrigin ? getReminderById(notif.reminder_id) : null
+
+  const stepKey = isJourneyOrigin
+    ? ((notif as any).step_trigger_key ?? def?.actionUrl ?? null)
+    : 'step_3_9'
+
+  const priority: 'critical' | 'high' | 'normal' | 'low' =
+    notif.reminder_type === 'URGENT' ? 'high'
+    : notif.reminder_type === 'ACTION' ? 'high'
+    : def?.priority ?? 'normal'
+
   await supabase
     .from('journey_reminders')
     .upsert(
       {
-        journey_id:   notif.journey_id,
-        reminder_type: 'ceac_status_update',   // maps to new type added in types.ts
-        priority:      notif.reminder_type === 'URGENT' ? 'high' : 'normal',
+        journey_id:    notif.journey_id,
+        reminder_type: isJourneyOrigin ? 'step_pending_too_long' : 'ceac_status_update',
+        priority,
         title:         notif.title,
         body:          notif.message,
-        step_key:      'step_3_9',
-        action_url:    '/visa-category/ir-category/ir1-journey',
-        action_label:  'View in Journey',
+        step_key:      stepKey,
+        action_url:    def?.actionUrl ?? '/visa-category/ir-category/ir1-journey',
+        action_label:  def?.actionLabel ?? 'View in Journey',
         is_dismissed:  false,
-        dedup_key:     `${notif.journey_id}:ceac:${notif.reminder_id}:${notif.recurrence_count}`,
+        dedup_key:     `${notif.journey_id}:${isJourneyOrigin ? 'journey' : 'ceac'}:${notif.reminder_id}:${notif.recurrence_count}`,
       },
       { onConflict: 'dedup_key', ignoreDuplicates: true }
     )
