@@ -53,6 +53,9 @@ export class UnifiedReminderEngine {
   // ─────────────────────────────────────────────────────────
   // PUBLIC: scheduleForMetadata
   // Schedules reminders triggered by a metadata key being set.
+  // For 'metadata_date_set' triggers, metadataValue must be an
+  // ISO date string — fire_at is calculated as:
+  //   appointmentDate + delayDays (negative = before the date)
   // ─────────────────────────────────────────────────────────
   async scheduleForMetadata(
     journeyId: string,
@@ -63,12 +66,23 @@ export class UnifiedReminderEngine {
     const baseDate = setAt ?? new Date()
     const candidates = getRemindersForMetadataKey(metadataKey).filter((r) => {
       if (r.trigger.type === 'metadata_key_value') {
-        return metadataValue === r.trigger.value
+        return metadataValue === (r.trigger as any).value
       }
       return true
     })
     if (candidates.length === 0) return
-    await this._scheduleAll(journeyId, candidates, baseDate)
+
+    for (const def of candidates) {
+      // For date-based reminders, base is the appointment date itself
+      if (def.trigger.type === 'metadata_date_set' && metadataValue) {
+        const appointmentDate = new Date(metadataValue + 'T00:00:00')
+        if (!isNaN(appointmentDate.getTime())) {
+          await this._scheduleOne(journeyId, def, appointmentDate)
+          continue
+        }
+      }
+      await this._scheduleOne(journeyId, def, baseDate)
+    }
   }
 
   // ─────────────────────────────────────────────────────────
@@ -126,18 +140,27 @@ export class UnifiedReminderEngine {
       let baseDate = new Date()
 
       if (def.trigger.type === 'step_completed') {
-        const completedAt = completedSteps[def.trigger.stepKey]
+        const completedAt = completedSteps[(def.trigger as any).stepKey]
         if (completedAt !== undefined) {
           triggerMet = true
           baseDate = completedAt ? new Date(completedAt) : new Date()
         }
       } else if (def.trigger.type === 'metadata_key_exists') {
-        if (metadata[def.trigger.metadataKey] != null) {
+        if (metadata[(def.trigger as any).metadataKey] != null) {
           triggerMet = true
         }
       } else if (def.trigger.type === 'metadata_key_value') {
-        if (String(metadata[def.trigger.metadataKey]) === def.trigger.value) {
+        if (String(metadata[(def.trigger as any).metadataKey]) === (def.trigger as any).value) {
           triggerMet = true
+        }
+      } else if (def.trigger.type === 'metadata_date_set') {
+        const dateVal = metadata[(def.trigger as any).metadataKey]
+        if (dateVal) {
+          const apptDate = new Date(String(dateVal) + 'T00:00:00')
+          if (!isNaN(apptDate.getTime())) {
+            triggerMet = true
+            baseDate = apptDate  // fire_at = appointmentDate + delayDays (negative = before)
+          }
         }
       }
 

@@ -44,6 +44,28 @@ export function DashboardView({
   );
   const isCaseRegistered = !!state.metadata?.nvcCaseNum;
 
+  // ── Phase helpers — drive which cards are visible ──────────
+  // Interview date: admin-set (tracking_status) OR user-set (Step 2.12 metadata)
+  const interviewDate = trackingStatus.interview_date || (state.metadata?.interviewDate as string | undefined);
+
+  // Interview attended = user completed Step 3.8 (attend visa interview)
+  const interviewAttended =
+    state.completedSteps?.has("step_3_8") ||
+    state.completedSteps?.has("c3s8") ||
+    !!trackingStatus.ap_status;  // if admin set AP, interview happened
+
+  // DQ is active (case qualified, waiting for interview scheduling)
+  const isDqPhase =
+    (!!state.metadata?.dqDate ||
+      trackingStatus.dq_status === "qualified" ||
+      state.metadata?.dqStatus === "qualified") &&
+    !interviewDate;
+
+  // AP phase: interview attended AND AP is pending
+  const isApPhase =
+    interviewAttended &&
+    (trackingStatus.ap_status === "pending" || state.metadata?.apSaved === "true");
+
   const nextActionData = useMemo(
     () => getNextBestAction(data, state),
     [data, state],
@@ -287,12 +309,10 @@ export function DashboardView({
         <div className="flex flex-col lg:flex-row gap-8 items-start">
           {/* Main Content Column */}
           <div className="flex-1 flex flex-col gap-6 order-1">
-            {/* Interview Queue — only show simple card when there is NO DQ
-                date/status yet. Once DQ data exists, the Dynamic Scheduling
-                Tracker in the sidebar already shows "In Interview Queue"
-                with full detail (DQ date, embassy month, estimate). */}
+            {/* Interview Queue simple card — only when admin flagged queue
+                but NO DQ data exists yet (Dynamic Tracker handles the rest). */}
             {trackingStatus.interview_queue &&
-              !trackingStatus.interview_date &&
+              !interviewDate &&
               !state.metadata?.dqDate &&
               trackingStatus.dq_status !== "qualified" &&
               !state.metadata?.dqStatus && (
@@ -306,13 +326,15 @@ export function DashboardView({
               />
             )}
 
-            {/* Interview Scheduled */}
-            {trackingStatus.interview_date && (
+            {/* Interview Scheduled — shows when interview date exists
+                (either admin-set via tracking_status OR user-set in Step 2.12).
+                Hidden once interview has been attended. */}
+            {interviewDate && !interviewAttended && (
               <WaitingStateCard
                 icon="calendar"
                 title="Interview Scheduled"
-                description={`Your visa interview is scheduled. Please prepare all required documents and attend on time.`}
-                date={`${trackingStatus.interview_date} ${trackingStatus.interview_time ? `at ${trackingStatus.interview_time}` : ""}`}
+                description="Your visa interview is scheduled. Prepare all required documents and attend on time."
+                date={`${trackingStatus.interview_date || state.metadata?.interviewDate}${trackingStatus.interview_time ? ` at ${trackingStatus.interview_time}` : ""}${trackingStatus.interview_embassy ? ` · ${trackingStatus.interview_embassy}` : ""}`}
                 status="complete"
                 actionLabel="Interview Prep Guide"
                 onAction={() => {
@@ -322,11 +344,9 @@ export function DashboardView({
               />
             )}
 
-            {/* Administrative Processing — only show simple card when user
-                has NOT yet recorded AP details in Step 9 (apSaved).
-                Once step_3_9 is filled, APTrackingTool in the sidebar
-                provides the full detailed view. */}
-            {trackingStatus.ap_status === "pending" && state.metadata?.apSaved !== "true" && (
+            {/* Administrative Processing — only shows AFTER interview is attended.
+                Simple card until Step 3.9 is filled; full APTrackingTool after. */}
+            {isApPhase && state.metadata?.apSaved !== "true" && (
               <WaitingStateCard
                 icon="alert"
                 title="Case in Administrative Processing"
@@ -558,11 +578,9 @@ export function DashboardView({
               </div>
             )}
 
-            {/* Dynamic Scheduling Tracker - Professional Redesign */}
-            {/* Show Interview Queue / DQ Tracker when:
-                - Admin marked DQ qualified, OR user recorded DQ date in Step 2.10
-                - AND interview not yet scheduled */}
-            {((trackingStatus.dq_status === "qualified") || (state.metadata?.dqStatus === "qualified") || (state.metadata?.nvc_review_outcome === "qualified") || !!state.metadata?.dqDate) && !trackingStatus.interview_date && (() => {
+            {/* Dynamic Scheduling Tracker — DQ phase only.
+                Hides as soon as interview date is set (admin OR user). */}
+            {isDqPhase && (() => {
               const dqDateStr = trackingStatus.dq_date || state.metadata?.dqDate;
               const currentSchedulingMonthYear = state.metadata?.currentSchedulingMonthYear as string | undefined;
               const postLabel = (state.metadata?.post || state.metadata?.dqPost || "Embassy") as string;
@@ -653,9 +671,9 @@ export function DashboardView({
             })()}
 
             {/* AP Tracking Tool — full detailed view.
-                Shows ONLY when user has recorded AP details in Step 3.9.
-                Before that, the simple WaitingStateCard (main column) is shown. */}
-            {state.metadata?.apSaved === "true" && (
+                Shows ONLY after interview is attended AND user recorded
+                AP details in Step 3.9. */}
+            {isApPhase && state.metadata?.apSaved === "true" && (
               <APTrackingTool state={state} />
             )}
           </div>

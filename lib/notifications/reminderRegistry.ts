@@ -30,6 +30,7 @@ export type TriggerEvent =
   | { type: 'step_completed';      stepKey: string }       // fires when a step is marked done
   | { type: 'ceac_status';         status: string }        // fires when CEAC status is set
   | { type: 'metadata_key_exists'; metadataKey: string }   // fires when metadata key appears
+  | { type: 'metadata_date_set';   metadataKey: string }   // fires relative to a DATE stored in metadata
 
 export interface JourneyReminderDef {
   /** Unique ID — used as reminder_id in DB */
@@ -48,7 +49,12 @@ export interface JourneyReminderDef {
   /** When to auto-cancel */
   suppressWhen: SuppressCondition
 
-  /** Days after trigger event. 0 = fire immediately. */
+  /**
+   * Days to offset from the trigger.
+   * - For most triggers: days AFTER trigger event (positive = future)
+   * - For 'metadata_date_set': days BEFORE the stored date (negative offset)
+   *   e.g. delayDays: -14 = fire 14 days BEFORE the appointment date
+   */
   delayDays: number
   /** Repeats every N days after first send. undefined = one-shot. */
   recurring?: { intervalDays: number; maxCount?: number }
@@ -355,10 +361,11 @@ export const REMINDER_REGISTRY: JourneyReminderDef[] = [
   // ══════════════════════════════════════════════════════════
 
   // ── Step 1: Schedule Medical Exam ─────────────────────────
+  // Phase A: Interview date set but medicalDate not yet booked → urge booking
 
   {
     id: 'c3_s1_book_medical',
-    group: 'c3_medical',
+    group: 'c3_medical_booking',
     chapter: 3,
     kind: 'ACTION',
     origin: 'journey',
@@ -369,42 +376,79 @@ export const REMINDER_REGISTRY: JourneyReminderDef[] = [
     priority: 'critical',
     channels: ['push_and_email'],
     title: 'Book your medical exam — do this TODAY',
-    body: 'Your interview is scheduled. Medical exam spots at panel physicians fill up fast. Book your appointment immediately — the exam must be completed before your interview date. Go to Chapter 3 → Step 1.',
+    body: 'Your interview is scheduled. Medical exam spots at approved panel physicians fill up very quickly — sometimes weeks out. Book immediately. The exam must be completed before your interview date.',
     actionLabel: 'Book Medical Exam',
     actionUrl: '/visa-category/ir-category/ir1-journey',
   },
 
+  // Phase B: medicalDate confirmed → countdown reminders relative to the appointment
+  // delayDays is NEGATIVE here = fire N days BEFORE the medical date
+
   {
-    id: 'c3_s1_medical_14d',
+    id: 'c3_s1_medical_14d_before',
     group: 'c3_medical_countdown',
     chapter: 3,
     kind: 'ACTION',
     origin: 'journey',
-    trigger: { type: 'metadata_key_exists', metadataKey: 'medicalDate' },
+    trigger: { type: 'metadata_date_set', metadataKey: 'medicalDate' },
     suppressWhen: { type: 'step_completed', stepKey: 'step_3_1' },
-    delayDays: 0,
+    delayDays: -14,   // 14 days BEFORE the medical appointment
     priority: 'high',
     channels: ['push'],
-    title: 'Medical exam in 2 weeks — what to prepare',
-    body: 'Your medical exam is coming up. Bring your original passport, passport photos (35×45mm), vaccination records (especially polio and COVID-19), and glasses/contacts if needed. Get a full night\'s sleep beforehand — the exam includes blood tests.',
-    actionLabel: 'View Medical Checklist',
+    title: 'Medical exam in 14 days — start preparing',
+    body: 'Your medical exam is in 2 weeks. Start gathering: original passport, 2 passport photos (35×45mm), polio vaccination certificate, COVID-19 vaccination record, and any existing medical records. Book fasting blood tests in the morning slot if possible.',
+    actionLabel: 'View Medical Prep',
     actionUrl: '/visa-category/ir-category/ir1-journey',
   },
 
   {
-    id: 'c3_s1_medical_3d',
+    id: 'c3_s1_medical_7d_before',
+    group: 'c3_medical_countdown',
+    chapter: 3,
+    kind: 'WAITING',
+    origin: 'journey',
+    trigger: { type: 'metadata_date_set', metadataKey: 'medicalDate' },
+    suppressWhen: { type: 'step_completed', stepKey: 'step_3_1' },
+    delayDays: -7,   // 7 days BEFORE
+    priority: 'high',
+    channels: ['push'],
+    title: 'Medical exam in 7 days — confirm you have everything',
+    body: 'One week to go. Confirm you have: ✓ Original passport ✓ 2 passport photos (35×45mm) ✓ Polio certificate ✓ Vaccination records ✓ Glasses/contact lens prescription if needed ✓ Payment for physician fee. Avoid alcohol 24 hours before.',
+    actionLabel: 'View Checklist',
+    actionUrl: '/visa-category/ir-category/ir1-journey',
+  },
+
+  {
+    id: 'c3_s1_medical_3d_before',
     group: 'c3_medical_countdown',
     chapter: 3,
     kind: 'URGENT',
     origin: 'journey',
-    trigger: { type: 'metadata_key_exists', metadataKey: 'medicalDate' },
+    trigger: { type: 'metadata_date_set', metadataKey: 'medicalDate' },
     suppressWhen: { type: 'step_completed', stepKey: 'step_3_1' },
-    delayDays: 0,
+    delayDays: -3,   // 3 days BEFORE
     priority: 'critical',
     channels: ['push_and_email'],
     title: 'Medical exam in 3 days — final checklist',
-    body: 'Items to bring: Original passport + 2 passport photos + vaccination records + glasses if needed + any medical records for existing conditions. Fast for 8 hours before blood tests. Arrive 15 minutes early.',
-    actionLabel: 'View Full Checklist',
+    body: 'Three days to go. Items to bring on the day: Original passport · 2 passport photos · Vaccination records (polio + COVID-19) · Glasses if worn · Any existing medical records · Physician fee. Fast for 8 hours before blood tests. Arrive 15 minutes early.',
+    actionLabel: 'View Final Checklist',
+    actionUrl: '/visa-category/ir-category/ir1-journey',
+  },
+
+  {
+    id: 'c3_s1_medical_day_before',
+    group: 'c3_medical_countdown',
+    chapter: 3,
+    kind: 'URGENT',
+    origin: 'journey',
+    trigger: { type: 'metadata_date_set', metadataKey: 'medicalDate' },
+    suppressWhen: { type: 'step_completed', stepKey: 'step_3_1' },
+    delayDays: -1,   // 1 day BEFORE (the evening before)
+    priority: 'critical',
+    channels: ['push_and_email'],
+    title: 'Medical exam is TOMORROW — are you ready?',
+    body: 'Your medical exam is tomorrow. Pack your bag tonight: passport + photos + vaccination records + glasses + medical records + fee. Set an alarm. Fast from midnight if blood tests are included. Sleep well.',
+    actionLabel: 'View Final Checklist',
     actionUrl: '/visa-category/ir-category/ir1-journey',
   },
 
@@ -515,12 +559,13 @@ export function getRemindersForStep(stepKey: string): JourneyReminderDef[] {
   )
 }
 
-/** All reminders triggered by a metadata key appearing */
+/** All reminders triggered by a metadata key appearing or a date metadata key */
 export function getRemindersForMetadataKey(metadataKey: string): JourneyReminderDef[] {
   return REMINDER_REGISTRY.filter(
     (r) =>
-      (r.trigger.type === 'metadata_key_exists' && r.trigger.metadataKey === metadataKey) ||
-      (r.trigger.type === 'metadata_key_value' && r.trigger.metadataKey === metadataKey)
+      (r.trigger.type === 'metadata_key_exists' && (r.trigger as any).metadataKey === metadataKey) ||
+      (r.trigger.type === 'metadata_key_value' && (r.trigger as any).metadataKey === metadataKey) ||
+      (r.trigger.type === 'metadata_date_set' && (r.trigger as any).metadataKey === metadataKey)
   )
 }
 
