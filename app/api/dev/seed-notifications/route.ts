@@ -84,7 +84,13 @@ export async function POST(request: NextRequest) {
     }
 
     const supabase = getAdminClient()
-    const now = new Date().toISOString()
+
+    // Always clear previous demo notifications first — prevents duplicates on repeat clicks
+    await supabase
+      .from('journey_reminders')
+      .delete()
+      .eq('journey_id', journeyId)
+      .like('dedup_key', `${journeyId}:dev_seed:%`)
 
     const rows = SAMPLE_NOTIFICATIONS.map((n, i) => ({
       journey_id: journeyId,
@@ -96,11 +102,14 @@ export async function POST(request: NextRequest) {
       action_url: n.action_url,
       step_key: n.step_key,
       is_dismissed: false,
-      dedup_key: `${journeyId}:dev_seed:${i}:${Date.now()}`,
-      created_at: new Date(Date.now() - i * 60000).toISOString(), // stagger times
+      dedup_key: `${journeyId}:dev_seed:${i}`,  // stable key — no timestamp = no duplicates
+      created_at: new Date(Date.now() - i * 60000).toISOString(),
     }))
 
-    const { error } = await supabase.from('journey_reminders').insert(rows)
+    const { error } = await supabase.from('journey_reminders').upsert(rows, {
+      onConflict: 'dedup_key',
+      ignoreDuplicates: false,
+    })
 
     if (error) {
       return NextResponse.json({ error: error.message }, { status: 500 })
