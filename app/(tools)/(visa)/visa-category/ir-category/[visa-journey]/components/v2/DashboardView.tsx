@@ -70,19 +70,6 @@ export function DashboardView({
     () => getNextBestAction(data, state),
     [data, state],
   );
-  const [openAccordions, setOpenAccordions] = useState<Record<string, boolean>>(
-    {
-      "case-details": true,
-      "milestones": false,
-    },
-  );
-
-  const toggleAccordion = (id: string) => {
-    setOpenAccordions((prev) => ({
-      ...prev,
-      [id]: !prev[id],
-    }));
-  };
 
   const alerts = useMemo(() => {
     const list: {
@@ -200,6 +187,25 @@ export function DashboardView({
     return list;
   }, [state, actions]);
 
+  // Determine if sidebar should be visible
+  const showSidebar = useMemo(() => {
+    return alerts.length > 0 || isDqPhase || (isApPhase && state.metadata?.apSaved === "true");
+  }, [alerts.length, isDqPhase, isApPhase, state.metadata?.apSaved]);
+
+  const [openAccordions, setOpenAccordions] = useState<Record<string, boolean>>(
+    {
+      "case-details": true,
+      "milestones": false,
+    },
+  );
+
+  const toggleAccordion = (id: string) => {
+    setOpenAccordions((prev) => ({
+      ...prev,
+      [id]: !prev[id],
+    }));
+  };
+
   const milestones = [
     { label: "Eligibility confirmed", sid: "step_1_1" },
     { label: "Documents gathered", sid: "step_1_2" },
@@ -299,16 +305,16 @@ export function DashboardView({
         style={{ backgroundImage: `url(${dashboardBg})` }}
       />
       <div className="w-full max-w-[1200px] mx-auto animate-in fade-in duration-700 relative z-10">
-        <div className="text-[10px] font-bold uppercase tracking-[0.12em] text-slate-400 mb-2">
+        <div className="text-[10px] font-bold uppercase tracking-[0.12em] text-slate-400 mb-2 text-center lg:text-left">
           IR-1 Spouse Visa · Pakistan
         </div>
-        <h1 className="font-black text-[clamp(22px,3vw,28px)] text-[#0c1b33] mb-8">
+        <h1 className="font-black text-[clamp(22px,3vw,28px)] text-[#0c1b33] mb-8 text-center lg:text-left">
           Case Dashboard
         </h1>
 
-        <div className="flex flex-col lg:flex-row gap-8 items-start">
+        <div className={`flex flex-col lg:flex-row gap-8 items-start ${!showSidebar ? "justify-center" : ""}`}>
           {/* Main Content Column */}
-          <div className="flex-1 flex flex-col gap-6 order-1">
+          <div className={`flex flex-col gap-6 order-1 w-full ${showSidebar ? "flex-1" : "lg:max-w-4xl"}`}>
             {/* Interview Queue simple card — only when admin flagged queue
                 but NO DQ data exists yet (Dynamic Tracker handles the rest). */}
             {trackingStatus.interview_queue &&
@@ -390,7 +396,7 @@ export function DashboardView({
               </div>
             </section>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
+            <div className={`grid grid-cols-1 md:grid-cols-2 gap-3 ${showSidebar ? "xl:grid-cols-3" : "lg:grid-cols-3"}`}>
               {(data.chapters || (data as any).stages || [])
                 .map((stage: any, originalIdx: number) => ({ stage, originalIdx }))
                 .filter(({ stage }) => !state.scenarioType || !stage.scenarioSpecific || stage.scenarioSpecific === state.scenarioType)
@@ -546,139 +552,140 @@ export function DashboardView({
           </div>
 
           {/* Sidebar Column (Case Tracking) */}
-          <div className="w-full lg:w-[360px] shrink-0 order-2 flex flex-col gap-4">
-            <div className="flex items-center justify-between px-1">
-              <h2 className="text-[12px] font-black uppercase tracking-[0.1em] text-[#0c1b33]">Live Case Tracking</h2>
-              <div className="flex items-center gap-1.5">
-                <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
-                <span className="text-[10px] font-bold text-[#6b8097]">Linked to Embassy</span>
-              </div>
-            </div>
-
-            {/* Unified Alerts */}
-            {alerts.length > 0 && (
-              <div className="flex flex-col gap-2 animate-in fade-in slide-in-from-right-4 duration-500">
-                {alerts.map((alert, i) => (
-                  <div key={i} className={`flex gap-2.5 items-start p-3 rounded-[10px] border shadow-xs ${alert.type === "gold" ? "bg-[#fffbeb] border-[#fde68a] text-[#b38600]" : alert.type === "sky" ? "bg-primary/5 border-[#d0e4f7] text-primary" : alert.type === "amber" ? "bg-[#fef8e8] border-[#f0d98a] text-[#8a6200]" : "bg-[#e8f5ef] border-[#a8d9be] text-[#15744f]"}`}>
-                    <div className={`w-1.5 h-1.5 rounded-full mt-1.5 shrink-0 ${alert.type === "gold" ? "bg-[#b38600]" : alert.type === "sky" ? "bg-primary" : alert.type === "amber" ? "bg-[#8a6200]" : "bg-[#15744f]"}`} />
-                    <div className="flex-1 flex flex-col gap-1.5">
-                      <div className="text-[12px] leading-relaxed"><span className="font-bold">{alert.title}: </span><span className="opacity-80">{alert.text}</span></div>
-                      {alert.action && (
-                        <div className="flex gap-2">
-                          {alert.action.url ? (
-                            <a href={alert.action.url} target="_blank" rel="noreferrer" className="text-[10px] font-bold uppercase tracking-wider text-slate-500 hover:text-slate-700 underline">{alert.action.label}</a>
-                          ) : (
-                            <button onClick={alert.action.onAction} className="text-[10px] font-bold uppercase tracking-wider text-slate-500 hover:text-slate-700 underline text-left">{alert.action.label}</button>
-                          )}
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-
-            {/* Dynamic Scheduling Tracker — DQ phase only.
-                Hides as soon as interview date is set (admin OR user). */}
-            {isDqPhase && (() => {
-              const dqDateStr = trackingStatus.dq_date || state.metadata?.dqDate;
-              const currentSchedulingMonthYear = state.metadata?.currentSchedulingMonthYear as string | undefined;
-              const postLabel = (state.metadata?.post || state.metadata?.dqPost || "Embassy") as string;
-
-              if (!dqDateStr) {
-                return (
-                  <div className="bg-[#0f1f38] rounded-[22px] border border-white/10 p-6 text-white mb-4">
-                    <div className="flex items-center gap-4 text-slate-400">
-                      <Clock size={20} />
-                      <p className="text-[13px]">Please record your DQ date in <b>Chapter 2, Step 10</b> to see scheduling estimates.</p>
-                    </div>
-                  </div>
-                );
-              }
-
-              const dqDateObj = new Date(dqDateStr + "T00:00:00");
-              const diffTime = new Date().getTime() - dqDateObj.getTime();
-              const daysSinceDq = Math.max(0, Math.floor(diffTime / (1000 * 60 * 60 * 24)));
-
-              if (!currentSchedulingMonthYear) {
-                return (
-                  <div className="bg-[#0f1f38] rounded-[22px] border border-[#2f6fd4]/30 p-6 text-white mb-4 relative overflow-hidden">
-                    <div className="absolute -top-10 -right-10 w-40 h-40 bg-primary/10 rounded-full blur-[80px] pointer-events-none" />
-                    <div className="relative z-10">
-                      <div className="inline-flex items-center gap-2 px-3 py-1 bg-white/10 rounded-full border border-white/10 text-[10px] font-black uppercase tracking-[0.15em] text-[#6aa8f0] mb-4">Interview Queue ({postLabel})</div>
-                      <h3 className="text-[18px] font-black mb-2">In Queue — Awaiting Estimate</h3>
-                      <p className="text-[12.5px] text-slate-400 leading-relaxed mb-4 max-w-md">Your DQ date is recorded. To see your estimated interview window, go to <b>Chapter 2 → Step 11</b> and sync the official embassy scheduling month.</p>
-                      <div className="bg-white/5 rounded-xl p-3 border border-white/10 flex items-center justify-between">
-                        <span className="text-[12px] font-bold">DQ Date: {dqDateObj.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}</span>
-                        <span className="text-[10px] text-[#34d399] font-black uppercase">{daysSinceDq} DAYS AGO</span>
-                      </div>
-                    </div>
-                  </div>
-                );
-              }
-
-              // Estimation Logic
-              const [ivY, ivM] = currentSchedulingMonthYear.split("-").map(Number);
-              const ivDate = new Date(ivY, ivM - 1, 1);
-              const waitMonths = Math.max(0, (dqDateObj.getFullYear() - ivDate.getFullYear()) * 12 + (dqDateObj.getMonth() - ivDate.getMonth()));
-              const lowDate = new Date(); lowDate.setMonth(lowDate.getMonth() + waitMonths);
-              const highDate = new Date(lowDate); highDate.setMonth(highDate.getMonth() + 2);
-              const fmt = { month: 'short', year: 'numeric' } as const;
-              const windowStr = waitMonths === 0 ? "Approaching Soon" : `${lowDate.toLocaleDateString('en-US', fmt)} – ${highDate.toLocaleDateString('en-US', fmt)}`;
-              const embassyMonthStr = ivDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
-
-              return (
-                <div className="bg-[#0f1f38] rounded-[24px] border border-[#2f6fd4]/30 shadow-2xl p-6 text-white mb-6 relative overflow-hidden animate-in zoom-in-95 duration-500">
-                  <div className="absolute -top-10 -right-10 w-40 h-40 bg-primary/10 rounded-full blur-[80px] pointer-events-none" />
-                  <div className="flex flex-col gap-4 mb-6 border-b border-white/10 pb-4">
-                    <div>
-                      <h3 className="text-[20px] font-black leading-tight">In Interview Queue ({postLabel})</h3>
-                      <p className="text-slate-400 text-[12px] mt-1">Estimated timeline based on your DQ date and the official IV Status Tool.</p>
-                    </div>
-                  </div>
-                  <div className="flex flex-col gap-4 mb-6">
-                    <div className="bg-white/5 rounded-2xl p-4 border border-white/5">
-                      <div className="text-[10px] uppercase tracking-widest text-[#6b8097] mb-2 font-black">Your DQ Date</div>
-                      <div className="text-[18px] font-bold">{dqDateObj.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}</div>
-                      <div className="text-[11px] text-[#34d399] mt-1 font-bold uppercase">{daysSinceDq} Days Ago</div>
-                    </div>
-                    <div className="bg-white/5 rounded-2xl p-4 border border-white/5 flex flex-col justify-between">
-                      <div>
-                        <div className="text-[10px] uppercase tracking-widest text-[#6b8097] mb-1 font-black leading-tight">Embassy is currently scheduling cases DQ'd in</div>
-                        <div className="text-[18px] font-bold text-[#6aa8f0] mt-1">{embassyMonthStr}</div>
-                      </div>
-                      <button onClick={() => window.open("https://travel.state.gov/content/travel/en/us-visas/visa-information-resources/iv-wait-times.html", "_blank")} className="mt-3 text-[10px] font-bold text-white/60 hover:text-white flex items-center gap-1 transition-colors group">
-                        Check Latest Official Tool <ExternalLink size={10} className="group-hover:translate-x-0.5 transition-transform" />
-                      </button>
-                    </div>
-                    <div className="bg-amber-500/10 rounded-2xl p-4 border border-amber-500/20">
-                      <div className="text-[10px] uppercase tracking-widest text-amber-500/80 mb-2 font-black">Estimated Interview Window</div>
-                      <div className="text-[20px] font-black text-amber-400">{windowStr}</div>
-                      <div className="text-[10px] text-amber-500/60 mt-1 font-medium">Subject to visa availability</div>
-                    </div>
-                  </div>
-                  <div className="bg-white/5 border border-white/10 rounded-2xl p-4 relative">
-                    <div className="flex items-start gap-4">
-                      <div className="w-8 h-8 rounded-xl bg-primary/20 flex items-center justify-center shrink-0 border border-primary/20"><Shield className="text-primary" size={16} /></div>
-                      <div>
-                        <h4 className="text-[13px] font-black mb-1">Status Intelligence</h4>
-                        <p className="text-[12.5px] text-slate-300 leading-relaxed">The embassy is currently scheduling cases that became DQ'd in <b>{embassyMonthStr}</b>. Your case became DQ'd in <b>{dqDateObj.toLocaleDateString("en-US", { month: "long", year: "numeric" })}</b>, which means you are <b>approximately {waitMonths} months</b> behind the current processing group.</p>
-                      </div>
-                    </div>
-                  </div>
+          {showSidebar && (
+            <div className="w-full lg:w-[360px] shrink-0 order-2 flex flex-col gap-4">
+              <div className="flex items-center justify-between px-1">
+                <h2 className="text-[12px] font-black uppercase tracking-[0.1em] text-[#0c1b33]">Live Case Tracking</h2>
+                <div className="flex items-center gap-1.5">
+                  <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
+                  <span className="text-[10px] font-bold text-[#6b8097]">Linked to Embassy</span>
                 </div>
-              );
-            })()}
+              </div>
 
-            {/* AP Tracking Tool — full detailed view.
-                Shows ONLY after interview is attended AND user recorded
-                AP details in Step 3.9. */}
-            {isApPhase && state.metadata?.apSaved === "true" && (
-              <APTrackingTool state={state} />
-            )}
-          </div>
+              {/* Unified Alerts */}
+              {alerts.length > 0 && (
+                <div className="flex flex-col gap-2 animate-in fade-in slide-in-from-right-4 duration-500">
+                  {alerts.map((alert, i) => (
+                    <div key={i} className={`flex gap-2.5 items-start p-3 rounded-[10px] border shadow-xs ${alert.type === "gold" ? "bg-[#fffbeb] border-[#fde68a] text-[#b38600]" : alert.type === "sky" ? "bg-primary/5 border-[#d0e4f7] text-primary" : alert.type === "amber" ? "bg-[#fef8e8] border-[#f0d98a] text-[#8a6200]" : "bg-[#e8f5ef] border-[#a8d9be] text-[#15744f]"}`}>
+                      <div className={`w-1.5 h-1.5 rounded-full mt-1.5 shrink-0 ${alert.type === "gold" ? "bg-[#b38600]" : alert.type === "sky" ? "bg-primary" : alert.type === "amber" ? "bg-[#8a6200]" : "bg-[#15744f]"}`} />
+                      <div className="flex-1 flex flex-col gap-1.5">
+                        <div className="text-[12px] leading-relaxed"><span className="font-bold">{alert.title}: </span><span className="opacity-80">{alert.text}</span></div>
+                        {alert.action && (
+                          <div className="flex gap-2">
+                            {alert.action.url ? (
+                              <a href={alert.action.url} target="_blank" rel="noreferrer" className="text-[10px] font-bold uppercase tracking-wider text-slate-500 hover:text-slate-700 underline">{alert.action.label}</a>
+                            ) : (
+                              <button onClick={alert.action.onAction} className="text-[10px] font-bold uppercase tracking-wider text-slate-500 hover:text-slate-700 underline text-left">{alert.action.label}</button>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* Dynamic Scheduling Tracker — DQ phase only.
+                  Hides as soon as interview date is set (admin OR user). */}
+              {isDqPhase && (() => {
+                const dqDateStr = trackingStatus.dq_date || state.metadata?.dqDate;
+                const currentSchedulingMonthYear = state.metadata?.currentSchedulingMonthYear as string | undefined;
+                const postLabel = (state.metadata?.post || state.metadata?.dqPost || "Embassy") as string;
+
+                if (!dqDateStr) {
+                  return (
+                    <div className="bg-[#0f1f38] rounded-[22px] border border-white/10 p-6 text-white mb-4">
+                      <div className="flex items-center gap-4 text-slate-400">
+                        <Clock size={20} />
+                        <p className="text-[13px]">Please record your DQ date in <b>Chapter 2, Step 10</b> to see scheduling estimates.</p>
+                      </div>
+                    </div>
+                  );
+                }
+
+                const dqDateObj = new Date(dqDateStr + "T00:00:00");
+                const diffTime = new Date().getTime() - dqDateObj.getTime();
+                const daysSinceDq = Math.max(0, Math.floor(diffTime / (1000 * 60 * 60 * 24)));
+
+                if (!currentSchedulingMonthYear) {
+                  return (
+                    <div className="bg-[#0f1f38] rounded-[22px] border border-[#2f6fd4]/30 p-6 text-white mb-4 relative overflow-hidden">
+                      <div className="absolute -top-10 -right-10 w-40 h-40 bg-primary/10 rounded-full blur-[80px] pointer-events-none" />
+                      <div className="relative z-10">
+                        <div className="inline-flex items-center gap-2 px-3 py-1 bg-white/10 rounded-full border border-white/10 text-[10px] font-black uppercase tracking-[0.15em] text-[#6aa8f0] mb-4">Interview Queue ({postLabel})</div>
+                        <h3 className="text-[18px] font-black mb-2">In Queue — Awaiting Estimate</h3>
+                        <p className="text-[12.5px] text-slate-400 leading-relaxed mb-4 max-w-md">Your DQ date is recorded. To see your estimated interview window, go to <b>Chapter 2 → Step 11</b> and sync the official embassy scheduling month.</p>
+                        <div className="bg-white/5 rounded-xl p-3 border border-white/10 flex items-center justify-between">
+                          <span className="text-[12px] font-bold">DQ Date: {dqDateObj.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}</span>
+                          <span className="text-[10px] text-[#34d399] font-black uppercase">{daysSinceDq} DAYS AGO</span>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                }
+
+                // Estimation Logic
+                const [ivY, ivM] = currentSchedulingMonthYear.split("-").map(Number);
+                const ivDate = new Date(ivY, ivM - 1, 1);
+                const waitMonths = Math.max(0, (dqDateObj.getFullYear() - ivDate.getFullYear()) * 12 + (dqDateObj.getMonth() - ivDate.getMonth()));
+                const lowDate = new Date(); lowDate.setMonth(lowDate.getMonth() + waitMonths);
+                const highDate = new Date(lowDate); highDate.setMonth(highDate.getMonth() + 2);
+                const fmt = { month: 'short', year: 'numeric' } as const;
+                const windowStr = waitMonths === 0 ? "Approaching Soon" : `${lowDate.toLocaleDateString('en-US', fmt)} – ${highDate.toLocaleDateString('en-US', fmt)}`;
+                const embassyMonthStr = ivDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+
+                return (
+                  <div className="bg-[#0f1f38] rounded-[24px] border border-[#2f6fd4]/30 shadow-2xl p-6 text-white mb-6 relative overflow-hidden animate-in zoom-in-95 duration-500">
+                    <div className="absolute -top-10 -right-10 w-40 h-40 bg-primary/10 rounded-full blur-[80px] pointer-events-none" />
+                    <div className="flex flex-col gap-4 mb-6 border-b border-white/10 pb-4">
+                      <div>
+                        <h3 className="text-[20px] font-black leading-tight">In Interview Queue ({postLabel})</h3>
+                        <p className="text-slate-400 text-[12px] mt-1">Estimated timeline based on your DQ date and the official IV Status Tool.</p>
+                      </div>
+                    </div>
+                    <div className="flex flex-col gap-4 mb-6">
+                      <div className="bg-white/5 rounded-2xl p-4 border border-white/5">
+                        <div className="text-[10px] uppercase tracking-widest text-[#6b8097] mb-2 font-black">Your DQ Date</div>
+                        <div className="text-[18px] font-bold">{dqDateObj.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}</div>
+                        <div className="text-[11px] text-[#34d399] mt-1 font-bold uppercase">{daysSinceDq} Days Ago</div>
+                      </div>
+                      <div className="bg-white/5 rounded-2xl p-4 border border-white/5 flex flex-col justify-between">
+                        <div>
+                          <div className="text-[10px] uppercase tracking-widest text-[#6b8097] mb-1 font-black leading-tight">Embassy is currently scheduling cases DQ'd in</div>
+                          <div className="text-[18px] font-bold text-[#6aa8f0] mt-1">{embassyMonthStr}</div>
+                        </div>
+                        <button onClick={() => window.open("https://travel.state.gov/content/travel/en/us-visas/visa-information-resources/iv-wait-times.html", "_blank")} className="mt-3 text-[10px] font-bold text-white/60 hover:text-white flex items-center gap-1 transition-colors group">
+                          Check Latest Official Tool <ExternalLink size={10} className="group-hover:translate-x-0.5 transition-transform" />
+                        </button>
+                      </div>
+                      <div className="bg-amber-500/10 rounded-2xl p-4 border border-amber-500/20">
+                        <div className="text-[10px] uppercase tracking-widest text-amber-500/80 mb-2 font-black">Estimated Interview Window</div>
+                        <div className="text-[20px] font-black text-amber-400">{windowStr}</div>
+                        <div className="text-[10px] text-amber-500/60 mt-1 font-medium">Subject to visa availability</div>
+                      </div>
+                    </div>
+                    <div className="bg-white/5 border border-white/10 rounded-2xl p-4 relative">
+                      <div className="flex items-start gap-4">
+                        <div className="w-8 h-8 rounded-xl bg-primary/20 flex items-center justify-center shrink-0 border border-primary/20"><Shield className="text-primary" size={16} /></div>
+                        <div>
+                          <h4 className="text-[13px] font-black mb-1">Status Intelligence</h4>
+                          <p className="text-[12.5px] text-slate-300 leading-relaxed">The embassy is currently scheduling cases that became DQ'd in <b>{embassyMonthStr}</b>. Your case became DQ'd in <b>{dqDateObj.toLocaleDateString("en-US", { month: "long", year: "numeric" })}</b>, which means you are <b>approximately {waitMonths} months</b> behind the current processing group.</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })()}
+
+              {/* AP Tracking Tool — full detailed view.
+                  Shows ONLY after interview is attended AND user recorded
+                  AP details in Step 3.9. */}
+              {isApPhase && state.metadata?.apSaved === "true" && (
+                <APTrackingTool state={state} />
+              )}
+            </div>
+          )}
         </div>
-
 
       </div>
     </div>
