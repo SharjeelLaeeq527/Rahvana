@@ -58,6 +58,7 @@ import {
   Activity,
   Clock,
   RefreshCw,
+  Sparkles,
 } from "lucide-react";
 
 import {
@@ -2666,7 +2667,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {/* Read Guide Card */}
+                {/* Action Card (Guide or Tool) */}
                 <button
                   onClick={() => {
                     setDocActionModal({ ...docActionModal, isOpen: false });
@@ -2675,13 +2676,38 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                   className="group relative text-left p-6 rounded-2xl border-[1.5px] border-[#d0e4f7] bg-white transition-all hover:border-primary hover:shadow-[0_12px_24px_rgba(15,31,56,0.08)] hover:-translate-y-1"
                 >
                   <div className="w-10 h-10 rounded-xl bg-[#e8f1fb] text-primary flex items-center justify-center mb-4 group-hover:bg-primary group-hover:text-white transition-colors">
-                    <BookOpen size={20} />
+                    {doc.id === "doc_translations" ||
+                    doc.guideKey === "doc_translations" ||
+                    doc.selectedGuideId === "doc_translations" ? (
+                      <Sparkles size={20} />
+                    ) : doc.id === "doc_passport_photos" ||
+                      doc.guideKey === "doc_passport_photos" ||
+                      doc.selectedGuideId === "doc_passport_photos" ? (
+                      <Camera size={20} />
+                    ) : (
+                      <BookOpen size={20} />
+                    )}
                   </div>
                   <h4 className="font-bold text-[#0f1f38] mb-1">
-                    Read the Guide
+                    {doc.id === "doc_translations" ||
+                    doc.guideKey === "doc_translations" ||
+                    doc.selectedGuideId === "doc_translations" ||
+                    doc.id === "doc_passport_photos" ||
+                    doc.guideKey === "doc_passport_photos" ||
+                    doc.selectedGuideId === "doc_passport_photos"
+                      ? "Launch the Tool"
+                      : "Read the Guide"}
                   </h4>
                   <p className="text-xs text-[#6b8097] leading-relaxed">
-                    View requirements, pitfalls, and step-by-step instructions.
+                    {doc.id === "doc_translations" ||
+                    doc.guideKey === "doc_translations" ||
+                    doc.selectedGuideId === "doc_translations"
+                      ? "Use our automated tool to prepare certified translations for your documents."
+                      : doc.id === "doc_passport_photos" ||
+                        doc.guideKey === "doc_passport_photos" ||
+                        doc.selectedGuideId === "doc_passport_photos"
+                        ? "Generate and validate your passport photos to meet U.S. specifications."
+                        : "View requirements, pitfalls, and step-by-step instructions."}
                   </p>
                 </button>
 
