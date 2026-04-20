@@ -161,14 +161,34 @@ export default function PassportPhotoTool({
   };
 
   return (
-    <div className={`flex flex-col items-center w-full ${className}`}>
+     <div
+      className={`fixed inset-0 overflow-y-auto ${className}`}
+      style={{
+        backgroundImage: "url('/assets/images/Photobooth.png')",
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+        backgroundRepeat: "no-repeat",
+        backgroundAttachment: "fixed",  /* stays put while content scrolls */
+        backgroundColor: "rgba(255,255,255,0.6)",  /* fallback */
+      }}
+    >
+      <div
+  className="fixed inset-0"
+  style={{ backgroundColor: "rgba(255,255,255,0.6)" }}
+/>
+       {/* Page content */}
+     l <div className="relative z-10 flex flex-col items-center w-full px-4 py-10">
       {/* Header */}
       {showHeader && (
         <header className="text-center mb-8 md:mb-10 w-full max-w-2xl">
-          <h1 className="text-3xl md:text-5xl font-bold text-primary/90 leading-tight">
+          <h1 className="text-3xl md:text-5xl font-bold text-primary/90 leading-tight"
+           style={{ color: "#4a7c8e",
+           textShadow: "0 2px 8px rgba(74,124,142,0.3), 0 1px 4px rgba(0,0,0,0.1)"
+            }}> 
             {t("passportPhoto.title")}
           </h1>
-          <p className="mt-3 md:mt-2 text-base md:text-lg text-gray-600 px-2">
+          <p className="mt-3 md:mt-2 text-base md:text-lg text-gray-600 px-2"
+          style={{ color: "#6b8fa0" }}>  
             {t("passportPhoto.subtitle")}
           </p>
         </header>
@@ -176,7 +196,13 @@ export default function PassportPhotoTool({
 
       {/* Official Guidelines */}
       {showRequirements && (
-        <section className="w-full max-w-3xl mb-8 md:mb-12 bg-white rounded-xl shadow-lg p-5 md:p-8">
+        <section className="w-full max-w-3xl mb-8 md:mb-12 bg-white rounded-xl shadow-lg p-5 md:p-8"
+        style={{
+              backgroundColor: "rgba(255,255,255,0.78)",
+              backdropFilter: "blur(10px)",
+              boxShadow: "0 8px 32px rgba(74,124,142,0.18), 0 2px 8px rgba(0,0,0,0.10), inset 0 1px 0 rgba(255,255,255,0.9)",
+              border: "1px solid rgba(74,124,142,0.2)",
+            }}>
           <h2 className="flex items-center gap-2 text-xl md:text-2xl font-semibold text-primary/90 mb-4 md:mb-6">
             <AlertCircle className="w-5 h-5 md:w-6 md:h-6 shrink-0" />
             {t("passportPhoto.requirementsTitle")}
@@ -185,7 +211,8 @@ export default function PassportPhotoTool({
           <ul className="grid md:grid-cols-2 gap-4 md:gap-6 text-gray-700 text-sm md:text-base">
             {["1", "2", "3", "4", "5", "6", "7"].map((key) => (
               <li key={key} className="flex items-start gap-3 md:col-span-1">
-                <CheckCircle className="w-5 h-5 text-green-600 mt-0.5 shrink-0" />
+                <CheckCircle className="w-5 h-5 text-green-600 mt-0.5 shrink-0" 
+                 style={{ color: "#7fb3c8" }} /> 
                 <span>
                   <strong>{key}.</strong> {t(`passportPhoto.requirements.${key}`)}
                 </span>
@@ -197,7 +224,13 @@ export default function PassportPhotoTool({
 
       {/* Upload Section - Made more compact with max-w-2xl */}
       <section className="w-full max-w-2xl">
-        <div className="bg-white rounded-xl shadow-md p-4 sm:p-6">
+        <div className="bg-white rounded-xl shadow-md p-4 sm:p-6"
+        style={{
+              backgroundColor: "rgba(255,255,255,0.80)",
+              backdropFilter: "blur(10px)",
+              boxShadow: "0 8px 32px rgba(74,124,142,0.18), 0 2px 8px rgba(0,0,0,0.10), inset 0 1px 0 rgba(255,255,255,0.9)",
+              border: "1px solid rgba(74,124,142,0.2)",
+            }}>
           <label className="block text-sm font-medium text-gray-700 mb-3 text-center sm:text-left">
             {t("passportPhoto.uploadLabel")}
           </label>
@@ -220,7 +253,8 @@ export default function PassportPhotoTool({
                   src={preview}
                   alt="Preview"
                   fill
-                  className="object-cover rounded-lg shadow"
+                  className="object-cover rounded-lg"
+                  style={{ boxShadow: "0 4px 16px rgba(0,0,0,0.15)" }}
                   unoptimized
                 />
               </div>
@@ -237,14 +271,22 @@ export default function PassportPhotoTool({
             <button
               onClick={reset}
               className="mt-3 text-sm text-red-600 hover:text-red-700 flex items-center gap-1 mx-auto"
-            >
+              style={{ color: "#c0756a" }}>
               <X className="w-4 h-4" /> {t("passportPhoto.removePhoto")}
             </button>
           )}
 
           {/* Error Message */}
           {error && (
-            <div className="mt-4 p-3 bg-red-50 border border-red-200 text-red-700 rounded-lg text-sm flex items-center gap-2">
+            <div
+                className="mt-4 p-3 rounded-lg text-sm flex items-center gap-2"
+                style={{
+                  backgroundColor: "#fef2f2",
+                  border: "1px solid #fecaca",
+                  color: "#b91c1c",
+                  boxShadow: "0 2px 8px rgba(185,28,28,0.08)",
+                }}
+              >
               <AlertCircle className="w-5 h-5" />
               {error}
             </div>
@@ -252,15 +294,28 @@ export default function PassportPhotoTool({
 
           {/* Process Button - Centered or contained */}
           <button
-            onClick={handleProcess}
-            disabled={!file || loading}
-            className={`mt-6 w-full py-3 rounded-xl font-semibold transition-colors flex items-center justify-center gap-2
-              ${
+              onClick={handleProcess}
+              disabled={!file || loading}
+              className="mt-6 w-full py-3 rounded-xl font-semibold transition-all flex items-center justify-center gap-2"
+              style={
                 !file || loading
-                  ? "bg-gray-300 text-gray-500 cursor-not-allowed"
-                  : "bg-primary/90 text-white hover:bg-primary"
-              }`}
-          >
+                  ? { backgroundColor: "#d1dde3", color: "#8aafc0", cursor: "not-allowed" }
+                  : {
+                      backgroundColor: "#5a9ab5",
+                      color: "#ffffff",
+                      boxShadow: "0 4px 18px rgba(90,154,181,0.45), 0 1px 4px rgba(0,0,0,0.10)",
+                      cursor: "pointer",
+                    }
+              }
+              onMouseEnter={(e) => {
+                if (file && !loading)
+                  (e.currentTarget as HTMLButtonElement).style.backgroundColor = "#4a7c8e";
+              }}
+              onMouseLeave={(e) => {
+                if (file && !loading)
+                  (e.currentTarget as HTMLButtonElement).style.backgroundColor = "#5a9ab5";
+              }}
+            >
             {loading ? (
               <>{t("passportPhoto.processing")}</>
             ) : (
@@ -276,8 +331,17 @@ export default function PassportPhotoTool({
       {/* Result */}
       {result && (
         <section className="mt-12 w-full max-w-2xl">
-          <div className="bg-white rounded-xl shadow-lg p-4 sm:p-6 text-center">
-            <p className="text-xl font-semibold text-green-600 mb-4 flex items-center justify-center gap-2">
+         <div
+              className="rounded-2xl p-4 sm:p-6"
+              style={{
+                backgroundColor: "rgba(255,255,255,0.85)",
+                backdropFilter: "blur(10px)",
+                boxShadow: "0 8px 32px rgba(74,124,142,0.18), 0 2px 8px rgba(0,0,0,0.10), inset 0 1px 0 rgba(255,255,255,0.9)",
+                border: "1px solid rgba(74,124,142,0.2)",
+              }}
+            >
+            <p className="text-xl font-semibold text-green-600 mb-4 flex items-center justify-center gap-2"
+              style={{ color: "#4a8c6e" }}> 
               <CheckCircle className="w-6 h-6" />
               {t("passportPhoto.ready")}
             </p>
@@ -291,16 +355,22 @@ export default function PassportPhotoTool({
               />
             </div>
             <a
-              href={result}
-              download="passport-photo.jpg"
-              className="mt-6 inline-flex items-center gap-2 bg-green-600 text-white px-6 py-3 rounded-xl font-semibold hover:bg-green-700 transition"
-            >
+                href={result}
+                download="passport-photo.jpg"
+                className="mt-6 inline-flex items-center gap-2 px-6 py-3 rounded-xl font-semibold transition-all hover:opacity-90"
+                style={{
+                  backgroundColor: "#4a8c6e",
+                  color: "#ffffff",
+                  boxShadow: "0 4px 18px rgba(74,140,110,0.4), 0 1px 4px rgba(0,0,0,0.10)",
+                }}
+              >
               <Download className="w-5 h-5" />
               {t("passportPhoto.download")}
             </a>
           </div>
         </section>
       )}
+    </div>
     </div>
   );
 }

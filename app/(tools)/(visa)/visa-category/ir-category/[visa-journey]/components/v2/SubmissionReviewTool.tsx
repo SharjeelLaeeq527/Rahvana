@@ -63,7 +63,7 @@ export const SubmissionReviewTool: React.FC<SubmissionReviewToolProps> = ({
               setSubmissionGuideIdx(0);
               setIsSubmissionGuideOpen(true);
             }}
-            className="w-full p-[15px_24px] bg-[#3b7dd8] text-white border-none rounded-[11px] text-[15px] font-semibold cursor-pointer transition-all hover:bg-[#3b7dd8] hover:-translate-y-0.5 shadow-[0_4px_20px_rgba(47,111,212,0.35)] flex items-center justify-center gap-[9px]"
+            className="w-full p-[15px_24px] bg-[#b48ad6] text-white border-none rounded-[12px] font-sans text-[15px] font-semibold cursor-pointer transition-all hover:bg-[#561864] hover:-translate-y-0.5 shadow-[0_4px_20px_rgba(47,111,212,0.35)] flex items-center justify-center gap-[9px]"
           >
             <span>{tool.launch_module.buttonText}</span>
             <ChevronRight size={15} />
