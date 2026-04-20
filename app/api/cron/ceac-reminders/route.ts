@@ -12,10 +12,12 @@ import { runCeacNotificationJob } from '@/lib/ceac-tracking/recurringJobRunner'
 export const runtime = 'nodejs'  // node-cron / Resend require Node runtime
 
 export async function GET(req: NextRequest) {
-  // Verify EasyCron secret — same pattern as existing cron routes
-  const secret = req.headers.get('x-cron-secret')
-  if (secret !== process.env.CRON_SECRET) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  // In dev, allow without secret for easy testing
+  if (process.env.NODE_ENV !== 'development') {
+    const secret = req.headers.get('x-cron-secret')
+    if (secret !== process.env.CRON_SECRET) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
   }
 
   try {

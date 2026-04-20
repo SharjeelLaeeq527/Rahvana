@@ -226,16 +226,42 @@ export class UnifiedReminderEngine {
       }
     }
 
-    if (toCancel.length === 0) return
+    // Cancel in scheduled queue
+    if (toCancel.length > 0) {
+      await this.supabase
+        .from('ceac_scheduled_notifications')
+        .update({
+          status: 'cancelled',
+          cancelled_at: new Date().toISOString(),
+          cancel_reason: 'suppress_condition_met',
+        })
+        .in('id', toCancel)
+    }
 
-    await this.supabase
-      .from('ceac_scheduled_notifications')
-      .update({
-        status: 'cancelled',
-        cancelled_at: new Date().toISOString(),
-        cancel_reason: 'suppress_condition_met',
-      })
-      .in('id', toCancel)
+    // Also auto-dismiss already-delivered journey_reminders whose suppress
+    // condition is now met (so stale notifications disappear from bell).
+    const suppressedReminderIds = toCancel
+      .map((id) => pending?.find((r) => r.id === id)?.reminder_id)
+      .filter(Boolean) as string[]
+
+    if (suppressedReminderIds.length > 0) {
+      await this.supabase
+        .from('journey_reminders')
+        .update({ is_dismissed: true, dismissed_at: new Date().toISOString() })
+        .eq('journey_id', journeyId)
+        .in('dedup_key', suppressedReminderIds.map((rid) => `${journeyId}:journey:${rid}:0`))
+    }
+
+    // Broader suppression: auto-dismiss journey_reminders by reminder_id match
+    // using dedup_key pattern for all delivered reminders from registry
+    for (const suppressed of suppressedReminderIds) {
+      await this.supabase
+        .from('journey_reminders')
+        .update({ is_dismissed: true, dismissed_at: new Date().toISOString() })
+        .eq('journey_id', journeyId)
+        .eq('is_dismissed', false)
+        .like('dedup_key', `${journeyId}:journey:${suppressed}%`)
+    }
   }
 
   // ─────────────────────────────────────────────────────────
@@ -270,6 +296,11 @@ export class UnifiedReminderEngine {
 
     const fireAt = new Date(baseDate)
     fireAt.setDate(fireAt.getDate() + def.delayDays)
+
+    // Skip if fire_at is more than 1 day in the past — reminder window already passed.
+    // Allow up to 1 day grace period for same-day D-0 reminders.
+    const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000)
+    if (fireAt < oneDayAgo) return
 
     await this.supabase.from('ceac_scheduled_notifications').insert({
       journey_id: journeyId,
