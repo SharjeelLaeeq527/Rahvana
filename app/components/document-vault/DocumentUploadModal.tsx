@@ -35,12 +35,59 @@ export function DocumentUploadModal({
   const [expirationDate, setExpirationDate] = useState("");
   const [notes, setNotes] = useState("");
   const [uploading, setUploading] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { config } = useDocumentVaultStore();
   const { t } = useLanguage();
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
+    if (file) {
+      // Validate file size (10MB)
+      if (file.size > 10 * 1024 * 1024) {
+        toast.error(
+          t("documentVaultPage.components.uploadModal.fileSizeError"),
+        );
+        return;
+      }
+
+      // Validate file type
+      const allowedTypes = [
+        "application/pdf",
+        "image/jpeg",
+        "image/jpg",
+        "image/png",
+        "image/gif",
+      ];
+      if (!allowedTypes.includes(file.type)) {
+        toast.error(
+          t("documentVaultPage.components.uploadModal.fileTypeError"),
+        );
+        return;
+      }
+
+      setSelectedFile(file);
+    }
+  };
+
+  const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+  };
+
+  const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+
+    const file = e.dataTransfer.files?.[0];
     if (file) {
       // Validate file size (10MB)
       if (file.size > 10 * 1024 * 1024) {
@@ -212,7 +259,14 @@ export function DocumentUploadModal({
               </Label>
               <div
                 onClick={() => fileInputRef.current?.click()}
-                className="group border-2 border-dashed border-[#d0e4f7] rounded-xl p-6 sm:p-10 text-center cursor-pointer hover:border-brand hover:bg-brand/5 transition-all duration-300 bg-slate-50/50"
+                onDragOver={handleDragOver}
+                onDragLeave={handleDragLeave}
+                onDrop={handleDrop}
+                className={`group border-2 border-dashed rounded-xl p-6 sm:p-10 text-center cursor-pointer transition-all duration-300 ${
+                  isDragging
+                    ? "border-brand bg-brand/10 shadow-md"
+                    : "border-[#d0e4f7] hover:border-brand hover:bg-brand/5 bg-slate-50/50"
+                }`}
               >
                 {selectedFile ? (
                   <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
@@ -376,23 +430,7 @@ export function DocumentUploadModal({
                   </p>
                   <div className="bg-white/80 border border-blue-100 p-3 rounded-lg shadow-inner group">
                     <code className="text-xs text-blue-900 font-mono break-all leading-relaxed">
-                      {`${(config.caseId || "CASE").replace(/[^a-zA-Z0-9]/g, "").toUpperCase()}_${role}_${(role ===
-                      "PETITIONER"
-                        ? config.petitionerName || "NAME"
-                        : role === "BENEFICIARY"
-                          ? config.beneficiaryName || "NAME"
-                          : config.jointSponsorName || "NAME"
-                      )
-                        .normalize("NFD")
-                        .replace(/[\u0300-\u036f]/g, "")
-                        .replace(/[^a-zA-Z0-9\s]/g, "")
-                        .trim()
-                        .replace(/\s+/g, "_")
-                        .toUpperCase()
-                        .substring(
-                          0,
-                          30,
-                        )}_${documentDef.key}_${new Date().toISOString().split("T")[0]}_v1.${selectedFile.name
+                      {`${role}_${documentDef.key}_${new Date().toISOString().split("T")[0]}_v1.${selectedFile.name
                         .split(".")
                         .pop()
                         ?.toLowerCase()}`}

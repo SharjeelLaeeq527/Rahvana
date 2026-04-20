@@ -307,7 +307,7 @@ const BirthCertificateGuidePage = () => {
 
   return (
     <div
-      className={`min-h-screen flex flex-col bg-[#f5f7fa] pt-20 ${isUrdu ? "font-urdu-body" : ""}`}
+      className={`min-h-screen flex flex-col bg-[#f5f7fa] pt-26 ${isUrdu ? "font-urdu-body" : ""}`}
       dir={isUrdu ? "rtl" : "ltr"}
     >
       <WizardHeader

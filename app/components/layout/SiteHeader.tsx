@@ -132,6 +132,9 @@ export function SiteHeader({
   // Real notification data
   const [notifList, setNotifList] = useState<any[]>([]);
   const [notifJourneyId, setNotifJourneyId] = useState<string | null>(null);
+  const [expandedNotifs, setExpandedNotifs] = useState<Set<string>>(new Set());
+  const toggleExpand = (id: string) =>
+    setExpandedNotifs((prev) => { const n = new Set(prev); n.has(id) ? n.delete(id) : n.add(id); return n; });
   const profileRef = useRef<HTMLDivElement>(null);
 
   const [activeMenu, setActiveMenu] = useState<string | null>(null);
@@ -306,6 +309,7 @@ export function SiteHeader({
         "k1-journey": "/visa-category/ir-category/k1-journey",
         services: "/services",
         tools: "/tools",
+        guides: "/guides",
         pricing: "/pricing",
         dashboard: "/user-dashboard",
         mfa: "/mfa-setup",
@@ -828,21 +832,35 @@ export function SiteHeader({
                             </div>
                           ) : (
                             <div className="divide-y divide-border">
-                              {notifList.slice(0, 6).map((n: any) => (
-                                <div key={n.id} className={`px-4 py-3 flex gap-3 items-start hover:bg-muted/30 transition-colors ${n.priority === 'critical' || n.priority === 'high' ? 'bg-orange-50/50' : ''}`}>
-                                  <div className={`w-1.5 h-1.5 rounded-full mt-1.5 shrink-0 ${n.priority === 'critical' ? 'bg-red-500' : n.priority === 'high' ? 'bg-orange-400' : 'bg-[#0d7377]'}`} />
-                                  <div className="flex-1 min-w-0">
-                                    <p className="text-[12px] font-bold text-foreground line-clamp-1">{n.title}</p>
-                                    <p className="text-[11px] text-muted-foreground line-clamp-2 mt-0.5">{n.body}</p>
-                                    {n.action_label && n.action_url && (
-                                      <a href={n.action_url} className="text-[10px] font-black text-[#0d7377] hover:underline mt-1 inline-block uppercase tracking-wide">
-                                        {n.action_label} →
-                                      </a>
-                                    )}
+                              {notifList.slice(0, 6).map((n: any) => {
+                                const isExpanded = expandedNotifs.has(n.id);
+                                const bodyLong = n.body && n.body.length > 80;
+                                return (
+                                  <div key={n.id} className={`px-4 py-3 flex gap-3 items-start transition-colors ${n.priority === 'critical' || n.priority === 'high' ? 'bg-orange-50/50 hover:bg-orange-50' : 'hover:bg-muted/30'}`}>
+                                    <div className={`w-1.5 h-1.5 rounded-full mt-1.5 shrink-0 ${n.priority === 'critical' ? 'bg-red-500' : n.priority === 'high' ? 'bg-orange-400' : 'bg-[#0d7377]'}`} />
+                                    <div className="flex-1 min-w-0">
+                                      <p className="text-[12px] font-bold text-foreground">{n.title}</p>
+                                      <p className={`text-[11px] text-muted-foreground mt-0.5 leading-relaxed ${isExpanded ? '' : 'line-clamp-2'}`}>
+                                        {n.body}
+                                      </p>
+                                      {bodyLong && (
+                                        <button
+                                          onClick={() => toggleExpand(n.id)}
+                                          className="text-[10px] font-bold text-[#0d7377] hover:underline mt-0.5"
+                                        >
+                                          {isExpanded ? 'Show less ↑' : 'Read more ↓'}
+                                        </button>
+                                      )}
+                                      {n.action_label && n.action_url && (
+                                        <a href={n.action_url} className="text-[10px] font-black text-[#0d7377] hover:underline mt-1 inline-block uppercase tracking-wide">
+                                          {n.action_label} →
+                                        </a>
+                                      )}
+                                    </div>
+                                    <button onClick={() => dismissNotif(n.id)} className="text-muted-foreground hover:text-red-400 text-[10px] shrink-0 mt-0.5">✕</button>
                                   </div>
-                                  <button onClick={() => dismissNotif(n.id)} className="text-muted-foreground hover:text-red-400 text-[10px] shrink-0 mt-0.5">✕</button>
-                                </div>
-                              ))}
+                                );
+                              })}
                             </div>
                           )}
                         </div>
@@ -916,14 +934,14 @@ export function SiteHeader({
                     clearTimeout(menuTimeoutRef.current);
                   setActiveMenu(activeMenu === "profile" ? null : "profile");
                 }}
-                className={`flex items-center justify-center transition-all shadow-none font-semibold text-lg rounded-none w-auto h-auto p-0 m-0 ${
+                className={`flex items-center justify-center transition-all shadow-none font-semibold text-lg rounded-none w-auto h-auto p-0 mb-2 ${
                   isHomeHeroState
                     ? "text-white"
                     : isHomeHeroP2State
                       ? "text-white"
                       : "text-rahvana-primary"
                 }`}
-                style={{background: 'none', boxShadow: 'none', border: 'none', width: 'auto', height: 'auto', padding: 0, margin: 0, borderRadius: 0}}
+                style={{background: 'none', boxShadow: 'none', border: 'none', width: 'auto', height: 'auto', padding: 0, borderRadius: 0}}
               >
                 <span style={isHomeHeroP2State ? { color: '#fff' } : isHomeHeroState ? { color: '#fff' } : { color: 'var(--rahvana-primary, #0d7377)' }}>{(
                   profile?.full_name ||
