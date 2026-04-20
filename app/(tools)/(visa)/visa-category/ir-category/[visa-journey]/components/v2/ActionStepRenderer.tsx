@@ -14,6 +14,12 @@ import {
 import { useWizard } from "@/app/(main)/dashboard/hooks/useWizard";
 import { CustomDropdown } from "@/app/components/shared/CustomDropdown";
 import { RoadmapStep } from "../types";
+import { DocumentPreviewModal } from "@/app/components/document-vault/DocumentPreviewModal";
+import { useDocumentVaultStore } from "@/lib/document-vault/store";
+import { DOCUMENTS_BY_KEY } from "@/lib/document-vault/document-definitions";
+import { useToast } from "@/app/components/shared/ToastProvider";
+import { UploadedDocument, DocumentDefinition } from "@/lib/document-vault/types";
+import { useAuth } from "@/app/context/AuthContext";
 
 interface ActionStepRendererProps {
   step: RoadmapStep;
@@ -132,6 +138,7 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
   const hookData = useWizard();
   const state = propsState || hookData.state;
   const actions = propsActions || hookData.actions;
+  const { showToast } = useToast();
 
   const [showGuide, setShowGuide] = useState(false);
   const [guideStep, setGuideStep] = useState(0);
@@ -145,6 +152,49 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
   const [trackingLastChecked, setTrackingLastChecked] = useState<string | null>(null);
   const [deliveredAt, setDeliveredAt] = useState<string | null>(null);
   const [isLoadingTracking, setIsLoadingTracking] = useState(false);
+
+  // Document Vault Integration
+  const { user } = useAuth();
+  const {
+    uploadedDocuments,
+    initialize: initializeVault,
+    hasLoadedDocsInitial,
+  } = useDocumentVaultStore();
+
+  useEffect(() => {
+    if (user && !hasLoadedDocsInitial) {
+      initializeVault(user.id);
+    }
+  }, [user, hasLoadedDocsInitial, initializeVault]);
+
+  const [previewConfig, setPreviewConfig] = useState<{
+    isOpen: boolean;
+    docDef: DocumentDefinition | null;
+    uploadedDoc: UploadedDocument | null;
+  }>({
+    isOpen: false,
+    docDef: null,
+    uploadedDoc: null,
+  });
+
+  const handlePreview = (docKey: string) => {
+    const docDef = DOCUMENTS_BY_KEY[docKey];
+    if (!docDef) return;
+
+    const uploadedDoc = uploadedDocuments.find(
+      (d) => d.documentDefId === docDef.id
+    );
+
+    if (uploadedDoc) {
+      setPreviewConfig({
+        isOpen: true,
+        docDef,
+        uploadedDoc,
+      });
+    } else {
+      showToast("This document is not uploaded in the document vault yet", "error");
+    }
+  };
 
   // Load persisted data from metadata on mount
   useEffect(() => {
@@ -423,38 +473,106 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
           )}
 
           {/* Primary CTA Button */}
-          {actionData.cta_button && actionData.cta_button.href && (
-            <button
-              onClick={() => {
-                if (actionData.cta_button?.href) {
-                  window.open(actionData.cta_button.href, "_blank");
-                }
-              }}
+          {step.step_key === "step_1_11" ? (
+            <div
               style={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                width: "100%",
-                background: step.step_key === 'step_1_11' ? "#c0596a" : COLORS.accent, // accent rose for print step
-                color: "#fff",
-                border: "none",
-                borderRadius: "14px",
-                padding: "15px 18px",
-                fontSize: "15px",
-                fontWeight: 700,
-                cursor: "pointer",
+                display: "grid",
+                gridTemplateColumns: "1fr 1fr",
+                gap: "12px",
                 marginTop: "12px",
-                transition: "background 0.2s",
-              }}
-              onMouseEnter={(e) => {
-                (e.target as HTMLElement).style.background = step.step_key === 'step_1_11' ? "#a94c5a" : COLORS.accent2;
-              }}
-              onMouseLeave={(e) => {
-                (e.target as HTMLElement).style.background = step.step_key === 'step_1_11' ? "#c0596a" : COLORS.accent;
               }}
             >
-              {actionData.cta_button.label}
-            </button>
+              <button
+                onClick={() => handlePreview("I130_FORM")}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  width: "100%",
+                  background: "#c0596a",
+                  color: "#fff",
+                  border: "none",
+                  borderRadius: "14px",
+                  padding: "15px 18px",
+                  fontSize: "15px",
+                  fontWeight: 700,
+                  cursor: "pointer",
+                  transition: "background 0.2s",
+                }}
+                onMouseEnter={(e) => {
+                  (e.target as HTMLElement).style.background = "#a94c5a";
+                }}
+                onMouseLeave={(e) => {
+                  (e.target as HTMLElement).style.background = "#c0596a";
+                }}
+              >
+                Print I-130
+              </button>
+              <button
+                onClick={() => handlePreview("I130A_FORM")}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  width: "100%",
+                  background: "#c0596a",
+                  color: "#fff",
+                  border: "none",
+                  borderRadius: "14px",
+                  padding: "15px 18px",
+                  fontSize: "15px",
+                  fontWeight: 700,
+                  cursor: "pointer",
+                  transition: "background 0.2s",
+                }}
+                onMouseEnter={(e) => {
+                  (e.target as HTMLElement).style.background = "#a94c5a";
+                }}
+                onMouseLeave={(e) => {
+                  (e.target as HTMLElement).style.background = "#c0596a";
+                }}
+              >
+                Print I-130A
+              </button>
+            </div>
+          ) : (
+            actionData.cta_button &&
+            actionData.cta_button.href && (
+              <button
+                onClick={() => {
+                  if (actionData.cta_button?.href) {
+                    window.open(actionData.cta_button.href, "_blank");
+                  }
+                }}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  width: "100%",
+                  background:
+                    step.step_key === "step_1_11" ? "#c0596a" : COLORS.accent, // accent rose for print step
+                  color: "#fff",
+                  border: "none",
+                  borderRadius: "14px",
+                  padding: "15px 18px",
+                  fontSize: "15px",
+                  fontWeight: 700,
+                  cursor: "pointer",
+                  marginTop: "12px",
+                  transition: "background 0.2s",
+                }}
+                onMouseEnter={(e) => {
+                  (e.target as HTMLElement).style.background =
+                    step.step_key === "step_1_11" ? "#a94c5a" : COLORS.accent2;
+                }}
+                onMouseLeave={(e) => {
+                  (e.target as HTMLElement).style.background =
+                    step.step_key === "step_1_11" ? "#c0596a" : COLORS.accent;
+                }}
+              >
+                {actionData.cta_button.label}
+              </button>
+            )
           )}
 
           {/* Info Cards Row */}
@@ -1234,6 +1352,21 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
             </div>
           </div>
         </div>
+      )}
+
+      {previewConfig.isOpen && previewConfig.docDef && previewConfig.uploadedDoc && (
+        <DocumentPreviewModal
+          open={previewConfig.isOpen}
+          onClose={() =>
+            setPreviewConfig({
+              isOpen: false,
+              docDef: null,
+              uploadedDoc: null,
+            })
+          }
+          documentDef={previewConfig.docDef}
+          uploadedDoc={previewConfig.uploadedDoc}
+        />
       )}
 
       <style>{`
