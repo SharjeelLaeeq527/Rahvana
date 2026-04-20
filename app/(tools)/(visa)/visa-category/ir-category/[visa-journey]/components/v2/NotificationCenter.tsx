@@ -75,8 +75,10 @@ export default function NotificationCenter({
   const [reminders, setReminders]   = useState<JourneyReminder[]>([]);
   const [loading, setLoading]       = useState(false);
   const [error, setError]           = useState<string | null>(null);
+  const [seeding, setSeeding]       = useState(false);
 
   const [resolvedJourneyId, setResolvedJourneyId] = useState<string | null>(journeyId === "ir-1" ? null : (journeyId || null));
+  const isDev = process.env.NODE_ENV === 'development';
 
   // ── Fetch from real API ──────────────────────────────────
   const fetchReminders = useCallback(async () => {
@@ -140,6 +142,31 @@ export default function NotificationCenter({
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ action: "snooze", snooze_days: 3 }),
     }).catch(() => {});
+  };
+
+  // ── Dev: seed sample notifications ──────────────────────
+  const seedDemo = async () => {
+    if (!resolvedJourneyId) return;
+    setSeeding(true);
+    await fetch('/api/dev/seed-notifications', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ journeyId: resolvedJourneyId }),
+    }).catch(() => {});
+    await fetchReminders();
+    setSeeding(false);
+  };
+
+  const clearDemo = async () => {
+    if (!resolvedJourneyId) return;
+    setSeeding(true);
+    await fetch('/api/dev/seed-notifications', {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ journeyId: resolvedJourneyId }),
+    }).catch(() => {});
+    await fetchReminders();
+    setSeeding(false);
   };
 
   const unread = reminders.filter((r) => !r.is_dismissed);
@@ -302,6 +329,26 @@ export default function NotificationCenter({
             className="w-full py-2.5 rounded-lg border border-[#d0e4f7] bg-white text-[12px] font-bold text-[#3a4f63] hover:bg-slate-50 transition-colors"
           >
             Dismiss all
+          </button>
+        </div>
+      )}
+
+      {/* Dev-only: Demo seeding controls */}
+      {isDev && resolvedJourneyId && (
+        <div className="p-3 border-t border-orange-200 bg-orange-50 flex gap-2">
+          <button
+            onClick={seedDemo}
+            disabled={seeding}
+            className="flex-1 py-2 rounded-lg bg-orange-500 text-white text-[11px] font-black hover:bg-orange-600 disabled:opacity-50 transition-colors"
+          >
+            {seeding ? "Loading..." : "Load Demo Notifications"}
+          </button>
+          <button
+            onClick={clearDemo}
+            disabled={seeding}
+            className="px-3 py-2 rounded-lg bg-white border border-orange-200 text-[11px] font-bold text-orange-600 hover:bg-orange-50 disabled:opacity-50 transition-colors"
+          >
+            Clear
           </button>
         </div>
       )}

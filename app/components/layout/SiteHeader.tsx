@@ -128,6 +128,10 @@ export function SiteHeader({
   const [confirmSignOutOpen, setConfirmSignOutOpen] = useState(false);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const notifRef = useRef<HTMLDivElement>(null);
+
+  // Real notification data
+  const [notifList, setNotifList] = useState<any[]>([]);
+  const [notifJourneyId, setNotifJourneyId] = useState<string | null>(null);
   const profileRef = useRef<HTMLDivElement>(null);
 
   const [activeMenu, setActiveMenu] = useState<string | null>(null);
@@ -191,6 +195,78 @@ export function SiteHeader({
 
   const { profile, isLoading, user: authUser } = useAuth();
   const resolvedUser = user ?? authUser;
+
+  // Fetch real notifications when bell opens
+  const fetchNotifications = async () => {
+    try {
+      // Step 1: get active journey ID
+      let jId = notifJourneyId;
+      if (!jId) {
+        const res = await fetch('/api/journeys');
+        if (res.ok) {
+          const data = await res.json();
+          const active = data?.data?.find((j: any) => j.journey?.status === 'in_progress') || data?.data?.[0];
+          jId = active?.journey?.id ?? null;
+          if (jId) setNotifJourneyId(jId);
+        }
+      }
+      if (!jId) return;
+
+      // Step 2: fetch reminders
+      const r = await fetch(`/api/v1/journeys/${jId}/reminders`);
+      if (r.ok) {
+        const d = await r.json();
+        setNotifList(d.reminders ?? []);
+      }
+    } catch {}
+  };
+
+  const handleBellClick = () => {
+    setNotificationsOpen((prev) => {
+      if (!prev) fetchNotifications();
+      return !prev;
+    });
+  };
+
+  const dismissNotif = async (id: string) => {
+    setNotifList((prev) => prev.filter((n) => n.id !== id));
+    if (notifJourneyId) {
+      await fetch(`/api/v1/journeys/${notifJourneyId}/reminders/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'dismiss' }),
+      }).catch(() => {});
+    }
+  };
+
+  const unreadCount = notifList.filter((n) => !n.is_dismissed).length;
+  const isDev = process.env.NODE_ENV === 'development';
+  const [seeding, setSeeding] = useState(false);
+
+  const seedDemoNotifs = async () => {
+    if (!notifJourneyId) return;
+    setSeeding(true);
+    await fetch('/api/dev/seed-notifications', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ journeyId: notifJourneyId }),
+    }).catch(() => {});
+    await fetchNotifications();
+    setSeeding(false);
+  };
+
+  const clearDemoNotifs = async () => {
+    if (!notifJourneyId) return;
+    setSeeding(true);
+    await fetch('/api/dev/seed-notifications', {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ journeyId: notifJourneyId }),
+    }).catch(() => {});
+    await fetchNotifications();
+    setSeeding(false);
+  };
+
   // const { language, setLanguage } = useLanguage();
 
   const handleMenuEnter = (menu: string) => {
@@ -700,7 +776,7 @@ export function SiteHeader({
                     variant="ghost"
                     size="icon"
                     aria-label="Notifications"
-                    onClick={() => setNotificationsOpen((prev) => !prev)}
+                    onClick={handleBellClick}
                     className={`relative rounded-md transition-colors shadow-none border-0 ${
                       isHomeHeroState
                         ? "text-white"
@@ -711,6 +787,11 @@ export function SiteHeader({
                     style={{padding: 0, minWidth: 40, minHeight: 40, background: 'none', boxShadow: 'none', border: 'none'}}
                   >
                     <Bell className="h-5 w-5" aria-hidden="true" style={isHomeHeroP2State ? { color: '#fff' } : isHomeHeroState ? { color: '#fff' } : { color: 'var(--rahvana-primary, #0d7377)' }} />
+                    {unreadCount > 0 && (
+                      <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-red-500 text-white text-[9px] font-black flex items-center justify-center">
+                        {unreadCount > 9 ? '9+' : unreadCount}
+                      </span>
+                    )}
                   </HydrationSafeButton>
 
                   <AnimatePresence>
@@ -725,46 +806,89 @@ export function SiteHeader({
                         {/* Header */}
                         <div className="flex items-center justify-between px-4 py-3 border-b border-border bg-muted/30">
                           <div className="flex items-center gap-2">
-                            <Bell className="w-4 h-4 text-[#fff]" />
-                            <span className="text-sm font-bold text-foreground">
-                              Notifications
-                            </span>
+                            <Bell className="w-4 h-4 text-[#0d7377]" />
+                            <span className="text-sm font-bold text-foreground">Notifications</span>
                           </div>
                           <span className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground bg-muted px-2 py-0.5 rounded-full">
-                            0 New
+                            {unreadCount > 0 ? `${unreadCount} New` : '0 New'}
                           </span>
                         </div>
 
-                        {/* Empty state body */}
-                        <div className="flex flex-col items-center justify-center px-6 py-10 gap-4">
-                          <div className="relative">
-                            <div className="w-16 h-16 rounded-2xl bg-muted flex items-center justify-center shadow-inner">
-                              <BellOff className="w-7 h-7 text-muted-foreground/50" />
+                        {/* Body */}
+                        <div className="max-h-[340px] overflow-y-auto">
+                          {notifList.length === 0 ? (
+                            <div className="flex flex-col items-center justify-center px-6 py-10 gap-4">
+                              <div className="w-14 h-14 rounded-2xl bg-muted flex items-center justify-center">
+                                <BellOff className="w-6 h-6 text-muted-foreground/50" />
+                              </div>
+                              <div className="text-center space-y-1">
+                                <p className="text-sm font-semibold text-foreground">All caught up!</p>
+                                <p className="text-xs text-muted-foreground max-w-[180px] mx-auto leading-relaxed">No pending notifications right now.</p>
+                              </div>
                             </div>
-                            <span className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-[#0d7377]/10 flex items-center justify-center">
-                              <Sparkles className="w-3 h-3 text-[#0d7377]" />
-                            </span>
-                          </div>
-                          <div className="text-center space-y-1">
-                            <p className="text-sm font-semibold text-foreground">
-                              You&apos;re all caught up!
-                            </p>
-                            <p className="text-xs text-muted-foreground leading-relaxed max-w-50 mx-auto">
-                              No new notifications right now. We&apos;ll let you
-                              know when something needs your attention.
-                            </p>
-                          </div>
+                          ) : (
+                            <div className="divide-y divide-border">
+                              {notifList.slice(0, 6).map((n: any) => (
+                                <div key={n.id} className={`px-4 py-3 flex gap-3 items-start hover:bg-muted/30 transition-colors ${n.priority === 'critical' || n.priority === 'high' ? 'bg-orange-50/50' : ''}`}>
+                                  <div className={`w-1.5 h-1.5 rounded-full mt-1.5 shrink-0 ${n.priority === 'critical' ? 'bg-red-500' : n.priority === 'high' ? 'bg-orange-400' : 'bg-[#0d7377]'}`} />
+                                  <div className="flex-1 min-w-0">
+                                    <p className="text-[12px] font-bold text-foreground line-clamp-1">{n.title}</p>
+                                    <p className="text-[11px] text-muted-foreground line-clamp-2 mt-0.5">{n.body}</p>
+                                    {n.action_label && n.action_url && (
+                                      <a href={n.action_url} className="text-[10px] font-black text-[#0d7377] hover:underline mt-1 inline-block uppercase tracking-wide">
+                                        {n.action_label} →
+                                      </a>
+                                    )}
+                                  </div>
+                                  <button onClick={() => dismissNotif(n.id)} className="text-muted-foreground hover:text-red-400 text-[10px] shrink-0 mt-0.5">✕</button>
+                                </div>
+                              ))}
+                            </div>
+                          )}
                         </div>
 
                         {/* Footer */}
-                        <div className="px-4 py-3 border-t border-border bg-muted/20 flex items-center justify-center">
+                        <div className="px-4 py-3 border-t border-border bg-muted/20 flex items-center justify-between">
+                          {notifList.length > 0 && (
+                            <button
+                              className="text-xs text-muted-foreground hover:text-red-400 font-medium transition-colors"
+                              onClick={() => notifList.forEach((n) => dismissNotif(n.id))}
+                            >
+                              Dismiss all
+                            </button>
+                          )}
                           <button
-                            className="text-xs text-muted-foreground hover:text-[#0d7377] font-medium transition-colors"
-                            onClick={() => setNotificationsOpen(false)}
+                            className="text-xs text-[#0d7377] hover:underline font-medium transition-colors ml-auto"
+                            onClick={fetchNotifications}
                           >
-                            Dismiss
+                            Refresh
                           </button>
                         </div>
+
+                        {/* Dev-only demo seeding */}
+                        {isDev && notifJourneyId && (
+                          <div className="px-3 py-2 border-t border-orange-200 bg-orange-50 flex gap-2">
+                            <button
+                              onClick={seedDemoNotifs}
+                              disabled={seeding}
+                              className="flex-1 py-1.5 rounded-lg bg-orange-500 text-white text-[10px] font-black hover:bg-orange-600 disabled:opacity-50 transition-colors"
+                            >
+                              {seeding ? 'Loading...' : 'Load Demo Notifications'}
+                            </button>
+                            <button
+                              onClick={clearDemoNotifs}
+                              disabled={seeding}
+                              className="px-2 py-1.5 rounded-lg bg-white border border-orange-200 text-[10px] font-bold text-orange-600 hover:bg-orange-50 disabled:opacity-50 transition-colors"
+                            >
+                              Clear
+                            </button>
+                          </div>
+                        )}
+                        {isDev && !notifJourneyId && (
+                          <div className="px-3 py-2 border-t border-orange-200 bg-orange-50 text-center">
+                            <p className="text-[10px] text-orange-600 font-medium">Complete a step first to enable demo seeding</p>
+                          </div>
+                        )}
                       </motion.div>
                     )}
                   </AnimatePresence>
