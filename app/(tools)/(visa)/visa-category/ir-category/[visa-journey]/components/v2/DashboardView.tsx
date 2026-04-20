@@ -303,7 +303,7 @@ export function DashboardView({
       {/* Fullscreen background for Dashboard */}
       <div
         className="pointer-events-none absolute inset-0 z-0 bg-cover bg-center bg-no-repeat"
-        style={{ backgroundImage: `url(${dashboardBg})` }}
+        style={{ backgroundImage: `url(${dashboardBg})`, opacity: 0.6 }}
       />
       <div className="w-full max-w-[1200px] mx-auto animate-in fade-in duration-700 relative z-10">
         <div className="text-[10px] font-bold uppercase tracking-[0.12em] text-slate-400 mb-2">
@@ -361,7 +361,7 @@ export function DashboardView({
             )}
 
           {/* Hero Section */}
-          <section className="bg-[#0c1b33]/95 rounded-2xl p-[20px_24px] relative overflow-hidden animate-in zoom-in duration-500 shadow-[0_8px_32px_rgba(44,62,80,0.13),0_1.5px_6px_rgba(47,111,212,0.07)] backdrop-blur-md after:content-[''] after:absolute after:-top-[50px] after:-right-[50px] after:w-[180px] after:h-[180px] after:rounded-full after:bg-[#2f6fd41f] after:pointer-events-none">
+          <section className="bg-[#0c1b33] rounded-2xl p-[20px_24px] relative overflow-hidden animate-in zoom-in duration-500 shadow-[0_12px_48px_rgba(44,62,80,0.18),0_3px_16px_rgba(47,111,212,0.10)] border border-[#d0e4f7] after:content-[''] after:absolute after:-top-[50px] after:-right-[50px] after:w-[180px] after:h-[180px] after:rounded-full after:bg-[#2f6fd41f] after:pointer-events-none">
             <div className="relative z-10">
               <div className="text-[10px] font-bold uppercase tracking-[0.12em] text-white/40 mb-1.5">
                 Next roadmap step
@@ -406,10 +406,10 @@ export function DashboardView({
                     <div
                       key={stage.chapter_key || stage.id}
                       onClick={() => !isLocked && onSelectChapter(originalIdx)}
-                      className={`bg-white border-[1.5px] rounded-[14px] p-4 transition-all flex flex-col gap-3 min-h-[110px] ${
+                      className={`bg-white border rounded-[18px] p-5 transition-all flex flex-col gap-3 min-h-[110px] shadow-[0_12px_48px_rgba(44,62,80,0.18),0_3px_16px_rgba(47,111,212,0.10)] hover:shadow-[0_16px_56px_rgba(44,62,80,0.22),0_6px_24px_rgba(47,111,212,0.13)] border-[#d0e4f7] ${
                         isLocked ? "opacity-50 cursor-default border-[#d0e4f7]" : 
-                        isDone ? "border-[#a8d9be] cursor-pointer hover:border-[#b8d4f0] hover:shadow-sm" : 
-                        isActive ? "border-primary bg-primary/8 cursor-pointer" : "border-[#d0e4f7] cursor-pointer hover:border-[#b8d4f0] hover:shadow-sm"
+                        isDone ? "border-[#a8d9be] cursor-pointer hover:border-[#b8d4f0]" : 
+                        isActive ? "border-primary bg-primary/10 cursor-pointer" : "border-[#d0e4f7] cursor-pointer hover:border-[#b8d4f0]"
                       }`}
                     >
                       <div>
@@ -430,7 +430,7 @@ export function DashboardView({
             </div>
 
             {/* Accordions */}
-            <div className="bg-white/80 border-[1.5px] border-[#d0e4f7] rounded-3xl overflow-hidden shadow-[0_8px_32px_rgba(44,62,80,0.13),0_1.5px_6px_rgba(47,111,212,0.07)] backdrop-blur-lg">
+            <div className="bg-white border border-[#d0e4f7] rounded-3xl overflow-hidden shadow-[0_12px_48px_rgba(44,62,80,0.18),0_3px_16px_rgba(47,111,212,0.10)]">
               {/* Case Details */}
               <div className="border-t first:border-t-0 border-[#d0e4f7]">
                 <div
@@ -515,10 +515,10 @@ export function DashboardView({
                         return (
                           <div
                             key={i}
-                            className={`flex items-center gap-3 py-2 px-2 rounded-xl border-b border-[#d0e4f7]/40 last:border-0 transition-all backdrop-blur-[2px] ${
+                            className={`flex items-center gap-3 py-2 px-2 rounded-xl border-b border-[#d0e4f7]/40 last:border-0 transition-all ${
                               isDone
-                                ? "bg-[#e8f5ef]/70 shadow-[0_2px_8px_rgba(21,116,79,0.07)]"
-                                : "bg-white/60"
+                                ? "bg-[#e8f5ef] border-l-2 border-[#a8d9be]"
+                                : "bg-white border-l-2 border-[#d0e4f7]"
                             }`}
                           >
                             <div
@@ -561,7 +561,7 @@ export function DashboardView({
             {alerts.length > 0 && (
               <div className="flex flex-col gap-2 animate-in fade-in slide-in-from-right-4 duration-500">
                 {alerts.map((alert, i) => (
-                  <div key={i} className={`flex gap-2.5 items-start p-3 rounded-[10px] border shadow-xs ${alert.type === "gold" ? "bg-[#fffbeb] border-[#fde68a] text-[#b38600]" : alert.type === "sky" ? "bg-primary/5 border-[#d0e4f7] text-primary" : alert.type === "amber" ? "bg-[#fef8e8] border-[#f0d98a] text-[#8a6200]" : "bg-[#e8f5ef] border-[#a8d9be] text-[#15744f]"}`}>
+                  <div key={i} className={`flex gap-2.5 items-start p-3 rounded-[14px] border shadow-[0_12px_48px_rgba(44,62,80,0.18),0_3px_16px_rgba(47,111,212,0.10)] border-[#d0e4f7] ${alert.type === "gold" ? "bg-[#fffbeb] border-[#fde68a] text-[#b38600]" : alert.type === "sky" ? "bg-primary/10 border-[#d0e4f7] text-primary" : alert.type === "amber" ? "bg-[#fef8e8] border-[#f0d98a] text-[#8a6200]" : "bg-[#e8f5ef] border-[#a8d9be] text-[#15744f]"}`}>
                     <div className={`w-1.5 h-1.5 rounded-full mt-1.5 shrink-0 ${alert.type === "gold" ? "bg-[#b38600]" : alert.type === "sky" ? "bg-primary" : alert.type === "amber" ? "bg-[#8a6200]" : "bg-[#15744f]"}`} />
                     <div className="flex-1 flex flex-col gap-1.5">
                       <div className="text-[12px] leading-relaxed"><span className="font-bold">{alert.title}: </span><span className="opacity-80">{alert.text}</span></div>

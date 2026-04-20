@@ -260,8 +260,16 @@ export function QuestRenderer({
                   onClick={() => handleStartQuest(q.id)}
                   className="w-full flex items-center gap-[16px] px-[20px] py-[18px] rounded-[14px] border-[1.5px] border-[#d0e4f7] bg-white text-left transition-all group hover:border-[#340606] hover:shadow-[0_8px_32px_rgba(52,6,6,0.12),0_2px_8px_rgba(52,6,6,0.06)] shadow-[0_2px_12px_rgba(52,6,6,0.12),0_1px_3px_rgba(52,6,6,0.06)] hover:-translate-y-px active:translate-y-0">
                   <div
-                    className={`w-[40px] h-[40px] rounded-[10px] flex items-center justify-center text-[18px] shrink-0 transition-all border group
-                      ${isChapter1
+                    className={`w-[40px] h-[40px] rounded-[10px] flex items-center justify-center text-[18px] shrink-0 transition-all border
+                      ${["Passed", "Completed"].includes(meta.label)
+                        ? isChapter1
+                          ? "border-[#c0596a] bg-[#c0596a]"
+                          : isChapter2
+                          ? "border-[#b48ad6] bg-[#b48ad6]"
+                          : isChapter3
+                          ? "border-[#2f6fd4] bg-[#2f6fd4]"
+                          : "border-[#c0596a] bg-[#c0596a]"
+                        : isChapter1
                         ? "border-[#c0596a] bg-white hover:bg-[#c0596a] hover:border-[#c0596a]"
                         : isChapter2
                         ? "border-[#b48ad6] bg-[#ede6f6] hover:bg-[#b48ad6] hover:border-[#b48ad6]"
@@ -273,7 +281,19 @@ export function QuestRenderer({
                       ? idx + 1
                       : meta.label === "Completed"
                         ? <CheckCircle2 className="w-5 h-5 text-white" />
-                        : <Circle className={`w-5 h-5 transition-all ${isChapter1 ? "text-[#c0596a] group-hover:text-white" : isChapter2 ? "text-[#b48ad6] group-hover:text-white" : isChapter3 ? "text-[#2f6fd4] group-hover:text-white" : "text-[#c0596a] group-hover:text-white"}`} />}
+                        : <Circle
+                            className={`w-5 h-5 transition-all
+                              ${["Passed", "Completed"].includes(meta.label)
+                                ? "text-white"
+                                : isChapter1
+                                ? "text-[#c0596a]"
+                                : isChapter2
+                                ? "text-[#b48ad6]"
+                                : isChapter3
+                                ? "text-[#2f6fd4]"
+                                : "text-[#c0596a]"}
+                            `}
+                          />}
                   </div>
                   <div className="flex-1 min-w-0">
                     <h3 className={`text-[15px] font-semibold mb-[4px] leading-[1.3] truncate ${isChapter1 ? "accent-brown" : isChapter2 ? "text-[#27192e]" : isChapter3 ? "text-[#0f1f38]" : "text-[#0f1f38]"}`}>
