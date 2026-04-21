@@ -252,7 +252,8 @@ export const REMINDER_REGISTRY: JourneyReminderDef[] = [
     chapter: 2,
     kind: 'ACTION',
     origin: 'journey',
-    trigger: { type: 'metadata_key_value', metadataKey: 'nvcReviewComplete', value: 'true' },
+    // Fires when step 2.9 (awaiting NVC review) is completed but DQ not yet recorded
+    trigger: { type: 'step_completed', stepKey: 'step_2_9' },
     suppressWhen: { type: 'metadata_key_exists', metadataKey: 'dqDate' },
     delayDays: 0,
     recurring: { intervalDays: 7, maxCount: 4 },
@@ -370,7 +371,7 @@ export const REMINDER_REGISTRY: JourneyReminderDef[] = [
     kind: 'ACTION',
     origin: 'journey',
     trigger: { type: 'metadata_key_exists', metadataKey: 'interviewDate' },
-    suppressWhen: { type: 'metadata_key_exists', metadataKey: 'medicalDate' },
+    suppressWhen: { type: 'metadata_key_value', metadataKey: 'med_appt_saved', value: 'true' },
     delayDays: 0,
     recurring: { intervalDays: 5, maxCount: 5 },
     priority: 'critical',
@@ -390,7 +391,7 @@ export const REMINDER_REGISTRY: JourneyReminderDef[] = [
     chapter: 3,
     kind: 'ACTION',
     origin: 'journey',
-    trigger: { type: 'metadata_date_set', metadataKey: 'medicalDate' },
+    trigger: { type: 'metadata_date_set', metadataKey: 'med_date' },
     suppressWhen: { type: 'step_completed', stepKey: 'step_3_1' },
     delayDays: -14,   // 14 days BEFORE the medical appointment
     priority: 'high',
@@ -407,7 +408,7 @@ export const REMINDER_REGISTRY: JourneyReminderDef[] = [
     chapter: 3,
     kind: 'WAITING',
     origin: 'journey',
-    trigger: { type: 'metadata_date_set', metadataKey: 'medicalDate' },
+    trigger: { type: 'metadata_date_set', metadataKey: 'med_date' },
     suppressWhen: { type: 'step_completed', stepKey: 'step_3_1' },
     delayDays: -7,   // 7 days BEFORE
     priority: 'high',
@@ -424,7 +425,7 @@ export const REMINDER_REGISTRY: JourneyReminderDef[] = [
     chapter: 3,
     kind: 'URGENT',
     origin: 'journey',
-    trigger: { type: 'metadata_date_set', metadataKey: 'medicalDate' },
+    trigger: { type: 'metadata_date_set', metadataKey: 'med_date' },
     suppressWhen: { type: 'step_completed', stepKey: 'step_3_1' },
     delayDays: -3,   // 3 days BEFORE
     priority: 'critical',
@@ -441,7 +442,7 @@ export const REMINDER_REGISTRY: JourneyReminderDef[] = [
     chapter: 3,
     kind: 'URGENT',
     origin: 'journey',
-    trigger: { type: 'metadata_date_set', metadataKey: 'medicalDate' },
+    trigger: { type: 'metadata_date_set', metadataKey: 'med_date' },
     suppressWhen: { type: 'step_completed', stepKey: 'step_3_1' },
     delayDays: -1,   // 1 day BEFORE (the evening before)
     priority: 'critical',
@@ -535,9 +536,9 @@ export const REMINDER_REGISTRY: JourneyReminderDef[] = [
     chapter: 3,
     kind: 'URGENT',
     origin: 'journey',
-    trigger: { type: 'metadata_key_exists', metadataKey: 'interviewDate' },
+    trigger: { type: 'metadata_date_set', metadataKey: 'interviewDate' },
     suppressWhen: { type: 'step_completed', stepKey: 'step_3_4' },
-    delayDays: 0,
+    delayDays: -7,
     priority: 'critical',
     channels: ['push_and_email'],
     title: '7 days to interview — confirm ALL documents are in hand',
@@ -564,7 +565,6 @@ export function getRemindersForMetadataKey(metadataKey: string): JourneyReminder
   return REMINDER_REGISTRY.filter(
     (r) =>
       (r.trigger.type === 'metadata_key_exists' && (r.trigger as any).metadataKey === metadataKey) ||
-      (r.trigger.type === 'metadata_key_value' && (r.trigger as any).metadataKey === metadataKey) ||
       (r.trigger.type === 'metadata_date_set' && (r.trigger as any).metadataKey === metadataKey)
   )
 }

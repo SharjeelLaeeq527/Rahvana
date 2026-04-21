@@ -64,12 +64,7 @@ export class UnifiedReminderEngine {
     setAt?: Date
   ): Promise<void> {
     const baseDate = setAt ?? new Date()
-    const candidates = getRemindersForMetadataKey(metadataKey).filter((r) => {
-      if (r.trigger.type === 'metadata_key_value') {
-        return metadataValue === (r.trigger as any).value
-      }
-      return true
-    })
+    const candidates = getRemindersForMetadataKey(metadataKey)
     if (candidates.length === 0) return
 
     for (const def of candidates) {
@@ -93,23 +88,28 @@ export class UnifiedReminderEngine {
   // are hard to hook via step completion events.
   // ─────────────────────────────────────────────────────────
   async checkAndScheduleAll(journeyId: string): Promise<void> {
-    // Fetch journey metadata + completed steps in one call
-    const [journeyResult, stepsResult] = await Promise.allSettled([
-      this.supabase
-        .from('journeys')
-        .select('metadata')
-        .eq('id', journeyId)
-        .single(),
-      this.supabase
-        .from('journey_steps')
-        .select('step_key, status, completed_at')
-        .eq('journey_id', journeyId),
+    const [journeyResult, caseDataResult, stepsResult] = await Promise.allSettled([
+      this.supabase.from('journeys').select('metadata').eq('id', journeyId).single(),
+      this.supabase.from('case_data').select('data_key, data_value').eq('journey_id', journeyId),
+      this.supabase.from('journey_steps').select('step_key, status, completed_at').eq('journey_id', journeyId),
     ])
 
+    // Merge journeys.metadata (admin fields) + case_data rows (user-saved fields)
     const metadata: Record<string, unknown> =
       journeyResult.status === 'fulfilled'
-        ? (journeyResult.value.data?.metadata as Record<string, unknown>) ?? {}
+        ? { ...(journeyResult.value.data?.metadata as Record<string, unknown> ?? {}) }
         : {}
+
+    if (caseDataResult.status === 'fulfilled' && caseDataResult.value.data) {
+      for (const row of caseDataResult.value.data) {
+        if (!row.data_key) continue
+        try {
+          metadata[row.data_key] = typeof row.data_value === 'string' && row.data_value.startsWith('"')
+            ? JSON.parse(row.data_value)
+            : row.data_value
+        } catch { metadata[row.data_key] = row.data_value }
+      }
+    }
 
     const completedSteps: Record<string, string | null> = {}
     if (stepsResult.status === 'fulfilled' && stepsResult.value.data) {
@@ -152,7 +152,7 @@ export class UnifiedReminderEngine {
       const storedFireAt = new Date(existingRow.fire_at)
       const diffDays = Math.abs(expectedFireAt.getTime() - storedFireAt.getTime()) / (1000 * 60 * 60 * 24)
 
-      if (diffDays > 1 && !dateTriggerGroups.has(def.group)) {
+      if (diffDays > 0.1 && !dateTriggerGroups.has(def.group)) {
         // Date changed — cancel all pending/sent rows for this group and dismiss in bell
         dateTriggerGroups.add(def.group)
         await this.supabase
@@ -162,12 +162,15 @@ export class UnifiedReminderEngine {
           .eq('trigger_group', def.group)
           .in('status', ['pending', 'sent'])
 
-        await this.supabase
-          .from('journey_reminders')
-          .update({ is_dismissed: true, dismissed_at: new Date().toISOString() })
-          .eq('journey_id', journeyId)
-          .eq('is_dismissed', false)
-          .like('dedup_key', `${journeyId}:journey:${def.group.replace('c3_', 'c3_s1_')}%`)
+        const groupReminderIds = REMINDER_REGISTRY.filter(r => r.group === def.group).map(r => r.id)
+        for (const rid of groupReminderIds) {
+          await this.supabase
+            .from('journey_reminders')
+            .update({ is_dismissed: true, dismissed_at: new Date().toISOString() })
+            .eq('journey_id', journeyId)
+            .eq('is_dismissed', false)
+            .like('dedup_key', `${journeyId}:journey:${rid}%`)
+        }
 
         // Remove from scheduledIds so they get re-scheduled
         for (const r of (existing ?? [])) {
@@ -195,10 +198,6 @@ export class UnifiedReminderEngine {
         }
       } else if (def.trigger.type === 'metadata_key_exists') {
         if (metadata[(def.trigger as any).metadataKey] != null) {
-          triggerMet = true
-        }
-      } else if (def.trigger.type === 'metadata_key_value') {
-        if (String(metadata[(def.trigger as any).metadataKey]) === (def.trigger as any).value) {
           triggerMet = true
         }
       } else if (def.trigger.type === 'metadata_date_set') {
@@ -230,16 +229,27 @@ export class UnifiedReminderEngine {
   //      is now met — this is the key fix for stale bell notifications
   // ─────────────────────────────────────────────────────────
   async runSuppression(journeyId: string): Promise<void> {
-    // Fetch current journey state once
-    const [journeyResult, stepsResult] = await Promise.allSettled([
+    const [journeyResult, caseDataResult, stepsResult] = await Promise.allSettled([
       this.supabase.from('journeys').select('metadata').eq('id', journeyId).single(),
+      this.supabase.from('case_data').select('data_key, data_value').eq('journey_id', journeyId),
       this.supabase.from('journey_steps').select('step_key, status').eq('journey_id', journeyId),
     ])
 
     const metadata: Record<string, unknown> =
       journeyResult.status === 'fulfilled'
-        ? (journeyResult.value.data?.metadata as Record<string, unknown>) ?? {}
+        ? { ...(journeyResult.value.data?.metadata as Record<string, unknown> ?? {}) }
         : {}
+
+    if (caseDataResult.status === 'fulfilled' && caseDataResult.value.data) {
+      for (const row of caseDataResult.value.data) {
+        if (!row.data_key) continue
+        try {
+          metadata[row.data_key] = typeof row.data_value === 'string' && row.data_value.startsWith('"')
+            ? JSON.parse(row.data_value)
+            : row.data_value
+        } catch { metadata[row.data_key] = row.data_value }
+      }
+    }
 
     const completedStepKeys = new Set<string>()
     if (stepsResult.status === 'fulfilled' && stepsResult.value.data) {
