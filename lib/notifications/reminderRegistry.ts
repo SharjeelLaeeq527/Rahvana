@@ -27,10 +27,32 @@ export type SuppressCondition =
 
 /** What event starts this reminder chain */
 export type TriggerEvent =
-  | { type: 'step_completed';      stepKey: string }       // fires when a step is marked done
-  | { type: 'ceac_status';         status: string }        // fires when CEAC status is set
-  | { type: 'metadata_key_exists'; metadataKey: string }   // fires when metadata key appears
-  | { type: 'metadata_date_set';   metadataKey: string }   // fires relative to a DATE stored in metadata
+  | { type: 'step_completed';      stepKey: string }
+  | { type: 'ceac_status';         status: string }
+  | { type: 'metadata_key_exists'; metadataKey: string }
+  | { type: 'metadata_key_value';  metadataKey: string; value: string }
+  | { type: 'metadata_date_set';   metadataKey: string }
+
+// ─────────────────────────────────────────────────────────────
+// TYPE-SAFE ACCESSORS — use these instead of (trigger as any)
+// ─────────────────────────────────────────────────────────────
+export function getStepKey(t: TriggerEvent): string | null {
+  return t.type === 'step_completed' ? t.stepKey : null
+}
+export function getMetadataKey(t: TriggerEvent | SuppressCondition): string | null {
+  if ('metadataKey' in t) return t.metadataKey
+  return null
+}
+export function getMetadataValue(t: TriggerEvent | SuppressCondition): string | null {
+  if (t.type === 'metadata_key_value') return t.value
+  return null
+}
+export function getSuppressStepKey(s: SuppressCondition): string | null {
+  return s.type === 'step_completed' ? s.stepKey : null
+}
+export function getCeacGroups(s: SuppressCondition): string[] {
+  return s.type === 'ceac_status_beyond' ? s.groups : []
+}
 
 export interface JourneyReminderDef {
   /** Unique ID — used as reminder_id in DB */
@@ -561,12 +583,7 @@ export function getRemindersForStep(stepKey: string): JourneyReminderDef[] {
 
 /** All reminders triggered by a metadata key appearing or a date metadata key */
 export function getRemindersForMetadataKey(metadataKey: string): JourneyReminderDef[] {
-  return REMINDER_REGISTRY.filter(
-    (r) =>
-      (r.trigger.type === 'metadata_key_exists' && (r.trigger as any).metadataKey === metadataKey) ||
-      (r.trigger.type === 'metadata_key_value' && (r.trigger as any).metadataKey === metadataKey) ||
-      (r.trigger.type === 'metadata_date_set' && (r.trigger as any).metadataKey === metadataKey)
-  )
+  return REMINDER_REGISTRY.filter((r) => getMetadataKey(r.trigger) === metadataKey)
 }
 
 /** Get reminder by ID */

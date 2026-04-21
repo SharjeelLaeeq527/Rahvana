@@ -126,7 +126,7 @@ export function DashboardView({
         type: "sky",
         iconColor: "d-sky",
         title: "Case Registered & Under Review",
-        text: "Your NVC identifiers have been recorded. Our admin team will verify your case status at the embassy/NVC shortly.",
+        text: "Your NVC case number has been recorded. Tracking will activate once your case status is updated.",
       });
     }
 
@@ -605,7 +605,14 @@ export function DashboardView({
 
                 const dqDateObj = new Date(dqDateStr + "T00:00:00");
                 const diffTime = new Date().getTime() - dqDateObj.getTime();
-                const daysSinceDq = Math.max(0, Math.floor(diffTime / (1000 * 60 * 60 * 24)));
+                const rawDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+                const daysSinceDq = Math.max(0, rawDays);
+                const dqLabel =
+                  rawDays < -1  ? `in ${Math.abs(rawDays)} days` :
+                  rawDays === -1 ? "tomorrow" :
+                  rawDays === 0  ? "today" :
+                  rawDays === 1  ? "1 day ago" :
+                  `${rawDays} days ago`;
 
                 if (!currentSchedulingMonthYear) {
                   return (
@@ -617,7 +624,7 @@ export function DashboardView({
                         <p className="text-[12.5px] text-slate-400 leading-relaxed mb-4 max-w-md">Your DQ date is recorded. To see your estimated interview window, go to <b>Chapter 2 → Step 11</b> and sync the official embassy scheduling month.</p>
                         <div className="bg-white/5 rounded-xl p-3 border border-white/10 flex items-center justify-between">
                           <span className="text-[12px] font-bold">DQ Date: {dqDateObj.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}</span>
-                          <span className="text-[10px] text-[#34d399] font-black uppercase">{daysSinceDq} DAYS AGO</span>
+                          <span className="text-[10px] text-[#34d399] font-black uppercase">{dqLabel.toUpperCase()}</span>
                         </div>
                       </div>
                     </div>
@@ -647,7 +654,7 @@ export function DashboardView({
                       <div className="bg-white/5 rounded-2xl p-4 border border-white/5">
                         <div className="text-[10px] uppercase tracking-widest text-[#6b8097] mb-2 font-black">Your DQ Date</div>
                         <div className="text-[18px] font-bold">{dqDateObj.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}</div>
-                        <div className="text-[11px] text-[#34d399] mt-1 font-bold uppercase">{daysSinceDq} Days Ago</div>
+                        <div className="text-[11px] text-[#34d399] mt-1 font-bold uppercase">{dqLabel}</div>
                       </div>
                       <div className="bg-white/5 rounded-2xl p-4 border border-white/5 flex flex-col justify-between">
                         <div>

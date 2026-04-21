@@ -2,7 +2,7 @@
 
 import { usePathname, useRouter } from "next/navigation";
 import Link from "next/link";
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import {
   Bell,
   BellOff,
@@ -199,10 +199,8 @@ export function SiteHeader({
   const { profile, isLoading, user: authUser } = useAuth();
   const resolvedUser = user ?? authUser;
 
-  // Fetch real notifications when bell opens
-  const fetchNotifications = async () => {
+  const fetchNotifications = useCallback(async () => {
     try {
-      // Step 1: get active journey ID
       let jId = notifJourneyId;
       if (!jId) {
         const res = await fetch('/api/journeys');
@@ -214,21 +212,28 @@ export function SiteHeader({
         }
       }
       if (!jId) return;
-
-      // Step 2: fetch reminders
       const r = await fetch(`/api/v1/journeys/${jId}/reminders`);
       if (r.ok) {
         const d = await r.json();
         setNotifList(d.reminders ?? []);
       }
     } catch {}
-  };
+  }, [notifJourneyId]);
+
+  // Fetch on mount — so bell badge and data are ready before user clicks
+  useEffect(() => {
+    if (resolvedUser) fetchNotifications();
+  }, [resolvedUser]);
+
+  // Re-fetch every 2 minutes in background to keep count fresh
+  useEffect(() => {
+    if (!resolvedUser) return;
+    const interval = setInterval(fetchNotifications, 2 * 60 * 1000);
+    return () => clearInterval(interval);
+  }, [resolvedUser, fetchNotifications]);
 
   const handleBellClick = () => {
-    setNotificationsOpen((prev) => {
-      if (!prev) fetchNotifications();
-      return !prev;
-    });
+    setNotificationsOpen((prev) => !prev);
   };
 
   const dismissNotif = async (id: string) => {
