@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useRef } from "react";
-import { X, Info } from "lucide-react";
+import React, { useRef, useState } from "react";
+import { X, Info, Check, RefreshCw, Upload } from "lucide-react";
 import { APPROVAL_NOTICE_DATA as data } from "./ApprovalNoticeData";
 import { useDocumentVaultStore } from "@/lib/document-vault/store";
 import { toast } from "sonner";
@@ -50,11 +50,28 @@ export const ApprovalNoticeTool: React.FC<ApprovalNoticeToolProps> = ({
     (d) => d.documentDefId === "i797-approval-notice",
   );
 
+  const [receiptError, setReceiptError] = useState("");
+
+  const validateReceiptNumber = (value: string) => {
+    const regex = /^[A-Z]{3}[0-9]{10}$/;
+    return regex.test(value);
+  };
+
   const saveDetails = () => {
     if (!approvalDetails.approvalDate || !approvalDetails.receiptNumber) {
       toast.error("Please fill in the required fields.");
       return;
     }
+
+    if (!validateReceiptNumber(approvalDetails.receiptNumber)) {
+      setReceiptError(
+        "Invalid format. Use 3 letters followed by 10 digits (e.g., IOE1234567890).",
+      );
+      toast.error("Invalid receipt number format.");
+      return;
+    }
+
+    setReceiptError("");
     setIsApprovalSaved(true);
     actions.updateMetadata({
       approvalDetails,
@@ -70,7 +87,9 @@ export const ApprovalNoticeTool: React.FC<ApprovalNoticeToolProps> = ({
   };
 
   return (
-    <div className={`flex flex-col gap-[22px] animate-in fade-in slide-in-from-bottom-2 duration-360 w-full text-[#1c2b3a] min-h-screen}`}>
+    <div
+      className={`flex flex-col gap-[22px] animate-in fade-in slide-in-from-bottom-2 duration-360 w-full text-[#1c2b3a] min-h-screen}`}
+    >
       {/* GLOBAL FONT IMPORT */}
       {/* <style
         dangerouslySetInnerHTML={{
@@ -197,18 +216,20 @@ export const ApprovalNoticeTool: React.FC<ApprovalNoticeToolProps> = ({
                 <div className="flex gap-[10px] flex-wrap">
                   <button
                     onClick={() => openUploadModal("i797-approval-notice")}
-                    className="inline-flex items-center justify-center gap-[8px] p-[12px_14px] rounded-[10px] border-[1.5px] border-[#d0e4f7] bg-white text-[#0c1b33] text-[13px] font-bold hover:border-[#2f6fd4] hover:text-[#2f6fd4] hover:-translate-y-[1px] transition-all"
+                    className={`inline-flex items-center justify-center gap-[8px] p-[12px_14px] rounded-[10px] border-[1.5px] transition-all hover:-translate-y-[1px] text-[13px] font-bold ${
+                      approvalDoc
+                        ? "bg-[#e8f5ef] border-[#a8d9be] text-[#15744f] hover:border-[#15744f]"
+                        : "bg-white border-[#d0e4f7] text-[#0c1b33] hover:border-[#2f6fd4] hover:text-[#2f6fd4]"
+                    }`}
                   >
-                    <svg
-                      viewBox="0 0 24 24"
-                      className="w-[15px] h-[15px] stroke-current fill-none stroke-[2px] stroke-linecap-round stroke-linejoin-round"
-                    >
-                      <path d="M12 16V4" />
-                      <polyline points="7 9 12 4 17 9" />
-                      <path d="M20 16.58A5 5 0 0 1 18 6h-1.26A8 8 0 1 0 4 16.25" />
-                      <path d="M8 20h8" />
-                    </svg>
-                    Upload approval notice
+                    {approvalDoc ? (
+                      <RefreshCw size={15} className="stroke-[2.5px]" />
+                    ) : (
+                      <Upload size={15} className="stroke-[2.5px]" />
+                    )}
+                    {approvalDoc
+                      ? "Replace approval notice"
+                      : "Upload approval notice"}
                   </button>
                 </div>
                 <div className="bg-[#e8f5ef] border-[1.5px] border-[#a8d9be] rounded-[14px] p-[16px_18px] animate-in zoom-in-95 duration-200 mt-4">
@@ -260,18 +281,20 @@ export const ApprovalNoticeTool: React.FC<ApprovalNoticeToolProps> = ({
                 <div className="flex gap-[10px] flex-wrap mb-3">
                   <button
                     onClick={() => openUploadModal("i797-approval-notice")}
-                    className="inline-flex items-center justify-center gap-[8px] p-[12px_14px] rounded-[10px] border-[1.5px] border-[#d0e4f7] bg-white text-[#0c1b33] text-[13px] font-bold hover:border-[#2f6fd4] hover:text-[#2f6fd4] hover:-translate-y-[1px] transition-all"
+                    className={`inline-flex items-center justify-center gap-[8px] p-[12px_14px] rounded-[10px] border-[1.5px] transition-all hover:-translate-y-[1px] text-[13px] font-bold ${
+                      approvalDoc
+                        ? "bg-[#e8f5ef] border-[#a8d9be] text-[#15744f] hover:border-[#15744f]"
+                        : "bg-white border-[#d0e4f7] text-[#0c1b33] hover:border-[#2f6fd4] hover:text-[#2f6fd4]"
+                    }`}
                   >
-                    <svg
-                      viewBox="0 0 24 24"
-                      className="w-[15px] h-[15px] stroke-current fill-none stroke-[2px] stroke-linecap-round stroke-linejoin-round"
-                    >
-                      <path d="M12 16V4" />
-                      <polyline points="7 9 12 4 17 9" />
-                      <path d="M20 16.58A5 5 0 0 1 18 6h-1.26A8 8 0 1 0 4 16.25" />
-                      <path d="M8 20h8" />
-                    </svg>
-                    Upload approval notice
+                    {approvalDoc ? (
+                      <RefreshCw size={15} className="stroke-[2.5px]" />
+                    ) : (
+                      <Upload size={15} className="stroke-[2.5px]" />
+                    )}
+                    {approvalDoc
+                      ? "Replace approval notice"
+                      : "Upload approval notice"}
                   </button>
                 </div>
                 <button
@@ -499,13 +522,7 @@ export const ApprovalNoticeTool: React.FC<ApprovalNoticeToolProps> = ({
                 onClick={() => setIsApprovalModalOpen(false)}
                 className="w-[34px] h-[34px] rounded-full bg-[#eef3fa] hover:bg-[#d0e4f7] flex items-center justify-center transition-colors"
               >
-                <svg
-                  viewBox="0 0 24 24"
-                  className="w-[14px] h-[14px] stroke-[#3a4f63] fill-none stroke-[2px] shadow-sm"
-                >
-                  <line x1="18" y1="6" x2="6" y2="18" />
-                  <line x1="6" y1="6" x2="18" y2="18" />
-                </svg>
+                <X size={16} strokeWidth={2} />
               </button>
             </div>
 
@@ -542,15 +559,29 @@ export const ApprovalNoticeTool: React.FC<ApprovalNoticeToolProps> = ({
                   id="receiptNumber"
                   type="text"
                   value={approvalDetails.receiptNumber}
-                  onChange={(e) =>
+                  maxLength={13}
+                  onChange={(e) => {
+                    const val = e.target.value
+                      .toUpperCase()
+                      .replace(/[^A-Z0-9]/g, "");
                     setApprovalDetails({
                       ...approvalDetails,
-                      receiptNumber: e.target.value.toUpperCase(),
-                    })
-                  }
+                      receiptNumber: val,
+                    });
+                    if (receiptError) setReceiptError("");
+                  }}
                   placeholder="IOE1234567890"
-                  className="p-[11px_13px] border-[1.5px] border-[#d0e4f7] rounded-[10px] text-[14px] text-[#1c2b3a] bg-white outline-none focus:border-[#2f6fd4] focus:shadow-[0_0_0_3px_rgba(47,111,212,0.12)] transition-all"
+                  className={`p-[11px_13px] border-[1.5px] rounded-[10px] text-[14px] text-[#1c2b3a] bg-white outline-none focus:shadow-[0_0_0_3px_rgba(47,111,212,0.12)] transition-all ${
+                    receiptError
+                      ? "border-red-500 focus:border-red-500"
+                      : "border-[#d0e4f7] focus:border-[#2f6fd4]"
+                  }`}
                 />
+                {receiptError && (
+                  <div className="text-[11px] font-medium text-red-600 mt-1 animate-in fade-in slide-in-from-top-1">
+                    {receiptError}
+                  </div>
+                )}
               </div>
 
               <div className="flex flex-col gap-[6px] mb-[14px]">
@@ -587,7 +618,7 @@ export const ApprovalNoticeTool: React.FC<ApprovalNoticeToolProps> = ({
                 </button>
                 <button
                   onClick={saveDetails}
-                  className="flex-1 p-[13px_16px] rounded-[11px] font-bold text-[14px] border-none bg-[#2f6fd4] hover:bg-[#2460bb] text-white transition-all shadow-[0_4px_20px_rgba(47,111,212,0.25)]"
+                  className="flex-1 p-[13px_16px] rounded-[11px] font-bold text-[14px] border-none bg-primary hover:bg-primary/90 text-white transition-all shadow-[0_4px_20px_rgba(47,111,212,0.25)]"
                 >
                   Save details
                 </button>
@@ -598,13 +629,9 @@ export const ApprovalNoticeTool: React.FC<ApprovalNoticeToolProps> = ({
       </Dialog>
 
       {/* OVERLAY: GUIDE TUTORIAL */}
-      {isApprovalGuideOpen && (
-        <div className="fixed inset-0 z-200 backdrop-blur-[4px] bg-[#0c1b338c] flex items-center justify-center p-[20px] animate-in fade-in duration-300">
-          <div
-            className="absolute inset-0 cursor-pointer"
-            onClick={() => setIsApprovalGuideOpen(false)}
-          />
-          <div className="relative bg-white rounded-[18px] w-full max-w-[760px] max-h-[90vh] overflow-hidden flex flex-col shadow-[0_24px_80px_rgba(12,27,51,0.24),0_4px_20px_rgba(12,27,51,0.14)] animate-in zoom-in-95 slide-in-from-bottom-5 duration-300">
+      <Dialog open={isApprovalGuideOpen} onOpenChange={setIsApprovalGuideOpen}>
+        <DialogContent className="max-w-[760px] p-0 border-none bg-transparent shadow-none w-[calc(100%-40px)]">
+          <div className="relative bg-white rounded-[18px] w-full max-h-[90vh] overflow-hidden flex flex-col shadow-[0_24px_80px_rgba(12,27,51,0.24),0_4px_20px_rgba(12,27,51,0.14)] animate-in zoom-in-95 slide-in-from-bottom-5 duration-300">
             {/* Header / Progress bar */}
             <div className="flex items-center p-[18px_20px] border-b border-[#d0e4f7] gap-[14px]">
               <button
@@ -632,7 +659,7 @@ export const ApprovalNoticeTool: React.FC<ApprovalNoticeToolProps> = ({
               </div>
             </div>
 
-            <div className="p-[28px_24px_24px] overflow-auto">
+            <div className="p-[28px_24px_24px] overflow-auto custom-scrollbar">
               <div className="text-[11px] font-bold tracking-[0.1em] uppercase text-[#2f6fd4] mb-[12px]">
                 {data.guideSteps[approvalGuideStep].label}
               </div>
@@ -710,8 +737,9 @@ export const ApprovalNoticeTool: React.FC<ApprovalNoticeToolProps> = ({
               </div>
             </div>
           </div>
-        </div>
-      )}
+        </DialogContent>
+      </Dialog>
+
     </div>
   );
 };

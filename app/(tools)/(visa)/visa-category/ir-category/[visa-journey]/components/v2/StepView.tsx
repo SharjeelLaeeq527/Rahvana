@@ -497,6 +497,13 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
     Record<string, boolean>
   >(initialSubmissionChecklist);
 
+  const [submissionSaved, setSubmissionSaved] = useState(
+    state.metadata.submissionSaved === true,
+  );
+  const [submissionDate, setSubmissionDate] = useState(
+    (state.metadata.submissionDate as string) || "",
+  );
+
   // Step 2.10 DQ Recording States
   const [dqSaved, setDqSaved] = useState(state.metadata.dqSaved === true);
   const [dqDate, setDqDate] = useState((state.metadata.dqDate as string) || "");
@@ -4159,6 +4166,16 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
               setSubmissionChecklistStatus={setSubmissionChecklistStatus}
               setSubmissionGuideIdx={setSubmissionGuideIdx}
               setIsSubmissionGuideOpen={setIsSubmissionGuideOpen}
+              submissionSaved={submissionSaved}
+              submissionDate={submissionDate}
+              onSave={(data) => {
+                setSubmissionSaved(data.saved);
+                setSubmissionDate(data.date);
+                actions.updateMetadata({
+                  submissionSaved: data.saved,
+                  submissionDate: data.date,
+                });
+              }}
             />
           )}
 

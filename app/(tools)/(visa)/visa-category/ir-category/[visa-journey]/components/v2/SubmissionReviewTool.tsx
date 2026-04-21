@@ -1,7 +1,14 @@
-"use client";
-
-import React, { useState } from "react";
-import { ExternalLink, ChevronRight, Check, AlertTriangle } from "lucide-react";
+import React, { useState, useEffect } from "react";
+import {
+  ExternalLink,
+  ChevronRight,
+  Check,
+  AlertTriangle,
+  Send,
+  Calendar,
+  Save,
+  X,
+} from "lucide-react";
 
 interface SubmissionReviewToolProps {
   tool: any;
@@ -9,6 +16,9 @@ interface SubmissionReviewToolProps {
   setSubmissionChecklistStatus: (status: Record<number, boolean>) => void;
   setSubmissionGuideIdx: (idx: number) => void;
   setIsSubmissionGuideOpen: (open: boolean) => void;
+  submissionSaved: boolean;
+  submissionDate: string;
+  onSave: (data: { saved: boolean; date: string }) => void;
 }
 
 export const SubmissionReviewTool: React.FC<SubmissionReviewToolProps> = ({
@@ -17,11 +27,26 @@ export const SubmissionReviewTool: React.FC<SubmissionReviewToolProps> = ({
   setSubmissionChecklistStatus,
   setSubmissionGuideIdx,
   setIsSubmissionGuideOpen,
+  submissionSaved,
+  submissionDate,
+  onSave,
 }) => {
+  const [localIsSubmitted, setLocalIsSubmitted] = useState<boolean | null>(
+    submissionSaved ? true : null,
+  );
+  const [localDate, setLocalDate] = useState(submissionDate);
+
   const handleToggleSubmissionCheck = (index: number) => {
     setSubmissionChecklistStatus({
       ...submissionChecklistStatus,
       [index]: !submissionChecklistStatus[index],
+    });
+  };
+
+  const handleSave = () => {
+    onSave({
+      saved: localIsSubmitted === true,
+      date: localDate,
     });
   };
 
@@ -150,6 +175,96 @@ export const SubmissionReviewTool: React.FC<SubmissionReviewToolProps> = ({
               </div>
             ))}
           </div>
+        </div>
+      </div>
+
+      {/* Submission Status Section */}
+      <div className="bg-white border-[1.5px] border-[#d0e4f7] rounded-[16px] p-[24px_22px] shadow-[0_4px_16px_rgba(15,31,56,0.04)]">
+        <div className="flex items-center gap-[12px] mb-[20px]">
+          <div className="w-[40px] h-[40px] rounded-[10px] bg-[#e8f1fb] border border-[#d0e4f7] flex items-center justify-center shrink-0">
+            <Send size={20} className="text-primary" />
+          </div>
+          <div>
+            <div className="text-[15px] font-bold text-[#0c1b33]">
+              Document Submission Status
+            </div>
+            <div className="text-[12px] text-[#6b8097]">
+              Have you officially submitted your documents on the CEAC portal?
+            </div>
+          </div>
+        </div>
+
+        <div className="flex flex-col gap-[18px]">
+          <div className="grid grid-cols-2 gap-[10px]">
+            <button
+              onClick={() => setLocalIsSubmitted(true)}
+              className={`flex items-center justify-center gap-[8px] p-[12px] rounded-[12px] border-[1.5px] font-sans text-[14px] font-semibold transition-all ${
+                localIsSubmitted === true
+                  ? "bg-[#e8f5ef] border-[#15744f] text-[#15744f]"
+                  : "bg-white border-[#d0e4f7] text-[#3a4f63] hover:bg-[#f8fafc]"
+              }`}
+            >
+              <Check size={16} />
+              Yes, Submitted
+            </button>
+            <button
+              onClick={() => {
+                setLocalIsSubmitted(false);
+                setLocalDate("");
+              }}
+              className={`flex items-center justify-center gap-[8px] p-[12px] rounded-[12px] border-[1.5px] font-sans text-[14px] font-semibold transition-all ${
+                localIsSubmitted === false
+                  ? "bg-[#fef2f2] border-[#b91c1c] text-[#b91c1c]"
+                  : "bg-white border-[#d0e4f7] text-[#3a4f63] hover:bg-[#f8fafc]"
+              }`}
+            >
+              <X className="h-4 w-4" />
+              Not Yet
+            </button>
+          </div>
+
+          {localIsSubmitted === true && (
+            <div className="flex flex-col gap-[10px] animate-in fade-in slide-in-from-top-2 duration-300">
+              <div className="text-[13px] font-semibold text-[#3a4f63] flex items-center gap-2">
+                <Calendar size={14} />
+                When did you submit?
+              </div>
+              <input
+                type="date"
+                value={localDate}
+                max={new Date().toISOString().split("T")[0]}
+                onChange={(e) => setLocalDate(e.target.value)}
+                className="w-full p-[12px] border-[1.5px] border-[#d0e4f7] rounded-[10px] text-[14px] outline-none focus:border-primary transition-all bg-white text-[#0c1b33]"
+              />
+            </div>
+          )}
+
+          <div className="mt-[6px]">
+            <button
+              onClick={handleSave}
+              disabled={
+                localIsSubmitted === null ||
+                (localIsSubmitted === true && !localDate)
+              }
+              className={`w-full p-[14px] rounded-[12px] font-sans text-[15px] font-semibold flex items-center justify-center gap-[9px] transition-all ${
+                localIsSubmitted === null ||
+                (localIsSubmitted === true && !localDate)
+                  ? "bg-slate-100 text-slate-400 cursor-not-allowed border-transparent"
+                  : "bg-primary text-white cursor-pointer hover:bg-primary/90 hover:-translate-y-0.5 shadow-[0_4px_12px_rgba(47,111,212,0.2)]"
+              }`}
+            >
+              <Save size={18} />
+              {submissionSaved
+                ? "Update Submission Info"
+                : "Save Submission Status"}
+            </button>
+          </div>
+
+          {submissionSaved && (
+            <div className="text-center text-[11px] text-[#15744f] font-medium bg-[#e8f5ef] py-1.5 rounded-full border border-[#a8d9be]/50">
+              Submission recorded successfully
+            </div>
+          )}
         </div>
       </div>
     </div>
