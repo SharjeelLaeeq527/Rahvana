@@ -196,15 +196,15 @@ export function QuestRenderer({
           btnOutline: "bg-white text-primary border border-primary hover:bg-primary/5",
         };
       case "caution":
-        return {
-          label: "Caution",
-          color: "text-amber-600",
-          icon: <AlertTriangle size={iconSize} />,
-          bg: "bg-amber-50",
-          border: "border-amber-200/50",
-          btnSolid: "bg-amber-600 text-white hover:bg-amber-700",
-          btnOutline: "bg-white text-amber-600 border border-amber-600 hover:bg-amber-50",
-        };
+          return {
+            label: "Caution",
+            color: "text-[#a97c50]",
+            icon: <AlertTriangle size={iconSize} />,
+            bg: "bg-[#f3e7d7]",
+            border: "border-[#a97c50]",
+            btnSolid: "bg-[#a97c50] text-white border border-[#a97c50]",
+            btnOutline: "bg-[#f3e7d7] text-[#a97c50] border border-[#a97c50] hover:bg-[#a97c50]/10",
+          };
       case "review":
         return {
           label: "Review",
@@ -272,48 +272,124 @@ export function QuestRenderer({
           <div className="flex flex-col gap-[10px]">
             {suite.quests.map((q, idx) => {
               const meta = getStatusMeta(q.id);
+              const isCompleted = ["Passed", "Completed"].includes(meta.label);
+              // Status color mapping
+              let statusTheme = {
+                bg: isChapter1 ? "bg-[#f7f6f3]" : "bg-[#f7fafd]",
+                border: isChapter1 ? "border-[#e2e0db]" : "border-[#c3d3e6]",
+                iconBg: isChapter1 ? "bg-[#e2e0db]" : "bg-[#f7fafd]",
+                iconBorder: isChapter1 ? "border-[#e2e0db]" : "border-[#c3d3e6]",
+                iconText: isChapter1 ? "text-[#7a7a7a]" : "text-[#3a4f63]",
+                badge: isChapter1 ? "bg-[#e2e0db] border-[#b0b0b0] text-[#7a7a7a]" : "bg-[#e3ecf7] border-[#b7c7db] text-[#3a4f63]",
+              };
+              if (meta.label === "Passed") {
+                statusTheme = isChapter1 ? {
+                  bg: "bg-[#eaf7ed]",
+                  border: "border-[#b7e2c1]",
+                  iconBg: "bg-[#b7e2c1]",
+                  iconBorder: "border-[#b7e2c1]",
+                  iconText: "text-[#2e7d32]",
+                  badge: "bg-[#b7e2c1] text-[#2e7d32] border-[#b7e2c1] shadow-sm",
+                } : {
+                  bg: "bg-[#e3f1fa]",
+                  border: "border-[#7bb6e3]",
+                  iconBg: "bg-[#7bb6e3]",
+                  iconBorder: "border-[#7bb6e3]",
+                  iconText: "text-[#174c6f]",
+                  badge: "bg-[#7bb6e3] text-[#174c6f] border-[#7bb6e3] shadow-sm",
+                };
+              } else if (meta.label === "Caution") {
+                statusTheme = isChapter1 ? {
+                  bg: "bg-[#f3e7d7]",
+                  border: "border-[#a97c50]",
+                  iconBg: "bg-[#a97c50]/10",
+                  iconBorder: "border-[#a97c50]",
+                  iconText: "text-[#a97c50]",
+                  badge: "bg-[#a97c50]/10 text-[#a97c50] border-[#a97c50] shadow-sm",
+                } : {
+                  bg: "bg-[#f3e7d7]",
+                  border: "border-[#a97c50]",
+                  iconBg: "bg-[#a97c50]/10",
+                  iconBorder: "border-[#a97c50]",
+                  iconText: "text-[#a97c50]",
+                  badge: "bg-[#a97c50]/10 text-[#a97c50] border-[#a97c50] shadow-sm",
+                };
+              } else if (meta.label === "Review") {
+                statusTheme = isChapter1 ? {
+                  bg: "bg-[#fff6ed]",
+                  border: "border-[#ffd8b5]",
+                  iconBg: "bg-[#ffd8b5]",
+                  iconBorder: "border-[#ffd8b5]",
+                  iconText: "text-[#b26a00]",
+                  badge: "bg-[#ffd8b5] text-[#b26a00] border-[#ffd8b5] shadow-sm",
+                } : {
+                  bg: "bg-[#f9f3e7]",
+                  border: "border-[#e6b97b]",
+                  iconBg: "bg-[#e6b97b]",
+                  iconBorder: "border-[#e6b97b]",
+                  iconText: "text-[#7a4c1a]",
+                  badge: "bg-[#e6b97b] text-[#7a4c1a] border-[#e6b97b] shadow-sm",
+                };
+              } else if (meta.label === "Blocked") {
+                statusTheme = isChapter1 ? {
+                  bg: "bg-[#fbeaea]",
+                  border: "border-[#f7b8b8]",
+                  iconBg: "bg-[#f7b8b8]",
+                  iconBorder: "border-[#f7b8b8]",
+                  iconText: "text-[#b71c1c]",
+                  badge: "bg-[#f7b8b8] text-[#b71c1c] border-[#f7b8b8] shadow-sm",
+                } : {
+                  bg: "bg-[#f9e7e7]",
+                  border: "border-[#e67b7b]",
+                  iconBg: "bg-[#e67b7b]",
+                  iconBorder: "border-[#e67b7b]",
+                  iconText: "text-[#7a1a1a]",
+                  badge: "bg-[#e67b7b] text-[#7a1a1a] border-[#e67b7b] shadow-sm",
+                };
+              } else if (meta.label === "Completed") {
+                statusTheme = isChapter1 ? {
+                  bg: "bg-[#eaf7ed]",
+                  border: "border-[#b7e2c1]",
+                  iconBg: "bg-[#b7e2c1]",
+                  iconBorder: "border-[#b7e2c1]",
+                  iconText: "text-[#2e7d32]",
+                  badge: "bg-[#b7e2c1] text-[#2e7d32] border-[#b7e2c1] shadow-sm",
+                } : {
+                  bg: "bg-[#e3f1fa]",
+                  border: "border-[#7bb6e3]",
+                  iconBg: "bg-[#7bb6e3]",
+                  iconBorder: "border-[#7bb6e3]",
+                  iconText: "text-[#174c6f]",
+                  badge: "bg-[#7bb6e3] text-[#174c6f] border-[#7bb6e3] shadow-sm",
+                };
+              }
               return (
                 <button
                   key={q.id}
                   onClick={() => handleStartQuest(q.id)}
-                  className="w-full flex items-center gap-[16px] px-[20px] py-[18px] rounded-[14px] border-[1.5px] border-[#d0e4f7] bg-white text-left transition-all group hover:border-[#340606] hover:shadow-[0_8px_32px_rgba(52,6,6,0.12),0_2px_8px_rgba(52,6,6,0.06)] shadow-[0_2px_12px_rgba(52,6,6,0.12),0_1px_3px_rgba(52,6,6,0.06)] hover:-translate-y-px active:translate-y-0"
+                  className={`w-full flex items-center gap-[16px] px-[20px] py-[18px] rounded-[14px] border-[1.5px] text-left transition-all group hover:border-[#340606] hover:shadow-[0_8px_32px_rgba(52,6,6,0.12),0_2px_8px_rgba(52,6,6,0.06)] shadow-[0_2px_12px_rgba(52,6,6,0.12),0_1px_3px_rgba(52,6,6,0.06)] hover:-translate-y-px active:translate-y-0 ${statusTheme.bg} ${statusTheme.border}`}
                 >
                   <div
-                    className={`w-[40px] h-[40px] rounded-[10px] flex items-center justify-center text-[18px] shrink-0 transition-all border group
-                      ${
-                        isChapter1
-                          ? "border-[#c0596a] bg-white hover:bg-[#c0596a] hover:border-[#c0596a]"
-                          : isChapter2
-                            ? "border-[#b48ad6] bg-[#ede6f6] hover:bg-[#b48ad6] hover:border-[#b48ad6]"
-                            : isChapter3
-                              ? "border-[#2f6fd4] bg-[#e8f1fb] hover:bg-[#2f6fd4] hover:border-[#2f6fd4]"
-                              : "border-[#c0596a] bg-white hover:bg-[#c0596a] hover:border-[#c0596a]"
-                      }`}
+                    className={`w-[40px] h-[40px] rounded-[10px] flex items-center justify-center text-[18px] shrink-0 transition-all border ${statusTheme.iconBg} ${statusTheme.iconBorder}`}
                   >
-                    {meta.bg === "bg-transparent" ? (
-                      idx + 1
-                    ) : meta.label === "Completed" ? (
-                      <CheckCircle2 className="w-5 h-5 text-white" />
-                    ) : (
-                      <Circle
-                        className={`w-5 h-5 transition-all ${isChapter1 ? "text-[#c0596a] group-hover:text-white" : isChapter2 ? "text-[#b48ad6] group-hover:text-white" : isChapter3 ? "text-[#2f6fd4] group-hover:text-white" : "text-[#c0596a] group-hover:text-white"}`}
-                      />
-                    )}
+                    {["Passed", "Completed"].includes(meta.label)
+                      ? <CheckCircle2 className={`w-5 h-5 ${statusTheme.iconText}`} />
+                      : <Circle className={`w-5 h-5 transition-all ${statusTheme.iconText}`} />}
                   </div>
                   <div className="flex-1 min-w-0">
                     <h3
-                      className={`text-[15px] font-semibold mb-[4px] leading-[1.3] truncate ${isChapter1 ? "accent-brown" : isChapter2 ? "text-[#27192e]" : isChapter3 ? "text-[#0f1f38]" : "text-[#0f1f38]"}`}
+                      className={`text-[15px] font-semibold mb-[4px] leading-[1.3] truncate ${["Passed", "Completed"].includes(meta.label) ? "opacity-90" : ""} ${isChapter1 ? "accent-brown" : isChapter2 ? "text-[#27192e]" : isChapter3 ? "text-[#0f1f38]" : "text-[#0f1f38]"}`}
                     >
                       {q.title}
                     </h3>
                     <p
-                      className={`text-[13px] font-normal leading-[1.4] truncate ${isChapter1 ? "accent-rose" : isChapter2 ? "text-[#b48ad6]" : isChapter3 ? "text-[#2f6fd4]" : "text-[#3a4f63]"}`}
+                      className={`text-[13px] font-normal leading-[1.4] truncate ${["Passed", "Completed"].includes(meta.label) ? "opacity-80" : ""} ${isChapter1 ? "accent-rose" : isChapter2 ? "text-[#b48ad6]" : isChapter3 ? "text-[#2f6fd4]" : "text-[#3a4f63]"}`}
                     >
                       {q.subtitle}
                     </p>
                   </div>
                   <div
-                    className={`flex items-center gap-[5px] px-[11px] py-[5px] rounded-full border text-[12px] font-medium whitespace-nowrap transition-all shrink-0 ${meta.color} ${meta.bg} ${meta.border} ${isChapter1 ? "accent-brown border-[#c0596a]/40 bg-[#e6d6c3]" : ""}`}
+                    className={`flex items-center gap-[5px] px-[11px] py-[5px] rounded-full border text-[12px] font-bold whitespace-nowrap transition-all shrink-0 ${statusTheme.badge}`}
                   >
                     <span className="text-[14px] leading-none mb-0.5">
                       {meta.icon}

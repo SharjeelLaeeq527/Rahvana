@@ -7,6 +7,7 @@ import { verifyJourneyAccess, errorResponse } from '@/lib/api/journey-auth'
 import { ReminderEngine } from '@/lib/reminders/ReminderEngine'
 import { UnifiedReminderEngine } from '@/lib/notifications/UnifiedReminderEngine'
 import { REMINDER_PRIORITY_ORDER } from '@/lib/reminders/types'
+import { getReminderById } from '@/lib/notifications/reminderRegistry'
 import type { ReminderListResponse } from '@/lib/reminders/types'
 
 interface RouteParams {
@@ -33,13 +34,45 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
     const engine = new ReminderEngine(supabase)
     await engine.generateReminders(journeyId)
 
-    // Step 1b: Unified registry — schedule any unscheduled triggered reminders
-    // + cancel any whose suppress condition is now met
+    // Step 1b: Unified registry — schedule + suppress
     const unified = new UnifiedReminderEngine(supabase)
-    await Promise.allSettled([
-      unified.checkAndScheduleAll(journeyId),
-      unified.runSuppression(journeyId),
-    ])
+    await unified.checkAndScheduleAll(journeyId)
+    await unified.runSuppression(journeyId)
+
+    // Step 1c: Immediately deliver any DUE scheduled notifications for this journey
+    // so user sees them without waiting for the cron job (6-hour delay).
+    const nowIso = new Date().toISOString()
+    const { data: dueNow } = await supabase
+      .from('ceac_scheduled_notifications')
+      .select('*')
+      .eq('journey_id', journeyId)
+      .eq('reminder_origin', 'journey')
+      .eq('status', 'pending')
+      .lte('fire_at', nowIso)
+      .limit(20)
+
+    for (const notif of dueNow ?? []) {
+      const def = getReminderById(notif.reminder_id)
+      const priority = notif.reminder_type === 'URGENT' || notif.reminder_type === 'ACTION'
+        ? (def?.priority ?? 'high') : (def?.priority ?? 'normal')
+
+      await supabase.from('journey_reminders').upsert({
+        journey_id: journeyId,
+        reminder_type: 'step_pending_too_long',
+        priority,
+        title: notif.title,
+        body: notif.message,
+        step_key: notif.step_trigger_key ?? null,
+        action_url: def?.actionUrl ?? null,
+        action_label: def?.actionLabel ?? null,
+        is_dismissed: false,
+        dedup_key: `${journeyId}:journey:${notif.reminder_id}:${notif.recurrence_count}`,
+      }, { onConflict: 'dedup_key', ignoreDuplicates: true })
+
+      await supabase.from('ceac_scheduled_notifications')
+        .update({ status: 'sent', sent_at: nowIso })
+        .eq('id', notif.id)
+    }
 
     // Step 2: Fetch all active reminders (not dismissed, not snoozed)
     const now = new Date().toISOString()

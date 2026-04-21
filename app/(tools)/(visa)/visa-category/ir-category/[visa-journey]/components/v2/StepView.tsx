@@ -3088,7 +3088,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                 setTutorialIdx(0);
                 setIsTutorialOpen(true);
               }}
-              className="w-full py-4 px-7 bg-[#3b7dd8] text-white rounded-[12px] text-[15px] font-semibold cursor-pointer hover:bg-[#3b7dd8] transition-all shadow-[0_4px_20px_rgba(47,111,212,0.35)] hover:shadow-[0_8px_32px_rgba(47,111,212,0.45)] hover:-translate-y-0.5 active:translate-y-0"
+              className="w-full py-4 px-7 bg-[#b48ad6] text-white rounded-[12px] text-[15px] font-semibold cursor-pointer hover:bg-[#561864] transition-all shadow-[0_4px_20px_rgba(47,111,212,0.35)] hover:shadow-[0_8px_32px_rgba(47,111,212,0.45)] hover:-translate-y-0.5 active:translate-y-0"
             >
               Start CEAC Guide
             </button>
@@ -6113,47 +6113,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                         currentStep.document_items;
                   return (
                     <>
-                      <div className="text-left w-full max-w-[740px] mb-[24px]">
-                        <h1 className="text-[clamp(26px,4vw,34px)] font-black text-[#0f1f38] leading-[1.2]">
-                          {currentStep.step_name}
-                        </h1>
-                        <p className="text-[#3a4f63] text-[15px] leading-[1.65] mb-[12px] max-w-[550px]">
-                          {currentStep.step_description}
-                        </p>
-                        {/* Personalized badge */}
-                        {sId === "step_1_2" && isDocQuestionnaireCompleted && (
-                          <div className="flex items-center gap-[8px] mb-[8px]">
-                            <span className="text-[11px] font-semibold tracking-[0.04em] px-[10px] py-[3px] rounded-full bg-[#eaf7f2] text-[#1a7a5e] border border-[#b5e0d0]">
-                              ✓ Personalized for your case
-                            </span>
-                          </div>
-                        )}
-
-                        {/* Local Progress Bar */}
-                        {effectiveDocItems && effectiveDocItems.length > 0 && (
-                          <div className="w-full flex items-center gap-[12px] mt-3">
-                            <div className="flex-1 h-[5px] bg-primary/30 rounded-full overflow-hidden">
-                              <div
-                                className="h-full bg-linear-to-r from-primary to-primary transition-all duration-1000 ease-out"
-                                style={{
-                                  width: `${(effectiveDocItems.filter((d: any) => state.metadata?.docReviewStatus?.[d.id] || state.documentChecklist[d.name]).length / effectiveDocItems.length) * 100}%`,
-                                }}
-                              />
-                            </div>
-                            <span className="text-[12px] font-medium text-[#6b8097] whitespace-nowrap">
-                              {
-                                effectiveDocItems.filter(
-                                  (d: any) =>
-                                    state.metadata?.docReviewStatus?.[d.id] ||
-                                    state.documentChecklist[d.name],
-                                ).length
-                              }{" "}
-                              of {effectiveDocItems.length} reviewed
-                            </span>
-                          </div>
-                        )}
-                      </div>
-
+                   
                       {/* Document Cards */}
                       <div className="w-full max-w-[740px]">
                         <div className="w-full">

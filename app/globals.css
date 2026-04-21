@@ -7,38 +7,83 @@
   background-attachment: fixed;
 }
 .step-modal.ch3step-bg {
-  background-image: linear-gradient(rgba(242, 232, 232, 0.32), rgba(248, 245, 245, 0.32)), url('/assets/images/ch3steps-bg.png');
+  position: relative;
+  z-index: 0;
+}
+.step-modal.ch3step-bg::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background-image: url('/assets/images/ch3steps-bg.png');
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
   background-attachment: fixed;
+  opacity: 0.6;
 }
 /* Toned down Chapter 1 Step Background */
 
 .ch1step-bg {
-  background-image: linear-gradient(rgba(255,255,255,0.32), rgba(255,255,255,0.32)), url('/assets/images/ch1steps-bg.png');
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
-  background-attachment: fixed;
+  position: relative;
+  z-index: 0;
 }
- .ch2step-bg {
-  background-image: linear-gradient(rgba(255,255,255,0.54), rgba(255,255,255,0.54)), url('/assets/images/ch2steps-bg.png');
+.ch1step-bg::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background-image: url('/assets/images/ch1steps-bg.png');
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
   background-attachment: fixed;
-} 
+  opacity: 0.6;
+}
+.ch2step-bg {
+  position: relative;
+  z-index: 0;
+}
+.ch2step-bg::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background-image: url('/assets/images/ch2steps-bg.png');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+  opacity: 0.6;
+}
 .ch3step-bg {
-  background-image: linear-gradient(rgba(242, 232, 232, 0.32), rgba(248, 245, 245, 0.32)), url('/assets/images/ch3steps-bg.png');
+  position: relative;
+  z-index: 0;
+}
+.ch3step-bg::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background-image: url('/assets/images/ch3steps-bg.png');
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
   background-attachment: fixed;
+  opacity: 0.6;
 }
 /* Nicer purple for Chapter 2 background */
 .chapter2-bg {
-  background: #e6dbfa url('/assets/images/chapter-2-bg.png') center/cover no-repeat fixed;
+  position: relative;
+  z-index: 0;
+}
+.chapter2-bg::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: url('/assets/images/chapter-2-bg.png') center/cover no-repeat fixed;
+  opacity: 0.6;
 }
 
 /* Accent colors for headings, progress, etc. */

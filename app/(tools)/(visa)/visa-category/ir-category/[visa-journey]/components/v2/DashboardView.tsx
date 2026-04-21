@@ -302,7 +302,7 @@ export function DashboardView({
       {/* Fullscreen background for Dashboard */}
       <div
         className="pointer-events-none absolute inset-0 z-0 bg-cover bg-center bg-no-repeat"
-        style={{ backgroundImage: `url(${dashboardBg})` }}
+        style={{ backgroundImage: `url(${dashboardBg})`, opacity: 0.6 }}
       />
       <div className="w-full max-w-[1200px] mx-auto animate-in fade-in duration-700 relative z-10">
         <div className="text-[10px] font-bold uppercase tracking-[0.12em] text-slate-400 mb-2 text-center lg:text-left">
@@ -365,7 +365,7 @@ export function DashboardView({
             )}
 
           {/* Hero Section */}
-          <section className="bg-[#0c1b33]/95 rounded-2xl p-[20px_24px] relative overflow-hidden animate-in zoom-in duration-500 shadow-[0_8px_32px_rgba(44,62,80,0.13),0_1.5px_6px_rgba(47,111,212,0.07)] backdrop-blur-md after:content-[''] after:absolute after:-top-[50px] after:-right-[50px] after:w-[180px] after:h-[180px] after:rounded-full after:bg-[#2f6fd41f] after:pointer-events-none">
+          <section className="bg-[#0c1b33] rounded-2xl p-[20px_24px] relative overflow-hidden animate-in zoom-in duration-500 shadow-[0_20px_64px_rgba(36,42,66,0.16),0_8px_32px_rgba(47,111,212,0.13)] border-2 border-gradient-to-br from-[#3a4a66] to-[#6aa8f0] outline outline-2 outline-[#22304a] after:content-[''] after:absolute after:-top-[50px] after:-right-[50px] after:w-[180px] after:h-[180px] after:rounded-full after:bg-[#2f6fd41f] after:pointer-events-none">
             <div className="relative z-10">
               <div className="text-[10px] font-bold uppercase tracking-[0.12em] text-white/40 mb-1.5">
                 Next roadmap step
@@ -410,10 +410,10 @@ export function DashboardView({
                     <div
                       key={stage.chapter_key || stage.id}
                       onClick={() => !isLocked && onSelectChapter(originalIdx)}
-                      className={`bg-white border-[1.5px] rounded-[14px] p-4 transition-all flex flex-col gap-3 min-h-[110px] ${
+                      className={`bg-white border-2 border-gradient-to-br from-[#3a4a66] to-[#6aa8f0] rounded-[20px] p-5 transition-all flex flex-col gap-3 min-h-[110px] shadow-[0_20px_64px_rgba(36,42,66,0.16),0_8px_32px_rgba(47,111,212,0.13)] outline outline-1 outline-[#22304a] ${
                         isLocked ? "opacity-50 cursor-default border-[#d0e4f7]" : 
-                        isDone ? "border-[#a8d9be] cursor-pointer hover:border-[#b8d4f0] hover:shadow-sm" : 
-                        isActive ? "border-primary bg-primary/8 cursor-pointer" : "border-[#d0e4f7] cursor-pointer hover:border-[#b8d4f0] hover:shadow-sm"
+                        isDone ? "border-[#a8d9be] cursor-pointer hover:border-[#b8d4f0]" : 
+                        isActive ? "border-primary bg-primary/10 cursor-pointer" : "border-[#d0e4f7] cursor-pointer hover:border-[#b8d4f0]"
                       }`}
                     >
                       <div>
@@ -434,7 +434,7 @@ export function DashboardView({
             </div>
 
             {/* Accordions */}
-            <div className="bg-white/80 border-[1.5px] border-[#d0e4f7] rounded-3xl overflow-hidden shadow-[0_8px_32px_rgba(44,62,80,0.13),0_1.5px_6px_rgba(47,111,212,0.07)] backdrop-blur-lg">
+            <div className="bg-white border-2 border-gradient-to-br from-[#3a4a66] to-[#6aa8f0] rounded-3xl overflow-hidden shadow-[0_20px_64px_rgba(36,42,66,0.16),0_8px_32px_rgba(47,111,212,0.13)] outline outline-1 outline-[#22304a]">
               {/* Case Details */}
               <div className="border-t first:border-t-0 border-[#d0e4f7]">
                 <div
@@ -519,10 +519,10 @@ export function DashboardView({
                         return (
                           <div
                             key={i}
-                            className={`flex items-center gap-3 py-2 px-2 rounded-xl border-b border-[#d0e4f7]/40 last:border-0 transition-all backdrop-blur-[2px] ${
+                            className={`flex items-center gap-3 py-2 px-2 rounded-xl border-b border-gradient-to-r from-[#3a4a66] to-[#6aa8f0] last:border-0 transition-all shadow-[0_8px_32px_rgba(36,42,66,0.13)] outline outline-1 outline-[#22304a] ${
                               isDone
-                                ? "bg-[#e8f5ef]/70 shadow-[0_2px_8px_rgba(21,116,79,0.07)]"
-                                : "bg-white/60"
+                                ? "bg-[#e8f5ef] border-l-4 border-[#a8d9be]"
+                                : "bg-white border-l-4 border-[#d0e4f7]"
                             }`}
                           >
                             <div
@@ -566,7 +566,7 @@ export function DashboardView({
               {alerts.length > 0 && (
                 <div className="flex flex-col gap-2 animate-in fade-in slide-in-from-right-4 duration-500">
                   {alerts.map((alert, i) => (
-                    <div key={i} className={`flex gap-2.5 items-start p-3 rounded-[10px] border shadow-xs ${alert.type === "gold" ? "bg-[#fffbeb] border-[#fde68a] text-[#b38600]" : alert.type === "sky" ? "bg-primary/5 border-[#d0e4f7] text-primary" : alert.type === "amber" ? "bg-[#fef8e8] border-[#f0d98a] text-[#8a6200]" : "bg-[#e8f5ef] border-[#a8d9be] text-[#15744f]"}`}>
+                    <div key={i} className={`flex gap-2.5 items-start p-3 rounded-[16px] border-2 border-gradient-to-br from-[#3a4a66] to-[#6aa8f0] shadow-[0_20px_64px_rgba(36,42,66,0.16),0_8px_32px_rgba(47,111,212,0.13)] outline outline-1 outline-[#22304a] ${alert.type === "gold" ? "bg-[#fffbeb] border-[#fde68a] text-[#b38600]" : alert.type === "sky" ? "bg-[#e3f0fa] border-[#6aa8f0] text-[#1e3a5c]" : alert.type === "amber" ? "bg-[#fef8e8] border-[#f0d98a] text-[#8a6200]" : "bg-[#e8f5ef] border-[#a8d9be] text-[#15744f]"}`}>
                       <div className={`w-1.5 h-1.5 rounded-full mt-1.5 shrink-0 ${alert.type === "gold" ? "bg-[#b38600]" : alert.type === "sky" ? "bg-primary" : alert.type === "amber" ? "bg-[#8a6200]" : "bg-[#15744f]"}`} />
                       <div className="flex-1 flex flex-col gap-1.5">
                         <div className="text-[12px] leading-relaxed"><span className="font-bold">{alert.title}: </span><span className="opacity-80">{alert.text}</span></div>
@@ -612,10 +612,10 @@ export function DashboardView({
                     <div className="bg-[#0f1f38] rounded-[22px] border border-[#2f6fd4]/30 p-6 text-white mb-4 relative overflow-hidden">
                       <div className="absolute -top-10 -right-10 w-40 h-40 bg-primary/10 rounded-full blur-[80px] pointer-events-none" />
                       <div className="relative z-10">
-                        <div className="inline-flex items-center gap-2 px-3 py-1 bg-white/10 rounded-full border border-white/10 text-[10px] font-black uppercase tracking-[0.15em] text-[#6aa8f0] mb-4">Interview Queue ({postLabel})</div>
+                        <div className="inline-flex items-center gap-2 px-3 py-1 bg-white rounded-full border border-[#d0e4f7] text-[10px] font-black uppercase tracking-[0.15em] text-[#6aa8f0] mb-4">Interview Queue ({postLabel})</div>
                         <h3 className="text-[18px] font-black mb-2">In Queue — Awaiting Estimate</h3>
                         <p className="text-[12.5px] text-slate-400 leading-relaxed mb-4 max-w-md">Your DQ date is recorded. To see your estimated interview window, go to <b>Chapter 2 → Step 11</b> and sync the official embassy scheduling month.</p>
-                        <div className="bg-white/5 rounded-xl p-3 border border-white/10 flex items-center justify-between">
+                        <div className="bg-white rounded-xl p-3 border border-[#d0e4f7] flex items-center justify-between">
                           <span className="text-[12px] font-bold">DQ Date: {dqDateObj.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}</span>
                           <span className="text-[10px] text-[#34d399] font-black uppercase">{daysSinceDq} DAYS AGO</span>
                         </div>
@@ -644,12 +644,12 @@ export function DashboardView({
                       </div>
                     </div>
                     <div className="flex flex-col gap-4 mb-6">
-                      <div className="bg-white/5 rounded-2xl p-4 border border-white/5">
+                      <div className="bg-white rounded-2xl p-4 border border-[#d0e4f7]">
                         <div className="text-[10px] uppercase tracking-widest text-[#6b8097] mb-2 font-black">Your DQ Date</div>
                         <div className="text-[18px] font-bold">{dqDateObj.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}</div>
                         <div className="text-[11px] text-[#34d399] mt-1 font-bold uppercase">{daysSinceDq} Days Ago</div>
                       </div>
-                      <div className="bg-white/5 rounded-2xl p-4 border border-white/5 flex flex-col justify-between">
+                      <div className="bg-white rounded-2xl p-4 border border-[#d0e4f7] flex flex-col justify-between">
                         <div>
                           <div className="text-[10px] uppercase tracking-widest text-[#6b8097] mb-1 font-black leading-tight">Embassy is currently scheduling cases DQ'd in</div>
                           <div className="text-[18px] font-bold text-[#6aa8f0] mt-1">{embassyMonthStr}</div>
@@ -664,7 +664,7 @@ export function DashboardView({
                         <div className="text-[10px] text-amber-500/60 mt-1 font-medium">Subject to visa availability</div>
                       </div>
                     </div>
-                    <div className="bg-white/5 border border-white/10 rounded-2xl p-4 relative">
+                    <div className="bg-white border border-[#d0e4f7] rounded-2xl p-4 relative">
                       <div className="flex items-start gap-4">
                         <div className="w-8 h-8 rounded-xl bg-primary/20 flex items-center justify-center shrink-0 border border-primary/20"><Shield className="text-primary" size={16} /></div>
                         <div>
