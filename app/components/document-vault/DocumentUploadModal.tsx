@@ -300,9 +300,7 @@ export function DocumentUploadModal({
                       <Upload className="w-6 h-6" />
                     </div>
                     <p className="font-bold text-[#0c1b33] mb-1">
-                      {t(
-                        "documentVaultPage.components.uploadModal.clickToSelect",
-                      )}
+                      Click to Upload or Drag and Drop
                     </p>
                     <p className="text-xs text-[#6b8097]">
                       {t(

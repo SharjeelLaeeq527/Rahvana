@@ -3693,10 +3693,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-[14px] mb-[14px]">
                 {/* Official Card - IV Tool Auto-Sync */}
                 {(() => {
-                  const [ivLoading, setIvLoading] = React.useState(false);
-                  const [ivError, setIvError] = React.useState<string | null>(
-                    null,
-                  );
+                  // Using ivLoading and ivError from component state (not creating duplicate hooks)
                   const savedMonth = state.metadata
                     ?.currentSchedulingMonthYear as string | undefined;
                   const savedUpdated = state.metadata
@@ -7459,10 +7456,10 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                                 (currentTutStep as TutorialStepData).screenTitle
                               }
                               fill
-                              className="object-contain"
+                              className="object-cover"
                               sizes="(max-width: 640px) 95vw, (max-width: 1024px) 90vw, 1000px"
                               quality={95}
-                              style={{ objectFit: "contain" }}
+                              style={{ objectFit: "cover" }}
                               priority={tutorialIdx === 0}
                             />
                           )
@@ -7486,10 +7483,10 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                               (currentTutStep as TutorialStepData).screenTitle
                             }
                             fill
-                            className="object-contain"
+                            className="object-cover"
                             sizes="(max-width: 640px) 95vw, (max-width: 1024px) 90vw, 1000px"
                             quality={95}
-                            style={{ objectFit: "contain" }}
+                            style={{ objectFit: "cover" }}
                             priority={tutorialIdx === 0}
                           />
                         ) : (
@@ -7641,10 +7638,10 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                                 ).screenTitle
                               }
                               fill
-                              className="object-contain"
+                              className="object-cover"
                               sizes="(max-width: 640px) 95vw, (max-width: 1024px) 90vw, 1000px"
                               quality={95}
-                              style={{ objectFit: "contain" }}
+                              style={{ objectFit: "cover" }}
                               priority
                             />
                           ) : (
