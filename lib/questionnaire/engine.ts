@@ -1,6 +1,5 @@
 // ============================================================================
 // Document Questionnaire Decision Engine
-// Pure logic — no React, no side effects. Takes config + answers → documents.
 // ============================================================================
 
 import type {
@@ -156,4 +155,51 @@ export function getProgress(
   if (visible.length === 0) return 0;
   const answered = visible.filter((q) => !!answers[q.id]).length;
   return Math.round((answered / visible.length) * 100);
+}
+
+// ============================================================================
+// Step 1 → Step 2 Answer Derivation
+// Maps eligibility quest answers to document questionnaire answer keys
+// so duplicate questions can be skipped.
+// ============================================================================
+
+/**
+ * Eligibility answers shape from QuestRenderer:
+ * state.answers["eligibility-suite"] → { [questId]: { [screenId]: value } }
+ *
+ * Relevant screens:
+ *   q3 → q3s1 (prior marriage history): "none" | "petitioner" | "beneficiary" | "both" | "unsure"
+ *   q5 → q5s2 (criminal history):       "no" | "yes" | "unsure"
+ */
+type EligibilityAnswers = Record<string, Record<string, string | string[]>>;
+
+export function deriveDocAnswersFromEligibility(
+  eligibilityAnswers: EligibilityAnswers | undefined,
+): QuestionnaireAnswers {
+  const derived: QuestionnaireAnswers = {};
+  if (!eligibilityAnswers) return derived;
+
+  // ── Prior marriage (q3 → q3s1) ──────────────────────────────────
+  const q3Answers = eligibilityAnswers["q3"];
+  const q3s1 = q3Answers?.["q3s1"] as string | undefined;
+
+  if (q3s1 && q3s1 !== "unsure") {
+    // Petitioner had a prior marriage?
+    derived["prior_marriage_petitioner"] =
+      q3s1 === "petitioner" || q3s1 === "both" ? "yes" : "no";
+
+    // Beneficiary had a prior marriage?
+    derived["prior_marriage_beneficiary"] =
+      q3s1 === "beneficiary" || q3s1 === "both" ? "yes" : "no";
+  }
+
+  // ── Criminal history (q5 → q5s2) ────────────────────────────────
+  const q5Answers = eligibilityAnswers["q5"];
+  const q5s2 = q5Answers?.["q5s2"] as string | undefined;
+
+  if (q5s2 && q5s2 !== "unsure") {
+    derived["criminal_history"] = q5s2 === "yes" ? "yes" : "no";
+  }
+
+  return derived;
 }

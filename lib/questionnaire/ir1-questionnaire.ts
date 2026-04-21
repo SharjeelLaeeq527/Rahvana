@@ -16,23 +16,25 @@ export const IR1_QUESTIONNAIRE_CONFIG: QuestionnaireConfig = {
   // ──────────────────────────────────────────────────────────────────
   questions: [
     // Q1 — Petitioner prior marriage
-    {
-      id: "prior_marriage_petitioner",
-      question:
-        "Was the petitioner (U.S. citizen spouse) previously married before the current marriage?",
-      helper:
-        "If the petitioner was married before, proof of how that marriage ended is legally required by USCIS.",
-      options: [
-        {
-          label: "Yes — the petitioner was previously married",
-          value: "yes",
-        },
-        {
-          label: "No — this is the petitioner's first marriage",
-          value: "no",
-        },
-      ],
-    },
+    // ⚡ DERIVED FROM STEP 1 (q3 → q3s1) — not shown to user.
+    //    Answer is auto-populated by deriveDocAnswersFromEligibility().
+    // {
+    //   id: "prior_marriage_petitioner",
+    //   question:
+    //     "Was the petitioner (U.S. citizen spouse) previously married before the current marriage?",
+    //   helper:
+    //     "If the petitioner was married before, proof of how that marriage ended is legally required by USCIS.",
+    //   options: [
+    //     {
+    //       label: "Yes — the petitioner was previously married",
+    //       value: "yes",
+    //     },
+    //     {
+    //       label: "No — this is the petitioner's first marriage",
+    //       value: "no",
+    //     },
+    //   ],
+    // },
 
     // Q2 — How petitioner's prior marriage ended (conditional on Q1=yes)
     {
@@ -56,23 +58,25 @@ export const IR1_QUESTIONNAIRE_CONFIG: QuestionnaireConfig = {
     },
 
     // Q3 — Beneficiary prior marriage
-    {
-      id: "prior_marriage_beneficiary",
-      question:
-        "Was the beneficiary (Pakistani spouse) previously married before the current marriage?",
-      helper:
-        "If the beneficiary had a prior marriage, proof of termination is required for visa processing.",
-      options: [
-        {
-          label: "Yes — the beneficiary was previously married",
-          value: "yes",
-        },
-        {
-          label: "No — this is the beneficiary's first marriage",
-          value: "no",
-        },
-      ],
-    },
+    // ⚡ DERIVED FROM STEP 1 (q3 → q3s1) — not shown to user.
+    //    Answer is auto-populated by deriveDocAnswersFromEligibility().
+    // {
+    //   id: "prior_marriage_beneficiary",
+    //   question:
+    //     "Was the beneficiary (Pakistani spouse) previously married before the current marriage?",
+    //   helper:
+    //     "If the beneficiary had a prior marriage, proof of termination is required for visa processing.",
+    //   options: [
+    //     {
+    //       label: "Yes — the beneficiary was previously married",
+    //       value: "yes",
+    //     },
+    //     {
+    //       label: "No — this is the beneficiary's first marriage",
+    //       value: "no",
+    //     },
+    //   ],
+    // },
 
     // Q4 — How beneficiary's prior marriage ended (conditional on Q3=yes)
     {
@@ -134,29 +138,29 @@ export const IR1_QUESTIONNAIRE_CONFIG: QuestionnaireConfig = {
     },
 
     // Q7 — Joint sponsor
-    {
-      id: "joint_sponsor",
-      question:
-        "Will a joint sponsor be used for the Affidavit of Support (Form I-864)?",
-      helper:
-        "A joint sponsor is needed if the petitioner's income doesn't meet the minimum threshold. Joint sponsor documents will be added to your checklist.",
-      options: [
-        {
-          label: "Yes — a joint sponsor will be used",
-          value: "yes",
-        },
-        {
-          label: "No — the petitioner meets the income requirement alone",
-          value: "no",
-        },
-        {
-          label: "Not sure yet — still figuring this out",
-          value: "unsure",
-          helper:
-            "We'll add joint sponsor documents as optional so you can prepare just in case.",
-        },
-      ],
-    },
+    // {
+    //   id: "joint_sponsor",
+    //   question:
+    //     "Will a joint sponsor be used for the Affidavit of Support (Form I-864)?",
+    //   helper:
+    //     "A joint sponsor is needed if the petitioner's income doesn't meet the minimum threshold. Joint sponsor documents will be added to your checklist.",
+    //   options: [
+    //     {
+    //       label: "Yes — a joint sponsor will be used",
+    //       value: "yes",
+    //     },
+    //     {
+    //       label: "No — the petitioner meets the income requirement alone",
+    //       value: "no",
+    //     },
+    //     {
+    //       label: "Not sure yet — still figuring this out",
+    //       value: "unsure",
+    //       helper:
+    //         "We'll add joint sponsor documents as optional so you can prepare just in case.",
+    //     },
+    //   ],
+    // },
 
     // Q8 — Military service
     {
@@ -178,23 +182,27 @@ export const IR1_QUESTIONNAIRE_CONFIG: QuestionnaireConfig = {
     },
 
     // Q9 — Criminal history
-    {
-      id: "criminal_history",
-      question:
-        "Has the beneficiary ever been arrested, charged, or convicted of any crime — anywhere in the world?",
-      helper:
-        "Even minor or old matters can affect eligibility. Court/disposition records will be needed if applicable.",
-      options: [
-        {
-          label: "Yes — there is at least one arrest, charge, or conviction",
-          value: "yes",
-        },
-        {
-          label: "No — no criminal history at all",
-          value: "no",
-        },
-      ],
-    },
+    // ⚡ DERIVED FROM STEP 1 (q5 → q5s2) — not shown to user.
+    //    Answer is auto-populated by deriveDocAnswersFromEligibility().
+    //    If Step 1 answer was "unsure", this question will still be asked
+    //    (the derivation function skips unsure values).
+    // {
+    //   id: "criminal_history",
+    //   question:
+    //     "Has the beneficiary ever been arrested, charged, or convicted of any crime — anywhere in the world?",
+    //   helper:
+    //     "Even minor or old matters can affect eligibility. Court/disposition records will be needed if applicable.",
+    //   options: [
+    //     {
+    //       label: "Yes — there is at least one arrest, charge, or conviction",
+    //       value: "yes",
+    //     },
+    //     {
+    //       label: "No — no criminal history at all",
+    //       value: "no",
+    //     },
+    //   ],
+    // },
   ],
 
   // ──────────────────────────────────────────────────────────────────
@@ -204,8 +212,7 @@ export const IR1_QUESTIONNAIRE_CONFIG: QuestionnaireConfig = {
     {
       id: "doc_citizenship",
       name: "Proof of U.S. Citizenship",
-      subtitle:
-        "Establishes the petitioner's right to file for an IR-1 spouse",
+      subtitle: "Establishes the petitioner's right to file for an IR-1 spouse",
       tag: "petitioner",
       guideUrl: "/guides",
       icon: "ShieldCheck",
@@ -308,8 +315,7 @@ export const IR1_QUESTIONNAIRE_CONFIG: QuestionnaireConfig = {
         {
           id: "doc_petitioner_divorce",
           name: "Petitioner's Divorce Decree",
-          subtitle:
-            "Final divorce decree from the petitioner's prior marriage",
+          subtitle: "Final divorce decree from the petitioner's prior marriage",
           tag: "petitioner",
           guideUrl: "/guides",
           icon: "Scale",
@@ -395,8 +401,7 @@ export const IR1_QUESTIONNAIRE_CONFIG: QuestionnaireConfig = {
         {
           id: "doc_children_passports",
           name: "Children's Passport Copies",
-          subtitle:
-            "Passport biographic pages for all children under 21",
+          subtitle: "Passport biographic pages for all children under 21",
           tag: "beneficiary",
           guideUrl: "/guides",
           icon: "User",
@@ -433,8 +438,7 @@ export const IR1_QUESTIONNAIRE_CONFIG: QuestionnaireConfig = {
         {
           id: "doc_joint_i864",
           name: "Joint Sponsor's Form I-864",
-          subtitle:
-            "Completed Affidavit of Support from the joint sponsor",
+          subtitle: "Completed Affidavit of Support from the joint sponsor",
           tag: "joint_sponsor",
           guideUrl: "/guides",
           icon: "FileCheck",
@@ -444,8 +448,7 @@ export const IR1_QUESTIONNAIRE_CONFIG: QuestionnaireConfig = {
         {
           id: "doc_joint_tax_returns",
           name: "Joint Sponsor's Tax Returns (3 years)",
-          subtitle:
-            "Federal tax transcripts or returns from the joint sponsor",
+          subtitle: "Federal tax transcripts or returns from the joint sponsor",
           tag: "joint_sponsor",
           guideUrl: "/guides",
           icon: "FileText",
@@ -466,8 +469,7 @@ export const IR1_QUESTIONNAIRE_CONFIG: QuestionnaireConfig = {
         {
           id: "doc_joint_pay_stubs",
           name: "Joint Sponsor's Pay Stubs",
-          subtitle:
-            "Most recent 6 pay stubs from the joint sponsor",
+          subtitle: "Most recent 6 pay stubs from the joint sponsor",
           tag: "joint_sponsor",
           guideUrl: "/guides",
           icon: "FileText",
@@ -486,8 +488,7 @@ export const IR1_QUESTIONNAIRE_CONFIG: QuestionnaireConfig = {
         {
           id: "doc_joint_i864",
           name: "Joint Sponsor's Form I-864",
-          subtitle:
-            "Completed Affidavit of Support from the joint sponsor",
+          subtitle: "Completed Affidavit of Support from the joint sponsor",
           tag: "joint_sponsor",
           guideUrl: "/guides",
           icon: "FileCheck",
@@ -497,8 +498,7 @@ export const IR1_QUESTIONNAIRE_CONFIG: QuestionnaireConfig = {
         {
           id: "doc_joint_tax_returns",
           name: "Joint Sponsor's Tax Returns (3 years)",
-          subtitle:
-            "Federal tax transcripts or returns from the joint sponsor",
+          subtitle: "Federal tax transcripts or returns from the joint sponsor",
           tag: "joint_sponsor",
           guideUrl: "/guides",
           icon: "FileText",
@@ -519,8 +519,7 @@ export const IR1_QUESTIONNAIRE_CONFIG: QuestionnaireConfig = {
         {
           id: "doc_joint_pay_stubs",
           name: "Joint Sponsor's Pay Stubs",
-          subtitle:
-            "Most recent 6 pay stubs from the joint sponsor",
+          subtitle: "Most recent 6 pay stubs from the joint sponsor",
           tag: "joint_sponsor",
           guideUrl: "/guides",
           icon: "FileText",
