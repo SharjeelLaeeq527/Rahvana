@@ -221,6 +221,7 @@ export class DocumentDatabaseStorage {
       petitioner_name: config.petitionerName,
       beneficiary_name: config.beneficiaryName,
       joint_sponsor_name: config.jointSponsorName,
+      dynamic_documents: config.dynamicDocuments || {},
       updated_at: new Date().toISOString(),
     };
 
@@ -408,6 +409,7 @@ export class DocumentDatabaseStorage {
       petitionerName: data.petitioner_name as string | undefined,
       beneficiaryName: data.beneficiary_name as string | undefined,
       jointSponsorName: data.joint_sponsor_name as string | undefined,
+      dynamicDocuments: (data.dynamic_documents as Record<string, { id: string; name: string }[]>) || {},
     };
   }
 }

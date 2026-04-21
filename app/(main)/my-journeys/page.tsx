@@ -392,8 +392,11 @@ export default function MyJourneysPage() {
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   {journeys.map((j) => {
+                    const totalSteps = j.total_steps_count || 1; // fallback safety
+                    const completedSteps = j.completed_steps_count ?? j.completed_steps.length;
+                    
                     const progress = Math.round(
-                      (j.completed_steps.length / 42) * 100,
+                      (completedSteps / totalSteps) * 100
                     );
                     const {
                       name: journeyName,

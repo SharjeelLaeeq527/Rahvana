@@ -64,6 +64,7 @@ export async function POST(request: NextRequest) {
       petitionerName: body.petitionerName,
       beneficiaryName: body.beneficiaryName,
       jointSponsorName: body.jointSponsorName,
+      dynamicDocuments: body.dynamicDocuments || {},
     };
 
     // Validate required fields

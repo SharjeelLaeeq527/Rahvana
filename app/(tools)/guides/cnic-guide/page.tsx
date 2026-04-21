@@ -378,13 +378,13 @@ const CnicGuide = () => {
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-gray-50 pt-14">
+    <div className="min-h-screen flex flex-col bg-gray-50 pt-26">
       <WizardHeader
         onWhatsThis={() => setShowWhatsThis(true)}
         title={guideData.wizard.title}
       />
 
-      <div className="flex flex-1 overflow-y-auto xl:overflow-hidden h-[calc(100vh-56px)] flex-col xl:flex-row">
+      <div className="flex flex-1 overflow-y-auto xl:overflow-hidden h-[calc(100vh-56px)] xl:h-auto flex-col xl:flex-row">
         <WizardSidebar
           currentStep={STEP_IDS.indexOf(currentStepId)}
           steps={STEP_IDS}
@@ -397,7 +397,7 @@ const CnicGuide = () => {
           session={session}
         />
 
-        <main className="flex-1 xl:overflow-y-auto p-4 sm:p-8 relative min-h-min">
+        <main className="flex-1 xl:flex-initial xl:overflow-y-auto p-4 sm:p-8 relative flex flex-col xl:items-start items-center xl:justify-start justify-center">
           <div
             className="fixed inset-0 pointer-events-none z-0"
             style={{
@@ -407,61 +407,63 @@ const CnicGuide = () => {
             }}
           />
 
-          <div className="relative z-10 max-w-full md:max-w-3xl mx-auto">
-            <div className="bg-white rounded-2xl border border-gray-200 p-4 sm:p-8 shadow-sm min-h-100">
-              <AnimatePresence mode="wait">
-                <motion.div
-                  key={currentStepId}
-                  initial={{ opacity: 0, x: 20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: -20 }}
-                  transition={{ duration: 0.25 }}
-                >
-                  {renderStep()}
-                </motion.div>
-              </AnimatePresence>
-            </div>
+          <div className="w-full flex flex-col xl:items-start items-center min-h-[550px] xl:min-h-[550px] justify-center">
+            <div className="relative z-10 w-full max-w-full md:max-w-3xl">
+              <div className="bg-white rounded-2xl border border-gray-200 p-4 sm:p-8 shadow-sm min-h-100">
+                <AnimatePresence mode="wait">
+                  <motion.div
+                    key={currentStepId}
+                    initial={{ opacity: 0, x: 20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: -20 }}
+                    transition={{ duration: 0.25 }}
+                  >
+                    {renderStep()}
+                  </motion.div>
+                </AnimatePresence>
+              </div>
 
-            <div className="flex justify-between items-center mt-5 pb-6">
-              {currentStep > 0 ? (
-                <motion.button
-                  whileHover={{ scale: 1.03 }}
-                  whileTap={{ scale: 0.97 }}
-                  onClick={goBack}
-                  className="flex items-center gap-1.5 px-5 py-2.5 rounded-xl border border-gray-300 bg-white text-gray-700 font-semibold text-sm cursor-pointer"
-                >
-                  <ArrowLeft className="w-4 h-4" /> Back
-                </motion.button>
-              ) : (
-                <div />
-              )}
-
-              <span className="text-sm text-gray-500 font-medium">
-                Step {currentStep + 1} of {STEP_IDS.length}
-              </span>
-
-              {currentStep < STEP_IDS.length - 1 &&
-                !(
-                  currentStepId === "document_need" &&
-                  guideData.wizard.document_need.questions &&
-                  guideData.wizard.document_need.questions.length > 1
-                ) && (
+              <div className="flex justify-between items-center mt-5 pb-6">
+                {currentStep > 0 ? (
                   <motion.button
                     whileHover={{ scale: 1.03 }}
                     whileTap={{ scale: 0.97 }}
-                    onClick={goNext}
-                    disabled={!canGoNext()}
-                    className={`flex items-center gap-1.5 px-5 py-2.5 rounded-xl font-semibold text-sm cursor-pointer
+                    onClick={goBack}
+                    className="flex items-center gap-1.5 px-5 py-2.5 rounded-xl border border-gray-300 bg-white text-gray-700 font-semibold text-sm cursor-pointer"
+                  >
+                    <ArrowLeft className="w-4 h-4" /> Back
+                  </motion.button>
+                ) : (
+                  <div />
+                )}
+
+                <span className="text-sm text-gray-500 font-medium">
+                  Step {currentStep + 1} of {STEP_IDS.length}
+                </span>
+
+                {currentStep < STEP_IDS.length - 1 &&
+                  !(
+                    currentStepId === "document_need" &&
+                    guideData.wizard.document_need.questions &&
+                    guideData.wizard.document_need.questions.length > 1
+                  ) && (
+                    <motion.button
+                      whileHover={{ scale: 1.03 }}
+                      whileTap={{ scale: 0.97 }}
+                      onClick={goNext}
+                      disabled={!canGoNext()}
+                      className={`flex items-center gap-1.5 px-5 py-2.5 rounded-xl font-semibold text-sm cursor-pointer
                     ${
                       canGoNext()
                         ? "bg-linear-to-br from-teal-600 to-teal-500 text-white shadow-md"
                         : "bg-gray-200 text-gray-400 cursor-not-allowed"
                     }
                   `}
-                  >
-                    Continue <ArrowRight className="w-4 h-4" />
-                  </motion.button>
-                )}
+                    >
+                      Continue <ArrowRight className="w-4 h-4" />
+                    </motion.button>
+                  )}
+              </div>
             </div>
           </div>
         </main>

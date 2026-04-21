@@ -10,14 +10,42 @@ import {
 import { useAuth } from "@/app/context/AuthContext";
 import { useLanguage } from "@/app/context/LanguageContext";
 
-const heroImage = "/assets/images/herobg.jpg";
+const heroImage = "/assets/images/herobg.png";
 
 export function CinematicHero() {
   const [hasTransitioned, setHasTransitioned] = useState(false);
   const heroSectionRef = useRef<HTMLElement | null>(null);
   const touchStartYRef = useRef<number | null>(null);
   const { user } = useAuth();
-     const { t } = useLanguage();
+  const { t } = useLanguage();
+
+  // Track journeys state: null = loading, [] = none, [..] = has journeys
+  const [journeys, setJourneys] = useState<null | any[]>(null);
+  const [journeysLoading, setJourneysLoading] = useState(false);
+
+  useEffect(() => {
+    let ignore = false;
+    if (!user) {
+      setJourneys(null);
+      return;
+    }
+    setJourneysLoading(true);
+    fetch("/api/journeys")
+      .then(async (res) => {
+        if (!res.ok) throw new Error("Failed to fetch journeys");
+        const data = await res.json();
+        if (!ignore) setJourneys(Array.isArray(data.data) ? data.data : []);
+      })
+      .catch(() => {
+        if (!ignore) setJourneys([]);
+      })
+      .finally(() => {
+        if (!ignore) setJourneysLoading(false);
+      });
+    return () => {
+      ignore = true;
+    };
+  }, [user]);
 
   useEffect(() => {
     const shouldIgnore = (target: EventTarget | null) => {
@@ -223,31 +251,43 @@ export function CinematicHero() {
                   </p>
 
                   <div className="flex w-full flex-row flex-wrap items-center justify-center gap-3 pt-0 sm:justify-start sm:pt-0 md:pt-1">
-                    {user && (
+                    {/* CTA Button Logic */}
+                    {(!user || journeysLoading) && (
                       <Link
-                        href="/my-journeys"
+                        href="/visa-category/ir-category/ir1-journey"
                         className="group inline-flex w-fit whitespace-nowrap items-center justify-center gap-2 rounded-full border-2 bg-transparent px-5 py-2.5 text-[12px] font-bold uppercase tracking-wider transition-all duration-200 ease-out hover:-translate-y-0.5 sm:px-6 sm:py-3 sm:text-[13px]"
                         style={{ borderColor: "#cfa3b9", color: "#a96583", boxShadow: "0 8px 14px -18px rgba(169, 101, 131, 0.22)" }}
                       >
-                        {t("homePage.resumeJourney")}
-                        <span className="flex h-5 w-5 flex-none items-center justify-center rounded-full transition-transform duration-200 ease-out group-hover:translate-x-0.5 sm:h-6 sm:w-6"
-                              style={{ color: "#a96583" }}>
+                        {"Start your journey"}
+                        <span className="flex h-5 w-5 flex-none items-center justify-center rounded-full transition-transform duration-200 ease-out group-hover:translate-x-0.5 sm:h-6 sm:w-6" style={{ color: "#a96583" }}>
                           <ArrowRight className="h-3.5 w-3.5 stroke-[3]" />
                         </span>
                       </Link>
                     )}
-
-                    <Link
-                      href="/visa-category/ir-category"
-                      className="group inline-flex w-fit whitespace-nowrap items-center justify-center gap-2 rounded-full px-5 py-2.5 text-[12px] font-bold uppercase tracking-wider text-white shadow-lg transition-all duration-200 ease-out hover:-translate-y-0.5 sm:px-6 sm:py-3 sm:text-[13px]"
-                      style={{ backgroundColor: "#c984a2", boxShadow: "0 10px 18px -18px rgba(201, 132, 162, 0.28)" }}
-                    >
-                      {t("homePage.exploreJourneys")}
-                      <span className="flex h-5 w-5 flex-none items-center justify-center rounded-full bg-white transition-transform group-hover:scale-110 sm:h-6 sm:w-6"
-                            style={{ color: "#c984a2" }}>
-                        <ArrowUpRight className="h-3.5 w-3.5 stroke-[3]" />
-                      </span>
-                    </Link>
+                    {user && journeys && journeys.length > 0 && (
+                      <Link
+                        href={"/dashboard"}
+                        className="group inline-flex w-fit whitespace-nowrap items-center justify-center gap-2 rounded-full border-2 bg-transparent px-5 py-2.5 text-[12px] font-bold uppercase tracking-wider transition-all duration-200 ease-out hover:-translate-y-0.5 sm:px-6 sm:py-3 sm:text-[13px]"
+                        style={{ borderColor: "#cfa3b9", color: "#a96583", boxShadow: "0 8px 14px -18px rgba(169, 101, 131, 0.22)" }}
+                      >
+                        {t("homePage.resumeJourney") || "Resume my journey"}
+                        <span className="flex h-5 w-5 flex-none items-center justify-center rounded-full transition-transform duration-200 ease-out group-hover:translate-x-0.5 sm:h-6 sm:w-6" style={{ color: "#a96583" }}>
+                          <ArrowRight className="h-3.5 w-3.5 stroke-[3]" />
+                        </span>
+                      </Link>
+                    )}
+                    {user && journeys && journeys.length === 0 && !journeysLoading && (
+                      <Link
+                        href="/visa-category/ir-category/ir1-journey"
+                        className="group inline-flex w-fit whitespace-nowrap items-center justify-center gap-2 rounded-full border-2 bg-transparent px-5 py-2.5 text-[12px] font-bold uppercase tracking-wider transition-all duration-200 ease-out hover:-translate-y-0.5 sm:px-6 sm:py-3 sm:text-[13px]"
+                        style={{ borderColor: "#cfa3b9", color: "#a96583", boxShadow: "0 8px 14px -18px rgba(169, 101, 131, 0.22)" }}
+                      >
+                        {"Start my journey"}
+                        <span className="flex h-5 w-5 flex-none items-center justify-center rounded-full transition-transform duration-200 ease-out group-hover:translate-x-0.5 sm:h-6 sm:w-6" style={{ color: "#a96583" }}>
+                          <ArrowRight className="h-3.5 w-3.5 stroke-[3]" />
+                        </span>
+                      </Link>
+                    )}
                   </div>
                 </motion.div>
               )}

@@ -3,7 +3,6 @@
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import {
-  Sparkles,
   ArrowRight,
   FileText,
   Compass,
@@ -32,6 +31,7 @@ const UserDashboard = () => {
   const router = useRouter();
 
   const [analytics, setAnalytics] = useState<Analytics | null>(null);
+  const [journeyType, setJourneyType] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
   const { profile } = useAuth();
@@ -52,7 +52,31 @@ const UserDashboard = () => {
       }
     };
 
+    const fetchJourneyType = async () => {
+      try {
+        const journeyTypeValue = "IR1"; 
+  
+        const res = await fetch(
+          `/api/journeys?journey_type=${encodeURIComponent(journeyTypeValue)}`
+        );
+  
+        if (!res.ok) throw new Error("Failed to fetch journeys");
+  
+        const data = await res.json();
+        console.log(data);
+  
+        // Extract just the journey type string, not the entire object
+        setJourneyType(journeyTypeValue);
+  
+      } catch (error) {
+        console.error(error);
+      } finally {
+        setLoading(false);
+      }
+    };
+  
     fetchAnalytics();
+    fetchJourneyType();
   }, []);
 
   if (loading) {
@@ -74,10 +98,11 @@ const UserDashboard = () => {
       ),
       status: "live" as const,
       count: analytics?.journeys.total || 0,
+      journeyType: journeyType,
       countLabel: "journeys created",
       description:
-        "Track your immigration journeys, progress through steps, and manage your case preparation.",
-      href: "/my-journeys",
+        "Track your IR-1 journey, progress through steps, and manage your case preparation.",
+      href: "/visa-category/ir-category/ir-1",
     },
     {
       title: "My Guides",
@@ -189,6 +214,7 @@ const UserDashboard = () => {
                     title={service.title}
                     icon={service.icon}
                     status={service.status}
+                    type={service.journeyType}
                     count={service.count}
                     countLabel={service.countLabel}
                     description={service.description}

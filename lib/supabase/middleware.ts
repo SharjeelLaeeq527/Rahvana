@@ -97,8 +97,13 @@ export async function updateSession(request: NextRequest) {
   // =============================
   // Admin Route Protection
   // =============================
-  if (isAdminRoute) {
+  const isApiAdminRoute = pathname.startsWith("/api/admin");
+
+  if (isAdminRoute || isApiAdminRoute) {
     if (!user) {
+      if (isApiAdminRoute) {
+        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      }
       const url = request.nextUrl.clone();
       url.pathname = "/admin-login";
       url.searchParams.set("redirectTo", request.nextUrl.pathname + request.nextUrl.search);
@@ -111,7 +116,12 @@ export async function updateSession(request: NextRequest) {
       .eq("id", user.id)
       .single();
 
-    if (!profile || !ADMIN_EMAILS.includes(profile.email) || profile.role !== 'admin') {
+    const isAuthorizedAdmin = profile && ADMIN_EMAILS.includes(profile.email) && profile.role === 'admin';
+
+    if (!isAuthorizedAdmin) {
+      if (isApiAdminRoute) {
+        return NextResponse.json({ error: "Forbidden: Admin access required" }, { status: 403 });
+      }
       const url = request.nextUrl.clone();
       url.pathname = "/";
       return NextResponse.redirect(url);

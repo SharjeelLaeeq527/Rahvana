@@ -6,8 +6,10 @@ import { useLanguage } from "@/app/context/LanguageContext";
 import { useRouter } from "next/navigation";
 import { useDocumentVaultStore } from "@/lib/document-vault/store";
 import {
-  getDocumentsByCategory,
   getCategoryDisplayName,
+  DYNAMIC_CATEGORIES,
+  CATEGORY_SUGGESTIONS,
+  getDocumentsByCategory,
 } from "@/lib/document-vault/personalization-engine";
 import { ALL_DOCUMENTS } from "@/lib/document-vault/document-definitions";
 import type { UploadedDocument } from "@/lib/document-vault/types";
@@ -52,6 +54,13 @@ import { Loader } from "@/components/ui/spinner";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { ConfirmationModal } from "@/app/components/shared/ConfirmationModal";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { Plus, Info } from "lucide-react";
 
 export default function DocumentVaultPage() {
   const { user, isLoading: authLoading } = useAuth();
@@ -72,7 +81,10 @@ export default function DocumentVaultPage() {
     closeWizard,
     refreshDocumentStatuses,
     refreshNotifications,
+    reloadDocuments,
     notifications,
+    addDynamicSlot,
+    renameDynamicSlot,
   } = useDocumentVaultStore();
 
   const [showConfigWizard, setShowConfigWizard] = useState(false);
@@ -90,7 +102,8 @@ export default function DocumentVaultPage() {
   // Filter documents based on search query
   const filteredDocumentsByCategory = useMemo(() => {
     if (!config) return {};
-    const baseDocs = getDocumentsByCategory(config, true);
+    const uploadedIds = uploadedDocuments.map(d => d.documentDefId);
+    const baseDocs = getDocumentsByCategory(config, true, uploadedIds);
     if (!searchQuery.trim()) return baseDocs;
 
     const query = searchQuery.toLowerCase();
@@ -148,8 +161,11 @@ export default function DocumentVaultPage() {
     };
   }, [uploadedDocuments, requiredDocuments]);
   const documentsByCategory = useMemo(
-    () => (config ? getDocumentsByCategory(config, true) : {}),
-    [config],
+    () => {
+      const uploadedIds = uploadedDocuments.map(d => d.documentDefId);
+      return config ? getDocumentsByCategory(config, true, uploadedIds) : {};
+    },
+    [config, uploadedDocuments],
   );
 
   // Get documents for special filters (required/optional)
@@ -164,6 +180,17 @@ export default function DocumentVaultPage() {
   const flatFilteredDocuments = useMemo(() => {
     return Object.values(filteredDocumentsByCategory).flat();
   }, [filteredDocumentsByCategory]);
+
+  const selectedDoc = useMemo(() => {
+    if (!selectedDocumentDefId) return undefined;
+    
+    // First check master static list
+    const staticDoc = ALL_DOCUMENTS.find((d) => d.id === selectedDocumentDefId);
+    if (staticDoc) return staticDoc;
+    
+    // Then check dynamic required documents from store
+    return requiredDocuments.find((d) => d.id === selectedDocumentDefId);
+  }, [selectedDocumentDefId, requiredDocuments]);
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -241,9 +268,6 @@ export default function DocumentVaultPage() {
     );
   }
 
-  const selectedDoc = selectedDocumentDefId
-    ? ALL_DOCUMENTS.find((d) => d.id === selectedDocumentDefId)
-    : undefined;
 
   const handleDownload = async (documentId: string) => {
     try {
@@ -443,7 +467,8 @@ export default function DocumentVaultPage() {
   };
 
   return (
-    <div className="bg-slate-50/50 dark:bg-slate-950/50">
+    <TooltipProvider>
+      <div className="bg-slate-50/50 dark:bg-slate-950/50">
       {/* Top Professional Header */}
       <div className="bg-white dark:bg-slate-900 border-b shadow-sm sticky top-0 z-30">
         <div className="site-main-px py-4">
@@ -704,9 +729,38 @@ export default function DocumentVaultPage() {
                       variant="outline"
                       className="font-bold text-primary border-primary/20 bg-primary/5"
                     >
-                      {t("documentVaultPage.page.searchPrefix")}
-                      {searchQuery}
+                      {t("documentVaultPage.page.foundPrefix")}{" "}
+                      {flatFilteredDocuments.length}{" "}
+                      {t("documentVaultPage.page.matchingDocuments")}
                     </Badge>
+                  )}
+                  {DYNAMIC_CATEGORIES.includes(activeTab) && (
+                    <div className="flex items-center gap-2">
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-slate-400 hover:text-primary">
+                            <Info className="w-4 h-4" />
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent side="right" className="max-w-xs p-3">
+                          <p className="font-bold mb-2">Suggested Documents:</p>
+                          <ul className="list-disc pl-4 space-y-1 text-xs">
+                            {CATEGORY_SUGGESTIONS[activeTab]?.map((suggestion, i) => (
+                              <li key={i}>{suggestion}</li>
+                            ))}
+                          </ul>
+                        </TooltipContent>
+                      </Tooltip>
+                      <Button 
+                        size="sm" 
+                        variant="ghost" 
+                        onClick={() => addDynamicSlot(activeTab)}
+                        className="h-8 px-2 gap-1 text-primary hover:bg-primary/10 font-bold"
+                      >
+                        <Plus className="w-4 h-4" />
+                        Add New
+                      </Button>
+                    </div>
                   )}
                 </h2>
               </div>
@@ -767,6 +821,7 @@ export default function DocumentVaultPage() {
                                       : undefined
                                   }
                                   onOpenWizard={() => openWizard(doc.id)}
+                                  onRename={(newName) => renameDynamicSlot(doc.category, doc.id, newName)}
                                 />
                               );
                             })}
@@ -781,6 +836,7 @@ export default function DocumentVaultPage() {
                             onDelete={handleDelete}
                             onExport={handleExportSingle}
                             onOpenWizard={openWizard}
+                            onRename={renameDynamicSlot}
                           />
                         )
                       ) : (
@@ -811,10 +867,38 @@ export default function DocumentVaultPage() {
                         <div key={category} className="space-y-4">
                           <div className="flex items-center gap-3">
                             <div className="h-1 w-8 sm:w-12 bg-primary rounded-full shrink-0"></div>
-                            <h3 className="text-xs sm:text-sm font-black uppercase tracking-widest text-slate-400">
-                              {getCategoryDisplayName(category, t)}
-                            </h3>
-                          </div>
+                             <h3 className="text-xs sm:text-sm font-black uppercase tracking-widest text-slate-400">
+                               {getCategoryDisplayName(category, t)}
+                             </h3>
+                             {DYNAMIC_CATEGORIES.includes(category) && (
+                               <div className="flex items-center gap-2">
+                                 <Tooltip>
+                                   <TooltipTrigger asChild>
+                                     <Button variant="ghost" size="sm" className="h-6 w-6 p-0 text-slate-400 hover:text-primary">
+                                       <Info className="w-3.5 h-3.5" />
+                                     </Button>
+                                   </TooltipTrigger>
+                                   <TooltipContent side="right" className="max-w-xs p-3">
+                                     <p className="font-bold mb-2 text-[11px]">Suggested Documents:</p>
+                                     <ul className="list-disc pl-4 space-y-1 text-[10px]">
+                                       {CATEGORY_SUGGESTIONS[category]?.map((suggestion, i) => (
+                                         <li key={i}>{suggestion}</li>
+                                       ))}
+                                     </ul>
+                                   </TooltipContent>
+                                 </Tooltip>
+                                 <Button 
+                                   size="sm" 
+                                   variant="ghost" 
+                                   onClick={() => addDynamicSlot(category)}
+                                   className="h-7 px-2 gap-1 text-primary hover:bg-primary/10 font-bold text-[10px]"
+                                 >
+                                   <Plus className="w-3.5 h-3.5" />
+                                   Add
+                                 </Button>
+                               </div>
+                             )}
+                           </div>
 
                           {viewMode === "grid" ? (
                             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-5">
@@ -854,6 +938,7 @@ export default function DocumentVaultPage() {
                                         : undefined
                                     }
                                     onOpenWizard={() => openWizard(doc.id)}
+                                    onRename={(newName) => renameDynamicSlot(doc.category, doc.id, newName)}
                                   />
                                 );
                               })}
@@ -868,6 +953,7 @@ export default function DocumentVaultPage() {
                               onDelete={handleDelete}
                               onExport={handleExportSingle}
                               onOpenWizard={openWizard}
+                              onRename={renameDynamicSlot}
                             />
                           )}
                         </div>
@@ -916,6 +1002,7 @@ export default function DocumentVaultPage() {
                                     : undefined
                                 }
                                 onOpenWizard={() => openWizard(doc.id)}
+                                onRename={(newName) => renameDynamicSlot(doc.category, doc.id, newName)}
                               />
                             );
                           })}
@@ -934,6 +1021,7 @@ export default function DocumentVaultPage() {
                           onDelete={handleDelete}
                           onExport={handleExportSingle}
                           onOpenWizard={openWizard}
+                          onRename={renameDynamicSlot}
                         />
                       )}
                     </div>
@@ -978,6 +1066,7 @@ export default function DocumentVaultPage() {
                                     : undefined
                                 }
                                 onOpenWizard={() => openWizard(doc.id)}
+                                onRename={(newName) => renameDynamicSlot(doc.category, doc.id, newName)}
                               />
                             );
                           })}
@@ -992,6 +1081,7 @@ export default function DocumentVaultPage() {
                           onDelete={handleDelete}
                           onExport={handleExportSingle}
                           onOpenWizard={openWizard}
+                          onRename={renameDynamicSlot}
                         />
                       )}
                     </div>
@@ -1011,9 +1101,9 @@ export default function DocumentVaultPage() {
             onClose={closeUploadModal}
             documentDef={selectedDoc}
             onUploadComplete={async () => {
-              if (user) {
-                await initialize(user.id, t);
-              }
+              // Reload documents in the store instantly — no full re-init needed
+              await reloadDocuments();
+              refreshNotifications(t);
             }}
           />
 
@@ -1038,7 +1128,8 @@ export default function DocumentVaultPage() {
           }}
           documentDef={
             selectedDoc ||
-            ALL_DOCUMENTS.find((d) => d.id === previewDoc.documentDefId)!
+            ALL_DOCUMENTS.find((d) => d.id === previewDoc.documentDefId) ||
+            requiredDocuments.find((d) => d.id === previewDoc.documentDefId)!
           }
           uploadedDoc={previewDoc}
         />
@@ -1059,5 +1150,6 @@ export default function DocumentVaultPage() {
         onConfirm={confirmDelete}
       />
     </div>
+    </TooltipProvider>
   );
 }

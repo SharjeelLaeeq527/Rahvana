@@ -1,32 +1,133 @@
-/* Thick, classic-style scrollbar for welcome modals */
-.welcome-thick-scrollbar::-webkit-scrollbar {
-  width: 16px;
-  background: #f8f8f8;
+/* Universal background for all guides */
+.guide-bg {
+  background-image: url('/assets/images/guides-bg.png');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+}
+.step-modal.ch3step-bg {
+  position: relative;
+  z-index: 0;
+}
+.step-modal.ch3step-bg::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background-image: url('/assets/images/ch3steps-bg.png');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+  opacity: 0.6;
+}
+/* Toned down Chapter 1 Step Background */
+
+.ch1step-bg {
+  position: relative;
+  z-index: 0;
+}
+.ch1step-bg::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background-image: url('/assets/images/ch1steps-bg.png');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+  opacity: 0.6;
+}
+.ch2step-bg {
+  position: relative;
+  z-index: 0;
+}
+.ch2step-bg::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background-image: url('/assets/images/ch2steps-bg.png');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+  opacity: 0.6;
+}
+.ch3step-bg {
+  position: relative;
+  z-index: 0;
+}
+.ch3step-bg::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background-image: url('/assets/images/ch3steps-bg.png');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+  opacity: 0.6;
+}
+/* Nicer purple for Chapter 2 background */
+.chapter2-bg {
+  position: relative;
+  z-index: 0;
+}
+.chapter2-bg::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: url('/assets/images/chapter-2-bg.png') center/cover no-repeat fixed;
+  opacity: 0.6;
 }
 
- .welcome-thick-scrollbar::-webkit-scrollbar-thumb {
-  background: #888;
-  border-radius: 8px;
-  min-height: 16px;
-  border: 3px solid #f8f8f8;
+/* Accent colors for headings, progress, etc. */
+.accent-rose {
+  color: #c0596a;
+}
+.accent-brown {
+  color: #28151c;
 }
 
-.welcome-thick-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: #666;
+.accent-rose-bg {
+  background-color: #ac636f;
+}
+.accent-brown-bg {
+  background-color: #28151c;
 }
 
-.welcome-thick-scrollbar::-webkit-scrollbar-button:single-button {
-  display: block;
-  background: #f8f8f8;
-  border-radius: 8px;
-  height: 16px;
+/* Crisp Modal Styling for Steps */
+.step-modal {
+  border-radius: 18px;
+  box-shadow: 0 8px 40px rgba(40,21,28,0.13), 0 1.5px 6px rgba(192,89,106,0.07);
+  border: 1.5px solid #e7e2e0;
+  padding: 36px 32px 32px 32px;
 }
 
-.welcome-thick-scrollbar {
-  scrollbar-width: thick;
-  scrollbar-color: #888 #f8f8f8;
+.step-modal:not(.ch1step-bg):not(.ch2step-bg):not(.ch3step-bg) {
+  background: #fff;
 }
+
+/* Brown Card Utility (for blue cards) */
+.brown-card {
+  background: #28151c;
+  color: #fff;
+  border-radius: 14px;
+  border: 1.5px solid #c0596a;
+  box-shadow: 0 4px 18px rgba(40,21,28,0.10);
+}
+
+.step-modal-spacing {
+  margin-top: 48px;
+}
+/* Chapter 1 Step Background Utility */
 @import "tailwindcss";
+@import url("https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&family=DM+Serif+Display:ital@0;1&display=swap");
 
 @custom-variant dark (&:is(.dark *));
 
@@ -38,14 +139,14 @@
   --card-foreground: oklch(0.145 0 0);
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.145 0 0);
-  /* --primary: #0d9488; */
-  --primary: #d884ae;
+  --primary: #0d9488;
+  /* --primary: #d884ae; */
   /* refined brand: blue-teal */
   /* --primary: oklch(0.58 0.16 230); refined brand: blue-teal */
   --primary-foreground: oklch(0.98 0 0);
   /* near-white text on primary */
-  --secondary: #d88ab0;
-  /* --secondary: oklch(0.97 0 0); */
+  /* --secondary: #d88ab0; */
+  --secondary: oklch(0.97 0 0);
   --secondary-foreground: oklch(0.205 0 0);
   --muted: oklch(0.97 0 0);
   --muted-foreground: oklch(0.556 0 0);
@@ -456,23 +557,42 @@
 }
 
 /* Custom Scrollbar Theme Colors and Corners */
-
-.compact-scrollbar::-webkit-scrollbar {
-  width: 4px;
-  height: 4px;
+.custom-scrollbar::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
 }
 
 .compact-scrollbar::-webkit-scrollbar-track {
   background: transparent;
+  /* margin-block provides the spacing from top and bottom (the red arrows in your image) */
+  margin-block: 20px;
 }
 
-.compact-scrollbar::-webkit-scrollbar-thumb {
-  background: rgba(13, 115, 119, 0.28);
-  border-radius: 999px;
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.25);
+  border-radius: 20px;
+  /* Transparent border + background-clip: padding-box creates horizontal 'margin' 
+     so the scrollbar never hits the side edges or rounded corners */
+  border: 3px solid transparent;
+  background-clip: padding-box;
 }
 
-.compact-scrollbar::-webkit-scrollbar-thumb:hover {
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.4);
+  background-clip: padding-box;
+}
+
+/* Adjust scrollbar for light backgrounds to match theme */
+.bg-slate-50\/30.custom-scrollbar::-webkit-scrollbar-thumb,
+.bg-slate-50 .custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(13, 115, 119, 0.25);
+  background-clip: padding-box;
+}
+
+.bg-slate-50\/30.custom-scrollbar::-webkit-scrollbar-thumb:hover,
+.bg-slate-50 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
   background: rgba(13, 115, 119, 0.45);
+  background-clip: padding-box;
 }
 
 .compact-scrollbar {
@@ -481,17 +601,19 @@
 
 /* Premium Scrollbar - Teal Theme */
 .scrollbar-premium::-webkit-scrollbar {
-  width: 6px;
+  width: 10px;
+  height: 10px;
 }
 
 .scrollbar-premium::-webkit-scrollbar-track {
   background: transparent;
+  margin-block: 20px;
 }
 
 .scrollbar-premium::-webkit-scrollbar-thumb {
   background: #0d7377;
-  border-radius: 3px;
-  border: 2px solid transparent;
+  border-radius: 20px;
+  border: 3px solid transparent;
   background-clip: padding-box;
 }
 

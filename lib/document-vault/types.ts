@@ -108,6 +108,7 @@ export interface DocumentDefinition {
     visaCategories?: VisaCategory[];
     scenarioFlags?: Partial<ScenarioFlags>;
   };
+  hideUntilUploaded?: boolean;
 }
 
 export interface DocumentWizardStep {
@@ -167,6 +168,7 @@ export interface DocumentVaultConfig {
   petitionerName?: string;
   beneficiaryName?: string;
   jointSponsorName?: string;
+  dynamicDocuments?: Record<string, { id: string; name: string }[]>;
 }
 
 export type NotificationType =

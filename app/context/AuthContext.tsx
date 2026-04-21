@@ -151,45 +151,37 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     };
   };
 
-  // Fetch user profile to check admin status
+  // Check admin status — silent on any failure, defaults to false.
   const fetchUserProfile = useCallback(async (userId: string) => {
     try {
-      // Use API route to check admin status (which uses service role)
       const response = await fetch("/api/auth/check-admin", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ userId }),
       });
-
-      if (!response.ok) {
-        console.error(
-          "Failed to check admin status:",
-          response.status,
-          response.statusText,
-        );
-        return false;
-      }
-
+      if (!response.ok) return false;
       const data = await response.json();
       return data.isAdmin || false;
-    } catch (error) {
-      console.error(
-        "Error checking admin status (network or parsing error):",
-        error,
-      );
+    } catch {
+      // Network error — user is not admin by default
       return false;
     }
   }, []);
 
-  // Fetch profile with retry and fallback
+  // Fetch profile with retry and fallback.
+  // Never throws — always sets a usable profile even on network failure.
   const fetchProfile = useCallback(
     async (
       userId: string,
       userMeta?: { full_name?: string; name?: string; email?: string },
     ) => {
-      // Try up to 2 attempts with a short delay
-      for (let attempt = 0; attempt < 2; attempt++) {
+      // Try up to 3 attempts with increasing delays (1s, 2s)
+      for (let attempt = 0; attempt < 3; attempt++) {
         try {
+          if (attempt > 0) {
+            await new Promise((resolve) => setTimeout(resolve, attempt * 1000));
+          }
+
           const { data, error } = await supabase
             .from("profiles")
             .select("*")
@@ -198,44 +190,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
           if (!error && data) {
             setProfile(data);
-            return; // Success — done
+            return; // Success
           }
 
-          if (error) {
-            console.error(
-              `[AuthContext] fetchProfile attempt ${attempt + 1} error:`,
-              error.message,
-              "userId:",
-              userId,
-            );
-          }
-        } catch (err) {
-          console.error(
-            `[AuthContext] fetchProfile attempt ${attempt + 1} unexpected error:`,
-            err,
-          );
-        }
+          // PGRST116 = no row found — user has no profile yet, skip retry
+          if ((error as any)?.code === "PGRST116") break;
 
-        // Wait 1s before retrying
-        if (attempt === 0) {
-          await new Promise((resolve) => setTimeout(resolve, 1000));
+        } catch {
+          // Network error — try again silently
         }
       }
 
-      // All attempts failed — set a fallback profile from user metadata
-      // so the UI never shows "Valued User".
+      // All attempts failed — use metadata fallback so UI never shows blank
       const fallbackName =
         userMeta?.full_name ||
         userMeta?.name ||
         userMeta?.email?.split("@")[0] ||
         "User";
-
-      console.warn(
-        "[AuthContext] fetchProfile: using fallback profile for",
-        userId,
-        "name:",
-        fallbackName,
-      );
 
       setProfile({
         full_name: fallbackName,

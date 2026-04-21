@@ -27,7 +27,7 @@ export async function GET() {
 
     // JOURNEYS
     const { count: journeysCount } = await supabase
-      .from("user_journey_progress")
+      .from("journeys")
       .select("*", { count: "exact", head: true })
       .eq("user_id", userId);
 

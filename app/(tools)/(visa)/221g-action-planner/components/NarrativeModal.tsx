@@ -1128,7 +1128,7 @@ export function NarrativeModal({
           style={{
             background:
               "radial-gradient(circle at 50% 25%, rgba(255,255,255,0.92) 0%, rgba(248,251,252,0.9) 42%, rgba(13,115,119,0.16) 100%)",
-            scrollbarWidth: "thin",
+            scrollbarWidth: "none",
           }}
         >
           {!reduceHeavyEffects && (
@@ -1170,7 +1170,7 @@ export function NarrativeModal({
             ].join(" ")}
             style={
               isCompactView
-                ? { scrollbarWidth: "thin", width: '98vw', height: '98vh', maxWidth: '100vw', maxHeight: '98vh' }
+                ? { scrollbarWidth: "none", width: '98vw', height: '98vh', maxWidth: '100vw', maxHeight: '98vh' }
                 : undefined
             }
           >
@@ -1220,7 +1220,7 @@ export function NarrativeModal({
                   ? "overflow-y-auto px-3 pt-4 pb-4"
                   : "items-start justify-center overflow-y-auto px-3 pb-4 pt-16 sm:px-8 sm:pb-8 sm:pt-20 md:items-center md:p-12"
               ].join(" ")}
-              style={{ scrollbarWidth: "thin" }}
+              style={{ scrollbarWidth: "none" }}
             >
               <div
                 className="pointer-events-none absolute inset-x-0 top-0 bg-gradient-to-b from-white/95 to-transparent"
