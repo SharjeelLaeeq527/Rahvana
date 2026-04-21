@@ -855,22 +855,24 @@ export function SiteHeader({
                       border: "none",
                     }}
                   >
-                    <Bell
-                      className="h-5 w-5"
-                      aria-hidden="true"
-                      style={
-                        isHomeHeroP2State
-                          ? { color: "#fff" }
-                          : isHomeHeroState
+                    <div className="relative inline-flex">
+                      <Bell
+                        className="h-5 w-5"
+                        aria-hidden="true"
+                        style={
+                          isHomeHeroP2State
                             ? { color: "#fff" }
-                            : { color: "var(--rahvana-primary, #0d7377)" }
-                      }
-                    />
-                    {unreadCount > 0 && (
-                      <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-red-500 text-white text-[9px] font-black flex items-center justify-center">
-                        {unreadCount > 9 ? "9+" : unreadCount}
-                      </span>
-                    )}
+                            : isHomeHeroState
+                              ? { color: "#fff" }
+                              : { color: "var(--rahvana-primary, #0d7377)" }
+                        }
+                      />
+                      {unreadCount > 0 && (
+                        <span className="absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full bg-red-500 text-white text-[9px] font-black flex items-center justify-center border border-white/50">
+                          {unreadCount > 9 ? "9+" : unreadCount}
+                        </span>
+                      )}
+                    </div>
                   </HydrationSafeButton>
 
                   <AnimatePresence>

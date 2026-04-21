@@ -49,15 +49,17 @@ export function NotificationBell() {
     >
       <SheetTrigger asChild>
         <Button variant="outline" size="icon" className="relative">
-          <ClipboardList className="h-5 w-5" />
-          {pendingRequiredCount > 0 && (
-            <Badge
-              variant="destructive"
-              className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 text-xs"
-            >
-              {pendingRequiredCount}
-            </Badge>
-          )}
+          <div className="relative inline-flex">
+            <ClipboardList className="h-5 w-5" />
+            {pendingRequiredCount > 0 && (
+              <Badge
+                variant="destructive"
+                className="absolute -top-1.5 -right-1.5 h-4 w-4 rounded-full flex items-center justify-center p-0 text-[9px] font-black border border-white/50"
+              >
+                {pendingRequiredCount}
+              </Badge>
+            )}
+          </div>
         </Button>
       </SheetTrigger>
       <SheetContent className="w-full sm:max-w-lg p-4 sm:p-6 overflow-hidden flex flex-col">
