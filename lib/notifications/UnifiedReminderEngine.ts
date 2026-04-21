@@ -214,16 +214,31 @@ export class UnifiedReminderEngine {
   // PRIVATE: _fetchJourneyState — single round-trip
   // ─────────────────────────────────────────────────────────
   private async _fetchJourneyState(journeyId: string): Promise<JourneyState> {
-    const [journeyResult, stepsResult, ceacResult] = await Promise.allSettled([
+    const [journeyResult, stepsResult, ceacResult, caseDataResult] = await Promise.allSettled([
       this.supabase.from('journeys').select('metadata').eq('id', journeyId).single(),
       this.supabase.from('journey_steps').select('step_key, status, completed_at').eq('journey_id', journeyId),
       this.supabase.from('ceac_case_status').select('current_status').eq('journey_id', journeyId).single(),
+      this.supabase.from('case_data').select('data_key, data_value').eq('journey_id', journeyId),
     ])
 
     const metadata: Record<string, unknown> =
       journeyResult.status === 'fulfilled'
-        ? (journeyResult.value.data?.metadata as Record<string, unknown>) ?? {}
+        ? { ...((journeyResult.value.data?.metadata as Record<string, unknown>) ?? {}) }
         : {}
+
+    if (caseDataResult.status === 'fulfilled' && caseDataResult.value?.data) {
+      for (const row of caseDataResult.value.data) {
+        if (!row.data_key) continue
+        try {
+          metadata[row.data_key] =
+            typeof row.data_value === 'string' && row.data_value.startsWith('"')
+              ? JSON.parse(row.data_value)
+              : row.data_value
+        } catch {
+          metadata[row.data_key] = row.data_value
+        }
+      }
+    }
 
     const completedStepKeys = new Set<string>()
     const completedStepDates: Record<string, string | null> = {}
