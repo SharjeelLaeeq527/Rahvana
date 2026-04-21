@@ -1325,7 +1325,7 @@
                 "label": "Step 2 of 10 — Go to myUSCIS",
                 "heading": "Navigate to myUSCIS",
                 "instruction": "After signing in, you will be directed to the <strong>myUSCIS portal homepage</strong>. This is your central hub for filing forms, checking case status, and managing your USCIS cases.",
-                "url": "my.uscis.gov",
+                "url": "myaccount.uscis.gov/dashboard",
                 "screenTitle": "USCIS Portal",
                 "screenDesc": "MyUSCIS account access",
                 "media": {
@@ -1420,7 +1420,7 @@
                 "label": "Step 7 of 10 — Begin the I-130 Form",
                 "heading": "Start filling out Form I-130",
                 "instruction": "The USCIS portal will walk you through the form <strong>section by section</strong>. Enter your information carefully — progress saves automatically as you go.",
-                "url": "my.uscis.gov",
+                "url": "my.uscis.gov/account/onboarding/filing/new",
                 "screenTitle": "Form I-130",
                 "screenDesc": "Begin the application form",
                 "media": {
@@ -1827,7 +1827,7 @@
                 "label": "Step 1 of 5 — Review Your Petition",
                 "heading": "Open the filing review",
                 "instruction": "Sign in to your USCIS account, open your I-130 draft, and navigate to the <strong>review step</strong>. The portal will display a full summary of everything you have entered.",
-                "url": "myaccount.uscis.gov",
+                "url": "my.uscis.gov/forms/petition-for-a-relative/12345678/review-and-submit/review-your-petition",
                 "screenTitle": "Filing Review",
                 "screenDesc": "Watch the review process",
                 "media": {
@@ -1849,7 +1849,7 @@
                 "label": "Step 2 of 5 — Open the Review Summary",
                 "heading": "Examine the complete filing summary",
                 "instruction": "Watch as the portal displays your complete filing summary. Review each section carefully to ensure <strong>all information is accurate and complete</strong>.",
-                "url": "my.uscis.gov",
+                "url": "my.uscis.gov/forms/petition-for-a-relative/12345678/review-and-submit/your-application-summary",
                 "screenTitle": "Review Summary",
                 "screenDesc": "See your complete application",
                 "media": {
@@ -1871,7 +1871,7 @@
                 "label": "Step 3 of 5 — Confirm Your Attached Evidence",
                 "heading": "Verify all supporting documents",
                 "instruction": "Within the review, verify that each piece of supporting evidence is correctly attached. Check that file names match the documents they represent and that nothing is missing.",
-                "url": "my.uscis.gov",
+                "url": "my.uscis.gov/forms/petition-for-a-relative/12345678/review-and-submit/your-application-summary",
                 "screenTitle": "Evidence Confirmation",
                 "screenDesc": "Review attached documents",
                 "media": {
@@ -1890,7 +1890,7 @@
                 "label": "Step 4 of 5 — Enter Your Full Legal Name",
                 "heading": "Digitally sign your petition",
                 "instruction": "After completing the review, USCIS will prompt you to <strong>digitally sign</strong>. Enter your full legal name — first, middle (if applicable), and last — exactly as it appears in official documents.",
-                "url": "my.uscis.gov",
+                "url": "my.uscis.gov/forms/petition-for-a-relative/12345678/review-and-submit/your-signature",
                 "screenTitle": "Electronic Signature",
                 "screenDesc": "Sign with your full legal name",
                 "media": {
@@ -1921,7 +1921,7 @@
                 "label": "Step 5 of 5 — Pay the I-130 Fees",
                 "heading": "Complete the filing fee payment",
                 "instruction": "After signing, the portal advances to the payment step. Confirm the filing fee displayed ($625 for online I-130 filing). <strong>Enter your payment information</strong> to complete submission.",
-                "url": "pay.gov",
+                "url": "my.uscis.gov/forms/petition-for-a-relative/12345678/review-and-submit/pay-and-submit",
                 "screenTitle": "Filing Fee Payment",
                 "screenDesc": "Pay $625 filing fee",
                 "media": {
@@ -2019,7 +2019,7 @@
                 "title": "Navigate to the Print Hard Copies step",
                 "text": "In USCIS Petition Filing, navigate to the <strong>Print Hard Copies of the Forms</strong> step, and click on either <strong>Print I-130</strong> or <strong>Print I-130A</strong> button.",
                 "url": "uscis-petition",
-                "visual": "<img src=\"/assets/images/ir1-journey/c1_step11/1-click-button.png\" alt=\"Navigate to print forms\" style=\"width:100%; \" />",
+                "visual": "<img src=\"/assets/images/ir1-journey/c1_step11/1-click-button.png\" alt=\"Navigate to print forms\" style=\"width:100%; height:100%; display:block; object-fit:cover;\" />",
                 "note": "If you have not added this document in the Document Vault yet, you will get an error. First upload the document there, then try again."
               },
               {
@@ -2027,7 +2027,7 @@
                 "title": "Open the preview modal and click Print",
                 "text": "After clicking the button, the preview modal will open. Look for the <strong>Print icon</strong> in the top toolbar and click it to open your system's print dialog.",
                 "url": "preview-modal",
-                "visual": "<img src=\"/assets/images/ir1-journey/c1_step11/2-click-print-icon.png\" alt=\"Click print icon\" style=\"width:100%;\" />",
+                "visual": "<img src=\"/assets/images/ir1-journey/c1_step11/2-click-print-icon.png\" alt=\"Click print icon\" style=\"width:100%; height:100%; display:block; object-fit:cover;\" />",
                 "note": "The print icon typically appears as a printer symbol in the document toolbar."
               },
               {
@@ -2035,7 +2035,7 @@
                 "title": "Select destination and pages",
                 "text": "In the print dialog, select your printer destination from the available options. Choose which pages you want to print or keep the default to print all pages.",
                 "url": "print-options",
-                "visual": "<img src=\"/assets/images/ir1-journey/c1_step11/3-click-destination.png\" alt=\"Select print destination\" style=\"width:100%; \" />",
+                "visual": "<img src=\"/assets/images/ir1-journey/c1_step11/3-click-destination.png\" alt=\"Select print destination\" style=\"width:100%; height:100%; display:block; object-fit:cover;\" />",
                 "note": "Make sure you have a compatible printer connected and selected."
               },
               {
@@ -2043,7 +2043,7 @@
                 "title": "Set paper size and orientation",
                 "text": "Select the correct paper size: <strong>Letter</strong> (8.5\" × 11\") for US filing, or <strong>A4</strong> (210 × 297mm) for Pakistan or other international locations. Ensure orientation matches your document.",
                 "url": "paper-setup",
-                "visual": "<img src=\"/assets/images/ir1-journey/c1_step11/4-select-paper-size.png\" alt=\"Set paper size\" style=\"width:100%; \" />",
+                "visual": "<img src=\"/assets/images/ir1-journey/c1_step11/4-select-paper-size.png\" alt=\"Set paper size\" style=\"width:100%; height:100%; display:block; object-fit:cover;\" />",
                 "note": "USCIS accepts both Letter and A4 sizes. Check your local requirements."
               },
               {
@@ -2051,7 +2051,7 @@
                 "title": "Enable collate option for proper sequencing",
                 "text": "In the advanced print options, make sure to check the <strong>Collate</strong> checkbox. This ensures all your pages are printed in the correct sequence so your final packet is properly organized.",
                 "url": "print-collate",
-                "visual": "<img src=\"/assets/images/ir1-journey/c1_step11/enable-collate.png\" alt=\"Check collate option\" style=\"width:100%; \" />",
+                "visual": "<img src=\"/assets/images/ir1-journey/c1_step11/enable-collate.png\" alt=\"Check collate option\" style=\"width:100%; height:100%; display:block; object-fit:cover;\" />",
                 "note": "Collating prevents pages from being mixed up if you're printing multiple copies."
               },
               {
@@ -2059,7 +2059,7 @@
                 "title": "Click Print and wait for completion",
                 "text": "Click the <strong>Print</strong> button and wait for your printer to complete the print job. Don't close the preview or dialog until printing is finished.",
                 "url": "final-print",
-                "visual": "<img src=\"/assets/images/ir1-journey/c1_step11/5-click-print-button.png\" alt=\"Print completion\" style=\"width:100%; \" />",
+                "visual": "<img src=\"/assets/images/ir1-journey/c1_step11/5-click-print-button.png\" alt=\"Print completion\" style=\"width:100%; height:100%; display:block; object-fit:cover;\" />",
                 "note": "Check that all pages printed clearly and are not faded or cut off before proceeding."
               },
               {
@@ -2067,7 +2067,7 @@
                 "title": "Navigate to the Print Hard Copies step",
                 "text": "In USCIS Petition Filing, navigate to the <strong>Print Hard Copies of Forms</strong> step, and click on either <strong>Print I-130</strong> or <strong>Print I-130A</strong> button.",
                 "url": "uscis-petition",
-                "visual": "<img src=\"/assets/images/ir1-journey/c1_step11/1-click-button.png\" alt=\"Navigate to download forms\" style=\"width:100%; \" />",
+                "visual": "<img src=\"/assets/images/ir1-journey/c1_step11/1-click-button.png\" alt=\"Navigate to download forms\" style=\"width:100%; height:100%; display:block; object-fit:cover;\" />",
                 "note": "If you have not added this document in the Document Vault yet, you will get an error. First upload the document there, then try again."
               },
               {
@@ -2075,7 +2075,7 @@
                 "title": "Open preview modal and click Download",
                 "text": "After clicking the button, the preview modal will open. Look for the <strong>Download icon</strong> in the top toolbar and click it to download the document to your computer.",
                 "url": "preview-modal",
-                "visual": "<img src=\"/assets/images/ir1-journey/c1_step11/6-click-download-icon.png\" alt=\"Click download icon\" style=\"width:100%; \" />",
+                "visual": "<img src=\"/assets/images/ir1-journey/c1_step11/6-click-download-icon.png\" alt=\"Click download icon\" style=\"width:100%; height:100%; display:block; object-fit:cover;\" />",
                 "note": "The download icon typically appears as a downward arrow or download symbol in the document toolbar."
               },
               {
@@ -2083,7 +2083,7 @@
                 "title": "Choose save location and filename",
                 "text": "When the save dialog appears, select the destination folder on your computer where you want to store the file. Give it a clear name like <strong>I-130_Final.pdf</strong> or <strong>I-130A_Completed.pdf</strong> and click <strong>Save</strong>.",
                 "url": "save-location",
-                "visual": "<img src=\"/assets/images/ir1-journey/c1_step11/7-save.png\" alt=\"Save file location\" style=\"width:100%; \" />",
+                "visual": "<img src=\"/assets/images/ir1-journey/c1_step11/7-save.png\" alt=\"Save file location\" style=\"width:100%; height:100%; display:block; object-fit:cover;\" />",
                 "note": "Choose a memorable location such as a dedicated immigration folder so you can find it later."
               }
             ]
@@ -2986,7 +2986,7 @@
                 "heading": "Locate your NVC Case Number",
                 "screenTitle": "Locate your NVC Case Number",
                 "instruction": "The NVC Case Number appears clearly in the Welcome Letter or email. For IR-1 spouse cases from Pakistan, it typically follows a format like <strong>ISL2026XXXXXX</strong> — beginning with your consulate code, followed by the year and case digits.",
-                "url": "NVC Case Number Location",
+                "url": "ceac.state.gov/iv/login.aspx",
                 "ss_label": "NVC Case Number Location",
                 "ss_headline": "Notice of NVC Receipt",
                 "ss_desc": "ISL2026XXXXXX",
@@ -3096,7 +3096,7 @@
                 "heading": "Open CEAC and sign in",
                 "screenTitle": "Open CEAC and sign in",
                 "instruction": "Go to the CEAC portal and sign in using the NVC Case Number and Invoice ID from your Welcome Letter.",
-                "url": "ceac.state.gov",
+                "url": "ceac.state.gov/iv/login.aspx",
                 "ss_label": "CEAC Login",
                 "ss_headline": "Sign In to Your Immigrant Visa Case",
                 "ss_desc": "Sign In",
@@ -3110,7 +3110,7 @@
                 "heading": "Enter your case information",
                 "screenTitle": "Enter your case information",
                 "instruction": "Enter your case number and invoice ID exactly as they appear in the NVC Welcome Letter. Both fields are required to access the case.",
-                "url": "ceac.state.gov",
+                "url": "ceac.state.gov/iv/login.aspx",
                 "ss_label": "Case Access",
                 "ss_headline": "Case Number & Invoice ID Required",
                 "ss_desc": "ISL2026XXXXXX — Invoice ID confirmed",
@@ -3125,7 +3125,7 @@
                 "heading": "Go to the fee payment section",
                 "screenTitle": "Go to the fee payment section",
                 "instruction": "After entering CEAC, navigate to the payment or invoices area. This is where NVC fee invoices are listed and where you can initiate payment.",
-                "url": "ceac.state.gov",
+                "url": "ceac.state.gov/iv/ivsummary.aspx",
                 "ss_label": "CEAC Dashboard",
                 "ss_headline": "Fee Payment",
                 "ss_desc": "Fee Payment — Available",
@@ -3139,7 +3139,7 @@
                 "heading": "Review the required fee invoices",
                 "screenTitle": "Review the required fee invoices",
                 "instruction": "CEAC will display the required fee invoices for your case. Review both the Affidavit of Support fee and the Immigrant Visa fee before proceeding.",
-                "url": "ceac.state.gov",
+                "url": "ceac.state.gov/iv/ivsummary.aspx",
                 "ss_label": "Fee Invoices",
                 "ss_headline": "Review Fees",
                 "ss_desc": "Affidavit of Support Fee / Immigrant Visa Fee",
@@ -3154,7 +3154,7 @@
                 "heading": "Follow the payment prompts carefully",
                 "screenTitle": "Follow the payment prompts carefully",
                 "instruction": "Proceed through the CEAC payment flow. Complete the payment method selection and confirm the transaction according to the portal prompts.",
-                "url": "ceac.state.gov",
+                "url": "ceac.state.gov/iv/ivsummary.aspx",
                 "ss_label": "Payment",
                 "ss_headline": "Confirm and Pay",
                 "ss_desc": "Submit Payment",
@@ -3168,7 +3168,7 @@
                 "label": "Step 6 of 6 — Return and save",
                 "heading": "Return here and save your payment record",
                 "instruction": "Once payment is submitted, return to this Rahvana step and save the fee status in the Portal Wallet for reference throughout your NVC processing.",
-                "url": "Save to Portal Wallet",
+                "url": "rahvana.com/portal-wallet",
                 "ss_label": "Payment Submitted",
                 "ss_headline": "Return to Rahvana",
                 "ss_desc": "Use the credential vault to save your fee payment status."
@@ -3272,6 +3272,7 @@
                 "heading": "Sign in to CEAC",
                 "screenTitle": "Sign in to CEAC",
                 "instruction": "Enter CEAC using your NVC Case Number and Invoice ID from the Welcome Letter. Your fees must be fully processed before DS-260 is available.",
+                "url": "ceac.state.gov/iv/login.aspx",
                 "ss_label": "CEAC Login",
                 "ss_headline": "Immigrant Visa Case — Sign In",
                 "ss_desc": "NVC Case Number: ISL2026XXXXXX, Invoice ID: ••••••••••••••••",
@@ -3285,6 +3286,7 @@
                 "heading": "Open the DS-260 section",
                 "screenTitle": "Open the DS-260 section",
                 "instruction": "Once fee payment is processed, DS-260 becomes available inside your CEAC case. Navigate to the DS-260 area and select Start or Resume.",
+                "url": "ceac.state.gov/iv/ivsummary.aspx",
                 "ss_label": "CEAC Case",
                 "ss_headline": "DS-260 Immigrant Visa Application",
                 "ss_desc": "Available after NVC fee processing is confirmed.",
@@ -3299,6 +3301,7 @@
                 "heading": "Start your DS-260",
                 "screenTitle": "Start your DS-260",
                 "instruction": "Click Start or Resume to begin. The form is divided into multiple sections. Use your Rahvana-generated PDF as a reference while completing each section.",
+                "url": "ceac.state.gov/iv/ivsummary.aspx",
                 "ss_label": "DS-260 Form",
                 "ss_headline": "Begin Application",
                 "ss_desc": "Work through the form section by section using your prepared answers.",
@@ -3312,6 +3315,7 @@
                 "heading": "Complete section by section",
                 "screenTitle": "Complete section by section",
                 "instruction": "Move through each DS-260 section in sequence. Enter your information carefully. Keep answers consistent with other immigration forms in your case.",
+                "url": "ceac.state.gov/IVApp/IVApp/complete/complete_gettingstarted.aspx?node=GetStarted",
                 "ss_label": "Form Progress",
                 "ss_headline": "Section-by-Section",
                 "ss_desc": "Personal info → Travel history → Work/education → Security questions → Review",
@@ -3326,6 +3330,7 @@
                 "heading": "Review your answers carefully",
                 "screenTitle": "Review your answers carefully",
                 "instruction": "Use the review stage to check for errors or missing information before certifying. This is your last opportunity to make edits.",
+                "url": "ceac.state.gov/IVApp/IVApp/complete/complete_socialsecuritynumber.aspx?node=SSN",
                 "ss_label": "Review",
                 "ss_headline": "Review All Answers",
                 "ss_desc": "Check each section before proceeding to final certification.",
@@ -3339,6 +3344,7 @@
                 "heading": "Sign and submit the DS-260",
                 "screenTitle": "Sign and submit the DS-260",
                 "instruction": "The final step requires certification. Read carefully before submitting — changes after submission are not straightforward.",
+                "url": "ceac.state.gov/IVApp/IVApp/review/review_personal.aspx?node=ReviewPersonal",
                 "ss_label": "Certification",
                 "ss_headline": "Sign and Submit",
                 "ss_desc": "Certify accuracy of your application before final submission.",
@@ -3353,6 +3359,7 @@
                 "heading": "Save your confirmation page",
                 "screenTitle": "Save your confirmation page",
                 "instruction": "After submission, CEAC displays a confirmation page. Save or print this for your records as proof that DS-260 has been received.",
+                "url": "ceac.state.gov/IVApp/IVApp/esign/complete_done.aspx?node=Done",
                 "ss_label": "Certification",
                 "ss_headline": "DS-260 Submitted",
                 "ss_desc": "Application Received",
@@ -3689,7 +3696,7 @@
                 "heading": "Sign in to CEAC",
                 "screenTitle": "Sign in to CEAC",
                 "instruction": "Enter CEAC using your NVC Case Number and Invoice ID from the Welcome Letter. Your fees must be fully processed and DS-260 completed before you can upload civil documents.",
-                "url": "ceac.state.gov",
+                "url": "ceac.state.gov.iv/login.aspx",
                 "ss_label": "CEAC Login",
                 "ss_headline": "Access Your Case",
                 "ss_desc": "Sign in with Case Number and Invoice ID",
@@ -3706,7 +3713,7 @@
                 "heading": "Confirm all fees are paid",
                 "screenTitle": "Confirm all fees are paid",
                 "instruction": "Before document submission begins, verify in CEAC that both the Affidavit of Support fee ($120) and the Immigrant Visa fee ($345) have been successfully processed.",
-                "url": "ceac.state.gov",
+                "url": "ceac.state.gov/iv/ivsummary.aspx",
                 "ss_label": "Fee Status",
                 "ss_headline": "NVC Fees Paid",
                 "ss_desc": "AOS + IV fees required before document upload",
@@ -3723,7 +3730,7 @@
                 "heading": "Navigate to the civil documents section",
                 "screenTitle": "Navigate to the civil documents section",
                 "instruction": "In CEAC, locate and open the civil documents upload area. This is where you will attach the required birth certificates, marriage records, police certificates, and other supporting documents.",
-                "url": "ceac.state.gov",
+                "url": "ceac.state.gov/iv/ivsummary.aspx",
                 "ss_label": "Document Upload",
                 "ss_headline": "Civil Documents Section",
                 "ss_desc": "Begin document submission",
@@ -3876,7 +3883,7 @@
                 "heading": "Verify your overall submission status",
                 "screenTitle": "Verify your overall submission status",
                 "instruction": "After uploading all civil documents, check the overall status in CEAC to confirm all items have been received and are marked as 'Submitted' or 'Received.' This gives you confidence before proceeding.",
-                "url": "ceac.state.gov",
+                "url": "ceac.state.gov/iv/ivsummary.aspx",
                 "ss_label": "Status Check",
                 "ss_headline": "Submission Status",
                 "ss_desc": "Confirm all documents marked as received",

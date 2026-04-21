@@ -7426,10 +7426,10 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                                 (currentTutStep as TutorialStepData).screenTitle
                               }
                               fill
-                              className="object-contain"
+                              className="object-cover"
                               sizes="(max-width: 640px) 95vw, (max-width: 1024px) 90vw, 1000px"
                               quality={95}
-                              style={{ objectFit: "contain" }}
+                              style={{ objectFit: "cover" }}
                               priority={tutorialIdx === 0}
                             />
                           )
@@ -7453,10 +7453,10 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                               (currentTutStep as TutorialStepData).screenTitle
                             }
                             fill
-                            className="object-contain"
+                            className="object-cover"
                             sizes="(max-width: 640px) 95vw, (max-width: 1024px) 90vw, 1000px"
                             quality={95}
-                            style={{ objectFit: "contain" }}
+                            style={{ objectFit: "cover" }}
                             priority={tutorialIdx === 0}
                           />
                         ) : (
@@ -7608,10 +7608,10 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                                 ).screenTitle
                               }
                               fill
-                              className="object-contain"
+                              className="object-cover"
                               sizes="(max-width: 640px) 95vw, (max-width: 1024px) 90vw, 1000px"
                               quality={95}
-                              style={{ objectFit: "contain" }}
+                              style={{ objectFit: "cover" }}
                               priority
                             />
                           ) : (

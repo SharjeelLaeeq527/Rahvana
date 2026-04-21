@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   CheckCircle2,
   Package,
@@ -12,6 +12,7 @@ import {
   CheckCircle,
   Printer,
   Download,
+  RefreshCw
 } from "lucide-react";
 import { useWizard } from "@/app/(main)/dashboard/hooks/useWizard";
 import { CustomDropdown } from "@/app/components/shared/CustomDropdown";
@@ -20,7 +21,10 @@ import { DocumentPreviewModal } from "@/app/components/document-vault/DocumentPr
 import { useDocumentVaultStore } from "@/lib/document-vault/store";
 import { DOCUMENTS_BY_KEY } from "@/lib/document-vault/document-definitions";
 import { useToast } from "@/app/components/shared/ToastProvider";
-import { UploadedDocument, DocumentDefinition } from "@/lib/document-vault/types";
+import {
+  UploadedDocument,
+  DocumentDefinition,
+} from "@/lib/document-vault/types";
 import { useAuth } from "@/app/context/AuthContext";
 
 interface ActionStepRendererProps {
@@ -145,7 +149,9 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
   const [showGuide, setShowGuide] = useState(false);
   const [guideStep, setGuideStep] = useState(0);
   const [showGuideChoice, setShowGuideChoice] = useState(false);
-  const [selectedGuideType, setSelectedGuideType] = useState<"print" | "download" | null>(null);
+  const [selectedGuideType, setSelectedGuideType] = useState<
+    "print" | "download" | null
+  >(null);
   const [statusSaved, setStatusSaved] = useState(isCompleted);
   const [selectedDropdown, setSelectedDropdown] = useState("");
   const [mailingCarrier, setMailingCarrier] = useState("");
@@ -153,7 +159,9 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
   const [isSavingPayment, setIsSavingPayment] = useState(false);
   const [isSavingMailing, setIsSavingMailing] = useState(false);
   const [trackingStatus, setTrackingStatus] = useState<string>("unknown");
-  const [trackingLastChecked, setTrackingLastChecked] = useState<string | null>(null);
+  const [trackingLastChecked, setTrackingLastChecked] = useState<string | null>(
+    null,
+  );
   const [deliveredAt, setDeliveredAt] = useState<string | null>(null);
   const [isLoadingTracking, setIsLoadingTracking] = useState(false);
 
@@ -186,7 +194,7 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
     if (!docDef) return;
 
     const uploadedDoc = uploadedDocuments.find(
-      (d) => d.documentDefId === docDef.id
+      (d) => d.documentDefId === docDef.id,
     );
 
     if (uploadedDoc) {
@@ -196,7 +204,10 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
         uploadedDoc,
       });
     } else {
-      showToast("This document is not uploaded in the document vault yet", "error");
+      showToast(
+        "This document is not uploaded in the document vault yet",
+        "error",
+      );
     }
   };
 
@@ -225,7 +236,11 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
         setStatusSaved(false);
       }
     }
-  }, [step.action_data?.dropdown_card, step.action_data?.mailing_card, state.metadata]);
+  }, [
+    step.action_data?.dropdown_card,
+    step.action_data?.mailing_card,
+    state.metadata,
+  ]);
 
   useEffect(() => {
     if (showGuide || showGuideChoice) {
@@ -261,51 +276,156 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
     state.metadata?.delivered_at,
   ]);
 
-  // Fetch tracking status periodically when tracker exists
+  const fetchTrackingStatus = useCallback(async () => {
+    try {
+      setIsLoadingTracking(true);
+      const response = await fetch(
+        `/api/easypost/tracker/status?caseId=${state.backendId}`,
+      );
+
+      if (!response.ok) {
+        console.error("[ActionStepRenderer] Failed to fetch tracking status");
+        return;
+      }
+
+      const data = await response.json();
+
+      // Update local state with latest tracking info
+      setTrackingStatus(data.status);
+      setTrackingLastChecked(data.lastChecked);
+      if (data.deliveredAt) {
+        setDeliveredAt(data.deliveredAt);
+      }
+    } catch (error) {
+      console.error("[ActionStepRenderer] Error fetching tracking:", error);
+    } finally {
+      setIsLoadingTracking(false);
+    }
+  }, [state.backendId]);
+
+  // Fetch tracking status periodically when tracker exists + Supabase Realtime for real-time updates
   useEffect(() => {
     // Only fetch if we have a tracker ID and not yet delivered
-    if (!state.metadata?.easypost_tracker_id || trackingStatus === "delivered") {
+    if (
+      !state.metadata?.easypost_tracker_id ||
+      trackingStatus === "delivered"
+    ) {
       return;
     }
-
-    const fetchTrackingStatus = async () => {
-      try {
-        setIsLoadingTracking(true);
-        const response = await fetch(
-          `/api/easypost/tracker/status?caseId=${state.backendId}`
-        );
-
-        if (!response.ok) {
-          console.error("[ActionStepRenderer] Failed to fetch tracking status");
-          return;
-        }
-
-        const data = await response.json();
-
-        // Update local state with latest tracking info
-        setTrackingStatus(data.status);
-        setTrackingLastChecked(data.lastChecked);
-        if (data.deliveredAt) {
-          setDeliveredAt(data.deliveredAt);
-        }
-      } catch (error) {
-        console.error("[ActionStepRenderer] Error fetching tracking:", error);
-      } finally {
-        setIsLoadingTracking(false);
-      }
-    };
 
     // Fetch on mount
     fetchTrackingStatus();
 
-    // Poll every 5 minutes if not delivered
-    const pollInterval = 5 * 60 * 1000; // 5 minutes
-    const intervalId = setInterval(fetchTrackingStatus, pollInterval);
+    let pollInterval: NodeJS.Timeout | undefined;
+    let realtimeChannel: any = null;
 
-    return () => {
-      if (intervalId) clearInterval(intervalId);
+    // Subscribe to Supabase Realtime for DB changes
+    const subscribeToRealtimeUpdates = async () => {
+      try {
+        const { createClient: createSupabaseClient } = await import(
+          "@/lib/supabase/client"
+        );
+        const supabase = createSupabaseClient();
+
+        // Subscribe to case_data table changes for this journey
+        realtimeChannel = supabase
+          .channel(`tracking:${state.backendId}`)
+          .on(
+            "postgres_changes",
+            {
+              event: "UPDATE",
+              table: "case_data",
+              filter: `journey_id=eq.${state.backendId}`,
+            },
+            (payload: any) => {
+              try {
+                const { new: updatedRow } = payload;
+
+                // Handle tracking status updates
+                if (updatedRow?.data_key === "tracking_status") {
+                  console.log(
+                    `[ActionStepRenderer] Realtime update - Status: ${updatedRow.data_value}`,
+                  );
+                  setTrackingStatus(updatedRow.data_value);
+                }
+
+                // Handle last checked timestamp
+                if (updatedRow?.data_key === "tracking_last_checked_at") {
+                  setTrackingLastChecked(updatedRow.data_value);
+                }
+
+                // Handle delivered timestamp
+                if (updatedRow?.data_key === "delivered_at") {
+                  setDeliveredAt(updatedRow.data_value);
+                }
+
+                // Stop polling if delivered
+                if (updatedRow?.data_value === "delivered" && pollInterval) {
+                  clearInterval(pollInterval);
+                  pollInterval = undefined;
+                }
+              } catch (err) {
+                console.error(
+                  "[ActionStepRenderer] Error processing realtime update:",
+                  err,
+                );
+              }
+            },
+          )
+          .subscribe((status: string) => {
+            if (status === "SUBSCRIBED") {
+              console.log(
+                "[ActionStepRenderer] Supabase Realtime subscribed for tracking updates",
+              );
+            }
+          });
+      } catch (err) {
+        console.error(
+          "[ActionStepRenderer] Failed to subscribe to Realtime:",
+          err,
+        );
+      }
     };
-  }, [state.metadata?.easypost_tracker_id, state.backendId, trackingStatus]);
+
+    subscribeToRealtimeUpdates();
+
+    // Set up polling as fallback (6 hours default, 10 min when out for delivery)
+    const setupPolling = () => {
+      // Calculate delay based on current tracking status
+      let pollDelayMs = 6 * 60 * 60 * 1000; // default: 6 hours
+
+      if (trackingStatus === "out_for_delivery") {
+        pollDelayMs = 10 * 60 * 1000; // 10 min (final stage)
+      }
+
+      if (trackingStatus === "delivered") {
+        return undefined; // don't poll if already delivered
+      }
+
+      // Clear any existing polling to prevent duplicates
+      if (pollInterval) {
+        clearInterval(pollInterval);
+      }
+
+      console.log(
+        `[ActionStepRenderer] Starting polling with interval: ${pollDelayMs / 1000 / 60}min`,
+      );
+
+      return setInterval(fetchTrackingStatus, pollDelayMs);
+    };
+
+    pollInterval = setupPolling();
+
+    // Cleanup on unmount
+    return () => {
+      if (realtimeChannel) {
+        realtimeChannel.unsubscribe();
+      }
+      if (pollInterval) {
+        clearInterval(pollInterval);
+      }
+    };
+  }, [state.metadata?.easypost_tracker_id, state.backendId, trackingStatus, fetchTrackingStatus]);
 
   const handlePrevGuide = () => {
     setGuideStep((prev) => Math.max(0, prev - 1));
@@ -319,7 +439,9 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
     if (!mailingCarrier.trim() || !mailingTracking.trim()) return;
 
     if (!actions?.saveMailingDetails) {
-      console.error("[ActionStepRenderer] saveMailingDetails not available in actions");
+      console.error(
+        "[ActionStepRenderer] saveMailingDetails not available in actions",
+      );
       return;
     }
 
@@ -348,7 +470,9 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
     if (!actionData.guide_steps) return [];
     if (step.step_key === "step_1_11" && selectedGuideType) {
       return actionData.guide_steps.filter((gs: any) =>
-        gs.label?.includes(selectedGuideType === "print" ? "Print" : "Download")
+        gs.label?.includes(
+          selectedGuideType === "print" ? "Print" : "Download",
+        ),
       );
     }
     return actionData.guide_steps || [];
@@ -357,47 +481,58 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
   const filteredSteps = getFilteredGuideSteps();
   const guideProgress = guideStep / (filteredSteps?.length || 1);
 
-    return (
-      <div
-        className={`min-h-screen${isChapter3 ? ' ch3step-bg' : ''}`}
-        style={
-          isChapter3
-            ? {
-                backgroundImage: "url('/assets/images/ch3steps-bg.png')",
-                backgroundSize: 'cover',
-                backgroundPosition: 'center',
-                backgroundRepeat: 'no-repeat',
-                backgroundAttachment: 'fixed',
-                minHeight: '100vh',
-              }
-            : undefined
-        }
-      >
-        {/* Main Content */}
-        <div className="max-w-3xl mx-auto px-5.5 py-12">
+  return (
+    <div
+      className={`min-h-screen${isChapter3 ? " ch3step-bg" : ""}`}
+      style={
+        isChapter3
+          ? {
+              backgroundImage: "url('/assets/images/ch3steps-bg.png')",
+              backgroundSize: "cover",
+              backgroundPosition: "center",
+              backgroundRepeat: "no-repeat",
+              backgroundAttachment: "fixed",
+              minHeight: "100vh",
+            }
+          : undefined
+      }
+    >
+      {/* Main Content */}
+      <div className="max-w-3xl mx-auto px-5.5 py-12">
         {/* Eyebrow for Paper Filing Path steps */}
-        {(step.step_key === 'step_1_11' || step.step_key === 'step_1_12' || step.step_key === 'step_1_13' || step.step_key === 'step_1_14') && (
+        {(step.step_key === "step_1_11" ||
+          step.step_key === "step_1_12" ||
+          step.step_key === "step_1_13" ||
+          step.step_key === "step_1_14") && (
           <div className="text-[10px] font-bold uppercase tracking-widest text-soft mb-2 text-[#636B97]">
-            Chapter 1 · Chapter 1: USCIS Petition Filing <span className="text-[#BDD7F1] mx-2">&gt;</span> <span className="text-[#3B7DD8]">{step.step_name}</span>
+            Chapter 1 · Chapter 1: USCIS Petition Filing{" "}
+            <span className="text-[#BDD7F1] mx-2">&gt;</span>{" "}
+            <span className="text-[#3B7DD8]">{step.step_name}</span>
           </div>
         )}
         {/* Title */}
-        <h1 className={`text-4xl leading-tight font-black -tracking-wide mb-3 ${isChapter1 ? 'accent-brown' : isChapter2 ? 'text-[#27192e]' : 'text-navy'}`}>
+        <h1
+          className={`text-4xl leading-tight font-black -tracking-wide mb-3 ${isChapter1 ? "accent-brown" : isChapter2 ? "text-[#27192e]" : "text-navy"}`}
+        >
           {step.step_name}
         </h1>
 
         {/* Subtitle */}
-        <p className={`text-base leading-relaxed max-w-2xl mb-5.5 ${isChapter1 ? 'accent-brown' : isChapter2 ? 'text-[#b48ad6]' : 'text-soft'}`}>
+        <p
+          className={`text-base leading-relaxed max-w-2xl mb-5.5 ${isChapter1 ? "accent-brown" : isChapter2 ? "text-[#b48ad6]" : "text-soft"}`}
+        >
           {step.step_description}
         </p>
 
         {/* Chips - Full background colors */}
         {actionData.chips && actionData.chips.length > 0 && (
-          <div className={`flex flex-wrap gap-2 mb-6 ${isChapter1 ? 'accent-rose' : isChapter2 ? 'accent-purple' : ''}`}>
+          <div
+            className={`flex flex-wrap gap-2 mb-6 ${isChapter1 ? "accent-rose" : isChapter2 ? "accent-purple" : ""}`}
+          >
             {actionData.chips.map((chip, idx) => (
               <span
                 key={idx}
-                className={`text-[11px] font-bold uppercase px-3 py-1 rounded-full border ${isChapter1 ? 'accent-rose-bg border-rose-200 text-[#ffff]' : isChapter2 ? 'accent-purple-bg border-[#e3c6f7] text-[#b48ad6]' : 'bg-[#e8f1fb] border-[#d0e4f7] text-[#2f6fd4]'}`}
+                className={`text-[11px] font-bold uppercase px-3 py-1 rounded-full border ${isChapter1 ? "accent-rose-bg border-rose-200 text-[#ffff]" : isChapter2 ? "accent-purple-bg border-[#e3c6f7] text-[#b48ad6]" : "bg-[#e8f1fb] border-[#d0e4f7] text-[#2f6fd4]"}`}
               >
                 {chip.label}
               </span>
@@ -409,10 +544,10 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
         <section
           style={{
             background:
-              step.step_key === 'step_1_11'
+              step.step_key === "step_1_11"
                 ? "linear-gradient(180deg, #28151c 0%, #28151c 100%)"
                 : "linear-gradient(180deg, #122541 0%, #0f2038 100%)",
-            color: step.step_key === 'step_1_11' ? "#fff" : "#fff", // white text on accent brown
+            color: step.step_key === "step_1_11" ? "#fff" : "#fff", // white text on accent brown
             borderRadius: "24px",
             padding: "24px",
             boxShadow: "0 18px 48px rgba(12, 27, 51, 0.12)",
@@ -426,7 +561,7 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
               lineHeight: 1.15,
               marginBottom: "6px",
               fontWeight: 700,
-              color: step.step_key === 'step_1_11' ? "#c0596a" : undefined, // white text on accent brown
+              color: step.step_key === "step_1_11" ? "#c0596a" : undefined, // white text on accent brown
             }}
           >
             {actionData.hero_heading}
@@ -438,7 +573,10 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
               style={{
                 fontSize: "14px",
                 lineHeight: 1.65,
-                color: step.step_key === 'step_1_11' ? "#fff" : "rgba(255, 255, 255, 0.74)", // white text on accent brown
+                color:
+                  step.step_key === "step_1_11"
+                    ? "#fff"
+                    : "rgba(255, 255, 255, 0.74)", // white text on accent brown
               }}
             >
               {actionData.hero_description}
@@ -452,14 +590,17 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
                 display: "inline-flex",
                 padding: "8px 12px",
                 borderRadius: "999px",
-                background: step.step_key === 'step_1_11' ? "#fff" : "rgba(255, 255, 255, 0.08)",
+                background:
+                  step.step_key === "step_1_11"
+                    ? "#fff"
+                    : "rgba(255, 255, 255, 0.08)",
                 fontSize: "11px",
                 fontWeight: 800,
                 letterSpacing: ".08em",
                 textTransform: "uppercase",
                 marginTop: "10px",
                 marginBottom: "12px",
-                color: step.step_key === 'step_1_11' ? "#7c4b26" : "#fff", // accent brown text on white badge
+                color: step.step_key === "step_1_11" ? "#7c4b26" : "#fff", // accent brown text on white badge
               }}
             >
               {actionData.badge}
@@ -715,12 +856,14 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
                   value={selectedDropdown}
                   onChange={async (value) => {
                     if (!value) return;
-                    
+
                     if (!actions?.savePaymentMethod) {
-                      console.error("[ActionStepRenderer] savePaymentMethod not available in actions");
+                      console.error(
+                        "[ActionStepRenderer] savePaymentMethod not available in actions",
+                      );
                       return;
                     }
-                    
+
                     setIsSavingPayment(true);
                     try {
                       // Save to database via wizard actions and wait for completion
@@ -834,7 +977,11 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
                   />
                   <button
                     onClick={handleSaveMailing}
-                    disabled={!mailingCarrier.trim() || !mailingTracking.trim() || isSavingMailing}
+                    disabled={
+                      !mailingCarrier.trim() ||
+                      !mailingTracking.trim() ||
+                      isSavingMailing
+                    }
                     style={{
                       width: "100%",
                       background: COLORS.sky,
@@ -845,17 +992,24 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
                       fontSize: "15px",
                       fontWeight: 700,
                       cursor:
-                        mailingCarrier.trim() && mailingTracking.trim() && !isSavingMailing
+                        mailingCarrier.trim() &&
+                        mailingTracking.trim() &&
+                        !isSavingMailing
                           ? "pointer"
                           : "not-allowed",
                       opacity:
-                        mailingCarrier.trim() && mailingTracking.trim() && !isSavingMailing
+                        mailingCarrier.trim() &&
+                        mailingTracking.trim() &&
+                        !isSavingMailing
                           ? 1
                           : 0.6,
                       transition: "opacity 0.2s",
                     }}
                   >
-                    {isSavingMailing ? "Saving..." : (actionData.action_button_label || "Save mailing details")}
+                    {isSavingMailing
+                      ? "Saving..."
+                      : actionData.action_button_label ||
+                        "Save mailing details"}
                   </button>
                 </div>
               </div>
@@ -884,11 +1038,18 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
                 <div style={{ flex: 1 }}>
                   {/* Common Heading */}
                   <strong style={{ display: "block" }}>
-                    {actionData.action_button_status_heading || "Selection saved"}
+                    {actionData.action_button_status_heading ||
+                      "Selection saved"}
                   </strong>
 
                   {/* Status Message - Different for dropdown vs mailing */}
-                  <span style={{ fontSize: "12px", display: "block", marginBottom: "8px" }}>
+                  <span
+                    style={{
+                      fontSize: "12px",
+                      display: "block",
+                      marginBottom: "8px",
+                    }}
+                  >
                     {actionData.mailing_card && mailingTracking
                       ? (
                           actionData.action_button_status_message ||
@@ -905,60 +1066,131 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
                   </span>
 
                   {/* Tracking Status Section - Only for mailing with tracker */}
-                  {actionData.mailing_card && state.metadata?.easypost_tracker_id && (
-                    <div
-                      style={{
-                        marginTop: "10px",
-                        paddingTop: "10px",
-                        borderTop: "1px solid rgba(21, 116, 79, 0.2)",
-                      }}
-                    >
-                      <div
-                        style={{
-                          display: "flex",
-                          alignItems: "center",
-                          gap: "8px",
-                          marginBottom: "6px",
-                          fontSize: "12px",
-                        }}
-                      >
-                        <strong>Tracking Status:</strong>
-                        {isLoadingTracking && (
-                          <>
-                            <Loader 
-                              size={14} 
-                              style={{ 
-                                animation: "spin 1s linear infinite",
-                              }} 
-                            />
-                            <span>Updating...</span>
-                          </>
-                        )}
-                        {!isLoadingTracking && (
-                          <>
-                            {getTrackingStatusDisplay(trackingStatus).icon}
-                            <span style={{ fontWeight: 600 }}>
-                              {getTrackingStatusDisplay(trackingStatus).label}
-                            </span>
-                          </>
-                        )}
-                      </div>
+{actionData.mailing_card &&
+  state.metadata?.easypost_tracker_id && (
+    <div
+      style={{
+        marginTop: "10px",
+        paddingTop: "10px",
+        borderTop: "1px solid rgba(21, 116, 79, 0.2)",
+      }}
+    >
+      {/* Top Row */}
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          gap: "8px",
+          marginBottom: "4px",
+          fontSize: "12px",
+        }}
+      >
+        {/* Left: Status */}
+        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+          <strong>Tracking Status:</strong>
 
-                      {/* Last Checked Time */}
-                      {trackingLastChecked && (
-                        <div style={{ fontSize: "11px", color: "rgba(21, 116, 79, 0.7)", marginBottom: "4px" }}>
-                          Last checked: {formatRelativeTime(trackingLastChecked)}
-                        </div>
-                      )}
+          {isLoadingTracking && (
+            <>
+              <Loader
+                size={14}
+                style={{
+                  animation: "spin 1s linear infinite",
+                }}
+              />
+              <span>Updating...</span>
+            </>
+          )}
 
-                      {/* Delivered Date */}
-                      {deliveredAt && trackingStatus === "delivered" && (
-                        <div style={{ fontSize: "11px", fontWeight: 600, color: COLORS.green }}>
-                          ✅ Delivered: {new Date(deliveredAt).toLocaleDateString()}
-                        </div>
-                      )}
-                    </div>
-                  )}
+          {!isLoadingTracking && (
+            <>
+              {getTrackingStatusDisplay(trackingStatus).icon}
+              <span style={{ fontWeight: 600 }}>
+                {getTrackingStatusDisplay(trackingStatus).label}
+              </span>
+            </>
+          )}
+        </div>
+
+        {/* Right: Refresh Button */}
+        {trackingStatus !== "delivered" && (
+          <button
+            onClick={fetchTrackingStatus}
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              width: "28px",
+              height: "28px",
+              borderRadius: "50%",
+              border: "1px solid rgba(21, 116, 79, 0.2)",
+              background: "#fff",
+              cursor: "pointer",
+              transition: "all 0.2s",
+            }}
+            onMouseEnter={(e) => {
+              const el = e.currentTarget;
+              el.style.background = "#f3f8f5";
+              el.style.transform = "rotate(20deg)";
+            }}
+            onMouseLeave={(e) => {
+              const el = e.currentTarget;
+              el.style.background = "#fff";
+              el.style.transform = "rotate(0deg)";
+            }}
+          >
+            <RefreshCw size={14} color={COLORS.green} />
+          </button>
+        )}
+      </div>
+
+      {/* Last Checked */}
+      {trackingLastChecked && (
+        <div
+          style={{
+            fontSize: "11px",
+            color: "rgba(21, 116, 79, 0.7)",
+            marginBottom: "6px",
+          }}
+        >
+          Last checked: {formatRelativeTime(trackingLastChecked)}
+        </div>
+      )}
+
+      {/* Update Info */}
+      {trackingStatus !== "delivered" && (
+        <div
+          style={{
+            fontSize: "12px",
+            color: "rgba(21, 116, 79, 0.6)",
+            marginBottom: "4px",
+            fontWeight: 500,
+          }}
+        >
+          Updates from the carrier are checked four times a day.
+        </div>
+      )}
+
+      {/* Delivered Date */}
+      {deliveredAt && trackingStatus === "delivered" && (
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "6px",
+            fontSize: "11px",
+            fontWeight: 600,
+            color: COLORS.green,
+          }}
+        >
+          <CheckCircle2 size={14} />
+          <span>
+            Delivered: {new Date(deliveredAt).toLocaleDateString()}
+          </span>
+        </div>
+      )}
+    </div>
+  )}
                 </div>
               </section>
             )}
@@ -1579,20 +1811,22 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
         </div>
       )}
 
-      {previewConfig.isOpen && previewConfig.docDef && previewConfig.uploadedDoc && (
-        <DocumentPreviewModal
-          open={previewConfig.isOpen}
-          onClose={() =>
-            setPreviewConfig({
-              isOpen: false,
-              docDef: null,
-              uploadedDoc: null,
-            })
-          }
-          documentDef={previewConfig.docDef}
-          uploadedDoc={previewConfig.uploadedDoc}
-        />
-      )}
+      {previewConfig.isOpen &&
+        previewConfig.docDef &&
+        previewConfig.uploadedDoc && (
+          <DocumentPreviewModal
+            open={previewConfig.isOpen}
+            onClose={() =>
+              setPreviewConfig({
+                isOpen: false,
+                docDef: null,
+                uploadedDoc: null,
+              })
+            }
+            documentDef={previewConfig.docDef}
+            uploadedDoc={previewConfig.uploadedDoc}
+          />
+        )}
 
       <style>{`
         @media (max-width: 640px) {
