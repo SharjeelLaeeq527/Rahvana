@@ -40,7 +40,6 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
     if (auth.error) return auth.error
 
     const { supabase } = auth
-    const adminSupabase = getAdminClient()
 
     // Create service role client for background inserts/updates
     const adminSupabase = getAdminClient()
