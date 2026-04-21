@@ -66,7 +66,7 @@ export default function IR1JourneyPage() {
     }
   }, [visaJourney]);
 
-  const { state, actions, isLoaded, hasExistingProgress, isSyncing } =
+  const { state, actions, isLoaded, hasExistingProgress, isSyncing, error } =
     useWizard({
       userId,
       journeyId: visaJourney,
@@ -109,6 +109,26 @@ export default function IR1JourneyPage() {
             </p>
           </div>
         );
+  }
+
+  if (error) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4 p-8">
+        <div className="w-16 h-16 rounded-full bg-red-50 flex items-center justify-center text-red-500 mb-2">
+          <icons.AlertCircle size={32} />
+        </div>
+        <h2 className="text-2xl font-bold text-slate-800">Connection Error</h2>
+        <p className="text-slate-500 text-center max-w-md">
+          {error.message || "Failed to synchronize your journey. This usually happens when the configuration file for your visa type is missing or inaccessible."}
+        </p>
+        <button 
+          onClick={() => window.location.reload()}
+          className="mt-4 px-6 py-2 bg-primary text-white rounded-lg font-semibold hover:bg-primary/90 transition-colors"
+        >
+          Retry Connection
+        </button>
+      </div>
+    );
   }
 
   if (!roadmapData) {
