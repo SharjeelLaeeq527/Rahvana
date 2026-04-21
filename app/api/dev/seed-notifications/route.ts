@@ -130,13 +130,18 @@ export async function DELETE(request: NextRequest) {
     const { journeyId } = await request.json()
     const supabase = getAdminClient()
 
+    // Fully reset all notifications for this journey to allow clean testing
     await supabase
       .from('journey_reminders')
       .delete()
       .eq('journey_id', journeyId)
-      .like('dedup_key', '%:dev_seed:%')
 
-    return NextResponse.json({ success: true })
+    await supabase
+      .from('ceac_scheduled_notifications')
+      .delete()
+      .eq('journey_id', journeyId)
+
+    return NextResponse.json({ success: true, message: "Notifications fully reset for testing" })
   } catch (err: any) {
     return NextResponse.json({ error: err.message }, { status: 500 })
   }

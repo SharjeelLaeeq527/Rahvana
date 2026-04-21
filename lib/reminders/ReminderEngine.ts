@@ -402,14 +402,14 @@ export class ReminderEngine {
 
     if (!journey || (journey.completion_percentage ?? 0) < 70) return []
 
-    const { data: appointments } = await this.supabase
-      .from('journey_appointments')
-      .select('id, appointment_type')
+    const { data: caseData } = await this.supabase
+      .from('case_data')
+      .select('data_key')
       .eq('journey_id', journeyId)
-      .in('appointment_type', ['medical', 'interview'])
+      .in('data_key', ['med_date', 'interviewDate'])
 
-    const hasMedical = appointments?.some(a => a.appointment_type === 'medical')
-    const hasInterview = appointments?.some(a => a.appointment_type === 'interview')
+    const hasMedical = caseData?.some(d => d.data_key === 'med_date')
+    const hasInterview = caseData?.some(d => d.data_key === 'interviewDate')
 
     const reminders: ReminderCandidate[] = []
 
