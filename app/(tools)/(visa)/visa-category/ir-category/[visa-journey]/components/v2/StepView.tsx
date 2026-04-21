@@ -6993,7 +6993,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
       )}
 
       {selectedGuideId && InlineGuideData[selectedGuideId] && (
-        <div className="fixed inset-0 bg-white z-[100] flex flex-col overflow-hidden animate-in slide-in-from-bottom-4 duration-300 ease-out">
+        <div className="fixed inset-0 z-[100] flex flex-col overflow-hidden animate-in slide-in-from-bottom-4 duration-300 ease-out guide-bg">
           {/* Guide Topbar */}
           <div className="flex items-center p-[18px_24px] border-b border-[#d0e4f7] gap-[16px] shrink-0">
             <button
@@ -7019,7 +7019,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
           </div>
 
           {/* Guide Body */}
-          <div className="flex-1 overflow-y-auto flex flex-col items-center p-[48px_24px_40px] bg-white">
+          <div className="flex-1 overflow-y-auto flex flex-col items-center p-[48px_24px_40px]">
             <div className="w-full max-w-[600px] flex flex-col">
               <div className="text-[11px] font-semibold tracking-widest uppercase text-primary mb-4">
                 Step 2 · Gather Required Documents
@@ -7812,7 +7812,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
 
       {/* Gathering Guide Overlay (Step 3.4) */}
       {isGatheringGuideOpen && selectedGatheringItem && (
-        <div className="fixed inset-0 z-[100] bg-white flex flex-col overflow-hidden animate-in slide-in-from-bottom duration-260 ease-[cubic-bezier(0.4,0,0.2,1)] font-sans">
+        <div className="fixed inset-0 z-[100] bg-white flex flex-col overflow-hidden animate-in slide-in-from-bottom duration-260 ease-[cubic-bezier(0.4,0,0.2,1)] font-sans guide-bg">
           {/* Guide Topbar */}
           <div className="flex items-center p-[18px_24px] border-b border-[#d0e4f7] gap-[16px] shrink-0">
             <button
@@ -7910,7 +7910,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
       {/* Medical Exam Guide Overlay (Step 3.5) */}
       {isMedicalGuideOpen &&
         currentStep?.tool_data?.type === "medical_exam_guide" && (
-          <div className="fixed inset-0 z-200 bg-white flex flex-col overflow-hidden animate-in slide-in-from-bottom duration-280 font-sans">
+          <div className="fixed inset-0 z-200 bg-white flex flex-col overflow-hidden animate-in slide-in-from-bottom duration-280 font-sans guide-bg">
             {/* Topbar */}
             <div className="flex items-center p-[18px_24px] border-b border-[#d0e4f7] gap-[16px] shrink-0">
               <button
