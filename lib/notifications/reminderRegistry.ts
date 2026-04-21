@@ -556,10 +556,9 @@ export const REMINDER_REGISTRY: JourneyReminderDef[] = [
     group: 'c3_documents',
     chapter: 3,
     kind: 'URGENT',
-    origin: 'journey',
-    trigger: { type: 'metadata_key_exists', metadataKey: 'interviewDate' },
+    trigger: { type: 'metadata_date_set', metadataKey: 'interviewDate' },
     suppressWhen: { type: 'step_completed', stepKey: 'step_3_4' },
-    delayDays: 0,
+    delayDays: -7,
     priority: 'critical',
     channels: ['push_and_email'],
     title: '7 days to interview — confirm ALL documents are in hand',
@@ -583,7 +582,11 @@ export function getRemindersForStep(stepKey: string): JourneyReminderDef[] {
 
 /** All reminders triggered by a metadata key appearing or a date metadata key */
 export function getRemindersForMetadataKey(metadataKey: string): JourneyReminderDef[] {
-  return REMINDER_REGISTRY.filter((r) => getMetadataKey(r.trigger) === metadataKey)
+  return REMINDER_REGISTRY.filter(
+    (r) =>
+      (r.trigger.type === 'metadata_key_exists' && (r.trigger as any).metadataKey === metadataKey) ||
+      (r.trigger.type === 'metadata_date_set' && (r.trigger as any).metadataKey === metadataKey)
+  )
 }
 
 /** Get reminder by ID */

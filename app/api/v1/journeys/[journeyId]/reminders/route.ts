@@ -9,9 +9,18 @@ import { UnifiedReminderEngine } from '@/lib/notifications/UnifiedReminderEngine
 import { REMINDER_PRIORITY_ORDER } from '@/lib/reminders/types'
 import { getReminderById } from '@/lib/notifications/reminderRegistry'
 import type { ReminderListResponse } from '@/lib/reminders/types'
+import { createClient } from '@supabase/supabase-js'
 
 interface RouteParams {
   params: Promise<{ journeyId: string }>
+}
+
+function getAdminClient() {
+  return createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!,
+    { auth: { persistSession: false } }
+  )
 }
 
 // ─────────────────────────────────────────────────────────────
@@ -29,20 +38,21 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
     if (auth.error) return auth.error
 
     const { supabase } = auth
+    const adminSupabase = getAdminClient()
 
     // Step 1a: Stateless condition-based reminders (documents, fees, etc.)
-    const engine = new ReminderEngine(supabase)
+    const engine = new ReminderEngine(adminSupabase)
     await engine.generateReminders(journeyId)
 
     // Step 1b: Unified registry — schedule + suppress
-    const unified = new UnifiedReminderEngine(supabase)
+    const unified = new UnifiedReminderEngine(adminSupabase)
     await unified.checkAndScheduleAll(journeyId)
     await unified.runSuppression(journeyId)
 
     // Step 1c: Immediately deliver any DUE scheduled notifications for this journey
     // so user sees them without waiting for the cron job (6-hour delay).
     const nowIso = new Date().toISOString()
-    const { data: dueNow } = await supabase
+    const { data: dueNow } = await adminSupabase
       .from('ceac_scheduled_notifications')
       .select('*')
       .eq('journey_id', journeyId)
@@ -56,7 +66,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
       const priority = notif.reminder_type === 'URGENT' || notif.reminder_type === 'ACTION'
         ? (def?.priority ?? 'high') : (def?.priority ?? 'normal')
 
-      await supabase.from('journey_reminders').upsert({
+      await adminSupabase.from('journey_reminders').upsert({
         journey_id: journeyId,
         reminder_type: 'step_pending_too_long',
         priority,
@@ -66,10 +76,10 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
         action_url: def?.actionUrl ?? null,
         action_label: def?.actionLabel ?? null,
         is_dismissed: false,
-        dedup_key: `${journeyId}:journey:${notif.reminder_id}:${notif.recurrence_count}`,
+        dedup_key: `${journeyId}:journey:${notif.reminder_id}:${notif.recurrence_count}:${notif.id}`,
       }, { onConflict: 'dedup_key', ignoreDuplicates: true })
 
-      await supabase.from('ceac_scheduled_notifications')
+      await adminSupabase.from('ceac_scheduled_notifications')
         .update({ status: 'sent', sent_at: nowIso })
         .eq('id', notif.id)
     }

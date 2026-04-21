@@ -786,7 +786,7 @@ export function useWizard(options: UseWizardOptions = {}) {
     
         // Update local state with saved values
         setState((prev) => {
-          const newMetadata = {
+          const newMetadata: Record<string, any> = {
             ...prev.metadata,
             paper_mailing_carrier: carrier,
             paper_mailing_tracking: trackingNumber,
