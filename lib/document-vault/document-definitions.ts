@@ -1148,6 +1148,40 @@ const MISC_DOCS: DocumentDefinition[] = [
     multipleFilesAllowed: true,
     validityType: "none",
   },
+  {
+    id: "courier-registration-certificate",
+    key: "COURIER_REGISTRATION",
+    name: "Courier Registration Certificate",
+    description: "Proof of registration with courier service for passport return",
+    category: "MISC",
+    applicableVisas: UNIVERSAL_VISAS,
+
+    roles: ["BENEFICIARY"],
+    stages: ["INTERVIEW"],
+    required: true,
+    multipleFilesAllowed: false,
+    validityType: "none",
+    wizardSteps: [
+      {
+        stepNumber: 1,
+        title: "Register with Courier Service",
+        description:
+          "Register online with the designated courier service (e.g., Gerry's for Pakistan) for passport delivery and interview preparation.",
+        resources: [
+          {
+            name: "Register at ustraveldocs.com",
+            url: "https://www.ustraveldocs.com/pk/",
+            type: "link",
+          },
+        ],
+        tips: [
+          "Create a profile on the ustraveldocs website",
+          "Ensure the delivery address is correct",
+          "Print and save the registration confirmation / certificate",
+        ],
+      },
+    ],
+  },
 ];
 
 // ============================================================================

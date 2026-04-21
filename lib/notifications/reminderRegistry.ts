@@ -274,7 +274,8 @@ export const REMINDER_REGISTRY: JourneyReminderDef[] = [
     chapter: 2,
     kind: 'ACTION',
     origin: 'journey',
-    trigger: { type: 'metadata_key_value', metadataKey: 'nvcReviewComplete', value: 'true' },
+    // Fires when step 2.9 (awaiting NVC review) is completed but DQ not yet recorded
+    trigger: { type: 'step_completed', stepKey: 'step_2_9' },
     suppressWhen: { type: 'metadata_key_exists', metadataKey: 'dqDate' },
     delayDays: 0,
     recurring: { intervalDays: 7, maxCount: 4 },

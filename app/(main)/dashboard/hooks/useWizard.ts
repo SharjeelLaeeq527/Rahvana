@@ -64,6 +64,7 @@ export function useWizard(options: UseWizardOptions = {}) {
   const [isLoaded, setIsLoaded] = useState(false);
   const [hasExistingProgress, setHasExistingProgress] = useState(false);
   const [isSyncing, setIsSyncing] = useState(false);
+  const [error, setError] = useState<Error | null>(null);
 
   // ─── Normalize State ───────────
   const normalizeState = useCallback(() => {
@@ -260,6 +261,7 @@ export function useWizard(options: UseWizardOptions = {}) {
         }
       } catch (err) {
         console.error("[useWizard] Critical sync error:", err);
+        setError(err instanceof Error ? err : new Error(String(err)));
         toast.error("Cloud synchronization failed.");
         setIsLoaded(true);
       }
@@ -813,5 +815,5 @@ export function useWizard(options: UseWizardOptions = {}) {
     },
   }), [state.backendId, state.metadata, state.completedSteps, state.stepMap, state.role, journeyId, userId, activeRoadmap, normalizeState]);
 
-  return { state, actions, isLoaded, hasExistingProgress, isSyncing };
+  return { state, actions, isLoaded, hasExistingProgress, isSyncing, error };
 }

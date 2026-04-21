@@ -4,6 +4,8 @@
 
 import { NextRequest, NextResponse } from 'next/server'
 import { verifyJourneyAccess, errorResponse } from '@/lib/api/journey-auth'
+
+export const dynamic = 'force-dynamic'
 import { ReminderEngine } from '@/lib/reminders/ReminderEngine'
 import { UnifiedReminderEngine } from '@/lib/notifications/UnifiedReminderEngine'
 import { REMINDER_PRIORITY_ORDER } from '@/lib/reminders/types'
@@ -33,11 +35,14 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
   try {
     const { journeyId } = await params
 
-    // Verify auth + journey ownership
+    // Verify auth + journey ownership (uses user client)
     const auth = await verifyJourneyAccess(journeyId)
     if (auth.error) return auth.error
 
     const { supabase } = auth
+    const adminSupabase = getAdminClient()
+
+    // Create service role client for background inserts/updates
     const adminSupabase = getAdminClient()
 
     // Step 1a: Stateless condition-based reminders (documents, fees, etc.)

@@ -41,9 +41,11 @@ export async function POST(req: Request) {
       .single();
 
     if (error || !credential) {
+      // Return 200 with null instead of 404 to avoid console errors in the browser
+      // when a user hasn't saved credentials yet.
       return NextResponse.json(
-        { error: "Credential not found" },
-        { status: 404 }
+        { value: null, details: null, message: "Credentials not found" },
+        { status: 200 }
       );
     }
 

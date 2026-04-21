@@ -5,7 +5,6 @@ import Link from "next/link";
 import { useAuth } from "@/app/context/AuthContext";
 import { useLanguage } from "@/app/context/LanguageContext";
 
-// ...existing code...
 
 export function CinematicHeroHtmlStyle() {
   // Auth/journey state (must be inside component)
@@ -131,7 +130,7 @@ export function CinematicHeroHtmlStyle() {
         .eyebrow-row.in { opacity: 1; transform: translateY(0); }
         .e-line { width: 32px; height: 1px; background: #7ECEC4; }
         .e-text { font-size: 11px; font-weight: 500; letter-spacing: 0.16em; text-transform: uppercase; color: #7ECEC4; }
-        .p1-h1 { font-family: 'Cormorant Garamond', serif; font-size: clamp(38px, 6vw, 68px); font-weight: 300; line-height: 1.08; color: #fff; letter-spacing: -0.02em; margin-bottom: 22px; opacity: 0; transform: translateY(22px); transition: opacity 0.8s ease 0.25s, transform 0.8s ease 0.25s; }
+        .p1-h1 { font-family: 'Cormorant Garamond', serif; font-variant-numeric: lining-nums tabular-nums; font-size: clamp(38px, 6vw, 68px); font-weight: 300; line-height: 1.08; color: #fff; letter-spacing: -0.02em; margin-bottom: 22px; opacity: 0; transform: translateY(22px); transition: opacity 0.8s ease 0.25s, transform 0.8s ease 0.25s; }
         .p1-h1.in { opacity: 1; transform: translateY(0); }
         .p1-h1 em { font-style: italic; color: #6ba59f; }
         .p1-sub { font-size: 15px; font-weight: 300; line-height: 1.72; color: rgba(255,255,255,0.68); max-width: 420px; margin-bottom: 40px; opacity: 0; transform: translateY(18px); transition: opacity 0.8s ease 0.4s, transform 0.8s ease 0.4s; }
@@ -239,7 +238,7 @@ export function CinematicHeroHtmlStyle() {
               Your IR-1<br />Journey, <em>Simplified</em>
             </h1>
             <p className="p1-sub" id="s1">
-              Bespoke residency advisory. We handle the intricacies of your international relocation with absolute discretion and precision.
+            Bringing clarity to each stage, making the process feel more structured and easier to move through from start to finish.
             </p>
             <div className="scroll-cta" id="sc" onClick={() => goTo(1)}>
               <div className="scroll-ring">

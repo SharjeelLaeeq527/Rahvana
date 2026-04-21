@@ -73,16 +73,17 @@ export function ChapterView({
           }}
         />
       )}
-      {/* For Chapter 1 and 2, show only their main backgrounds, never the step backgrounds */}
       {isChapter1 && !isChapter1Step && (
         <div
           className="pointer-events-none fixed inset-0 z-0 bg-cover bg-center bg-no-repeat bg-fixed"
           style={{
             backgroundImage: `url(${chapter1Bg})`,
-            opacity: 0.5,
+            opacity: 0.35,
           }}
         />
       )}
+      {/* For Chapter 1 and 2, show only their main backgrounds, never the step backgrounds */}
+      {/* Only one Chapter 1 background overlay, toned down */}
       {isChapter2 && !isChapter2Step && (
         <div
           className="pointer-events-none fixed inset-0 z-0 bg-cover bg-center bg-no-repeat bg-fixed"
@@ -107,32 +108,33 @@ export function ChapterView({
           Back to Dashboard
         </button> */}
 
-        <div className={`bg-white/95 border-[1.5px] rounded-2xl p-[18px_20px] mb-3.5 shadow-[0_8px_32px_rgba(44,62,80,0.13),0_1.5px_6px_rgba(108,90,167,0.07)] backdrop-blur-md ${
-          isChapter3
-            ? "border-[#b3d6f7]"
-            : isChapter2
-              ? "border-[#d1c6e7]"
-              : "border-[#ecdbe7]"
-        }`}>
+        <div
+          className={`bg-gradient-to-br from-white via-white/95 to-neutral-50 border-[1.5px] rounded-3xl p-[32px_32px] mb-7
+            shadow-[0_8px_40px_rgba(36,42,66,0.18),0_3px_16px_rgba(44,62,80,0.13)]
+            transition-all duration-300 hover:scale-[1.018] hover:shadow-[0_16px_56px_rgba(36,42,66,0.22),0_6px_24px_rgba(44,62,80,0.18)]
+            border-solid
+            ${isChapter3 ? "border-[#2b6e7a]" : isChapter2 ? "border-[#7c5e8a]" : "border-[#b97c7c]"}
+          `}
+        >
           <div
-            className={`inline-flex items-center gap-1.25 px-[11px] py-[3px] rounded-full text-[10px] font-bold tracking-[0.07em] uppercase mb-2.5 border ${
-              isDone
+            className={`inline-flex items-center gap-1.5 px-[13px] py-[4px] rounded-full text-[11px] font-bold tracking-[0.07em] uppercase mb-3 border
+              ${isDone
                 ? isChapter3
-                  ? "bg-[#e3f2fd] border-[#b3d6f7] text-[#2176c7]"
+                  ? "bg-[#eaf4f6] border-[#2b6e7a] text-[#2b6e7a]"
                   : isChapter2
-                    ? "bg-[#f2f7f7] border-[#c6c8e0] text-[#6c5aa7]"
-                    : "bg-[#f2f7f2] border-[#c8e0d0] text-[#15744f]"
+                    ? "bg-[#f3f0fa] border-[#7c5e8a] text-[#7c5e8a]"
+                    : "bg-[#f7e0ec] border-[#b97c7c] text-[#b97c7c]"
                 : isInProgress
                   ? isChapter3
-                    ? "bg-[#e3f2fd] border-[#b3d6f7] text-[#2176c7]"
+                    ? "bg-[#eaf4f6] border-[#2b6e7a] text-[#2b6e7a]"
                     : isChapter2
-                      ? "bg-[#f7f3fa] border-[#d1c6e7] text-[#6c5aa7]"
-                      : "bg-[#f7f3fa] border-[#ecdbe7] text-[#a06ca7]"
+                      ? "bg-[#f3f0fa] border-[#7c5e8a] text-[#7c5e8a]"
+                      : "bg-[#f7e0ec] border-[#b97c7c] text-[#b97c7c]"
                   : isChapter3
-                    ? "bg-[#e3f2fd] border-[#b3d6f7] text-[#2176c7]"
+                    ? "bg-[#eaf4f6] border-[#2b6e7a] text-[#2b6e7a]"
                     : isChapter2
-                      ? "bg-[#f7f3fa] border-[#d1c6e7] text-[#6c5aa7]"
-                      : "bg-[#f7f3fa] border-[#ecdbe7] text-[#a06ca7]"
+                      ? "bg-[#f3f0fa] border-[#7c5e8a] text-[#7c5e8a]"
+                      : "bg-[#f7e0ec] border-[#b97c7c] text-[#b97c7c]"
             }`}
           >
             {isDone
@@ -141,24 +143,31 @@ export function ChapterView({
                 ? "In Progress"
                 : "Not Started"}
           </div>
-          <h1 className="text-[clamp(20px,3vw,26px)] font-black text-[#0c1b33] mb-1">
+          <h1 className="text-[clamp(22px,3vw,28px)] font-extrabold text-[#1a2236] mb-1 tracking-tight">
             {(chapter.chapter_name || (chapter as any).name).replace(
               /^Stage\s[IVX]+:\s/,
               "",
             )}
           </h1>
-          <p className="text-[13.5px] text-[#3a4f63] leading-[1.7] mb-3.5">
+          <p className="text-[14px] text-[#3a4f63] leading-[1.7] mb-4">
             {chapter.chapter_description || chapter.description}
           </p>
 
           <div className="flex items-center gap-2.5">
-            <div className={`flex-1 h-[5px] rounded-[10px] overflow-hidden ${isChapter3 ? "bg-[#d0e8fa]" : isChapter2 ? "bg-[#e0def3]" : "bg-[#f3e0e4]"}`}>
+            <div className={`flex-1 h-[7px] rounded-[13px] overflow-hidden ${isChapter3 ? "bg-[#eaf4f6]" : isChapter2 ? "bg-[#f3f0fa]" : "bg-[#f7e0ec]"}`}>
               <div
-                className="h-full rounded-[10px] transition-all duration-500"
-                style={{ width: `${prog.pct}%`, background: isChapter3 ? '#2176c7' : isChapter2 ? '#6c5aa7' : '#c0596a' }}
+                className="h-full rounded-[13px] transition-all duration-500 shadow-[0_2.5px_12px_rgba(36,42,66,0.18)]"
+                style={{
+                  width: `${prog.pct}%`,
+                  background: isChapter3
+                    ? '#2b6e7a'
+                    : isChapter2
+                      ? '#7c5e8a'
+                      : '#b97c7c',
+                }}
               />
             </div>
-            <div className={`text-[11px] font-bold ${isChapter3 ? "text-[#2176c7]" : isChapter2 ? "text-[#6c5aa7]" : "text-[#c0596a]"}`}>
+            <div className={`text-[12px] font-bold ${isChapter3 ? "text-[#217a8b]" : isChapter2 ? "text-[#7a326a]" : "text-[#a06ca7]"}`}>
               {prog.pct}%
             </div>
           </div>
@@ -182,11 +191,6 @@ export function ChapterView({
 
         <div className="flex flex-col gap-1.5">
           {activeSteps
-            .filter(
-              (step) =>
-                step.step_key !== "step_1_15" &&
-                step.step_key !== "step_1_16"
-            )
             .map((step, idx) => {
               const sId = step.step_key || (step as any).id;
               const isCompleted = state.completedSteps.has(sId);
@@ -203,116 +207,99 @@ export function ChapterView({
 
               // Accent and border colors to match screenshot
               // Updated to a nicer shade of purple for Chapter 2, blue for Chapter 3
+              // --- Enhanced accent color palette and depth for step cards ---
+              // Harmonized, premium step card colors
               let borderColor = isChapter3
-              ? "border-[#7fc1f9]"
-              : isChapter2
-                ? "border-[#8f6be9]"
-                : "border-[#e7bfc2]";
-            let bgColor = "bg-white";
-            let textColor = isChapter3
-              ? "text-[#2176c7]"
-              : isChapter2
-                ? "text-[#7c4dce]"
-                : "text-[#a06ca7]";
-            let iconBg = "bg-white";
-            let iconBorder = isChapter3
-              ? "border-[#7fc1f9]"
-              : isChapter2
-                ? "border-[#8f6be9]"
-                : "border-[#e7bfc2]";
-            let iconText = isChapter3
-              ? "text-[#2176c7]"
-              : isChapter2
-                ? "text-[#7c4dce]"
-                : "text-[#e06a6a]";
-            if (isCompleted) {
-              borderColor = isChapter3
-                ? "border-[#b3d6f7]"
+                ? "border-[#2b6e7a]"
                 : isChapter2
-                  ? "border-[#b7a6f7]"
-                  : "border-[#b7e0c3]";
-              bgColor = "bg-white";
-              textColor = isChapter3
-                ? "text-[#2176c7]"
+                  ? "border-[#7c5e8a]"
+                  : "border-[#b97c7c]";
+              let bgColor = "bg-gradient-to-br from-white via-white/95 to-neutral-50";
+              let textColor = isChapter3
+                ? "text-[#2b6e7a]"
                 : isChapter2
-                  ? "text-[#7c4dce]"
-                  : "text-[#15744f]";
-              iconBg = "bg-white";
-              iconBorder = isChapter3
-                ? "border-[#b3d6f7]"
-                : isChapter2
-                  ? "border-[#b7a6f7]"
-                  : "border-[#b7e0c3]";
-              iconText = isChapter3
-                ? "text-[#2176c7]"
-                : isChapter2
-                  ? "text-[#7c4dce]"
-                  : "text-[#15744f]";
-            } else if (isCurrent) {
-              borderColor = isChapter3
-                ? "border-[#2176c7]"
-                : isChapter2
-                  ? "border-[#7c4dce]"
-                  : "border-[#c0596a]";
-              bgColor = "bg-white";
-              textColor = isChapter3
-                ? "text-[#2176c7]"
-                : isChapter2
-                  ? "text-[#7c4dce]"
-                  : "text-[#c0596a]";
-              iconBg = "bg-white";
-              iconBorder = isChapter3
-                ? "border-[#2176c7]"
-                : isChapter2
-                  ? "border-[#7c4dce]"
-                  : "border-[#c0596a]";
-              iconText = isChapter3
-                ? "text-[#2176c7]"
-                : isChapter2
-                  ? "text-[#7c4dce]"
-                  : "text-[#c0596a]";
-            } else {
-              borderColor = isChapter3
-                ? "border-[#d0e8fa]"
-                : isChapter2
-                  ? "border-[#e0def3]"
-                  : "border-[#e7dbe7]";
-              bgColor = "bg-white";
-              textColor = isChapter3
-                ? "text-[#b3d6f7]"
-                : isChapter2
-                  ? "text-[#b3a6d3]"
-                  : "text-[#b3a6b3]";
-              iconBg = "bg-white";
-              iconBorder = isChapter3
-                ? "border-[#d0e8fa]"
-                : isChapter2
-                  ? "border-[#e0def3]"
-                  : "border-[#e7dbe7]";
-              iconText = isChapter3
-                ? "text-[#b3d6f7]"
-                : isChapter2
-                  ? "text-[#b3a6d3]"
-                  : "text-[#b3a6b3]";
-            }
+                  ? "text-[#7c5e8a]"
+                  : "text-[#b97c7c]";
+              let iconBg = "bg-white";
+              let iconBorder = borderColor;
+              let iconText = textColor;
+
+              if (isCompleted) {
+                borderColor = isChapter3
+                  ? "border-[#2b6e7a]"
+                  : isChapter2
+                    ? "border-[#7c5e8a]"
+                    : "border-[#b97c7c]";
+                bgColor = isChapter3
+                  ? "bg-[#2b6e7a]"
+                  : isChapter2
+                    ? "bg-[#7c5e8a]"
+                    : "bg-[#b97c7c]";
+                textColor = "text-white";
+                iconBg = "bg-white/20";
+                iconBorder = isChapter3
+                  ? "border-[#b2dbe0]"
+                  : isChapter2
+                    ? "border-[#d6cbe0]"
+                    : "border-[#e7bfc2]";
+                iconText = "text-white";
+              } else if (isCurrent) {
+                borderColor = isChapter3
+                  ? "border-[#2b6e7a]"
+                  : isChapter2
+                    ? "border-[#7c5e8a]"
+                    : "border-[#b97c7c]";
+                bgColor = "bg-white/80 backdrop-blur-sm"; // softly transparent for all chapters
+                textColor = isChapter3
+                  ? "text-[#217a8b]" // deep teal accent
+                  : isChapter2
+                    ? "text-[#7c5e8a]" // deep lavender accent
+                    : "text-[#b97c7c]"; // deep rose accent
+                iconBg = "bg-white";
+                iconBorder = borderColor;
+                iconText = textColor;
+              } else {
+                borderColor = isChapter3
+                  ? "border-[#b2dbe0]"
+                  : isChapter2
+                    ? "border-[#d6cbe0]"
+                    : "border-[#e7bfc2]";
+                bgColor = "bg-white";
+                textColor = isChapter3
+                  ? "text-[#2b6e7a]"
+                  : isChapter2
+                    ? "text-[#7c5e8a]"
+                    : "text-[#b97c7c]";
+                iconBg = "bg-white";
+                iconBorder = borderColor;
+                iconText = textColor;
+              }
 
             return (
               <div
                 key={sId}
                 onClick={() => onSelectStep(chapterIdx, fullStepIdx)}
-                className={`flex items-center gap-3 px-4 py-3 rounded-[10px] cursor-pointer transition-all border-[1.5px] animate-in fade-in slide-in-from-right-2 duration-500 ${borderColor} ${bgColor}`}
+                className={`flex items-center gap-3 px-4 py-3 rounded-[13px] cursor-pointer transition-all border-[1.5px] animate-in fade-in slide-in-from-right-2 duration-500 ${borderColor} ${bgColor} relative
+                  ${isCompleted
+                    ? 'shadow-[0_8px_32px_rgba(36,42,66,0.18),0_3px_16px_rgba(44,62,80,0.13)]'
+                    : 'shadow-[0_4px_20px_rgba(36,42,66,0.13),0_2px_8px_rgba(44,62,80,0.10)] hover:shadow-[0_8px_32px_rgba(36,42,66,0.18),0_3px_16px_rgba(44,62,80,0.13)]'}
+                  active:scale-[0.98]
+                  ${isCurrent ? (isChapter3 ? 'before:bg-[#2b6e7a]' : isChapter2 ? 'before:bg-[#7c5e8a]' : 'before:bg-[#b97c7c]') + ' before:content-[" "] before:absolute before:inset-y-1 before:left-0 before:w-1.5 before:rounded-full' : ''}
+                `}
                 style={{ animationDelay: `${idx * 40}ms` }}
               >
                 <div
-                  className={`w-7 h-7 rounded-full border-2 flex items-center justify-center text-[11px] font-bold transition-all shrink-0 ${iconBg} ${iconBorder} ${iconText}`}
+                  className={`w-7 h-7 rounded-full border-2 flex items-center justify-center text-[11.5px] font-bold transition-all shrink-0 ${iconBg} ${iconBorder} ${iconText}
+                    shadow-[0_1.5px_6px_rgba(36,42,66,0.10)]
+                  `}
                 >
                   {isCompleted ? "✓" : idx + 1}
                 </div>
                 <div className="flex-1">
-                  <div className={`text-[13.5px] font-semibold leading-[1.3] ${textColor}`}>
+                  <div className={`text-[14px] font-semibold leading-[1.3] ${textColor}`}>
                     {step.step_name || (step as any).name}
                   </div>
-                  <div className="text-[11.5px] text-[#b3a6b3] mt-0.25">
+                  <div className={`text-[11.5px] font-semibold mt-0.25 ${isCompleted ? 'text-white' : 'text-[#23232b]'}`}> 
                     {step.step_short_description || ""}
                   </div>
                 </div>

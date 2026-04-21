@@ -100,6 +100,12 @@ const nextConfig = {
   typescript: {
     ignoreBuildErrors: true,
   },
+
+  experimental: {
+    outputFileTracingIncludes: {
+      '/api/**/*': ['./data/**/*'],
+    },
+  },
 }
 
 export default nextConfig

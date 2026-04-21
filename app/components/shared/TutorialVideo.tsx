@@ -30,7 +30,7 @@ export const TutorialVideo: React.FC<TutorialVideoProps> = ({
   return (
     <video
       key={src}
-      className={`w-full h-full object-contain ${className}`}
+      className={`w-full h-full object-cover ${className}`}
       autoPlay
       muted
       loop

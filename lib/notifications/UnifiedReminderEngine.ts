@@ -44,12 +44,16 @@ export class UnifiedReminderEngine {
     setAt?: Date
   ): Promise<void> {
     const baseDate = setAt ?? new Date()
+<<<<<<< HEAD
     const candidates = getRemindersForMetadataKey(metadataKey).filter((r) => {
       if (r.trigger.type === 'metadata_key_value') {
         return metadataValue === getMetadataValue(r.trigger)
       }
       return true
     })
+=======
+    const candidates = getRemindersForMetadataKey(metadataKey)
+>>>>>>> hashir-roadmap-journey-feature
     if (candidates.length === 0) return
 
     const dateBasedDefs: JourneyReminderDef[] = []
@@ -79,9 +83,45 @@ export class UnifiedReminderEngine {
   // Lazily schedules + handles date-change detection.
   // ─────────────────────────────────────────────────────────
   async checkAndScheduleAll(journeyId: string): Promise<void> {
+<<<<<<< HEAD
     const jState = await this._fetchJourneyState(journeyId)
 
     // Fetch existing scheduled rows (all non-cancelled)
+=======
+    const [journeyResult, caseDataResult, stepsResult] = await Promise.allSettled([
+      this.supabase.from('journeys').select('metadata').eq('id', journeyId).single(),
+      this.supabase.from('case_data').select('data_key, data_value').eq('journey_id', journeyId),
+      this.supabase.from('journey_steps').select('step_key, status, completed_at').eq('journey_id', journeyId),
+    ])
+
+    // Merge journeys.metadata (admin fields) + case_data rows (user-saved fields)
+    const metadata: Record<string, unknown> =
+      journeyResult.status === 'fulfilled'
+        ? { ...(journeyResult.value.data?.metadata as Record<string, unknown> ?? {}) }
+        : {}
+
+    if (caseDataResult.status === 'fulfilled' && caseDataResult.value.data) {
+      for (const row of caseDataResult.value.data) {
+        if (!row.data_key) continue
+        try {
+          metadata[row.data_key] = typeof row.data_value === 'string' && row.data_value.startsWith('"')
+            ? JSON.parse(row.data_value)
+            : row.data_value
+        } catch { metadata[row.data_key] = row.data_value }
+      }
+    }
+
+    const completedSteps: Record<string, string | null> = {}
+    if (stepsResult.status === 'fulfilled' && stepsResult.value.data) {
+      for (const step of stepsResult.value.data) {
+        if (step.status === 'completed') {
+          completedSteps[step.step_key] = step.completed_at ?? null
+        }
+      }
+    }
+
+    // Get all already-scheduled reminder rows (with fire_at for date-change detection)
+>>>>>>> hashir-roadmap-journey-feature
     const { data: existing } = await this.supabase
       .from('ceac_scheduled_notifications')
       .select('id, reminder_id, fire_at, trigger_group, status')
@@ -178,6 +218,7 @@ export class UnifiedReminderEngine {
   async runSuppression(journeyId: string): Promise<void> {
     const jState = await this._fetchJourneyState(journeyId)
 
+    // Build list of all reminder IDs whose suppress condition is now met
     const suppressedIds = REMINDER_REGISTRY
       .filter((def) => def.origin === 'journey' && this._isSuppressed(def.suppressWhen, jState))
       .map((def) => def.id)

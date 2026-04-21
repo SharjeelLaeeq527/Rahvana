@@ -3,7 +3,7 @@
 import React, { useState, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { motion as BannerMotion } from "motion/react";
+import { motion as BannerMotion } from "framer-motion";
 import * as Icons from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Wizard } from "./components/home-page/Wizard";

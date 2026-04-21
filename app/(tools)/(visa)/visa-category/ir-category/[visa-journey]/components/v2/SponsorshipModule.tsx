@@ -54,7 +54,7 @@ export const SponsorshipModule: React.FC<SponsorshipModuleProps> = ({
           </div>
           <button
             onClick={onOpenCalc}
-            className="inline-flex items-center justify-center gap-[10px] w-full p-[16px_28px] bg-[#3b7dd8] text-white border-none rounded-[12px] font-sans text-[15px] font-semibold cursor-pointer transition-all hover:bg-[#3b7dd8] hover:-translate-y-0.5 active:translate-y-0 shadow-[0_4px_20px_rgba(47,111,212,0.35)]"
+            className="inline-flex items-center justify-center gap-[10px] w-full p-[16px_28px] bg-[#b48ad6] text-white border-none rounded-[12px] font-sans text-[15px] font-semibold cursor-pointer transition-all hover:bg-[#561864] hover:-translate-y-0.5 active:translate-y-0 shadow-[0_4px_20px_rgba(47,111,212,0.35)]"
           >
             {tool.launch_module.buttonText || "Start Sponsorship Calculator"}
           </button>

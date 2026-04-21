@@ -123,7 +123,7 @@ import DocumentTranslationTool from "@/components/tools/DocumentTranslationTool"
 import SponsorshipCalculatorTool from "@/components/tools/SponsorshipCalculatorTool";
 import { DocumentQuestionnaire } from "@/app/components/questionnaire/DocumentQuestionnaire";
 import { IR1_QUESTIONNAIRE_CONFIG } from "@/lib/questionnaire/ir1-questionnaire";
-import { computeDocumentList } from "@/lib/questionnaire/engine";
+import { computeDocumentList, deriveDocAnswersFromEligibility } from "@/lib/questionnaire/engine";
 import type {
   QuestionnaireResult,
   ConditionalDocument,
@@ -343,6 +343,15 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
     state.metadata?.docQuestionnaireCompleted === true;
   const [showDocQuestionnaire, setShowDocQuestionnaire] = useState(false);
 
+  // Derive document-questionnaire answers from Step 1 eligibility quest answers
+  // so duplicate questions (prior marriage, criminal history) don't need to be asked again.
+  const derivedDocAnswers = useMemo(() => {
+    const eligibilityAnswers = state.answers?.["eligibility-suite"] as
+      | Record<string, Record<string, string | string[]>>
+      | undefined;
+    return deriveDocAnswersFromEligibility(eligibilityAnswers);
+  }, [state.answers]);
+
   // Compute effective document items: use engine-finalized list if questionnaire done,
   // otherwise fall back to the raw JSON data
   const questionnaireDocItems = useMemo(() => {
@@ -351,9 +360,12 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
       | Record<string, string>
       | undefined;
     if (!savedAnswers) return null;
+    // Merge derived Step 1 answers underneath saved answers
+    // (saved answers take priority if both exist)
+    const mergedAnswers = { ...derivedDocAnswers, ...savedAnswers };
     const computed = computeDocumentList(
       IR1_QUESTIONNAIRE_CONFIG,
-      savedAnswers,
+      mergedAnswers,
     );
     // Map ConditionalDocument shape to the document_items shape the UI uses
     return computed.map((doc: ConditionalDocument) => ({
@@ -367,7 +379,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
       status: "not-started",
       required: doc.required,
     }));
-  }, [isDocQuestionnaireCompleted, state.metadata?.docQuestionnaireAnswers]);
+  }, [isDocQuestionnaireCompleted, state.metadata?.docQuestionnaireAnswers, derivedDocAnswers]);
 
   const [multipleUploadModalState, setMultipleUploadModalState] = useState<{
     isOpen: boolean;
@@ -484,6 +496,13 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
   const [submissionChecklistStatus, setSubmissionChecklistStatus] = useState<
     Record<string, boolean>
   >(initialSubmissionChecklist);
+
+  const [submissionSaved, setSubmissionSaved] = useState(
+    state.metadata.submissionSaved === true,
+  );
+  const [submissionDate, setSubmissionDate] = useState(
+    (state.metadata.submissionDate as string) || "",
+  );
 
   // Step 2.10 DQ Recording States
   const [dqSaved, setDqSaved] = useState(state.metadata.dqSaved === true);
@@ -3076,7 +3095,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                 setTutorialIdx(0);
                 setIsTutorialOpen(true);
               }}
-              className="w-full py-4 px-7 bg-[#3b7dd8] text-white rounded-[12px] text-[15px] font-semibold cursor-pointer hover:bg-[#3b7dd8] transition-all shadow-[0_4px_20px_rgba(47,111,212,0.35)] hover:shadow-[0_8px_32px_rgba(47,111,212,0.45)] hover:-translate-y-0.5 active:translate-y-0"
+              className="w-full py-4 px-7 bg-[#b48ad6] text-white rounded-[12px] text-[15px] font-semibold cursor-pointer hover:bg-[#561864] transition-all shadow-[0_4px_20px_rgba(47,111,212,0.35)] hover:shadow-[0_8px_32px_rgba(47,111,212,0.45)] hover:-translate-y-0.5 active:translate-y-0"
             >
               Start CEAC Guide
             </button>
@@ -3674,10 +3693,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-[14px] mb-[14px]">
                 {/* Official Card - IV Tool Auto-Sync */}
                 {(() => {
-                  const [ivLoading, setIvLoading] = React.useState(false);
-                  const [ivError, setIvError] = React.useState<string | null>(
-                    null,
-                  );
+                  // Using ivLoading and ivError from component state (not creating duplicate hooks)
                   const savedMonth = state.metadata
                     ?.currentSchedulingMonthYear as string | undefined;
                   const savedUpdated = state.metadata
@@ -4147,6 +4163,16 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
               setSubmissionChecklistStatus={setSubmissionChecklistStatus}
               setSubmissionGuideIdx={setSubmissionGuideIdx}
               setIsSubmissionGuideOpen={setIsSubmissionGuideOpen}
+              submissionSaved={submissionSaved}
+              submissionDate={submissionDate}
+              onSave={(data) => {
+                setSubmissionSaved(data.saved);
+                setSubmissionDate(data.date);
+                actions.updateMetadata({
+                  submissionSaved: data.saved,
+                  submissionDate: data.date,
+                });
+              }}
             />
           )}
 
@@ -6051,6 +6077,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
               {showDocQuestionnaire && currentStep.step_key === "step_1_2" && (
                 <DocumentQuestionnaire
                   config={IR1_QUESTIONNAIRE_CONFIG}
+                  initialAnswers={derivedDocAnswers}
                   onComplete={(result: QuestionnaireResult) => {
                     // Persist answers + completion flag via backend
                     actions.updateMetadata({
@@ -6100,47 +6127,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                         currentStep.document_items;
                   return (
                     <>
-                      <div className="text-left w-full max-w-[740px] mb-[24px]">
-                        <h1 className="text-[clamp(26px,4vw,34px)] font-black text-[#0f1f38] leading-[1.2]">
-                          {currentStep.step_name}
-                        </h1>
-                        <p className="text-[#3a4f63] text-[15px] leading-[1.65] mb-[12px] max-w-[550px]">
-                          {currentStep.step_description}
-                        </p>
-                        {/* Personalized badge */}
-                        {sId === "step_1_2" && isDocQuestionnaireCompleted && (
-                          <div className="flex items-center gap-[8px] mb-[8px]">
-                            <span className="text-[11px] font-semibold tracking-[0.04em] px-[10px] py-[3px] rounded-full bg-[#eaf7f2] text-[#1a7a5e] border border-[#b5e0d0]">
-                              ✓ Personalized for your case
-                            </span>
-                          </div>
-                        )}
-
-                        {/* Local Progress Bar */}
-                        {effectiveDocItems && effectiveDocItems.length > 0 && (
-                          <div className="w-full flex items-center gap-[12px] mt-3">
-                            <div className="flex-1 h-[5px] bg-primary/30 rounded-full overflow-hidden">
-                              <div
-                                className="h-full bg-linear-to-r from-primary to-primary transition-all duration-1000 ease-out"
-                                style={{
-                                  width: `${(effectiveDocItems.filter((d: any) => state.metadata?.docReviewStatus?.[d.id] || state.documentChecklist[d.name]).length / effectiveDocItems.length) * 100}%`,
-                                }}
-                              />
-                            </div>
-                            <span className="text-[12px] font-medium text-[#6b8097] whitespace-nowrap">
-                              {
-                                effectiveDocItems.filter(
-                                  (d: any) =>
-                                    state.metadata?.docReviewStatus?.[d.id] ||
-                                    state.documentChecklist[d.name],
-                                ).length
-                              }{" "}
-                              of {effectiveDocItems.length} reviewed
-                            </span>
-                          </div>
-                        )}
-                      </div>
-
+                   
                       {/* Document Cards */}
                       <div className="w-full max-w-[740px]">
                         <div className="w-full">
@@ -7469,10 +7456,10 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                                 (currentTutStep as TutorialStepData).screenTitle
                               }
                               fill
-                              className="object-contain"
+                              className="object-cover"
                               sizes="(max-width: 640px) 95vw, (max-width: 1024px) 90vw, 1000px"
                               quality={95}
-                              style={{ objectFit: "contain" }}
+                              style={{ objectFit: "cover" }}
                               priority={tutorialIdx === 0}
                             />
                           )
@@ -7496,10 +7483,10 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                               (currentTutStep as TutorialStepData).screenTitle
                             }
                             fill
-                            className="object-contain"
+                            className="object-cover"
                             sizes="(max-width: 640px) 95vw, (max-width: 1024px) 90vw, 1000px"
                             quality={95}
-                            style={{ objectFit: "contain" }}
+                            style={{ objectFit: "cover" }}
                             priority={tutorialIdx === 0}
                           />
                         ) : (
@@ -7651,10 +7638,10 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                                 ).screenTitle
                               }
                               fill
-                              className="object-contain"
+                              className="object-cover"
                               sizes="(max-width: 640px) 95vw, (max-width: 1024px) 90vw, 1000px"
                               quality={95}
-                              style={{ objectFit: "contain" }}
+                              style={{ objectFit: "cover" }}
                               priority
                             />
                           ) : (
