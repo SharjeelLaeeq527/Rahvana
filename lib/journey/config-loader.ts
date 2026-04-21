@@ -107,8 +107,18 @@ export class ConfigLoader {
     // Load journey config from JSON file
   static loadJourneyJSON(filePath: string): RawJourneyJSON {
     try {
+      // Normalize filePath to ensure no leading slash
+      const normalizedPath = filePath.startsWith("/") ? filePath.slice(1) : filePath;
+      
       // Get absolute path
-      const absolutePath = path.join(process.cwd(), filePath);
+      const absolutePath = path.resolve(process.cwd(), normalizedPath);
+
+      console.log(`[ConfigLoader] Attempting to load journey JSON from: ${absolutePath}`);
+
+      if (!fs.existsSync(absolutePath)) {
+        console.error(`[ConfigLoader] File does not exist at path: ${absolutePath}`);
+        throw new Error(`Config file not found at ${absolutePath}`);
+      }
 
       // Read file from disk into memory 
       const fileContent = fs.readFileSync(absolutePath, "utf-8");
@@ -117,15 +127,12 @@ export class ConfigLoader {
       const json = JSON.parse(fileContent);
 
       console.log(
-        `Loaded journey config: ${json.journey_name} (${filePath})`
+        `[ConfigLoader] Successfully loaded journey config: ${json.journey_name}`
       );
       return json;
     } catch (error) {
-      throw new Error(
-        `Failed to load journey config from ${filePath}: ${
-          error instanceof Error ? error.message : "Unknown error"
-        }`
-      );
+      console.error(`[ConfigLoader] Error loading journey JSON:`, error);
+      throw error;
     }
   }
 

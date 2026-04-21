@@ -29,6 +29,8 @@ import {
 interface DocumentQuestionnaireProps {
   /** The questionnaire configuration (questions, rules, base docs) */
   config: QuestionnaireConfig;
+  /** Pre-populated answers derived from earlier steps (e.g. Step 1 eligibility quest) */
+  initialAnswers?: QuestionnaireAnswers;
   /** Called when user finishes the questionnaire */
   onComplete: (result: QuestionnaireResult) => void;
   /** Called when user dismisses (X button). Optional. */
@@ -40,10 +42,13 @@ interface DocumentQuestionnaireProps {
 // ────────────────────────────────────────────────────────────────────
 export function DocumentQuestionnaire({
   config,
+  initialAnswers,
   onComplete,
   onDismiss,
 }: DocumentQuestionnaireProps) {
-  const [answers, setAnswers] = useState<QuestionnaireAnswers>({});
+  const [answers, setAnswers] = useState<QuestionnaireAnswers>(
+    () => initialAnswers ? { ...initialAnswers } : {},
+  );
   const [currentIdx, setCurrentIdx] = useState(0);
   const [showSummary, setShowSummary] = useState(false);
   const [direction, setDirection] = useState<"forward" | "backward">("forward");
