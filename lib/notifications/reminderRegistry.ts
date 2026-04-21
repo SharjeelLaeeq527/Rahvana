@@ -392,7 +392,7 @@ export const REMINDER_REGISTRY: JourneyReminderDef[] = [
     kind: 'ACTION',
     origin: 'journey',
     trigger: { type: 'metadata_date_set', metadataKey: 'med_date' },
-    suppressWhen: { type: 'step_completed', stepKey: 'step_3_1' },
+    suppressWhen: { type: 'never' },
     delayDays: -14,   // 14 days BEFORE the medical appointment
     priority: 'high',
     channels: ['push'],
@@ -409,7 +409,7 @@ export const REMINDER_REGISTRY: JourneyReminderDef[] = [
     kind: 'WAITING',
     origin: 'journey',
     trigger: { type: 'metadata_date_set', metadataKey: 'med_date' },
-    suppressWhen: { type: 'step_completed', stepKey: 'step_3_1' },
+    suppressWhen: { type: 'never' },
     delayDays: -7,   // 7 days BEFORE
     priority: 'high',
     channels: ['push'],
@@ -426,7 +426,7 @@ export const REMINDER_REGISTRY: JourneyReminderDef[] = [
     kind: 'URGENT',
     origin: 'journey',
     trigger: { type: 'metadata_date_set', metadataKey: 'med_date' },
-    suppressWhen: { type: 'step_completed', stepKey: 'step_3_1' },
+    suppressWhen: { type: 'never' },
     delayDays: -3,   // 3 days BEFORE
     priority: 'critical',
     channels: ['push_and_email'],
@@ -443,7 +443,7 @@ export const REMINDER_REGISTRY: JourneyReminderDef[] = [
     kind: 'URGENT',
     origin: 'journey',
     trigger: { type: 'metadata_date_set', metadataKey: 'med_date' },
-    suppressWhen: { type: 'step_completed', stepKey: 'step_3_1' },
+    suppressWhen: { type: 'never' },
     delayDays: -1,   // 1 day BEFORE (the evening before)
     priority: 'critical',
     channels: ['push_and_email'],

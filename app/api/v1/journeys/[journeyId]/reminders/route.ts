@@ -4,6 +4,8 @@
 
 import { NextRequest, NextResponse } from 'next/server'
 import { verifyJourneyAccess, errorResponse } from '@/lib/api/journey-auth'
+
+export const dynamic = 'force-dynamic'
 import { ReminderEngine } from '@/lib/reminders/ReminderEngine'
 import { UnifiedReminderEngine } from '@/lib/notifications/UnifiedReminderEngine'
 import { REMINDER_PRIORITY_ORDER } from '@/lib/reminders/types'
