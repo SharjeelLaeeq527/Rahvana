@@ -191,11 +191,6 @@ export function ChapterView({
 
         <div className="flex flex-col gap-1.5">
           {activeSteps
-            .filter(
-              (step) =>
-                step.step_key !== "step_1_15" &&
-                step.step_key !== "step_1_16"
-            )
             .map((step, idx) => {
               const sId = step.step_key || (step as any).id;
               const isCompleted = state.completedSteps.has(sId);

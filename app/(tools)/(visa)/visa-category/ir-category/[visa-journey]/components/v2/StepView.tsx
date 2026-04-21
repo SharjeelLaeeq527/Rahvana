@@ -123,7 +123,7 @@ import DocumentTranslationTool from "@/components/tools/DocumentTranslationTool"
 import SponsorshipCalculatorTool from "@/components/tools/SponsorshipCalculatorTool";
 import { DocumentQuestionnaire } from "@/app/components/questionnaire/DocumentQuestionnaire";
 import { IR1_QUESTIONNAIRE_CONFIG } from "@/lib/questionnaire/ir1-questionnaire";
-import { computeDocumentList } from "@/lib/questionnaire/engine";
+import { computeDocumentList, deriveDocAnswersFromEligibility } from "@/lib/questionnaire/engine";
 import type {
   QuestionnaireResult,
   ConditionalDocument,
@@ -343,6 +343,15 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
     state.metadata?.docQuestionnaireCompleted === true;
   const [showDocQuestionnaire, setShowDocQuestionnaire] = useState(false);
 
+  // Derive document-questionnaire answers from Step 1 eligibility quest answers
+  // so duplicate questions (prior marriage, criminal history) don't need to be asked again.
+  const derivedDocAnswers = useMemo(() => {
+    const eligibilityAnswers = state.answers?.["eligibility-suite"] as
+      | Record<string, Record<string, string | string[]>>
+      | undefined;
+    return deriveDocAnswersFromEligibility(eligibilityAnswers);
+  }, [state.answers]);
+
   // Compute effective document items: use engine-finalized list if questionnaire done,
   // otherwise fall back to the raw JSON data
   const questionnaireDocItems = useMemo(() => {
@@ -351,9 +360,12 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
       | Record<string, string>
       | undefined;
     if (!savedAnswers) return null;
+    // Merge derived Step 1 answers underneath saved answers
+    // (saved answers take priority if both exist)
+    const mergedAnswers = { ...derivedDocAnswers, ...savedAnswers };
     const computed = computeDocumentList(
       IR1_QUESTIONNAIRE_CONFIG,
-      savedAnswers,
+      mergedAnswers,
     );
     // Map ConditionalDocument shape to the document_items shape the UI uses
     return computed.map((doc: ConditionalDocument) => ({
@@ -367,7 +379,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
       status: "not-started",
       required: doc.required,
     }));
-  }, [isDocQuestionnaireCompleted, state.metadata?.docQuestionnaireAnswers]);
+  }, [isDocQuestionnaireCompleted, state.metadata?.docQuestionnaireAnswers, derivedDocAnswers]);
 
   const [multipleUploadModalState, setMultipleUploadModalState] = useState<{
     isOpen: boolean;
@@ -484,6 +496,13 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
   const [submissionChecklistStatus, setSubmissionChecklistStatus] = useState<
     Record<string, boolean>
   >(initialSubmissionChecklist);
+
+  const [submissionSaved, setSubmissionSaved] = useState(
+    state.metadata.submissionSaved === true,
+  );
+  const [submissionDate, setSubmissionDate] = useState(
+    (state.metadata.submissionDate as string) || "",
+  );
 
   // Step 2.10 DQ Recording States
   const [dqSaved, setDqSaved] = useState(state.metadata.dqSaved === true);
@@ -3674,10 +3693,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-[14px] mb-[14px]">
                 {/* Official Card - IV Tool Auto-Sync */}
                 {(() => {
-                  const [ivLoading, setIvLoading] = React.useState(false);
-                  const [ivError, setIvError] = React.useState<string | null>(
-                    null,
-                  );
+                  // Using ivLoading and ivError from component state (not creating duplicate hooks)
                   const savedMonth = state.metadata
                     ?.currentSchedulingMonthYear as string | undefined;
                   const savedUpdated = state.metadata
@@ -4147,6 +4163,16 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
               setSubmissionChecklistStatus={setSubmissionChecklistStatus}
               setSubmissionGuideIdx={setSubmissionGuideIdx}
               setIsSubmissionGuideOpen={setIsSubmissionGuideOpen}
+              submissionSaved={submissionSaved}
+              submissionDate={submissionDate}
+              onSave={(data) => {
+                setSubmissionSaved(data.saved);
+                setSubmissionDate(data.date);
+                actions.updateMetadata({
+                  submissionSaved: data.saved,
+                  submissionDate: data.date,
+                });
+              }}
             />
           )}
 
@@ -6051,6 +6077,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
               {showDocQuestionnaire && currentStep.step_key === "step_1_2" && (
                 <DocumentQuestionnaire
                   config={IR1_QUESTIONNAIRE_CONFIG}
+                  initialAnswers={derivedDocAnswers}
                   onComplete={(result: QuestionnaireResult) => {
                     // Persist answers + completion flag via backend
                     actions.updateMetadata({
@@ -7429,10 +7456,10 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                                 (currentTutStep as TutorialStepData).screenTitle
                               }
                               fill
-                              className="object-contain"
+                              className="object-cover"
                               sizes="(max-width: 640px) 95vw, (max-width: 1024px) 90vw, 1000px"
                               quality={95}
-                              style={{ objectFit: "contain" }}
+                              style={{ objectFit: "cover" }}
                               priority={tutorialIdx === 0}
                             />
                           )
@@ -7456,10 +7483,10 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                               (currentTutStep as TutorialStepData).screenTitle
                             }
                             fill
-                            className="object-contain"
+                            className="object-cover"
                             sizes="(max-width: 640px) 95vw, (max-width: 1024px) 90vw, 1000px"
                             quality={95}
-                            style={{ objectFit: "contain" }}
+                            style={{ objectFit: "cover" }}
                             priority={tutorialIdx === 0}
                           />
                         ) : (
@@ -7611,10 +7638,10 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                                 ).screenTitle
                               }
                               fill
-                              className="object-contain"
+                              className="object-cover"
                               sizes="(max-width: 640px) 95vw, (max-width: 1024px) 90vw, 1000px"
                               quality={95}
-                              style={{ objectFit: "contain" }}
+                              style={{ objectFit: "cover" }}
                               priority
                             />
                           ) : (

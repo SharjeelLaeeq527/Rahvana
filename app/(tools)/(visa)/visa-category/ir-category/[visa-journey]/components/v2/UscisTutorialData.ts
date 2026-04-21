@@ -28,9 +28,9 @@ export interface TutorialStep {
 export const USCIS_TUTORIAL_STEPS: TutorialStep[] = [
   {
     label: 'Step 1 — Go to the USCIS account page',
-    heading: 'Navigate to the USCIS create-account page',
-    instruction: 'Open a browser and go to <strong>myaccount.uscis.gov/create-account</strong>. This is the official USCIS account setup portal — bookmark it for future reference.',
-    url: 'myaccount.uscis.gov/create-account',
+    heading: 'Navigate to the USCIS sign-in page',
+    instruction: 'Open a browser and go to <strong>myaccount.uscis.gov/sign-in</strong>. This is the official USCIS account setup portal — bookmark it for future reference.',
+    url: 'myaccount.uscis.gov/sign-in',
     screenTitle: 'USCIS Online Account',
     screenDesc: 'Sign Up for a USCIS Account',
     media: { type: 'img', src: '/assets/images/ir1-journey/c1_step6/01-uscis-acc-sign-up.png' },

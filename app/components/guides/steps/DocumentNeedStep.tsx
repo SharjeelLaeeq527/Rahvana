@@ -353,20 +353,20 @@ const DocumentNeedStep = ({
     <div>
       <h2
         className="text-[1.75rem] font-extrabold text-[hsl(220_20%_10%)]
-                     mb-2 font-['Plus_Jakarta_Sans','Inter',system-ui,sans-serif] font-urdu-body"
+                     mb-1 font-['Plus_Jakarta_Sans','Inter',system-ui,sans-serif] font-urdu-body"
       >
         {title}
       </h2>
 
       <p
         className="text-[0.95rem] text-[hsl(215_16%_47%)]
-                    mb-8 leading-normal font-urdu-body"
+                    mb-5 leading-normal font-urdu-body"
       >
         {description}
       </p>
 
       <div
-        className={`grid gap-5 ${
+        className={`grid gap-4 ${
           options.length === 4
             ? "grid-cols-1 sm:grid-cols-2 max-w-3xl mx-auto"
             : options.length % 3 === 0
@@ -397,7 +397,7 @@ const DocumentNeedStep = ({
               whileTap={{ scale: 0.97 }}
               onClick={() => onSelect(option.id)}
               className={`
-                p-7 rounded-2xl text-left flex flex-col gap-4
+                p-5 rounded-2xl text-left flex flex-col gap-2
                 border-2 transition-all duration-200
                 ${
                   isSelected
@@ -406,40 +406,38 @@ const DocumentNeedStep = ({
                 }
               `}
             >
-              {/* Icon Box */}
-              <div
-                className={`w-14 h-14 rounded-[14px] flex items-center justify-center
-                  ${isSelected ? "bg-[hsl(168_60%_88%)]" : styles.iconBg}`}
-              >
-                <Icon
-                  className={`w-6.5 h-6.5
-                    ${
-                      isSelected
-                        ? "text-[hsl(168_80%_25%)]"
-                        : "text-[hsl(220_20%_30%)]"
-                    }`}
-                />
-              </div>
-
-              {/* Text */}
-              <div>
+              {/* Icon and Title Row */}
+              <div className="flex items-center gap-3">
+                <div
+                  className={`w-10 h-10 rounded-[10px] flex items-center justify-center flex-shrink-0
+                    ${isSelected ? "bg-[hsl(168_60%_88%)]" : styles.iconBg}`}
+                >
+                  <Icon
+                    className={`w-5 h-5
+                      ${
+                        isSelected
+                          ? "text-[hsl(168_80%_25%)]"
+                          : "text-[hsl(220_20%_30%)]"
+                      }`}
+                  />
+                </div>
                 <h3
-                  className="text-[1.05rem] font-bold
-                                text-[hsl(220_20%_10%)]
-                                mb-1
-                                font-['Plus_Jakarta_Sans','Inter',system-ui,sans-serif] font-urdu-body"
+                  className="text-[0.95rem] font-bold
+                              text-[hsl(220_20%_10%)]
+                              font-['Plus_Jakarta_Sans','Inter',system-ui,sans-serif] font-urdu-body"
                 >
                   {option.title}
                 </h3>
-
-                <p
-                  className="text-[0.85rem]
-                               text-[hsl(215_16%_50%)]
-                               leading-[1.4] font-urdu-body"
-                >
-                  {option.description}
-                </p>
               </div>
+
+              {/* Description */}
+              <p
+                className="text-[0.8rem]
+                             text-[hsl(215_16%_50%)]
+                             leading-[1.3] font-urdu-body"
+              >
+                {option.description}
+              </p>
             </motion.button>
           );
         })}
