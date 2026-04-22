@@ -166,8 +166,12 @@ export const REMINDER_REGISTRY: JourneyReminderDef[] = [
     chapter: 2,
     kind: 'WAITING',
     origin: 'journey',
-    trigger: { type: 'step_completed', stepKey: 'step_2_2' },
-    suppressWhen: { type: 'metadata_key_value', metadataKey: 'nvcFeeStatus', value: 'posted' },
+    // Trigger: fires when NVC Case Number is saved (Step 2.1 — CaseRegistrationForm saves nvcCaseNum)
+    // This means user has registered with NVC, so fees are now due
+    trigger: { type: 'metadata_key_exists', metadataKey: 'nvcCaseNum' },
+    // Suppress: nvcFeeStatus is an OBJECT { aos: 'Paid', iv: 'Paid' } saved by NVC Fee Modal.
+    // We suppress when the object exists (any status saved = user has acknowledged fees)
+    suppressWhen: { type: 'metadata_key_exists', metadataKey: 'nvcFeeStatus' },
     delayDays: 0,
     recurring: { intervalDays: 14 },
     priority: 'high',
@@ -188,7 +192,8 @@ export const REMINDER_REGISTRY: JourneyReminderDef[] = [
     chapter: 2,
     kind: 'ACTION',
     origin: 'journey',
-    trigger: { type: 'step_completed', stepKey: 'step_2_8' },
+    // Trigger: SubmissionReviewTool saves submissionSaved:true when user submits docs to NVC
+    trigger: { type: 'metadata_key_exists', metadataKey: 'submissionSaved' },
     suppressWhen: { type: 'metadata_key_exists', metadataKey: 'dqDate' },
     delayDays: 0,
     priority: 'normal',
@@ -205,7 +210,8 @@ export const REMINDER_REGISTRY: JourneyReminderDef[] = [
     chapter: 2,
     kind: 'WAITING',
     origin: 'journey',
-    trigger: { type: 'step_completed', stepKey: 'step_2_8' },
+    // Trigger: same as c2_s9_start — submissionSaved key existing means docs are with NVC
+    trigger: { type: 'metadata_key_exists', metadataKey: 'submissionSaved' },
     suppressWhen: { type: 'metadata_key_exists', metadataKey: 'dqDate' },
     delayDays: 14,
     recurring: { intervalDays: 14 },
@@ -223,7 +229,7 @@ export const REMINDER_REGISTRY: JourneyReminderDef[] = [
     chapter: 2,
     kind: 'WAITING',
     origin: 'journey',
-    trigger: { type: 'step_completed', stepKey: 'step_2_8' },
+    trigger: { type: 'metadata_key_exists', metadataKey: 'submissionSaved' },
     suppressWhen: { type: 'metadata_key_exists', metadataKey: 'dqDate' },
     delayDays: 60,
     priority: 'high',
@@ -240,7 +246,7 @@ export const REMINDER_REGISTRY: JourneyReminderDef[] = [
     chapter: 2,
     kind: 'WAITING',
     origin: 'journey',
-    trigger: { type: 'step_completed', stepKey: 'step_2_8' },
+    trigger: { type: 'metadata_key_exists', metadataKey: 'submissionSaved' },
     suppressWhen: { type: 'metadata_key_exists', metadataKey: 'dqDate' },
     delayDays: 90,
     priority: 'high',
@@ -257,7 +263,7 @@ export const REMINDER_REGISTRY: JourneyReminderDef[] = [
     chapter: 2,
     kind: 'WAITING',
     origin: 'journey',
-    trigger: { type: 'step_completed', stepKey: 'step_2_8' },
+    trigger: { type: 'metadata_key_exists', metadataKey: 'submissionSaved' },
     suppressWhen: { type: 'metadata_key_exists', metadataKey: 'dqDate' },
     delayDays: 120,
     priority: 'high',
@@ -274,15 +280,16 @@ export const REMINDER_REGISTRY: JourneyReminderDef[] = [
     chapter: 2,
     kind: 'ACTION',
     origin: 'journey',
-    // Fires when step 2.9 (awaiting NVC review) is completed but DQ not yet recorded
-    trigger: { type: 'step_completed', stepKey: 'step_2_9' },
+    // Fires after docs submitted to NVC (submissionSaved) but DQ date not yet recorded.
+    // This reminds user to go back and record DQ once NVC approves.
+    trigger: { type: 'metadata_key_exists', metadataKey: 'submissionSaved' },
     suppressWhen: { type: 'metadata_key_exists', metadataKey: 'dqDate' },
-    delayDays: 0,
-    recurring: { intervalDays: 7, maxCount: 4 },
+    delayDays: 45,
+    recurring: { intervalDays: 14, maxCount: 6 },
     priority: 'high',
     channels: ['push'],
     title: 'Record your DQ date — Step 10 is waiting',
-    body: 'NVC has completed their review. Go to Chapter 2 → Step 10 and record your DQ (Documentarily Qualified) date to activate interview queue tracking and your estimated interview window.',
+    body: 'NVC has had your documents for over a month. Once they mark your case as Documentarily Qualified (DQ), go to Chapter 2 → Step 10 and record your DQ date to activate interview queue tracking.',
     actionLabel: 'Go to Step 10',
     actionUrl: '/visa-category/ir-category/ir1-journey',
   },
@@ -484,7 +491,8 @@ export const REMINDER_REGISTRY: JourneyReminderDef[] = [
     kind: 'ACTION',
     origin: 'journey',
     trigger: { type: 'metadata_key_exists', metadataKey: 'interviewDate' },
-    suppressWhen: { type: 'step_completed', stepKey: 'step_3_2' },
+    // PolioCertificateTool saves polio_launched:'true' when guide is completed — no step mark
+    suppressWhen: { type: 'metadata_key_value', metadataKey: 'polio_launched', value: 'true' },
     delayDays: 0,
     recurring: { intervalDays: 7, maxCount: 4 },
     priority: 'high',
@@ -504,7 +512,8 @@ export const REMINDER_REGISTRY: JourneyReminderDef[] = [
     kind: 'ACTION',
     origin: 'journey',
     trigger: { type: 'metadata_key_exists', metadataKey: 'interviewDate' },
-    suppressWhen: { type: 'step_completed', stepKey: 'step_3_3' },
+    // PoliceClearanceTool saves pcc_saved:'true' when tracking info is saved — no step mark
+    suppressWhen: { type: 'metadata_key_value', metadataKey: 'pcc_saved', value: 'true' },
     delayDays: 0,
     recurring: { intervalDays: 5, maxCount: 4 },
     priority: 'critical',
@@ -521,8 +530,10 @@ export const REMINDER_REGISTRY: JourneyReminderDef[] = [
     chapter: 3,
     kind: 'WAITING',
     origin: 'journey',
-    trigger: { type: 'step_completed', stepKey: 'step_3_3' },
-    suppressWhen: { type: 'step_completed', stepKey: 'step_3_4' },
+    // Trigger: fires when PCC application is saved (pcc_saved = 'true')
+    trigger: { type: 'metadata_key_value', metadataKey: 'pcc_saved', value: 'true' },
+    // Suppress: when PCC is received (pcc_received = 'true') via 'Mark as Received' button
+    suppressWhen: { type: 'metadata_key_value', metadataKey: 'pcc_received', value: 'true' },
     delayDays: 7,
     recurring: { intervalDays: 7, maxCount: 6 },
     priority: 'high',
