@@ -28,6 +28,9 @@ async function getAccessToken(): Promise<string> {
       method: "POST",
       headers: {
         "Content-Type": "application/x-www-form-urlencoded",
+        demo_id:"3734"
+
+
       },
       body: new URLSearchParams({
         grant_type: "client_credentials",
@@ -91,6 +94,7 @@ export async function POST(req: NextRequest) {
       headers: {
         Authorization: `Bearer ${accessToken}`,
         Accept: "application/json",
+        demo_id: "3734",
       },
     });
 
