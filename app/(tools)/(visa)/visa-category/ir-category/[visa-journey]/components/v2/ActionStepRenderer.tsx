@@ -12,7 +12,7 @@ import {
   CheckCircle,
   Printer,
   Download,
-  RefreshCw
+  RefreshCw,
 } from "lucide-react";
 import { useWizard } from "@/app/(main)/dashboard/hooks/useWizard";
 import { CustomDropdown } from "@/app/components/shared/CustomDropdown";
@@ -158,6 +158,9 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
   const [mailingTracking, setMailingTracking] = useState("");
   const [isSavingPayment, setIsSavingPayment] = useState(false);
   const [isSavingMailing, setIsSavingMailing] = useState(false);
+  const [carrierError, setCarrierError] = useState("");
+  const [trackingError, setTrackingError] = useState("");
+  const [isEditingMailing, setIsEditingMailing] = useState(false);
   const [trackingStatus, setTrackingStatus] = useState<string>("unknown");
   const [trackingLastChecked, setTrackingLastChecked] = useState<string | null>(
     null,
@@ -305,127 +308,116 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
 
   // Fetch tracking status periodically when tracker exists + Supabase Realtime for real-time updates
   useEffect(() => {
-    // Only fetch if we have a tracker ID and not yet delivered
-    if (
-      !state.metadata?.easypost_tracker_id ||
-      trackingStatus === "delivered"
-    ) {
-      return;
-    }
+    if (!state.metadata?.easypost_tracker_id) return;
 
-    // Fetch on mount
+    let channel: any = null;
+    let isMounted = true;
+
+    let pollTimer: NodeJS.Timeout | null = null;
+
+    // initial fetch
     fetchTrackingStatus();
 
-    let pollInterval: NodeJS.Timeout | undefined;
-    let realtimeChannel: any = null;
+    const getPollDelay = (status?: string) => {
+      if (status === "out_for_delivery") {
+        return 10 * 60 * 1000; // 10 min
+      }
+      return 6 * 60 * 60 * 1000; // 6 hours
+    };
 
-    // Subscribe to Supabase Realtime for DB changes
-    const subscribeToRealtimeUpdates = async () => {
+    const startPolling = (status?: string) => {
+      if (pollTimer) {
+        clearInterval(pollTimer);
+      }
+
+      if (status === "delivered") return;
+
+      const delay = getPollDelay(status);
+
+      console.log(
+        `[Tracking] Polling started: ${delay / 1000 / 60} min interval`,
+      );
+
+      pollTimer = setInterval(fetchTrackingStatus, delay);
+    };
+
+    const setupRealtime = async () => {
       try {
-        const { createClient: createSupabaseClient } = await import(
-          "@/lib/supabase/client"
-        );
-        const supabase = createSupabaseClient();
+        const { createClient } = await import("@/lib/supabase/client");
+        const supabase = createClient();
 
-        // Subscribe to case_data table changes for this journey
-        realtimeChannel = supabase
+        if (!isMounted) return;
+
+        channel = supabase
           .channel(`tracking:${state.backendId}`)
           .on(
             "postgres_changes",
             {
               event: "UPDATE",
+              schema: "public",
               table: "case_data",
               filter: `journey_id=eq.${state.backendId}`,
             },
             (payload: any) => {
-              try {
-                const { new: updatedRow } = payload;
+              const updatedRow = payload.new;
+              if (!updatedRow) return;
 
-                // Handle tracking status updates
-                if (updatedRow?.data_key === "tracking_status") {
-                  console.log(
-                    `[ActionStepRenderer] Realtime update - Status: ${updatedRow.data_value}`,
-                  );
-                  setTrackingStatus(updatedRow.data_value);
-                }
+              // Skip updates while user is editing mailing details
+              if (isEditingMailing) return;
 
-                // Handle last checked timestamp
-                if (updatedRow?.data_key === "tracking_last_checked_at") {
-                  setTrackingLastChecked(updatedRow.data_value);
-                }
+              // TRACKING STATUS
+              if (updatedRow.data_key === "tracking_status") {
+                const newStatus = updatedRow.data_value;
 
-                // Handle delivered timestamp
-                if (updatedRow?.data_key === "delivered_at") {
-                  setDeliveredAt(updatedRow.data_value);
-                }
+                console.log(`[Realtime] Status: ${newStatus}`);
+                setTrackingStatus(newStatus);
 
-                // Stop polling if delivered
-                if (updatedRow?.data_value === "delivered" && pollInterval) {
-                  clearInterval(pollInterval);
-                  pollInterval = undefined;
-                }
-              } catch (err) {
-                console.error(
-                  "[ActionStepRenderer] Error processing realtime update:",
-                  err,
-                );
+                // Adjust polling dynamically
+                startPolling(newStatus);
+              }
+
+              // LAST CHECKED
+              if (updatedRow.data_key === "tracking_last_checked_at") {
+                setTrackingLastChecked(updatedRow.data_value);
+              }
+
+              // DELIVERED TIME
+              if (updatedRow.data_key === "delivered_at") {
+                setDeliveredAt(updatedRow.data_value);
               }
             },
           )
-          .subscribe((status: string) => {
-            if (status === "SUBSCRIBED") {
-              console.log(
-                "[ActionStepRenderer] Supabase Realtime subscribed for tracking updates",
-              );
-            }
-          });
+          .subscribe();
       } catch (err) {
-        console.error(
-          "[ActionStepRenderer] Failed to subscribe to Realtime:",
-          err,
-        );
+        console.error("Realtime setup failed:", err);
       }
     };
 
-    subscribeToRealtimeUpdates();
+    setupRealtime();
 
-    // Set up polling as fallback (6 hours default, 10 min when out for delivery)
-    const setupPolling = () => {
-      // Calculate delay based on current tracking status
-      let pollDelayMs = 6 * 60 * 60 * 1000; // default: 6 hours
+    // Start polling with initial status
+    startPolling(trackingStatus);
 
-      if (trackingStatus === "out_for_delivery") {
-        pollDelayMs = 10 * 60 * 1000; // 10 min (final stage)
-      }
-
-      if (trackingStatus === "delivered") {
-        return undefined; // don't poll if already delivered
-      }
-
-      // Clear any existing polling to prevent duplicates
-      if (pollInterval) {
-        clearInterval(pollInterval);
-      }
-
-      console.log(
-        `[ActionStepRenderer] Starting polling with interval: ${pollDelayMs / 1000 / 60}min`,
-      );
-
-      return setInterval(fetchTrackingStatus, pollDelayMs);
-    };
-
-    pollInterval = setupPolling();
-
-    // Cleanup on unmount
     return () => {
-      if (realtimeChannel) {
-        realtimeChannel.unsubscribe();
+      isMounted = false;
+
+      if (channel) {
+        import("@/lib/supabase/client").then(({ createClient }) => {
+          const supabase = createClient();
+          supabase.removeChannel(channel);
+        });
       }
-      if (pollInterval) {
-        clearInterval(pollInterval);
+
+      if (pollTimer) {
+        clearInterval(pollTimer);
       }
     };
-  }, [state.metadata?.easypost_tracker_id, state.backendId, trackingStatus, fetchTrackingStatus]);
+  }, [
+    state.metadata?.easypost_tracker_id,
+    state.backendId,
+    fetchTrackingStatus,
+    isEditingMailing,
+  ]);
 
   const handlePrevGuide = () => {
     setGuideStep((prev) => Math.max(0, prev - 1));
@@ -435,8 +427,43 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
     setGuideStep((prev) => prev + 1);
   };
 
+  // Validation functions for mailing inputs
+  const validateCarrier = (value: string): string => {
+    if (!value.trim()) {
+      return "Carrier name is required";
+    }
+    if (value.trim().length < 2) {
+      return "Carrier name must be at least 2 characters";
+    }
+    return "";
+  };
+
+  const validateTracking = (value: string): string => {
+    if (!value.trim()) {
+      return "Tracking number is required";
+    }
+    if (value.trim().length < 3) {
+      return "Tracking number must be at least 3 characters";
+    }
+    // Allow alphanumeric and common separators
+    if (!/^[a-zA-Z0-9\-\s]*$/.test(value.trim())) {
+      return "Tracking number can only contain letters, numbers, dashes, and spaces";
+    }
+    return "";
+  };
+
   const handleSaveMailing = async () => {
-    if (!mailingCarrier.trim() || !mailingTracking.trim()) return;
+    // Validate carrier
+    const carrierErr = validateCarrier(mailingCarrier);
+    if (carrierErr) {
+      setCarrierError(carrierErr);
+    }
+
+    // Validate tracking
+    const trackingErr = validateTracking(mailingTracking);
+    if (trackingErr) {
+      setTrackingError(trackingErr);
+    }
 
     if (!actions?.saveMailingDetails) {
       console.error(
@@ -451,11 +478,15 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
       await actions.saveMailingDetails(mailingCarrier, mailingTracking);
       // Only show saved status after successful API call
       setStatusSaved(true);
+      showToast("Mailing details saved successfully!", "success");
     } catch (error) {
       console.error("Failed to save mailing details:", error);
       setStatusSaved(false);
+      showToast("Failed to save mailing details", "error");
     } finally {
       setIsSavingMailing(false);
+      // Re-enable tracking updates after save completes
+      setIsEditingMailing(false);
     }
   };
 
@@ -925,62 +956,152 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
                     gap: "10px",
                   }}
                 >
-                  <input
-                    type="text"
-                    placeholder={
-                      actionData.mailing_card.carrier_placeholder ||
-                      "Carrier (USPS, UPS, FedEx)"
-                    }
-                    value={mailingCarrier}
-                    onChange={(e) => setMailingCarrier(e.target.value)}
-                    style={{
-                      padding: "12px 14px",
-                      border: `1px solid ${COLORS.line}`,
-                      borderRadius: "10px",
-                      fontSize: "14px",
-                      fontFamily: "inherit",
-                      transition: "border-color 0.2s",
-                      color: COLORS.ink,
-                      background: "#fff",
-                    }}
-                    onFocus={(e) => {
-                      e.target.style.borderColor = COLORS.accent;
-                    }}
-                    onBlur={(e) => {
-                      e.target.style.borderColor = COLORS.line;
-                    }}
-                  />
-                  <input
-                    type="text"
-                    placeholder={
-                      actionData.mailing_card.tracking_placeholder ||
-                      "Tracking number"
-                    }
-                    value={mailingTracking}
-                    onChange={(e) => setMailingTracking(e.target.value)}
-                    style={{
-                      padding: "12px 14px",
-                      border: `1px solid ${COLORS.line}`,
-                      borderRadius: "10px",
-                      fontSize: "14px",
-                      fontFamily: "inherit",
-                      transition: "border-color 0.2s",
-                      color: COLORS.ink,
-                      background: "#fff",
-                    }}
-                    onFocus={(e) => {
-                      e.target.style.borderColor = COLORS.accent;
-                    }}
-                    onBlur={(e) => {
-                      e.target.style.borderColor = COLORS.line;
-                    }}
-                  />
+                  {/* Carrier Input */}
+                  <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+                    <label
+                      style={{
+                        fontSize: "11px",
+                        fontWeight: "bold",
+                        letterSpacing: "0.08em",
+                        textTransform: "uppercase",
+                        color: COLORS.muted,
+                      }}
+                    >
+                      Carrier name
+                    </label>
+                    <input
+                      type="text"
+                      placeholder={
+                        actionData.mailing_card.carrier_placeholder ||
+                        "Carrier (USPS, UPS, FedEx)"
+                      }
+                      value={mailingCarrier}
+                      onChange={(e) => {
+                        setMailingCarrier(e.target.value);
+                        setIsEditingMailing(true);
+                        if (carrierError) setCarrierError("");
+                      }}
+                      style={{
+                        padding: "12px 14px",
+                        border: `1px solid ${carrierError ? "#ef4444" : COLORS.line}`,
+                        borderRadius: "10px",
+                        fontSize: "14px",
+                        fontFamily: "inherit",
+                        transition: "border-color 0.2s",
+                        color: COLORS.ink,
+                        background: "#fff",
+                        outline: "none",
+                        boxShadow: carrierError
+                          ? "0 0 0 3px rgba(239, 68, 68, 0.12)"
+                          : "none",
+                      }}
+                      onFocus={(e) => {
+                        e.currentTarget.style.borderColor = carrierError
+                          ? "#ef4444"
+                          : COLORS.accent;
+                        e.currentTarget.style.boxShadow = carrierError
+                          ? "0 0 0 3px rgba(239, 68, 68, 0.12)"
+                          : "0 0 0 3px rgba(47, 111, 212, 0.12)";
+                      }}
+                      onBlur={(e) => {
+                        e.currentTarget.style.borderColor = carrierError
+                          ? "#ef4444"
+                          : COLORS.line;
+                        e.currentTarget.style.boxShadow = "none";
+                      }}
+                    />
+                    {carrierError && (
+                      <div
+                        style={{
+                          fontSize: "11px",
+                          fontWeight: 500,
+                          color: "#dc2626",
+                          marginTop: "2px",
+                          animation: "fadeIn 0.2s ease-in",
+                        }}
+                      >
+                        {carrierError}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Tracking Number Input */}
+                  <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+                    <label
+                      style={{
+                        fontSize: "11px",
+                        fontWeight: "bold",
+                        letterSpacing: "0.08em",
+                        textTransform: "uppercase",
+                        color: COLORS.muted,
+                      }}
+                    >
+                      Tracking number
+                    </label>
+                    <input
+                      type="text"
+                      placeholder={
+                        actionData.mailing_card.tracking_placeholder ||
+                        "Tracking number"
+                      }
+                      value={mailingTracking}
+                      onChange={(e) => {
+                        setMailingTracking(e.target.value);
+                        setIsEditingMailing(true);
+                        if (trackingError) setTrackingError("");
+                      }}
+                      style={{
+                        padding: "12px 14px",
+                        border: `1px solid ${trackingError ? "#ef4444" : COLORS.line}`,
+                        borderRadius: "10px",
+                        fontSize: "14px",
+                        fontFamily: "inherit",
+                        transition: "border-color 0.2s",
+                        color: COLORS.ink,
+                        background: "#fff",
+                        outline: "none",
+                        boxShadow: trackingError
+                          ? "0 0 0 3px rgba(239, 68, 68, 0.12)"
+                          : "none",
+                      }}
+                      onFocus={(e) => {
+                        e.currentTarget.style.borderColor = trackingError
+                          ? "#ef4444"
+                          : COLORS.accent;
+                        e.currentTarget.style.boxShadow = trackingError
+                          ? "0 0 0 3px rgba(239, 68, 68, 0.12)"
+                          : "0 0 0 3px rgba(47, 111, 212, 0.12)";
+                      }}
+                      onBlur={(e) => {
+                        e.currentTarget.style.borderColor = trackingError
+                          ? "#ef4444"
+                          : COLORS.line;
+                        e.currentTarget.style.boxShadow = "none";
+                      }}
+                    />
+                    {trackingError && (
+                      <div
+                        style={{
+                          fontSize: "11px",
+                          fontWeight: 500,
+                          color: "#dc2626",
+                          marginTop: "2px",
+                          animation: "fadeIn 0.2s ease-in",
+                        }}
+                      >
+                        {trackingError}
+                      </div>
+                    )}
+                  </div>
+
                   <button
                     onClick={handleSaveMailing}
                     disabled={
                       !mailingCarrier.trim() ||
                       !mailingTracking.trim() ||
-                      isSavingMailing
+                      isSavingMailing ||
+                      !!carrierError ||
+                      !!trackingError
                     }
                     style={{
                       width: "100%",
@@ -994,13 +1115,17 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
                       cursor:
                         mailingCarrier.trim() &&
                         mailingTracking.trim() &&
-                        !isSavingMailing
+                        !isSavingMailing &&
+                        !carrierError &&
+                        !trackingError
                           ? "pointer"
                           : "not-allowed",
                       opacity:
                         mailingCarrier.trim() &&
                         mailingTracking.trim() &&
-                        !isSavingMailing
+                        !isSavingMailing &&
+                        !carrierError &&
+                        !trackingError
                           ? 1
                           : 0.6,
                       transition: "opacity 0.2s",
@@ -1066,131 +1191,142 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
                   </span>
 
                   {/* Tracking Status Section - Only for mailing with tracker */}
-{actionData.mailing_card &&
-  state.metadata?.easypost_tracker_id && (
-    <div
-      style={{
-        marginTop: "10px",
-        paddingTop: "10px",
-        borderTop: "1px solid rgba(21, 116, 79, 0.2)",
-      }}
-    >
-      {/* Top Row */}
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          gap: "8px",
-          marginBottom: "4px",
-          fontSize: "12px",
-        }}
-      >
-        {/* Left: Status */}
-        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-          <strong>Tracking Status:</strong>
+                  {actionData.mailing_card &&
+                    state.metadata?.easypost_tracker_id && (
+                      <div
+                        style={{
+                          marginTop: "10px",
+                          paddingTop: "10px",
+                          borderTop: "1px solid rgba(21, 116, 79, 0.2)",
+                        }}
+                      >
+                        {/* Top Row */}
+                        <div
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "space-between",
+                            gap: "8px",
+                            marginBottom: "4px",
+                            fontSize: "12px",
+                          }}
+                        >
+                          {/* Left: Status */}
+                          <div
+                            style={{
+                              display: "flex",
+                              alignItems: "center",
+                              gap: "8px",
+                            }}
+                          >
+                            <strong>Tracking Status:</strong>
 
-          {isLoadingTracking && (
-            <>
-              <Loader
-                size={14}
-                style={{
-                  animation: "spin 1s linear infinite",
-                }}
-              />
-              <span>Updating...</span>
-            </>
-          )}
+                            {isLoadingTracking && (
+                              <>
+                                <Loader
+                                  size={14}
+                                  style={{
+                                    animation: "spin 1s linear infinite",
+                                  }}
+                                />
+                                <span>Updating...</span>
+                              </>
+                            )}
 
-          {!isLoadingTracking && (
-            <>
-              {getTrackingStatusDisplay(trackingStatus).icon}
-              <span style={{ fontWeight: 600 }}>
-                {getTrackingStatusDisplay(trackingStatus).label}
-              </span>
-            </>
-          )}
-        </div>
+                            {!isLoadingTracking && (
+                              <>
+                                {getTrackingStatusDisplay(trackingStatus).icon}
+                                <span style={{ fontWeight: 600 }}>
+                                  {
+                                    getTrackingStatusDisplay(trackingStatus)
+                                      .label
+                                  }
+                                </span>
+                              </>
+                            )}
+                          </div>
 
-        {/* Right: Refresh Button */}
-        {trackingStatus !== "delivered" && (
-          <button
-            onClick={fetchTrackingStatus}
-            style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              width: "28px",
-              height: "28px",
-              borderRadius: "50%",
-              border: "1px solid rgba(21, 116, 79, 0.2)",
-              background: "#fff",
-              cursor: "pointer",
-              transition: "all 0.2s",
-            }}
-            onMouseEnter={(e) => {
-              const el = e.currentTarget;
-              el.style.background = "#f3f8f5";
-              el.style.transform = "rotate(20deg)";
-            }}
-            onMouseLeave={(e) => {
-              const el = e.currentTarget;
-              el.style.background = "#fff";
-              el.style.transform = "rotate(0deg)";
-            }}
-          >
-            <RefreshCw size={14} color={COLORS.green} />
-          </button>
-        )}
-      </div>
+                          {/* Right: Refresh Button */}
+                          {/* {trackingStatus !== "delivered" && (
+                            <button
+                              onClick={fetchTrackingStatus}
+                              style={{
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                                width: "28px",
+                                height: "28px",
+                                borderRadius: "50%",
+                                border: "1px solid rgba(21, 116, 79, 0.2)",
+                                background: "#fff",
+                                cursor: "pointer",
+                                transition: "all 0.2s",
+                              }}
+                              onMouseEnter={(e) => {
+                                const el = e.currentTarget;
+                                el.style.background = "#f3f8f5";
+                                el.style.transform = "rotate(20deg)";
+                              }}
+                              onMouseLeave={(e) => {
+                                const el = e.currentTarget;
+                                el.style.background = "#fff";
+                                el.style.transform = "rotate(0deg)";
+                              }}
+                            >
+                              <RefreshCw size={14} color={COLORS.green} />
+                            </button>
+                          )} */}
+                        </div>
 
-      {/* Last Checked */}
-      {trackingLastChecked && (
-        <div
-          style={{
-            fontSize: "11px",
-            color: "rgba(21, 116, 79, 0.7)",
-            marginBottom: "6px",
-          }}
-        >
-          Last checked: {formatRelativeTime(trackingLastChecked)}
-        </div>
-      )}
+                        {/* Last Checked */}
+                        {trackingLastChecked && (
+                          <div
+                            style={{
+                              fontSize: "11px",
+                              color: "rgba(21, 116, 79, 0.7)",
+                              marginBottom: "6px",
+                            }}
+                          >
+                            Last checked:{" "}
+                            {formatRelativeTime(trackingLastChecked)}
+                          </div>
+                        )}
 
-      {/* Update Info */}
-      {trackingStatus !== "delivered" && (
-        <div
-          style={{
-            fontSize: "12px",
-            color: "rgba(21, 116, 79, 0.6)",
-            marginBottom: "4px",
-            fontWeight: 500,
-          }}
-        >
-          Updates from the carrier are checked four times a day.
-        </div>
-      )}
+                        {/* Update Info */}
+                        {trackingStatus !== "delivered" && (
+                          <div
+                            style={{
+                              fontSize: "12px",
+                              color: "rgba(21, 116, 79, 0.6)",
+                              marginBottom: "4px",
+                              fontWeight: 500,
+                            }}
+                          >
+                            Updates from the carrier are checked in every 24 hours.
+                          </div>
+                        )}
 
-      {/* Delivered Date */}
-      {deliveredAt && trackingStatus === "delivered" && (
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: "6px",
-            fontSize: "11px",
-            fontWeight: 600,
-            color: COLORS.green,
-          }}
-        >
-          <CheckCircle2 size={14} />
-          <span>
-            Delivered: {new Date(deliveredAt).toLocaleDateString()}
-          </span>
-        </div>
-      )}
-    </div>
-  )}
+                        {/* Delivered Date */}
+                        {deliveredAt && trackingStatus === "delivered" && (
+                          <div
+                            style={{
+                              display: "flex",
+                              alignItems: "center",
+                              gap: "6px",
+                              fontSize: "11px",
+                              fontWeight: 600,
+                              color: COLORS.green,
+                            }}
+                          >
+                            <CheckCircle2 size={14} />
+                            <span>
+                              Delivered:{" "}
+                              {new Date(deliveredAt).toLocaleDateString()}
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                    )}
                 </div>
               </section>
             )}
